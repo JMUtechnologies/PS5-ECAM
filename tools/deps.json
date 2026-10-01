@@ -1,0 +1,150 @@
+{
+  "about": "Pinned inputs of the PS5Cemu build. `make deps` (tools/deps.py) fetches every missing item and leaves existing checkouts and files untouched. Paths are relative to the repository root.",
+  "items": [
+    {
+      "name": "cemu",
+      "about": "Cemu (Wii U emulator) at the pinned upstream commit, with the submodules the PS5 build uses",
+      "kind": "git",
+      "url": "https://github.com/cemu-project/Cemu.git",
+      "commit": "4e3c824faa00f6b85782db019f20f29f063f3a2a",
+      "path": ".deps/Cemu",
+      "submodules": ["dependencies/ZArchive", "dependencies/Vulkan-Headers", "dependencies/imgui"],
+      "creates": ".deps/Cemu/src/Cafe/CafeSystem.cpp"
+    },
+    {
+      "name": "boilerplate",
+      "about": "PS5 Native App Boilerplate: public Payload SDK v0.42, the runtime libc.prx shim and the native packaging tool",
+      "kind": "git",
+      "url": "https://github.com/blackbearreloaded/ps5-native-app-boilerplate.git",
+      "commit": "dd44bbdc75437332ed22e3ba95126733419ef25a",
+      "path": ".deps/ps5-native-app-boilerplate",
+      "setup": ["bash", "tools/setup-native-dependencies.sh"],
+      "setup_creates": ".deps/ps5-native-app-boilerplate/.deps/native/ps5-payload-sdk/bin/prospero-clang"
+    },
+    {
+      "name": "pacbrew",
+      "about": "Prebuilt PS5 libraries from pacbrew v0.40.2: curl, OpenSSL, zlib, zstd, libpng, glm, fmt 12.1, FreeType, RmlUi 6.2",
+      "kind": "archive",
+      "url": "https://github.com/ps5-payload-dev/pacbrew-repo/releases/download/v0.40.2/ps5-payload-dev.tar.gz",
+      "sha256": "a85f65de418a8e6a898c6c3e3c870d50fff7618a200e4dd59ea9692af6ecec4d",
+      "extract": ".deps/pacbrew-0.40.2",
+      "creates": ".deps/pacbrew-0.40.2/opt/ps5-payload-sdk/target/user/homebrew/lib/libcurl.a"
+    },
+    {
+      "name": "boost",
+      "about": "Boost 1.90.0 (filesystem, program_options, nowide built for the PS5; the rest header-only)",
+      "kind": "archive",
+      "url": "https://github.com/boostorg/boost/releases/download/boost-1.90.0/boost-1.90.0-b2-nodocs.tar.xz",
+      "sha256": "9e6bee9ab529fb2b0733049692d57d10a72202af085e553539a05b4204211a6f",
+      "extract": ".deps",
+      "creates": ".deps/boost-1.90.0/boost/version.hpp"
+    },
+    {
+      "name": "pugixml",
+      "about": "pugixml 1.15",
+      "kind": "archive",
+      "url": "https://github.com/zeux/pugixml/releases/download/v1.15/pugixml-1.15.tar.gz",
+      "sha256": "655ade57fa703fb421c2eb9a0113b5064bddb145d415dd1f88c79353d90d511a",
+      "extract": ".deps",
+      "creates": ".deps/pugixml-1.15/src/pugixml.cpp"
+    },
+    {
+      "name": "libzip",
+      "about": "libzip 1.11.4",
+      "kind": "archive",
+      "url": "https://github.com/nih-at/libzip/releases/download/v1.11.4/libzip-1.11.4.tar.xz",
+      "sha256": "8a247f57d1e3e6f6d11413b12a6f28a9d388de110adc0ec608d893180ed7097b",
+      "extract": ".deps",
+      "creates": ".deps/libzip-1.11.4/CMakeLists.txt"
+    },
+    {
+      "name": "glslang",
+      "about": "glslang 15.1.0, the version Cemu's vcpkg manifest pins",
+      "kind": "git",
+      "url": "https://github.com/KhronosGroup/glslang.git",
+      "commit": "1062752a891c95b2bfeed9e356562d88f9df84ac",
+      "path": ".deps/glslang-15.1.0",
+      "creates": ".deps/glslang-15.1.0/CMakeLists.txt"
+    },
+    {
+      "name": "rapidjson",
+      "about": "RapidJSON (header-only)",
+      "kind": "git",
+      "url": "https://github.com/Tencent/rapidjson.git",
+      "commit": "24b5e7a8b27f42fa16b96fc70aade9106cf7102f",
+      "path": ".deps/rapidjson",
+      "creates": ".deps/rapidjson/include/rapidjson/rapidjson.h"
+    },
+    {
+      "name": "rmlui",
+      "about": "RmlUi 6.2 sources, for the Vulkan render backend (the library itself comes from pacbrew)",
+      "kind": "git",
+      "url": "https://github.com/mikke89/RmlUi.git",
+      "commit": "2230d1a6e8e0848ed87a5761e2a5160b2a175ba4",
+      "path": ".deps/RmlUi-6.2",
+      "creates": ".deps/RmlUi-6.2/Backends/RmlUi_Renderer_VK.cpp"
+    },
+    {
+      "name": "ps5-mesa",
+      "about": "Mihawk-99's Mesa 26.2 fork: RADV with the PS5 winsys and the VideoOut swapchain, at the revision PS5_Vulkan pins (tools/build-radv.sh builds it with PS5_Vulkan's recipe)",
+      "kind": "git",
+      "url": "https://github.com/mihawk-99/PS5_Mesa.git",
+      "commit": "0b2d6d1a61d9bbf89cf8beb88a696144f67c61f8",
+      "path": ".deps/PS5_Mesa",
+      "creates": ".deps/PS5_Mesa/src/amd/vulkan/winsys/ps5/radv_ps5_winsys.c"
+    },
+    {
+      "name": "ps5-vulkan",
+      "about": "Mihawk-99's PS5_Vulkan: RADV's build and link recipe for titles (tools/build-radv.sh, tools/radv-link.sh), its linker script and the AGC link stubs",
+      "kind": "git",
+      "url": "https://github.com/mihawk-99/PS5_Vulkan.git",
+      "commit": "3f3ee69607013b345d2baa6d6a37c86745649a08",
+      "path": ".deps/PS5_Vulkan",
+      "creates": ".deps/PS5_Vulkan/tools/radv-link.sh"
+    },
+    {
+      "name": "ps5-payload-sdk-fork",
+      "about": "Mihawk-99's payload SDK fork with the PS5 platform layer RADV's winsys is built on, at the revision PS5_Vulkan pins",
+      "kind": "git",
+      "url": "https://github.com/mihawk-99/PS5_PayloadSDK.git",
+      "commit": "95c08f27386fc698f6bbe21dde3030140a41d10b",
+      "path": ".deps/PS5_PayloadSDK",
+      "creates": ".deps/PS5_PayloadSDK/platform/tools/setup-sdk.sh"
+    },
+    {
+      "name": "compiler-rt",
+      "about": "LLVM 18.1.8 builtins Clang's PS5 code calls and the host has no compiler-rt for: the emulated-TLS runtime (emutls.c, for -femulated-tls) and __cpu_model (x86.c, for __builtin_cpu_supports in RADV)",
+      "kind": "files",
+      "dest": ".deps/compiler-rt-18.1.8",
+      "creates": ".deps/compiler-rt-18.1.8/x86.c",
+      "files": [
+        {"name": "emutls.c", "url": "https://raw.githubusercontent.com/llvm/llvm-project/llvmorg-18.1.8/compiler-rt/lib/builtins/emutls.c", "sha256": "a4437f3e329a0835adbc7df38e36df12f358d05c073b11813c409f849c2345d2"},
+        {"name": "int_endianness.h", "url": "https://raw.githubusercontent.com/llvm/llvm-project/llvmorg-18.1.8/compiler-rt/lib/builtins/int_endianness.h", "sha256": "ec5175561075845b7b16a92ad5ecdfd42a284de2736dd07e4ca7011b75c37709"},
+        {"name": "int_lib.h", "url": "https://raw.githubusercontent.com/llvm/llvm-project/llvmorg-18.1.8/compiler-rt/lib/builtins/int_lib.h", "sha256": "b31130f10484636895daa13b91b63d47ea82b45547f29e4dd136b48a67854d30"},
+        {"name": "int_types.h", "url": "https://raw.githubusercontent.com/llvm/llvm-project/llvmorg-18.1.8/compiler-rt/lib/builtins/int_types.h", "sha256": "26517abcfb05e989f4ac18b38779bc118637e0a5b3e44536c3733cc47b33026e"},
+        {"name": "int_util.h", "url": "https://raw.githubusercontent.com/llvm/llvm-project/llvmorg-18.1.8/compiler-rt/lib/builtins/int_util.h", "sha256": "63d06198ab720a75c20bfd84be895c2746581b129168bae6201e7384bbb0473b"},
+        {"name": "x86.c", "url": "https://raw.githubusercontent.com/llvm/llvm-project/llvmorg-18.1.8/compiler-rt/lib/builtins/cpu_model/x86.c", "sha256": "76e43483ff498d8849b933d04e63d9710bca1ae7624057a044bb117b6477aa51"},
+        {"name": "cpu_model.h", "url": "https://raw.githubusercontent.com/llvm/llvm-project/llvmorg-18.1.8/compiler-rt/lib/builtins/cpu_model/cpu_model.h", "sha256": "cfb51c855bbffc0216e21f64a0f792d0354a6f07e693c56564a309bbe2e17757"}
+      ]
+    },
+    {
+      "name": "graphic-packs",
+      "about": "The Cemu community graphic packs (resolution, FPS++, fixes; CC0), release Github987, bundled as Cemu's downloaded graphic packs",
+      "kind": "files",
+      "dest": ".deps/graphic-packs",
+      "creates": ".deps/graphic-packs/graphicPacks987.zip",
+      "files": [
+        {"name": "graphicPacks987.zip", "url": "https://github.com/cemu-project/cemu_graphic_packs/releases/download/Github987/graphicPacks987.zip", "sha256": "fff8df5d8122b18871c0485fe266873644ed5254c15ede727bad1ef5f383951d"}
+      ]
+    },
+    {
+      "name": "prosperoeden",
+      "about": "ProsperoEden, for the launcher artwork, fonts and icons the PS5Cemu launcher reuses",
+      "kind": "git",
+      "url": "https://github.com/blackbearreloaded/ProsperoEden.git",
+      "commit": "183439625ef1d686d531426022d371142b3819bd",
+      "path": ".deps/ProsperoEden",
+      "creates": ".deps/ProsperoEden/headless/prosperoeden/ui/main.rml"
+    }
+  ]
+}

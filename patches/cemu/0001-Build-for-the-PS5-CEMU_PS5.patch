@@ -1,0 +1,575 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Thu, 1 Oct 2026 05:35:03 +0000
+Subject: [PATCH] Build for the PS5 (CEMU_PS5)
+
+A CEMU_PS5 CMake option builds Cemu for the PlayStation 5 with the port's host
+code from CEMU_PS5_PORT_DIR:
+
+- no X11, GTK, Wayland or GLX on the PS5; the Vulkan surface is a VK_KHR_display
+  plane surface on VideoOut, and the Vulkan driver is linked into the title, so
+  its global commands come from the port instead of a loader.
+- the x86_64-sie-ps5 target rejects ms_abi: the recompiler reaches the host
+  functions it calls, and is entered, through Microsoft-ABI thunks
+  (PPCREC_HOST_CALL); the x64 backend itself is unchanged.
+- fibers, the memory mapper, system information, audio output and the
+  DualSense controller provider come from the port.
+- threads are named with FreeBSD's pthread_set_name_np.
+---
+ CMakeLists.txt                                | 15 ++++++-
+ src/CMakeLists.txt                            | 16 ++++++--
+ src/Cafe/CMakeLists.txt                       | 10 +++++
+ .../Recompiler/BackendX64/BackendX64.cpp      |  8 +++-
+ .../HW/Espresso/Recompiler/PPCRecompiler.h    |  7 ++++
+ .../Recompiler/PPCRecompilerImlGen.cpp        |  2 +-
+ .../Recompiler/PPCRecompilerImlGenFPU.cpp     | 12 +++---
+ .../HW/Latte/Renderer/Vulkan/VulkanAPI.cpp    | 41 +++++++++++++++++++
+ src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h | 11 ++++-
+ .../Latte/Renderer/Vulkan/VulkanRenderer.cpp  | 10 ++++-
+ .../HW/Latte/Renderer/Vulkan/VulkanRenderer.h |  2 +-
+ src/Common/CMakeLists.txt                     |  2 +-
+ src/Common/GLInclude/GLInclude.h              |  2 +-
+ src/Common/GLInclude/glFunctions.h            |  2 +-
+ src/Common/platform.h                         |  4 ++
+ src/Common/precompiled.h                      |  5 ++-
+ src/audio/CMakeLists.txt                      |  8 ++++
+ src/gui/interface/WindowSystem.h              |  1 +
+ src/input/CMakeLists.txt                      | 10 +++++
+ src/util/CMakeLists.txt                       |  9 +++-
+ src/util/helpers/helpers.cpp                  |  4 ++
+ 21 files changed, 160 insertions(+), 21 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 644032c..542032e 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 3.21.1)
+ option(ENABLE_VCPKG "Enable the vcpkg package manager" ON)
+ option(MACOS_BUNDLE "The executable when built on macOS will be created as an application bundle" OFF)
+ option(ALLOW_PORTABLE "Allow Cemu to be run in portable mode" ON)
++# The native PlayStation 5 port (ps5cemu): FreeBSD-derived userland, Vulkan on the console's
++# RADV driver, a DualSense input provider and AudioOut. Its host code lives in CEMU_PS5_PORT_DIR.
++option(CEMU_PS5 "Build the native PlayStation 5 port" OFF)
++set(CEMU_PS5_PORT_DIR "" CACHE PATH "Directory of the PS5 port's host code (ps5cemu/port)")
+ 
+ # used by CI script to set version:
+ set(EMULATOR_VERSION_MAJOR "0" CACHE STRING "")
+@@ -72,6 +76,13 @@ add_definitions(-DEMULATOR_VERSION_PATCH=${EMULATOR_VERSION_PATCH})
+ 
+ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+ 
++if (CEMU_PS5)
++	if (NOT CEMU_PS5_PORT_DIR)
++		message(FATAL_ERROR "CEMU_PS5 needs CEMU_PS5_PORT_DIR (ps5cemu/port)")
++	endif()
++	add_compile_definitions(CEMU_PS5)
++endif()
++
+ # enable link time optimization for release builds
+ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
+ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO ON)
+@@ -102,7 +113,7 @@ if (APPLE)
+     set(CMAKE_OSX_DEPLOYMENT_TARGET "13.4")
+ endif()
+ 
+-if (UNIX AND NOT APPLE)
++if (UNIX AND NOT APPLE AND NOT CEMU_PS5)
+ 	option(ENABLE_WAYLAND "Build with Wayland support" ON)
+ 	option(ENABLE_FERAL_GAMEMODE "Enables Feral Interactive GameMode Support" ON)
+ 	option(ENABLE_BLUEZ "Build with Bluez support" ON)
+@@ -173,7 +184,7 @@ if (NOT TARGET glslang::SPIRV AND TARGET SPIRV)
+ 	add_library(glslang::SPIRV ALIAS SPIRV)
+ endif()
+ 
+-if (UNIX AND NOT APPLE)
++if (UNIX AND NOT APPLE AND NOT CEMU_PS5)
+ 	find_package(X11 REQUIRED)
+ 	if (ENABLE_WAYLAND)
+ 		find_package(Wayland REQUIRED Client)
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index d8378c3..8a8538b 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -23,7 +23,7 @@ elseif(UNIX)
+ 		else()
+ 			add_compile_definitions(_XOPEN_SOURCE)
+ 		endif()
+-	else()
++	elseif(NOT CEMU_PS5)
+ 		if (ENABLE_VULKAN)
+ 			add_compile_definitions(
+ 				VK_USE_PLATFORM_XLIB_KHR # legacy. Do we need to support XLIB surfaces?
+@@ -64,10 +64,16 @@ add_subdirectory(util)
+ add_subdirectory(imgui)
+ add_subdirectory(resource)
+ 
++if(CEMU_PS5)
++	# The port's host code: entry point, launcher, WindowSystem, DualSense, AudioOut, memory and JIT.
++	add_subdirectory("${CEMU_PS5_PORT_DIR}" ps5port)
++	add_executable(CemuBin "${CEMU_PS5_PORT_DIR}/main_ps5.cpp")
++else()
+ add_executable(CemuBin
+ 	main.cpp
+ 	mainLLE.cpp
+ )
++endif()
+ 
+ cemu_use_precompiled_header(CemuBin)
+ 
+@@ -206,6 +212,10 @@ if(ENABLE_SDL)
+ 	target_link_libraries(CemuBin PRIVATE SDL3::SDL3)
+ endif()
+ 
++if(CEMU_PS5)
++	target_link_libraries(CemuBin PRIVATE CemuPS5)
++endif()
++
+ target_link_libraries(CemuBin PRIVATE
+ 	CemuAudio
+ 	CemuCafe
+@@ -217,7 +227,7 @@ target_link_libraries(CemuBin PRIVATE
+ 	CemuUtil
+ )
+ 
+-if(UNIX AND NOT APPLE)
++if(UNIX AND NOT APPLE AND NOT CEMU_PS5)
+ 	# due to nasm output some linkers will make stack executable
+ 	# cemu does not require this so we explicity disable it
+ 	target_link_options(CemuBin PRIVATE -z noexecstack)
+@@ -226,6 +236,6 @@ if(UNIX AND NOT APPLE)
+ 	target_link_options(CemuBin PRIVATE "$<$<CONFIG:Release>:-Xlinker;--strip-debug>")
+ endif()
+ 
+-if (BSD)
++if (BSD AND NOT CEMU_PS5)
+ 	target_link_libraries(CemuBin PRIVATE execinfo SPIRV-Tools SPIRV-Tools-opt)
+ endif()
+diff --git a/src/Cafe/CMakeLists.txt b/src/Cafe/CMakeLists.txt
+index b509e72..32d3025 100644
+--- a/src/Cafe/CMakeLists.txt
++++ b/src/Cafe/CMakeLists.txt
+@@ -548,6 +548,16 @@ if (ENABLE_VULKAN)
+   )
+ endif()
+ 
++if(CEMU_PS5)
++	# the recompiler's Microsoft-ABI bridge and the VK_KHR_display surface
++	target_sources(CemuCafe PRIVATE
++		"${CEMU_PS5_PORT_DIR}/cemu/MsAbiBridge.cpp"
++		"${CEMU_PS5_PORT_DIR}/cemu/MsAbiBridge.h"
++		"${CEMU_PS5_PORT_DIR}/cemu/VulkanPS5.cpp"
++	)
++	target_include_directories(CemuCafe PUBLIC "${CEMU_PS5_PORT_DIR}/cemu")
++endif()
++
+ if(APPLE)
+ 	target_sources(CemuCafe PRIVATE
+ 	    HW/Latte/Renderer/MetalView.mm
+diff --git a/src/Cafe/HW/Espresso/Recompiler/BackendX64/BackendX64.cpp b/src/Cafe/HW/Espresso/Recompiler/BackendX64/BackendX64.cpp
+index 20c1711..9b59c57 100644
+--- a/src/Cafe/HW/Espresso/Recompiler/BackendX64/BackendX64.cpp
++++ b/src/Cafe/HW/Espresso/Recompiler/BackendX64/BackendX64.cpp
+@@ -285,7 +285,7 @@ bool PPCRecompilerX64Gen_imlInstruction_macro(PPCRecFunction_t* PPCRecFunction,
+ 		x64Gen_sub_reg64_imm32(x64GenContext, X86_REG_RSP, 8*11); // must be uneven number in order to retain stack 0x10 alignment
+ 		x64Gen_mov_reg64_imm64(x64GenContext, X86_REG_RBP, 0);
+ 		// call HLE function
+-		x64Gen_mov_reg64_imm64(x64GenContext, X86_REG_RAX, (uint64)PPCRecompiler_virtualHLE);
++		x64Gen_mov_reg64_imm64(x64GenContext, X86_REG_RAX, (uint64)PPCREC_HOST_CALL(PPCRecompiler_virtualHLE));
+ 		x64Gen_call_reg64(x64GenContext, X86_REG_RAX);
+ 		// restore RSP to hCPU (from RAX, result of PPCRecompiler_virtualHLE)
+ 		x64Gen_mov_reg64_reg64(x64GenContext, REG_RESV_HCPU, X86_REG_RAX);
+@@ -1640,7 +1640,13 @@ void PPCRecompilerX64Gen_generateEnterRecompilerCode()
+ 	uint8* executableMemory = PPCRecompilerX86_allocateExecutableMemory(x64GenContext.emitter->GetBuffer().size_bytes());
+ 	// copy code to executable memory
+ 	memcpy(executableMemory, x64GenContext.emitter->GetBuffer().data(), x64GenContext.emitter->GetBuffer().size_bytes());
++#if defined(CEMU_PS5)
++	// entered with the Microsoft ABI through a SysV thunk (MsAbiBridge.cpp)
++	PS5_MsAbi_enterRecompilerCodeTarget = executableMemory;
++	PPCRecompiler_enterRecompilerCode = PS5_SysV_enterRecompilerCode;
++#else
+ 	PPCRecompiler_enterRecompilerCode = (void ATTR_MS_ABI (*)(uint64,uint64))executableMemory;
++#endif
+ }
+ 
+ 
+diff --git a/src/Cafe/HW/Espresso/Recompiler/PPCRecompiler.h b/src/Cafe/HW/Espresso/Recompiler/PPCRecompiler.h
+index fc86407..1ff685f 100644
+--- a/src/Cafe/HW/Espresso/Recompiler/PPCRecompiler.h
++++ b/src/Cafe/HW/Espresso/Recompiler/PPCRecompiler.h
+@@ -127,6 +127,13 @@ struct ppcImlGenContext_t
+ 
+ typedef void ATTR_MS_ABI (*PPCREC_JUMP_ENTRY)();
+ 
++// The address generated code calls to reach host function F with the Microsoft x64 ABI.
++#if defined(CEMU_PS5)
++#include "MsAbiBridge.h" // ps5cemu/port/cemu: thunks, as the PS5 target has no ms_abi
++#else
++#define PPCREC_HOST_CALL(F) ((uintptr_t)F)
++#endif
++
+ typedef struct  
+ {
+ 	PPCREC_JUMP_ENTRY ppcRecompilerDirectJumpTable[PPC_REC_ALIGN_TO_4MB(PPC_REC_CODE_AREA_SIZE/4)]; // lookup table for ppc offset to native code function
+diff --git a/src/Cafe/HW/Espresso/Recompiler/PPCRecompilerImlGen.cpp b/src/Cafe/HW/Espresso/Recompiler/PPCRecompilerImlGen.cpp
+index 89e805d..d9cb6e6 100644
+--- a/src/Cafe/HW/Espresso/Recompiler/PPCRecompilerImlGen.cpp
++++ b/src/Cafe/HW/Espresso/Recompiler/PPCRecompilerImlGen.cpp
+@@ -498,7 +498,7 @@ bool PPCRecompilerImlGen_MFTB(ppcImlGenContext_t* ppcImlGenContext, uint32 opcod
+ 	if( spr == SPR_TBL || spr == SPR_TBU )
+ 	{
+ 		IMLReg resultReg = _GetRegGPR(ppcImlGenContext, rD);
+-		ppcImlGenContext->emitInst().make_call_imm(spr == SPR_TBL ? (uintptr_t)PPCRecompiler_GetTBL : (uintptr_t)PPCRecompiler_GetTBU, IMLREG_INVALID, IMLREG_INVALID, IMLREG_INVALID, resultReg);
++		ppcImlGenContext->emitInst().make_call_imm(spr == SPR_TBL ? PPCREC_HOST_CALL(PPCRecompiler_GetTBL) : PPCREC_HOST_CALL(PPCRecompiler_GetTBU), IMLREG_INVALID, IMLREG_INVALID, IMLREG_INVALID, resultReg);
+ 		return true;
+ 	}
+ 	return false;
+diff --git a/src/Cafe/HW/Espresso/Recompiler/PPCRecompilerImlGenFPU.cpp b/src/Cafe/HW/Espresso/Recompiler/PPCRecompilerImlGenFPU.cpp
+index 19ad257..8b1b9cb 100644
+--- a/src/Cafe/HW/Espresso/Recompiler/PPCRecompilerImlGenFPU.cpp
++++ b/src/Cafe/HW/Espresso/Recompiler/PPCRecompilerImlGenFPU.cpp
+@@ -643,7 +643,7 @@ bool PPCRecompilerImlGen_FRES(ppcImlGenContext_t* ppcImlGenContext, uint32 opcod
+ 	PPC_ASSERT(frA==0);
+ 	DefinePS0(fprB, frB);
+ 	DefinePS0(fprD, frD);
+-	ppcImlGenContext->emitInst().make_call_imm((uintptr_t)fres_espresso, fprB, IMLREG_INVALID, IMLREG_INVALID, fprD);
++	ppcImlGenContext->emitInst().make_call_imm(PPCREC_HOST_CALL(fres_espresso), fprB, IMLREG_INVALID, IMLREG_INVALID, fprD);
+ 	// adjust accuracy
+ 	PPRecompilerImmGen_roundToSinglePrecision(ppcImlGenContext, fprD);
+ 	PSE_CopyResultToPs1();
+@@ -701,7 +701,7 @@ bool PPCRecompilerImlGen_FRSQRTE(ppcImlGenContext_t* ppcImlGenContext, uint32 op
+ 	PPC_OPC_TEMPL_A(opcode, frD, frA, frB, frC);
+ 	DefinePS0(fprB, frB);
+ 	DefinePS0(fprD, frD);
+-	ppcImlGenContext->emitInst().make_call_imm((uintptr_t)frsqrte_espresso, fprB, IMLREG_INVALID, IMLREG_INVALID, fprD);
++	ppcImlGenContext->emitInst().make_call_imm(PPCREC_HOST_CALL(frsqrte_espresso), fprB, IMLREG_INVALID, IMLREG_INVALID, fprD);
+ 	// adjust accuracy
+ 	PPRecompilerImmGen_roundToSinglePrecision(ppcImlGenContext, fprD);
+ 	return true;
+@@ -1537,8 +1537,8 @@ bool PPCRecompilerImlGen_PS_RES(ppcImlGenContext_t* ppcImlGenContext, uint32 opc
+ 	DefinePS0(fprDps0, frD);
+ 	DefinePS1(fprDps1, frD);
+ 
+-	ppcImlGenContext->emitInst().make_call_imm((uintptr_t)fres_espresso, fprBps0, IMLREG_INVALID, IMLREG_INVALID, fprDps0);
+-	ppcImlGenContext->emitInst().make_call_imm((uintptr_t)fres_espresso, fprBps1, IMLREG_INVALID, IMLREG_INVALID, fprDps1);
++	ppcImlGenContext->emitInst().make_call_imm(PPCREC_HOST_CALL(fres_espresso), fprBps0, IMLREG_INVALID, IMLREG_INVALID, fprDps0);
++	ppcImlGenContext->emitInst().make_call_imm(PPCREC_HOST_CALL(fres_espresso), fprBps1, IMLREG_INVALID, IMLREG_INVALID, fprDps1);
+ 	// adjust accuracy
+ 	PPRecompilerImmGen_roundToSinglePrecision(ppcImlGenContext, fprDps0);
+ 	PPRecompilerImmGen_roundToSinglePrecision(ppcImlGenContext, fprDps1);
+@@ -1556,8 +1556,8 @@ bool PPCRecompilerImlGen_PS_RSQRTE(ppcImlGenContext_t* ppcImlGenContext, uint32
+ 	DefinePS0(fprDps0, frD);
+ 	DefinePS1(fprDps1, frD);
+ 
+-	ppcImlGenContext->emitInst().make_call_imm((uintptr_t)frsqrte_espresso, fprBps0, IMLREG_INVALID, IMLREG_INVALID, fprDps0);
+-	ppcImlGenContext->emitInst().make_call_imm((uintptr_t)frsqrte_espresso, fprBps1, IMLREG_INVALID, IMLREG_INVALID, fprDps1);
++	ppcImlGenContext->emitInst().make_call_imm(PPCREC_HOST_CALL(frsqrte_espresso), fprBps0, IMLREG_INVALID, IMLREG_INVALID, fprDps0);
++	ppcImlGenContext->emitInst().make_call_imm(PPCREC_HOST_CALL(frsqrte_espresso), fprBps1, IMLREG_INVALID, IMLREG_INVALID, fprDps1);
+ 	// adjust accuracy
+ 	PPRecompilerImmGen_roundToSinglePrecision(ppcImlGenContext, fprDps0);
+ 	PPRecompilerImmGen_roundToSinglePrecision(ppcImlGenContext, fprDps1);
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.cpp b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.cpp
+index b7dc500..e10dd96 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.cpp
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.cpp
+@@ -142,6 +142,47 @@ bool InitializeDeviceVulkan(VkDevice device)
+ 	return true;
+ }
+ 
++#elif defined(CEMU_PS5)
++
++// The PS5 has no Vulkan loader: RADV is linked into the title, and the port hands out its
++// vkGetInstanceProcAddr (ps5cemu/port/cemu/VulkanPS5.cpp).
++PFN_vkVoidFunction PS5_VulkanGetGlobalProc(const char* name);
++
++bool InitializeGlobalVulkan()
++{
++	if(g_vulkan_available)
++		return true;
++
++	#define VKFUNC_INIT
++	#include "Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h"
++
++	if(!vkGetInstanceProcAddr || !vkEnumerateInstanceVersion)
++	{
++		cemuLog_log(LogType::Force, "The PS5 Vulkan driver did not provide its global commands");
++		return false;
++	}
++
++	g_vulkan_available = true;
++	return true;
++}
++
++bool InitializeInstanceVulkan(VkInstance instance)
++{
++	#define VKFUNC_INSTANCE_INIT
++	#include "Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h"
++
++	// a global command per Cemu's table, but only an instance can give it out
++	vkGetDeviceProcAddr = (PFN_vkGetDeviceProcAddr)vkGetInstanceProcAddr(instance, "vkGetDeviceProcAddr");
++	return vkGetDeviceProcAddr != nullptr;
++}
++
++bool InitializeDeviceVulkan(VkDevice device)
++{
++	#define VKFUNC_DEVICE_INIT
++	#include "Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h"
++	return true;
++}
++
+ #else
+ 
+ void* dlopen_vulkan_loader()
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h
+index f503c10..a164738 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h
+@@ -26,6 +26,9 @@ extern bool g_vulkan_available;
+ 	#if defined(VKFUNC_INIT)
+ 		#if BOOST_OS_WINDOWS
+ 		#define VKFUNC(__FUNC__) __FUNC__ = (PFN_##__FUNC__)GetProcAddress(hmodule, #__FUNC__)
++		#elif defined(CEMU_PS5)
++		// the driver is linked into the title: global commands come from its vkGetInstanceProcAddr
++		#define VKFUNC(__FUNC__) __FUNC__ = (PFN_##__FUNC__)PS5_VulkanGetGlobalProc(#__FUNC__)
+ 		#else
+ 		#define VKFUNC(__FUNC__) __FUNC__ = (PFN_##__FUNC__)dlsym(vulkan_so, #__FUNC__)
+ 		#endif
+@@ -130,7 +133,13 @@ VKFUNC_DEVICE(vkDestroyPipeline);
+ VKFUNC_DEVICE(vkCmdBindPipeline);
+ 
+ // swapchain
+-#if BOOST_OS_LINUX || BOOST_OS_BSD
++#if defined(CEMU_PS5)
++VKFUNC_INSTANCE(vkGetPhysicalDeviceDisplayPropertiesKHR);
++VKFUNC_INSTANCE(vkGetPhysicalDeviceDisplayPlanePropertiesKHR);
++VKFUNC_INSTANCE(vkGetDisplayModePropertiesKHR);
++VKFUNC_INSTANCE(vkGetDisplayPlaneSupportedDisplaysKHR);
++VKFUNC_INSTANCE(vkCreateDisplayPlaneSurfaceKHR);
++#elif BOOST_OS_LINUX || BOOST_OS_BSD
+ VKFUNC_INSTANCE(vkCreateXlibSurfaceKHR);
+ VKFUNC_INSTANCE(vkCreateXcbSurfaceKHR);
+ #ifdef HAS_WAYLAND
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+index 599190a..2ed0094 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+@@ -113,6 +113,8 @@ std::vector<VulkanRenderer::DeviceInfo> VulkanRenderer::GetDevices()
+ 	requiredExtensions.emplace_back(VK_KHR_SURFACE_EXTENSION_NAME);
+ 	#if BOOST_OS_WINDOWS
+ 	requiredExtensions.emplace_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
++	#elif defined(CEMU_PS5)
++	requiredExtensions.emplace_back(VK_KHR_DISPLAY_EXTENSION_NAME);
+ 	#elif BOOST_OS_LINUX || BOOST_OS_BSD
+ 	auto backend = WindowSystem::GetWindowInfo().window_main.backend;
+ 	if(backend == WindowSystem::WindowHandleInfo::Backend::X11)
+@@ -1491,6 +1493,8 @@ std::vector<const char*> VulkanRenderer::CheckInstanceExtensionSupport(FeatureCo
+ 	requiredInstanceExtensions.emplace_back(VK_KHR_SURFACE_EXTENSION_NAME);
+ 	#if BOOST_OS_WINDOWS
+ 	requiredInstanceExtensions.emplace_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
++	#elif defined(CEMU_PS5)
++	requiredInstanceExtensions.emplace_back(VK_KHR_DISPLAY_EXTENSION_NAME);
+ 	#elif BOOST_OS_LINUX || BOOST_OS_BSD
+ 	auto backend = WindowSystem::GetWindowInfo().window_main.backend;
+ 	if(backend == WindowSystem::WindowHandleInfo::Backend::X11)
+@@ -1578,7 +1582,7 @@ VkSurfaceKHR VulkanRenderer::CreateWinSurface(VkInstance instance, HWND hwindow)
+ }
+ #endif
+ 
+-#if BOOST_OS_LINUX || BOOST_OS_BSD
++#if (BOOST_OS_LINUX || BOOST_OS_BSD) && !defined(CEMU_PS5)
+ VkSurfaceKHR VulkanRenderer::CreateXlibSurface(VkInstance instance, Display* dpy, Window window)
+ {
+     VkXlibSurfaceCreateInfoKHR sci{};
+@@ -1642,6 +1646,10 @@ VkSurfaceKHR VulkanRenderer::CreateFramebufferSurface(VkInstance instance, Windo
+ {
+ #if BOOST_OS_WINDOWS
+ 	return CreateWinSurface(instance, static_cast<HWND>(windowInfo.surface));
++#elif defined(CEMU_PS5)
++	// a VK_KHR_display plane surface on the console's VideoOut, made by the port
++	VkSurfaceKHR PS5_CreateDisplaySurface(VkInstance instance);
++	return PS5_CreateDisplaySurface(instance);
+ #elif BOOST_OS_LINUX || BOOST_OS_BSD
+ 	if(windowInfo.backend == WindowSystem::WindowHandleInfo::Backend::X11)
+ 		return CreateXlibSurface(instance, static_cast<Display*>(windowInfo.display), reinterpret_cast<Window>(windowInfo.surface));
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.h b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.h
+index d975e11..692bd00 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.h
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.h
+@@ -212,7 +212,7 @@ public:
+ #if BOOST_OS_WINDOWS
+ 	static VkSurfaceKHR CreateWinSurface(VkInstance instance, HWND hwindow);
+ #endif
+-#if BOOST_OS_LINUX || BOOST_OS_BSD
++#if (BOOST_OS_LINUX || BOOST_OS_BSD) && !defined(CEMU_PS5)
+ 	static VkSurfaceKHR CreateXlibSurface(VkInstance instance, Display* dpy, Window window);
+     static VkSurfaceKHR CreateXcbSurface(VkInstance instance, xcb_connection_t* connection, xcb_window_t window);
+ 	#ifdef HAS_WAYLAND
+diff --git a/src/Common/CMakeLists.txt b/src/Common/CMakeLists.txt
+index cb80eb6..fc1b2f3 100644
+--- a/src/Common/CMakeLists.txt
++++ b/src/Common/CMakeLists.txt
+@@ -61,7 +61,7 @@ target_link_libraries(CemuCommon PRIVATE
+ 	glm::glm
+ )
+ 
+-if (UNIX AND NOT APPLE)
++if (UNIX AND NOT APPLE AND NOT CEMU_PS5)
+ 	target_link_libraries(CemuCommon PRIVATE X11::X11 X11::Xrender X11::Xutil)
+ endif()
+ 
+diff --git a/src/Common/GLInclude/GLInclude.h b/src/Common/GLInclude/GLInclude.h
+index e6a4e8c..eba299c 100644
+--- a/src/Common/GLInclude/GLInclude.h
++++ b/src/Common/GLInclude/GLInclude.h
+@@ -6,7 +6,7 @@
+ #include "wglext.h"
+ #endif
+ 
+-#if ( BOOST_OS_LINUX || BOOST_OS_BSD ) > 0
++#if ( BOOST_OS_LINUX || BOOST_OS_BSD ) > 0 && !defined(CEMU_PS5)
+ 
+ // from Xlib
+ #define Bool int
+diff --git a/src/Common/GLInclude/glFunctions.h b/src/Common/GLInclude/glFunctions.h
+index 76ff846..dbb0cac 100644
+--- a/src/Common/GLInclude/glFunctions.h
++++ b/src/Common/GLInclude/glFunctions.h
+@@ -299,7 +299,7 @@ GLFUNC(PFNWGLSWAPINTERVALEXTPROC, wglSwapIntervalEXT)
+ 
+ // x
+ 
+-#if BOOST_OS_LINUX || BOOST_OS_BSD
++#if (BOOST_OS_LINUX || BOOST_OS_BSD) && !defined(CEMU_PS5)
+ EGLFUNC(PFNEGLSWAPINTERVALPROC, eglSwapInterval)
+ EGLFUNC(PFNEGLGETCURRENTDISPLAYPROC, eglGetCurrentDisplay)
+ #endif
+diff --git a/src/Common/platform.h b/src/Common/platform.h
+index 08462a9..ef28540 100644
+--- a/src/Common/platform.h
++++ b/src/Common/platform.h
+@@ -8,12 +8,16 @@
+ #elif BOOST_OS_LINUX || BOOST_OS_BSD
+ #if BOOST_OS_LINUX
+ #include <byteswap.h>
++#elif defined(CEMU_PS5)
++#include <sys/endian.h>
+ #elif BOOST_OS_BSD
+ #include <endian.h>
+ #endif
++#if !defined(CEMU_PS5)
+ #include <X11/Xlib.h>
+ #include <X11/extensions/Xrender.h>
+ #include <X11/Xutil.h>
++#endif
+ #include "Common/unix/platform.h"
+ #elif BOOST_OS_MACOS
+ #include <libkern/OSByteOrder.h>
+diff --git a/src/Common/precompiled.h b/src/Common/precompiled.h
+index e037395..6f43fd8 100644
+--- a/src/Common/precompiled.h
++++ b/src/Common/precompiled.h
+@@ -589,7 +589,10 @@ std::atomic<T>* _rawPtrToAtomic(T* ptr)
+     return reinterpret_cast<std::atomic<T>*>(ptr);
+ }
+ 
+-#if defined(__GNUC__)
++#if defined(CEMU_PS5)
++// the PS5 target has no ms_abi: the recompiler reaches these functions through thunks (PPCREC_HOST_CALL)
++#define ATTR_MS_ABI
++#elif defined(__GNUC__)
+ #define ATTR_MS_ABI __attribute__((ms_abi))
+ #else
+ #define ATTR_MS_ABI
+diff --git a/src/audio/CMakeLists.txt b/src/audio/CMakeLists.txt
+index 7f2d626..9456281 100644
+--- a/src/audio/CMakeLists.txt
++++ b/src/audio/CMakeLists.txt
+@@ -20,6 +20,14 @@ if(WIN32)
+ 	)
+ endif()
+ 
++if(CEMU_PS5)
++	target_sources(CemuAudio PRIVATE
++		"${CEMU_PS5_PORT_DIR}/cemu/PS5AudioAPI.cpp"
++		"${CEMU_PS5_PORT_DIR}/cemu/PS5AudioAPI.h"
++	)
++	target_include_directories(CemuAudio PRIVATE "${CEMU_PS5_PORT_DIR}/cemu")
++endif()
++
+ if(ENABLE_CUBEB)
+ 	target_sources(CemuAudio PRIVATE
+ 		CubebAPI.cpp
+diff --git a/src/gui/interface/WindowSystem.h b/src/gui/interface/WindowSystem.h
+index b2346c1..c5862be 100644
+--- a/src/gui/interface/WindowSystem.h
++++ b/src/gui/interface/WindowSystem.h
+@@ -12,6 +12,7 @@ namespace WindowSystem
+ 			Wayland,
+ 			Cocoa,
+ 			Windows,
++			PS5VideoOut, // the PS5's VideoOut, through VK_KHR_display (ps5cemu)
+ 		} backend;
+ 		void* display = nullptr;
+ 		void* surface = nullptr;
+diff --git a/src/input/CMakeLists.txt b/src/input/CMakeLists.txt
+index 4978ef0..69c7041 100644
+--- a/src/input/CMakeLists.txt
++++ b/src/input/CMakeLists.txt
+@@ -88,6 +88,16 @@ if (SUPPORTS_WIIMOTE)
+ endif ()
+ 
+ 
++if(CEMU_PS5)
++	target_sources(CemuInput PRIVATE
++		"${CEMU_PS5_PORT_DIR}/cemu/PS5PadController.cpp"
++		"${CEMU_PS5_PORT_DIR}/cemu/PS5PadController.h"
++		"${CEMU_PS5_PORT_DIR}/cemu/PS5PadControllerProvider.cpp"
++		"${CEMU_PS5_PORT_DIR}/cemu/PS5PadControllerProvider.h"
++	)
++	target_include_directories(CemuInput PRIVATE "${CEMU_PS5_PORT_DIR}/cemu")
++endif()
++
+ if(ENABLE_SDL)
+ 	target_sources(CemuInput PRIVATE
+ 		api/SDL/SDLController.cpp
+diff --git a/src/util/CMakeLists.txt b/src/util/CMakeLists.txt
+index be10d40..1ab4b01 100644
+--- a/src/util/CMakeLists.txt
++++ b/src/util/CMakeLists.txt
+@@ -70,7 +70,14 @@ add_library(CemuUtil
+   Zir/Passes/ZpIRRegisterAllocator.cpp
+ )
+ 
+-if(WIN32)
++if(CEMU_PS5)
++	target_sources(CemuUtil PRIVATE
++		"${CEMU_PS5_PORT_DIR}/cemu/FiberPS5.cpp"
++		"${CEMU_PS5_PORT_DIR}/cemu/MemMapperPS5.cpp"
++		"${CEMU_PS5_PORT_DIR}/cemu/SystemInfoPS5.cpp"
++		SystemInfo/SystemInfoUnix.cpp
++	)
++elseif(WIN32)
+ 	target_sources(CemuUtil PRIVATE Fiber/FiberWin.cpp)
+ 	target_sources(CemuUtil PRIVATE MemMapper/MemMapperWin.cpp)
+ 	target_sources(CemuUtil PRIVATE SystemInfo/SystemInfoWin.cpp)
+diff --git a/src/util/helpers/helpers.cpp b/src/util/helpers/helpers.cpp
+index d13a31a..2e0195a 100644
+--- a/src/util/helpers/helpers.cpp
++++ b/src/util/helpers/helpers.cpp
+@@ -14,6 +14,8 @@
+ 
+ #if BOOST_OS_WINDOWS
+ #include <TlHelp32.h>
++#elif defined(CEMU_PS5)
++#include <pthread_np.h>
+ #endif
+ 
+ std::string& ltrim(std::string& str, const std::string& chars)
+@@ -145,6 +147,8 @@ void SetThreadName(const char* name)
+ #endif
+ #elif BOOST_OS_MACOS
+ 	pthread_setname_np(name);
++#elif defined(CEMU_PS5)
++	pthread_set_name_np(pthread_self(), name); // FreeBSD's name for it, exported by libkernel
+ #else
+ 	if(std::strlen(name) > 15)
+ 		cemuLog_log(LogType::Force, "Truncating thread name {} because it was longer than 15 characters", name);
