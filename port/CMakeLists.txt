@@ -35,6 +35,8 @@ add_library(CemuPS5 STATIC
 	app/emulator.h
 	app/covers.cpp
 	app/graphic_packs.cpp
+	app/ingame.cpp
+	app/ingame.h
 	app/paths.h
 	frontend/launcher.cpp
 	frontend/launcher.h
