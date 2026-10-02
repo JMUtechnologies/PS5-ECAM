@@ -143,6 +143,8 @@ by Alex Free. It is kept in this repository with its own readme and licence.
 - **ProsperoEden** by BlackBearReloaded: the launcher's design, artwork, fonts, bitmap font
   engine, folder browser and software drawing through SDL, and the **PS5 Native App
   Boilerplate**: runtime, packaging tool, sandbox elevation.
+- **Dimok**: the Wii U Homebrew Launcher's background (homebrew_launcher and libgui, GPL-3.0), which
+  the launcher draws behind ProsperoEden's layout (`tools/render-background.py`).
 - **Mihawk-99**: RADV on the PS5 (PS5_Mesa, PS5_Vulkan, the payload SDK fork), with
   **mpereiraesaa**'s contributions.
 - **John Törnblom** (ps5-payload-dev): the PS5 payload SDK, and **pacbrew**'s PS5 libraries.
