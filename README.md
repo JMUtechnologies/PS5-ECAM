@@ -81,10 +81,10 @@ hardware and software you own.
 The build runs on Linux and needs:
 - `clang-18`, `lld-18` and the LLVM 18 tools;
 - `cmake`, `ninja`, `git`, `make` and `python3`;
-- for RADV: `meson`, Python's `mako`, `rsync`, and LLVM, Clang, libclc, SPIRV-Tools and the SPIR-V
-  translator for Mesa's OpenCL kernels. On Ubuntu 24.04: `pip install meson mako`, then
-  `apt install rsync flex llvm-18-dev libclang-18-dev libclc-18-dev libllvmspirvlib-18-dev
-  llvm-spirv-18 spirv-tools`.
+- for RADV: `meson`, Python's `mako` and `packaging`, `rsync`, `glslangValidator`, and LLVM, Clang,
+  libclc, SPIRV-Tools and the SPIR-V translator for Mesa's OpenCL kernels. On Ubuntu 24.04:
+  `pip install meson mako packaging`, then `apt install rsync flex glslang-tools llvm-18-dev
+  libclang-18-dev libclc-18-dev libllvmspirvlib-18-dev llvm-spirv-18 spirv-tools`.
 
 ```bash
 make radv      # builds RADV, the Vulkan driver
