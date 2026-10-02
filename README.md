@@ -13,10 +13,11 @@ emulator belongs to the Cemu team and its contributors. PS5Cemu is not affiliate
 by the Cemu project, Nintendo or Sony.
 
 > [!WARNING]
-> **Status: the launcher runs on a console; no game has started on one yet.** `make release`
-> builds RADV, Cemu, the port and the launcher for the PS5 and packages a signed `eboot.bin` with
-> everything the app needs. On a console with etaHEN, PS5Cemu starts into the launcher and lists
-> the games it can read. Starting a game is still untested: expect it to need fixes.
+> **Status: the launcher runs on a console and starts games; none has been played yet.**
+> `make release` builds RADV, Cemu, the port and the launcher for the PS5 and packages a signed
+> `eboot.bin` with everything the app needs. On a console with etaHEN, PS5Cemu starts into the
+> launcher, lists the games it can read and starts them: The Wind Waker HD loads and its threads
+> run. Playing a game is still untested: expect it to need fixes.
 
 ## Features
 
