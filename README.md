@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/banner.svg" alt="PS5Cemu: Cemu, the Wii U emulator, on PlayStation 5 homebrew" width="100%">
+</p>
+
 # PS5Cemu
 
 **An unofficial port of [Cemu](https://github.com/cemu-project/Cemu), the Wii U emulator, to PlayStation 5 homebrew.**
