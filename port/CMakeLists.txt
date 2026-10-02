@@ -33,11 +33,15 @@ find_library(PSL_LIBRARY psl REQUIRED)
 add_library(CemuPS5 STATIC
 	app/emulator.cpp
 	app/emulator.h
+	app/controllers.cpp
 	app/covers.cpp
 	app/graphic_packs.cpp
 	app/ingame.cpp
 	app/ingame.h
+	app/install.cpp
 	app/paths.h
+	frontend/bubbles.cpp
+	frontend/bubbles.h
 	frontend/launcher.cpp
 	frontend/launcher.h
 	frontend/settings.cpp
@@ -67,6 +71,7 @@ add_library(CemuPS5 STATIC
 # launcher's and the console layer's files do not.
 cemu_use_precompiled_header(CemuPS5)
 set_source_files_properties(
+	frontend/bubbles.cpp
 	frontend/launcher.cpp
 	frontend/settings.cpp
 	frontend/ui_host.cpp

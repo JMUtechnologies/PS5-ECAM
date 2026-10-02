@@ -70,19 +70,115 @@ namespace ps5emu
 
 	// The community graphic packs (graphic_packs.cpp): what Cemu's Graphic Packs window shows for
 	// one game, with its choices saved to settings.xml as that window saves them.
+	struct GraphicPackChoice
+	{
+		std::string category;			  // "Resolution"; empty for a pack's presets without one
+		std::vector<std::string> presets; // those the pack's conditions allow now, in its order
+		int active = 0;					  // in presets
+	};
 	struct GraphicPackInfo
 	{
-		std::string name;		 // "Resolution"
-		std::string category;	 // "Graphics", the folders between the game and the pack
-		std::string description;
+		std::string name;		 // "Graphics"
+		std::string folder;		 // "Mods", the folders between the game and the pack ("" for none)
+		std::string description; // lines end with '\n'
 		bool enabled = false;
-		std::string preset;		 // the active presets, "category: name" when there are categories
-		bool hasPresets = false; // more than one preset to choose from
+		std::vector<GraphicPackChoice> choices; // one dropdown each, as in Cemu's window
 	};
 	std::vector<GraphicPackInfo> ListGraphicPacks(uint64_t titleId);
 	int EnabledGraphicPackCount(uint64_t titleId);
 	// Turns a pack of the game (by its index in ListGraphicPacks) on or off; returns its new state.
 	bool ToggleGraphicPack(uint64_t titleId, size_t index);
-	// Moves the pack's first preset choice by delta (left -1, right +1).
-	void CycleGraphicPackPreset(uint64_t titleId, size_t index, int delta);
+	// Chooses one of a pack's presets in a category, as Cemu's window does, and turns the pack on.
+	// The presets other categories allow can change with it (their conditions).
+	void SetGraphicPackPreset(uint64_t titleId, size_t index, const std::string& category, const std::string& preset);
+
+	// Cemu's controller settings for the four players (controllers.cpp), saved in its controller
+	// profiles (controllerProfiles/controller0-3.xml) as its Input Settings window saves them. Each
+	// player's controller is that player's DualSense.
+	enum class EmulatedType
+	{
+		None,		 // no controller for this player
+		GamePad,	 // the Wii U GamePad
+		Pro,		 // the Wii U Pro Controller
+		Classic,	 // the Classic Controller Pro
+		Wiimote,	 // the Wii Remote
+		Nunchuk,	 // the Wii Remote with a Nunchuk
+	};
+	struct PlayerControls
+	{
+		EmulatedType type = EmulatedType::None;
+		bool connected = false; // the player's DualSense
+		bool hasMotion = false; // the emulated controller has motion sensors (GamePad, Wii Remote)
+		bool motion = false;	// the DualSense's are its
+		int rumble = 0;			// vibration strength, percent
+		int leftDeadzone = 25, rightDeadzone = 25; // percent of the stick's travel
+	};
+	PlayerControls GetPlayerControls(int player);
+	// A new emulated controller, with the default buttons for it.
+	void SetEmulatedType(int player, EmulatedType type);
+	void SetMotion(int player, bool enabled);
+	void SetRumble(int player, int percent);
+	void SetDeadzones(int player, int left, int right);
+	// The default buttons and settings for the emulated controller the player has.
+	void ResetControls(int player);
+
+	// What a mapping can be: a DualSense input. Sticks and triggers count in one direction each.
+	enum class PadInput
+	{
+		None,
+		Cross, Circle, Square, Triangle,
+		L1, R1, L2, R2, L3, R3,
+		Create, Options,
+		Up, Down, Left, Right,
+		LeftStickUp, LeftStickDown, LeftStickLeft, LeftStickRight,
+		RightStickUp, RightStickDown, RightStickLeft, RightStickRight,
+	};
+	struct ButtonMapping
+	{
+		std::string button; // the emulated controller's ("ZL", "Left stick up")
+		std::string input;	// the DualSense's ("L2"), empty when unmapped
+	};
+	std::vector<ButtonMapping> ListMappings(int player);
+	void SetMapping(int player, size_t index, PadInput input);
+	void ClearMapping(int player, size_t index);
+
+	// Installing a game, update or DLC into the MLC, as Cemu's "Install game title, update or DLC"
+	// does (install.cpp): from a folder with code, content and meta.
+	struct InstallCandidate
+	{
+		enum class Kind
+		{
+			None,	// not a title Cemu can install (note says why)
+			Game,
+			Update,
+			Dlc,
+			System,
+		} kind = Kind::None;
+		std::string name;		  // the game's, from meta.xml
+		uint64_t titleId = 0;
+		uint16_t version = 0;
+		int installedVersion = -1; // what the MLC has in its place; -1 for nothing
+		std::string note;
+	};
+	InstallCandidate InspectInstall(const std::string& folder);
+	// Copies it on a thread of its own. False, with a reason, when it cannot start.
+	bool StartInstall(const std::string& folder, std::string& error);
+	struct InstallStatus
+	{
+		enum class State
+		{
+			Idle,
+			Running,
+			Done,
+			Failed,
+			Cancelled,
+		} state = State::Idle;
+		uint64_t copied = 0, total = 0; // bytes
+		std::string message;			// the reason, when it failed
+	};
+	InstallStatus GetInstallStatus();
+	// Stops an install and puts back what was there.
+	void CancelInstall();
+	// Looks for games again (after an install), as at start: Scanning() is true until done.
+	void Rescan();
 }

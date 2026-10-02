@@ -1,7 +1,9 @@
 <rml>
   <!-- PS5Cemu launcher. Layout, artwork, fonts and stylesheet are ProsperoEden's
-       (headless/prosperoeden/ui, GPL-3.0-or-later, by BlackBearReloaded), adapted for Wii U games;
-       ps5cemu.rcss adds what is new. Element ids and classes follow ProsperoEden's so its styles apply. -->
+       (headless/prosperoeden/ui, GPL-3.0-or-later, by BlackBearReloaded), adapted for Wii U games
+       and recoloured dark blue (tools/recolour-ui.py); ps5cemu.rcss adds what is new. Element ids
+       and classes follow ProsperoEden's so its styles apply. The background, the Wii U Homebrew
+       Launcher's with its bubbles rising, is drawn under the page (frontend/bubbles.h). -->
   <head>
     <title>PS5Cemu</title>
     <link type="text/rcss" href="styles/app.rcss" />
@@ -9,13 +11,10 @@
   </head>
   <body>
     <div id="app-shell">
-      <img id="background" src="background-menu.tga" width="2048" height="1152" alt=""/>
-      <div id="shade"></div>
-
       <header id="header">
         <img id="brand-icon" src="icons/ps5cemu-72.tga" width="72" height="72" alt=""/>
         <span id="brand-name">PS5CEMU</span>
-        <span id="brand-version">WII U  /  PS5 EDITION  /  v0.2.0</span>
+        <span id="brand-version">WII U  /  PS5 EDITION</span>
         <span id="menu-clock">--:--</span>
       </header>
       <nav id="menu">
@@ -46,16 +45,10 @@
       </section>
 
       <div id="startup-status" class="quiet"></div>
-      <footer id="footer">
-        <span class="controller-hint hint-select"><img src="icons/cross-mono.tga" width="26" height="26" alt=""/><span>Select</span></span>
-        <span class="controller-hint hint-options"><img src="icons/triangle-mono.tga" width="26" height="26" alt=""/><span>Graphic packs</span></span>
-        <span class="controller-hint hint-nav"><img src="icons/dpad-mono.tga" width="26" height="26" alt=""/><span>Navigate</span></span>
-        <span id="system-status">Looking for games</span>
-      </footer>
+      <footer id="footer" class="hints"><span class="hint"><img src="icons/cross-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Select</span></span><span class="hint"><img src="icons/triangle-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Graphic packs</span></span><span class="hint"><img src="icons/dpad-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Navigate</span></span><span id="system-status">Looking for games</span></footer>
 
       <!-- Library -->
       <div id="rom-dialog" class="library-screen">
-        <img class="library-background" src="background.tga" width="1920" height="1080" alt=""/>
         <span class="library-shade"></span>
         <span class="library-title">Your games</span>
         <span class="library-copy">Select a game to begin</span>
@@ -63,13 +56,13 @@
           <img class="library-panel-chrome" src="chrome/dialog-panel.tga" width="820" height="720" alt=""/>
           <span class="library-panel-kicker">LIBRARY</span>
           <div id="rom-list-viewport"><div id="rom-list-track">
-            <span id="rom-row-0" class="library-row library-row-0 focused"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="rom-name-0" class="library-row-name"></span><span id="rom-format-0" class="library-row-meta"></span></span>
-            <span id="rom-row-1" class="library-row library-row-1"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="rom-name-1" class="library-row-name"></span><span id="rom-format-1" class="library-row-meta"></span></span>
-            <span id="rom-row-2" class="library-row library-row-2"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="rom-name-2" class="library-row-name"></span><span id="rom-format-2" class="library-row-meta"></span></span>
-            <span id="rom-row-3" class="library-row library-row-3"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="rom-name-3" class="library-row-name"></span><span id="rom-format-3" class="library-row-meta"></span></span>
-            <span id="rom-row-4" class="library-row library-row-4"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="rom-name-4" class="library-row-name"></span><span id="rom-format-4" class="library-row-meta"></span></span>
-            <span id="rom-row-5" class="library-row library-row-5"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="rom-name-5" class="library-row-name"></span><span id="rom-format-5" class="library-row-meta"></span></span>
-            <span id="rom-row-6" class="library-row library-row-6"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="rom-name-6" class="library-row-name"></span><span id="rom-format-6" class="library-row-meta"></span></span>
+            <span id="rom-row-0" class="library-row library-row-0"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="rom-name-0" class="library-row-name rom-row-name"></span><span id="rom-format-0" class="library-row-meta"></span></span>
+            <span id="rom-row-1" class="library-row library-row-1"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="rom-name-1" class="library-row-name rom-row-name"></span><span id="rom-format-1" class="library-row-meta"></span></span>
+            <span id="rom-row-2" class="library-row library-row-2"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="rom-name-2" class="library-row-name rom-row-name"></span><span id="rom-format-2" class="library-row-meta"></span></span>
+            <span id="rom-row-3" class="library-row library-row-3"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="rom-name-3" class="library-row-name rom-row-name"></span><span id="rom-format-3" class="library-row-meta"></span></span>
+            <span id="rom-row-4" class="library-row library-row-4"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="rom-name-4" class="library-row-name rom-row-name"></span><span id="rom-format-4" class="library-row-meta"></span></span>
+            <span id="rom-row-5" class="library-row library-row-5"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="rom-name-5" class="library-row-name rom-row-name"></span><span id="rom-format-5" class="library-row-meta"></span></span>
+            <span id="rom-row-6" class="library-row library-row-6"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="rom-name-6" class="library-row-name rom-row-name"></span><span id="rom-format-6" class="library-row-meta"></span></span>
           </div></div>
           <span id="library-empty">No games found. Put them in the game files folder.</span>
           <span id="rom-scrollbar"><img class="scrollbar-track" src="chrome/scrollbar-track.tga" width="10" height="606" alt=""/><img id="rom-scrollbar-thumb" src="chrome/scrollbar-thumb.tga" width="10" height="110" alt=""/></span>
@@ -87,12 +80,12 @@
           <span id="game-packs-setting"><img src="chrome/dialog-row-normal.tga" width="736" height="94" alt=""/><span class="game-mode-label">Graphic packs</span><span id="game-packs-value">-</span></span>
           <span id="game-mode-hint"><img src="icons/triangle-mono.tga" width="26" height="26" alt=""/><span id="game-mode-hint-text">Choose this game's graphic packs.</span></span>
         </aside>
-        <footer class="library-footer icon-footer"><span class="controller-hint lib-hint-select"><img class="hint-icon-0" src="icons/cross-mono.tga" width="26" height="26" alt=""/><span>Play</span></span><span class="controller-hint lib-hint-back"><img class="hint-icon-0" src="icons/circle-mono.tga" width="26" height="26" alt=""/><span>Back</span></span><span class="controller-hint lib-hint-browse"><img class="hint-icon-0" src="icons/updown-mono.tga" width="26" height="26" alt=""/><span>Browse games</span></span><span class="controller-hint lib-hint-mode"><img class="hint-icon-0" src="icons/triangle-mono.tga" width="26" height="26" alt=""/><span>Graphic packs</span></span></footer>
+        <footer class="hints"><span class="hint"><img src="icons/cross-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Play</span></span><span class="hint"><img src="icons/circle-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Back</span></span><span class="hint"><img src="icons/updown-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Browse games</span></span><span class="hint"><img src="icons/triangle-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Graphic packs</span></span><span class="hint hint-pair"><img src="icons/l1-mono.tga" width="26" height="26" alt=""/><img class="hint-second" src="icons/r1-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Page</span></span></footer>
       </div>
 
-      <!-- Graphic packs of one game -->
+      <!-- Graphic packs of one game, laid out as Cemu's Graphic Packs window: the packs, and each
+           one's presets, a dropdown for each of its categories -->
       <div id="packs-dialog" class="library-screen">
-        <img class="library-background" src="background.tga" width="1920" height="1080" alt=""/>
         <span class="library-shade"></span>
         <span class="library-title">Graphic packs</span>
         <span id="packs-game" class="library-copy"></span>
@@ -113,75 +106,167 @@
         </section>
         <aside class="game-detail-panel">
           <img class="library-panel-chrome" src="chrome/dialog-panel.tga" width="820" height="720" alt=""/>
-          <span class="detail-kicker">THIS PACK</span>
+          <span id="pack-detail-kicker" class="detail-kicker">GRAPHIC PACK</span>
           <span id="pack-detail-title"></span>
-          <span class="files-label files-line-0">CATEGORY</span><span id="pack-detail-category" class="files-value files-line-0 ready"></span>
-          <span class="files-label files-line-1">PRESET</span><span id="pack-detail-preset" class="files-value files-line-1 ready"></span>
-          <span class="about-divider files-divider-0"></span>
           <span id="pack-detail-description"></span>
+          <span class="about-divider pack-divider"></span>
+          <span id="presets-kicker" class="detail-kicker presets-kicker">PRESETS</span>
+          <span id="presets-empty">This pack has no presets: it is only on or off.</span>
+          <div id="presets-viewport">
+            <span id="preset-row-0" class="library-row library-row-0 preset-row"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="preset-label-0" class="preset-label"></span><span id="preset-value-0" class="preset-value"></span><span class="preset-arrow"></span></span>
+            <span id="preset-row-1" class="library-row library-row-1 preset-row"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="preset-label-1" class="preset-label"></span><span id="preset-value-1" class="preset-value"></span><span class="preset-arrow"></span></span>
+            <span id="preset-row-2" class="library-row library-row-2 preset-row"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="preset-label-2" class="preset-label"></span><span id="preset-value-2" class="preset-value"></span><span class="preset-arrow"></span></span>
+            <span id="preset-row-3" class="library-row library-row-3 preset-row"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="preset-label-3" class="preset-label"></span><span id="preset-value-3" class="preset-value"></span><span class="preset-arrow"></span></span>
+          </div>
+          <span id="presets-position"></span>
         </aside>
-        <footer class="library-footer icon-footer"><span class="controller-hint lib-hint-select"><img class="hint-icon-0" src="icons/cross-mono.tga" width="26" height="26" alt=""/><span>On / off</span></span><span class="controller-hint lib-hint-back"><img class="hint-icon-0" src="icons/circle-mono.tga" width="26" height="26" alt=""/><span>Back</span></span><span class="controller-hint lib-hint-browse"><img class="hint-icon-0" src="icons/updown-mono.tga" width="26" height="26" alt=""/><span>Browse packs</span></span><span class="controller-hint lib-hint-mode"><img class="hint-icon-0" src="icons/leftright-mono.tga" width="26" height="26" alt=""/><span>Preset</span></span></footer>
+        <footer class="hints"><span class="hint"><img src="icons/cross-mono.tga" width="26" height="26" alt=""/><span id="packs-hint-0" class="hint-text">On / off</span></span><span class="hint"><img src="icons/circle-mono.tga" width="26" height="26" alt=""/><span id="packs-hint-1" class="hint-text">Back</span></span><span class="hint"><img src="icons/updown-mono.tga" width="26" height="26" alt=""/><span id="packs-hint-2" class="hint-text">Browse packs</span></span><span class="hint"><img src="icons/leftright-mono.tga" width="26" height="26" alt=""/><span id="packs-hint-3" class="hint-text">Presets</span></span></footer>
       </div>
 
       <!-- Settings -->
       <div id="settings-dialog" class="settings-screen">
-        <img class="library-background" src="background.tga" width="1920" height="1080" alt=""/>
         <span class="library-shade"></span>
         <span class="library-title">Settings</span><span class="library-copy">Fine-tune your experience</span>
         <section class="settings-list-panel">
         <img class="library-panel-chrome" src="chrome/dialog-panel.tga" width="820" height="720" alt=""/>
         <span class="library-panel-kicker">PREFERENCES</span>
-        <span id="settings-row-0" class="dialog-row dialog-row-0 focused"><img class="dialog-row-chrome base-chrome" src="chrome/dialog-row-normal.tga" width="736" height="94" alt=""/><img class="dialog-row-chrome focused-chrome" src="chrome/dialog-row-focused.tga" width="736" height="94" alt=""/><span>Video</span></span>
-        <span id="settings-row-1" class="dialog-row dialog-row-1"><img class="dialog-row-chrome base-chrome" src="chrome/dialog-row-normal.tga" width="736" height="94" alt=""/><img class="dialog-row-chrome focused-chrome" src="chrome/dialog-row-focused.tga" width="736" height="94" alt=""/><span>Audio</span></span>
-        <span id="settings-row-2" class="dialog-row dialog-row-2"><img class="dialog-row-chrome base-chrome" src="chrome/dialog-row-normal.tga" width="736" height="94" alt=""/><img class="dialog-row-chrome focused-chrome" src="chrome/dialog-row-focused.tga" width="736" height="94" alt=""/><span>Controls</span></span>
-        <span id="settings-row-3" class="dialog-row dialog-row-3"><img class="dialog-row-chrome base-chrome" src="chrome/dialog-row-normal.tga" width="736" height="94" alt=""/><img class="dialog-row-chrome focused-chrome" src="chrome/dialog-row-focused.tga" width="736" height="94" alt=""/><span>Diagnostics</span></span>
-        <span id="settings-row-4" class="dialog-row dialog-row-4"><img class="dialog-row-chrome base-chrome" src="chrome/dialog-row-normal.tga" width="736" height="94" alt=""/><img class="dialog-row-chrome focused-chrome" src="chrome/dialog-row-focused.tga" width="736" height="94" alt=""/><span>Game files</span></span>
+        <span id="settings-row-0" class="dialog-row settings-row-0"><img class="dialog-row-chrome base-chrome" src="chrome/dialog-row-normal.tga" width="736" height="94" alt=""/><img class="dialog-row-chrome focused-chrome" src="chrome/dialog-row-focused.tga" width="736" height="94" alt=""/><span>Video</span></span>
+        <span id="settings-row-1" class="dialog-row settings-row-1"><img class="dialog-row-chrome base-chrome" src="chrome/dialog-row-normal.tga" width="736" height="94" alt=""/><img class="dialog-row-chrome focused-chrome" src="chrome/dialog-row-focused.tga" width="736" height="94" alt=""/><span>Audio</span></span>
+        <span id="settings-row-2" class="dialog-row settings-row-2"><img class="dialog-row-chrome base-chrome" src="chrome/dialog-row-normal.tga" width="736" height="94" alt=""/><img class="dialog-row-chrome focused-chrome" src="chrome/dialog-row-focused.tga" width="736" height="94" alt=""/><span>Controls</span></span>
+        <span id="settings-row-3" class="dialog-row settings-row-3"><img class="dialog-row-chrome base-chrome" src="chrome/dialog-row-normal.tga" width="736" height="94" alt=""/><img class="dialog-row-chrome focused-chrome" src="chrome/dialog-row-focused.tga" width="736" height="94" alt=""/><span>Game files</span></span>
+        <span id="settings-row-4" class="dialog-row settings-row-4"><img class="dialog-row-chrome base-chrome" src="chrome/dialog-row-normal.tga" width="736" height="94" alt=""/><img class="dialog-row-chrome focused-chrome" src="chrome/dialog-row-focused.tga" width="736" height="94" alt=""/><span>Install updates and DLC</span></span>
+        <span id="settings-row-5" class="dialog-row settings-row-5"><img class="dialog-row-chrome base-chrome" src="chrome/dialog-row-normal.tga" width="736" height="94" alt=""/><img class="dialog-row-chrome focused-chrome" src="chrome/dialog-row-focused.tga" width="736" height="94" alt=""/><span>Diagnostics</span></span>
         </section>
         <aside class="settings-detail-panel"><img class="library-panel-chrome" src="chrome/dialog-panel.tga" width="820" height="720" alt=""/>
           <span class="detail-kicker">ON THIS CONSOLE</span>
           <span class="settings-detail-title">Make it yours.</span>
           <span class="settings-detail-copy">Adjust the essentials without leaving your library behind.</span>
-          <span class="settings-detail-label settings-detail-one">VIDEO</span><span class="settings-detail-value settings-detail-one">Upscaling filter, 120 Hz, overlay</span>
-          <span class="settings-detail-label settings-detail-two">AUDIO</span><span class="settings-detail-value settings-detail-two">Game volume</span>
-          <span class="settings-detail-label settings-detail-three">CONTROLS</span><span class="settings-detail-value settings-detail-three">Shortcuts and vibration</span>
-          <span class="settings-detail-label settings-detail-four">DIAGNOSTICS</span><span class="settings-detail-value settings-detail-four">Jailbreak, JIT and log files</span>
-          <span class="settings-detail-label settings-detail-five">GAME FILES</span><span class="settings-detail-value settings-detail-five">Folder for your Wii U games</span>
+          <span class="settings-detail-label settings-detail-0">VIDEO</span><span class="settings-detail-value settings-detail-0">Upscaling filter, 120 Hz, overlay</span>
+          <span class="settings-detail-label settings-detail-1">AUDIO</span><span class="settings-detail-value settings-detail-1">Game volume</span>
+          <span class="settings-detail-label settings-detail-2">CONTROLS</span><span class="settings-detail-value settings-detail-2">Controllers, buttons, motion, vibration</span>
+          <span class="settings-detail-label settings-detail-3">GAME FILES</span><span class="settings-detail-value settings-detail-3">The folder for your Wii U games</span>
+          <span class="settings-detail-label settings-detail-4">INSTALL</span><span class="settings-detail-value settings-detail-4">Updates and DLC into the Wii U storage</span>
+          <span class="settings-detail-label settings-detail-5">DIAGNOSTICS</span><span class="settings-detail-value settings-detail-5">Jailbreak, JIT and log files</span>
         </aside>
-        <footer class="library-footer icon-footer"><span class="controller-hint lib-hint-select"><img class="hint-icon-0" src="icons/cross-mono.tga" width="26" height="26" alt=""/><span>Select</span></span><span class="controller-hint lib-hint-back"><img class="hint-icon-0" src="icons/circle-mono.tga" width="26" height="26" alt=""/><span>Back</span></span><span class="controller-hint lib-hint-browse"><img class="hint-icon-0" src="icons/updown-mono.tga" width="26" height="26" alt=""/><span>Browse settings</span></span></footer>
+        <footer class="hints"><span class="hint"><img src="icons/cross-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Select</span></span><span class="hint"><img src="icons/circle-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Back</span></span><span class="hint"><img src="icons/updown-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Browse settings</span></span></footer>
       </div>
 
-      <!-- Settings > Game files: the folder browser -->
-      <div id="files-dialog" class="library-screen">
-        <img class="library-background" src="background.tga" width="1920" height="1080" alt=""/>
+      <!-- Settings > Controls: the players -->
+      <div id="controls-dialog" class="library-screen">
         <span class="library-shade"></span>
-        <span class="library-title">Game files</span>
-        <span class="library-copy">Choose the folder that holds your Wii U games</span>
+        <span class="library-title">Controls</span>
+        <span class="library-copy">Cemu's controller settings, for each player's DualSense</span>
+        <section class="library-list-panel">
+          <img class="library-panel-chrome" src="chrome/dialog-panel.tga" width="820" height="720" alt=""/>
+          <span class="library-panel-kicker">PLAYERS</span>
+          <div class="list-viewport">
+            <span id="control-row-0" class="library-row library-row-0"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="control-name-0" class="library-row-name setting-name">Player 1</span><span id="control-value-0" class="setting-value"></span></span>
+            <span id="control-row-1" class="library-row library-row-1"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="control-name-1" class="library-row-name setting-name">Player 2</span><span id="control-value-1" class="setting-value"></span></span>
+            <span id="control-row-2" class="library-row library-row-2"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="control-name-2" class="library-row-name setting-name">Player 3</span><span id="control-value-2" class="setting-value"></span></span>
+            <span id="control-row-3" class="library-row library-row-3"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="control-name-3" class="library-row-name setting-name">Player 4</span><span id="control-value-3" class="setting-value"></span></span>
+          </div>
+        </section>
+        <aside class="game-detail-panel">
+          <img class="library-panel-chrome" src="chrome/dialog-panel.tga" width="820" height="720" alt=""/>
+          <span id="control-kicker" class="detail-kicker">PLAYER 1</span>
+          <span id="control-title" class="detail-title"></span>
+          <span id="control-label-0" class="files-label files-line-0"></span><span id="control-detail-0" class="files-value files-line-0 ready"></span>
+          <span id="control-label-1" class="files-label files-line-1"></span><span id="control-detail-1" class="files-value files-line-1 ready"></span>
+          <span id="control-label-2" class="files-label files-line-2"></span><span id="control-detail-2" class="files-value files-line-2 ready"></span>
+          <span class="about-divider files-divider-0"></span>
+          <span id="control-help" class="detail-help">Touchpad: a cursor on the GamePad's screen; click to touch.<br/>Touchpad click + Options: the in-game menu.<br/>Touchpad click + L1: the TV or the GamePad as the main screen.<br/>Touchpad click + R1: the other screen in a corner.</span>
+        </aside>
+        <footer class="hints"><span class="hint"><img src="icons/cross-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Settings</span></span><span class="hint"><img src="icons/circle-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Back</span></span><span class="hint"><img src="icons/updown-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Browse players</span></span></footer>
+      </div>
+
+      <!-- Settings > Controls > a player -->
+      <div id="player-dialog" class="library-screen">
+        <span class="library-shade"></span>
+        <span id="player-title" class="library-title">Player 1</span>
+        <span id="player-copy" class="library-copy"></span>
+        <section class="library-list-panel">
+          <img class="library-panel-chrome" src="chrome/dialog-panel.tga" width="820" height="720" alt=""/>
+          <span class="library-panel-kicker">SETTINGS</span>
+          <div class="list-viewport">
+            <span id="player-row-0" class="library-row library-row-0"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="player-name-0" class="library-row-name setting-name"></span><span id="player-value-0" class="setting-value"></span></span>
+            <span id="player-row-1" class="library-row library-row-1"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="player-name-1" class="library-row-name setting-name"></span><span id="player-value-1" class="setting-value"></span></span>
+            <span id="player-row-2" class="library-row library-row-2"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="player-name-2" class="library-row-name setting-name"></span><span id="player-value-2" class="setting-value"></span></span>
+            <span id="player-row-3" class="library-row library-row-3"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="player-name-3" class="library-row-name setting-name"></span><span id="player-value-3" class="setting-value"></span></span>
+            <span id="player-row-4" class="library-row library-row-4"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="player-name-4" class="library-row-name setting-name"></span><span id="player-value-4" class="setting-value"></span></span>
+            <span id="player-row-5" class="library-row library-row-5"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="player-name-5" class="library-row-name setting-name"></span><span id="player-value-5" class="setting-value"></span></span>
+            <span id="player-row-6" class="library-row library-row-6"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="player-name-6" class="library-row-name setting-name"></span><span id="player-value-6" class="setting-value"></span></span>
+          </div>
+        </section>
+        <aside class="game-detail-panel">
+          <img class="library-panel-chrome" src="chrome/dialog-panel.tga" width="820" height="720" alt=""/>
+          <span class="detail-kicker">THIS SETTING</span>
+          <span id="player-detail-title" class="detail-title"></span>
+          <span id="player-help" class="detail-help detail-help-high"></span>
+        </aside>
+        <footer class="hints"><span class="hint"><img src="icons/cross-mono.tga" width="26" height="26" alt=""/><span id="player-hint-0" class="hint-text">Choose</span></span><span class="hint"><img src="icons/leftright-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Change</span></span><span class="hint"><img src="icons/circle-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Back</span></span><span class="hint"><img src="icons/updown-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Browse</span></span></footer>
+      </div>
+
+      <!-- Settings > Controls > a player > buttons -->
+      <div id="mapping-dialog" class="library-screen">
+        <span class="library-shade"></span>
+        <span class="library-title">Buttons</span>
+        <span id="mapping-copy" class="library-copy"></span>
+        <section class="library-list-panel">
+          <img class="library-panel-chrome" src="chrome/dialog-panel.tga" width="820" height="720" alt=""/>
+          <span id="mapping-kicker" class="library-panel-kicker">WII U GAMEPAD</span>
+          <div class="list-viewport">
+            <span id="map-row-0" class="library-row library-row-0"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="map-name-0" class="library-row-name setting-name"></span><span id="map-value-0" class="setting-value"></span></span>
+            <span id="map-row-1" class="library-row library-row-1"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="map-name-1" class="library-row-name setting-name"></span><span id="map-value-1" class="setting-value"></span></span>
+            <span id="map-row-2" class="library-row library-row-2"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="map-name-2" class="library-row-name setting-name"></span><span id="map-value-2" class="setting-value"></span></span>
+            <span id="map-row-3" class="library-row library-row-3"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="map-name-3" class="library-row-name setting-name"></span><span id="map-value-3" class="setting-value"></span></span>
+            <span id="map-row-4" class="library-row library-row-4"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="map-name-4" class="library-row-name setting-name"></span><span id="map-value-4" class="setting-value"></span></span>
+            <span id="map-row-5" class="library-row library-row-5"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="map-name-5" class="library-row-name setting-name"></span><span id="map-value-5" class="setting-value"></span></span>
+            <span id="map-row-6" class="library-row library-row-6"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="map-name-6" class="library-row-name setting-name"></span><span id="map-value-6" class="setting-value"></span></span>
+          </div>
+          <span id="mapping-position" class="list-position">0 OF 0</span>
+        </section>
+        <aside class="game-detail-panel">
+          <img class="library-panel-chrome" src="chrome/dialog-panel.tga" width="820" height="720" alt=""/>
+          <span class="detail-kicker">THIS BUTTON</span>
+          <span id="map-title" class="detail-title"></span>
+          <span class="files-label files-line-0">DUALSENSE</span><span id="map-input" class="files-value files-line-0 ready"></span>
+          <span class="about-divider files-divider-0"></span>
+          <span id="map-message" class="detail-help"></span>
+        </aside>
+        <footer class="hints"><span class="hint"><img src="icons/cross-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Assign</span></span><span class="hint"><img src="icons/square-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Clear</span></span><span class="hint"><img src="icons/circle-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Back</span></span><span class="hint"><img src="icons/updown-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Browse buttons</span></span><span class="hint hint-pair"><img src="icons/l1-mono.tga" width="26" height="26" alt=""/><img class="hint-second" src="icons/r1-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Page</span></span></footer>
+      </div>
+
+      <!-- Settings > Game files, and Settings > Install updates and DLC: the folder browser -->
+      <div id="files-dialog" class="library-screen">
+        <span class="library-shade"></span>
+        <span id="files-title" class="library-title">Game files</span>
+        <span id="files-copy" class="library-copy">Choose the folder that holds your Wii U games</span>
         <section class="library-list-panel">
           <img class="library-panel-chrome" src="chrome/dialog-panel.tga" width="820" height="720" alt=""/>
           <span class="library-panel-kicker">FOLDERS</span>
           <span id="files-path"></span>
           <div id="files-list-viewport">
-            <span id="files-row-0" class="library-row library-row-0 files-row"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><img class="files-icon files-icon-folder" src="icons/folder.tga" width="40" height="32" alt=""/><img class="files-icon files-icon-up" src="icons/folder-up.tga" width="40" height="32" alt=""/><span id="files-name-0" class="library-row-name files-row-name"></span></span>
-            <span id="files-row-1" class="library-row library-row-1 files-row"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><img class="files-icon files-icon-folder" src="icons/folder.tga" width="40" height="32" alt=""/><img class="files-icon files-icon-up" src="icons/folder-up.tga" width="40" height="32" alt=""/><span id="files-name-1" class="library-row-name files-row-name"></span></span>
-            <span id="files-row-2" class="library-row library-row-2 files-row"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><img class="files-icon files-icon-folder" src="icons/folder.tga" width="40" height="32" alt=""/><img class="files-icon files-icon-up" src="icons/folder-up.tga" width="40" height="32" alt=""/><span id="files-name-2" class="library-row-name files-row-name"></span></span>
-            <span id="files-row-3" class="library-row library-row-3 files-row"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><img class="files-icon files-icon-folder" src="icons/folder.tga" width="40" height="32" alt=""/><img class="files-icon files-icon-up" src="icons/folder-up.tga" width="40" height="32" alt=""/><span id="files-name-3" class="library-row-name files-row-name"></span></span>
-            <span id="files-row-4" class="library-row library-row-4 files-row"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><img class="files-icon files-icon-folder" src="icons/folder.tga" width="40" height="32" alt=""/><img class="files-icon files-icon-up" src="icons/folder-up.tga" width="40" height="32" alt=""/><span id="files-name-4" class="library-row-name files-row-name"></span></span>
-            <span id="files-row-5" class="library-row library-row-5 files-row"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><img class="files-icon files-icon-folder" src="icons/folder.tga" width="40" height="32" alt=""/><img class="files-icon files-icon-up" src="icons/folder-up.tga" width="40" height="32" alt=""/><span id="files-name-5" class="library-row-name files-row-name"></span></span>
+            <span id="files-row-0" class="library-row library-row-0 files-row"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><img class="files-icon files-icon-folder" src="icons/folder.tga" width="40" height="32" alt=""/><img class="files-icon files-icon-up" src="icons/folder-up.tga" width="40" height="32" alt=""/><span id="files-name-0" class="library-row-name files-row-name"></span><span id="files-meta-0" class="library-row-meta files-row-meta"></span></span>
+            <span id="files-row-1" class="library-row library-row-1 files-row"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><img class="files-icon files-icon-folder" src="icons/folder.tga" width="40" height="32" alt=""/><img class="files-icon files-icon-up" src="icons/folder-up.tga" width="40" height="32" alt=""/><span id="files-name-1" class="library-row-name files-row-name"></span><span id="files-meta-1" class="library-row-meta files-row-meta"></span></span>
+            <span id="files-row-2" class="library-row library-row-2 files-row"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><img class="files-icon files-icon-folder" src="icons/folder.tga" width="40" height="32" alt=""/><img class="files-icon files-icon-up" src="icons/folder-up.tga" width="40" height="32" alt=""/><span id="files-name-2" class="library-row-name files-row-name"></span><span id="files-meta-2" class="library-row-meta files-row-meta"></span></span>
+            <span id="files-row-3" class="library-row library-row-3 files-row"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><img class="files-icon files-icon-folder" src="icons/folder.tga" width="40" height="32" alt=""/><img class="files-icon files-icon-up" src="icons/folder-up.tga" width="40" height="32" alt=""/><span id="files-name-3" class="library-row-name files-row-name"></span><span id="files-meta-3" class="library-row-meta files-row-meta"></span></span>
+            <span id="files-row-4" class="library-row library-row-4 files-row"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><img class="files-icon files-icon-folder" src="icons/folder.tga" width="40" height="32" alt=""/><img class="files-icon files-icon-up" src="icons/folder-up.tga" width="40" height="32" alt=""/><span id="files-name-4" class="library-row-name files-row-name"></span><span id="files-meta-4" class="library-row-meta files-row-meta"></span></span>
+            <span id="files-row-5" class="library-row library-row-5 files-row"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><img class="files-icon files-icon-folder" src="icons/folder.tga" width="40" height="32" alt=""/><img class="files-icon files-icon-up" src="icons/folder-up.tga" width="40" height="32" alt=""/><span id="files-name-5" class="library-row-name files-row-name"></span><span id="files-meta-5" class="library-row-meta files-row-meta"></span></span>
           </div>
           <span id="files-empty">No folders here.</span>
           <span id="files-position">0 OF 0</span>
         </section>
         <aside class="game-detail-panel">
           <img class="library-panel-chrome" src="chrome/dialog-panel.tga" width="820" height="720" alt=""/>
-          <span class="detail-kicker">THIS FOLDER</span>
+          <span id="files-kicker" class="detail-kicker">THIS FOLDER</span>
           <span id="files-current"></span>
-          <span class="files-label files-line-0">GAMES</span><span id="files-games" class="files-value files-line-0"></span>
-          <span class="files-label files-line-1">KEYS.TXT</span><span id="files-keys" class="files-value files-line-1"></span>
-          <span class="files-label files-line-2">IN USE</span><span id="files-in-use" class="files-value files-line-2"></span>
+          <span id="files-label-0" class="files-label files-line-0"></span><span id="files-value-0" class="files-value files-line-0"></span>
+          <span id="files-label-1" class="files-label files-line-1"></span><span id="files-value-1" class="files-value files-line-1"></span>
+          <span id="files-label-2" class="files-label files-line-2"></span><span id="files-value-2" class="files-value files-line-2"></span>
           <span class="about-divider files-divider-0"></span>
           <span id="files-message"></span>
         </aside>
-        <footer class="library-footer icon-footer"><span class="controller-hint files-hint-open"><img class="hint-icon-0" src="icons/cross-mono.tga" width="26" height="26" alt=""/><span>Open</span></span><span class="controller-hint files-hint-back"><img class="hint-icon-0" src="icons/circle-mono.tga" width="26" height="26" alt=""/><span>Back</span></span><span class="controller-hint files-hint-use"><img class="hint-icon-0" src="icons/triangle-mono.tga" width="26" height="26" alt=""/><span>Use this folder</span></span><span class="controller-hint files-hint-page"><img class="hint-icon-0" src="icons/l1-mono.tga" width="26" height="26" alt=""/><img class="hint-icon-1" src="icons/r1-mono.tga" width="26" height="26" alt=""/><span class="files-page-label">Page</span></span></footer>
+        <footer class="hints"><span class="hint"><img src="icons/cross-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Open</span></span><span class="hint"><img src="icons/circle-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Back</span></span><span class="hint"><img src="icons/triangle-mono.tga" width="26" height="26" alt=""/><span id="files-hint-use" class="hint-text">Use this folder</span></span><span class="hint hint-pair"><img src="icons/l1-mono.tga" width="26" height="26" alt=""/><img class="hint-second" src="icons/r1-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Page</span></span></footer>
       </div>
 
       <!-- Settings > Video -->
@@ -189,29 +274,19 @@
         <img class="dialog-panel-chrome" src="chrome/modal-panel.tga" width="820" height="720" alt=""/>
         <span class="dialog-title">Video</span>
         <span class="dialog-copy">Applies to the next game you start.</span>
-        <span id="video-row-0" class="dialog-row dialog-row-0"><img class="dialog-row-chrome base-chrome" src="chrome/dialog-row-normal.tga" width="736" height="94" alt=""/><img class="dialog-row-chrome focused-chrome" src="chrome/dialog-row-focused.tga" width="736" height="94" alt=""/><span id="video-output">Upscaling to 4K: Bicubic</span></span>
-        <span id="video-row-1" class="dialog-row dialog-row-1"><img class="dialog-row-chrome base-chrome" src="chrome/dialog-row-normal.tga" width="736" height="94" alt=""/><img class="dialog-row-chrome focused-chrome" src="chrome/dialog-row-focused.tga" width="736" height="94" alt=""/><span id="video-hfr">120 Hz output: Off</span></span>
-        <span id="video-row-2" class="dialog-row dialog-row-2"><img class="dialog-row-chrome base-chrome" src="chrome/dialog-row-normal.tga" width="736" height="94" alt=""/><img class="dialog-row-chrome focused-chrome" src="chrome/dialog-row-focused.tga" width="736" height="94" alt=""/><span id="video-overlay">Performance overlay: Off</span></span>
-        <span class="dialog-hint">UP / DOWN Select  /  X or LEFT / RIGHT Change  /  O Back</span>
+        <span id="video-row-0" class="dialog-row dialog-row-0"><img class="dialog-row-chrome base-chrome" src="chrome/dialog-row-normal.tga" width="736" height="94" alt=""/><img class="dialog-row-chrome focused-chrome" src="chrome/dialog-row-focused.tga" width="736" height="94" alt=""/><span id="video-label-0" class="dialog-row-label"></span><span id="video-value-0" class="dialog-row-value"></span></span>
+        <span id="video-row-1" class="dialog-row dialog-row-1"><img class="dialog-row-chrome base-chrome" src="chrome/dialog-row-normal.tga" width="736" height="94" alt=""/><img class="dialog-row-chrome focused-chrome" src="chrome/dialog-row-focused.tga" width="736" height="94" alt=""/><span id="video-label-1" class="dialog-row-label"></span><span id="video-value-1" class="dialog-row-value"></span></span>
+        <span id="video-row-2" class="dialog-row dialog-row-2"><img class="dialog-row-chrome base-chrome" src="chrome/dialog-row-normal.tga" width="736" height="94" alt=""/><img class="dialog-row-chrome focused-chrome" src="chrome/dialog-row-focused.tga" width="736" height="94" alt=""/><span id="video-label-2" class="dialog-row-label"></span><span id="video-value-2" class="dialog-row-value"></span></span>
+        <div class="dialog-hints"><span class="hint"><img src="icons/updown-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Select</span></span><span class="hint"><img src="icons/leftright-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Change</span></span><span class="hint"><img src="icons/circle-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Back</span></span></div>
       </div></div>
 
       <!-- Settings > Audio -->
       <div id="audio-dialog" class="dialog"><div class="dialog-panel">
         <img class="dialog-panel-chrome" src="chrome/modal-panel.tga" width="820" height="720" alt=""/>
         <span class="dialog-title">Audio</span>
-        <span class="dialog-copy">The TV sound of your games; the PS5's own volume is unchanged.</span>
-        <span id="audio-row-0" class="dialog-row dialog-row-0 focused"><img class="dialog-row-chrome base-chrome" src="chrome/dialog-row-normal.tga" width="736" height="94" alt=""/><img class="dialog-row-chrome focused-chrome" src="chrome/dialog-row-focused.tga" width="736" height="94" alt=""/><span id="audio-volume">Game volume: 100%</span></span>
-        <span class="dialog-hint">LEFT / RIGHT Change  /  O Back</span>
-      </div></div>
-
-      <!-- Settings > Controls -->
-      <div id="controls-dialog" class="dialog"><div class="dialog-panel">
-        <img class="dialog-panel-chrome" src="chrome/modal-panel.tga" width="820" height="720" alt=""/>
-        <span class="dialog-title">Controls</span>
-        <span class="dialog-copy">Your DualSense is the Wii U GamePad; more players get Pro Controllers.</span>
-        <div class="settings-details">Touchpad: a cursor on the GamePad's screen; click to touch.<br/>Touchpad click + Options: the in-game menu.<br/>Touchpad click + L1: TV or GamePad as the main screen.<br/>Touchpad click + R1: the other screen in a corner.</div>
-        <span id="controls-row-0" class="dialog-row settings-low focused"><img class="dialog-row-chrome base-chrome" src="chrome/dialog-row-normal.tga" width="736" height="94" alt=""/><img class="dialog-row-chrome focused-chrome" src="chrome/dialog-row-focused.tga" width="736" height="94" alt=""/><span id="controls-rumble">Vibration: On</span></span>
-        <span class="dialog-hint">X Change  /  O Back</span>
+        <span class="dialog-copy">The sound of your games; the PS5's own volume stays as it is.</span>
+        <span id="audio-row-0" class="dialog-row dialog-row-0 focused"><img class="dialog-row-chrome base-chrome" src="chrome/dialog-row-normal.tga" width="736" height="94" alt=""/><img class="dialog-row-chrome focused-chrome" src="chrome/dialog-row-focused.tga" width="736" height="94" alt=""/><span class="dialog-row-label">Game volume</span><span id="audio-volume" class="dialog-row-value">100%</span></span>
+        <div class="dialog-hints"><span class="hint"><img src="icons/leftright-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Change</span></span><span class="hint"><img src="icons/circle-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Back</span></span></div>
       </div></div>
 
       <!-- Settings > Diagnostics -->
@@ -219,13 +294,12 @@
         <img class="dialog-panel-chrome" src="chrome/modal-panel.tga" width="820" height="720" alt=""/>
         <span class="dialog-title">Diagnostics</span>
         <span class="dialog-copy">Attach the log files when you report a problem.</span>
-        <div id="setup-details" class="settings-details"></div>
-        <span class="dialog-hint">O Back</span>
+        <div id="setup-details" class="settings-details diagnostics-details"></div>
+        <div class="dialog-hints"><span class="hint"><img src="icons/circle-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Back</span></span></div>
       </div></div>
 
       <!-- About -->
       <div id="about-dialog" class="library-screen about-screen">
-        <img class="library-background" src="background.tga" width="1920" height="1080" alt=""/>
         <span class="library-shade"></span>
         <span class="library-title">About PS5Cemu</span>
         <span class="library-copy">Credits and setup</span>
@@ -237,7 +311,7 @@
           <span class="about-link about-eden-link">cemu.info</span>
           <span class="about-divider about-divider-vulkan"></span>
           <span class="about-subhead about-vulkan-head">THANKS</span>
-          <span class="about-body about-vulkan">Mihawk-99 and mpereiraesaa (RADV on the PS5), BlackBearReloaded (ProsperoEden's launcher, the app boilerplate), Swordpdf (PS5SX2), John Tornblom (payload SDK), the graphic pack authors.</span>
+          <span class="about-body about-vulkan">Mihawk-99 and mpereiraesaa (RADV on the PS5), BlackBearReloaded (ProsperoEden's launcher, the app boilerplate), Swordpdf (PS5SX2), John Tornblom (payload SDK), Dimok (the Homebrew Launcher), the graphic pack authors.</span>
           <span class="about-divider about-divider-port"></span>
           <span class="about-subhead about-port-head">PS5 EDITION</span>
           <span class="about-body about-port">An unofficial port. Not affiliated with the Cemu team, Nintendo or Sony.</span>
@@ -252,12 +326,30 @@
           <span class="about-divider about-setup-divider"></span>
           <span class="about-note">Dump your games from your own Wii U (.wua, .wud, .wux, or a folder with code, content and meta).</span>
         </aside>
-        <footer class="library-footer icon-footer"><span class="controller-hint lib-hint-select"><img class="hint-icon-0" src="icons/circle-mono.tga" width="26" height="26" alt=""/><span>Back</span></span></footer>
+        <footer class="hints"><span class="hint"><img src="icons/circle-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Back</span></span></footer>
+      </div>
+
+      <!-- A dropdown's choices, over the right-hand panel -->
+      <div id="picker">
+        <div class="picker-panel">
+          <img class="dialog-panel-chrome" src="chrome/modal-panel.tga" width="820" height="720" alt=""/>
+          <span id="picker-kicker" class="detail-kicker"></span>
+          <span id="picker-title" class="detail-title"></span>
+          <div id="picker-viewport">
+            <span id="picker-row-0" class="library-row library-row-0"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="picker-name-0" class="library-row-name picker-name"></span><span id="picker-mark-0" class="library-row-meta picker-mark"></span></span>
+            <span id="picker-row-1" class="library-row library-row-1"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="picker-name-1" class="library-row-name picker-name"></span><span id="picker-mark-1" class="library-row-meta picker-mark"></span></span>
+            <span id="picker-row-2" class="library-row library-row-2"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="picker-name-2" class="library-row-name picker-name"></span><span id="picker-mark-2" class="library-row-meta picker-mark"></span></span>
+            <span id="picker-row-3" class="library-row library-row-3"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="picker-name-3" class="library-row-name picker-name"></span><span id="picker-mark-3" class="library-row-meta picker-mark"></span></span>
+            <span id="picker-row-4" class="library-row library-row-4"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="picker-name-4" class="library-row-name picker-name"></span><span id="picker-mark-4" class="library-row-meta picker-mark"></span></span>
+            <span id="picker-row-5" class="library-row library-row-5"><img class="library-row-chrome base-chrome" src="chrome/library-row-normal.tga" width="760" height="78" alt=""/><img class="library-row-chrome focused-chrome" src="chrome/library-row-focused.tga" width="760" height="78" alt=""/><span id="picker-name-5" class="library-row-name picker-name"></span><span id="picker-mark-5" class="library-row-meta picker-mark"></span></span>
+          </div>
+          <div class="picker-hints"><span class="hint"><img src="icons/cross-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Choose</span></span><span class="hint"><img src="icons/circle-mono.tga" width="26" height="26" alt=""/><span class="hint-text">Cancel</span></span></div>
+          <span id="picker-position"></span>
+        </div>
       </div>
 
       <!-- Starting a game -->
       <div id="loading-screen" class="library-screen">
-        <img class="library-background" src="background.tga" width="1920" height="1080" alt=""/>
         <span class="library-shade"></span>
         <img id="loading-cover" src="icons/ps5cemu.tga" width="288" height="288" alt=""/>
         <span id="loading-title"></span>

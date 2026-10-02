@@ -9,8 +9,8 @@
 #     sce_sys/pic0.dds, pic1.dds      its home screen background (selected, starting)
 #     sce_module/libc.prx             the boilerplate's clean-room runtime
 #     sandbox-elevator.elf            the boilerplate's /data helper, built for PPSA99360
-#     assets/ui/                      the launcher: ProsperoEden's artwork and fonts, port/frontend/ui,
-#                                     the Wii U Homebrew Launcher's background
+#     assets/ui/                      the launcher: ProsperoEden's artwork (in dark blue) and fonts,
+#                                     port/frontend/ui
 #     assets/cemu/                    Cemu's game profiles and the Wii U system fonts
 #     assets/graphicPacks/            the community graphic packs (installed on first start)
 #
@@ -85,16 +85,13 @@ grep -q "\"$title\"" "$helper/payload/main.cpp" || { echo "the elevation helper'
 make -s -C "$helper/payload" PS5_PAYLOAD_SDK="$PS5_PAYLOAD_SDK" OUTPUT="$app/sandbox-elevator.elf"
 python3 -B "$boilerplate/tools/validate-elevation-helper.py" "$app/sandbox-elevator.elf" >/dev/null
 
-# The launcher: ProsperoEden's artwork, fonts and stylesheet, PS5Cemu's layout and icons, and the
-# Wii U Homebrew Launcher's background (tools/render-background.py) in place of ProsperoEden's.
+# The launcher: ProsperoEden's artwork, fonts and stylesheet in dark blue (tools/recolour-ui.py),
+# and PS5Cemu's layout and icons. Its background, the Wii U Homebrew Launcher's with its bubbles
+# rising, is drawn as it runs (port/frontend/bubbles.h).
 ui=$app/assets/ui
 prospero=$deps/ProsperoEden/headless/prosperoeden/ui
-mkdir -p "$ui/styles"
-cp -a "$prospero/chrome" "$prospero/fonts" "$prospero/icons" "$ui/"
-python3 -B "$PS5CEMU_ROOT/tools/render-background.py" "$work/background"
-cp "$work/background/ui/background.tga" "$work/background/ui/background-menu.tga" "$ui/"
-find "$ui" -name '*.svg' -delete # their sources; the launcher draws the TGAs
-cp "$prospero/styles/app.rcss" "$PS5CEMU_ROOT/port/frontend/ui/ps5cemu.rcss" "$ui/styles/"
+python3 -B "$PS5CEMU_ROOT/tools/recolour-ui.py" "$prospero" "$ui"
+cp "$PS5CEMU_ROOT/port/frontend/ui/ps5cemu.rcss" "$ui/styles/"
 cp "$PS5CEMU_ROOT/port/frontend/ui/main.rml" "$ui/"
 cp "$work/icons/ui/icons/"*.tga "$ui/icons/"
 python3 - "$ui" <<'PY'

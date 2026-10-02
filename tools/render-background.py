@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Draw the launcher's backgrounds, with nothing but the standard library.
+"""Draw the launcher's background as a still picture, with nothing but the standard library.
 
     render-background.py OUTPUT_DIR
 
-writes ui/background-menu.tga (2048x1152, the home screen's) and ui/background.tga
-(1920x1080, the library's): the Wii U Homebrew Launcher's background, as Dimok's
+writes ui/background-menu.tga (2048x1152) and ui/background.tga (1920x1080). The home screen
+tile, its background and the README's banner are drawn on it (render-icons.py,
+render-presentation.py and render-banner.py use its particles); the launcher draws it moving,
+its bubbles rising (port/frontend/bubbles.h). It is the Wii U Homebrew Launcher's background, as Dimok's
 homebrew_launcher draws it (src/menu/MainWindow.cpp, with libgui's GuiParticleImage; both
 GPL-3.0-or-later). A blue gradient, (59, 159, 223) at the top to (79, 153, 239) at the bottom,
 and 500 white discs of radius up to 30 and alpha 0.05 to 0.65 on its 1280x720 screen, here
