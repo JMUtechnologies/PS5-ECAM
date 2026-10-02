@@ -1,7 +1,7 @@
 # Building PS5Cemu
 
 `make release` builds everything from source on Linux and writes the app to `build/app/PPSA99360`
-and `dist/PS5Cemu-v0.1.0.zip`. Ubuntu 24.04 is what it is built on; WSL works.
+and `dist/PS5Cemu-v0.2.0.zip`. Ubuntu 24.04 is what it is built on; WSL works.
 
 ## Requirements
 
@@ -22,7 +22,7 @@ sudo apt install rsync flex glslang-tools llvm-18-dev libclang-18-dev libclc-18-
 
 ```bash
 make radv      # RADV, the Vulkan driver
-make release   # the app (build/app/PPSA99360) and dist/PS5Cemu-v0.1.0.zip with its SHA256SUMS
+make release   # the app (build/app/PPSA99360) and dist/PS5Cemu-v0.2.0.zip with its SHA256SUMS
 make check     # the same build with a stand-in for RADV: checks everything else, not an app
 ```
 

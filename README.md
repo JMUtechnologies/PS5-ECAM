@@ -15,7 +15,7 @@ is not affiliated with or endorsed by the Cemu project, Nintendo or Sony.
 This is an early alpha. On a console with etaHEN, PS5Cemu starts into its launcher, lists your
 games and starts them, and The Wind Waker HD plays: video, controller input and saves work.
 Compatibility and performance will vary between games. The latest release is
-**[v0.1.0](https://github.com/premohq/PS5CEMU/releases/tag/v0.1.0)**.
+**[v0.2.0](https://github.com/premohq/PS5CEMU/releases/tag/v0.2.0)**.
 
 ## Source code
 
@@ -140,9 +140,7 @@ In the menu, the D-pad moves, Cross chooses, Left and Right change a setting, an
 to the game. On Cemu's keyboard, the D-pad moves, Cross types, Circle deletes, Triangle is shift
 and Options is done. On both, the touchpad points and clicks.
 
-## Changes after v0.1.0
-
-Not yet in a release:
+## Changes in v0.2.0
 
 - **Games run at their own speed.** Cemu took the console clock's 81 ns resolution for the unit of
   its timers, so they ran 81 times too fast, and games ran as fast as the display let them: The
