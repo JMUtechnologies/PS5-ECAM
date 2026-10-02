@@ -12,10 +12,10 @@
 Wii U emulator. All credit for the emulator belongs to the Cemu team and its contributors. PS5Cemu
 is not affiliated with or endorsed by the Cemu project, Nintendo or Sony.
 
-This is an early alpha. On a console with etaHEN, PS5Cemu starts into its launcher, lists your
-games and starts them, and The Wind Waker HD plays: video, controller input and saves work.
-Compatibility and performance will vary between games. The latest release is
-**[v0.2.0](https://github.com/premohq/PS5CEMU/releases/tag/v0.2.0)**.
+On a console with etaHEN, PS5Cemu starts into its launcher, lists your games and starts them, and
+The Wind Waker HD plays: video, controller input and saves work. Compatibility and performance
+will vary between games. The latest release is
+**[v1.0.0](https://github.com/premohq/PS5CEMU/releases/tag/v1.0.0)**.
 
 ## Source code
 
@@ -53,22 +53,29 @@ build, packaging and artwork tools in `tools/`. To build it yourself, run `make 
   fall back to Cemu's interpreter, which is much slower.
 - **Vulkan renderer** - Cemu's Vulkan renderer on Mihawk's RADV driver, at the console's 3840x2160
   output with the upscaling filter you choose (Bicubic by default), and 120 Hz on displays that take it.
-- **Launcher** - ProsperoEden's layout, artwork and fonts, adapted for Wii U games, on the Wii U
-  Homebrew Launcher's background: **Continue Playing**, **Recently Played**, and a **Library** with
-  each game's icon, version, update and DLC.
+- **Launcher** - ProsperoEden's layout, artwork and fonts, adapted for Wii U games and in dark blue,
+  over the Wii U Homebrew Launcher's background with its bubbles rising: **Continue Playing**,
+  **Recently Played**, and a **Library** with each game's icon, version, update and DLC.
 - **Game files anywhere** - WUA, WUD/WUX and unpacked games in any folder the PS5 can read, chosen
   with a folder browser in **Settings > Game files**.
-- **Graphic packs per game** - the community graphic packs are bundled. Turn them on or off and pick
-  their presets for each game, as in Cemu's Graphic Packs window.
+- **Graphic packs per game** - the community graphic packs are bundled, listed in their folders as
+  in Cemu's Graphic Packs window. Each kind of preset has a dropdown of its own, such as Breath of
+  the Wild's aspect ratio and resolution, so 16:9 at 2560x1440 is two choices.
+- **Controller settings** - in **Settings > Controls**, each player's emulated controller (Wii U
+  GamePad, Pro Controller, Classic Controller, Wii Remote with or without a Nunchuk), motion
+  controls, vibration strength, stick deadzones and every button, saved in Cemu's controller profiles.
+- **Updates and DLC** - **Settings > Install updates and DLC** installs a folder with code, content
+  and meta into the Wii U's storage, as Cemu's "Install game title, update or DLC" does. Updates and
+  DLC in the game files folder or in a WUA are found as they are.
 - **Both screens** - the TV's picture or the GamePad's as the main one, and the other one in a corner
   when you want it.
 - **The touchpad as the touch screen** - a cursor shows where your finger is on the GamePad's
   picture. Click to touch, and keep it clicked to drag.
-- **In-game menu** - the main screen, the screen in a corner, upscaling, the picture's shape, the
-  performance overlay, the volume, and back to the library.
+- **In-game menu** - laid out as the launcher is: the main screen, the screen in a corner,
+  upscaling, the picture's shape, the performance overlay, the volume, and back to the library.
 - **Text entry** - games that ask for text get Cemu's keyboard, typed with the D-pad or the touchpad.
-- **Controllers, audio and saves** - player 1's DualSense is the Wii U GamePad, with motion controls
-  and vibration, and other signed-in users get Pro Controllers, up to four players. Audio plays
+- **Controllers, audio and saves** - player 1's DualSense is the Wii U GamePad, and other signed-in
+  users get Pro Controllers, up to four players, until you choose otherwise. Audio plays
   through the PS5's AudioOut, and saves stay in `/data/ps5cemu`.
 
 ## Install
@@ -95,7 +102,9 @@ build, packaging and artwork tools in `tools/`. To build it yourself, run `make 
 ```
 
 Encrypted WUD and WUX dumps also need their disc keys in `/data/ps5cemu/keys.txt`, as Cemu reads
-them. Updates and DLC installed in the Wii U's storage (`mlc01`) are found with their game.
+them. An update or DLC is found with its game when it is in the game files folder (unpacked, or in
+the game's WUA) or installed in the Wii U's storage (`mlc01`) with **Settings > Install updates and
+DLC**.
 
 ### App data
 
@@ -139,6 +148,22 @@ hardware and software you own. Do not download or redistribute them.
 In the menu, the D-pad moves, Cross chooses, Left and Right change a setting, and Circle goes back
 to the game. On Cemu's keyboard, the D-pad moves, Cross types, Circle deletes, Triangle is shift
 and Options is done. On both, the touchpad points and clicks.
+
+## Changes in v1.0.0
+
+- **Dark blue.** The launcher's green panels, rows and highlights are a dark blue to black, with the
+  same light text, and the shades ProsperoEden meant behind its screens and dialogs now show.
+- **The bubbles rise.** The Homebrew Launcher's background moves behind the launcher, drawn as it
+  runs instead of two pictures, which also makes the app 17 MB smaller.
+- **Graphic packs as on a PC.** A dropdown for each kind of preset: every resolution an aspect
+  ratio has can be chosen, where only the first kind (the aspect ratio) could be changed before.
+  Packs are listed in their folders, and choosing a preset turns its pack on.
+- **Controller settings.** Each player's emulated controller, motion controls, vibration, stick
+  deadzones and buttons, which are assigned by pressing them.
+- **Updates and DLC install** into the Wii U's storage from the launcher.
+- **Nothing overlaps.** The controller hints flow with their text, and long names, paths and
+  descriptions keep to their places.
+- **The in-game menu** has the launcher's panels, rows and colours.
 
 ## Changes in v0.2.0
 
@@ -191,8 +216,9 @@ by Alex Free. It is kept in this repository with its own readme and licence.
 - **ProsperoEden** by BlackBearReloaded: the launcher's design, artwork, fonts, bitmap font engine,
   folder browser and software drawing through SDL, and the **PS5 Native App Boilerplate**: runtime,
   packaging tool, sandbox elevation and the home screen's asset format.
-- **Dimok**: the Wii U Homebrew Launcher's background (homebrew_launcher and libgui, GPL-3.0), drawn
-  by `tools/render-background.py` for the launcher, the home screen and this page.
+- **Dimok**: the Wii U Homebrew Launcher's background (homebrew_launcher and libgui, GPL-3.0), moving
+  behind the launcher (`port/frontend/bubbles.cpp`), and drawn by `tools/render-background.py` for
+  the home screen and this page.
 - **Mihawk**: RADV on the PS5 (PS5_Mesa, PS5_Vulkan, the payload SDK fork), with **mpereiraesaa**'s
   contributions.
 - **John Törnblom** (ps5-payload-dev): the [PS5 Payload SDK](https://github.com/ps5-payload-dev/sdk),

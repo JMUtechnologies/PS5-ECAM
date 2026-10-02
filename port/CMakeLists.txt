@@ -4,7 +4,7 @@
 # which draws ProsperoEden's RmlUi layout in software through SDL, as ProsperoEden does. Cemu's own
 # platform classes (cemu/) are added to Cemu's targets by the patch.
 
-set(PS5CEMU_VERSION "0.2.0")
+set(PS5CEMU_VERSION "1.0.0")
 set(PS5CEMU_ROOT "${CMAKE_CURRENT_LIST_DIR}/..")
 set(PS5CEMU_DEPS "${PS5CEMU_ROOT}/.deps")
 # ProsperoEden's bitmap font engine: its launcher fonts are Montserrat atlases, not TrueType
@@ -100,7 +100,7 @@ target_include_directories(CemuPS5 PRIVATE
 	"${RMLUI_INCLUDE_DIR}"
 )
 target_compile_definitions(CemuPS5 PRIVATE RMLUI_STATIC_LIB)
-# the version the launcher and the boot log show (sce_sys/param.json has it as 01.000.200)
+# the version the launcher and the boot log show (sce_sys/param.json has it as 01.001.000)
 target_compile_definitions(CemuPS5 PUBLIC PS5CEMU_VERSION="${PS5CEMU_VERSION}")
 
 target_link_libraries(CemuPS5 PUBLIC
