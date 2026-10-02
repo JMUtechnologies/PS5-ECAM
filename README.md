@@ -17,9 +17,8 @@ The Wind Waker HD plays: video, controller input and saves work. Compatibility a
 will vary between games. The latest release is
 **[v1.0.0](https://github.com/premohq/PS5CEMU/releases/tag/v1.0.0)**.
 This is an early alpha. On a console with etaHEN, PS5Cemu starts into its launcher, lists your
-games and starts them, and The Wind Waker HD plays: video, controller input and saves work.
-Compatibility and performance will vary between games. The latest release is
-**[v0.2.0](https://github.com/premohq/PS5CEMU/releases/tag/v0.2.0)**.
+games and starts them, and Most games I have tried play: video, controller input and saves work.
+Compatibility and performance will vary between games.
 
 ## Source code
 
