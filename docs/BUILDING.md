@@ -1,6 +1,7 @@
 # Building PS5Cemu
 
 `make release` builds everything from source on Linux and writes the app to `build/app/PPSA99360`
+and `dist/PS5Cemu-v1.0.0.zip`. Ubuntu 24.04 is what it is built on; WSL works.
 and `dist/PS5Cemu-v0.2.0.zip`. Ubuntu 24.04 is what it is built on; WSL works.
 
 ## Requirements
@@ -22,6 +23,7 @@ sudo apt install rsync flex glslang-tools llvm-18-dev libclang-18-dev libclc-18-
 
 ```bash
 make radv      # RADV, the Vulkan driver
+make release   # the app (build/app/PPSA99360) and dist/PS5Cemu-v1.0.0.zip with its SHA256SUMS
 make release   # the app (build/app/PPSA99360) and dist/PS5Cemu-v0.2.0.zip with its SHA256SUMS
 make check     # the same build with a stand-in for RADV: checks everything else, not an app
 ```
@@ -52,6 +54,11 @@ else compiles, links and packages, but its output (`build/app-check`) is not an 
 |---|---|
 | `port/ps5/` | The console layer: the DualSense, VideoOut through Vulkan, logging, notifications, the sandbox escape and JIT memory |
 | `port/cemu/` | Cemu's platform classes for the PS5: the memory mapper, fibers, AudioOut, the DualSense controller, and a Microsoft-ABI bridge for the recompiler, since the PS5 target has no `ms_abi` |
+| `port/app/` | Cemu's start-up without wxWidgets, the game list, game icons, graphic packs, controller settings, installs, and what the port shows over a game: its menu, the GamePad's screen and the touchpad's cursor |
+| `port/frontend/` | The launcher: ProsperoEden's RmlUi layout, drawn in software and shown on VideoOut through SDL, as ProsperoEden does, over the Homebrew Launcher's bubbles (`bubbles.cpp`) |
+| `port/main_ps5.cpp` | The entry point: the sandbox escape, logs, Cemu's core, the launcher, the game |
+| `patches/cemu/` | The port's changes to Cemu's own files |
+| `tools/` | The dependencies, the builds, the PS5 link (`link.sh`), the packaging (`package.sh`), the artwork and the launcher's preview |
 | `port/app/` | Cemu's start-up without wxWidgets, the game list, game icons, graphic packs, and what the port shows over a game: its menu, the GamePad's screen and the touchpad's cursor |
 | `port/frontend/` | The launcher: ProsperoEden's RmlUi layout, drawn in software and shown on VideoOut through SDL, as ProsperoEden does |
 | `port/main_ps5.cpp` | The entry point: the sandbox escape, logs, Cemu's core, the launcher, the game |
@@ -72,9 +79,20 @@ and drawn again:
 
 | Script | What it draws |
 |---|---|
+| `tools/recolour-ui.py` | ProsperoEden's launcher artwork and stylesheet in dark blue: its panels and rows drawn again from their SVGs, its colours moved from green to blue. Run by `package.sh` |
+| `tools/render-background.py` | The Wii U Homebrew Launcher's background as a still picture, blue gradient and discs under a dark overlay, which the next three draw on. The launcher draws it moving (`port/frontend/bubbles.cpp`) |
 | `tools/render-background.py` | The launcher's backgrounds: the Wii U Homebrew Launcher's blue gradient and discs, under a dark overlay. Run by `package.sh` |
 | `tools/render-icons.py` | The home screen tile (`icon0.png`) and the launcher's icons: the GamePad on that background. Run by `package.sh` |
 | `tools/render-presentation.py` | The home screen background (`sce_sys/pic0.dds`, installed as `pic0.dds` and `pic1.dds`): a 3840x2160 BC7 DDS it encodes itself. Needs Pillow, numpy and a bold sans-serif font; its output is committed, so the build does not |
 | `tools/render-banner.py` | This repository's banner, `docs/banner.svg` |
 
+The first three need only Python's standard library.
+
+## The launcher on a PC
+
+`tools/preview-launcher.sh` builds the launcher's own code for the PC, on RmlUi built for the PC,
+with sample games, graphic packs and controllers in place of Cemu, and saves its screens as PNGs in
+`build/preview`. A script (`tools/launcher-preview/screens.txt` by default) presses the
+DualSense's buttons and says when to save a screen, so a change to the layout can be seen without a
+console. It needs `make deps` first, and zlib's headers (`zlib1g-dev`).
 The first two need only Python's standard library.

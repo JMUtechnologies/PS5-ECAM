@@ -4,6 +4,7 @@
 # which draws ProsperoEden's RmlUi layout in software through SDL, as ProsperoEden does. Cemu's own
 # platform classes (cemu/) are added to Cemu's targets by the patch.
 
+set(PS5CEMU_VERSION "1.0.0")
 set(PS5CEMU_VERSION "0.2.0")
 set(PS5CEMU_ROOT "${CMAKE_CURRENT_LIST_DIR}/..")
 set(PS5CEMU_DEPS "${PS5CEMU_ROOT}/.deps")
@@ -33,11 +34,15 @@ find_library(PSL_LIBRARY psl REQUIRED)
 add_library(CemuPS5 STATIC
 	app/emulator.cpp
 	app/emulator.h
+	app/controllers.cpp
 	app/covers.cpp
 	app/graphic_packs.cpp
 	app/ingame.cpp
 	app/ingame.h
+	app/install.cpp
 	app/paths.h
+	frontend/bubbles.cpp
+	frontend/bubbles.h
 	frontend/launcher.cpp
 	frontend/launcher.h
 	frontend/settings.cpp
@@ -67,6 +72,7 @@ add_library(CemuPS5 STATIC
 # launcher's and the console layer's files do not.
 cemu_use_precompiled_header(CemuPS5)
 set_source_files_properties(
+	frontend/bubbles.cpp
 	frontend/launcher.cpp
 	frontend/settings.cpp
 	frontend/ui_host.cpp
@@ -95,6 +101,7 @@ target_include_directories(CemuPS5 PRIVATE
 	"${RMLUI_INCLUDE_DIR}"
 )
 target_compile_definitions(CemuPS5 PRIVATE RMLUI_STATIC_LIB)
+# the version the launcher and the boot log show (sce_sys/param.json has it as 01.001.000)
 # the version the launcher and the boot log show (sce_sys/param.json has it as 01.000.200)
 target_compile_definitions(CemuPS5 PUBLIC PS5CEMU_VERSION="${PS5CEMU_VERSION}")
 

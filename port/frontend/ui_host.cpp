@@ -7,11 +7,14 @@
 // (headless/prosperoeden/frontend.cpp, GPL-3.0-or-later, by BlackBearReloaded) is adapted here.
 // The GPU stays Cemu's: RmlUi's Vulkan renderer on RADV presented frames, but nothing it drew
 // reached them. SDL closes VideoOut again before a game starts, so Cemu's renderer finds it free.
+// Under the page is the Wii U Homebrew Launcher's background with its bubbles rising (bubbles.h),
+// drawn each frame before RmlUi draws.
 
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 
 #include "ui_host.h"
+#include "bubbles.h"
 #include "../app/paths.h"
 #include "../ps5/log.h"
 
@@ -20,7 +23,11 @@
 #include <RmlUi/Core.h>
 #include <RmlUi/Core/RenderInterfaceCompatibility.h>
 
+#include <algorithm>
+#include <array>
+#include <cmath>
 #include <cstdio>
+#include <utility>
 #include <vector>
 
 extern "C" uint64_t sceKernelGetProcessTime();
@@ -163,7 +170,7 @@ namespace
 				return false;
 			}
 			// pictures are scaled smoothly; the rest is drawn at its own size
-			const bool art = source.find("/covers/") != Rml::String::npos || source.find("background-menu.tga") != Rml::String::npos;
+			const bool art = source.find("/covers/") != Rml::String::npos;
 			const bool glyphs = source.find("lvgl-bitmap") != Rml::String::npos;
 			Texture* texture = Create(data.data() + 18, width, height, SDL_PIXELFORMAT_BGRA32,
 				art ? SDL_ScaleModeLinear : SDL_ScaleModeNearest, glyphs);
@@ -332,12 +339,85 @@ namespace
 		bool m_scissorEnabled = false;
 	};
 
+	// The background: its gradient, and one picture of a bubble for each radius, drawn where each
+	// bubble is with its alpha.
+	class Background
+	{
+	public:
+		bool Create(SDL_Renderer* renderer)
+		{
+			const auto gradient = ps5ui::Bubbles::Gradient();
+			m_gradient = Texture(renderer, gradient.data(), ps5ui::Bubbles::kWidth, ps5ui::Bubbles::kHeight, SDL_BLENDMODE_NONE);
+			if (!m_gradient)
+				return false;
+			for (int radius = 1; radius <= ps5ui::Bubbles::kMaxRadius; radius++)
+			{
+				const int size = ps5ui::Bubbles::DiscSize(radius);
+				const auto coverage = ps5ui::Bubbles::Disc(radius);
+				std::vector<uint8_t> pixels((size_t)size * size * 4);
+				for (size_t i = 0; i < coverage.size(); i++)
+				{
+					std::copy(ps5ui::Bubbles::kColour, ps5ui::Bubbles::kColour + 3, &pixels[i * 4]);
+					pixels[i * 4 + 3] = coverage[i];
+				}
+				m_discs[radius] = Texture(renderer, pixels.data(), size, size, SDL_BLENDMODE_BLEND);
+				if (!m_discs[radius])
+					return false;
+			}
+			return true;
+		}
+
+		void Draw(SDL_Renderer* renderer, double now)
+		{
+			m_bubbles.Advance(m_last > 0.0 ? now - m_last : 0.0);
+			m_last = now;
+			SDL_RenderCopy(renderer, m_gradient, nullptr, nullptr);
+			for (const auto& bubble : m_bubbles.List())
+			{
+				SDL_Texture* disc = m_discs[bubble.radius];
+				const int size = ps5ui::Bubbles::DiscSize(bubble.radius);
+				const SDL_Rect where{(int)std::lround(bubble.x) - size / 2, (int)std::lround(bubble.y) - size / 2, size, size};
+				SDL_SetTextureAlphaMod(disc, (Uint8)std::lround(bubble.alpha * 255.0f));
+				SDL_RenderCopy(renderer, disc, nullptr, &where);
+			}
+		}
+
+		void Destroy()
+		{
+			if (m_gradient)
+				SDL_DestroyTexture(m_gradient);
+			for (SDL_Texture*& disc : m_discs)
+				if (disc)
+					SDL_DestroyTexture(std::exchange(disc, nullptr));
+			m_gradient = nullptr;
+		}
+
+	private:
+		static SDL_Texture* Texture(SDL_Renderer* renderer, const uint8_t* bgra, int width, int height, SDL_BlendMode blend)
+		{
+			SDL_Surface* staging = SDL_CreateRGBSurfaceWithFormatFrom(const_cast<uint8_t*>(bgra), width, height, 32, width * 4, SDL_PIXELFORMAT_BGRA32);
+			if (!staging)
+				return nullptr;
+			SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, staging);
+			SDL_FreeSurface(staging);
+			if (texture)
+				SDL_SetTextureBlendMode(texture, blend);
+			return texture;
+		}
+
+		ps5ui::Bubbles m_bubbles;
+		double m_last = 0.0;
+		SDL_Texture* m_gradient = nullptr;
+		std::array<SDL_Texture*, ps5ui::Bubbles::kMaxRadius + 1> m_discs{};
+	};
+
 	struct Host
 	{
 		SystemInterface system;
 		FileInterface files;
 		BitmapFontEngine fonts;
 		RenderInterface render;
+		Background background;
 		bool sdl = false;
 		SDL_Window* window = nullptr;
 		SDL_Surface* surface = nullptr;
@@ -385,6 +465,12 @@ namespace ps5ui
 			return false;
 		}
 		host.render.Attach(host.renderer, host.surface);
+		if (!host.background.Create(host.renderer))
+		{
+			error = fmt::format("the launcher's background could not be made: {}", SDL_GetError());
+			Stop();
+			return false;
+		}
 
 		Rml::SetFileInterface(&host.files);
 		Rml::SetRenderInterface(host.render.GetAdaptedInterface());
@@ -439,8 +525,7 @@ namespace ps5ui
 		step("layout");
 		host.context->Update();
 		step("draw");
-		SDL_SetRenderDrawColor(host.renderer, 0, 0, 0, 255);
-		SDL_RenderClear(host.renderer);
+		host.background.Draw(host.renderer, start / 1000000.0);
 		host.context->Render();
 		SDL_RenderFlush(host.renderer);
 		step("present");
@@ -470,6 +555,7 @@ namespace ps5ui
 		if (host.rml)
 			Rml::Shutdown();
 		Rml::SetSystemInterface(nullptr);
+		host.background.Destroy();
 		if (host.renderer)
 			SDL_DestroyRenderer(host.renderer);
 		if (host.window)

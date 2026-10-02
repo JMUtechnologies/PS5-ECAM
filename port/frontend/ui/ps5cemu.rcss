@@ -1,26 +1,105 @@
-/* PS5Cemu additions to ProsperoEden's app.rcss: the elements its launcher does not have. */
+/* PS5Cemu additions to ProsperoEden's app.rcss: the elements its launcher does not have, in the
+   dark blue its stylesheet and artwork are recoloured to (tools/recolour-ui.py). rgba()'s alpha is
+   0 to 255 in RmlUi, as its other parts are.
+     titles #f2f8ff, text #edf1f6, copy #cad1d9, labels #bbc2ca, accents #b8cfed and #82ace2,
+     dimmed #9ba1a9, dividers #404a58, warnings #e8b39a. */
 
-/* Library: the graphic packs row where ProsperoEden has the console mode. */
+/* The background, the Wii U Homebrew Launcher's with its bubbles rising, is drawn under the page
+   (frontend/bubbles.h): nothing here covers it. */
+body, #app-shell, .library-screen, .settings-screen { background-color: transparent; }
+
+/* Controller hints: in a row that flows with their text, so none can run into the next. */
+.hints { position: absolute; left: 108px; top: 955px; width: 1704px; height: 64px; padding-top: 18px; border-top: 1px #454d59; color: #cad1d9; font-size: 20px; line-height: 28px; white-space: nowrap; }
+#footer.hints { left: 120px; top: 952px; width: 1680px; height: 56px; padding-top: 14px; }
+.hint { display: inline-block; position: relative; height: 30px; padding-left: 38px; margin-right: 44px; }
+.hint-pair { padding-left: 70px; }
+.hint img { position: absolute; left: 0px; top: 1px; width: 26px; height: 26px; }
+.hint img.hint-second { left: 32px; }
+.hint-text { display: inline; }
+.dialog-hints { position: absolute; left: 42px; top: 616px; width: 736px; height: 40px; color: #b8cfed; font-size: 20px; line-height: 28px; text-align: center; white-space: nowrap; }
+.dialog-hints .hint { margin-right: 22px; margin-left: 22px; }
+
+/* Home: a notice takes the place of the recently played games, whose names have three lines. */
+#recent-section.covered { display: none; }
+.recent-title { top: 30px; height: 84px; font-size: 22px; line-height: 28px; }
+
+/* Library */
 #game-packs-setting { position: absolute; left: 42px; top: 550px; width: 736px; height: 94px; }
 #game-packs-setting img { position: absolute; left: 0px; top: 0px; }
-#game-packs-value { position: absolute; right: 26px; top: 0px; height: 94px; line-height: 94px; font-size: 24px; color: #dfe8a6; }
+#game-packs-value { position: absolute; right: 26px; top: 0px; height: 94px; line-height: 94px; font-size: 24px; color: #b8cfed; }
 .library-row-meta { width: 110px; left: 620px; }
+.rom-row-name { width: 576px; }
 
-/* Graphic packs */
+/* Rows with a setting's name and its value */
+.list-viewport { position: absolute; left: 30px; top: 62px; width: 760px; height: 606px; overflow: hidden; }
+.setting-name { width: 400px; }
+.setting-value { position: absolute; left: 400px; top: 20px; width: 330px; height: 38px; overflow: hidden; white-space: nowrap; color: #b8cfed; font-size: 22px; line-height: 38px; text-align: right; }
+.setting-value.unset { color: #9ba1a9; }
+.library-row.dimmed { opacity: 0.45; }
+.list-position { position: absolute; left: 590px; top: 678px; width: 200px; height: 30px; color: #b8cfed; font-size: 20px; line-height: 28px; text-align: right; }
+
+/* The right-hand panel's title and help */
+.detail-title { position: absolute; left: 36px; top: 62px; width: 748px; height: 96px; overflow: hidden; color: #f2f8ff; font-size: 32px; line-height: 42px; }
+.detail-help { position: absolute; left: 36px; top: 390px; width: 748px; height: 300px; overflow: hidden; color: #cad1d9; font-size: 22px; line-height: 34px; }
+.detail-help-high { top: 130px; height: 560px; }
+
+/* Graphic packs: the packs, in their folders as in Cemu's window, and each one's presets */
 #packs-list-viewport { position: absolute; left: 30px; top: 62px; width: 760px; height: 606px; overflow: hidden; }
-.pack-row-name { width: 560px; }
+.pack-row-name { width: 556px; }
 .pack-row-state { left: 590px; width: 140px; }
-.pack-row-state.on { color: #dfe8a6; }
-#packs-empty { display: none; position: absolute; left: 30px; top: 300px; width: 760px; height: 40px; color: #c5d0bd; font-size: 24px; line-height: 38px; text-align: center; }
+.pack-row-state.on { color: #b8cfed; }
+.library-row.pack-header > .base-chrome { display: none; }
+.library-row.chosen > .base-chrome { display: none; }
+.library-row.chosen > .focused-chrome { display: block; opacity: 0.5; }
+.pack-header .pack-row-name { top: 36px; color: #82ace2; font-size: 20px; line-height: 30px; letter-spacing: 3px; }
+#packs-empty { display: none; position: absolute; left: 30px; top: 300px; width: 760px; height: 40px; color: #cad1d9; font-size: 24px; line-height: 38px; text-align: center; }
 #packs-empty.visible { display: block; }
-#packs-position { position: absolute; left: 590px; top: 678px; width: 200px; height: 30px; color: #dfe8a6; font-size: 20px; line-height: 28px; text-align: right; }
-#pack-detail-title { position: absolute; left: 36px; top: 62px; width: 748px; height: 96px; overflow: hidden; color: #fffcef; font-size: 32px; line-height: 42px; }
-#pack-detail-description { position: absolute; left: 36px; top: 390px; width: 748px; height: 290px; overflow: hidden; color: #c5d0bd; font-size: 22px; line-height: 34px; }
+#packs-position { position: absolute; left: 590px; top: 678px; width: 200px; height: 30px; color: #b8cfed; font-size: 20px; line-height: 28px; text-align: right; }
+#pack-detail-title { position: absolute; left: 36px; top: 62px; width: 748px; height: 44px; overflow: hidden; white-space: nowrap; color: #f2f8ff; font-size: 32px; line-height: 42px; }
+#pack-detail-description { position: absolute; left: 36px; top: 116px; width: 748px; height: 120px; overflow: hidden; color: #cad1d9; font-size: 20px; line-height: 30px; }
+.pack-divider { top: 250px; }
+.presets-kicker { top: 266px; width: 748px; }
+#presets-viewport { position: absolute; left: 30px; top: 304px; width: 760px; height: 342px; overflow: hidden; }
+.preset-label { position: absolute; left: 26px; top: 0px; width: 250px; height: 78px; overflow: hidden; white-space: nowrap; color: #b8cfed; font-size: 20px; line-height: 78px; }
+.preset-value { position: absolute; left: 280px; top: 0px; width: 420px; height: 78px; overflow: hidden; white-space: nowrap; color: #edf1f6; font-size: 22px; line-height: 78px; text-align: right; }
+.preset-arrow { position: absolute; left: 714px; top: 35px; width: 0px; height: 0px; border-top: 10px #82ace2; border-left: 8px transparent; border-right: 8px transparent; }
+#presets-empty { display: none; position: absolute; left: 36px; top: 304px; width: 748px; height: 72px; color: #cad1d9; font-size: 20px; line-height: 30px; }
+#presets-empty.visible { display: block; }
+#presets-position { position: absolute; left: 590px; top: 664px; width: 200px; height: 30px; color: #b8cfed; font-size: 20px; line-height: 28px; text-align: right; }
 
-/* Settings > Video has three rows. */
+/* A dropdown's choices, over the right-hand panel */
+#picker { display: none; position: absolute; left: 0px; top: 0px; width: 1920px; height: 1080px; background-color: rgba(1, 3, 8, 115); }
+#picker.open { display: block; }
+.picker-panel { position: absolute; left: 980px; top: 188px; width: 820px; height: 720px; }
+#picker-title { height: 44px; white-space: nowrap; }
+#picker-viewport { position: absolute; left: 30px; top: 120px; width: 760px; height: 518px; overflow: hidden; }
+.picker-name { width: 560px; }
+.picker-mark { left: 590px; width: 140px; color: #b8cfed; }
+.picker-hints { position: absolute; left: 36px; top: 664px; width: 560px; height: 30px; color: #cad1d9; font-size: 20px; line-height: 28px; white-space: nowrap; }
+#picker-position { position: absolute; left: 590px; top: 664px; width: 200px; height: 30px; color: #b8cfed; font-size: 20px; line-height: 28px; text-align: right; }
+
+/* Settings: six of them */
+.settings-row-0 { top: 62px; } .settings-row-1 { top: 166px; } .settings-row-2 { top: 270px; }
+.settings-row-3 { top: 374px; } .settings-row-4 { top: 478px; } .settings-row-5 { top: 582px; }
+.settings-detail-0 { top: 250px; } .settings-detail-1 { top: 314px; } .settings-detail-2 { top: 378px; }
+.settings-detail-3 { top: 442px; } .settings-detail-4 { top: 506px; } .settings-detail-5 { top: 570px; }
+
+/* Settings > Video and Audio: the setting, and its value on the right */
 #video-dialog .dialog-row-0 { top: 170px; } #video-dialog .dialog-row-1 { top: 282px; } #video-dialog .dialog-row-2 { top: 394px; }
+.dialog-row .dialog-row-label { width: 380px; }
+.dialog-row .dialog-row-value { left: 300px; width: 400px; color: #b8cfed; text-align: right; }
+.diagnostics-details { height: 400px; overflow: hidden; font-size: 20px; line-height: 32px; }
+
+/* Settings > Game files and Install updates and DLC: what each folder holds */
+.files-row-name { width: 640px; }
+#files-dialog.install .files-row-name { width: 420px; }
+.files-row-meta { left: 520px; width: 210px; color: #b8cfed; }
+
+/* About: the thanks have four lines, and the PS5 edition goes below them */
+.about-vulkan { height: 120px; font-size: 20px; line-height: 30px; }
+.about-divider-port { top: 452px; } .about-port-head { top: 472px; } .about-credit-panel .about-port { top: 508px; }
 
 /* Starting a game */
 #loading-cover { position: absolute; left: 816px; top: 300px; width: 288px; height: 288px; }
-#loading-title { position: absolute; left: 160px; top: 620px; width: 1600px; height: 64px; color: #fffcef; font-size: 40px; line-height: 56px; text-align: center; }
-#loading-caption { position: absolute; left: 160px; top: 696px; width: 1600px; height: 40px; color: #c5d0bd; font-size: 24px; line-height: 36px; text-align: center; }
+#loading-title { position: absolute; left: 160px; top: 620px; width: 1600px; height: 64px; color: #f2f8ff; font-size: 40px; line-height: 56px; text-align: center; }
+#loading-caption { position: absolute; left: 160px; top: 696px; width: 1600px; height: 40px; color: #cad1d9; font-size: 24px; line-height: 36px; text-align: center; }

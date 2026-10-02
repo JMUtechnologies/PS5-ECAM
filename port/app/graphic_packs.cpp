@@ -50,20 +50,27 @@ namespace ps5emu
 			GetConfigHandle().Save();
 		}
 
-		// The preset categories with something to choose, in the pack's order.
-		std::vector<std::pair<std::string, std::vector<GraphicPack2::PresetPtr>>> Choices(const GraphicPack2& pack)
+		// The preset categories with a preset to show, in the pack's order, as
+		// GraphicPacksWindow2::LoadPresetSelections lists them.
+		std::vector<GraphicPackChoice> Choices(const GraphicPack2& pack)
 		{
 			std::vector<std::string> order;
 			auto categorized = pack.GetCategorizedPresets(order);
-			std::vector<std::pair<std::string, std::vector<GraphicPack2::PresetPtr>>> choices;
+			std::vector<GraphicPackChoice> choices;
 			for (const auto& category : order)
 			{
-				std::vector<GraphicPack2::PresetPtr> visible;
+				GraphicPackChoice choice;
+				choice.category = category;
 				for (const auto& preset : categorized[category])
-					if (pack.IsPresetVisible(preset))
-						visible.push_back(preset);
-				if (visible.size() > 1)
-					choices.emplace_back(category, std::move(visible));
+				{
+					if (!preset->visible)
+						continue;
+					if (preset->active)
+						choice.active = (int)choice.presets.size();
+					choice.presets.push_back(preset->name);
+				}
+				if (!choice.presets.empty())
+					choices.push_back(std::move(choice));
 			}
 			return choices;
 		}
@@ -75,23 +82,15 @@ namespace ps5emu
 		for (const auto& pack : PacksOf(titleId))
 		{
 			GraphicPackInfo info;
-			// "Game name/Graphics/Resolution": the last part names the pack, the middle its kind
+			// "Game name/Mods/FPS++": the last part names the pack, the middle its folder
 			std::vector<std::string> parts;
 			boost::split(parts, pack->GetVirtualPath(), boost::is_any_of("/"));
 			info.name = pack->HasName() ? pack->GetName() : parts.back();
 			if (parts.size() > 2)
-				info.category = boost::join(std::vector<std::string>(parts.begin() + 1, parts.end() - 1), " / ");
+				info.folder = boost::join(std::vector<std::string>(parts.begin() + 1, parts.end() - 1), " / ");
 			info.description = pack->GetDescription();
 			info.enabled = pack->IsEnabled();
-			const auto choices = Choices(*pack);
-			info.hasPresets = !choices.empty();
-			for (const auto& [category, presets] : choices)
-			{
-				if (!info.preset.empty())
-					info.preset += ", ";
-				const std::string active = pack->GetActivePreset(category);
-				info.preset += category.empty() ? active : category + ": " + active;
-			}
+			info.choices = Choices(*pack);
 			result.push_back(std::move(info));
 		}
 		return result;
@@ -117,24 +116,16 @@ namespace ps5emu
 		return pack->IsEnabled();
 	}
 
-	void CycleGraphicPackPreset(uint64_t titleId, size_t index, int delta)
+	void SetGraphicPackPreset(uint64_t titleId, size_t index, const std::string& category, const std::string& preset)
 	{
 		const auto packs = PacksOf(titleId);
 		if (index >= packs.size())
 			return;
 		const auto& pack = packs[index];
-		const auto choices = Choices(*pack);
-		if (choices.empty())
-			return;
-		const auto& [category, presets] = choices.front();
-		const std::string active = pack->GetActivePreset(category);
-		int position = 0;
-		for (size_t i = 0; i < presets.size(); i++)
-			if (presets[i]->name == active)
-				position = (int)i;
-		position = (position + delta + (int)presets.size()) % (int)presets.size();
-		pack->SetActivePreset(category, presets[position]->name);
+		// as GraphicPacksWindow2::OnActivePresetChanged: the other categories follow its conditions
+		pack->SetActivePreset(category, preset);
+		pack->SetEnabled(true);
 		SaveState();
-		ps5log::Line("[packs] {}: preset {}", pack->GetVirtualPath(), presets[position]->name);
+		ps5log::Line("[packs] {}: {} {}", pack->GetVirtualPath(), category.empty() ? "preset" : category, preset);
 	}
 }

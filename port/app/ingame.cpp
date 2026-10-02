@@ -13,6 +13,8 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
+#include <cstring>
+
 namespace
 {
 	std::atomic<bool> s_menuOpen{false};
@@ -71,6 +73,97 @@ namespace
 			g_tvAudio->SetVolume(GetConfig().tv_volume);
 	}
 
+	// The launcher's look (frontend/ui, in the dark blue tools/recolour-ui.py gives it): its panels,
+	// rows, colours and controller hints, drawn here with ImGui on its 1920x1080 layout scaled to the
+	// screen, so the menu over a game is laid out as the launcher's screens are.
+	constexpr ImU32 Colour(uint32_t rgb, uint8_t alpha = 255)
+	{
+		return IM_COL32(rgb >> 16, (rgb >> 8) & 255, rgb & 255, alpha);
+	}
+	constexpr ImU32 kTitle = Colour(0xf2f8ff), kText = Colour(0xedf1f6), kCopy = Colour(0xcad1d9), kAccent = Colour(0xb8cfed),
+		kKicker = Colour(0x82ace2), kLine = Colour(0x454d59);
+
+	struct Canvas
+	{
+		ImDrawList* draw;
+		float scale;
+		ImVec2 origin;
+
+		ImVec2 At(float x, float y) const { return {origin.x + x * scale, origin.y + y * scale}; }
+
+		void Panel(float x, float y, float width, float height) const
+		{
+			draw->AddRectFilled(At(x + 2, y + 2), At(x + width - 3, y + height - 3), Colour(0x070d18, 0xf5), 26 * scale);
+			draw->AddRect(At(x + 2, y + 2), At(x + width - 3, y + height - 3), Colour(0x34506f, 0xa8), 26 * scale, 0, scale);
+		}
+
+		// A row as the launcher's library rows: dark, or with the focus's deep blue gradient
+		void Row(float x, float y, float width, float height, bool focused) const
+		{
+			const ImVec2 a = At(x + 2, y + 2), b = At(x + width - 3, y + height - 3);
+			if (!focused)
+			{
+				draw->AddRectFilled(a, b, Colour(0x0d1828, 0xe8), 13 * scale);
+				draw->AddRect(a, b, Colour(0x2a4462, 0x77), 13 * scale, 0, scale);
+				return;
+			}
+			const int start = draw->VtxBuffer.Size;
+			draw->AddRectFilled(a, b, Colour(0x2a63a6, 0x78), 13 * scale);
+			ImGui::ShadeVertsLinearColorGradientKeepAlpha(draw, start, draw->VtxBuffer.Size, a, {b.x, a.y}, Colour(0x2a63a6), Colour(0x0d2140));
+			draw->AddRect(a, b, Colour(0x5c9ce6, 0xa0), 13 * scale, 0, 1.5f * scale);
+		}
+
+		void Text(ImFont* font, float size, float x, float y, ImU32 colour, const std::string& text, float wrap = 0.0f) const
+		{
+			draw->AddText(font, size * scale, At(x, y), colour, text.c_str(), nullptr, wrap * scale);
+		}
+
+		void TextRight(ImFont* font, float size, float right, float y, ImU32 colour, const std::string& text) const
+		{
+			const float width = font->CalcTextSizeA(size * scale, FLT_MAX, 0.0f, text.c_str()).x / scale;
+			Text(font, size, right - width, y, colour, text);
+		}
+
+		// A controller hint: its button's mark, as the launcher's mono icons have it, and what it
+		// does. Returns where the next one goes.
+		float Hint(ImFont* font, float x, float y, const char* button, const std::string& label) const
+		{
+			const ImU32 colour = kCopy;
+			const float thick = 2.2f * scale;
+			const ImVec2 centre = At(x + 13, y + 14);
+			const float r = 10 * scale;
+			if (std::strcmp(button, "cross") == 0)
+			{
+				draw->AddLine({centre.x - r, centre.y - r}, {centre.x + r, centre.y + r}, colour, thick);
+				draw->AddLine({centre.x - r, centre.y + r}, {centre.x + r, centre.y - r}, colour, thick);
+			}
+			else if (std::strcmp(button, "circle") == 0)
+				draw->AddCircle(centre, r, colour, 0, thick);
+			else if (std::strcmp(button, "leftright") == 0)
+			{
+				draw->AddLine({centre.x - r - 2 * scale, centre.y}, {centre.x + r + 2 * scale, centre.y}, colour, thick);
+				for (const float side : {-1.0f, 1.0f})
+				{
+					const ImVec2 tip{centre.x + side * (r + 2 * scale), centre.y};
+					draw->AddLine(tip, {tip.x - side * 6 * scale, centre.y - 6 * scale}, colour, thick);
+					draw->AddLine(tip, {tip.x - side * 6 * scale, centre.y + 6 * scale}, colour, thick);
+				}
+			}
+			else if (std::strcmp(button, "touchpad") == 0)
+				draw->AddRect({centre.x - r - 3 * scale, centre.y - r + 3 * scale}, {centre.x + r + 3 * scale, centre.y + r - 3 * scale},
+					colour, 3 * scale, 0, thick);
+			Text(font, 20, x + 38, y + 2, colour, label);
+			return x + 38 + font->CalcTextSizeA(20 * scale, FLT_MAX, 0.0f, label.c_str()).x / scale + 44;
+		}
+	};
+
+	void DrawMenu(float scale)
+	{
+		ImFont* titleFont = ImGui_GetFont(48.0f * scale);
+		ImFont* headFont = ImGui_GetFont(32.0f * scale);
+		ImFont* rowFont = ImGui_GetFont(24.0f * scale);
+		ImFont* smallFont = ImGui_GetFont(20.0f * scale);
+		if (!titleFont || !headFont || !rowFont || !smallFont)
 	void DrawMenu(float scale)
 	{
 		ImFont* titleFont = ImGui_GetFont(36.0f * scale);
@@ -80,6 +173,134 @@ namespace
 		ImGuiIO& io = ImGui::GetIO();
 		auto& config = GetConfig();
 
+		// the launcher's 1920x1080 layout, scaled to the screen and centred on it
+		const ImVec2 origin{(io.DisplaySize.x - 1920.0f * scale) * 0.5f, (io.DisplaySize.y - 1080.0f * scale) * 0.5f};
+		ImGui::SetNextWindowPos({0, 0}, ImGuiCond_Always);
+		ImGui::SetNextWindowSize(io.DisplaySize, ImGuiCond_Always);
+		ImGui::SetNextWindowFocus();
+		ImGui::PushStyleColor(ImGuiCol_NavHighlight, IM_COL32(0, 0, 0, 0)); // the rows show the focus
+		constexpr ImGuiWindowFlags kFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
+			ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollWithMouse;
+		if (ImGui::Begin("PS5Cemu##InGameMenu", nullptr, kFlags))
+		{
+			const bool appearing = ImGui::IsWindowAppearing();
+			if (appearing)
+			{
+				ImGui::GetCurrentContext()->NavDisableHighlight = false; // Back to the game shows as selected
+				s_confirmLibrary = false;
+				s_gameName = CafeSystem::GetForegroundTitleName();
+			}
+			const Canvas canvas{ImGui::GetWindowDrawList(), scale, origin};
+			canvas.draw->AddRectFilled({0, 0}, io.DisplaySize, Colour(0x02060e, 0xb8)); // the game, dimmed
+
+			canvas.Text(titleFont, 48, 108, 62, kTitle, "PS5Cemu");
+			canvas.Text(smallFont, 20, 110, 132, kCopy, s_gameName);
+			canvas.Panel(108, 188, 820, 720);
+			canvas.Text(smallFont, 20, 138, 208, kKicker, "IN THE GAME");
+			canvas.Panel(980, 188, 820, 720);
+
+			static const char* kFilters[] = {"Bilinear", "Bicubic", "Bicubic Hermite", "Nearest neighbour"};
+			const bool gamePadMain = LatteGPUState.isDRCPrimary;
+			const bool stretch = config.fullscreen_scaling == kStretch;
+			const bool overlay = config.overlay.position != ScreenPosition::kDisabled;
+			const int filter = std::clamp((int)config.upscale_filter, 0, 3);
+			struct Item
+			{
+				const char* id;
+				std::string label, value;
+				bool setting; // Left and Right change it
+				const char* help;
+			};
+			const Item items[] = {
+				{"resume", "Back to the game", "", false, "Closes this menu: the game carries on where it is."},
+				{"main", "Main screen", gamePadMain ? "GamePad" : "TV", true,
+					"Which picture fills the TV: the TV's or the GamePad's.\nIn the game, touchpad click + L1 swaps them."},
+				{"corner", fmt::format("{} in a corner", gamePadMain ? "TV" : "GamePad"), s_cornerScreen ? "On" : "Off", true,
+					"The other screen, small in the bottom right corner, so both can be seen.\nIn the game, touchpad click + R1."},
+				{"upscaling", "Upscaling to 4K", kFilters[filter], true,
+					"How the game's picture is scaled to the screen. Bicubic is sharp, Bicubic Hermite a little softer, Bilinear "
+					"softer still; Nearest neighbour keeps pixels square."},
+				{"scaling", "Picture", stretch ? "Stretched" : "Its own shape", true,
+					"Its own shape keeps the picture's proportions, with bars where they differ from the screen's; Stretched "
+					"fills the screen."},
+				{"overlay", "Performance overlay", overlay ? "On" : "Off", true,
+					"Frames per second, CPU and memory use in the top left corner, as Cemu shows them."},
+				{"volume", "Volume", fmt::format("{}%", config.tv_volume), true, "The game's sound. Left and Right change it by 10%."},
+				{"library", "Back to the library", s_confirmLibrary ? "Press Cross again" : "", false,
+					"Leaves the game for the library. What you have not saved in the game is lost."},
+			};
+
+			int focused = 0;
+			for (int i = 0; i < (int)std::size(items); i++)
+			{
+				const Item& item = items[i];
+				const float y = 250 + i * 80;
+				ImGui::SetCursorScreenPos(canvas.At(138, y));
+				const bool chosen = ImGui::InvisibleButton(item.id, {760 * scale, 72 * scale});
+				if (i == 0 && appearing)
+					ImGui::SetItemDefaultFocus();
+				const bool isFocused = ImGui::IsItemFocused();
+				if (isFocused)
+					focused = i;
+				int change = chosen ? 1 : 0; // Cross moves a setting on, Left and Right either way
+				if (isFocused && item.setting)
+				{
+					if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft) || ImGui::IsKeyPressed(ImGuiKey_GamepadLStickLeft))
+						change = -1;
+					else if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight) || ImGui::IsKeyPressed(ImGuiKey_GamepadLStickRight))
+						change = 1;
+				}
+				canvas.Row(138, y, 760, 72, isFocused);
+				canvas.Text(rowFont, 24, 164, y + 21, kText, item.label);
+				canvas.TextRight(rowFont, 22, 872, y + 23, kAccent, item.value);
+				if (change == 0)
+					continue;
+				switch (i)
+				{
+				case 0: CloseMenu(); break;
+				case 1: ps5ingame::SwapScreens(); break;
+				case 2: ps5ingame::ToggleCornerScreen(); break;
+				case 3: config.upscale_filter = (filter + (change < 0 ? 3 : 1)) % 4; break;
+				case 4: config.fullscreen_scaling = stretch ? kKeepAspectRatio : kStretch; break;
+				case 5:
+					config.overlay.position = overlay ? ScreenPosition::kDisabled : ScreenPosition::kTopLeft;
+					config.overlay.fps = config.overlay.cpu_usage = config.overlay.ram_usage = true;
+					break;
+				case 6:
+					// Cross goes up by 10, and from 100 back to 0
+					SetVolume(chosen && config.tv_volume >= 100 ? 0 : config.tv_volume + change * 10);
+					break;
+				case 7:
+					if (s_confirmLibrary)
+						s_libraryRequested = true;
+					s_confirmLibrary = true;
+					break;
+				}
+			}
+			if (focused != 7)
+				s_confirmLibrary = false;
+
+			// the right-hand panel: the game, and what the focused item does
+			canvas.Text(smallFont, 20, 1016, 208, kKicker, "THIS GAME");
+			canvas.Text(headFont, 32, 1016, 248, kTitle, s_gameName, 748);
+			canvas.Text(smallFont, 20, 1016, 378, kKicker, "TITLE ID");
+			canvas.TextRight(smallFont, 20, 1764, 378, kAccent, fmt::format("{:016X}", CafeSystem::GetForegroundTitleId()));
+			canvas.Text(smallFont, 20, 1016, 422, kKicker, "VERSION");
+			canvas.TextRight(smallFont, 20, 1764, 422, kAccent, fmt::format("v{}", CafeSystem::GetForegroundTitleVersion()));
+			canvas.draw->AddLine(canvas.At(1016, 478), canvas.At(1764, 478), kLine, scale);
+			canvas.Text(headFont, 32, 1016, 500, kTitle, items[focused].label);
+			canvas.Text(rowFont, 22, 1016, 552, kCopy, items[focused].help, 748);
+
+			// the controller hints, along the bottom
+			canvas.draw->AddLine(canvas.At(108, 955), canvas.At(1812, 955), kLine, scale);
+			float x = 108;
+			x = canvas.Hint(smallFont, x, 973, "cross", "Choose");
+			x = canvas.Hint(smallFont, x, 973, "leftright", "Change");
+			x = canvas.Hint(smallFont, x, 973, "circle", "Back to the game");
+			canvas.Hint(smallFont, x, 973, "touchpad", "Touchpad click + L1 / R1: the screens, in the game");
+		}
+		ImGui::End();
+		ImGui::PopStyleColor();
 		ImGui::GetBackgroundDrawList()->AddRectFilled({0, 0}, io.DisplaySize, IM_COL32(0, 0, 0, 140));
 		ImGui::SetNextWindowPos({io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f}, ImGuiCond_Always, {0.5f, 0.5f});
 		ImGui::SetNextWindowSize({760.0f * scale, 0.0f}, ImGuiCond_Always);

@@ -149,6 +149,14 @@ std::string PS5PadController::get_button_name(uint64 button) const
 	case kDpadRight: return "D-pad right";
 	case kTriggerXP: return "L2";
 	case kTriggerYP: return "R2";
+	case kAxisYN: return "Left stick up";
+	case kAxisYP: return "Left stick down";
+	case kAxisXN: return "Left stick left";
+	case kAxisXP: return "Left stick right";
+	case kRotationYN: return "Right stick up";
+	case kRotationYP: return "Right stick down";
+	case kRotationXN: return "Right stick left";
+	case kRotationXP: return "Right stick right";
 	default: return ControllerBase::get_button_name(button);
 	}
 }
