@@ -11,8 +11,10 @@
 #include "app/emulator.h"
 #include "app/paths.h"
 #include "azahar/azahar.h"
+#include "azahar/library.h"
 #include "frontend/launcher.h"
 #include "frontend/settings.h"
+#include "ps5/crash.h"
 #include "ps5/display.h"
 #include "ps5/kernel.h"
 #include "ps5/log.h"
@@ -64,6 +66,7 @@ int main(int argc, char* argv[])
 	if (privileges.filesystem)
 		ps5log::Open(ps5paths::kLogs);
 	ps5log::Line("[main] {}", privileges.summary);
+	ps5crash::Install(); // Cemu's own replaces it, in a session Cemu runs in
 	{
 		// how the console starts the CPU's floating point: desktop systems keep denormals (0x1f80);
 		// flush-to-zero (bit 15) or denormals-are-zero (bit 6) would make Cemu's and Azahar's float
@@ -85,16 +88,9 @@ int main(int argc, char* argv[])
 	status.diagnostics = Diagnostics(privileges);
 	std::string error;
 	if (!privileges.filesystem)
-		status.notice = "PS5CEMU-HAR cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5CEMU-HAR.";
-	else if (!ps5emu::InitializeCore(error))
-		status.notice = "Cemu did not start: " + error;
-	else
 	{
-		status.coreReady = true;
-		ps5emu::ApplyOptions(Options(settings));
-	}
-	if (!status.notice.empty())
-	{
+		status.notice = status.notice3ds =
+			"PS5CEMU-HAR cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5CEMU-HAR.";
 		ps5log::Line("[main] {}", status.notice);
 		ps5notify::Send(status.notice);
 	}
@@ -105,18 +101,58 @@ int main(int argc, char* argv[])
 		settings.launchError.clear();
 		ps5settings::Save(settings);
 	}
-	if (!privileges.jit)
-		ps5notify::Send("No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?");
+
+	// One emulator per session: neither starts until the start screen's choice (or the side the last
+	// game was on), and leaving that side starts the app over. Cemu's core (its guest memory, system
+	// threads, crash handler, graphic packs and game scan) runs only for the Wii U; Azahar (its game
+	// scan, and its core once a game starts) only for the 3DS.
+	std::optional<ps5launcher::System> started; // a game that did not start brings the launcher back: once each
+	auto prepare = [&](ps5launcher::System system) {
+		if (started)
+			return;
+		started = system;
+		if (system == ps5launcher::System::N3ds)
+		{
+			ps5log::Line("[main] this session is Azahar's (3DS): Cemu is not started");
+			status.diagnostics.push_back("This session: Azahar (3DS) only; Cemu is not loaded");
+			ps5azahar::StartScan(settings.n3ds.gamesFolder);
+			ps5emu::LogMemory(); // the 3DS side's start, against Cemu's
+			return;
+		}
+		ps5log::Line("[main] this session is Cemu's (Wii U): Azahar is not started");
+		status.diagnostics.push_back("This session: Cemu (Wii U) only; Azahar is not loaded");
+		if (!privileges.filesystem)
+			return;
+		std::string coreError;
+		if (!ps5emu::InitializeCore(coreError))
+		{
+			status.notice = "Cemu did not start: " + coreError;
+			ps5log::Line("[main] {}", status.notice);
+			ps5notify::Send(status.notice);
+			return;
+		}
+		status.coreReady = true;
+		ps5emu::ApplyOptions(Options(settings));
+		if (!privileges.jit)
+			ps5notify::Send("No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?");
+		ps5emu::LogMemory(); // Cemu's start, against the 3DS side's
+	};
 
 	for (;;)
 	{
 		ps5display::SetHighFrameRate(false); // the launcher at 59.94 Hz
-		const auto choice = ps5launcher::Run(settings, status);
+		const auto choice = ps5launcher::Run(settings, status, prepare);
 		if (!choice)
 		{
 			// nothing to show it on: wait for the player to close the app from the PS5's menu
 			for (;;)
 				sceKernelUsleep(1000000);
+		}
+		if (choice->startOver)
+		{
+			RememberSide(""); // the start screen
+			ps5emu::RestartToLibrary();
+			return 0;
 		}
 		const ps5emu::Game& game = choice->game;
 

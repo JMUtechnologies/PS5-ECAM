@@ -75,6 +75,7 @@ namespace ps5settings
 			ReadBool(json, "performance", n3ds.performance);
 			ReadInt(json, "cpuClock", n3ds.cpuClock, 25, 400);
 			ReadString(json, "articAddress", n3ds.articAddress);
+			ReadInt(json, "gameCount", n3ds.gameCount, -1, 1000000);
 			if (json.HasMember("buttons") && json["buttons"].IsObject())
 				for (const auto& member : json["buttons"].GetObject())
 					if (member.value.IsString())
@@ -105,6 +106,8 @@ namespace ps5settings
 			writer.Int(n3ds.cpuClock);
 			writer.Key("articAddress");
 			writer.String(n3ds.articAddress.c_str());
+			writer.Key("gameCount");
+			writer.Int(n3ds.gameCount);
 			writer.Key("buttons");
 			writer.StartObject();
 			for (const auto& [button, input] : n3ds.buttons)
@@ -136,6 +139,7 @@ namespace ps5settings
 		ReadBool(json, "rumble", settings.rumble);
 		ReadBool(json, "pinCpuThreads", settings.pinCpuThreads);
 		ReadInt(json, "volume", settings.volume, 0, 100);
+		ReadInt(json, "gameCount", settings.gameCount, -1, 1000000);
 		ReadString(json, "launchError", settings.launchError);
 		ReadString(json, "side", settings.side);
 		ReadGames(json, settings.lastGame, settings.recent);
@@ -163,6 +167,8 @@ namespace ps5settings
 		writer.Bool(settings.pinCpuThreads);
 		writer.Key("volume");
 		writer.Int(settings.volume);
+		writer.Key("gameCount");
+		writer.Int(settings.gameCount);
 		WriteGames(writer, settings.lastGame, settings.recent);
 		writer.Key("n3ds");
 		WriteN3ds(writer, settings.n3ds);

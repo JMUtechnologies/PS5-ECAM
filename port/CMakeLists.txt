@@ -77,6 +77,8 @@ add_library(CemuPS5 STATIC
 	frontend/ui_host.h
 	frontend/wave.cpp
 	frontend/wave.h
+	ps5/crash.cpp
+	ps5/crash.h
 	ps5/display.cpp
 	ps5/display.h
 	ps5/kernel.h

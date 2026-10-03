@@ -52,6 +52,8 @@ namespace ps5boxart
 		bool s_started = false;
 		std::atomic<uint32_t> s_arrivals{0};
 		std::atomic<bool> s_enabled{true};
+		std::atomic<bool> s_stopped{false}; // for good: a game is starting
+		std::atomic<bool> s_busy{false};	// a cover is being fetched
 
 		const char* Folder(System system)
 		{
@@ -337,12 +339,15 @@ namespace ps5boxart
 					item = std::move(s_queue.front());
 					s_queue.pop_front();
 				}
-				if (!s_enabled || !curl || !Path(item.first, item.second).empty())
+				if (!s_enabled || s_stopped || !curl || !Path(item.first, item.second).empty())
 					continue;
 				std::error_code ec;
 				if (fs::exists(Base(item.first, item.second) + ".none", ec))
 					continue;
-				if (!FetchOne(curl, item.first, item.second))
+				s_busy = true;
+				const bool fetched = FetchOne(curl, item.first, item.second);
+				s_busy = false;
+				if (!fetched)
 				{
 					// no network: the rest wait for the next start
 					ps5log::Line("[boxart] GameTDB did not answer: no covers fetched until PS5CEMU-HAR starts again");
@@ -364,7 +369,7 @@ namespace ps5boxart
 
 	void Fetch(System system, const std::vector<std::string>& ids)
 	{
-		if (!s_enabled)
+		if (!s_enabled || s_stopped)
 			return;
 		std::lock_guard lock(s_mutex);
 		size_t queued = 0;
@@ -392,6 +397,24 @@ namespace ps5boxart
 	void SetEnabled(bool enabled)
 	{
 		s_enabled = enabled;
+	}
+
+	void Stop()
+	{
+		s_stopped = true;
+		size_t dropped;
+		{
+			std::lock_guard lock(s_mutex);
+			dropped = s_queue.size();
+			s_queue.clear();
+		}
+		// a cover on its way is let finish (30 s at most, most take well under one), so no download
+		// or file write runs beside the game; past 5 s the game starts anyway
+		int waited = 0;
+		for (; s_busy && waited < 250; waited++)
+			std::this_thread::sleep_for(std::chrono::milliseconds(20));
+		ps5log::Line("[boxart] stopped for the game: {} covers left for the next start{}", dropped,
+			s_busy ? "; one download still running" : waited ? fmt::format("; waited {} ms for one", waited * 20) : std::string());
 	}
 
 	bool ImageSize(const std::string& path, int& width, int& height)

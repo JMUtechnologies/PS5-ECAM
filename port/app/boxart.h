@@ -31,6 +31,9 @@ namespace ps5boxart
 	uint32_t Arrivals();
 	// The launcher's setting: when off, nothing more is fetched.
 	void SetEnabled(bool enabled);
+	// Before a game starts: nothing more is fetched in this session (the app starts over after the
+	// game), and a cover being fetched is waited for, a few seconds at most.
+	void Stop();
 
 	// A TGA's size (its header), for laying it out.
 	bool ImageSize(const std::string& path, int& width, int& height);

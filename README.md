@@ -65,7 +65,9 @@ see new ones, register the app again in the loader you installed it with.
 | Left / Right, Cross | Choose PS5 CEMU or PS5 AZAHAR |
 | Circle (on a launcher's home screen) | Go back to the start screen |
 
-The app opens on whichever side you used last. Both launchers have:
+After a game, the app opens on the side you played on. Only the emulator you pick is started, so
+Cemu and Azahar never run at the same time: going back to the start screen restarts the app, and
+box art downloads and game scans stop before a game starts. Both launchers have:
 
 - **Continue Playing** and **Recently Played** on the home screen
 - **Library**: all your games with their icons, plus box art from

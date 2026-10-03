@@ -10,6 +10,7 @@
 #include "../app/emulator.h"
 #include "settings.h"
 
+#include <functional>
 #include <optional>
 #include <string>
 #include <vector>
@@ -34,10 +35,16 @@ namespace ps5launcher
 	{
 		System system;
 		ps5emu::Game game;
+		// The player left this emulator's side for the start screen: the app starts over, so that a
+		// session only ever holds one emulator (game is empty).
+		bool startOver = false;
 	};
 
 	// Shows the launcher until a game is chosen, saving the settings it changes (the emulator
-	// chosen among them, which the launcher opens on next time). Returns nothing when the launcher
-	// could not show (the reason is in the boot log and a notification).
-	std::optional<Choice> Run(ps5settings::Launcher& settings, const Status& status);
+	// chosen among them, which the launcher opens on next time). Neither emulator runs until a side
+	// is chosen (or given, after a game): then prepare starts that one, once, and may change status.
+	// Before a game is returned, the launcher's background work (box art downloads, the library's
+	// scan) has stopped. Returns nothing when the launcher could not show (the reason is in the
+	// boot log and a notification).
+	std::optional<Choice> Run(ps5settings::Launcher& settings, Status& status, const std::function<void(System)>& prepare);
 }

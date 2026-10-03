@@ -566,7 +566,11 @@ namespace ps5launcher
 				if (CoreReady())
 					m_games = SystemGames();
 				if (!m_scanning)
+				{
 					FetchBoxArt();
+					if (CoreReady())
+						RememberCount();
+				}
 				RefreshHome();
 				m_selected = m_continueReady ? kContinue : CoreReady() ? kLibraryButton : kSettingsButton;
 				UpdateHome();
@@ -597,6 +601,7 @@ namespace ps5launcher
 					m_scanning = false;
 					m_games = SystemGames();
 					ps5log::Line("[launcher] {} games", m_games.size());
+					RememberCount();
 					FetchBoxArt();
 					RefreshHome();
 					UpdateHome();
@@ -662,6 +667,17 @@ namespace ps5launcher
 			const char* Icon() const { return Is3ds() ? "icons/azahar.tga" : "icons/ps5cemu.tga"; }
 			std::string CoverOf(uint64_t titleId) const { return Is3ds() ? ps5azahar::CoverPath(titleId) : ps5emu::CoverPath(titleId); }
 			ps5boxart::System BoxSystem() const { return Is3ds() ? ps5boxart::System::N3ds : ps5boxart::System::WiiU; }
+
+			// How many games the start screen says this side has, next time: it looks for none itself,
+			// as neither emulator runs on it
+			void RememberCount()
+			{
+				int& count = Is3ds() ? m_settings.n3ds.gameCount : m_settings.gameCount;
+				if (count == (int)m_games.size())
+					return;
+				count = (int)m_games.size();
+				SaveSettings();
+			}
 
 			// GameTDB's covers for the games that have none yet (boxart.h)
 			void FetchBoxArt()
@@ -2463,16 +2479,21 @@ namespace ps5launcher
 			std::string m_installProgress;
 		};
 		// The start screen: Cemu on the left half, Azahar on the right; Left and Right choose, Cross starts.
+		// Neither emulator runs behind it: the game counts are those their libraries had last time.
 		class StartScreen
 		{
 		public:
-			StartScreen(Rml::ElementDocument* document, const Status& status, System selected)
+			StartScreen(Rml::ElementDocument* document, const Status& status, const ps5settings::Launcher& settings, System selected)
 				: m_document(document), m_status(status), m_selected(selected)
 			{
+				auto count = [](int games) { return games < 0 ? std::string("Open to look for games") : Plural(games, "game", "games"); };
+				SetText(m_document, "start-status-wiiu", !m_status.notice.empty() ? "Setup required" : count(settings.gameCount));
+				SetText(m_document, "start-status-3ds",
+					ps5azahar::Available() ? count(settings.n3ds.gameCount) : count(settings.n3ds.gameCount) + "  /  core not in this build");
 				Update();
 			}
 
-			// The clock, and how many games each has once their libraries are read.
+			// The clock.
 			void Poll()
 			{
 				const std::time_t minute = std::time(nullptr) / 60;
@@ -2485,15 +2506,13 @@ namespace ps5launcher
 						std::strftime(label, sizeof(label), "%H:%M", local);
 					SetText(m_document, "menu-clock", label);
 				}
-				std::string wiiu = !m_status.coreReady ? "Setup required" : ps5emu::Scanning() ? "Looking for games" :
-					Plural((int)ps5emu::ListGames().size(), "game", "games");
-				std::string n3ds = ps5azahar::Scanning() ? "Looking for games" : Plural((int)ps5azahar::ListGames().size(), "game", "games");
-				if (!ps5azahar::Available())
-					n3ds += "  /  core not in this build";
-				if (wiiu != m_wiiu)
-					SetText(m_document, "start-status-wiiu", m_wiiu = wiiu);
-				if (n3ds != m_n3ds)
-					SetText(m_document, "start-status-3ds", m_n3ds = n3ds);
+			}
+
+			// While the chosen emulator starts (Cemu takes a few seconds): on its half.
+			void ShowStarting(System system)
+			{
+				SetText(m_document, system == System::WiiU ? "start-status-wiiu" : "start-status-3ds",
+					system == System::WiiU ? "Starting Cemu" : "Starting Azahar");
 			}
 
 			// The emulator chosen, once Cross is pressed.
@@ -2523,11 +2542,10 @@ namespace ps5launcher
 			const Status& m_status;
 			System m_selected;
 			std::time_t m_shownMinute = 0;
-			std::string m_wiiu, m_n3ds;
 		};
 	}
 
-	std::optional<Choice> Run(ps5settings::Launcher& settings, const Status& status)
+	std::optional<Choice> Run(ps5settings::Launcher& settings, Status& status, const std::function<void(System)>& prepare)
 	{
 		std::string error;
 		if (!ps5ui::Start(error))
@@ -2536,11 +2554,11 @@ namespace ps5launcher
 			ps5notify::Send("The launcher cannot show: " + error);
 			return std::nullopt;
 		}
-		ps5azahar::StartScan(settings.n3ds.gamesFolder);
 		// After a game, the launcher opens on its emulator's side (and only then: next time, the
 		// start screen)
 		System system = settings.side == "3ds" ? System::N3ds : System::WiiU;
 		bool choosing = settings.side.empty();
+		std::optional<System> prepared;
 		if (!choosing)
 		{
 			settings.side.clear();
@@ -2563,7 +2581,7 @@ namespace ps5launcher
 				Rml::ElementDocument* document = ps5ui::Show("start.rml");
 				if (!document)
 					break;
-				StartScreen start(document, status, system);
+				StartScreen start(document, status, settings, system);
 				std::optional<System> chosen;
 				while (!chosen)
 				{
@@ -2575,6 +2593,16 @@ namespace ps5launcher
 				}
 				system = *chosen;
 				choosing = false;
+				// the chosen emulator starts now, its half saying so
+				start.ShowStarting(system);
+				frame();
+			}
+			// the one emulator this session holds, started once: the side left is never returned to
+			// in this process (Leaving, below)
+			if (!prepared)
+			{
+				prepare(system);
+				prepared = system;
 			}
 			const bool n3ds = system == System::N3ds;
 			ps5ui::SetScene(n3ds ? ps5ui::Scene::Wave : ps5ui::Scene::Bubbles);
@@ -2592,8 +2620,21 @@ namespace ps5launcher
 			}
 			if (launcher.Leaving())
 			{
-				choosing = true;
-				continue;
+				// back to the start screen in a fresh process, which starts neither emulator until one
+				// is chosen
+				ps5ui::Stop();
+				ps5log::Line("[launcher] leaving {}'s side: starting over at the start screen", n3ds ? "Azahar" : "Cemu");
+				return Choice{system, {}, true};
+			}
+			// the launcher's background work stops before the game: no more box art, and the
+			// library's scan finished (the loading screen shows meanwhile)
+			ps5boxart::Stop();
+			for (int waited = 0; n3ds ? ps5azahar::Scanning() : status.coreReady && ps5emu::Scanning(); waited++)
+			{
+				if (waited == 0)
+					ps5log::Line("[launcher] waiting for the library's scan to finish before the game");
+				frame();
+				sceKernelUsleep(16000);
 			}
 			// the loading screen stays on VideoOut while the launcher makes way for the emulator's renderer
 			ps5ui::Frame();

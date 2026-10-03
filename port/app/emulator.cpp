@@ -62,6 +62,7 @@ namespace ps5emu
 	namespace
 	{
 		bool s_firstStart = false;
+		bool s_coreStarted = false; // Cemu's settings are loaded: this session is Cemu's
 
 		// the app's heap in use, MiB (0 without the platform's statistics)
 		uint64_t HeapMiB()
@@ -336,6 +337,7 @@ namespace ps5emu
 		ActiveSettings::Init();
 		LatteOverlay_init();
 		CommonInit();
+		s_coreStarted = true;
 		if (!InitializeGlobalVulkan())
 		{
 			error = "the PS5 Vulkan driver did not start";
@@ -572,7 +574,10 @@ namespace ps5emu
 	void RestartToLibrary()
 	{
 		ps5log::Line("[emu] back to the library: starting PS5Cemu over");
-		GetConfigHandle().Save();
+		// Cemu's settings only where Cemu ran: a 3DS session never read them, and would write its
+		// defaults over them
+		if (s_coreStarted)
+			GetConfigHandle().Save();
 		std::error_code ec;
 		const std::string eboot = fs::exists(ps5paths::kMountedEboot, ec) ? ps5paths::kMountedEboot : ps5paths::Eboot();
 		const int result = sceSystemServiceLoadExec(eboot.c_str(), nullptr);

@@ -25,6 +25,7 @@ namespace ps5settings
 		bool performance = false;	  // the frame rate and speed over the game (its in-game menu)
 		int cpuClock = 100;			  // the emulated CPU's speed, percent of the 3DS's (Azahar's cpu_clock_percentage)
 		std::string articAddress;	  // the last Artic Base server's IPv4 address, a 3DS on the network
+		int gameCount = -1;			  // the library's games when last looked for (the start screen's); -1: never
 		std::map<std::string, std::string> buttons; // 3DS button: DualSense input, where not the default
 		uint64_t lastGame = 0;		  // title ID, or one made from the path
 		std::vector<uint64_t> recent; // newest first, at most four
@@ -39,6 +40,7 @@ namespace ps5settings
 		bool rumble = true;
 		bool pinCpuThreads = false;	  // an experiment (ps5/threads.h): only in ps5cemu.json
 		int volume = 100;			  // the TV sound, in percent
+		int gameCount = -1;			  // the Wii U library's games when last looked for (the start screen's); -1: never
 		uint64_t lastGame = 0;		  // title ID
 		std::vector<uint64_t> recent; // newest first, at most four
 		N3ds n3ds;
