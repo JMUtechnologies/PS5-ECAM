@@ -29,7 +29,7 @@ index 7afbf19..4775759 100644
  #include <string.h>
  #include <string>
  #include "config/CemuConfig.h"
-@@ -100,6 +104,56 @@ void handlerDumpingSignal(int sig, siginfo_t *info, void *context)
+@@ -100,6 +104,62 @@ void handlerDumpingSignal(int sig, siginfo_t *info, void *context)
  #endif
  
      CrashLog_WriteLine(fmt::format("Error: signal {}:", sig));
@@ -48,7 +48,13 @@ index 7afbf19..4775759 100644
 +			words += fmt::format(" {:x}", machine[i]);
 +		CrashLog_WriteLine(fmt::format("PS5: fault address {:#x}, handler at {:#x}", (uintptr_t)info->si_addr, self));
 +		CrashLog_WriteLine("PS5: machine context:" + words);
-+		const uintptr_t here = (uintptr_t)&words & ~(uintptr_t)7;
++		// from where the crashed code's stack stood (machine context word 29, RSP), not this
++		// handler's frame: the handler may run on a signal stack of its own (port/cemu/FiberPS5.cpp).
++		// A fault in RSP's own page is a stack overflow into its guard page: the scan starts above it.
++		uintptr_t here = machine[29] ? machine[29] : (uintptr_t)&words;
++		if ((here ^ (uintptr_t)info->si_addr) < 0x4000)
++			here = (here | 0x3fff) + 1;
++		here &= ~(uintptr_t)7;
 +		uintptr_t top = here + 16 * 1024;
 +		bool bounded = false;
 +		pthread_attr_t attributes;
