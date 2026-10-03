@@ -64,6 +64,15 @@ int main(int argc, char* argv[])
 	if (privileges.filesystem)
 		ps5log::Open(ps5paths::kLogs);
 	ps5log::Line("[main] {}", privileges.summary);
+	{
+		// how the console starts the CPU's floating point: desktop systems keep denormals (0x1f80);
+		// flush-to-zero (bit 15) or denormals-are-zero (bit 6) would make Cemu's and Azahar's float
+		// results differ from a desktop's
+		uint32_t mxcsr = 0;
+		asm volatile("stmxcsr %0" : "=m"(mxcsr));
+		ps5log::Line("[main] MXCSR {:#06x}: flush-to-zero {}, denormals-are-zero {}", mxcsr, mxcsr & 0x8000 ? "on" : "off",
+			mxcsr & 0x40 ? "on" : "off");
+	}
 	ps5threads::Initialize(); // before any thread starts: they inherit the main thread's CPUs
 
 	ps5settings::Launcher settings = ps5settings::Load();
@@ -76,7 +85,7 @@ int main(int argc, char* argv[])
 	status.diagnostics = Diagnostics(privileges);
 	std::string error;
 	if (!privileges.filesystem)
-		status.notice = "PS5CEMU-HAR cannot reach /data. Load etaHEN, add PPSA99360 to its app jailbreak list, then restart PS5CEMU-HAR.";
+		status.notice = "PS5CEMU-HAR cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5CEMU-HAR.";
 	else if (!ps5emu::InitializeCore(error))
 		status.notice = "Cemu did not start: " + error;
 	else
@@ -97,7 +106,7 @@ int main(int argc, char* argv[])
 		ps5settings::Save(settings);
 	}
 	if (!privileges.jit)
-		ps5notify::Send("No JIT memory: games run on the interpreter, much slower. Is PPSA99360 in etaHEN's jailbreak list?");
+		ps5notify::Send("No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?");
 
 	for (;;)
 	{

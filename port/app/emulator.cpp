@@ -22,6 +22,7 @@
 #include "audio/IAudioAPI.h"
 #include "audio/IAudioInputAPI.h"
 #include "Cafe/CafeSystem.h"
+#include "Cafe/GameProfile/GameProfile.h"
 #include "Cafe/GraphicPack/GraphicPack2.h"
 #include "Cafe/HW/Espresso/PPCState.h"
 #include "Cafe/HW/Latte/Core/Latte.h"
@@ -240,6 +241,19 @@ namespace ps5emu
 			}
 		}
 
+		const char* CpuModeName(CPUMode mode)
+		{
+			switch (mode)
+			{
+			case CPUMode::SinglecoreInterpreter: return "interpreter";
+			case CPUMode::SinglecoreRecompiler: return "single-core recompiler";
+			case CPUMode::DualcoreRecompiler:
+			case CPUMode::MulticoreRecompiler: return "multi-core recompiler";
+			case CPUMode::Auto: break;
+			}
+			return "recompiler";
+		}
+
 		// As CemuCommonInit.
 		void CommonInit()
 		{
@@ -451,8 +465,11 @@ namespace ps5emu
 			return false;
 		}
 		CafeSystem::LaunchForegroundTitle();
-		ps5log::Line("[emu] {} is running ({})", CafeSystem::GetForegroundTitleName(),
-			ActiveSettings::GetCPUMode() == CPUMode::SinglecoreInterpreter ? "interpreter" : "recompiler");
+		ps5log::Line("[emu] {} is running ({})", CafeSystem::GetForegroundTitleName(), CpuModeName(ActiveSettings::GetCPUMode()));
+		// Cemu's own profile for the game (gameProfiles/), which can set the CPU mode and more
+		ps5log::Line("[emu] game profile: {}; CPU mode {}", g_current_game_profile->IsLoaded() ?
+			(g_current_game_profile->IsDefaultProfile() ? "Cemu's bundled one" : "the user's own") : "none",
+			g_current_game_profile->GetCPUMode().has_value() ? "from the profile" : "from Cemu's settings");
 		// what the game's speed rests on: Cemu's timers count the monotonic clock's nanoseconds, and
 		// the PowerPC's time base is the TSC, measured against that clock at start
 		timespec resolution{};
