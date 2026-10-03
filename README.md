@@ -44,6 +44,13 @@ See [What's new in 2.0.0 B](#whats-new-in-200-b) for everything.
    and the JIT memory the emulators' recompilers need. Without it, the app runs its bundled
    `sandbox-elevator.elf` through elfldr instead, which only grants `/data` access, and Wii U games
    fall back to Cemu's interpreter, which is much slower.
+
+   **OnionHEN:** adding `PPSA99360` to the `[app_jailbreak]` section of OnionHEN's `config.ini`
+   isn't enough on its own: the app still gets no JIT memory
+   ([#12](https://github.com/premohq/PS5CEMU-HAR/issues/12)). One user got it working by also
+   saving a `whitelist.txt` with `PPSA99360` in it and sending PS5SX2's helper `.elf` to the
+   console. This hasn't been confirmed by the project yet; a proper fix that needs no HEN's JIT grant
+   is planned.
 4. Add your game dumps (see [Game files](#game-files)).
 5. Launch PS5CEMU-HAR from the home screen, pick an emulator and open the Library.
 
@@ -170,9 +177,11 @@ connection, the libraries just show the game icons.
 In the in-game menu, use the D-pad to move, Cross to select, Left/Right to change a setting and
 Circle to go back to the game. From there you can change the screens, picture, volume and controls,
 turn on a performance overlay, or go back to the library (press Cross twice; unsaved progress is
-lost). Your changes are saved for the next games you play. The Wii U menu also has Cemu's
-**Accurate barriers** setting (on by default; off can be faster but some games flicker), and the
-3DS menu has the **CPU clock**.
+lost). Your changes are saved for the next games you play. The Wii U menu also has a **Graphics**
+page with two of Cemu's settings: **Accurate barriers** (on by default; off can be faster but some
+games flicker) and **Async shader compile** (on by default; off waits for each new shader, which
+stutters but draws nothing wrong). The 3DS menu has the **CPU clock** and a **Speed limit** (100% by
+default; raise it or choose None to fast-forward, for the current game only).
 
 ## Where files are stored
 
@@ -210,9 +219,14 @@ Everything the app writes goes to `/data/ps5cemu`, except your game files:
 
 ## Reporting problems
 
+Please [open an issue with the bug report form](https://github.com/premohq/PS5CEMU-HAR/issues/new/choose):
+it asks for your firmware, HEN, app version and logs, which almost every problem needs. Check the
+[compatibility list](docs/COMPATIBILITY.md) first to see whether the game is already known.
+
 **Settings > Diagnostics** shows the app version and where the logs are. When you report a problem,
 please attach `/data/ps5cemu/logs/boot.log`, plus `log.txt` (Wii U) or `azahar/log/azahar_log.txt`
-(3DS). During a game, the boot log also gets a `[memory]` line once a minute, which shows whether
+(3DS), copied off the console right after the problem, before the app is started again (the app
+keeps only the previous session's boot log, as `boot.prev.log`). During a game, the boot log also gets a `[memory]` line once a minute, which shows whether
 memory use keeps growing, and a `[perf]` (Wii U) or `[perf3ds]` (3DS) line every 10 seconds with the
 frame rate. If Cemu crashes, its crash report is in the boot log too, as `[crash]` lines.
 

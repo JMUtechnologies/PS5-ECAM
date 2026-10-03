@@ -1,0 +1,101 @@
+name: Bug report
+description: A game or the app crashes, freezes, looks wrong or won't start
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Almost every problem needs the logs, so please attach them: copy them
+        off the console (FTP or a file manager) **right after the problem**, before starting the app
+        again. Check the [compatibility list](https://github.com/premohq/PS5CEMU-HAR/blob/PS5-Cemu/docs/COMPATIBILITY.md)
+        first to see whether the game is already known.
+
+  - type: dropdown
+    id: emulator
+    attributes:
+      label: Emulator
+      options:
+        - Wii U (PS5 CEMU)
+        - 3DS (PS5 AZAHAR)
+        - The launcher or start screen
+    validations:
+      required: true
+
+  - type: input
+    id: game
+    attributes:
+      label: Game
+      description: Its name, region (USA, EUR, JPN) and version, as the library's details show them. Leave empty if it isn't about a game.
+      placeholder: "The Legend of Zelda: Breath of the Wild, USA, v208"
+
+  - type: input
+    id: app-version
+    attributes:
+      label: PS5CEMU-HAR version
+      description: Shown on the launcher's top line and in Settings > Diagnostics.
+      placeholder: "2.0.0b"
+    validations:
+      required: true
+
+  - type: input
+    id: firmware
+    attributes:
+      label: PS5 firmware
+      placeholder: "10.01"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: hen
+    attributes:
+      label: HEN
+      description: What you loaded before starting the app.
+      options:
+        - etaHEN, with PPSA99360 in its app jailbreak list
+        - etaHEN, without the app jailbreak
+        - OnionHEN
+        - Something else (say which below)
+    validations:
+      required: true
+
+  - type: input
+    id: jit
+    attributes:
+      label: Recompiler and JIT
+      description: The second line of Settings > Diagnostics (it says whether the app got /data access and JIT memory).
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead. For a crash or freeze, say exactly where in the game it happens.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to make it happen
+      description: Steps that bring the problem back, and whether it happens every time.
+      placeholder: |
+        1. Start a new game
+        2. Use Magnesis on a metal box
+        3. The game freezes and closes
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        Drag the files in here:
+        - `/data/ps5cemu/logs/boot.log` (or `boot.prev.log` if the app has been started again since)
+        - Wii U: `/data/ps5cemu/log.txt`
+        - 3DS: `/data/ps5cemu/azahar/log/azahar_log.txt`
+    validations:
+      required: true
+
+  - type: textarea
+    id: settings
+    attributes:
+      label: Anything you changed
+      description: Graphic packs, in-game menu settings (Accurate barriers, CPU clock, internal resolution, texture filter), a shader cache copied from a PC, and so on.
