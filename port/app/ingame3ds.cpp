@@ -80,6 +80,19 @@ namespace ps5ingame3ds
 			return kClocks[(at + change + count) % count];
 		}
 
+		// the speed limit's steps, percent of the 3DS's; 0 is none
+		constexpr int kSpeedLimits[] = {100, 150, 200, 300, 0};
+
+		int NextSpeedLimit(int limit, int change)
+		{
+			constexpr int count = (int)std::size(kSpeedLimits);
+			int at = 0; // 100%
+			for (int i = 0; i < count; i++)
+				if (kSpeedLimits[i] == limit)
+					at = i;
+			return kSpeedLimits[(at + change + count) % count];
+		}
+
 		void Change(const Settings& settings)
 		{
 			std::lock_guard lock(s_mutex);
@@ -248,6 +261,10 @@ namespace ps5ingame3ds
 							"frame, which can bring a slow game up to full speed, but a game that needs the time may slow down or "
 							"misbehave. Above 100% smooths games that dropped frames on the 3DS itself, and asks more of the PS5.\n"
 							"It changes at once; 100% is how the 3DS is."},
+						{"speed", "Speed limit", settings.speedLimit ? fmt::format("{}%", settings.speedLimit) : "None", true,
+							"How fast the game may run, against the 3DS's 100%: above it to hurry through slow scenes, or None for as "
+							"fast as the PS5 can. The sound is stretched while it runs faster.\nFor this game only: the next one "
+							"starts at 100%."},
 						{"performance", "Performance overlay", settings.performance ? "On" : "Off", true,
 							"The frame rate and the emulation's speed, in the top left corner."},
 						{"volume", "Volume", fmt::format("{}%", settings.volume), true, "The game's sound. Left and Right change it by 10%."},
@@ -269,9 +286,9 @@ namespace ps5ingame3ds
 					};
 
 				int focused = 0;
-				// nine rows fill the panel at their full height; more are drawn closer
-				const bool tight = items.size() > 9;
-				const float spacing = tight ? 65 : 72, height = tight ? 59 : 64, lift = (64 - height) / 2;
+				// nine rows fill the panel at their full height; more are drawn closer, eleven closer still
+				const bool tight = items.size() > 9, tighter = items.size() > 10;
+				const float spacing = tighter ? 59 : tight ? 65 : 72, height = tighter ? 54 : tight ? 59 : 64, lift = (64 - height) / 2;
 				for (int i = 0; i < (int)items.size(); i++)
 				{
 					const Item& item = items[i];
@@ -318,6 +335,8 @@ namespace ps5ingame3ds
 						next.textureFilter = (settings.textureFilter + change + 6) % 6;
 					else if (id == "cpu")
 						next.cpuClock = NextClock(settings.cpuClock, change);
+					else if (id == "speed")
+						next.speedLimit = NextSpeedLimit(settings.speedLimit, change);
 					else if (id == "performance")
 						next.performance = !settings.performance;
 					else if (id == "volume")

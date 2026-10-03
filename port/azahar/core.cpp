@@ -193,6 +193,7 @@ namespace ps5azahar
 			menu.volume = settings.volume;
 			menu.performance = settings.performance;
 			menu.cpuClock = settings.cpuClock;
+			menu.speedLimit = (int)Settings::values.frame_limit.GetValue();
 			menu.motion = settings.motion;
 			menu.deadzone = settings.deadzone;
 			menu.aOnCircle = MappedInput(settings, Button::A) == ps5emu::PadInput::Circle;
@@ -266,6 +267,13 @@ namespace ps5azahar
 				if (system.IsPoweredOn())
 					system.CoreTiming().UpdateClockSpeed(values.cpu_clock_percentage.GetValue());
 				ps5log::Line("[azahar] CPU clock {}%", values.cpu_clock_percentage.GetValue());
+			}
+			if (menu.speedLimit != (int)values.frame_limit.GetValue())
+			{
+				// read at every frame (the frame limiter); for this game only, as ApplySettings starts
+				// each one at 100%
+				values.frame_limit = std::clamp(menu.speedLimit, 0, 1000);
+				ps5log::Line("[azahar] speed limit {}", menu.speedLimit ? fmt::format("{}%", menu.speedLimit) : "none");
 			}
 
 			ps5settings::Launcher all = ps5settings::Load();

@@ -26,6 +26,7 @@ namespace ps5ingame3ds
 		int volume = 100;		  // percent
 		bool performance = false; // the frame rate and speed in a corner
 		int cpuClock = 100;		  // the emulated CPU's speed, percent of the 3DS's
+		int speedLimit = 100;	  // the emulation's top speed, percent of the 3DS's; 0: none (for this game only)
 		bool motion = true;
 		int deadzone = 15;		  // percent
 		bool aOnCircle = true;	  // A on Circle and B on Cross, where the 3DS has them
