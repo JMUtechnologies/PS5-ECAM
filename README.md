@@ -29,7 +29,10 @@ Nintendo or Sony. All credit for the emulators goes to their developers.
 
 ## Install
 
-1. Download the latest release ZIP and extract it, or [build it yourself](docs/BUILDING.md).
+1. Download the latest release ZIP,
+   [PS5CEMU-HAR-v2.0.0.zip](https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v2.0.0.zip)
+   (see the [release page](https://github.com/premohq/PS5CEMU-HAR/releases/latest)), and extract it, or
+   [build it yourself](docs/BUILDING.md).
 2. Copy the `PPSA99360` folder to `/data/homebrew/PPSA99360` on your PS5.
 3. Load etaHEN and add `PPSA99360` to its app jailbreak list. This gives the app access to `/data`
    and the JIT memory the emulators' recompilers need. Without it, the app runs its bundled
