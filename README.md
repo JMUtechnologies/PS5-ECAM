@@ -134,8 +134,8 @@ Put games in `/data/ps5cemu/azahar/games`, or pick another folder on the 3DS sid
 - `.3ds`, `.cci`, `.cxi` and `.app` dumps, `.3dsx` and `.elf` homebrew, and Azahar's compressed
   formats (`.z3ds`, `.zcci`, `.zcxi`, `.z3dsx`) can be played directly.
 - `.cia` files have to be installed first from **Settings > Install CIA files**, then the game shows
-  up in the library. Update and DLC CIAs are installed the same way. Azahar only installs decrypted
-  CIA files.
+  up in the library. Update and DLC CIAs are installed the same way. Azahar only installs fully
+  decrypted CIA files, the game inside included; `aes_keys.txt` doesn't change that.
 - Encrypted dumps need `aes_keys.txt` from your own console in `/data/ps5cemu/azahar/sysdata`.
   Decrypted dumps don't need any keys.
 

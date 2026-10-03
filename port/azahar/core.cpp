@@ -498,26 +498,34 @@ namespace ps5azahar
 		s_installing = true;
 		std::thread([cia] {
 			ps5log::Line("[azahar] installing {}", cia);
-			const auto result = Service::AM::InstallCIA(cia, [](std::size_t written, std::size_t total) {
-				std::lock_guard lock(s_installMutex);
-				s_install.copied = written;
-				s_install.total = total;
-			});
-			std::lock_guard lock(s_installMutex);
 			using Result = Service::AM::InstallStatus;
+			// Checked first, as Azahar's own frontends do: InstallCIA looks only at the CIA's own
+			// encryption, so a CIA whose game is still encrypted inside starts, is refused part-way
+			// and comes back as ErrorAborted
+			bool compressed = false;
+			auto result = Service::AM::CheckCIAToInstall(cia, compressed, true);
+			if (result == Result::Success)
+				result = Service::AM::InstallCIA(cia, [](std::size_t written, std::size_t total) {
+					std::lock_guard lock(s_installMutex);
+					s_install.copied = written;
+					s_install.total = total;
+				});
+			std::lock_guard lock(s_installMutex);
 			switch (result)
 			{
 			case Result::Success: s_install.state = ps5emu::InstallStatus::State::Done; break;
 			case Result::ErrorEncrypted:
-				// Azahar installs decrypted CIA files only; a decrypted one whose game is still
-				// encrypted inside installs, then needs the keys to start
-				s_install.message = "it is encrypted: Azahar installs decrypted CIA files only (decrypt it on your 3DS, "
-					"e.g. with GodMode9). If it is decrypted, its game needs the 3DS's aes_keys.txt in /data/ps5cemu/azahar/sysdata";
+				// Azahar installs only CIAs decrypted all the way through, the CIA and the game in
+				// it; the 3DS's keys do not change that
+				s_install.message = "it is encrypted, the CIA or the game inside it. Azahar installs only fully decrypted CIA files: "
+					"decrypt it with GodMode9 on a 3DS, or play the game's decrypted .3ds or .cci file instead";
 				break;
 			case Result::ErrorInvalid: s_install.message = "it is not a CIA file, or it is damaged (check the file's size)"; break;
 			case Result::ErrorFileNotFound:
 			case Result::ErrorFailedToOpenFile: s_install.message = "the file could not be read"; break;
-			case Result::ErrorAborted: s_install.message = "it was stopped"; break;
+			case Result::ErrorAborted:
+				s_install.message = "Azahar stopped part-way through; /data/ps5cemu/azahar/log/azahar_log.txt says why";
+				break;
 			default: s_install.message = "it is not a CIA Azahar can install"; break;
 			}
 			if (result != Result::Success)
