@@ -12,11 +12,11 @@ thread's stack that point into the eboot's code, from the handler's frame
 up to the top of that stack. With them a crash can be looked up in the
 ELF.
 ---
- .../ExceptionHandler_posix.cpp                | 54 +++++++++++++++++++
- 1 file changed, 54 insertions(+)
+ .../ExceptionHandler_posix.cpp                | 60 +++++++++++++++++++
+ 1 file changed, 60 insertions(+)
 
 diff --git a/src/Common/ExceptionHandler/ExceptionHandler_posix.cpp b/src/Common/ExceptionHandler/ExceptionHandler_posix.cpp
-index 7afbf19..4775759 100644
+index 7afbf19..dc11bf4 100644
 --- a/src/Common/ExceptionHandler/ExceptionHandler_posix.cpp
 +++ b/src/Common/ExceptionHandler/ExceptionHandler_posix.cpp
 @@ -1,5 +1,9 @@

@@ -61,6 +61,12 @@ namespace ps5log
 	}
 }
 
+// A line from Cemu's code into the boot log (patches/cemu), written at once like the port's own.
+void PS5Cemu_LogLine(std::string_view line)
+{
+	ps5log::Write(line);
+}
+
 // Cemu's crash report (patches/cemu, ExceptionHandler), line by line from its signal handler: with
 // write(2) on the file's descriptor, no lock taken (the crashed thread may hold the log's) and no
 // buffer, so each line is on disk before the next. Every line is "[crash] ...".

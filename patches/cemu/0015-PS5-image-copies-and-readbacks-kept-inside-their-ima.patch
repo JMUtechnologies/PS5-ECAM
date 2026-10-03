@@ -1,0 +1,110 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Sat, 3 Oct 2026 21:10:28 +0000
+Subject: [PATCH] PS5: image copies and readbacks kept inside their images and
+ buffers
+
+Cemu scales an image copy by the source's graphic-pack resolution, and with
+some texture rules the region reaches past one image or the other: Breath
+of the Wild copies 2560x1440 between two 1280x720 images at 1440p, and
+1708x960 into an 854x480 one, around the runes' highlight. A PC's GPU
+drops what lies outside; the PS5's faults on it and hangs, and the game
+freezes, then closes. The copy is now clamped to the part both images'
+mips and layers hold (skipped when that is nothing), and a readback to the
+rows its buffer holds. Each kind clamped is said once in the boot log.
+Copies between a compressed and an uncompressed image are left as they are.
+---
+ .../Renderer/Vulkan/TextureReadbackVk.cpp     | 21 ++++++++-
+ .../Latte/Renderer/Vulkan/VulkanRenderer.cpp  | 46 +++++++++++++++++++
+ 2 files changed, 66 insertions(+), 1 deletion(-)
+
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/TextureReadbackVk.cpp b/src/Cafe/HW/Latte/Renderer/Vulkan/TextureReadbackVk.cpp
+index 94104f1..95cfb7a 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/TextureReadbackVk.cpp
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/TextureReadbackVk.cpp
+@@ -125,8 +125,27 @@ void LatteTextureReadbackInfoVk::StartTransfer()
+ 				overrun ? " WOULD OVERRUN" : "", (int)vkFormat, aspect, m_firstMip, region.bufferRowLength, region.bufferImageHeight, texel,
+ 				bothAspects ? "depth and stencil in one copy" : "known", writes, m_image_size, (uint32)m_textureView->format), overrun);
+ 	}
+-#endif
++	// kept inside its buffer: the rows that would run past it are left out, where the PS5's GPU
++	// would fault on them (the layout barriers keep the whole region)
++	VkBufferImageCopy copy = region;
++	{
++		const uint64 rowBytes = (uint64)region.bufferRowLength * PS5_TexelBytes(baseTexture->GetFormat(), region.imageSubresource.aspectMask);
++		if (rowBytes && rowBytes * region.bufferImageHeight > m_image_size)
++		{
++			const uint32 rows = (uint32)std::min<uint64>(m_image_size / rowBytes, region.imageExtent.height);
++			copy.imageExtent.height = rows;
++			copy.bufferImageHeight = rows;
++			PS5_NoteCopy(fmt::format("rb clamp {} {}x{} {}", (int)baseTexture->GetFormat(), region.bufferRowLength, region.bufferImageHeight, m_image_size),
++				fmt::format("[copy] readback clamped: VkFormat {} {}x{}, {} rows copied into a buffer of {} bytes{}", (int)baseTexture->GetFormat(),
++					region.bufferRowLength, region.bufferImageHeight, rows, m_image_size, rows ? "" : " (nothing: skipped)"),
++				false);
++		}
++	}
++	if (copy.imageExtent.height > 0)
++		vkCmdCopyImageToBuffer(renderer->getCurrentCommandBuffer(), baseTexture->GetImageObj()->m_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_buffer, 1, &copy);
++#else
+ 	vkCmdCopyImageToBuffer(renderer->getCurrentCommandBuffer(), baseTexture->GetImageObj()->m_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_buffer, 1, &region);
++#endif
+ 
+ 	renderer->barrier_sequentializeTransfer();
+ 
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+index 5546d5b..4aa1fca 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+@@ -3678,6 +3678,52 @@ void VulkanRenderer::texture_copyImageSubData(LatteTexture* src, sint32 srcMip,
+ 	srcVkObj->flagForCurrentCommandBuffer();
+ 	dstVkObj->flagForCurrentCommandBuffer();
+ 
++#if defined(CEMU_PS5)
++	// The region kept inside both images' mips and layers. Cemu scales a copy by the source's
++	// graphic-pack resolution, and with some texture rules the result reaches past one image or
++	// the other (Breath of the Wild copies 2560x1440 between two 1280x720 images, 2x at 1440p). A
++	// PC's GPU drops or wraps what lies outside; the PS5's faults on it and hangs. Only the part
++	// both images hold is copied, which is all a PC shows too. Copies between a compressed and an
++	// uncompressed image count in different texels and are left as they are.
++	if (Latte::IsCompressedFormat(src->format) == Latte::IsCompressedFormat(dst->format))
++	{
++		auto room = [](LatteTexture* t, sint32 mip, sint32 x, sint32 y, sint32& w, sint32& h) {
++			sint32 mw = 0, mh = 0;
++			if (mip >= 0 && mip < t->mipLevels)
++				t->GetEffectiveSize(mw, mh, mip);
++			if (Latte::IsCompressedFormat(t->format))
++			{
++				mw = (mw + 3) & ~3;
++				mh = (mh + 3) & ~3;
++			}
++			w = mw - x;
++			h = mh - y;
++		};
++		sint32 srcRoomW, srcRoomH, dstRoomW, dstRoomH;
++		room(src, srcMip, effectiveSrcX, effectiveSrcY, srcRoomW, srcRoomH);
++		room(dst, dstMip, effectiveDstX, effectiveDstY, dstRoomW, dstRoomH);
++		const sint32 srcLayers = src->Is3DTexture() ? std::max(src->depth >> srcMip, 1) - srcSlice : (sint32)src->depth - srcSlice;
++		const sint32 dstLayers = dst->Is3DTexture() ? std::max(dst->depth >> dstMip, 1) - dstSlice : (sint32)dst->depth - dstSlice;
++		const sint32 width = std::min({effectiveCopyWidth, srcRoomW, dstRoomW});
++		const sint32 height = std::min({effectiveCopyHeight, srcRoomH, dstRoomH});
++		const sint32 layers = std::min({srcDepth, srcLayers, dstLayers});
++		if (width != effectiveCopyWidth || height != effectiveCopyHeight || layers != srcDepth)
++		{
++			PS5_NoteCopy(fmt::format("clamp {} {} {} {} {}x{}x{}", (int)srcVk->GetFormat(), (int)dstVk->GetFormat(), srcMip, dstMip,
++							 effectiveCopyWidth, effectiveCopyHeight, srcDepth),
++				fmt::format("[copy] image clamped: VkFormat {} mip {} -> VkFormat {} mip {}, {}x{} x{} layers asked, {}x{} x{} copied{}",
++					(int)srcVk->GetFormat(), srcMip, (int)dstVk->GetFormat(), dstMip, effectiveCopyWidth, effectiveCopyHeight, srcDepth,
++					std::max(width, 0), std::max(height, 0), std::max(layers, 0), width <= 0 || height <= 0 || layers <= 0 ? " (nothing: skipped)" : ""),
++				false);
++			if (width <= 0 || height <= 0 || layers <= 0)
++				return;
++			effectiveCopyWidth = width;
++			effectiveCopyHeight = height;
++			srcDepth = layers;
++		}
++	}
++#endif
++
+ 	VkImageCopy region{};
+ 	region.srcOffset.x = effectiveSrcX;
+ 	region.srcOffset.y = effectiveSrcY;

@@ -1,0 +1,162 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Sat, 3 Oct 2026 18:18:49 +0000
+Subject: [PATCH] PS5: readbacks and image copies checked against their
+ buffers, in the boot log
+
+A copy that runs past its buffer or image is lost in a PC's video memory
+but is a page fault on the PS5, whose GPU stops on one (Breath of the
+Wild's runes report an asynchronous GPU fault). Each texture readback and
+image copy is now checked against what it writes: a readback against its
+buffer from the Vulkan format's texel size (Cemu sizes it from the Wii U
+format's) and against copying depth and stencil in one region, an image
+copy against both images' mips and layers. Each kind is logged once to the
+port's boot log, and at once when it would overrun. Nothing is changed or
+skipped.
+---
+ .../Renderer/Vulkan/TextureReadbackVk.cpp     | 72 +++++++++++++++++++
+ .../Latte/Renderer/Vulkan/VulkanRenderer.cpp  | 36 ++++++++++
+ 2 files changed, 108 insertions(+)
+
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/TextureReadbackVk.cpp b/src/Cafe/HW/Latte/Renderer/Vulkan/TextureReadbackVk.cpp
+index 4e780a8..94104f1 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/TextureReadbackVk.cpp
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/TextureReadbackVk.cpp
+@@ -2,6 +2,64 @@
+ #include "Cafe/HW/Latte/Renderer/Vulkan/VulkanTextureReadback.h"
+ #include "Cafe/HW/Latte/Renderer/Vulkan/LatteTextureVk.h"
+ 
++#if defined(CEMU_PS5)
++#include <mutex>
++#include <set>
++#include <string_view>
++void PS5Cemu_LogLine(std::string_view line); // the port's boot log, written at once
++
++// Bytes a copy writes per texel of a VkFormat's aspect (0: not known here). The GPU writes what the
++// image holds, while Cemu sizes readbacks from the Wii U format: where they differ, the copy runs
++// past its buffer, which the PS5's GPU stops on (an unmapped page) where a PC's does not.
++uint32 PS5_TexelBytes(VkFormat format, VkImageAspectFlags aspect)
++{
++	if (aspect == VK_IMAGE_ASPECT_STENCIL_BIT)
++		return 1;
++	switch (format)
++	{
++	case VK_FORMAT_R8_UNORM: case VK_FORMAT_R8_SNORM: case VK_FORMAT_R8_UINT: case VK_FORMAT_R8_SINT: case VK_FORMAT_S8_UINT:
++		return 1;
++	case VK_FORMAT_R8G8_UNORM: case VK_FORMAT_R8G8_SNORM: case VK_FORMAT_R8G8_UINT: case VK_FORMAT_R8G8_SINT:
++	case VK_FORMAT_R16_UNORM: case VK_FORMAT_R16_SNORM: case VK_FORMAT_R16_UINT: case VK_FORMAT_R16_SINT: case VK_FORMAT_R16_SFLOAT:
++	case VK_FORMAT_R5G6B5_UNORM_PACK16: case VK_FORMAT_B5G6R5_UNORM_PACK16: case VK_FORMAT_R4G4B4A4_UNORM_PACK16:
++	case VK_FORMAT_B4G4R4A4_UNORM_PACK16: case VK_FORMAT_R5G5B5A1_UNORM_PACK16: case VK_FORMAT_B5G5R5A1_UNORM_PACK16:
++	case VK_FORMAT_A1R5G5B5_UNORM_PACK16: case VK_FORMAT_D16_UNORM:
++		return 2;
++	case VK_FORMAT_R8G8B8A8_UNORM: case VK_FORMAT_R8G8B8A8_SNORM: case VK_FORMAT_R8G8B8A8_UINT: case VK_FORMAT_R8G8B8A8_SINT:
++	case VK_FORMAT_R8G8B8A8_SRGB: case VK_FORMAT_B8G8R8A8_UNORM: case VK_FORMAT_B8G8R8A8_SRGB:
++	case VK_FORMAT_R16G16_UNORM: case VK_FORMAT_R16G16_SNORM: case VK_FORMAT_R16G16_UINT: case VK_FORMAT_R16G16_SINT: case VK_FORMAT_R16G16_SFLOAT:
++	case VK_FORMAT_R32_UINT: case VK_FORMAT_R32_SINT: case VK_FORMAT_R32_SFLOAT:
++	case VK_FORMAT_A2B10G10R10_UNORM_PACK32: case VK_FORMAT_A2R10G10B10_UNORM_PACK32: case VK_FORMAT_A2B10G10R10_UINT_PACK32:
++	case VK_FORMAT_B10G11R11_UFLOAT_PACK32: case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32:
++	case VK_FORMAT_D32_SFLOAT: case VK_FORMAT_X8_D24_UNORM_PACK32: case VK_FORMAT_D24_UNORM_S8_UINT: case VK_FORMAT_D32_SFLOAT_S8_UINT:
++		return 4;
++	case VK_FORMAT_R16G16B16A16_UNORM: case VK_FORMAT_R16G16B16A16_SNORM: case VK_FORMAT_R16G16B16A16_UINT:
++	case VK_FORMAT_R16G16B16A16_SINT: case VK_FORMAT_R16G16B16A16_SFLOAT:
++	case VK_FORMAT_R32G32_UINT: case VK_FORMAT_R32G32_SINT: case VK_FORMAT_R32G32_SFLOAT:
++		return 8;
++	case VK_FORMAT_R32G32B32A32_UINT: case VK_FORMAT_R32G32B32A32_SINT: case VK_FORMAT_R32G32B32A32_SFLOAT:
++		return 16;
++	default:
++		return 0;
++	}
++}
++
++// Said once for each kind (format, aspect, size), or at once when it would run past its buffer.
++void PS5_NoteCopy(const std::string& key, const std::string& line, bool overrun)
++{
++	static std::mutex s_mutex;
++	static std::set<std::string> s_seen;
++	{
++		std::lock_guard lock(s_mutex);
++		if (!s_seen.insert(key).second && !overrun)
++			return;
++		if (overrun && !s_seen.insert("!" + key).second)
++			return;
++	}
++	PS5Cemu_LogLine(line);
++}
++#endif
++
+ LatteTextureReadbackInfoVk::LatteTextureReadbackInfoVk(VkDevice device, LatteTextureView* textureView)
+ 	: LatteTextureReadbackInfo(textureView, textureView->firstMip), m_device(device)
+ {
+@@ -54,6 +112,20 @@ void LatteTextureReadbackInfoVk::StartTransfer()
+ 
+ 	renderer->barrier_sequentializeTransfer();
+ 
++#if defined(CEMU_PS5)
++	{
++		const VkFormat vkFormat = baseTexture->GetFormat();
++		const VkImageAspectFlags aspect = region.imageSubresource.aspectMask;
++		const uint32 texel = PS5_TexelBytes(vkFormat, aspect);
++		const bool bothAspects = (aspect & VK_IMAGE_ASPECT_DEPTH_BIT) && (aspect & VK_IMAGE_ASPECT_STENCIL_BIT);
++		const uint64 writes = (uint64)region.bufferRowLength * region.bufferImageHeight * texel;
++		const bool overrun = bothAspects || (texel && writes > m_image_size);
++		PS5_NoteCopy(fmt::format("rb {} {} {}x{} {}", (int)vkFormat, aspect, region.bufferRowLength, region.bufferImageHeight, m_image_size),
++			fmt::format("[copy] readback{}: VkFormat {} aspect {:#x} mip {} {}x{}, {} bytes a texel ({}), {} bytes into a buffer of {} (Wii U format {:#x})",
++				overrun ? " WOULD OVERRUN" : "", (int)vkFormat, aspect, m_firstMip, region.bufferRowLength, region.bufferImageHeight, texel,
++				bothAspects ? "depth and stencil in one copy" : "known", writes, m_image_size, (uint32)m_textureView->format), overrun);
++	}
++#endif
+ 	vkCmdCopyImageToBuffer(renderer->getCurrentCommandBuffer(), baseTexture->GetImageObj()->m_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_buffer, 1, &region);
+ 
+ 	renderer->barrier_sequentializeTransfer();
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+index 2ed0094..5546d5b 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+@@ -1,4 +1,9 @@
+ #include "Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.h"
++
++#if defined(CEMU_PS5)
++#include <string_view>
++void PS5_NoteCopy(const std::string& key, const std::string& line, bool overrun); // TextureReadbackVk.cpp
++#endif
+ #include "Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h"
+ #include "Cafe/HW/Latte/Renderer/Vulkan/LatteTextureVk.h"
+ #include "Cafe/HW/Latte/Renderer/Vulkan/RendererShaderVk.h"
+@@ -3737,6 +3742,37 @@ void VulkanRenderer::texture_copyImageSubData(LatteTexture* src, sint32 srcMip,
+ 	// make sure all read and write operations to the dst image have finished
+ 	barrier_image<SYNC_OP::IMAGE_READ | SYNC_OP::IMAGE_WRITE | SYNC_OP::ANY_TRANSFER, SYNC_OP::ANY_TRANSFER>(dstVk, region.dstSubresource, VK_IMAGE_LAYOUT_GENERAL);
+ 
++#if defined(CEMU_PS5)
++	{
++		// a region past either image's mip (or its layers) is invalid, and on the PS5 a fault
++		// against the image's real size: a graphic pack's resolution makes it larger than the Wii U's
++		auto within = [](LatteTexture* t, sint32 mip, sint32 x, sint32 y, sint32 w, sint32 h) {
++			if (mip < 0 || mip >= t->mipLevels)
++				return false;
++			sint32 mw, mh;
++			t->GetEffectiveSize(mw, mh, mip);
++			if (Latte::IsCompressedFormat(t->format))
++			{
++				mw = (mw + 3) & ~3;
++				mh = (mh + 3) & ~3;
++			}
++			return x >= 0 && y >= 0 && x + w <= mw && y + h <= mh;
++		};
++		const bool srcOk = within(src, srcMip, effectiveSrcX, effectiveSrcY, effectiveCopyWidth, effectiveCopyHeight);
++		const bool dstOk = within(dst, dstMip, effectiveDstX, effectiveDstY, effectiveCopyWidth, effectiveCopyHeight);
++		const bool layersOk = (src->Is3DTexture() || srcSlice + srcDepth <= (sint32)src->depth) &&
++			(dst->Is3DTexture() || dstSlice + srcDepth <= (sint32)dst->depth);
++		const bool overrun = !srcOk || !dstOk || !layersOk;
++		sint32 srcW, srcH, dstW, dstH; // the images' real (mip 0) sizes, for the line
++		src->GetEffectiveSize(srcW, srcH, 0);
++		dst->GetEffectiveSize(dstW, dstH, 0);
++		PS5_NoteCopy(fmt::format("ci {} {} {} {} {}x{}", (int)srcVk->GetFormat(), (int)dstVk->GetFormat(), srcMip, dstMip, effectiveCopyWidth, effectiveCopyHeight),
++			fmt::format("[copy] image{}: VkFormat {} {}x{} mip {} at {},{} slice {} -> VkFormat {} {}x{} mip {} at {},{} slice {}, {}x{} x{} layers",
++				overrun ? " WOULD OVERRUN" : "", (int)srcVk->GetFormat(), srcW, srcH, srcMip, effectiveSrcX, effectiveSrcY, srcSlice,
++				(int)dstVk->GetFormat(), dstW, dstH, dstMip, effectiveDstX, effectiveDstY, dstSlice, effectiveCopyWidth,
++				effectiveCopyHeight, srcDepth), overrun);
++	}
++#endif
+ 	vkCmdCopyImage(m_state.currentCommandBuffer, srcVkObj->m_image, VK_IMAGE_LAYOUT_GENERAL, dstVkObj->m_image, VK_IMAGE_LAYOUT_GENERAL, 1, &region);
+ 
+ 	// make sure the transfer is finished before the image is read or written
