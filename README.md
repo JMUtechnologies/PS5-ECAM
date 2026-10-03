@@ -4,13 +4,13 @@
 
 <p align="center">
   <strong>Wii U and Nintendo 3DS emulation in one PlayStation 5 homebrew app</strong><br>
-  Latest release: <a href="https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v2.0.0b.zip"><strong>2.0.0 B</strong></a> ·
-  <a href="#whats-new-in-200-b">What's new</a><br>
+  Latest release: <a href="https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v2.0.0c.zip"><strong>2.0.0 C</strong></a> ·
+  <a href="#whats-new-in-200-c">What's new</a><br>
   <a href="#install">Install</a> · <a href="#wii-u-cemu">Wii U</a> · <a href="#nintendo-3ds-azahar">3DS</a> ·
   <a href="#controls">Controls</a> · <a href="docs/BUILDING.md">Building</a> · <a href="#credits">Credits</a>
 </p>
 
-**PS5CEMU-HAR** is a homebrew app for jailbroken PS5 consoles running etaHEN. It bundles two
+**PS5CEMU-HAR** is a homebrew app for jailbroken PS5 consoles running etaHEN or another HEN. It bundles two
 emulators:
 
 - [Cemu](https://github.com/cemu-project/Cemu) for Wii U games
@@ -29,28 +29,25 @@ Nintendo or Sony. All credit for the emulators goes to their developers.
 > some rough edges. If something goes wrong, please report it with your logs (see
 > [Reporting problems](#reporting-problems)).
 
-**New in 2.0.0 B:** Artic Base (play games from your own 3DS over the network), fixed 3DS sound,
-a fix for a 3DS memory leak, and no more crashes from shared Breath of the Wild shader caches.
-See [What's new in 2.0.0 B](#whats-new-in-200-b) for everything.
+**New in 2.0.0 C:** a new launcher look with music and menu sounds, any HEN works (no etaHEN JIT
+grant needed), a 3DS on-screen keyboard, 3DS region, Cemu and Azahar kept fully apart, USB drives,
+and log and cache tools in Diagnostics. See [What's new in 2.0.0 C](#whats-new-in-200-c).
 
 ## Install
 
 1. Download the latest release ZIP,
-   [PS5CEMU-HAR-v2.0.0b.zip](https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v2.0.0b.zip)
+   [PS5CEMU-HAR-v2.0.0c.zip](https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v2.0.0c.zip)
    (see [all releases](https://github.com/premohq/PS5CEMU-HAR/releases)), and extract it, or
    [build it yourself](docs/BUILDING.md).
 2. Copy the `PPSA99360` folder to `/data/homebrew/PPSA99360` on your PS5.
-3. Load etaHEN and add `PPSA99360` to its app jailbreak list. This gives the app access to `/data`
-   and the JIT memory the emulators' recompilers need. Without it, the app runs its bundled
-   `sandbox-elevator.elf` through elfldr instead, which only grants `/data` access, and Wii U games
-   fall back to Cemu's interpreter, which is much slower.
-
-   **OnionHEN:** adding `PPSA99360` to the `[app_jailbreak]` section of OnionHEN's `config.ini`
-   isn't enough on its own: the app still gets no JIT memory
-   ([#12](https://github.com/premohq/PS5CEMU-HAR/issues/12)). One user got it working by also
-   saving a `whitelist.txt` with `PPSA99360` in it and sending PS5SX2's helper `.elf` to the
-   console. This hasn't been confirmed by the project yet; a proper fix that needs no HEN's JIT grant
-   is planned.
+3. Load your HEN. With etaHEN, add `PPSA99360` to its app jailbreak list: that gives the app
+   access to `/data` and the HEN's JIT memory. With any other HEN (OnionHEN and others), the app
+   runs its bundled `sandbox-elevator.elf` through elfldr for `/data` access, and both emulators'
+   recompilers make their own executable memory, so no HEN has to grant JIT memory
+   ([#11](https://github.com/premohq/PS5CEMU-HAR/issues/11),
+   [#12](https://github.com/premohq/PS5CEMU-HAR/issues/12)). **Settings > Diagnostics** says which
+   one the app got. The same helper also opens USB and extended-storage drives a HEN leaves out
+   ([#16](https://github.com/premohq/PS5CEMU-HAR/issues/16)).
 4. Add your game dumps (see [Game files](#game-files)).
 5. Launch PS5CEMU-HAR from the home screen, pick an emulator and open the Library.
 
@@ -66,8 +63,8 @@ see new ones, register the app again in the loader you installed it with.
 | Circle (on a launcher's home screen) | Go back to the start screen |
 
 After a game, the app opens on the side you played on. Only the emulator you pick is started, so
-Cemu and Azahar never run at the same time: going back to the start screen restarts the app, and
-box art downloads and game scans stop before a game starts. Both launchers have:
+Cemu and Azahar never run at the same time (choosing the 3DS side after the Wii U's restarts the
+app), and box art downloads and game scans stop before a game starts. Both launchers have:
 
 - **Last played** and **Recent games** on the home screen, and a **Coming soon** row of planned
   features that says what each will do
@@ -161,7 +158,8 @@ The first time a game shows up in a library, the app downloads its cover from Ga
 Wild or `AREE` for Super Mario 3D Land. Covers are downloaded in the background over plain HTTP, one
 game at a time, and saved in `/data/ps5cemu/covers/boxart`. If GameTDB doesn't have a cover, the app
 saves a `.none` file there and won't ask again; delete that file to try again. Without an internet
-connection, the libraries just show the game icons.
+connection, the libraries just show the game icons. **Settings > Online and updates** turns the
+downloads off.
 
 ## Controls
 
@@ -228,12 +226,49 @@ Please [open an issue with the bug report form](https://github.com/premohq/PS5CE
 it asks for your firmware, HEN, app version and logs, which almost every problem needs. Check the
 [compatibility list](docs/COMPATIBILITY.md) first to see whether the game is already known.
 
-**Settings > Diagnostics** shows the app version and where the logs are. When you report a problem,
-please attach `/data/ps5cemu/logs/boot.log`, plus `log.txt` (Wii U) or `azahar/log/azahar_log.txt`
-(3DS), copied off the console right after the problem, before the app is started again (the app
-keeps only the previous session's boot log, as `boot.prev.log`). During a game, the boot log also gets a `[memory]` line once a minute, which shows whether
+**Settings > Diagnostics** shows the app version, the firmware and where the logs are. **Copy logs
+to USB** puts the boot log, `log.txt` (Wii U), `azahar/log/azahar_log.txt` (3DS) and the settings in
+a dated `PS5CEMU-HAR-logs-...` folder on a USB drive: please attach them when you report a problem,
+copied right after it happens, before the app is started again (the app keeps only the previous
+session's boot log, as `boot.prev.log`). **Clear shader caches** deletes that side's shader caches
+(press Cross twice), for a game that crashes on a bad or shared cache; games build them again as
+they run. During a game, the boot log also gets a `[memory]` line once a minute, which shows whether
 memory use keeps growing, and a `[perf]` (Wii U) or `[perf3ds]` (3DS) line every 10 seconds with the
 frame rate. If Cemu crashes, its crash report is in the boot log too, as `[crash]` lines.
+
+## What's new in 2.0.0 C
+
+- **A new launcher look.** The Lexend font (accents show, so "Pokémon" does too), glass panels,
+  pill buttons, a clock bar on every screen, a home screen with your last game, recent games and the
+  features coming next.
+- **Music and menu sounds.** Two pieces of PS5CEMU-HAR's own music and menu sounds, set in
+  **Settings > Audio** (music, its volume, menu sounds on or off).
+- **Any HEN.** Both emulators' recompilers now make their own executable memory, so Wii U games run
+  on Cemu's recompiler without etaHEN's JIT grant, with OnionHEN or any other HEN
+  ([#11](https://github.com/premohq/PS5CEMU-HAR/issues/11),
+  [#12](https://github.com/premohq/PS5CEMU-HAR/issues/12)). The app's messages name no single HEN.
+- **USB and extended storage.** Drives a HEN leaves out are opened with the bundled helper
+  ([#16](https://github.com/premohq/PS5CEMU-HAR/issues/16)), and plugged-in drives are listed at the
+  top of the folder browser.
+- **One emulator at a time.** Only the side you choose starts: Cemu and Azahar never run together,
+  and box art downloads and game scans stop before a game starts.
+- **3DS on-screen keyboard.** Games that ask for a name or other text get a keyboard (D-pad and
+  Cross type, Circle deletes, Triangle shifts, Options confirms) instead of your PS5 user name.
+- **3DS region** in **Settings > System**: automatic, or Japan, USA, Europe, Australia, China, Korea
+  or Taiwan ([#17](https://github.com/premohq/PS5CEMU-HAR/issues/17)).
+- **3DS in-game menu:** a speed limit (100% to 300%, or none) to fast-forward, and going back to the
+  library no longer waits on a slow shutdown.
+- **Wii U in-game menu:** a Graphics page with Accurate barriers and Async shader compile.
+- **Diagnostics:** the firmware, which HEN gave what, **Copy logs to USB** and **Clear shader
+  caches**. **Settings > Online and updates** turns box art downloads off.
+- **Clearer problems:** a message when a Wii U game runs out of memory, the CPU mode and game
+  profile in the boot log ([#15](https://github.com/premohq/PS5CEMU-HAR/issues/15)), crash reports
+  on the 3DS side too, and a [bug report form](https://github.com/premohq/PS5CEMU-HAR/issues/new/choose)
+  with a [compatibility list](docs/COMPATIBILITY.md).
+- **Under the hood:** image copies and readbacks kept inside their images (a GPU fault on the PS5
+  otherwise), guard pages under the game threads' stacks, and desktop floating-point rules in the build.
+- Breath of the Wild still freezes when Magnesis or the Sheikah scope highlights objects
+  ([#10](https://github.com/premohq/PS5CEMU-HAR/issues/10)): a GPU hang that is being worked on.
 
 ## What's new in 2.0.0 B
 
@@ -276,8 +311,9 @@ frame rate. If Cemu crashes, its crash report is in the boot log too, as `[crash
   try Texture filter: None first.
 - The first start with a large Wii U shader cache takes a few minutes while Cemu builds the
   pipelines.
-- There's no option yet to turn off box art downloads.
 - DualSense motion controls haven't been tested with every game.
+- Breath of the Wild freezes, then closes, when Magnesis, other runes or the Sheikah scope highlight
+  objects (the console reports a GPU timeout, [#10](https://github.com/premohq/PS5CEMU-HAR/issues/10)).
 
 ## Building
 
