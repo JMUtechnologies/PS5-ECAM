@@ -312,6 +312,8 @@ frame rate. If Cemu crashes, its crash report is in the boot log too, as `[crash
 - The first start with a large Wii U shader cache takes a few minutes while Cemu builds the
   pipelines.
 - DualSense motion controls haven't been tested with every game.
+- Only etaHEN is supported and tested so far. Other HENs (OnionHEN and others) should work now that
+  the app makes its own recompiler memory, but they haven't been tested yet.
 - Breath of the Wild freezes, then closes, when Magnesis, other runes or the Sheikah scope highlight
   objects (the console reports a GPU timeout, [#10](https://github.com/premohq/PS5CEMU-HAR/issues/10)).
 
