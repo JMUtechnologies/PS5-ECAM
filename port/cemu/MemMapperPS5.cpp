@@ -21,10 +21,18 @@
 #include "../ps5/notify.h"
 
 #include <atomic>
+#include <cstdint>
 #include <map>
 #include <mutex>
 #include <unistd.h>
 #include <vector>
+
+// The platform layer's executable direct memory (ps5platform/exec.h, in libps5platform.a with RADV)
+extern "C"
+{
+	void* ps5_exec_allocate(size_t bytes, uintptr_t anchor);
+	int ps5_exec_release(void* base);
+}
 
 namespace
 {
@@ -42,8 +50,10 @@ namespace
 	{
 		size_t size;
 		off_t physical;	 // direct memory, or -1 for JIT memory
-		int handle = -1; // JIT memory's, closed with it: the memory lasts as long as the handle
+		int handle = -1; // JIT memory's, closed with it: the memory lasts as long as the handle;
+						 // kExecRegion: the platform layer's executable direct memory
 	};
+	constexpr int kExecRegion = -2;
 
 	constexpr uint8 kCommitted = 0x80;
 	constexpr size_t kCommitChunk = 256 * 1024 * 1024;
@@ -143,14 +153,28 @@ namespace
 		return true;
 	}
 
+	// Without the HEN's JIT memory: direct memory mapped read-write, then given execute, which the
+	// kernel grants any title (the platform layer's exec.h; Azahar's recompiler and ProsperoEden's
+	// run on it). Cemu's code calls out through 64-bit addresses, so it may lie anywhere.
+	void* AllocateExecutableDirect(size_t size)
+	{
+		void* address = ps5_exec_allocate(size, 0);
+		if (!address)
+		{
+			ps5log::Line("[memmap] executable direct memory refused too ({:#x} bytes): no recompiler", size);
+			return nullptr;
+		}
+		static std::once_flag s_logged;
+		std::call_once(s_logged, [] { ps5log::Line("[memmap] the recompiler's code is in executable direct memory (no HEN JIT grant needed)"); });
+		s_allocations[reinterpret_cast<uintptr_t>(address)] = {size, -1, kExecRegion};
+		return address;
+	}
+
 	void* AllocateJit(size_t size)
 	{
 		int handle = -1;
 		if (sceKernelJitCreateSharedMemory(nullptr, size, ps5::kProtRead | ps5::kProtWrite | ps5::kProtExec, &handle) != 0)
-		{
-			ps5log::Line("[memmap] JIT memory refused ({:#x} bytes): the HEN has not jailbroken PS5Cemu", size);
-			return nullptr;
-		}
+			return AllocateExecutableDirect(size); // the HEN has not jailbroken the app, or this one gives no JIT
 		void* address = nullptr;
 		if (sceKernelJitMapSharedMemory(handle, ps5::kProtRead | ps5::kProtWrite | ps5::kProtExec, &address) != 0 || !address)
 		{
@@ -288,6 +312,12 @@ namespace MemMapper
 			auto it = s_allocations.find(reinterpret_cast<uintptr_t>(baseAddr));
 			if (it == s_allocations.end())
 				return;
+			if (it->second.handle == kExecRegion)
+			{
+				ps5_exec_release(baseAddr);
+				s_allocations.erase(it);
+				return;
+			}
 			sceKernelMunmap(baseAddr, it->second.size);
 			if (it->second.physical >= 0)
 				sceKernelReleaseDirectMemory(it->second.physical, it->second.size);

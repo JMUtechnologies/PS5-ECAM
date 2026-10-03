@@ -17,6 +17,7 @@ the controller hints.
 """
 
 import os
+import re
 import sys
 
 WIIU = {
@@ -24,15 +25,30 @@ WIIU = {
     "chrome": "chrome", "icons": "icons", "suffix": "",
     "brand": "PS5 CEMU", "brand_icon": "icons/ps5cemu-72.tga", "cover": "icons/ps5cemu.tga",
     "system": "WII U", "footnote": "Cemu, the Wii U emulator, on PlayStation 5",
+    "library_copy": "Every Wii U game in your game folder", "settings_copy": "How Cemu runs on your PS5",
+    # planned, with their places in the layout: the video page's next row, and a game's tiles
+    "video_soon": "Async shaders and VSync",
+    "online_soon": "Graphic pack and app updates",
+    "features": [
+        ("Amiibo", "Amiibo: load your amiibo files and scan them in the games that use them."),
+        ("Manage data", "Manage data: see, delete, back up and restore each game's updates, DLC and saves."),
+        ("Search", "Search: find a game by its name, and sort the library your way."),
+        ("Updates", "Updates: a notice when a new PS5CEMU-HAR is out, and the newest graphic packs."),
+        ("Game list", "Game list: which Wii U games run well on the PS5, from players' reports."),
+    ],
+    "tiles_soon": [("Game options", "square")],  # its settings, updates, DLC and saves
     "detail": [("TITLE ID", "game-detail-format"), ("VERSION", "game-detail-size"), ("DLC", "game-detail-dlc")],
     "packs": True,
     "settings": [
         ("Video", "VIDEO", "Upscaling filter, 120 Hz, overlay"),
-        ("Audio", "AUDIO", "Game volume"),
+        ("Audio", "AUDIO", "Game volume, music, menu sounds"),
         ("Controls", "CONTROLS", "Controllers, buttons, motion, vibration"),
         ("Game files", "GAME FILES", "The folder for your Wii U games"),
         ("Install updates and DLC", "INSTALL", "Updates and DLC into the Wii U storage"),
         ("Diagnostics", "DIAGNOSTICS", "Jailbreak, JIT and log files"),
+        # planned: in their places already, marked as coming
+        ("Amiibo", "AMIIBO", "Your amiibo files, to scan in games", True),
+        ("Online and updates", "ONLINE", "Box art, graphic pack and app updates"),
     ],
     "files_copy": "Choose the folder that holds your Wii U games",
     "controls_copy": "Cemu's controller settings, for each player's DualSense",
@@ -50,15 +66,32 @@ N3DS = {
     "chrome": "chrome-3ds", "icons": "icons-3ds", "suffix": "-3ds",
     "brand": "PS5 AZAHAR", "brand_icon": "icons/azahar-72.tga", "cover": "icons/azahar.tga",
     "system": "NINTENDO 3DS", "footnote": "Azahar, the 3DS emulator, on PlayStation 5",
+    "library_copy": "Your 3DS games, installed ones included", "settings_copy": "How Azahar runs on your PS5",
+    "video_soon": "Border",
+    "online_soon": "App updates",
+    "features": [
+        ("Amiibo", "Amiibo: load your amiibo files and scan them in the games that use them."),
+        ("Save states", "Save states: save and load a game anywhere, a few slots for each game."),
+        ("Cheats", "Cheats: turn a game's cheat codes on and off from the in-game menu."),
+        ("Borders", "Borders: artwork around the 3DS screens in every layout, without shrinking them."),
+        ("Home Menu", "Home Menu: start the 3DS Home Menu, once Artic Setup has copied your console's files."),
+    ],
+    "tiles_soon": [("Cheats and mods", "triangle"), ("Game options", "square")],  # textures too; settings, saves, DLC
     "detail": [("TITLE ID", "game-detail-format"), ("PUBLISHER", "game-detail-size"), ("FORMAT", "game-detail-dlc")],
     "packs": False,
     "settings": [
         ("Video", "VIDEO", "Internal resolution, screen layout, textures"),
-        ("Audio", "AUDIO", "Game volume"),
+        ("Audio", "AUDIO", "Game volume, music, menu sounds"),
         ("Controls", "CONTROLS", "Buttons, circle pad, motion"),
         ("Game files", "GAME FILES", "The folder for your 3DS games"),
         ("Install CIA files", "INSTALL", "CIA files into the 3DS storage"),
         ("Diagnostics", "DIAGNOSTICS", "Jailbreak, JIT and log files"),
+        # planned: in their places already, marked as coming
+        ("Borders", "BORDERS", "Artwork around the screens", True),
+        ("Camera and microphone", "CAMERA", "PS5 HD Camera, DualSense microphone", True),
+        ("Amiibo", "AMIIBO", "Your amiibo files, to scan in games", True),
+        ("System", "SYSTEM", "Region, language and the Home Menu"),
+        ("Online and updates", "ONLINE", "Box art downloads and app updates"),
     ],
     "files_copy": "Choose the folder that holds your 3DS games",
     "controls_copy": "Azahar's controls, on the DualSense",
@@ -100,9 +133,9 @@ def footer(*hints):
 def head(side):
     return f'''<rml>
   <!-- PS5CEMU-HAR's launcher (tools/render-layout.py). Layout, artwork, fonts and stylesheet are
-       ProsperoEden's (headless/prosperoeden/ui, GPL-3.0-or-later, by BlackBearReloaded), adapted and
-       recoloured (tools/recolour-ui.py); ps5cemu.rcss adds what is new. Element ids and classes
-       follow ProsperoEden's so its styles apply. The background is drawn under the page. -->
+       ProsperoEden's (headless/prosperoeden/ui, GPL-3.0-or-later, by BlackBearReloaded), adapted,
+       recoloured and reshaped (tools/recolour-ui.py); ps5cemu.rcss adds what is new. Element ids
+       and classes follow ProsperoEden's so its styles apply. The background is drawn under the page. -->
   <head>
     <title>PS5CEMU-HAR</title>
     <link type="text/rcss" href="styles/app{side["suffix"]}.rcss" />
@@ -132,7 +165,6 @@ def launcher(side):
         <img id="brand-icon" src="{S["brand_icon"]}" width="72" height="72" alt=""/>
         <span id="brand-name">{S["brand"]}</span>
         <span id="brand-version">{S["system"]}  /  PS5CEMU-HAR</span>
-        <span id="menu-clock">--:--</span>
       </header>
       <nav id="menu">
         <button id="load-rom" class="nav-item"><img class="nav-focus" src="{c}/nav-focused.tga" width="136" height="64" alt=""/><span>Library</span></button>
@@ -141,28 +173,39 @@ def launcher(side):
       </nav>
 
       <main id="last-played-card">
-        <img class="hero-chrome" src="{c}/hero-panel.tga" width="1680" height="480" alt=""/>
+        <img class="hero-chrome" src="{c}/cover-frame.tga" width="360" height="360" alt=""/>
         <img id="last-played-cover" src="{S["cover"]}" width="336" height="336" alt=""/>
-        <span class="hero-kicker">CONTINUE PLAYING</span>
-        <span id="last-played-title">Your next adventure</span>
-        <span id="last-played-caption">Choose a game from your library.</span>
-        <button id="continue-game" class="hero-button"><img class="hero-button-chrome base-chrome" src="{c}/hero-button.tga" width="272" height="72" alt=""/><img class="hero-button-chrome focused-chrome" src="{c}/hero-button-focused.tga" width="272" height="72" alt=""/><span id="continue-copy">Launch game</span></button>''')
+        <span class="hero-kicker">LAST PLAYED</span>
+        <span id="last-played-title">Nothing played yet</span>
+        <span id="last-played-caption">Start a game from the library and it shows up here.</span>
+        <button id="continue-game" class="hero-button"><img class="hero-button-chrome base-chrome" src="{c}/hero-button.tga" width="272" height="72" alt=""/><img class="hero-button-chrome focused-chrome" src="{c}/hero-button-focused.tga" width="272" height="72" alt=""/><img class="hero-glyph" src="{S["icons"]}/cross-mono.tga" width="26" height="26" alt=""/><span id="continue-copy">Launch game</span></button>''')
     # the hero's second button: a game's graphic packs on the Wii U's side, Artic Base (a game from
     # a 3DS on the network) on the 3DS's
-    add(f'''        <button id="hero-options" class="hero-button"><img class="hero-button-chrome base-chrome" src="{c}/hero-button.tga" width="272" height="72" alt=""/><img class="hero-button-chrome focused-chrome" src="{c}/hero-button-focused.tga" width="272" height="72" alt=""/><span>{"Graphic packs" if S["packs"] else "Artic Base"}</span></button>''')
+    add(f'''        <button id="hero-options" class="hero-button"><img class="hero-button-chrome base-chrome" src="{c}/hero-button.tga" width="272" height="72" alt=""/><img class="hero-button-chrome focused-chrome" src="{c}/hero-button-focused.tga" width="272" height="72" alt=""/><img class="hero-glyph" src="{S["icons"]}/triangle-mono.tga" width="26" height="26" alt=""/><span>{"Graphic packs" if S["packs"] else "Artic Base"}</span></button>''')
     add(f'''        <span class="hero-footnote">{S["footnote"]}</span>
       </main>
 
       <section id="recent-section">
-        <span class="section-label">RECENTLY PLAYED</span>
-        <button id="view-all"><img class="view-all-focus" src="{c}/view-all-focused.tga" width="304" height="40" alt=""/><span>VIEW ALL GAMES</span></button>
-        <span id="recent-empty">Games you launch will appear here.</span>''')
+        <span class="section-label">RECENT GAMES</span>
+        <button id="view-all"><img class="view-all-focus" src="{c}/view-all-focused.tga" width="304" height="40" alt=""/><span>FULL LIBRARY</span></button>
+        <span id="recent-empty">The games you play show up here.</span>''')
     for i in range(4):
-        add(f'        <button id="recent-{i}" class="recent-tile"><img class="recent-chrome base-chrome" src="{c}/recent-tile.tga" width="400" height="144" alt=""/>'
-            f'<img class="recent-chrome focused-chrome" src="{c}/recent-tile-focused.tga" width="400" height="144" alt=""/>'
+        add(f'        <button id="recent-{i}" class="recent-tile"><img class="recent-chrome base-chrome" src="{c}/recent-square-normal.tga" width="200" height="250" alt=""/>'
+            f'<img class="recent-chrome focused-chrome" src="{c}/recent-square-focused.tga" width="200" height="250" alt=""/>'
             f'<img id="recent-cover-{i}" class="recent-cover" src="{S["cover"]}" width="96" height="96" alt=""/><span id="recent-title-{i}" class="recent-title"></span></button>')
     home_hints = [h('cross', 'Select'), h('triangle', 'Graphic packs' if S["packs"] else 'Artic Base'), h('dpad', 'Navigate'), h('circle', 'Change emulator')]
-    add(f'''      </section>
+    add('      </section>')
+    # the roadmap's features, in their places on the home screen until they are made: launcher.cpp
+    # moves the focus through them and shows the one in focus's caption (data-caption)
+    add('''      <section id="features-section">
+        <span class="section-label">COMING SOON</span>''')
+    for i, (name, caption) in enumerate(S["features"]):
+        add(f'        <button id="feature-{i}" class="feature-tile" data-caption="{caption}">'
+            f'<img class="feature-chrome base-chrome" src="{c}/feature-chip-normal.tga" width="312" height="64" alt=""/>'
+            f'<img class="feature-chrome focused-chrome" src="{c}/feature-chip-focused.tga" width="312" height="64" alt=""/>'
+            f'<span class="feature-name">{name}</span><span class="feature-tag">SOON</span></button>')
+    add(f'''        <span id="feature-caption">Planned for later versions: choose one to see what it will do.</span>
+      </section>
 
       <div id="startup-status" class="quiet"></div>
       <footer id="footer" class="hints">{"".join(home_hints)}<span id="system-status">Looking for games</span></footer>
@@ -170,11 +213,11 @@ def launcher(side):
       <!-- Library -->
       <div id="rom-dialog" class="library-screen">
         <span class="library-shade"></span>
-        <span class="library-title">Your games</span>
-        <span class="library-copy">Select a game to begin</span>
+        <span class="library-title">Library</span>
+        <span class="library-copy">{S["library_copy"]}</span>
         <section class="library-list-panel">
           {PANEL}
-          <span class="library-panel-kicker">LIBRARY</span>
+          <span class="library-panel-kicker">GAMES</span>
           <div id="rom-list-viewport"><div id="rom-list-track">
 {rows(S, 'rom', 7, lambda i: f'<img id="rom-icon-{i}" class="rom-row-icon" src="{S["cover"]}" width="56" height="56" alt=""/><span id="rom-name-{i}" class="library-row-name rom-row-name"></span><span id="rom-format-{i}" class="library-row-meta"></span>')}
           </div></div>
@@ -184,15 +227,24 @@ def launcher(side):
         </section>
         <aside class="game-detail-panel">
           {PANEL}
-          <span class="detail-kicker">GAME DETAILS</span>
+          <span class="detail-kicker">ABOUT THIS GAME</span>
           <span id="game-detail-title">No game selected</span>
           <img id="game-cover" src="{S["cover"]}" width="288" height="288" alt=""/><span id="cover-caption"></span>''')
     for i, (label, value_id) in enumerate(S["detail"]):
         add(f'          <span class="game-detail-label game-detail-line-{i}">{label}</span><span id="{value_id}" class="game-detail-value game-detail-line-{i}">-</span>')
     add('''          <span class="game-path-label">FILES</span><span id="game-detail-path" class="game-path">-</span>''')
+    # a game's tiles: its graphic packs on the Wii U's side, then what is planned (tiles_soon)
+    tiles, tile_hints = [], []
     if S["packs"]:
-        add(f'''          <span id="game-packs-setting"><img src="{c}/dialog-row-normal.tga" width="736" height="94" alt=""/><span class="game-mode-label">Graphic packs</span><span id="game-packs-value">-</span></span>
-          <span id="game-mode-hint"><img src="{S["icons"]}/triangle-mono.tga" width="26" height="26" alt=""/><span id="game-mode-hint-text">Choose this game's graphic packs.</span></span>''')
+        tiles.append(f'<span id="game-packs-setting" class="game-tile game-tile-0"><img src="{c}/tile-normal.tga" width="360" height="94" alt=""/>'
+                     f'<span class="game-mode-label">Graphic packs</span><span id="game-packs-value" class="game-tile-value">-</span></span>')
+        tile_hints.append(h('triangle', 'Graphic packs'))
+    for name, button in S["tiles_soon"]:
+        tiles.append(f'<span class="game-tile game-tile-{len(tiles)} planned"><img src="{c}/tile-normal.tga" width="360" height="94" alt=""/>'
+                     f'<span class="game-mode-label">{name}</span><span class="game-tile-value">Coming soon</span></span>')
+        tile_hints.append(h(button, f'{name} (soon)'))
+    add('          ' + '\n          '.join(tiles))
+    add(f'          <span id="game-tile-hints" class="tile-hints">{"".join(tile_hints)}</span>')
     library_hints = [h('cross', 'Play'), h('circle', 'Back'), h('updown', 'Browse games')] + ([h('triangle', 'Graphic packs')] if S["packs"] else []) + [h('l1', 'Page', second='r1')]
     add(f'''        </aside>
 {footer(*library_hints)}
@@ -233,19 +285,29 @@ def launcher(side):
     add(f'''      <!-- Settings -->
       <div id="settings-dialog" class="settings-screen">
         <span class="library-shade"></span>
-        <span class="library-title">Settings</span><span class="library-copy">Fine-tune your experience</span>
+        <span class="library-title">Settings</span><span class="library-copy">{S["settings_copy"]}</span>
         <section class="settings-list-panel">
         {PANEL}
-        <span class="library-panel-kicker">PREFERENCES</span>''')
-    for i, (name, _, _) in enumerate(S["settings"]):
-        add(f'        <span id="settings-row-{i}" class="dialog-row settings-row-{i}">{DLG}<span>{name}</span></span>')
-    add(f'''        </section>
+        <span class="library-panel-kicker">OPTIONS</span>''')
+    # every category, the planned ones (True) marked and in their places already; launcher.cpp
+    # scrolls them as it does the library's rows
+    add('        <div id="settings-viewport" class="list-viewport">')
+    for i, (name, _, _, *planned) in enumerate(S["settings"]):
+        mark = ' planned' if planned else ''
+        add(f'          <span id="settings-row-{i}" class="library-row{mark}" style="top: {i * 88}px;">{LIB}'
+            f'<span class="library-row-name">{name}</span><span class="library-row-meta">{"SOON" if planned else ""}</span></span>')
+    add(f'''        </div>
+        <span id="settings-position" class="list-position">1 OF {len(S["settings"])}</span>
+        </section>
         <aside class="settings-detail-panel">{PANEL}
-          <span class="detail-kicker">ON THIS CONSOLE</span>
-          <span class="settings-detail-title">Make it yours.</span>
-          <span class="settings-detail-copy">Adjust the essentials without leaving your library behind.</span>''')
-    for i, (_, label, value) in enumerate(S["settings"]):
-        add(f'          <span class="settings-detail-label settings-detail-{i}">{label}</span><span class="settings-detail-value settings-detail-{i}">{value}</span>')
+          <span class="detail-kicker">OVERVIEW</span>
+          <span class="settings-detail-title">At a glance</span>
+          <span class="settings-detail-copy">These apply to every game. In a game, touchpad + Options changes some of them.</span>''')
+    for i, (_, label, value, *planned) in enumerate(S["settings"]):
+        mark = ' planned' if planned else ''
+        top = f' style="top: {236 + i * 40}px;"'
+        add(f'          <span class="settings-detail-label{mark}"{top}>{label}</span>'
+            f'<span class="settings-detail-value{mark}"{top}>{"Soon: " if planned else ""}{value}</span>')
     add(f'''        </aside>
 {footer(h('cross', 'Select'), h('circle', 'Back'), h('updown', 'Browse settings'))}
       </div>
@@ -357,6 +419,7 @@ def launcher(side):
         <span class="dialog-copy">Applies to the next game you start.</span>''')
     for i in range(3):
         add(f'        <span id="video-row-{i}" class="dialog-row dialog-row-{i}">{DLG}<span id="video-label-{i}" class="dialog-row-label"></span><span id="video-value-{i}" class="dialog-row-value"></span></span>')
+    add(f'        <span class="dialog-row dialog-row-3 planned">{DLG}<span class="dialog-row-label">{S["video_soon"]}</span><span class="dialog-row-value">Soon</span></span>')
     credit = S["credits"]
     add(f'''        <div class="dialog-hints">{h('updown', 'Select')}{h('leftright', 'Change')}{h('circle', 'Back')}</div>
       </div></div>
@@ -365,9 +428,13 @@ def launcher(side):
       <div id="audio-dialog" class="dialog"><div class="dialog-panel">
         {MODAL}
         <span class="dialog-title">Audio</span>
-        <span class="dialog-copy">The sound of your games; the PS5's own volume stays as it is.</span>
-        <span id="audio-row-0" class="dialog-row dialog-row-0 focused">{DLG}<span class="dialog-row-label">Game volume</span><span id="audio-volume" class="dialog-row-value">100%</span></span>
-        <div class="dialog-hints">{h('leftright', 'Change')}{h('circle', 'Back')}</div>
+        <span class="dialog-copy">Your games' sound, and the launcher's own music and menu sounds.</span>''')
+    # the game's volume is the emulator's; the music (PS5CEMU-HAR's own, tools/render-sounds.py) and
+    # the menu's sounds are the launcher's, on both sides
+    for i, (label, value_id, value) in enumerate((("Game volume", "audio-volume", "100%"), ("Launcher music", "audio-music", "Shop theme"),
+                                                  ("Music volume", "audio-music-volume", "50%"), ("Menu sounds", "audio-menu-sounds", "On"))):
+        add(f'        <span id="audio-row-{i}" class="dialog-row dialog-row-{i}">{DLG}<span class="dialog-row-label">{label}</span><span id="{value_id}" class="dialog-row-value">{value}</span></span>')
+    add(f'''        <div class="dialog-hints">{h('updown', 'Select')}{h('leftright', 'Change')}{h('circle', 'Back')}</div>
       </div></div>
 
       <!-- Settings > Diagnostics -->
@@ -376,7 +443,29 @@ def launcher(side):
         <span class="dialog-title">Diagnostics</span>
         <span class="dialog-copy">Attach the log files when you report a problem.</span>
         <div id="setup-details" class="settings-details diagnostics-details"></div>
-        <div class="dialog-hints">{h('circle', 'Back')}</div>
+        <span id="diag-row-0" class="dialog-row dialog-row-0">{DLG}<span class="dialog-row-label">Copy logs to USB</span><span id="diag-value-0" class="dialog-row-value"></span></span>
+        <span id="diag-row-1" class="dialog-row dialog-row-1">{DLG}<span id="diag-label-1" class="dialog-row-label">Clear shader caches</span><span id="diag-value-1" class="dialog-row-value"></span></span>
+        <div class="dialog-hints">{h('updown', 'Select')}{h('cross', 'Choose')}{h('circle', 'Back')}</div>
+      </div></div>
+
+      <!-- Settings > System (the 3DS's) -->
+      <div id="system-dialog" class="dialog"><div class="dialog-panel">
+        {MODAL}
+        <span class="dialog-title">System</span>
+        <span class="dialog-copy">The emulated 3DS. Applies to the next game you start.</span>
+        <span id="system-row-0" class="dialog-row dialog-row-0">{DLG}<span class="dialog-row-label">Region</span><span id="system-region" class="dialog-row-value">Automatic</span></span>
+        <span class="dialog-row dialog-row-1 planned">{DLG}<span class="dialog-row-label">Language and Home Menu</span><span class="dialog-row-value">Soon</span></span>
+        <div class="dialog-hints">{h('leftright', 'Change')}{h('circle', 'Back')}</div>
+      </div></div>
+
+      <!-- Settings > Online and updates -->
+      <div id="online-dialog" class="dialog"><div class="dialog-panel">
+        {MODAL}
+        <span class="dialog-title">Online and updates</span>
+        <span class="dialog-copy">What the app fetches from the internet.</span>
+        <span id="online-row-0" class="dialog-row dialog-row-0">{DLG}<span class="dialog-row-label">Box art from GameTDB</span><span id="online-boxart" class="dialog-row-value">On</span></span>
+        <span class="dialog-row dialog-row-1 planned">{DLG}<span class="dialog-row-label">{S["online_soon"]}</span><span class="dialog-row-value">Soon</span></span>
+        <div class="dialog-hints">{h('leftright', 'Change')}{h('circle', 'Back')}</div>
       </div></div>
 
       <!-- About -->
@@ -430,8 +519,12 @@ def launcher(side):
         <span id="loading-title"></span>
         <span id="loading-caption">Starting</span>
       </div>''')
+    # a thin bar across the top of every screen, the time in its middle (ps5cemu.rcss keeps it on top)
+    add('      <div id="top-bar"><span id="menu-clock">--:--</span></div>')
     out.append(TAIL)
-    return '\n'.join(out)
+    # each page's title with PS5CEMU-HAR's accent bar beside it
+    return re.sub(r'(<span (?:id="[^"]+" )?class="library-title")',
+                  rf'<img class="title-bar" src="{c}/title-bar.tga" width="6" height="80" alt=""/>\1', '\n'.join(out))
 
 
 def start():
@@ -441,8 +534,7 @@ def start():
     add('''      <header id="start-header">
         <img id="start-brand-icon" src="icons/har-72.tga" width="72" height="72" alt=""/>
         <span id="start-brand-name">PS5CEMU-HAR</span>
-        <span id="start-brand-copy">CEMU  +  AZAHAR  /  WII U AND 3DS ON PLAYSTATION 5</span>
-        <span id="menu-clock">--:--</span>
+        <span id="start-brand-copy">Cemu and Azahar  /  Wii U and 3DS games on PlayStation 5</span>
       </header>
       <span id="start-divider"></span>''')
     for side, name, system, art, left in ((WIIU, "Cemu", "Wii U", "start-wiiu", 100), (N3DS, "Azahar", "Nintendo 3DS", "start-3ds", 1000)):
@@ -457,6 +549,8 @@ def start():
         <span class="start-button"><img class="hero-button-chrome base-chrome" src="{c}/hero-button.tga" width="272" height="72" alt=""/><img class="hero-button-chrome focused-chrome" src="{c}/hero-button-focused.tga" width="272" height="72" alt=""/><span>Start {name}</span></span>
       </section>''')
     add(f'''      <footer id="start-footer" class="hints">{hint(WIIU, 'cross', 'Start')}{hint(WIIU, 'leftright', 'Choose')}</footer>''')
+    # a thin bar across the top of every screen, the time in its middle (ps5cemu.rcss keeps it on top)
+    add('      <div id="top-bar"><span id="menu-clock">--:--</span></div>')
     out.append(TAIL)
     return '\n'.join(out)
 

@@ -104,6 +104,11 @@ namespace ps5menu
 			else if (std::strcmp(button, "touchpad") == 0)
 				draw->AddRect({centre.x - r - 3 * scale, centre.y - r + 3 * scale}, {centre.x + r + 3 * scale, centre.y + r - 3 * scale},
 					colour, 3 * scale, 0, thick);
+			else if (std::strcmp(button, "triangle") == 0)
+				draw->AddTriangle({centre.x, centre.y - r}, {centre.x + r, centre.y + r * 0.75f}, {centre.x - r, centre.y + r * 0.75f}, colour, thick);
+			else if (std::strcmp(button, "options") == 0)
+				for (const float line : {-1.0f, 0.0f, 1.0f}) // the Options button's three lines
+					draw->AddLine({centre.x - r * 0.7f, centre.y + line * 5 * scale}, {centre.x + r * 0.7f, centre.y + line * 5 * scale}, colour, thick);
 			Text(font, 20, x + 38, y + 2, colour, label);
 			return x + 38 + font->CalcTextSizeA(20 * scale, FLT_MAX, 0.0f, label.c_str()).x / scale + 44;
 		}

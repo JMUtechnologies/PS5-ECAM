@@ -9,12 +9,15 @@
 //     This is how PS5SX2 gets JIT memory and /data (its ProsperoHenJailbreak.cpp).
 //  2. failing that, the console's ELF loader (elfldr, port 9021, which etaHEN provides) to run the
 //     bundled helper /app0/sandbox-elevator.elf, which grants filesystem access only
-//     (ps5-native-app-boilerplate's sandbox-elevation, as ProsperoEden does). No JIT then: Cemu
-//     runs its interpreter.
+//     (ps5-native-app-boilerplate's sandbox-elevation, as ProsperoEden does).
+// Without the HEN's JIT memory, Cemu's recompiler takes executable direct memory from the platform
+// layer instead (ps5platform/exec.h), which any title gets; only when that fails too does Cemu run
+// its interpreter.
 
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace ps5privilege
 {
@@ -29,6 +32,10 @@ namespace ps5privilege
 	// Blocking, at most a few seconds; call it before starting threads.
 	Result Acquire();
 	const Result& Current();
+	// Once the settings are read, still before threads start: when a game folder, or a drive
+	// plugged in, is there but refused (a HEN that opened /data but not the drives), the bundled
+	// helper is asked for the whole filesystem. Current().summary says what came of it.
+	void ReachFolders(const std::vector<std::string>& folders);
 }
 
 // For Cemu (ActiveSettings::GetCPUMode).

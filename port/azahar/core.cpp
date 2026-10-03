@@ -33,6 +33,7 @@
 #include "core/core.h"
 #include "core/core_timing.h"
 #include "core/frontend/applets/default_applets.h"
+#include "core/frontend/applets/swkbd.h"
 #include "core/frontend/emu_window.h"
 #include "core/frontend/image_interface.h"
 #include "core/hle/service/am/am.h"
@@ -49,6 +50,7 @@
 #include "video_core/renderer_base.h"
 
 #include <atomic>
+#include <chrono>
 #include <mutex>
 #include <stdexcept>
 #include <thread>
@@ -101,7 +103,7 @@ namespace ps5azahar
 				float x, y;
 				const auto& layout = GetFramebufferLayout();
 				// only over a bottom screen that is shown (not with the top screen alone)
-				cursor.visible = input::Cursor(x, y) && !ps5ingame3ds::MenuOpen() && layout.bottom_screen_enabled &&
+				cursor.visible = input::Cursor(x, y) && !ps5ingame3ds::MenuOpen() && !ps5ingame3ds::KeyboardOpen() && layout.bottom_screen_enabled &&
 					layout.bottom_screen.GetWidth() > 0;
 				// in the bottom screen's pixels on the TV, from its top left corner, as Azahar draws
 				// its crosshair: where the touch lands
@@ -110,6 +112,58 @@ namespace ps5azahar
 				return cursor;
 			}
 		};
+
+		// A game asking for text (a name, a password): the port's keyboard (app/ingame3ds.h), where
+		// Azahar's default one answers at once with the console's user name
+		class Keyboard final : public Frontend::SoftwareKeyboard
+		{
+		public:
+			void Execute(const Frontend::KeyboardConfig& config) override
+			{
+				SoftwareKeyboard::Execute(config);
+				ps5ingame3ds::KeyboardRequest request;
+				request.hint = config.hint_text;
+				request.maxLength = config.max_text_length;
+				// the game's own labels where it gives them, as the 3DS's keyboard shows them
+				std::vector<std::string> defaults;
+				switch (config.button_config)
+				{
+				case Frontend::ButtonConfig::Dual: defaults = {Frontend::SWKBD_BUTTON_CANCEL, Frontend::SWKBD_BUTTON_OKAY}; break;
+				case Frontend::ButtonConfig::Triple:
+					defaults = {Frontend::SWKBD_BUTTON_CANCEL, Frontend::SWKBD_BUTTON_FORGOT, Frontend::SWKBD_BUTTON_OKAY};
+					break;
+				default: defaults = {Frontend::SWKBD_BUTTON_OKAY}; break;
+				}
+				for (size_t i = 0; i < defaults.size(); i++)
+					request.buttons.push_back(i < config.button_text.size() && !config.button_text[i].empty() ? config.button_text[i] : defaults[i]);
+				ps5log::Line("[azahar] the game asks for text ({} characters at most, {} buttons)", config.max_text_length, request.buttons.size());
+				ps5ingame3ds::OpenKeyboard(request);
+			}
+
+			void ShowError(const std::string& error) override
+			{
+				ps5ingame3ds::KeyboardError(error);
+			}
+		};
+		std::shared_ptr<Keyboard> s_keyboard;
+
+		const char* KeyboardMessage(Frontend::ValidationError error)
+		{
+			using Error = Frontend::ValidationError;
+			switch (error)
+			{
+			case Error::MaxDigitsExceeded: return "Too many digits.";
+			case Error::AtSignNotAllowed: return "The @ sign is not allowed here.";
+			case Error::PercentNotAllowed: return "The % sign is not allowed here.";
+			case Error::BackslashNotAllowed: return "The \\ sign is not allowed here.";
+			case Error::ProfanityNotAllowed: return "That word is not allowed.";
+			case Error::FixedLengthRequired: return "The text must be exactly the length asked for.";
+			case Error::MaxLengthExceeded: return "The text is too long.";
+			case Error::BlankInputNotAllowed: return "The text cannot be only spaces.";
+			case Error::EmptyInputNotAllowed: return "The text cannot be empty.";
+			default: return "The game did not accept it.";
+			}
+		}
 
 		std::once_flag s_setUp;
 		std::unique_ptr<Window> s_window;
@@ -173,6 +227,9 @@ namespace ps5azahar
 			values.use_cpu_jit = true;
 			values.cpu_clock_percentage = std::clamp(settings.cpuClock, 25, 400);
 			values.is_new_3ds = true;
+			// automatic (-1) takes the game's own region; a game made for another one may refuse to
+			// start or show other languages (#17)
+			values.region_value = std::clamp(settings.region, -1, 6);
 			values.output_type = AudioCore::SinkType::PS5;
 			values.audio_emulation = Settings::AudioEmulation::HLE;
 			values.enable_audio_stretching = true;
@@ -368,6 +425,8 @@ namespace ps5azahar
 
 		Core::System& system = Core::System::GetInstance();
 		Frontend::RegisterDefaultApplets(system);
+		s_keyboard = std::make_shared<Keyboard>();
+		system.RegisterSoftwareKeyboard(s_keyboard);
 		system.RegisterImageInterface(std::make_shared<Frontend::ImageInterface>());
 		Vulkan::SetFrontendOverlay(&DrawMenu);
 
@@ -419,7 +478,7 @@ namespace ps5azahar
 		while (s_running && !s_stop)
 		{
 			sceKernelUsleep(4000);
-			input::Update(*s_window, ps5ingame3ds::MenuOpen());
+			input::Update(*s_window, ps5ingame3ds::MenuOpen() || ps5ingame3ds::KeyboardOpen()); // the game sees no buttons while either is up
 			if (++polls % 500 == 0)
 				ps5pad::Rescan(); // controllers joining or leaving, about every two seconds
 			if (polls % 15000 == 0)
@@ -468,6 +527,17 @@ namespace ps5azahar
 			ps5ingame3ds::Settings menu;
 			if (ps5ingame3ds::TakeChanges(menu))
 				ApplyMenu(menu);
+			std::string typed;
+			int button = 0;
+			if (s_keyboard && ps5ingame3ds::TakeKeyboardResult(typed, button))
+			{
+				// checked as the 3DS's keyboard does; refused, the keyboard opens again saying why
+				const auto result = s_keyboard->Finalize(typed, (u8)button);
+				if (result != Frontend::ValidationError::None)
+					ps5ingame3ds::KeyboardError(KeyboardMessage(result));
+				ps5log::Line("[azahar] keyboard: {} characters, button {}{}", typed.size(), button,
+					result != Frontend::ValidationError::None ? fmt::format(", refused ({})", (int)result) : std::string());
+			}
 			if (ps5ingame3ds::TakeLibraryRequest())
 			{
 				ps5log::Line("[azahar] back to the library");
@@ -475,12 +545,34 @@ namespace ps5azahar
 			}
 		}
 		s_stop = true;
+		const auto started = std::chrono::steady_clock::now();
+		auto elapsed = [&] {
+			return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - started).count();
+		};
+		// The app starts over after this, and the game's saves are on the SD card already (written as
+		// the game writes them): a shutdown that takes long (18 s was seen, the screen frozen) is cut
+		// short by starting over from here.
+		static std::atomic_bool s_shutDown = false;
+		std::thread([] {
+			for (int waited = 0; waited < 50 && !s_shutDown; waited++)
+				sceKernelUsleep(100000);
+			if (s_shutDown)
+				return;
+			ps5log::Line("[azahar] shutting down takes over 5 s: starting over without waiting");
+			ps5settings::Launcher all = ps5settings::Load();
+			all.side = "3ds";
+			ps5settings::Save(all);
+			ps5emu::RestartToLibrary();
+		}).detach();
 		if (s_emulation.joinable())
 			s_emulation.join();
+		ps5log::Line("[azahar] emulation stopped in {} ms", elapsed());
 		Vulkan::SetFrontendOverlay(nullptr);
 		// the 3DS's files closed (saves are written as the game writes them)
 		system.Shutdown();
+		ps5log::Line("[azahar] shut down in {} ms", elapsed());
 		input::Shutdown();
+		s_shutDown = true;
 	}
 
 	namespace

@@ -174,7 +174,7 @@ namespace
 			}
 			// pictures are scaled smoothly; the rest is drawn at its own size
 			const bool art = source.find("/covers/") != Rml::String::npos;
-			const bool glyphs = source.find("lvgl-bitmap") != Rml::String::npos;
+			const bool glyphs = source.find("/fonts/") != Rml::String::npos;
 			Texture* texture = Create(data.data() + 18, width, height, SDL_PIXELFORMAT_BGRA32,
 				art ? SDL_ScaleModeLinear : SDL_ScaleModeNearest, glyphs);
 			if (!texture)
@@ -537,15 +537,17 @@ namespace ps5ui
 			return false;
 		}
 		host.rml = true;
-		for (const char* size : kFonts)
-		{
-			if (!Rml::LoadFontFace(AssetPath(fmt::format("fonts/lvgl-bitmap/Montserrat-{}.fnt", size))))
+		for (const char* weight : {"", "-Bold"})
+			for (const char* size : kFonts)
 			{
-				error = fmt::format("the launcher's font Montserrat-{} is missing", size);
-				Stop();
-				return false;
+				const std::string font = fmt::format("Lexend{}-{}", weight, size);
+				if (!Rml::LoadFontFace(AssetPath("fonts/" + font + ".fnt")))
+				{
+					error = fmt::format("the launcher's font {} is missing", font);
+					Stop();
+					return false;
+				}
 			}
-		}
 		host.context = Rml::CreateContext("ps5cemu", {kWidth, kHeight});
 		if (!host.context)
 		{

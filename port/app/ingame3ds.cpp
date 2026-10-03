@@ -36,6 +36,16 @@ namespace ps5ingame3ds
 		std::atomic<uint64_t> s_openedAt{0}; // sceKernelGetProcessTime
 		std::atomic<bool> s_libraryRequested{false};
 
+		// The keyboard: asked for on Azahar's thread, typed on its renderer's, its result taken by
+		// the game's loop
+		std::atomic<bool> s_keyboardOpen{false};
+		KeyboardRequest s_keyboard; // under s_mutex, with the four below
+		std::string s_keyboardError;
+		bool s_keyboardFresh = false; // a new request: the renderer starts its text over
+		bool s_keyboardDone = false;
+		std::string s_keyboardResult;
+		int s_keyboardButton = 0;
+
 		// The rest belongs to Azahar's renderer thread, which draws the menu.
 		struct Gpu
 		{
@@ -402,6 +412,133 @@ namespace ps5ingame3ds
 			}
 		}
 
+		// -- the keyboard ----------------------------------------------------------------------------
+
+		std::string s_typed;		  // the renderer's
+		bool s_shift = false;		  // capitals and the second symbols
+		constexpr const char* kKeys[2][4] = {
+			{"1234567890", "qwertyuiop", "asdfghjkl'", "zxcvbnm,.-"},
+			{"!?#$%&*()+", "QWERTYUIOP", "ASDFGHJKL\"", "ZXCVBNM;:_"},
+		};
+
+		void FinishKeyboard(int button)
+		{
+			std::lock_guard lock(s_mutex);
+			s_keyboardResult = s_typed;
+			s_keyboardButton = button;
+			s_keyboardDone = true;
+			s_keyboardOpen = false;
+		}
+
+		void Type(const std::string& characters, int maxLength)
+		{
+			if (maxLength <= 0 || (int)(s_typed.size() + characters.size()) <= maxLength)
+				s_typed += characters;
+		}
+
+		// The keyboard, laid out on the launcher's 1920x1080 as the menu is: what the game asks for,
+		// the text, the keys, then the game's own buttons (the last confirms, as Options does)
+		void DrawKeyboard(float scale)
+		{
+			ImGuiIO& io = ImGui::GetIO();
+			KeyboardRequest request;
+			std::string error;
+			{
+				std::lock_guard lock(s_mutex);
+				request = s_keyboard;
+				error = s_keyboardError;
+				if (s_keyboardFresh)
+				{
+					s_typed.clear();
+					s_shift = false;
+					s_keyboardFresh = false;
+				}
+			}
+			if (request.buttons.empty())
+				request.buttons = {"OK"};
+			const ImVec2 origin{(io.DisplaySize.x - 1920.0f * scale) * 0.5f, (io.DisplaySize.y - 1080.0f * scale) * 0.5f};
+			ImGui::SetNextWindowPos({0, 0}, ImGuiCond_Always);
+			ImGui::SetNextWindowSize(io.DisplaySize, ImGuiCond_Always);
+			ImGui::SetNextWindowFocus();
+			ImGui::PushStyleColor(ImGuiCol_NavHighlight, IM_COL32(0, 0, 0, 0));
+			constexpr ImGuiWindowFlags kFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
+				ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollWithMouse;
+			if (ImGui::Begin("PS5CEMU-HAR##Keyboard3ds", nullptr, kFlags))
+			{
+				const bool appearing = ImGui::IsWindowAppearing();
+				if (appearing)
+					ImGui::GetCurrentContext()->NavDisableHighlight = false;
+				const Canvas canvas{ImGui::GetWindowDrawList(), scale, origin, kColours};
+				canvas.draw->AddRectFilled({0, 0}, io.DisplaySize, kColours.dim);
+				canvas.Panel(260, 110, 1400, 860);
+				canvas.Text(g.small, 20, 300, 136, kColours.kicker, "THE GAME ASKS FOR");
+				canvas.Text(g.head, 32, 300, 170, kColours.title, request.hint.empty() ? "Some text" : request.hint, 1320);
+				canvas.Row(300, 236, 1320, 72, false);
+				canvas.Text(g.row, 24, 330, 258, kColours.text, s_typed + "_");
+				if (request.maxLength > 0)
+					canvas.TextRight(g.small, 20, 1590, 262, kColours.accent, fmt::format("{} / {}", s_typed.size(), request.maxLength));
+				if (!error.empty())
+					canvas.Text(g.small, 20, 300, 320, kColours.accent, error, 1320);
+
+				// a key: true when chosen (Cross, or a touch of the touchpad's click)
+				int keyIndex = 0;
+				auto key = [&](float x, float y, float width, const std::string& label) {
+					ImGui::SetCursorScreenPos(canvas.At(x, y));
+					const bool chosen = ImGui::InvisibleButton(fmt::format("##key{}", keyIndex).c_str(), {width * scale, 72 * scale});
+					if (keyIndex++ == 0 && appearing)
+						ImGui::SetFocusID(ImGui::GetItemID(), ImGui::GetCurrentWindow());
+					canvas.Row(x, y, width, 72, ImGui::IsItemFocused());
+					const ImVec2 size = g.row->CalcTextSizeA(24 * scale, FLT_MAX, 0.0f, label.c_str());
+					canvas.draw->AddText(g.row, 24 * scale, canvas.At(x + width / 2 - size.x / scale / 2, y + 22), kColours.text, label.c_str());
+					return chosen;
+				};
+				const auto& rows = kKeys[s_shift ? 1 : 0];
+				for (int row = 0; row < 4; row++)
+					for (int column = 0; column < 10; column++)
+					{
+						const std::string character(1, rows[row][column]);
+						if (key(325 + column * 128, 360 + row * 84, 118, character))
+							Type(character, request.maxLength);
+					}
+				if (key(325, 696, 246, s_shift ? "Shift: on" : "Shift"))
+					s_shift = !s_shift;
+				if (key(581, 696, 502, "Space"))
+					Type(" ", request.maxLength);
+				if (key(1093, 696, 502, "Delete") && !s_typed.empty())
+					s_typed.pop_back();
+				// the game's buttons, right-aligned on the last row
+				const float buttonWidth = 300;
+				const int count = (int)request.buttons.size();
+				for (int button = 0; button < count; button++)
+				{
+					const float x = 1595 - (count - button) * (buttonWidth + 10) + 10;
+					if (key(x, 800, buttonWidth, request.buttons[button]))
+						FinishKeyboard(button);
+				}
+
+				canvas.draw->AddLine(canvas.At(300, 900), canvas.At(1620, 900), kColours.line, scale);
+				float x = 300;
+				x = canvas.Hint(g.small, x, 915, "cross", "Type");
+				x = canvas.Hint(g.small, x, 915, "circle", "Delete");
+				x = canvas.Hint(g.small, x, 915, "triangle", "Shift");
+				canvas.Hint(g.small, x, 915, "options", request.buttons.back());
+			}
+			ImGui::End();
+			ImGui::PopStyleColor();
+
+			// Circle deletes, Triangle shifts, Options confirms with the last button (as on the Wii U's
+			// keyboard); not while the touchpad is held for a shortcut
+			if (!(s_buttons & ps5pad::kTouchPad))
+			{
+				if ((s_pressed & ps5pad::kCircle) && !s_typed.empty())
+					s_typed.pop_back();
+				if (s_pressed & ps5pad::kTriangle)
+					s_shift = !s_shift;
+				if (s_pressed & ps5pad::kOptions)
+					FinishKeyboard((int)request.buttons.size() - 1);
+			}
+		}
+
 		void DrawPerformance(float scale)
 		{
 			double fps, speed;
@@ -464,6 +601,39 @@ namespace ps5ingame3ds
 		return s_libraryRequested.exchange(false);
 	}
 
+	void OpenKeyboard(const KeyboardRequest& request)
+	{
+		std::lock_guard lock(s_mutex);
+		s_keyboard = request;
+		s_keyboardError.clear();
+		s_keyboardFresh = true;
+		s_keyboardDone = false;
+		s_keyboardOpen = true;
+	}
+
+	bool KeyboardOpen()
+	{
+		return s_keyboardOpen;
+	}
+
+	bool TakeKeyboardResult(std::string& text, int& button)
+	{
+		std::lock_guard lock(s_mutex);
+		if (!s_keyboardDone)
+			return false;
+		s_keyboardDone = false;
+		text = s_keyboardResult;
+		button = s_keyboardButton;
+		return true;
+	}
+
+	void KeyboardError(const std::string& message)
+	{
+		std::lock_guard lock(s_mutex);
+		s_keyboardError = message;
+		s_keyboardOpen = true; // the text typed stays, to be corrected
+	}
+
 	void SetPerformance(double fps, double speed, const std::string& breakdown)
 	{
 		std::lock_guard lock(s_mutex);
@@ -486,7 +656,8 @@ namespace ps5ingame3ds
 				performance = s_settings.performance;
 			}
 			const bool open = s_open;
-			if (!open && !performance)
+			const bool keyboard = s_keyboardOpen;
+			if (!open && !performance && !keyboard)
 			{
 				s_buttons = 0; // the menu sees a fresh controller when it next opens
 				return;
@@ -524,6 +695,8 @@ namespace ps5ingame3ds
 			ImGui::NewFrame();
 			if (open)
 				DrawMenu(scale);
+			else if (keyboard)
+				DrawKeyboard(scale);
 			if (performance)
 				DrawPerformance(scale);
 			ImGui::Render();

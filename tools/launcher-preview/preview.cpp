@@ -22,10 +22,12 @@
 
 #include "app/boxart.h"
 #include "app/emulator.h"
+#include "azahar/library.h"
 #include "frontend/bubbles.h"
 #include "frontend/launcher.h"
 #include "frontend/wave.h"
 #include "frontend/settings.h"
+#include "frontend/sound.h"
 #include "frontend/ui_host.h"
 #include "ps5/kernel.h"
 #include "ps5/log.h"
@@ -464,12 +466,13 @@ namespace ps5ui
 		Rml::SetRenderInterface(s_host->render.GetAdaptedInterface());
 		Rml::SetFontEngineInterface(&s_host->fonts);
 		Rml::Initialise();
-		for (const char* size : kFonts)
-			if (!Rml::LoadFontFace(AssetPath(fmt::format("fonts/lvgl-bitmap/Montserrat-{}.fnt", size))))
-			{
-				error = "missing font";
-				return false;
-			}
+		for (const char* weight : {"", "-Bold"})
+			for (const char* size : kFonts)
+				if (!Rml::LoadFontFace(AssetPath(fmt::format("fonts/Lexend{}-{}.fnt", weight, size))))
+				{
+					error = "missing font";
+					return false;
+				}
 		s_host->context = Rml::CreateContext("preview", {kWidth, kHeight});
 		return true;
 	}
@@ -539,6 +542,26 @@ namespace ps5notify
 	void Send(const std::string& message) { std::fprintf(stderr, "[notify] %s\n", message.c_str()); }
 }
 
+// the launcher's sound: what would play, in the log
+namespace ps5sound
+{
+	bool s_menuSounds = true;
+	void Start(const std::string& music, int volume, bool menuSounds)
+	{
+		s_menuSounds = menuSounds;
+		std::fprintf(stderr, "[sound] music %s at %d%%, menu sounds %s\n", music.c_str(), volume, menuSounds ? "on" : "off");
+	}
+	void SetMusic(const std::string& music, int volume) { std::fprintf(stderr, "[sound] music %s at %d%%\n", music.c_str(), volume); }
+	void SetMenuSounds(bool on) { s_menuSounds = on; }
+	void Play(Effect effect)
+	{
+		static constexpr const char* kNames[] = {"move", "select", "back", "denied", "launch"};
+		if (s_menuSounds)
+			std::fprintf(stderr, "[sound] %s\n", kNames[(int)effect]);
+	}
+	void Stop() { std::fprintf(stderr, "[sound] stop\n"); }
+}
+
 namespace ps5pad
 {
 	bool Init() { return true; }
@@ -582,6 +605,7 @@ namespace ps5boxart
 	void Fetch(System, const std::vector<std::string>&) {}
 	uint32_t Arrivals() { return 0; }
 	void SetEnabled(bool) {}
+	void Stop() {}
 	bool ImageSize(const std::string& path, int& width, int& height)
 	{
 		unsigned char header[18];
@@ -872,7 +896,14 @@ int main(int argc, char* argv[])
 	status.coreReady = true;
 	status.diagnostics = {"PS5CEMU-HAR preview: Cemu at 4e3c824, Azahar at 4598458", "Jailbroken by the HEN: /data reachable, JIT memory available",
 		"Boot log: /data/ps5cemu/logs/boot.log", "Cemu's log: /data/ps5cemu/log.txt"};
-	ps5launcher::Run(settings, status);
+	// the start screen's counts, as the last session would have saved them
+	settings.gameCount = 4;
+	settings.n3ds.gameCount = 3;
+	// as main_ps5.cpp: only the chosen side starts (the preview's Cemu is always ready)
+	ps5launcher::Run(settings, status, [&](ps5launcher::System system) {
+		if (system == ps5launcher::System::N3ds)
+			ps5azahar::StartScan(settings.n3ds.gamesFolder);
+	});
 	// a game was chosen: the loading screen is on
 	WritePng(s_output + "/launch.png");
 	return 0;

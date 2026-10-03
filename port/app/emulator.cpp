@@ -6,6 +6,7 @@
 // MainWindow::FileLoad and VulkanCanvas; this file keeps their MPL-2.0 licence.
 
 #include "emulator.h"
+#include "boxart.h"
 #include "ingame.h"
 #include "paths.h"
 #include "../frontend/settings.h"
@@ -488,7 +489,8 @@ namespace ps5emu
 	// What memory is used and left, once a minute in a game: what keeps growing while a game plays
 	// on is a leak. The heap is every malloc and new of the app's (Cemu's, RADV's, Azahar's), which
 	// the platform layer serves from direct memory (ps5platform/heap.h); Cemu's guest memory and
-	// recompiled code are its MemMapper's; Azahar's recompiled code the platform's (exec.h).
+	// recompiled code are its MemMapper's; executable direct memory the platform's (exec.h): Azahar's
+	// recompiled code, and Cemu's where the HEN gives no JIT memory (it then counts in both).
 	void LogMemory()
 	{
 		size_t flexible = 0, direct = 0;
@@ -508,7 +510,7 @@ namespace ps5emu
 		uint64_t execRegions = 0, execBytes = 0;
 		if (ps5_exec_live)
 			ps5_exec_live(&execRegions, &execBytes);
-		ps5log::Line("[memory] {}; Cemu: {} MiB committed, {} MiB recompiled code; Azahar's recompiled code {} MiB in {} regions; "
+		ps5log::Line("[memory] {}; Cemu: {} MiB committed, {} MiB recompiled code; executable direct memory {} MiB in {} regions; "
 			"flexible memory free {} MiB, largest free block of direct memory {} MiB",
 			heap, committed >> 20, jit >> 20, execBytes >> 20, execRegions, flexible >> 20, direct >> 20);
 	}
@@ -573,6 +575,9 @@ namespace ps5emu
 
 	void RestartToLibrary()
 	{
+		// nothing of the launcher's still on the network or writing: a restart with a cover being
+		// fetched ended the app instead of starting it over (it waits for one a few seconds at most)
+		ps5boxart::Stop();
 		ps5log::Line("[emu] back to the library: starting PS5Cemu over");
 		// Cemu's settings only where Cemu ran: a 3DS session never read them, and would write its
 		// defaults over them

@@ -24,15 +24,36 @@
 #include "ps5/threads.h"
 #include "ps5/window.h"
 
+// The PS4 SDK's version record: its size is set by the caller (libkernel)
+struct SceKernelSwVersion
+{
+	size_t size;
+	char text[0x1c];
+	uint32_t version;
+};
+extern "C" int32_t sceKernelGetSystemSwVersion(SceKernelSwVersion* version);
+
 namespace
 {
+	// The console's firmware, as its settings show it ("11.60"), for the boot log and Diagnostics:
+	// most reports hinge on it
+	std::string Firmware()
+	{
+		SceKernelSwVersion version{};
+		version.size = sizeof(version);
+		if (sceKernelGetSystemSwVersion(&version) != 0)
+			return "unknown";
+		version.text[sizeof(version.text) - 1] = 0;
+		return fmt::format("{} ({:#010x})", version.text, version.version);
+	}
+
 	std::vector<std::string> Diagnostics(const ps5privilege::Result& privileges)
 	{
 		return {
 			fmt::format("PS5CEMU-HAR {}: Cemu at {}, Azahar at {}", PS5CEMU_VERSION, PS5CEMU_CEMU_COMMIT, PS5CEMU_AZAHAR_COMMIT),
+			fmt::format("Firmware {}", Firmware()),
 			privileges.summary,
-			fmt::format("Boot log: {}", ps5log::Path()[0] ? ps5log::Path() : "not written (/data is unreachable)"),
-			fmt::format("Cemu's log: {}/log.txt", ps5paths::kRoot),
+			ps5log::Path()[0] ? fmt::format("Logs: {}, {}/log.txt", ps5log::Path(), ps5paths::kRoot) : "Boot log not written (/data is unreachable)",
 		};
 	}
 
@@ -65,6 +86,7 @@ int main(int argc, char* argv[])
 	const ps5privilege::Result privileges = ps5privilege::Acquire();
 	if (privileges.filesystem)
 		ps5log::Open(ps5paths::kLogs);
+	ps5log::Line("[main] firmware {}", Firmware());
 	ps5log::Line("[main] {}", privileges.summary);
 	ps5crash::Install(); // Cemu's own replaces it, in a session Cemu runs in
 	{
@@ -79,13 +101,22 @@ int main(int argc, char* argv[])
 	ps5threads::Initialize(); // before any thread starts: they inherit the main thread's CPUs
 
 	ps5settings::Launcher settings = ps5settings::Load();
+	// still before any thread: the game folders and drives the HEN may have left out (#16)
+	if (privileges.filesystem)
+		ps5privilege::ReachFolders({settings.gamesFolder, settings.n3ds.gamesFolder});
 	ps5threads::SetPinning(settings.pinCpuThreads);
+	// before either emulator's Vulkan driver starts, which reads it once
+	if (!settings.radvDebug.empty())
+	{
+		setenv("RADV_DEBUG", settings.radvDebug.c_str(), 1);
+		ps5log::Line("[vulkan] RADV_DEBUG={} (radvDebug in ps5cemu.json)", settings.radvDebug);
+	}
 	ps5pad::Init();
 	ps5pad::SetVibrationEnabled(settings.rumble);
 	ps5window::Initialize();
 
 	ps5launcher::Status status;
-	status.diagnostics = Diagnostics(privileges);
+	status.diagnostics = Diagnostics(ps5privilege::Current());
 	std::string error;
 	if (!privileges.filesystem)
 	{
@@ -106,11 +137,16 @@ int main(int argc, char* argv[])
 	// game was on), and leaving that side starts the app over. Cemu's core (its guest memory, system
 	// threads, crash handler, graphic packs and game scan) runs only for the Wii U; Azahar (its game
 	// scan, and its core once a game starts) only for the 3DS.
-	std::optional<ps5launcher::System> started; // a game that did not start brings the launcher back: once each
+	// Once each (a game that did not start brings the launcher back). The 3DS side may give way to the
+	// Wii U's in the same process, as Azahar's core runs only for a game; once Cemu has started, the
+	// launcher starts a fresh process for the 3DS side instead of asking here.
+	std::optional<ps5launcher::System> started;
+	const size_t sessionLine = status.diagnostics.size();
 	auto prepare = [&](ps5launcher::System system) {
-		if (started)
+		if (started == system || started == ps5launcher::System::WiiU)
 			return;
 		started = system;
+		status.diagnostics.resize(sessionLine);
 		if (system == ps5launcher::System::N3ds)
 		{
 			ps5log::Line("[main] this session is Azahar's (3DS): Cemu is not started");
@@ -119,7 +155,7 @@ int main(int argc, char* argv[])
 			ps5emu::LogMemory(); // the 3DS side's start, against Cemu's
 			return;
 		}
-		ps5log::Line("[main] this session is Cemu's (Wii U): Azahar is not started");
+		ps5log::Line("[main] this session is Cemu's (Wii U): Azahar's core is not started");
 		status.diagnostics.push_back("This session: Cemu (Wii U) only; Azahar is not loaded");
 		if (!privileges.filesystem)
 			return;
@@ -150,7 +186,8 @@ int main(int argc, char* argv[])
 		}
 		if (choice->startOver)
 		{
-			RememberSide(""); // the start screen
+			// the side chosen, in a fresh process (only from Cemu's to Azahar's)
+			RememberSide(choice->system == ps5launcher::System::N3ds ? "3ds" : "wiiu");
 			ps5emu::RestartToLibrary();
 			return 0;
 		}

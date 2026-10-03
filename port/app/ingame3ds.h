@@ -13,6 +13,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 namespace ps5ingame3ds
 {
@@ -64,4 +65,20 @@ namespace ps5ingame3ds
 
 	// For Azahar's renderer, twice a frame, where it records its commands.
 	void Record(const Target& target);
+
+	// A game asking for text (Azahar's software keyboard): the port's keyboard, drawn over the game
+	// like the menu, typed with the D-pad and Cross.
+	struct KeyboardRequest
+	{
+		std::string hint;				  // what the game asks for; may be empty
+		int maxLength = 0;				  // 0: no limit
+		std::vector<std::string> buttons; // the game's buttons, left to right; the last one confirms
+	};
+	// From Azahar's emulation thread.
+	void OpenKeyboard(const KeyboardRequest& request);
+	bool KeyboardOpen();
+	// For the game's loop: the text typed and the button chosen (an index into buttons), once.
+	bool TakeKeyboardResult(std::string& text, int& button);
+	// The game refused what was typed (too long, empty...): the keyboard opens again, saying why.
+	void KeyboardError(const std::string& message);
 }

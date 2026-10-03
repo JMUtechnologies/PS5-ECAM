@@ -74,6 +74,7 @@ namespace ps5settings
 			ReadInt(json, "deadzone", n3ds.deadzone, 0, 50);
 			ReadBool(json, "performance", n3ds.performance);
 			ReadInt(json, "cpuClock", n3ds.cpuClock, 25, 400);
+			ReadInt(json, "region", n3ds.region, -1, 6);
 			ReadString(json, "articAddress", n3ds.articAddress);
 			ReadInt(json, "gameCount", n3ds.gameCount, -1, 1000000);
 			if (json.HasMember("buttons") && json["buttons"].IsObject())
@@ -104,6 +105,8 @@ namespace ps5settings
 			writer.Bool(n3ds.performance);
 			writer.Key("cpuClock");
 			writer.Int(n3ds.cpuClock);
+			writer.Key("region");
+			writer.Int(n3ds.region);
 			writer.Key("articAddress");
 			writer.String(n3ds.articAddress.c_str());
 			writer.Key("gameCount");
@@ -138,6 +141,7 @@ namespace ps5settings
 		ReadBool(json, "overlay", settings.overlay);
 		ReadBool(json, "rumble", settings.rumble);
 		ReadBool(json, "pinCpuThreads", settings.pinCpuThreads);
+		ReadString(json, "radvDebug", settings.radvDebug);
 		ReadInt(json, "volume", settings.volume, 0, 100);
 		ReadInt(json, "gameCount", settings.gameCount, -1, 1000000);
 		ReadString(json, "launchError", settings.launchError);
@@ -145,6 +149,12 @@ namespace ps5settings
 		ReadGames(json, settings.lastGame, settings.recent);
 		if (json.HasMember("n3ds") && json["n3ds"].IsObject())
 			ReadN3ds(json["n3ds"], settings.n3ds);
+		ReadString(json, "music", settings.music);
+		if (settings.music != "shop" && settings.music != "setup")
+			settings.music = "off";
+		ReadInt(json, "musicVolume", settings.musicVolume, 0, 100);
+		ReadBool(json, "boxArt", settings.boxArt);
+		ReadBool(json, "menuSounds", settings.menuSounds);
 		return settings;
 	}
 
@@ -165,6 +175,8 @@ namespace ps5settings
 		writer.Bool(settings.rumble);
 		writer.Key("pinCpuThreads");
 		writer.Bool(settings.pinCpuThreads);
+		writer.Key("radvDebug");
+		writer.String(settings.radvDebug.c_str());
 		writer.Key("volume");
 		writer.Int(settings.volume);
 		writer.Key("gameCount");
@@ -172,6 +184,14 @@ namespace ps5settings
 		WriteGames(writer, settings.lastGame, settings.recent);
 		writer.Key("n3ds");
 		WriteN3ds(writer, settings.n3ds);
+		writer.Key("music");
+		writer.String(settings.music.c_str());
+		writer.Key("musicVolume");
+		writer.Int(settings.musicVolume);
+		writer.Key("boxArt");
+		writer.Bool(settings.boxArt);
+		writer.Key("menuSounds");
+		writer.Bool(settings.menuSounds);
 		writer.Key("side");
 		writer.String(settings.side.c_str());
 		writer.Key("launchError");

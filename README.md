@@ -69,12 +69,15 @@ After a game, the app opens on the side you played on. Only the emulator you pic
 Cemu and Azahar never run at the same time: going back to the start screen restarts the app, and
 box art downloads and game scans stop before a game starts. Both launchers have:
 
-- **Continue Playing** and **Recently Played** on the home screen
+- **Last played** and **Recent games** on the home screen, and a **Coming soon** row of planned
+  features that says what each will do
 - **Library**: all your games with their icons, plus box art from
   [GameTDB](https://www.gametdb.com/) when it's available (see [Box art](#box-art))
 - **Settings**: video, audio, controls (remap any button by pressing it), game folder, installs and
   diagnostics
 - **About**: credits and where the app stores its files
+- **Music and menu sounds**: two original pieces in the spirit of a Nintendo console's shop and setup
+  screens, and sounds as you move and choose. Settings > Audio picks the piece, its volume, or none
 
 ## Wii U (Cemu)
 
@@ -302,9 +305,13 @@ What's in the repo:
   and the PS5 ports of Azahar and dynarmic ([PS5_Azahar](https://github.com/mihawk-99/PS5_Azahar)),
   with contributions from **mpereiraesaa**
 - **BlackBearReloaded** for [ProsperoEden](https://github.com/blackbearreloaded/ProsperoEden), which
-  the launchers' design, artwork, fonts and software renderer are based on, and the
+  the launchers' layout, artwork and software renderer are based on, and the
   [PS5 Native App Boilerplate](https://github.com/blackbearreloaded/ps5-native-app-boilerplate) for
-  the app runtime, packaging and sandbox elevation
+  the app runtime, packaging and sandbox elevation, and the
+  [ps5-homebrew-ui](https://github.com/blackbearreloaded/ps5-homebrew-ui) designs the home screen
+  follows
+- The [Lexend](https://github.com/googlefonts/lexend) authors for the launchers' font (SIL Open Font
+  License 1.1)
 - **Dimok** for the Wii U Homebrew Launcher, whose background is used on the Wii U side
 - The authors of the **3DS Homebrew Launcher**, which inspired the 3DS side's background
 - **John Törnblom** for the [PS5 Payload SDK](https://github.com/ps5-payload-dev/sdk), and

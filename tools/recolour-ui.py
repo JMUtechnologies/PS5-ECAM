@@ -14,7 +14,10 @@ the 3DS Homebrew Launcher's wave, made yellow. Each theme (THEMES) writes:
     from (rounded rectangles with a fill, a gradient or not, and a stroke), and PS5CEMU-HAR's own
     in the chrome folder beside its stylesheet, with the theme's
     fills and strokes: dark panels and rows, a deep gradient on the focused ones with a light
-    outline, so the focus is as plain to see as before;
+    outline, so the focus is as plain to see as before. They take PS5CEMU-HAR's shapes, not
+    ProsperoEden's (RADII, MARKED, UNDERLINED, GLASS): rounder corners, pill buttons, see-through
+    panels with light rows on them, the focus's gradient from top to bottom, an accent bar on
+    focused rows and an underline in the menu;
   - styles/app.rcss (app-3ds.rcss): each colour in the theme's source hues turns to its hue. Light
     ones, its text, keep their lightness (a little lighter: blue and gold look darker than green
     at the same lightness) so they read as well on the dark panels; dark ones, its backgrounds and
@@ -23,7 +26,9 @@ the 3DS Homebrew Launcher's wave, made yellow. Each theme (THEMES) writes:
   - styles/ps5cemu.rcss (ps5cemu-3ds.rcss): PS5CEMU-HAR's own stylesheet, which is written in the
     blue: as it is (in gold);
   - icons/ (icons-3ds/): recoloured the same way (the folders); the white ones stay white;
-and fonts/ as they are: the glyphs are white and take the text's colour.
+and fonts/: PS5CEMU-HAR's own, Lexend's atlases beside its stylesheet (tools/render-fonts.py), in
+place of ProsperoEden's Montserrat. The glyphs are white and take the text's colour. And sounds/:
+the launcher's music and menu sounds, also beside the stylesheet (tools/render-sounds.py).
 """
 
 import colorsys
@@ -77,6 +82,7 @@ YELLOW_FILLS = {
     "eef7ed": "faf5ea",
     "d8e8aa": "f0cf6a",  # scrollbar
     "49624a": "5e4a1c",
+    "5c9ce6": "f2c14e",  # PS5CEMU-HAR's own accent, blue already (chrome/title-bar.svg)
 }
 YELLOW_STROKES = {
     "a9db63": "f2c14e",  # the focus outline
@@ -89,6 +95,34 @@ YELLOW_STROKES = {
     "d8e8aa": "f0cf6a",
     "49624a": "5e4a1c",
 }
+
+# PS5CEMU-HAR's shapes for that chrome, so the launcher is more than ProsperoEden's look recoloured:
+# rounder panels and rows, pill-shaped buttons, and a focus filled from top to bottom with a firmer
+# outline. Focused rows and tiles also get an accent bar at their left edge, and the menu's focus
+# is an underline instead of a box. Corner radii by the chrome's name, without -normal/-focused:
+RADII = {
+    "library-row": 18, "dialog-row": 20, "dropdown-panel": 20, "recent-tile": 20, "action": 24, "tile": 20,
+    "hero-panel": 28, "last-played-card": 24, "dialog-panel": 32, "modal-panel": 32, "start-panel": 32,
+    "hero-button": 36,  # half the height or more: a pill
+    "cover-frame": 28, "recent-square": 22, "feature-chip": 32,  # PS5CEMU-HAR's own home screen
+}
+MARKED = {"library-row-focused", "dialog-row-focused", "recent-tile-focused", "action-focused"}
+# Glass where ProsperoEden has dark slabs: the pages' panels let the bubbles and waves show through,
+# and the rows on them are a light tint with a fine light edge. Fills and strokes by the chrome's name.
+GLASS = {
+    "dialog-panel": ("#0b1713a0", "#ffffff26"),
+    "hero-panel": ("#0b171388", "#ffffff26"),
+    "library-row-normal": ("#ffffff12", "#ffffff1f"),
+    "dialog-row-normal": ("#ffffff12", "#ffffff1f"),
+    "action-normal": ("#ffffff12", "#ffffff1f"),
+    "tile-normal": ("#ffffff12", "#ffffff1f"),  # PS5CEMU-HAR's own: a game's tiles
+    "cover-frame": ("#0b171388", "#ffffff2e"),  # and the home screen's
+    "recent-square-normal": ("#ffffff10", "#ffffff1f"),
+    "feature-chip-normal": ("#ffffff10", "#ffffff24"),
+}
+# the underline: from x to x, its top, in the chrome's pixels (the menu's labels are centred, the
+# home screen's link to the full library is right-aligned at 280)
+UNDERLINED = {"nav-focused": (46, 90, 50), "view-all-focused": (200, 280, 35)}
 
 # name: (hue, the hues it replaces, fills, strokes, the suffix of its folders and files)
 THEMES = {
@@ -127,27 +161,62 @@ def parse_colour(value, table, theme):
     return tuple(int(rgb[i:i + 2], 16) for i in (0, 2, 4)) + (alpha,)
 
 
-def render_svg(svg, theme):
-    """ProsperoEden's chrome SVGs: one rounded rectangle, filled with a colour or a horizontal
-    gradient, with a stroke. Returns width, height and top-down BGRA pixels."""
+def composite_bar(pixels, width, bx, by, bw, bh, colour):
+    """A bar with round ends, in colour (RGBA), over top-down BGRA pixels."""
+    height = len(pixels) // (4 * width)
+    r = min(bw, bh) / 2
+    for py in range(max(int(by) - 1, 0), min(int(math.ceil(by + bh)) + 1, height)):
+        for px in range(max(int(bx) - 1, 0), min(int(math.ceil(bx + bw)) + 1, width)):
+            qx = abs(px + 0.5 - (bx + bw / 2)) - (bw / 2 - r)
+            qy = abs(py + 0.5 - (by + bh / 2)) - (bh / 2 - r)
+            d = math.hypot(max(qx, 0.0), max(qy, 0.0)) + min(max(qx, qy), 0.0) - r
+            cover = min(max(0.5 - d, 0.0), 1.0) * colour[3] / 255.0
+            if cover <= 0.0:
+                continue
+            o = (py * width + px) * 4
+            under = pixels[o + 3] / 255.0 * (1.0 - cover)
+            out_a = cover + under
+            for i, c in enumerate((colour[2], colour[1], colour[0])):
+                pixels[o + i] = round((c * cover + pixels[o + i] * under) / out_a)
+            pixels[o + 3] = round(out_a * 255.0)
+
+
+def render_svg(svg, theme, name=""):
+    """ProsperoEden's chrome SVGs: one rounded rectangle, filled with a colour or a gradient, with a
+    stroke, in PS5CEMU-HAR's shapes and glass (RADII, MARKED, UNDERLINED, GLASS) when name is one of
+    them. Returns width, height and top-down BGRA pixels."""
     fills, strokes = THEMES[theme][2:4]
+    stem = os.path.splitext(name)[0]
+    accent = parse_colour("#a9db63", strokes, theme)[:3] + (255,)  # the focus outline's colour
     width = int(re.search(r'<svg[^>]*\bwidth="(\d+)"', svg).group(1))
     height = int(re.search(r'<svg[^>]*\bheight="(\d+)"', svg).group(1))
     rect = re.search(r"<rect([^>]*)/>", svg).group(1)
     attribute = lambda name, default=None: (re.search(rf'\b{name}="([^"]*)"', rect) or [None, default])[1]
+    if stem in UNDERLINED:
+        left, right, top = UNDERLINED[stem]
+        pixels = bytearray(width * height * 4)
+        composite_bar(pixels, width, left, top, right - left, 4, accent)
+        return width, height, bytes(pixels)
     x, y, w, h = (float(attribute(n)) for n in ("x", "y", "width", "height"))
-    radius = min(float(attribute("rx", "0")), w / 2, h / 2)  # as SVG clamps it
-    stroke = parse_colour(attribute("stroke"), strokes, theme) if attribute("stroke") else None
+    radius = float(RADII.get(re.sub(r"-(normal|focused)$", "", stem), attribute("rx", "0")))
+    radius = min(radius, w / 2, h / 2)  # as SVG clamps it
+    glass = GLASS.get(stem)
+    stroke = attribute("stroke") if not glass else glass[1]
+    stroke = parse_colour(stroke, strokes, theme) if stroke else None
     stroke_width = float(attribute("stroke-width", "1"))
-    fill = attribute("fill")
-    if fill.startswith("url("):
+    fill = attribute("fill") if not glass else glass[0]
+    # ProsperoEden's gradients, its focus, run left to right; these run top to bottom, with a 2-pixel outline
+    vertical = fill.startswith("url(")
+    if vertical:
         stops = [parse_colour(c, fills, theme) for c in re.findall(r'stop-color="([^"]+)"', svg)]
         gradient = (stops[0], stops[-1])
+        stroke_width = max(stroke_width, 2.0)
     else:
         gradient = (parse_colour(fill, fills, theme),) * 2
 
-    def fill_colour(px):
-        t = min(max((px + 0.5 - x) / w, 0.0), 1.0)
+    def fill_colour(px, py):
+        t = (py + 0.5 - y) / h if vertical else (px + 0.5 - x) / w
+        t = min(max(t, 0.0), 1.0)
         return tuple(a + (b - a) * t for a, b in zip(*gradient))
 
     def distance(px, py):
@@ -158,7 +227,7 @@ def render_svg(svg, theme):
 
     def pixel(px, py):
         d = distance(px, py)
-        r, g, b, a = fill_colour(px)
+        r, g, b, a = fill_colour(px, py)
         fill_cover = min(max(0.5 - d, 0.0), 1.0)
         out_a = a / 255.0 * fill_cover
         out = [r * out_a, g * out_a, b * out_a]  # premultiplied while compositing
@@ -170,9 +239,10 @@ def render_svg(svg, theme):
             return b"\0\0\0\0"
         return bytes((round(out[2] / out_a), round(out[1] / out_a), round(out[0] / out_a), round(out_a * 255.0)))
 
-    # Away from the edges every row is the same: work it out once, and the edges for each row.
+    # Away from the edges a row's pixels are all alike (and, with a horizontal gradient, every row
+    # is the same): work them out once, and the edges for each row.
     inner_left, inner_right = int(x + radius + 2), int(x + w - radius - 2)
-    inner_rows = range(int(y + radius + 2), int(y + h - radius - 2))
+    inner_rows = range(int(y + radius + 2), int(y + h - radius - 2)) if inner_left < inner_right else range(0)
     middle_row = int(y + h / 2)
     shared = b"".join(pixel(px, middle_row) for px in range(width))
     rows = []
@@ -180,10 +250,15 @@ def render_svg(svg, theme):
         if py in inner_rows:
             left = b"".join(pixel(px, py) for px in range(inner_left))
             right = b"".join(pixel(px, py) for px in range(inner_right, width))
-            rows.append(left + shared[inner_left * 4:inner_right * 4] + right)
+            middle = pixel(inner_left, py) * (inner_right - inner_left) if vertical else shared[inner_left * 4:inner_right * 4]
+            rows.append(left + middle + right)
         else:
             rows.append(b"".join(pixel(px, py) for px in range(width)))
-    return width, height, b"".join(rows)
+    pixels = bytearray(b"".join(rows))
+    if stem in MARKED:
+        # the accent bar, inside the left edge, over the middle half of the height
+        composite_bar(pixels, width, x + 6, y + h / 4, 5, h / 2, accent)
+    return width, height, bytes(pixels)
 
 
 def recolour_tga(source, target, theme):
@@ -226,7 +301,8 @@ def main():
         sys.exit(__doc__)
     source, own, target = sys.argv[1:4]
     with open(os.path.join(source, "styles", "app.rcss")) as file:
-        app = file.read()
+        # in PS5CEMU-HAR's font, Lexend (fonts/, tools/render-fonts.py), not ProsperoEden's Montserrat
+        app = file.read().replace('font-family: "Montserrat"', 'font-family: "Lexend"')
     with open(own) as file:
         ps5cemu = file.read()
     os.makedirs(os.path.join(target, "styles"), exist_ok=True)
@@ -240,7 +316,7 @@ def main():
         for svg in svgs:
             if svg.endswith(".svg"):
                 with open(svg) as file:
-                    width, height, pixels = render_svg(file.read(), theme)
+                    width, height, pixels = render_svg(file.read(), theme, os.path.basename(svg))
                 write_tga(os.path.join(target, "chrome" + suffix, os.path.basename(svg)[:-4] + ".tga"), width, height, pixels)
         os.makedirs(os.path.join(target, "icons" + suffix), exist_ok=True)
         for name in sorted(os.listdir(os.path.join(source, "icons"))):
@@ -251,7 +327,8 @@ def main():
         # PS5CEMU-HAR's own is written in the blue already
         with open(os.path.join(target, "styles", f"ps5cemu{suffix}.rcss"), "w") as file:
             file.write(ps5cemu if theme == "blue" else recolour_rcss(ps5cemu, theme))
-    shutil.copytree(os.path.join(source, "fonts"), os.path.join(target, "fonts"), dirs_exist_ok=True)
+    for folder in ("fonts", "sounds"):
+        shutil.copytree(os.path.join(os.path.dirname(own), folder), os.path.join(target, folder), dirs_exist_ok=True)
 
 
 if __name__ == "__main__":

@@ -35,8 +35,8 @@ namespace ps5launcher
 	{
 		System system;
 		ps5emu::Game game;
-		// The player left this emulator's side for the start screen: the app starts over, so that a
-		// session only ever holds one emulator (game is empty).
+		// Azahar's side was chosen after Cemu had started in this process: the app starts over on it,
+		// so that a session never holds both emulators (game is empty).
 		bool startOver = false;
 	};
 

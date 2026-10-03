@@ -9,6 +9,7 @@
 // is Cemu's (main.rml) or Azahar's (azahar.rml); the start screen (start.rml) chooses which.
 
 #include "launcher.h"
+#include "sound.h"
 #include "ui_host.h"
 #include "../app/boxart.h"
 #include "../app/paths.h"
@@ -33,10 +34,13 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <dirent.h>
 #include <fcntl.h>
+#include <filesystem>
+#include <fstream>
 #include <functional>
 #include <initializer_list>
 #include <map>
@@ -138,17 +142,11 @@ namespace ps5launcher
 				element->SetClass(name, enabled);
 		}
 
-		// Text in what the launcher's fonts have (ProsperoEden's Montserrat atlases: ASCII, with � and
-		// �): accented letters as their plain ones, typographic quotes, dashes and marks as ASCII ones,
-		// and anything else left out, so a name such as "Pok�mon" shows as "Pokemon" and not "Pokmon".
+		// Text in what the launcher's fonts have (tools/render-fonts.py: ASCII, Latin-1 and the
+		// typographic marks below), so a name such as "Pokémon" keeps its accent; anything else is
+		// left out rather than drawn as a missing glyph.
 		std::string Printable(const std::string& text)
 		{
-			static constexpr const char* kLatin1[64] = {
-				"A", "A", "A", "A", "A", "A", "AE", "C", "E", "E", "E", "E", "I", "I", "I", "I", // C0
-				"D", "N", "O", "O", "O", "O", "O", "x", "O", "U", "U", "U", "U", "Y", "Th", "ss", // D0
-				"a", "a", "a", "a", "a", "a", "ae", "c", "e", "e", "e", "e", "i", "i", "i", "i", // E0
-				"d", "n", "o", "o", "o", "o", "o", "/", "o", "u", "u", "u", "u", "y", "th", "y", // F0
-			};
 			std::string out;
 			for (size_t i = 0; i < text.size();)
 			{
@@ -161,26 +159,11 @@ namespace ps5launcher
 				i += length;
 				if (c < 0x80)
 					out += (char)c;
-				else if (c == 0xB0 || c == 0x2022) // the fonts have these
-					out += whole;
-				else if (c >= 0xC0 && c <= 0xFF)
-					out += kLatin1[c - 0xC0];
-				else if (c == 0x2018 || c == 0x2019 || c == 0xB4)
-					out += '\'';
-				else if (c == 0x201C || c == 0x201D)
-					out += '"';
-				else if (c == 0x2013 || c == 0x2014)
-					out += '-';
-				else if (c == 0x2026)
-					out += "...";
-				else if (c == 0x2122)
-					out += "TM";
-				else if (c == 0xAE)
-					out += "(R)";
-				else if (c == 0xA9)
-					out += "(C)";
 				else if (c == 0xA0)
 					out += ' ';
+				else if ((c > 0xA0 && c <= 0xFF) || c == 0x2013 || c == 0x2014 || c == 0x2018 || c == 0x2019 || c == 0x201C ||
+					c == 0x201D || c == 0x2022 || c == 0x2026 || c == 0x20AC || c == 0x2122)
+					out += whole;
 			}
 			return out;
 		}
@@ -250,9 +233,105 @@ namespace ps5launcher
 			return fmt::format("{:.1f} GB", bytes / 1e9);
 		}
 
+		// A folder's entry as a path; an entry that is a path already (a drive's, below) stays one
 		std::string JoinPath(const std::string& folder, const std::string& name)
 		{
+			if (name.starts_with('/'))
+				return name;
 			return folder == "/" ? "/" + name : folder + "/" + name;
+		}
+
+		// The drives plugged in (USB, and the PS5's extended storage), for the folder browser to list
+		// first: otherwise reached only by climbing to / and into /mnt
+		std::vector<std::string> ConnectedDrives()
+		{
+			std::vector<std::string> drives;
+			for (int i = 0; i < 8; i++)
+				drives.push_back(fmt::format("/mnt/usb{}", i));
+			drives.push_back("/mnt/ext0");
+			drives.push_back("/mnt/ext1");
+			std::erase_if(drives, [](const std::string& drive) {
+				struct stat info{};
+				return stat(drive.c_str(), &info) != 0 || !S_ISDIR(info.st_mode);
+			});
+			return drives;
+		}
+
+		bool IsFolder(const std::string& path);
+		bool IsFile(const std::string& path);
+
+		bool CopyFile(const std::string& from, const std::string& to)
+		{
+			std::ifstream in(from, std::ios::binary);
+			if (!in)
+				return false;
+			std::ofstream out(to, std::ios::binary | std::ios::trunc);
+			out << in.rdbuf();
+			return (bool)out;
+		}
+
+		// Diagnostics > Copy logs to USB: what a report needs, in a folder of its own on the first
+		// USB drive that takes one. What it did, as the row shows it.
+		std::string CopyLogsToUsb()
+		{
+			char stamp[32] = "logs";
+			const std::time_t now = std::time(nullptr);
+			if (const std::tm* local = std::localtime(&now))
+				std::strftime(stamp, sizeof(stamp), "%Y-%m-%d-%H%M%S", local);
+			const std::string root = ps5paths::kRoot;
+			const std::string files[] = {std::string(ps5paths::kLogs) + "/boot.log", std::string(ps5paths::kLogs) + "/boot.prev.log",
+				root + "/log.txt", root + "/azahar/log/azahar_log.txt", ps5paths::kLauncherSettings, root + "/settings.xml"};
+			for (int drive = 0; drive < 8; drive++)
+			{
+				const std::string folder = fmt::format("/mnt/usb{}/PS5CEMU-HAR-logs-{}", drive, stamp);
+				if (!IsFolder(fmt::format("/mnt/usb{}", drive)) || mkdir(folder.c_str(), 0777) != 0)
+					continue;
+				int copied = 0;
+				for (const std::string& file : files)
+					if (IsFile(file) && CopyFile(file, folder + file.substr(file.find_last_of('/'))))
+						copied++;
+				ps5log::Line("[launcher] {} log files copied to {}", copied, folder);
+				return fmt::format("{} files to USB drive {}", copied, drive + 1);
+			}
+			ps5log::Line("[launcher] no USB drive took the logs");
+			return "No USB drive found";
+		}
+
+		// Diagnostics > Clear shader caches, for the side it is on: Cemu's (its transferable,
+		// precompiled and driver caches: the .bin files, so a copy set aside by hand stays) or
+		// Azahar's. Every game builds its shaders again as it meets them.
+		std::string ClearShaderCaches(bool n3ds)
+		{
+			namespace fs = std::filesystem;
+			const std::string folder = n3ds ? std::string(ps5paths::kRoot) + "/azahar/shaders" : std::string(ps5paths::kCache) + "/shaderCache";
+			std::error_code ec;
+			int files = 0;
+			uintmax_t bytes = 0;
+			std::vector<fs::path> doomed;
+			for (auto it = fs::recursive_directory_iterator(folder, ec); !ec && it != fs::recursive_directory_iterator(); it.increment(ec))
+				if (it->is_regular_file(ec) && (n3ds || it->path().extension() == ".bin"))
+					doomed.push_back(it->path());
+			for (const fs::path& file : doomed)
+			{
+				const uintmax_t size = fs::file_size(file, ec);
+				if (fs::remove(file, ec))
+				{
+					files++;
+					bytes += ec ? 0 : size;
+				}
+			}
+			ps5log::Line("[launcher] shader caches cleared in {}: {} files, {} MiB", folder, files, bytes >> 20);
+			return files ? fmt::format("{} files deleted ({} MB)", files, bytes / 1000000) : "None to delete";
+		}
+
+		// How the browser names a drive: "USB drive 1", "Extended storage 1"
+		std::string DriveName(const std::string& path)
+		{
+			if (path.starts_with("/mnt/usb"))
+				return fmt::format("USB drive {}", std::atoi(path.c_str() + 8) + 1);
+			if (path.starts_with("/mnt/ext"))
+				return fmt::format("Extended storage {}", std::atoi(path.c_str() + 8) + 1);
+			return path;
 		}
 
 		std::string ParentPath(const std::string& folder)
@@ -425,6 +504,8 @@ namespace ps5launcher
 			kVideo,
 			kAudio,
 			kDiagnostics,
+			kOnline,
+			kSystem,
 			kAbout,
 			kFiles,
 			kPacks,
@@ -445,9 +526,12 @@ namespace ps5launcher
 			kPacksButton = 4,
 			kRecent0 = 5,
 			kViewAll = 9,
+			// the roadmap's features, on PS5CEMU-HAR's home screen until they are made (render-layout.py)
+			kFeature0 = 10,
 		};
 
-		// Settings' list
+		// Settings' list: these, then the planned categories the layout already has rows for, marked as
+		// coming (tools/render-layout.py), which open nothing yet
 		enum SettingsRow
 		{
 			kRowVideo,
@@ -456,8 +540,10 @@ namespace ps5launcher
 			kRowGameFiles,
 			kRowInstall,
 			kRowDiagnostics,
-			kSettingsRows,
 		};
+		// the 3DS's System, after its planned Borders, Camera and microphone, and Amiibo (render-layout.py)
+		constexpr int kRowSystem3ds = 9;
+		constexpr const char* kRegions[] = {"Automatic", "Japan", "USA", "Europe", "Australia", "China", "Korea", "Taiwan"};
 
 		// The 3DS's controls (Azahar's side has one console, and these in place of a player's)
 		enum ConsoleRow
@@ -534,11 +620,43 @@ namespace ps5launcher
 		};
 
 		constexpr int kListRows = 7, kFileRows = 6, kPresetRows = 4, kPickerRows = 6;
-		constexpr const char* kHomeElements[] = {"header", "menu", "last-played-card", "recent-section", "startup-status", "footer"};
+		constexpr const char* kHomeElements[] = {"header", "menu", "last-played-card", "recent-section", "features-section", "startup-status", "footer"};
 		// The screens that fill the display: one shows at a time, as the background shows through them
 		constexpr const char* kFullScreens[] = {"rom-dialog", "packs-dialog", "settings-dialog", "controls-dialog", "player-dialog",
 			"mapping-dialog", "files-dialog", "about-dialog", "loading-screen"};
 		constexpr uint64_t kCaptureUs = 6000000; // how long a button mapping waits for a press
+		constexpr int kAudioRows = 4;			 // Settings > Audio: the game's volume, the music, its volume, the menu's sounds
+		constexpr const char* kMusic[] = {"shop", "setup", "off"};
+
+		// What the screen shows, to tell whether a key press did anything, for its sound: the layout
+		// (its text, pictures and places) and which screens are open and which rows focused.
+		std::string Showing(Rml::ElementDocument* document)
+		{
+			std::string showing = document->GetInnerRML();
+			Rml::ElementList elements;
+			document->QuerySelectorAll(elements, ".open, .focused");
+			for (Rml::Element* element : elements)
+				showing += (element->IsClassSet("open") ? "\nopen " : "\nfocused ") + element->GetId();
+			return showing;
+		}
+
+		// A key press's sound (sound.h): moving when the cursor or a value moved, choosing or going back
+		// when something opened, closed or changed, and a bump when Cross was pressed on what does
+		// nothing (yet).
+		void Feedback(Key key, bool changed)
+		{
+			using ps5sound::Effect;
+			if (key == Key::Cross)
+				ps5sound::Play(changed ? Effect::Select : Effect::Denied);
+			else if (!changed)
+				return;
+			else if (key == Key::Circle)
+				ps5sound::Play(Effect::Back);
+			else if (key == Key::Triangle || key == Key::Square)
+				ps5sound::Play(Effect::Select);
+			else
+				ps5sound::Play(Effect::Move);
+		}
 
 		class Launcher
 		{
@@ -578,6 +696,8 @@ namespace ps5launcher
 			}
 
 			bool Done() const { return m_launch.has_value() && m_screen == kLoading; }
+			// A button mapping waiting for a press: the controller is PollCapture's.
+			bool Capturing() const { return m_capture.active; }
 			// The player went back to the start screen.
 			bool Leaving() const { return m_leaving; }
 			const std::optional<ps5emu::Game>& Choice() const { return m_launch; }
@@ -636,7 +756,9 @@ namespace ps5launcher
 				case kSettings: SettingsKey(key); break;
 				case kVideo:
 				case kAudio:
-				case kDiagnostics: SettingsPageKey(key); break;
+				case kDiagnostics:
+				case kOnline:
+				case kSystem: SettingsPageKey(key); break;
 				case kControls: ControlsKey(key); break;
 				case kPlayer: PlayerKey(key); break;
 				case kMapping: MappingKey(key); break;
@@ -847,11 +969,11 @@ namespace ps5launcher
 				{
 					const auto& game = m_games[m_lastIndex];
 					SetText(m_document, "last-played-title", game.name);
+					// the kicker above says it was the last game played
 					if (Is3ds())
-						SetText(m_document, "last-played-caption", game.publisher.empty() ? "Last game played" : "Last game played  /  " + game.publisher);
+						SetText(m_document, "last-played-caption", game.publisher.empty() ? "Nintendo 3DS" : game.publisher);
 					else
-						SetText(m_document, "last-played-caption", fmt::format("Last game played  /  v{}{}", game.version,
-							game.dlcCount ? "  /  DLC" : ""));
+						SetText(m_document, "last-played-caption", fmt::format("v{}{}", game.version, game.dlcCount ? "  /  DLC" : ""));
 					SetImage(m_document, "last-played-cover", Cover(game));
 				}
 				else if (LastGame() && CoreReady() && !m_scanning)
@@ -905,6 +1027,24 @@ namespace ps5launcher
 				SetClass(m_document, "view-all", "focused", m_selected == kViewAll);
 				for (int i = 0; i < 4; i++)
 					SetClass(m_document, fmt::format("recent-{}", i), "focused", m_selected == kRecent0 + i);
+				// a planned feature in focus says what it will do
+				std::string caption = "Planned for later versions: choose one to see what it will do.";
+				for (int i = 0; i < FeatureCount(); i++)
+					if (Rml::Element* feature = m_document->GetElementById(fmt::format("feature-{}", i)))
+					{
+						feature->SetClass("focused", m_selected == kFeature0 + i);
+						if (m_selected == kFeature0 + i)
+							caption = feature->GetAttribute<Rml::String>("data-caption", caption);
+					}
+				SetText(m_document, "feature-caption", caption);
+			}
+
+			int FeatureCount()
+			{
+				int count = 0;
+				while (m_document->GetElementById(fmt::format("feature-{}", count)))
+					count++;
+				return count;
 			}
 
 			void HomeKey(Key key)
@@ -917,12 +1057,18 @@ namespace ps5launcher
 					m_leaving = true;
 					return;
 				}
+				const int featureCount = FeatureCount();
+				const int firstRecent = recentCount ? kRecent0 : kViewAll;
+				// PS5CEMU-HAR's home screen, top to bottom: the menu, the last game and its buttons, the
+				// shelf of recent games, and the row of the roadmap's features
 				if (key == Key::Up)
 				{
-					if (m_selected == kContinue || m_selected == kPacksButton)
-						m_selected = ready ? kLibraryButton : kSettingsButton;
+					if (m_selected >= kFeature0)
+						m_selected = recentShown ? firstRecent : kContinue;
 					else if (m_selected >= kRecent0)
 						m_selected = kContinue;
+					else if (m_selected == kContinue || m_selected == kPacksButton)
+						m_selected = ready ? kLibraryButton : kSettingsButton;
 				}
 				else if (key == Key::Down)
 				{
@@ -931,8 +1077,15 @@ namespace ps5launcher
 						if (ready)
 							m_selected = kContinue;
 					}
-					else if ((m_selected == kContinue || m_selected == kPacksButton) && recentShown)
-						m_selected = recentCount ? kRecent0 : kViewAll;
+					else if (m_selected == kContinue || m_selected == kPacksButton)
+					{
+						if (recentShown)
+							m_selected = firstRecent;
+						else if (featureCount)
+							m_selected = kFeature0;
+					}
+					else if (m_selected >= kRecent0 && m_selected <= kViewAll && featureCount)
+						m_selected = kFeature0;
 				}
 				else if (key == Key::Left || key == Key::Right)
 				{
@@ -943,6 +1096,8 @@ namespace ps5launcher
 						if (m_selected == kLibraryButton && !ready)
 							m_selected = delta > 0 ? kSettingsButton : kAboutButton;
 					}
+					else if (m_selected >= kFeature0)
+						m_selected = kFeature0 + (m_selected - kFeature0 + delta + featureCount) % featureCount;
 					else if (m_selected == kContinue || m_selected == kPacksButton)
 					{
 						// the second button: a game's graphic packs, or Artic Base on the 3DS's side
@@ -1333,10 +1488,27 @@ namespace ps5launcher
 				UpdateSettingsList();
 			}
 
+			// The settings' rows in the layout, the planned ones included
+			int SettingsCount()
+			{
+				int count = 0;
+				while (m_document->GetElementById(fmt::format("settings-row-{}", count)))
+					count++;
+				return count;
+			}
+
 			void UpdateSettingsList()
 			{
-				for (int row = 0; row < kSettingsRows; row++)
-					SetClass(m_document, fmt::format("settings-row-{}", row), "focused", m_settingsSelected == row);
+				const int count = SettingsCount();
+				const int scroll = Scroll(m_settingsSelected, kListRows);
+				for (int row = 0; row < count; row++)
+					if (Rml::Element* element = m_document->GetElementById(fmt::format("settings-row-{}", row)))
+					{
+						element->SetClass("focused", m_settingsSelected == row);
+						element->SetClass("offscreen", row < scroll || row >= scroll + kListRows);
+						element->SetProperty("top", fmt::format("{}px", (row - scroll) * 88));
+					}
+				SetText(m_document, "settings-position", fmt::format("{} OF {}", m_settingsSelected + 1, count));
 			}
 
 			void SettingsKey(Key key)
@@ -1346,7 +1518,7 @@ namespace ps5launcher
 					GoHome();
 					return;
 				}
-				if (Browse(key, m_settingsSelected, kSettingsRows, kSettingsRows))
+				if (Browse(key, m_settingsSelected, SettingsCount(), kListRows))
 				{
 					UpdateSettingsList();
 					return;
@@ -1366,6 +1538,13 @@ namespace ps5launcher
 					break;
 				case kRowGameFiles: OpenFiles(FilesMode::GamesFolder); break;
 				case kRowInstall: OpenFiles(Is3ds() ? FilesMode::InstallCia : FilesMode::Install); break;
+				default:
+					// Online and updates, the last category on both sides (the ones before it are planned)
+					if (m_settingsSelected == SettingsCount() - 1)
+						OpenSettingsPage("online-dialog", kOnline);
+					else if (Is3ds() && m_settingsSelected == kRowSystem3ds)
+						OpenSettingsPage("system-dialog", kSystem);
+					break;
 				}
 			}
 
@@ -1375,12 +1554,15 @@ namespace ps5launcher
 				SetClass(m_document, id, "open", true);
 				m_screen = screen;
 				m_option = 0;
+				m_diagnosticsDone[0].clear();
+				m_diagnosticsDone[1].clear();
+				m_confirmClear = false;
 				UpdateSettingsPage();
 			}
 
 			static const char* PageOf(Screen screen)
 			{
-				return screen == kVideo ? "video-dialog" : screen == kAudio ? "audio-dialog" : "diagnostics-dialog";
+				return screen == kVideo ? "video-dialog" : screen == kAudio ? "audio-dialog" : screen == kOnline ? "online-dialog" : screen == kSystem ? "system-dialog" : "diagnostics-dialog";
 			}
 
 			void SettingsPageKey(Key key)
@@ -1421,10 +1603,63 @@ namespace ps5launcher
 					else if (change && m_option == 2)
 						changed = (m_settings.overlay = !m_settings.overlay, true);
 				}
-				else if (m_screen == kAudio && (key == Key::Left || key == Key::Right))
+				else if (m_screen == kAudio)
 				{
-					Volume() = std::clamp(Volume() + (key == Key::Right ? 10 : -10), 0, 100);
+					const int step = key == Key::Left ? -1 : 1;
+					const bool slide = key == Key::Left || key == Key::Right; // the volumes move by Left and Right only
+					if (key == Key::Up || key == Key::Down)
+						Browse(key, m_option, kAudioRows, kAudioRows);
+					else if (slide && m_option == 0)
+						changed = (Volume() = std::clamp(Volume() + step * 10, 0, 100), true);
+					else if (change && m_option == 1)
+					{
+						const int music = (int)(std::find(std::begin(kMusic), std::end(kMusic), m_settings.music) - std::begin(kMusic));
+						changed = (m_settings.music = kMusic[(music + step + 3) % 3], true);
+					}
+					else if (slide && m_option == 2)
+						changed = (m_settings.musicVolume = std::clamp(m_settings.musicVolume + step * 10, 0, 100), true);
+					else if (change && m_option == 3)
+						changed = (m_settings.menuSounds = !m_settings.menuSounds, true);
+					if (changed)
+					{
+						ps5sound::SetMusic(m_settings.music, m_settings.musicVolume);
+						ps5sound::SetMenuSounds(m_settings.menuSounds);
+					}
+				}
+				else if (m_screen == kSystem && change)
+				{
+					// Automatic (-1), then Azahar's regions 0 to 6
+					int& region = m_settings.n3ds.region;
+					region = (region + 1 + (key == Key::Left ? 7 : 1)) % 8 - 1;
 					changed = true;
+				}
+				else if (m_screen == kOnline && change)
+				{
+					// box art from GameTDB: off stops what is queued, and nothing more is asked for
+					m_settings.boxArt = !m_settings.boxArt;
+					ps5boxart::SetEnabled(m_settings.boxArt);
+					if (m_settings.boxArt)
+						FetchBoxArt();
+					changed = true;
+				}
+				else if (m_screen == kDiagnostics)
+				{
+					if (key == Key::Up || key == Key::Down)
+					{
+						Browse(key, m_option, 2, 2);
+						m_confirmClear = false;
+					}
+					else if (key == Key::Cross && m_option == 0)
+						m_diagnosticsDone[0] = CopyLogsToUsb();
+					else if (key == Key::Cross && m_option == 1)
+					{
+						// deleting caches takes a second press: they take long to build again
+						if (m_confirmClear)
+							m_diagnosticsDone[1] = ClearShaderCaches(Is3ds());
+						else
+							m_diagnosticsDone[1] = "Press Cross again to delete";
+						m_confirmClear = !m_confirmClear;
+					}
 				}
 				if (changed)
 					SaveSettings();
@@ -1456,6 +1691,21 @@ namespace ps5launcher
 					SetClass(m_document, fmt::format("video-row-{}", row), "focused", m_screen == kVideo && m_option == row);
 				}
 				SetText(m_document, "audio-volume", fmt::format("{}%", Volume()));
+				SetText(m_document, "audio-music", m_settings.music == "shop" ? "Shop theme" : m_settings.music == "setup" ? "Setup theme" : "Off");
+				SetText(m_document, "audio-music-volume", fmt::format("{}%", m_settings.musicVolume));
+				SetText(m_document, "audio-menu-sounds", m_settings.menuSounds ? "On" : "Off");
+				for (int row = 0; row < kAudioRows; row++)
+					SetClass(m_document, fmt::format("audio-row-{}", row), "focused", m_screen == kAudio && m_option == row);
+				SetText(m_document, "system-region", kRegions[std::clamp(m_settings.n3ds.region, -1, 6) + 1]);
+				SetClass(m_document, "system-row-0", "focused", m_screen == kSystem);
+				SetText(m_document, "online-boxart", m_settings.boxArt ? "On" : "Off");
+				SetClass(m_document, "online-row-0", "focused", m_screen == kOnline);
+				SetText(m_document, "diag-label-1", Is3ds() ? "Clear 3DS shader caches" : "Clear Wii U shader caches");
+				for (int row = 0; row < 2; row++)
+				{
+					SetText(m_document, fmt::format("diag-value-{}", row), m_diagnosticsDone[row]);
+					SetClass(m_document, fmt::format("diag-row-{}", row), "focused", m_screen == kDiagnostics && m_option == row);
+				}
 				std::string details;
 				for (const auto& line : m_status.diagnostics)
 					details += (details.empty() ? "" : "<br/>") + Rml::StringUtilities::EncodeRml(line);
@@ -2153,6 +2403,12 @@ namespace ps5launcher
 				m_browseEntries.clear();
 				if (folder != "/")
 					m_browseEntries.push_back("..");
+				// the drives plugged in, as shortcuts, except the one already open (and in /mnt, which
+				// lists them itself)
+				if (folder != "/mnt")
+					for (const std::string& drive : ConnectedDrives())
+						if (folder != drive && !folder.starts_with(drive + "/"))
+							m_browseEntries.push_back(drive);
 				m_browseEntries.insert(m_browseEntries.end(), folders.begin(), folders.end());
 				m_browseFiles = 0;
 				if (m_filesMode == FilesMode::InstallCia)
@@ -2336,9 +2592,10 @@ namespace ps5launcher
 					SetClass(m_document, id, "offscreen", index >= count);
 					SetClass(m_document, id, "files-up", up);
 					SetClass(m_document, id, "files-file", IsFileEntry(index));
-					SetText(m_document, fmt::format("files-name-{}", row), index >= count ? "" : up ? "Parent folder" : m_browseEntries[index]);
-					std::string meta = IsFileEntry(index) ? "CIA" : "";
-					if (install && index < count && !up)
+					const bool drive = index < count && m_browseEntries[index].starts_with('/');
+					SetText(m_document, fmt::format("files-name-{}", row), index >= count ? "" : up ? "Parent folder" : drive ? DriveName(m_browseEntries[index]) : m_browseEntries[index]);
+					std::string meta = IsFileEntry(index) ? "CIA" : drive ? "DRIVE" : "";
+					if (install && index < count && !up && !drive)
 					{
 						const auto& candidate = Inspect(JoinPath(m_browseFolder, m_browseEntries[index]));
 						if (candidate.kind != ps5emu::InstallCandidate::Kind::None)
@@ -2477,6 +2734,8 @@ namespace ps5launcher
 			std::map<std::string, ps5emu::InstallCandidate> m_inspected;
 			bool m_installing = false;
 			std::string m_installProgress;
+			std::string m_diagnosticsDone[2]; // what Diagnostics' two actions did, on their rows
+			bool m_confirmClear = false;	  // Clear shader caches was pressed once
 		};
 		// The start screen: Cemu on the left half, Azahar on the right; Left and Right choose, Cross starts.
 		// Neither emulator runs behind it: the game counts are those their libraries had last time.
@@ -2545,6 +2804,30 @@ namespace ps5launcher
 		};
 	}
 
+	namespace
+	{
+		// Before a game or a fresh process: no more box art (a cover on its way is waited for), and
+		// the side's game scan finished, the screen kept drawn meanwhile
+		template<typename Frame>
+		void WaitForScan(System system, const Status& status, Frame& frame)
+		{
+			for (int waited = 0; system == System::N3ds ? ps5azahar::Scanning() : status.coreReady && ps5emu::Scanning(); waited++)
+			{
+				if (waited == 0)
+					ps5log::Line("[launcher] waiting for the library's scan to finish");
+				frame();
+				sceKernelUsleep(16000);
+			}
+		}
+
+		template<typename Frame>
+		void StopBackgroundWork(System system, const Status& status, Frame& frame)
+		{
+			ps5boxart::Stop();
+			WaitForScan(system, status, frame);
+		}
+	}
+
 	std::optional<Choice> Run(ps5settings::Launcher& settings, Status& status, const std::function<void(System)>& prepare)
 	{
 		std::string error;
@@ -2554,6 +2837,8 @@ namespace ps5launcher
 			ps5notify::Send("The launcher cannot show: " + error);
 			return std::nullopt;
 		}
+		ps5sound::Start(settings.music, settings.musicVolume, settings.menuSounds);
+		ps5boxart::SetEnabled(settings.boxArt);
 		// After a game, the launcher opens on its emulator's side (and only then: next time, the
 		// start screen)
 		System system = settings.side == "3ds" ? System::N3ds : System::WiiU;
@@ -2587,20 +2872,36 @@ namespace ps5launcher
 				{
 					for (const Key key : input.Poll())
 						if (!chosen)
+						{
+							const std::string before = Showing(document);
 							chosen = start.HandleKey(key);
+							Feedback(key, chosen || Showing(document) != before);
+						}
 					start.Poll();
 					frame();
 				}
 				system = *chosen;
 				choosing = false;
+				if (prepared == System::WiiU && system == System::N3ds)
+				{
+					// Cemu has started in this process: Azahar's side gets a fresh one, opened on it
+					StopBackgroundWork(System::WiiU, status, frame);
+					ps5sound::Stop();
+					ps5ui::Stop();
+					ps5log::Line("[launcher] Azahar's side chosen after Cemu's: starting over on it");
+					return Choice{system, {}, true};
+				}
 				// the chosen emulator starts now, its half saying so
 				start.ShowStarting(system);
 				frame();
 			}
-			// the one emulator this session holds, started once: the side left is never returned to
-			// in this process (Leaving, below)
-			if (!prepared)
+			// the emulator this session holds, started once. From the 3DS side to the Wii U's needs no
+			// fresh process: Azahar's core runs only for a game, so only its game list was read
+			// (finished first)
+			if (prepared != system)
 			{
+				if (prepared)
+					WaitForScan(*prepared, status, frame);
 				prepare(system);
 				prepared = system;
 			}
@@ -2614,34 +2915,40 @@ namespace ps5launcher
 			while (!launcher.Done() && !launcher.Leaving())
 			{
 				for (const Key key : input.Poll())
+				{
+					if (launcher.Done() || launcher.Capturing())
+					{
+						launcher.HandleKey(key);
+						continue;
+					}
+					const std::string before = Showing(document);
 					launcher.HandleKey(key);
+					if (launcher.Done())
+						ps5sound::Play(ps5sound::Effect::Launch);
+					else
+						Feedback(key, launcher.Capturing() || Showing(document) != before);
+				}
 				launcher.Poll();
 				frame();
 			}
 			if (launcher.Leaving())
 			{
-				// back to the start screen in a fresh process, which starts neither emulator until one
-				// is chosen
-				ps5ui::Stop();
-				ps5log::Line("[launcher] leaving {}'s side: starting over at the start screen", n3ds ? "Azahar" : "Cemu");
-				return Choice{system, {}, true};
+				// back to the start screen, in this process (choosing Azahar's side after Cemu's starts it over)
+				ps5log::Line("[launcher] leaving {}'s side for the start screen", n3ds ? "Azahar" : "Cemu");
+				choosing = true;
+				continue;
 			}
-			// the launcher's background work stops before the game: no more box art, and the
-			// library's scan finished (the loading screen shows meanwhile)
-			ps5boxart::Stop();
-			for (int waited = 0; n3ds ? ps5azahar::Scanning() : status.coreReady && ps5emu::Scanning(); waited++)
-			{
-				if (waited == 0)
-					ps5log::Line("[launcher] waiting for the library's scan to finish before the game");
-				frame();
-				sceKernelUsleep(16000);
-			}
-			// the loading screen stays on VideoOut while the launcher makes way for the emulator's renderer
+			// the launcher's background work stops before the game (the loading screen shows meanwhile)
+			StopBackgroundWork(system, status, frame);
+			// the loading screen stays on VideoOut while the launcher makes way for the emulator's
+			// renderer, and while its music fades and the launch's sound plays out
 			ps5ui::Frame();
+			ps5sound::Stop();
 			ps5ui::Stop();
 			ps5log::Line("[launcher] starting {} ({:016x}) on {}", launcher.Choice()->name, launcher.Choice()->titleId, n3ds ? "Azahar" : "Cemu");
 			return Choice{system, *launcher.Choice()};
 		}
+		ps5sound::Stop();
 		ps5ui::Stop();
 		ps5notify::Send("The launcher's layout did not load.");
 		return std::nullopt;

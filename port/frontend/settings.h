@@ -23,6 +23,7 @@ namespace ps5settings
 		bool motion = true;			  // the DualSense's motion sensors as the 3DS's
 		int deadzone = 15;			  // the sticks', percent
 		bool performance = false;	  // the frame rate and speed over the game (its in-game menu)
+		int region = -1;			  // the emulated 3DS's region: -1 automatic (the game's), else Azahar's region_value
 		int cpuClock = 100;			  // the emulated CPU's speed, percent of the 3DS's (Azahar's cpu_clock_percentage)
 		std::string articAddress;	  // the last Artic Base server's IPv4 address, a 3DS on the network
 		int gameCount = -1;			  // the library's games when last looked for (the start screen's); -1: never
@@ -39,11 +40,20 @@ namespace ps5settings
 		bool overlay = false;		  // Cemu's performance overlay from the start
 		bool rumble = true;
 		bool pinCpuThreads = false;	  // an experiment (ps5/threads.h): only in ps5cemu.json
+		// only in ps5cemu.json: RADV_DEBUG for the Vulkan driver (e.g. "nongg,nohiz"), to narrow down
+		// a GPU hang by turning hardware features off; empty by default
+		std::string radvDebug;
 		int volume = 100;			  // the TV sound, in percent
 		int gameCount = -1;			  // the Wii U library's games when last looked for (the start screen's); -1: never
 		uint64_t lastGame = 0;		  // title ID
 		std::vector<uint64_t> recent; // newest first, at most four
 		N3ds n3ds;
+		// The launcher's own sound, on both sides (frontend/sound.h): its music ("shop", "setup" or
+		// "off") and the music's volume in percent, and the menu's sounds.
+		std::string music = "shop";
+		int musicVolume = 50;
+		bool boxArt = true;			  // box art from GameTDB (Settings > Online and updates)
+		bool menuSounds = true;
 		// The emulator the launcher opens on, the one last played ("wiiu" or "3ds"); empty: the
 		// start screen, to choose.
 		std::string side;

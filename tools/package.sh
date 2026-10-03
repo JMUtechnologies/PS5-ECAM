@@ -9,8 +9,8 @@
 #     sce_sys/pic0.dds, pic1.dds      its home screen background (selected, starting)
 #     sce_module/libc.prx             the boilerplate's clean-room runtime
 #     sandbox-elevator.elf            the boilerplate's /data helper, built for PPSA99360
-#     assets/ui/                      the launcher: ProsperoEden's artwork (in blue and in gold) and
-#                                     fonts, its layouts, port/frontend/ui's stylesheet
+#     assets/ui/                      the launcher: ProsperoEden's artwork (in blue and in gold), its
+#                                     layouts, port/frontend/ui's stylesheet, fonts and sounds
 #     assets/cemu/                    Cemu's game profiles and the Wii U system fonts
 #     assets/graphicPacks/            the community graphic packs (installed on first start)
 #
@@ -85,10 +85,11 @@ grep -q "\"$title\"" "$helper/payload/main.cpp" || { echo "the elevation helper'
 make -s -C "$helper/payload" PS5_PAYLOAD_SDK="$PS5_PAYLOAD_SDK" OUTPUT="$app/sandbox-elevator.elf"
 python3 -B "$boilerplate/tools/validate-elevation-helper.py" "$app/sandbox-elevator.elf" >/dev/null
 
-# The launcher: ProsperoEden's artwork, fonts and stylesheet in Cemu's blue and Azahar's gold
-# (tools/recolour-ui.py), its layouts (tools/render-layout.py: the start screen, Cemu's side and
-# Azahar's) and PS5CEMU-HAR's icons. Its backgrounds, the Homebrew Launchers' bubbles and waves, are
-# drawn as it runs (port/frontend/bubbles.h, wave.h).
+# The launcher: ProsperoEden's artwork and stylesheet in Cemu's blue and Azahar's gold and in
+# PS5CEMU-HAR's own shapes, with its Lexend font and its music and menu sounds (tools/recolour-ui.py,
+# render-fonts.py, render-sounds.py), its layouts (tools/render-layout.py: the start screen, Cemu's
+# side and Azahar's) and PS5CEMU-HAR's icons. Its backgrounds, the Homebrew Launchers' bubbles and
+# waves, are drawn as it runs (port/frontend/bubbles.h, wave.h).
 ui=$app/assets/ui
 prospero=$deps/ProsperoEden/headless/prosperoeden/ui
 python3 -B "$PS5CEMU_ROOT/tools/recolour-ui.py" "$prospero" "$PS5CEMU_ROOT/port/frontend/ui/ps5cemu.rcss" "$ui"

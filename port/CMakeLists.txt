@@ -21,7 +21,8 @@ foreach(index RANGE ${PS5CEMU_DEPS_LAST})
 endforeach()
 set(PS5CEMU_ROOT "${CMAKE_CURRENT_LIST_DIR}/..")
 set(PS5CEMU_DEPS "${PS5CEMU_ROOT}/.deps")
-# ProsperoEden's bitmap font engine: its launcher fonts are Montserrat atlases, not TrueType
+# ProsperoEden's bitmap font engine: the launcher's fonts are atlases (Lexend's, tools/render-fonts.py),
+# not TrueType
 set(PROSPEROEDEN_LAUNCHER "${PS5CEMU_DEPS}/ProsperoEden/headless/prosperoeden")
 # the boilerplate's sandbox elevation client (port/ps5/privilege.cpp)
 set(SANDBOX_ELEVATION "${PS5CEMU_DEPS}/ps5-native-app-boilerplate/examples/sandbox-elevation")
@@ -73,6 +74,8 @@ add_library(CemuPS5 STATIC
 	frontend/launcher.h
 	frontend/settings.cpp
 	frontend/settings.h
+	frontend/sound.cpp
+	frontend/sound.h
 	frontend/ui_host.cpp
 	frontend/ui_host.h
 	frontend/wave.cpp
@@ -111,6 +114,7 @@ set_source_files_properties(
 	frontend/bubbles.cpp
 	frontend/launcher.cpp
 	frontend/settings.cpp
+	frontend/sound.cpp
 	frontend/ui_host.cpp
 	frontend/wave.cpp
 	ps5/display.cpp
