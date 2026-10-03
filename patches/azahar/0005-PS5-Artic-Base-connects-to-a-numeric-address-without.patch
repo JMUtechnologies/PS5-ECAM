@@ -8,7 +8,6 @@ The Artic client looked its server up with getaddrinfo, which on the PS5
 asks the console's resolver; a jailbroken title may not have one, so an
 address such as 192.168.1.20 never connected. A numeric address is now
 read with inet_pton, and only a name is looked up.
-
 ---
  src/network/artic_base/artic_base_client.cpp | 27 ++++++++++++--------
  1 file changed, 16 insertions(+), 11 deletions(-)

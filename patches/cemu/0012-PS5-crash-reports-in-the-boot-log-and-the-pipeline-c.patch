@@ -10,7 +10,6 @@ crash handler's lines now also go to the port's boot log, written with
 write(2) from the handler (PS5Cemu_CrashLine), the signal and fault
 address first of all. The port can also read how far the pipeline cache's
 loading is (PS5Cemu_PipelineCacheProgress) for its boot log.
-
 ---
  .../Renderer/Vulkan/VulkanPipelineStableCache.cpp     | 11 +++++++++++
  src/Common/ExceptionHandler/ExceptionHandler.cpp      |  9 +++++++++

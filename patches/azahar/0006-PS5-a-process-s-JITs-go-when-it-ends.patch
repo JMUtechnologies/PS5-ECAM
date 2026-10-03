@@ -14,7 +14,6 @@ A JIT whose page table is no longer registered (its process has gone) is
 now retired when the core next changes page tables, and freed at the
 start of that core's next Run: SetPageTable can be reached from inside a
 JIT's own callbacks, so it is never freed there.
-
 ---
  src/core/arm/dynarmic/arm_dynarmic.cpp | 27 +++++++++++++++++++++-----
  src/core/arm/dynarmic/arm_dynarmic.h   |  4 ++++

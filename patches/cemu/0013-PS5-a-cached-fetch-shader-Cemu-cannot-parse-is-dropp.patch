@@ -17,7 +17,6 @@ instruction that is not a semantic one, too many attributes or buffers)
 marks it invalid, nothing is registered, and the vertex shader's entry
 fails to load, which the loader already handles by deleting the entry
 from the cache. The game's own fetch shaders assert as before.
-
 ---
  src/Cafe/HW/Latte/Core/FetchShader.cpp      | 46 ++++++++++++++++++++-
  src/Cafe/HW/Latte/Core/FetchShader.h        |  5 +++

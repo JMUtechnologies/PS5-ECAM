@@ -4,6 +4,9 @@
 
 <p align="center">
   <strong>Wii U and Nintendo 3DS emulation in one PlayStation 5 homebrew app</strong><br>
+  Latest release: <a href="https://github.com/premohq/PS5CEMU-HAR/releases/latest"><strong>2.0.0 B</strong></a> ·
+  <a href="https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v2.0.0b.zip">Download</a> ·
+  <a href="#whats-new-in-200-b">What's new</a><br>
   <a href="#install">Install</a> · <a href="#wii-u-cemu">Wii U</a> · <a href="#nintendo-3ds-azahar">3DS</a> ·
   <a href="#controls">Controls</a> · <a href="docs/BUILDING.md">Building</a> · <a href="#credits">Credits</a>
 </p>
@@ -26,6 +29,10 @@ Nintendo or Sony. All credit for the emulators goes to their developers.
 > saves. 3DS support is new since 2.0.0 and hasn't had much testing on real hardware yet, so expect
 > some rough edges. If something goes wrong, please report it with your logs (see
 > [Reporting problems](#reporting-problems)).
+
+**New in 2.0.0 B:** Artic Base (play games from your own 3DS over the network), fixed 3DS sound,
+a fix for a 3DS memory leak, and no more crashes from shared Breath of the Wild shader caches.
+See [What's new in 2.0.0 B](#whats-new-in-200-b) for everything.
 
 ## Install
 
