@@ -165,7 +165,7 @@ def main():
   <g font-family="{FONT}" filter="url(#text-shadow)" text-anchor="middle">
     <text x="{HALF}" y="168" font-size="88" font-weight="800" letter-spacing="-1" fill="{BODY}">PS5CEMU-HAR</text>
     <text x="{HALF}" y="208" font-size="26" font-weight="600" fill="#e6eef6">Cemu and Azahar on PlayStation 5 homebrew</text>
-    <text x="{HALF}" y="240" font-size="20" fill="#d3e2f0">Wii U and Nintendo 3DS · Vulkan on RADV · the DualSense as both</text>
+    <text x="{HALF}" y="240" font-size="20" fill="#d3e2f0">Wii U and Nintendo 3DS · Vulkan on RADV · DualSense controls</text>
   </g>
 </svg>
 '''
