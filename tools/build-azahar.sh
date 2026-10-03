@@ -25,6 +25,13 @@ if [[ ${1:-} == --reconfigure ]]; then
     rm -rf "$build"
     shift
 fi
+# CMake reads the toolchain's flags (tools/ps5.cmake) only into a new cache: when that file
+# changes, the build folder starts over
+toolchain=$(sha1sum <"$PS5CEMU_TOOLCHAIN" | cut -c1-40)
+if [[ -d $build && $(cat "$build/ps5-toolchain" 2>/dev/null) != "$toolchain" ]]; then
+    echo "tools/ps5.cmake changed: $build starts over"
+    rm -rf "$build"
+fi
 
 bash "$PS5CEMU_ROOT/tools/azahar-patches.sh" apply
 
@@ -45,6 +52,7 @@ if [[ ! -f $build/build.ninja || $(cat "$build/ps5-options" 2>/dev/null) != "${o
     cmake -S "$azahar" -B "$build" -G Ninja -Wno-dev "${options[@]}" \
         >"$build.configure.log" 2>&1 || { tail -40 "$build.configure.log"; exit 1; }
     echo "${options[*]}" >"$build/ps5-options"
+    echo "$toolchain" >"$build/ps5-toolchain"
 fi
 
 if (($# == 0)); then

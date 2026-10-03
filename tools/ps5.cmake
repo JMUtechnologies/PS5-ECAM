@@ -31,7 +31,11 @@ set(PS5_SYSROOT "$ENV{PS5CEMU_SYSROOT}")
 
 # Zen 2 is the PS5's CPU; the SDK's own flags for a title: no stack protector (no
 # __stack_chk_guard is exported to titles), no PLT, emulated TLS.
-set(PS5_COMMON_FLAGS "-isysroot ${PS5_SDK} -isystem ${PS5_SDK}/target/include -march=znver2 -fno-stack-protector -fno-plt -femulated-tls -fvisibility-nodllstorageclass=default -ffunction-sections -fdata-sections")
+# -fdenormal-fp-math=ieee: for the PS5 target clang assumes denormal floats are flushed to zero
+# ("preserve-sign"), where desktop targets keep them, and the emulators' float code is written for
+# the desktop's rules. CMake reads these flags only into a new cache, so the build scripts start
+# a fresh build folder when this file changes.
+set(PS5_COMMON_FLAGS "-isysroot ${PS5_SDK} -isystem ${PS5_SDK}/target/include -march=znver2 -fno-stack-protector -fno-plt -femulated-tls -fvisibility-nodllstorageclass=default -ffunction-sections -fdata-sections -fdenormal-fp-math=ieee")
 if(PS5_PACBREW)
 	string(APPEND PS5_COMMON_FLAGS " -isystem ${PS5_PACBREW}/include")
 endif()
