@@ -18,7 +18,9 @@
 #include "util/MemMapper/MemMapper.h"
 #include "../ps5/kernel.h"
 #include "../ps5/log.h"
+#include "../ps5/notify.h"
 
+#include <atomic>
 #include <map>
 #include <mutex>
 #include <unistd.h>
@@ -113,7 +115,16 @@ namespace
 		off_t physical = 0;
 		if (sceKernelAllocateDirectMemory(0, (off_t)sceKernelGetDirectMemorySize(), size, alignment, ps5::kDirectMemoryTypeCpu, &physical) != 0)
 		{
-			ps5log::Line("[memmap] out of direct memory committing {:#x} bytes", size);
+			off_t start = 0;
+			size_t largest = 0;
+			sceKernelAvailableDirectMemorySize(0, (off_t)sceKernelGetDirectMemorySize(), 0, &start, &largest);
+			ps5log::Line("[memmap] out of direct memory committing {:#x} bytes (largest free block {} MiB): the game ran out of memory",
+				size, largest >> 20);
+			// Cemu cannot go on without the memory, and the app ends soon after: the player is told
+			// why, once, as the toast outlives the app
+			static std::atomic<bool> s_told{false};
+			if (!s_told.exchange(true))
+				ps5notify::Send("The PS5 has no memory left for this Wii U game, so it has to stop. The boot log has the details.");
 			return false;
 		}
 		void* at = reinterpret_cast<void*>(address);
