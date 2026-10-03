@@ -44,10 +44,11 @@ namespace
 	uint32_t s_buttons = 0, s_pressed = 0; // player 1's buttons, and those pressed since the last frame
 	bool s_confirmLibrary = false;
 	std::string s_gameName;
-	// The menu's pages: its main one, and the controllers'
+	// The menu's pages: its main one, Cemu's graphics settings, and the controllers'
 	enum class Page
 	{
 		Main,
+		Graphics,
 		Controls,
 	};
 	Page s_page = Page::Main;
@@ -153,7 +154,7 @@ namespace
 			canvas.Text(titleFont, 48, 108, 62, kTitle, "PS5 CEMU");
 			canvas.Text(smallFont, 20, 110, 132, kCopy, s_gameName);
 			canvas.Panel(108, 188, 820, 720);
-			canvas.Text(smallFont, 20, 138, 208, kKicker, s_page == Page::Controls ? "CONTROLS" : "IN THE GAME");
+			canvas.Text(smallFont, 20, 138, 208, kKicker, s_page == Page::Controls ? "CONTROLS" : s_page == Page::Graphics ? "GRAPHICS" : "IN THE GAME");
 			canvas.Panel(980, 188, 820, 720);
 
 			struct Item
@@ -164,7 +165,6 @@ namespace
 				const char* help;
 			};
 			std::vector<Item> items;
-			const bool controlsPage = s_page == Page::Controls;
 			static const char* kFilters[] = {"Bilinear", "Bicubic", "Bicubic Hermite", "Nearest neighbour"};
 			const bool gamePadMain = LatteGPUState.isDRCPrimary;
 			const bool stretch = config.fullscreen_scaling == kStretch;
@@ -177,7 +177,7 @@ namespace
 			// A, or on Cross
 			const bool faceButtons = mappings.size() > 3 && mappings[0].button == "A" && mappings[3].button == "Y";
 			const bool aOnCircle = faceButtons && mappings[0].input == "Circle";
-			if (!controlsPage)
+			if (s_page == Page::Main)
 				items = {
 					{"resume", "Back to the game", "", false, "Closes this menu: the game carries on where it is."},
 					{"main", "Main screen", gamePadMain ? "GamePad" : "TV", true,
@@ -192,17 +192,28 @@ namespace
 						"fills the screen."},
 					{"overlay", "Performance overlay", overlay ? "On" : "Off", true,
 						"Frames per second, CPU and memory use in the top left corner, as Cemu shows them."},
-					{"barriers", "Accurate barriers", config.vk_accurate_barriers ? "On" : "Off", true,
-						"Cemu's own setting (Debug > Accurate barriers), on unless you turn it off. Off lets the GPU keep some "
-						"drawing in one pass, which can raise the frame rate, but some games then flicker or show wrong "
-						"shadows or effects.\nAn experiment: it changes at once, so compare with the overlay on, and turn it back "
-						"on if anything looks wrong."},
+					{"graphics", "Graphics", "", false,
+						"Cemu's accuracy settings: accurate barriers and asynchronous shader compiling. They are kept for the next "
+						"games too."},
 					{"volume", "Volume", fmt::format("{}%", config.tv_volume), true, "The game's sound. Left and Right change it by 10%."},
 					{"controls", "Controls", "", false,
 						"Each player's controller: the emulated one, motion controls, vibration, the sticks' deadzones and where A and B are. "
 						"They are kept for the next games too."},
 					{"library", "Back to the library", s_confirmLibrary ? "Press Cross again" : "", false,
 						"Leaves the game for the library. What you have not saved in the game is lost."},
+				};
+			else if (s_page == Page::Graphics)
+				items = {
+					{"barriers", "Accurate barriers", config.vk_accurate_barriers ? "On" : "Off", true,
+						"Cemu's own setting (Debug > Accurate barriers), on unless you turn it off. Off lets the GPU keep some "
+						"drawing in one pass, which can raise the frame rate, but some games then flicker or show wrong "
+						"shadows or effects.\nAn experiment: it changes at once, so compare with the overlay on, and turn it back "
+						"on if anything looks wrong."},
+					{"async", "Async shader compile", config.async_compile ? "On" : "Off", true,
+						"Cemu's own setting (Graphics > Async shader compile), on unless you turn it off. On, a new shader is built "
+						"while the game carries on, so it does not stutter, but some things may be missing for a moment. Off, "
+						"the game waits for each one: stutter, but nothing drawn wrong.\nIt changes at once."},
+					{"back", "Back", "", false, "To the menu's first page."},
 				};
 			else
 				items = {
@@ -279,6 +290,14 @@ namespace
 					config.vk_accurate_barriers = !config.vk_accurate_barriers;
 					ps5log::Line("[ingame] accurate barriers: {}", config.vk_accurate_barriers ? "on" : "off");
 				}
+				else if (id == "async")
+				{
+					// read as each new pipeline is made; Cemu's compile threads run either way
+					config.async_compile = !config.async_compile;
+					ps5log::Line("[ingame] async shader compile: {}", config.async_compile ? "on" : "off");
+				}
+				else if (id == "graphics")
+					ShowPage(Page::Graphics);
 				else if (id == "volume")
 					// Cross goes up by 10, and from 100 back to 0
 					SetVolume(chosen && config.tv_volume >= 100 ? 0 : config.tv_volume + change * 10);
@@ -353,18 +372,18 @@ namespace
 			float x = 108;
 			x = canvas.Hint(smallFont, x, 973, "cross", "Choose");
 			x = canvas.Hint(smallFont, x, 973, "leftright", "Change");
-			x = canvas.Hint(smallFont, x, 973, "circle", s_page == Page::Controls ? "Back" : "Back to the game");
+			x = canvas.Hint(smallFont, x, 973, "circle", s_page != Page::Main ? "Back" : "Back to the game");
 			canvas.Hint(smallFont, x, 973, "touchpad", "Touchpad click + L1 / R1: the screens, in the game");
 		}
 		ImGui::End();
 		ImGui::PopStyleColor();
 
-		// Circle or Options closes it, but not the press of Options that opened it; on the controls'
-		// page, Circle goes back to the first
+		// Circle or Options closes it, but not the press of Options that opened it; on the other
+		// pages, Circle goes back to the first
 		const bool settled = sceKernelGetProcessTime() - s_menuOpenedAt > 300000;
 		if (settled && (s_pressed & (ps5pad::kCircle | ps5pad::kOptions)) && !(s_buttons & ps5pad::kTouchPad))
 		{
-			if (s_page == Page::Controls && (s_pressed & ps5pad::kCircle))
+			if (s_page != Page::Main && (s_pressed & ps5pad::kCircle))
 				ShowPage(Page::Main);
 			else
 				CloseMenu();
