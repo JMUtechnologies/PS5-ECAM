@@ -8,20 +8,62 @@
 // is all a function call may expect to survive.
 
 #include "util/Fiber/Fiber.h"
+#include "../ps5/kernel.h"
+#include "../ps5/log.h"
+
+#include <signal.h>
 
 #include <atomic>
 #include <cstdlib>
+#include <mutex>
 
 namespace
 {
 	thread_local Fiber* sCurrentFiber{};
 
 	constexpr size_t kStackSize = 2 * 1024 * 1024;
+	// Below each stack, a page no one may touch: a guest thread that runs off the end of its stack
+	// crashes there, at once, instead of writing over whatever lies below and crashing later
+	// somewhere unrelated.
+	constexpr size_t kGuardSize = ps5::kPageSize;
 
 	struct FiberContext
 	{
-		void* stackPointer; // the saved RSP of a fiber that is not running
+		void* stackPointer = nullptr; // the saved RSP of a fiber that is not running
+		bool guarded = false;		  // the guard page is in place (and must be given back before free)
 	};
+
+	std::once_flag sGuardFailureLogged;
+
+	// Cemu's crash report (Common/ExceptionHandler) runs on the crashing thread's stack, which a
+	// fiber that ran into its guard page has no room left on: the kernel would end the app without
+	// a word. The threads that run fibers take their signals on a stack of their own instead.
+	void UseSignalStack()
+	{
+		static std::once_flag onStack;
+		std::call_once(onStack, [] {
+			// Cemu's handler, installed at start (SA_SIGINFO), told to use that stack
+			for (int sig : {SIGSEGV, SIGBUS})
+			{
+				struct sigaction action{};
+				if (sigaction(sig, nullptr, &action) == 0 && (action.sa_flags & SA_SIGINFO))
+				{
+					action.sa_flags |= SA_ONSTACK;
+					sigaction(sig, &action, nullptr);
+				}
+			}
+		});
+		// kept for the thread's life, which is the app's: it restarts after every game
+		constexpr size_t kSignalStackSize = 256 * 1024;
+		stack_t stack{};
+		stack.ss_sp = malloc(kSignalStackSize);
+		stack.ss_size = kSignalStackSize;
+		if (!stack.ss_sp || sigaltstack(&stack, nullptr) != 0)
+		{
+			free(stack.ss_sp);
+			ps5log::Line("[fiber] no signal stack for this thread: a stack overflow will end the app without a crash report");
+		}
+	}
 }
 
 extern "C"
@@ -76,12 +118,15 @@ asm(".text\n"
 Fiber::Fiber(void (*FiberEntryPoint)(void* userParam), void* userParam, void* privateData) : m_privateData(privateData)
 {
 	auto* ctx = new FiberContext();
-	m_stackPtr = aligned_alloc(64, kStackSize);
+	m_stackPtr = aligned_alloc(kGuardSize, kGuardSize + kStackSize);
 	cemu_assert(m_stackPtr);
+	ctx->guarded = sceKernelMprotect(m_stackPtr, kGuardSize, 0) == 0;
+	if (!ctx->guarded)
+		std::call_once(sGuardFailureLogged, [] { ps5log::Line("[fiber] no guard page below the game threads' stacks: the kernel refused it"); });
 
 	// The initial frame PS5Cemu_FiberSwitch pops, laid out so that FiberStart's call sees a
 	// 16-byte aligned stack: the return address sits at 8 mod 16.
-	uint64* top = reinterpret_cast<uint64*>(reinterpret_cast<uint8*>(m_stackPtr) + kStackSize);
+	uint64* top = reinterpret_cast<uint64*>(reinterpret_cast<uint8*>(m_stackPtr) + kGuardSize + kStackSize);
 	uint64* frame = top - 10;
 	uint32 mxcsr;
 	uint16 fpuControl;
@@ -110,14 +155,21 @@ Fiber::Fiber(void* privateData) : m_privateData(privateData)
 
 Fiber::~Fiber()
 {
+	auto* ctx = static_cast<FiberContext*>(m_implData);
 	if (m_stackPtr)
+	{
+		// the heap writes its own bookkeeping into a freed block
+		if (ctx->guarded)
+			sceKernelMprotect(m_stackPtr, kGuardSize, ps5::kProtRead | ps5::kProtWrite);
 		free(m_stackPtr);
-	delete static_cast<FiberContext*>(m_implData);
+	}
+	delete ctx;
 }
 
 Fiber* Fiber::PrepareCurrentThread(void* privateData)
 {
 	cemu_assert_debug(sCurrentFiber == nullptr);
+	UseSignalStack();
 	sCurrentFiber = new Fiber(privateData);
 	return sCurrentFiber;
 }
