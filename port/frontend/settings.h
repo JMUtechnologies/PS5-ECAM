@@ -23,6 +23,8 @@ namespace ps5settings
 		bool motion = true;			  // the DualSense's motion sensors as the 3DS's
 		int deadzone = 15;			  // the sticks', percent
 		bool performance = false;	  // the frame rate and speed over the game (its in-game menu)
+		int cpuClock = 100;			  // the emulated CPU's speed, percent of the 3DS's (Azahar's cpu_clock_percentage)
+		std::string articAddress;	  // the last Artic Base server's IPv4 address, a 3DS on the network
 		std::map<std::string, std::string> buttons; // 3DS button: DualSense input, where not the default
 		uint64_t lastGame = 0;		  // title ID, or one made from the path
 		std::vector<uint64_t> recent; // newest first, at most four

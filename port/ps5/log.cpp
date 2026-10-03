@@ -11,7 +11,7 @@
 namespace
 {
 	std::mutex s_mutex;
-	FILE* s_file = nullptr;
+	FILE* s_file = nullptr; // flushed after every line, so a raw write(2) can follow its content
 	std::string s_path;
 	std::string s_pending; // lines from before /data was reachable
 }
@@ -59,4 +59,22 @@ namespace ps5log
 		else if (s_pending.size() < 256 * 1024)
 			s_pending += text;
 	}
+}
+
+// Cemu's crash report (patches/cemu, ExceptionHandler), line by line from its signal handler: with
+// write(2) on the file's descriptor, no lock taken (the crashed thread may hold the log's) and no
+// buffer, so each line is on disk before the next. Every line is "[crash] ...".
+void PS5Cemu_CrashLine(std::string_view text, bool newLine)
+{
+	static bool s_lineStarted = false;
+	FILE* file = s_file;
+	if (!file)
+		return;
+	const int fd = fileno(file);
+	if (!s_lineStarted)
+		(void)!write(fd, "[crash] ", 8);
+	(void)!write(fd, text.data(), text.size());
+	s_lineStarted = !newLine;
+	if (newLine)
+		(void)!write(fd, "\n", 1);
 }

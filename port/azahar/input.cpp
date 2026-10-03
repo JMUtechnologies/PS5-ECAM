@@ -33,6 +33,12 @@ namespace ps5azahar::input
 		bool s_cursorVisible = false;
 		float s_cursorX = 0, s_cursorY = 0; // 0 to 1 over the bottom screen
 		bool s_touching = false;
+		// The game's loop's: the buttons held while the menu was open (the press that closed it among
+		// them), kept from the game until each is let go, and the same for the sticks and the click
+		uint32_t s_heldOver = 0;
+		bool s_sticksHeldOver = false, s_touchHeldOver = false;
+
+		constexpr float kStickRest = 0.25f; // a stick nearer the middle than this is let go of
 
 		float Stick(uint8_t value)
 		{
@@ -258,13 +264,30 @@ namespace ps5azahar::input
 			constexpr float kDegrees = 180.0f / 3.14159265f;
 			sample.rotation = {-data.angularVelocity[0] * kDegrees, data.angularVelocity[1] * kDegrees,
 				-data.angularVelocity[2] * kDegrees};
+			const bool sticksMoved = std::abs(sample.leftX) > kStickRest || std::abs(sample.leftY) > kStickRest ||
+				std::abs(sample.rightX) > kStickRest || std::abs(sample.rightY) > kStickRest;
 			if (blocked)
 			{
-				// the shortcuts still seen (the menu's own closes it), nothing for the game
+				// the shortcuts still seen (the menu's own closes it), nothing for the game; what is
+				// held now stays the menu's until it is let go (Cross on "Back to the game", Circle)
+				s_heldOver |= sample.buttons;
+				s_sticksHeldOver |= sticksMoved;
+				s_touchHeldOver |= touch;
 				sample = Sample{};
 				touch = false;
 			}
-			else if (data.touchCount > 0)
+			else
+			{
+				s_heldOver &= sample.buttons;
+				sample.buttons &= ~s_heldOver;
+				s_sticksHeldOver = s_sticksHeldOver && sticksMoved;
+				if (s_sticksHeldOver)
+					sample.leftX = sample.leftY = sample.rightX = sample.rightY = 0;
+				s_touchHeldOver = s_touchHeldOver && touch;
+				if (s_touchHeldOver)
+					touch = false;
+			}
+			if (!blocked && data.touchCount > 0)
 			{
 				float width = 1, height = 1;
 				ps5pad::TouchResolution(0, width, height);

@@ -311,15 +311,16 @@ namespace ps5azahar
 		}
 
 		// The games installed from CIA files into the 3DS's SD card (Azahar's sdmc): title/00040000/
-		// <id>/content holds the game's contents, the one with an ExeFS (and its SMDH) the program
-		// Azahar starts.
+		// <id>/content holds the game's contents (00040002/<id> a demo's), the one with an ExeFS
+		// (and its SMDH) the program Azahar starts.
 		void ScanInstalled(std::vector<ps5emu::Game>& games)
 		{
 			std::error_code ec;
 			const fs::path root = fs::path(kRoot) / "sdmc" / "Nintendo 3DS";
 			for (const auto& id0 : fs::directory_iterator(root, ec))
 				for (const auto& id1 : fs::directory_iterator(id0.path(), ec))
-					for (const auto& title : fs::directory_iterator(id1.path() / "title" / "00040000", ec))
+					for (const char* kind : {"00040000", "00040002"})
+					for (const auto& title : fs::directory_iterator(id1.path() / "title" / kind, ec))
 					{
 						std::vector<fs::path> contents;
 						for (const auto& entry : fs::directory_iterator(title.path() / "content", ec))

@@ -53,12 +53,24 @@ extern uint64 _rdtscFrequency; // Cafe/HW/Espresso/PPCTimer.cpp
 
 // MemMapperPS5.cpp
 void PS5Cemu_MemMapperUsage(size_t& committed, size_t& jit);
+// patches/cemu: Cemu's VulkanPipelineStableCache.cpp
+void PS5Cemu_PipelineCacheProgress(uint32& loaded, uint32& queued, uint32& lastIndex);
 
 namespace ps5emu
 {
 	namespace
 	{
 		bool s_firstStart = false;
+
+		// the app's heap in use, MiB (0 without the platform's statistics)
+		uint64_t HeapMiB()
+		{
+			if (!ps5_heap_stats)
+				return 0;
+			struct ps5_heap_stats stats{};
+			ps5_heap_stats(&stats);
+			return stats.mapped_bytes >> 20;
+		}
 
 		// The ID on a game's box (GameTDB's) from its meta.xml: the product code's last part and the
 		// company code's last two digits (WUP-P-ALZE and 0001: ALZE01)
@@ -487,6 +499,8 @@ namespace ps5emu
 		ps5notify::Send("Touchpad + Options: the PS5 CEMU menu (screens, picture, volume, controls, library)");
 		uint64_t polls = 0;
 		LogMemory();
+		uint32_t loggedFrames = LatteGPUState.frameCounter;
+		uint64_t loggedAt = sceKernelGetProcessTime();
 		for (;;)
 		{
 			sceKernelUsleep(16000);
@@ -494,6 +508,24 @@ namespace ps5emu
 				ps5pad::Rescan(); // controllers joining or leaving, about every two seconds
 			if (polls % 3750 == 0)
 				LogMemory();
+			if (polls % 625 == 0)
+			{
+				// about every ten seconds: the game's frame rate (frames Cemu's GPU thread finished,
+				// as its overlay counts them), so settings can be compared from the boot log
+				const uint32_t frames = LatteGPUState.frameCounter;
+				const uint64_t now = sceKernelGetProcessTime();
+				// while the game starts: how far the pipeline cache's loading is, so where a load
+				// stops can be told (the same pipeline every time, or anywhere)
+				uint32 loaded = 0, queued = 0, lastIndex = 0;
+				PS5Cemu_PipelineCacheProgress(loaded, queued, lastIndex);
+				const std::string pipelines = frames == loggedFrames || loaded != queued ?
+					fmt::format("; pipeline cache {} compiled, {} read of {}", loaded, queued, lastIndex + 1) : std::string();
+				if (now > loggedAt)
+					ps5log::Line("[perf] {:.1f} fps over {:.0f} s; accurate barriers {}{}; heap {} MiB", (frames - loggedFrames) * 1e6 / (now - loggedAt),
+						(now - loggedAt) / 1e6, GetConfig().vk_accurate_barriers ? "on" : "off", pipelines, HeapMiB());
+				loggedFrames = frames;
+				loggedAt = now;
+			}
 			switch (ps5pad::TakeShortcut())
 			{
 			case ps5pad::Shortcut::Menu:

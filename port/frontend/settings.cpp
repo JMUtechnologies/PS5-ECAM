@@ -73,6 +73,8 @@ namespace ps5settings
 			ReadBool(json, "motion", n3ds.motion);
 			ReadInt(json, "deadzone", n3ds.deadzone, 0, 50);
 			ReadBool(json, "performance", n3ds.performance);
+			ReadInt(json, "cpuClock", n3ds.cpuClock, 25, 400);
+			ReadString(json, "articAddress", n3ds.articAddress);
 			if (json.HasMember("buttons") && json["buttons"].IsObject())
 				for (const auto& member : json["buttons"].GetObject())
 					if (member.value.IsString())
@@ -99,6 +101,10 @@ namespace ps5settings
 			writer.Int(n3ds.deadzone);
 			writer.Key("performance");
 			writer.Bool(n3ds.performance);
+			writer.Key("cpuClock");
+			writer.Int(n3ds.cpuClock);
+			writer.Key("articAddress");
+			writer.String(n3ds.articAddress.c_str());
 			writer.Key("buttons");
 			writer.StartObject();
 			for (const auto& [button, input] : n3ds.buttons)

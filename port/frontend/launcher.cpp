@@ -27,10 +27,12 @@
 #include <RmlUi/Core/StringUtilities.h>
 
 #include <algorithm>
+#include <arpa/inet.h>
 #include <array>
 #include <cctype>
 #include <cmath>
 #include <cstddef>
+#include <cstdio>
 #include <cstring>
 #include <ctime>
 #include <dirent.h>
@@ -38,7 +40,9 @@
 #include <functional>
 #include <initializer_list>
 #include <map>
+#include <netinet/in.h>
 #include <set>
+#include <sys/socket.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -134,9 +138,9 @@ namespace ps5launcher
 				element->SetClass(name, enabled);
 		}
 
-		// Text in what the launcher's fonts have (ProsperoEden's Montserrat atlases: ASCII, with ° and
-		// •): accented letters as their plain ones, typographic quotes, dashes and marks as ASCII ones,
-		// and anything else left out, so a name such as "Pokémon" shows as "Pokemon" and not "Pokmon".
+		// Text in what the launcher's fonts have (ProsperoEden's Montserrat atlases: ASCII, with ï¿½ and
+		// ï¿½): accented letters as their plain ones, typographic quotes, dashes and marks as ASCII ones,
+		// and anything else left out, so a name such as "Pokï¿½mon" shows as "Pokemon" and not "Pokmon".
 		std::string Printable(const std::string& text)
 		{
 			static constexpr const char* kLatin1[64] = {
@@ -427,6 +431,7 @@ namespace ps5launcher
 			kControls,
 			kPlayer,
 			kMapping,
+			kArtic,
 			kLoading,
 		};
 
@@ -463,6 +468,52 @@ namespace ps5launcher
 			kRowConsoleReset,
 			kConsoleRows,
 		};
+
+		// Artic Base's page (the 3DS's side, from the home screen)
+		enum ArticRow
+		{
+			kRowArticAddress,
+			kRowArticConnect,
+			kRowArticSetupOld,
+			kRowArticSetupNew,
+			kArticRows,
+		};
+
+		// An IPv4 address's four numbers, from "a.b.c.d". False when it is not one.
+		bool ParseAddress(const std::string& text, std::array<int, 4>& octets)
+		{
+			unsigned a, b, c, d;
+			char extra;
+			if (std::sscanf(text.c_str(), "%u.%u.%u.%u%c", &a, &b, &c, &d, &extra) != 4 || a > 255 || b > 255 || c > 255 || d > 255)
+				return false;
+			octets = {(int)a, (int)b, (int)c, (int)d};
+			return true;
+		}
+
+		// The PS5's own address, a first guess at the 3DS's on the same network: the one a UDP socket
+		// would send from (connecting a UDP socket sends nothing).
+		std::array<int, 4> OwnAddress()
+		{
+			std::array<int, 4> octets{192, 168, 1, 2};
+			const int fd = socket(AF_INET, SOCK_DGRAM, 0);
+			if (fd < 0)
+				return octets;
+			sockaddr_in to{};
+			to.sin_family = AF_INET;
+			to.sin_port = htons(53);
+			to.sin_addr.s_addr = htonl(0x08080808);
+			sockaddr_in from{};
+			socklen_t length = sizeof(from);
+			if (connect(fd, (const sockaddr*)&to, sizeof(to)) == 0 && getsockname(fd, (sockaddr*)&from, &length) == 0 &&
+				from.sin_addr.s_addr != 0)
+			{
+				const uint32_t address = ntohl(from.sin_addr.s_addr);
+				for (int i = 0; i < 4; i++)
+					octets[i] = (int)((address >> (24 - 8 * i)) & 255);
+			}
+			close(fd);
+			return octets;
+		}
 
 		constexpr const char* kResolutions[] = {"", "1x (400x240)", "2x (800x480)", "3x (1200x720)", "4x (1600x960)", "5x (2000x1200)",
 			"6x (2400x1440)", "7x (2800x1680)", "8x (3200x1920)", "9x (3600x2160)", "10x (4000x2400)"};
@@ -589,6 +640,7 @@ namespace ps5launcher
 						GoHome();
 					break;
 				case kFiles: FilesKey(key); break;
+				case kArtic: ArticKey(key); break;
 				case kLoading: break;
 				}
 			}
@@ -793,7 +845,8 @@ namespace ps5launcher
 				}
 				SetText(m_document, "continue-copy", m_continueReady ? "Launch game" : "Open library");
 				SetClass(m_document, "continue-game", "disabled", !CoreReady());
-				SetClass(m_document, "hero-options", "disabled", !m_continueReady);
+				// a game's graphic packs need a game; Artic Base (the 3DS's side) does not
+				SetClass(m_document, "hero-options", "disabled", HasPacks() && !m_continueReady);
 
 				m_recent.clear();
 				for (uint64_t titleId : Recent())
@@ -876,7 +929,8 @@ namespace ps5launcher
 					}
 					else if (m_selected == kContinue || m_selected == kPacksButton)
 					{
-						if (m_continueReady && HasPacks())
+						// the second button: a game's graphic packs, or Artic Base on the 3DS's side
+						if ((m_continueReady && HasPacks()) || Is3ds())
 							m_selected = m_selected == kContinue ? kPacksButton : kContinue;
 					}
 					else if (m_selected >= kRecent0)
@@ -889,8 +943,18 @@ namespace ps5launcher
 				}
 				else if (key == Key::Triangle && m_continueReady && HasPacks() && (m_selected == kContinue || m_selected == kPacksButton))
 					OpenPacks(m_lastIndex, kHome);
+				else if (key == Key::Triangle && Is3ds())
+				{
+					OpenArtic();
+					return;
+				}
 				else if (key == Key::Cross)
 				{
+					if (m_selected == kPacksButton && Is3ds())
+					{
+						OpenArtic();
+						return;
+					}
 					if (m_selected == kContinue && m_continueReady)
 						Launch(m_lastIndex);
 					else if ((m_selected == kContinue || m_selected == kLibraryButton || m_selected == kViewAll) && ready)
@@ -1526,6 +1590,156 @@ namespace ps5launcher
 				SetLines(m_document, "player-help", rows[m_playerRow].help);
 				static constexpr const char* kCrossHints[kConsoleRows] = {"On / off", "More", "Open", "Reset"};
 				SetText(m_document, "player-hint-0", kCrossHints[m_playerRow]);
+			}
+
+			// -- Artic Base, on Azahar's side: a game from a 3DS on the network --------------------
+			// The player's page, with the 3DS's address (edited a number at a time, as there is no
+			// keyboard), connecting, and the Artic Setup Tool's two modes.
+
+			void OpenArtic()
+			{
+				m_articRow = 0;
+				m_articEditing = false;
+				m_articArmed = false;
+				if (!ParseAddress(m_settings.n3ds.articAddress, m_articOctets))
+					m_articOctets = OwnAddress();
+				Show("player-dialog", kArtic);
+				SetText(m_document, "player-title", "Artic Base");
+				SetText(m_document, "player-copy", "Play a game from your own 3DS, over the network");
+				UpdateArtic();
+			}
+
+			std::string ArticAddress() const
+			{
+				return fmt::format("{}.{}.{}.{}", m_articOctets[0], m_articOctets[1], m_articOctets[2], m_articOctets[3]);
+			}
+
+			void ArticKey(Key key)
+			{
+				if (m_articEditing)
+				{
+					switch (key)
+					{
+					case Key::Left: m_articOctet = (m_articOctet + 3) % 4; break;
+					case Key::Right: m_articOctet = (m_articOctet + 1) % 4; break;
+					case Key::Up:
+					case Key::Down:
+					case Key::L1:
+					case Key::R1:
+					{
+						const int step = key == Key::Up ? 1 : key == Key::Down ? -1 : key == Key::R1 ? 10 : -10;
+						int& octet = m_articOctets[m_articOctet];
+						octet = (octet + step + 256) % 256;
+						break;
+					}
+					case Key::Cross:
+					case Key::Circle:
+						m_articEditing = false;
+						m_settings.n3ds.articAddress = ArticAddress();
+						SaveSettings();
+						break;
+					default: break;
+					}
+					UpdateArtic();
+					return;
+				}
+				if (key == Key::Circle)
+				{
+					GoHome();
+					return;
+				}
+				if (key == Key::Up || key == Key::Down)
+				{
+					Browse(key, m_articRow, kArticRows, kArticRows);
+					m_articArmed = false;
+					UpdateArtic();
+					return;
+				}
+				if (key != Key::Cross)
+					return;
+				switch (m_articRow)
+				{
+				case kRowArticAddress:
+					m_articEditing = true;
+					m_articOctet = 3; // the last number is the one that differs on a home network
+					break;
+				case kRowArticConnect: LaunchArtic(ps5azahar::kArticBase, "Artic Base"); return;
+				case kRowArticSetupOld:
+				case kRowArticSetupNew:
+					// it writes the 3DS's own data into Azahar's: a second press, to be sure
+					if (m_articArmed)
+					{
+						LaunchArtic(m_articRow == kRowArticSetupOld ? ps5azahar::kArticSetupOld : ps5azahar::kArticSetupNew, "Artic Setup Tool");
+						return;
+					}
+					m_articArmed = true;
+					break;
+				}
+				UpdateArtic();
+			}
+
+			// As Launch, for a game that is on the 3DS: no library entry, nothing to add to the recent ones.
+			void LaunchArtic(const char* scheme, const char* what)
+			{
+				m_settings.n3ds.articAddress = ArticAddress();
+				SaveSettings();
+				ps5emu::Game game;
+				game.name = fmt::format("{} ({})", what, ArticAddress());
+				game.path = std::string(scheme) + ArticAddress();
+				game.format = "ARTIC";
+				SetText(m_document, "loading-title", game.name);
+				SetText(m_document, "loading-caption", "Connecting to the 3DS");
+				SetImage(m_document, "loading-cover", Icon());
+				Show("loading-screen", kLoading);
+				m_launch = game;
+			}
+
+			void UpdateArtic()
+			{
+				std::string address = ArticAddress();
+				if (m_articEditing)
+				{
+					address.clear();
+					for (int i = 0; i < 4; i++)
+						address += (i ? "." : "") + (i == m_articOctet ? fmt::format("[{}]", m_articOctets[i]) : std::to_string(m_articOctets[i]));
+				}
+				const char* again = "Press Cross again";
+				struct Row
+				{
+					const char* name;
+					std::string value;
+					const char* help;
+				};
+				const Row rows[kArticRows] = {
+					{"3DS address", address,
+						"The address Artic Base shows on the 3DS's screen when it is ready.\nCross edits it: Left and Right choose a "
+						"number, Up and Down change it by 1, L1 and R1 by 10, and Cross again keeps it.\nThe 3DS and the PS5 must be "
+						"on the same network."},
+					{"Connect and play", "",
+						"On the 3DS, start the Artic Base app (homebrew, from Azahar's team) and choose a game in it: the cartridge "
+						"or an installed one. Then connect from here: the game plays on the PS5 from the 3DS, and its saves stay on "
+						"the 3DS.\nIt is only as smooth as the network: a strong Wi-Fi signal for the 3DS and a wired PS5 help."},
+					{"Set up from an Old 3DS", m_articArmed && m_articRow == kRowArticSetupOld ? again : "",
+						"With the Artic Setup Tool app running on an Old 3DS or 2DS: copies its system files and its own data "
+						"(system settings, friend code, Mii and eShop data) into Azahar, so games that need the 3DS's system "
+						"applets or files start.\nThat data is your console's: do not share Azahar's folder afterwards."},
+					{"Set up from a New 3DS", m_articArmed && m_articRow == kRowArticSetupNew ? again : "",
+						"As above, from a New 3DS or New 2DS running the Artic Setup Tool app."},
+				};
+				for (int row = 0; row < kPlayerRows; row++)
+				{
+					const std::string id = fmt::format("player-row-{}", row);
+					const bool present = row < kArticRows;
+					SetClass(m_document, id, "offscreen", !present);
+					SetClass(m_document, id, "focused", row == m_articRow);
+					SetClass(m_document, id, "dimmed", false);
+					SetText(m_document, fmt::format("player-name-{}", row), present ? rows[row].name : "");
+					SetText(m_document, fmt::format("player-value-{}", row), present ? rows[row].value : "");
+				}
+				SetText(m_document, "player-detail-title", rows[m_articRow].name);
+				SetLines(m_document, "player-help", rows[m_articRow].help);
+				static constexpr const char* kCrossHints[kArticRows] = {"Edit", "Connect", "Set up", "Set up"};
+				SetText(m_document, "player-hint-0", m_articEditing ? "Keep" : kCrossHints[m_articRow]);
 			}
 
 			// -- settings > controls > a player ------------------------------------------------
@@ -2229,6 +2443,12 @@ namespace ps5launcher
 			bool m_resetArmed = false;
 			int m_mapSelected = 0;
 			Capture m_capture;
+
+			int m_articRow = 0;
+			bool m_articEditing = false;		  // the address's numbers being changed
+			int m_articOctet = 3;				  // which of them
+			std::array<int, 4> m_articOctets{192, 168, 1, 2};
+			bool m_articArmed = false;			  // a setup row pressed once
 			std::string m_mapMessage;
 
 			FilesMode m_filesMode = FilesMode::GamesFolder;

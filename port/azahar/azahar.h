@@ -39,6 +39,19 @@ namespace ps5azahar
 	// on, only a fresh process is safe to start a game in.
 	bool CoreTouched();
 
+	// Artic Base: a game played from a 3DS on the network, which runs the Artic Base server (a
+	// homebrew app) and streams its game card or installed game, saves and system data. A game whose
+	// path is one of these, followed by the 3DS's address ("articbase://192.168.1.20", optionally
+	// ":port", 5543 by default), is Azahar's Artic loader's. The setup ones are the Artic Setup
+	// Tool's: they copy the system files and console data of an old or a new 3DS into Azahar's NAND.
+	constexpr const char* kArticBase = "articbase://";
+	constexpr const char* kArticSetupOld = "articinio://";
+	constexpr const char* kArticSetupNew = "articinin://";
+	inline bool IsArtic(const std::string& path)
+	{
+		return path.starts_with(kArticBase) || path.starts_with(kArticSetupOld) || path.starts_with(kArticSetupNew);
+	}
+
 	// Installing a CIA (a game, an update or DLC) into the 3DS's storage, as Azahar's "Install CIA"
 	// does, on a thread of its own.
 	bool StartInstall(const std::string& cia, std::string& error);

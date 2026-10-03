@@ -147,8 +147,9 @@ def launcher(side):
         <span id="last-played-title">Your next adventure</span>
         <span id="last-played-caption">Choose a game from your library.</span>
         <button id="continue-game" class="hero-button"><img class="hero-button-chrome base-chrome" src="{c}/hero-button.tga" width="272" height="72" alt=""/><img class="hero-button-chrome focused-chrome" src="{c}/hero-button-focused.tga" width="272" height="72" alt=""/><span id="continue-copy">Launch game</span></button>''')
-    if S["packs"]:
-        add(f'''        <button id="hero-options" class="hero-button"><img class="hero-button-chrome base-chrome" src="{c}/hero-button.tga" width="272" height="72" alt=""/><img class="hero-button-chrome focused-chrome" src="{c}/hero-button-focused.tga" width="272" height="72" alt=""/><span>Graphic packs</span></button>''')
+    # the hero's second button: a game's graphic packs on the Wii U's side, Artic Base (a game from
+    # a 3DS on the network) on the 3DS's
+    add(f'''        <button id="hero-options" class="hero-button"><img class="hero-button-chrome base-chrome" src="{c}/hero-button.tga" width="272" height="72" alt=""/><img class="hero-button-chrome focused-chrome" src="{c}/hero-button-focused.tga" width="272" height="72" alt=""/><span>{"Graphic packs" if S["packs"] else "Artic Base"}</span></button>''')
     add(f'''        <span class="hero-footnote">{S["footnote"]}</span>
       </main>
 
@@ -160,7 +161,7 @@ def launcher(side):
         add(f'        <button id="recent-{i}" class="recent-tile"><img class="recent-chrome base-chrome" src="{c}/recent-tile.tga" width="400" height="144" alt=""/>'
             f'<img class="recent-chrome focused-chrome" src="{c}/recent-tile-focused.tga" width="400" height="144" alt=""/>'
             f'<img id="recent-cover-{i}" class="recent-cover" src="{S["cover"]}" width="96" height="96" alt=""/><span id="recent-title-{i}" class="recent-title"></span></button>')
-    home_hints = [h('cross', 'Select')] + ([h('triangle', 'Graphic packs')] if S["packs"] else []) + [h('dpad', 'Navigate'), h('circle', 'Change emulator')]
+    home_hints = [h('cross', 'Select'), h('triangle', 'Graphic packs' if S["packs"] else 'Artic Base'), h('dpad', 'Navigate'), h('circle', 'Change emulator')]
     add(f'''      </section>
 
       <div id="startup-status" class="quiet"></div>

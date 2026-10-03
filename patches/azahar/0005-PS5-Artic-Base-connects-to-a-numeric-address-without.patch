@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Sat, 3 Oct 2026 04:26:48 +0000
+Subject: [PATCH] PS5: Artic Base connects to a numeric address without the
+ resolver
+
+The Artic client looked its server up with getaddrinfo, which on the PS5
+asks the console's resolver; a jailbroken title may not have one, so an
+address such as 192.168.1.20 never connected. A numeric address is now
+read with inet_pton, and only a name is looked up.
+
+---
+ src/network/artic_base/artic_base_client.cpp | 27 ++++++++++++--------
+ 1 file changed, 16 insertions(+), 11 deletions(-)
+
+diff --git a/src/network/artic_base/artic_base_client.cpp b/src/network/artic_base/artic_base_client.cpp
+index f62494420..d678c637a 100644
+--- a/src/network/artic_base/artic_base_client.cpp
++++ b/src/network/artic_base/artic_base_client.cpp
+@@ -243,17 +243,23 @@ bool Client::Connect() {
+         return static_cast<int>(ul);
+     };
+ 
+-    struct addrinfo hints, *addrinfo;
+-    memset(&hints, 0, sizeof(hints));
+-    hints.ai_socktype = SOCK_STREAM;
+-    hints.ai_family = AF_INET;
+-
+     LOG_INFO(Network, "Starting Artic Client");
+ 
+-    if (getaddrinfo(address.data(), NULL, &hints, &addrinfo) != 0) {
+-        LOG_ERROR(Network, "Failed to get server address");
+-        SignalCommunicationError();
+-        return false;
++    // A numeric address needs no resolver: on the PS5, getaddrinfo asks the console's, which a
++    // jailbroken title may not have.
++    struct in_addr server_ip {};
++    if (inet_pton(AF_INET, address.c_str(), &server_ip) != 1) {
++        struct addrinfo hints, *addrinfo;
++        memset(&hints, 0, sizeof(hints));
++        hints.ai_socktype = SOCK_STREAM;
++        hints.ai_family = AF_INET;
++        if (getaddrinfo(address.data(), NULL, &hints, &addrinfo) != 0) {
++            LOG_ERROR(Network, "Failed to get server address");
++            SignalCommunicationError();
++            return false;
++        }
++        server_ip = ((struct sockaddr_in*)(addrinfo->ai_addr))->sin_addr;
++        freeaddrinfo(addrinfo);
+     }
+ 
+     main_socket = ::socket(AF_INET, SOCK_STREAM, 0);
+@@ -273,9 +279,8 @@ bool Client::Connect() {
+ 
+     struct sockaddr_in servaddr = {0};
+     servaddr.sin_family = AF_INET;
+-    servaddr.sin_addr.s_addr = ((struct sockaddr_in*)(addrinfo->ai_addr))->sin_addr.s_addr;
++    servaddr.sin_addr = server_ip;
+     servaddr.sin_port = htons(port);
+-    freeaddrinfo(addrinfo);
+     memcpy(last_sockaddr_in.data(), &servaddr, last_sockaddr_in.size());
+ 
+     if (!ConnectWithTimeout(main_socket, &servaddr, sizeof(servaddr), 10)) {

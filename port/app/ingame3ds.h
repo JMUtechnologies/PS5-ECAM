@@ -25,6 +25,7 @@ namespace ps5ingame3ds
 		int textureFilter = 0;	  // None, Anime4K, Bicubic, ScaleForce, xBRZ, MMPX
 		int volume = 100;		  // percent
 		bool performance = false; // the frame rate and speed in a corner
+		int cpuClock = 100;		  // the emulated CPU's speed, percent of the 3DS's
 		bool motion = true;
 		int deadzone = 15;		  // percent
 		bool aOnCircle = true;	  // A on Circle and B on Cross, where the 3DS has them
@@ -56,8 +57,9 @@ namespace ps5ingame3ds
 	// now), and whether the library was chosen.
 	bool TakeChanges(Settings& settings);
 	bool TakeLibraryRequest();
-	// The performance overlay's numbers, about once a second: frames per second, speed in percent.
-	void SetPerformance(double fps, double speed);
+	// The performance overlay's numbers, about once a second: frames per second, speed in percent,
+	// and where a frame's time goes (a line of text; empty: none).
+	void SetPerformance(double fps, double speed, const std::string& breakdown);
 
 	// For Azahar's renderer, twice a frame, where it records its commands.
 	void Record(const Target& target);

@@ -31,6 +31,7 @@
 #include "common/settings.h"
 #include "common/thread.h"
 #include "core/core.h"
+#include "core/core_timing.h"
 #include "core/frontend/applets/default_applets.h"
 #include "core/frontend/emu_window.h"
 #include "core/frontend/image_interface.h"
@@ -170,7 +171,7 @@ namespace ps5azahar
 			values.layout_option = LayoutOf(settings.layout);
 			values.swap_screen = false;
 			values.use_cpu_jit = true;
-			values.cpu_clock_percentage = 100;
+			values.cpu_clock_percentage = std::clamp(settings.cpuClock, 25, 400);
 			values.is_new_3ds = true;
 			values.output_type = AudioCore::SinkType::PS5;
 			values.audio_emulation = Settings::AudioEmulation::HLE;
@@ -191,6 +192,7 @@ namespace ps5azahar
 			menu.textureFilter = settings.textureFilter;
 			menu.volume = settings.volume;
 			menu.performance = settings.performance;
+			menu.cpuClock = settings.cpuClock;
 			menu.motion = settings.motion;
 			menu.deadzone = settings.deadzone;
 			menu.aOnCircle = MappedInput(settings, Button::A) == ps5emu::PadInput::Circle;
@@ -233,6 +235,8 @@ namespace ps5azahar
 			s_settings.textureFilter = menu.textureFilter;
 			s_settings.volume = menu.volume;
 			s_settings.performance = menu.performance;
+			const bool clock = menu.cpuClock != s_settings.cpuClock;
+			s_settings.cpuClock = menu.cpuClock;
 			s_settings.motion = menu.motion;
 			s_settings.deadzone = menu.deadzone;
 			if (menu.aOnCircle != (MappedInput(s_settings, Button::A) == ps5emu::PadInput::Circle))
@@ -254,6 +258,15 @@ namespace ps5azahar
 			s_window->UpdateLayout();
 			if (controls)
 				ReloadControls();
+			if (clock)
+			{
+				// as Azahar's ApplySettings: the cores' timers take the new rate from their next slice
+				values.cpu_clock_percentage = std::clamp(menu.cpuClock, 25, 400);
+				Core::System& system = Core::System::GetInstance();
+				if (system.IsPoweredOn())
+					system.CoreTiming().UpdateClockSpeed(values.cpu_clock_percentage.GetValue());
+				ps5log::Line("[azahar] CPU clock {}%", values.cpu_clock_percentage.GetValue());
+			}
 
 			ps5settings::Launcher all = ps5settings::Load();
 			all.n3ds = s_settings;
@@ -277,6 +290,9 @@ namespace ps5azahar
 			case Status::ErrorLoader_ErrorPatches:
 			case Status::ErrorLoader_ErrorPatchesInvalidTitle: return "The game's patches could not be applied.";
 			case Status::ErrorNotInitialized: return "Azahar's renderer or CPU did not start.";
+			case Status::ErrorArticDisconnected:
+				return "The Artic Base server did not answer: check the 3DS's address, that Artic Base runs on it, and that "
+					"the 3DS and the PS5 are on the same network.";
 			default: return "The game could not be started.";
 			}
 		}
@@ -374,6 +390,9 @@ namespace ps5azahar
 		system.GPU().Renderer().Rasterizer()->LoadDefaultDiskResources(stopLoading, nullptr);
 
 		s_name = game.name;
+		std::string title;
+		if (IsArtic(path) && system.GetAppLoader().ReadTitle(title) == Loader::ResultStatus::Success && !title.empty())
+			s_name = title; // the game on the 3DS, by its own name
 		s_titleId = programId ? programId : game.titleId;
 		ShowInMenu();
 		s_stop = false;
@@ -399,8 +418,22 @@ namespace ps5azahar
 				ps5emu::LogMemory(); // about once a minute: what keeps growing is a leak
 			if (polls % 250 == 0)
 			{
+				// about once a second: the overlay's numbers, and where the frames' time went (Azahar's
+				// own measures, per 3DS frame: the CPU's code and the rest, the system calls and
+				// services, the 3DS GPU's commands, and the hand-over to the PS5's GPU with its waits)
 				const auto stats = system.GetAndResetPerfStats();
-				ps5ingame3ds::SetPerformance(stats.game_fps, stats.emulation_speed * 100.0);
+				const double ms = 1000.0;
+				const std::string breakdown = stats.time_vblank_interval > 0 ?
+					fmt::format("frame {:.1f} ms: CPU {:.1f}  SVC {:.1f}  IPC {:.1f}  GPU {:.1f}  swap {:.1f}",
+						stats.time_vblank_interval * ms, stats.time_remaining * ms, stats.time_hle_svc * ms,
+						stats.time_hle_ipc * ms, stats.time_gpu * ms, stats.time_swap * ms) :
+					std::string();
+				ps5ingame3ds::SetPerformance(stats.game_fps, stats.emulation_speed * 100.0, breakdown);
+				// every ten seconds in the boot log, so a slow game can be told from a slow PS5
+				if (polls % 2500 == 0)
+					ps5log::Line("[perf3ds] {:.0f} fps, speed {:.0f}%; {}; CPU clock {}%, {}x, filter {}", stats.game_fps,
+						stats.emulation_speed * 100.0, breakdown.empty() ? "no frames" : breakdown, s_settings.cpuClock,
+						s_settings.resolution, s_settings.textureFilter);
 			}
 			switch (ps5pad::TakeShortcut())
 			{
@@ -476,8 +509,12 @@ namespace ps5azahar
 			{
 			case Result::Success: s_install.state = ps5emu::InstallStatus::State::Done; break;
 			case Result::ErrorEncrypted:
-				s_install.message = "it is encrypted: decrypt it, or put the 3DS's aes_keys.txt in /data/ps5cemu/azahar/sysdata";
+				// Azahar installs decrypted CIA files only; a decrypted one whose game is still
+				// encrypted inside installs, then needs the keys to start
+				s_install.message = "it is encrypted: Azahar installs decrypted CIA files only (decrypt it on your 3DS, "
+					"e.g. with GodMode9). If it is decrypted, its game needs the 3DS's aes_keys.txt in /data/ps5cemu/azahar/sysdata";
 				break;
+			case Result::ErrorInvalid: s_install.message = "it is not a CIA file, or it is damaged (check the file's size)"; break;
 			case Result::ErrorFileNotFound:
 			case Result::ErrorFailedToOpenFile: s_install.message = "the file could not be read"; break;
 			case Result::ErrorAborted: s_install.message = "it was stopped"; break;

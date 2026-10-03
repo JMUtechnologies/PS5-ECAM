@@ -31,6 +31,7 @@ namespace ps5ingame3ds
 		std::string s_name;
 		uint64_t s_titleId = 0;
 		double s_fps = 0, s_speed = 0;
+		std::string s_breakdown;
 		std::atomic<bool> s_open{false};
 		std::atomic<uint64_t> s_openedAt{0}; // sceKernelGetProcessTime
 		std::atomic<bool> s_libraryRequested{false};
@@ -66,6 +67,18 @@ namespace ps5ingame3ds
 
 		constexpr const char* kLayouts[] = {"Top above bottom", "Top screen only", "Large top screen", "Side by side"};
 		constexpr const char* kFilters[] = {"None", "Anime4K", "Bicubic", "ScaleForce", "xBRZ", "MMPX"};
+		// the CPU clock's steps, percent of the 3DS's
+		constexpr int kClocks[] = {25, 50, 75, 100, 125, 150, 200, 300, 400};
+
+		int NextClock(int clock, int change)
+		{
+			constexpr int count = (int)std::size(kClocks);
+			int at = 3; // 100%
+			for (int i = 0; i < count; i++)
+				if (kClocks[i] == clock)
+					at = i;
+			return kClocks[(at + change + count) % count];
+		}
 
 		void Change(const Settings& settings)
 		{
@@ -225,9 +238,16 @@ namespace ps5ingame3ds
 							"Which screen takes the top screen's place.\nIn the game, touchpad click + L1 swaps them."},
 						{"resolution", "Internal resolution", fmt::format("{}x  ({}x{})", resolution, 400 * resolution, 240 * resolution), true,
 							"How large the 3DS's 3D scenes are drawn before they are scaled to the TV. Higher is sharper and asks "
-							"more of the GPU."},
+							"more of the GPU, and each time the game reads a picture back the wait grows with it."},
 						{"filter", "Texture filter", kFilters[std::clamp(settings.textureFilter, 0, 5)], true,
-							"Smooths the game's textures as they are scaled up. None keeps them as the 3DS draws them."},
+							"Smooths the game's textures as they are scaled up. None keeps them as the 3DS draws them.\nA filter "
+							"redraws every texture the game loads at the internal resolution: at high resolutions it is the costliest "
+							"setting here. If a game stutters, try None first."},
+						{"cpu", "CPU clock", fmt::format("{}%", settings.cpuClock), true,
+							"How fast the 3DS's CPU runs, against the real one's 100%. Below 100% the PS5 has less to do for each "
+							"frame, which can bring a slow game up to full speed, but a game that needs the time may slow down or "
+							"misbehave. Above 100% smooths games that dropped frames on the 3DS itself, and asks more of the PS5.\n"
+							"It changes at once; 100% is how the 3DS is."},
 						{"performance", "Performance overlay", settings.performance ? "On" : "Off", true,
 							"The frame rate and the emulation's speed, in the top left corner."},
 						{"volume", "Volume", fmt::format("{}%", settings.volume), true, "The game's sound. Left and Right change it by 10%."},
@@ -249,7 +269,9 @@ namespace ps5ingame3ds
 					};
 
 				int focused = 0;
-				const float spacing = 72, height = 64;
+				// nine rows fill the panel at their full height; more are drawn closer
+				const bool tight = items.size() > 9;
+				const float spacing = tight ? 65 : 72, height = tight ? 59 : 64, lift = (64 - height) / 2;
 				for (int i = 0; i < (int)items.size(); i++)
 				{
 					const Item& item = items[i];
@@ -274,8 +296,8 @@ namespace ps5ingame3ds
 							change = 1;
 					}
 					canvas.Row(138, y, 760, height, isFocused);
-					canvas.Text(g.row, 24, 164, y + 17, kColours.text, item.label);
-					canvas.TextRight(g.row, 22, 872, y + 19, kColours.accent, item.value);
+					canvas.Text(g.row, 24, 164, y + 17 - lift, kColours.text, item.label);
+					canvas.TextRight(g.row, 22, 872, y + 19 - lift, kColours.accent, item.value);
 					if (change == 0)
 						continue;
 					const std::string id = item.id;
@@ -294,6 +316,8 @@ namespace ps5ingame3ds
 						next.resolution = chosen && resolution >= 10 ? 1 : std::clamp(resolution + change, 1, 10);
 					else if (id == "filter")
 						next.textureFilter = (settings.textureFilter + change + 6) % 6;
+					else if (id == "cpu")
+						next.cpuClock = NextClock(settings.cpuClock, change);
 					else if (id == "performance")
 						next.performance = !settings.performance;
 					else if (id == "volume")
@@ -362,12 +386,16 @@ namespace ps5ingame3ds
 		void DrawPerformance(float scale)
 		{
 			double fps, speed;
+			std::string breakdown;
 			{
 				std::lock_guard lock(s_mutex);
 				fps = s_fps;
 				speed = s_speed;
+				breakdown = s_breakdown;
 			}
-			const std::string text = fmt::format("{:.0f} FPS   {:.0f}%", fps, speed);
+			std::string text = fmt::format("{:.0f} FPS   {:.0f}%", fps, speed);
+			if (!breakdown.empty())
+				text += "\n" + breakdown;
 			ImDrawList* draw = ImGui::GetForegroundDrawList();
 			const ImVec2 at{24 * scale, 20 * scale};
 			const ImVec2 size = g.small->CalcTextSizeA(20 * scale, FLT_MAX, 0.0f, text.c_str());
@@ -417,11 +445,12 @@ namespace ps5ingame3ds
 		return s_libraryRequested.exchange(false);
 	}
 
-	void SetPerformance(double fps, double speed)
+	void SetPerformance(double fps, double speed, const std::string& breakdown)
 	{
 		std::lock_guard lock(s_mutex);
 		s_fps = fps;
 		s_speed = speed;
+		s_breakdown = breakdown;
 	}
 
 	void Record(const Target& target)

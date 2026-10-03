@@ -1,0 +1,92 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Sat, 3 Oct 2026 05:11:04 +0000
+Subject: [PATCH] PS5: crash reports in the boot log, and the pipeline cache's
+ progress
+
+A crash that only reached log.txt's buffer was lost with the process: a
+BotW start that ended while its pipeline cache loaded left no report. The
+crash handler's lines now also go to the port's boot log, written with
+write(2) from the handler (PS5Cemu_CrashLine), the signal and fault
+address first of all. The port can also read how far the pipeline cache's
+loading is (PS5Cemu_PipelineCacheProgress) for its boot log.
+
+---
+ .../Renderer/Vulkan/VulkanPipelineStableCache.cpp     | 11 +++++++++++
+ src/Common/ExceptionHandler/ExceptionHandler.cpp      |  9 +++++++++
+ .../ExceptionHandler/ExceptionHandler_posix.cpp       |  6 ++++++
+ 3 files changed, 26 insertions(+)
+
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanPipelineStableCache.cpp b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanPipelineStableCache.cpp
+index 9f8f449..6c7ff13 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanPipelineStableCache.cpp
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanPipelineStableCache.cpp
+@@ -22,6 +22,17 @@ struct
+ 	std::atomic_uint32_t pipelinesLoaded;
+ }g_vkCacheState;
+ 
++#if defined(CEMU_PS5)
++// The port's boot log, while a game starts: how far the pipeline cache's loading is (the pipelines
++// compiled, those read from the file so far, and the file's last index).
++void PS5Cemu_PipelineCacheProgress(uint32& loaded, uint32& queued, uint32& lastIndex)
++{
++	loaded = g_vkCacheState.pipelinesLoaded;
++	queued = g_vkCacheState.pipelinesQueued;
++	lastIndex = g_vkCacheState.pipelineMaxFileIndex;
++}
++#endif
++
+ VulkanPipelineStableCache g_vkPipelineStableCacheInstance;
+ 
+ VulkanPipelineStableCache& VulkanPipelineStableCache::GetInstance()
+diff --git a/src/Common/ExceptionHandler/ExceptionHandler.cpp b/src/Common/ExceptionHandler/ExceptionHandler.cpp
+index 1c7e95b..e7bd253 100644
+--- a/src/Common/ExceptionHandler/ExceptionHandler.cpp
++++ b/src/Common/ExceptionHandler/ExceptionHandler.cpp
+@@ -27,6 +27,12 @@ void CrashLog_SetOutputChannels(bool writeToStdErr, bool writeToLogTxt)
+     s_writeToLogTxt = writeToLogTxt;
+ }
+ 
++#if defined(CEMU_PS5)
++// The port's boot log (ps5/log.cpp), written at once with write(2): a crash report that only
++// reached log.txt's buffer was lost with the process.
++void PS5Cemu_CrashLine(std::string_view text, bool newLine);
++#endif
++
+ // outputs to both stderr and log.txt
+ void CrashLog_WriteLine(std::string_view text, bool newLine)
+ {
+@@ -34,6 +40,9 @@ void CrashLog_WriteLine(std::string_view text, bool newLine)
+         cemuLog_writeLineToLog(text, false, newLine);
+     if(s_writeToStdErr)
+     {
++#if defined(CEMU_PS5)
++        PS5Cemu_CrashLine(text, newLine); // the console keeps no stderr
++#endif
+         fwrite(text.data(), sizeof(char), text.size(), stderr);
+         if(newLine)
+             fwrite("\n", sizeof(char), 1, stderr);
+diff --git a/src/Common/ExceptionHandler/ExceptionHandler_posix.cpp b/src/Common/ExceptionHandler/ExceptionHandler_posix.cpp
+index 4775759..1589557 100644
+--- a/src/Common/ExceptionHandler/ExceptionHandler_posix.cpp
++++ b/src/Common/ExceptionHandler/ExceptionHandler_posix.cpp
+@@ -3,6 +3,8 @@
+ #if defined(CEMU_PS5)
+ #include <pthread.h>
+ #include <pthread_np.h>
++#include <string_view>
++void PS5Cemu_CrashLine(std::string_view text, bool newLine); // the port's boot log
+ #endif
+ #include <string.h>
+ #include <string>
+@@ -78,6 +80,10 @@ void handlerDumpingSignal(int sig, siginfo_t *info, void *context)
+ 	}
+ #endif
+ 
++#if defined(CEMU_PS5)
++	// first, before anything that could fail: which signal, and where
++	PS5Cemu_CrashLine(fmt::format("signal {} at {:#x}", sig, (uintptr_t)info->si_addr), true);
++#endif
+     if(!CrashLog_Create())
+         return; // give up if crashlog was already created
+ 

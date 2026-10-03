@@ -3,6 +3,7 @@
 #include "emulator.h"
 #include "menu_canvas.h"
 #include "../ps5/kernel.h"
+#include "../ps5/log.h"
 #include "../ps5/pad.h"
 
 #include "audio/IAudioAPI.h"
@@ -191,6 +192,11 @@ namespace
 						"fills the screen."},
 					{"overlay", "Performance overlay", overlay ? "On" : "Off", true,
 						"Frames per second, CPU and memory use in the top left corner, as Cemu shows them."},
+					{"barriers", "Accurate barriers", config.vk_accurate_barriers ? "On" : "Off", true,
+						"Cemu's own setting (Debug > Accurate barriers), on unless you turn it off. Off lets the GPU keep some "
+						"drawing in one pass, which can raise the frame rate, but some games then flicker or show wrong "
+						"shadows or effects.\nAn experiment: it changes at once, so compare with the overlay on, and turn it back "
+						"on if anything looks wrong."},
 					{"volume", "Volume", fmt::format("{}%", config.tv_volume), true, "The game's sound. Left and Right change it by 10%."},
 					{"controls", "Controls", "", false,
 						"Each player's controller: the emulated one, motion controls, vibration, the sticks' deadzones and where A and B are. "
@@ -220,7 +226,9 @@ namespace
 				};
 
 			int focused = 0;
-			const float spacing = 72, height = 64;
+			// nine rows fill the panel at their full height; more are drawn closer
+			const bool tight = items.size() > 9;
+			const float spacing = tight ? 65 : 72, height = tight ? 59 : 64, lift = (64 - height) / 2;
 			for (int i = 0; i < (int)items.size(); i++)
 			{
 				const Item& item = items[i];
@@ -245,8 +253,8 @@ namespace
 						change = 1;
 				}
 				canvas.Row(138, y, 760, height, isFocused);
-				canvas.Text(rowFont, 24, 164, y + 17, kText, item.label);
-				canvas.TextRight(rowFont, 22, 872, y + 19, kAccent, item.value);
+				canvas.Text(rowFont, 24, 164, y + 17 - lift, kText, item.label);
+				canvas.TextRight(rowFont, 22, 872, y + 19 - lift, kAccent, item.value);
 				if (change == 0)
 					continue;
 				const std::string id = item.id;
@@ -264,6 +272,12 @@ namespace
 				{
 					config.overlay.position = overlay ? ScreenPosition::kDisabled : ScreenPosition::kTopLeft;
 					config.overlay.fps = config.overlay.cpu_usage = config.overlay.ram_usage = true;
+				}
+				else if (id == "barriers")
+				{
+					// the renderer reads it at each draw; settings.xml keeps it, as Cemu's menu does
+					config.vk_accurate_barriers = !config.vk_accurate_barriers;
+					ps5log::Line("[ingame] accurate barriers: {}", config.vk_accurate_barriers ? "on" : "off");
 				}
 				else if (id == "volume")
 					// Cross goes up by 10, and from 100 back to 0

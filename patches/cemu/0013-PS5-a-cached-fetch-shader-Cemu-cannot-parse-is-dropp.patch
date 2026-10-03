@@ -1,0 +1,150 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Sat, 3 Oct 2026 05:32:33 +0000
+Subject: [PATCH] PS5: a cached fetch shader Cemu cannot parse is dropped, not
+ fatal
+
+Breath of the Wild with a transferable shader cache from another Cemu
+ended while the cache loaded: raise(SIGTRAP) from the release assert
+cemu_assert(attribSize > 0) in _fetchShaderDecompiler_parseInstruction_
+VTX_SEMANTIC, under LatteShaderCache_Load. The cache held fetch shaders the
+legacy parser (for caches without a CF program) reads as an unknown vertex
+format.
+
+A fetch shader read from the cache file is now parsed with
+createFetchShaderFromCache: what would assert (an attribute of no size, an
+instruction that is not a semantic one, too many attributes or buffers)
+marks it invalid, nothing is registered, and the vertex shader's entry
+fails to load, which the loader already handles by deleting the entry
+from the cache. The game's own fetch shaders assert as before.
+
+---
+ src/Cafe/HW/Latte/Core/FetchShader.cpp      | 46 ++++++++++++++++++++-
+ src/Cafe/HW/Latte/Core/FetchShader.h        |  5 +++
+ src/Cafe/HW/Latte/Core/LatteShaderCache.cpp |  7 ++++
+ 3 files changed, 57 insertions(+), 1 deletion(-)
+
+diff --git a/src/Cafe/HW/Latte/Core/FetchShader.cpp b/src/Cafe/HW/Latte/Core/FetchShader.cpp
+index d5e8bdd..a2b869c 100644
+--- a/src/Cafe/HW/Latte/Core/FetchShader.cpp
++++ b/src/Cafe/HW/Latte/Core/FetchShader.cpp
+@@ -16,6 +16,26 @@
+ 
+ void LatteSHRC_RemoveShaderStateCacheEntryByKey(uint64 key);
+ 
++#if defined(CEMU_PS5)
++// Set while a fetch shader from the shader cache file is parsed (createFetchShaderFromCache): what
++// the parser cannot make sense of marks it invalid instead of asserting. A cache written by another
++// Cemu can hold fetch shaders the legacy parser below reads as nonsense, and the release assert
++// (raise(SIGTRAP)) then ended the game while its cache loaded. The cache loader drops such an
++// entry, as it does any it cannot read. The game's own fetch shaders still assert as before.
++static thread_local bool* t_fetchShaderInvalid = nullptr;
++
++// false (and the fetch shader marked invalid) when the condition fails while the cache is read
++static bool FetchShaderCacheCheck(bool condition)
++{
++	if (condition || !t_fetchShaderInvalid)
++		return true;
++	*t_fetchShaderInvalid = true;
++	return false;
++}
++#else
++static bool FetchShaderCacheCheck(bool) { return true; }
++#endif
++
+ uint32 LatteShaderRecompiler_getAttributeSize(Latte::E_HWFMT format)
+ {
+ 	if (format == Latte::E_HWFMT::HWFMT_32_32_32_32 || format == Latte::E_HWFMT::HWFMT_32_32_32_32_FLOAT)
+@@ -217,6 +237,8 @@ void _fetchShaderDecompiler_parseInstruction_VTX_SEMANTIC(LatteFetchShader* pars
+ 	auto endianSwap = instr->getField_ENDIAN_SWAP();
+ 
+ 	uint32 attribSize = LatteShaderRecompiler_getAttributeSize(dataFormat);
++	if (!FetchShaderCacheCheck(attribSize > 0))
++		return;
+ 	cemu_assert(attribSize > 0);
+ 	uint32 offsetAfterAttrib = offset + attribSize;
+ 
+@@ -253,6 +275,8 @@ void _fetchShaderDecompiler_parseInstruction_VTX_SEMANTIC(LatteFetchShader* pars
+ 	}
+ 	// add attribute
+ 	sint32 groupAttribIndex = attribGroup->attribCount;
++	if (!FetchShaderCacheCheck(groupAttribIndex < 127))
++		return;
+ 	if (attribGroup->attribCount < (groupAttribIndex + 1))
+ 	{
+ 		cemu_assert(groupAttribIndex < 127);
+@@ -309,7 +333,7 @@ void _fetchShaderDecompiler_parseVTXClause(LatteFetchShader* parsedFetchShader,
+ 		{
+ 			_fetchShaderDecompiler_parseInstruction_VTX_SEMANTIC(parsedFetchShader, contextRegister, instr);
+ 		}
+-		else
++		else if (FetchShaderCacheCheck(false))
+ 		{
+ 			assert_dbg();
+ 		}
+@@ -422,6 +446,15 @@ LatteFetchShader* LatteShaderRecompiler_createFetchShader(LatteFetchShader::Cach
+ 		}
+ 	}
+ 	newFetchShader->bufferGroups.shrink_to_fit();
++#if defined(CEMU_PS5)
++	// a cached fetch shader that did not parse: nothing of it registered (createFetchShaderFromCache)
++	if (!FetchShaderCacheCheck(newFetchShader->bufferGroups.size() <= Latte::GPU_LIMITS::NUM_VERTEX_BUFFERS) ||
++		(t_fetchShaderInvalid && *t_fetchShaderInvalid))
++	{
++		delete newFetchShader;
++		return nullptr;
++	}
++#endif
+ 	// calculate group information
+ 	cemu_assert(newFetchShader->bufferGroups.size() <= Latte::GPU_LIMITS::NUM_VERTEX_BUFFERS);
+ 	for (auto& bufferGroup : newFetchShader->bufferGroups)
+@@ -457,6 +490,17 @@ LatteFetchShader* LatteShaderRecompiler_createFetchShader(LatteFetchShader::Cach
+ 	return newFetchShader;
+ }
+ 
++#if defined(CEMU_PS5)
++LatteFetchShader* LatteShaderRecompiler_createFetchShaderFromCache(LatteFetchShader::CacheHash fsHash, uint32* contextRegister, uint32* fsProgramCode, uint32 fsProgramSize)
++{
++	bool invalid = false;
++	t_fetchShaderInvalid = &invalid;
++	LatteFetchShader* fetchShader = LatteShaderRecompiler_createFetchShader(fsHash, contextRegister, fsProgramCode, fsProgramSize);
++	t_fetchShaderInvalid = nullptr;
++	return invalid ? nullptr : fetchShader;
++}
++#endif
++
+ LatteFetchShader::~LatteFetchShader()
+ {
+ 	UnregisterInCache();
+diff --git a/src/Cafe/HW/Latte/Core/FetchShader.h b/src/Cafe/HW/Latte/Core/FetchShader.h
+index 0a29a83..48c32b0 100644
+--- a/src/Cafe/HW/Latte/Core/FetchShader.h
++++ b/src/Cafe/HW/Latte/Core/FetchShader.h
+@@ -74,3 +74,8 @@ struct LatteFetchShader
+ };
+ 
+ LatteFetchShader* LatteShaderRecompiler_createFetchShader(LatteFetchShader::CacheHash fsHash, uint32* contextRegister, uint32* fsProgramCode, uint32 fsProgramSize);
++#if defined(CEMU_PS5)
++// As LatteShaderRecompiler_createFetchShader, for a fetch shader read from the shader cache file:
++// nullptr (and nothing registered) when Cemu cannot parse it, where the game's own would assert.
++LatteFetchShader* LatteShaderRecompiler_createFetchShaderFromCache(LatteFetchShader::CacheHash fsHash, uint32* contextRegister, uint32* fsProgramCode, uint32 fsProgramSize);
++#endif
+diff --git a/src/Cafe/HW/Latte/Core/LatteShaderCache.cpp b/src/Cafe/HW/Latte/Core/LatteShaderCache.cpp
+index ab2898b..892d917 100644
+--- a/src/Cafe/HW/Latte/Core/LatteShaderCache.cpp
++++ b/src/Cafe/HW/Latte/Core/LatteShaderCache.cpp
+@@ -849,7 +849,14 @@ bool LatteShaderCache_readSeparableVertexShader(MemStreamReader& streamReader, u
+ 	LatteShader_UpdatePSInputs(lcr->GetRawView());
+ 	// get fetch shader
+ 	LatteFetchShader::CacheHash fsHash = LatteFetchShader::CalculateCacheHash((uint32*)fetchShaderData.data(), fetchShaderData.size());
++#if defined(CEMU_PS5)
++	// one Cemu cannot parse (a cache from another Cemu): the entry is dropped, not the game
++	LatteFetchShader* fetchShader = LatteShaderRecompiler_createFetchShaderFromCache(fsHash, lcr->GetRawView(), (uint32*)fetchShaderData.data(), fetchShaderData.size());
++	if (!fetchShader)
++		return false;
++#else
+ 	LatteFetchShader* fetchShader = LatteShaderRecompiler_createFetchShader(fsHash, lcr->GetRawView(), (uint32*)fetchShaderData.data(), fetchShaderData.size());
++#endif
+ 	// determine decompiler options
+ 	LatteDecompilerOptions options;
+ 	LatteShader_GetDecompilerOptions(options, LatteConst::ShaderType::Vertex, usesGeometryShader);

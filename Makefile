@@ -8,7 +8,7 @@ SHELL := /bin/bash
 .DEFAULT_GOAL := help
 MAKEFLAGS += --no-print-directory
 
-VERSION := 2.0.0
+VERSION := 2.0.0b
 APP := build/app/PPSA99360
 JOBS ?= $(shell nproc)
 export JOBS

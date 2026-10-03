@@ -1,0 +1,123 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Sat, 3 Oct 2026 04:32:47 +0000
+Subject: [PATCH] PS5: a process's JITs go when it ends
+
+Each core keeps a dynarmic JIT per page table it has run, and never let
+one go: the JIT of a process that had ended (an applet such as the
+software keyboard, which a game starts and closes) stayed, with its page
+table, until the emulation stopped. On the PS5 a JIT's 128 MiB code cache
+is committed direct memory, so each applet a game opened took up to
+128 MiB per core and about 33 MiB more for good.
+
+A JIT whose page table is no longer registered (its process has gone) is
+now retired when the core next changes page tables, and freed at the
+start of that core's next Run: SetPageTable can be reached from inside a
+JIT's own callbacks, so it is never freed there.
+
+---
+ src/core/arm/dynarmic/arm_dynarmic.cpp | 27 +++++++++++++++++++++-----
+ src/core/arm/dynarmic/arm_dynarmic.h   |  4 ++++
+ src/core/memory.cpp                    |  5 +++++
+ src/core/memory.h                      |  3 +++
+ 4 files changed, 34 insertions(+), 5 deletions(-)
+
+diff --git a/src/core/arm/dynarmic/arm_dynarmic.cpp b/src/core/arm/dynarmic/arm_dynarmic.cpp
+index 7453326cf..c02cd49d2 100644
+--- a/src/core/arm/dynarmic/arm_dynarmic.cpp
++++ b/src/core/arm/dynarmic/arm_dynarmic.cpp
+@@ -196,6 +196,11 @@ void ARM_Dynarmic::Run() {
+         return;
+     }
+ 
++    // none of this core's JITs runs here: the ended processes' can go
++    if (!retired_jits.empty()) [[unlikely]] {
++        retired_jits.clear();
++    }
++
+     jit->Run();
+ }
+ 
+@@ -342,13 +347,25 @@ void ARM_Dynarmic::SetPageTable(const std::shared_ptr<Memory::PageTable>& page_t
+     if (iter != jits.end()) {
+         jit = iter->second.get();
+         LoadContext(ctx);
+-        return;
++    } else {
++        auto new_jit = MakeJit();
++        jit = new_jit.get();
++        LoadContext(ctx);
++        jits.emplace(current_page_table, std::move(new_jit));
+     }
+ 
+-    auto new_jit = MakeJit();
+-    jit = new_jit.get();
+-    LoadContext(ctx);
+-    jits.emplace(current_page_table, std::move(new_jit));
++    // The JITs of processes that have ended (an applet's, a closed title's): their page tables are
++    // unregistered when the process goes, but this map kept both, the JIT's code cache (128 MiB,
++    // which the PS5 commits) and the page table (about 33 MiB), for as long as the emulation ran.
++    // Every page table a core runs is a process's, registered while it lives.
++    for (auto it = jits.begin(); it != jits.end();) {
++        if (it->first != current_page_table && !memory.IsPageTableRegistered(it->first)) {
++            retired_jits.push_back(std::move(it->second));
++            it = jits.erase(it);
++        } else {
++            ++it;
++        }
++    }
+ }
+ 
+ void ARM_Dynarmic::ServeBreak([[maybe_unused]] int signal) {
+diff --git a/src/core/arm/dynarmic/arm_dynarmic.h b/src/core/arm/dynarmic/arm_dynarmic.h
+index d24002a57..f418205bd 100644
+--- a/src/core/arm/dynarmic/arm_dynarmic.h
++++ b/src/core/arm/dynarmic/arm_dynarmic.h
+@@ -6,6 +6,7 @@
+ 
+ #include <map>
+ #include <memory>
++#include <vector>
+ #include <dynarmic/interface/A32/a32.h>
+ #include "common/common_types.h"
+ #include "core/arm/arm_interface.h"
+@@ -79,6 +80,9 @@ private:
+     Dynarmic::A32::Jit* jit = nullptr;
+     std::shared_ptr<Memory::PageTable> current_page_table = nullptr;
+     std::map<std::shared_ptr<Memory::PageTable>, std::unique_ptr<Dynarmic::A32::Jit>> jits;
++    /// JITs of processes that have ended, freed at the next Run: SetPageTable can be reached from
++    /// a JIT's own callbacks (an SVC that reschedules), when one of them may still be on the stack
++    std::vector<std::unique_ptr<Dynarmic::A32::Jit>> retired_jits;
+ };
+ 
+ } // namespace Core
+diff --git a/src/core/memory.cpp b/src/core/memory.cpp
+index b5eb9b829..e4c36ce29 100644
+--- a/src/core/memory.cpp
++++ b/src/core/memory.cpp
+@@ -565,6 +565,11 @@ void MemorySystem::UnregisterPageTable(std::shared_ptr<PageTable> page_table) {
+     }
+ }
+ 
++bool MemorySystem::IsPageTableRegistered(const std::shared_ptr<PageTable>& page_table) const {
++    return std::find(impl->page_table_list.begin(), impl->page_table_list.end(), page_table) !=
++           impl->page_table_list.end();
++}
++
+ template <typename T>
+ void MemorySystem::UnmappedAccess(const VAddr vaddr, const T value, bool read) {
+     const std::string mode = (read ? "Read" : "Write");
+diff --git a/src/core/memory.h b/src/core/memory.h
+index f7045c171..9a5bc1139 100644
+--- a/src/core/memory.h
++++ b/src/core/memory.h
+@@ -693,6 +693,9 @@ public:
+     /// Unregisters page table for rasterizer cache marking
+     void UnregisterPageTable(std::shared_ptr<PageTable> page_table);
+ 
++    /// Whether a page table is registered: its process still exists
++    bool IsPageTableRegistered(const std::shared_ptr<PageTable>& page_table) const;
++
+     /// Gets pointer to DSP shared memory with given offset
+     u8* GetDspMemory(std::size_t offset) const;
+ 
