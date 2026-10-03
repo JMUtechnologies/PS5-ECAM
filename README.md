@@ -4,8 +4,7 @@
 
 <p align="center">
   <strong>Wii U and Nintendo 3DS emulation in one PlayStation 5 homebrew app</strong><br>
-  Latest release: <a href="https://github.com/premohq/PS5CEMU-HAR/releases/latest"><strong>2.0.0 B</strong></a> ·
-  <a href="https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v2.0.0b.zip">Download</a> ·
+  Latest release: <a href="https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v2.0.0b.zip"><strong>2.0.0 B</strong></a> ·
   <a href="#whats-new-in-200-b">What's new</a><br>
   <a href="#install">Install</a> · <a href="#wii-u-cemu">Wii U</a> · <a href="#nintendo-3ds-azahar">3DS</a> ·
   <a href="#controls">Controls</a> · <a href="docs/BUILDING.md">Building</a> · <a href="#credits">Credits</a>
@@ -38,7 +37,7 @@ See [What's new in 2.0.0 B](#whats-new-in-200-b) for everything.
 
 1. Download the latest release ZIP,
    [PS5CEMU-HAR-v2.0.0b.zip](https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v2.0.0b.zip)
-   (see the [release page](https://github.com/premohq/PS5CEMU-HAR/releases/latest)), and extract it, or
+   (see [all releases](https://github.com/premohq/PS5CEMU-HAR/releases)), and extract it, or
    [build it yourself](docs/BUILDING.md).
 2. Copy the `PPSA99360` folder to `/data/homebrew/PPSA99360` on your PS5.
 3. Load etaHEN and add `PPSA99360` to its app jailbreak list. This gives the app access to `/data`
