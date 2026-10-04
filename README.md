@@ -36,7 +36,7 @@ and log and cache tools in Diagnostics. See [What's new in 2.0.0 C](#whats-new-i
 ## Install
 
 1. Download the latest release ZIP,
-   [PS5CEMU-HAR-v2.0.0c.zip](https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v2.0.0c.zip)
+   [PS5CEMU-HAR-v2.0.0d.zip](https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v2.0.0d.zip)
    (see [all releases](https://github.com/premohq/PS5CEMU-HAR/releases)), and extract it, or
    [build it yourself](docs/BUILDING.md).
 2. Copy the `PPSA99360` folder to `/data/homebrew/PPSA99360` on your PS5.
