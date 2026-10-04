@@ -312,9 +312,7 @@ a ZIP to `dist/`. See [docs/BUILDING.md](docs/BUILDING.md), or run `make help` f
 - `port/`: the PS5 platform layer, both emulators' PS5 frontends, the launcher and the in-game menus
 - `patches/`: changes to Cemu and Azahar
 - `tools/`: build, packaging and artwork scripts
-- `extras/ps5mfr`: Alex Free's
-  [PS5 Make FSELF Recursive](https://github.com/alex-free/ps5-make-fself-recursive), with its own
-  readme and license
+- `docs/`: building, the HEN setup guide and the compatibility list
 
 ## Credits
 
