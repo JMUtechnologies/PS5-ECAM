@@ -4,8 +4,8 @@
 
 <p align="center">
   <strong>Wii U and Nintendo 3DS emulation in one PlayStation 5 homebrew app</strong><br>
-  Latest release: <a href="https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v2.0.0c.zip"><strong>2.0.0 C</strong></a> ·
-  <a href="#whats-new-in-200-c">What's new</a><br>
+  Latest release: <a href="https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v2.0.0d.zip"><strong>2.0.0 D</strong></a> ·
+  <a href="#whats-new-in-200-d">What's new</a><br>
   <a href="#install">Install</a> · <a href="#wii-u-cemu">Wii U</a> · <a href="#nintendo-3ds-azahar">3DS</a> ·
   <a href="#controls">Controls</a> · <a href="docs/BUILDING.md">Building</a> · <a href="#credits">Credits</a>
 </p>
@@ -29,9 +29,10 @@ Nintendo or Sony. All credit for the emulators goes to their developers.
 > some rough edges. If something goes wrong, please report it with your logs (see
 > [Reporting problems](#reporting-problems)).
 
-**New in 2.0.0 C:** a new launcher look with music and menu sounds, any HEN works (no etaHEN JIT
-grant needed), a 3DS on-screen keyboard, 3DS region, Cemu and Azahar kept fully apart, USB drives,
-and log and cache tools in Diagnostics. See [What's new in 2.0.0 C](#whats-new-in-200-c).
+**New in 2.0.0 D:** Breath of the Wild's runes fixed, Batman: Arkham Origins playable, 3DS borders,
+3DS save states, cheats and amiibo, Wii U amiibo, no restart when switching sides, an update notice,
+and a [HEN setup guide](docs/HEN-SETUP.md) for etaHEN, OnionHEN and others. See
+[What's new in 2.0.0 D](#whats-new-in-200-d).
 
 ## Install
 
