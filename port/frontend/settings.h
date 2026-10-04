@@ -42,6 +42,7 @@ namespace ps5settings
 		bool highFrameRate = false;	  // the 119.88 Hz mode where the display has it
 		bool overlay = false;		  // Cemu's performance overlay from the start
 		bool asyncShaders = true;	  // Cemu's async_compile (Settings > Video, and the in-game menu's Graphics)
+		bool gamePadSpeaker = false;  // the GamePad's sound on player 1's DualSense speaker (Settings > Audio)
 		bool rumble = true;
 		bool pinCpuThreads = false;	  // an experiment (ps5/threads.h): only in ps5cemu.json
 		// only in ps5cemu.json: RADV_DEBUG for the Vulkan driver (e.g. "nongg,nohiz"), to narrow down

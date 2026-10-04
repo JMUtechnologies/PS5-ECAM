@@ -196,6 +196,12 @@ namespace ps5pad
 		return Read(player, data);
 	}
 
+	int32_t UserId(int player)
+	{
+		std::lock_guard lock(s_mutex);
+		return player >= 0 && player < kMaxPlayers && s_slots[player].handle >= 0 ? s_slots[player].user : -1;
+	}
+
 	void TouchResolution(int player, float& width, float& height)
 	{
 		std::lock_guard lock(s_mutex);

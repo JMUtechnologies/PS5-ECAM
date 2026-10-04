@@ -9,6 +9,7 @@
 //     that emulator's side.
 
 #include "app/emulator.h"
+#include "app/pack_updates.h"
 #include "app/paths.h"
 #include "app/updates.h"
 #include "azahar/azahar.h"
@@ -60,7 +61,7 @@ namespace
 
 	ps5emu::Options Options(const ps5settings::Launcher& settings)
 	{
-		return {settings.gamesFolder, settings.overlay, settings.volume, settings.upscaleFilter, settings.asyncShaders};
+		return {settings.gamesFolder, settings.overlay, settings.volume, settings.upscaleFilter, settings.asyncShaders, settings.gamePadSpeaker};
 	}
 
 	// The side the launcher opens on when the app starts over (and only then), and why the game did
@@ -184,6 +185,7 @@ int main(int argc, char* argv[])
 		ps5display::SetHighFrameRate(false); // the launcher at 59.94 Hz
 		const auto choice = ps5launcher::Run(settings, status, prepare);
 		ps5update::Stop(); // nothing of the launcher's runs beside a game
+		ps5packs::Stop();
 		if (!choice)
 		{
 			// nothing to show it on: wait for the player to close the app from the PS5's menu

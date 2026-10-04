@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "ingame3ds.h"
 #include "menu_canvas.h"
+#include "side_menu.h"
+#include "tga.h"
 #include "../ps5/kernel.h"
 #include "../ps5/log.h"
 #include "../ps5/pad.h"
@@ -11,7 +13,10 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
+#include <algorithm>
 #include <atomic>
+#include <cctype>
+#include <cstdlib>
 #include <mutex>
 
 // Cemu's overlay font, compressed into Cemu (resource/CafeDefaultFont.cpp)
@@ -29,6 +34,8 @@ namespace ps5ingame3ds
 		Settings s_settings;  // under s_mutex
 		bool s_changed = false;
 		std::string s_name;
+		std::string s_details;	 // GameTDB's publisher and year (SetGame)
+		std::string s_coverPath; // the game's box art, or its icon
 		uint64_t s_titleId = 0;
 		double s_fps = 0, s_speed = 0;
 		std::string s_breakdown;
@@ -80,23 +87,21 @@ namespace ps5ingame3ds
 			int uploadAge = -1;	   // frames since the font upload, until its buffer goes
 			bool pending = false;  // a frame's draw data waits for the render pass
 			ImTextureID border = nullptr;
+			ImTextureID cover = nullptr; // the game's box art, made the first time the menu opens
+			bool coverTried = false;
+			int coverWidth = 0, coverHeight = 0;
 			std::vector<std::pair<ImTextureID, int>> retired; // textures and their age in frames, until the GPU is done with them
 			uint64_t lastFrame = 0;
 		};
 		Gpu g;
 		uint32_t s_buttons = 0, s_pressed = 0;
+		uint32_t s_menuButtons = 0; // the same, with the left stick's directions as the D-pad's
 		bool s_confirmLibrary = false;
-		enum class Page
-		{
-			Main,
-			Controls,
-			States,
-			Cheats,
-		};
-		Page s_page = Page::Main;
-		bool s_pageChanged = false;
+		// the menu's panel: its place in the list and the open category (the renderer's), and a new
+		// opening, asked for by ToggleMenu on the game's loop
+		ps5menu::SideMenu s_side;
+		std::atomic<bool> s_menuFresh{false};
 		int s_stateSlot = 1;
-		int s_cheatOffset = 0; // the Cheats page's first row
 		bool s_confirmLoad = false;
 
 		constexpr const char* kLayouts[] = {"Top above bottom", "Top screen only", "Large top screen", "Side by side"};
@@ -152,6 +157,7 @@ namespace ps5ingame3ds
 			{0.50f, IM_COL32(255, 210, 90, 60), false},	 // Waves
 			{0.55f, IM_COL32(255, 255, 255, 30), false}, // Aurora
 			{0.35f, IM_COL32(255, 255, 255, 22), true},	 // Shell
+			{0.55f, IM_COL32(255, 255, 255, 30), false}, // PS5CEMU-HAR
 		};
 
 		// The border's picture where no screen is (the space round them cut into the cells of a grid
@@ -216,14 +222,6 @@ namespace ps5ingame3ds
 			}
 		}
 
-		void ShowPage(Page page)
-		{
-			s_page = page;
-			s_pageChanged = true;
-			s_confirmLibrary = false;
-			s_confirmLoad = false;
-		}
-
 		// Cemu's Vulkan entry points from Azahar's instance and device (Cemu's renderer never ran),
 		// a descriptor pool for the font, an ImGui context of its own with Cemu's font at the
 		// menu's four sizes, and ImGui's Vulkan backend on Azahar's render pass.
@@ -266,6 +264,8 @@ namespace ps5ingame3ds
 			ImGui::SetCurrentContext(g.context);
 			ImGui_ImplVulkan_ForgetDeviceObjects();
 			g.border = nullptr;
+			g.cover = nullptr;
+			g.coverTried = false;
 			g.retired.clear();
 			g.fontsUploaded = false;
 			g.uploadAge = -1;
@@ -340,338 +340,227 @@ namespace ps5ingame3ds
 			};
 			stick(ImGuiKey_GamepadLStickLeft, ImGuiKey_GamepadLStickRight, data.leftX);
 			stick(ImGuiKey_GamepadLStickUp, ImGuiKey_GamepadLStickDown, data.leftY);
+			s_menuButtons = buttons;
+			if (connected)
+			{
+				if (data.leftY < 64)
+					s_menuButtons |= ps5pad::kUp;
+				else if (data.leftY > 192)
+					s_menuButtons |= ps5pad::kDown;
+				if (data.leftX < 64)
+					s_menuButtons |= ps5pad::kLeft;
+				else if (data.leftX > 192)
+					s_menuButtons |= ps5pad::kRight;
+			}
 			io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
 			io.MouseDown[0] = false;
 		}
 
+		// The menu's rows as things are now: a few settings, and categories that open in place
+		std::vector<ps5menu::Row> MenuRows(const Settings& settings)
+		{
+			using Row = ps5menu::Row;
+			std::string time, stateMessage, amiibo, amiiboMessage;
+			std::vector<std::pair<std::string, bool>> cheats;
+			bool noAmiibo;
+			{
+				std::lock_guard lock(s_mutex);
+				if (s_stateSlot <= (int)s_stateTimes.size())
+					time = s_stateTimes[s_stateSlot - 1];
+				stateMessage = s_stateMessage;
+				s_amiiboIndex = s_amiibo.empty() ? 0 : std::clamp(s_amiiboIndex, 0, (int)s_amiibo.size() - 1);
+				noAmiibo = s_amiibo.empty();
+				amiibo = noAmiibo ? "None" : s_amiibo[s_amiiboIndex];
+				amiiboMessage = s_extrasMessage;
+				cheats = s_cheats;
+			}
+			const int resolution = std::clamp(settings.resolution, 1, 10);
+			std::vector<Row> rows;
+			rows.push_back({"resume", "Back to the game", "", false, "Closes this menu: the game carries on where it is."});
+			rows.push_back({"screens", "Screens", "", false, "The screens' layout, which one is the main one, and the border.", {
+				{"layout", "Layout", kLayouts[std::clamp(settings.layout, 0, 3)], true,
+					"How the two screens share the TV. In the game, touchpad click + R1 goes to the next."},
+				{"swap", "Main screen", settings.swapScreens ? "Bottom" : "Top", true,
+					"Which screen takes the top screen's place. In the game, touchpad click + L1 swaps them."},
+				{"border", "Border", kBorderNames[std::clamp(settings.border, 0, kBorderCount - 1)], true,
+					"Artwork around the screens, never over them. Also in the launcher's Settings > Borders."},
+			}});
+			rows.push_back({"graphics", "Graphics", "", false, "Internal resolution, texture filter and the performance overlay.", {
+				{"resolution", "Internal resolution", fmt::format("{}x  ({}x{})", resolution, 400 * resolution, 240 * resolution), true,
+					"How large the 3D scenes are drawn before they are scaled to the TV. Higher is sharper and asks more of the GPU."},
+				{"filter", "Texture filter", kFilters[std::clamp(settings.textureFilter, 0, 5)], true,
+					"Smooths textures as they are scaled up. The costliest setting here: if a game stutters, try None first."},
+				{"performance", "Performance overlay", settings.performance ? "On" : "Off", true,
+					"The frame rate and the emulation's speed, in the top left corner."},
+			}});
+			rows.push_back({"pace", "Speed", "", false, "The emulated CPU's clock, and how fast the game may run.", {
+				{"cpu", "CPU clock", fmt::format("{}%", settings.cpuClock), true,
+					"Below 100% can bring a slow game to full speed; above it smooths games that dropped frames on the 3DS."},
+				{"speed", "Speed limit", settings.speedLimit ? fmt::format("{}%", settings.speedLimit) : "None", true,
+					"Above 100% hurries through slow scenes; None runs as fast as the PS5 can. For this game only."},
+			}});
+			rows.push_back({"volume", "Volume", fmt::format("{}%", settings.volume), true, "The game's sound. Left and Right change it by 10%."});
+			rows.push_back({"states", "Save states", "", false, "Five slots for this game: save exactly where you are, and come back to it.", {
+				{"slot", "Slot", fmt::format("{}  {}", s_stateSlot, time.empty() ? "(empty)" : time), true,
+					"Which of this game's five slots to save to or load from."},
+				{"save", "Save to this slot", stateMessage, false,
+					"Saves the game as it is now, replacing what the slot had. Newer app versions may not load it: keep saving in the game too."},
+				{"load", "Load this slot", s_confirmLoad ? "Press Cross again" : "", false,
+					"Goes back to the moment the slot was saved. What you did since is lost, so it asks twice."},
+			}});
+			Row cheatRows{"cheats", "Cheats", "", false, "The game's cheats, from azahar/cheats/<title ID>.txt (Gateway format)."};
+			for (size_t i = 0; i < cheats.size(); i++)
+				cheatRows.rows.push_back({fmt::format("cheat{}", i), cheats[i].first, cheats[i].second ? "On" : "Off", true,
+					"Cross, Left or Right turns it on or off, at once; it is kept for next time."});
+			if (cheats.empty())
+				cheatRows.rows.push_back({"nocheats", "No cheats for this game", "", false,
+					"Put them in /data/ps5cemu/azahar/cheats/<title ID>.txt, then start the game again."});
+			else
+				cheatRows.value = fmt::format("{} of {} on", std::count_if(cheats.begin(), cheats.end(), [](const auto& c) { return c.second; }), cheats.size());
+			rows.push_back(cheatRows);
+			rows.push_back({"amiibos", "Amiibo", "", false, "Hold an amiibo dump to the 3DS's reader when the game asks for one.", {
+				{"amiibo", "Amiibo", amiibo, true,
+					noAmiibo ? "Put amiibo dumps (.bin) in /data/ps5cemu/amiibo to scan them here." :
+							   "Left and Right choose an amiibo dump; Cross holds it to the reader."},
+				{"noamiibo", "Take the amiibo away", amiiboMessage, false, "Takes the amiibo off the reader, as lifting it off would."},
+			}});
+			rows.push_back({"controls", "Controls", "", false, "Motion controls, the sticks' deadzone and where A and B are.", {
+				{"motion", "Motion controls", settings.motion ? "On" : "Off", true,
+					"The DualSense's gyroscope and accelerometer as the 3DS's, for the games that aim or steer by tilting."},
+				{"deadzone", "Stick deadzone", fmt::format("{}%", settings.deadzone), true,
+					"How far a stick moves before the game sees it. Raise it if something drifts when you let go."},
+				{"ab", "A and B", settings.aOnCircle ? "A on Circle" : "A on Cross", true,
+					"A on Circle and B on Cross, where the 3DS has them, or the other way round, with X and Y swapped to match."},
+			}});
+			Row library{"library", "Back to the library", s_confirmLibrary ? "Press Cross again" : "", false,
+				"Leaves the game for the library. What you have not saved in the game is lost."};
+			library.apart = true;
+			rows.push_back(library);
+			return rows;
+		}
+
+		// What a row chosen or changed does
+		void Act(const ps5menu::Action& action, const Settings& settings)
+		{
+			const std::string& id = action.id;
+			const int change = action.change;
+			const bool chosen = action.chosen;
+			const int resolution = std::clamp(settings.resolution, 1, 10);
+			Settings next = settings;
+			bool changed = true; // a setting's row; the others set it false
+			if (id == "resume")
+			{
+				CloseMenu();
+				changed = false;
+			}
+			else if (id == "layout")
+				next.layout = (settings.layout + change + 4) % 4;
+			else if (id == "swap")
+				next.swapScreens = !settings.swapScreens;
+			else if (id == "border")
+				next.border = (std::clamp(settings.border, 0, kBorderCount - 1) + change + kBorderCount) % kBorderCount;
+			else if (id == "resolution")
+				next.resolution = chosen && resolution >= 10 ? 1 : std::clamp(resolution + change, 1, 10);
+			else if (id == "filter")
+				next.textureFilter = (settings.textureFilter + change + 6) % 6;
+			else if (id == "cpu")
+				next.cpuClock = NextClock(settings.cpuClock, change);
+			else if (id == "speed")
+				next.speedLimit = NextSpeedLimit(settings.speedLimit, change);
+			else if (id == "performance")
+				next.performance = !settings.performance;
+			else if (id == "volume")
+				next.volume = chosen && settings.volume >= 100 ? 0 : std::clamp(settings.volume + change * 10, 0, 100);
+			else if (id == "motion")
+				next.motion = !settings.motion;
+			else if (id == "deadzone")
+				next.deadzone = chosen && settings.deadzone >= 50 ? 0 : std::clamp(settings.deadzone + change * 5, 0, 50);
+			else if (id == "ab")
+				next.aOnCircle = !settings.aOnCircle;
+			else
+			{
+				changed = false;
+				std::lock_guard lock(s_mutex);
+				if (id == "slot")
+				{
+					s_stateSlot = (s_stateSlot - 1 + change + kStateSlots) % kStateSlots + 1;
+					s_confirmLoad = false;
+				}
+				else if (id == "save" || (id == "load" && s_confirmLoad))
+				{
+					s_stateRequest = id == "save" ? s_stateSlot : -s_stateSlot;
+					s_stateMessage = id == "save" ? "Saving..." : "Loading...";
+					s_confirmLoad = false;
+				}
+				else if (id == "load")
+					s_confirmLoad = true;
+				else if (id == "amiibo" && !chosen && !s_amiibo.empty())
+					s_amiiboIndex = (s_amiiboIndex + change + (int)s_amiibo.size()) % (int)s_amiibo.size();
+				else if (id == "amiibo" && !s_amiibo.empty())
+					s_extrasRequest = {ExtrasRequest::Amiibo, s_amiiboIndex};
+				else if (id == "noamiibo")
+					s_extrasRequest = {ExtrasRequest::RemoveAmiibo, 0};
+				else if (id.rfind("cheat", 0) == 0 && id.size() > 5 && std::isdigit((unsigned char)id[5]))
+					s_extrasRequest = {ExtrasRequest::Cheat, std::atoi(id.c_str() + 5)};
+				else if (id == "library")
+				{
+					if (s_confirmLibrary)
+						s_libraryRequested = true;
+					s_confirmLibrary = true;
+				}
+			}
+			if (changed)
+				Change(next);
+		}
+
 		void DrawMenu(float scale)
 		{
-			ImGuiIO& io = ImGui::GetIO();
 			Settings settings;
-			std::string name;
-			uint64_t titleId;
+			std::string name, details;
 			{
 				std::lock_guard lock(s_mutex);
 				settings = s_settings;
 				name = s_name;
-				titleId = s_titleId;
+				details = s_details;
 			}
+			if (s_menuFresh.exchange(false))
+			{
+				// opened: on its first row, every category closed, the shortcut's buttons not counted
+				s_side.Reset();
+				s_confirmLibrary = false;
+				s_confirmLoad = false;
+			}
+			bool close = false;
+			const ps5menu::Action action = s_side.Update(MenuRows(settings), s_menuButtons, sceKernelGetProcessTime(), close);
+			if (close)
+			{
+				CloseMenu();
+				return;
+			}
+			if (!action.id.empty())
+			{
+				Act(action, settings);
+				std::lock_guard lock(s_mutex);
+				settings = s_settings; // as the change left them, for the rows drawn below
+			}
+			// the two that ask twice ask again once the focus moves away
+			if (s_side.Focus() != "library")
+				s_confirmLibrary = false;
+			if (s_side.Focus() != "load")
+				s_confirmLoad = false;
 
+			ImGuiIO& io = ImGui::GetIO();
 			const ImVec2 origin{(io.DisplaySize.x - 1920.0f * scale) * 0.5f, (io.DisplaySize.y - 1080.0f * scale) * 0.5f};
-			ImGui::SetNextWindowPos({0, 0}, ImGuiCond_Always);
-			ImGui::SetNextWindowSize(io.DisplaySize, ImGuiCond_Always);
-			ImGui::SetNextWindowFocus();
-			ImGui::PushStyleColor(ImGuiCol_NavHighlight, IM_COL32(0, 0, 0, 0)); // the rows show the focus
-			constexpr ImGuiWindowFlags kFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
-				ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollWithMouse;
-			if (ImGui::Begin("PS5CEMU-HAR##InGameMenu3ds", nullptr, kFlags))
-			{
-				const bool appearing = ImGui::IsWindowAppearing();
-				if (appearing)
-				{
-					ImGui::GetCurrentContext()->NavDisableHighlight = false;
-					s_confirmLibrary = false;
-					s_page = Page::Main;
-				}
-				const Canvas canvas{ImGui::GetWindowDrawList(), scale, origin, kColours};
-				canvas.draw->AddRectFilled({0, 0}, io.DisplaySize, kColours.dim); // the game, dimmed
-
-				canvas.Text(g.title, 48, 108, 62, kColours.title, "PS5 AZAHAR");
-				canvas.Text(g.small, 20, 110, 132, kColours.copy, name);
-				canvas.Panel(108, 188, 820, 720);
-				canvas.Text(g.small, 20, 138, 208, kColours.kicker, s_page == Page::Controls ? "CONTROLS" : s_page == Page::States ? "SAVE STATES, CHEATS, AMIIBO" :
-					s_page == Page::Cheats ? "CHEATS" : "IN THE GAME");
-				canvas.Panel(980, 188, 820, 720);
-
-				struct Item
-				{
-					const char* id;
-					std::string label, value;
-					bool setting; // Left and Right change it
-					const char* help;
-				};
-				std::vector<Item> items;
-				const int resolution = std::clamp(settings.resolution, 1, 10);
-				if (s_page == Page::Main)
-					items = {
-						{"resume", "Back to the game", "", false, "Closes this menu: the game carries on where it is."},
-						{"layout", "Screens", kLayouts[std::clamp(settings.layout, 0, 3)], true,
-							"How the two screens share the TV: one above the other, the top one alone, the top one large with the "
-							"bottom one beside it, or the two side by side.\nIn the game, touchpad click + R1 goes to the next."},
-						{"swap", "Main screen", settings.swapScreens ? "Bottom" : "Top", true,
-							"Which screen takes the top screen's place.\nIn the game, touchpad click + L1 swaps them."},
-						{"border", "Border", kBorderNames[std::clamp(settings.border, 0, kBorderCount - 1)], true,
-							"Artwork around the screens, never over them, with a frame round each: it follows every layout. Also in "
-							"the launcher's Settings > Borders."},
-						{"resolution", "Internal resolution", fmt::format("{}x  ({}x{})", resolution, 400 * resolution, 240 * resolution), true,
-							"How large the 3DS's 3D scenes are drawn before they are scaled to the TV. Higher is sharper and asks "
-							"more of the GPU, and each time the game reads a picture back the wait grows with it."},
-						{"filter", "Texture filter", kFilters[std::clamp(settings.textureFilter, 0, 5)], true,
-							"Smooths the game's textures as they are scaled up. None keeps them as the 3DS draws them.\nA filter "
-							"redraws every texture the game loads at the internal resolution: at high resolutions it is the costliest "
-							"setting here. If a game stutters, try None first."},
-						{"cpu", "CPU clock", fmt::format("{}%", settings.cpuClock), true,
-							"How fast the 3DS's CPU runs, against the real one's 100%. Below 100% the PS5 has less to do for each "
-							"frame, which can bring a slow game up to full speed, but a game that needs the time may slow down or "
-							"misbehave. Above 100% smooths games that dropped frames on the 3DS itself, and asks more of the PS5.\n"
-							"It changes at once; 100% is how the 3DS is."},
-						{"speed", "Speed limit", settings.speedLimit ? fmt::format("{}%", settings.speedLimit) : "None", true,
-							"How fast the game may run, against the 3DS's 100%: above it to hurry through slow scenes, or None for as "
-							"fast as the PS5 can. The sound is stretched while it runs faster.\nFor this game only: the next one "
-							"starts at 100%."},
-						{"performance", "Performance overlay", settings.performance ? "On" : "Off", true,
-							"The frame rate and the emulation's speed, in the top left corner."},
-						{"volume", "Volume", fmt::format("{}%", settings.volume), true, "The game's sound. Left and Right change it by 10%."},
-						{"states", "Save states, cheats, amiibo", "", false, "Save the game exactly where it is, in one of five slots "
-							"for this game, and load it again later; turn the game's cheats on and off; and scan an amiibo, as the "
-							"desktop Azahar does."},
-						{"controls", "Controls", "", false, "Motion controls, the sticks' deadzone and where A and B are. They are "
-							"kept for the next games too; every button can be set in the launcher's Settings > Controls."},
-						{"library", "Back to the library", s_confirmLibrary ? "Press Cross again" : "", false,
-							"Leaves the game for the library. What you have not saved in the game is lost."},
-					};
-				else if (s_page == Page::States)
-				{
-					std::string time, message, amiibo, amiiboMessage;
-					int cheatsOn = 0, cheatCount = 0;
-					{
-						std::lock_guard lock(s_mutex);
-						if (s_stateSlot <= (int)s_stateTimes.size())
-							time = s_stateTimes[s_stateSlot - 1];
-						message = s_stateMessage;
-						s_amiiboIndex = s_amiibo.empty() ? 0 : std::clamp(s_amiiboIndex, 0, (int)s_amiibo.size() - 1);
-						amiibo = s_amiibo.empty() ? "None in /data/ps5cemu/amiibo" : s_amiibo[s_amiiboIndex];
-						amiiboMessage = s_extrasMessage;
-						cheatCount = (int)s_cheats.size();
-						for (const auto& cheat : s_cheats)
-							cheatsOn += cheat.second ? 1 : 0;
-					}
-					items = {
-						{"slot", "Slot", fmt::format("{}  {}", s_stateSlot, time.empty() ? "(empty)" : time), true,
-							"Which of this game's five slots to save to or load from. Left and Right choose it."},
-						{"save", "Save to this slot", message, false,
-							"Saves the game exactly as it is now. Anything already in the slot is replaced. Save states go with this "
-							"version of the app: a newer one may not load them, so keep saving in the game too."},
-						{"load", "Load this slot", s_confirmLoad ? "Press Cross again" : "", false,
-							"Goes back to the moment the slot was saved. What you did since then is lost, so it asks twice."},
-						{"amiibo", "Amiibo", amiibo, true,
-							"Left and Right choose an amiibo dump (.bin) from /data/ps5cemu/amiibo; Cross holds it to the 3DS's reader. "
-							"Scan it when the game asks for an amiibo. Without the 3DS's aes_keys.txt in azahar/sysdata, games read "
-							"it but cannot save to it."},
-						{"noamiibo", "Take the amiibo away", amiiboMessage, false, "Takes the amiibo off the reader, as lifting it off would."},
-						{"cheats", "Cheats", cheatCount ? fmt::format("{} of {} on", cheatsOn, cheatCount) : "None for this game", false,
-							"Turn the game's cheats on and off. They come from azahar/cheats/<title ID>.txt, in the Gateway format "
-							"the desktop Azahar uses."},
-						{"back", "Back", "", false, "To the menu's first page."},
-					};
-				}
-				else if (s_page == Page::Cheats)
-				{
-					static constexpr const char* kCheatIds[] = {"cheat0", "cheat1", "cheat2", "cheat3", "cheat4", "cheat5", "cheat6", "cheat7", "cheat8"};
-					constexpr int kShown = (int)std::size(kCheatIds);
-					std::vector<std::pair<std::string, bool>> cheats;
-					{
-						std::lock_guard lock(s_mutex);
-						cheats = s_cheats;
-					}
-					if (s_cheatOffset >= (int)cheats.size())
-						s_cheatOffset = 0;
-					for (int i = 0; i < kShown && s_cheatOffset + i < (int)cheats.size(); i++)
-						items.push_back({kCheatIds[i], cheats[s_cheatOffset + i].first, cheats[s_cheatOffset + i].second ? "On" : "Off", true,
-							"Cross, Left or Right turns this cheat on or off. It changes at once and is kept for the next time."});
-					if ((int)cheats.size() > kShown)
-						items.push_back({"morecheats", "More cheats",
-							fmt::format("{}-{} of {}", s_cheatOffset + 1, std::min(s_cheatOffset + kShown, (int)cheats.size()), cheats.size()), false,
-							"The next page of this game's cheats."});
-					if (cheats.empty())
-						items.push_back({"nocheats", "No cheats for this game", "", false,
-							"Put the game's cheats in /data/ps5cemu/azahar/cheats/<title ID>.txt (the title ID in 16 hex digits, as "
-							"on the right), in the Gateway format the desktop Azahar uses, then start the game again."});
-					items.push_back({"extras", "Back", "", false, "To save states, cheats and amiibo."});
-				}
-				else
-					items = {
-						{"motion", "Motion controls", settings.motion ? "On" : "Off", true,
-							"The DualSense's gyroscope and accelerometer as the 3DS's, for the games that aim or steer by tilting."},
-						{"deadzone", "Stick deadzone", fmt::format("{}%", settings.deadzone), true,
-							"How far a stick moves before the game sees it. Raise it if something drifts when you let go."},
-						{"ab", "A and B", settings.aOnCircle ? "A on Circle" : "A on Cross", true,
-							"A on Circle and B on Cross, where the 3DS has them, or A on Cross and B on Circle, with X and Y swapped "
-							"to match."},
-						{"back", "Back", "", false, "To the menu's first page."},
-					};
-
-				int focused = 0;
-				// nine rows fill the panel at their full height; more are drawn closer, up to thirteen
-				const size_t rows = items.size();
-				const float spacing = rows > 12 ? 50 : rows > 11 ? 54 : rows > 10 ? 59 : rows > 9 ? 65 : 72;
-				const float height = rows > 12 ? 46 : rows > 11 ? 50 : rows > 10 ? 54 : rows > 9 ? 59 : 64, lift = (64 - height) / 2;
-				for (int i = 0; i < (int)items.size(); i++)
-				{
-					const Item& item = items[i];
-					const float y = 250 + i * spacing;
-					ImGui::SetCursorScreenPos(canvas.At(138, y));
-					const bool chosen = ImGui::InvisibleButton(item.id, {760 * scale, height * scale});
-					if (i == 0 && (appearing || s_pageChanged))
-					{
-						ImGui::SetFocusID(ImGui::GetItemID(), ImGui::GetCurrentWindow());
-						ImGui::GetCurrentContext()->NavDisableHighlight = false;
-						s_pageChanged = false;
-					}
-					const bool isFocused = ImGui::IsItemFocused();
-					if (isFocused)
-						focused = i;
-					int change = chosen ? 1 : 0; // Cross moves a setting on, Left and Right either way
-					if (isFocused && item.setting)
-					{
-						if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft) || ImGui::IsKeyPressed(ImGuiKey_GamepadLStickLeft))
-							change = -1;
-						else if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight) || ImGui::IsKeyPressed(ImGuiKey_GamepadLStickRight))
-							change = 1;
-					}
-					canvas.Row(138, y, 760, height, isFocused);
-					canvas.Text(g.row, 24, 164, y + 17 - lift, kColours.text, item.label);
-					canvas.TextRight(g.row, 22, 872, y + 19 - lift, kColours.accent, item.value);
-					if (change == 0)
-						continue;
-					const std::string id = item.id;
-					Settings next = settings;
-					bool changed = true; // a setting's item; the others set it false
-					if (id == "resume")
-					{
-						CloseMenu();
-						changed = false;
-					}
-					else if (id == "layout")
-						next.layout = (settings.layout + change + 4) % 4;
-					else if (id == "swap")
-						next.swapScreens = !settings.swapScreens;
-					else if (id == "border")
-						next.border = (std::clamp(settings.border, 0, kBorderCount - 1) + change + kBorderCount) % kBorderCount;
-					else if (id == "resolution")
-						next.resolution = chosen && resolution >= 10 ? 1 : std::clamp(resolution + change, 1, 10);
-					else if (id == "filter")
-						next.textureFilter = (settings.textureFilter + change + 6) % 6;
-					else if (id == "cpu")
-						next.cpuClock = NextClock(settings.cpuClock, change);
-					else if (id == "speed")
-						next.speedLimit = NextSpeedLimit(settings.speedLimit, change);
-					else if (id == "performance")
-						next.performance = !settings.performance;
-					else if (id == "volume")
-						next.volume = chosen && settings.volume >= 100 ? 0 : std::clamp(settings.volume + change * 10, 0, 100);
-					else if (id == "controls")
-					{
-						ShowPage(Page::Controls);
-						changed = false;
-					}
-					else if (id == "states")
-					{
-						ShowPage(Page::States);
-						changed = false;
-					}
-					else if (id == "slot")
-					{
-						s_stateSlot = (s_stateSlot - 1 + change + kStateSlots) % kStateSlots + 1;
-						s_confirmLoad = false;
-						changed = false;
-					}
-					else if (id == "save" || (id == "load" && s_confirmLoad))
-					{
-						std::lock_guard lock(s_mutex);
-						s_stateRequest = id == "save" ? s_stateSlot : -s_stateSlot;
-						s_stateMessage = id == "save" ? "Saving..." : "Loading...";
-						s_confirmLoad = false;
-						changed = false;
-					}
-					else if (id == "load")
-					{
-						s_confirmLoad = true;
-						changed = false;
-					}
-					else if (id == "amiibo" || id == "noamiibo" || id.rfind("cheat", 0) == 0)
-					{
-						std::lock_guard lock(s_mutex);
-						changed = false;
-						if (id == "amiibo" && !chosen && !s_amiibo.empty())
-							s_amiiboIndex = (s_amiiboIndex + change + (int)s_amiibo.size()) % (int)s_amiibo.size();
-						else if (id == "amiibo" && !s_amiibo.empty())
-							s_extrasRequest = {ExtrasRequest::Amiibo, s_amiiboIndex};
-						else if (id == "noamiibo")
-							s_extrasRequest = {ExtrasRequest::RemoveAmiibo, 0};
-						else if (id != "cheats")
-							s_extrasRequest = {ExtrasRequest::Cheat, s_cheatOffset + (id[5] - '0')};
-					}
-					if (id == "cheats")
-						ShowPage(Page::Cheats);
-					else if (id == "morecheats")
-					{
-						s_cheatOffset += 9;
-						changed = false;
-					}
-					else if (id == "extras")
-					{
-						ShowPage(Page::States);
-						changed = false;
-					}
-					else if (id == "nocheats")
-						changed = false;
-					else if (id == "library")
-					{
-						changed = false;
-						if (s_confirmLibrary)
-							s_libraryRequested = true;
-						s_confirmLibrary = true;
-					}
-					else if (id == "motion")
-						next.motion = !settings.motion;
-					else if (id == "deadzone")
-						next.deadzone = chosen && settings.deadzone >= 50 ? 0 : std::clamp(settings.deadzone + change * 5, 0, 50);
-					else if (id == "ab")
-						next.aOnCircle = !settings.aOnCircle;
-					else if (id == "back")
-					{
-						ShowPage(Page::Main);
-						changed = false;
-					}
-					if (changed)
-						Change(next);
-				}
-				if (items[focused].id != std::string("library"))
-					s_confirmLibrary = false;
-				if (items[focused].id != std::string("load"))
-					s_confirmLoad = false;
-
-				// the right-hand panel: the game, and what the focused item does
-				canvas.Text(g.small, 20, 1016, 208, kColours.kicker, "THIS GAME");
-				canvas.Text(g.head, 32, 1016, 248, kColours.title, name, 748);
-				canvas.Text(g.small, 20, 1016, 378, kColours.kicker, "TITLE ID");
-				canvas.TextRight(g.small, 20, 1764, 378, kColours.accent, fmt::format("{:016X}", titleId));
-				canvas.draw->AddLine(canvas.At(1016, 434), canvas.At(1764, 434), kColours.line, scale);
-				canvas.Text(g.head, 32, 1016, 456, kColours.title, items[focused].label);
-				canvas.Text(g.row, 22, 1016, 508, kColours.copy, items[focused].help, 748);
-
-				// the controller hints, along the bottom
-				canvas.draw->AddLine(canvas.At(108, 955), canvas.At(1812, 955), kColours.line, scale);
-				float x = 108;
-				x = canvas.Hint(g.small, x, 973, "cross", "Choose");
-				x = canvas.Hint(g.small, x, 973, "leftright", "Change");
-				x = canvas.Hint(g.small, x, 973, "circle", s_page != Page::Main ? "Back" : "Back to the game");
-				canvas.Hint(g.small, x, 973, "touchpad", "Touchpad click: touch the bottom screen, in the game");
-			}
-			ImGui::End();
-			ImGui::PopStyleColor();
-
-			// Circle or Options closes it, but not the press of Options that opened it; on the
-			// controls' page, Circle goes back to the first
-			const bool settled = sceKernelGetProcessTime() - s_openedAt > 300000;
-			if (settled && (s_pressed & (ps5pad::kCircle | ps5pad::kOptions)) && !(s_buttons & ps5pad::kTouchPad))
-			{
-				if (s_page != Page::Main && (s_pressed & ps5pad::kCircle))
-					ShowPage(s_page == Page::Cheats ? Page::States : Page::Main);
-				else
-					CloseMenu();
-			}
+			const Canvas canvas{ImGui::GetForegroundDrawList(), scale, origin, kColours};
+			ps5menu::Header header;
+			header.kicker = "NINTENDO 3DS";
+			header.title = name;
+			header.details = details;
+			header.cover = g.cover;
+			header.coverWidth = (float)g.coverWidth;
+			header.coverHeight = (float)g.coverHeight;
+			s_side.Draw(canvas, {g.head, g.row, g.small}, header, MenuRows(settings),
+				{{"cross", "Choose"}, {"leftright", "Change"}, {"circle", s_side.Open().empty() ? "Back to the game" : "Back"}});
 		}
 
 		// -- the keyboard ----------------------------------------------------------------------------
@@ -788,6 +677,7 @@ namespace ps5ingame3ds
 			ImGui::End();
 			ImGui::PopStyleColor();
 
+			// a USB keyboard types as the keys do; Enter confirms with the last button
 			// Circle deletes, Triangle shifts, Options confirms with the last button (as on the Wii U's
 			// keyboard); not while the touchpad is held for a shortcut
 			if (!(s_buttons & ps5pad::kTouchPad))
@@ -832,6 +722,13 @@ namespace ps5ingame3ds
 		s_changed = false;
 	}
 
+	void SetGame(const std::string& details, const std::string& coverPath)
+	{
+		std::lock_guard lock(s_mutex);
+		s_details = details;
+		s_coverPath = coverPath;
+	}
+
 	void ToggleMenu()
 	{
 		if (s_open)
@@ -840,6 +737,7 @@ namespace ps5ingame3ds
 			return;
 		}
 		s_openedAt = sceKernelGetProcessTime();
+		s_menuFresh = true;
 		s_open = true;
 	}
 
@@ -1065,6 +963,26 @@ namespace ps5ingame3ds
 				g.border = nullptr;
 				if (!pixels.empty())
 					g.border = ImGui_ImplVulkan_GenerateTexture(target.commandBuffer, pixels, {width, height});
+			}
+			// the game's box art, the first time the menu opens
+			if (open && !g.coverTried)
+			{
+				g.coverTried = true;
+				std::string path;
+				{
+					std::lock_guard lock(s_mutex);
+					path = s_coverPath;
+				}
+				std::vector<uint8_t> rgba;
+				int width = 0, height = 0;
+				if (!path.empty() && ps5tga::Load(path, 264, 352, rgba, width, height))
+				{
+					g.cover = ImGui_ImplVulkan_GenerateTexture(target.commandBuffer, rgba, {width, height});
+					g.coverWidth = width;
+					g.coverHeight = height;
+				}
+				else
+					ps5log::Line("[ingame3ds] no box art for the menu ({})", path.empty() ? "none fetched" : path);
 			}
 			ImGuiIO& io = ImGui::GetIO();
 			io.DisplaySize = {(float)target.width, (float)target.height};

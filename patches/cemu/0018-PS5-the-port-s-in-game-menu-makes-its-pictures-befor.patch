@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Sun, 4 Oct 2026 05:44:06 +0000
+Subject: [PATCH] PS5: the port's in-game menu makes its pictures before
+ ImGui's render pass
+
+The port's in-game menu shows the game's box art. A picture is uploaded with
+a buffer-to-image copy, which may not run inside a render pass, and ImGui's
+pass begins in ImGui_ImplVulkan_NewFrame. VulkanRenderer::ImguiBegin now
+calls the port's PS5Cemu_ImguiUploads where the font texture is made, after
+the draw pass has ended and before ImGui's begins.
+---
+ src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+index eba56e4..4e7be57 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+@@ -3,6 +3,9 @@
+ #if defined(CEMU_PS5)
+ #include <string_view>
+ void PS5_NoteCopy(const std::string& key, const std::string& line, bool overrun); // TextureReadbackVk.cpp
++// The port's in-game menu (port/app/ingame.cpp): its pictures, made where the font's is, before
++// ImGui's render pass begins (a copy may not run inside one)
++void PS5Cemu_ImguiUploads();
+ #endif
+ #include "Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h"
+ #include "Cafe/HW/Latte/Renderer/Vulkan/LatteTextureVk.h"
+@@ -2076,6 +2079,10 @@ bool VulkanRenderer::ImguiBegin(bool mainWindow)
+ 	m_state.currentPipeline = VK_NULL_HANDLE;
+ 
+ 	ImGui_ImplVulkan_CreateFontsTexture(m_state.currentCommandBuffer);
++#if defined(CEMU_PS5)
++	if (mainWindow)
++		PS5Cemu_ImguiUploads();
++#endif
+ 	ImGui_ImplVulkan_NewFrame(m_state.currentCommandBuffer, chainInfo.m_swapchainFramebuffers[chainInfo.swapchainImageIndex], chainInfo.getExtent());
+ 	ImGui_UpdateWindowInformation(mainWindow);
+ 	ImGui::NewFrame();

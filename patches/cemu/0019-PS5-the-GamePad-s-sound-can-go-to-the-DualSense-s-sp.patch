@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Sun, 4 Oct 2026 05:59:15 +0000
+Subject: [PATCH] PS5: the GamePad's sound can go to the DualSense's speaker
+
+The PS5 audio backend has a second device, the speaker of player 1's
+DualSense, for the GamePad's sound (Cemu's pad_device), as the desktop
+backends offer a second output. IAudioAPI::CreateDevice now tells the
+backend which of its devices is being opened.
+---
+ src/audio/IAudioAPI.cpp | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/audio/IAudioAPI.cpp b/src/audio/IAudioAPI.cpp
+index 9a77e78..19100c8 100644
+--- a/src/audio/IAudioAPI.cpp
++++ b/src/audio/IAudioAPI.cpp
+@@ -172,7 +172,9 @@ AudioAPIPtr IAudioAPI::CreateDevice(AudioAPI api, const DeviceDescriptionPtr& de
+ #endif
+ #if defined(CEMU_PS5)
+ 	case PS5AudioOut:
+-		return std::make_unique<PS5AudioAPI>(samplerate, channels, samples_per_block, bits_per_sample);
++		// the console's audio output, or the DualSense's speaker (the GamePad's sound)
++		return std::make_unique<PS5AudioAPI>(device && device->GetIdentifier() == PS5AudioAPI::kPadSpeakerId, samplerate, channels,
++			samples_per_block, bits_per_sample);
+ #endif
+ 	default:
+ 		throw std::runtime_error(fmt::format("invalid audio api: {}", api));

@@ -9,7 +9,8 @@ Launcher's blue with its bubbles (tools/render-background.py), Azahar a 3DS on t
 Launcher's waves made yellow (as port/frontend/wave.cpp draws them), under the README banner's dark
 overlay (a lighter one on the yellow). Writes:
 
-  sce_sys/icon0.png          512x512, opaque: the console's tile, the two side by side
+  sce_sys/icon0.png          512x512, opaque: the two side by side (the console's tile is now
+                             tools/render-presentation.py's, with the app's name)
   ui/icons/ps5cemu.tga       336x336, and ps5cemu-72.tga: the GamePad on the bubbles (Cemu's side)
   ui/icons/azahar.tga        336x336, and azahar-72.tga: the 3DS on the waves (Azahar's side)
   ui/icons/har-72.tga        72x72: the two side by side (the start screen)

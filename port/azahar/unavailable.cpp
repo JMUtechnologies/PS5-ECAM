@@ -13,7 +13,11 @@ namespace ps5azahar
 
 	bool Available()
 	{
+#ifdef PS5CEMU_LAUNCHER_PREVIEW
+		return true; // the launcher's preview has a 3DS side of its own: its library reads the sample games
+#else
 		return false;
+#endif
 	}
 
 	bool LaunchGame(const ps5emu::Game&, const ps5settings::N3ds&, std::string& error)
@@ -40,6 +44,11 @@ namespace ps5azahar
 	ps5emu::InstallStatus GetInstallStatus()
 	{
 		return {};
+	}
+
+	bool HomeMenu(int, ps5emu::Game&)
+	{
+		return false;
 	}
 
 	void CancelInstall()

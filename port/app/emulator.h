@@ -34,6 +34,7 @@ namespace ps5emu
 		int volume = 100;	  // the TV's, in percent
 		int upscaleFilter = 1; // Cemu's upscale_filter: 0 linear, 1 bicubic, 2 bicubic Hermite, 3 nearest
 		bool asyncShaders = true; // Cemu's async_compile
+		bool gamePadSpeaker = false; // the GamePad's sound on player 1's DualSense speaker (Cemu's pad_device)
 	};
 
 	// Paths, settings (with PS5 defaults on first start), MLC, graphic packs, controllers and
@@ -94,6 +95,26 @@ namespace ps5emu
 	// Chooses one of a pack's presets in a category, as Cemu's window does, and turns the pack on.
 	// The presets other categories allow can change with it (their conditions).
 	void SetGraphicPackPreset(uint64_t titleId, size_t index, const std::string& category, const std::string& preset);
+	// The in-game menu's graphic packs (the running game's): its thread asks, and the game's main
+	// thread (RunGame) makes the change as Cemu's Graphic Packs window does while a game runs: the
+	// pack activated or deactivated at once, its shaders and patches reloaded; a pack that replaces
+	// textures takes effect when the game starts again. The menu reads the list as the main thread
+	// last made it.
+	struct RunningGraphicPacks
+	{
+		std::vector<GraphicPackInfo> packs;
+		std::vector<bool> nextStart; // per pack: changed, but only the next start shows it
+		uint32_t version = 0;		 // goes up each time the list is made again
+	};
+	void RequestGraphicPackToggle(size_t index);
+	void RequestGraphicPackPreset(size_t index, const std::string& category, const std::string& preset);
+	void RequestGraphicPackList();
+	RunningGraphicPacks GetRunningGraphicPacks();
+	// RunGame's: the requests made, and the list made again when asked
+	void ServiceGraphicPackRequests();
+	// Every pack read again (after newer community packs were installed: pack_updates.h), with the
+	// choices settings.xml keeps.
+	void ReloadGraphicPacks();
 
 	// Cemu's controller settings for the four players (controllers.cpp), saved in its controller
 	// profiles (controllerProfiles/controller0-3.xml) as its Input Settings window saves them. Each

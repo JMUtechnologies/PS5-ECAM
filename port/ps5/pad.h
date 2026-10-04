@@ -78,6 +78,8 @@ namespace ps5pad
 	// The latest sample of a player's controller; false when that player has none.
 	bool Read(int player, Data& out);
 	bool IsConnected(int player);
+	// The signed-in user whose controller a player's is (for its speaker's audio port); -1: none.
+	int32_t UserId(int player);
 	// The touchpad's resolution, for normalising touch positions.
 	void TouchResolution(int player, float& width, float& height);
 	void SetVibration(int player, uint8_t largeMotor, uint8_t smallMotor);

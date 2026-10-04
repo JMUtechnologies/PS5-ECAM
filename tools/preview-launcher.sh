@@ -5,7 +5,7 @@
 #
 #   tools/preview-launcher.sh [SCRIPT]    default: tools/launcher-preview/screens.txt
 #
-# Needs what `make deps` fetches (RmlUi, ProsperoEden, pacbrew's fmt and the sysroot's RapidJSON),
+# Needs what `make deps` fetches (RmlUi, ProsperoEden's font engine, pacbrew's fmt and the sysroot's RapidJSON),
 # clang-18, cmake, ninja, python3 and zlib's headers (zlib1g-dev). What the launcher writes (its
 # settings, the 3DS games' icons) goes in build/preview/data, in place of /data/ps5cemu.
 
@@ -30,8 +30,13 @@ ln -sfn "$PS5CEMU_PACBREW/include/fmt" "$out/include/fmt"
 # the launcher's files, as tools/package.sh puts them in the app
 ui=$out/ui
 rm -rf "$ui"
-python3 -B tools/recolour-ui.py "$prospero/ui" port/frontend/ui/ps5cemu.rcss "$ui"
 python3 -B tools/render-layout.py "$ui"
+mkdir -p "$ui/fonts" "$ui/sounds" "$ui/icons"
+cp port/frontend/ui/fonts/*.fnt port/frontend/ui/fonts/*.tga "$ui/fonts/"
+cp port/frontend/ui/sounds/*.wav "$ui/sounds/"
+[[ -f $out/glyphs/cross-30.tga && -z $(find tools/render-glyphs.py -newer "$out/glyphs/cross-30.tga") ]] ||
+    python3 -B tools/render-glyphs.py "$out/glyphs" >/dev/null
+cp -r "$out/glyphs" "$ui/glyphs"
 [[ -f $out/icons/ui/icons/har-72.tga && -z $(find tools/render-icons.py tools/render-background.py -newer "$out/icons/ui/icons/har-72.tga") ]] ||
     python3 -B tools/render-icons.py "$out/icons" >/dev/null
 cp "$out/icons/ui/icons/"*.tga "$ui/icons/"
@@ -48,11 +53,11 @@ done
 mkdir -p "$games/Installs/Screenshots"
 python3 -B tools/launcher-preview/make-3ds-samples.py "$games/3ds"
 
-version=$(sed -n 's/^set(PS5CEMU_VERSION "\(.*\)")/\1/p' port/CMakeLists.txt)
-if [[ ! -x $out/launcher-preview ]] || [[ -n $(find port/frontend port/azahar port/app/emulator.h port/app/paths.h port/app/boxart.h tools/launcher-preview -newer "$out/launcher-preview" -name '*.[ch]*' -print -quit) ]]; then
-    clang++-18 -std=c++20 -O1 -w -DFMT_HEADER_ONLY -DRMLUI_STATIC_LIB "-DPS5CEMU_VERSION=\"$version\"" "-DPS5CEMU_DATA=\"$out/data\"" \
+version=$(sed -n 's/^VERSION := *\([^ ]*\).*/\1/p' Makefile)
+if [[ ! -x $out/launcher-preview ]] || [[ -n $(find port/frontend port/azahar port/app/emulator.h port/app/paths.h port/app/boxart.h port/app/gameinfo.* port/app/compatibility.* port/app/pack_updates.h tools/launcher-preview -newer "$out/launcher-preview" -name '*.[ch]*' -print -quit) ]]; then
+    clang++-18 -std=c++20 -O1 -w -DFMT_HEADER_ONLY -DRMLUI_STATIC_LIB -DPS5CEMU_LAUNCHER_PREVIEW "-DPS5CEMU_VERSION=\"$version\"" "-DPS5CEMU_DATA=\"$out/data\"" \
         -I "$out/include" -I "$rmlui/Include" -I "$PS5CEMU_SYSROOT/include" -I port -I port/app -I "$prospero" \
-        tools/launcher-preview/preview.cpp port/frontend/launcher.cpp port/frontend/settings.cpp port/frontend/bubbles.cpp \
+        tools/launcher-preview/preview.cpp port/frontend/launcher.cpp port/frontend/settings.cpp port/frontend/bubbles.cpp port/app/gameinfo.cpp port/app/compatibility.cpp \
         port/frontend/wave.cpp port/azahar/library.cpp port/azahar/controls.cpp port/azahar/unavailable.cpp \
         "$prospero/bitmap_font_engine.cpp" "$out/rmlui/librmlui.a" -lz -o "$out/launcher-preview"
 fi

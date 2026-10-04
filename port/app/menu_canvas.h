@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // PS5CEMU-HAR: the in-game menus' look, the Wii U's (ingame.cpp) and the 3DS's (ingame3ds.cpp): the
-// launcher's panels, rows, colours and controller hints (frontend/ui, in the colours
-// tools/recolour-ui.py gives each side), drawn with ImGui on the launcher's 1920x1080 layout scaled
-// to the screen, so a menu over a game is laid out as the launcher's screens are.
+// launcher's panels, rows, colours and controller hints (its stylesheet, frontend/ui/har.rcss, in the
+// colours tools/render-layout.py gives each side), drawn with ImGui on the launcher's 1920x1080
+// layout scaled to the screen, so a menu over a game is laid out as the launcher's screens are.
 
 #pragma once
 
@@ -21,18 +21,18 @@ namespace ps5menu
 		return IM_COL32(rgb >> 16, (rgb >> 8) & 255, rgb & 255, alpha);
 	}
 
-	// A side's colours: the Wii U's dark blue, or the 3DS's dark gold
+	// A side's colours, the launcher's (render-layout.py's THEMES): the Wii U's blue, or the 3DS's gold
 	struct Palette
 	{
 		ImU32 title, text, copy, accent, kicker, line;
-		ImU32 panel, panelEdge, row, rowEdge, focus, focusEnd, focusEdge, dim;
+		ImU32 panel, panelEdge, row, rowEdge, focus, focusEdge, dim;
 	};
-	constexpr Palette kBlue{Colour(0xf2f8ff), Colour(0xedf1f6), Colour(0xcad1d9), Colour(0xb8cfed), Colour(0x82ace2), Colour(0x454d59),
-		Colour(0x070d18, 0xf5), Colour(0x34506f, 0xa8), Colour(0x0d1828, 0xe8), Colour(0x2a4462, 0x77), Colour(0x2a63a6),
-		Colour(0x0d2140), Colour(0x5c9ce6, 0xa0), Colour(0x02060e, 0xb8)};
-	constexpr Palette kGold{Colour(0xfff8ec), Colour(0xf6f1e8), Colour(0xd9d1c4), Colour(0xeddcb2), Colour(0xe2be6a), Colour(0x594f40),
-		Colour(0x181207, 0xf5), Colour(0x6f5a2e, 0xa8), Colour(0x281e0d, 0xe8), Colour(0x62502a, 0x77), Colour(0xa67a1c),
-		Colour(0x40290a), Colour(0xe6b44a, 0xa0), Colour(0x0e0902, 0xb8)};
+	constexpr Palette kBlue{Colour(0xf3f7ff), Colour(0xf3f7ff), Colour(0xa9bcd6), Colour(0x5aa9ff), Colour(0x5aa9ff), Colour(0xffffff, 0x1e),
+		Colour(0x07101f, 0xf0), Colour(0xffffff, 0x1e), Colour(0xffffff, 0x10), Colour(0xffffff, 0x0c), Colour(0x5aa9ff, 0x28),
+		Colour(0x5aa9ff), Colour(0x02060e, 0xb8)};
+	constexpr Palette kGold{Colour(0xfff7e8), Colour(0xfff7e8), Colour(0xd8c6a3), Colour(0xf4b63f), Colour(0xf4b63f), Colour(0xffffff, 0x1e),
+		Colour(0x1a1206, 0xf0), Colour(0xffffff, 0x1e), Colour(0xffffff, 0x10), Colour(0xffffff, 0x0c), Colour(0xf4b63f, 0x28),
+		Colour(0xf4b63f), Colour(0x0e0902, 0xb8)};
 
 	struct Canvas
 	{
@@ -45,24 +45,19 @@ namespace ps5menu
 
 		void Panel(float x, float y, float width, float height) const
 		{
-			draw->AddRectFilled(At(x + 2, y + 2), At(x + width - 3, y + height - 3), colours.panel, 26 * scale);
-			draw->AddRect(At(x + 2, y + 2), At(x + width - 3, y + height - 3), colours.panelEdge, 26 * scale, 0, scale);
+			draw->AddRectFilled(At(x + 2, y + 2), At(x + width - 3, y + height - 3), colours.panel, 28 * scale);
+			draw->AddRect(At(x + 2, y + 2), At(x + width - 3, y + height - 3), colours.panelEdge, 28 * scale, 0, 2 * scale);
 		}
 
-		// A row as the launcher's library rows: dark, or with the focus's gradient
+		// A row as the launcher's: a faint card, or the accent's tint inside an accent outline
 		void Row(float x, float y, float width, float height, bool focused) const
 		{
 			const ImVec2 a = At(x + 2, y + 2), b = At(x + width - 3, y + height - 3);
-			if (!focused)
-			{
-				draw->AddRectFilled(a, b, colours.row, 13 * scale);
-				draw->AddRect(a, b, colours.rowEdge, 13 * scale, 0, scale);
-				return;
-			}
-			const int start = draw->VtxBuffer.Size;
-			draw->AddRectFilled(a, b, (colours.focus & 0x00ffffff) | (0x78u << IM_COL32_A_SHIFT), 13 * scale);
-			ImGui::ShadeVertsLinearColorGradientKeepAlpha(draw, start, draw->VtxBuffer.Size, a, {b.x, a.y}, colours.focus, colours.focusEnd);
-			draw->AddRect(a, b, colours.focusEdge, 13 * scale, 0, 1.5f * scale);
+			draw->AddRectFilled(a, b, focused ? colours.focus : colours.row, 16 * scale);
+			if (focused)
+				draw->AddRect(a, b, colours.focusEdge, 16 * scale, 0, 3 * scale);
+			else
+				draw->AddRect(a, b, colours.rowEdge, 16 * scale, 0, scale);
 		}
 
 		void Text(ImFont* font, float size, float x, float y, ImU32 colour, const std::string& text, float wrap = 0.0f) const

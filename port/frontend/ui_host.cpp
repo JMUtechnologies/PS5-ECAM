@@ -55,6 +55,7 @@ namespace
 {
 	constexpr int kWidth = 1920, kHeight = 1080; // main.rml's body, and the window's size
 	constexpr const char* kFonts[] = {"20", "24", "28", "32", "36", "40", "48"};
+	constexpr const char* kTitleFonts[] = {"56", "64", "72"}; // in bold only (tools/render-fonts.py)
 
 	class SystemInterface final : public Rml::SystemInterface
 	{
@@ -120,6 +121,9 @@ namespace
 	// RmlUi's geometry through SDL's software renderer, as ProsperoEden's SdlRenderInterface draws it:
 	// quads on whole pixels (most of the launcher: images and glyphs) are copied rather than
 	// rasterised, and the bitmap fonts' glyphs are composited onto the window surface pixel for pixel.
+	// Untextured geometry (backgrounds and borders, rounded or not) is filled here, onto the surface:
+	// SDL's software renderer fills triangles that share an edge with gaps and overlaps, which
+	// see-through colours show as seams and a box's two halves in different shades.
 	class RenderInterface final : public Rml::RenderInterfaceCompatibility
 	{
 	public:
@@ -135,6 +139,8 @@ namespace
 		{
 			Texture* texture = reinterpret_cast<Texture*>(handle);
 			if (texture && CopyPixelAlignedQuads(vertices, vertexCount, indices, indexCount, *texture, translation))
+				return;
+			if (!texture && FillTriangles(vertices, vertexCount, indices, indexCount, translation))
 				return;
 			std::vector<SDL_Vertex> converted(vertexCount);
 			for (int i = 0; i < vertexCount; i++)
@@ -172,8 +178,9 @@ namespace
 				ps5log::Line("[ui] {} is not a 32-bit top-down TGA", source);
 				return false;
 			}
-			// pictures are scaled smoothly; the rest is drawn at its own size
-			const bool art = source.find("/covers/") != Rml::String::npos;
+			// pictures are scaled smoothly, but small icons (the 3DS's are 48 pixels) stay sharp, scaled by
+			// whole multiples; the rest is drawn at its own size
+			const bool art = source.find("/covers/") != Rml::String::npos && width > 64;
 			const bool glyphs = source.find("/fonts/") != Rml::String::npos;
 			Texture* texture = Create(data.data() + 18, width, height, SDL_PIXELFORMAT_BGRA32,
 				art ? SDL_ScaleModeLinear : SDL_ScaleModeNearest, glyphs);
@@ -311,6 +318,82 @@ namespace
 			}
 			SDL_SetTextureColorMod(texture.texture, 255, 255, 255);
 			SDL_SetTextureAlphaMod(texture.texture, 255);
+			return true;
+		}
+
+		// Each triangle's pixels whose centres (a hair off them) are inside it, blended onto the surface
+		// as SDL_BLENDMODE_BLEND blends: of two triangles sharing an edge, exactly one draws each pixel
+		// on it (as the launcher's preview draws, tools/launcher-preview/preview.cpp). False when the
+		// surface is not one this can write.
+		bool FillTriangles(const Rml::Vertex* vertices, int vertexCount, const int* indices, int indexCount, const Rml::Vector2f& t)
+		{
+			if (!m_surface || m_surface->format->BytesPerPixel != 4)
+				return false;
+			SDL_RenderFlush(m_renderer); // what the renderer has queued lands on the surface first
+			if (SDL_MUSTLOCK(m_surface) && SDL_LockSurface(m_surface) != 0)
+				return false;
+			const SDL_PixelFormat& format = *m_surface->format;
+			int clipLeft = 0, clipTop = 0, clipRight = m_surface->w, clipBottom = m_surface->h;
+			if (m_scissorEnabled)
+			{
+				clipLeft = std::max(clipLeft, m_scissor.x);
+				clipTop = std::max(clipTop, m_scissor.y);
+				clipRight = std::min(clipRight, m_scissor.x + m_scissor.w);
+				clipBottom = std::min(clipBottom, m_scissor.y + m_scissor.h);
+			}
+			for (int i = 0; i + 2 < indexCount; i += 3)
+			{
+				const int ia = indices[i], ib = indices[i + 1], ic = indices[i + 2];
+				if (ia < 0 || ib < 0 || ic < 0 || ia >= vertexCount || ib >= vertexCount || ic >= vertexCount)
+					continue;
+				const Rml::Vertex &a = vertices[ia], &b = vertices[ib], &c = vertices[ic];
+				const double ax = a.position.x + t.x, ay = a.position.y + t.y, bx = b.position.x + t.x, by = b.position.y + t.y;
+				const double cx = c.position.x + t.x, cy = c.position.y + t.y;
+				const double area = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+				if (area == 0.0)
+					continue;
+				const int left = std::max(clipLeft, (int)std::floor(std::min({ax, bx, cx})));
+				const int right = std::min(clipRight, (int)std::ceil(std::max({ax, bx, cx})));
+				const int top = std::max(clipTop, (int)std::floor(std::min({ay, by, cy})));
+				const int bottom = std::min(clipBottom, (int)std::ceil(std::max({ay, by, cy})));
+				if (left >= right || top >= bottom)
+					continue;
+				// the barycentric weights of a and b, linear in the pixel's position
+				const double stepA = (by - cy) / area, stepB = (cy - ay) / area;
+				const bool flat = SameColour(a, b) && SameColour(a, c);
+				for (int y = top; y < bottom; y++)
+				{
+					const double px = left + 0.5 + 1e-5, py = y + 0.5 + 2e-5;
+					double wa = (bx * cy - by * cx + px * (by - cy) + py * (cx - bx)) / area;
+					double wb = (cx * ay - cy * ax + px * (cy - ay) + py * (ax - cx)) / area;
+					auto* row = reinterpret_cast<uint32_t*>(static_cast<uint8_t*>(m_surface->pixels) + (size_t)y * m_surface->pitch);
+					for (int x = left; x < right; x++, wa += stepA, wb += stepB)
+					{
+						const double wc = 1.0 - wa - wb;
+						if (wa < 0.0 || wb < 0.0 || wc < 0.0)
+							continue;
+						int red = a.colour.red, green = a.colour.green, blue = a.colour.blue, alpha = a.colour.alpha;
+						if (!flat)
+						{
+							auto mix = [&](int va, int vb, int vc) { return (int)std::lround(va * wa + vb * wb + vc * wc); };
+							red = mix(a.colour.red, b.colour.red, c.colour.red);
+							green = mix(a.colour.green, b.colour.green, c.colour.green);
+							blue = mix(a.colour.blue, b.colour.blue, c.colour.blue);
+							alpha = mix(a.colour.alpha, b.colour.alpha, c.colour.alpha);
+						}
+						if (alpha <= 0)
+							continue;
+						const uint32_t pixel = row[x];
+						auto blend = [alpha](uint32_t under, int over) { return (uint32_t)((over * alpha + (int)under * (255 - alpha) + 127) / 255); };
+						const uint32_t r = blend((pixel & format.Rmask) >> format.Rshift, red);
+						const uint32_t g = blend((pixel & format.Gmask) >> format.Gshift, green);
+						const uint32_t bl = blend((pixel & format.Bmask) >> format.Bshift, blue);
+						row[x] = (r << format.Rshift) | (g << format.Gshift) | (bl << format.Bshift) | format.Amask;
+					}
+				}
+			}
+			if (SDL_MUSTLOCK(m_surface))
+				SDL_UnlockSurface(m_surface);
 			return true;
 		}
 
@@ -537,16 +620,18 @@ namespace ps5ui
 			return false;
 		}
 		host.rml = true;
+		std::vector<std::string> fonts;
 		for (const char* weight : {"", "-Bold"})
 			for (const char* size : kFonts)
+				fonts.push_back(fmt::format("Lexend{}-{}", weight, size));
+		for (const char* size : kTitleFonts)
+			fonts.push_back(fmt::format("Lexend-Bold-{}", size));
+		for (const std::string& font : fonts)
+			if (!Rml::LoadFontFace(AssetPath("fonts/" + font + ".fnt")))
 			{
-				const std::string font = fmt::format("Lexend{}-{}", weight, size);
-				if (!Rml::LoadFontFace(AssetPath("fonts/" + font + ".fnt")))
-				{
-					error = fmt::format("the launcher's font {} is missing", font);
-					Stop();
-					return false;
-				}
+				error = fmt::format("the launcher's font {} is missing", font);
+				Stop();
+				return false;
 			}
 		host.context = Rml::CreateContext("ps5cemu", {kWidth, kHeight});
 		if (!host.context)

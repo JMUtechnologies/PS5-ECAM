@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the in-game menu over a 3DS game, laid out as the Wii U's (ingame.h) in Azahar's
-// gold (menu_canvas.h). It is drawn with Cemu's ImGui and its Vulkan backend into Azahar's frames,
+// PS5CEMU-HAR: the in-game menu over a 3DS game, a panel down the left as the Wii U's (ingame.h,
+// side_menu.h) in Azahar's gold (menu_canvas.h), with the game's box art at its top. It is drawn with Cemu's ImGui and its Vulkan backend into Azahar's frames,
 // through the hook patches/azahar adds to Azahar's renderer; the game's loop (port/azahar/core.cpp)
 // applies what it changes. Both sides include this header, so it names no Cemu or Azahar type.
 
@@ -53,6 +53,9 @@ namespace ps5ingame3ds
 
 	// When the game starts: its name and title ID, and the settings it starts with.
 	void Start(const std::string& name, uint64_t titleId, const Settings& settings);
+	// The menu's top, once: GameTDB's facts on a line ("Nintendo  /  2015"), and the TGA of the
+	// game's box art or icon (empty: none).
+	void SetGame(const std::string& details, const std::string& coverPath);
 	// Touchpad click + Options.
 	void ToggleMenu();
 	bool MenuOpen();
@@ -94,7 +97,7 @@ namespace ps5ingame3ds
 	// The border: artwork drawn around the screens, never over them, with a frame round each (a soft
 	// shadow, a hairline, a ring for Shell). From the game's loop: the theme with its picture (RGBA,
 	// top row first; empty for none), and where the screens are on a width x height picture.
-	constexpr const char* kBorderNames[] = {"None", "Midnight", "Waves", "Aurora", "Shell"};
+	constexpr const char* kBorderNames[] = {"None", "Midnight", "Waves", "Aurora", "Shell", "PS5CEMU-HAR"};
 	constexpr int kBorderCount = (int)std::size(kBorderNames);
 	struct ScreenRect
 	{

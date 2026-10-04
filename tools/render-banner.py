@@ -7,9 +7,10 @@
 writes docs/banner.svg (1280x320): PS5CEMU-HAR's two sides, split down the middle as its start
 screen is. On the left Cemu's: the Wii U GamePad (tools/render-icons.py's shapes) on the Wii U
 Homebrew Launcher's background as the launcher draws it (tools/render-background.py: its gradient
-and the discs of the top 320 rows of its 1280x720 screen). On the right Azahar's: the 3DS on the 3DS
-Homebrew Launcher's waves made yellow (port/frontend/wave.cpp's colours). The app's name runs across
-the middle.
+and the discs of the top 320 rows of its 1280x720 screen), dimmed to the app's dark blue. On the right
+Azahar's: the 3DS on the 3DS Homebrew Launcher's waves, glowing gold on a dark amber ground
+(port/frontend/wave.cpp's colours). Where they meet, a soft seam; the app's name runs across the
+middle, lit blue from the left and gold from the right. The trailer opens and closes on it.
 """
 
 import importlib.util
@@ -20,13 +21,13 @@ import sys
 W, H = 1280, 320
 HALF = W // 2
 T = 272  # a device's unit square, in banner pixels
-OVERLAY, WAVE_OVERLAY = 0.35, 0.22
+OVERLAY, WAVE_OVERLAY = 0.7, 0.8  # dark, as the app's start screen has its two sides
 BODY = '#f4f8fc'
-BLUE = {'top': '#1e4f7a', 'bottom': '#0b1e33', 'accent': '#9fd6ff', 'detail': '#6a7e93'}
-GOLD = {'top': '#7c5610', 'bottom': '#332206', 'accent': '#ffd25a', 'detail': '#8f826c'}
+BLUE = {'top': '#163b62', 'bottom': '#071225', 'accent': '#5aa9ff', 'detail': '#6a7e93'}
+GOLD = {'top': '#6b4a0e', 'bottom': '#170f04', 'accent': '#f4b63f', 'detail': '#8f826c'}
 WAVE_TOP, WAVE_BOTTOM = (255, 204, 64), (236, 158, 22)
 # top, wavelength, amplitude, colour, alpha: port/frontend/wave.cpp's layers, at the banner's size
-WAVES = [(196, 430, 12, '#ffe48c', 0.26), (228, 320, 9, '#ffeca6', 0.32), (262, 240, 7, '#fff4c4', 0.40)]
+WAVES = [(196, 430, 12, '#f4b63f', 0.16), (228, 320, 9, '#f8c65a', 0.18), (262, 240, 7, '#ffd98a', 0.20)]
 FONT = "'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif"
 
 
@@ -122,7 +123,7 @@ def main():
     right = Device(HALF + HALF // 2 - T // 2 + 150, 30, GOLD, 'screen-gold')
     svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" aria-label="PS5CEMU-HAR: Cemu and Azahar, the Wii U and Nintendo 3DS emulators, on PlayStation 5 homebrew">
   <defs>
-    <clipPath id="tile"><rect width="{W}" height="{H}" rx="28"/></clipPath>
+    <clipPath id="tile"><rect width="{W}" height="{H}" rx="32"/></clipPath>
     <clipPath id="left"><rect width="{HALF}" height="{H}"/></clipPath>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="{top}"/>
@@ -147,6 +148,12 @@ def main():
       <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.45"/>
     </filter>
     <filter id="soft" x="-10%" y="-40%" width="120%" height="180%"><feGaussianBlur stdDeviation="14"/></filter>
+    <filter id="glow" x="-50%" y="-80%" width="200%" height="260%"><feGaussianBlur stdDeviation="34"/></filter>
+    <linearGradient id="seam" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#fff" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
   </defs>
   <g clip-path="url(#tile)">
     <g clip-path="url(#left)">
@@ -155,17 +162,18 @@ def main():
       <rect width="{HALF}" height="{H}" fill="#000" fill-opacity="{OVERLAY}"/>
     </g>
     <rect x="{HALF}" width="{W - HALF}" height="{H}" fill="url(#sand)"/>
-    {(chr(10) + '    ').join(waves)}
     <rect x="{HALF}" width="{W - HALF}" height="{H}" fill="#000" fill-opacity="{WAVE_OVERLAY}"/>
-    <rect x="{HALF - 1}" width="2" height="{H}" fill="#fff" fill-opacity="0.35"/>
+    {(chr(10) + '    ').join(waves)}
+    <rect x="{HALF - 1}" width="2" height="{H}" fill="url(#seam)"/>
   </g>
   {(chr(10) + '  ').join(gamepad(left))}
   {(chr(10) + '  ').join(n3ds(right))}
-  <rect x="{HALF - 330}" y="104" width="660" height="150" rx="40" fill="#040810" fill-opacity="0.45" filter="url(#soft)"/>
+  <ellipse cx="{HALF - 170}" cy="160" rx="190" ry="62" fill="{BLUE['accent']}" fill-opacity="0.42" filter="url(#glow)"/>
+  <ellipse cx="{HALF + 170}" cy="160" rx="190" ry="62" fill="{GOLD['accent']}" fill-opacity="0.38" filter="url(#glow)"/>
+  <rect x="{HALF - 330}" y="104" width="660" height="128" rx="40" fill="#040810" fill-opacity="0.4" filter="url(#soft)"/>
   <g font-family="{FONT}" filter="url(#text-shadow)" text-anchor="middle">
-    <text x="{HALF}" y="168" font-size="88" font-weight="800" letter-spacing="-1" fill="{BODY}">PS5CEMU-HAR</text>
-    <text x="{HALF}" y="208" font-size="26" font-weight="600" fill="#e6eef6">Cemu and Azahar on PlayStation 5 homebrew</text>
-    <text x="{HALF}" y="240" font-size="20" fill="#d3e2f0">Wii U and Nintendo 3DS · Vulkan on RADV · DualSense controls</text>
+    <text x="{HALF}" y="176" font-size="88" font-weight="800" letter-spacing="-1" fill="{BODY}">PS5CEMU-HAR</text>
+    <text x="{HALF}" y="218" font-size="26" font-weight="600" fill="#e6eef6">Wii U and Nintendo 3DS on PlayStation 5</text>
   </g>
 </svg>
 '''

@@ -4,7 +4,8 @@
 // Cemu hands over blocks of 16-bit samples (stereo, or 5.1 for the TV if configured). A worker
 // thread feeds AudioOut 256-frame stereo grains at 48 kHz; sceAudioOutOutput blocks until the
 // previous grain is playing, which paces the thread. Missing samples play as silence, and surround
-// streams are mixed down to stereo, the format every PS5 audio output accepts.
+// streams are mixed down to stereo, the format every PS5 audio output accepts. The GamePad's
+// sound goes to player 1's DualSense speaker instead (its own port, one channel).
 
 #include "PS5AudioAPI.h"
 
@@ -12,6 +13,7 @@
 #include <array>
 
 #include "util/helpers/helpers.h"
+#include "../ps5/pad.h"
 
 extern "C"
 {
@@ -26,9 +28,10 @@ namespace
 {
 	constexpr int kUserSystem = 0xff;	 // the port belongs to the system, not to one user
 	constexpr int kPortMain = 0;
+	constexpr int kPortPadSpeaker = 4;	 // a controller's speaker, its user's
 	constexpr uint32 kGrain = 256;		 // frames per sceAudioOutOutput
 	constexpr uint32 kRate = 48000;
-	constexpr uint32 kFormatStereoS16 = 1;
+	constexpr uint32 kFormatStereoS16 = 1, kFormatMonoS16 = 0;
 	constexpr int kVolumeFlagsLeftRight = 3;
 	constexpr int kVolume0dB = 32768;
 }
@@ -44,15 +47,24 @@ bool PS5AudioAPI::InitializeStatic()
 
 std::vector<IAudioAPI::DeviceDescriptionPtr> PS5AudioAPI::GetDevices()
 {
-	return {std::make_shared<PS5DeviceDescription>()};
+	return {std::make_shared<PS5DeviceDescription>(L"PS5 audio output", kDeviceId),
+		std::make_shared<PS5DeviceDescription>(L"DualSense speaker", kPadSpeakerId)};
 }
 
-PS5AudioAPI::PS5AudioAPI(uint32 samplerate, uint32 channels, uint32 samples_per_block, uint32 bits_per_sample)
-	: IAudioAPI(samplerate, channels, samples_per_block, bits_per_sample)
+PS5AudioAPI::PS5AudioAPI(bool padSpeaker, uint32 samplerate, uint32 channels, uint32 samples_per_block, uint32 bits_per_sample)
+	: IAudioAPI(samplerate, channels, samples_per_block, bits_per_sample), m_padSpeaker(padSpeaker)
 {
 	if (bits_per_sample != 16 || samplerate != kRate)
 		throw std::runtime_error(fmt::format("PS5 AudioOut: unsupported stream ({} Hz, {} bit)", samplerate, bits_per_sample));
-	m_port = sceAudioOutOpen(kUserSystem, kPortMain, 0, kGrain, kRate, kFormatStereoS16);
+	if (padSpeaker)
+	{
+		const int32_t user = ps5pad::UserId(0);
+		m_port = user >= 0 ? sceAudioOutOpen(user, kPortPadSpeaker, 0, kGrain, kRate, kFormatMonoS16) : user;
+		cemuLog_log(LogType::Force, "PS5 AudioOut: the GamePad's sound on the DualSense speaker of user {:#x}: {}", (uint32)user,
+			m_port >= 0 ? "open" : fmt::format("{:#x}", (uint32)m_port));
+	}
+	else
+		m_port = sceAudioOutOpen(kUserSystem, kPortMain, 0, kGrain, kRate, kFormatStereoS16);
 	if (m_port < 0)
 		throw std::runtime_error(fmt::format("PS5 AudioOut: sceAudioOutOpen failed ({:#x})", (uint32)m_port));
 	const std::array<int, 8> volumes{kVolume0dB, kVolume0dB, kVolume0dB, kVolume0dB, kVolume0dB, kVolume0dB, kVolume0dB, kVolume0dB};
@@ -147,10 +159,15 @@ void PS5AudioAPI::OutputThread()
 					left = in[0] + 0.707f * (in[2] + surroundLeft);
 					right = in[1] + 0.707f * (in[2] + surroundRight);
 				}
-				grain[frame * 2] = (sint16)std::clamp(left * volume, -32768.0f, 32767.0f);
-				grain[frame * 2 + 1] = (sint16)std::clamp(right * volume, -32768.0f, 32767.0f);
+				if (m_padSpeaker)
+					grain[frame] = (sint16)std::clamp((left + right) * 0.5f * volume, -32768.0f, 32767.0f); // one channel
+				else
+				{
+					grain[frame * 2] = (sint16)std::clamp(left * volume, -32768.0f, 32767.0f);
+					grain[frame * 2 + 1] = (sint16)std::clamp(right * volume, -32768.0f, 32767.0f);
+				}
 			}
-			std::fill(grain.begin() + frames * 2, grain.end(), (sint16)0);
+			std::fill(grain.begin() + frames * (m_padSpeaker ? 1 : 2), grain.end(), (sint16)0);
 			m_queue.erase(m_queue.begin(), m_queue.begin() + frames * channels);
 		}
 		if (sceAudioOutOutput(m_port, grain.data()) < 0)

@@ -52,6 +52,11 @@ namespace ps5azahar
 		return path.starts_with(kArticBase) || path.starts_with(kArticSetupOld) || path.starts_with(kArticSetupNew);
 	}
 
+	// The 3DS Home Menu, as Azahar's own frontend boots it (System > Boot Home Menu): when Artic Setup
+	// copied a console's system files into Azahar's NAND, the menu of the region asked for (-1: the
+	// first one there) as a game to launch. False when there is none.
+	bool HomeMenu(int region, ps5emu::Game& game);
+
 	// Installing a CIA (a game, an update or DLC) into the 3DS's storage, as Azahar's "Install CIA"
 	// does, on a thread of its own.
 	bool StartInstall(const std::string& cia, std::string& error);

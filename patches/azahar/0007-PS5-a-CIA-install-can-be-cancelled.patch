@@ -1,0 +1,69 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Sun, 4 Oct 2026 05:02:51 +0000
+Subject: [PATCH] PS5: a CIA install can be cancelled
+
+InstallCIA takes a flag the frontend sets to stop it: the loop checks it
+after each 64 KiB it writes and, when it is set, closes the CIA file as
+cancelled, which removes the title's contents written so far, as for an
+install that ends part-way. It returns the new InstallStatus::Cancelled.
+---
+ src/core/hle/service/am/am.cpp | 10 +++++++++-
+ src/core/hle/service/am/am.h   |  6 +++++-
+ 2 files changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/src/core/hle/service/am/am.cpp b/src/core/hle/service/am/am.cpp
+index 9581817ca..776f3750d 100644
+--- a/src/core/hle/service/am/am.cpp
++++ b/src/core/hle/service/am/am.cpp
+@@ -1057,7 +1057,8 @@ void ContentFile::Cancel(FS::MediaType media_type, u64 title_id) {
+ }
+ 
+ InstallStatus InstallCIA(const std::string& path,
+-                         std::function<ProgressCallback>&& update_callback) {
++                         std::function<ProgressCallback>&& update_callback,
++                         const std::atomic<bool>* cancel) {
+     LOG_INFO(Service_AM, "Installing {}...", path);
+ 
+     if (!FileUtil::Exists(path)) {
+@@ -1102,6 +1103,13 @@ InstallStatus InstallCIA(const std::string& path,
+                 return InstallStatus::ErrorAborted;
+             }
+             total_bytes_read += bytes_read;
++            if (cancel && cancel->load() && total_bytes_read != file_size) {
++                // as an install closed part-way: the title's contents written so far are removed
++                LOG_INFO(Service_AM, "Install of {} cancelled after {} of {} bytes", path,
++                         total_bytes_read, file_size);
++                installFile.Cancel();
++                return InstallStatus::Cancelled;
++            }
+         }
+         installFile.Close();
+ 
+diff --git a/src/core/hle/service/am/am.h b/src/core/hle/service/am/am.h
+index cea95b564..3048597cb 100644
+--- a/src/core/hle/service/am/am.h
++++ b/src/core/hle/service/am/am.h
+@@ -75,6 +75,7 @@ enum class InstallStatus : u32 {
+     ErrorAborted,
+     ErrorInvalid,
+     ErrorEncrypted,
++    Cancelled,
+ };
+ 
+ enum class ImportTitleContextState : u8 {
+@@ -372,10 +373,13 @@ private:
+  * Installs a CIA file from a specified file path.
+  * @param path file path of the CIA file to install
+  * @param update_callback callback function called during filesystem write
++ * @param cancel when set to true while the contents are written, the install stops and what it
++ * wrote is removed, as for an install that fails part-way (Cancelled)
+  * @returns bool whether the install was successful
+  */
+ InstallStatus InstallCIA(const std::string& path,
+-                         std::function<ProgressCallback>&& update_callback = nullptr);
++                         std::function<ProgressCallback>&& update_callback = nullptr,
++                         const std::atomic<bool>* cancel = nullptr);
+ 
+ /**
+  * Checks if the provided path is a valid CIA file

@@ -1,7 +1,7 @@
 # Building PS5CEMU-HAR
 
 `make release` builds everything from source on Linux and writes the app to `build/app/PPSA99360`
-and `dist/PS5CEMU-HAR-v2.0.0.zip`. Ubuntu 24.04 is what it is built on; WSL works.
+and `dist/PS5CEMU-HAR-vVERSION.zip`. Ubuntu 24.04 is what it is built on; WSL works.
 
 ## Requirements
 
@@ -23,8 +23,22 @@ sudo apt install rsync flex glslang-tools llvm-18-dev libclang-18-dev libclc-18-
 ```bash
 make radv      # RADV, the Vulkan driver
 make azahar    # Azahar's core and its PS5 frontend (build/azahar)
-make release   # the app (build/app/PPSA99360) and dist/PS5CEMU-HAR-v2.0.0.zip with its SHA256SUMS
+make release   # the app (build/app/PPSA99360), dist/PS5CEMU-HAR-vVERSION.zip with its SHA256SUMS,
+               # and dist/ps5cemu-vVERSION.elf, the eboot's ELF with its symbols
 make check     # the same build with a stand-in for RADV: checks everything else, not an app
+```
+
+**The version** is set in one place, `VERSION` in the `Makefile`. The launcher and the boot log
+show it (`port/CMakeLists.txt` reads it), and `tools/package.sh` writes it into the app's
+`param.json`: `3.0.0` is `contentVersion` `03.000.000` and `masterVersion` `03.00` (`2.0.0d` was
+`02.000.004`: the patch number in hundreds, then the letter).
+
+**Crash reports.** A crash leaves `[crash]` lines in the boot log: the crashed instruction, the
+registers and the code addresses on the crashed thread's stack, as numbers. With the release's ELF
+(`make release` keeps it in `dist/`), `tools/symbolize-crash.py` turns them into function names:
+
+```bash
+python3 tools/symbolize-crash.py dist/ps5cemu-v3.0.0.elf boot.log
 ```
 
 `make help` lists every target. `make deps` fetches every input at the revision pinned in
@@ -82,11 +96,13 @@ and drawn again:
 
 | Script | What it draws |
 |---|---|
-| `tools/recolour-ui.py` | ProsperoEden's launcher artwork and stylesheet in each side's colours, dark blue and gold: its panels and rows drawn again from their SVGs. Run by `package.sh` |
-| `tools/render-layout.py` | The launcher's layouts: the start screen, and each side's screens. Run by `package.sh` |
+| `tools/render-layout.py` | The launcher's layouts: the start screen, and each side's tabs (Home, Library, Settings), game pages and dialogs; and its stylesheet, `port/frontend/ui/har.rcss`, in each side's colours, blue and gold. Run by `package.sh` |
+| `tools/render-glyphs.py` | The launcher's glyphs: the DualSense's buttons for its hints, and Settings' category icons, white for the stylesheet to tint. Run by `package.sh` |
+| `tools/render-fonts.py` | Lexend's bitmap atlases for the launcher (`port/frontend/ui/fonts`, committed) |
+| `tools/render-gametdb.py` | GameTDB's game information, as the game pages and in-game menus read it (`port/app/gametdb`, committed) |
 | `tools/render-background.py` | The Wii U Homebrew Launcher's background as a still picture, which the icons, the home screen background and the banner draw on. The launcher draws it moving (`port/frontend/bubbles.cpp`) |
-| `tools/render-icons.py` | The home screen tile (`icon0.png`) and the launcher's icons: the GamePad on the bubbles, the 3DS on the waves, and the two side by side. Run by `package.sh` |
-| `tools/render-presentation.py` | The home screen background (`sce_sys/pic0.dds`, installed as `pic0.dds` and `pic1.dds`): a 3840x2160 BC7 DDS it encodes itself. Needs Pillow, numpy and a bold sans-serif font; its output is committed, so the build does not |
+| `tools/render-icons.py` | The launcher's icons: the GamePad on the bubbles, the 3DS on the waves, and the two side by side. Run by `package.sh` |
+| `tools/render-presentation.py` | The PS5 home screen's art: the background (`sce_sys/pic0.dds`, installed as `pic0.dds` and `pic1.dds`, a 3840x2160 BC7 DDS it encodes itself) and the tile (`sce_sys/icon0.png`), both the README banner's design. Needs Pillow, numpy and the banner's fonts; its output is committed, so the build does not |
 | `tools/render-banner.py` | This repository's banner, `docs/banner.svg` |
 
 All but `render-presentation.py` need only Python's standard library.

@@ -17,11 +17,18 @@
 //   hold BUTTON N    down for N frames, then up for 3
 //   wait N           N frames
 //   shot NAME        the frame on screen as OUTPUT_FOLDER/NAME.png
+//   record NAME      from here, every other frame (30 a second) as OUTPUT_FOLDER/NAME/00000.png on,
+//                    for a video of the launcher (ffmpeg -framerate 30 -i NAME/%05d.png makes one)
+//   stop             no more recording
 // Buttons: up down left right cross circle square triangle l1 r1 l2 r2 l3 r3 options create
 // touchpad, and the sticks: ls-up ls-down ls-left ls-right rs-up rs-down rs-left rs-right.
 
 #include "app/boxart.h"
+#include "app/compatibility.h"
 #include "app/emulator.h"
+#include "app/gameinfo.h"
+#include "app/pack_updates.h"
+#include "app/updates.h"
 #include "azahar/library.h"
 #include "frontend/bubbles.h"
 #include "frontend/launcher.h"
@@ -46,6 +53,8 @@
 #include <array>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
+#include <filesystem>
 #include <fstream>
 #include <map>
 #include <sstream>
@@ -277,7 +286,7 @@ namespace
 		}
 	}
 
-	void WritePng(const std::string& path)
+	void WritePng(const std::string& path, int level = 6)
 	{
 		std::vector<uint8_t> raw;
 		raw.reserve((size_t)kHeight * (kWidth * 3 + 1));
@@ -292,7 +301,7 @@ namespace
 		}
 		uLongf size = compressBound(raw.size());
 		std::vector<uint8_t> packed(size);
-		compress2(packed.data(), &size, raw.data(), raw.size(), 6);
+		compress2(packed.data(), &size, raw.data(), raw.size(), level);
 		packed.resize(size);
 		std::ofstream out(path, std::ios::binary);
 		auto chunk = [&](const char* type, const std::vector<uint8_t>& data) {
@@ -309,7 +318,8 @@ namespace
 		chunk("IHDR", {0, 0, kWidth >> 8, kWidth & 255, 0, 0, kHeight >> 8, kHeight & 255, 8, 2, 0, 0, 0});
 		chunk("IDAT", packed);
 		chunk("IEND", {});
-		std::printf("%s\n", path.c_str());
+		if (level == 6)
+			std::printf("%s\n", path.c_str());
 	}
 
 	// -- the script ------------------------------------------------------------------------------
@@ -322,6 +332,8 @@ namespace
 			Hold,
 			Wait,
 			Shot,
+			Record,
+			Stop,
 		} kind;
 		uint32_t buttons = 0;
 		int frames = 0;
@@ -330,6 +342,8 @@ namespace
 	std::vector<Step> s_script;
 	size_t s_step = 0;
 	int s_stepFrame = 0;
+	std::string s_recording; // the folder frames go to while recording
+	int s_recorded = 0, s_recordTick = 0;
 
 	uint32_t ButtonMask(const std::string& name)
 	{
@@ -395,11 +409,13 @@ namespace
 				step.kind = Step::Wait;
 				words >> step.frames;
 			}
-			else if (command == "shot")
+			else if (command == "shot" || command == "record")
 			{
-				step.kind = Step::Shot;
+				step.kind = command == "shot" ? Step::Shot : Step::Record;
 				words >> step.name;
 			}
+			else if (command == "stop")
+				step.kind = Step::Stop;
 			else
 			{
 				std::fprintf(stderr, "unknown command %s\n", command.c_str());
@@ -412,6 +428,8 @@ namespace
 	// After each frame: what the buttons are for the next, and the shots.
 	void AdvanceScript()
 	{
+		if (!s_recording.empty() && s_recordTick++ % 2 == 0)
+			WritePng(fmt::format("{}/{:05d}.png", s_recording, s_recorded++), 1);
 		for (;;)
 		{
 			if (s_step >= s_script.size())
@@ -420,6 +438,22 @@ namespace
 			if (step.kind == Step::Shot)
 			{
 				WritePng(s_output + "/" + step.name + ".png");
+				s_step++;
+				continue;
+			}
+			if (step.kind == Step::Record || step.kind == Step::Stop)
+			{
+				if (step.kind == Step::Record)
+				{
+					s_recording = s_output + "/" + step.name;
+					std::filesystem::create_directories(s_recording);
+					s_recorded = s_recordTick = 0;
+				}
+				else if (!s_recording.empty())
+				{
+					std::printf("%s: %d frames\n", s_recording.c_str(), s_recorded);
+					s_recording.clear();
+				}
 				s_step++;
 				continue;
 			}
@@ -466,6 +500,8 @@ namespace ps5ui
 		Rml::SetRenderInterface(s_host->render.GetAdaptedInterface());
 		Rml::SetFontEngineInterface(&s_host->fonts);
 		Rml::Initialise();
+		for (const char* size : {"56", "64", "72"}) // the titles' sizes, bold only
+			Rml::LoadFontFace(AssetPath(fmt::format("fonts/Lexend-Bold-{}.fnt", size)));
 		for (const char* weight : {"", "-Bold"})
 			for (const char* size : kFonts)
 				if (!Rml::LoadFontFace(AssetPath(fmt::format("fonts/Lexend{}-{}.fnt", weight, size))))
@@ -618,6 +654,75 @@ namespace ps5boxart
 	}
 }
 
+// -- the community graphic packs' update, in brief: what is installed, and a check that finds
+// nothing newer
+
+namespace ps5packs
+{
+	std::string InstalledVersion() { return "Github987"; }
+	bool Newer(const std::string&, const std::string&) { return false; }
+	void Start() {}
+	Status GetStatus() { return {}; }
+	void Stop() {}
+}
+
+// -- the app's own update, in brief: with PREVIEW_UPDATE set, a newer release is found as the app
+// starts, and installing it takes a few seconds
+
+namespace ps5update
+{
+	namespace
+	{
+		Status s_update;
+		bool s_updateDismissed = false;
+		uint64_t s_installAt = 0;
+	}
+
+	void Start()
+	{
+		s_update.state = Status::State::Available;
+		s_update.latest = "v3.0.1";
+	}
+	void Check()
+	{
+		Start();
+		s_updateDismissed = false;
+	}
+	void Install()
+	{
+		if (s_update.state != Status::State::Available)
+			return;
+		s_update.installing = true;
+		s_update.state = Status::State::Downloading;
+		s_installAt = s_timeUs;
+	}
+	Status GetStatus()
+	{
+		if (s_update.installing && s_update.state != Status::State::Ready)
+		{
+			const double t = (s_timeUs - s_installAt) / 1e6;
+			s_update.total = 49ull << 20;
+			s_update.received = (uint64_t)(std::min(1.0, t / 4.0) * (double)s_update.total);
+			s_update.state = t < 4 ? Status::State::Downloading : t < 5 ? Status::State::Verifying : t < 6 ? Status::State::Installing : Status::State::Ready;
+		}
+		return s_update;
+	}
+	bool Prompting()
+	{
+		GetStatus();
+		return s_update.installing || (s_update.state == Status::State::Available && !s_updateDismissed);
+	}
+	void Dismiss()
+	{
+		if (s_update.state == Status::State::Ready || (s_update.installing && s_update.state != Status::State::Failed))
+			return;
+		s_updateDismissed = true;
+		s_update.installing = false;
+	}
+	void Restart() {}
+	void Stop() {}
+}
+
 // -- Cemu, in brief: sample games, packs and controllers ------------------------------------------
 
 namespace ps5emu
@@ -741,7 +846,12 @@ namespace ps5emu
 	bool Scanning() { return false; }
 	void ApplyOptions(const Options&) {}
 	void Rescan() {}
-	std::string CoverPath(uint64_t) { return ""; }
+	// the games' icons, when build/preview/covers has them (copied there by hand, as the box art)
+	std::string CoverPath(uint64_t titleId)
+	{
+		const std::string path = fmt::format("{}/covers/{:016x}.tga", s_output, titleId);
+		return std::filesystem::exists(path) ? path : std::string();
+	}
 
 	std::vector<Game> ListGames()
 	{
@@ -750,17 +860,17 @@ namespace ps5emu
 			games.push_back({id, name, std::string("/data/ps5cemu/games/") + name + ".wua", version, update, dlc, format});
 			games.back().gameId = box;
 		};
-		add(0x0005000010110E00, "Bayonetta 2", 0, false, 0, "WUA");
-		add(0x0005000010138300, "Donkey Kong Country: Tropical Freeze", 17, true, 0, "WUX");
-		add(0x0005000010180700, "Captain Toad: Treasure Tracker", 0, false, 1, "FOLDER");
-		add(0x0005000010145D00, "Super Mario 3D World", 0, false, 0, "WUA");
+		add(0x0005000010110E00, "Bayonetta 2", 0, false, 0, "WUA", "AQUE01");
+		add(0x0005000010138300, "Donkey Kong Country: Tropical Freeze", 17, true, 0, "WUX", "ARKE01");
+		add(0x0005000010180700, "Captain Toad: Treasure Tracker", 0, false, 1, "FOLDER", "AKBE01");
+		add(0x0005000010145D00, "Super Mario 3D World", 0, false, 0, "WUA", "ARDE01");
 		add(0x000500001010EC00, "Mario Kart 8", 64, true, 2, "WUA", "AMKE01");
-		add(0x0005000010101D00, "New Super Mario Bros. U + New Super Luigi U", 0, false, 1, "WUD");
-		add(0x0005000010176900, "Splatoon", 288, true, 0, "WUA");
+		add(0x0005000010101D00, "New Super Mario Bros. U + New Super Luigi U", 0, false, 1, "WUD", "ATWE01");
+		add(0x0005000010176900, "Splatoon", 288, true, 0, "WUA", "AGME01");
 		add(kBreathOfTheWild, "The Legend of Zelda: Breath of the Wild", 208, true, 1, "WUA", "ALZE01");
-		add(0x0005000010143500, "The Legend of Zelda: The Wind Waker HD", 0, false, 0, "FOLDER");
-		add(0x000500001014B800, "Xenoblade Chronicles X", 33, true, 1, "WUX");
-		add(0x0005000010172600, "Pikmin 3", 0, false, 0, "NUS");
+		add(0x0005000010143500, "The Legend of Zelda: The Wind Waker HD", 0, false, 0, "FOLDER", "BCZE01");
+		add(0x000500001014B800, "Xenoblade Chronicles X", 33, true, 1, "WUX", "AX5E01");
+		add(0x0005000010172600, "Pikmin 3", 0, false, 0, "NUS", "AC3E01");
 		std::sort(games.begin(), games.end(), [](const Game& a, const Game& b) { return a.name < b.name; });
 		return games;
 	}
@@ -873,6 +983,7 @@ namespace ps5emu
 	}
 
 	void CancelInstall() { s_install.state = InstallStatus::State::Cancelled; }
+	void ReloadGraphicPacks() {}
 }
 
 int main(int argc, char* argv[])
@@ -884,6 +995,10 @@ int main(int argc, char* argv[])
 	}
 	s_ui = argv[1];
 	s_output = argv[2];
+	ps5gameinfo::SetFolder("port/app/gametdb"); // the repository's: the preview runs from its root
+	ps5compat::SetPath("docs/COMPATIBILITY.md");
+	if (std::getenv("PREVIEW_UPDATE"))
+		ps5update::Start(); // as the app's check finding a newer release
 	LoadScript(argv[3]);
 	ps5settings::Launcher settings;
 	settings.gamesFolder = argv[4];

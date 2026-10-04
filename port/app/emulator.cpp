@@ -8,6 +8,7 @@
 #include "emulator.h"
 #include "boxart.h"
 #include "ingame.h"
+#include "pack_updates.h"
 #include "paths.h"
 #include "../frontend/settings.h"
 #include "../ps5/display.h"
@@ -197,8 +198,9 @@ namespace ps5emu
 		}
 
 		// The community graphic packs bundled with the app (assets/graphicPacks, with its
-		// version.txt) go where Cemu's own downloader puts them, once per bundled release. Packs of
-		// your own elsewhere in graphicPacks/ are left alone.
+		// version.txt) go where Cemu's own downloader puts them, once per bundled release, unless
+		// newer ones were downloaded there since (pack_updates.h). Packs of your own elsewhere in
+		// graphicPacks/ are left alone.
 		void InstallBundledGraphicPacks()
 		{
 			std::error_code ec;
@@ -215,7 +217,7 @@ namespace ps5emu
 				std::ifstream file(target / "version.txt");
 				std::getline(file, installedVersion);
 			}
-			if (installedVersion == bundledVersion)
+			if (installedVersion == bundledVersion || ps5packs::Newer(installedVersion, bundledVersion))
 				return;
 			ps5log::Line("[emu] installing community graphic packs {} (had '{}')", bundledVersion, installedVersion);
 			fs::remove_all(target, ec);
@@ -273,6 +275,12 @@ namespace ps5emu
 			GraphicPack2::LoadAll();
 			InputManager::instance().load();
 			DefaultControllers();
+			// the players with Wii Remotes point with their DualSenses (PS5PadController.h)
+			for (size_t player = 0; player < 4; player++)
+			{
+				const auto emulated = InputManager::instance().get_controller(player);
+				PS5PadController::SetWiiRemote((int)player, emulated && emulated->type() == EmulatedController::Type::Wiimote);
+			}
 			fsc_init(); // the game scan mounts each title to read it; CafeSystem::Initialize starts it over
 			CafeTitleList::Initialize(ActiveSettings::GetUserDataPath("title_list_cache.xml"));
 			for (auto& it : GetConfig().game_paths)
@@ -377,6 +385,11 @@ namespace ps5emu
 		config.tv_volume = std::clamp(options.volume, 0, 100);
 		config.upscale_filter = std::clamp(options.upscaleFilter, (int)kLinearFilter, (int)kNearestNeighborFilter);
 		config.async_compile = options.asyncShaders;
+		// the GamePad's own sound: on the DualSense's speaker (cemu/PS5AudioAPI.h), or nowhere, as
+		// before; Cemu opens it as the game starts
+		config.pad_device = options.gamePadSpeaker ? L"ps5-padspeaker" : L""; // PS5AudioAPI::kPadSpeakerId
+		if (options.gamePadSpeaker && config.pad_volume <= 0)
+			config.pad_volume = 100;
 		config.overlay.position = options.overlay ? ScreenPosition::kTopLeft : ScreenPosition::kDisabled;
 		if (options.overlay)
 			config.overlay.fps = config.overlay.cpu_usage = config.overlay.ram_usage = true;
@@ -439,6 +452,7 @@ namespace ps5emu
 	bool LaunchGame(const Game& game, std::string& error)
 	{
 		ps5log::Line("[emu] launching {} ({:016x}) from {}", game.name, game.titleId, _pathToUtf8(game.path));
+		ps5ingame::SetGame(game); // the in-game menu's top: its name, box art and GameTDB's facts
 		if (!StartSystem(error))
 			return false;
 		TitleInfo launchTitle{game.path};
@@ -551,6 +565,8 @@ namespace ps5emu
 		for (;;)
 		{
 			sceKernelUsleep(16000);
+			// the in-game menu's graphic pack changes, made here as Cemu's window makes them
+			ServiceGraphicPackRequests();
 			if (++polls % 120 == 0)
 				ps5pad::Rescan(); // controllers joining or leaving, about every two seconds
 			if (polls % 3750 == 0)

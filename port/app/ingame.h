@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // PS5Cemu: what the port shows and decides over a running game (ingame.cpp):
-//   - its menu (touchpad + Options): the main screen, the other screen in a corner, the picture,
-//     the performance overlay, the volume, back to the library;
+//   - its menu (touchpad + Options), a panel down the left (side_menu.h) with the game's box art,
+//     name, publisher and year at its top: the screens, the picture and Cemu's graphics settings,
+//     the volume, amiibo, the controllers, back to the library;
 //   - the GamePad's screen, the TV's unless the player makes it the main one or puts it in a corner;
 //   - the touchpad's cursor on the GamePad's screen, where a click touches it;
 //   - the DualSense in Cemu's own overlays (ImGui), such as the software keyboard games type with.
@@ -9,8 +10,13 @@
 
 #pragma once
 
+#include "emulator.h"
+
 namespace ps5ingame
 {
+	// The game starting, for the menu's top: its name, box art (or icon) and GameTDB's facts.
+	void SetGame(const ps5emu::Game& game);
+
 	// Player 1's touchpad (the GamePad's): where the finger is, normalised to the GamePad's
 	// screen, and whether the game is being touched there.
 	void SetGamePadPointer(bool finger, float x, float y, bool touching);

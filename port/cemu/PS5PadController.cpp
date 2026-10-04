@@ -3,8 +3,15 @@
 #include "../app/ingame.h"
 #include "../ps5/pad.h"
 
+#include <array>
+#include <atomic>
+
 namespace
 {
+	// The Wii Remote pointer's reach: how far the DualSense turns (radians) to cross the screen
+	constexpr float kAimAcross = 0.70f, kAimDown = 0.42f;
+	std::array<std::atomic<bool>, ps5pad::kMaxPlayers> s_wiiRemote{};
+
 	float StickAxis(uint8 raw)
 	{
 		// 0..255 with 128 at rest, down and right positive (as SDL reports them)
@@ -75,6 +82,10 @@ ControllerState PS5PadController::raw_state()
 	m_touching = filtered.touch;
 	if (m_touching)
 		m_touch = m_cursor;
+	// a Wii Remote's pointer: where a finger rests, else aimed from there by the gyroscope (below)
+	m_previousAim = m_aim;
+	if (finger)
+		m_aim = m_cursor;
 
 	// motion, in the axes and units Cemu's SDL gamepads use (acceleration in g, rotation in
 	// radians per second). The DualSense axes as libScePad reports them need checking on a console.
@@ -89,6 +100,13 @@ ControllerState PS5PadController::raw_state()
 			const glm::vec3 gyro{data.angularVelocity[0], -data.angularVelocity[1], -data.angularVelocity[2]};
 			m_motion.processMotionSample(deltaTime, gyro.x, gyro.y, gyro.z, acc.x, -acc.y, -acc.z);
 			m_motionSample = m_motion.getMotionSample();
+			// the pointer, without a finger on the touchpad: turning left (about the controller's up
+			// axis) moves it left, tilting its front up (about its right axis) moves it up
+			if (!finger && IsPointer())
+			{
+				m_aim.x = std::clamp(m_aim.x - data.angularVelocity[1] * deltaTime / kAimAcross, 0.0f, 1.0f);
+				m_aim.y = std::clamp(m_aim.y - data.angularVelocity[0] * deltaTime / kAimDown, 0.0f, 1.0f);
+			}
 		}
 	}
 	return result;
@@ -100,19 +118,41 @@ MotionSample PS5PadController::get_motion_sample()
 	return m_motionSample;
 }
 
+void PS5PadController::SetWiiRemote(int player, bool wiiRemote)
+{
+	if (player >= 0 && player < ps5pad::kMaxPlayers)
+		s_wiiRemote[player] = wiiRemote;
+}
+
+bool PS5PadController::IsPointer()
+{
+	const bool pointer = s_wiiRemote[m_player];
+	if (pointer && !m_pointer)
+		m_aim = m_previousAim = {0.5f, 0.5f}; // a Wii Remote now: it points at the middle
+	m_pointer = pointer;
+	return pointer;
+}
+
 bool PS5PadController::has_position()
 {
-	return m_touching;
+	// a Wii Remote always points somewhere on the screen; the GamePad's screen is touched only
+	// while the touchpad is clicked
+	return IsPointer() || m_touching;
 }
 
 glm::vec2 PS5PadController::get_position()
 {
-	return m_touch;
+	return IsPointer() ? m_aim : m_touch;
+}
+
+glm::vec2 PS5PadController::get_prev_position()
+{
+	return IsPointer() ? m_previousAim : m_previousTouch;
 }
 
 PositionVisibility PS5PadController::GetPositionVisibility()
 {
-	return m_touching ? PositionVisibility::FULL : PositionVisibility::NONE;
+	return IsPointer() || m_touching ? PositionVisibility::FULL : PositionVisibility::NONE;
 }
 
 void PS5PadController::start_rumble()

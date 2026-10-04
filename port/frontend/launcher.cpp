@@ -1,17 +1,22 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // PS5CEMU-HAR: the launcher (launcher.h).
 //
-// Its screens follow ProsperoEden's launcher (headless/prosperoeden/eden_app.cpp, GPL-3.0-or-later,
-// by BlackBearReloaded): the same element ids and classes ("open" shows a screen, "focused" the
-// row under the cursor, "offscreen" hides unused rows), the same navigation on the home screen,
-// and its folder browser, which reads folders with sceKernelGetdents as it does. The graphic
-// packs, the controls and the installs are laid out as Cemu's own windows have them. One Launcher
-// is Cemu's (main.rml) or Azahar's (azahar.rml); the start screen (start.rml) chooses which.
+// Each side (Cemu's main.rml, Azahar's azahar.rml: tools/render-layout.py) has three screens behind
+// tabs along the top, Home, Library and Settings, a game's page (Details), and the pages they open:
+// a game's graphic packs, a player's controls and buttons, the folder browser for games and
+// installs, Artic Base, a dropdown's choices and a setting's longer help. Box art comes first and
+// words only where they are needed: a setting says what it does in one line, Triangle has the rest.
+// The start screen (start.rml) chooses the side. The folder browser reads folders with
+// sceKernelGetdents, as ProsperoEden's does; the graphic packs, the controls and the installs are
+// laid out as Cemu's own windows have them.
 
 #include "launcher.h"
 #include "sound.h"
 #include "ui_host.h"
 #include "../app/boxart.h"
+#include "../app/compatibility.h"
+#include "../app/gameinfo.h"
+#include "../app/pack_updates.h"
 #include "../app/paths.h"
 #include "../app/updates.h"
 #include "../ps5/kernel.h"
@@ -67,10 +72,12 @@ namespace ps5launcher
 			Square,
 			L1,
 			R1,
+			L2,
+			R2,
 		};
 
 		// The DualSense as key presses: any connected controller, the left stick as the D-pad, and
-		// the directions and L1/R1 repeating while held.
+		// the directions and the shoulder buttons repeating while held.
 		class Input
 		{
 		public:
@@ -132,9 +139,11 @@ namespace ps5launcher
 				{ps5pad::kSquare, Key::Square, false},
 				{ps5pad::kL1, Key::L1, true},
 				{ps5pad::kR1, Key::R1, true},
+				{ps5pad::kL2, Key::L2, true},
+				{ps5pad::kR2, Key::R2, true},
 			};
 			uint32_t m_held = ~0u; // nothing counts as pressed until it has been released once
-			std::array<uint64_t, 10> m_repeatAt{};
+			std::array<uint64_t, 12> m_repeatAt{};
 		};
 
 		void SetClass(Rml::ElementDocument* document, const std::string& id, const char* name, bool enabled)
@@ -193,10 +202,59 @@ namespace ps5launcher
 				element->SetInnerRML(rml);
 		}
 
+		// Paragraphs (separated by a blank line) with a blank line between them
+		void SetParagraphs(Rml::ElementDocument* document, const std::string& id, const std::string& text)
+		{
+			std::string rml;
+			size_t start = 0;
+			bool blank = false;
+			while (start <= text.size())
+			{
+				size_t end = text.find('\n', start);
+				if (end == std::string::npos)
+					end = text.size();
+				if (end == start)
+					blank = !rml.empty();
+				else
+				{
+					rml += (rml.empty() ? "" : blank ? "<br/><br/>" : "<br/>") + Rml::StringUtilities::EncodeRml(Printable(text.substr(start, end - start)));
+					blank = false;
+				}
+				start = end + 1;
+			}
+			if (Rml::Element* element = document->GetElementById(id))
+				element->SetInnerRML(rml);
+		}
+
 		void SetImage(Rml::ElementDocument* document, const std::string& id, const std::string& source)
 		{
 			if (Rml::Element* element = document->GetElementById(id))
 				element->SetAttribute("src", source);
+		}
+
+		// A picture fitted whole inside a box (left, top, width, height), centred in it; its own size
+		// from its TGA's header
+		void FitImage(Rml::ElementDocument* document, const std::string& id, const std::string& source, float left, float top, float width,
+			float height)
+		{
+			Rml::Element* element = document->GetElementById(id);
+			if (!element)
+				return;
+			int w = 0, h = 0;
+			float fittedWidth = width, fittedHeight = height;
+			// the layout's own pictures are named from the UI's folder
+			const std::string file = !source.empty() && source[0] != '/' ? ps5ui::AssetPath(source) : source;
+			if (ps5boxart::ImageSize(file, w, h) && w > 0 && h > 0)
+			{
+				const float scale = std::min(width / w, height / h);
+				fittedWidth = std::round(w * scale);
+				fittedHeight = std::round(h * scale);
+			}
+			element->SetAttribute("src", source);
+			element->SetProperty("width", fmt::format("{}px", fittedWidth));
+			element->SetProperty("height", fmt::format("{}px", fittedHeight));
+			element->SetProperty("left", fmt::format("{}px", std::round(left + (width - fittedWidth) / 2)));
+			element->SetProperty("top", fmt::format("{}px", std::round(top + (height - fittedHeight) / 2)));
 		}
 
 		std::string Hex(uint64_t value)
@@ -232,6 +290,16 @@ namespace ps5launcher
 		std::string Gigabytes(uint64_t bytes)
 		{
 			return fmt::format("{:.1f} GB", bytes / 1e9);
+		}
+
+		// "a  /  b  /  c" from the parts that are not empty
+		std::string Join(std::initializer_list<std::string> parts, const char* between = "  /  ")
+		{
+			std::string out;
+			for (const std::string& part : parts)
+				if (!part.empty())
+					out += (out.empty() ? "" : between) + part;
+			return out;
 		}
 
 		// A folder's entry as a path; an entry that is a path already (a drive's, below) stays one
@@ -468,9 +536,9 @@ namespace ps5launcher
 				selected = (selected + count - 1) % count;
 			else if (key == Key::Down)
 				selected = (selected + 1) % count;
-			else if (key == Key::L1)
+			else if (key == Key::L1 || key == Key::L2)
 				selected = std::max(0, selected - page);
-			else if (key == Key::R1)
+			else if (key == Key::R1 || key == Key::R2)
 				selected = std::min(count - 1, selected + page);
 			else
 				return false;
@@ -508,68 +576,40 @@ namespace ps5launcher
 		{
 			kHome,
 			kLibrary,
+			kDetails,
 			kSettings,
-			kVideo,
-			kAudio,
-			kDiagnostics,
-			kOnline,
-			kSystem,
-			kBorders,
-			kAbout,
-			kFiles,
 			kPacks,
-			kControls,
 			kPlayer,
 			kMapping,
+			kFiles,
 			kArtic,
 			kLoading,
 		};
 
-		// The home screen's focusable elements, as ProsperoEden numbers them.
-		enum HomeItem
-		{
-			kContinue = 0,
-			kLibraryButton = 1,
-			kSettingsButton = 2,
-			kAboutButton = 3,
-			kPacksButton = 4,
-			kRecent0 = 5,
-			kViewAll = 9,
-			// the roadmap's features, on PS5CEMU-HAR's home screen until they are made (render-layout.py)
-			kFeature0 = 10,
-		};
+		// The tabs along the top, and which screen each is
+		constexpr Screen kTabs[] = {kHome, kLibrary, kSettings};
+		constexpr const char* kScreenIds[] = {"home", "library", "details", "settings"};
+		constexpr const char* kPageIds[] = {"packs-dialog", "player-dialog", "mapping-dialog", "files-dialog", "artic-dialog"};
 
-		// Settings' list: these, then the planned categories the layout already has rows for, marked as
-		// coming (tools/render-layout.py), which open nothing yet
-		enum SettingsRow
-		{
-			kRowVideo,
-			kRowAudio,
-			kRowControls,
-			kRowGameFiles,
-			kRowInstall,
-			kRowDiagnostics,
-		};
-		// the 3DS's Borders, then its planned Camera and microphone, then System (render-layout.py)
-		constexpr int kRowBorders3ds = 6;
-		constexpr int kRowSystem3ds = 8;
-		constexpr const char* kBorderThemes[] = {"None", "Midnight", "Waves", "Aurora", "Shell"};
+		// Settings' categories, as render-layout.py lays out the rail (the same order)
+		constexpr const char* kCategoriesWiiU[] = {"video", "audio", "controls", "files", "installs", "online", "diagnostics", "about"};
+		constexpr const char* kCategories3ds[] = {"video", "audio", "controls", "borders", "system", "files", "installs", "online", "diagnostics", "about"};
+		constexpr int kSettingRows = 7, kHints = 4;
+
+		constexpr const char* kBorderThemes[] = {"None", "Midnight", "Waves", "Aurora", "Shell", "PS5CEMU-HAR"};
+		constexpr int kBorderThemeCount = (int)std::size(kBorderThemes);
 		constexpr const char* kRegions[] = {"Automatic", "Japan", "USA", "Europe", "Australia", "China", "Korea", "Taiwan"};
 		// Automatic (-1), then Azahar's SystemLanguage 0 to 11
 		constexpr const char* kLanguages[] = {"Automatic", "Japanese", "English", "French", "German", "Italian", "Spanish",
 			"Chinese (simplified)", "Korean", "Dutch", "Portuguese", "Russian", "Chinese (traditional)"};
+		constexpr const char* kResolutions[] = {"", "1x (400x240)", "2x (800x480)", "3x (1200x720)", "4x (1600x960)", "5x (2000x1200)",
+			"6x (2400x1440)", "7x (2800x1680)", "8x (3200x1920)", "9x (3600x2160)", "10x (4000x2400)"};
+		constexpr const char* kLayouts[] = {"Top above bottom", "Top screen only", "Large top screen", "Side by side"};
+		constexpr const char* kTextureFilters[] = {"None", "Anime4K", "Bicubic", "ScaleForce", "xBRZ", "MMPX"};
+		constexpr const char* kUpscaleFilters[] = {"Linear", "Bicubic", "Bicubic Hermite", "Nearest neighbour"};
+		constexpr const char* kMusic[] = {"shop", "setup", "off"};
 
-		// The 3DS's controls (Azahar's side has one console, and these in place of a player's)
-		enum ConsoleRow
-		{
-			kRowConsoleMotion,
-			kRowConsoleDeadzone,
-			kRowConsoleButtons,
-			kRowConsoleReset,
-			kConsoleRows,
-		};
-
-		// Artic Base's page (the 3DS's side, from the home screen)
+		// Artic Base's page (the 3DS's side)
 		enum ArticRow
 		{
 			kRowArticAddress,
@@ -615,12 +655,7 @@ namespace ps5launcher
 			return octets;
 		}
 
-		constexpr const char* kResolutions[] = {"", "1x (400x240)", "2x (800x480)", "3x (1200x720)", "4x (1600x960)", "5x (2000x1200)",
-			"6x (2400x1440)", "7x (2800x1680)", "8x (3200x1920)", "9x (3600x2160)", "10x (4000x2400)"};
-		constexpr const char* kLayouts[] = {"Top above bottom", "Top screen only", "Large top screen", "Side by side"};
-		constexpr const char* kTextureFilters[] = {"None", "Anime4K", "Bicubic", "ScaleForce", "xBRZ", "MMPX"};
-
-		// A player's settings
+		// A player's settings (the Wii U's)
 		enum PlayerRow
 		{
 			kRowType,
@@ -634,13 +669,7 @@ namespace ps5launcher
 		};
 
 		constexpr int kListRows = 7, kFileRows = 6, kPresetRows = 4, kPickerRows = 6;
-		constexpr const char* kHomeElements[] = {"header", "menu", "last-played-card", "recent-section", "features-section", "startup-status", "footer"};
-		// The screens that fill the display: one shows at a time, as the background shows through them
-		constexpr const char* kFullScreens[] = {"rom-dialog", "packs-dialog", "settings-dialog", "controls-dialog", "player-dialog",
-			"mapping-dialog", "files-dialog", "about-dialog", "loading-screen"};
 		constexpr uint64_t kCaptureUs = 6000000; // how long a button mapping waits for a press
-		constexpr int kAudioRows = 4;			 // Settings > Audio: the game's volume, the music, its volume, the menu's sounds
-		constexpr const char* kMusic[] = {"shop", "setup", "off"};
 
 		// What the screen shows, to tell whether a key press did anything, for its sound: the layout
 		// (its text, pictures and places) and which screens are open and which rows focused.
@@ -648,7 +677,7 @@ namespace ps5launcher
 		{
 			std::string showing = document->GetInnerRML();
 			Rml::ElementList elements;
-			document->QuerySelectorAll(elements, ".open, .focused");
+			document->QuerySelectorAll(elements, ".open, .focused, .selected");
 			for (Rml::Element* element : elements)
 				showing += (element->IsClassSet("open") ? "\nopen " : "\nfocused ") + element->GetId();
 			return showing;
@@ -656,7 +685,7 @@ namespace ps5launcher
 
 		// A key press's sound (sound.h): moving when the cursor or a value moved, choosing or going back
 		// when something opened, closed or changed, and a bump when Cross was pressed on what does
-		// nothing (yet).
+		// nothing.
 		void Feedback(Key key, bool changed)
 		{
 			using ps5sound::Effect;
@@ -672,6 +701,26 @@ namespace ps5launcher
 				ps5sound::Play(Effect::Move);
 		}
 
+		// The hints along the bottom right: a glyph (render-glyphs.py) and a word or two each
+		struct Hint
+		{
+			const char* glyph;
+			std::string text;
+		};
+
+		void SetHints(Rml::ElementDocument* document, const std::vector<Hint>& hints)
+		{
+			for (int i = 0; i < kHints; i++)
+			{
+				const bool used = i < (int)hints.size();
+				SetClass(document, fmt::format("hint-{}", i), "unused", !used);
+				if (!used)
+					continue;
+				SetImage(document, fmt::format("hint-img-{}", i), fmt::format("glyphs/{}-30.tga", hints[i].glyph));
+				SetText(document, fmt::format("hint-text-{}", i), hints[i].text);
+			}
+		}
+
 		class Launcher
 		{
 		public:
@@ -682,18 +731,6 @@ namespace ps5launcher
 
 			void Initialize()
 			{
-				SetText(m_document, "brand-version", fmt::format("{}  /  PS5CEMU-HAR  /  {}", Is3ds() ? "NINTENDO 3DS" : "WII U", ps5update::Readable(PS5CEMU_VERSION)));
-				const std::string& notice = Notice();
-				SetText(m_document, "startup-status", notice);
-				SetClass(m_document, "startup-status", "quiet", notice.empty());
-				SetClass(m_document, "recent-section", "covered", !notice.empty());
-				SetClass(m_document, "load-rom", "disabled", !CoreReady());
-				SetText(m_document, "about-games-path", ShortPath(GamesFolder(), 36));
-				if (!Is3ds())
-				{
-					SetText(m_document, "about-keys-path", std::string(ps5paths::kRoot) + "/keys.txt");
-					SetText(m_document, "about-mlc-path", ps5paths::kMlc);
-				}
 				m_scanning = CoreReady() && SystemScanning();
 				if (CoreReady())
 					m_games = SystemGames();
@@ -703,9 +740,9 @@ namespace ps5launcher
 					if (CoreReady())
 						RememberCount();
 				}
-				RefreshHome();
-				m_selected = m_continueReady ? kContinue : CoreReady() ? kLibraryButton : kSettingsButton;
-				UpdateHome();
+				m_homeRow = kHeroRow;
+				m_homeColumn = 0;
+				ShowTab(kHome);
 				Poll();
 			}
 
@@ -716,8 +753,8 @@ namespace ps5launcher
 			bool Leaving() const { return m_leaving; }
 			const std::optional<ps5emu::Game>& Choice() const { return m_launch; }
 
-			// The clock, the library once Cemu has finished looking for games, a button being
-			// mapped and an install.
+			// The clock, the library once the side has finished looking for games, box art arriving,
+			// a button being mapped, an install, and the graphic packs' update.
 			void Poll()
 			{
 				const std::time_t minute = std::time(nullptr) / 60;
@@ -737,22 +774,20 @@ namespace ps5launcher
 					ps5log::Line("[launcher] {} games", m_games.size());
 					RememberCount();
 					FetchBoxArt();
-					RefreshHome();
-					UpdateHome();
-					if (m_screen == kLibrary)
-						UpdateLibrary();
+					Refresh();
 				}
-				// a cover arrived: the selected game's may be it
+				// a cover arrived: one on the screen may be it
 				if (ps5boxart::Arrivals() != m_boxArrivals)
 				{
 					m_boxArrivals = ps5boxart::Arrivals();
-					if (m_screen == kLibrary)
-						UpdateLibrary();
+					if (m_screen == kHome || m_screen == kLibrary || m_screen == kDetails)
+						Refresh();
 				}
 				if (m_capture.active)
 					PollCapture();
 				if (m_installing)
 					PollInstall();
+				PollPacks();
 			}
 
 			void HandleKey(Key key)
@@ -762,25 +797,22 @@ namespace ps5launcher
 					PickerKey(key);
 					return;
 				}
+				if (m_info)
+				{
+					// any of these closes a setting's help
+					if (key == Key::Circle || key == Key::Triangle || key == Key::Cross)
+						CloseInfo();
+					return;
+				}
 				switch (m_screen)
 				{
 				case kHome: HomeKey(key); break;
 				case kLibrary: LibraryKey(key); break;
-				case kPacks: PacksKey(key); break;
+				case kDetails: DetailsKey(key); break;
 				case kSettings: SettingsKey(key); break;
-				case kVideo:
-				case kAudio:
-				case kDiagnostics:
-				case kOnline:
-				case kBorders:
-				case kSystem: SettingsPageKey(key); break;
-				case kControls: ControlsKey(key); break;
+				case kPacks: PacksKey(key); break;
 				case kPlayer: PlayerKey(key); break;
 				case kMapping: MappingKey(key); break;
-				case kAbout:
-					if (key == Key::Circle)
-						GoHome();
-					break;
 				case kFiles: FilesKey(key); break;
 				case kArtic: ArticKey(key); break;
 				case kLoading: break;
@@ -804,6 +836,18 @@ namespace ps5launcher
 			const char* Icon() const { return Is3ds() ? "icons/azahar.tga" : "icons/ps5cemu.tga"; }
 			std::string CoverOf(uint64_t titleId) const { return Is3ds() ? ps5azahar::CoverPath(titleId) : ps5emu::CoverPath(titleId); }
 			ps5boxart::System BoxSystem() const { return Is3ds() ? ps5boxart::System::N3ds : ps5boxart::System::WiiU; }
+			// the library's grid: Wii U box art is 5:7, 3DS box art wider than tall (render-layout.py)
+			int GridColumns() const { return 7; }
+			int GridRows() const { return Is3ds() ? 3 : 2; }
+			float TileWidth() const { return 212; }
+			float TileHeight() const { return Is3ds() ? 196.0f : 290.0f; }
+			// Home: the last game's icon on a card, and the recent games' icons (render-layout.py's sizes)
+			static constexpr float kHeroLeft = 1384, kHeroTop = 150, kHeroSize = 416, kShelfSize = 160;
+			int CategoryCount() const { return Is3ds() ? (int)std::size(kCategories3ds) : (int)std::size(kCategoriesWiiU); }
+			std::string Category(int index) const
+			{
+				return Is3ds() ? kCategories3ds[std::clamp(index, 0, CategoryCount() - 1)] : kCategoriesWiiU[std::clamp(index, 0, CategoryCount() - 1)];
+			}
 
 			// How many games the start screen says this side has, next time: it looks for none itself,
 			// as neither emulator runs on it
@@ -826,77 +870,246 @@ namespace ps5launcher
 				ps5boxart::Fetch(BoxSystem(), ids);
 			}
 
-			// The library's details: the game's box art, fitted to the cover's area (288x352, at its
-			// top, centred across), or its icon, square, as before covers came. Box art no longer
-			// shown is let go of, so a long scroll through the library does not keep every one.
-			void ShowCover(const ps5emu::Game* game)
+			void SaveSettings()
 			{
-				Rml::Element* cover = m_document->GetElementById("game-cover");
-				if (!cover)
+				if (!ps5settings::Save(m_settings))
+					ps5log::Line("[launcher] could not save {}", ps5paths::kLauncherSettings);
+			}
+
+			// -- a game's pictures and facts ----------------------------------------------------
+
+			// Its box art when GameTDB had one, else its icon, else the side's own
+			std::string ArtOf(const ps5emu::Game& game, bool& boxArt) const
+			{
+				const std::string box = ps5boxart::Path(BoxSystem(), game.gameId);
+				boxArt = !box.empty();
+				if (boxArt)
+					return box;
+				const std::string icon = CoverOf(game.titleId);
+				return icon.empty() ? Icon() : icon;
+			}
+
+			struct Facts
+			{
+				ps5gameinfo::Info info;
+				bool known = false;
+				const ps5compat::Report* report = nullptr;
+			};
+
+			Facts FactsOf(const ps5emu::Game& game) const
+			{
+				Facts facts;
+				facts.known = ps5gameinfo::Find(BoxSystem(), game.gameId, facts.info);
+				facts.report = ps5compat::Find(Is3ds(), game.name);
+				return facts;
+			}
+
+			// "Nintendo  /  2017", or what the game itself says when GameTDB has nothing
+			std::string Byline(const ps5emu::Game& game, const Facts& facts) const
+			{
+				if (facts.known && (!facts.info.publisher.empty() || !facts.info.released.empty()))
+					return Join({facts.info.publisher, ps5gameinfo::Year(facts.info.released)});
+				if (Is3ds())
+					return Join({game.publisher, game.format});
+				return Join({fmt::format("v{}", game.version), game.dlcCount ? "DLC" : "", game.format});
+			}
+
+			void ShowStatus(const std::string& id, const Facts& facts)
+			{
+				const std::string status = facts.report ? facts.report->status : std::string();
+				SetText(m_document, id, status);
+				SetClass(m_document, id, "unused", status.empty());
+				const std::string kind = ps5compat::Kind(status);
+				for (const char* name : {"good", "warn", "bad"})
+					SetClass(m_document, id, name, kind == name);
+			}
+
+			// A tile (the shelf's or the grid's): the game's art fitted in it, its name under an icon
+			void ShowTile(const std::string& prefix, int slot, const ps5emu::Game* game, float width, float height)
+			{
+				const std::string tile = fmt::format("{}-{}", prefix, slot);
+				SetClass(m_document, tile, "unused", !game);
+				if (!game)
 					return;
-				std::string source = Icon();
-				float width = 288, height = 288;
-				std::string caption;
-				if (game)
+				bool boxArt = false;
+				const std::string art = ArtOf(*game, boxArt);
+				SetClass(m_document, tile, "noart", !boxArt);
+				SetText(m_document, fmt::format("{}-text-{}", prefix, slot), game->name);
+				if (boxArt)
+					FitImage(m_document, fmt::format("{}-img-{}", prefix, slot), art, 0, 0, width, height);
+				else // the icon, square, above the name
 				{
-					const std::string boxArt = ps5boxart::Path(BoxSystem(), game->gameId);
-					int w = 0, h = 0;
-					if (!boxArt.empty() && ps5boxart::ImageSize(boxArt, w, h))
-					{
-						const float scale = std::min(288.0f / w, 352.0f / h);
-						width = std::round(w * scale);
-						height = std::round(h * scale);
-						source = boxArt;
-					}
-					else
-					{
-						const std::string icon = CoverOf(game->titleId);
-						if (!icon.empty())
-							source = icon;
-						else
-							caption = "No icon";
-					}
+					const float size = std::min(width * 0.62f, height * 0.5f);
+					FitImage(m_document, fmt::format("{}-img-{}", prefix, slot), art, (width - size) / 2, height * 0.12f, size, size);
 				}
-				cover->SetAttribute("src", source);
-				cover->SetProperty("width", fmt::format("{}px", width));
-				cover->SetProperty("height", fmt::format("{}px", height));
-				cover->SetProperty("left", fmt::format("{}px", 36 + (288 - width) / 2));
-				SetText(m_document, "cover-caption", caption);
-				if (!m_shownBoxArt.empty() && m_shownBoxArt != source)
-					Rml::ReleaseTexture(m_shownBoxArt);
-				m_shownBoxArt = source.find("/boxart/") != std::string::npos ? source : std::string();
+				m_shownArt.insert(art);
 			}
 
-			// The rows' icons: those scrolled away are let go of once there are many
-			void ReleaseRowIcons(const std::vector<std::string>& shown)
+			// A game's cover in a box: its box art filling it, or, without any, its icon on a card the box's size
+			void ShowCover(const std::string& card, const std::string& image, const std::string& art, bool boxArt, float left, float top,
+				float width, float height)
 			{
-				for (const auto& icon : shown)
-					m_rowIcons.insert(icon);
-				if (m_rowIcons.size() <= 48)
+				SetClass(m_document, card, "visible", !boxArt);
+				if (boxArt)
+				{
+					FitImage(m_document, image, art, left, top, width, height);
 					return;
-				for (const auto& icon : m_rowIcons)
-					if (std::find(shown.begin(), shown.end(), icon) == shown.end())
-						Rml::ReleaseTexture(icon);
-				m_rowIcons = {shown.begin(), shown.end()};
+				}
+				if (Rml::Element* element = m_document->GetElementById(card))
+				{
+					element->SetProperty("left", fmt::format("{}px", left));
+					element->SetProperty("top", fmt::format("{}px", top));
+					element->SetProperty("width", fmt::format("{}px", width));
+					element->SetProperty("height", fmt::format("{}px", height));
+				}
+				const float size = std::round(std::min(width, height) * 0.56f);
+				FitImage(m_document, image, art, left + (width - size) / 2, top + (height - size) / 2, size, size);
 			}
 
-			// -- screens -----------------------------------------------------------------------
+			// A game's own icon (from its files), or "" when it has none
+			std::string GameIcon(const ps5emu::Game& game) const { return CoverOf(game.titleId); }
 
-			// One full screen open (none: the home screen), the rest closed.
-			void Show(const char* id, Screen screen)
+			// How large an icon is drawn in a square of size: a small one (the 3DS's are 48 pixels) at a
+			// whole multiple of its own size, so its pixels stay sharp; a larger one (the Wii U's 128)
+			// fills it, scaled smoothly
+			static float IconSize(const std::string& icon, float size)
 			{
-				for (const char* full : kFullScreens)
-					SetClass(m_document, full, "open", id && std::strcmp(id, full) == 0);
-				for (const char* element : kHomeElements)
-					SetClass(m_document, element, "library-hidden", id != nullptr);
+				int width = 0, height = 0;
+				const std::string file = !icon.empty() && icon[0] != '/' ? ps5ui::AssetPath(icon) : icon;
+				if (!ps5boxart::ImageSize(file, width, height) || width <= 0 || width > 64)
+					return size;
+				return std::floor(size / width) * width;
+			}
+
+			// Home's pictures: the game's icon on a square card, at (left, top), size wide; the side's
+			// own icon when the game has none (box art is the library's)
+			void ShowIcon(const std::string& card, const std::string& image, const std::string& icon, float left, float top, float size)
+			{
+				SetClass(m_document, card, "visible", true);
+				if (Rml::Element* element = m_document->GetElementById(card))
+				{
+					element->SetProperty("left", fmt::format("{}px", left));
+					element->SetProperty("top", fmt::format("{}px", top));
+					element->SetProperty("width", fmt::format("{}px", size));
+					element->SetProperty("height", fmt::format("{}px", size));
+				}
+				const std::string art = icon.empty() ? Icon() : icon;
+				const float inner = icon.empty() ? std::round(size * 0.56f) : IconSize(art, size - 32);
+				FitImage(m_document, image, art, left + (size - inner) / 2, top + (size - inner) / 2, inner, inner);
+				m_shownArt.insert(art);
+			}
+
+			// A recent game on Home's shelf: its icon filling the tile, or the side's icon and its name
+			void ShowIconTile(const std::string& prefix, int slot, const ps5emu::Game* game, float size)
+			{
+				const std::string tile = fmt::format("{}-{}", prefix, slot);
+				SetClass(m_document, tile, "unused", !game);
+				if (!game)
+					return;
+				const std::string icon = GameIcon(*game);
+				SetClass(m_document, tile, "noart", icon.empty());
+				SetText(m_document, fmt::format("{}-text-{}", prefix, slot), game->name);
+				const std::string art = icon.empty() ? Icon() : icon;
+				const float inner = icon.empty() ? std::round(size * 0.5f) : IconSize(art, size);
+				FitImage(m_document, fmt::format("{}-img-{}", prefix, slot), art, (size - inner) / 2, icon.empty() ? size * 0.12f : (size - inner) / 2,
+					inner, inner);
+				m_shownArt.insert(art);
+			}
+
+			// The covers loaded are let go of once many have been: a long scroll keeps them all otherwise
+			void ReleaseArt()
+			{
+				if (m_shownArt.size() <= 64)
+					return;
+				for (const auto& art : m_shownArt)
+					Rml::ReleaseTexture(art);
+				m_shownArt.clear();
+			}
+
+			// -- screens and tabs -----------------------------------------------------------------
+
+			void ShowScreen(Screen screen)
+			{
 				m_screen = screen;
+				for (int i = 0; i < (int)std::size(kScreenIds); i++)
+					SetClass(m_document, kScreenIds[i], "open", (int)screen == i);
+				const char* page = screen == kPacks ? "packs-dialog" : screen == kPlayer ? "player-dialog" : screen == kMapping ? "mapping-dialog" :
+					screen == kFiles ? "files-dialog" : screen == kArtic ? "artic-dialog" : nullptr;
+				for (const char* id : kPageIds)
+					SetClass(m_document, id, "open", page && std::strcmp(page, id) == 0);
+				SetClass(m_document, "loading-screen", "open", screen == kLoading);
+				SetClass(m_document, "app", "page-open", page != nullptr || screen == kLoading || screen == kDetails);
 			}
 
-			void GoHome()
+			// The tab of a screen, along the top; the screen under it shown
+			void ShowTab(Screen screen)
 			{
-				Show(nullptr, kHome);
-				RefreshHome();
-				UpdateHome();
+				m_tab = screen;
+				for (int i = 0; i < (int)std::size(kTabs); i++)
+				{
+					SetClass(m_document, fmt::format("tab-{}", i), "selected", kTabs[i] == screen);
+					SetClass(m_document, fmt::format("tab-{}", i), "focused", m_onTabs && kTabs[i] == screen);
+				}
+				ShowScreen(screen);
+				Refresh();
+			}
+
+			// L1 and R1, and Left and Right on the tabs: the next tab along
+			void NextTab(int direction)
+			{
+				int at = 0;
+				for (int i = 0; i < (int)std::size(kTabs); i++)
+					if (kTabs[i] == m_tab)
+						at = i;
+				at = (at + direction + (int)std::size(kTabs)) % (int)std::size(kTabs);
+				ShowTab(kTabs[at]);
+			}
+
+			// The tabs, focused: Left and Right change them, Down goes into the screen. True when the
+			// key was the tabs'.
+			bool TabsKey(Key key)
+			{
+				if (key == Key::L1 || key == Key::R1)
+				{
+					NextTab(key == Key::R1 ? 1 : -1);
+					return true;
+				}
+				if (!m_onTabs)
+					return false;
+				if (key == Key::Left || key == Key::Right)
+					NextTab(key == Key::Right ? 1 : -1);
+				else if (key == Key::Down || key == Key::Cross)
+				{
+					m_onTabs = false;
+					ShowTab(m_tab);
+				}
+				else if (key == Key::Circle)
+				{
+					if (m_tab == kHome)
+						m_leaving = true;
+					else
+						ShowTab(kHome);
+				}
+				return true;
+			}
+
+			void FocusTabs()
+			{
+				m_onTabs = true;
+				ShowTab(m_tab);
+			}
+
+			// What is shown now, again (after the games or their art changed)
+			void Refresh()
+			{
+				switch (m_screen)
+				{
+				case kHome: UpdateHome(); break;
+				case kLibrary: UpdateLibrary(); break;
+				case kDetails: UpdateDetails(); break;
+				case kSettings: UpdateSettings(); break;
+				default: break;
+				}
 			}
 
 			// -- a dropdown --------------------------------------------------------------------
@@ -931,12 +1144,15 @@ namespace ps5launcher
 					m_picker.open = false;
 					SetClass(m_document, "picker", "open", false);
 					m_picker.choose(m_picker.selected);
+					RestoreHints();
 					return;
 				}
 				else
 					Browse(key, m_picker.selected, (int)m_picker.options.size(), kPickerRows);
 				SetClass(m_document, "picker", "open", m_picker.open);
 				UpdatePicker();
+				if (!m_picker.open)
+					RestoreHints();
 			}
 
 			void UpdatePicker()
@@ -949,12 +1165,60 @@ namespace ps5launcher
 					SetClass(m_document, fmt::format("picker-row-{}", row), "focused", index == m_picker.selected);
 					SetClass(m_document, fmt::format("picker-row-{}", row), "offscreen", index >= count);
 					SetText(m_document, fmt::format("picker-name-{}", row), index < count ? m_picker.options[index] : "");
-					SetText(m_document, fmt::format("picker-mark-{}", row), index == m_picker.active ? "IN USE" : "");
+					SetText(m_document, fmt::format("picker-mark-{}", row), index == m_picker.active ? "In use" : "");
 				}
-				SetText(m_document, "picker-position", count > kPickerRows ? fmt::format("{} OF {}", m_picker.selected + 1, count) : "");
+				SetText(m_document, "picker-position", count > kPickerRows ? fmt::format("{} of {}", m_picker.selected + 1, count) : "");
+				SetHints(m_document, {{"cross", "Choose"}, {"circle", "Cancel"}});
+			}
+
+			// -- a setting's longer help (Triangle) ----------------------------------------------
+
+			void OpenInfo(const std::string& title, const std::string& text)
+			{
+				m_info = true;
+				SetText(m_document, "info-title", title);
+				SetLines(m_document, "info-text", text);
+				SetClass(m_document, "info", "open", true);
+				SetHints(m_document, {{"circle", "Close"}});
+			}
+
+			void CloseInfo()
+			{
+				m_info = false;
+				SetClass(m_document, "info", "open", false);
+				RestoreHints();
+			}
+
+			// The hints of the screen under a dropdown or the help, once it closes
+		public:
+			void RefreshHints() { RestoreHints(); }
+
+		private:
+			void RestoreHints()
+			{
+				switch (m_screen)
+				{
+				case kHome: UpdateHome(); break;
+				case kLibrary: UpdateLibrary(); break;
+				case kDetails: UpdateDetails(); break;
+				case kSettings: UpdateSettings(); break;
+				case kPacks: UpdatePacks(); break;
+				case kPlayer: UpdatePlayer(); break;
+				case kMapping: UpdateMapping(); break;
+				case kFiles: UpdateFiles(); break;
+				case kArtic: UpdateArtic(); break;
+				case kLoading: break;
+				}
 			}
 
 			// -- home --------------------------------------------------------------------------
+			// The last game large, with its buttons and box art, and the recent ones on a shelf.
+
+			enum HomeRow
+			{
+				kHeroRow,
+				kShelfRow,
+			};
 
 			int FindGame(uint64_t titleId) const
 			{
@@ -964,195 +1228,191 @@ namespace ps5launcher
 				return -1;
 			}
 
-			std::string Cover(const ps5emu::Game& game) const
+			// The hero's buttons, in their order
+			enum class HeroAction
 			{
-				const std::string cover = CoverOf(game.titleId);
-				return cover.empty() ? Icon() : cover;
-			}
+				Play,
+				Details,
+				Library,
+				Settings,
+				Artic,
+			};
 
-			// Recently played games, unless a notice has their place.
-			int RecentCount() const
+			std::vector<std::pair<HeroAction, const char*>> HeroActions() const
 			{
-				return Notice().empty() ? (int)m_recent.size() : 0;
-			}
-
-			void RefreshHome()
-			{
-				m_lastIndex = FindGame(LastGame());
-				m_continueReady = CoreReady() && m_lastIndex >= 0;
-				if (m_lastIndex >= 0)
-				{
-					const auto& game = m_games[m_lastIndex];
-					SetText(m_document, "last-played-title", game.name);
-					// the kicker above says it was the last game played
-					if (Is3ds())
-						SetText(m_document, "last-played-caption", game.publisher.empty() ? "Nintendo 3DS" : game.publisher);
-					else
-						SetText(m_document, "last-played-caption", fmt::format("v{}{}", game.version, game.dlcCount ? "  /  DLC" : ""));
-					SetImage(m_document, "last-played-cover", Cover(game));
-				}
-				else if (LastGame() && CoreReady() && !m_scanning)
-				{
-					SetText(m_document, "last-played-title", "Your last game is not here");
-					SetText(m_document, "last-played-caption", "It is no longer in the game files folder.");
-				}
-				SetText(m_document, "continue-copy", m_continueReady ? "Launch game" : "Open library");
-				SetClass(m_document, "continue-game", "disabled", !CoreReady());
-				// a game's graphic packs need a game; Artic Base (the 3DS's side) does not
-				SetClass(m_document, "hero-options", "disabled", HasPacks() && !m_continueReady);
-
-				m_recent.clear();
-				for (uint64_t titleId : Recent())
-					if (const int index = FindGame(titleId); index >= 0)
-						m_recent.push_back(index);
-				for (int i = 0; i < 4; i++)
-				{
-					const std::string row = fmt::format("recent-{}", i);
-					const bool present = i < (int)m_recent.size();
-					SetClass(m_document, row, "library-hidden", !present);
-					if (!present)
-						continue;
-					const auto& game = m_games[m_recent[i]];
-					SetText(m_document, fmt::format("recent-title-{}", i), game.name);
-					SetImage(m_document, fmt::format("recent-cover-{}", i), Cover(game));
-				}
-				SetClass(m_document, "recent-empty", "library-hidden", !m_recent.empty());
-
-				std::string system;
-				if (!CoreReady())
-					system = "Setup required";
-				else if (m_scanning)
-					system = "Looking for games";
+				std::vector<std::pair<HeroAction, const char*>> actions;
+				if (!Notice().empty() || !CoreReady())
+					actions = {{HeroAction::Settings, "Settings"}};
+				else if (m_lastIndex >= 0)
+					actions = {{HeroAction::Play, "Play"}, {HeroAction::Details, "Details"}};
 				else
-					system = Plural((int)m_games.size(), "game", "games");
+					actions = {{HeroAction::Library, "Library"}, {HeroAction::Settings, "Settings"}};
 				if (Is3ds())
-					system += ps5azahar::Available() ? (PS5_JitAvailable() ? "  /  dynarmic JIT" : "  /  Interpreter (no JIT)") : "  /  Core not in this build";
-				else
-					system += PS5_JitAvailable() ? "  /  Recompiler" : "  /  Interpreter (no JIT)";
-				SetText(m_document, "system-status", system);
+					actions.push_back({HeroAction::Artic, "Artic Base"});
+				return actions;
 			}
+
+			// The shelf: the recent games (but the last, which the hero has), and "All games"
+			int ShelfCount() const { return (int)m_recent.size() + 1; }
 
 			void UpdateHome()
 			{
-				SetClass(m_document, "continue-game", "focused", m_selected == kContinue);
-				SetClass(m_document, "load-rom", "focused", m_selected == kLibraryButton);
-				SetClass(m_document, "settings", "focused", m_selected == kSettingsButton);
-				SetClass(m_document, "help-about", "focused", m_selected == kAboutButton);
-				SetClass(m_document, "hero-options", "focused", m_selected == kPacksButton);
-				SetClass(m_document, "view-all", "focused", m_selected == kViewAll);
-				for (int i = 0; i < 4; i++)
-					SetClass(m_document, fmt::format("recent-{}", i), "focused", m_selected == kRecent0 + i);
-				// a planned feature in focus says what it will do
-				std::string caption = "Planned for later versions: choose one to see what it will do.";
-				for (int i = 0; i < FeatureCount(); i++)
-					if (Rml::Element* feature = m_document->GetElementById(fmt::format("feature-{}", i)))
-					{
-						feature->SetClass("focused", m_selected == kFeature0 + i);
-						if (m_selected == kFeature0 + i)
-							caption = feature->GetAttribute<Rml::String>("data-caption", caption);
-					}
-				SetText(m_document, "feature-caption", caption);
-			}
+				m_lastIndex = CoreReady() ? FindGame(LastGame()) : -1;
+				m_recent.clear();
+				for (uint64_t titleId : Recent())
+					if (const int index = FindGame(titleId); index >= 0 && index != m_lastIndex && m_recent.size() < 5)
+						m_recent.push_back(index);
+				const bool notice = !Notice().empty();
+				SetClass(m_document, "home", "notice", notice);
+				SetClass(m_document, "home-notice", "visible", notice);
+				SetText(m_document, "home-notice", Notice());
+				const ps5emu::Game* last = m_lastIndex >= 0 ? &m_games[m_lastIndex] : nullptr;
+				if (notice || !CoreReady())
+				{
+					SetText(m_document, "hero-kicker", "SETUP");
+					SetText(m_document, "hero-title", notice ? "Something needs a look" : "Starting");
+					SetText(m_document, "hero-facts", "");
+					SetClass(m_document, "hero-status", "unused", true);
+					ShowIcon("hero-card", "hero-cover", "", kHeroLeft, kHeroTop, kHeroSize);
+				}
+				else if (last)
+				{
+					const Facts facts = FactsOf(*last);
+					SetText(m_document, "hero-kicker", "CONTINUE");
+					SetText(m_document, "hero-title", last->name);
+					SetText(m_document, "hero-facts", Byline(*last, facts));
+					ShowStatus("hero-status", facts);
+					ShowIcon("hero-card", "hero-cover", GameIcon(*last), kHeroLeft, kHeroTop, kHeroSize);
+				}
+				else
+				{
+					SetText(m_document, "hero-kicker", m_scanning ? "LOOKING FOR GAMES" : "WELCOME");
+					SetText(m_document, "hero-title", m_games.empty() ? (m_scanning ? "Your games" : "No games yet") : "Pick a game");
+					SetText(m_document, "hero-facts", m_games.empty() ? (m_scanning ? "" : "Put them in the game files folder (Settings)") :
+															  Plural((int)m_games.size(), "game", "games"));
+					SetClass(m_document, "hero-status", "unused", true);
+					ShowIcon("hero-card", "hero-cover", "", kHeroLeft, kHeroTop, kHeroSize);
+				}
+				const auto actions = HeroActions();
+				if (m_homeRow == kHeroRow)
+					m_homeColumn = std::clamp(m_homeColumn, 0, std::max(0, (int)actions.size() - 1));
+				for (int i = 0; i < 3; i++)
+				{
+					const bool used = i < (int)actions.size();
+					SetClass(m_document, fmt::format("hero-{}", i), "unused", !used);
+					SetClass(m_document, fmt::format("hero-{}", i), "focused", used && !m_onTabs && m_homeRow == kHeroRow && m_homeColumn == i);
+					if (used)
+						SetText(m_document, fmt::format("hero-label-{}", i), actions[i].second);
+				}
+				// the play glyph on the first button only when it plays
+				if (Rml::Element* glyph = m_document->GetElementById("hero-0"))
+					if (Rml::Element* image = glyph->GetFirstChild(); image && image->GetTagName() == "img")
+						image->SetProperty("display", actions.front().first == HeroAction::Play ? "inline-block" : "none");
+				SetClass(m_document, "hero-0", "primary", true);
 
-			int FeatureCount()
-			{
-				int count = 0;
-				while (m_document->GetElementById(fmt::format("feature-{}", count)))
-					count++;
-				return count;
+				// the shelf
+				if (m_homeRow == kShelfRow)
+					m_homeColumn = std::clamp(m_homeColumn, 0, ShelfCount() - 1);
+				for (int i = 0; i < 5; i++)
+				{
+					const ps5emu::Game* game = i < (int)m_recent.size() ? &m_games[m_recent[i]] : nullptr;
+					ShowIconTile("shelf", i, game, kShelfSize);
+					SetClass(m_document, fmt::format("shelf-{}", i), "focused", !m_onTabs && m_homeRow == kShelfRow && m_homeColumn == i);
+				}
+				SetClass(m_document, "shelf-all", "focused", !m_onTabs && m_homeRow == kShelfRow && m_homeColumn == (int)m_recent.size());
+				SetText(m_document, "shelf-label", m_recent.empty() ? "Your library" : "Recent");
+				if (!m_onTabs && m_homeRow == kShelfRow && m_homeColumn < (int)m_recent.size())
+				{
+					const auto& game = m_games[m_recent[m_homeColumn]];
+					SetText(m_document, "shelf-name", game.name);
+					SetText(m_document, "shelf-meta", Byline(game, FactsOf(game)));
+				}
+				else
+				{
+					SetText(m_document, "shelf-name", !m_onTabs && m_homeRow == kShelfRow ? "All games" : "");
+					SetText(m_document, "shelf-meta", !m_onTabs && m_homeRow == kShelfRow ? Plural((int)m_games.size(), "game", "games") : "");
+				}
+				ReleaseArt();
+
+				if (m_onTabs)
+					SetHints(m_document, {{"leftright", "Tabs"}, {"cross", "Open"}, {"circle", "Change emulator"}});
+				else if (m_homeRow == kHeroRow && actions[m_homeColumn].first == HeroAction::Play)
+					SetHints(m_document, {{"cross", "Play"}, {"square", "Details"}, {"circle", "Change emulator"}});
+				else
+					SetHints(m_document, {{"cross", "Choose"}, {"circle", "Change emulator"}});
 			}
 
 			void HomeKey(Key key)
 			{
-				const int recentCount = RecentCount();
-				const bool ready = CoreReady();
-				const bool recentShown = Notice().empty();
-				if (key == Key::Circle)
-				{
-					m_leaving = true;
+				if (TabsKey(key))
 					return;
-				}
-				const int featureCount = FeatureCount();
-				const int firstRecent = recentCount ? kRecent0 : kViewAll;
-				// PS5CEMU-HAR's home screen, top to bottom: the menu, the last game and its buttons, the
-				// shelf of recent games, and the row of the roadmap's features
-				if (key == Key::Up)
+				const auto actions = HeroActions();
+				const bool shelf = Notice().empty() && CoreReady();
+				switch (key)
 				{
-					if (m_selected >= kFeature0)
-						m_selected = recentShown ? firstRecent : kContinue;
-					else if (m_selected >= kRecent0)
-						m_selected = kContinue;
-					else if (m_selected == kContinue || m_selected == kPacksButton)
-						m_selected = ready ? kLibraryButton : kSettingsButton;
-				}
-				else if (key == Key::Down)
-				{
-					if (m_selected >= kLibraryButton && m_selected <= kAboutButton)
+				case Key::Circle: m_leaving = true; return;
+				case Key::Up:
+					if (m_homeRow == kShelfRow)
 					{
-						if (ready)
-							m_selected = kContinue;
+						m_homeRow = kHeroRow;
+						m_homeColumn = 0;
 					}
-					else if (m_selected == kContinue || m_selected == kPacksButton)
+					else
 					{
-						if (recentShown)
-							m_selected = firstRecent;
-						else if (featureCount)
-							m_selected = kFeature0;
-					}
-					else if (m_selected >= kRecent0 && m_selected <= kViewAll && featureCount)
-						m_selected = kFeature0;
-				}
-				else if (key == Key::Left || key == Key::Right)
-				{
-					const int delta = key == Key::Right ? 1 : -1;
-					if (m_selected >= kLibraryButton && m_selected <= kAboutButton)
-					{
-						m_selected = kLibraryButton + (m_selected - kLibraryButton + delta + 3) % 3;
-						if (m_selected == kLibraryButton && !ready)
-							m_selected = delta > 0 ? kSettingsButton : kAboutButton;
-					}
-					else if (m_selected >= kFeature0)
-						m_selected = kFeature0 + (m_selected - kFeature0 + delta + featureCount) % featureCount;
-					else if (m_selected == kContinue || m_selected == kPacksButton)
-					{
-						// the second button: a game's graphic packs, or Artic Base on the 3DS's side
-						if ((m_continueReady && HasPacks()) || Is3ds())
-							m_selected = m_selected == kContinue ? kPacksButton : kContinue;
-					}
-					else if (m_selected >= kRecent0)
-					{
-						const int length = recentCount + 1;
-						int position = m_selected == kViewAll ? recentCount : m_selected - kRecent0;
-						position = (position + delta + length) % length;
-						m_selected = position == recentCount ? kViewAll : kRecent0 + position;
-					}
-				}
-				else if (key == Key::Triangle && m_continueReady && HasPacks() && (m_selected == kContinue || m_selected == kPacksButton))
-					OpenPacks(m_lastIndex, kHome);
-				else if (key == Key::Triangle && Is3ds())
-				{
-					OpenArtic();
-					return;
-				}
-				else if (key == Key::Cross)
-				{
-					if (m_selected == kPacksButton && Is3ds())
-					{
-						OpenArtic();
+						FocusTabs();
 						return;
 					}
-					if (m_selected == kContinue && m_continueReady)
-						Launch(m_lastIndex);
-					else if ((m_selected == kContinue || m_selected == kLibraryButton || m_selected == kViewAll) && ready)
-						OpenLibrary(m_lastIndex);
-					else if (m_selected == kSettingsButton)
-						OpenSettings();
-					else if (m_selected == kAboutButton)
-						Show("about-dialog", kAbout);
-					else if (m_selected == kPacksButton && m_continueReady)
-						OpenPacks(m_lastIndex, kHome);
-					else if (m_selected >= kRecent0 && m_selected < kRecent0 + recentCount)
-						Launch(m_recent[m_selected - kRecent0]);
+					break;
+				case Key::Down:
+					if (m_homeRow == kHeroRow && shelf)
+					{
+						m_homeRow = kShelfRow;
+						m_homeColumn = 0;
+					}
+					break;
+				case Key::Left:
+				case Key::Right:
+				{
+					const int count = m_homeRow == kHeroRow ? (int)actions.size() : ShelfCount();
+					m_homeColumn = (m_homeColumn + (key == Key::Right ? 1 : count - 1)) % count;
+					break;
+				}
+				case Key::Square:
+					if (m_lastIndex >= 0 && m_homeRow == kHeroRow)
+					{
+						OpenDetails(m_lastIndex, kHome);
+						return;
+					}
+					if (m_homeRow == kShelfRow && m_homeColumn < (int)m_recent.size())
+					{
+						OpenDetails(m_recent[m_homeColumn], kHome);
+						return;
+					}
+					break;
+				case Key::Cross:
+					if (m_homeRow == kHeroRow)
+					{
+						switch (actions[m_homeColumn].first)
+						{
+						case HeroAction::Play: Launch(m_lastIndex); return;
+						case HeroAction::Details: OpenDetails(m_lastIndex, kHome); return;
+						case HeroAction::Library: ShowTab(kLibrary); return;
+						case HeroAction::Settings: OpenSettings(Notice().empty() ? 0 : CategoryIndex("files")); return;
+						case HeroAction::Artic: OpenArtic(); return;
+						}
+					}
+					else if (m_homeColumn < (int)m_recent.size())
+					{
+						Launch(m_recent[m_homeColumn]);
+						return;
+					}
+					else
+					{
+						ShowTab(kLibrary);
+						return;
+					}
+					break;
+				default: break;
 				}
 				UpdateHome();
 			}
@@ -1166,105 +1426,276 @@ namespace ps5launcher
 				ps5settings::Save(m_settings);
 				SetText(m_document, "loading-title", game.name);
 				SetText(m_document, "loading-caption", "Starting");
-				SetImage(m_document, "loading-cover", Cover(game));
-				Show("loading-screen", kLoading);
+				const std::string icon = GameIcon(game).empty() ? Icon() : GameIcon(game);
+				const float size = IconSize(icon, 384);
+				FitImage(m_document, "loading-cover", icon, 960 - size / 2, 220 + (384 - size) / 2, size, size);
+				ShowScreen(kLoading);
+				SetHints(m_document, {});
 				m_launch = game;
 			}
 
 			// -- library -----------------------------------------------------------------------
-
-			void OpenLibrary(int select)
-			{
-				Show("rom-dialog", kLibrary);
-				if (select >= 0)
-					m_librarySelected = select;
-				m_librarySelected = std::clamp(m_librarySelected, 0, std::max(0, (int)m_games.size() - 1));
-				UpdateLibrary();
-			}
+			// Every game's box art in a grid that scrolls by rows; the focused one's name below it.
 
 			void LibraryKey(Key key)
 			{
+				if (TabsKey(key))
+					return;
 				const int count = (int)m_games.size();
+				const int columns = GridColumns();
 				if (key == Key::Circle)
 				{
-					GoHome();
+					ShowTab(kHome);
 					return;
 				}
 				if (count == 0)
-					return;
-				if (key == Key::Left)
-					m_librarySelected = std::max(0, m_librarySelected - kListRows);
-				else if (key == Key::Right)
-					m_librarySelected = std::min(count - 1, m_librarySelected + kListRows);
-				else if (key == Key::Cross)
 				{
-					Launch(m_librarySelected);
+					if (key == Key::Up)
+						FocusTabs();
 					return;
 				}
-				else if (key == Key::Triangle && HasPacks())
+				int& at = m_librarySelected;
+				switch (key)
 				{
-					OpenPacks(m_librarySelected, kLibrary);
-					return;
+				case Key::Left: at = std::max(0, at - 1); break;
+				case Key::Right: at = std::min(count - 1, at + 1); break;
+				case Key::Up:
+					if (at < columns)
+					{
+						FocusTabs();
+						return;
+					}
+					at -= columns;
+					break;
+				case Key::Down: at = std::min(count - 1, at + columns); break;
+				case Key::L2: at = std::max(0, at - columns * GridRows()); break;
+				case Key::R2: at = std::min(count - 1, at + columns * GridRows()); break;
+				case Key::Cross: Launch(at); return;
+				case Key::Square: OpenDetails(at, kLibrary); return;
+				case Key::Triangle:
+					if (HasPacks())
+					{
+						OpenPacks(at, kLibrary);
+						return;
+					}
+					break;
+				default: break;
 				}
-				else
-					Browse(key, m_librarySelected, count, kListRows);
 				UpdateLibrary();
 			}
 
 			void UpdateLibrary()
 			{
 				const int count = (int)m_games.size();
-				const int scroll = Scroll(m_librarySelected, kListRows);
-				std::vector<std::string> icons;
-				for (int row = 0; row < kListRows; row++)
+				const int columns = GridColumns(), rows = GridRows();
+				m_librarySelected = std::clamp(m_librarySelected, 0, std::max(0, count - 1));
+				// the rows shown: the focused one stays in view, moving them as little as can be
+				const int row = m_librarySelected / columns;
+				if (row < m_gridTop)
+					m_gridTop = row;
+				if (row >= m_gridTop + rows)
+					m_gridTop = row - rows + 1;
+				const int totalRows = (count + columns - 1) / columns;
+				m_gridTop = std::clamp(m_gridTop, 0, std::max(0, totalRows - rows));
+				for (int slot = 0; slot < columns * rows; slot++)
 				{
-					const int index = scroll + row;
-					const std::string id = fmt::format("rom-row-{}", row);
-					SetClass(m_document, id, "focused", index == m_librarySelected);
-					SetClass(m_document, id, "offscreen", index >= count);
-					SetText(m_document, fmt::format("rom-name-{}", row), index < count ? m_games[index].name : "");
-					SetText(m_document, fmt::format("rom-format-{}", row), index < count ? m_games[index].format : "");
-					if (index < count)
-					{
-						icons.push_back(Cover(m_games[index]));
-						SetImage(m_document, fmt::format("rom-icon-{}", row), icons.back());
-					}
+					const int index = m_gridTop * columns + slot;
+					ShowTile("cell", slot, index < count ? &m_games[index] : nullptr, TileWidth(), TileHeight());
+					SetClass(m_document, fmt::format("cell-{}", slot), "focused", !m_onTabs && index == m_librarySelected);
 				}
-				ReleaseRowIcons(icons);
-				SetText(m_document, "library-empty", m_scanning ? "Looking for games..." : "No games found. Put them in the game files folder.");
+				ReleaseArt();
+				SetText(m_document, "library-count", m_scanning ? "Looking for games..." : Plural(count, "game", "games"));
+				SetText(m_document, "library-empty", m_scanning ? "Looking for games..." : "No games yet. Settings > Game files says where to put them.");
 				SetClass(m_document, "library-empty", "visible", count == 0);
-				SetClass(m_document, "rom-scrollbar", "offscreen", count <= kListRows);
-				if (count > kListRows)
-					if (Rml::Element* thumb = m_document->GetElementById("rom-scrollbar-thumb"))
-						thumb->SetProperty("top", fmt::format("{}px", 496 * scroll / (count - kListRows)));
-				SetText(m_document, "library-position", fmt::format("{} OF {}", count ? m_librarySelected + 1 : 0, count));
-				if (count == 0)
+				SetClass(m_document, "grid-scroll", "unused", totalRows <= rows);
+				if (totalRows > rows)
+					if (Rml::Element* thumb = m_document->GetElementById("grid-thumb"))
+					{
+						const float height = 680.0f * rows / totalRows;
+						thumb->SetProperty("height", fmt::format("{}px", std::round(height)));
+						thumb->SetProperty("top", fmt::format("{}px", std::round((680.0f - height) * m_gridTop / (totalRows - rows))));
+					}
+				if (count > 0)
 				{
-					SetText(m_document, "game-detail-title", "No game selected");
-					for (const char* id : {"game-detail-format", "game-detail-size", "game-detail-dlc", "game-detail-path", "game-packs-value"})
-						SetText(m_document, id, "-");
-					ShowCover(nullptr);
-					return;
+					const auto& game = m_games[m_librarySelected];
+					const Facts facts = FactsOf(game);
+					SetText(m_document, "lib-name", game.name);
+					SetText(m_document, "lib-meta", Byline(game, facts));
+					ShowStatus("lib-status", facts);
 				}
-				const auto& game = m_games[m_librarySelected];
-				SetText(m_document, "game-detail-title", game.name);
-				SetText(m_document, "game-detail-path", ShortPath(game.path.string(), 44));
-				ShowCover(&game);
-				if (Is3ds())
+				else
 				{
-					// a title ID made from the path is no 3DS's
-					const bool own = (game.titleId >> 60) == 0xF;
-					SetText(m_document, "game-detail-format", own ? "-" : Hex(game.titleId));
-					SetText(m_document, "game-detail-size", game.publisher.empty() ? "-" : game.publisher);
-					SetText(m_document, "game-detail-dlc", game.format);
-					return;
+					SetText(m_document, "lib-name", "");
+					SetText(m_document, "lib-meta", "");
+					SetClass(m_document, "lib-status", "unused", true);
 				}
-				SetText(m_document, "game-detail-format", Hex(game.titleId));
-				SetText(m_document, "game-detail-size", game.hasUpdate ? fmt::format("v{} (update)", game.version) : fmt::format("v{}", game.version));
-				SetText(m_document, "game-detail-dlc", game.dlcCount ? "Installed" : "None");
-				const auto packs = ps5emu::ListGraphicPacks(game.titleId);
-				const int enabled = ps5emu::EnabledGraphicPackCount(game.titleId);
-				SetText(m_document, "game-packs-value", packs.empty() ? "None available" : fmt::format("{} of {} on", enabled, packs.size()));
+				if (m_onTabs)
+					SetHints(m_document, {{"leftright", "Tabs"}, {"cross", "Open"}, {"circle", "Home"}});
+				else if (HasPacks())
+					SetHints(m_document, {{"cross", "Play"}, {"square", "Details"}, {"triangle", "Graphic packs"}, {"circle", "Home"}});
+				else
+					SetHints(m_document, {{"cross", "Play"}, {"square", "Details"}, {"circle", "Home"}});
+			}
+
+			// -- details: a game's page --------------------------------------------------------
+
+			enum class DetailsAction
+			{
+				Play,
+				Packs,
+			};
+
+			std::vector<std::pair<DetailsAction, std::string>> DetailsActions() const
+			{
+				std::vector<std::pair<DetailsAction, std::string>> actions{{DetailsAction::Play, "Play"}};
+				if (HasPacks() && m_detailsGame < (int)m_games.size())
+				{
+					const int enabled = ps5emu::EnabledGraphicPackCount(m_games[m_detailsGame].titleId);
+					const int count = (int)ps5emu::ListGraphicPacks(m_games[m_detailsGame].titleId).size();
+					if (count > 0)
+						actions.push_back({DetailsAction::Packs, enabled ? fmt::format("Graphic packs  /  {} on", enabled) : "Graphic packs"});
+				}
+				return actions;
+			}
+
+			void OpenDetails(int index, Screen from)
+			{
+				if (index < 0 || index >= (int)m_games.size())
+					return;
+				m_detailsGame = index;
+				m_detailsFrom = from;
+				m_detailsAction = 0;
+				m_synopsisTop = 0;
+				ShowScreen(kDetails);
+				UpdateDetails();
+			}
+
+			void DetailsKey(Key key)
+			{
+				const auto actions = DetailsActions();
+				switch (key)
+				{
+				case Key::Circle:
+					if (m_detailsFrom == kLibrary)
+						m_librarySelected = m_detailsGame;
+					ShowTab(m_detailsFrom == kLibrary ? kLibrary : kHome);
+					return;
+				case Key::Left:
+				case Key::Right:
+					m_detailsAction = (m_detailsAction + (key == Key::Right ? 1 : (int)actions.size() - 1)) % (int)actions.size();
+					break;
+				case Key::Up:
+				case Key::Down:
+					// the description scrolls a few lines at a time
+					m_synopsisTop = std::max(0, m_synopsisTop + (key == Key::Down ? 3 : -3));
+					break;
+				case Key::L1:
+				case Key::R1:
+					// the game before or after, in the library's order
+					m_detailsGame = (m_detailsGame + (key == Key::R1 ? 1 : (int)m_games.size() - 1)) % (int)m_games.size();
+					m_detailsAction = 0;
+					m_synopsisTop = 0;
+					break;
+				case Key::Cross:
+					if (actions[m_detailsAction].first == DetailsAction::Play)
+						Launch(m_detailsGame);
+					else
+						OpenPacks(m_detailsGame, kDetails);
+					return;
+				case Key::Triangle:
+					if (HasPacks())
+					{
+						OpenPacks(m_detailsGame, kDetails);
+						return;
+					}
+					break;
+				default: break;
+				}
+				UpdateDetails();
+			}
+
+			void UpdateDetails()
+			{
+				if (m_detailsGame < 0 || m_detailsGame >= (int)m_games.size())
+					return;
+				const auto& game = m_games[m_detailsGame];
+				const Facts facts = FactsOf(game);
+				bool boxArt = false;
+				const std::string art = ArtOf(game, boxArt);
+				ShowCover("details-card", "details-cover", art, boxArt, 120, 136, 560, Is3ds() ? 520 : 740);
+				SetText(m_document, "details-cover-text", "");
+				m_shownArt.insert(art);
+				// "WII U  /  ALZE01  /  NTSC-U"
+				SetText(m_document, "details-kicker", Join({Is3ds() ? "NINTENDO 3DS" : "WII U", game.gameId, facts.known ? facts.info.region : ""}));
+				SetText(m_document, "details-title", game.name);
+				// what is known for sure: the status, the version, DLC, the format
+				std::vector<std::pair<std::string, const char*>> chips;
+				if (facts.report)
+					chips.push_back({facts.report->status, ps5compat::Kind(facts.report->status)});
+				if (!Is3ds())
+				{
+					chips.push_back({game.hasUpdate ? fmt::format("Update v{}", game.version) : fmt::format("v{}", game.version), ""});
+					if (game.dlcCount)
+						chips.push_back({"DLC", ""});
+				}
+				else if (!game.publisher.empty() && !facts.known)
+					chips.push_back({game.publisher, ""});
+				chips.push_back({game.format, ""});
+				for (int i = 0; i < 4; i++)
+				{
+					const std::string id = fmt::format("chip-{}", i);
+					const bool used = i < (int)chips.size() && !chips[i].first.empty();
+					SetClass(m_document, id, "unused", !used);
+					SetText(m_document, id, used ? chips[i].first : "");
+					for (const char* kind : {"good", "warn", "bad"})
+						SetClass(m_document, id, kind, used && std::strcmp(chips[i].second, kind) == 0);
+				}
+				// GameTDB's facts, those it has, in a grid
+				std::vector<std::pair<const char*, std::string>> lines;
+				if (facts.known)
+				{
+					lines = {{"Developer", facts.info.developer}, {"Publisher", facts.info.publisher},
+						{"Released", ps5gameinfo::ReleaseDate(facts.info.released)}, {"Genre", ps5gameinfo::Genres(facts.info.genre, 2)},
+						{"Players", facts.info.players > 0 ? std::to_string(facts.info.players) : ""}, {"Rating", facts.info.rating}};
+					std::erase_if(lines, [](const auto& line) { return line.second.empty(); });
+				}
+				if (lines.empty())
+					lines.push_back({"Title ID", Hex(game.titleId)});
+				for (int i = 0; i < 6; i++)
+				{
+					const bool used = i < (int)lines.size();
+					SetClass(m_document, fmt::format("fact-{}", i), "unused", !used);
+					SetText(m_document, fmt::format("fact-label-{}", i), used ? lines[i].first : "");
+					SetText(m_document, fmt::format("fact-value-{}", i), used ? lines[i].second : "");
+				}
+				// GameTDB's description alone
+				std::string synopsis = facts.known ? facts.info.synopsis : std::string();
+				if (synopsis.empty())
+					synopsis = game.gameId.empty() ? "GameTDB knows this game by the ID on its box, which this dump does not have." :
+													 "GameTDB has no description of this game yet.";
+				SetParagraphs(m_document, "synopsis", synopsis);
+				if (Rml::Element* text = m_document->GetElementById("synopsis"))
+				{
+					// scrolled by Up and Down, a line of 36 pixels at a time, no further than its end
+					const int lines = (int)std::ceil(text->GetOffsetHeight() / 36.0f);
+					m_synopsisTop = std::clamp(m_synopsisTop, 0, std::max(0, lines - 7));
+					text->SetProperty("margin-top", fmt::format("{}px", -36 * m_synopsisTop));
+				}
+				const auto actions = DetailsActions();
+				m_detailsAction = std::clamp(m_detailsAction, 0, (int)actions.size() - 1);
+				for (int i = 0; i < 4; i++)
+				{
+					const bool used = i < (int)actions.size();
+					SetClass(m_document, fmt::format("action-{}", i), "unused", !used);
+					SetClass(m_document, fmt::format("action-{}", i), "focused", used && i == m_detailsAction);
+					SetText(m_document, fmt::format("action-label-{}", i), used ? actions[i].second : "");
+				}
+				std::vector<Hint> hints = {{"cross", actions[m_detailsAction].first == DetailsAction::Play ? "Play" : "Open"}};
+				if (m_games.size() > 1)
+					hints.push_back({"l1", "Other games"});
+				hints.push_back({"updown", "Scroll"});
+				hints.push_back({"circle", "Back"});
+				SetHints(m_document, hints);
 			}
 
 			// -- graphic packs -----------------------------------------------------------------
@@ -1338,7 +1769,7 @@ namespace ps5launcher
 				m_packItems.clear();
 				m_presetsFocus = false;
 				m_presetSelected = 0;
-				Show("packs-dialog", kPacks);
+				ShowScreen(kPacks);
 				SetText(m_document, "packs-game", m_games[gameIndex].name);
 				RefreshPacks();
 				UpdatePacks();
@@ -1357,20 +1788,31 @@ namespace ps5launcher
 				m_presetSelected = std::clamp(m_presetSelected, 0, std::max(0, (int)(SelectedPack() ? SelectedPack()->choices.size() : 1) - 1));
 			}
 
+			void ClosePacks()
+			{
+				if (m_packsFrom == kDetails)
+				{
+					ShowScreen(kDetails);
+					UpdateDetails();
+				}
+				else if (m_packsFrom == kLibrary)
+				{
+					m_librarySelected = m_packsGame;
+					ShowTab(kLibrary);
+				}
+				else
+					ShowTab(kHome);
+			}
+
 			void PacksKey(Key key)
 			{
 				if (key == Key::Circle)
 				{
 					if (m_presetsFocus)
 						m_presetsFocus = false;
-					else if (m_packsFrom == kLibrary)
-					{
-						OpenLibrary(m_packsGame);
-						return;
-					}
 					else
 					{
-						GoHome();
+						ClosePacks();
 						return;
 					}
 				}
@@ -1383,15 +1825,10 @@ namespace ps5launcher
 				if (!m_presetsFocus)
 				{
 					const int count = (int)m_packItems.size();
-					if (key == Key::Up || key == Key::Down)
+					if (key == Key::Up || key == Key::Down || key == Key::L1 || key == Key::R1)
 					{
 						Browse(key, m_packItem, count, kListRows);
-						SettlePackItem(key == Key::Up ? -1 : 1);
-					}
-					else if (key == Key::L1 || key == Key::R1)
-					{
-						Browse(key, m_packItem, count, kListRows);
-						SettlePackItem(key == Key::L1 ? -1 : 1);
+						SettlePackItem(key == Key::Up || key == Key::L1 ? -1 : 1);
 					}
 					else if (key == Key::Cross)
 					{
@@ -1417,6 +1854,7 @@ namespace ps5launcher
 								ChoosePreset(choiceIndex, preset);
 								UpdatePacks();
 							});
+						return; // the dropdown's hints stay
 					}
 					else if (key == Key::Left || key == Key::Right)
 					{
@@ -1448,24 +1886,23 @@ namespace ps5launcher
 					SetClass(m_document, id, "focused", index == m_packItem && !m_presetsFocus);
 					SetClass(m_document, id, "chosen", index == m_packItem && m_presetsFocus);
 					SetClass(m_document, id, "offscreen", !present);
-					SetClass(m_document, id, "pack-header", heading);
+					SetClass(m_document, id, "heading", heading);
 					const auto* pack = present && !heading ? &m_packs[m_packItems[index].pack] : nullptr;
 					SetText(m_document, fmt::format("pack-name-{}", row), heading ? Upper(m_packItems[index].heading) : pack ? pack->name : "");
-					SetText(m_document, fmt::format("pack-state-{}", row), pack ? (pack->enabled ? "ON" : "OFF") : "");
+					SetText(m_document, fmt::format("pack-state-{}", row), pack ? (pack->enabled ? "On" : "Off") : "");
 					SetClass(m_document, fmt::format("pack-state-{}", row), "on", pack && pack->enabled);
 				}
 				SetClass(m_document, "packs-empty", "visible", packCount == 0);
-				SetText(m_document, "packs-position", fmt::format("{} OF {}", packNumber, packCount));
-
-				static constexpr const char* kListHints[] = {"On / off", "Back", "Browse packs", "Presets"};
-				static constexpr const char* kPresetHints[] = {"Choose", "Back to the packs", "Browse presets", "Change"};
-				for (int i = 0; i < 4; i++)
-					SetText(m_document, fmt::format("packs-hint-{}", i), m_presetsFocus ? kPresetHints[i] : kListHints[i]);
+				SetText(m_document, "packs-position", packCount ? fmt::format("{} of {}", packNumber, packCount) : "");
+				if (m_presetsFocus)
+					SetHints(m_document, {{"cross", "Choose"}, {"leftright", "Change"}, {"circle", "Back to the packs"}});
+				else
+					SetHints(m_document, {{"cross", "On / off"}, {"leftright", "Presets"}, {"circle", "Back"}});
 
 				const auto* pack = SelectedPack();
 				if (!pack)
 				{
-					for (const char* id : {"pack-detail-title", "pack-detail-description"})
+					for (const char* id : {"pack-detail-title", "pack-detail-description", "pack-detail-kicker", "presets-kicker"})
 						SetText(m_document, id, "");
 					SetClass(m_document, "presets-empty", "visible", false);
 					for (int row = 0; row < kPresetRows; row++)
@@ -1476,7 +1913,7 @@ namespace ps5launcher
 				SetText(m_document, "pack-detail-title", pack->name);
 				SetLines(m_document, "pack-detail-description", pack->description.empty() ? "This pack has no description." : pack->description);
 				const int choices = (int)pack->choices.size();
-				SetText(m_document, "presets-kicker", choices == 0 ? "PRESETS" : pack->enabled ? "PRESETS" : "PRESETS  /  CHOOSING ONE TURNS THE PACK ON");
+				SetText(m_document, "presets-kicker", choices == 0 ? "PRESETS" : pack->enabled ? "PRESETS" : "PRESETS  /  CHOOSING ONE TURNS IT ON");
 				SetClass(m_document, "presets-empty", "visible", choices == 0);
 				m_presetSelected = std::clamp(m_presetSelected, 0, std::max(0, choices - 1));
 				const int presetScroll = Scroll(m_presetSelected, kPresetRows);
@@ -1492,576 +1929,505 @@ namespace ps5launcher
 					SetText(m_document, fmt::format("preset-label-{}", row), choice.category.empty() ? "Preset" : choice.category);
 					SetText(m_document, fmt::format("preset-value-{}", row), choice.presets.empty() ? "" : choice.presets[std::clamp(choice.active, 0, (int)choice.presets.size() - 1)]);
 				}
-				SetText(m_document, "presets-position", choices > kPresetRows ? fmt::format("{} OF {}", m_presetSelected + 1, choices) : "");
+				SetText(m_document, "presets-position", choices > kPresetRows ? fmt::format("{} of {}", m_presetSelected + 1, choices) : "");
 			}
 
 			// -- settings ----------------------------------------------------------------------
+			// The categories down the left; the focused one's settings on the right, each with a line
+			// saying what it does, and its longer help behind Triangle.
 
-			void OpenSettings()
+			struct SettingRow
 			{
-				Show("settings-dialog", kSettings);
-				UpdateSettingsList();
+				std::string id;
+				std::string label, value;
+				std::string description; // one line, under it while it has the focus
+				std::string help;		 // Triangle's
+				bool dimmed = false;
+			};
+
+			int CategoryIndex(const char* name) const
+			{
+				for (int i = 0; i < CategoryCount(); i++)
+					if (Category(i) == name)
+						return i;
+				return 0;
 			}
 
-			// The settings' rows in the layout, the planned ones included
-			int SettingsCount()
+			void OpenSettings(int category)
 			{
-				int count = 0;
-				while (m_document->GetElementById(fmt::format("settings-row-{}", count)))
-					count++;
-				return count;
+				m_category = std::clamp(category, 0, CategoryCount() - 1);
+				m_onRail = true;
+				m_settingRow = 0;
+				m_confirmClear = m_resetArmed = false;
+				m_onTabs = false;
+				ShowTab(kSettings);
 			}
 
-			void UpdateSettingsList()
+			std::vector<SettingRow> SettingRows(const std::string& category)
 			{
-				const int count = SettingsCount();
-				const int scroll = Scroll(m_settingsSelected, kListRows);
-				for (int row = 0; row < count; row++)
-					if (Rml::Element* element = m_document->GetElementById(fmt::format("settings-row-{}", row)))
+				std::vector<SettingRow> rows;
+				auto& n3ds = m_settings.n3ds;
+				const auto onOff = [](bool on) { return std::string(on ? "On" : "Off"); };
+				if (category == "video" && Is3ds())
+					rows = {
+						{"resolution", "Internal resolution", kResolutions[std::clamp(n3ds.resolution, 1, 10)], "Higher is sharper and asks more of the GPU.",
+							"How large the 3DS's 3D scenes are drawn before they are scaled to the TV. Higher is sharper and asks more of the "
+							"GPU, and each time a game reads a picture back the wait grows with it."},
+						{"layout", "Screen layout", kLayouts[std::clamp(n3ds.layout, 0, 3)], "How the two screens share the TV.",
+							"One above the other, the top one alone, the top one large with the bottom one beside it, or the two side by "
+							"side. In a game, touchpad click + R1 goes to the next."},
+						{"filter", "Texture filter", kTextureFilters[std::clamp(n3ds.textureFilter, 0, 5)], "Smooths textures as they are scaled up.",
+							"Smooths the game's textures as they are scaled up; None keeps them as the 3DS draws them. A filter redraws every "
+							"texture at the internal resolution: at high resolutions it is the costliest setting. If a game stutters, try None first."},
+						{"customtextures", "Custom textures", onOff(n3ds.customTextures), "Texture packs from azahar/load/textures.",
+							"Texture packs in /data/ps5cemu/azahar/load/textures/<title ID>, as the desktop Azahar loads them."},
+					};
+				else if (category == "video")
+					rows = {
+						{"upscaling", "Upscaling to 4K", kUpscaleFilters[std::clamp(m_settings.upscaleFilter, 0, 3)], "How the picture is scaled to the TV.",
+							"Bicubic is sharp, Bicubic Hermite a little softer, Linear softer still; Nearest neighbour keeps pixels square."},
+						{"highframerate", "120 Hz output", m_settings.highFrameRate ? "On, where the TV has it" : "Off", "For displays that take 120 Hz.",
+							"The 119.88 Hz mode, on displays that support it. Games still run at their own speed."},
+						{"overlay", "Performance overlay", onOff(m_settings.overlay), "Frame rate, CPU and memory in a corner.",
+							"Frames per second, CPU and memory use in the top left corner, as Cemu shows them. Also in the in-game menu."},
+						{"async", "Async shader compile", onOff(m_settings.asyncShaders), "No stutter while new shaders build.",
+							"On, a new shader is built while the game carries on, so it does not stutter, but some things may be missing for a "
+							"moment. Off, the game waits for each one: stutter, but nothing drawn wrong."},
+					};
+				else if (category == "audio")
+				{
+					rows = {
+						{"volume", "Game volume", fmt::format("{}%", Volume()), "The games' sound.", "The games' sound. Left and Right change it by 10%."},
+						{"music", "Launcher music", m_settings.music == "shop" ? "Shop theme" : m_settings.music == "setup" ? "Setup theme" : "Off",
+							"The music under the menus.", "The launcher's own music, in the spirit of a console's shop and setup screens, or none."},
+						{"musicvolume", "Music volume", fmt::format("{}%", m_settings.musicVolume), "How loud the menus' music is.",
+							"How loud the launcher's music is. Left and Right change it by 10%."},
+						{"menusounds", "Menu sounds", onOff(m_settings.menuSounds), "The sounds of moving and choosing.",
+							"The launcher's sounds as you move, choose and go back."},
+					};
+					if (!Is3ds())
+						rows.push_back({"gamepadspeaker", "GamePad speaker", m_settings.gamePadSpeaker ? "DualSense speaker" : "Off",
+							"The GamePad's own sound, on the DualSense.",
+							"The sounds games play on the Wii U GamePad's speaker, from player 1's DualSense speaker. Many games send their "
+							"whole sound there too, so it is off unless you want it. Applies to the next game."});
+				}
+				else if (category == "controls" && Is3ds())
+				{
+					const auto mappings = ps5azahar::ListMappings(n3ds);
+					const int mapped = (int)std::count_if(mappings.begin(), mappings.end(), [](const ps5emu::ButtonMapping& m) { return !m.input.empty(); });
+					rows = {
+						{"motion", "Motion controls", onOff(n3ds.motion), "The DualSense's motion as the 3DS's.",
+							"The DualSense's gyroscope and accelerometer as the 3DS's own, for the games that aim or steer by tilting it."},
+						{"deadzone", "Stick deadzone", fmt::format("{}%", n3ds.deadzone), "How far a stick moves before it counts.",
+							"How far a stick moves before the game sees it, for the circle pad and the C-stick. Raise it if something drifts "
+							"when you let go of the stick; lower it for finer control."},
+						{"buttons", "Buttons", Plural(mapped, "button set", "buttons set"), "Which DualSense button is which.",
+							"Which DualSense button is which of the 3DS's. A is on Circle and B on Cross by default, where the 3DS has them; the "
+							"circle pad is the left stick, the C-stick the right one, and the touchpad the touch screen."},
+						{"reset", "Reset to defaults", m_resetArmed ? "Press Cross again" : "", "Default buttons, motion and deadzone.",
+							"The default buttons, motion and deadzone."},
+					};
+				}
+				else if (category == "controls")
+					for (int player = 0; player < ps5pad::kMaxPlayers; player++)
 					{
-						element->SetClass("focused", m_settingsSelected == row);
-						element->SetClass("offscreen", row < scroll || row >= scroll + kListRows);
-						element->SetProperty("top", fmt::format("{}px", (row - scroll) * 88));
+						const auto controls = ps5emu::GetPlayerControls(player);
+						rows.push_back({fmt::format("player{}", player), fmt::format("Player {}", player + 1), TypeName(controls.type),
+							controls.connected ? "Cross: this player's controller, motion and buttons." : "No DualSense for this player yet.",
+							"What the game sees in this player's hands, and its motion, vibration, deadzones and buttons. Player 1 is the "
+							"signed-in user who started the app; the other signed-in users' DualSenses are players 2 to 4.",
+							!controls.connected});
 					}
-				SetText(m_document, "settings-position", fmt::format("{} OF {}", m_settingsSelected + 1, count));
+				else if (category == "borders")
+					rows = {{"border", "Border", kBorderThemes[std::clamp(n3ds.border, 0, kBorderThemeCount - 1)], "Artwork around the screens.",
+						"Artwork around the 3DS screens, never over them. It follows every layout, and the in-game menu changes it too."}};
+				else if (category == "system")
+				{
+					ps5emu::Game home;
+					const bool homeMenu = ps5azahar::HomeMenu(n3ds.region, home);
+					rows = {
+						{"region", "Region", kRegions[std::clamp(n3ds.region, -1, 6) + 1], "The emulated 3DS's region.",
+							"Automatic takes each game's own region. A game made for another region may refuse to start or show other "
+							"languages. Applies to the next game."},
+						{"language", "Language", kLanguages[std::clamp(n3ds.language, -1, 11) + 1], "The emulated 3DS's language.",
+							"The language games that follow the console's show their text in. Applies to the next game."},
+						{"homemenu", "Home Menu", homeMenu ? "Start" : "Run Artic Setup first", "The 3DS Home Menu, from your console's files.",
+							"Starts the 3DS Home Menu, once Artic Base's setup has copied your own console's system files (Home: Artic Base).",
+							!homeMenu},
+					};
+				}
+				else if (category == "files")
+					rows = {{"gamesfolder", "Game folder", ShortPath(GamesFolder(), 40), "Where your games are. Cross picks another.",
+						Is3ds() ? "Your 3DS games: .3ds or .cci, .cxi, .3dsx and Azahar's compressed dumps, decrypted, here or in the folders in "
+								  "it. CIA files are installed (Install CIA files). Encrypted dumps need the 3DS's aes_keys.txt in "
+								  "/data/ps5cemu/azahar/sysdata." :
+								  "Your Wii U games: .wua, .wud, .wux, or folders with code, content and meta. Encrypted .wud and .wux need their "
+								  "keys in /data/ps5cemu/keys.txt."}};
+				else if (category == "installs")
+					rows = {{"install", Is3ds() ? "Install a CIA file" : "Install from a folder", "", Is3ds() ? "A game, an update or DLC." :
+						"An update, DLC or game (code, content and meta).",
+						Is3ds() ? "Installs a CIA into the 3DS's storage, as Azahar's Install CIA does: an update or DLC goes with its game, and "
+								  "a game joins the library. Circle cancels while it runs." :
+								  "Installs into the Wii U's storage (mlc01), as Cemu's Install game title, update or DLC does. Updates and DLC "
+								  "in the game files folder work as they are, too."}};
+				else if (category == "online")
+				{
+					rows = {{"boxart", "Box art from GameTDB", onOff(m_settings.boxArt), "Covers for the library, downloaded once.",
+						"The first time a game shows up, its cover is downloaded from GameTDB (art.gametdb.com) by the ID on its box. "
+						"Off: nothing more is downloaded."}};
+					if (HasPacks())
+						rows.push_back({"packs", "Community graphic packs", PacksStatus(), "Cross checks GitHub for newer ones.",
+							"Cemu's community graphic packs, from GitHub's latest release when it is newer than the ones installed. The packs "
+							"bundled with the app stay as the fallback."});
+					rows.push_back({"appupdate", "PS5CEMU-HAR updates", AppUpdateStatus(), "Cross checks GitHub for a newer version.",
+						"PS5CEMU-HAR asks GitHub for its latest release each time it starts. Cross asks again, or installs the newer version "
+						"it found: the release's files are downloaded, checked and put in place of these, and the app starts again. Your "
+						"games, saves and settings stay as they are."});
+				}
+				else if (category == "diagnostics")
+					rows = {
+						{"copylogs", "Copy logs to USB", m_diagnosticsDone[0], "The logs a report needs, onto a USB drive.",
+							"Copies the last five sessions' logs and the settings into a dated folder on a USB drive, to attach to a report."},
+						{"clearcaches", Is3ds() ? "Clear 3DS shader caches" : "Clear Wii U shader caches", m_diagnosticsDone[1],
+							"For a game that crashes on a bad cache.", "Deletes the shader caches (press Cross twice). Games build them again as "
+							"they run: the first minutes stutter."},
+					};
+				return rows;
+			}
+
+			// What the panel says under (or instead of) its rows
+			std::string PanelText(const std::string& category) const
+			{
+				if (category == "diagnostics")
+				{
+					std::string text;
+					for (const auto& line : m_status.diagnostics)
+						text += line + "\n";
+					return text;
+				}
+				if (category == "about")
+					return Is3ds() ?
+						"Azahar, the 3DS emulator, by the Azahar team and the Citra contributors before them; Mihawk-99's PS5 port of it "
+						"and dynarmic.\nBox art and game information: GameTDB.\nThe launcher's font: Lexend.\nAn unofficial port, not affiliated "
+						"with the Azahar team, Nintendo or Sony.\n\nGames: /data/ps5cemu/azahar/games\n3DS storage: /data/ps5cemu/azahar/sdmc\n"
+						"Version " + ps5update::Readable(PS5CEMU_VERSION) :
+						"Cemu, the Wii U emulator, by the Cemu team and its contributors; RADV on the PS5 by Mihawk-99 and mpereiraesaa; the "
+						"community graphic packs' authors.\nBox art and game information: GameTDB.\nThe launcher's font: Lexend.\nAn unofficial "
+						"port, not affiliated with the Cemu team, Nintendo or Sony.\n\nGames: /data/ps5cemu/games\nWii U storage and saves: "
+						"/data/ps5cemu/mlc01\nKeys: /data/ps5cemu/keys.txt\nVersion " + ps5update::Readable(PS5CEMU_VERSION);
+				return {};
 			}
 
 			void SettingsKey(Key key)
 			{
-				if (key == Key::Circle)
+				if (TabsKey(key))
+					return;
+				const std::string category = Category(m_category);
+				auto rows = SettingRows(category);
+				if (m_onRail)
 				{
-					GoHome();
+					switch (key)
+					{
+					case Key::Up:
+						if (m_category == 0)
+						{
+							FocusTabs();
+							return;
+						}
+						m_category--;
+						break;
+					case Key::Down: m_category = std::min(CategoryCount() - 1, m_category + 1); break;
+					case Key::Right:
+					case Key::Cross:
+						if (!rows.empty())
+						{
+							m_onRail = false;
+							m_settingRow = 0;
+						}
+						break;
+					case Key::Circle: ShowTab(kHome); return;
+					default: break;
+					}
+					m_settingRow = 0;
+					m_confirmClear = m_resetArmed = false;
+					UpdateSettings();
 					return;
 				}
-				if (Browse(key, m_settingsSelected, SettingsCount(), kListRows))
+				if (rows.empty())
 				{
-					UpdateSettingsList();
+					m_onRail = true;
+					UpdateSettings();
 					return;
 				}
-				if (key != Key::Cross)
-					return;
-				switch (m_settingsSelected)
+				m_settingRow = std::clamp(m_settingRow, 0, (int)rows.size() - 1);
+				const SettingRow& row = rows[m_settingRow];
+				switch (key)
 				{
-				case kRowVideo: OpenSettingsPage("video-dialog", kVideo); break;
-				case kRowAudio: OpenSettingsPage("audio-dialog", kAudio); break;
-				case kRowDiagnostics: OpenSettingsPage("diagnostics-dialog", kDiagnostics); break;
-				case kRowControls:
-					if (Is3ds())
-						OpenConsole();
-					else
-						OpenControls();
+				case Key::Circle: m_onRail = true; break;
+				case Key::Up:
+				case Key::Down:
+					Browse(key, m_settingRow, (int)rows.size(), (int)rows.size());
+					m_confirmClear = m_resetArmed = false;
 					break;
-				case kRowGameFiles: OpenFiles(FilesMode::GamesFolder); break;
-				case kRowInstall: OpenFiles(Is3ds() ? FilesMode::InstallCia : FilesMode::Install); break;
-				default:
-					// Online and updates, the last category on both sides (the ones before it are planned)
-					if (m_settingsSelected == SettingsCount() - 1)
-						OpenSettingsPage("online-dialog", kOnline);
-					else if (Is3ds() && m_settingsSelected == kRowSystem3ds)
-						OpenSettingsPage("system-dialog", kSystem);
-					else if (Is3ds() && m_settingsSelected == kRowBorders3ds)
-						OpenSettingsPage("borders-dialog", kBorders);
+				case Key::Triangle: OpenInfo(row.label, row.help); return;
+				case Key::Left:
+				case Key::Right:
+				case Key::Cross:
+					if (ChangeSetting(row.id, key))
+						return; // it opened a page
 					break;
+				default: break;
 				}
+				UpdateSettings();
 			}
 
-			// Video, Audio and Diagnostics: over the settings
-			void OpenSettingsPage(const char* id, Screen screen)
+			// A setting changed by Left, Right or Cross; true when it opened a page instead
+			bool ChangeSetting(const std::string& id, Key key)
 			{
-				SetClass(m_document, id, "open", true);
-				m_screen = screen;
-				m_option = 0;
-				m_diagnosticsDone[0].clear();
-				m_diagnosticsDone[1].clear();
-				m_confirmClear = false;
-				UpdateSettingsPage();
-			}
-
-			static const char* PageOf(Screen screen)
-			{
-				return screen == kVideo ? "video-dialog" : screen == kAudio ? "audio-dialog" : screen == kOnline ? "online-dialog" : screen == kSystem ? "system-dialog" :
-					screen == kBorders ? "borders-dialog" : "diagnostics-dialog";
-			}
-
-			void SettingsPageKey(Key key)
-			{
-				if (key == Key::Circle)
+				auto& n3ds = m_settings.n3ds;
+				const bool cross = key == Key::Cross, slide = key == Key::Left || key == Key::Right;
+				const int step = key == Key::Left ? -1 : 1;
+				bool changed = true;
+				if (id == "resolution")
+					n3ds.resolution = (n3ds.resolution - 1 + step + 10) % 10 + 1;
+				else if (id == "layout")
+					n3ds.layout = (n3ds.layout + step + 4) % 4;
+				else if (id == "filter")
+					n3ds.textureFilter = (n3ds.textureFilter + step + 6) % 6;
+				else if (id == "customtextures")
+					n3ds.customTextures = !n3ds.customTextures;
+				else if (id == "upscaling")
+					m_settings.upscaleFilter = (m_settings.upscaleFilter + step + 4) % 4;
+				else if (id == "highframerate")
+					m_settings.highFrameRate = !m_settings.highFrameRate;
+				else if (id == "overlay")
+					m_settings.overlay = !m_settings.overlay;
+				else if (id == "async")
+					m_settings.asyncShaders = !m_settings.asyncShaders;
+				else if (id == "volume" && slide)
+					Volume() = std::clamp(Volume() + step * 10, 0, 100);
+				else if (id == "music")
 				{
-					SetClass(m_document, PageOf(m_screen), "open", false);
-					m_screen = kSettings;
-					UpdateSettingsList();
-					return;
+					const int music = (int)(std::find(std::begin(kMusic), std::end(kMusic), m_settings.music) - std::begin(kMusic));
+					m_settings.music = kMusic[(music + step + 3) % 3];
 				}
-				const bool change = key == Key::Cross || key == Key::Left || key == Key::Right;
-				bool changed = false;
-				if (m_screen == kVideo && Is3ds())
+				else if (id == "musicvolume" && slide)
+					m_settings.musicVolume = std::clamp(m_settings.musicVolume + step * 10, 0, 100);
+				else if (id == "menusounds")
+					m_settings.menuSounds = !m_settings.menuSounds;
+				else if (id == "gamepadspeaker")
+					m_settings.gamePadSpeaker = !m_settings.gamePadSpeaker;
+				else if (id == "motion")
+					n3ds.motion = !n3ds.motion;
+				else if (id == "deadzone")
 				{
-					auto& n3ds = m_settings.n3ds;
-					const int step = key == Key::Left ? -1 : 1;
-					if (key == Key::Up || key == Key::Down)
-						Browse(key, m_option, 4, 4);
-					else if (change && m_option == 0)
-						changed = (n3ds.resolution = (n3ds.resolution - 1 + step + 10) % 10 + 1, true);
-					else if (change && m_option == 1)
-						changed = (n3ds.layout = (n3ds.layout + step + 4) % 4, true);
-					else if (change && m_option == 2)
-						changed = (n3ds.textureFilter = (n3ds.textureFilter + step + 6) % 6, true);
-					else if (change && m_option == 3)
-						changed = (n3ds.customTextures = !n3ds.customTextures, true);
+					int value = n3ds.deadzone + step * 5;
+					if (cross && value > 50)
+						value = 0;
+					n3ds.deadzone = std::clamp(value, 0, 50);
 				}
-				else if (m_screen == kVideo)
+				else if (id == "buttons" && cross)
 				{
-					if (key == Key::Up || key == Key::Down)
-						Browse(key, m_option, 4, 4);
-					else if (change && m_option == 0)
+					OpenMapping();
+					return true;
+				}
+				else if (id == "reset" && cross)
+				{
+					if (m_resetArmed)
+						ps5azahar::ResetControls(n3ds);
+					m_resetArmed = !m_resetArmed;
+				}
+				else if (id.rfind("player", 0) == 0 && cross)
+				{
+					OpenPlayer(id.back() - '0');
+					return true;
+				}
+				else if (id == "border")
+					n3ds.border = (std::clamp(n3ds.border, 0, kBorderThemeCount - 1) + step + kBorderThemeCount) % kBorderThemeCount;
+				else if (id == "region")
+					n3ds.region = (n3ds.region + 1 + step + 8) % 8 - 1;
+				else if (id == "language")
+					n3ds.language = (n3ds.language + 1 + step + 13) % 13 - 1;
+				else if (id == "homemenu" && cross)
+				{
+					// the 3DS Home Menu, from the console's files Artic Setup copied
+					ps5emu::Game home;
+					if (ps5azahar::HomeMenu(n3ds.region, home))
 					{
-						m_settings.upscaleFilter = (m_settings.upscaleFilter + (key == Key::Left ? 3 : 1)) % 4;
-						changed = true;
+						SetText(m_document, "loading-title", home.name);
+						SetText(m_document, "loading-caption", "Starting the 3DS");
+						FitImage(m_document, "loading-cover", Icon(), 760, 220, 400, 400);
+						ShowScreen(kLoading);
+						SetHints(m_document, {});
+						m_launch = home;
+						return true;
 					}
-					else if (change && m_option == 1)
-						changed = (m_settings.highFrameRate = !m_settings.highFrameRate, true);
-					else if (change && m_option == 2)
-						changed = (m_settings.overlay = !m_settings.overlay, true);
-					else if (change && m_option == 3)
-						changed = (m_settings.asyncShaders = !m_settings.asyncShaders, true);
+					changed = false;
 				}
-				else if (m_screen == kAudio)
+				else if (id == "gamesfolder" && cross)
 				{
-					const int step = key == Key::Left ? -1 : 1;
-					const bool slide = key == Key::Left || key == Key::Right; // the volumes move by Left and Right only
-					if (key == Key::Up || key == Key::Down)
-						Browse(key, m_option, kAudioRows, kAudioRows);
-					else if (slide && m_option == 0)
-						changed = (Volume() = std::clamp(Volume() + step * 10, 0, 100), true);
-					else if (change && m_option == 1)
-					{
-						const int music = (int)(std::find(std::begin(kMusic), std::end(kMusic), m_settings.music) - std::begin(kMusic));
-						changed = (m_settings.music = kMusic[(music + step + 3) % 3], true);
-					}
-					else if (slide && m_option == 2)
-						changed = (m_settings.musicVolume = std::clamp(m_settings.musicVolume + step * 10, 0, 100), true);
-					else if (change && m_option == 3)
-						changed = (m_settings.menuSounds = !m_settings.menuSounds, true);
-					if (changed)
-					{
-						ps5sound::SetMusic(m_settings.music, m_settings.musicVolume);
-						ps5sound::SetMenuSounds(m_settings.menuSounds);
-					}
+					OpenFiles(FilesMode::GamesFolder);
+					return true;
 				}
-				else if (m_screen == kSystem)
+				else if (id == "install" && cross)
 				{
-					if (key == Key::Up || key == Key::Down)
-						Browse(key, m_option, 2, 2);
-					else if (change && m_option == 0)
-					{
-						// Automatic (-1), then Azahar's regions 0 to 6
-						int& region = m_settings.n3ds.region;
-						region = (region + 1 + (key == Key::Left ? 7 : 1)) % 8 - 1;
-						changed = true;
-					}
-					else if (change && m_option == 1)
-					{
-						int& language = m_settings.n3ds.language;
-						language = (language + 1 + (key == Key::Left ? 12 : 1)) % 13 - 1;
-						changed = true;
-					}
+					OpenFiles(Is3ds() ? FilesMode::InstallCia : FilesMode::Install);
+					return true;
 				}
-				else if (m_screen == kBorders && change)
-				{
-					int& border = m_settings.n3ds.border;
-					border = (std::clamp(border, 0, 4) + (key == Key::Left ? 4 : 1)) % 5;
-					changed = true;
-				}
-				else if (m_screen == kOnline && change)
+				else if (id == "boxart")
 				{
 					// box art from GameTDB: off stops what is queued, and nothing more is asked for
 					m_settings.boxArt = !m_settings.boxArt;
 					ps5boxart::SetEnabled(m_settings.boxArt);
 					if (m_settings.boxArt)
 						FetchBoxArt();
-					changed = true;
 				}
-				else if (m_screen == kDiagnostics)
+				else if (id == "appupdate" && cross)
 				{
-					if (key == Key::Up || key == Key::Down)
-					{
-						Browse(key, m_option, 2, 2);
-						m_confirmClear = false;
-					}
-					else if (key == Key::Cross && m_option == 0)
-						m_diagnosticsDone[0] = CopyLogsToUsb();
-					else if (key == Key::Cross && m_option == 1)
-					{
-						// deleting caches takes a second press: they take long to build again
-						if (m_confirmClear)
-							m_diagnosticsDone[1] = ClearShaderCaches(Is3ds());
-						else
-							m_diagnosticsDone[1] = "Press Cross again to delete";
-						m_confirmClear = !m_confirmClear;
-					}
+					// installing shows over the screen (UpdatePrompt); otherwise GitHub is asked again
+					const auto state = ps5update::GetStatus().state;
+					if (state == ps5update::Status::State::Available)
+						ps5update::Install();
+					else if (state == ps5update::Status::State::Ready)
+						ps5update::Restart();
+					else
+						ps5update::Check();
+					changed = false;
 				}
+				else if (id == "packs" && cross)
+				{
+					ps5packs::Start(); // GitHub's latest community packs, when newer
+					changed = false;
+				}
+				else if (id == "copylogs" && cross)
+				{
+					m_diagnosticsDone[0] = CopyLogsToUsb();
+					changed = false;
+				}
+				else if (id == "clearcaches" && cross)
+				{
+					// deleting caches takes a second press: they take long to build again
+					m_diagnosticsDone[1] = m_confirmClear ? ClearShaderCaches(Is3ds()) : "Press Cross again to delete";
+					m_confirmClear = !m_confirmClear;
+					changed = false;
+				}
+				else
+					changed = false;
 				if (changed)
+				{
 					SaveSettings();
-				UpdateSettingsPage();
+					ps5sound::SetMusic(m_settings.music, m_settings.musicVolume);
+					ps5sound::SetMenuSounds(m_settings.menuSounds);
+				}
+				return false;
 			}
 
-			void SaveSettings()
+			void UpdateSettings()
 			{
-				if (!ps5settings::Save(m_settings))
-					ps5log::Line("[launcher] could not save {}", ps5paths::kLauncherSettings);
+				const std::string category = Category(m_category);
+				const auto rows = SettingRows(category);
+				for (int i = 0; i < CategoryCount(); i++)
+				{
+					SetClass(m_document, fmt::format("rail-{}", i), "selected", i == m_category);
+					SetClass(m_document, fmt::format("rail-{}", i), "focused", !m_onTabs && m_onRail && i == m_category);
+				}
+				static const std::map<std::string, std::string> kTitles = {{"video", "Video"}, {"audio", "Audio"}, {"controls", "Controls"},
+					{"borders", "Borders"}, {"system", "System"}, {"files", "Game files"}, {"installs", "Installs"}, {"online", "Online and updates"},
+					{"diagnostics", "Diagnostics"}, {"about", "About"}};
+				SetText(m_document, "panel-title", kTitles.count(category) ? kTitles.at(category) : category);
+				m_settingRow = std::clamp(m_settingRow, 0, std::max(0, (int)rows.size() - 1));
+				for (int i = 0; i < kSettingRows; i++)
+				{
+					const bool used = i < (int)rows.size();
+					const std::string id = fmt::format("srow-{}", i);
+					SetClass(m_document, id, "unused", !used);
+					SetClass(m_document, id, "focused", used && !m_onTabs && !m_onRail && i == m_settingRow);
+					SetClass(m_document, id, "dimmed", used && rows[i].dimmed);
+					SetText(m_document, fmt::format("srow-label-{}", i), used ? rows[i].label : "");
+					SetText(m_document, fmt::format("srow-value-{}", i), used ? rows[i].value : "");
+					SetText(m_document, fmt::format("srow-desc-{}", i), used ? rows[i].description : "");
+				}
+				// the panel's text, under the rows
+				SetLines(m_document, "panel-text", PanelText(category));
+				if (Rml::Element* text = m_document->GetElementById("panel-text"))
+					text->SetProperty("top", fmt::format("{}px", 214 + (int)rows.size() * 96 + (rows.empty() ? 0 : 50)));
+				if (m_onTabs)
+					SetHints(m_document, {{"leftright", "Tabs"}, {"cross", "Open"}, {"circle", "Home"}});
+				else if (m_onRail)
+					SetHints(m_document, {{"updown", "Categories"}, {"cross", "Open"}, {"circle", "Home"}});
+				else
+					SetHints(m_document, {{"leftright", "Change"}, {"cross", "Choose"}, {"triangle", "More"}, {"circle", "Back"}});
 			}
 
-			void UpdateSettingsPage()
+			// The community graphic packs' update, as its row shows it
+			std::string PacksStatus() const
 			{
-				static constexpr const char* kFilters[] = {"Linear", "Bicubic", "Bicubic Hermite", "Nearest neighbour"};
-				const auto& n3ds = m_settings.n3ds;
-				const std::pair<const char*, std::string> video[] = {
-					Is3ds() ? std::pair<const char*, std::string>{"Internal resolution", kResolutions[std::clamp(n3ds.resolution, 1, 10)]} :
-						std::pair<const char*, std::string>{"Upscaling to 4K", kFilters[std::clamp(m_settings.upscaleFilter, 0, 3)]},
-					Is3ds() ? std::pair<const char*, std::string>{"Screen layout", kLayouts[std::clamp(n3ds.layout, 0, 3)]} :
-						std::pair<const char*, std::string>{"120 Hz output", m_settings.highFrameRate ? "On, where the TV has it" : "Off"},
-					Is3ds() ? std::pair<const char*, std::string>{"Texture filter", kTextureFilters[std::clamp(n3ds.textureFilter, 0, 5)]} :
-						std::pair<const char*, std::string>{"Performance overlay", m_settings.overlay ? "On" : "Off"},
-					Is3ds() ? std::pair<const char*, std::string>{"Custom textures", n3ds.customTextures ? "On" : "Off"} :
-						std::pair<const char*, std::string>{"Async shader compile", m_settings.asyncShaders ? "On" : "Off"},
-				};
-				for (int row = 0; row < 4; row++)
+				using State = ps5packs::Status::State;
+				const auto status = ps5packs::GetStatus();
+				const std::string installed = ps5packs::InstalledVersion();
+				switch (status.state)
 				{
-					SetText(m_document, fmt::format("video-label-{}", row), video[row].first);
-					SetText(m_document, fmt::format("video-value-{}", row), video[row].second);
-					SetClass(m_document, fmt::format("video-row-{}", row), "focused", m_screen == kVideo && m_option == row);
+				case State::Checking: return "Checking GitHub...";
+				case State::Downloading:
+					return status.total ? fmt::format("Downloading: {}%", (int)(status.received * 100 / status.total)) :
+										  fmt::format("Downloading: {} MB", status.received >> 20);
+				case State::Installing: return "Installing...";
+				case State::UpToDate: return "Up to date: " + installed;
+				case State::Done: return "Installed: " + status.version;
+				case State::Failed: return status.message;
+				case State::Idle: break;
 				}
-				SetText(m_document, "audio-volume", fmt::format("{}%", Volume()));
-				SetText(m_document, "audio-music", m_settings.music == "shop" ? "Shop theme" : m_settings.music == "setup" ? "Setup theme" : "Off");
-				SetText(m_document, "audio-music-volume", fmt::format("{}%", m_settings.musicVolume));
-				SetText(m_document, "audio-menu-sounds", m_settings.menuSounds ? "On" : "Off");
-				for (int row = 0; row < kAudioRows; row++)
-					SetClass(m_document, fmt::format("audio-row-{}", row), "focused", m_screen == kAudio && m_option == row);
-				SetText(m_document, "system-region", kRegions[std::clamp(m_settings.n3ds.region, -1, 6) + 1]);
-				SetText(m_document, "system-language", kLanguages[std::clamp(m_settings.n3ds.language, -1, 11) + 1]);
-				for (int row = 0; row < 2; row++)
-					SetClass(m_document, fmt::format("system-row-{}", row), "focused", m_screen == kSystem && m_option == row);
-				SetText(m_document, "borders-theme", kBorderThemes[std::clamp(m_settings.n3ds.border, 0, 4)]);
-				SetClass(m_document, "borders-row-0", "focused", m_screen == kBorders);
-				SetText(m_document, "online-boxart", m_settings.boxArt ? "On" : "Off");
-				SetClass(m_document, "online-row-0", "focused", m_screen == kOnline);
-				SetText(m_document, "diag-label-1", Is3ds() ? "Clear 3DS shader caches" : "Clear Wii U shader caches");
-				for (int row = 0; row < 2; row++)
-				{
-					SetText(m_document, fmt::format("diag-value-{}", row), m_diagnosticsDone[row]);
-					SetClass(m_document, fmt::format("diag-row-{}", row), "focused", m_screen == kDiagnostics && m_option == row);
-				}
-				std::string details;
-				for (const auto& line : m_status.diagnostics)
-					details += (details.empty() ? "" : "<br/>") + Rml::StringUtilities::EncodeRml(line);
-				if (Rml::Element* element = m_document->GetElementById("setup-details"))
-					element->SetInnerRML(details);
+				return installed.empty() ? "Cross to download" : installed;
 			}
 
-			// -- settings > controls -----------------------------------------------------------
-
-			void OpenControls()
+			// The app's own update, as its row shows it
+			static std::string AppUpdateStatus()
 			{
-				Show("controls-dialog", kControls);
-				UpdateControls();
+				using State = ps5update::Status::State;
+				const auto status = ps5update::GetStatus();
+				switch (status.state)
+				{
+				case State::Checking: return "Checking GitHub...";
+				case State::UpToDate: return "Up to date: " + ps5update::Readable(PS5CEMU_VERSION);
+				case State::Available: return ps5update::Readable(status.latest) + ": Cross to install";
+				case State::Downloading:
+					return status.total ? fmt::format("Downloading: {}%", (int)(status.received * 100 / status.total)) : "Downloading...";
+				case State::Verifying: return "Checking the download...";
+				case State::Installing: return "Installing...";
+				case State::Ready: return "Installed: Cross to restart";
+				case State::Failed: return status.message;
+				case State::Idle: break;
+				}
+				return "Cross to check";
 			}
 
-			void ControlsKey(Key key)
+			// The update's row while it runs; Cemu's packs read again once newer ones are in
+			void PollPacks()
 			{
-				if (key == Key::Circle)
+				const auto state = ps5packs::GetStatus().state;
+				const std::string shown = PacksStatus() + "\n" + AppUpdateStatus();
+				if (shown != m_packsShown)
 				{
-					OpenSettings();
-					return;
+					m_packsShown = shown;
+					if (m_screen == kSettings)
+						UpdateSettings();
 				}
-				if (key == Key::Cross)
+				if (state == ps5packs::Status::State::Done && !m_packsReloaded && m_status.coreReady)
 				{
-					OpenPlayer(m_controlSelected);
-					return;
-				}
-				Browse(key, m_controlSelected, ps5pad::kMaxPlayers, ps5pad::kMaxPlayers);
-				UpdateControls();
-			}
-
-			void UpdateControls()
-			{
-				for (int player = 0; player < ps5pad::kMaxPlayers; player++)
-				{
-					const auto controls = ps5emu::GetPlayerControls(player);
-					SetClass(m_document, fmt::format("control-row-{}", player), "focused", player == m_controlSelected);
-					SetText(m_document, fmt::format("control-value-{}", player), TypeName(controls.type));
-				}
-				const auto controls = ps5emu::GetPlayerControls(m_controlSelected);
-				SetText(m_document, "control-kicker", fmt::format("PLAYER {}", m_controlSelected + 1));
-				SetText(m_document, "control-title", TypeName(controls.type));
-				const std::pair<const char*, std::string> lines[] = {
-					{"DUALSENSE", controls.connected ? fmt::format("Player {}'s, connected", m_controlSelected + 1) : "Not connected"},
-					{"MOTION", !controls.hasMotion ? "Not on this controller" : controls.motion ? "On" : "Off"},
-					{"VIBRATION", controls.rumble ? fmt::format("{}%", controls.rumble) : "Off"},
-				};
-				for (int i = 0; i < 3; i++)
-				{
-					SetText(m_document, fmt::format("control-label-{}", i), lines[i].first);
-					SetText(m_document, fmt::format("control-detail-{}", i), lines[i].second);
+					m_packsReloaded = true;
+					ps5emu::ReloadGraphicPacks();
 				}
 			}
 
-			// -- settings > controls, on Azahar's side: the 3DS ------------------------------------
-
-			void OpenConsole()
-			{
-				m_playerRow = 0;
-				m_resetArmed = false;
-				Show("player-dialog", kPlayer);
-				SetText(m_document, "player-title", "Controls");
-				SetText(m_document, "player-copy", "The DualSense as the 3DS: its touchpad is the touch screen");
-				UpdateConsole();
-			}
-
-			void ConsoleKey(Key key)
-			{
-				auto& n3ds = m_settings.n3ds;
-				if (key == Key::Circle)
-				{
-					OpenSettings();
-					return;
-				}
-				if (key == Key::Up || key == Key::Down)
-				{
-					Browse(key, m_playerRow, kConsoleRows, kConsoleRows);
-					m_resetArmed = false;
-					UpdateConsole();
-					return;
-				}
-				const bool left = key == Key::Left, cross = key == Key::Cross;
-				if (!left && !cross && key != Key::Right)
-					return;
-				switch (m_playerRow)
-				{
-				case kRowConsoleMotion: n3ds.motion = !n3ds.motion; break;
-				case kRowConsoleDeadzone:
-				{
-					int value = n3ds.deadzone + (left ? -5 : 5);
-					if (cross && value > 50)
-						value = 0;
-					n3ds.deadzone = std::clamp(value, 0, 50);
-					break;
-				}
-				case kRowConsoleButtons:
-					if (cross)
-					{
-						OpenMapping();
-						return;
-					}
-					break;
-				case kRowConsoleReset:
-					if (!cross)
-						break;
-					if (m_resetArmed)
-						ps5azahar::ResetControls(n3ds);
-					m_resetArmed = !m_resetArmed;
-					break;
-				}
-				SaveSettings();
-				UpdateConsole();
-			}
-
-			void UpdateConsole()
-			{
-				const auto& n3ds = m_settings.n3ds;
-				const auto mappings = ps5azahar::ListMappings(n3ds);
-				const int mapped = (int)std::count_if(mappings.begin(), mappings.end(), [](const ps5emu::ButtonMapping& m) { return !m.input.empty(); });
-				struct Row
-				{
-					const char* name;
-					std::string value;
-					const char* help;
-				};
-				const Row rows[kConsoleRows] = {
-					{"Motion controls", n3ds.motion ? "On" : "Off",
-						"The DualSense's gyroscope and accelerometer as the 3DS's own, for the games that aim or steer by tilting it."},
-					{"Stick deadzone", fmt::format("{}%", n3ds.deadzone),
-						"How far a stick moves before the game sees it, for the circle pad and the C-stick. Raise it if something "
-						"drifts when you let go of the stick; lower it for finer control."},
-					{"Buttons", Plural(mapped, "button set", "buttons set"),
-						"Which DualSense button is which of the 3DS's.\nA is on Circle and B on Cross by default, where the 3DS has "
-						"them; the circle pad is the left stick, the C-stick the right one, and the touchpad the touch screen."},
-					{"Reset to defaults", m_resetArmed ? "Press Cross again" : "", "The default buttons, motion and deadzone."},
-				};
-				for (int row = 0; row < kPlayerRows; row++)
-				{
-					const std::string id = fmt::format("player-row-{}", row);
-					const bool present = row < kConsoleRows;
-					SetClass(m_document, id, "offscreen", !present);
-					SetClass(m_document, id, "focused", row == m_playerRow);
-					SetClass(m_document, id, "dimmed", false);
-					SetText(m_document, fmt::format("player-name-{}", row), present ? rows[row].name : "");
-					SetText(m_document, fmt::format("player-value-{}", row), present ? rows[row].value : "");
-				}
-				SetText(m_document, "player-detail-title", rows[m_playerRow].name);
-				SetLines(m_document, "player-help", rows[m_playerRow].help);
-				static constexpr const char* kCrossHints[kConsoleRows] = {"On / off", "More", "Open", "Reset"};
-				SetText(m_document, "player-hint-0", kCrossHints[m_playerRow]);
-			}
-
-			// -- Artic Base, on Azahar's side: a game from a 3DS on the network --------------------
-			// The player's page, with the 3DS's address (edited a number at a time, as there is no
-			// keyboard), connecting, and the Artic Setup Tool's two modes.
-
-			void OpenArtic()
-			{
-				m_articRow = 0;
-				m_articEditing = false;
-				m_articArmed = false;
-				if (!ParseAddress(m_settings.n3ds.articAddress, m_articOctets))
-					m_articOctets = OwnAddress();
-				Show("player-dialog", kArtic);
-				SetText(m_document, "player-title", "Artic Base");
-				SetText(m_document, "player-copy", "Play a game from your own 3DS, over the network");
-				UpdateArtic();
-			}
-
-			std::string ArticAddress() const
-			{
-				return fmt::format("{}.{}.{}.{}", m_articOctets[0], m_articOctets[1], m_articOctets[2], m_articOctets[3]);
-			}
-
-			void ArticKey(Key key)
-			{
-				if (m_articEditing)
-				{
-					switch (key)
-					{
-					case Key::Left: m_articOctet = (m_articOctet + 3) % 4; break;
-					case Key::Right: m_articOctet = (m_articOctet + 1) % 4; break;
-					case Key::Up:
-					case Key::Down:
-					case Key::L1:
-					case Key::R1:
-					{
-						const int step = key == Key::Up ? 1 : key == Key::Down ? -1 : key == Key::R1 ? 10 : -10;
-						int& octet = m_articOctets[m_articOctet];
-						octet = (octet + step + 256) % 256;
-						break;
-					}
-					case Key::Cross:
-					case Key::Circle:
-						m_articEditing = false;
-						m_settings.n3ds.articAddress = ArticAddress();
-						SaveSettings();
-						break;
-					default: break;
-					}
-					UpdateArtic();
-					return;
-				}
-				if (key == Key::Circle)
-				{
-					GoHome();
-					return;
-				}
-				if (key == Key::Up || key == Key::Down)
-				{
-					Browse(key, m_articRow, kArticRows, kArticRows);
-					m_articArmed = false;
-					UpdateArtic();
-					return;
-				}
-				if (key != Key::Cross)
-					return;
-				switch (m_articRow)
-				{
-				case kRowArticAddress:
-					m_articEditing = true;
-					m_articOctet = 3; // the last number is the one that differs on a home network
-					break;
-				case kRowArticConnect: LaunchArtic(ps5azahar::kArticBase, "Artic Base"); return;
-				case kRowArticSetupOld:
-				case kRowArticSetupNew:
-					// it writes the 3DS's own data into Azahar's: a second press, to be sure
-					if (m_articArmed)
-					{
-						LaunchArtic(m_articRow == kRowArticSetupOld ? ps5azahar::kArticSetupOld : ps5azahar::kArticSetupNew, "Artic Setup Tool");
-						return;
-					}
-					m_articArmed = true;
-					break;
-				}
-				UpdateArtic();
-			}
-
-			// As Launch, for a game that is on the 3DS: no library entry, nothing to add to the recent ones.
-			void LaunchArtic(const char* scheme, const char* what)
-			{
-				m_settings.n3ds.articAddress = ArticAddress();
-				SaveSettings();
-				ps5emu::Game game;
-				game.name = fmt::format("{} ({})", what, ArticAddress());
-				game.path = std::string(scheme) + ArticAddress();
-				game.format = "ARTIC";
-				SetText(m_document, "loading-title", game.name);
-				SetText(m_document, "loading-caption", "Connecting to the 3DS");
-				SetImage(m_document, "loading-cover", Icon());
-				Show("loading-screen", kLoading);
-				m_launch = game;
-			}
-
-			void UpdateArtic()
-			{
-				std::string address = ArticAddress();
-				if (m_articEditing)
-				{
-					address.clear();
-					for (int i = 0; i < 4; i++)
-						address += (i ? "." : "") + (i == m_articOctet ? fmt::format("[{}]", m_articOctets[i]) : std::to_string(m_articOctets[i]));
-				}
-				const char* again = "Press Cross again";
-				struct Row
-				{
-					const char* name;
-					std::string value;
-					const char* help;
-				};
-				const Row rows[kArticRows] = {
-					{"3DS address", address,
-						"The address Artic Base shows on the 3DS's screen when it is ready.\nCross edits it: Left and Right choose a "
-						"number, Up and Down change it by 1, L1 and R1 by 10, and Cross again keeps it.\nThe 3DS and the PS5 must be "
-						"on the same network."},
-					{"Connect and play", "",
-						"On the 3DS, start the Artic Base app (homebrew, from Azahar's team) and choose a game in it: the cartridge "
-						"or an installed one. Then connect from here: the game plays on the PS5 from the 3DS, and its saves stay on "
-						"the 3DS.\nIt is only as smooth as the network: a strong Wi-Fi signal for the 3DS and a wired PS5 help."},
-					{"Set up from an Old 3DS", m_articArmed && m_articRow == kRowArticSetupOld ? again : "",
-						"With the Artic Setup Tool app running on an Old 3DS or 2DS: copies its system files and its own data "
-						"(system settings, friend code, Mii and eShop data) into Azahar, so games that need the 3DS's system "
-						"applets or files start.\nThat data is your console's: do not share Azahar's folder afterwards."},
-					{"Set up from a New 3DS", m_articArmed && m_articRow == kRowArticSetupNew ? again : "",
-						"As above, from a New 3DS or New 2DS running the Artic Setup Tool app."},
-				};
-				for (int row = 0; row < kPlayerRows; row++)
-				{
-					const std::string id = fmt::format("player-row-{}", row);
-					const bool present = row < kArticRows;
-					SetClass(m_document, id, "offscreen", !present);
-					SetClass(m_document, id, "focused", row == m_articRow);
-					SetClass(m_document, id, "dimmed", false);
-					SetText(m_document, fmt::format("player-name-{}", row), present ? rows[row].name : "");
-					SetText(m_document, fmt::format("player-value-{}", row), present ? rows[row].value : "");
-				}
-				SetText(m_document, "player-detail-title", rows[m_articRow].name);
-				SetLines(m_document, "player-help", rows[m_articRow].help);
-				static constexpr const char* kCrossHints[kArticRows] = {"Edit", "Connect", "Set up", "Set up"};
-				SetText(m_document, "player-hint-0", m_articEditing ? "Keep" : kCrossHints[m_articRow]);
-			}
-
-			// -- settings > controls > a player ------------------------------------------------
+			// -- settings > controls > a player (the Wii U's) -----------------------------------------
 
 			void OpenPlayer(int player)
 			{
-				m_player = player;
+				m_player = std::clamp(player, 0, ps5pad::kMaxPlayers - 1);
 				m_playerRow = 0;
 				m_resetArmed = false;
-				Show("player-dialog", kPlayer);
-				SetText(m_document, "player-title", fmt::format("Player {}", player + 1));
+				ShowScreen(kPlayer);
+				SetText(m_document, "player-title", fmt::format("Player {}", m_player + 1));
 				UpdatePlayer();
 			}
 
@@ -2082,14 +2448,12 @@ namespace ps5launcher
 
 			void PlayerKey(Key key)
 			{
-				if (Is3ds())
-				{
-					ConsoleKey(key);
-					return;
-				}
 				if (key == Key::Circle)
 				{
-					OpenControls();
+					OpenSettings(CategoryIndex("controls"));
+					m_onRail = false;
+					m_settingRow = m_player;
+					UpdateSettings();
 					return;
 				}
 				if (key == Key::Up || key == Key::Down)
@@ -2199,7 +2563,8 @@ namespace ps5launcher
 					{"Emulated controller", TypeName(controls.type), false,
 						"What the game sees in this player's hands.\n\nMost games want the Wii U GamePad for player 1: its screen is the "
 						"second one PS5CEMU-HAR shows, and the touchpad touches it. Others take Pro Controllers, or Wii Remotes for "
-						"games such as New Super Mario Bros. U.\nCemu has two GamePads at most."},
+						"games such as New Super Mario Bros. U.\nA Wii Remote points where a finger rests on the touchpad, or where you "
+						"aim the DualSense.\nCemu has two GamePads at most."},
 					{"Motion controls", !controls.hasMotion ? "None on this one" : controls.motion ? "On" : "Off", !controls.hasMotion,
 						"The DualSense's gyroscope and accelerometer as the controller's own, for the games that aim or steer by "
 						"tilting the GamePad or the Wii Remote.\nThe Pro Controller and the Classic Controller have none."},
@@ -2217,21 +2582,22 @@ namespace ps5launcher
 					{"Reset to defaults", m_resetArmed ? "Press Cross again" : "", false,
 						"The default buttons, vibration, motion and deadzones for this controller."},
 				};
-				for (int row = 0; row < kPlayerRows; row++)
+				for (int row = 0; row < kListRows; row++)
 				{
 					const std::string id = fmt::format("player-row-{}", row);
+					const bool present = row < kPlayerRows;
+					SetClass(m_document, id, "offscreen", !present);
 					SetClass(m_document, id, "focused", row == m_playerRow);
-					SetClass(m_document, id, "dimmed", rows[row].dimmed);
-					SetText(m_document, fmt::format("player-name-{}", row), rows[row].name);
-					SetText(m_document, fmt::format("player-value-{}", row), rows[row].value);
+					SetClass(m_document, id, "dimmed", present && rows[row].dimmed);
+					SetText(m_document, fmt::format("player-name-{}", row), present ? rows[row].name : "");
+					SetText(m_document, fmt::format("player-value-{}", row), present ? rows[row].value : "");
 				}
 				SetText(m_document, "player-detail-title", rows[m_playerRow].name);
 				SetLines(m_document, "player-help", rows[m_playerRow].help);
-				static constexpr const char* kCrossHints[kPlayerRows] = {"Choose", "On / off", "More", "More", "More", "Open", "Reset"};
-				SetText(m_document, "player-hint-0", kCrossHints[m_playerRow]);
+				SetHints(m_document, {{"cross", m_playerRow == kRowButtons ? "Open" : "Choose"}, {"leftright", "Change"}, {"circle", "Back"}});
 			}
 
-			// -- settings > controls > a player > buttons ----------------------------------------
+			// -- settings > controls > buttons -------------------------------------------------
 
 			struct Capture
 			{
@@ -2245,7 +2611,7 @@ namespace ps5launcher
 				m_mapSelected = 0;
 				m_capture = {};
 				m_mapMessage.clear();
-				Show("mapping-dialog", kMapping);
+				ShowScreen(kMapping);
 				if (Is3ds())
 				{
 					SetText(m_document, "mapping-copy", "The DualSense's buttons for the 3DS's");
@@ -2285,9 +2651,10 @@ namespace ps5launcher
 				{
 					if (Is3ds())
 					{
-						OpenConsole();
-						m_playerRow = kRowConsoleButtons;
-						UpdateConsole();
+						OpenSettings(CategoryIndex("controls"));
+						m_onRail = false;
+						m_settingRow = 2; // Buttons
+						UpdateSettings();
 						return;
 					}
 					OpenPlayer(m_player);
@@ -2386,7 +2753,11 @@ namespace ps5launcher
 					SetText(m_document, fmt::format("map-value-{}", row), index >= count ? "" : unset ? "Not set" : mappings[index].input);
 					SetClass(m_document, fmt::format("map-value-{}", row), "unset", unset);
 				}
-				SetText(m_document, "mapping-position", fmt::format("{} OF {}", count ? m_mapSelected + 1 : 0, count));
+				SetText(m_document, "mapping-position", fmt::format("{} of {}", count ? m_mapSelected + 1 : 0, count));
+				if (m_capture.active)
+					SetHints(m_document, {{"touchpad", "Cancel"}});
+				else
+					SetHints(m_document, {{"cross", "Assign"}, {"square", "Clear"}, {"circle", "Back"}});
 				if (count == 0)
 					return;
 				const auto& mapping = mappings[m_mapSelected];
@@ -2406,7 +2777,157 @@ namespace ps5launcher
 				SetLines(m_document, "map-message", message);
 			}
 
-			// -- settings > game files, and install updates and dlc -----------------------------
+			// -- Artic Base, on Azahar's side: a game from a 3DS on the network --------------------
+			// The 3DS's address (edited a number at a time, or typed on a keyboard), connecting, and
+			// the Artic Setup Tool's two modes.
+
+			void OpenArtic()
+			{
+				m_articRow = 0;
+				m_articEditing = false;
+				m_articArmed = false;
+				if (!ParseAddress(m_settings.n3ds.articAddress, m_articOctets))
+					m_articOctets = OwnAddress();
+				ShowScreen(kArtic);
+				UpdateArtic();
+			}
+
+			std::string ArticAddress() const
+			{
+				return fmt::format("{}.{}.{}.{}", m_articOctets[0], m_articOctets[1], m_articOctets[2], m_articOctets[3]);
+			}
+
+			void ArticKey(Key key)
+			{
+				if (m_articEditing)
+				{
+					switch (key)
+					{
+					case Key::Left: m_articOctet = (m_articOctet + 3) % 4; break;
+					case Key::Right: m_articOctet = (m_articOctet + 1) % 4; break;
+					case Key::Up:
+					case Key::Down:
+					case Key::L1:
+					case Key::R1:
+					{
+						const int step = key == Key::Up ? 1 : key == Key::Down ? -1 : key == Key::R1 ? 10 : -10;
+						int& octet = m_articOctets[m_articOctet];
+						octet = (octet + step + 256) % 256;
+						break;
+					}
+					case Key::Cross:
+					case Key::Circle:
+						m_articEditing = false;
+						m_settings.n3ds.articAddress = ArticAddress();
+						SaveSettings();
+						break;
+					default: break;
+					}
+					UpdateArtic();
+					return;
+				}
+				if (key == Key::Circle)
+				{
+					ShowTab(kHome);
+					return;
+				}
+				if (key == Key::Up || key == Key::Down)
+				{
+					Browse(key, m_articRow, kArticRows, kArticRows);
+					m_articArmed = false;
+					UpdateArtic();
+					return;
+				}
+				if (key != Key::Cross)
+					return;
+				switch (m_articRow)
+				{
+				case kRowArticAddress:
+					m_articEditing = true;
+					m_articOctet = 3; // the last number is the one that differs on a home network
+					break;
+				case kRowArticConnect: LaunchArtic(ps5azahar::kArticBase, "Artic Base"); return;
+				case kRowArticSetupOld:
+				case kRowArticSetupNew:
+					// it writes the 3DS's own data into Azahar's: a second press, to be sure
+					if (m_articArmed)
+					{
+						LaunchArtic(m_articRow == kRowArticSetupOld ? ps5azahar::kArticSetupOld : ps5azahar::kArticSetupNew, "Artic Setup Tool");
+						return;
+					}
+					m_articArmed = true;
+					break;
+				}
+				UpdateArtic();
+			}
+
+			// As Launch, for a game that is on the 3DS: no library entry, nothing to add to the recent ones.
+			void LaunchArtic(const char* scheme, const char* what)
+			{
+				m_settings.n3ds.articAddress = ArticAddress();
+				SaveSettings();
+				ps5emu::Game game;
+				game.name = fmt::format("{} ({})", what, ArticAddress());
+				game.path = std::string(scheme) + ArticAddress();
+				game.format = "ARTIC";
+				SetText(m_document, "loading-title", game.name);
+				SetText(m_document, "loading-caption", "Connecting to the 3DS");
+				FitImage(m_document, "loading-cover", Icon(), 760, 220, 400, 400);
+				ShowScreen(kLoading);
+				SetHints(m_document, {});
+				m_launch = game;
+			}
+
+			void UpdateArtic()
+			{
+				std::string address = ArticAddress();
+				if (m_articEditing)
+				{
+					address.clear();
+					for (int i = 0; i < 4; i++)
+						address += (i ? "." : "") + (i == m_articOctet ? fmt::format("[{}]", m_articOctets[i]) : std::to_string(m_articOctets[i]));
+				}
+				const char* again = "Press Cross again";
+				struct Row
+				{
+					const char* name;
+					std::string value;
+					const char* help;
+				};
+				const Row rows[kArticRows] = {
+					{"3DS address", address,
+						"The address Artic Base shows on the 3DS's screen when it is ready.\nCross edits it: Left and Right choose a "
+						"number, Up and Down change it by 1, L1 and R1 by 10, and Cross again keeps it.\nThe 3DS and the PS5 must be "
+						"on the same network."},
+					{"Connect and play", "",
+						"On the 3DS, start the Artic Base app (homebrew, from Azahar's team) and choose a game in it: the cartridge "
+						"or an installed one. Then connect from here: the game plays on the PS5 from the 3DS, and its saves stay on "
+						"the 3DS.\nIt is only as smooth as the network: a strong Wi-Fi signal for the 3DS and a wired PS5 help."},
+					{"Set up from an Old 3DS", m_articArmed && m_articRow == kRowArticSetupOld ? again : "",
+						"With the Artic Setup Tool app running on an Old 3DS or 2DS: copies its system files and its own data "
+						"(system settings, friend code, Mii and eShop data) into Azahar, so games that need the 3DS's system "
+						"applets or files start, and the Home Menu can (Settings > System).\nThat data is your console's: do not "
+						"share Azahar's folder afterwards."},
+					{"Set up from a New 3DS", m_articArmed && m_articRow == kRowArticSetupNew ? again : "",
+						"As above, from a New 3DS or New 2DS running the Artic Setup Tool app."},
+				};
+				for (int row = 0; row < kArticRows; row++)
+				{
+					const std::string id = fmt::format("artic-row-{}", row);
+					SetClass(m_document, id, "focused", row == m_articRow);
+					SetText(m_document, fmt::format("artic-name-{}", row), rows[row].name);
+					SetText(m_document, fmt::format("artic-value-{}", row), rows[row].value);
+				}
+				SetText(m_document, "artic-detail-title", rows[m_articRow].name);
+				SetLines(m_document, "artic-help", rows[m_articRow].help);
+				if (m_articEditing)
+					SetHints(m_document, {{"leftright", "Number"}, {"updown", "Change"}, {"cross", "Keep"}});
+				else
+					SetHints(m_document, {{"cross", m_articRow == kRowArticAddress ? "Edit" : m_articRow == kRowArticConnect ? "Connect" : "Set up"},
+						{"circle", "Back"}});
+			}
+
+			// -- settings > game files, and installs ---------------------------------------------
 
 			enum class FilesMode
 			{
@@ -2424,7 +2945,7 @@ namespace ps5launcher
 				while (!BrowseTo(start) && start != "/")
 					start = ParentPath(start);
 				m_filesMessage.clear();
-				Show("files-dialog", kFiles);
+				ShowScreen(kFiles);
 				const bool install = mode != FilesMode::GamesFolder;
 				const bool cia = mode == FilesMode::InstallCia;
 				SetText(m_document, "files-title", cia ? "Install CIA files" : install ? "Install updates and DLC" : "Game files");
@@ -2432,8 +2953,6 @@ namespace ps5launcher
 					install ? "Choose a folder with an update, DLC or game (code, content and meta)" :
 					Is3ds() ? "Choose the folder that holds your 3DS games" : "Choose the folder that holds your Wii U games");
 				SetText(m_document, "files-kicker", install ? "TO INSTALL" : "THIS FOLDER");
-				SetText(m_document, "files-hint-use", install ? "Install it" : "Use this folder");
-				SetClass(m_document, "files-dialog", "install", install);
 				UpdateFiles();
 			}
 
@@ -2493,6 +3012,13 @@ namespace ps5launcher
 				return it->second;
 			}
 
+			void CloseFiles()
+			{
+				OpenSettings(CategoryIndex(m_filesMode == FilesMode::GamesFolder ? "files" : "installs"));
+				m_onRail = false;
+				UpdateSettings();
+			}
+
 			void FilesKey(Key key)
 			{
 				const int count = (int)m_browseEntries.size();
@@ -2500,18 +3026,25 @@ namespace ps5launcher
 				{
 					if (key == Key::Circle)
 					{
+						// Cemu's install puts back what it replaced; Azahar's writes in place, so the title's
+						// contents go (as when an install fails part-way), its saves staying
 						if (m_filesMode == FilesMode::InstallCia)
+						{
 							ps5azahar::CancelInstall();
+							m_filesMessage = "Cancelling: what it copied is removed...";
+						}
 						else
+						{
 							ps5emu::CancelInstall();
-						m_filesMessage = "Cancelling: what was installed before is put back...";
+							m_filesMessage = "Cancelling: what was installed before is put back...";
+						}
 						UpdateFiles();
 					}
 					return;
 				}
 				if (key == Key::Circle)
 				{
-					OpenSettings();
+					CloseFiles();
 					return;
 				}
 				if (key == Key::Cross && count && !IsFileEntry(m_browseSelected))
@@ -2545,11 +3078,11 @@ namespace ps5launcher
 					}
 					else if (m_status.coreReady)
 					{
-						ps5emu::ApplyOptions({m_settings.gamesFolder, m_settings.overlay, m_settings.volume, m_settings.upscaleFilter});
+						ps5emu::ApplyOptions({m_settings.gamesFolder, m_settings.overlay, m_settings.volume, m_settings.upscaleFilter,
+							m_settings.asyncShaders, m_settings.gamePadSpeaker});
 						m_scanning = true;
 						m_games.clear();
 					}
-					SetText(m_document, "about-games-path", ShortPath(GamesFolder(), 36));
 					m_filesMessage = saved ? "Saved. PS5CEMU-HAR is looking for games there." : "The folder could not be saved. Please try again.";
 				}
 				else if (key == Key::Triangle && m_filesMode == FilesMode::InstallCia)
@@ -2615,6 +3148,9 @@ namespace ps5launcher
 						ps5emu::Rescan();
 					m_scanning = true;
 				}
+				else if (status.state == State::Cancelled && m_filesMode == FilesMode::InstallCia)
+					m_filesMessage = "Cancelled. What it copied was removed, with any earlier copy of the same title: install it again to "
+						"play it. Its saves are kept.";
 				else if (status.state == State::Cancelled)
 					m_filesMessage = "Cancelled. What was installed before is as it was.";
 				else
@@ -2635,24 +3171,23 @@ namespace ps5launcher
 					const std::string id = fmt::format("files-row-{}", row);
 					SetClass(m_document, id, "focused", index == m_browseSelected);
 					SetClass(m_document, id, "offscreen", index >= count);
-					SetClass(m_document, id, "files-up", up);
-					SetClass(m_document, id, "files-file", IsFileEntry(index));
+					SetClass(m_document, id, "folder", index < count && !IsFileEntry(index));
 					const bool drive = index < count && m_browseEntries[index].starts_with('/');
 					SetText(m_document, fmt::format("files-name-{}", row), index >= count ? "" : up ? "Parent folder" : drive ? DriveName(m_browseEntries[index]) : m_browseEntries[index]);
-					std::string meta = IsFileEntry(index) ? "CIA" : drive ? "DRIVE" : "";
+					std::string meta = IsFileEntry(index) ? "CIA" : drive ? "Drive" : "";
 					if (install && index < count && !up && !drive)
 					{
 						const auto& candidate = Inspect(JoinPath(m_browseFolder, m_browseEntries[index]));
 						if (candidate.kind != ps5emu::InstallCandidate::Kind::None)
-							meta = Upper(KindName(candidate.kind));
+							meta = KindName(candidate.kind);
 					}
 					SetText(m_document, fmt::format("files-meta-{}", row), meta);
 				}
 				SetClass(m_document, "files-empty", "visible", count == 0);
-				SetText(m_document, "files-path", ShortPath(m_browseFolder, 52));
-				SetText(m_document, "files-position", fmt::format("{} OF {}", count ? m_browseSelected + 1 : 0, count));
+				SetText(m_document, "files-path", Upper(ShortPath(m_browseFolder, 52)));
+				SetText(m_document, "files-position", fmt::format("{} of {}", count ? m_browseSelected + 1 : 0, count));
 
-				// TRIANGLE uses the folder shown: show what Cemu would find in it
+				// TRIANGLE uses the folder shown: show what the side would find in it
 				std::pair<std::string, std::string> lines[3];
 				bool ready[3]{};
 				std::string message = m_filesMessage;
@@ -2666,9 +3201,8 @@ namespace ps5launcher
 					lines[2] = {"VERSION", file && title.titleId ? fmt::format("v{}", title.version) : "-"};
 					ready[0] = ready[1] = ready[2] = file;
 					if (message.empty())
-						message = file ? "Triangle installs it into the 3DS's storage, as Azahar's Install CIA does: an update or DLC "
-							"goes with its game, and a game joins the library." :
-							"Choose a CIA file to install: a game, an update or DLC.";
+						message = file ? "Triangle installs it into the 3DS's storage: an update or DLC goes with its game, and a game joins the library." :
+										 "Choose a CIA file to install: a game, an update or DLC.";
 				}
 				else if (Is3ds() && !install)
 				{
@@ -2706,9 +3240,8 @@ namespace ps5launcher
 					ready[0] = ready[1] = valid;
 					ready[2] = valid && candidate.installedVersion < (int)candidate.version;
 					if (message.empty())
-						message = valid ? "Triangle installs it into the Wii U's storage (mlc01), as Cemu's Install game title, update or DLC does. "
-							"Updates and DLC in the game files folder work as they are, too." :
-							candidate.note;
+						message = valid ? "Triangle installs it into the Wii U's storage (mlc01). Updates and DLC in the game files folder work as they are, too." :
+										  candidate.note;
 				}
 				for (int i = 0; i < 3; i++)
 				{
@@ -2719,6 +3252,10 @@ namespace ps5launcher
 				if (m_installing && !m_installProgress.empty() && m_filesMessage.empty())
 					message = m_installProgress;
 				SetLines(m_document, "files-message", message);
+				if (m_installing)
+					SetHints(m_document, {{"circle", "Cancel"}});
+				else
+					SetHints(m_document, {{"cross", "Open"}, {"triangle", install || cia ? "Install" : "Use this folder"}, {"circle", "Back"}});
 			}
 
 			Rml::ElementDocument* m_document;
@@ -2726,23 +3263,30 @@ namespace ps5launcher
 			ps5settings::Launcher& m_settings;
 			const Status& m_status;
 			Screen m_screen = kHome;
+			Screen m_tab = kHome;	// the tab selected
+			bool m_onTabs = false;	// the focus is on the tabs
 			std::optional<ps5emu::Game> m_launch;
 			bool m_leaving = false;
 			Picker m_picker;
+			bool m_info = false;	// a setting's help is open
 
 			std::vector<ps5emu::Game> m_games;
 			bool m_scanning = false;
-			uint32_t m_boxArrivals = 0;	   // ps5boxart::Arrivals() when the library was last drawn
-			std::string m_shownBoxArt;	   // the box art the details show, to let go of after
-			std::set<std::string> m_rowIcons; // the icons the library's rows have loaded
+			uint32_t m_boxArrivals = 0;		  // ps5boxart::Arrivals() when the covers were last drawn
+			std::set<std::string> m_shownArt; // the covers loaded since they were last let go of
 			std::time_t m_shownMinute = 0;
 
-			int m_selected = kContinue;
+			int m_homeRow = kHeroRow, m_homeColumn = 0;
 			int m_lastIndex = -1;
-			bool m_continueReady = false;
 			std::vector<int> m_recent; // indices into m_games
 
 			int m_librarySelected = 0;
+			int m_gridTop = 0; // the first row of the grid shown
+
+			int m_detailsGame = -1;
+			Screen m_detailsFrom = kLibrary;
+			int m_detailsAction = 0;
+			int m_synopsisTop = 0; // the description's first line shown
 
 			int m_packsGame = 0;
 			Screen m_packsFrom = kHome;
@@ -2752,22 +3296,22 @@ namespace ps5launcher
 			bool m_presetsFocus = false;
 			int m_presetSelected = 0;
 
-			int m_settingsSelected = 0;
-			int m_option = 0;
+			int m_category = 0;	   // Settings' category on the rail
+			bool m_onRail = true;  // the focus on the rail, not on the category's settings
+			int m_settingRow = 0;
 
-			int m_controlSelected = 0;
 			int m_player = 0;
 			int m_playerRow = 0;
 			bool m_resetArmed = false;
 			int m_mapSelected = 0;
 			Capture m_capture;
+			std::string m_mapMessage;
 
 			int m_articRow = 0;
-			bool m_articEditing = false;		  // the address's numbers being changed
-			int m_articOctet = 3;				  // which of them
+			bool m_articEditing = false; // the address's numbers being changed
+			int m_articOctet = 3;		 // which of them
 			std::array<int, 4> m_articOctets{192, 168, 1, 2};
-			bool m_articArmed = false;			  // a setup row pressed once
-			std::string m_mapMessage;
+			bool m_articArmed = false;	 // a setup row pressed once
 
 			FilesMode m_filesMode = FilesMode::GamesFolder;
 			std::string m_browseFolder;
@@ -2781,7 +3325,142 @@ namespace ps5launcher
 			std::string m_installProgress;
 			std::string m_diagnosticsDone[2]; // what Diagnostics' two actions did, on their rows
 			bool m_confirmClear = false;	  // Clear shader caches was pressed once
+			std::string m_packsShown;		  // the graphic packs' and app updates' rows as last shown
+			bool m_packsReloaded = false;	  // Cemu read the newly installed packs
 		};
+
+		// The app's own update (app/updates.h), over whichever screen is up: a newer release asked
+		// about, then its download, check and install, then the restart into it. It has the keys
+		// while it is up.
+		class UpdatePrompt
+		{
+		public:
+			explicit UpdatePrompt(Rml::ElementDocument* document) : m_document(document) {}
+
+			// Shown or not, and what it says, as the update stands; true when it opened or closed (the
+			// screen under it shows its own hints again then)
+			bool Poll()
+			{
+				const bool show = ps5update::Prompting();
+				const bool changed = show != m_open;
+				m_open = show;
+				SetClass(m_document, "update", "open", show);
+				if (show)
+					Show(ps5update::GetStatus());
+				else
+					m_shown.clear();
+				return changed;
+			}
+
+			bool Open() const { return m_open; }
+
+			void HandleKey(Key key)
+			{
+				const auto status = ps5update::GetStatus();
+				const auto choices = Choices(status);
+				if ((key == Key::Left || key == Key::Right) && choices.size() > 1)
+					m_choice = 1 - m_choice;
+				else if (key == Key::Circle)
+					ps5update::Dismiss();
+				else if (key == Key::Cross && !choices.empty())
+				{
+					const std::string choice = choices[std::min<size_t>(m_choice, choices.size() - 1)];
+					if (choice == "Update now")
+						ps5update::Install();
+					else if (choice == "Restart now")
+						ps5update::Restart();
+					else
+						ps5update::Dismiss(); // Later, OK
+					m_choice = 0;
+				}
+				// the next Poll shows what changed, and tells the screen under it when it closed
+			}
+
+		private:
+			static std::vector<std::string> Choices(const ps5update::Status& status)
+			{
+				using State = ps5update::Status::State;
+				switch (status.state)
+				{
+				case State::Available: return {"Update now", "Later"};
+				case State::Ready: return {"Restart now"};
+				case State::Failed: return {"OK"};
+				default: return {};
+				}
+			}
+
+			void Show(const ps5update::Status& status)
+			{
+				using State = ps5update::Status::State;
+				const std::string next = ps5update::Readable(status.latest), mine = ps5update::Readable(PS5CEMU_VERSION);
+				std::string title, text;
+				float done = -1.0f; // the bar's fill, when it shows
+				switch (status.state)
+				{
+				case State::Available:
+					title = fmt::format("PS5CEMU-HAR {} is out", next);
+					text = fmt::format("This is {}. Download and install it now? Your games, saves and settings stay as they are.", mine);
+					break;
+				case State::Downloading:
+					title = fmt::format("Updating to {}", next);
+					text = status.total ? fmt::format("Downloading: {} of {} MB", status.received >> 20, status.total >> 20) : "Downloading...";
+					done = status.total ? (float)status.received / (float)status.total : 0.0f;
+					break;
+				case State::Verifying:
+					title = fmt::format("Updating to {}", next);
+					text = "Checking the download";
+					done = 1.0f;
+					break;
+				case State::Installing:
+					title = fmt::format("Updating to {}", next);
+					text = "Installing";
+					done = 1.0f;
+					break;
+				case State::Ready:
+					title = fmt::format("{} is installed", next);
+					text = "PS5CEMU-HAR starts again to finish the update.";
+					break;
+				case State::Failed:
+					title = "The update did not finish";
+					text = fmt::format("{}\nPS5CEMU-HAR is still {}.", status.message, mine);
+					break;
+				default:
+					title = "Checking for updates";
+					break;
+				}
+				const auto choices = Choices(status);
+				m_choice = std::min<int>(m_choice, std::max<int>(0, (int)choices.size() - 1));
+				// only what changed is laid out again
+				const std::string shown = fmt::format("{}|{}|{}|{}|{}", title, text, done, m_choice, choices.size());
+				if (shown == m_shown)
+					return;
+				m_shown = shown;
+				SetText(m_document, "update-title", title);
+				SetLines(m_document, "update-text", text);
+				SetClass(m_document, "update-bar", "visible", done >= 0.0f);
+				if (Rml::Element* fill = m_document->GetElementById("update-fill"))
+					fill->SetProperty("width", fmt::format("{}px", std::round(920.0f * std::clamp(done, 0.0f, 1.0f))));
+				for (int i = 0; i < 2; i++)
+				{
+					const bool used = i < (int)choices.size();
+					SetClass(m_document, fmt::format("update-{}", i), "unused", !used);
+					SetClass(m_document, fmt::format("update-{}", i), "focused", used && i == m_choice);
+					SetText(m_document, fmt::format("update-label-{}", i), used ? choices[i] : "");
+				}
+				if (choices.size() > 1)
+					SetHints(m_document, {{"leftright", "Choose"}, {"cross", "Select"}, {"circle", "Later"}});
+				else if (!choices.empty())
+					SetHints(m_document, {{"cross", choices.front() == "OK" ? "OK" : "Restart"}});
+				else
+					SetHints(m_document, {});
+			}
+
+			Rml::ElementDocument* m_document;
+			bool m_open = false;
+			int m_choice = 0;
+			std::string m_shown; // what it last laid out
+		};
+
 		// The start screen: Cemu on the left half, Azahar on the right; Left and Right choose, Cross starts.
 		// Neither emulator runs behind it: the game counts are those their libraries had last time.
 		class StartScreen
@@ -2791,30 +3470,17 @@ namespace ps5launcher
 				: m_document(document), m_status(status), m_selected(selected)
 			{
 				auto count = [](int games) { return games < 0 ? std::string("Open to look for games") : Plural(games, "game", "games"); };
-				SetText(m_document, "start-brand-copy",
-					"Cemu and Azahar  /  Wii U and 3DS games on PlayStation 5  /  " + ps5update::Readable(PS5CEMU_VERSION));
+				SetText(m_document, "start-version", ps5update::Readable(PS5CEMU_VERSION));
 				SetText(m_document, "start-status-wiiu", !m_status.notice.empty() ? "Setup required" : count(settings.gameCount));
 				SetText(m_document, "start-status-3ds",
 					ps5azahar::Available() ? count(settings.n3ds.gameCount) : count(settings.n3ds.gameCount) + "  /  core not in this build");
+				RestoreHints();
 				Update();
 			}
 
-			// The clock.
-			void Poll()
-			{
-				const std::time_t minute = std::time(nullptr) / 60;
-				if (minute != m_shownMinute)
-				{
-					m_shownMinute = minute;
-					const std::time_t now = minute * 60;
-					char label[16]{};
-					if (const std::tm* local = std::localtime(&now))
-						std::strftime(label, sizeof(label), "%H:%M", local);
-					SetText(m_document, "menu-clock", label);
-				}
-			}
+			void RestoreHints() { SetHints(m_document, {{"leftright", "Choose"}, {"cross", "Start"}}); }
 
-			// While the chosen emulator starts (Cemu takes a few seconds): on its half.
+			// While the chosen emulator starts (Cemu takes a few seconds): on its card.
 			void ShowStarting(System system)
 			{
 				SetText(m_document, system == System::WiiU ? "start-status-wiiu" : "start-status-3ds",
@@ -2847,7 +3513,6 @@ namespace ps5launcher
 			Rml::ElementDocument* m_document;
 			const Status& m_status;
 			System m_selected;
-			std::time_t m_shownMinute = 0;
 		};
 	}
 
@@ -2871,6 +3536,7 @@ namespace ps5launcher
 		void StopBackgroundWork(System system, const Status& status, Frame& frame)
 		{
 			ps5boxart::Stop();
+			ps5packs::Stop();
 			WaitForScan(system, status, frame);
 		}
 	}
@@ -2914,22 +3580,29 @@ namespace ps5launcher
 				if (!document)
 					break;
 				StartScreen start(document, status, settings, system);
+				UpdatePrompt update(document);
 				std::optional<System> chosen;
+				std::time_t shownMinute = 0;
 				while (!chosen)
 				{
 					for (const Key key : input.Poll())
 						if (!chosen)
 						{
 							const std::string before = Showing(document);
-							chosen = start.HandleKey(key);
+							if (update.Open())
+								update.HandleKey(key);
+							else
+								chosen = start.HandleKey(key);
 							Feedback(key, chosen || Showing(document) != before);
 						}
-					start.Poll();
+					(void)shownMinute;
+					if (update.Poll() && !update.Open())
+						start.RestoreHints();
 					frame();
 				}
 				system = *chosen;
 				choosing = false;
-				// the chosen emulator starts now, its half saying so
+				// the chosen emulator starts now, its card saying so
 				start.ShowStarting(system);
 				frame();
 			}
@@ -2949,6 +3622,7 @@ namespace ps5launcher
 				break;
 			Launcher launcher(document, system, settings, status);
 			launcher.Initialize();
+			UpdatePrompt update(document);
 			while (!launcher.Done() && !launcher.Leaving())
 			{
 				for (const Key key : input.Poll())
@@ -2959,13 +3633,18 @@ namespace ps5launcher
 						continue;
 					}
 					const std::string before = Showing(document);
-					launcher.HandleKey(key);
+					if (update.Open())
+						update.HandleKey(key);
+					else
+						launcher.HandleKey(key);
 					if (launcher.Done())
 						ps5sound::Play(ps5sound::Effect::Launch);
 					else
 						Feedback(key, launcher.Capturing() || Showing(document) != before);
 				}
 				launcher.Poll();
+				if (update.Poll() && !update.Open())
+					launcher.RefreshHints();
 				frame();
 			}
 			if (launcher.Leaving())

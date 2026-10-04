@@ -4,7 +4,14 @@
 # the launcher (frontend/), which draws ProsperoEden's RmlUi layout in software through SDL, as
 # ProsperoEden does. Cemu's own platform classes (cemu/) are added to Cemu's targets by the patch.
 
-set(PS5CEMU_VERSION "2.0.0d")
+# the release's version, from the Makefile's VERSION (the one place it is set: tools/package.sh
+# writes it into sce_sys/param.json too), read again when the Makefile changes
+file(STRINGS "${CMAKE_CURRENT_LIST_DIR}/../Makefile" PS5CEMU_VERSION REGEX "^VERSION := ")
+string(REGEX REPLACE "^VERSION := *([^ ]+).*$" "\\1" PS5CEMU_VERSION "${PS5CEMU_VERSION}")
+if(NOT PS5CEMU_VERSION MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+[a-z]?$")
+	message(FATAL_ERROR "the Makefile's VERSION ('${PS5CEMU_VERSION}') is not like 2.0.0 or 2.0.0d")
+endif()
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/../Makefile")
 # the emulators' pinned commits (tools/deps.json), which the diagnostics and the boot log name: they
 # are no releases, so their own version numbers would say nothing (Cemu's reads 0.0.0)
 file(READ "${CMAKE_CURRENT_LIST_DIR}/../tools/deps.json" PS5CEMU_DEPS_JSON)
@@ -53,7 +60,11 @@ add_library(CemuPS5 STATIC
 	app/controllers.cpp
 	app/boxart.cpp
 	app/boxart.h
+	app/compatibility.cpp
+	app/compatibility.h
 	app/covers.cpp
+	app/gameinfo.cpp
+	app/gameinfo.h
 	app/graphic_packs.cpp
 	app/ingame.cpp
 	app/ingame.h
@@ -63,7 +74,11 @@ add_library(CemuPS5 STATIC
 	app/updates.cpp
 	app/updates.h
 	app/menu_canvas.h
+	app/pack_updates.cpp
+	app/pack_updates.h
 	app/paths.h
+	app/side_menu.h
+	app/tga.h
 	azahar/azahar.h
 	app/boxart.cpp
 	azahar/controls.cpp
@@ -110,6 +125,8 @@ add_library(CemuPS5 STATIC
 cemu_use_precompiled_header(CemuPS5)
 set_source_files_properties(
 	app/boxart.cpp
+	app/compatibility.cpp
+	app/gameinfo.cpp
 	azahar/controls.cpp
 	azahar/library.cpp
 	azahar/unavailable.cpp
@@ -147,7 +164,7 @@ target_include_directories(CemuPS5 PRIVATE
 	"${RMLUI_INCLUDE_DIR}"
 )
 target_compile_definitions(CemuPS5 PRIVATE RMLUI_STATIC_LIB)
-# the version the launcher and the boot log show (sce_sys/param.json has it as 01.001.000)
+# the version the launcher and the boot log show (the app's param.json has it as 02.000.004)
 target_compile_definitions(CemuPS5 PUBLIC PS5CEMU_VERSION="${PS5CEMU_VERSION}"
 	PS5CEMU_CEMU_COMMIT="${PS5CEMU_CEMU_COMMIT}" PS5CEMU_AZAHAR_COMMIT="${PS5CEMU_AZAHAR_COMMIT}")
 
@@ -170,6 +187,8 @@ target_link_libraries(CemuPS5 PUBLIC
 	"${BZ2_LIBRARY}"
 	"${PSL_LIBRARY}"
 	"${TURBOJPEG_LIBRARY}"
+	ZLIB::ZLIB
+	libzip::zip
 )
 
 # Azahar's core and its PS5 frontend (tools/build-azahar.sh builds them in Azahar's tree): the

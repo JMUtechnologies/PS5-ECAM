@@ -5,6 +5,11 @@
 // analog L2/R2 the trigger. The touchpad is the GamePad's touch screen: a finger moves a cursor
 // over it (app/ingame.h draws it), and a click touches it there, or drags while held. The motion
 // sensors feed Cemu's motion handler like an SDL gamepad's.
+//
+// For a player whose emulated controller is a Wii Remote, the same position is its pointer (what
+// its infrared camera sees of the sensor bar): a finger on the touchpad points where it rests, and
+// without one the DualSense aims it, turning it left and right, tilting it up and down, from where
+// the finger last put it.
 
 #pragma once
 
@@ -34,6 +39,11 @@ public:
 	};
 
 	explicit PS5PadController(int player);
+
+	// Whether a player's emulated controller is a Wii Remote (app/controllers.cpp says so when it
+	// changes): its DualSense then points as one. Not looked up from here: InputManager's update
+	// holds its lock while it reads the controllers.
+	static void SetWiiRemote(int player, bool wiiRemote);
 	PS5PadController(std::string_view uuid, std::string_view display_name);
 
 	std::string_view api_name() const override
@@ -50,7 +60,7 @@ public:
 
 	bool has_position() override;
 	glm::vec2 get_position() override;
-	glm::vec2 get_prev_position() override { return m_previousTouch; }
+	glm::vec2 get_prev_position() override;
 	PositionVisibility GetPositionVisibility() override;
 
 	bool has_rumble() override { return true; }
@@ -73,4 +83,10 @@ private:
 	bool m_touching = false;
 	glm::vec2 m_cursor{0.5f, 0.5f}; // where the finger last was on the touchpad
 	glm::vec2 m_touch{}, m_previousTouch{};
+
+	// the Wii Remote's pointer: whether this player's emulated controller is one (SetWiiRemote), and
+	// where it points, from 0 to 1 across and down the screen
+	bool IsPointer();
+	bool m_pointer = false;
+	glm::vec2 m_aim{0.5f, 0.5f}, m_previousAim{0.5f, 0.5f};
 };

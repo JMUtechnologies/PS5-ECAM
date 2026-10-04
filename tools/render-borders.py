@@ -6,9 +6,10 @@ so one picture fits every layout, swapped or not.
 
     render-borders.py OUTPUT_FOLDER
 
-Writes midnight.tga, waves.tga, aurora.tga and shell.tga: 960x540, 24-bit, uncompressed, top row
-first. They are smooth enough to be scaled up to 4K. Needs NumPy and Pillow. The pictures are the
+Writes midnight.tga, waves.tga, aurora.tga, shell.tga and ps5cemu-har.tga: 960x540, 24-bit,
+uncompressed, top row first. They are smooth enough to be scaled up to 4K. Needs NumPy and Pillow. The pictures are the
 app's own, drawn here: nothing is taken from a console or a game."""
+import importlib.util
 import math
 import os
 import sys
@@ -76,7 +77,40 @@ def shell():
     return vignette(img + grain[..., None], 0.22)
 
 
-THEMES = {"midnight": midnight, "waves": waves, "aurora": aurora, "shell": shell}
+def har():
+    """PS5CEMU-HAR's own: its two sides as its start screen and banner have them, the Wii U Homebrew
+    Launcher's blue and its bubbles on the left (tools/render-background.py's), the 3DS Homebrew
+    Launcher's gold waves on the right, the two blending in the middle; dark, so it sits back."""
+    spec = importlib.util.spec_from_file_location("render_background", os.path.join(os.path.dirname(os.path.abspath(__file__)), "render-background.py"))
+    hbl = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(hbl)
+    blue = vgrad(hbl.TOP, hbl.BOTTOM)
+    for x, y, radius, alpha in hbl.particles():
+        cx, cy, r = x * W, y * H, radius * W
+        if r < 1:
+            continue
+        x0, x1, y0, y1 = int(max(0, cx - r - 2)), int(min(W, cx + r + 3)), int(max(0, cy - r - 2)), int(min(H, cy + r + 3))
+        if x0 >= x1 or y0 >= y1:
+            continue
+        yy, xx = np.mgrid[y0:y1, x0:x1]
+        coverage = np.clip(r - np.hypot(xx + 0.5 - cx, yy + 0.5 - cy) + 0.5, 0, 1)[..., None] * alpha
+        blue[y0:y1, x0:x1] = blue[y0:y1, x0:x1] * (1 - coverage) + 255 * coverage
+    blue *= 0.30
+    sand = Image.fromarray(np.clip(vgrad((255, 204, 64), (236, 158, 22)) * 0.26, 0, 255).astype(np.uint8)).convert("RGBA")
+    for top, length, amp, colour, alpha in [(1380, 2560, 60, (255, 214, 120), 0.06), (1580, 1920, 48, (255, 222, 140), 0.07),
+                                            (1780, 1440, 36, (255, 230, 160), 0.08)]:
+        layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        pts = [(x, top + amp * (1 - math.cos(2 * math.pi * (x + top) / length))) for x in range(0, W + 8, 8)]
+        ImageDraw.Draw(layer).polygon([(0, H)] + pts + [(W, H)], fill=colour + (int(255 * alpha),))
+        ImageDraw.Draw(layer).line(pts, fill=colour + (int(255 * alpha * 2.2),), width=12)
+        sand = Image.alpha_composite(sand, layer)
+    gold = np.asarray(sand.convert("RGB"), float)
+    t = np.clip((np.arange(W) / W - 0.40) / 0.20, 0, 1)
+    t = (t * t * (3 - 2 * t))[None, :, None]  # smoothstep: the sides meet softly in the middle
+    return vignette(blue * (1 - t) + gold * t, 0.30)
+
+
+THEMES = {"midnight": midnight, "waves": waves, "aurora": aurora, "shell": shell, "ps5cemu-har": har}
 
 
 def write_tga(path, rgb):

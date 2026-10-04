@@ -17,6 +17,9 @@
 #include "azahar.h"
 #include "controls.h"
 #include "input.h"
+#include "library.h"
+#include "../app/boxart.h"
+#include "../app/gameinfo.h"
 #include "../app/ingame3ds.h"
 #include "../ps5/display.h"
 #include "../ps5/kernel.h"
@@ -51,6 +54,7 @@
 #include "core/hle/service/sm/sm.h"
 #include "core/loader/loader.h"
 #include "core/savestate.h"
+#include "core/system_titles.h"
 #include "video_core/gpu.h"
 #include "video_core/rasterizer_interface.h"
 #include "video_core/renderer_base.h"
@@ -566,6 +570,15 @@ namespace ps5azahar
 				// still working in the background: then the step below makes it, and what it returns
 				// says how it went (Azahar would otherwise put it off, and say nothing of it)
 				const int request = s_stateRequest.load();
+				// the game held while its menu is open: the screens presented again, without the 3DS
+				// running (the menu is drawn in Azahar's frames, so they must go on), unless a save state
+				// is waiting to be made; the game's sound goes quiet meanwhile
+				if (!request && ps5ingame3ds::MenuOpen())
+				{
+					system.GPU().Renderer().SwapBuffers();
+					sceKernelUsleep(16000);
+					continue;
+				}
 				bool stateNow = false;
 				if (request && !system.Kernel().AreAsyncOperationsPending())
 				{
@@ -608,6 +621,26 @@ namespace ps5azahar
 	bool CoreTouched()
 	{
 		return s_coreTouched;
+	}
+
+	bool HomeMenu(int region, ps5emu::Game& game)
+	{
+		SetUp(); // Azahar's paths, for its NAND
+		for (u32 candidate = 0; candidate < Core::NUM_SYSTEM_TITLE_REGIONS; candidate++)
+		{
+			if (region >= 0 && (int)candidate != region)
+				continue;
+			const std::string path = Core::GetHomeMenuNcchPath(candidate);
+			if (path.empty() || !FileUtil::Exists(path))
+				continue;
+			game = {};
+			game.titleId = Core::GetHomeMenuTitleId(candidate);
+			game.name = "Home Menu";
+			game.path = path;
+			game.format = "HOME MENU";
+			return true;
+		}
+		return false;
 	}
 
 	bool LaunchGame(const ps5emu::Game& game, const ps5settings::N3ds& settings, std::string& error)
@@ -680,6 +713,19 @@ namespace ps5azahar
 		if (IsArtic(path) && system.GetAppLoader().ReadTitle(title) == Loader::ResultStatus::Success && !title.empty())
 			s_name = title; // the game on the 3DS, by its own name
 		s_titleId = programId ? programId : game.titleId;
+		{
+			// the menu's top: GameTDB's publisher and year, and the box art (or the game's icon)
+			ps5gameinfo::Info info;
+			std::string details;
+			if (ps5gameinfo::Find(ps5boxart::System::N3ds, game.gameId, info))
+				for (const std::string& part : {info.publisher, ps5gameinfo::Year(info.released)})
+					if (!part.empty())
+						details += (details.empty() ? "" : "  /  ") + part;
+			std::string cover = ps5boxart::Path(ps5boxart::System::N3ds, game.gameId);
+			if (cover.empty())
+				cover = CoverPath(game.titleId);
+			ps5ingame3ds::SetGame(details, cover);
+		}
 		ShowInMenu();
 		ShowStateSlots();
 		ShowExtras();
@@ -814,6 +860,7 @@ namespace ps5azahar
 		std::mutex s_installMutex;
 		ps5emu::InstallStatus s_install;
 		std::atomic_bool s_installing = false;
+		std::atomic<bool> s_cancelInstall = false; // read by Azahar's install loop (patches/azahar)
 	}
 
 	bool StartInstall(const std::string& cia, std::string& error)
@@ -829,6 +876,7 @@ namespace ps5azahar
 			s_install = {};
 			s_install.state = ps5emu::InstallStatus::State::Running;
 		}
+		s_cancelInstall = false;
 		s_installing = true;
 		std::thread([cia] {
 			ps5log::Line("[azahar] installing {}", cia);
@@ -838,16 +886,22 @@ namespace ps5azahar
 			// and comes back as ErrorAborted
 			bool compressed = false;
 			auto result = Service::AM::CheckCIAToInstall(cia, compressed, true);
-			if (result == Result::Success)
-				result = Service::AM::InstallCIA(cia, [](std::size_t written, std::size_t total) {
-					std::lock_guard lock(s_installMutex);
-					s_install.copied = written;
-					s_install.total = total;
-				});
+			if (result == Result::Success && s_cancelInstall)
+				result = Result::Cancelled;
+			else if (result == Result::Success)
+				result = Service::AM::InstallCIA(
+					cia,
+					[](std::size_t written, std::size_t total) {
+						std::lock_guard lock(s_installMutex);
+						s_install.copied = written;
+						s_install.total = total;
+					},
+					&s_cancelInstall);
 			std::lock_guard lock(s_installMutex);
 			switch (result)
 			{
 			case Result::Success: s_install.state = ps5emu::InstallStatus::State::Done; break;
+			case Result::Cancelled: s_install.state = ps5emu::InstallStatus::State::Cancelled; break;
 			case Result::ErrorEncrypted:
 				// Azahar installs only CIAs decrypted all the way through, the CIA and the game in
 				// it; the 3DS's keys do not change that
@@ -862,9 +916,10 @@ namespace ps5azahar
 				break;
 			default: s_install.message = "it is not a CIA Azahar can install"; break;
 			}
-			if (result != Result::Success)
+			if (result != Result::Success && result != Result::Cancelled)
 				s_install.state = ps5emu::InstallStatus::State::Failed;
-			ps5log::Line("[azahar] install of {}: {}", cia, result == Result::Success ? "done" : s_install.message);
+			ps5log::Line("[azahar] install of {}: {}", cia,
+				result == Result::Success ? "done" : result == Result::Cancelled ? "cancelled, what it wrote removed" : s_install.message);
 			s_installing = false;
 		}).detach();
 		return true;
@@ -878,6 +933,8 @@ namespace ps5azahar
 
 	void CancelInstall()
 	{
-		// Azahar writes a CIA's contents as it reads them, with no way to stop part-way: it finishes
+		// Azahar writes a CIA's contents in place as it reads them: its install loop stops at its next
+		// 64 KiB and removes the title's contents, as it does for an install that fails part-way
+		s_cancelInstall = true;
 	}
 }

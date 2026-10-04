@@ -282,6 +282,7 @@ namespace ps5emu
 			wiimote->set_device_type(type == EmulatedType::Nunchuk ? kWAPDevFreestyle : kWAPDevCore);
 		DefaultMapping(emulated, pad);
 		Save(player);
+		PS5PadController::SetWiiRemote(player, cemuType == EmulatedController::Type::Wiimote); // it points
 		ps5log::Line("[controls] player {}: {}", player + 1, emulated->type_string());
 	}
 

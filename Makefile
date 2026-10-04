@@ -8,7 +8,8 @@ SHELL := /bin/bash
 .DEFAULT_GOAL := help
 MAKEFLAGS += --no-print-directory
 
-VERSION := 2.0.0d
+# The release's version, set here only: port/CMakeLists.txt and tools/package.sh (param.json) read it
+VERSION := 3.0.0
 APP := build/app/PPSA99360
 JOBS ?= $(shell nproc)
 export JOBS
@@ -47,11 +48,14 @@ check: deps azahar ## Build and package everything with a stand-in for RADV, to 
 package: build ## The app folder: build/app/PPSA99360
 	bash tools/package.sh
 
-release: package ## dist/PS5CEMU-HAR-vVERSION.zip (the PPSA99360 folder) and SHA256SUMS
+release: package ## dist/PS5CEMU-HAR-vVERSION.zip (the PPSA99360 folder), SHA256SUMS, and the ELF with its symbols
 	@mkdir -p dist
 	rm -f dist/PS5CEMU-HAR-v$(VERSION).zip
 	cd build/app && python3 -m zipfile -c ../../dist/PS5CEMU-HAR-v$(VERSION).zip PPSA99360
 	cd dist && sha256sum PS5CEMU-HAR-v$(VERSION).zip > SHA256SUMS
+	@# the unstripped ELF of the eboot, kept to look up this release's crash reports
+	@# (tools/symbolize-crash.py dist/ps5cemu-vVERSION.elf boot.log)
+	cp build/cemu/ps5cemu.elf dist/ps5cemu-v$(VERSION).elf
 	@cat dist/SHA256SUMS
 
 clean: ## Remove build outputs (build/, dist/); dependencies stay

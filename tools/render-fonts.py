@@ -5,7 +5,8 @@
     render-fonts.py FONT_TTF OUTPUT_DIR
 
 writes OUTPUT_DIR/Lexend-SIZE.fnt and .tga (the text's weight) and Lexend-Bold-SIZE.fnt and .tga
-(titles, font-weight: bold) for each size the launcher loads (port/frontend/ui_host.cpp). Each
+(titles, font-weight: bold) for each size the launcher loads (port/frontend/ui_host.cpp), and the
+large title sizes in bold only (TITLE_SIZES). Each
 .fnt is an AngelCode BMFont description in XML and each .tga its glyphs, white with their coverage
 as alpha, in a 32-bit top-down TGA: what ProsperoEden's bitmap font engine reads, as it read its
 Montserrat atlases. The glyphs are ASCII, Latin-1 (so game names such as "Pokémon" keep their
@@ -27,6 +28,7 @@ from PIL import Image, ImageDraw, ImageFont, features
 
 FAMILY = "Lexend"
 SIZES = (20, 24, 28, 32, 36, 40, 48)
+TITLE_SIZES = (56, 64, 72)  # bold only: the home screen's and a game's page's titles
 # the variable font's weight axis: the text's, and the titles'
 WEIGHTS = {"": 400, "-Bold": 600}
 CHARACTERS = (list(range(0x20, 0x7F)) + list(range(0xA0, 0x100)) +
@@ -148,6 +150,9 @@ def main():
         for suffix, weight in WEIGHTS.items():
             name, width, height, pairs = render(path, output, size, suffix, weight)
             print(f"{name}: {width}x{height}, {pairs} kerning pairs")
+    for size in TITLE_SIZES:
+        name, width, height, pairs = render(path, output, size, "-Bold", WEIGHTS["-Bold"])
+        print(f"{name}: {width}x{height}, {pairs} kerning pairs")
 
 
 if __name__ == "__main__":

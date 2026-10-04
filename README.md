@@ -17,7 +17,7 @@ rendering with Vulkan through Mihawk's PS5 port of the RADV driver and played wi
 - [Cemu](https://github.com/cemu-project/Cemu) for Wii U games
 - [Azahar](https://github.com/azahar-emu/azahar) for Nintendo 3DS games
 
-The app opens on a start screen where you pick PS5 CEMU (Wii U) or PS5 AZAHAR (3DS). Each has its
+The app opens on a start screen where you pick Wii U (Cemu) or Nintendo 3DS (Azahar). Each has its
 own launcher, game library, settings and in-game menu.
 
 This is an unofficial project, not affiliated with or endorsed by the Cemu or Azahar teams, Nintendo
@@ -56,8 +56,12 @@ to see new ones.
 
 | Button | Action |
 |---|---|
-| Left / Right, Cross | Choose PS5 CEMU or PS5 AZAHAR |
-| Circle (on a launcher's home screen) | Go back to the start screen |
+| Left / Right, Cross | Choose Wii U or Nintendo 3DS on the start screen |
+| L1 / R1 | Switch between Home, Library and Settings |
+| Cross | Play the game, or open what's focused |
+| Square | A game's page |
+| Triangle | A setting's help; a game's graphic packs (Wii U library) |
+| Circle | Back; on Home, back to the start screen |
 
 You can switch sides without the app restarting. Each emulator's core only starts with one of its
 games, so Cemu and Azahar never run at the same time, and the launcher's background work stops
@@ -65,12 +69,14 @@ before a game starts. After a game, the app opens on the side you played on.
 
 Both launchers have:
 
-- **Home:** your last game, recent games, and a **Coming soon** row of planned features
-- **Library:** all your games with their icons, plus box art from [GameTDB](https://www.gametdb.com/)
-  when it's available
-- **Settings:** video, audio, controls (remap any button by pressing it), game folder, installs,
-  online options and diagnostics
-- **About:** credits and where the app stores its files
+- **Home:** your last game with its box art, **Play** and **Details**, and your recent games
+- **Library:** every game's box art from [GameTDB](https://www.gametdb.com/) in a grid (its icon
+  until the cover arrives)
+- **Game pages:** a game's description, developer, publisher, release date, genre, players and
+  rating from GameTDB, and how it runs from the [compatibility list](docs/COMPATIBILITY.md); L1 and
+  R1 go to the next game
+- **Settings:** categories down the left (video, audio, controls, game files, installs, online,
+  diagnostics and about), a line under each setting saying what it does, and Triangle for more
 - **Music and menu sounds:** two original pieces in the spirit of a Nintendo console's shop and
   setup screens; **Settings > Audio** picks the piece and its volume, or turns it off
 
@@ -98,7 +104,7 @@ Both launchers have:
   ScaleForce, xBRZ, MMPX), and shaders compiled in the background so games don't stutter.
 - Screen layouts: a large top screen with the bottom one beside it, the top screen only, side by
   side, or stacked; either screen can take the main spot.
-- **Borders:** Midnight, Waves, Aurora or Shell artwork around the screens in every layout, from
+- **Borders:** Midnight, Waves, Aurora, Shell or PS5CEMU-HAR artwork around the screens in every layout, from
   **Settings > Borders** or the in-game menu.
 - DualSense: A on Circle and B on Cross like a real 3DS (or swapped), circle pad and C-stick on the
   sticks, ZL/ZR on L2/R2, motion from the gyro and accelerometer, and every button remappable in
@@ -158,8 +164,9 @@ software you own, and don't download or share them.
 | Touchpad click + L1 | Swap the screens |
 | Touchpad click + R1 | Next screen layout |
 
-In the in-game menu, the D-pad moves, Cross selects, Left and Right change a setting, and Circle goes
-back to the game. Changes are kept for your next games.
+The in-game menu opens on the left with the game's box art and details. Up and Down move, Right or
+Cross opens a category, Left and Right change a setting, and Circle closes a category or goes back to
+the game. Changes are kept for your next games. A 3DS game pauses while its menu is open.
 
 - **Both:** screens, picture, volume, controls, the performance overlay, and **Back to the library**
   (press Cross twice; unsaved progress is lost).
@@ -192,8 +199,11 @@ back to the game. Changes are kept for your next games.
   (`art.gametdb.com`) by the ID on the game's box, in the background, into
   `/data/ps5cemu/covers/boxart`. A cover GameTDB doesn't have leaves a `.none` file there; delete it
   to try again. **Settings > Online and updates** turns the downloads off.
-- **Update notice:** when the app starts fresh, it asks GitHub once for the latest release and shows
-  a notification if a newer PS5CEMU-HAR is out. Nothing is downloaded or installed.
+- **Updates:** when the app starts fresh, it asks GitHub for the latest release. When a newer
+  PS5CEMU-HAR is out, it asks whether to install it: **Update now** downloads the release, checks it
+  against the release's SHA-256, puts its files in place of the old ones and starts the app again.
+  Your games, saves and settings in `/data/ps5cemu` stay as they are. **Settings > Online and
+  updates > PS5CEMU-HAR updates** checks again.
 
 Without an internet connection, the libraries just show the game icons.
 
@@ -253,6 +263,30 @@ It asks for your firmware, HEN, app version and logs, which almost every problem
 The boot log also gets a `[memory]` line once a minute, a `[perf]` (Wii U) or `[perf3ds]` (3DS) line
 every 10 seconds with the frame rate, and `[crash]` lines if an emulator crashes.
 
+## What's new in 3.0.0
+
+- **Updates from inside the app.** When a newer release is out, the app offers to download and install
+  it, then starts again as the new version.
+- **A new launcher.** Box art first and fewer words: Home, Library and Settings along the top (L1
+  and R1), a grid of covers, and a page for each game with its description, developer, publisher,
+  release date and rating from GameTDB, and its status from the compatibility list.
+- **New in-game menus:** a panel on the left with the game's box art and details, its settings in
+  categories that open in place.
+- **Graphic packs in the Wii U in-game menu:** turn packs on and off and change their presets while
+  the game runs, as Cemu's Graphic Packs window does (packs that replace textures apply at the next
+  start).
+- **3DS games pause** while the in-game menu is open.
+- **3DS Home Menu** (Settings > System), from your console's files once Artic Setup has run.
+- **Wii Remote pointer:** a Wii Remote points where a finger rests on the touchpad, or where you aim
+  the DualSense.
+- **GamePad speaker:** the sounds games play on the GamePad, from the DualSense's speaker
+  (Settings > Audio).
+- **Community graphic packs update** from GitHub (Settings > Online).
+- **CIA installs can be canceled** with Circle.
+- **A PS5CEMU-HAR border** for 3DS games: the Wii U side's bubbles meeting the 3DS side's waves.
+- **New home screen art and icon** on the PS5, in the banner's design.
+- **The launcher draws its rounded panels itself,** so they show without seams on the console.
+
 ## What's new in 2.0.0 D
 
 - **Breath of the Wild's runes fixed.** Magnesis, the other runes and the Sheikah scope no longer
@@ -292,11 +326,11 @@ every 10 seconds with the frame rate, and `[crash]` lines if an emulator crashes
 
 ## Known issues
 
-- Going back to the library restarts the app, and the game keeps running behind the in-game menu.
+- Going back to the library restarts the app, and a Wii U game keeps running behind the in-game
+  menu.
 - Batman: Arkham Origins needs its 60 FPS graphic pack turned off; with it on, it glitches and
   crashes once gameplay loads ([#15](https://github.com/premohq/PS5CEMU-HAR/issues/15)).
 - 3DS camera, microphone, local wireless and online play aren't supported.
-- A CIA install can't be canceled once it starts.
 - 3DS texture filters are expensive at high internal resolutions; if a game stutters, try Texture
   filter: None first.
 - The first start with a large Wii U shader cache takes a few minutes while Cemu builds the
