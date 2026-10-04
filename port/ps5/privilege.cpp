@@ -153,7 +153,10 @@ namespace ps5privilege
 		// HEN's JIT memory first (what the recompiler has used since 1.0), else executable direct
 		// memory, which any title gets: the recompiler runs either way
 		const bool henJit = ProbeJit();
-		const bool directExec = !henJit && ProbeExecutableDirect();
+		// asked either way: Azahar's recompiler (dynarmic) takes this memory even where the HEN gives
+		// JIT memory, and runs Azahar's interpreter without it
+		const bool directExec = ProbeExecutableDirect();
+		r.executable = directExec;
 		r.jit = henJit || directExec;
 		r.filesystem = CanReachData();
 		std::string elevationDetail;
@@ -163,8 +166,9 @@ namespace ps5privilege
 			r.filesystem = status == elevation::Status::ok && CanReachData();
 			elevationDetail = fmt::format(", elevation helper: {}", (int)status);
 		}
-		r.summary = fmt::format("HEN: {} ({}); JIT {}; /data {}{}", r.jailbroken ? "ok" : "no", henDetail,
+		r.summary = fmt::format("HEN: {} ({}); JIT {}{}; /data {}{}", r.jailbroken ? "ok" : "no", henDetail,
 			henJit ? "available (the HEN's)" : directExec ? "available (executable direct memory, no HEN needed)" : "unavailable (interpreter only)",
+			henJit && !directExec ? "; no executable direct memory: 3DS games run on Azahar's interpreter" : "",
 			r.filesystem ? "reachable" : "unreachable", elevationDetail);
 		s_result = r;
 		return r;

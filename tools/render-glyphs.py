@@ -14,6 +14,7 @@ one. Each is drawn at the sizes the layouts show it at, so none is scaled.
   Settings' categories: video audio controls borders system folder install online diagnostics about
       packs
   each side's mark, beside its name in the top bar: wiiu (the GamePad) and 3ds
+  usb: Settings' USB devices (the USB trident)
 
 Shapes are signed distance functions, strokes of an even width, anti-aliased over a pixel.
 """
@@ -208,6 +209,18 @@ def packs(x, y):
     return min(top, lower, lowest)
 
 
+def usb(x, y):
+    """The USB trident: a stem with an arrow on top, a branch to a ring and one to a square."""
+    stem = stroke(segment(x, y, 0.5, 0.86, 0.5, 0.2), W)
+    head = polygon(x, y, [(0.5, 0.06), (0.39, 0.22), (0.61, 0.22)])
+    left = stroke(min(segment(x, y, 0.5, 0.66, 0.28, 0.52), segment(x, y, 0.28, 0.52, 0.28, 0.42)), W)
+    right = stroke(min(segment(x, y, 0.5, 0.56, 0.72, 0.44), segment(x, y, 0.72, 0.44, 0.72, 0.36)), W)
+    ring = abs(math.hypot(x - 0.28, y - 0.36) - 0.06) - W / 2
+    square = rounded_box(x, y, 0.72, 0.31, 0.06, 0.06, 0.01)
+    foot = math.hypot(x - 0.5, y - 0.86) - 0.075
+    return min(stem, head, left, right, ring, square, foot)
+
+
 def wiiu(x, y):
     """The Wii U GamePad: its body, its screen, the sticks."""
     body = ring(rounded_box(x, y, 0.5, 0.5, 0.45, 0.26, 0.13), W)
@@ -252,6 +265,7 @@ GLYPHS = {
     "diagnostics": (diagnostics, ("rail",)),
     "about": (about, ("rail",)),
     "packs": (packs, ("rail",)),
+    "usb": (usb, ("rail",)),
     "wiiu": (wiiu, ("mark",)),
     "3ds": (n3ds, ("mark",)),
 }

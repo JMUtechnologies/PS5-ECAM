@@ -26,6 +26,7 @@ namespace ps5privilege
 		bool jailbroken = false; // the HEN jailbroke the process
 		bool filesystem = false; // /data is reachable
 		bool jit = false;		 // JIT memory can be created (the recompiler can run)
+		bool executable = false; // executable direct memory (ps5platform/exec.h), which Azahar's recompiler takes
 		std::string summary;	 // one line for the log and the launcher's status
 	};
 

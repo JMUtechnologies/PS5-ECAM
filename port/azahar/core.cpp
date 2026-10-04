@@ -26,6 +26,7 @@
 #include "../ps5/log.h"
 #include "../ps5/notify.h"
 #include "../ps5/pad.h"
+#include "../ps5/privilege.h"
 #include "../ps5/vulkan_display.h"
 
 #include "audio_core/sink_details.h"
@@ -403,7 +404,11 @@ namespace ps5azahar
 			values.texture_filter = (Settings::TextureFilter)std::clamp(settings.textureFilter, 0, 5);
 			values.layout_option = LayoutOf(settings.layout);
 			values.swap_screen = false;
-			values.use_cpu_jit = true;
+			// dynarmic's code goes in executable direct memory (ps5platform/exec.h): where the console
+			// refuses it, Azahar's interpreter runs the game (slower) rather than nothing at all
+			values.use_cpu_jit = ps5privilege::Current().executable;
+			if (!values.use_cpu_jit.GetValue())
+				ps5log::Line("[azahar] no executable direct memory: the 3DS CPU runs on Azahar's interpreter");
 			values.cpu_clock_percentage = std::clamp(settings.cpuClock, 25, 400);
 			values.is_new_3ds = true;
 			// automatic (-1) takes the game's own region; a game made for another one may refuse to

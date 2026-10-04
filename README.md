@@ -183,6 +183,12 @@ the game. Changes are kept for your next games. A 3DS game pauses while its menu
   the 3DS, **Save states, cheats, amiibo > Amiibo**, then **Take the amiibo away** when the game is
   done. 3DS games can only write to an amiibo with your console's `aes_keys.txt`. No amiibo files
   are included.
+- **Skylanders, Disney Infinity and LEGO Dimensions (Wii U).** **Settings > USB devices** switches on
+  Cemu's emulated Skylanders Portal of Power, Disney Infinity Base or LEGO Dimensions Toypad; it is
+  plugged in when a game starts. Put your figure dumps in `/data/ps5cemu/figures/skylanders`,
+  `infinity` or `dimensions`, then in the game open the in-game menu's **USB devices**: Left and Right
+  put the next figure on a slot, and **Empty** takes it off. The game saves its progress into the dump,
+  as it would on the toy. A real portal plugged into the PS5 isn't supported.
 - **Save states (3DS).** Five slots per game; loading asks twice. Save states are tied to the app
   version that made them, so keep saving in the game too.
 - **Cheats (3DS).** Put a game's cheats in `/data/ps5cemu/azahar/cheats/<title ID>.txt` (16 hex
@@ -222,6 +228,7 @@ Everything the app writes goes to `/data/ps5cemu`, except your game files:
 ├── graphicPacks/                   community graphic packs and your own
 ├── cache/                          Cemu shader and pipeline caches
 ├── amiibo/                         your amiibo dumps (.bin), for both emulators
+├── figures/                        Skylanders, Disney Infinity and LEGO Dimensions dumps (Wii U)
 ├── azahar/
 │   ├── games/                      default 3DS game folder
 │   ├── sdmc/                       3DS SD card: installed CIAs, saves, extra data
@@ -272,6 +279,11 @@ every 10 seconds with the frame rate, and `[crash]` lines if an emulator crashes
   release date and rating from GameTDB, and its status from the compatibility list.
 - **New in-game menus:** a panel on the left with the game's box art and details, its settings in
   categories that open in place.
+- **Skylanders, Disney Infinity and LEGO Dimensions** on Cemu's emulated portals: switch one on in
+  Settings > USB devices, and put figures on and take them off from the in-game menu
+  ([#18](https://github.com/premohq/PS5CEMU-HAR/issues/18)).
+- **3DS games run where the console refuses the recompiler's memory,** on Azahar's interpreter
+  (slower), instead of not at all; Settings > Diagnostics says which.
 - **Graphic packs in the Wii U in-game menu:** turn packs on and off and change their presets while
   the game runs, as Cemu's Graphic Packs window does (packs that replace textures apply at the next
   start).

@@ -19,6 +19,7 @@
 #include "../app/pack_updates.h"
 #include "../app/paths.h"
 #include "../app/updates.h"
+#include "../app/usb_devices.h"
 #include "../ps5/kernel.h"
 #include "../ps5/log.h"
 #include "../ps5/notify.h"
@@ -592,7 +593,7 @@ namespace ps5launcher
 		constexpr const char* kPageIds[] = {"packs-dialog", "player-dialog", "mapping-dialog", "files-dialog", "artic-dialog"};
 
 		// Settings' categories, as render-layout.py lays out the rail (the same order)
-		constexpr const char* kCategoriesWiiU[] = {"video", "audio", "controls", "files", "installs", "online", "diagnostics", "about"};
+		constexpr const char* kCategoriesWiiU[] = {"video", "audio", "controls", "usb", "files", "installs", "online", "diagnostics", "about"};
 		constexpr const char* kCategories3ds[] = {"video", "audio", "controls", "borders", "system", "files", "installs", "online", "diagnostics", "about"};
 		constexpr int kSettingRows = 7, kHints = 4;
 
@@ -2038,6 +2039,16 @@ namespace ps5launcher
 							"signed-in user who started the app; the other signed-in users' DualSenses are players 2 to 4.",
 							!controls.connected});
 					}
+				else if (category == "usb")
+					for (ps5usb::Device device : ps5usb::kDevices)
+						rows.push_back({fmt::format("usb{}", (int)device), ps5usb::Name(device),
+							!m_status.coreReady ? "-" : ps5usb::Enabled(device) ? "On" : "Off",
+							device == ps5usb::Device::Skylanders ? "For the Skylanders games." :
+							device == ps5usb::Device::Infinity	 ? "For Disney Infinity 3.0." :
+																   "For LEGO Dimensions.",
+							"Cemu's emulated portal, plugged in as a game starts. In the game, the menu's USB devices category puts "
+							"figures on it: dumps in " + ps5usb::Folder(device) + ". A real portal on the PS5's USB is not reached.",
+							!m_status.coreReady});
 				else if (category == "borders")
 					rows = {{"border", "Border", kBorderThemes[std::clamp(n3ds.border, 0, kBorderThemeCount - 1)], "Artwork around the screens.",
 						"Artwork around the 3DS screens, never over them. It follows every layout, and the in-game menu changes it too."}};
@@ -2105,6 +2116,9 @@ namespace ps5launcher
 						text += line + "\n";
 					return text;
 				}
+				if (category == "usb")
+					return "Figure dumps go in /data/ps5cemu/figures: skylanders, infinity and dimensions. Switch a portal on here, "
+						   "start the game, then put figures on it from the in-game menu (Touchpad + Options > USB devices).";
 				if (category == "about")
 					return Is3ds() ?
 						"Azahar, the 3DS emulator, by the Azahar team and the Citra contributors before them; Mihawk-99's PS5 port of it "
@@ -2248,6 +2262,13 @@ namespace ps5launcher
 					n3ds.region = (n3ds.region + 1 + step + 8) % 8 - 1;
 				else if (id == "language")
 					n3ds.language = (n3ds.language + 1 + step + 13) % 13 - 1;
+				else if (id.rfind("usb", 0) == 0 && id.size() == 4 && m_status.coreReady)
+				{
+					// Cemu's settings.xml keeps it, as its Emulated USB Devices window does
+					const auto device = (ps5usb::Device)(id[3] - '0');
+					ps5usb::SetEnabled(device, !ps5usb::Enabled(device));
+					changed = false; // not the launcher's own settings
+				}
 				else if (id == "homemenu" && cross)
 				{
 					// the 3DS Home Menu, from the console's files Artic Setup copied
@@ -2332,6 +2353,7 @@ namespace ps5launcher
 					SetClass(m_document, fmt::format("rail-{}", i), "focused", !m_onTabs && m_onRail && i == m_category);
 				}
 				static const std::map<std::string, std::string> kTitles = {{"video", "Video"}, {"audio", "Audio"}, {"controls", "Controls"},
+					{"usb", "USB devices"},
 					{"borders", "Borders"}, {"system", "System"}, {"files", "Game files"}, {"installs", "Installs"}, {"online", "Online and updates"},
 					{"diagnostics", "Diagnostics"}, {"about", "About"}};
 				SetText(m_document, "panel-title", kTitles.count(category) ? kTitles.at(category) : category);

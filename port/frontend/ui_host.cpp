@@ -358,20 +358,48 @@ namespace
 				const int bottom = std::min(clipBottom, (int)std::ceil(std::max({ay, by, cy})));
 				if (left >= right || top >= bottom)
 					continue;
-				// the barycentric weights of a and b, linear in the pixel's position
-				const double stepA = (by - cy) / area, stepB = (cy - ay) / area;
+				// the barycentric weights of a and b, linear in the pixel's position; c's is what is left
+				const double stepA = (by - cy) / area, stepB = (cy - ay) / area, stepC = -stepA - stepB;
 				const bool flat = SameColour(a, b) && SameColour(a, c);
+				const bool opaque = flat && a.colour.alpha == 255;
+				const uint32_t solid = (uint32_t)a.colour.red << format.Rshift | (uint32_t)a.colour.green << format.Gshift |
+					(uint32_t)a.colour.blue << format.Bshift | format.Amask;
 				for (int y = top; y < bottom; y++)
 				{
-					const double px = left + 0.5 + 1e-5, py = y + 0.5 + 2e-5;
-					double wa = (bx * cy - by * cx + px * (by - cy) + py * (cx - bx)) / area;
-					double wb = (cx * ay - cy * ax + px * (cy - ay) + py * (ax - cx)) / area;
+					const double py = y + 0.5 + 2e-5;
+					// each weight at px = 0 on this row: the pixels where all three are not negative
+					const double ka = (bx * cy - by * cx + py * (cx - bx)) / area;
+					const double kb = (cx * ay - cy * ax + py * (ax - cx)) / area;
+					const double kc = 1.0 - ka - kb;
+					double from = left, to = right;
+					bool empty = false;
+					for (const auto& [k, step] : {std::pair{ka, stepA}, std::pair{kb, stepB}, std::pair{kc, stepC}})
+					{
+						if (step > 0.0)
+							from = std::max(from, -k / step - 0.5);
+						else if (step < 0.0)
+							to = std::min(to, -k / step - 0.5);
+						else if (k < 0.0)
+							empty = true;
+					}
+					if (empty || from > to + 1.0)
+						continue;
+					// the span found, a pixel either side: the exact test below decides its edges, so two
+					// triangles sharing an edge still split its pixels between them as before
+					const int start = std::max(left, (int)std::floor(from) - 1), end = std::min(right, (int)std::ceil(to) + 2);
+					const double px = start + 0.5 + 1e-5;
+					double wa = ka + px * stepA, wb = kb + px * stepB;
 					auto* row = reinterpret_cast<uint32_t*>(static_cast<uint8_t*>(m_surface->pixels) + (size_t)y * m_surface->pitch);
-					for (int x = left; x < right; x++, wa += stepA, wb += stepB)
+					for (int x = start; x < end; x++, wa += stepA, wb += stepB)
 					{
 						const double wc = 1.0 - wa - wb;
 						if (wa < 0.0 || wb < 0.0 || wc < 0.0)
 							continue;
+						if (opaque)
+						{
+							row[x] = solid;
+							continue;
+						}
 						int red = a.colour.red, green = a.colour.green, blue = a.colour.blue, alpha = a.colour.alpha;
 						if (!flat)
 						{

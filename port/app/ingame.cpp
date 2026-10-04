@@ -7,6 +7,7 @@
 #include "paths.h"
 #include "side_menu.h"
 #include "tga.h"
+#include "usb_devices.h"
 #include "../ps5/kernel.h"
 #include "../ps5/log.h"
 #include "../ps5/pad.h"
@@ -216,6 +217,33 @@ namespace
 			rows.push_back({"packs", "Graphic packs", "", false,
 				"The game's community graphic packs: resolution, frame rate and mods, as Cemu's Graphic Packs window has them.", packs});
 		}
+		// the toys-to-life portals: each device's switch, and the figures on the ones plugged in
+		{
+			std::vector<Row> usb;
+			for (ps5usb::Device device : ps5usb::kDevices)
+			{
+				const int d = (int)device;
+				const bool on = ps5usb::Enabled(device), plugged = ps5usb::Plugged(device);
+				usb.push_back({fmt::format("usb:{}", d), ps5usb::Name(device),
+					std::string(on ? "On" : "Off") + (on != plugged ? " (next start)" : ""), true,
+					on != plugged ? "The game sees the change when it starts again: the portal is plugged in as a game starts." :
+									"Plugged in as a game starts, as in Cemu. Its figures are below while it is on."});
+				if (!plugged)
+					continue;
+				const auto figures = ps5usb::Figures(device);
+				const auto slots = ps5usb::Slots(device);
+				for (size_t s = 0; s < slots.size(); s++)
+					usb.push_back({fmt::format("figure:{}:{}", d, s), "   " + slots[s].label,
+						slots[s].figure.empty() ? "Empty" : fs::path(slots[s].figure).stem().string(), true,
+						figures.empty() ? "Put figure dumps in " + ps5usb::Folder(device) + " to put them on here." :
+										  "Left and Right put the next figure on it; Empty takes it off."});
+			}
+			const std::string error = ps5usb::LastError();
+			if (!error.empty())
+				usb.push_back({"usberror", error, "", false, "The last figure could not be put on."});
+			rows.push_back({"usb", "USB devices", "", false,
+				"Skylanders, Disney Infinity and LEGO Dimensions figures on Cemu's emulated portals, as amiibo are scanned.", usb});
+		}
 		rows.push_back({"volume", "Volume", fmt::format("{}%", config.tv_volume), true, "The game's sound. Left and Right change it by 10%."});
 		rows.push_back({"amiibo", "Amiibo", !s_amiiboMessage.empty() ? s_amiiboMessage : s_amiibo.empty() ? "None" : s_amiibo[s_amiiboIndex], true,
 			s_amiibo.empty() ? "Put amiibo dumps (.bin) in /data/ps5cemu/amiibo to scan them here." :
@@ -305,6 +333,30 @@ namespace
 				s_libraryRequested = true;
 			s_confirmLibrary = true;
 		}
+		else if (id.rfind("usb:", 0) == 0)
+		{
+			const auto device = (ps5usb::Device)std::stoi(id.substr(4));
+			ps5usb::SetEnabled(device, !ps5usb::Enabled(device));
+		}
+		else if (id.rfind("figure:", 0) == 0)
+		{
+			// the next figure in the folder, or the one before; Empty between the last and the first
+			int d = 0;
+			size_t slot = 0;
+			std::sscanf(id.c_str(), "figure:%d:%zu", &d, &slot);
+			const auto device = (ps5usb::Device)d;
+			const auto figures = ps5usb::Figures(device);
+			const auto slots = ps5usb::Slots(device);
+			if (slot < slots.size())
+			{
+				std::vector<std::string> choices{""};
+				choices.insert(choices.end(), figures.begin(), figures.end());
+				const auto at = std::find(choices.begin(), choices.end(), slots[slot].figure);
+				const int now = at == choices.end() ? 0 : (int)(at - choices.begin());
+				const int count = (int)choices.size();
+				ps5usb::RequestFigure(device, slot, choices[(now + (change < 0 ? count - 1 : 1)) % count]);
+			}
+		}
 		else if (id.rfind("pack:", 0) == 0)
 			ps5emu::RequestGraphicPackToggle(std::stoul(id.substr(5)));
 		else if (id.rfind("preset:", 0) == 0)
@@ -382,6 +434,7 @@ namespace
 			s_confirmLibrary = false;
 			FindAmiibo();
 			ps5emu::RequestGraphicPackList(); // the main thread lists them for the menu
+			ps5usb::Refresh();				  // the figures in their folders
 			std::lock_guard lock(s_gameMutex);
 			if (s_gameName.empty())
 				s_gameName = CafeSystem::GetForegroundTitleName();

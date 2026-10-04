@@ -50,7 +50,8 @@ WIIU = {
     "grid": (7, 2, 212, 290),
     "settings": [
         ("video", "Video", "video"), ("audio", "Audio", "audio"), ("controls", "Controls", "controls"),
-        ("files", "Game files", "folder"), ("installs", "Updates and DLC", "install"), ("online", "Online", "online"),
+        ("usb", "USB devices", "usb"), ("files", "Game files", "folder"), ("installs", "Updates and DLC", "install"),
+        ("online", "Online", "online"),
         ("diagnostics", "Diagnostics", "diagnostics"), ("about", "About", "about"),
     ],
 }

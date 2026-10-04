@@ -73,6 +73,8 @@ add_library(CemuPS5 STATIC
 	app/install.cpp
 	app/updates.cpp
 	app/updates.h
+	app/usb_devices.cpp
+	app/usb_devices.h
 	app/menu_canvas.h
 	app/pack_updates.cpp
 	app/pack_updates.h

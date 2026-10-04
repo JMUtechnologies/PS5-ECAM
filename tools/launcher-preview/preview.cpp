@@ -29,6 +29,7 @@
 #include "app/gameinfo.h"
 #include "app/pack_updates.h"
 #include "app/updates.h"
+#include "app/usb_devices.h"
 #include "azahar/library.h"
 #include "frontend/bubbles.h"
 #include "frontend/launcher.h"
@@ -664,6 +665,34 @@ namespace ps5packs
 	void Start() {}
 	Status GetStatus() { return {}; }
 	void Stop() {}
+}
+
+// -- Cemu's emulated USB devices, in brief: switches only
+
+namespace ps5usb
+{
+	namespace
+	{
+		bool s_usbOn[3] = {true, false, false};
+	}
+	const char* Name(Device device)
+	{
+		return device == Device::Skylanders ? "Skylanders Portal of Power" : device == Device::Infinity ? "Disney Infinity Base" : "LEGO Dimensions Toypad";
+	}
+	std::string Folder(Device device)
+	{
+		return std::string("/data/ps5cemu/figures/") + (device == Device::Skylanders ? "skylanders" : device == Device::Infinity ? "infinity" : "dimensions");
+	}
+	bool Enabled(Device device) { return s_usbOn[(int)device]; }
+	void SetEnabled(Device device, bool on) { s_usbOn[(int)device] = on; }
+	bool Plugged(Device device) { return s_usbOn[(int)device]; }
+	std::vector<std::string> Figures(Device) { return {}; }
+	std::vector<Slot> Slots(Device) { return {}; }
+	void RequestFigure(Device, size_t, const std::string&) {}
+	void Refresh() {}
+	void GameStarted() {}
+	void ServiceRequests() {}
+	std::string LastError() { return {}; }
 }
 
 // -- the app's own update, in brief: with PREVIEW_UPDATE set, a newer release is found as the app

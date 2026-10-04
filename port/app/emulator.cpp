@@ -10,6 +10,7 @@
 #include "ingame.h"
 #include "pack_updates.h"
 #include "paths.h"
+#include "usb_devices.h"
 #include "../frontend/settings.h"
 #include "../ps5/display.h"
 #include "../ps5/kernel.h"
@@ -562,11 +563,14 @@ namespace ps5emu
 		LogMemory();
 		uint32_t loggedFrames = LatteGPUState.frameCounter;
 		uint64_t loggedAt = sceKernelGetProcessTime();
+		ps5usb::GameStarted(); // the portals the game was started with
+		ps5usb::Refresh();
 		for (;;)
 		{
 			sceKernelUsleep(16000);
-			// the in-game menu's graphic pack changes, made here as Cemu's window makes them
+			// the in-game menu's graphic pack changes and figures, made here as Cemu's windows make them
 			ServiceGraphicPackRequests();
+			ps5usb::ServiceRequests();
 			if (++polls % 120 == 0)
 				ps5pad::Rescan(); // controllers joining or leaving, about every two seconds
 			if (polls % 3750 == 0)
