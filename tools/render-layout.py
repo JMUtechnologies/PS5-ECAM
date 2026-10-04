@@ -32,7 +32,6 @@ WIIU = {
     "features": [
         ("GamePad speaker", "GamePad speaker: the sounds games play on the GamePad, from the DualSense's speaker."),
         ("Manage data", "Manage data: see, delete, back up and restore each game's updates, DLC and saves."),
-        ("Search", "Search: find a game by its name, and sort the library your way."),
         ("App updates", "App updates: a notice when a new PS5CEMU-HAR is out, and the newest graphic packs. Game updates and DLC already install from Settings > Install updates and DLC."),
         ("Game list", "Game list: which Wii U games run well on the PS5, from players' reports."),
     ],
@@ -71,8 +70,6 @@ N3DS = {
     "features": [
         ("Microphone", "Microphone: the DualSense's microphone as the 3DS's, for the games that listen."),
         ("Camera", "Camera: the PS5 HD Camera as the 3DS cameras, for QR codes and the games that use them."),
-        ("Search", "Search: find a game by its name, and sort the library your way."),
-        ("Pause", "Pause: the game stops while the in-game menu is open."),
         ("Home Menu", "Home Menu: start the 3DS Home Menu, once Artic Setup has copied your console's files."),
     ],
     "tiles_soon": [("Game options", "square")],  # its settings, saves and DLC (cheats are in the in-game menu)

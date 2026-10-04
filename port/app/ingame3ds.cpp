@@ -982,19 +982,10 @@ namespace ps5ingame3ds
 			if (target.renderPass != g.renderPass && target.width == g.width && target.height == g.height)
 			{
 				// the screen's pass made again: Azahar starts its presentation over when a save state is
-				// loaded. ImGui's pipeline goes onto the new pass, once the GPU is done with the old one,
-				// and its font is uploaded again (the border's texture stays: its descriptor set lives
-				// on).
-				vkDeviceWaitIdle(g.device);
-				ImGui::SetCurrentContext(g.context);
-				ImGui_ImplVulkan_DestroyFontsTexture(); // with its descriptor set, made again with the font
-				ImGui_ImplVulkan_Shutdown();
-				ImGui_ImplVulkan_InitInfo info = g.info;
-				ImGui_ImplVulkan_Init(&info, target.renderPass);
+				// loaded. The new pass has the old one's formats, so ImGui's pipeline is compatible with
+				// it and only the handle changes (tearing ImGui down and up again crashed in the driver).
 				g.renderPass = target.renderPass;
-				g.fontsUploaded = false;
-				g.uploadAge = -1;
-				ps5log::Line("[ingame3ds] the screen's render pass was made again: the menu moved onto it");
+				ps5log::Line("[ingame3ds] the screen's render pass was made again: the menu follows it");
 			}
 			if (target.renderPass != g.renderPass)
 				return; // another pass than the screen's (a screenshot's)
