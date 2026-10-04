@@ -1,0 +1,58 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Sun, 4 Oct 2026 03:40:42 +0000
+Subject: [PATCH] PS5: ImGui's Vulkan objects forgotten when their device is
+ gone
+
+Azahar makes its renderer again, device and all, when a save state is loaded; the port's 3DS menu then starts ImGui's Vulkan backend over on the new device, which needs the old objects forgotten, not destroyed.
+---
+ src/imgui/imgui_impl_vulkan.cpp | 18 ++++++++++++++++++
+ src/imgui/imgui_impl_vulkan.h   |  6 ++++++
+ 2 files changed, 24 insertions(+)
+
+diff --git a/src/imgui/imgui_impl_vulkan.cpp b/src/imgui/imgui_impl_vulkan.cpp
+index cf530b9..bdc242d 100644
+--- a/src/imgui/imgui_impl_vulkan.cpp
++++ b/src/imgui/imgui_impl_vulkan.cpp
+@@ -925,6 +925,24 @@ void ImGui_ImplVulkan_Shutdown()
+     ImGui_ImplVulkan_DestroyDeviceObjects();
+ }
+ 
++#if defined(CEMU_PS5)
++void ImGui_ImplVulkan_ForgetDeviceObjects()
++{
++    g_RenderPass = VK_NULL_HANDLE;
++    g_DescriptorSetLayout = VK_NULL_HANDLE;
++    g_PipelineLayout = VK_NULL_HANDLE;
++    g_Pipeline = VK_NULL_HANDLE;
++    g_FontSampler = VK_NULL_HANDLE;
++    g_FontMemory = VK_NULL_HANDLE;
++    g_FontImage = VK_NULL_HANDLE;
++    g_FontView = VK_NULL_HANDLE;
++    g_UploadBufferMemory = VK_NULL_HANDLE;
++    g_UploadBuffer = VK_NULL_HANDLE;
++    g_MainWindowRenderBuffers = {};
++    ImGui::GetIO().Fonts->TexID = nullptr; // its descriptor set went with the device's pool
++}
++#endif
++
+ void ImGui_ImplVulkan_NewFrame(VkCommandBuffer command_buffer, VkFramebuffer framebuffer, VkExtent2D extent)
+ {
+ 	auto& io = ImGui::GetIO();
+diff --git a/src/imgui/imgui_impl_vulkan.h b/src/imgui/imgui_impl_vulkan.h
+index 44bcdd5..c1ebaf8 100644
+--- a/src/imgui/imgui_impl_vulkan.h
++++ b/src/imgui/imgui_impl_vulkan.h
+@@ -46,6 +46,12 @@ struct ImGui_ImplVulkan_InitInfo
+ // Called by user code
+ IMGUI_IMPL_API bool     ImGui_ImplVulkan_Init(ImGui_ImplVulkan_InitInfo* info, VkRenderPass render_pass);
+ IMGUI_IMPL_API void     ImGui_ImplVulkan_Shutdown();
++#if defined(CEMU_PS5)
++// The device the backend's objects were made on is gone: forget them, destroying nothing, so that
++// ImGui_ImplVulkan_Init can start over on a new device (PS5CEMU-HAR's 3DS menu, after Azahar
++// remakes its renderer for a save state).
++IMGUI_IMPL_API void     ImGui_ImplVulkan_ForgetDeviceObjects();
++#endif
+ IMGUI_IMPL_API void     ImGui_ImplVulkan_NewFrame(VkCommandBuffer command_buffer, VkFramebuffer framebuffer, VkExtent2D extent);
+ IMGUI_IMPL_API void     ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, VkCommandBuffer command_buffer);
+ IMGUI_IMPL_API bool     ImGui_ImplVulkan_CreateFontsTexture(VkCommandBuffer command_buffer);

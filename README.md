@@ -173,6 +173,9 @@ saves a `.none` file there and won't ask again; delete that file to try again. W
 connection, the libraries just show the game icons. **Settings > Online and updates** turns the
 downloads off.
 
+When the app starts fresh, it also asks GitHub once for the latest release, and a notification
+says when a newer PS5CEMU-HAR is out. Nothing is downloaded or installed.
+
 ## Controls
 
 | In a Wii U game | Action |
@@ -273,6 +276,32 @@ they run. During a game, the boot log also gets a `[memory]` line once a minute,
 memory use keeps growing, and a `[perf]` (Wii U) or `[perf3ds]` (3DS) line every 10 seconds with the
 frame rate. If Cemu crashes, its crash report is in the boot log too, as `[crash]` lines.
 
+## What's new in 2.0.0 D
+
+- **Breath of the Wild's runes fixed.** Magnesis, the other runes and the Sheikah scope no longer
+  freeze the game: Cemu is now past upstream's fix for shaders with loops
+  ([#10](https://github.com/premohq/PS5CEMU-HAR/issues/10)).
+- **Batman: Arkham Origins plays**, with its 60 FPS graphic pack turned off. Cemu ran out of Vulkan
+  descriptors on the PS5's driver, which holds them to their limits
+  ([#15](https://github.com/premohq/PS5CEMU-HAR/issues/15)).
+- **3DS borders.** Midnight, Waves, Aurora and Shell: artwork around the screens, never over them,
+  in every layout. **Settings > Borders**, or **Border** in the 3DS in-game menu.
+- **3DS save states, cheats and amiibo**, in the in-game menu's **Save states, cheats, amiibo**:
+  five save state slots per game, cheats on and off, and amiibo scanning.
+- **Wii U amiibo**, in the in-game menu's **Amiibo** row. Both sides read your dumps from
+  `/data/ps5cemu/amiibo`.
+- **More settings.** Async shader compile (Wii U Video), Custom textures (3DS Video), and the 3DS's
+  Language (Settings > System).
+- **Switching from the Wii U side to the 3DS's no longer restarts the app.** Cemu's emulated Wii U
+  only starts with a Wii U game, so the two emulators still never run at the same time.
+- **Update notice.** When a newer PS5CEMU-HAR is out, a notification says so as the app starts.
+- **Any HEN.** [The HEN setup guide](docs/HEN-SETUP.md) has the steps for etaHEN, OnionHEN (no
+  comma after `PPSA99360` in `exact_title_ids`,
+  [#12](https://github.com/premohq/PS5CEMU-HAR/issues/12)) and any HEN with an ELF loader.
+- **Logs from the last five sessions** are kept, each with Cemu's `log.txt`, so a crash's logs
+  survive starting the app again.
+- The version shows on the start screen and in both launchers.
+
 ## What's new in 2.0.0 C
 
 - **A new launcher look.** The Lexend font (accents show, so "Pokémon" does too), glass panels,
@@ -349,8 +378,8 @@ frame rate. If Cemu crashes, its crash report is in the boot log too, as `[crash
 - The first start with a large Wii U shader cache takes a few minutes while Cemu builds the
   pipelines.
 - DualSense motion controls haven't been tested with every game.
-- Only etaHEN is supported and tested so far. Other HENs (OnionHEN and others) should work now that
-  the app makes its own recompiler memory, but they haven't been tested yet.
+- etaHEN is the HEN tested the most. OnionHEN and other HENs should work (see
+  [the HEN setup guide](docs/HEN-SETUP.md)), but have had fewer reports so far.
 - Batman: Arkham Origins needs its 60 FPS graphic pack turned off; with it on, the game glitches and
   crashes once gameplay loads ([#15](https://github.com/premohq/PS5CEMU-HAR/issues/15)).
 

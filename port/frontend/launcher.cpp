@@ -13,6 +13,7 @@
 #include "ui_host.h"
 #include "../app/boxart.h"
 #include "../app/paths.h"
+#include "../app/updates.h"
 #include "../ps5/kernel.h"
 #include "../ps5/log.h"
 #include "../ps5/notify.h"
@@ -681,7 +682,7 @@ namespace ps5launcher
 
 			void Initialize()
 			{
-				SetText(m_document, "brand-version", fmt::format("{}  /  PS5CEMU-HAR  /  v" PS5CEMU_VERSION, Is3ds() ? "NINTENDO 3DS" : "WII U"));
+				SetText(m_document, "brand-version", fmt::format("{}  /  PS5CEMU-HAR  /  {}", Is3ds() ? "NINTENDO 3DS" : "WII U", ps5update::Readable(PS5CEMU_VERSION)));
 				const std::string& notice = Notice();
 				SetText(m_document, "startup-status", notice);
 				SetClass(m_document, "startup-status", "quiet", notice.empty());
@@ -2790,6 +2791,8 @@ namespace ps5launcher
 				: m_document(document), m_status(status), m_selected(selected)
 			{
 				auto count = [](int games) { return games < 0 ? std::string("Open to look for games") : Plural(games, "game", "games"); };
+				SetText(m_document, "start-brand-copy",
+					"Cemu and Azahar  /  Wii U and 3DS games on PlayStation 5  /  " + ps5update::Readable(PS5CEMU_VERSION));
 				SetText(m_document, "start-status-wiiu", !m_status.notice.empty() ? "Setup required" : count(settings.gameCount));
 				SetText(m_document, "start-status-3ds",
 					ps5azahar::Available() ? count(settings.n3ds.gameCount) : count(settings.n3ds.gameCount) + "  /  core not in this build");

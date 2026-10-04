@@ -4,7 +4,7 @@
 # the launcher (frontend/), which draws ProsperoEden's RmlUi layout in software through SDL, as
 # ProsperoEden does. Cemu's own platform classes (cemu/) are added to Cemu's targets by the patch.
 
-set(PS5CEMU_VERSION "2.0.0c")
+set(PS5CEMU_VERSION "2.0.0d")
 # the emulators' pinned commits (tools/deps.json), which the diagnostics and the boot log name: they
 # are no releases, so their own version numbers would say nothing (Cemu's reads 0.0.0)
 file(READ "${CMAKE_CURRENT_LIST_DIR}/../tools/deps.json" PS5CEMU_DEPS_JSON)
@@ -60,6 +60,8 @@ add_library(CemuPS5 STATIC
 	app/ingame3ds.cpp
 	app/ingame3ds.h
 	app/install.cpp
+	app/updates.cpp
+	app/updates.h
 	app/menu_canvas.h
 	app/paths.h
 	azahar/azahar.h

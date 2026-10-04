@@ -28,11 +28,10 @@ WIIU = {
     "library_copy": "Every Wii U game in your game folder", "settings_copy": "How Cemu runs on your PS5",
     # planned, with their places in the layout: the video page's next row, and a game's tiles
     "video_soon": None,
-    "online_soon": "Graphic pack and app updates",
+    "online_soon": None,
     "features": [
         ("GamePad speaker", "GamePad speaker: the sounds games play on the GamePad, from the DualSense's speaker."),
         ("Manage data", "Manage data: see, delete, back up and restore each game's updates, DLC and saves."),
-        ("App updates", "App updates: a notice when a new PS5CEMU-HAR is out, and the newest graphic packs. Game updates and DLC already install from Settings > Install updates and DLC."),
         ("Game list", "Game list: which Wii U games run well on the PS5, from players' reports."),
     ],
     "tiles_soon": [("Game options", "square")],  # its settings, updates, DLC and saves
@@ -66,7 +65,7 @@ N3DS = {
     "system": "NINTENDO 3DS", "footnote": "Azahar, the 3DS emulator, on PlayStation 5",
     "library_copy": "Your 3DS games, installed ones included", "settings_copy": "How Azahar runs on your PS5",
     "video_soon": None,  # Border is planned in its own settings category
-    "online_soon": "App updates",
+    "online_soon": None,
     "features": [
         ("Microphone", "Microphone: the DualSense's microphone as the 3DS's, for the games that listen."),
         ("Camera", "Camera: the PS5 HD Camera as the 3DS cameras, for QR codes and the games that use them."),
@@ -468,9 +467,8 @@ def launcher(side):
       <div id="online-dialog" class="dialog"><div class="dialog-panel">
         {MODAL}
         <span class="dialog-title">Online and updates</span>
-        <span class="dialog-copy">What the app fetches from the internet.</span>
+        <span class="dialog-copy">What the app fetches from the internet. It also tells you when a newer PS5CEMU-HAR is out.</span>
         <span id="online-row-0" class="dialog-row dialog-row-0">{DLG}<span class="dialog-row-label">Box art from GameTDB</span><span id="online-boxart" class="dialog-row-value">On</span></span>
-        <span class="dialog-row dialog-row-1 planned">{DLG}<span class="dialog-row-label">{S["online_soon"]}</span><span class="dialog-row-value">Soon</span></span>
         <div class="dialog-hints">{h('leftright', 'Change')}{h('circle', 'Back')}</div>
       </div></div>
 

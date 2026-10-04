@@ -10,6 +10,7 @@
 
 #include "app/emulator.h"
 #include "app/paths.h"
+#include "app/updates.h"
 #include "azahar/azahar.h"
 #include "azahar/library.h"
 #include "frontend/launcher.h"
@@ -101,6 +102,8 @@ int main(int argc, char* argv[])
 	ps5threads::Initialize(); // before any thread starts: they inherit the main thread's CPUs
 
 	ps5settings::Launcher settings = ps5settings::Load();
+	// the update notice, on a fresh start only (not each time a game hands back to the library)
+	const bool freshStart = settings.side.empty();
 	// still before any thread: the game folders and drives the HEN may have left out (#16)
 	if (privileges.filesystem)
 		ps5privilege::ReachFolders({settings.gamesFolder, settings.n3ds.gamesFolder});
@@ -174,10 +177,13 @@ int main(int argc, char* argv[])
 		ps5emu::LogMemory(); // Cemu's start, against the 3DS side's
 	};
 
+	if (freshStart && privileges.filesystem)
+		ps5update::Start();
 	for (;;)
 	{
 		ps5display::SetHighFrameRate(false); // the launcher at 59.94 Hz
 		const auto choice = ps5launcher::Run(settings, status, prepare);
+		ps5update::Stop(); // nothing of the launcher's runs beside a game
 		if (!choice)
 		{
 			// nothing to show it on: wait for the player to close the app from the PS5's menu

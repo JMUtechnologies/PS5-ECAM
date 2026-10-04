@@ -227,6 +227,61 @@ namespace ps5ingame3ds
 		// Cemu's Vulkan entry points from Azahar's instance and device (Cemu's renderer never ran),
 		// a descriptor pool for the font, an ImGui context of its own with Cemu's font at the
 		// menu's four sizes, and ImGui's Vulkan backend on Azahar's render pass.
+		bool CreatePool(VkDevice device)
+		{
+			const VkDescriptorPoolSize size{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 16};
+			VkDescriptorPoolCreateInfo poolInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
+			poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+			poolInfo.maxSets = 16; // the font, the border, borders on their way out
+			poolInfo.poolSizeCount = 1;
+			poolInfo.pPoolSizes = &size;
+			return vkCreateDescriptorPool(device, &poolInfo, nullptr, &g.pool) == VK_SUCCESS;
+		}
+
+		void InitializeBackend(const Target& target)
+		{
+			ImGui_ImplVulkan_InitInfo info{};
+			info.Instance = target.instance;
+			info.PhysicalDevice = target.physicalDevice;
+			info.Device = target.device;
+			info.QueueFamily = target.queueFamily;
+			info.Queue = target.queue;
+			info.DescriptorPool = g.pool;
+			info.MinImageCount = std::max(2u, target.imageCount);
+			info.ImageCount = info.MinImageCount;
+			ImGui_ImplVulkan_Init(&info, target.renderPass);
+			g.info = info;
+			g.device = target.device;
+			g.renderPass = target.renderPass;
+			g.width = target.width;
+			g.height = target.height;
+		}
+
+		// Azahar made its renderer again, device and all (it does when a save state is loaded): what
+		// the menu made on the old device went with it, so it is forgotten, not destroyed, and made
+		// again on the new one. The ImGui context and the fonts' atlas stay.
+		bool Reattach(const Target& target)
+		{
+			ps5log::Line("[ingame3ds] Azahar made its renderer again: the menu starts over on the new device");
+			ImGui::SetCurrentContext(g.context);
+			ImGui_ImplVulkan_ForgetDeviceObjects();
+			g.border = nullptr;
+			g.retired.clear();
+			g.fontsUploaded = false;
+			g.uploadAge = -1;
+			g.pending = false;
+			g.pool = VK_NULL_HANDLE;
+			if (!InitializeInstanceVulkan(target.instance) || !InitializeDeviceVulkan(target.device) || !CreatePool(target.device))
+			{
+				ps5log::Line("[ingame3ds] the menu could not start on the new device: no menu");
+				return false;
+			}
+			InitializeBackend(target);
+			std::lock_guard lock(s_mutex);
+			s_borderFresh = s_borderTheme > 0 && !s_borderPixels.empty(); // the border's picture again
+			return true;
+		}
+
 		bool Initialize(const Target& target, float scale)
 		{
 			if (!InitializeGlobalVulkan() || !InitializeInstanceVulkan(target.instance) || !InitializeDeviceVulkan(target.device))
@@ -234,13 +289,7 @@ namespace ps5ingame3ds
 				ps5log::Line("[ingame3ds] Cemu's Vulkan commands did not load from Azahar's device: no menu");
 				return false;
 			}
-			const VkDescriptorPoolSize size{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 16};
-			VkDescriptorPoolCreateInfo poolInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
-			poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-			poolInfo.maxSets = 16; // the font, the border, borders on their way out
-			poolInfo.poolSizeCount = 1;
-			poolInfo.pPoolSizes = &size;
-			if (vkCreateDescriptorPool(target.device, &poolInfo, nullptr, &g.pool) != VK_SUCCESS)
+			if (!CreatePool(target.device))
 			{
 				ps5log::Line("[ingame3ds] no descriptor pool: no menu");
 				return false;
@@ -262,22 +311,8 @@ namespace ps5ingame3ds
 			io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 			io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
 
-			ImGui_ImplVulkan_InitInfo info{};
-			info.Instance = target.instance;
-			info.PhysicalDevice = target.physicalDevice;
-			info.Device = target.device;
-			info.QueueFamily = target.queueFamily;
-			info.Queue = target.queue;
-			info.DescriptorPool = g.pool;
-			info.MinImageCount = std::max(2u, target.imageCount);
-			info.ImageCount = info.MinImageCount;
-			ImGui_ImplVulkan_Init(&info, target.renderPass);
-			g.info = info;
-			g.device = target.device;
-			g.renderPass = target.renderPass;
-			g.width = target.width;
-			g.height = target.height;
-			ps5log::Line("[ingame3ds] the menu is ready ({} images in flight)", info.ImageCount);
+			InitializeBackend(target);
+			ps5log::Line("[ingame3ds] the menu is ready ({} images in flight)", g.info.ImageCount);
 			return true;
 		}
 
@@ -938,6 +973,16 @@ namespace ps5ingame3ds
 		if (g.failed)
 			return;
 		const float scale = std::max(1.0f, target.height / 1080.0f);
+		if (g.ready && target.device != g.device)
+		{
+			if (target.insideRenderPass)
+				return; // the pass before it starts over
+			if (!Reattach(target))
+			{
+				g.failed = true;
+				return;
+			}
+		}
 		if (!target.insideRenderPass)
 		{
 			g.pending = false;
@@ -1002,14 +1047,15 @@ namespace ps5ingame3ds
 				ImGui_ImplVulkan_DestroyFontUploadObjects();
 				g.uploadAge = -1;
 			}
-			// a new border picture: uploaded here, outside the render pass, as the font is
+			// a new border picture: uploaded here, outside the render pass, as the font is (the
+			// picture is kept, for a new device)
 			if (borderFresh)
 			{
 				std::vector<uint8_t> pixels;
 				int width, height;
 				{
 					std::lock_guard lock(s_mutex);
-					pixels.swap(s_borderPixels);
+					pixels = s_borderPixels;
 					width = s_borderWidth;
 					height = s_borderHeight;
 					s_borderFresh = false;

@@ -108,6 +108,9 @@ PY
 # Cemu's read-only data: game profiles, and the Wii U's system fonts games draw text with.
 mkdir -p "$app/assets/cemu/resources"
 cp -a "$deps/Cemu/bin/gameProfiles" "$app/assets/cemu/"
+# the certificate authorities curl checks GitHub against for the update notice (app/updates.cpp):
+# the console has no store of its own, so the build system's goes along
+cp /etc/ssl/certs/ca-certificates.crt "$app/assets/cacert.pem"
 # the 3DS side's border themes (tools/render-borders.py, committed)
 mkdir -p "$app/assets/borders"
 cp "$PS5CEMU_ROOT"/port/azahar/borders/*.tga "$app/assets/borders/"
