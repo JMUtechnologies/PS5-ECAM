@@ -4,8 +4,8 @@
 
 <p align="center">
   <strong>Wii U and Nintendo 3DS emulation in one PlayStation 5 homebrew app</strong><br>
-  Latest release: <a href="https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v2.0.0d.zip"><strong>2.0.0 D</strong></a> ·
-  <a href="#whats-new-in-200-d">What's new</a><br>
+  Latest release: <a href="https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v3.0.0.zip"><strong>3.0.0</strong></a> ·
+  <a href="#whats-new-in-300">What's new</a><br>
   <a href="#install">Install</a> · <a href="#wii-u-cemu">Wii U</a> · <a href="#nintendo-3ds-azahar">3DS</a> ·
   <a href="#controls">Controls</a> · <a href="docs/COMPATIBILITY.md">Compatibility</a> ·
   <a href="docs/BUILDING.md">Building</a> · <a href="#credits">Credits</a>
@@ -30,8 +30,8 @@ or Sony. All credit for the emulators goes to their developers.
 
 ## Install
 
-1. Download [PS5CEMU-HAR-v2.0.0d.zip](https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v2.0.0d.zip)
-   ([all releases](https://github.com/premohq/PS5CEMU-HAR/releases)) and extract it, or
+1. Download [PS5CEMU-HAR-v3.0.0.zip](https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v3.0.0.zip)
+   ([release notes](https://github.com/premohq/PS5CEMU-HAR/releases/tag/v3.0.0), [all releases](https://github.com/premohq/PS5CEMU-HAR/releases)) and extract it, or
    [build it yourself](docs/BUILDING.md).
 2. Copy the `PPSA99360` folder to `/data/homebrew/PPSA99360` on your PS5.
 3. Load your HEN and let it jailbreak `PPSA99360`:
