@@ -279,8 +279,15 @@ namespace ps5launcher
 			if (const std::tm* local = std::localtime(&now))
 				std::strftime(stamp, sizeof(stamp), "%Y-%m-%d-%H%M%S", local);
 			const std::string root = ps5paths::kRoot;
-			const std::string files[] = {std::string(ps5paths::kLogs) + "/boot.log", std::string(ps5paths::kLogs) + "/boot.prev.log",
-				root + "/log.txt", root + "/azahar/log/azahar_log.txt", ps5paths::kLauncherSettings, root + "/settings.xml"};
+			const std::string logs = ps5paths::kLogs;
+			std::vector<std::string> files = {logs + "/boot.log", root + "/log.txt", root + "/azahar/log/azahar_log.txt",
+				ps5paths::kLauncherSettings, root + "/settings.xml"};
+			// the sessions before, each with Cemu's log of it (port/ps5/log.cpp)
+			for (const char* age : {"prev", "2", "3", "4"})
+			{
+				files.push_back(fmt::format("{}/boot.{}.log", logs, age));
+				files.push_back(fmt::format("{}/cemu.{}.txt", logs, age));
+			}
 			for (int drive = 0; drive < 8; drive++)
 			{
 				const std::string folder = fmt::format("/mnt/usb{}/PS5CEMU-HAR-logs-{}", drive, stamp);
@@ -506,6 +513,7 @@ namespace ps5launcher
 			kDiagnostics,
 			kOnline,
 			kSystem,
+			kBorders,
 			kAbout,
 			kFiles,
 			kPacks,
@@ -541,9 +549,14 @@ namespace ps5launcher
 			kRowInstall,
 			kRowDiagnostics,
 		};
-		// the 3DS's System, after its planned Borders, Camera and microphone, and Amiibo (render-layout.py)
-		constexpr int kRowSystem3ds = 9;
+		// the 3DS's Borders, then its planned Camera and microphone, then System (render-layout.py)
+		constexpr int kRowBorders3ds = 6;
+		constexpr int kRowSystem3ds = 8;
+		constexpr const char* kBorderThemes[] = {"None", "Midnight", "Waves", "Aurora", "Shell"};
 		constexpr const char* kRegions[] = {"Automatic", "Japan", "USA", "Europe", "Australia", "China", "Korea", "Taiwan"};
+		// Automatic (-1), then Azahar's SystemLanguage 0 to 11
+		constexpr const char* kLanguages[] = {"Automatic", "Japanese", "English", "French", "German", "Italian", "Spanish",
+			"Chinese (simplified)", "Korean", "Dutch", "Portuguese", "Russian", "Chinese (traditional)"};
 
 		// The 3DS's controls (Azahar's side has one console, and these in place of a player's)
 		enum ConsoleRow
@@ -758,6 +771,7 @@ namespace ps5launcher
 				case kAudio:
 				case kDiagnostics:
 				case kOnline:
+				case kBorders:
 				case kSystem: SettingsPageKey(key); break;
 				case kControls: ControlsKey(key); break;
 				case kPlayer: PlayerKey(key); break;
@@ -1544,6 +1558,8 @@ namespace ps5launcher
 						OpenSettingsPage("online-dialog", kOnline);
 					else if (Is3ds() && m_settingsSelected == kRowSystem3ds)
 						OpenSettingsPage("system-dialog", kSystem);
+					else if (Is3ds() && m_settingsSelected == kRowBorders3ds)
+						OpenSettingsPage("borders-dialog", kBorders);
 					break;
 				}
 			}
@@ -1562,7 +1578,8 @@ namespace ps5launcher
 
 			static const char* PageOf(Screen screen)
 			{
-				return screen == kVideo ? "video-dialog" : screen == kAudio ? "audio-dialog" : screen == kOnline ? "online-dialog" : screen == kSystem ? "system-dialog" : "diagnostics-dialog";
+				return screen == kVideo ? "video-dialog" : screen == kAudio ? "audio-dialog" : screen == kOnline ? "online-dialog" : screen == kSystem ? "system-dialog" :
+					screen == kBorders ? "borders-dialog" : "diagnostics-dialog";
 			}
 
 			void SettingsPageKey(Key key)
@@ -1581,18 +1598,20 @@ namespace ps5launcher
 					auto& n3ds = m_settings.n3ds;
 					const int step = key == Key::Left ? -1 : 1;
 					if (key == Key::Up || key == Key::Down)
-						Browse(key, m_option, 3, 3);
+						Browse(key, m_option, 4, 4);
 					else if (change && m_option == 0)
 						changed = (n3ds.resolution = (n3ds.resolution - 1 + step + 10) % 10 + 1, true);
 					else if (change && m_option == 1)
 						changed = (n3ds.layout = (n3ds.layout + step + 4) % 4, true);
 					else if (change && m_option == 2)
 						changed = (n3ds.textureFilter = (n3ds.textureFilter + step + 6) % 6, true);
+					else if (change && m_option == 3)
+						changed = (n3ds.customTextures = !n3ds.customTextures, true);
 				}
 				else if (m_screen == kVideo)
 				{
 					if (key == Key::Up || key == Key::Down)
-						Browse(key, m_option, 3, 3);
+						Browse(key, m_option, 4, 4);
 					else if (change && m_option == 0)
 					{
 						m_settings.upscaleFilter = (m_settings.upscaleFilter + (key == Key::Left ? 3 : 1)) % 4;
@@ -1602,6 +1621,8 @@ namespace ps5launcher
 						changed = (m_settings.highFrameRate = !m_settings.highFrameRate, true);
 					else if (change && m_option == 2)
 						changed = (m_settings.overlay = !m_settings.overlay, true);
+					else if (change && m_option == 3)
+						changed = (m_settings.asyncShaders = !m_settings.asyncShaders, true);
 				}
 				else if (m_screen == kAudio)
 				{
@@ -1626,11 +1647,28 @@ namespace ps5launcher
 						ps5sound::SetMenuSounds(m_settings.menuSounds);
 					}
 				}
-				else if (m_screen == kSystem && change)
+				else if (m_screen == kSystem)
 				{
-					// Automatic (-1), then Azahar's regions 0 to 6
-					int& region = m_settings.n3ds.region;
-					region = (region + 1 + (key == Key::Left ? 7 : 1)) % 8 - 1;
+					if (key == Key::Up || key == Key::Down)
+						Browse(key, m_option, 2, 2);
+					else if (change && m_option == 0)
+					{
+						// Automatic (-1), then Azahar's regions 0 to 6
+						int& region = m_settings.n3ds.region;
+						region = (region + 1 + (key == Key::Left ? 7 : 1)) % 8 - 1;
+						changed = true;
+					}
+					else if (change && m_option == 1)
+					{
+						int& language = m_settings.n3ds.language;
+						language = (language + 1 + (key == Key::Left ? 12 : 1)) % 13 - 1;
+						changed = true;
+					}
+				}
+				else if (m_screen == kBorders && change)
+				{
+					int& border = m_settings.n3ds.border;
+					border = (std::clamp(border, 0, 4) + (key == Key::Left ? 4 : 1)) % 5;
 					changed = true;
 				}
 				else if (m_screen == kOnline && change)
@@ -1683,8 +1721,10 @@ namespace ps5launcher
 						std::pair<const char*, std::string>{"120 Hz output", m_settings.highFrameRate ? "On, where the TV has it" : "Off"},
 					Is3ds() ? std::pair<const char*, std::string>{"Texture filter", kTextureFilters[std::clamp(n3ds.textureFilter, 0, 5)]} :
 						std::pair<const char*, std::string>{"Performance overlay", m_settings.overlay ? "On" : "Off"},
+					Is3ds() ? std::pair<const char*, std::string>{"Custom textures", n3ds.customTextures ? "On" : "Off"} :
+						std::pair<const char*, std::string>{"Async shader compile", m_settings.asyncShaders ? "On" : "Off"},
 				};
-				for (int row = 0; row < 3; row++)
+				for (int row = 0; row < 4; row++)
 				{
 					SetText(m_document, fmt::format("video-label-{}", row), video[row].first);
 					SetText(m_document, fmt::format("video-value-{}", row), video[row].second);
@@ -1697,7 +1737,11 @@ namespace ps5launcher
 				for (int row = 0; row < kAudioRows; row++)
 					SetClass(m_document, fmt::format("audio-row-{}", row), "focused", m_screen == kAudio && m_option == row);
 				SetText(m_document, "system-region", kRegions[std::clamp(m_settings.n3ds.region, -1, 6) + 1]);
-				SetClass(m_document, "system-row-0", "focused", m_screen == kSystem);
+				SetText(m_document, "system-language", kLanguages[std::clamp(m_settings.n3ds.language, -1, 11) + 1]);
+				for (int row = 0; row < 2; row++)
+					SetClass(m_document, fmt::format("system-row-{}", row), "focused", m_screen == kSystem && m_option == row);
+				SetText(m_document, "borders-theme", kBorderThemes[std::clamp(m_settings.n3ds.border, 0, 4)]);
+				SetClass(m_document, "borders-row-0", "focused", m_screen == kBorders);
 				SetText(m_document, "online-boxart", m_settings.boxArt ? "On" : "Off");
 				SetClass(m_document, "online-row-0", "focused", m_screen == kOnline);
 				SetText(m_document, "diag-label-1", Is3ds() ? "Clear 3DS shader caches" : "Clear Wii U shader caches");
@@ -2882,22 +2926,12 @@ namespace ps5launcher
 				}
 				system = *chosen;
 				choosing = false;
-				if (prepared == System::WiiU && system == System::N3ds)
-				{
-					// Cemu has started in this process: Azahar's side gets a fresh one, opened on it
-					StopBackgroundWork(System::WiiU, status, frame);
-					ps5sound::Stop();
-					ps5ui::Stop();
-					ps5log::Line("[launcher] Azahar's side chosen after Cemu's: starting over on it");
-					return Choice{system, {}, true};
-				}
 				// the chosen emulator starts now, its half saying so
 				start.ShowStarting(system);
 				frame();
 			}
-			// the emulator this session holds, started once. From the 3DS side to the Wii U's needs no
-			// fresh process: Azahar's core runs only for a game, so only its game list was read
-			// (finished first)
+			// the side's game list and settings. Either way needs no fresh process: each emulator's core
+			// starts only for a game, so only the other side's game list was read (finished first)
 			if (prepared != system)
 			{
 				if (prepared)
@@ -2933,7 +2967,7 @@ namespace ps5launcher
 			}
 			if (launcher.Leaving())
 			{
-				// back to the start screen, in this process (choosing Azahar's side after Cemu's starts it over)
+				// back to the start screen, in this process
 				ps5log::Line("[launcher] leaving {}'s side for the start screen", n3ds ? "Azahar" : "Cemu");
 				choosing = true;
 				continue;

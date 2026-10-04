@@ -13,7 +13,8 @@
 //     graphicPacks/                  community packs (downloadedGraphicPacks/) and your own
 //     cache/                         shader and pipeline caches (radv/: RADV's own)
 //     covers/                        game icons converted for the launcher
-//     logs/                          boot.log (the port; boot.prev.log is the session before)
+//     logs/                          boot.log (the port), boot.prev.log and boot.2-4.log the sessions
+//                                    before, cemu.prev.txt and cemu.2-4.txt their log.txt
 
 #pragma once
 

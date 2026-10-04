@@ -23,11 +23,13 @@
 #include "audio/IAudioAPI.h"
 #include "audio/IAudioInputAPI.h"
 #include "Cafe/CafeSystem.h"
+#include "Cafe/Filesystem/fsc.h"
 #include "Cafe/GameProfile/GameProfile.h"
 #include "Cafe/GraphicPack/GraphicPack2.h"
 #include "Cafe/HW/Espresso/PPCState.h"
 #include "Cafe/HW/Latte/Core/Latte.h"
 #include "Cafe/HW/Latte/Core/LatteOverlay.h"
+#include "Cafe/HW/Latte/Core/LattePerformanceMonitor.h"
 #include "Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.h"
 #include "Cafe/TitleList/SaveList.h"
 #include "Cafe/TitleList/TitleList.h"
@@ -257,22 +259,21 @@ namespace ps5emu
 		}
 
 		// As CemuCommonInit.
-		void CommonInit()
+		// What the launcher's Wii U side needs: Cemu's settings, graphic packs, controllers and game
+		// and save lists. The emulated Wii U itself waits for a game (StartSystem), so the 3DS side
+		// can follow in the same process with nothing of Cemu's running.
+		void LibraryInit()
 		{
 			AES128_init();
-			PPCTimer_init();
-			ExceptionHandler_Init();
 			GetConfigHandle().Load();
 			ApplyPlatformSettings();
 			GetConfigHandle().Save();
 			if (NetworkConfig::XMLExists())
 				n_config.Load();
-			IAudioAPI::InitializeStatic();
-			IAudioInputAPI::InitializeStatic();
 			GraphicPack2::LoadAll();
 			InputManager::instance().load();
 			DefaultControllers();
-			CafeSystem::Initialize();
+			fsc_init(); // the game scan mounts each title to read it; CafeSystem::Initialize starts it over
 			CafeTitleList::Initialize(ActiveSettings::GetUserDataPath("title_list_cache.xml"));
 			for (auto& it : GetConfig().game_paths)
 				CafeTitleList::AddScanPath(_utf8ToPath(it));
@@ -288,6 +289,30 @@ namespace ps5emu
 			}
 		}
 
+		// The emulated Wii U, once, as a game starts: its timers, crash handler, sound, memory space,
+		// IOSU and threads (CafeSystem::Initialize), the overlay and Vulkan
+		bool s_systemStarted = false;
+
+		bool StartSystem(std::string& error)
+		{
+			if (s_systemStarted)
+				return true;
+			s_systemStarted = true;
+			PPCTimer_init();
+			ExceptionHandler_Init();
+			IAudioAPI::InitializeStatic();
+			IAudioInputAPI::InitializeStatic();
+			CafeSystem::Initialize();
+			LatteOverlay_init();
+			if (!InitializeGlobalVulkan())
+			{
+				error = "the PS5 Vulkan driver did not start";
+				return false;
+			}
+			ps5log::Line("[emu] the emulated Wii U started");
+			return true;
+		}
+
 		// The menu's settings: Cemu's in settings.xml, and those the launcher also has in its file,
 		// which it writes into Cemu's when the next game starts (ApplyOptions).
 		void SaveInGameSettings()
@@ -298,12 +323,15 @@ namespace ps5emu
 			settings.upscaleFilter = config.upscale_filter;
 			settings.overlay = config.overlay.position != ScreenPosition::kDisabled;
 			settings.volume = config.tv_volume;
+			settings.asyncShaders = config.async_compile;
 			ps5settings::Save(settings);
 		}
 	}
 
 	bool InitializeCore(std::string& error)
 	{
+		if (s_coreStarted)
+			return true; // back on the Wii U side after the 3DS's, in the same process
 		std::set<fs::path> failedWriteAccess;
 		ActiveSettings::SetPaths(false, ps5paths::Eboot(), ps5paths::kRoot, ps5paths::kRoot, ps5paths::kCache,
 			ps5paths::CemuData(), failedWriteAccess);
@@ -314,6 +342,7 @@ namespace ps5emu
 		}
 		cemuLog_createLogFile(false); // log.txt in /data/ps5cemu, as on the desktop
 		CreateDirectories(ActiveSettings::GetConfigPath("controllerProfiles"));
+		CreateDirectories(fs::path(PS5CEMU_DATA "/amiibo")); // both emulators' in-game menus scan from here
 		CreateDirectories(ps5paths::kGames);
 		CreateDirectories(ps5paths::kLogs);
 		ps5log::Line("[emu] app folder: {}", ps5paths::AppDir());
@@ -336,15 +365,9 @@ namespace ps5emu
 		}
 		InstallBundledGraphicPacks();
 		ActiveSettings::Init();
-		LatteOverlay_init();
-		CommonInit();
+		LibraryInit();
 		s_coreStarted = true;
-		if (!InitializeGlobalVulkan())
-		{
-			error = "the PS5 Vulkan driver did not start";
-			return false;
-		}
-		ps5log::Line("[emu] Cemu is ready: {} game folders, MLC {}", GetConfig().game_paths.size(), _pathToUtf8(ActiveSettings::GetMlcPath()));
+		ps5log::Line("[emu] Cemu's library is ready (the emulated Wii U starts with a game): {} game folders, MLC {}", GetConfig().game_paths.size(), _pathToUtf8(ActiveSettings::GetMlcPath()));
 		return true;
 	}
 
@@ -353,6 +376,7 @@ namespace ps5emu
 		auto& config = GetConfig();
 		config.tv_volume = std::clamp(options.volume, 0, 100);
 		config.upscale_filter = std::clamp(options.upscaleFilter, (int)kLinearFilter, (int)kNearestNeighborFilter);
+		config.async_compile = options.asyncShaders;
 		config.overlay.position = options.overlay ? ScreenPosition::kTopLeft : ScreenPosition::kDisabled;
 		if (options.overlay)
 			config.overlay.fps = config.overlay.cpu_usage = config.overlay.ram_usage = true;
@@ -415,6 +439,8 @@ namespace ps5emu
 	bool LaunchGame(const Game& game, std::string& error)
 	{
 		ps5log::Line("[emu] launching {} ({:016x}) from {}", game.name, game.titleId, _pathToUtf8(game.path));
+		if (!StartSystem(error))
+			return false;
 		TitleInfo launchTitle{game.path};
 		if (launchTitle.IsValid())
 		{
@@ -542,8 +568,10 @@ namespace ps5emu
 				const std::string pipelines = frames == loggedFrames || loaded != queued ?
 					fmt::format("; pipeline cache {} compiled, {} read of {}", loaded, queued, lastIndex + 1) : std::string();
 				if (now > loggedAt)
-					ps5log::Line("[perf] {:.1f} fps over {:.0f} s; accurate barriers {}{}; heap {} MiB", (frames - loggedFrames) * 1e6 / (now - loggedAt),
-						(now - loggedAt) / 1e6, GetConfig().vk_accurate_barriers ? "on" : "off", pipelines, HeapMiB());
+					ps5log::Line("[perf] {:.1f} fps over {:.0f} s; accurate barriers {}{}; heap {} MiB; descriptor sets {}, image samplers {}",
+						(frames - loggedFrames) * 1e6 / (now - loggedAt),
+						(now - loggedAt) / 1e6, GetConfig().vk_accurate_barriers ? "on" : "off", pipelines, HeapMiB(), performanceMonitor.vk.numDescriptorSets.get(),
+						performanceMonitor.vk.numDescriptorSamplerTextures.get());
 				loggedFrames = frames;
 				loggedAt = now;
 			}

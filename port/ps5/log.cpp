@@ -14,6 +14,25 @@ namespace
 	FILE* s_file = nullptr; // flushed after every line, so a raw write(2) can follow its content
 	std::string s_path;
 	std::string s_pending; // lines from before /data was reachable
+
+	// The last few sessions are kept, so a crash's log survives the restarts after it: newest is
+	// <stem>.prev<ext>, then <stem>.2<ext> up to <stem>.<kKept - 1><ext>
+	constexpr int kKept = 5;
+
+	std::string Older(const std::string& folder, const char* stem, const char* ext, int age)
+	{
+		return age == 1 ? fmt::format("{}/{}.prev{}", folder, stem, ext) : fmt::format("{}/{}.{}{}", folder, stem, age, ext);
+	}
+
+	void Rotate(const std::string& current, const std::string& folder, const char* stem, const char* ext)
+	{
+		struct stat st{};
+		if (stat(current.c_str(), &st) != 0)
+			return;
+		for (int age = kKept - 1; age > 1; age--)
+			rename(Older(folder, stem, ext, age - 1).c_str(), Older(folder, stem, ext, age).c_str());
+		rename(current.c_str(), Older(folder, stem, ext, 1).c_str());
+	}
 }
 
 namespace ps5log
@@ -25,8 +44,11 @@ namespace ps5log
 			return;
 		mkdir(folder, 0777);
 		s_path = std::string(folder) + "/boot.log";
-		const std::string previous = std::string(folder) + "/boot.prev.log";
-		rename(s_path.c_str(), previous.c_str());
+		Rotate(s_path, folder, "boot", ".log");
+		// Cemu's log.txt, one folder up, is rewritten each start: kept beside the boot logs it goes with
+		std::string root = folder;
+		root.erase(root.find_last_of('/'));
+		Rotate(root + "/log.txt", folder, "cemu", ".txt");
 		s_file = fopen(s_path.c_str(), "w");
 		if (s_file)
 		{

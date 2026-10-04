@@ -35,14 +35,12 @@ namespace ps5launcher
 	{
 		System system;
 		ps5emu::Game game;
-		// Azahar's side was chosen after Cemu had started in this process: the app starts over on it,
-		// so that a session never holds both emulators (game is empty).
-		bool startOver = false;
 	};
 
 	// Shows the launcher until a game is chosen, saving the settings it changes (the emulator
 	// chosen among them, which the launcher opens on next time). Neither emulator runs until a side
-	// is chosen (or given, after a game): then prepare starts that one, once, and may change status.
+	// is chosen (or given, after a game): then prepare loads that one's side (its game list and settings;
+	// its core waits for a game), each time the side changes, and may change status.
 	// Before a game is returned, the launcher's background work (box art downloads, the library's
 	// scan) has stopped. Returns nothing when the launcher could not show (the reason is in the
 	// boot log and a notification).

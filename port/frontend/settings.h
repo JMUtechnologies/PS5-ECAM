@@ -24,6 +24,9 @@ namespace ps5settings
 		int deadzone = 15;			  // the sticks', percent
 		bool performance = false;	  // the frame rate and speed over the game (its in-game menu)
 		int region = -1;			  // the emulated 3DS's region: -1 automatic (the game's), else Azahar's region_value
+		int language = -1;			  // the emulated 3DS's language: -1 as Azahar sets it, else its SystemLanguage (0 to 11)
+		bool customTextures = false;  // texture packs from azahar/load/textures/<title ID> (Azahar's custom_textures)
+		int border = 0;				  // artwork around the screens: 0 none, else ps5ingame3ds::kBorderNames' theme
 		int cpuClock = 100;			  // the emulated CPU's speed, percent of the 3DS's (Azahar's cpu_clock_percentage)
 		std::string articAddress;	  // the last Artic Base server's IPv4 address, a 3DS on the network
 		int gameCount = -1;			  // the library's games when last looked for (the start screen's); -1: never
@@ -38,6 +41,7 @@ namespace ps5settings
 		int upscaleFilter = 1;		  // how the game's picture is scaled to 4K: Cemu's upscale_filter
 		bool highFrameRate = false;	  // the 119.88 Hz mode where the display has it
 		bool overlay = false;		  // Cemu's performance overlay from the start
+		bool asyncShaders = true;	  // Cemu's async_compile (Settings > Video, and the in-game menu's Graphics)
 		bool rumble = true;
 		bool pinCpuThreads = false;	  // an experiment (ps5/threads.h): only in ps5cemu.json
 		// only in ps5cemu.json: RADV_DEBUG for the Vulkan driver (e.g. "nongg,nohiz"), to narrow down

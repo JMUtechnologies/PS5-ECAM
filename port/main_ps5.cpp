@@ -59,7 +59,7 @@ namespace
 
 	ps5emu::Options Options(const ps5settings::Launcher& settings)
 	{
-		return {settings.gamesFolder, settings.overlay, settings.volume, settings.upscaleFilter};
+		return {settings.gamesFolder, settings.overlay, settings.volume, settings.upscaleFilter, settings.asyncShaders};
 	}
 
 	// The side the launcher opens on when the app starts over (and only then), and why the game did
@@ -137,26 +137,26 @@ int main(int argc, char* argv[])
 	// game was on), and leaving that side starts the app over. Cemu's core (its guest memory, system
 	// threads, crash handler, graphic packs and game scan) runs only for the Wii U; Azahar (its game
 	// scan, and its core once a game starts) only for the 3DS.
-	// Once each (a game that did not start brings the launcher back). The 3DS side may give way to the
-	// Wii U's in the same process, as Azahar's core runs only for a game; once Cemu has started, the
-	// launcher starts a fresh process for the 3DS side instead of asking here.
+	// Each time the launcher moves to a side (a game that did not start brings the launcher back).
+	// Either side gives way to the other in the same process: Azahar's core and Cemu's emulated
+	// Wii U both start only for a game, so until then only their game lists and settings are loaded.
 	std::optional<ps5launcher::System> started;
 	const size_t sessionLine = status.diagnostics.size();
 	auto prepare = [&](ps5launcher::System system) {
-		if (started == system || started == ps5launcher::System::WiiU)
+		if (started == system)
 			return;
 		started = system;
 		status.diagnostics.resize(sessionLine);
 		if (system == ps5launcher::System::N3ds)
 		{
-			ps5log::Line("[main] this session is Azahar's (3DS): Cemu is not started");
-			status.diagnostics.push_back("This session: Azahar (3DS) only; Cemu is not loaded");
+			ps5log::Line("[main] the 3DS side: Cemu's emulated Wii U is not started");
+			status.diagnostics.push_back("This session: Azahar (3DS); Cemu's emulated Wii U is not started");
 			ps5azahar::StartScan(settings.n3ds.gamesFolder);
 			ps5emu::LogMemory(); // the 3DS side's start, against Cemu's
 			return;
 		}
-		ps5log::Line("[main] this session is Cemu's (Wii U): Azahar's core is not started");
-		status.diagnostics.push_back("This session: Cemu (Wii U) only; Azahar is not loaded");
+		ps5log::Line("[main] the Wii U side: Azahar's core is not started");
+		status.diagnostics.push_back("This session: Cemu (Wii U); Azahar's core is not started");
 		if (!privileges.filesystem)
 			return;
 		std::string coreError;
@@ -183,13 +183,6 @@ int main(int argc, char* argv[])
 			// nothing to show it on: wait for the player to close the app from the PS5's menu
 			for (;;)
 				sceKernelUsleep(1000000);
-		}
-		if (choice->startOver)
-		{
-			// the side chosen, in a fresh process (only from Cemu's to Azahar's)
-			RememberSide(choice->system == ps5launcher::System::N3ds ? "3ds" : "wiiu");
-			ps5emu::RestartToLibrary();
-			return 0;
 		}
 		const ps5emu::Game& game = choice->game;
 

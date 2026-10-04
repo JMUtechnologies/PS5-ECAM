@@ -75,7 +75,7 @@ namespace ps5privilege
 				if (++polls >= kMaxPolls)
 				{
 					unlink(kRequestPath);
-					detail = "no HEN took the request (is etaHEN loaded, and PPSA99360 in its app jailbreak list?)";
+					detail = "no HEN took the request (is a HEN loaded, with PPSA99360 in its app jailbreak list: etaHEN's list, or OnionHEN's exact_title_ids with no trailing comma?)";
 					return false;
 				}
 				sceKernelUsleep(kPollUs);
@@ -143,7 +143,12 @@ namespace ps5privilege
 	{
 		Result r;
 		std::string henDetail;
-		r.jailbroken = HenJailbreak(henDetail);
+		// A test of the no-HEN start on a console that has one: with this file in the app's own
+		// download0 (/mnt/sandbox/PPSA99360_000/download0 from outside), no HEN is asked
+		if (access("/download0/ps5cemu_skip_hen", F_OK) == 0)
+			henDetail = "not asked: download0/ps5cemu_skip_hen is there";
+		else
+			r.jailbroken = HenJailbreak(henDetail);
 		// euid may stay 1 even with working credentials: the JIT probe is the ground truth. The
 		// HEN's JIT memory first (what the recompiler has used since 1.0), else executable direct
 		// memory, which any title gets: the recompiler runs either way

@@ -27,13 +27,13 @@ WIIU = {
     "system": "WII U", "footnote": "Cemu, the Wii U emulator, on PlayStation 5",
     "library_copy": "Every Wii U game in your game folder", "settings_copy": "How Cemu runs on your PS5",
     # planned, with their places in the layout: the video page's next row, and a game's tiles
-    "video_soon": "Async shaders and VSync",
+    "video_soon": None,
     "online_soon": "Graphic pack and app updates",
     "features": [
-        ("Amiibo", "Amiibo: load your amiibo files and scan them in the games that use them."),
+        ("GamePad speaker", "GamePad speaker: the sounds games play on the GamePad, from the DualSense's speaker."),
         ("Manage data", "Manage data: see, delete, back up and restore each game's updates, DLC and saves."),
         ("Search", "Search: find a game by its name, and sort the library your way."),
-        ("Updates", "Updates: a notice when a new PS5CEMU-HAR is out, and the newest graphic packs."),
+        ("App updates", "App updates: a notice when a new PS5CEMU-HAR is out, and the newest graphic packs. Game updates and DLC already install from Settings > Install updates and DLC."),
         ("Game list", "Game list: which Wii U games run well on the PS5, from players' reports."),
     ],
     "tiles_soon": [("Game options", "square")],  # its settings, updates, DLC and saves
@@ -47,7 +47,6 @@ WIIU = {
         ("Install updates and DLC", "INSTALL", "Updates and DLC into the Wii U storage"),
         ("Diagnostics", "DIAGNOSTICS", "Jailbreak, JIT and log files"),
         # planned: in their places already, marked as coming
-        ("Amiibo", "AMIIBO", "Your amiibo files, to scan in games", True),
         ("Online and updates", "ONLINE", "Box art, graphic pack and app updates"),
     ],
     "files_copy": "Choose the folder that holds your Wii U games",
@@ -67,16 +66,16 @@ N3DS = {
     "brand": "PS5 AZAHAR", "brand_icon": "icons/azahar-72.tga", "cover": "icons/azahar.tga",
     "system": "NINTENDO 3DS", "footnote": "Azahar, the 3DS emulator, on PlayStation 5",
     "library_copy": "Your 3DS games, installed ones included", "settings_copy": "How Azahar runs on your PS5",
-    "video_soon": "Border",
+    "video_soon": None,  # Border is planned in its own settings category
     "online_soon": "App updates",
     "features": [
-        ("Amiibo", "Amiibo: load your amiibo files and scan them in the games that use them."),
-        ("Save states", "Save states: save and load a game anywhere, a few slots for each game."),
-        ("Cheats", "Cheats: turn a game's cheat codes on and off from the in-game menu."),
-        ("Borders", "Borders: artwork around the 3DS screens in every layout, without shrinking them."),
+        ("Microphone", "Microphone: the DualSense's microphone as the 3DS's, for the games that listen."),
+        ("Camera", "Camera: the PS5 HD Camera as the 3DS cameras, for QR codes and the games that use them."),
+        ("Search", "Search: find a game by its name, and sort the library your way."),
+        ("Pause", "Pause: the game stops while the in-game menu is open."),
         ("Home Menu", "Home Menu: start the 3DS Home Menu, once Artic Setup has copied your console's files."),
     ],
-    "tiles_soon": [("Cheats and mods", "triangle"), ("Game options", "square")],  # textures too; settings, saves, DLC
+    "tiles_soon": [("Game options", "square")],  # its settings, saves and DLC (cheats are in the in-game menu)
     "detail": [("TITLE ID", "game-detail-format"), ("PUBLISHER", "game-detail-size"), ("FORMAT", "game-detail-dlc")],
     "packs": False,
     "settings": [
@@ -87,9 +86,8 @@ N3DS = {
         ("Install CIA files", "INSTALL", "CIA files into the 3DS storage"),
         ("Diagnostics", "DIAGNOSTICS", "Jailbreak, JIT and log files"),
         # planned: in their places already, marked as coming
-        ("Borders", "BORDERS", "Artwork around the screens", True),
+        ("Borders", "BORDERS", "Artwork around the screens"),
         ("Camera and microphone", "CAMERA", "PS5 HD Camera, DualSense microphone", True),
-        ("Amiibo", "AMIIBO", "Your amiibo files, to scan in games", True),
         ("System", "SYSTEM", "Region, language and the Home Menu"),
         ("Online and updates", "ONLINE", "Box art downloads and app updates"),
     ],
@@ -417,9 +415,10 @@ def launcher(side):
         {MODAL}
         <span class="dialog-title">Video</span>
         <span class="dialog-copy">Applies to the next game you start.</span>''')
-    for i in range(3):
+    for i in range(4):
         add(f'        <span id="video-row-{i}" class="dialog-row dialog-row-{i}">{DLG}<span id="video-label-{i}" class="dialog-row-label"></span><span id="video-value-{i}" class="dialog-row-value"></span></span>')
-    add(f'        <span class="dialog-row dialog-row-3 planned">{DLG}<span class="dialog-row-label">{S["video_soon"]}</span><span class="dialog-row-value">Soon</span></span>')
+    if S["video_soon"]:
+        add(f'        <span class="dialog-row dialog-row-4 planned">{DLG}<span class="dialog-row-label">{S["video_soon"]}</span><span class="dialog-row-value">Soon</span></span>')
     credit = S["credits"]
     add(f'''        <div class="dialog-hints">{h('updown', 'Select')}{h('leftright', 'Change')}{h('circle', 'Back')}</div>
       </div></div>
@@ -454,7 +453,17 @@ def launcher(side):
         <span class="dialog-title">System</span>
         <span class="dialog-copy">The emulated 3DS. Applies to the next game you start.</span>
         <span id="system-row-0" class="dialog-row dialog-row-0">{DLG}<span class="dialog-row-label">Region</span><span id="system-region" class="dialog-row-value">Automatic</span></span>
-        <span class="dialog-row dialog-row-1 planned">{DLG}<span class="dialog-row-label">Language and Home Menu</span><span class="dialog-row-value">Soon</span></span>
+        <span id="system-row-1" class="dialog-row dialog-row-1">{DLG}<span class="dialog-row-label">Language</span><span id="system-language" class="dialog-row-value">Automatic</span></span>
+        <span class="dialog-row dialog-row-2 planned">{DLG}<span class="dialog-row-label">Home Menu</span><span class="dialog-row-value">Soon</span></span>
+        <div class="dialog-hints">{h('updown', 'Select')}{h('leftright', 'Change')}{h('circle', 'Back')}</div>
+      </div></div>
+
+      <!-- Settings > Borders (the 3DS's) -->
+      <div id="borders-dialog" class="dialog"><div class="dialog-panel">
+        {MODAL}
+        <span class="dialog-title">Borders</span>
+        <span class="dialog-copy">Artwork around the 3DS screens, never over them. It follows every layout, and the in-game menu changes it too.</span>
+        <span id="borders-row-0" class="dialog-row dialog-row-0">{DLG}<span class="dialog-row-label">Border</span><span id="borders-theme" class="dialog-row-value">None</span></span>
         <div class="dialog-hints">{h('leftright', 'Change')}{h('circle', 'Back')}</div>
       </div></div>
 

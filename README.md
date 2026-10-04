@@ -41,13 +41,24 @@ and log and cache tools in Diagnostics. See [What's new in 2.0.0 C](#whats-new-i
    [build it yourself](docs/BUILDING.md).
 2. Copy the `PPSA99360` folder to `/data/homebrew/PPSA99360` on your PS5.
 3. Load your HEN. With etaHEN, add `PPSA99360` to its app jailbreak list: that gives the app
-   access to `/data` and the HEN's JIT memory. With any other HEN (OnionHEN and others), the app
+   access to `/data` and the HEN's JIT memory. With OnionHEN, add it to the end of
+   `exact_title_ids` in the `[app_jailbreak]` section of its `config.ini`, with **no comma after
+   it**, then reload OnionHEN:
+
+   ```ini
+   exact_title_ids=ITEM00001,NPXS39041,PKGI13337,PKGI12345,TOOL00001,PPSA99360
+   ```
+
+   A trailing comma, or any entry that isn't a 9-character title ID, makes OnionHEN drop the whole
+   list, so the app isn't jailbroken
+   ([#12](https://github.com/premohq/PS5CEMU-HAR/issues/12)). With any other HEN, the app
    runs its bundled `sandbox-elevator.elf` through elfldr for `/data` access, and both emulators'
    recompilers make their own executable memory, so no HEN has to grant JIT memory
    ([#11](https://github.com/premohq/PS5CEMU-HAR/issues/11),
    [#12](https://github.com/premohq/PS5CEMU-HAR/issues/12)). **Settings > Diagnostics** says which
    one the app got. The same helper also opens USB and extended-storage drives a HEN leaves out
    ([#16](https://github.com/premohq/PS5CEMU-HAR/issues/16)).
+   **[The HEN setup guide](docs/HEN-SETUP.md)** has the steps for etaHEN, OnionHEN and other HENs.
 4. Add your game dumps (see [Game files](#game-files)).
 5. Launch PS5CEMU-HAR from the home screen, pick an emulator and open the Library.
 
@@ -62,9 +73,10 @@ see new ones, register the app again in the loader you installed it with.
 | Left / Right, Cross | Choose PS5 CEMU or PS5 AZAHAR |
 | Circle (on a launcher's home screen) | Go back to the start screen |
 
-After a game, the app opens on the side you played on. Only the emulator you pick is started, so
-Cemu and Azahar never run at the same time (choosing the 3DS side after the Wii U's restarts the
-app), and box art downloads and game scans stop before a game starts. Both launchers have:
+After a game, the app opens on the side you played on. You can switch between the two sides
+without the app restarting: each emulator's core only starts when you start one of its games, so
+Cemu and Azahar never run at the same time, and box art downloads and game scans stop before a game
+starts. Both launchers have:
 
 - **Last played** and **Recent games** on the home screen, and a **Coming soon** row of planned
   features that says what each will do
@@ -186,6 +198,26 @@ games flicker) and **Async shader compile** (on by default; off waits for each n
 stutters but draws nothing wrong). The 3DS menu has the **CPU clock** and a **Speed limit** (100% by
 default; raise it or choose None to fast-forward, for the current game only).
 
+## Amiibo, save states, cheats and mods
+
+- **Amiibo (both emulators).** Put your own amiibo dumps (`.bin` files) in `/data/ps5cemu/amiibo`.
+  When a game asks for an amiibo, open the in-game menu: on the Wii U, **Amiibo** (Left and Right
+  choose the file, Cross scans it); on the 3DS, **Save states, cheats, amiibo > Amiibo**, and
+  **Take the amiibo away** when the game is done with it. On the 3DS, games can only write to an
+  amiibo with the console's `aes_keys.txt` in `azahar/sysdata`. The app ships no amiibo files.
+- **Save states (3DS).** **Save states, cheats, amiibo** in the in-game menu saves and loads five
+  slots per game (loading asks twice). Save states are tied to the app version that made them, so
+  keep saving in the game too.
+- **Cheats (3DS).** Put a game's cheats in `/data/ps5cemu/azahar/cheats/<title ID>.txt` (the title ID
+  as 16 hex digits, shown in the in-game menu), in the Gateway format desktop Azahar uses, and turn
+  them on and off from **Save states, cheats, amiibo > Cheats**. Your choices are saved in the file.
+- **Custom textures (3DS).** Turn on **Settings > Video > Custom textures** and put a texture pack in
+  `/data/ps5cemu/azahar/load/textures/<title ID>/`, as for desktop Azahar.
+- **Mods (3DS).** LayeredFS mods go in `/data/ps5cemu/azahar/load/mods/<title ID>/` (`romfs/` and
+  `exefs/` inside), as for desktop Azahar.
+- **3DS language.** **Settings > System > Language** sets the emulated 3DS's language (Automatic
+  leaves it as Azahar sets it), for games that show text only in the console's language.
+
 ## Where files are stored
 
 Everything the app writes goes to `/data/ps5cemu`, except your game files:
@@ -207,9 +239,13 @@ Everything the app writes goes to `/data/ps5cemu`, except your game files:
 │   ├── sysdata/                    aes_keys.txt, if you add it
 │   ├── shaders/                    Azahar shader cache
 │   └── log/azahar_log.txt          Azahar log
+│   ├── cheats/<title ID>.txt       3DS cheats
+│   └── load/                       3DS custom textures (textures/) and mods (mods/)
+├── amiibo/                         your amiibo dumps (.bin), for both emulators
 ├── covers/                         game icons and box art (boxart/)
 ├── log.txt                         Cemu log
-└── logs/boot.log                   app log (boot.prev.log is the previous session)
+└── logs/                           app logs: boot.log, then boot.prev.log and boot.2-4.log for the
+                                    sessions before, each with Cemu's log of it (cemu.prev.txt...)
 ```
 
 **Moving Wii U saves from Cemu on PC:** with the game closed, copy the save folder from
@@ -229,8 +265,9 @@ it asks for your firmware, HEN, app version and logs, which almost every problem
 **Settings > Diagnostics** shows the app version, the firmware and where the logs are. **Copy logs
 to USB** puts the boot log, `log.txt` (Wii U), `azahar/log/azahar_log.txt` (3DS) and the settings in
 a dated `PS5CEMU-HAR-logs-...` folder on a USB drive: please attach them when you report a problem,
-copied right after it happens, before the app is started again (the app keeps only the previous
-session's boot log, as `boot.prev.log`). **Clear shader caches** deletes that side's shader caches
+copied soon after it happens: the app keeps the last five sessions' boot logs (`boot.log`,
+`boot.prev.log`, `boot.2.log` to `boot.4.log`), each with Cemu's `log.txt` from that session
+(`cemu.prev.txt` and so on), and copies them all. **Clear shader caches** deletes that side's shader caches
 (press Cross twice), for a game that crashes on a bad or shared cache; games build them again as
 they run. During a game, the boot log also gets a `[memory]` line once a minute, which shows whether
 memory use keeps growing, and a `[perf]` (Wii U) or `[perf3ds]` (3DS) line every 10 seconds with the

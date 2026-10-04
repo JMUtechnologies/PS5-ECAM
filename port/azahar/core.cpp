@@ -19,6 +19,7 @@
 #include "input.h"
 #include "../app/ingame3ds.h"
 #include "../ps5/display.h"
+#include "../ps5/kernel.h"
 #include "../ps5/log.h"
 #include "../ps5/notify.h"
 #include "../ps5/pad.h"
@@ -39,18 +40,29 @@
 #include "core/hle/service/am/am.h"
 #include "core/hle/service/apt/applet_manager.h"
 #include "core/hle/service/apt/apt.h"
+#include "core/hle/service/cfg/cfg.h"
+#include "core/hle/service/nfc/nfc.h"
+#include "core/cheats/cheat_base.h"
+#include "core/cheats/cheats.h"
 #include "core/hle/service/hid/hid.h"
 #include "core/hle/service/ir/ir_rst.h"
 #include "core/hle/service/ir/ir_user.h"
 #include "core/hle/service/service.h"
 #include "core/hle/service/sm/sm.h"
 #include "core/loader/loader.h"
+#include "core/savestate.h"
 #include "video_core/gpu.h"
 #include "video_core/rasterizer_interface.h"
 #include "video_core/renderer_base.h"
 
 #include <atomic>
 #include <chrono>
+#include <algorithm>
+#include <cstdlib>
+#include <filesystem>
+#include <fstream>
+#include <iterator>
+#include <ctime>
 #include <mutex>
 #include <stdexcept>
 #include <thread>
@@ -174,6 +186,169 @@ namespace ps5azahar
 		std::string s_name;
 		uint64_t s_titleId = 0;
 		bool s_coreTouched = false; // LaunchGame got as far as starting Azahar's core
+		// a save state the menu asked for, for the emulation thread: a save to slot n (n), a load (-n)
+		std::atomic<int> s_stateRequest{0};
+		std::atomic<uint64_t> s_stateAskedAt{0}; // sceKernelGetProcessTime
+
+		// The menu's save state slots: when each was saved, as Azahar lists them
+		void ShowStateSlots()
+		{
+			std::vector<std::string> times(ps5ingame3ds::kStateSlots);
+			for (const Core::SaveStateInfo& info : Core::ListSaveStates(s_titleId, 0))
+			{
+				if (info.slot < 1 || info.slot > (u32)times.size())
+					continue;
+				const std::time_t time = (std::time_t)info.time;
+				char text[32] = "saved";
+				if (const std::tm* local = std::localtime(&time))
+					std::strftime(text, sizeof(text), "%b %d, %H:%M", local);
+				times[info.slot - 1] = info.status == Core::SaveStateInfo::ValidationStatus::OK ? text : "another version's";
+			}
+			ps5ingame3ds::SetStateSlots(times);
+		}
+
+		// Amiibo dumps for both emulators' menus (the Wii U side reads the same folder)
+		constexpr const char* kAmiiboFolder = PS5CEMU_DATA "/amiibo";
+		std::vector<std::string> s_amiiboFiles;
+
+		// The menu's amiibo files and the game's cheats, as they are now
+		void ShowExtras()
+		{
+			std::vector<std::string> amiibo;
+			std::error_code error;
+			for (const auto& entry : std::filesystem::directory_iterator(kAmiiboFolder, error))
+			{
+				std::string extension = entry.path().extension().string();
+				std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+				if (entry.is_regular_file(error) && extension == ".bin")
+					amiibo.push_back(entry.path().filename().string());
+			}
+			std::sort(amiibo.begin(), amiibo.end());
+			s_amiiboFiles = amiibo;
+			std::vector<std::pair<std::string, bool>> cheats;
+			for (const auto& cheat : Core::System::GetInstance().CheatEngine().GetCheats())
+				cheats.emplace_back(cheat->GetName(), cheat->IsEnabled());
+			ps5ingame3ds::SetExtras(amiibo, cheats);
+		}
+
+		// An amiibo held to the 3DS's reader or taken off it, or a cheat turned on or off (kept in the
+		// game's cheat file, as the desktop Azahar's cheat window does)
+		void HandleExtras(const ps5ingame3ds::ExtrasRequest& request)
+		{
+			using Request = ps5ingame3ds::ExtrasRequest;
+			Core::System& system = Core::System::GetInstance();
+			std::string message;
+			if (request.kind == Request::Amiibo || request.kind == Request::RemoveAmiibo)
+			{
+				auto nfc = system.ServiceManager().GetService<Service::NFC::Module::Interface>("nfc:u");
+				if (!nfc)
+					message = "No amiibo reader";
+				else if (request.kind == Request::RemoveAmiibo)
+				{
+					nfc->RemoveAmiibo();
+					message = "Taken away";
+				}
+				else if (request.index >= 0 && request.index < (int)s_amiiboFiles.size())
+				{
+					const std::string& name = s_amiiboFiles[request.index];
+					message = nfc->LoadAmiibo(std::string(kAmiiboFolder) + "/" + name) ? "Scanned " + name : "Not an amiibo dump";
+				}
+			}
+			else if (request.kind == Request::Cheat)
+			{
+				const auto cheats = system.CheatEngine().GetCheats();
+				if (request.index >= 0 && request.index < (int)cheats.size())
+				{
+					const auto& cheat = cheats[request.index];
+					cheat->SetEnabled(!cheat->IsEnabled());
+					system.CheatEngine().SaveCheatFile(s_titleId);
+					message = fmt::format("{}: {}", cheat->GetName(), cheat->IsEnabled() ? "on" : "off");
+				}
+			}
+			ps5log::Line("[azahar] {}", message);
+			if (request.kind != Request::Cheat)
+				ps5ingame3ds::SetExtrasMessage(message);
+			ShowExtras();
+		}
+
+		void ReloadControls();
+
+		// The border's picture, from the app's assets/borders (tools/render-borders.py: uncompressed
+		// 24- or 32-bit TGA), for the menu's renderer to draw round the screens
+		void LoadBorder(int theme)
+		{
+			theme = std::clamp(theme, 0, ps5ingame3ds::kBorderCount - 1);
+			std::vector<uint8_t> rgba;
+			int width = 0, height = 0;
+			if (theme > 0)
+			{
+				std::string name = ps5ingame3ds::kBorderNames[theme];
+				std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+				const std::string path = ps5paths::Assets() + "/borders/" + name + ".tga";
+				std::ifstream file(path, std::ios::binary);
+				std::vector<uint8_t> data((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+				const int bytes = data.size() >= 18 ? data[16] / 8 : 0;
+				if (data.size() >= 18 && data[2] == 2 && (bytes == 3 || bytes == 4))
+				{
+					width = data[12] | data[13] << 8;
+					height = data[14] | data[15] << 8;
+					const bool topFirst = data[17] & 0x20;
+					const size_t start = 18 + data[0];
+					if (data.size() >= start + (size_t)width * height * bytes)
+					{
+						rgba.resize((size_t)width * height * 4);
+						for (int y = 0; y < height; y++)
+							for (int x = 0; x < width; x++)
+							{
+								const uint8_t* in = &data[start + ((size_t)(topFirst ? y : height - 1 - y) * width + x) * bytes];
+								uint8_t* out = &rgba[((size_t)y * width + x) * 4];
+								out[0] = in[2];
+								out[1] = in[1];
+								out[2] = in[0];
+								out[3] = 255;
+							}
+					}
+				}
+				if (rgba.empty())
+					ps5log::Line("[azahar] border {}: {} could not be read", ps5ingame3ds::kBorderNames[theme], path);
+			}
+			ps5ingame3ds::SetBorder(theme, std::move(rgba), width, height);
+		}
+
+		// Where the screens are, for the border
+		void PublishScreens()
+		{
+			if (!s_window)
+				return;
+			const auto& layout = s_window->GetFramebufferLayout();
+			std::vector<ps5ingame3ds::ScreenRect> screens;
+			auto add = [&](const Common::Rectangle<u32>& r) {
+				if (r.GetWidth() > 0 && r.GetHeight() > 0)
+					screens.push_back({(float)r.left, (float)r.top, (float)r.right, (float)r.bottom});
+			};
+			if (layout.top_screen_enabled)
+				add(layout.top_screen);
+			if (layout.bottom_screen_enabled)
+				add(layout.bottom_screen);
+			ps5ingame3ds::SetScreens(screens, (float)layout.width, (float)layout.height);
+		}
+
+		// What came of a save or load, in the menu and the boot log
+		void ReportState(int request, Core::System::ResultStatus result, Core::System& system)
+		{
+			using Status = Core::System::ResultStatus;
+			const bool load = request < 0;
+			const int slot = std::abs(request);
+			const std::string message = result == Status::Success ? fmt::format("{} slot {}", load ? "Loaded" : "Saved", slot) :
+				result == Status::ErrorSavestateBuildMismatch ? "Made by another version" : "It did not work";
+			ps5log::Line("[azahar] {} slot {}: {}{}", load ? "load from" : "save to", slot, message,
+				result == Status::Success ? std::string() : fmt::format(" ({})", system.GetStatusDetails()));
+			ps5ingame3ds::SetStateMessage(message);
+			ShowStateSlots();
+			// a load makes the 3DS's input services over: the DualSense goes back to them
+			if (load && result == Status::Success)
+				ReloadControls();
+		}
 
 		// Azahar's paths and log, once, before anything of Azahar's runs (a CIA install from the
 		// launcher, or a game).
@@ -230,6 +405,10 @@ namespace ps5azahar
 			// automatic (-1) takes the game's own region; a game made for another one may refuse to
 			// start or show other languages (#17)
 			values.region_value = std::clamp(settings.region, -1, 6);
+			// texture packs from azahar/load/textures/<title ID>, as the desktop Azahar loads them
+			values.custom_textures = settings.customTextures;
+			values.preload_textures = false;
+			values.async_custom_loading = true;
 			values.output_type = AudioCore::SinkType::PS5;
 			values.audio_emulation = Settings::AudioEmulation::HLE;
 			values.enable_audio_stretching = true;
@@ -254,6 +433,7 @@ namespace ps5azahar
 			menu.motion = settings.motion;
 			menu.deadzone = settings.deadzone;
 			menu.aOnCircle = MappedInput(settings, Button::A) == ps5emu::PadInput::Circle;
+			menu.border = settings.border;
 			return menu;
 		}
 
@@ -297,6 +477,11 @@ namespace ps5azahar
 			s_settings.cpuClock = menu.cpuClock;
 			s_settings.motion = menu.motion;
 			s_settings.deadzone = menu.deadzone;
+			if (menu.border != s_settings.border)
+			{
+				s_settings.border = menu.border;
+				LoadBorder(menu.border);
+			}
 			if (menu.aOnCircle != (MappedInput(s_settings, Button::A) == ps5emu::PadInput::Circle))
 			{
 				// A, B, X and Y: on Circle, Cross, Triangle and Square, or on Cross, Circle, Square and
@@ -377,7 +562,28 @@ namespace ps5azahar
 			system.RegisterCoreLoopThreadId();
 			while (!s_stop)
 			{
+				// a save state between two of the loop's steps, signalled only when no system call is
+				// still working in the background: then the step below makes it, and what it returns
+				// says how it went (Azahar would otherwise put it off, and say nothing of it)
+				const int request = s_stateRequest.load();
+				bool stateNow = false;
+				if (request && !system.Kernel().AreAsyncOperationsPending())
+				{
+					s_stateRequest = 0;
+					system.SendSignal(request > 0 ? Core::System::Signal::Save : Core::System::Signal::Load, (u32)std::abs(request));
+					stateNow = true;
+				}
+				else if (request && sceKernelGetProcessTime() - s_stateAskedAt > 5000000)
+				{
+					s_stateRequest = 0;
+					ps5log::Line("[azahar] save state: the game stayed busy for 5 s");
+					ps5ingame3ds::SetStateMessage("The game is busy: try again");
+				}
 				const auto result = system.RunLoop();
+				if (stateNow)
+					ReportState(request, result, system);
+				if (result == Core::System::ResultStatus::ErrorSavestate || result == Core::System::ResultStatus::ErrorSavestateBuildMismatch)
+					continue; // the game carries on as it was
 				if (result == Core::System::ResultStatus::ShutdownRequested)
 				{
 					ps5log::Line("[azahar] the game shut the 3DS down");
@@ -452,6 +658,19 @@ namespace ps5azahar
 
 		u64 programId = 0;
 		system.GetAppLoader().ReadProgramId(programId);
+		// the 3DS's language, set before the game first runs and asks for it (Load may have set one
+		// for the game's region; the launcher's choice comes after)
+		if (settings.language >= 0)
+			if (auto cfg = Service::CFG::GetModule(system))
+			{
+				const auto language = (Service::CFG::SystemLanguage)std::clamp(settings.language, 0, 11);
+				if (cfg->GetSystemLanguage() != language)
+				{
+					cfg->SetSystemLanguage(language);
+					cfg->UpdateConfigNANDSavegame();
+				}
+				ps5log::Line("[azahar] system language {}", (int)language);
+			}
 		system.GPU().ApplyPerProgramSettings(programId);
 		std::atomic_bool stopLoading = false;
 		system.GPU().Renderer().Rasterizer()->LoadDefaultDiskResources(stopLoading, nullptr);
@@ -462,6 +681,10 @@ namespace ps5azahar
 			s_name = title; // the game on the 3DS, by its own name
 		s_titleId = programId ? programId : game.titleId;
 		ShowInMenu();
+		ShowStateSlots();
+		ShowExtras();
+		LoadBorder(settings.border);
+		PublishScreens();
 		s_stop = false;
 		s_running = true;
 		s_emulation = std::thread(Emulate);
@@ -479,6 +702,7 @@ namespace ps5azahar
 		{
 			sceKernelUsleep(4000);
 			input::Update(*s_window, ps5ingame3ds::MenuOpen() || ps5ingame3ds::KeyboardOpen()); // the game sees no buttons while either is up
+			PublishScreens(); // the layout may have changed (the menu, a shortcut)
 			if (++polls % 500 == 0)
 				ps5pad::Rescan(); // controllers joining or leaving, about every two seconds
 			if (polls % 15000 == 0)
@@ -537,6 +761,16 @@ namespace ps5azahar
 					ps5ingame3ds::KeyboardError(KeyboardMessage(result));
 				ps5log::Line("[azahar] keyboard: {} characters, button {}{}", typed.size(), button,
 					result != Frontend::ValidationError::None ? fmt::format(", refused ({})", (int)result) : std::string());
+			}
+			ps5ingame3ds::ExtrasRequest extras;
+			if (ps5ingame3ds::TakeExtrasRequest(extras))
+				HandleExtras(extras);
+			bool load = false;
+			int slot = 0;
+			if (ps5ingame3ds::TakeStateRequest(load, slot))
+			{
+				s_stateAskedAt = sceKernelGetProcessTime();
+				s_stateRequest = load ? -slot : slot;
 			}
 			if (ps5ingame3ds::TakeLibraryRequest())
 			{

@@ -75,6 +75,9 @@ namespace ps5settings
 			ReadBool(json, "performance", n3ds.performance);
 			ReadInt(json, "cpuClock", n3ds.cpuClock, 25, 400);
 			ReadInt(json, "region", n3ds.region, -1, 6);
+			ReadInt(json, "language", n3ds.language, -1, 11);
+			ReadBool(json, "customTextures", n3ds.customTextures);
+			ReadInt(json, "border", n3ds.border, 0, 4);
 			ReadString(json, "articAddress", n3ds.articAddress);
 			ReadInt(json, "gameCount", n3ds.gameCount, -1, 1000000);
 			if (json.HasMember("buttons") && json["buttons"].IsObject())
@@ -107,6 +110,12 @@ namespace ps5settings
 			writer.Int(n3ds.cpuClock);
 			writer.Key("region");
 			writer.Int(n3ds.region);
+			writer.Key("language");
+			writer.Int(n3ds.language);
+			writer.Key("customTextures");
+			writer.Bool(n3ds.customTextures);
+			writer.Key("border");
+			writer.Int(n3ds.border);
 			writer.Key("articAddress");
 			writer.String(n3ds.articAddress.c_str());
 			writer.Key("gameCount");
@@ -154,6 +163,7 @@ namespace ps5settings
 			settings.music = "off";
 		ReadInt(json, "musicVolume", settings.musicVolume, 0, 100);
 		ReadBool(json, "boxArt", settings.boxArt);
+		ReadBool(json, "asyncShaders", settings.asyncShaders);
 		ReadBool(json, "menuSounds", settings.menuSounds);
 		return settings;
 	}
@@ -190,6 +200,8 @@ namespace ps5settings
 		writer.Int(settings.musicVolume);
 		writer.Key("boxArt");
 		writer.Bool(settings.boxArt);
+		writer.Key("asyncShaders");
+		writer.Bool(settings.asyncShaders);
 		writer.Key("menuSounds");
 		writer.Bool(settings.menuSounds);
 		writer.Key("side");

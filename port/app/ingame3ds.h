@@ -12,6 +12,7 @@
 #include <vulkan/vulkan.h>
 
 #include <cstdint>
+#include <iterator>
 #include <string>
 #include <vector>
 
@@ -31,6 +32,7 @@ namespace ps5ingame3ds
 		bool motion = true;
 		int deadzone = 15;		  // percent
 		bool aOnCircle = true;	  // A on Circle and B on Cross, where the 3DS has them
+		int border = 0;			  // kBorderNames
 	};
 
 	// Azahar's frame being recorded (its renderer's FrontendOverlayTarget): before its render pass
@@ -62,6 +64,44 @@ namespace ps5ingame3ds
 	// The performance overlay's numbers, about once a second: frames per second, speed in percent,
 	// and where a frame's time goes (a line of text; empty: none).
 	void SetPerformance(double fps, double speed, const std::string& breakdown);
+
+	// Save states (the menu's Save states page), in slots 1 to kStateSlots. From the game's loop:
+	// each slot's time (empty: nothing saved) and what came of the last save or load; for it, a save
+	// (load false) or load chosen in the menu, once.
+	constexpr int kStateSlots = 5;
+	void SetStateSlots(const std::vector<std::string>& times);
+	void SetStateMessage(const std::string& message);
+	bool TakeStateRequest(bool& load, int& slot);
+
+	// The same page's amiibo and cheats. From the game's loop: the amiibo files (names in
+	// /data/ps5cemu/amiibo), the game's cheats (name, on) and what came of the last request; for it,
+	// what the menu asked for, once.
+	void SetExtras(const std::vector<std::string>& amiibo, const std::vector<std::pair<std::string, bool>>& cheats);
+	void SetExtrasMessage(const std::string& message);
+	struct ExtrasRequest
+	{
+		enum Kind
+		{
+			None,
+			Amiibo,		  // scan amiibo[index]
+			RemoveAmiibo,
+			Cheat,		  // turn cheats[index] on or off
+		} kind = None;
+		int index = 0;
+	};
+	bool TakeExtrasRequest(ExtrasRequest& request);
+
+	// The border: artwork drawn around the screens, never over them, with a frame round each (a soft
+	// shadow, a hairline, a ring for Shell). From the game's loop: the theme with its picture (RGBA,
+	// top row first; empty for none), and where the screens are on a width x height picture.
+	constexpr const char* kBorderNames[] = {"None", "Midnight", "Waves", "Aurora", "Shell"};
+	constexpr int kBorderCount = (int)std::size(kBorderNames);
+	struct ScreenRect
+	{
+		float left, top, right, bottom;
+	};
+	void SetBorder(int theme, std::vector<uint8_t> rgba, int width, int height);
+	void SetScreens(const std::vector<ScreenRect>& screens, float width, float height);
 
 	// For Azahar's renderer, twice a frame, where it records its commands.
 	void Record(const Target& target);

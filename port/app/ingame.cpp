@@ -2,6 +2,7 @@
 #include "ingame.h"
 #include "emulator.h"
 #include "menu_canvas.h"
+#include "paths.h"
 #include "../ps5/kernel.h"
 #include "../ps5/log.h"
 #include "../ps5/pad.h"
@@ -9,12 +10,16 @@
 #include "audio/IAudioAPI.h"
 #include "Cafe/CafeSystem.h"
 #include "Cafe/HW/Latte/Core/Latte.h"
+#include "Cafe/OS/libs/nfc/nfc.h"
 #include "Cafe/OS/libs/swkbd/swkbd.h"
 #include "config/CemuConfig.h"
 #include "imgui/imgui_extension.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
+
+#include <algorithm>
+#include <filesystem>
 
 namespace
 {
@@ -44,6 +49,26 @@ namespace
 	uint32_t s_buttons = 0, s_pressed = 0; // player 1's buttons, and those pressed since the last frame
 	bool s_confirmLibrary = false;
 	std::string s_gameName;
+	// amiibo dumps in /data/ps5cemu/amiibo, looked for as the menu opens; the one chosen, and what
+	// came of the last scan
+	std::vector<std::string> s_amiibo;
+	int s_amiiboIndex = 0;
+	std::string s_amiiboMessage;
+
+	void FindAmiibo()
+	{
+		s_amiibo.clear();
+		std::error_code error;
+		for (const auto& entry : std::filesystem::directory_iterator(PS5CEMU_DATA "/amiibo", error))
+		{
+			std::string extension = entry.path().extension().string();
+			std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+			if (entry.is_regular_file(error) && extension == ".bin")
+				s_amiibo.push_back(entry.path().filename().string());
+		}
+		std::sort(s_amiibo.begin(), s_amiibo.end());
+		s_amiiboIndex = s_amiibo.empty() ? 0 : std::clamp(s_amiiboIndex, 0, (int)s_amiibo.size() - 1);
+	}
 	// The menu's pages: its main one, Cemu's graphics settings, and the controllers'
 	enum class Page
 	{
@@ -147,6 +172,7 @@ namespace
 				s_confirmLibrary = false;
 				s_page = Page::Main; // the menu opens on its first page
 				s_gameName = CafeSystem::GetForegroundTitleName();
+				FindAmiibo();
 			}
 			const Canvas canvas{ImGui::GetWindowDrawList(), scale, origin};
 			canvas.draw->AddRectFilled({0, 0}, io.DisplaySize, Colour(0x02060e, 0xb8)); // the game, dimmed
@@ -196,6 +222,10 @@ namespace
 						"Cemu's accuracy settings: accurate barriers and asynchronous shader compiling. They are kept for the next "
 						"games too."},
 					{"volume", "Volume", fmt::format("{}%", config.tv_volume), true, "The game's sound. Left and Right change it by 10%."},
+					{"amiibo", "Amiibo", !s_amiiboMessage.empty() ? s_amiiboMessage : s_amiibo.empty() ? "None in /data/ps5cemu/amiibo" :
+						s_amiibo[s_amiiboIndex], true,
+						"Left and Right choose an amiibo dump (.bin) from /data/ps5cemu/amiibo; Cross touches it to the GamePad, "
+						"as Cemu's NFC > Scan NFC tag does. Scan it when the game asks for an amiibo."},
 					{"controls", "Controls", "", false,
 						"Each player's controller: the emulated one, motion controls, vibration, the sticks' deadzones and where A and B are. "
 						"They are kept for the next games too."},
@@ -238,8 +268,8 @@ namespace
 
 			int focused = 0;
 			// nine rows fill the panel at their full height; more are drawn closer
-			const bool tight = items.size() > 9;
-			const float spacing = tight ? 65 : 72, height = tight ? 59 : 64, lift = (64 - height) / 2;
+			const bool tight = items.size() > 9, tighter = items.size() > 10;
+			const float spacing = tighter ? 59 : tight ? 65 : 72, height = tighter ? 54 : tight ? 59 : 64, lift = (64 - height) / 2;
 			for (int i = 0; i < (int)items.size(); i++)
 			{
 				const Item& item = items[i];
@@ -298,6 +328,20 @@ namespace
 				}
 				else if (id == "graphics")
 					ShowPage(Page::Graphics);
+				else if (id == "amiibo" && !s_amiibo.empty())
+				{
+					s_amiiboMessage.clear();
+					if (!chosen)
+						s_amiiboIndex = (s_amiiboIndex + change + (int)s_amiibo.size()) % (int)s_amiibo.size();
+					else
+					{
+						const std::string& name = s_amiibo[s_amiiboIndex];
+						uint32 nfcError = 0;
+						const bool scanned = nfc::TouchTagFromFile(fs::path(PS5CEMU_DATA "/amiibo") / name, &nfcError);
+						s_amiiboMessage = scanned ? "Scanned " + name : fmt::format("Not scanned (error {:#x})", nfcError);
+						ps5log::Line("[ingame] amiibo {}: {}", name, s_amiiboMessage);
+					}
+				}
 				else if (id == "volume")
 					// Cross goes up by 10, and from 100 back to 0
 					SetVolume(chosen && config.tv_volume >= 100 ? 0 : config.tv_volume + change * 10);
