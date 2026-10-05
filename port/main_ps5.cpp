@@ -109,11 +109,24 @@ int main(int argc, char* argv[])
 	if (privileges.filesystem)
 		ps5privilege::ReachFolders({settings.gamesFolder, settings.n3ds.gamesFolder});
 	ps5threads::SetPinning(settings.pinCpuThreads);
+	ps5log::ForwardDriverMessages();
 	// before either emulator's Vulkan driver starts, which reads it once
 	if (!settings.radvDebug.empty())
 	{
 		setenv("RADV_DEBUG", settings.radvDebug.c_str(), 1);
 		ps5log::Line("[vulkan] RADV_DEBUG={} (radvDebug in ps5cemu.json)", settings.radvDebug);
+	}
+	for (const auto& [name, value] : settings.radvEnvironment)
+	{
+		// the driver's own variables only: the rest of the environment is the app's
+		const bool driver = name.rfind("RADV_", 0) == 0 || name.rfind("MESA_", 0) == 0 || name.rfind("ACO_", 0) == 0;
+		if (!driver || name == "RADV_DEBUG")
+		{
+			ps5log::Line("[vulkan] {} in radvEnvironment left out: only RADV_, MESA_ and ACO_ names, and radvDebug for RADV_DEBUG", name);
+			continue;
+		}
+		setenv(name.c_str(), value.c_str(), 1);
+		ps5log::Line("[vulkan] {}={} (radvEnvironment in ps5cemu.json)", name, value);
 	}
 	ps5pad::Init();
 	ps5pad::SetVibrationEnabled(settings.rumble);

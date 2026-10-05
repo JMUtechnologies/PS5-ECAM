@@ -48,6 +48,10 @@ namespace ps5settings
 		// only in ps5cemu.json: RADV_DEBUG for the Vulkan driver (e.g. "nongg,nohiz"), to narrow down
 		// a GPU hang by turning hardware features off; empty by default
 		std::string radvDebug;
+		// only in ps5cemu.json: more of the Vulkan driver's environment, name to value, for its
+		// performance experiments (RADV_, MESA_ and ACO_ names only), e.g.
+		// {"RADV_THREADED_RECORDING": "1", "RADV_PS5_GPU_TIME": "1"}; empty by default
+		std::map<std::string, std::string> radvEnvironment;
 		int volume = 100;			  // the TV sound, in percent
 		int gameCount = -1;			  // the Wii U library's games when last looked for (the start screen's); -1: never
 		uint64_t lastGame = 0;		  // title ID
