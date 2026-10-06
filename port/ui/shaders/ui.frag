@@ -1,7 +1,8 @@
 #version 450
 // PS5CEMU-HAR's UI kit: each quad's shape as a signed distance, so corners and edges are smooth at any
 // scale. Kinds: 0 a filled rounded box, 1 a ring inside the box's edge, 2 a soft shadow or glow
-// around it, 3 an image in it, 4 a glyph (a signed-distance atlas), 5 grain, 6 a line with round
+// around it (with the ring width set, outside the box only: a glow drawn over what it lights), 3 an
+// image in it, 4 a glyph (a signed-distance atlas), 5 grain, 6 a line with round
 // ends (from gradient.xy to gradient.zw, the ring width wide), 7 a triangle (gradient.xy,
 // gradient.zw and uv.xy; outlined when the ring width is set, its corners rounded by the radius),
 // 8 a wave: everything below base + amplitude * sin(x / wavelength + phase) (gradient: base,
@@ -103,6 +104,8 @@ void main()
 		// a Gaussian's edge, near enough: full inside, fading over the softness either side
 		float t = clamp((d + soft) / (2.0 * soft), 0.0, 1.0);
 		coverage = 1.0 - t * t * (3.0 - 2.0 * t);
+		if (vShape.y > 0.0)
+			coverage *= clamp(0.5 + d / pixel, 0.0, 1.0);
 	}
 	else if (kind == 3)
 	{

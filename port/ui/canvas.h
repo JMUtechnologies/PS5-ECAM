@@ -87,6 +87,8 @@ namespace ui
 		void RadialGradient(const Box& box, float radius, uint32_t from, uint32_t to, float cx, float cy, float rx, float ry, float start = 0);
 		void Ring(const Box& box, float radius, float width, uint32_t colour);
 		void Shadow(const Box& box, float radius, float offsetY, float softness, uint32_t colour);
+		// light around the box, none over it (a focused element's glow, drawn after it)
+		void Glow(const Box& box, float radius, float softness, uint32_t colour);
 		// a picture in the box, its rectangle (u0, v0)-(u1, v1)
 		void Image(TextureId texture, const Box& box, float radius, uint32_t tint = 0xffffffff, float u0 = 0, float v0 = 0, float u1 = 1, float v1 = 1);
 		// a picture filling the box, cut to its shape (width x height: the picture's)

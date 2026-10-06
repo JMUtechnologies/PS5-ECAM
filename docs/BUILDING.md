@@ -76,7 +76,8 @@ else compiles, links and packages, but its output (`build/app-check`) is not an 
 | `port/cemu/` | Cemu's platform classes for the PS5: the memory mapper, fibers, AudioOut, the DualSense controller, and a Microsoft-ABI bridge for the recompiler, since the PS5 target has no `ms_abi` |
 | `port/app/` | Cemu's start-up without wxWidgets, the game list, game icons and box art, graphic packs, controller settings, installs, and what the app shows over a game: both in-game menus, the GamePad's screen and the touchpad's cursor |
 | `port/azahar/` | Azahar's side: the 3DS library (read by the launcher itself), its controls, and its PS5 frontend (built in Azahar's tree): the window on VideoOut, the DualSense as the 3DS, AudioOut, CIA installs |
-| `port/frontend/` | The launcher: the start screen and each side's screens, ProsperoEden's RmlUi layout drawn in software and shown on VideoOut through SDL, over the Homebrew Launcher's bubbles (`bubbles.cpp`) or the 3DS one's waves (`wave.cpp`) |
+| `port/frontend/` | The launchers. The new one (`shell/`, [docs/UI-REDESIGN.md](UI-REDESIGN.md)): the Wii U and 3DS sides of one shell, opening on the side last used, drawn with the UI kit. The classic one, the fallback (L1 held as the app starts): the start screen and each side's screens, ProsperoEden's RmlUi layout drawn in software and shown on VideoOut through SDL, over the Homebrew Launcher's bubbles (`bubbles.cpp`) or the 3DS one's waves (`wave.cpp`) |
+| `port/ui/` | The UI kit the new launcher draws with: Vulkan on the RADV the app links, presenting to VideoOut; signed-distance shapes and text (Lexend baked by `tools/render-sdf-font.sh`), pictures, springs, the DualSense as actions, and the design's tokens |
 | `port/main_ps5.cpp` | The entry point: the sandbox escape, logs, Cemu's core, the launcher, the game |
 | `patches/cemu/`, `patches/azahar/` | The port's changes to Cemu's and Azahar's own files |
 | `tools/` | The dependencies, the builds, the PS5 link (`link.sh`), the packaging (`package.sh`), the artwork and the launcher's preview |
@@ -115,3 +116,10 @@ PNGs in `build/preview`. A script (`tools/launcher-preview/screens.txt` by defau
 DualSense's buttons and says when to save a screen, so a change to the layout can be seen without a
 console. It needs `make deps` first, and zlib's headers (`zlib1g-dev`). Box art can be tried by
 putting TGAs in `build/preview/boxart/<wiiu|3ds>/<ID>.tga`.
+
+`tools/preview-shell.sh` does the same for the new launcher, into `build/shell-preview`: its own code
+and the UI kit run as on the console, drawing with the PC's Vulkan (Mesa's lavapipe will do:
+`libvulkan-dev` and `mesa-vulkan-drivers`, with `libfreetype-dev`), in place of the emulators the
+classic preview's samples (`tools/launcher-preview/console.cpp`, which both share). Its scripts are
+`tools/launcher-preview/shell-screens.txt` (every screen), `shell-first.txt` (a first start, with
+`PREVIEW_FIRST=1`) and `shell-ask.txt` (the side chooser, with `PREVIEW_ASK=1`).

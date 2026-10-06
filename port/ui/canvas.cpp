@@ -131,6 +131,14 @@ namespace ui
 		Add(instance);
 	}
 
+	void Canvas::Glow(const Box& box, float radius, float softness, uint32_t colour)
+	{
+		Instance instance = Make(box.Inset(-softness * 1.2f), box, radius, kShadow, colour);
+		instance.shape[1] = 1; // outside the box only
+		instance.shape[2] = softness;
+		Add(instance);
+	}
+
 	void Canvas::Image(TextureId texture, const Box& box, float radius, uint32_t tint, float u0, float v0, float u1, float v1)
 	{
 		Instance instance = Make(box, box, radius, kImage, tint);

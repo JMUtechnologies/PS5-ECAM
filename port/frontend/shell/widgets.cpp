@@ -93,7 +93,7 @@ namespace ps5shell
 		if (m_ringGlow >> 24)
 		{
 			const float breath = m_settings.ui.reduceMotion ? 0.0f : 0.06f * std::sin((float)(m_now * 2 * 3.14159265 / kBreathSeconds));
-			canvas.Shadow(box, radius, 0, 46, ui::WithAlpha(m_ringGlow, 0.42f + breath));
+			canvas.Glow(box, radius, 46, ui::WithAlpha(m_ringGlow, 0.42f + breath));
 		}
 		const float width = m_settings.ui.highContrast ? 6.0f : 4.0f;
 		canvas.Ring(box.Inset(-width), radius + width, width, kInk0);
@@ -244,7 +244,9 @@ namespace ps5shell
 		const ui::TextStyle label = Style(kBodyStyle);
 		const ui::TextStyle caption = Style(kCaptionStyle);
 		const bool described = focused && !row.description.empty();
-		const ui::TextBlock labelBlock = m_fonts.Layout(label, row.label, box.w * 0.5f, 1);
+		// a toggle leaves the label the row's width; the other controls, half of it
+		const float labelWidth = row.kind == Row::Kind::Toggle ? box.w - 56 - 64 - 24 : box.w * 0.5f;
+		const ui::TextBlock labelBlock = m_fonts.Layout(label, row.label, labelWidth, 1);
 		const float labelY = described ? box.y + 16 : box.CentreY() - labelBlock.height * 0.5f;
 		canvas.Text(labelBlock, box.x + 28, labelY, kText);
 		if (described)

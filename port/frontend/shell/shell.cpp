@@ -137,6 +137,7 @@ namespace ps5shell
 		ps5boxart::SetEnabled(m_settings.boxArt);
 		ps5catalog::Load();
 		m_start = m_now = m_lastFrame = host.clock();
+		m_sideMix.Snap(1); // the backdrop shows from the first frame; switching sides fades it in again
 
 		// the bubbles, everywhere at first
 		uint32_t seed = 0x5735;
@@ -153,7 +154,8 @@ namespace ps5shell
 				0.04f + random() * 0.12f});
 		}
 
-		// the side: the one a game came back from, else the one last used, else asked
+		// the side: the one a game came back from, else the one last used, else (a first start) the one
+		// with games, else the Wii U's. Nothing asks which side (5.3), unless Start on: Ask each time is on.
 		const bool returning = !m_settings.side.empty();
 		std::string side = returning ? m_settings.side : m_settings.ui.lastSide;
 		if (returning)
@@ -161,24 +163,51 @@ namespace ps5shell
 			m_settings.side.clear(); // a fresh start next time
 			SaveSettings();
 		}
-		if (side.empty() && m_settings.gameCount > 0 && m_settings.n3ds.gameCount <= 0)
-			side = "wiiu";
-		else if (side.empty() && m_settings.n3ds.gameCount > 0 && m_settings.gameCount <= 0)
-			side = "3ds";
-		const bool ask = side.empty() || (!returning && m_settings.ui.startOn == "ask");
+		if (side.empty())
+		{
+			const int wiiuGames = std::max<int>(m_settings.gameCount, (int)ps5catalog::Games(ps5catalog::System::WiiU).size());
+			const int n3dsGames = std::max<int>(m_settings.n3ds.gameCount, (int)ps5catalog::Games(ps5catalog::System::N3ds).size());
+			side = n3dsGames > 0 && wiiuGames <= 0 ? "3ds" : "wiiu";
+		}
+		// why the last game did not start (main_ps5.cpp puts it in the side's notice, as the classic launcher
+		// shows it): said once here, not a state that keeps every game from starting
+		std::string launchError;
+		for (std::string* notice : {&m_status.notice, &m_status.notice3ds})
+			if (notice->starts_with("The game could not start"))
+			{
+				const size_t reason = notice->find_first_not_of(' ', notice->find(':') + 1);
+				launchError = reason == std::string::npos ? *notice : notice->substr(reason);
+				if (!launchError.empty() && launchError[0] >= 'a' && launchError[0] <= 'z')
+					launchError[0] = (char)(launchError[0] - 'a' + 'A'); // a sentence of its own now
+				notice->clear();
+			}
+		m_askSide = !returning && m_settings.ui.startOn == "ask";
 		m_side = side == "3ds" ? System::N3ds : System::WiiU;
 		m_chooserSide = m_side == System::N3ds ? 1 : 0;
-		const bool failing = !m_status.notice.empty() && m_status.notice.find("/data") != std::string::npos;
-		if (!m_settings.ui.setupDone || failing)
-			SetupOpen(true);
-		else if (ask)
+		if (!m_settings.ui.setupDone || SetupNeeded())
+			SetupOpen(true); // then the side (FinishStart)
+		else if (m_askSide)
 			Show(ScreenId::Chooser);
 		else
 		{
 			OpenSide(m_side, true);
 			if (returning)
+			{
+				// back on the game just played, its hub, as the library was left (6.8)
+				const uint64_t played = Is3ds() ? m_settings.n3ds.lastGame : m_settings.lastGame;
+				const int game = played ? FindGame(played) : -1;
+				if (game >= 0)
+				{
+					for (int i = 0; i < (int)m_homeGames.size(); i++)
+						if (m_homeGames[i] == game)
+							m_homeIndex = i;
+					HubOpen(game, ScreenId::Home);
+				}
 				Toast("Saved your place in the library");
+			}
 		}
+		if (!launchError.empty())
+			OpenHelp("The game could not start", launchError);
 		ps5log::Line("[ui] the new launcher is up in {:.0f} ms", (host.clock() - started) * 1000);
 
 		while (!m_done && !m_failed)
@@ -613,7 +642,7 @@ namespace ps5shell
 		if (from.w <= 0)
 			from = {760, 240, 400, 560};
 		LaunchGame(game.entry.game, Is3ds() ? "Starting Azahar" : "Starting Cemu", from);
-		m_launch.cover = CoverOf(game);
+		m_launch.game = index;
 	}
 
 	void Shell::LaunchGame(const ps5emu::Game& game, const std::string& caption, const Box& from)
@@ -624,6 +653,7 @@ namespace ps5shell
 		m_launch.caption = caption;
 		m_launch.title = game.name;
 		m_launch.aspect = from.h > 0 ? from.w / from.h : 0.714f;
+		m_launch.game = -1;
 		m_choice = ps5launcher::Choice{m_side, game};
 		m_feedback.Play(ui::Cue::Launch);
 		ps5log::Line("[launcher] {} chosen on the {} side", game.name, Is3ds() ? "3DS" : "Wii U");
@@ -851,7 +881,7 @@ namespace ps5shell
 			if (m_setupRow < (int)m_checks.size() && !m_checks[m_setupRow].action.empty())
 				hints.push_back({Icon::Cross, m_checks[m_setupRow].action});
 			hints.push_back({Icon::Triangle, "Check again"});
-			hints.push_back({Icon::Circle, m_setupFirst ? "Continue" : "Back"});
+			hints.push_back({Icon::Circle, !m_setupFirst ? "Back" : m_askSide ? "Continue" : "Continue to Home"});
 			return hints;
 		}
 		case ScreenId::Home:
@@ -916,6 +946,12 @@ namespace ps5shell
 
 	void Shell::DrawBackdrop(Canvas& canvas)
 	{
+		// the Setup check and the chooser belong to neither side: both sides' colours, and the seam
+		if (m_screen == ScreenId::Setup || m_screen == ScreenId::Chooser)
+		{
+			DrawBrandBackdrop(canvas, m_screen == ScreenId::Setup ? 1140.0f : 960.0f);
+			return;
+		}
 		// the colours glide to the focused game's
 		const float mix = m_ambientMix.Value(m_now);
 		for (int i = 0; i < 2; i++)
@@ -958,32 +994,10 @@ namespace ps5shell
 			picture(m_backdrop, pictureMix);
 		}
 		// the motif: bubbles rising on the Wii U side, waves rolling on the 3DS side
-		const bool still = m_settings.ui.reduceMotion;
 		if (!Is3ds())
-			for (Bubble& bubble : m_bubbles)
-			{
-				if (!still)
-				{
-					bubble.y -= bubble.speed * m_dt;
-					bubble.x += bubble.drift * m_dt;
-					if (bubble.y < -bubble.radius)
-						bubble.y = 1080 + bubble.radius;
-				}
-				const Box disc{bubble.x - bubble.radius, bubble.y - bubble.radius, bubble.radius * 2, bubble.radius * 2};
-				canvas.Rect(disc, bubble.radius, ui::SetAlpha(0xfff4e9de, bubble.alpha * 0.5f));
-			}
+			DrawBubbles(canvas, 1);
 		else
-		{
-			static constexpr float kTop[3] = {580, 670, 770}, kWave[3] = {1280, 960, 720}, kAmplitude[3] = {36, 28, 22}, kSpeed[3] = {24, -36, 50};
-			static constexpr uint32_t kColour[3] = {0xff8ce4ff, 0xffa6ecff, 0xffc4f4ff};
-			for (int layer = 0; layer < 3; layer++)
-			{
-				if (!still)
-					m_wavePhase[layer] -= kSpeed[layer] * m_dt / kWave[layer] * 6.2831853f;
-				canvas.Wave({0, kTop[layer] - 4, 1920, 1080 - kTop[layer] + 4}, kTop[layer] + kAmplitude[layer], kAmplitude[layer],
-					kWave[layer] / 6.2831853f, m_wavePhase[layer], ui::SetAlpha(kColour[layer], 0.05f + 0.015f * layer));
-			}
-		}
+			DrawWaves(canvas, 1);
 		// scrims, grain and a vignette
 		canvas.LinearGradient(screen, 0, 0xb305070d, 0x0005070d, 0, 0, 1300, 0);
 		canvas.LinearGradient(screen, 0, 0x0005070d, 0xcc05070d, 0, 640, 0, 1080);
@@ -991,6 +1005,36 @@ namespace ps5shell
 			canvas.Grain(screen, 0x0cffffff);
 		canvas.RadialGradient(screen, 0, 0x00000000, 0x8c000000, 960, 432, 1248, 1026, 0.55f);
 		canvas.PopAlpha();
+	}
+
+	void Shell::DrawBubbles(Canvas& canvas, float alpha)
+	{
+		const bool still = m_settings.ui.reduceMotion;
+		for (Bubble& bubble : m_bubbles)
+		{
+			if (!still)
+			{
+				bubble.y -= bubble.speed * m_dt;
+				bubble.x += bubble.drift * m_dt;
+				if (bubble.y < -bubble.radius)
+					bubble.y = 1080 + bubble.radius;
+			}
+			const Box disc{bubble.x - bubble.radius, bubble.y - bubble.radius, bubble.radius * 2, bubble.radius * 2};
+			canvas.Rect(disc, bubble.radius, ui::SetAlpha(0xfff4e9de, bubble.alpha * 0.5f * alpha));
+		}
+	}
+
+	void Shell::DrawWaves(Canvas& canvas, float alpha)
+	{
+		static constexpr float kTop[3] = {580, 670, 770}, kWave[3] = {1280, 960, 720}, kAmplitude[3] = {36, 28, 22}, kSpeed[3] = {24, -36, 50};
+		static constexpr uint32_t kColour[3] = {0xff8ce4ff, 0xffa6ecff, 0xffc4f4ff};
+		for (int layer = 0; layer < 3; layer++)
+		{
+			if (!m_settings.ui.reduceMotion)
+				m_wavePhase[layer] -= kSpeed[layer] * m_dt / kWave[layer] * 6.2831853f;
+			canvas.Wave({0, kTop[layer] - 4, 1920, 1080 - kTop[layer] + 4}, kTop[layer] + kAmplitude[layer], kAmplitude[layer],
+				kWave[layer] / 6.2831853f, m_wavePhase[layer], ui::SetAlpha(kColour[layer], (0.05f + 0.015f * layer) * alpha));
+		}
 	}
 
 	// -- overlays: the dropdown, help, the Game menu, the keyboard, the update sheet, toasts, the launch --
@@ -1471,10 +1515,9 @@ namespace ps5shell
 			const Box to{960 - width / 2, 170, width, height};
 			const Box from = m_launch.from;
 			const Box at{from.x + (to.x - from.x) * t, from.y + (to.y - from.y) * t, from.w + (to.w - from.w) * t, from.h + (to.h - from.h) * t};
-			const ui::Picture& picture = m_images->Get(m_launch.cover);
 			canvas.Shadow(at, kRadiusCover, 30, 70, 0xa0000000);
-			if (picture.texture)
-				canvas.ImageCover(picture.texture, picture.width, picture.height, at, kRadiusCover, 0xffffffff, 0.0f);
+			if (m_launch.game >= 0 && m_launch.game < (int)m_games.size())
+				DrawCover(canvas, m_games[m_launch.game], at, false, 0); // its box art, or its card with the icon kept small
 			else
 				canvas.LinearGradient(at, kRadiusCover, ui::Mix(Accent(), kInk1, 0.4f), kInk1, at.x, at.y, at.x, at.Bottom());
 			canvas.Ring(at, kRadiusCover, 1, 0x1fffffff);

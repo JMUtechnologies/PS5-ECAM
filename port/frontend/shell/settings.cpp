@@ -78,8 +78,8 @@ namespace ps5shell
 		};
 		auto n3ds = [&](int section) {
 			pages.push_back({"3ds-graphics", "Graphics", "For every 3DS game.", section, System::N3ds});
-			pages.push_back({"3ds-screens", "Screens and borders",
-				"For every 3DS game. In a game, the menu (touchpad click + Options) changes them at once.", section, System::N3ds});
+			pages.push_back({"3ds-screens", "Screens and borders", "For every 3DS game; in a game, its menu changes them at once.", section,
+				System::N3ds});
 			pages.push_back({"3ds-controls", "Controls", "The DualSense as the 3DS.", section, System::N3ds});
 			pages.push_back({"3ds-system", "System and Home Menu", "The emulated 3DS's region and language.", section, System::N3ds});
 			pages.push_back({"3ds-installs", "Install CIA files", "Into the 3DS's storage.", section, System::N3ds});
@@ -413,8 +413,10 @@ namespace ps5shell
 		}
 		else if (page == "3ds-system")
 		{
+			// Azahar looks for it in its own files, which only the 3DS side opens: asked on the Wii U side, its
+			// logging would start and run on beside a Wii U game
 			ps5emu::Game home;
-			const bool homeMenu = ps5azahar::HomeMenu(n3ds.region, home);
+			const bool homeMenu = m_prepared == System::N3ds && ps5azahar::HomeMenu(n3ds.region, home);
 			choice("region", "Region", Options(kRegions), n3ds.region + 1, "The emulated 3DS's region.",
 				"Automatic takes each game's own region. A game made for another region may refuse to start or show other languages. Applies "
 				"to the next game.");
@@ -423,7 +425,7 @@ namespace ps5shell
 			Row* row = action(Kind::Action, "homemenu", "Home Menu", homeMenu ? "Start" : "Run Artic Setup first",
 				"The 3DS Home Menu, from your console's files.",
 				"Starts the 3DS Home Menu, once Artic Base's setup has copied your own console's system files (Artic Base).");
-			row->dimmed = !homeMenu;
+			row->dimmed = m_prepared == System::N3ds && !homeMenu;
 			sided(row, System::N3ds, false);
 		}
 		else if (page == "3ds-installs")
@@ -986,7 +988,9 @@ namespace ps5shell
 		if (current.section == 1 || current.section == 2)
 			tx += Badge(canvas, px, 152, current.side) + 16;
 		canvas.Text(Style(kTitleStyle), tx, 140, current.title, kText, pw + 500 - (tx - px), 1);
-		canvas.Text(Style({22, ui::Weight::Regular, 1.3f}), px, 202, current.subtitle, Secondary(), 1240, 1);
+		// as wide as the page, or the rows where a preview stands beside them
+		const bool preview = m_page == "3ds-screens";
+		canvas.Text(Style({22, ui::Weight::Regular, 1.3f}), px, 202, current.subtitle, Secondary(), preview ? pw + 20 : 1240, 1);
 		auto rows = SettingRows(m_page);
 		m_settingRow = std::clamp(m_settingRow, 0, std::max(0, (int)rows.size() - 1));
 		float ry = 252;
@@ -1012,7 +1016,7 @@ namespace ps5shell
 		// the panel at the right: a preview, and the focused row's help
 		const float qx = 1320, qw = 504;
 		float qy = 252;
-		if (m_page == "3ds-screens")
+		if (preview)
 		{
 			canvas.Text(Style(kOverlineStyle), qx, qy - 34, "Preview", Secondary());
 			DrawScreensPreview(canvas, {qx, qy, qw, qw * 9 / 16});

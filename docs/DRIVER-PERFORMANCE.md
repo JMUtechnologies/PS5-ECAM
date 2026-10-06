@@ -294,9 +294,14 @@ make radv                                   # the recipe once: SDK, host tools, 
 cd .deps/PS5_Mesa
 git checkout -b ps5cemu-perf 7b59ef27c1b09b9671bc4153c41940c3155c3af2
 git am ../../patches/mesa/*.patch
-work=../PS5_Vulkan/.deps/work
-PATH=$work/radv-clc-bin:$PATH meson setup build-ps5 \
-    --cross-file $work/radv-cross-constants.ini --cross-file ../PS5_Vulkan/tooling/radv/ps5-cross.ini \
+# meson's zlib wrap, as the recipe's tree has it (its patch's host may be out of reach from a build machine)
+mkdir -p subprojects/packagecache
+cp ../PS5_Vulkan/.deps/work/radv-src/subprojects/packagecache/zlib* subprojects/packagecache/
+# absolute: ninja runs mesa_clc from the build folder
+work=$(cd ../PS5_Vulkan/.deps/work && pwd)
+export PATH=$work/radv-clc-bin:$PATH
+meson setup build-ps5 \
+    --cross-file $work/radv-cross-constants.ini --cross-file $(cd ../PS5_Vulkan/tooling/radv && pwd)/ps5-cross.ini \
     $(cat $work/radv-build-ps5-release/.radv-options) \
     -Dradv-build-id=7b59ef27c1b09b9671bc4153c41940c3155c3af2
 ninja -C build-ps5 src/amd/vulkan/libvulkan_radeon.a

@@ -18,7 +18,10 @@
 #include "../../ui/images.h"
 #include "../../ui/input.h"
 #include "../../ui/motion.h"
+#include "../../ui/qr.h"
 #include "../../ui/tokens.h"
+
+#include <fmt/format.h>
 
 #include <array>
 #include <ctime>
@@ -121,6 +124,8 @@ namespace ps5shell
 		void Update(const ui::Actions& actions);
 		void Draw(Canvas& canvas);
 		void DrawBackdrop(Canvas& canvas);
+		void DrawBubbles(Canvas& canvas, float alpha); // the Wii U side's motif, rising
+		void DrawWaves(Canvas& canvas, float alpha);   // the 3DS side's, rolling
 		void DrawBar(Canvas& canvas, bool tabs);
 		void DrawHints(Canvas& canvas, const std::vector<Hint>& hints);
 		void DrawOverlays(Canvas& canvas);
@@ -188,11 +193,15 @@ namespace ps5shell
 		bool BarUpdate(const ui::Press& press);
 		void FocusBar();
 
+		// the side chooser: only with Start on: Ask each time (5.3); nothing else asks which side
 		void ChooserUpdate(const ui::Press& press);
 		void ChooserDraw(Canvas& canvas);
 		void SetupOpen(bool first);
 		void SetupUpdate(const ui::Press& press);
 		void SetupDraw(Canvas& canvas);
+		bool SetupNeeded() const; // a check that fails at start: the Setup check comes first
+		void FinishStart();		  // the first Setup check done: the side, or the chooser when asked for
+		void DrawBrandBackdrop(Canvas& canvas, float seam); // both sides' colours meeting at the seam
 
 		void HomeUpdate(const ui::Press& press);
 		void HomeDraw(Canvas& canvas);
@@ -402,16 +411,21 @@ namespace ps5shell
 		std::array<int, 4> m_articOctets{192, 168, 1, 2};
 
 		// Setup check
-		bool m_setupFirst = false;
+		bool m_setupFirst = false; // as the app starts, before a side opens
 		int m_setupRow = 0;
+		ScreenId m_setupFrom = ScreenId::Settings; // where Circle goes back to, when not at the start
 		struct Check
 		{
-			std::string id, title, detail, action;
+			std::string id, title, detail, action; // action: what Cross does (empty: nothing)
 			int state; // 0 ready, 1 needs a look, 2 optional
-			std::string about, aboutTitle;
+			std::string about, aboutTitle;		  // the panel beside the list: what it means, what to do
+			std::vector<std::string> chips;		  // what goes there (a games folder's formats)
+			std::string guide, guideTitle;		  // the guide's page for it, as the QR code, and what it is
 		};
 		std::vector<Check> m_checks;
 		void RunChecks();
+		std::unordered_map<std::string, ui::QrCode> m_qrCodes; // made once each
+		bool m_askSide = false; // Start on: Ask each time, at this start
 		int m_chooserSide = 0;
 
 		// overlays
@@ -462,9 +476,9 @@ namespace ps5shell
 			bool active = false;
 			double at = 0;
 			Box from;
-			std::string cover, caption, title;
-			int coverWidth = 0, coverHeight = 0;
+			std::string caption, title;
 			float aspect = 0.714f;
+			int game = -1; // in m_games, drawn as its cover is; -1: a launch of its own (the Home Menu, Artic Base)
 		} m_launch;
 
 		// facts and pictures looked up once
