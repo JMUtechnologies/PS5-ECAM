@@ -30,6 +30,13 @@ or Sony. All credit for the emulators goes to their developers.
 
 ## Install
 
+> [!NOTE]
+> **First, can your PS5 run homebrew?** That depends on your firmware, not on this app: a jailbroken
+> console on a firmware the scene has an exploit for (as of late 2026, roughly **1.00–5.50** and
+> **7.00–13.60**, with **14.00+** not yet cracked). Once your console loads **etaHEN, OnionHEN, or
+> just an ELF loader on port 9021**, PS5CEMU-HAR runs. The
+> [firmware and setup guide](docs/HEN-SETUP.md) has the full picture, per firmware and per HEN.
+
 1. Download [PS5CEMU-HAR-v3.0.0.zip](https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v3.0.0.zip)
    ([release notes](https://github.com/premohq/PS5CEMU-HAR/releases/tag/v3.0.0), [all releases](https://github.com/premohq/PS5CEMU-HAR/releases)) and extract it, or
    [build it yourself](docs/BUILDING.md).
@@ -42,8 +49,8 @@ or Sony. All credit for the emulators goes to their developers.
      `/data` itself with its bundled helper.
 
    No HEN has to grant JIT memory: the recompilers make their own when it isn't granted. The
-   [HEN setup guide](docs/HEN-SETUP.md) has the details, and **Settings > Diagnostics** shows what
-   the app got.
+   [firmware and setup guide](docs/HEN-SETUP.md) has the details for every firmware and HEN, and
+   **Settings > Diagnostics** shows what the app got.
 4. Add your games (see [Game files](#game-files)).
 5. Start PS5CEMU-HAR from the home screen, pick an emulator and open the Library.
 
@@ -359,7 +366,7 @@ a ZIP to `dist/`. See [docs/BUILDING.md](docs/BUILDING.md), or run `make help` f
 - `port/`: the PS5 platform layer, both emulators' PS5 frontends, the launcher and the in-game menus
 - `patches/`: changes to Cemu and Azahar
 - `tools/`: build, packaging and artwork scripts
-- `docs/`: building, the HEN setup guide, the compatibility list, and the
+- `docs/`: building, the firmware and HEN setup guide, the compatibility list, and the
   [UI design](docs/UI-REDESIGN.md) the launcher and in-game menus are moving to
 
 ## Credits
