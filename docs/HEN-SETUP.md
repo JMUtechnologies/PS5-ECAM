@@ -32,20 +32,36 @@ page](https://wololo.net/ps5-jailbreak-and-custom-firmware/) before you act on i
 Find your firmware on the console under **Settings > System > System Software > Console Information**
 (or the app shows it in **Settings > Diagnostics**).
 
-| Firmware | Can run homebrew? | How (entry point) |
+A jailbreak has two parts: an **entry point**, where the console first runs outside code (the web
+browser, a Blu-ray disc, or the YouTube app), and a **kernel exploit** behind it, which takes over the
+system so a HEN can load. The public routes:
+
+| Route: entry point → kernel exploit | Firmware | Needs |
 |---|---|---|
-| **1.00 – 5.50** | **Yes** | The UMTX kernel exploit (and the IPV6 exploit on some), then a HEN such as etaHEN. |
-| **≤ 7.61, disc consoles** | **Yes** | BD-JB (the Blu-ray entry) is an alternative on consoles with a disc drive. |
-| **7.00 – 13.60** | **Yes** | The **Relapse** exploit (WebKit + kernel, published Sept 2026), all models including Slim and Pro. Loads a HEN (etaHEN is supported up to 12.70; Kstuff Lite reaches 13.60). |
-| **5.51 – 6.99, digital consoles** | **Maybe / gap** | Above UMTX's 5.50 ceiling and below Relapse's 7.00 floor; BD-JB needs a disc drive. Check current sources for your exact version. |
-| **14.00 and newer** | **No (today)** | Sony closed the Relapse hole in firmware 14.00 (early Sept 2026). No public entry point yet, and **the PS5 cannot be downgraded**. See [Where it's impossible](#9-where-its-impossible-and-what-we-can-do). |
+| Browser → **UMTX** | 1.00 – 5.50 | Nothing extra |
+| YouTube app (**Y2JB**) → **Lapse** | 4.03 – 10.01 | An old version of the YouTube app (see below) |
+| YouTube app (**Y2JB**) → **P2JB** | 9.00 – 12.40 (some report up to 12.70) | An old version of the YouTube app |
+| Blu-ray (**BD-JB**) → **UMTX2** | up to 7.61 | A disc drive and a Blu-ray you burn |
+| Blu-ray (**BD-JB**) → **Poopsploit** | up to 12.00 | A disc drive and a Blu-ray you burn |
+| Browser → **Relapse** (published Sept 2026) | 7.00 – 13.60 | Nothing extra; every model, Slim and Pro included |
+| None yet | **14.00 and newer** | Sony closed Relapse's hole in 14.00 (early Sept 2026), and **the PS5 cannot be downgraded**. See [Where it's impossible](#9-where-its-impossible-and-what-we-can-do) |
+
+**So every firmware from 1.00 to 13.60 has at least one route, on disc and digital consoles alike.**
+The browser covers 1.00–5.50 and 7.00–13.60, and the YouTube app covers the firmwares between them.
+Each route then loads a HEN: etaHEN supports firmwares up to 12.70, and Kstuff Lite reaches 13.60.
+
+> [!WARNING]
+> **Y2JB on a console that isn't jailbroken yet** needs the YouTube app (`PPSA01650`) at an old
+> version: 01.000.003 for firmwares 4.03 to 12.40, 01.000.030 from 12.60. The way to get it there
+> is restoring a backup from USB, which **factory-resets the PS5**. Back up your saves first, and
+> follow the [Y2JB project's instructions](https://github.com/Gezine/Y2JB) exactly.
 
 Two things to keep in mind whatever your firmware:
 
-- **These jailbreaks are tethered.** They don't survive a reboot or a full power-off — after every
-  boot you re-run the exploit (open the exploit host page in the console browser, or let your
-  BD-JB/USB chain run) and reload your HEN *before* starting PS5CEMU-HAR. Rest mode usually keeps a
-  jailbroken state; a cold boot does not.
+- **These jailbreaks are tethered.** They don't survive a reboot or a full power-off. After every
+  boot you run the exploit again (the exploit host page in the browser, the YouTube app, or the
+  disc) and reload your HEN *before* starting PS5CEMU-HAR. Rest mode usually keeps a jailbroken
+  state; a cold boot does not.
 - **Never update to chase a feature.** If your console is on a jailbreakable firmware, turn off
   automatic updates. There is no official way back down.
 
@@ -55,9 +71,14 @@ point.
 
 Sources for the firmware picture above (as of October 2026):
 [wololo.net](https://wololo.net/ps5-jailbreak-and-custom-firmware/) ·
+[GBAtemp's PS5 exploit guide](https://gbatemp.net/threads/ps5-exploit-guide.613891/page-974) ·
+[Y2JB](https://github.com/Gezine/Y2JB) ·
+[P2JB on Y2JB](https://github.com/matem6/P2JB-Y2JB-Porting) ·
+[BD-JB](https://github.com/Gezine/BD-JB-1250) ·
+[PSFree and Lapse](https://github.com/EchoStretch/PSFree/blob/main/README.md) ·
 [Relapse 7.00–13.60 (GBAtemp)](https://gbatemp.net/threads/relapse-ps5-kernel-exploit-brings-homebrew-to-firmware-7-00-13-60.684829/) ·
-[etaHEN / Kstuff coverage (onejailbreak)](https://onejailbreak.com/blog/kstuff-1.6.6-ps5-10-00-and-10-01-support/) ·
-[Relapse up to July 2026 firmware (Kotaku)](https://kotaku.com/new-ps5-jailbreak-exploit-works-on-systems-running-july-2026-firmware-2000738283).
+[Relapse up to July 2026 firmware (Kotaku)](https://kotaku.com/new-ps5-jailbreak-exploit-works-on-systems-running-july-2026-firmware-2000738283) ·
+[etaHEN and Kstuff coverage (onejailbreak)](https://onejailbreak.com/blog/kstuff-1.6.6-ps5-10-00-and-10-01-support/).
 
 ---
 
@@ -224,14 +245,12 @@ honest line between what we can fix and what we can't:
 
 **What is genuinely out of reach, and why:**
 
-- **Firmware 14.00 and newer.** There is no public exploit, so the console can't run *any* homebrew,
-  and the PS5 can't be downgraded. This is a kernel-exploit problem, not an app problem — nothing
-  PS5CEMU-HAR could ship would change it. If and when the scene releases an entry point for a newer
-  firmware, PS5CEMU-HAR already works on top of whatever HEN that entry point loads; this page will
-  be updated with the coverage.
-- **The 5.51–6.99 digital-edition gap.** On the exact versions between UMTX's ceiling and Relapse's
-  floor, a console without a disc drive may have no public entry point. Same situation: upstream of
-  this app.
+- **Firmware 14.00 and newer, and only that.** Every firmware up to 13.60 has a public route, with or
+  without a disc drive ([section 1](#1-can-your-ps5-run-homebrew)). From 14.00 there is no public
+  exploit, so the console can't run *any* homebrew, and the PS5 can't be downgraded. This is a
+  kernel-exploit problem, not an app problem — nothing PS5CEMU-HAR could ship would change it. If
+  and when the scene releases a route for a newer firmware, PS5CEMU-HAR already works on top of
+  whatever HEN it loads; this page will be updated with the coverage.
 
 **What we're still improving** (tracked as issues, help welcome):
 

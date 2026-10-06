@@ -32,9 +32,9 @@ or Sony. All credit for the emulators goes to their developers.
 
 > [!NOTE]
 > **First, can your PS5 run homebrew?** That depends on your firmware, not on this app: a jailbroken
-> console on a firmware the scene has an exploit for (as of late 2026, roughly **1.00–5.50** and
-> **7.00–13.60**, with **14.00+** not yet cracked). Once your console loads **etaHEN, OnionHEN, or
-> just an ELF loader on port 9021**, PS5CEMU-HAR runs. The
+> console on a firmware the scene has an exploit for (as of late 2026, every firmware up to
+> **13.60**, disc or digital, with **14.00+** not yet cracked). Once your console loads **etaHEN,
+> OnionHEN, or just an ELF loader on port 9021**, PS5CEMU-HAR runs. The
 > [firmware and setup guide](docs/HEN-SETUP.md) has the full picture, per firmware and per HEN.
 
 1. Download [PS5CEMU-HAR-v3.0.0.zip](https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v3.0.0.zip)
