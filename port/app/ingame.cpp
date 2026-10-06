@@ -8,6 +8,7 @@
 #include "side_menu.h"
 #include "tga.h"
 #include "usb_devices.h"
+#include "../ps5/display.h"
 #include "../ps5/kernel.h"
 #include "../ps5/log.h"
 #include "../ps5/pad.h"
@@ -183,6 +184,8 @@ namespace
 				"Off can raise the frame rate, but some games then flicker or show wrong shadows. It changes at once."},
 			{"async", "Async shader compile", config.async_compile ? "On" : "Off", true,
 				"On, new shaders build while the game carries on: no stutter, but things may be missing for a moment."},
+			{"pacing", "Frame pacing", ps5display::FramePacingName(ps5display::FramePacing(), ps5display::OutputRefresh() > 100000), true,
+				"Holds the game to an even rate: 60 fps for 4K at 120 Hz, 30 for 8K at 60 Hz. Off shows each frame when it is done."},
 			{"overlay", "Performance overlay", overlay ? "On" : "Off", true,
 				"Frames per second, CPU and memory use in the top left corner, as Cemu shows them."},
 		}});
@@ -304,6 +307,9 @@ namespace
 			config.vk_accurate_barriers = !config.vk_accurate_barriers;
 			ps5log::Line("[ingame] accurate barriers: {}", config.vk_accurate_barriers ? "on" : "off");
 		}
+		else if (id == "pacing")
+			// VideoOut takes it from the next flip on
+			ps5display::SetFramePacing((ps5display::FramePacing() - 1 + (change < 0 ? 2 : 1)) % 3 + 1);
 		else if (id == "async")
 		{
 			// read as each new pipeline is made; Cemu's compile threads run either way

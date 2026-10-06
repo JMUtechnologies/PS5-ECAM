@@ -333,6 +333,7 @@ namespace ps5emu
 			settings.overlay = config.overlay.position != ScreenPosition::kDisabled;
 			settings.volume = config.tv_volume;
 			settings.asyncShaders = config.async_compile;
+			settings.framePacing = ps5display::FramePacing();
 			ps5settings::Save(settings);
 		}
 	}

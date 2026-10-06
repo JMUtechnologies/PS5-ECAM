@@ -1,16 +1,73 @@
-# The Vulkan driver and Breath of the Wild at 4K60
+# The Vulkan driver and Breath of the Wild at 4K60 and 8K30
 
 This is a read-through of the Vulkan driver PS5CEMU-HAR links (Mihawk-99's RADV port: the
-[PS5_Mesa](https://github.com/mihawk-99/PS5_Mesa) fork at `0b2d6d1a`, built with
-[PS5_Vulkan](https://github.com/mihawk-99/PS5_Vulkan)'s recipe), of how Cemu drives it, and of what
-could make Breath of the Wild run at 4K and 60 fps. It ends with changes, ranked, and how to test
-them.
+[PS5_Mesa](https://github.com/mihawk-99/PS5_Mesa) fork at `7b59ef27`, built with
+[PS5_Vulkan](https://github.com/mihawk-99/PS5_Vulkan)'s recipe at `fde9e37`), of how Cemu drives it,
+and of what could make Breath of the Wild run at 4K and 60 fps, and at 8K and 30. It ends with the
+settings for both, changes ranked, and how to test them.
 
 Nothing here was measured on a console. The driver patches in `patches/mesa` were built and run on
 the driver's PC model (the PS5 winsys's host build, which runs everything but the GPU), and their
 console code was compiled against the platform headers. Every number for the console below comes
 from PS5_Vulkan's own measurements, cited by their finding names (R34, R68 and so on in its
 `docs/HARDWARE_FINDINGS.md`), or is marked as an estimate.
+
+## The driver: 7b59ef2, with 120 Hz that works and frame pacing
+
+The app pinned PS5_Mesa `0b2d6d1a` until 2026-10-06. Upstream has since rewritten its commit ids
+(that tree is now `504adad`, and the SDK fork's `95c08f27` is now `b83202b`, the same tree), so the old
+pins may stop being fetchable. `tools/deps.json` now pins upstream's current driver, `7b59ef27`
+(PS5_Vulkan `fde9e37` builds the same), which is `504adad` and four changes to the VideoOut swapchain:
+
+| Change | What it does | What PS5CEMU-HAR does with it |
+| --- | --- | --- |
+| `f46af72` `PS5_VIDEOOUT_PARAM_JSON` | The driver offers 119.88 Hz only to a title whose `param.json` declares it, and read only `/app0/sce_sys/param.json`. A process the HEN jailbreaks has no `/app0` (`port/app/paths.h`), so **119.88 Hz was never offered there, and "120 Hz output" did nothing** (the boot log said `VideoOut surface 3840x2160 at 59.94 Hz`). The variable names another file | With "120 Hz output" on, the app names its own `param.json` before a Wii U game starts. With it off, it names a file that does not exist: in a sandboxed process the driver used to find `/app0`'s and switch the display to 119.88 Hz whatever the setting said, since the 59.94 Hz mode Cemu then took was only a mode handle |
+| `12d0391` attribute3 bit 0x40 alone | 0x80000 (a 120 Hz mode that requires VRR) turned the system's VRR off; retail titles with VRR declare 0x40 with 0x40000 | `sce_sys/param.json` declares 0x40040 (was 0x80040). The driver reads the file either way; the home screen may keep the old value until the app is registered again |
+| `aa44fa4` `wsi_videoout_set_flip_rate` | Each flip shows for at least 1, 2 or 3 vblanks (`sceVideoOutSetFlipRate`) | **Frame pacing**, a new setting (below) |
+| `7b59ef2` a mode for each size | Modes at 3840x2160, 2560x1440 and 1920x1080, which VideoOut scales to the screen | The surface takes the 3840x2160 mode by size (`port/ps5/vulkan_display.cpp`), as before |
+
+The winsys, where `patches/mesa` apply, is the same in both, and the patches apply unchanged.
+
+### Frame pacing
+
+**Settings > Video > Frame pacing** (and the in-game menu's Graphics, which changes it at once) keeps
+each frame on screen for at least two or three refreshes, through the driver's flip rate
+(`port/ps5/display.cpp`). A game that cannot hold the display's rate then runs at an even lower one,
+instead of mixing frames shown for one refresh with frames shown for two:
+
+| Output | Frame pacing | Each frame shows for | When the next is late, a frame shows for | Suits |
+| --- | --- | --- | --- | --- |
+| 119.88 Hz | Off | 8.3 ms or more | 16.7 ms | a game that holds 120 |
+| 119.88 Hz | 60 fps | 16.7 ms or more | 25 ms | **BotW at 4K**, FPS++ at 60 |
+| 119.88 Hz | 40 fps | 25 ms or more | 33 ms | BotW at 5K or 8K, if it holds 40 |
+| 59.94 Hz | Off | 16.7 ms or more | 33 ms | as before |
+| 59.94 Hz | 30 fps | 33.3 ms or more | 50 ms | **BotW at 8K**, FPS++ at 30 |
+
+The boot log says what was asked of VideoOut (`[vulkan] frame pacing: each frame shown for at least
+2 refreshes`) and what the surface got (`[vulkan] VideoOut surface 3840x2160 at 119.88 Hz`, or a line
+saying 120 Hz output is on but VideoOut offers 59.94 Hz only). The pacing is the flip rate of the
+whole output, so the app puts it back to every refresh before the launcher and the 3DS side.
+
+## Breath of the Wild at 4K60 and 8K30: the settings
+
+VideoOut's largest buffer is 3840x2160, so 8K is drawn at 7680x4320 and scaled to the 4K screen by
+Cemu (four samples a pixel). Both use the bundled community graphic packs (the in-game menu, or
+Triangle on the game in the library):
+
+| | 4K at 60 | 8K at 30 |
+| --- | --- | --- |
+| Graphics > Resolution | 3840x2160 (4K) | 7680x4320 (8K) |
+| Graphics > Anti-Aliasing | Normal FXAA | **None**: the 8K picture scaled to 4K is already smooth, and FXAA would be one more full pass at 8K |
+| Graphics > Shadows | Medium (100%) | Medium (100%) |
+| Mods > FPS++ | On, 60FPS Limit | On, 30FPS Limit (or off: the game's own 30) |
+| Settings > Video > 120 Hz output | On, where the TV has it | **Off** (frame pacing cannot make 30 at 120 Hz) |
+| Settings > Video > Frame pacing | 60 fps (with 120 Hz output; Off at 60 Hz) | 30 fps |
+| In-game > Graphics > Accurate barriers | Off, if the game shows no glitches with it off | the same |
+
+If 8K does not hold 30, 5120x2880 (5K) with 120 Hz output and frame pacing at 40 fps is the next
+step. 8K's render targets are four times 4K's, and nothing has measured how much of the console's
+memory BotW at 8K takes: the boot log's memory lines (`[perf] ... heap` and Cemu's start) are where
+to look first if 8K stops or stutters where 4K does not.
 
 ## Where things stand
 
@@ -82,11 +139,14 @@ This is where the port differs most from Linux.
 ### Presenting
 
 - VideoOut takes five 32 MiB 3840x2160 framebuffers, registered once, as 64 KiB R_X tiles (no DCC on
-  the swapchain). FIFO is the only present mode; 119.88 Hz is used where `param.json` declares it
-  and the display runs at it.
+  the swapchain); a 2560x1440 or 1920x1080 swapchain gets five of its own. FIFO is the only present
+  mode. The driver configures 119.88 Hz when it first opens VideoOut, where `param.json` declares it
+  (`PS5_VIDEOOUT_PARAM_JSON`, above) and the display runs at it, and a flip shows for at least as
+  many vblanks as the flip rate says.
 - A present goes to a **flip thread**, which waits for the frame's fence (the spin-then-1 ms-sleep
   wait above) and then calls `sceVideoOutSubmitFlip` for the next vblank. A frame that finishes
-  just before a vblank can miss it while the thread sleeps.
+  just before a vblank can miss it while the thread sleeps. A 1 ms sleep is an eighth of a refresh
+  at 119.88 Hz; patch 0003 makes it 200 us.
 - `sceAgcDcbSetFlip`, a flip packet the GPU runs in the stream itself, works once VideoOut is open
   (2026-09-17) and was how PS5_Vulkan's first driver (ps5vk) flipped. RADV's swapchain does not use
   it.
@@ -155,12 +215,14 @@ These are in the working tree alongside this document.
   "radvEnvironment": {"RADV_THREADED_RECORDING": "1", "RADV_PS5_GPU_TIME": "1"}
   ```
 
-### 2. Driver patches (`patches/mesa`, against PS5_Mesa `0b2d6d1a`)
+### 2. Driver patches (`patches/mesa`, against PS5_Mesa `7b59ef27`)
 
 Built and run on the PC model: about 110,000 submissions in 11 s, including 3.1M-word command
 buffers split into five AGC submissions in a buffer of their own, with RADV's assertions on (its
 check that the words copied equal the words planned held throughout). The console branch compiles
-against PS5_PayloadSDK's headers. None of them has run on a console.
+against PS5_PayloadSDK's headers. None of them has run on a console. They were written against
+`0b2d6d1a` and apply to `7b59ef27` unchanged (the four commits between touch only the swapchain);
+RADV builds with them there.
 
 | Patch | What it changes | Expected effect | Risk |
 | --- | --- | --- | --- |
@@ -176,7 +238,7 @@ against PS5_PayloadSDK's headers. None of them has run on a console.
 | `RADV_THREADED_RECORDING=1` | `radvEnvironment` | Takes RADV's recording off Cemu's GPU thread, the thread that also decodes the Wii U's commands |
 | `nonggc` | `radvDebug` | NGG culling pays the slow repack fallback here; Wii U geometry is light and 4K is pixel-bound |
 | Accurate barriers off | In-game menu, Graphics | Fewer full pipeline barriers between Cemu's passes, which matter more at 4K |
-| 120 Hz output | Settings > Video > 120 Hz output | A late frame costs 8.3 ms instead of 16.7 ms, so "mostly 60" looks closer to 60 |
+| 120 Hz output and frame pacing at 60 fps | Settings > Video | A late frame costs 8.3 ms instead of 16.7 ms, so "mostly 60" looks closer to 60; with the driver before `7b59ef2`, 120 Hz never reached a jailbroken process |
 | `RADV_PERFTEST=pswave32` | `radvEnvironment` | RADV recommends wave64 for pixel shaders; a quick check, low expectations |
 
 ### 4. Driver changes proposed, not written
@@ -212,19 +274,19 @@ path is the model.
 
 ## Building with the patches
 
-PS5_Vulkan's recipe exports exactly the pinned revision (`git archive 0b2d6d1a`), so the patches
+PS5_Vulkan's recipe exports exactly the pinned revision (`git archive 7b59ef27`), so the patches
 need a build of the fork's own tree, which `tools/link.sh` then takes through `RADV_ARCHIVE`:
 
 ```sh
 make radv                                   # the recipe once: SDK, host tools, cross files
 cd .deps/PS5_Mesa
-git checkout -b ps5cemu-perf 0b2d6d1a61d9bbf89cf8beb88a696144f67c61f8
+git checkout -b ps5cemu-perf 7b59ef27c1b09b9671bc4153c41940c3155c3af2
 git am ../../patches/mesa/*.patch
 work=../PS5_Vulkan/.deps/work
 PATH=$work/radv-clc-bin:$PATH meson setup build-ps5 \
     --cross-file $work/radv-cross-constants.ini --cross-file ../PS5_Vulkan/tooling/radv/ps5-cross.ini \
     $(cat $work/radv-build-ps5-release/.radv-options) \
-    -Dradv-build-id=0b2d6d1a61d9bbf89cf8beb88a696144f67c61f8
+    -Dradv-build-id=7b59ef27c1b09b9671bc4153c41940c3155c3af2
 ninja -C build-ps5 src/amd/vulkan/libvulkan_radeon.a
 cd ../..
 make package RADV_ARCHIVE=$PWD/.deps/PS5_Mesa/build-ps5/src/amd/vulkan/libvulkan_radeon.a \
@@ -233,7 +295,14 @@ make package RADV_ARCHIVE=$PWD/.deps/PS5_Mesa/build-ps5/src/amd/vulkan/libvulkan
 
 The options come from the recipe's own release build, so the archive is configured the same way.
 Keeping the pinned revision as the build id keeps existing shader caches valid; the patches touch
-only the winsys, never the compiler. A change that touches the compiler needs a new id.
+only the winsys, never the compiler. A change that touches the compiler needs a new id. Moving from
+`0b2d6d1a` to `7b59ef27` is a new id: each game's pipelines are compiled again once, on its first
+start with the new driver.
+
+The winsys's PC model (`-Dradv-winsys=ps5` without the cross files) builds on Ubuntu 24.04 with
+`libdrm-dev` installed and `-Dc_args="-include host-types.h"` (and `cpp_args`), where `host-types.h`
+includes `<linux/types.h>` outside assembly: `ac_surface.c` uses the kernel's `__u64`, which no
+header includes when DRM is left out.
 
 ## Test plan
 
@@ -242,9 +311,12 @@ USB**. Busy places are the useful ones: Kakariko Village, Hateno Village, the vi
 Plateau tower.
 
 1. Baseline at 1440p and at 4K, with `"radvEnvironment": {"RADV_PS5_GPU_TIME": "1"}` and the
-   patched driver. Record FPS and the `[driver] radv/ps5 submissions` lines.
-2. Each row of "Settings to test", one at a time, at 4K.
-3. The unpatched driver at 4K, for the patches' own effect (`copy_ms`, `flush_ms` and FPS).
+   patched driver. Record FPS and the `[driver] radv/ps5 submissions` lines. With 120 Hz output on,
+   check the boot log says `VideoOut surface 3840x2160 at 119.88 Hz`.
+2. The two columns of "Breath of the Wild at 4K60 and 8K30" as they stand, then with frame pacing
+   off, for what pacing changes.
+3. Each row of "Settings to test", one at a time, at 4K.
+4. The unpatched driver at 4K, for the patches' own effect (`copy_ms`, `flush_ms` and FPS).
 
 Reading the lines (per 10 s window):
 

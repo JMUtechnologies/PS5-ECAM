@@ -40,6 +40,9 @@ namespace ps5settings
 		std::string gamesFolder = "/data/ps5cemu/games";
 		int upscaleFilter = 1;		  // how the game's picture is scaled to 4K: Cemu's upscale_filter
 		bool highFrameRate = false;	  // the 119.88 Hz mode where the display has it
+		// frame pacing (ps5/display.h): each frame shown for at least this many refreshes, 1 to 3;
+		// 2 is an even 60 fps at 119.88 Hz and an even 30 at 59.94 Hz (Settings > Video, in-game Graphics)
+		int framePacing = 1;
 		bool overlay = false;		  // Cemu's performance overlay from the start
 		bool asyncShaders = true;	  // Cemu's async_compile (Settings > Video, and the in-game menu's Graphics)
 		bool gamePadSpeaker = false;  // the GamePad's sound on player 1's DualSense speaker (Settings > Audio)

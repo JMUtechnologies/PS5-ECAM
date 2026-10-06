@@ -147,6 +147,7 @@ namespace ps5settings
 		ReadString(json, "gamesFolder", settings.gamesFolder);
 		ReadInt(json, "upscaleFilter", settings.upscaleFilter, 0, 3);
 		ReadBool(json, "highFrameRate", settings.highFrameRate);
+		ReadInt(json, "framePacing", settings.framePacing, 1, 3);
 		ReadBool(json, "overlay", settings.overlay);
 		ReadBool(json, "rumble", settings.rumble);
 		ReadBool(json, "pinCpuThreads", settings.pinCpuThreads);
@@ -184,6 +185,8 @@ namespace ps5settings
 		writer.Int(settings.upscaleFilter);
 		writer.Key("highFrameRate");
 		writer.Bool(settings.highFrameRate);
+		writer.Key("framePacing");
+		writer.Int(settings.framePacing);
 		writer.Key("overlay");
 		writer.Bool(settings.overlay);
 		writer.Key("rumble");
