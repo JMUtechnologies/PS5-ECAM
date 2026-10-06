@@ -55,6 +55,10 @@ namespace ps5settings
 		// performance experiments (RADV_, MESA_ and ACO_ names only), e.g.
 		// {"RADV_THREADED_RECORDING": "1", "RADV_PS5_GPU_TIME": "1"}; empty by default
 		std::map<std::string, std::string> radvEnvironment;
+		// only in ps5cemu.json: how many draws Cemu records in a command buffer before it submits it,
+		// for the driver's performance experiments (docs/DRIVER-PERFORMANCE.md); 0, the default,
+		// keeps Cemu's own 300
+		int cemuSubmitDraws = 0;
 		int volume = 100;			  // the TV sound, in percent
 		int gameCount = -1;			  // the Wii U library's games when last looked for (the start screen's); -1: never
 		uint64_t lastGame = 0;		  // title ID

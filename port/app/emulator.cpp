@@ -45,6 +45,7 @@
 #include "input/InputManager.h"
 #include "util/crypto/aes128.h"
 
+#include <atomic>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
@@ -68,6 +69,9 @@ namespace ps5emu
 	{
 		bool s_firstStart = false;
 		bool s_coreStarted = false; // Cemu's settings are loaded: this session is Cemu's
+		// the draws Cemu records in a command buffer before it submits it (PS5Cemu_SubmitDraws)
+		constexpr uint32_t kCemuSubmitDraws = 300;
+		std::atomic<uint32_t> s_submitDraws{kCemuSubmitDraws};
 
 		// the app's heap in use, MiB (0 without the platform's statistics)
 		uint64_t HeapMiB()
@@ -408,6 +412,14 @@ namespace ps5emu
 		GetConfigHandle().Save();
 	}
 
+	void SetSubmitDraws(int draws)
+	{
+		s_submitDraws = draws > 0 ? (uint32_t)draws : kCemuSubmitDraws;
+		if (draws > 0)
+			ps5log::Line("[vulkan] Cemu submits a command buffer every {} draws (cemuSubmitDraws in ps5cemu.json; its own is {})", draws,
+				kCemuSubmitDraws);
+	}
+
 	bool Scanning()
 	{
 		return CafeTitleList::IsScanning();
@@ -641,4 +653,12 @@ namespace ps5emu
 				sceKernelUsleep(100000);
 		ps5log::Line("[emu] LoadExec({}) returned {:#x}", eboot, (uint32_t)result);
 	}
+}
+
+// patches/cemu: Cemu's VulkanRenderer::SubmitCommandBuffer, for each command buffer it begins. Each
+// submission costs the driver a copy of its words and an AGC submission, and the GPU a reset of its
+// state and a write-back of its caches (docs/DRIVER-PERFORMANCE.md)
+uint32 PS5Cemu_SubmitDraws()
+{
+	return ps5emu::s_submitDraws.load(std::memory_order_relaxed);
 }

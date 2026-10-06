@@ -44,6 +44,11 @@ namespace ps5emu
 	// Writes the launcher's settings into Cemu's (settings.xml). A new games folder is scanned.
 	void ApplyOptions(const Options& options);
 
+	// How many draws Cemu records in a command buffer before it submits it, from the process's start
+	// (ps5cemu.json's cemuSubmitDraws, a driver experiment: docs/DRIVER-PERFORMANCE.md); 0 keeps
+	// Cemu's own 300.
+	void SetSubmitDraws(int draws);
+
 	// Whether Cemu is still looking for games (the library fills in when it is done).
 	bool Scanning();
 

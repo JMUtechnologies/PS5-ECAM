@@ -149,7 +149,7 @@ This is where the port differs most from Linux.
   at 119.88 Hz; patch 0003 makes it 200 us.
 - `sceAgcDcbSetFlip`, a flip packet the GPU runs in the stream itself, works once VideoOut is open
   (2026-09-17) and was how PS5_Vulkan's first driver (ps5vk) flipped. RADV's swapchain does not use
-  it.
+  it; patch 0005 does, with `RADV_PS5_GPU_FLIP=1`.
 
 ### What the GPU cannot do here, and what it costs
 
@@ -172,8 +172,8 @@ case unchanged, and stays off until it measures faster in a game. **PS5CEMU-HAR 
 
 From Cemu's Vulkan renderer at the pinned commit:
 
-- **Submissions:** every 300 draws, within 10 draws of any occlusion query ending, on texture
-  readbacks, and at each swap. Each waits on the previous one's semaphore and has a fence.
+- **Submissions:** every 300 draws (`cemuSubmitDraws` in `ps5cemu.json` changes it, below), within
+  10 draws of any occlusion query ending, on texture readbacks, and at each swap. Each waits on the previous one's semaphore and has a fence.
 - **Polling:** `vkGetFenceStatus` on the oldest unfinished command buffers after every submit.
 - **At swap:** a wait for the *previous* frame's last command buffer, so one frame is in flight.
 - **All on one thread.** Cemu's GPU thread decodes the Wii U's command stream, records Vulkan,
@@ -220,9 +220,9 @@ These are in the working tree alongside this document.
 Built and run on the PC model: about 110,000 submissions in 11 s, including 3.1M-word command
 buffers split into five AGC submissions in a buffer of their own, with RADV's assertions on (its
 check that the words copied equal the words planned held throughout). The console branch compiles
-against PS5_PayloadSDK's headers. None of them has run on a console. They were written against
+against PS5_PayloadSDK's headers. None of them has run on a console. 0001-0004 were written against
 `0b2d6d1a` and apply to `7b59ef27` unchanged (the four commits between touch only the swapchain);
-RADV builds with them there.
+0005 was written against `7b59ef27`. RADV builds with all five there.
 
 | Patch | What it changes | Expected effect | Risk |
 | --- | --- | --- | --- |
@@ -230,6 +230,13 @@ RADV builds with them there.
 | 0002 Streamed copy | Words go into the ring with non-temporal stores; the eviction pass becomes one `SFENCE` | About half the copy cost (on a host Xeon, a 256 KiB submission: 72 us to 33-43 us) | Low: correct whether or not the CP's fetch sees CPU caches, which was never measured |
 | 0003 Waits | `vkGetFenceStatus` (a zero timeout) reads no clock; waits past their spin sleep 200 us, not 1 ms | Fewer system calls; the flip thread and the swap wait wake within 0.2 ms of the GPU | Low: a few more wake-ups per long wait |
 | 0004 GPU busy time | With `RADV_PS5_GPU_TIME=1`, each submission carries a start timestamp (`COPY_DATA` of the GPU clock, RADV's top-of-pipe timestamp) and an end one (the bottom-of-pipe `RELEASE_MEM` the driver's GPU clock read already uses), and the statistics line gains `gpu_busy_pct` | Says whether BotW at 4K is GPU-bound | Low: off by default, and then nothing changes |
+| 0005 Flips on the GPU | With `RADV_PS5_GPU_FLIP=1`, a present puts `sceAgcDcbSetFlip`'s packets (mode 1, the flip's argument as their marker, as ps5vk flipped) on the queue in a submission of their own, behind the frame (`radv_ps5_submit_after`, which the swapchain links weak), instead of handing the frame to the flip thread | The GPU hands the flip to VideoOut as the frame's work ends: no core spinning on each frame's fence, no sleep between the frame and its flip, so a frame done just before a vblank makes it | Medium: off by default. Flips from the CPU and the GPU are never mixed out of order (a present goes to the thread only while the thread still holds flips, or when its frame's submission was deferred, which Cemu's never is), but whether VideoOut paces the GPU's flips with the flip rate as it paces `sceVideoOutSubmitFlip`'s is unmeasured |
+
+0005 on the PC model: 2,000,000 presents through three images, two submissions a frame (the frame
+and the flip's 72 words); a frame held behind a timeline semaphore that another thread opens 30 ms
+later presents on the GPU too; a run under the Khronos validation layer reports nothing. The boot
+log says `[driver] wsi/videoout: flips on the GPU (RADV_PS5_GPU_FLIP)` and `the first flip on the
+GPU`, and says so if a flip ever goes to the thread instead.
 
 ### 3. Settings to test (no rebuild)
 
@@ -240,18 +247,18 @@ RADV builds with them there.
 | Accurate barriers off | In-game menu, Graphics | Fewer full pipeline barriers between Cemu's passes, which matter more at 4K |
 | 120 Hz output and frame pacing at 60 fps | Settings > Video | A late frame costs 8.3 ms instead of 16.7 ms, so "mostly 60" looks closer to 60; with the driver before `7b59ef2`, 120 Hz never reached a jailbroken process |
 | `RADV_PERFTEST=pswave32` | `radvEnvironment` | RADV recommends wave64 for pixel shaders; a quick check, low expectations |
+| `RADV_PS5_GPU_FLIP=1` (patch 0005) | `radvEnvironment` | The flip on the GPU behind the frame: compare FPS and how often a frame shows for two refreshes at 119.88 Hz with frame pacing off |
+| `cemuSubmitDraws` at 600, 1000 and 1500 | `ps5cemu.json` (a number; 0 is Cemu's 300) | Fewer submissions a frame, each a copy, an AGC submission, a state reset and an L2 write-back; too few delay the GPU's start on a frame. Read `count=` and `gpu_busy_pct` |
 
 ### 4. Driver changes proposed, not written
 
-1. **Flip on the GPU.** Submit `sceAgcDcbSetFlip` (mode 1) after the frame's work on the same
-   in-order queue, as ps5vk did, instead of a CPU thread waiting for the fence and then flipping.
-   The flip then cannot miss a vblank because a thread slept, and a core stops spinning on every
-   frame. Needs a hook from the generic WSI into the winsys and the flip bookkeeping kept for
-   acquires. Medium effort; the packet's behaviour was measured in PS5_Vulkan M5 C1.
-2. **Fewer AGC submissions per frame.** Each one resets state, replays the preamble and empties
-   the L2. Cemu's 300-draw threshold (`VulkanRenderer::SubmitCommandBuffer`) could be a setting
-   (a patch in `patches/cemu`), tested at 600-1500 against `count=` and `gpu_busy_pct`. Too few
-   submissions delay the GPU's start on a frame, so it is a measurement, not a default to flip.
+1. **Flip on the GPU: written, patch 0005** (`RADV_PS5_GPU_FLIP=1`, above). It needs a console run:
+   whether VideoOut paces flips from the GPU with the flip rate, and what the flip thread cost.
+2. **Fewer AGC submissions per frame: a setting now.** Each one resets state, replays the preamble
+   and empties the L2. Cemu's 300-draw threshold (`VulkanRenderer::SubmitCommandBuffer`) comes from
+   `cemuSubmitDraws` in `ps5cemu.json` (`patches/cemu` 0020, `port/app/emulator.cpp`; 0 keeps 300),
+   read when the app starts. Too few submissions delay the GPU's start on a frame, so it is a
+   measurement, not a default to change.
 3. **Investigate the base PS5's late start (R68).** If each idle start of the GPU waits for a
    refresh on a base console, Cemu's many submissions are the worst case for it. A probe like R67's
    stamps, run on a base PS5 with several submissions per frame, would settle it.
@@ -260,7 +267,12 @@ RADV builds with them there.
    was written. Larger change; patch 0002 takes most of the cost away first.
 5. **Waits that block on the GPU's interrupt.** On the PS4, `RELEASE_MEM` can raise an
    end-of-pipe interrupt that wakes a kernel event queue. Nothing in PS5_PayloadSDK's AGC header
-   exposes one; finding whether AGC exports it would end the spinning and the sleep latency both.
+   exposes one, but titles import `sceAgcDriverAddEqEvent` (PS5_Vulkan's `AGC_ENTRY_POINTS.md`, its
+   NID from Kyty's table, never called), the SDK's stubs have the kernel's `sceKernelCreateEqueue`
+   and `sceKernelWaitEqueue`, and VideoOut's `sceVideoOutAddFlipEvent`. A probe would register an
+   end-of-pipe event, set the completion packet's `INT_SEL`, and time the wake-up against the
+   marker; it would end the spinning and the sleep latency both, and the acquire's vblank polling
+   with the flip event.
 6. **Build at `-O3` with LTO.** The "release" archive is `-Dbuildtype=debugoptimized` (`-O2 -g`)
    with assertions off. A small CPU gain on recording, to be measured.
 7. **Measure the GPU's bandwidth on type-12 memory**, and try the other types, with a streaming
@@ -317,10 +329,14 @@ Plateau tower.
    off, for what pacing changes.
 3. Each row of "Settings to test", one at a time, at 4K.
 4. The unpatched driver at 4K, for the patches' own effect (`copy_ms`, `flush_ms` and FPS).
+5. `RADV_PS5_GPU_FLIP=1` at 4K, with the 4K60 column's settings: the boot log's `flips on the GPU`
+   lines, FPS, and with frame pacing at 60 fps whether the pacing still holds.
+6. `cemuSubmitDraws` at 600, 1000 and 1500 at 4K, one per start of the app.
 
 Reading the lines (per 10 s window):
 
-- `count` divided by 10 s and by the FPS is **submissions per frame**.
+- `count` divided by 10 s and by the FPS is **submissions per frame** (one of them the flip's, with
+  `RADV_PS5_GPU_FLIP=1`).
 - `copy_ms + flush_ms + agc_ms + claim_ms` is the **driver's submission cost on Cemu's GPU thread**;
   divided by the frames in the window, it is milliseconds per frame out of 16.7.
 - `gpu_busy_pct` near 90-100 with FPS under 60 at 4K: **GPU-bound**. The levers are fewer
