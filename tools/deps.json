@@ -142,6 +142,16 @@
       ]
     },
     {
+      "name": "reshade",
+      "about": "ReShade 6.8.0 (BSD-3-Clause): its effect compiler (ReShade FX to SPIR-V), with the SPIR-V headers and stb's image loaders it builds with. port/cemu/ReShadeEffects.cpp compiles effects with it and port/cemu/ReShadeRuntime.cpp runs them",
+      "kind": "git",
+      "url": "https://github.com/crosire/reshade.git",
+      "commit": "18deaa52de0c425a78b329e9cb3c497281cd00ec",
+      "path": ".deps/reshade",
+      "submodules": ["deps/spirv", "deps/stb"],
+      "creates": ".deps/reshade/source/effect_codegen_spirv.cpp"
+    },
+    {
       "name": "prosperoeden",
       "about": "ProsperoEden, for the launcher artwork, fonts and icons the PS5Cemu launcher reuses",
       "kind": "git",

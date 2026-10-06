@@ -29,6 +29,7 @@ if [[ -d $build && $(cat "$build/ps5-toolchain" 2>/dev/null) != "$toolchain" ]];
 fi
 
 bash "$PS5CEMU_ROOT/tools/cemu-patches.sh" apply
+bash "$PS5CEMU_ROOT/tools/reshade-patches.sh" apply # its effect compiler (port/cemu/ReShadeEffects.cpp)
 
 options=(
     -DCMAKE_TOOLCHAIN_FILE="$PS5CEMU_TOOLCHAIN" -DCMAKE_BUILD_TYPE=Release
