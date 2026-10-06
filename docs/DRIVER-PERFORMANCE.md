@@ -222,7 +222,8 @@ buffers split into five AGC submissions in a buffer of their own, with RADV's as
 check that the words copied equal the words planned held throughout). The console branch compiles
 against PS5_PayloadSDK's headers. None of them has run on a console. 0001-0004 were written against
 `0b2d6d1a` and apply to `7b59ef27` unchanged (the four commits between touch only the swapchain);
-0005 was written against `7b59ef27`. RADV builds with all five there.
+0005 and 0006 were written against `7b59ef27`. RADV builds with all six there, and with 0006 alone.
+`make radv` builds 0006 alone by default; `RADV_PATCHES` chooses others ([below](#building-with-the-patches)).
 
 | Patch | What it changes | Expected effect | Risk |
 | --- | --- | --- | --- |
@@ -231,6 +232,7 @@ against PS5_PayloadSDK's headers. None of them has run on a console. 0001-0004 w
 | 0003 Waits | `vkGetFenceStatus` (a zero timeout) reads no clock; waits past their spin sleep 200 us, not 1 ms | Fewer system calls; the flip thread and the swap wait wake within 0.2 ms of the GPU | Low: a few more wake-ups per long wait |
 | 0004 GPU busy time | With `RADV_PS5_GPU_TIME=1`, each submission carries a start timestamp (`COPY_DATA` of the GPU clock, RADV's top-of-pipe timestamp) and an end one (the bottom-of-pipe `RELEASE_MEM` the driver's GPU clock read already uses), and the statistics line gains `gpu_busy_pct` | Says whether BotW at 4K is GPU-bound | Low: off by default, and then nothing changes |
 | 0005 Flips on the GPU | With `RADV_PS5_GPU_FLIP=1`, a present puts `sceAgcDcbSetFlip`'s packets (mode 1, the flip's argument as their marker, as ps5vk flipped) on the queue in a submission of their own, behind the frame (`radv_ps5_submit_after`, which the swapchain links weak), instead of handing the frame to the flip thread | The GPU hands the flip to VideoOut as the frame's work ends: no core spinning on each frame's fence, no sleep between the frame and its flip, so a frame done just before a vblank makes it | Medium: off by default. Flips from the CPU and the GPU are never mixed out of order (a present goes to the thread only while the thread still holds flips, or when its frame's submission was deferred, which Cemu's never is), but whether VideoOut paces the GPU's flips with the flip rate as it paces `sceVideoOutSubmitFlip`'s is unmeasured |
+| 0006 Refresh rate asked for again | `wsi_videoout_set_high_frame_rate(high)` configures the open output again once no swapchain presents on it: 119.88 Hz where `param.json` (`PS5_VIDEOOUT_PARAM_JSON`, read again) declares high-frame-rate output, else 59.94 Hz; the display modes offered follow. The app calls it, weak, before each Wii U game (`ps5display::ConfigureOutput`) | **120 Hz output works after the new launcher**, which opens VideoOut first at 59.94 Hz: without it, the driver keeps the launcher's rate for the process. The boot log says `VideoOut configured again for the next surface: 119.88 Hz` | Low: **in the default build**. A process that never calls it behaves as before; it refuses (-1) while a swapchain still presents |
 
 0005 on the PC model: 2,000,000 presents through three images, two submissions a frame (the frame
 and the flip's 72 words); a frame held behind a timeline semaphore that another thread opens 30 ms
@@ -286,33 +288,25 @@ path is the model.
 
 ## Building with the patches
 
-PS5_Vulkan's recipe exports exactly the pinned revision (`git archive 7b59ef27`), so the patches
-need a build of the fork's own tree, which `tools/link.sh` then takes through `RADV_ARCHIVE`:
+`make radv` (`tools/build-radv.sh`) builds the patches `RADV_PATCHES` names, and the app links that
+build. PS5_Vulkan's recipe exports exactly the pinned revision (`git archive 7b59ef27`), so after
+the recipe has run, the script applies the patches to the same revision in a temporary index of
+the fork's repository, exports that tree, and builds it in `.deps/PS5_Vulkan/.deps/work/ps5cemu-radv-build`
+with the recipe's own release options, cross files and `mesa_clc`, into
+`.deps/PS5_Vulkan/.deps/native/radv-ps5cemu` (its `PROVENANCE.txt` lists the patches):
 
 ```sh
-make radv                                   # the recipe once: SDK, host tools, cross files
-cd .deps/PS5_Mesa
-git checkout -b ps5cemu-perf 7b59ef27c1b09b9671bc4153c41940c3155c3af2
-git am ../../patches/mesa/*.patch
-# meson's zlib wrap, as the recipe's tree has it (its patch's host may be out of reach from a build machine)
-mkdir -p subprojects/packagecache
-cp ../PS5_Vulkan/.deps/work/radv-src/subprojects/packagecache/zlib* subprojects/packagecache/
-# absolute: ninja runs mesa_clc from the build folder
-work=$(cd ../PS5_Vulkan/.deps/work && pwd)
-export PATH=$work/radv-clc-bin:$PATH
-meson setup build-ps5 \
-    --cross-file $work/radv-cross-constants.ini --cross-file $(cd ../PS5_Vulkan/tooling/radv && pwd)/ps5-cross.ini \
-    $(cat $work/radv-build-ps5-release/.radv-options) \
-    -Dradv-build-id=7b59ef27c1b09b9671bc4153c41940c3155c3af2
-ninja -C build-ps5 src/amd/vulkan/libvulkan_radeon.a
-cd ../..
-make package RADV_ARCHIVE=$PWD/.deps/PS5_Mesa/build-ps5/src/amd/vulkan/libvulkan_radeon.a \
-    RADV_SDK=$PWD/.deps/PS5_Vulkan/.deps/native/ps5-payload-sdk
+make release                          # 0006 alone, the default: 120 Hz output after the new launcher
+make release RADV_PATCHES=all         # every patch, for the A/B runs below
+make release RADV_PATCHES=0004,0006   # some of them, by number
+make release RADV_PATCHES=            # none: the recipe's archive as it is
 ```
 
-The options come from the recipe's own release build, so the archive is configured the same way.
-Keeping the pinned revision as the build id keeps existing shader caches valid; the patches touch
-only the winsys, never the compiler. A change that touches the compiler needs a new id. Moving from
+A change of patches recompiles only the files they touch, and `make build` links the app again
+whenever the archive changed (`tools/build-cemu.sh`; ninja does not track it). The build id stays
+the pinned revision while the patches touch only the winsys and WSI, which keeps existing shader
+caches valid; the script gives a patch set that touches anything else, such as the compiler, the
+patched tree's id instead, so caches start over. Moving from
 `0b2d6d1a` to `7b59ef27` is a new id: each game's pipelines are compiled again once, on its first
 start with the new driver.
 
@@ -328,12 +322,14 @@ USB**. Busy places are the useful ones: Kakariko Village, Hateno Village, the vi
 Plateau tower.
 
 1. Baseline at 1440p and at 4K, with `"radvEnvironment": {"RADV_PS5_GPU_TIME": "1"}` and the
-   patched driver. Record FPS and the `[driver] radv/ps5 submissions` lines. With 120 Hz output on,
+   driver with every patch (`make release RADV_PATCHES=all`; steps 2, 3, 5 and 6 use it too).
+   Record FPS and the `[driver] radv/ps5 submissions` lines. With 120 Hz output on,
    check the boot log says `VideoOut surface 3840x2160 at 119.88 Hz`.
 2. The two columns of "Breath of the Wild at 4K60 and 8K30" as they stand, then with frame pacing
    off, for what pacing changes.
 3. Each row of "Settings to test", one at a time, at 4K.
-4. The unpatched driver at 4K, for the patches' own effect (`copy_ms`, `flush_ms` and FPS).
+4. The default driver at 4K (`make release`: 0006 alone, which leaves submissions as they were), for
+   the other patches' own effect (`copy_ms`, `flush_ms` and FPS).
 5. `RADV_PS5_GPU_FLIP=1` at 4K, with the 4K60 column's settings: the boot log's `flips on the GPU`
    lines, FPS, and with frame pacing at 60 fps whether the pacing still holds.
 6. `cemuSubmitDraws` at 600, 1000 and 1500 at 4K, one per start of the app.

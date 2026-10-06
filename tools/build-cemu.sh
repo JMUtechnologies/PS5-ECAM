@@ -50,11 +50,16 @@ if [[ ! -f $build/build.ninja || $(cat "$build/ps5-options" 2>/dev/null) != "${o
     echo "$toolchain" >"$build/ps5-toolchain"
 fi
 
-# ps5cemu.elf is relinked when a link check gives way to RADV (tools/link.sh), or the other way round:
-# ninja does not see the difference
+# ps5cemu.elf is relinked when a link check gives way to RADV (tools/link.sh), or the other way round,
+# and when RADV is another archive than the one it was linked with (other patches/mesa, or
+# RADV_ARCHIVE): ninja does not see the difference
 elf=$build/ps5cemu.elf
 if [[ -f $elf.linkcheck && ${PS5CEMU_LINK_CHECK:-0} != 1 ]] || [[ -f $elf && ! -f $elf.linkcheck && ${PS5CEMU_LINK_CHECK:-0} == 1 ]]; then
     rm -f "$elf" "$elf.linkcheck"
+fi
+if [[ -f $elf && ${PS5CEMU_LINK_CHECK:-0} != 1 && $(cat "$elf.radv" 2>/dev/null) != "$(ps5cemu_radv_stamp)" ]]; then
+    echo "==> [cemu] RADV is not the archive ps5cemu.elf was linked with: linking again"
+    rm -f "$elf"
 fi
 
 ninja -C "$build" -j "$JOBS" "$@"
