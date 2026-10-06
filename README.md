@@ -358,7 +358,8 @@ a ZIP to `dist/`. See [docs/BUILDING.md](docs/BUILDING.md), or run `make help` f
 - `port/`: the PS5 platform layer, both emulators' PS5 frontends, the launcher and the in-game menus
 - `patches/`: changes to Cemu and Azahar
 - `tools/`: build, packaging and artwork scripts
-- `docs/`: building, the HEN setup guide and the compatibility list
+- `docs/`: building, the HEN setup guide, the compatibility list, and the
+  [UI redesign proposal](docs/UI-REDESIGN.md)
 
 ## Credits
 
