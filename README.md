@@ -83,7 +83,8 @@ Both launchers have:
 ## Wii U (Cemu)
 
 - Cemu's x64 recompiler, at the PS5's 3840x2160 output, with a choice of upscaling filter (Bicubic
-  by default) and 120 Hz on displays that support it.
+  by default), 120 Hz on displays that support it, and frame pacing (**Settings > Video**, or the
+  in-game menu's Graphics) that holds a game to an even 60 fps at 120 Hz or 30 fps at 60 Hz.
 - Plays WUA, WUD/WUX and unpacked games from any folder the PS5 can read.
 - The Cemu community graphic packs, organized by folder like Cemu's Graphic Packs window, with a
   dropdown for each preset.

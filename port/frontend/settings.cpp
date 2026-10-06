@@ -147,10 +147,15 @@ namespace ps5settings
 		ReadString(json, "gamesFolder", settings.gamesFolder);
 		ReadInt(json, "upscaleFilter", settings.upscaleFilter, 0, 3);
 		ReadBool(json, "highFrameRate", settings.highFrameRate);
+		ReadInt(json, "framePacing", settings.framePacing, 1, 3);
 		ReadBool(json, "overlay", settings.overlay);
 		ReadBool(json, "rumble", settings.rumble);
 		ReadBool(json, "pinCpuThreads", settings.pinCpuThreads);
 		ReadString(json, "radvDebug", settings.radvDebug);
+		if (json.HasMember("radvEnvironment") && json["radvEnvironment"].IsObject())
+			for (const auto& member : json["radvEnvironment"].GetObject())
+				if (member.value.IsString())
+					settings.radvEnvironment[member.name.GetString()] = member.value.GetString();
 		ReadInt(json, "volume", settings.volume, 0, 100);
 		ReadInt(json, "gameCount", settings.gameCount, -1, 1000000);
 		ReadString(json, "launchError", settings.launchError);
@@ -180,6 +185,8 @@ namespace ps5settings
 		writer.Int(settings.upscaleFilter);
 		writer.Key("highFrameRate");
 		writer.Bool(settings.highFrameRate);
+		writer.Key("framePacing");
+		writer.Int(settings.framePacing);
 		writer.Key("overlay");
 		writer.Bool(settings.overlay);
 		writer.Key("rumble");
@@ -188,6 +195,14 @@ namespace ps5settings
 		writer.Bool(settings.pinCpuThreads);
 		writer.Key("radvDebug");
 		writer.String(settings.radvDebug.c_str());
+		writer.Key("radvEnvironment");
+		writer.StartObject();
+		for (const auto& [name, value] : settings.radvEnvironment)
+		{
+			writer.Key(name.c_str());
+			writer.String(value.c_str());
+		}
+		writer.EndObject();
 		writer.Key("volume");
 		writer.Int(settings.volume);
 		writer.Key("gameCount");

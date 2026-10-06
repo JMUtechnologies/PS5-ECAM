@@ -40,6 +40,9 @@ namespace ps5settings
 		std::string gamesFolder = "/data/ps5cemu/games";
 		int upscaleFilter = 1;		  // how the game's picture is scaled to 4K: Cemu's upscale_filter
 		bool highFrameRate = false;	  // the 119.88 Hz mode where the display has it
+		// frame pacing (ps5/display.h): each frame shown for at least this many refreshes, 1 to 3;
+		// 2 is an even 60 fps at 119.88 Hz and an even 30 at 59.94 Hz (Settings > Video, in-game Graphics)
+		int framePacing = 1;
 		bool overlay = false;		  // Cemu's performance overlay from the start
 		bool asyncShaders = true;	  // Cemu's async_compile (Settings > Video, and the in-game menu's Graphics)
 		bool gamePadSpeaker = false;  // the GamePad's sound on player 1's DualSense speaker (Settings > Audio)
@@ -48,6 +51,10 @@ namespace ps5settings
 		// only in ps5cemu.json: RADV_DEBUG for the Vulkan driver (e.g. "nongg,nohiz"), to narrow down
 		// a GPU hang by turning hardware features off; empty by default
 		std::string radvDebug;
+		// only in ps5cemu.json: more of the Vulkan driver's environment, name to value, for its
+		// performance experiments (RADV_, MESA_ and ACO_ names only), e.g.
+		// {"RADV_THREADED_RECORDING": "1", "RADV_PS5_GPU_TIME": "1"}; empty by default
+		std::map<std::string, std::string> radvEnvironment;
 		int volume = 100;			  // the TV sound, in percent
 		int gameCount = -1;			  // the Wii U library's games when last looked for (the start screen's); -1: never
 		uint64_t lastGame = 0;		  // title ID

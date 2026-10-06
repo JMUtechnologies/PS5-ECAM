@@ -74,6 +74,19 @@ namespace
 		settings.launchError = launchError;
 		ps5settings::Save(settings);
 	}
+
+	// The 119.88 Hz mode for the next game, where the setting asks for it. The driver configures
+	// VideoOut once a process, when a renderer first asks for the display's modes, and offers 119.88
+	// Hz only to a title whose param.json declares high-frame-rate output. It reads /app0's unless
+	// PS5_VIDEOOUT_PARAM_JSON names another, and a process the HEN has jailbroken has no /app0
+	// (app/paths.h), so it is told where the app's is; with the setting off it is told of one that
+	// is not there, which declares nothing, so the display stays at 59.94 Hz in a sandboxed process too.
+	void SetHighFrameRate(bool highFrameRate)
+	{
+		ps5display::SetHighFrameRate(highFrameRate);
+		const std::string paramJson = ps5paths::AppDir() + (highFrameRate ? "/sce_sys/param.json" : "/sce_sys/no-high-frame-rate.json");
+		setenv("PS5_VIDEOOUT_PARAM_JSON", paramJson.c_str(), 1);
+	}
 }
 
 // What Cemu's src/main.cpp defines for the rest of Cemu.
@@ -109,11 +122,24 @@ int main(int argc, char* argv[])
 	if (privileges.filesystem)
 		ps5privilege::ReachFolders({settings.gamesFolder, settings.n3ds.gamesFolder});
 	ps5threads::SetPinning(settings.pinCpuThreads);
+	ps5log::ForwardDriverMessages();
 	// before either emulator's Vulkan driver starts, which reads it once
 	if (!settings.radvDebug.empty())
 	{
 		setenv("RADV_DEBUG", settings.radvDebug.c_str(), 1);
 		ps5log::Line("[vulkan] RADV_DEBUG={} (radvDebug in ps5cemu.json)", settings.radvDebug);
+	}
+	for (const auto& [name, value] : settings.radvEnvironment)
+	{
+		// the driver's own variables only: the rest of the environment is the app's
+		const bool driver = name.rfind("RADV_", 0) == 0 || name.rfind("MESA_", 0) == 0 || name.rfind("ACO_", 0) == 0;
+		if (!driver || name == "RADV_DEBUG")
+		{
+			ps5log::Line("[vulkan] {} in radvEnvironment left out: only RADV_, MESA_ and ACO_ names, and radvDebug for RADV_DEBUG", name);
+			continue;
+		}
+		setenv(name.c_str(), value.c_str(), 1);
+		ps5log::Line("[vulkan] {}={} (radvEnvironment in ps5cemu.json)", name, value);
 	}
 	ps5pad::Init();
 	ps5pad::SetVibrationEnabled(settings.rumble);
@@ -182,7 +208,8 @@ int main(int argc, char* argv[])
 		ps5update::Start();
 	for (;;)
 	{
-		ps5display::SetHighFrameRate(false); // the launcher at 59.94 Hz
+		SetHighFrameRate(false); // the launcher at 59.94 Hz
+		ps5display::SetFramePacing(1); // and the 3DS's games every refresh
 		const auto choice = ps5launcher::Run(settings, status, prepare);
 		ps5update::Stop(); // nothing of the launcher's runs beside a game
 		ps5packs::Stop();
@@ -217,7 +244,8 @@ int main(int argc, char* argv[])
 		}
 
 		ps5emu::ApplyOptions(Options(settings));
-		ps5display::SetHighFrameRate(settings.highFrameRate);
+		SetHighFrameRate(settings.highFrameRate);
+		ps5display::SetFramePacing(settings.framePacing);
 		ps5window::Initialize();
 		if (ps5emu::LaunchGame(game, error))
 		{

@@ -20,6 +20,7 @@
 #include "../app/paths.h"
 #include "../app/updates.h"
 #include "../app/usb_devices.h"
+#include "../ps5/display.h"
 #include "../ps5/kernel.h"
 #include "../ps5/log.h"
 #include "../ps5/notify.h"
@@ -1988,7 +1989,13 @@ namespace ps5launcher
 						{"upscaling", "Upscaling to 4K", kUpscaleFilters[std::clamp(m_settings.upscaleFilter, 0, 3)], "How the picture is scaled to the TV.",
 							"Bicubic is sharp, Bicubic Hermite a little softer, Linear softer still; Nearest neighbour keeps pixels square."},
 						{"highframerate", "120 Hz output", m_settings.highFrameRate ? "On, where the TV has it" : "Off", "For displays that take 120 Hz.",
-							"The 119.88 Hz mode, on displays that support it. Games still run at their own speed."},
+							"The 119.88 Hz mode, on displays that support it. Games still run at their own speed, and a frame that misses a "
+							"refresh waits 8 ms for the next instead of 17."},
+						{"framepacing", "Frame pacing", ps5display::FramePacingName(m_settings.framePacing, m_settings.highFrameRate),
+							"Holds a game to an even frame rate.",
+							"Each frame stays on screen for at least two or three refreshes, so a game that cannot hold the display's rate "
+							"runs at an even one: 60 or 40 fps with 120 Hz output, 30 or 20 without. 60 fps with 120 Hz output suits a game "
+							"at 4K that sometimes drops under 60; 30 fps at 60 Hz suits one at 8K. Also in the in-game menu."},
 						{"overlay", "Performance overlay", onOff(m_settings.overlay), "Frame rate, CPU and memory in a corner.",
 							"Frames per second, CPU and memory use in the top left corner, as Cemu shows them. Also in the in-game menu."},
 						{"async", "Async shader compile", onOff(m_settings.asyncShaders), "No stutter while new shaders build.",
@@ -2214,6 +2221,8 @@ namespace ps5launcher
 					m_settings.upscaleFilter = (m_settings.upscaleFilter + step + 4) % 4;
 				else if (id == "highframerate")
 					m_settings.highFrameRate = !m_settings.highFrameRate;
+				else if (id == "framepacing")
+					m_settings.framePacing = (m_settings.framePacing - 1 + step + 3) % 3 + 1;
 				else if (id == "overlay")
 					m_settings.overlay = !m_settings.overlay;
 				else if (id == "async")

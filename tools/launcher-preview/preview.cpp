@@ -1038,7 +1038,7 @@ int main(int argc, char* argv[])
 	settings.n3ds.recent = {0x0004000000053F00, 0x0004000000030600, 0x000400000017C100};
 	ps5launcher::Status status;
 	status.coreReady = true;
-	status.diagnostics = {"PS5CEMU-HAR preview: Cemu at 4e3c824, Azahar at 4598458", "Jailbroken by the HEN: /data reachable, JIT memory available",
+	status.diagnostics = {"PS5CEMU-HAR preview: Cemu at 4e3c824, Azahar at 4aef900", "Jailbroken by the HEN: /data reachable, JIT memory available",
 		"Boot log: /data/ps5cemu/logs/boot.log", "Cemu's log: /data/ps5cemu/log.txt"};
 	// the start screen's counts, as the last session would have saved them
 	settings.gameCount = 4;
