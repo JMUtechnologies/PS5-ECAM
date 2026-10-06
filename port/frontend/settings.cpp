@@ -172,6 +172,26 @@ namespace ps5settings
 		ReadBool(json, "asyncShaders", settings.asyncShaders);
 		ReadBool(json, "gamePadSpeaker", settings.gamePadSpeaker);
 		ReadBool(json, "menuSounds", settings.menuSounds);
+		if (json.HasMember("ui") && json["ui"].IsObject())
+		{
+			const rapidjson::Value& ui = json["ui"];
+			Ui& out = settings.ui;
+			ReadBool(ui, "classic", out.classic);
+			ReadString(ui, "startOn", out.startOn);
+			if (out.startOn != "ask")
+				out.startOn = "last";
+			ReadString(ui, "lastSide", out.lastSide);
+			ReadBool(ui, "largerText", out.largerText);
+			ReadBool(ui, "highContrast", out.highContrast);
+			ReadBool(ui, "reduceMotion", out.reduceMotion);
+			ReadInt(ui, "holdMs", out.holdMs, 400, 1500);
+			ReadBool(ui, "gamePictures", out.gamePictures);
+			ReadBool(ui, "setupDone", out.setupDone);
+			ReadInt(ui, "libraryFilterWiiU", out.libraryFilter[0], 0, 3);
+			ReadInt(ui, "libraryFilter3ds", out.libraryFilter[1], 0, 2);
+			ReadInt(ui, "librarySortWiiU", out.librarySort[0], 0, 3);
+			ReadInt(ui, "librarySort3ds", out.librarySort[1], 0, 3);
+		}
 		return settings;
 	}
 
@@ -229,6 +249,35 @@ namespace ps5settings
 		writer.String(settings.side.c_str());
 		writer.Key("launchError");
 		writer.String(settings.launchError.c_str());
+		writer.Key("ui");
+		writer.StartObject();
+		writer.Key("classic");
+		writer.Bool(settings.ui.classic);
+		writer.Key("startOn");
+		writer.String(settings.ui.startOn.c_str());
+		writer.Key("lastSide");
+		writer.String(settings.ui.lastSide.c_str());
+		writer.Key("largerText");
+		writer.Bool(settings.ui.largerText);
+		writer.Key("highContrast");
+		writer.Bool(settings.ui.highContrast);
+		writer.Key("reduceMotion");
+		writer.Bool(settings.ui.reduceMotion);
+		writer.Key("holdMs");
+		writer.Int(settings.ui.holdMs);
+		writer.Key("gamePictures");
+		writer.Bool(settings.ui.gamePictures);
+		writer.Key("setupDone");
+		writer.Bool(settings.ui.setupDone);
+		writer.Key("libraryFilterWiiU");
+		writer.Int(settings.ui.libraryFilter[0]);
+		writer.Key("libraryFilter3ds");
+		writer.Int(settings.ui.libraryFilter[1]);
+		writer.Key("librarySortWiiU");
+		writer.Int(settings.ui.librarySort[0]);
+		writer.Key("librarySort3ds");
+		writer.Int(settings.ui.librarySort[1]);
+		writer.EndObject();
 		writer.EndObject();
 		const std::string temporary = std::string(ps5paths::kLauncherSettings) + ".tmp";
 		{

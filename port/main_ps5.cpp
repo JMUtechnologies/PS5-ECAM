@@ -86,6 +86,8 @@ namespace
 		ps5display::SetHighFrameRate(highFrameRate);
 		const std::string paramJson = ps5paths::AppDir() + (highFrameRate ? "/sce_sys/param.json" : "/sce_sys/no-high-frame-rate.json");
 		setenv("PS5_VIDEOOUT_PARAM_JSON", paramJson.c_str(), 1);
+		// the new launcher opened VideoOut through the driver at 59.94 Hz: the game's rate asked for again
+		ps5display::ConfigureOutput(highFrameRate);
 	}
 }
 

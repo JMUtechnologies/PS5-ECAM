@@ -87,6 +87,8 @@ add_library(CemuPS5 STATIC
 	azahar/controls.h
 	azahar/library.cpp
 	azahar/library.h
+	frontend/actions.cpp
+	frontend/actions.h
 	frontend/bubbles.cpp
 	frontend/bubbles.h
 	frontend/launcher.cpp
@@ -132,6 +134,7 @@ set_source_files_properties(
 	azahar/controls.cpp
 	azahar/library.cpp
 	azahar/unavailable.cpp
+	frontend/actions.cpp
 	frontend/bubbles.cpp
 	frontend/launcher.cpp
 	frontend/settings.cpp

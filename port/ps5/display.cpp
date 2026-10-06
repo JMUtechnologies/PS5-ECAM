@@ -9,6 +9,9 @@
 // for at least rate + 1 vblanks. Weak, so a driver from before it still links, and pacing is then
 // not offered.
 extern "C" int wsi_videoout_set_flip_rate(int rate) __attribute__((weak));
+// VideoOut's mode chosen again once no swapchain presents on it (patch 0006): 1 at 119.88 Hz, 0 at
+// 59.94 Hz, -1 when VideoOut is not open yet (it settles as it opens) or still presenting.
+extern "C" int wsi_videoout_set_high_frame_rate(bool high) __attribute__((weak));
 
 namespace
 {
@@ -27,6 +30,16 @@ namespace ps5display
 	bool HighFrameRate()
 	{
 		return s_highFrameRate;
+	}
+
+	void ConfigureOutput(bool highFrameRate)
+	{
+		if (!wsi_videoout_set_high_frame_rate)
+			return;
+		const int result = wsi_videoout_set_high_frame_rate(highFrameRate);
+		if (result >= 0)
+			ps5log::Line("[vulkan] VideoOut configured again for the next surface: {} Hz{}", result ? "119.88" : "59.94",
+				highFrameRate && !result ? " (120 Hz output is on, but the display or VideoOut refused it)" : "");
 	}
 
 	void SetOutputRefresh(uint32_t millihertz)

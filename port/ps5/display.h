@@ -17,6 +17,11 @@ namespace ps5display
 
 	// The 119.88 Hz mode for the next surface, where the display has it.
 	void SetHighFrameRate(bool highFrameRate);
+	// VideoOut configured again for the next surface, once the surface before it is gone: the driver
+	// opens VideoOut once a process and settles its mode then, so after the launcher's surface (the
+	// new launcher draws through the driver) a game's renderer asks for its own rate here first
+	// (PS5_Mesa patch 0006). Nothing before VideoOut is open, nor with a driver without it.
+	void ConfigureOutput(bool highFrameRate);
 	bool HighFrameRate();
 	// The refresh rate of the surface made last, in millihertz (59940 or 119880); 0 before one.
 	void SetOutputRefresh(uint32_t millihertz);

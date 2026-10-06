@@ -35,6 +35,22 @@ namespace ps5settings
 		std::vector<uint64_t> recent; // newest first, at most four
 	};
 
+	// The new launcher's own (docs/UI-REDESIGN.md, 9.8), under "ui"
+	struct Ui
+	{
+		bool classic = false;		 // the classic launcher instead (L1 held as the app starts sets it, R1 clears it)
+		std::string startOn = "last"; // "last": the side last used; "ask": the side chooser
+		std::string lastSide;		 // "wiiu" or "3ds": the side last used, restored at every start
+		bool largerText = false;
+		bool highContrast = false;
+		bool reduceMotion = false;
+		int holdMs = 800;			 // hold to confirm, 400 to 1500
+		bool gamePictures = true;	 // the focused game's picture behind the menus
+		bool setupDone = false;		 // the Setup check was shown once
+		int libraryFilter[2] = {0, 0}; // per side (Wii U, 3DS): All, Recently added, Favourites, Graphic packs on
+		int librarySort[2] = {1, 1};   // Recently played, A to Z (the default), Release year, How it runs
+	};
+
 	struct Launcher
 	{
 		std::string gamesFolder = "/data/ps5cemu/games";
@@ -76,6 +92,7 @@ namespace ps5settings
 		// Why the last game did not start, when that needed a fresh process to show (the launcher
 		// shows it once, then clears it).
 		std::string launchError;
+		Ui ui;
 	};
 
 	Launcher Load();
