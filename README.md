@@ -359,7 +359,7 @@ a ZIP to `dist/`. See [docs/BUILDING.md](docs/BUILDING.md), or run `make help` f
 - `patches/`: changes to Cemu and Azahar
 - `tools/`: build, packaging and artwork scripts
 - `docs/`: building, the HEN setup guide, the compatibility list, and the
-  [UI redesign proposal](docs/UI-REDESIGN.md)
+  [UI design](docs/UI-REDESIGN.md) the launcher and in-game menus are moving to
 
 ## Credits
 
