@@ -40,6 +40,8 @@ extern bool g_ps5AccurateSingleStores;
 extern bool g_ps5GpuTimestamps;
 // patches/cemu: Cemu's samplers without custom border colours (VulkanRenderer.cpp)
 extern bool g_ps5StandardBorderColors;
+// ps5/heap_wrap.c: the title heap's per-thread cache of small blocks (weak: a link check has no heap)
+extern "C" __attribute__((weak)) int g_ps5HeapThreadCache;
 // patches/cemu: Cemu's millisecond clock on the TSC (Common/unix/platform.cpp)
 void PS5Cemu_UseTscTickCount(bool enabled);
 // patches/cemu: an idle emulated core's spin before it sleeps, in PAUSEs (coreinit_Thread.cpp)
@@ -207,6 +209,13 @@ int main(int argc, char* argv[])
 	else
 		ps5log::Line("[vulkan] the driver's clock is clock_gettime (driverClockTsc in ps5cemu.json)");
 	// before Cemu recompiles any of a game's code
+	// before the game's threads start: they keep their own lists of small blocks
+	if (&g_ps5HeapThreadCache)
+	{
+		g_ps5HeapThreadCache = settings.heapThreadCache;
+		if (settings.heapThreadCache)
+			ps5log::Line("[heap] small blocks cached per thread (heapThreadCache in ps5cemu.json)");
+	}
 	g_ps5AccurateSingleStores = settings.accurateSingleStores;
 	if (settings.accurateSingleStores)
 		ps5log::Line("[emu] single-precision stores: Cemu's exact conversion (accurateSingleStores in ps5cemu.json)");

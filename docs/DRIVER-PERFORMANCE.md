@@ -223,7 +223,7 @@ check that the words copied equal the words planned held throughout). The consol
 against PS5_PayloadSDK's headers. None of them has run on a console. 0001-0004 were written against
 `0b2d6d1a` and apply to `7b59ef27` unchanged (the four commits between touch only the swapchain);
 0005 and 0006 were written against `7b59ef27`. RADV builds with all six there, and with 0006 alone.
-`make radv` builds 0006 and 0007 by default; `RADV_PATCHES` chooses others ([below](#building-with-the-patches)).
+`make radv` builds 0006 and 0007 by default (0005 needs 0001-0004 under it); `RADV_PATCHES` chooses others ([below](#building-with-the-patches)).
 0007 is not a performance change: it is the driver fix 3.0.0's archive was built with (Mesa
 `13aa9a88`), which the newer driver lacks, against GPU faults that stop the console.
 

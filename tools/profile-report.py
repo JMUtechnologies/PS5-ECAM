@@ -83,6 +83,8 @@ def main():
     parser.add_argument("logs")
     parser.add_argument("--top", type=int, default=25)
     parser.add_argument("--thread", help="only the threads whose name has this in it")
+    parser.add_argument("--callers", metavar="FUNCTION",
+                        help="instead: the functions FUNCTION's samples were called from, by samples")
     args = parser.parse_args()
 
     starts, names, anchor, code_end = functions(args.elf)
@@ -117,6 +119,23 @@ def main():
         if runtime not in cache:
             cache[runtime] = function(runtime)
         return cache[runtime]
+
+    if args.callers:
+        # the first eboot function on the stack, other than FUNCTION itself, of each of its samples
+        callers_of, total = collections.Counter(), 0
+        for i in range(count):
+            rip, thread, *callers = SAMPLE.unpack_from(data, i * SAMPLE.size)
+            if args.thread and args.thread not in thread_names.get(thread, ""):
+                continue
+            if named(rip) != args.callers:
+                continue
+            total += 1
+            caller = next((f for f in (named(c) for c in callers if c) if f and f != args.callers), "?")
+            callers_of[caller] += 1
+        print(f"{total} samples in {args.callers}, {100 * total / max(count, 1):.1f}% of the app's CPU time; called from:")
+        for function_name, n in callers_of.most_common(args.top):
+            print(f"  {100 * n / max(total, 1):5.1f}%  {function_name[:150]}")
+        return
 
     for i in range(count):
         rip, thread, *callers = SAMPLE.unpack_from(data, i * SAMPLE.size)

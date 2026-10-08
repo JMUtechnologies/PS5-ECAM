@@ -81,6 +81,16 @@ if [[ -f $radv_archive && -f $radv_sdk/target/lib/libps5platform.a ]]; then
     done
     radv_link_inputs=("${flattened[@]}")
     stubs=("$work/libSceAgc.so" "$work/libSceAgcDriver.so")
+    # libc's allocator onto the title heap with a per-thread cache (port/ps5/heap_wrap.c): an object
+    # ahead of the group defines every wrap the platform library's heap_wrap.o would, so that one
+    # stays out
+    heap_wrap=$PS5CEMU_ROOT/port/ps5/heap_wrap.c
+    if [[ ! -f $work/heap_wrap.o || $heap_wrap -nt $work/heap_wrap.o || ${BASH_SOURCE[0]} -nt $work/heap_wrap.o ]]; then
+        clang-18 -target x86_64-sie-ps5 -isysroot "$sdk" -isystem "$sdk/target/include" -std=c11 -O2 -fPIC -march=znver2 \
+            -fno-stack-protector -fno-plt -femulated-tls -ffunction-sections -fdata-sections \
+            -fvisibility-nodllstorageclass=default -c "$heap_wrap" -o "$work/heap_wrap.o"
+    fi
+    objects=("$work/heap_wrap.o")
     check=0
     echo "==> [link] RADV: $radv_archive"
 elif [[ ${PS5CEMU_LINK_CHECK:-0} == 1 ]]; then
@@ -92,6 +102,7 @@ elif [[ ${PS5CEMU_LINK_CHECK:-0} == 1 ]]; then
         "$sdk/target/lib/libunwind.a" "$PS5CEMU_SYSROOT/clang-rt/lib/linux/libclang_rt.builtins-x86_64.a")
     radv_link_flags=()
     stubs=()
+    objects=()
     check=1
     echo "==> [link] no RADV: checking the link with a stand-in driver (not an app)"
 else
@@ -130,7 +141,7 @@ done
     "${radv_link_flags[@]}" "${absent[@]}" \
     --version-script "$vulkan/tooling/native/app-symbols.map" --exclude-libs=ALL --gc-sections \
     --error-limit=0 -Map="$output.map" -e _start -o "$output" \
-    "$work/app_crt.o" "$work/app_cpp_runtime.o" \
+    "$work/app_crt.o" "$work/app_cpp_runtime.o" "${objects[@]}" \
     --start-group "${radv_link_inputs[@]}" "${inputs[@]}" --end-group \
     "${stubs[@]}" --as-needed "${modules[@]}" \
     "$sdk/target/lib/libc.a" # what no module exports to a title and the platform layer does not bind (as ProsperoEden links)

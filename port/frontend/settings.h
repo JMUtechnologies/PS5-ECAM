@@ -111,6 +111,11 @@ namespace ps5settings
 		bool driverClockTsc = false;
 		// only in ps5cemu.json: the sampling profiler (ps5/profiler.h), into logs/profile.bin
 		bool profile = false;
+		// only in ps5cemu.json: a per-thread cache of small blocks in front of the title heap
+		// (ps5/heap_wrap.c), so a thread's malloc and free of up to 1 KiB take no lock and no system
+		// call: Cemu's recompiler spent about a third of its time in them. An experiment, off until a
+		// console has measured it
+		bool heapThreadCache = false;
 		// only in ps5cemu.json: RADV_DEBUG for the Vulkan driver (e.g. "nongg,nohiz"), to narrow down
 		// a GPU hang by turning hardware features off; empty by default
 		std::string radvDebug;
