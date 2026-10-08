@@ -382,6 +382,10 @@ namespace ps5shell
 				"the internal resolution: at high resolutions it is the costliest setting. If a game stutters, try None first.");
 			toggle("customtextures", "Custom textures", n3ds.customTextures, "Texture packs from azahar/load/textures.",
 				"Texture packs in /data/ps5cemu/azahar/load/textures/<title ID>, as the desktop Azahar loads them.");
+			toggle("async-3ds", "Async shader compile", n3ds.asyncShaders, "No stutter, but models can be missing until their shaders build.",
+				"Off, as desktop Azahar has it: the first time a game needs a new shader it waits for it, a short stutter, and "
+				"everything is drawn. On: no stutter, but what needs a shader still building is not drawn until it is ready, so "
+				"models can show up dark or missing for a moment (Pokemon). Shaders are kept, so each builds once.");
 		}
 		else if (page == "3ds-screens")
 		{
@@ -569,6 +573,8 @@ namespace ps5shell
 				m_settings.asyncShaders = on;
 			else if (id == "customtextures")
 				n3ds.customTextures = on;
+			else if (id == "async-3ds")
+				n3ds.asyncShaders = on;
 			else if (id == "motion")
 				n3ds.motion = on;
 			else if (id == "usb")

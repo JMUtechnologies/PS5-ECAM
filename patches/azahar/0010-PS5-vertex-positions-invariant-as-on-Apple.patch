@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Thu, 8 Oct 2026 15:03:31 +0000
+Subject: [PATCH] PS5: vertex positions invariant, as on Apple
+
+Pokemon X and Y and Omega Ruby and Alpha Sapphire show moving black
+stipples on their outlined models on the console (PS5CEMU-HAR #23), at
+any resolution: where two passes compute the same position slightly
+differently, parts of a face fail the depth test. Azahar already declares
+gl_Position invariant on Apple GPUs for this, whose compilers optimize
+more aggressively than desktop drivers; the console's does too, and the
+qualifier removed the stipples there in both games. So the PS5 build
+declares it as the Apple one does, always. The generated source changes
+with it, so the disk shader cache builds those shaders again rather than
+reusing the old kind.
+---
+ src/video_core/shader/generator/glsl_shader_gen.cpp | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/video_core/shader/generator/glsl_shader_gen.cpp b/src/video_core/shader/generator/glsl_shader_gen.cpp
+index 6de5f96b9..8c605530a 100644
+--- a/src/video_core/shader/generator/glsl_shader_gen.cpp
++++ b/src/video_core/shader/generator/glsl_shader_gen.cpp
+@@ -75,7 +75,9 @@ static std::string GetVertexInterfaceDeclaration(bool is_output, bool use_clip_p
+         out += "out gl_PerVertex {\n";
+         // Apple Silicon GPU drivers optimize more aggressively, which can create
+         // too much variance and cause visual artifacting in games like Pokemon.
+-#ifdef __APPLE__
++        // PS5: the console's shader compiler does too (moving black stipples on Pokemon X's and
++        // Alpha Sapphire's outlined models, gone with this on a console: PS5CEMU-HAR #23).
++#if defined(__APPLE__) || defined(__PROSPERO__)
+         out += "    invariant vec4 gl_Position;\n";
+ #else
+         out += "    vec4 gl_Position;\n";

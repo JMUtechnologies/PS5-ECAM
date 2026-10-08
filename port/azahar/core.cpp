@@ -397,7 +397,8 @@ namespace ps5azahar
 			values.physical_device = 0;
 			values.use_hw_shader = true;
 			values.use_disk_shader_cache = true;
-			// on, a draw waits for no shader: no stutter (Settings > Video)
+			// off by default, as desktop Azahar: on, a draw waits for no shader, and one whose shader is
+			// not built yet is skipped (Settings > Graphics)
 			values.async_shader_compilation = settings.asyncShaders;
 			// the statistics' and frame limiter's clock, read for every SVC (Azahar patch 0016)
 			Core::g_ps5TscClock = settings.tscClock;
@@ -417,11 +418,6 @@ namespace ps5azahar
 			if (!values.use_cpu_jit.GetValue())
 				ps5log::Line("[azahar] no executable direct memory: the 3DS CPU and shaders run on Azahar's interpreters");
 			values.cpu_clock_percentage = std::clamp(settings.cpuClock, 25, 400);
-			// every vertex position computed invariantly, as Azahar does on Apple GPUs (patch 0010):
-			// for Pokemon X's moving black stipples (#23)
-			Pica::Shader::Generator::GLSL::g_ps5InvariantPosition = settings.invariantPosition;
-			if (settings.invariantPosition)
-				ps5log::Line("[azahar] vertex positions invariant (n3ds.invariantPosition)");
 			values.is_new_3ds = true;
 			// automatic (-1) takes the game's own region; a game made for another one may refuse to
 			// start or show other languages (#17)

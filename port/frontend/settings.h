@@ -26,16 +26,15 @@ namespace ps5settings
 		int region = -1;			  // the emulated 3DS's region: -1 automatic (the game's), else Azahar's region_value
 		int language = -1;			  // the emulated 3DS's language: -1 as Azahar sets it, else its SystemLanguage (0 to 11)
 		bool customTextures = false;  // texture packs from azahar/load/textures/<title ID> (Azahar's custom_textures)
-		bool asyncShaders = true;	  // Azahar's async_shader_compilation (Settings > Video), as the Wii U side's
+		// Azahar's async_shader_compilation (Settings > Graphics): off, as desktop Azahar has it. On, a
+		// draw whose pipeline is still building is skipped (a Pokemon game's models drawn as their dark
+		// outline alone until it is ready); off, it waits for it once (a stutter)
+		bool asyncShaders = false;
 		int border = 0;				  // artwork around the screens: 0 none, else ps5ingame3ds::kBorderNames' theme
 		int cpuClock = 100;			  // the emulated CPU's speed, percent of the 3DS's (Azahar's cpu_clock_percentage)
 		// only in ps5cemu.json: Azahar's statistics and frame limiter on the TSC (Azahar patch 0016),
 		// which time every SVC; false: the steady clock, a call into the kernel each read
 		bool tscClock = true;
-		// only in ps5cemu.json: every 3DS vertex position computed invariantly (Azahar patch 0010), as
-		// Azahar does on Apple GPUs, for Pokemon X's moving black stipples (#23). Off, as on a PC,
-		// until a console has shown it fixes them, and what it costs
-		bool invariantPosition = false;
 		std::string articAddress;	  // the last Artic Base server's IPv4 address, a 3DS on the network
 		int gameCount = -1;			  // the library's games when last looked for (the start screen's); -1: never
 		std::map<std::string, std::string> buttons; // 3DS button: DualSense input, where not the default
