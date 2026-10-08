@@ -33,9 +33,11 @@ THEMES = {
         # the tiles: the recent games' and the library's (box art 5:7)
         "shelf-w": "160px", "shelf-h": "160px", "cell-w": "212px", "cell-h": "290px",
     }),
+    # the 3DS's panel is lifted from its shade as much as the Wii U's is from its own: at the shade's
+    # colour (26, 18, 6) a page's panel did not show at all
     "3ds": ("-3ds", {
         "ground": "rgba(16, 10, 2, 150)", "text": "#fff7e8", "muted": "#d8c6a3", "dim": "#a8977a",
-        "accent": "#f4b63f", "accent-strong": "#d9961b", "on-accent": "#1a1204", "panel": "rgba(26, 18, 6, 225)",
+        "accent": "#f4b63f", "accent-strong": "#d9961b", "on-accent": "#1a1204", "panel": "rgba(36, 27, 10, 225)",
         "card": "rgba(255, 255, 255, 16)", "card-edge": "rgba(255, 255, 255, 30)", "focus-fill": "rgba(244, 182, 63, 40)",
         "glow": "rgba(244, 182, 63, 60)", "shade": "rgba(14, 9, 2, 200)", "line": "rgba(255, 255, 255, 30)",
         "tab-text": "#e6d8bc", "hero-glow": "rgba(244, 182, 63, 26)", "placeholder": "#3a2a0c",
@@ -50,7 +52,7 @@ WIIU = {
     "grid": (7, 2, 212, 290),
     "settings": [
         ("video", "Video", "video"), ("audio", "Audio", "audio"), ("controls", "Controls", "controls"),
-        ("usb", "USB devices", "usb"), ("files", "Game files", "folder"), ("installs", "Updates and DLC", "install"),
+        ("usb", "USB devices", "usb"), ("files", "Game files", "folder"), ("installs", "Installs", "install"),
         ("online", "Online", "online"),
         ("diagnostics", "Diagnostics", "diagnostics"), ("about", "About", "about"),
     ],
@@ -62,7 +64,7 @@ N3DS = {
     "settings": [
         ("video", "Video", "video"), ("audio", "Audio", "audio"), ("controls", "Controls", "controls"),
         ("borders", "Borders", "borders"), ("system", "System", "system"), ("files", "Game files", "folder"),
-        ("installs", "Install CIA files", "install"), ("online", "Online", "online"),
+        ("installs", "Installs", "install"), ("online", "Online", "online"),
         ("diagnostics", "Diagnostics", "diagnostics"), ("about", "About", "about"),
     ],
 }

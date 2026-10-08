@@ -1,0 +1,96 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Mon, 5 Oct 2026 05:27:21 +0000
+Subject: [PATCH] PS5: the shader JIT's code in blocks of shared regions
+
+Each compiled shader took a region of executable memory of its own from
+the platform layer, which keeps 128 for the whole process (dynarmic's
+code caches among them) and makes each with calls into the kernel: a
+game that runs its vertex shaders on the CPU would stop being able to
+compile one after about 124. A shader now takes a block of
+MAX_SHADER_SIZE from a 16 MiB region of 64, and a freed block (the
+shader cache goes with the system at every loaded save state) is reused.
+---
+ .../shader/shader_jit_x64_compiler.cpp        | 52 ++++++++++++++++---
+ 1 file changed, 46 insertions(+), 6 deletions(-)
+
+diff --git a/src/video_core/shader/shader_jit_x64_compiler.cpp b/src/video_core/shader/shader_jit_x64_compiler.cpp
+index 5b3902e81..6d013be97 100644
+--- a/src/video_core/shader/shader_jit_x64_compiler.cpp
++++ b/src/video_core/shader/shader_jit_x64_compiler.cpp
+@@ -20,6 +20,8 @@
+ #include "video_core/pica_types.h"
+ #include "video_core/shader/shader_jit_x64_compiler.h"
+ #ifdef __PROSPERO__
++#include <mutex>
++#include <vector>
+ #include <ps5platform/exec.h>
+ #endif
+ 
+@@ -1107,22 +1109,60 @@ void JitShader::Compile(const std::array<u32, MAX_PROGRAM_CODE_LENGTH>* program_
+ namespace {
+ // The PS5: a shader's code goes in the platform layer's read-write-execute direct memory
+ // (ps5platform/exec.h), near this code, as dynarmic's code cache does. Xbyak's own allocator makes
+-// heap memory executable with mprotect, which the console refuses.
++// heap memory executable with mprotect, which the console refuses. The layer keeps 128 regions for
++// the whole process (dynarmic's code caches among them), and each is an allocation from the
++// kernel: a shader takes a block of MAX_SHADER_SIZE from a region of many, and a freed block (the
++// shader cache goes with the system, at every loaded save state) is taken again.
+ class ExecutableAllocator : public Xbyak::Allocator {
+ public:
+     uint8_t* alloc(size_t size) override {
+-        void* p = ps5_exec_allocate(size, reinterpret_cast<uintptr_t>(this));
+-        if (p == nullptr) {
+-            throw Xbyak::Error(Xbyak::ERR_CANT_ALLOC);
++        if (size > BLOCK_BYTES) {
++            // not a shader's: a region of its own
++            void* p = ps5_exec_allocate(size, reinterpret_cast<uintptr_t>(this));
++            if (p == nullptr) {
++                throw Xbyak::Error(Xbyak::ERR_CANT_ALLOC);
++            }
++            return static_cast<uint8_t*>(p);
++        }
++        std::scoped_lock lock{mutex};
++        if (free_blocks.empty()) {
++            auto* region = static_cast<uint8_t*>(
++                ps5_exec_allocate(BLOCK_BYTES * BLOCKS_PER_REGION, reinterpret_cast<uintptr_t>(this)));
++            if (region == nullptr) {
++                throw Xbyak::Error(Xbyak::ERR_CANT_ALLOC);
++            }
++            regions.push_back(region);
++            for (std::size_t i = BLOCKS_PER_REGION; i-- > 0;) {
++                free_blocks.push_back(region + i * BLOCK_BYTES);
++            }
+         }
+-        return static_cast<uint8_t*>(p);
++        uint8_t* const block = free_blocks.back();
++        free_blocks.pop_back();
++        return block;
+     }
+     void free(uint8_t* p) override {
+-        ps5_exec_release(p);
++        if (p == nullptr) {
++            return;
++        }
++        std::scoped_lock lock{mutex};
++        for (uint8_t* const region : regions) {
++            if (p >= region && p < region + BLOCK_BYTES * BLOCKS_PER_REGION) {
++                free_blocks.push_back(p);
++                return;
++            }
++        }
++        ps5_exec_release(p); // a region of its own
+     }
+     bool useProtect() const override {
+         return false;
+     }
++
++private:
++    static constexpr std::size_t BLOCK_BYTES = MAX_SHADER_SIZE; // 256 KiB: whole 16 KiB pages
++    static constexpr std::size_t BLOCKS_PER_REGION = 64;         // 16 MiB a region
++    std::mutex mutex;
++    std::vector<uint8_t*> regions;
++    std::vector<uint8_t*> free_blocks;
+ };
+ ExecutableAllocator s_executable_allocator;
+ } // namespace

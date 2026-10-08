@@ -51,7 +51,7 @@ for title in "BotW Update v208" "BotW DLC"; do
     echo '<menu/>' >"$games/Installs/$title/meta/meta.xml"
 done
 mkdir -p "$games/Installs/Screenshots"
-python3 -B tools/launcher-preview/make-3ds-samples.py "$games/3ds"
+python3 -B tools/launcher-preview/make-3ds-samples.py "$games/3ds" "$out/data"
 
 version=$(sed -n 's/^VERSION := *\([^ ]*\).*/\1/p' Makefile)
 if [[ ! -x $out/launcher-preview ]] || [[ -n $(find port/frontend port/azahar port/app/emulator.h port/app/paths.h port/app/boxart.h port/app/gameinfo.* port/app/compatibility.* port/app/pack_updates.h tools/launcher-preview -newer "$out/launcher-preview" -name '*.[ch]*' -print -quit) ]]; then

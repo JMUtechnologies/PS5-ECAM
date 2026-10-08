@@ -572,6 +572,8 @@ namespace ps5log
 	void Open(const char*) {}
 	void Write(std::string_view line) { std::fprintf(stderr, "%.*s\n", (int)line.size(), line.data()); }
 	const char* Path() { return ""; }
+	void Flush(int) {}
+	void FlushAll() {}
 }
 
 namespace ps5notify
@@ -889,6 +891,26 @@ namespace ps5emu
 			games.push_back({id, name, std::string("/data/ps5cemu/games/") + name + ".wua", version, update, dlc, format});
 			games.back().gameId = box;
 		};
+		if (const char* library = std::getenv("PREVIEW_LIBRARY"); library && std::string(library) == "console")
+		{
+			// a console's library, for the trailer (tools: trailer's art.py puts their covers and icons in)
+			add(0x00050000101C9400, "The Legend of Zelda: Breath of the Wild", 208, true, 1, "WUA", "ALZE01");
+			add(0x0005000010137C00, "Batman: Arkham Origins", 16, true, 1, "WUA", "AZEEWR");
+			add(0x0005000010145C00, "Super Mario 3D World", 0, false, 0, "WUA", "ARDE01");
+			add(0x0005000010143500, "The Legend of Zelda: The Wind Waker HD", 0, false, 0, "WUA", "BCZE01");
+			add(0x000500001019E500, "The Legend of Zelda: Twilight Princess HD", 0, false, 0, "WUA", "AZAE01");
+			add(0x0005000010101D00, "New Super Mario Bros. U", 0, false, 1, "WUA", "ARPE01");
+			add(0x000500001010EC00, "Mario Kart 8", 64, true, 2, "WUA", "AMKE01");
+			add(0x0005000010176900, "Splatoon", 288, true, 0, "WUA", "AGME01");
+			add(0x000500001014B800, "Xenoblade Chronicles X", 33, true, 1, "WUX", "AX5E01");
+			add(0x0005000010172600, "Pikmin 3", 0, false, 0, "WUA", "AC3E01");
+			add(0x0005000010138300, "Donkey Kong Country: Tropical Freeze", 17, true, 0, "WUX", "ARKE01");
+			add(0x0005000010110E00, "Bayonetta 2", 0, false, 0, "WUA", "AQUE01");
+			add(0x0005000010180700, "Captain Toad: Treasure Tracker", 0, false, 1, "WUA", "AKBE01");
+			add(0x0005000010144F00, "Super Smash Bros. for Wii U", 288, true, 1, "WUA", "AXFE01");
+			std::sort(games.begin(), games.end(), [](const Game& a, const Game& b) { return a.name < b.name; });
+			return games;
+		}
 		add(0x0005000010110E00, "Bayonetta 2", 0, false, 0, "WUA", "AQUE01");
 		add(0x0005000010138300, "Donkey Kong Country: Tropical Freeze", 17, true, 0, "WUX", "ARKE01");
 		add(0x0005000010180700, "Captain Toad: Treasure Tracker", 0, false, 1, "FOLDER", "AKBE01");
@@ -1036,6 +1058,13 @@ int main(int argc, char* argv[])
 	settings.n3ds.gamesFolder = argv[5];
 	settings.n3ds.lastGame = 0x0004000000053F00;
 	settings.n3ds.recent = {0x0004000000053F00, 0x0004000000030600, 0x000400000017C100};
+	if (const char* library = std::getenv("PREVIEW_LIBRARY"); library && std::string(library) == "console")
+	{
+		settings.lastGame = 0x00050000101C9400;
+		settings.recent = {0x00050000101C9400, 0x0005000010137C00, 0x0005000010145C00, 0x0005000010143500, 0x0005000010101D00};
+		settings.n3ds.lastGame = 0x0004000000125500;
+		settings.n3ds.recent = {0x0004000000125500};
+	}
 	ps5launcher::Status status;
 	status.coreReady = true;
 	status.diagnostics = {"PS5CEMU-HAR preview: Cemu at 4e3c824, Azahar at 4598458", "Jailbroken by the HEN: /data reachable, JIT memory available",
@@ -1043,6 +1072,11 @@ int main(int argc, char* argv[])
 	// the start screen's counts, as the last session would have saved them
 	settings.gameCount = 4;
 	settings.n3ds.gameCount = 3;
+	if (const char* library = std::getenv("PREVIEW_LIBRARY"); library && std::string(library) == "console")
+	{
+		settings.gameCount = 14;
+		settings.n3ds.gameCount = 9;
+	}
 	// as main_ps5.cpp: only the chosen side starts (the preview's Cemu is always ready)
 	ps5launcher::Run(settings, status, [&](ps5launcher::System system) {
 		if (system == ps5launcher::System::N3ds)

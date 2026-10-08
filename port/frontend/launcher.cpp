@@ -313,6 +313,11 @@ namespace ps5launcher
 
 		// The drives plugged in (USB, and the PS5's extended storage), for the folder browser to list
 		// first: otherwise reached only by climbing to / and into /mnt
+		std::vector<std::string> ListEntries(const std::string& path, bool folders, bool& ok);
+
+		// The USB drives and extended storage plugged in. The console keeps a folder in /mnt for each
+		// of them whether or not one is there: a drive is there when its folder is a file system of its
+		// own (another device than /mnt's), or has something in it.
 		std::vector<std::string> ConnectedDrives()
 		{
 			std::vector<std::string> drives;
@@ -320,9 +325,16 @@ namespace ps5launcher
 				drives.push_back(fmt::format("/mnt/usb{}", i));
 			drives.push_back("/mnt/ext0");
 			drives.push_back("/mnt/ext1");
-			std::erase_if(drives, [](const std::string& drive) {
+			struct stat mnt{};
+			const bool mntKnown = stat("/mnt", &mnt) == 0;
+			std::erase_if(drives, [&](const std::string& drive) {
 				struct stat info{};
-				return stat(drive.c_str(), &info) != 0 || !S_ISDIR(info.st_mode);
+				if (stat(drive.c_str(), &info) != 0 || !S_ISDIR(info.st_mode))
+					return true;
+				if (mntKnown && info.st_dev != mnt.st_dev)
+					return false;
+				bool ok = false;
+				return ListEntries(drive, true, ok).empty() && ListEntries(drive, false, ok).empty();
 			});
 			return drives;
 		}
@@ -344,13 +356,14 @@ namespace ps5launcher
 		// USB drive that takes one. What it did, as the row shows it.
 		std::string CopyLogsToUsb()
 		{
+			ps5log::FlushAll(); // the boot log as it stands, all of it
 			char stamp[32] = "logs";
 			const std::time_t now = std::time(nullptr);
 			if (const std::tm* local = std::localtime(&now))
 				std::strftime(stamp, sizeof(stamp), "%Y-%m-%d-%H%M%S", local);
 			const std::string root = ps5paths::kRoot;
 			const std::string logs = ps5paths::kLogs;
-			std::vector<std::string> files = {logs + "/boot.log", root + "/log.txt", root + "/azahar/log/azahar_log.txt",
+			std::vector<std::string> files = {logs + "/boot.log", logs + "/driver.log", root + "/log.txt", root + "/azahar/log/azahar_log.txt",
 				ps5paths::kLauncherSettings, root + "/settings.xml"};
 			// the sessions before, each with Cemu's log of it (port/ps5/log.cpp)
 			for (const char* age : {"prev", "2", "3", "4"})
@@ -1639,9 +1652,17 @@ namespace ps5launcher
 					if (game.dlcCount)
 						chips.push_back({"DLC", ""});
 				}
-				else if (!game.publisher.empty() && !facts.known)
-					chips.push_back({game.publisher, ""});
+				else
+				{
+					// an update or DLC installed (Settings > Installs), as the Wii U side shows them
+					if (game.hasUpdate)
+						chips.push_back({fmt::format("Update v{}", game.version), ""});
+					if (game.dlcCount)
+						chips.push_back({"DLC", ""});
+				}
 				chips.push_back({game.format, ""});
+				if (Is3ds() && !game.publisher.empty() && !facts.known)
+					chips.push_back({game.publisher, ""});
 				for (int i = 0; i < 4; i++)
 				{
 					const std::string id = fmt::format("chip-{}", i);
@@ -1982,6 +2003,11 @@ namespace ps5launcher
 							"texture at the internal resolution: at high resolutions it is the costliest setting. If a game stutters, try None first."},
 						{"customtextures", "Custom textures", onOff(n3ds.customTextures), "Texture packs from azahar/load/textures.",
 							"Texture packs in /data/ps5cemu/azahar/load/textures/<title ID>, as the desktop Azahar loads them."},
+						{"performance3ds", "Performance overlay", onOff(n3ds.performance), "Frame rate and speed in a corner.",
+							"The game's frame rate and speed in the top left corner. Also in the in-game menu."},
+						{"async3ds", "Async shader compile", onOff(n3ds.asyncShaders), "No stutter while new shaders build.",
+							"On, a new shader is built while the game carries on, so it does not stutter, but some things may be missing for a "
+							"moment. Off, the game waits for each one: stutter, but nothing drawn wrong. Applies to the next game."},
 					};
 				else if (category == "video")
 					rows = {
@@ -2070,17 +2096,18 @@ namespace ps5launcher
 				else if (category == "files")
 					rows = {{"gamesfolder", "Game folder", ShortPath(GamesFolder(), 40), "Where your games are. Cross picks another.",
 						Is3ds() ? "Your 3DS games: .3ds or .cci, .cxi, .3dsx and Azahar's compressed dumps, decrypted, here or in the folders in "
-								  "it. CIA files are installed (Install CIA files). Encrypted dumps need the 3DS's aes_keys.txt in "
-								  "/data/ps5cemu/azahar/sysdata." :
+								  "it. CIA files are installed (Installs). Encrypted dumps do not play, with keys or without: "
+								  "Azahar plays only decrypted games, so decrypt them on your 3DS first (GodMode9)." :
 								  "Your Wii U games: .wua, .wud, .wux, or folders with code, content and meta. Encrypted .wud and .wux need their "
 								  "keys in /data/ps5cemu/keys.txt."}};
 				else if (category == "installs")
-					rows = {{"install", Is3ds() ? "Install a CIA file" : "Install from a folder", "", Is3ds() ? "A game, an update or DLC." :
-						"An update, DLC or game (code, content and meta).",
+					rows = {{"install", "Install games, updates and DLC", "", Is3ds() ? "From CIA files." : "From folders with code, content and meta.",
 						Is3ds() ? "Installs a CIA into the 3DS's storage, as Azahar's Install CIA does: an update or DLC goes with its game, and "
-								  "a game joins the library. Circle cancels while it runs." :
-								  "Installs into the Wii U's storage (mlc01), as Cemu's Install game title, update or DLC does. Updates and DLC "
-								  "in the game files folder work as they are, too."}};
+								  "a game joins the library. Cross installs the file chosen; Circle cancels while it runs and puts back what "
+								  "was installed before." :
+								  "Installs into the Wii U's storage (mlc01), as Cemu's Install game title, update or DLC does: Cross installs "
+								  "the folder chosen; Circle cancels while it runs and puts back what was installed before. Updates and DLC in "
+								  "the game files folder work as they are, too."}};
 				else if (category == "online")
 				{
 					rows = {{"boxart", "Box art from GameTDB", onOff(m_settings.boxArt), "Covers for the library, downloaded once.",
@@ -2210,6 +2237,10 @@ namespace ps5launcher
 					n3ds.textureFilter = (n3ds.textureFilter + step + 6) % 6;
 				else if (id == "customtextures")
 					n3ds.customTextures = !n3ds.customTextures;
+				else if (id == "performance3ds")
+					n3ds.performance = !n3ds.performance;
+				else if (id == "async3ds")
+					n3ds.asyncShaders = !n3ds.asyncShaders;
 				else if (id == "upscaling")
 					m_settings.upscaleFilter = (m_settings.upscaleFilter + step + 4) % 4;
 				else if (id == "highframerate")
@@ -2958,59 +2989,79 @@ namespace ps5launcher
 				InstallCia, // Azahar's: a CIA file
 			};
 
+			// What the browser lists: the parent folder, the folder's subfolders, its CIA files when
+			// those are what is being installed, then the drives plugged in
+			struct BrowseEntry
+			{
+				enum class Kind
+				{
+					Up,
+					Folder,
+					File,
+					Drive,
+				} kind;
+				std::string name; // a folder's or a file's name; a drive's path
+			};
+
+			// What an entry would install, told the same way on both sides; kind empty when it is not
+			// something to install
+			struct Installable
+			{
+				std::string kind; // Game, Update, DLC...
+				uint64_t titleId = 0;
+				std::string name;
+				uint32_t version = 0;
+				int installedVersion = -1; // what the side's storage has now; -1 for nothing
+				std::string note;		   // why it is not something to install
+				std::string label;		   // the browser's word for it then ("Encrypted"), where it has one
+			};
+
+			bool Installing() const { return m_filesMode != FilesMode::GamesFolder; }
+
 			void OpenFiles(FilesMode mode)
 			{
 				m_filesMode = mode;
+				m_inspected.clear();
 				const std::string& games = GamesFolder();
-				std::string start = mode != FilesMode::GamesFolder && !m_installFolder.empty() ? m_installFolder :
-					games.empty() ? ps5paths::kGames : games;
+				std::string start = Installing() && !m_installFolder.empty() ? m_installFolder : games.empty() ? ps5paths::kGames : games;
 				while (!BrowseTo(start) && start != "/")
 					start = ParentPath(start);
 				m_filesMessage.clear();
 				ShowScreen(kFiles);
-				const bool install = mode != FilesMode::GamesFolder;
-				const bool cia = mode == FilesMode::InstallCia;
-				SetText(m_document, "files-title", cia ? "Install CIA files" : install ? "Install updates and DLC" : "Game files");
-				SetText(m_document, "files-copy", cia ? "Choose a CIA file: a game, an update or DLC" :
-					install ? "Choose a folder with an update, DLC or game (code, content and meta)" :
+				SetText(m_document, "files-title", Installing() ? "Install games, updates and DLC" : "Game files");
+				SetText(m_document, "files-copy", mode == FilesMode::InstallCia ? "Choose a CIA file: a game, an update or DLC" :
+					mode == FilesMode::Install ? "Choose a game, an update or DLC: a folder with code, content and meta" :
 					Is3ds() ? "Choose the folder that holds your 3DS games" : "Choose the folder that holds your Wii U games");
-				SetText(m_document, "files-kicker", install ? "TO INSTALL" : "THIS FOLDER");
+				SetText(m_document, "files-kicker", Installing() ? "TO INSTALL" : "THIS FOLDER");
 				UpdateFiles();
 			}
 
-			// A folder's subfolders, and its CIA files when they are what is being chosen
 			bool BrowseTo(const std::string& folder)
 			{
 				bool ok = false;
 				auto folders = ListEntries(folder, true, ok);
 				if (!ok)
 					return false;
+				using Kind = BrowseEntry::Kind;
 				m_browseFolder = folder;
 				m_browseEntries.clear();
 				if (folder != "/")
-					m_browseEntries.push_back("..");
-				// the drives plugged in, as shortcuts, except the one already open (and in /mnt, which
-				// lists them itself)
+					m_browseEntries.push_back({Kind::Up, ".."});
+				for (std::string& name : folders)
+					m_browseEntries.push_back({Kind::Folder, std::move(name)});
+				if (m_filesMode == FilesMode::InstallCia)
+					for (std::string& file : ListEntries(folder, false, ok))
+						if (Lower(file).ends_with(".cia"))
+							m_browseEntries.push_back({Kind::File, std::move(file)});
+				// the drives plugged in, after what is here, as shortcuts: not the one open (nor in
+				// /mnt, which lists them itself)
 				if (folder != "/mnt")
 					for (const std::string& drive : ConnectedDrives())
 						if (folder != drive && !folder.starts_with(drive + "/"))
-							m_browseEntries.push_back(drive);
-				m_browseEntries.insert(m_browseEntries.end(), folders.begin(), folders.end());
-				m_browseFiles = 0;
-				if (m_filesMode == FilesMode::InstallCia)
-					for (const auto& file : ListEntries(folder, false, ok))
-						if (Lower(file).ends_with(".cia"))
-						{
-							m_browseEntries.push_back(file);
-							m_browseFiles++;
-						}
-				m_browseSelected = 0;
+							m_browseEntries.push_back({Kind::Drive, drive});
+				// on the first thing here rather than on the way back up
+				m_browseSelected = m_browseEntries.size() > 1 && m_browseEntries[0].kind == Kind::Up && m_browseEntries[1].kind != Kind::Drive ? 1 : 0;
 				return true;
-			}
-
-			bool IsFileEntry(int index) const
-			{
-				return index >= (int)m_browseEntries.size() - m_browseFiles && index < (int)m_browseEntries.size();
 			}
 
 			// A CIA's kind, from its title ID's high half
@@ -3026,19 +3077,98 @@ namespace ps5launcher
 				}
 			}
 
-			const ps5emu::InstallCandidate& Inspect(const std::string& folder)
+			// Whether the side would look at the entry as something to install: a CIA file for Azahar,
+			// a folder for Cemu
+			bool Candidate(const BrowseEntry& entry) const
 			{
-				auto it = m_inspected.find(folder);
-				if (it == m_inspected.end())
-					it = m_inspected.emplace(folder, ps5emu::InspectInstall(folder)).first;
-				return it->second;
+				return m_filesMode == FilesMode::InstallCia ? entry.kind == BrowseEntry::Kind::File :
+					   m_filesMode == FilesMode::Install	? entry.kind == BrowseEntry::Kind::Folder :
+															  false;
+			}
+
+			const Installable& Inspect(const std::string& path)
+			{
+				auto it = m_inspected.find(path);
+				if (it != m_inspected.end())
+					return it->second;
+				Installable item;
+				if (m_filesMode == FilesMode::InstallCia)
+				{
+					const auto title = ps5azahar::Inspect(path);
+					if (title.titleId)
+					{
+						item.titleId = title.titleId;
+						item.name = title.name;
+						item.version = title.version;
+						if (title.encrypted)
+						{
+							// Azahar refuses it before it writes anything, keys or not: said before Cross is pressed
+							item.note = "This CIA is encrypted, or the game in it is. Azahar installs only fully decrypted CIA "
+										"files, with aes_keys.txt or without: decrypt it on your 3DS first (GodMode9).";
+							item.label = "Encrypted";
+						}
+						else
+						{
+							item.kind = CiaKind(title.titleId);
+							item.installedVersion = ps5azahar::InstalledVersion(title.titleId);
+						}
+					}
+					else
+						item.note = "This CIA file cannot be read: it may be damaged.";
+				}
+				else
+				{
+					const auto candidate = ps5emu::InspectInstall(path);
+					if (candidate.kind != ps5emu::InstallCandidate::Kind::None)
+					{
+						item.kind = KindName(candidate.kind);
+						item.titleId = candidate.titleId;
+						item.name = candidate.name;
+						item.version = candidate.version;
+						item.installedVersion = candidate.installedVersion;
+					}
+					item.note = candidate.note;
+				}
+				return m_inspected.emplace(path, std::move(item)).first->second;
+			}
+
+			// The entry's path when it is something to install
+			std::optional<std::string> InstallPath(int index)
+			{
+				if (index < 0 || index >= (int)m_browseEntries.size() || !Candidate(m_browseEntries[index]))
+					return std::nullopt;
+				std::string path = JoinPath(m_browseFolder, m_browseEntries[index].name);
+				if (Inspect(path).kind.empty())
+					return std::nullopt;
+				return path;
+			}
+
+			// Cemu: the folder shown, when it is itself one to install (it was opened)
+			bool FolderShownInstalls()
+			{
+				return m_filesMode == FilesMode::Install && !Inspect(m_browseFolder).kind.empty();
 			}
 
 			void CloseFiles()
 			{
-				OpenSettings(CategoryIndex(m_filesMode == FilesMode::GamesFolder ? "files" : "installs"));
+				OpenSettings(CategoryIndex(Installing() ? "installs" : "files"));
 				m_onRail = false;
 				UpdateSettings();
+			}
+
+			void StartInstallOf(const std::string& path)
+			{
+				std::string error;
+				m_installFolder = m_browseFolder;
+				if (m_filesMode == FilesMode::Install && !m_status.coreReady)
+					m_filesMessage = "Cemu did not start, so nothing can be installed.";
+				else if (m_filesMode == FilesMode::InstallCia ? ps5azahar::StartInstall(path, error) : ps5emu::StartInstall(path, error))
+				{
+					m_installing = true;
+					m_filesMessage.clear();
+				}
+				else
+					m_filesMessage = error;
 			}
 
 			void FilesKey(Key key)
@@ -3048,18 +3178,13 @@ namespace ps5launcher
 				{
 					if (key == Key::Circle)
 					{
-						// Cemu's install puts back what it replaced; Azahar's writes in place, so the title's
-						// contents go (as when an install fails part-way), its saves staying
+						// both sides put back what was installed before (Cemu's install itself; Azahar's
+						// through StartInstall, as its install removes the title's contents)
 						if (m_filesMode == FilesMode::InstallCia)
-						{
 							ps5azahar::CancelInstall();
-							m_filesMessage = "Cancelling: what it copied is removed...";
-						}
 						else
-						{
 							ps5emu::CancelInstall();
-							m_filesMessage = "Cancelling: what was installed before is put back...";
-						}
+						m_filesMessage = "Cancelling: what was installed before is put back...";
 						UpdateFiles();
 					}
 					return;
@@ -3069,22 +3194,30 @@ namespace ps5launcher
 					CloseFiles();
 					return;
 				}
-				if (key == Key::Cross && count && !IsFileEntry(m_browseSelected))
+				using Kind = BrowseEntry::Kind;
+				if (key == Key::Cross && count)
 				{
-					const std::string entry = m_browseEntries[m_browseSelected];
-					const std::string from = m_browseFolder;
-					const bool up = entry == "..";
-					if (!BrowseTo(up ? ParentPath(m_browseFolder) : JoinPath(m_browseFolder, entry)))
-						m_filesMessage = "This folder cannot be opened.";
-					else
+					if (const auto path = InstallPath(m_browseSelected))
+						StartInstallOf(*path);
+					else if (m_browseEntries[m_browseSelected].kind != Kind::File)
 					{
-						m_filesMessage.clear();
-						if (up) // keep the folder just left in view
+						const BrowseEntry entry = m_browseEntries[m_browseSelected];
+						const std::string from = m_browseFolder;
+						const std::string to = entry.kind == Kind::Up ? ParentPath(m_browseFolder) :
+							entry.kind == Kind::Drive					  ? entry.name :
+																			JoinPath(m_browseFolder, entry.name);
+						if (!BrowseTo(to))
+							m_filesMessage = "This folder cannot be opened.";
+						else
 						{
-							const std::string left = from.substr(from.find_last_of('/') + 1);
-							for (int i = 0; i < (int)m_browseEntries.size(); i++)
-								if (m_browseEntries[i] == left)
-									m_browseSelected = i;
+							m_filesMessage.clear();
+							if (entry.kind == Kind::Up) // keep the folder just left in view
+							{
+								const std::string left = from.substr(from.find_last_of('/') + 1);
+								for (int i = 0; i < (int)m_browseEntries.size(); i++)
+									if (m_browseEntries[i].kind == Kind::Folder && m_browseEntries[i].name == left)
+										m_browseSelected = i;
+							}
 						}
 					}
 				}
@@ -3107,34 +3240,8 @@ namespace ps5launcher
 					}
 					m_filesMessage = saved ? "Saved. PS5CEMU-HAR is looking for games there." : "The folder could not be saved. Please try again.";
 				}
-				else if (key == Key::Triangle && m_filesMode == FilesMode::InstallCia)
-				{
-					std::string error;
-					m_installFolder = m_browseFolder;
-					if (!IsFileEntry(m_browseSelected))
-						m_filesMessage = "Choose a CIA file first.";
-					else if (ps5azahar::StartInstall(JoinPath(m_browseFolder, m_browseEntries[m_browseSelected]), error))
-					{
-						m_installing = true;
-						m_filesMessage.clear();
-					}
-					else
-						m_filesMessage = error;
-				}
-				else if (key == Key::Triangle && m_filesMode == FilesMode::Install)
-				{
-					std::string error;
-					m_installFolder = m_browseFolder;
-					if (!m_status.coreReady)
-						m_filesMessage = "Cemu did not start, so nothing can be installed.";
-					else if (ps5emu::StartInstall(m_browseFolder, error))
-					{
-						m_installing = true;
-						m_filesMessage.clear();
-					}
-					else
-						m_filesMessage = error;
-				}
+				else if (key == Key::Triangle && FolderShownInstalls())
+					StartInstallOf(m_browseFolder);
 				else if (!Browse(key, m_browseSelected, count, kFileRows))
 					return;
 				UpdateFiles();
@@ -3170,9 +3277,6 @@ namespace ps5launcher
 						ps5emu::Rescan();
 					m_scanning = true;
 				}
-				else if (status.state == State::Cancelled && m_filesMode == FilesMode::InstallCia)
-					m_filesMessage = "Cancelled. What it copied was removed, with any earlier copy of the same title: install it again to "
-						"play it. Its saves are kept.";
 				else if (status.state == State::Cancelled)
 					m_filesMessage = "Cancelled. What was installed before is as it was.";
 				else
@@ -3182,51 +3286,82 @@ namespace ps5launcher
 
 			void UpdateFiles()
 			{
-				const bool install = m_filesMode == FilesMode::Install;
-				const bool cia = m_filesMode == FilesMode::InstallCia;
+				using Kind = BrowseEntry::Kind;
 				const int count = (int)m_browseEntries.size();
 				const int scroll = Scroll(m_browseSelected, kFileRows);
 				for (int row = 0; row < kFileRows; row++)
 				{
 					const int index = scroll + row;
-					const bool up = index < count && m_browseEntries[index] == "..";
+					const BrowseEntry* entry = index < count ? &m_browseEntries[index] : nullptr;
 					const std::string id = fmt::format("files-row-{}", row);
 					SetClass(m_document, id, "focused", index == m_browseSelected);
-					SetClass(m_document, id, "offscreen", index >= count);
-					SetClass(m_document, id, "folder", index < count && !IsFileEntry(index));
-					const bool drive = index < count && m_browseEntries[index].starts_with('/');
-					SetText(m_document, fmt::format("files-name-{}", row), index >= count ? "" : up ? "Parent folder" : drive ? DriveName(m_browseEntries[index]) : m_browseEntries[index]);
-					std::string meta = IsFileEntry(index) ? "CIA" : drive ? "Drive" : "";
-					if (install && index < count && !up && !drive)
+					SetClass(m_document, id, "offscreen", !entry);
+					SetClass(m_document, id, "folder", entry && entry->kind != Kind::File);
+					std::string name, meta;
+					if (entry)
 					{
-						const auto& candidate = Inspect(JoinPath(m_browseFolder, m_browseEntries[index]));
-						if (candidate.kind != ps5emu::InstallCandidate::Kind::None)
-							meta = KindName(candidate.kind);
+						name = entry->kind == Kind::Up ? "Parent folder" : entry->kind == Kind::Drive ? DriveName(entry->name) : entry->name;
+						meta = entry->kind == Kind::Drive ? "Drive" : entry->kind == Kind::File ? "CIA" : "";
+						if (Candidate(*entry))
+						{
+							const Installable& item = Inspect(JoinPath(m_browseFolder, entry->name));
+							if (!item.kind.empty())
+								meta = item.kind;
+							else if (!item.label.empty())
+								meta = item.label;
+						}
 					}
+					SetText(m_document, fmt::format("files-name-{}", row), name);
 					SetText(m_document, fmt::format("files-meta-{}", row), meta);
 				}
 				SetClass(m_document, "files-empty", "visible", count == 0);
 				SetText(m_document, "files-path", Upper(ShortPath(m_browseFolder, 52)));
 				SetText(m_document, "files-position", fmt::format("{} of {}", count ? m_browseSelected + 1 : 0, count));
 
-				// TRIANGLE uses the folder shown: show what the side would find in it
 				std::pair<std::string, std::string> lines[3];
 				bool ready[3]{};
 				std::string message = m_filesMessage;
-				if (cia)
+				const auto chosen = Installing() ? InstallPath(m_browseSelected) : std::nullopt;
+				if (Installing())
 				{
-					const bool file = IsFileEntry(m_browseSelected);
-					const auto title = file ? ps5azahar::Inspect(JoinPath(m_browseFolder, m_browseEntries[m_browseSelected])) : ps5azahar::Title{};
-					SetText(m_document, "files-current", !file ? ShortPath(m_browseFolder, 40) : title.name.empty() ? m_browseEntries[m_browseSelected] : title.name);
-					lines[0] = {"TYPE", !file ? "A folder" : title.titleId ? CiaKind(title.titleId) : "CIA"};
-					lines[1] = {"TITLE ID", file && title.titleId ? Hex(title.titleId) : "-"};
-					lines[2] = {"VERSION", file && title.titleId ? fmt::format("v{}", title.version) : "-"};
-					ready[0] = ready[1] = ready[2] = file;
-					if (message.empty())
-						message = file ? "Triangle installs it into the 3DS's storage: an update or DLC goes with its game, and a game joins the library." :
-										 "Choose a CIA file to install: a game, an update or DLC.";
+					// what Cross would install, or (Cemu) Triangle: the folder shown, when it was opened
+					const bool shown = !chosen && FolderShownInstalls();
+					const std::string path = chosen ? *chosen : shown ? m_browseFolder : "";
+					const Installable* item = path.empty() ? nullptr : &Inspect(path);
+					// a file that cannot be installed, whose title is known (an encrypted CIA): what it is, all
+					// the same
+					const BrowseEntry* selected = count ? &m_browseEntries[m_browseSelected] : nullptr;
+					const std::string selectedPath = selected && selected->kind == Kind::File ? JoinPath(m_browseFolder, selected->name) : "";
+					const Installable* known = item ? item : !selectedPath.empty() && Inspect(selectedPath).titleId ? &Inspect(selectedPath) : nullptr;
+					// the title's name, else the file's or folder's own (its path is above the list)
+					const std::string& named = item ? path : known ? selectedPath : m_browseFolder;
+					const std::string leaf = named == "/" ? "/" : named.substr(named.find_last_of('/') + 1);
+					SetText(m_document, "files-current", known && !known->name.empty() ? known->name : leaf);
+					lines[0] = {"TYPE", item ? item->kind : known ? fmt::format("{}, {}", CiaKind(known->titleId), Lower(known->label)) : "Nothing chosen"};
+					lines[1] = {"TITLE ID", known ? Hex(known->titleId) : "-"};
+					lines[2] = {"VERSION", !known ? "-" : !item ? fmt::format("v{}", known->version) :
+						item->installedVersion < 0 ? fmt::format("v{}, not installed yet", item->version) :
+						fmt::format("v{}, v{} installed now", item->version, item->installedVersion)};
+					ready[0] = ready[1] = item != nullptr;
+					ready[2] = item && item->installedVersion < (int)item->version;
+					const bool cia = m_filesMode == FilesMode::InstallCia;
+					const std::string where = cia ? "the 3DS's storage: an update or DLC goes with its game, and a game joins the library." :
+						"the Wii U's storage (mlc01). Updates and DLC in the game files folder work as they are, too.";
+					if (message.empty() && item)
+						message = (shown ? "Triangle installs this folder into " : "Cross installs it into ") + where;
+					else if (message.empty())
+					{
+						// why not: a CIA file that cannot be read, or a Cemu folder opened that is not one to
+						// install as it is (a title.tmd one)
+						const bool file = count && m_browseEntries[m_browseSelected].kind == Kind::File;
+						const std::string note = cia ? (file ? Inspect(JoinPath(m_browseFolder, m_browseEntries[m_browseSelected].name)).note : "") :
+													   Inspect(m_browseFolder).note;
+						message = (cia && !note.empty()) || note.find("title.tmd") != std::string::npos ? note :
+							cia ? "Choose a CIA file to install: a game, an update or DLC." :
+								  "Choose a folder to install: a game, an update or DLC, with code, content and meta in it.";
+					}
 				}
-				else if (Is3ds() && !install)
+				else if (Is3ds())
 				{
 					SetText(m_document, "files-current", ShortPath(m_browseFolder, 40));
 					const int games = Count3dsGames(m_browseFolder);
@@ -3237,7 +3372,7 @@ namespace ps5launcher
 					if (message.empty())
 						message = "Games can be .3ds or .cci, .cxi, .cia or .3dsx, decrypted, here or in the folders in it. Triangle uses the folder shown.";
 				}
-				else if (!install)
+				else
 				{
 					SetText(m_document, "files-current", ShortPath(m_browseFolder, 40));
 					const int games = CountGames(m_browseFolder);
@@ -3248,22 +3383,6 @@ namespace ps5launcher
 					ready[0] = games > 0, ready[1] = keys, ready[2] = m_settings.gamesFolder == m_browseFolder;
 					if (message.empty())
 						message = "Games can be .wua, .wud, .wux, or folders with code, content and meta. Triangle uses the folder shown.";
-				}
-				else
-				{
-					const auto& candidate = Inspect(m_browseFolder);
-					const bool valid = candidate.kind != ps5emu::InstallCandidate::Kind::None;
-					SetText(m_document, "files-current", valid && !candidate.name.empty() ? candidate.name : ShortPath(m_browseFolder, 40));
-					lines[0] = {"TYPE", valid ? KindName(candidate.kind) : "Nothing to install"};
-					lines[1] = {"TITLE ID", valid ? Hex(candidate.titleId) : "-"};
-					lines[2] = {"VERSION", !valid ? "-" : candidate.installedVersion < 0 ?
-						fmt::format("v{}, not installed yet", candidate.version) :
-						fmt::format("v{}, v{} installed now", candidate.version, candidate.installedVersion)};
-					ready[0] = ready[1] = valid;
-					ready[2] = valid && candidate.installedVersion < (int)candidate.version;
-					if (message.empty())
-						message = valid ? "Triangle installs it into the Wii U's storage (mlc01). Updates and DLC in the game files folder work as they are, too." :
-										  candidate.note;
 				}
 				for (int i = 0; i < 3; i++)
 				{
@@ -3276,8 +3395,20 @@ namespace ps5launcher
 				SetLines(m_document, "files-message", message);
 				if (m_installing)
 					SetHints(m_document, {{"circle", "Cancel"}});
+				else if (!Installing())
+					SetHints(m_document, {{"cross", "Open"}, {"triangle", "Use this folder"}, {"circle", "Back"}});
 				else
-					SetHints(m_document, {{"cross", "Open"}, {"triangle", install || cia ? "Install" : "Use this folder"}, {"circle", "Back"}});
+				{
+					// Cross installs, or opens a folder or drive; a file it cannot install (an encrypted CIA) it leaves
+					const bool file = count && m_browseEntries[m_browseSelected].kind == Kind::File;
+					std::vector<Hint> hints;
+					if (chosen || !file)
+						hints.push_back({"cross", chosen ? "Install" : "Open"});
+					if (!chosen && FolderShownInstalls())
+						hints.push_back({"triangle", "Install this folder"});
+					hints.push_back({"circle", "Back"});
+					SetHints(m_document, hints);
+				}
 			}
 
 			Rml::ElementDocument* m_document;
@@ -3337,12 +3468,11 @@ namespace ps5launcher
 
 			FilesMode m_filesMode = FilesMode::GamesFolder;
 			std::string m_browseFolder;
-			std::vector<std::string> m_browseEntries; // ".." first unless at "/", then subfolders, then files
-			int m_browseFiles = 0;					  // how many of them, at the end, are files
+			std::vector<BrowseEntry> m_browseEntries;
 			int m_browseSelected = 0;
 			std::string m_filesMessage;
 			std::string m_installFolder;
-			std::map<std::string, ps5emu::InstallCandidate> m_inspected;
+			std::map<std::string, Installable> m_inspected; // what the entries would install, by path
 			bool m_installing = false;
 			std::string m_installProgress;
 			std::string m_diagnosticsDone[2]; // what Diagnostics' two actions did, on their rows

@@ -73,6 +73,7 @@ namespace ps5ingame3ds
 		{
 			bool ready = false, failed = false;
 			VkDevice device = VK_NULL_HANDLE;
+			uint64_t generation = 0; // Azahar's renderer's (Target::generation)
 			VkRenderPass renderPass = VK_NULL_HANDLE;
 			uint32_t width = 0, height = 0; // the screen's pass's picture
 			ImGui_ImplVulkan_InitInfo info{};
@@ -250,6 +251,7 @@ namespace ps5ingame3ds
 			ImGui_ImplVulkan_Init(&info, target.renderPass);
 			g.info = info;
 			g.device = target.device;
+			g.generation = target.generation;
 			g.renderPass = target.renderPass;
 			g.width = target.width;
 			g.height = target.height;
@@ -871,7 +873,10 @@ namespace ps5ingame3ds
 		if (g.failed)
 			return;
 		const float scale = std::max(1.0f, target.height / 1080.0f);
-		if (g.ready && target.device != g.device)
+		// Azahar's renderer made again (a loaded save state): its device is new even when it has the
+		// old one's handle, as it often does (the menu then drew with the old device's objects, and
+		// the driver crashed)
+		if (g.ready && (target.generation != g.generation || target.device != g.device))
 		{
 			if (target.insideRenderPass)
 				return; // the pass before it starts over

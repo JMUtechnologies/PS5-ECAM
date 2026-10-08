@@ -8,7 +8,9 @@ ELF is the unstripped build/cemu/ps5cemu.elf of the build that crashed (`make re
 release's as dist/ps5cemu-vVERSION.elf); LOG is a boot log (logs/boot.log, or a report's attached
 one) or Cemu's log.txt, "-" for standard input. Every crash report in them is printed with its
 addresses looked up: the instruction that crashed (RIP), and the code addresses found on the crashed
-thread's stack, the return addresses of the calls it was in, innermost first.
+thread's stack, the return addresses of the calls it was in, innermost first. So is every hang dump
+(the "[hang]" lines of a game that stopped drawing): where Cemu's GPU thread and emulated CPU cores
+were.
 
 The eboot is not loaded at the ELF's addresses: the report gives its crash handler's address, so the
 load offset is that minus the handler's address in the ELF (Cemu's handlerDumpingSignal, or the
@@ -26,7 +28,8 @@ WORDS = {7: "rdi", 8: "rsi", 9: "rdx", 10: "rcx", 11: "r8", 12: "r9", 13: "rax",
          16: "r10", 17: "r11", 18: "r12", 19: "r13", 20: "r14", 21: "r15", 23: "fault address", 25: "error",
          26: "rip", 29: "rsp"}
 HANDLERS = {"cemu": "handlerDumpingSignal(int, __siginfo*, void*)",
-            "port": "(anonymous namespace)::Handler(int, __siginfo*, void*)"}
+            "port": "(anonymous namespace)::Handler(int, __siginfo*, void*)",
+            "hang": "PS5Cemu_HangSignal"}
 
 
 def tool(name):
@@ -63,6 +66,24 @@ def reports(lines):
                 yield current
             current = [text]
         elif current is not None and ("[crash] " in line or text.startswith("PS5:")):
+            current.append(text)
+    if current:
+        yield current
+
+
+def hangs(lines):
+    """Each hang dump (port/ps5/threads.h): its first line, which has the handler's address, and its
+    threads' "NAME: rip ..., code on the stack: ..." lines."""
+    current = None
+    for raw in lines:
+        if "[hang] " not in raw:
+            continue
+        text = raw.split("[hang] ", 1)[1].strip()
+        if "handler at" in text:
+            if current:
+                yield current
+            current = [text]
+        elif current is not None:
             current.append(text)
     if current:
         yield current
@@ -128,6 +149,35 @@ def show(elf, handlers, report, number):
                 print("    " + line)
 
 
+def show_hang(elf, handlers, dump, number):
+    print(f"=== hang {number}: {dump[0]}")
+    handler = re.search(r"handler at (0x[0-9a-f]+)", dump[0])
+    if not handler or "hang" not in handlers:
+        print("  no handler address (or its symbol in the ELF): cannot place the eboot")
+        return
+    offset = int(handler[1], 16) - handlers["hang"]
+    threads = []
+    for line in dump[1:]:
+        match = re.match(r"(.+?): rip (0x[0-9a-f]+), code on the stack:(.*)", line)
+        if match:
+            threads.append((match[1], int(match[2], 16), [int(w, 16) for w in re.findall(r"0x[0-9a-f]+", match[3])]))
+        else:
+            print(f"  {line}")
+    wanted = [address for _, rip, stack in threads for address in [rip] + stack]
+    looked_up = symbolize(elf, sorted({a - offset for a in wanted if a >= offset}))
+
+    def describe(runtime):
+        found = looked_up.get(runtime - offset)
+        if not found:
+            return f"{runtime:#x}: not in the eboot's code (recompiled code, or a system library)"
+        return f"{runtime:#x}: {found[0][0]}  [{found[0][1]}]"
+
+    for name, rip, stack in threads:
+        print(f"  {name}: at {describe(rip)}")
+        for runtime in stack:
+            print(f"      {describe(runtime)}")
+
+
 def main():
     if len(sys.argv) < 3:
         sys.exit(__doc__)
@@ -141,11 +191,13 @@ def main():
             with open(log, errors="replace") as file:
                 lines += file.read().splitlines()
     found = list(reports(lines))
-    if not found:
-        print("no crash report in " + ", ".join(logs))
-        return
     for number, report in enumerate(found, 1):
         show(elf, handlers, report, number)
+    dumps = list(hangs(lines))
+    for number, dump in enumerate(dumps, 1):
+        show_hang(elf, handlers, dump, number)
+    if not found and not dumps:
+        print("no crash report or hang dump in " + ", ".join(logs))
 
 
 if __name__ == "__main__":

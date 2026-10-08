@@ -92,7 +92,7 @@ Both launchers have:
   without a Nunchuk, with motion controls, rumble, stick deadzones and button mapping.
 - The TV or the GamePad screen as the main picture, with the other one in a corner if you want; the
   touchpad works as the GamePad's touch screen.
-- Updates and DLC: installed from **Settings > Install updates and DLC**, or picked up automatically
+- Updates and DLC: installed from **Settings > Installs**, or picked up automatically
   from your game folder or a WUA.
 - Amiibo, from the in-game menu (see [Amiibo, save states, cheats and mods](#amiibo-save-states-cheats-and-mods)).
 - Text entry with Cemu's on-screen keyboard.
@@ -111,7 +111,7 @@ Both launchers have:
   **Settings > Controls**. The touchpad is the bottom screen.
 - Save states, cheats and amiibo in the in-game menu, plus custom textures and mods.
 - System region and language in **Settings > System**.
-- Install CIA files (games, updates and DLC) from **Settings > Install CIA files**.
+- Install CIA files (games, updates and DLC) from **Settings > Installs**.
 - **Artic Base:** play a game straight from your own 3DS over the network. Start Artic Base on the
   3DS, choose **Artic Base** on the 3DS home screen (or press Triangle) and enter the address the
   3DS shows. The same page runs the Artic Setup Tool, which copies your 3DS's system files.
@@ -141,9 +141,11 @@ Put games in `/data/ps5cemu/azahar/games`, or pick another folder on the 3DS sid
 
 - `.3ds`, `.cci`, `.cxi` and `.app` dumps, `.3dsx` and `.elf` homebrew, and Azahar's compressed
   formats (`.z3ds`, `.zcci`, `.zcxi`, `.z3dsx`) play directly.
-- `.cia` files are installed first from **Settings > Install CIA files**; updates and DLC too. Azahar
+- `.cia` files are installed first from **Settings > Installs**; updates and DLC too. Azahar
   only installs fully decrypted CIAs, the game inside included.
-- Encrypted dumps need `aes_keys.txt` from your own console in `/data/ps5cemu/azahar/sysdata`.
+- Encrypted dumps don't play, even with `aes_keys.txt`: Azahar plays only decrypted games, so decrypt
+  them on your 3DS first (GodMode9). `aes_keys.txt` from your own console, in
+  `/data/ps5cemu/azahar/sysdata`, is still what lets games write to an amiibo.
 
 No games, keys, firmware or other copyrighted console data are included. Dump them from hardware and
 software you own, and don't download or share them.
@@ -293,7 +295,7 @@ every 10 seconds with the frame rate, and `[crash]` lines if an emulator crashes
   the DualSense.
 - **GamePad speaker:** the sounds games play on the GamePad, from the DualSense's speaker
   (Settings > Audio).
-- **Community graphic packs update** from GitHub (Settings > Online).
+- **Community graphic packs update** from GitHub (Settings > Online and updates).
 - **CIA installs can be canceled** with Circle.
 - **A PS5CEMU-HAR border** for 3DS games: the Wii U side's bubbles meeting the 3DS side's waves.
 - **New home screen art and icon** on the PS5, in the banner's design.

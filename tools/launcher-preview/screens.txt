@@ -80,6 +80,10 @@ shot mapping-done
 press circle
 press circle                  # Controls
 press circle                  # the categories
+press down                    # USB devices
+press right
+shot usb
+press circle
 press down                    # Game files
 press right
 shot files-category
@@ -87,17 +91,14 @@ press cross                   # the folder browser
 shot files
 press circle
 press circle
-press down                    # Updates and DLC
+press down                    # Installs
 press right
-press cross
+press cross                   # the browser, on the first folder of the games' folder
 shot install
-press down down               # Installs
+press down                    # Installs
 press cross
-shot install-folder
-press down                    # BotW DLC
-press cross
-shot install-dlc
-press triangle                # install it
+shot install-folder           # on BotW DLC: Cross installs it
+press cross                   # install it
 wait 30
 shot install-progress
 wait 60
@@ -134,7 +135,7 @@ shot 3ds-details
 press circle
 press r1                      # the library
 shot 3ds-library
-press down down
+press right right right right # Kirby: Planet Robobot, a CIA in the games folder
 shot 3ds-library-cia
 press up up up                # the tabs
 press right                   # Settings
@@ -158,14 +159,14 @@ press down                    # System
 press right
 shot 3ds-system
 press circle
-press down down               # Install CIA files
+press down down               # Installs
 press right
-press cross
-press down down down          # to the 3DS games' folder
-press cross
+press cross                   # the browser, on the 3DS games' folder's first folder
 shot 3ds-install
-press down down down down down
+press down                    # a CIA file: Cross installs it
 shot 3ds-install-cia
+press down down               # an encrypted CIA: said before Cross is pressed
+shot 3ds-install-encrypted
 press circle
 press circle
 press circle                  # home

@@ -1,0 +1,360 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Sun, 4 Oct 2026 21:23:38 +0000
+Subject: [PATCH] PS5: emulated USB devices' transfers on threads kept for them
+
+nsyshid made a new thread for every asynchronous transfer and every
+synchronous one (std::async). A game polls its Skylanders Portal of
+Power or Disney Infinity Base many times a second, and making and ending
+a thread for each poll ran the console's thread and memory budget down
+until the app crashed. Each device now has two threads of its own, one
+for its reads and one for its other transfers, which run them in the
+order the game asks for them, as a real device answers them. Reads have
+their own because an Infinity Base or Toypad read waits for the answer
+to a write.
+
+The portals' queues are also taken from under their locks: the Infinity
+Base and the Toypad took their answers off their queues with no lock
+while the command and figure threads added to them, and the Skylanders
+portal took its figures' states under its query lock while a figure put
+on or taken off changed them under its portal lock.
+---
+ src/Cafe/OS/libs/nsyshid/Dimensions.cpp |  27 +++---
+ src/Cafe/OS/libs/nsyshid/Infinity.cpp   |  31 +++---
+ src/Cafe/OS/libs/nsyshid/Skylander.cpp  |  18 ++--
+ src/Cafe/OS/libs/nsyshid/nsyshid.cpp    | 119 ++++++++++++++++++------
+ 4 files changed, 138 insertions(+), 57 deletions(-)
+
+diff --git a/src/Cafe/OS/libs/nsyshid/Dimensions.cpp b/src/Cafe/OS/libs/nsyshid/Dimensions.cpp
+index b23560f..8105991 100644
+--- a/src/Cafe/OS/libs/nsyshid/Dimensions.cpp
++++ b/src/Cafe/OS/libs/nsyshid/Dimensions.cpp
+@@ -515,20 +515,24 @@ namespace nsyshid
+ 		bool responded = false;
+ 		do
+ 		{
+-			if (!m_queries.empty())
+-			{
+-				response = m_queries.front();
+-				m_queries.pop();
+-				responded = true;
+-			}
+-			else if (!m_figureAddedRemovedResponses.empty() && m_isAwake)
+ 			{
++				// PS5: both queues under the Toypad's lock, as the figures' and the commands' threads
++				// add to them while this one takes from them
+ 				std::lock_guard lock(m_dimensionsMutex);
+-				response = m_figureAddedRemovedResponses.front();
+-				m_figureAddedRemovedResponses.pop();
+-				responded = true;
++				if (!m_queries.empty())
++				{
++					response = m_queries.front();
++					m_queries.pop();
++					responded = true;
++				}
++				else if (!m_figureAddedRemovedResponses.empty() && m_isAwake)
++				{
++					response = m_figureAddedRemovedResponses.front();
++					m_figureAddedRemovedResponses.pop();
++					responded = true;
++				}
+ 			}
+-			else
++			if (!responded)
+ 			{
+ 				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+ 			}
+@@ -614,6 +618,7 @@ namespace nsyshid
+ 		}
+ 		}
+ 
++		std::lock_guard lock(m_dimensionsMutex);
+ 		m_queries.push(q_result);
+ 	}
+ 
+diff --git a/src/Cafe/OS/libs/nsyshid/Infinity.cpp b/src/Cafe/OS/libs/nsyshid/Infinity.cpp
+index 94ef817..6756a52 100644
+--- a/src/Cafe/OS/libs/nsyshid/Infinity.cpp
++++ b/src/Cafe/OS/libs/nsyshid/Infinity.cpp
+@@ -475,24 +475,28 @@ namespace nsyshid
+ 
+ 		do
+ 		{
+-			if (!m_figureAddedRemovedResponses.empty())
+ 			{
+-				memcpy(response.data(), m_figureAddedRemovedResponses.front().data(),
+-					   0x20);
+-				m_figureAddedRemovedResponses.pop();
+-				responded = true;
++				// PS5: the queues under the base's lock, as the figures' and the commands' threads
++				// add to them while this one takes from them
++				std::lock_guard lock(m_infinityMutex);
++				if (!m_figureAddedRemovedResponses.empty())
++				{
++					memcpy(response.data(), m_figureAddedRemovedResponses.front().data(),
++						   0x20);
++					m_figureAddedRemovedResponses.pop();
++					responded = true;
++				}
++				else if (!m_queries.empty())
++				{
++					memcpy(response.data(), m_queries.front().data(), 0x20);
++					m_queries.pop();
++					responded = true;
++				}
+ 			}
+-			else if (!m_queries.empty())
+-			{
+-				memcpy(response.data(), m_queries.front().data(), 0x20);
+-				m_queries.pop();
+-				responded = true;
+-			}
+-			else
++			if (!responded)
+ 			{
+ 				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+ 			}
+-			/* code */
+ 		}
+ 		while (!responded);
+ 
+@@ -572,6 +576,7 @@ namespace nsyshid
+ 			break;
+ 		}
+ 
++		std::lock_guard lock(m_infinityMutex);
+ 		m_queries.push(q_result);
+ 	}
+ 
+diff --git a/src/Cafe/OS/libs/nsyshid/Skylander.cpp b/src/Cafe/OS/libs/nsyshid/Skylander.cpp
+index 7833796..fc39b43 100644
+--- a/src/Cafe/OS/libs/nsyshid/Skylander.cpp
++++ b/src/Cafe/OS/libs/nsyshid/Skylander.cpp
+@@ -962,17 +962,21 @@ namespace nsyshid
+ 
+ 	std::array<uint8, 64> SkylanderUSB::GetStatus()
+ 	{
+-		std::lock_guard lock(m_queryMutex);
+ 		std::array<uint8, 64> interruptResponse = {};
+-
+-		if (!m_queries.empty())
+ 		{
+-			interruptResponse = m_queries.front();
+-			m_queries.pop();
+-			// This needs to happen after ~22 milliseconds
++			std::lock_guard lock(m_queryMutex);
++			if (!m_queries.empty())
++			{
++				interruptResponse = m_queries.front();
++				m_queries.pop();
++				// This needs to happen after ~22 milliseconds
++				return interruptResponse;
++			}
+ 		}
+-		else
+ 		{
++			// PS5: the figures' states under the portal's lock, as a figure put on or taken off (on
++			// another thread) adds to them while this takes from them
++			std::lock_guard lock(m_skyMutex);
+ 			uint32 status = 0;
+ 			uint8 active = 0x00;
+ 			if (m_activated)
+diff --git a/src/Cafe/OS/libs/nsyshid/nsyshid.cpp b/src/Cafe/OS/libs/nsyshid/nsyshid.cpp
+index a26aef6..d2c0929 100644
+--- a/src/Cafe/OS/libs/nsyshid/nsyshid.cpp
++++ b/src/Cafe/OS/libs/nsyshid/nsyshid.cpp
+@@ -1,11 +1,17 @@
+ #include "Cafe/OS/common/OSCommon.h"
+ #include "Cafe/HW/Espresso/PPCCallback.h"
+ #include <bitset>
++#include <condition_variable>
++#include <deque>
++#include <functional>
++#include <future>
++#include <map>
+ #include <mutex>
+ #include "nsyshid.h"
+ #include "Cafe/OS/libs/coreinit/coreinit_Thread.h"
+ #include "Backend.h"
+ #include "Whitelist.h"
++#include "util/helpers/helpers.h"
+ 
+ namespace nsyshid
+ {
+@@ -344,6 +350,76 @@ namespace nsyshid
+ 		coreinitAsyncCallback_add(callbackFuncMPTR, 5, hidHandle, errorCode, buffer, length, callbackParamMPTR);
+ 	}
+ 
++	// PS5: a device's transfers run on two threads kept for it, one for its reads and one for the
++	// rest, in the order the game asks for them, instead of on a new thread each. A game polls its
++	// Skylanders portal or Infinity Base many times a second, and making and ending a thread for every
++	// poll ran the console's thread and memory budget down until the app crashed. Reads have their own
++	// thread because an Infinity Base or Toypad read waits for the answer to a write.
++	class TransferQueue
++	{
++	  public:
++		void Push(std::function<void()> job)
++		{
++			std::lock_guard lock(m_mutex);
++			m_jobs.push_back(std::move(job));
++			if (!m_started)
++			{
++				m_started = true;
++				std::thread([this] { Run(); }).detach();
++			}
++			m_wake.notify_one();
++		}
++
++	  private:
++		void Run()
++		{
++			SetThreadName("nsyshid");
++			std::unique_lock lock(m_mutex);
++			while (true)
++			{
++				m_wake.wait(lock, [this] { return !m_jobs.empty(); });
++				std::function<void()> job = std::move(m_jobs.front());
++				m_jobs.pop_front();
++				lock.unlock();
++				job();
++				lock.lock();
++			}
++		}
++
++		std::mutex m_mutex;
++		std::condition_variable m_wake;
++		std::deque<std::function<void()>> m_jobs;
++		bool m_started = false;
++	};
++
++	// The device's reads' thread, or the one for its other transfers. Kept for the rest of the
++	// process, as its thread waits on it.
++	TransferQueue& Transfers(const std::shared_ptr<Device>& device, bool reads)
++	{
++		static std::mutex s_mutex;
++		static std::map<std::pair<const Device*, bool>, std::unique_ptr<TransferQueue>> s_queues;
++		std::lock_guard lock(s_mutex);
++		std::unique_ptr<TransferQueue>& queue = s_queues[{device.get(), reads}];
++		if (!queue)
++			queue = std::make_unique<TransferQueue>();
++		return *queue;
++	}
++
++	// A synchronous transfer on the device's thread: the PPC thread waits on the event the transfer
++	// signals, then takes its result
++	sint32 TransferAndWait(const std::shared_ptr<Device>& device, bool reads,
++						   std::function<sint32(coreinit::OSEvent*)> transfer)
++	{
++		StackAllocator<coreinit::OSEvent> event;
++		coreinit::OSInitEvent(&event, coreinit::OSEvent::EVENT_STATE::STATE_NOT_SIGNALED, coreinit::OSEvent::EVENT_MODE::MODE_AUTO);
++		auto result = std::make_shared<std::promise<sint32>>();
++		std::future<sint32> done = result->get_future();
++		coreinit::OSEvent* signal = &event;
++		Transfers(device, reads).Push([transfer = std::move(transfer), result, signal] { result->set_value(transfer(signal)); });
++		coreinit::OSWaitEvent(&event);
++		return done.get();
++	}
++
+ 	void _hidGetDescriptorAsync(std::shared_ptr<Device> device, uint8 descType, uint8 descIndex, uint16 lang, uint8* output, uint32 outputMaxLength, MPTR callbackFuncMPTR, MPTR callbackParamMPTR)
+ 	{
+ 		if (device->GetDescriptor(descType, descIndex, lang, output, outputMaxLength))
+@@ -401,8 +477,7 @@ namespace nsyshid
+ 		else
+ 		{
+ 			// asynchronous
+-			std::thread(&_hidGetDescriptorAsync, device, descType, descIndex, lang, output, outputMaxLength, cbFuncMPTR, cbParamMPTR)
+-				.detach();
++			Transfers(device, false).Push([=] { _hidGetDescriptorAsync(device, descType, descIndex, lang, output, outputMaxLength, cbFuncMPTR, cbParamMPTR); });
+ 			returnCode = 0;
+ 		}
+ 		osLib_returnFromFunction(hCPU, returnCode);
+@@ -463,8 +538,7 @@ namespace nsyshid
+ 		else
+ 		{
+ 			// asynchronous
+-			std::thread(&_hidSetIdleAsync, device, ifIndex, reportId, duration, callbackFuncMPTR, callbackParamMPTR)
+-				.detach();
++			Transfers(device, false).Push([=] { _hidSetIdleAsync(device, ifIndex, reportId, duration, callbackFuncMPTR, callbackParamMPTR); });
+ 			returnCode = 0;
+ 		}
+ 		osLib_returnFromFunction(hCPU, returnCode);
+@@ -523,8 +597,7 @@ namespace nsyshid
+ 		else
+ 		{
+ 			// asynchronous
+-			std::thread(&_hidSetProtocolAsync, device, ifIndex, protocol, callbackFuncMPTR, callbackParamMPTR)
+-				.detach();
++			Transfers(device, false).Push([=] { _hidSetProtocolAsync(device, ifIndex, protocol, callbackFuncMPTR, callbackParamMPTR); });
+ 			returnCode = 0;
+ 		}
+ 		osLib_returnFromFunction(hCPU, returnCode);
+@@ -604,18 +677,16 @@ namespace nsyshid
+ 		if (callbackFuncMPTR == MPTR_NULL)
+ 		{
+ 			// synchronous
+-			StackAllocator<coreinit::OSEvent> event;
+-			coreinit::OSInitEvent(&event, coreinit::OSEvent::EVENT_STATE::STATE_NOT_SIGNALED, coreinit::OSEvent::EVENT_MODE::MODE_AUTO);
+-			std::future<sint32> res = std::async(std::launch::async, &_hidSetReportSync, device, reportType, reportId, data, dataLength, &event);
+-			coreinit::OSWaitEvent(&event);
+-			returnCode = res.get();
++			returnCode = TransferAndWait(device, false, [=](coreinit::OSEvent* event) {
++				return _hidSetReportSync(device, reportType, reportId, data, dataLength, event);
++			});
+ 		}
+ 		else
+ 		{
+ 			// asynchronous
+-			std::thread(&_hidSetReportAsync, device, reportType, reportId, data, dataLength,
+-						callbackFuncMPTR, callbackParamMPTR)
+-				.detach();
++			Transfers(device, false).Push([=] {
++				_hidSetReportAsync(device, reportType, reportId, data, dataLength, callbackFuncMPTR, callbackParamMPTR);
++			});
+ 			returnCode = 0;
+ 		}
+ 		osLib_returnFromFunction(hCPU, returnCode);
+@@ -703,17 +774,15 @@ namespace nsyshid
+ 		if (callbackFuncMPTR != MPTR_NULL)
+ 		{
+ 			// asynchronous transfer
+-			std::thread(&_hidReadAsync, device, data, maxLength, callbackFuncMPTR, callbackParamMPTR).detach();
++			Transfers(device, true).Push([=] { _hidReadAsync(device, data, maxLength, callbackFuncMPTR, callbackParamMPTR); });
+ 			returnCode = 0;
+ 		}
+ 		else
+ 		{
+ 			// synchronous transfer
+-			StackAllocator<coreinit::OSEvent> event;
+-			coreinit::OSInitEvent(&event, coreinit::OSEvent::EVENT_STATE::STATE_NOT_SIGNALED, coreinit::OSEvent::EVENT_MODE::MODE_AUTO);
+-			std::future<sint32> res = std::async(std::launch::async, &_hidReadSync, device, data, maxLength, &event);
+-			coreinit::OSWaitEvent(&event);
+-			returnCode = res.get();
++			returnCode = TransferAndWait(device, true, [=](coreinit::OSEvent* event) {
++				return _hidReadSync(device, data, maxLength, event);
++			});
+ 		}
+ 
+ 		osLib_returnFromFunction(hCPU, returnCode);
+@@ -800,17 +869,15 @@ namespace nsyshid
+ 		if (callbackFuncMPTR != MPTR_NULL)
+ 		{
+ 			// asynchronous transfer
+-			std::thread(&_hidWriteAsync, device, data, maxLength, callbackFuncMPTR, callbackParamMPTR).detach();
++			Transfers(device, false).Push([=] { _hidWriteAsync(device, data, maxLength, callbackFuncMPTR, callbackParamMPTR); });
+ 			returnCode = 0;
+ 		}
+ 		else
+ 		{
+ 			// synchronous transfer
+-			StackAllocator<coreinit::OSEvent> event;
+-			coreinit::OSInitEvent(&event, coreinit::OSEvent::EVENT_STATE::STATE_NOT_SIGNALED, coreinit::OSEvent::EVENT_MODE::MODE_AUTO);
+-			std::future<sint32> res = std::async(std::launch::async, &_hidWriteSync, device, data, maxLength, &event);
+-			coreinit::OSWaitEvent(&event);
+-			returnCode = res.get();
++			returnCode = TransferAndWait(device, false, [=](coreinit::OSEvent* event) {
++				return _hidWriteSync(device, data, maxLength, event);
++			});
+ 		}
+ 
+ 		osLib_returnFromFunction(hCPU, returnCode);

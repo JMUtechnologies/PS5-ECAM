@@ -1,0 +1,111 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Sun, 4 Oct 2026 23:18:54 +0000
+Subject: [PATCH] PS5: the GPU thread's waits as running totals, and its waits
+ on the GPU
+
+LattePerfStatTimer keeps every measured tick as well as the last frame's,
+so the port's boot log can say, over ten seconds, how much of the GPU
+thread's time went idle (the emulated CPU behind it), waiting for results
+the game asked for, or waiting on the host's GPU: the new
+gpuTime_waitForHostGPU measures a command buffer's fence, the swapchain's
+image, its available fence, the present wait and the present itself. A
+game that misses 60 fps can then be told CPU-bound from GPU-bound from
+its log.
+---
+ src/Cafe/HW/Latte/Core/LattePerformanceMonitor.h    | 10 ++++++++++
+ .../HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp     | 13 ++++++++++++-
+ 2 files changed, 22 insertions(+), 1 deletion(-)
+
+diff --git a/src/Cafe/HW/Latte/Core/LattePerformanceMonitor.h b/src/Cafe/HW/Latte/Core/LattePerformanceMonitor.h
+index dbc3cff..bd841b9 100644
+--- a/src/Cafe/HW/Latte/Core/LattePerformanceMonitor.h
++++ b/src/Cafe/HW/Latte/Core/LattePerformanceMonitor.h
+@@ -18,6 +18,7 @@ public:
+ 	{
+ 		uint64 dif = PPCTimer_getRawTsc() - timerStart;
+ 		currentSum += dif;
++		total += dif;
+ 	}
+ 
+ 	void frameFinished()
+@@ -31,10 +32,18 @@ public:
+ 		return previousFrame;
+ 	}
+ 
++	// PS5: every measured tick since the start, for the port's boot log ([perf]), which compares
++	// ten-second windows rather than single frames
++	uint64 getTotal() const
++	{
++		return total.load(std::memory_order_relaxed);
++	}
++
+ private:
+ 	uint64 currentSum{};
+ 	uint64 previousFrame{};
+ 	uint64 timerStart{};
++	std::atomic<uint64> total{};
+ };
+ 
+ class LattePerfStatCounter
+@@ -108,6 +117,7 @@ typedef struct
+ 
+ 	LattePerfStatTimer gpuTime_dcStageDrawcallAPI; // drawcall api call
+ 	LattePerfStatTimer gpuTime_waitForAsync; // waiting for operations to complete (e.g. GX2DrawDone or force texture readback) Also includes texture readback and occlusion query polling logic
++	LattePerfStatTimer gpuTime_waitForHostGPU; // PS5: the GPU thread waiting on the host's GPU (a command buffer's fence, the swapchain's image, a present)
+ 
+ 	// generic
+ 	uint32 numCompiledVS; // number of compiled vertex shader programs
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+index 4e7be57..665585c 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+@@ -2210,7 +2210,9 @@ void VulkanRenderer::WaitForNextFinishedCommandBuffer()
+ {
+ 	cemu_assert_debug(m_commandBufferSyncIndex != m_commandBufferIndex);
+ 	// wait on least recently submitted command buffer
++	performanceMonitor.gpuTime_waitForHostGPU.beginMeasuring();
+ 	VkResult result = vkWaitForFences(m_logicalDevice, 1, &m_cmdBufferFences[m_commandBufferSyncIndex], true, UINT64_MAX);
++	performanceMonitor.gpuTime_waitForHostGPU.endMeasuring();
+ 	if (result == VK_TIMEOUT)
+ 	{
+ 		cemuLog_log(LogType::Force, "vkWaitForFences: Returned VK_TIMEOUT on infinite fence");
+@@ -3049,7 +3051,10 @@ bool VulkanRenderer::UpdateSwapchainProperties(bool mainWindow)
+ 
+ void VulkanRenderer::SwapBuffer(bool mainWindow)
+ {
+-	if(!AcquireNextSwapchainImage(mainWindow))
++	performanceMonitor.gpuTime_waitForHostGPU.beginMeasuring();
++	const bool acquired = AcquireNextSwapchainImage(mainWindow);
++	performanceMonitor.gpuTime_waitForHostGPU.endMeasuring();
++	if(!acquired)
+ 		return;
+ 
+ 	auto& chainInfo = GetChainInfo(mainWindow);
+@@ -3072,7 +3077,9 @@ void VulkanRenderer::SwapBuffer(bool mainWindow)
+ 	WaitCommandBufferFinished(m_commandBufferIDOfPrevFrame);
+ 	m_commandBufferIDOfPrevFrame = currentFrameCmdBufferID;
+ 
++	performanceMonitor.gpuTime_waitForHostGPU.beginMeasuring();
+ 	chainInfo.WaitAvailableFence();
++	performanceMonitor.gpuTime_waitForHostGPU.endMeasuring();
+ 
+ 	VkPresentIdKHR presentId = {};
+ 
+@@ -3098,12 +3105,16 @@ void VulkanRenderer::SwapBuffer(bool mainWindow)
+ 		if(chainInfo.m_queueDepth >= chainInfo.m_maxQueued)
+ 		{
+ 			uint64 waitFrameId = chainInfo.m_presentId - chainInfo.m_queueDepth;
++			performanceMonitor.gpuTime_waitForHostGPU.beginMeasuring();
+ 			vkWaitForPresentKHR(m_logicalDevice, chainInfo.m_swapchain, waitFrameId, 40'000'000);
++			performanceMonitor.gpuTime_waitForHostGPU.endMeasuring();
+ 			chainInfo.m_queueDepth--;
+ 		}
+ 	}
+ 
++	performanceMonitor.gpuTime_waitForHostGPU.beginMeasuring();
+ 	VkResult result = vkQueuePresentKHR(m_presentQueue, &presentInfo);
++	performanceMonitor.gpuTime_waitForHostGPU.endMeasuring();
+ 	if (result < 0 && result != VK_ERROR_OUT_OF_DATE_KHR)
+ 	{
+ 		throw std::runtime_error(fmt::format("Failed to present image: {}", result));

@@ -1,0 +1,99 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Mon, 5 Oct 2026 11:57:56 +0000
+Subject: [PATCH] PS5: performance statistics timed with the TSC
+
+PerfStats reads its clock twice for every SVC and every HLE IPC request
+(BeginSVCProcessing, EndSVCProcessing...), and the frame limiter reads it
+too. The standard clocks call into the PS5's kernel, about 890 ns a read
+against about 11 ns for the TSC, and the whole emulated 3DS runs on one
+thread: a game making thousands of SVCs a frame spent a share of that
+thread on measuring them. On the PS5 both read a TSC clock instead,
+in nanoseconds from the console's reported TSC frequency.
+---
+ src/core/perf_stats.cpp | 16 ++++++++++++++++
+ src/core/perf_stats.h   | 28 ++++++++++++++++++++++++++++
+ 2 files changed, 44 insertions(+)
+
+diff --git a/src/core/perf_stats.cpp b/src/core/perf_stats.cpp
+index 1a4a99fb0..a199b9797 100644
+--- a/src/core/perf_stats.cpp
++++ b/src/core/perf_stats.cpp
+@@ -50,6 +50,22 @@ PerfStats::~PerfStats() {
+     file.WriteString(stream.str());
+ }
+ 
++#ifdef __PROSPERO__
++extern "C" u64 sceKernelGetTscFrequency();
++
++bool g_ps5TscClock = true;
++
++TscClock::time_point TscClock::now() noexcept {
++    if (!g_ps5TscClock) {
++        return time_point(std::chrono::duration_cast<duration>(
++            std::chrono::steady_clock::now().time_since_epoch()));
++    }
++    static const u64 frequency = sceKernelGetTscFrequency();
++    const unsigned __int128 ticks = __builtin_ia32_rdtsc();
++    return time_point(duration(static_cast<s64>(ticks * 1000000000u / frequency)));
++}
++#endif
++
+ void PerfStats::BeginSVCProcessing() {
+     start_svc_time = Clock::now();
+ }
+diff --git a/src/core/perf_stats.h b/src/core/perf_stats.h
+index e9136da6d..31198601a 100644
+--- a/src/core/perf_stats.h
++++ b/src/core/perf_stats.h
+@@ -15,6 +15,26 @@
+ 
+ namespace Core {
+ 
++#ifdef __PROSPERO__
++/**
++ * PS5: the clock the statistics and the frame limiter read, from the TSC. They read it twice for
++ * every SVC and every HLE IPC request, and the standard clocks call into the console's kernel
++ * (about 890 ns a read, against about 11 ns for the TSC): on one emulation thread, thousands of
++ * SVCs a frame made the measuring cost more than some of what it measured.
++ */
++struct TscClock {
++    using rep = s64;
++    using period = std::nano;
++    using duration = std::chrono::nanoseconds;
++    using time_point = std::chrono::time_point<TscClock>;
++    static constexpr bool is_steady = true;
++    static time_point now() noexcept;
++};
++/// Whether TscClock reads the TSC (the frontend's choice, before a game starts); false: the
++/// steady clock, in the same units
++extern bool g_ps5TscClock;
++#endif
++
+ /**
+  * Class to manage and query performance/timing statistics. All public functions of this class are
+  * thread-safe unless stated otherwise.
+@@ -24,7 +44,11 @@ public:
+     explicit PerfStats(u64 title_id);
+     ~PerfStats();
+ 
++#ifdef __PROSPERO__
++    using Clock = TscClock;
++#else
+     using Clock = std::chrono::high_resolution_clock;
++#endif
+ 
+     enum class PerfArticEventBits {
+         NONE = 0,
+@@ -179,7 +203,11 @@ private:
+ 
+ class FrameLimiter {
+ public:
++#ifdef __PROSPERO__
++    using Clock = TscClock;
++#else
+     using Clock = std::chrono::high_resolution_clock;
++#endif
+ 
+     void DoFrameLimiting(std::chrono::microseconds current_system_time_us);
+ 

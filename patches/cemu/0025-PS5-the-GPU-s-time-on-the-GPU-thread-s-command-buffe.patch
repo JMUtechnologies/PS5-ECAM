@@ -1,0 +1,192 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Mon, 5 Oct 2026 06:31:48 +0000
+Subject: [PATCH] PS5: the GPU's time on the GPU thread's command buffers, when
+ asked
+
+Whether a game that misses its frame rate waits on the console's GPU or
+on Cemu's GPU thread decides what to work on, and whether a higher
+resolution would fit. When the port asks (g_ps5GpuTimestamps, on in its
+profiling runs), each command buffer gets a timestamp where it starts
+and one where it ends, read once its fence has signalled; their
+difference, summed in g_ps5GpuBusyNs, is the time the GPU spent on it.
+The command buffers run one after another (each waits on the last), so
+the sum is the GPU's busy time. Off, nothing changes.
+---
+ src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h |  2 +
+ .../Latte/Renderer/Vulkan/VulkanRenderer.cpp  | 89 +++++++++++++++++++
+ .../HW/Latte/Renderer/Vulkan/VulkanRenderer.h | 11 +++
+ 3 files changed, 102 insertions(+)
+
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h
+index a164738..eacce34 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h
+@@ -211,6 +211,8 @@ VKFUNC_DEVICE(vkCmdResetQueryPool);
+ VKFUNC_DEVICE(vkCmdBeginQuery);
+ VKFUNC_DEVICE(vkCmdEndQuery);
+ VKFUNC_DEVICE(vkCmdCopyQueryPoolResults);
++VKFUNC_DEVICE(vkCmdWriteTimestamp); // PS5: the GPU thread's command buffers timed (VulkanRenderer.cpp)
++VKFUNC_DEVICE(vkGetQueryPoolResults);
+ 
+ // event
+ VKFUNC_DEVICE(vkCreateEvent);
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+index 665585c..afb20db 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+@@ -948,6 +948,10 @@ VulkanRenderer::~VulkanRenderer()
+ 
+ 	if (m_commandPool != VK_NULL_HANDLE)
+ 		vkDestroyCommandPool(m_logicalDevice, m_commandPool, nullptr);
++#if defined(CEMU_PS5)
++	if (m_ps5Timestamps != VK_NULL_HANDLE)
++		vkDestroyQueryPool(m_logicalDevice, m_ps5Timestamps, nullptr);
++#endif
+ 
+ 	VKRObjectSampler::DestroyCache();
+ 
+@@ -1688,8 +1692,81 @@ void VulkanRenderer::CreateCommandPool()
+ 		throw std::runtime_error(fmt::format("Failed to create command pool: {}", result));
+ }
+ 
++#if defined(CEMU_PS5)
++// PS5: the port turns these on before the renderer starts (its profiler's runs), and reads the sum
++bool g_ps5GpuTimestamps = false;
++std::atomic<uint64> g_ps5GpuBusyNs{0};
++
++void VulkanRenderer::PS5_CreateTimestamps()
++{
++	if (!g_ps5GpuTimestamps)
++		return;
++	uint32 familyCount = 0;
++	vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &familyCount, nullptr);
++	std::vector<VkQueueFamilyProperties> families(familyCount);
++	vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &familyCount, families.data());
++	VkPhysicalDeviceProperties properties{};
++	vkGetPhysicalDeviceProperties(m_physicalDevice, &properties);
++	const uint32 validBits = m_indices.graphicsFamily >= 0 && (uint32)m_indices.graphicsFamily < familyCount ?
++		families[m_indices.graphicsFamily].timestampValidBits : 0;
++	if (validBits == 0 || properties.limits.timestampPeriod <= 0.0f)
++	{
++		cemuLog_log(LogType::Force, "PS5: the graphics queue has no timestamps: the GPU's time is not measured");
++		return;
++	}
++	VkQueryPoolCreateInfo poolInfo{};
++	poolInfo.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
++	poolInfo.queryType = VK_QUERY_TYPE_TIMESTAMP;
++	poolInfo.queryCount = 2 * kCommandBufferPoolSize;
++	if (vkCreateQueryPool(m_logicalDevice, &poolInfo, nullptr, &m_ps5Timestamps) != VK_SUCCESS)
++	{
++		m_ps5Timestamps = VK_NULL_HANDLE;
++		return;
++	}
++	m_ps5TimestampNs = properties.limits.timestampPeriod;
++	m_ps5TimestampMask = validBits >= 64 ? ~0ull : (1ull << validBits) - 1;
++}
++
++// right after a command buffer begins (outside any render pass): its queries made ready, then its start
++void VulkanRenderer::PS5_TimestampStart()
++{
++	if (m_ps5Timestamps == VK_NULL_HANDLE)
++		return;
++	const uint32 first = (uint32)(2 * m_commandBufferIndex);
++	vkCmdResetQueryPool(m_state.currentCommandBuffer, m_ps5Timestamps, first, 2);
++	vkCmdWriteTimestamp(m_state.currentCommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, m_ps5Timestamps, first);
++}
++
++// right before it ends, once its render pass has
++void VulkanRenderer::PS5_TimestampEnd()
++{
++	if (m_ps5Timestamps == VK_NULL_HANDLE)
++		return;
++	vkCmdWriteTimestamp(m_state.currentCommandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, m_ps5Timestamps,
++		(uint32)(2 * m_commandBufferIndex + 1));
++}
++
++// when its fence has signalled: the time between the two, which consecutive command buffers do not
++// share (each waits on the one before)
++void VulkanRenderer::PS5_CollectTimestamps(size_t commandBufferIndex)
++{
++	if (m_ps5Timestamps == VK_NULL_HANDLE)
++		return;
++	uint64 ticks[2]{};
++	if (vkGetQueryPoolResults(m_logicalDevice, m_ps5Timestamps, (uint32)(2 * commandBufferIndex), 2, sizeof(ticks), ticks,
++			sizeof(uint64), VK_QUERY_RESULT_64_BIT) != VK_SUCCESS)
++		return;
++	const uint64 start = ticks[0] & m_ps5TimestampMask, end = ticks[1] & m_ps5TimestampMask;
++	if (end >= start)
++		g_ps5GpuBusyNs.fetch_add((uint64)((double)(end - start) * m_ps5TimestampNs), std::memory_order_relaxed);
++}
++#endif
++
+ void VulkanRenderer::CreateCommandBuffers()
+ {
++#if defined(CEMU_PS5)
++	PS5_CreateTimestamps();
++#endif
+ 	auto it = m_cmdBufferFences.begin();
+ 	VkFenceCreateInfo fenceInfo{};
+ 	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+@@ -2170,6 +2247,9 @@ void VulkanRenderer::InitFirstCommandBuffer()
+ 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+ 	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+ 	vkBeginCommandBuffer(m_state.currentCommandBuffer, &beginInfo);
++#if defined(CEMU_PS5)
++	PS5_TimestampStart();
++#endif
+ 
+ 	vkCmdSetViewport(m_state.currentCommandBuffer, 0, 1, &m_state.currentViewport);
+ 	vkCmdSetScissor(m_state.currentCommandBuffer, 0, 1, &m_state.currentScissorRect);
+@@ -2185,6 +2265,9 @@ void VulkanRenderer::ProcessFinishedCommandBuffers()
+ 		VkResult fenceStatus = vkGetFenceStatus(m_logicalDevice, m_cmdBufferFences[m_commandBufferSyncIndex]);
+ 		if (fenceStatus == VK_SUCCESS)
+ 		{
++#if defined(CEMU_PS5)
++			PS5_CollectTimestamps(m_commandBufferSyncIndex);
++#endif
+ 			ProcessDestructionQueue();
+ 			m_uniformVarBufferReadIndex = m_cmdBufferUniformRingbufIndices[m_commandBufferSyncIndex];
+ 			m_commandBufferSyncIndex = (m_commandBufferSyncIndex + 1) % m_commandBuffers.size();
+@@ -2230,6 +2313,9 @@ void VulkanRenderer::SubmitCommandBuffer(VkSemaphore signalSemaphore, VkSemaphor
+ 	draw_endRenderPass();
+ 
+ 	occlusionQuery_notifyEndCommandBuffer();
++#if defined(CEMU_PS5)
++	PS5_TimestampEnd();
++#endif
+ 
+ 	vkEndCommandBuffer(m_state.currentCommandBuffer);
+ 
+@@ -2293,6 +2379,9 @@ void VulkanRenderer::SubmitCommandBuffer(VkSemaphore signalSemaphore, VkSemaphor
+ 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+ 	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+ 	vkBeginCommandBuffer(m_state.currentCommandBuffer, &beginInfo);
++#if defined(CEMU_PS5)
++	PS5_TimestampStart();
++#endif
+ 
+ 	// make sure some states are set for this command buffer
+ 	vkCmdSetViewport(m_state.currentCommandBuffer, 0, 1, &m_state.currentViewport);
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.h b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.h
+index 93fe22a..126a845 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.h
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.h
+@@ -677,6 +677,17 @@ private:
+ 	std::array<VkFence, kCommandBufferPoolSize> m_cmdBufferFences;
+ 	std::array<VkCommandBuffer, kCommandBufferPoolSize> m_commandBuffers;
+ 	std::array<VkSemaphore, kCommandBufferPoolSize> m_commandBufferSemaphores;
++#if defined(CEMU_PS5)
++	// PS5: the GPU's time on each command buffer, from timestamps at its start and its end, when the
++	// port asks for them (g_ps5GpuTimestamps); summed into g_ps5GpuBusyNs for its boot log
++	VkQueryPool m_ps5Timestamps = VK_NULL_HANDLE;
++	double m_ps5TimestampNs = 0.0; // nanoseconds a tick
++	uint64 m_ps5TimestampMask = 0;
++	void PS5_CreateTimestamps();
++	void PS5_TimestampStart();
++	void PS5_TimestampEnd();
++	void PS5_CollectTimestamps(size_t commandBufferIndex);
++#endif
+ 
+ 	VkSemaphore GetLastSubmittedCmdBufferSemaphore()
+ 	{

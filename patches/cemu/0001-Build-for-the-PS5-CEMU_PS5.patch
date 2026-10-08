@@ -166,7 +166,7 @@ index b509e72..32d3025 100644
  	target_sources(CemuCafe PRIVATE
  	    HW/Latte/Renderer/MetalView.mm
 diff --git a/src/Cafe/HW/Espresso/Recompiler/BackendX64/BackendX64.cpp b/src/Cafe/HW/Espresso/Recompiler/BackendX64/BackendX64.cpp
-index 20c1711..9b59c57 100644
+index e466deb..c899c3a 100644
 --- a/src/Cafe/HW/Espresso/Recompiler/BackendX64/BackendX64.cpp
 +++ b/src/Cafe/HW/Espresso/Recompiler/BackendX64/BackendX64.cpp
 @@ -285,7 +285,7 @@ bool PPCRecompilerX64Gen_imlInstruction_macro(PPCRecFunction_t* PPCRecFunction,
@@ -178,7 +178,7 @@ index 20c1711..9b59c57 100644
  		x64Gen_call_reg64(x64GenContext, X86_REG_RAX);
  		// restore RSP to hCPU (from RAX, result of PPCRecompiler_virtualHLE)
  		x64Gen_mov_reg64_reg64(x64GenContext, REG_RESV_HCPU, X86_REG_RAX);
-@@ -1640,7 +1640,13 @@ void PPCRecompilerX64Gen_generateEnterRecompilerCode()
+@@ -1674,7 +1674,13 @@ void PPCRecompilerX64Gen_generateEnterRecompilerCode()
  	uint8* executableMemory = PPCRecompilerX86_allocateExecutableMemory(x64GenContext.emitter->GetBuffer().size_bytes());
  	// copy code to executable memory
  	memcpy(executableMemory, x64GenContext.emitter->GetBuffer().data(), x64GenContext.emitter->GetBuffer().size_bytes());
@@ -193,7 +193,7 @@ index 20c1711..9b59c57 100644
  
  
 diff --git a/src/Cafe/HW/Espresso/Recompiler/PPCRecompiler.h b/src/Cafe/HW/Espresso/Recompiler/PPCRecompiler.h
-index fc86407..1ff685f 100644
+index 3e9a794..e70f029 100644
 --- a/src/Cafe/HW/Espresso/Recompiler/PPCRecompiler.h
 +++ b/src/Cafe/HW/Espresso/Recompiler/PPCRecompiler.h
 @@ -127,6 +127,13 @@ struct ppcImlGenContext_t
@@ -224,7 +224,7 @@ index 89e805d..d9cb6e6 100644
  	}
  	return false;
 diff --git a/src/Cafe/HW/Espresso/Recompiler/PPCRecompilerImlGenFPU.cpp b/src/Cafe/HW/Espresso/Recompiler/PPCRecompilerImlGenFPU.cpp
-index 19ad257..8b1b9cb 100644
+index f9c811b..6330a55 100644
 --- a/src/Cafe/HW/Espresso/Recompiler/PPCRecompilerImlGenFPU.cpp
 +++ b/src/Cafe/HW/Espresso/Recompiler/PPCRecompilerImlGenFPU.cpp
 @@ -643,7 +643,7 @@ bool PPCRecompilerImlGen_FRES(ppcImlGenContext_t* ppcImlGenContext, uint32 opcod

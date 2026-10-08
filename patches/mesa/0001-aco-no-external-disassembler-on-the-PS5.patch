@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Sat, 3 Oct 2026 16:00:08 +0000
+Subject: [PATCH] aco: no external disassembler on the PS5
+
+Without LLVM, check_print_asm_support asks system() whether the CLRX
+disassembler is installed, for every shader compiled with its IR kept
+(RADV_DEBUG=hang, shader dumps). The PS5 runs no other program, and the
+call took about a second to fail: Breath of the Wild's pipeline cache
+loaded at one pipeline a second with RADV_DEBUG=hang. On the PS5 there is
+no disassembler to look for.
+---
+ src/amd/compiler/aco_print_asm.cpp | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/src/amd/compiler/aco_print_asm.cpp b/src/amd/compiler/aco_print_asm.cpp
+index 01aee2a..7ab4554 100644
+--- a/src/amd/compiler/aco_print_asm.cpp
++++ b/src/amd/compiler/aco_print_asm.cpp
+@@ -421,12 +421,14 @@ check_print_asm_support(Program* program, enum radeon_family family)
+    }
+ #endif
+ 
+-#ifndef _WIN32
++#if defined(_WIN32) || defined(__PROSPERO__)
++   /* The PS5 runs no other program: system() for the CLRX disassembler took about a second to
++    * fail, for every shader RADV_DEBUG=hang (or a shader dump) compiled. */
++   return false;
++#else
+    /* Check if CLRX disassembler binary is available and can disassemble the program */
+    return to_clrx_device_name(program->gfx_level, family) &&
+           system("clrxdisasm --version > /dev/null 2>&1") == 0;
+-#else
+-   return false;
+ #endif
+ }
+ 

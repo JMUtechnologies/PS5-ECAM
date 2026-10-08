@@ -1,0 +1,69 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Mon, 5 Oct 2026 10:23:19 +0000
+Subject: [PATCH] PS5: an idle core can spin a while before it sleeps
+
+In multi-core mode a core with no thread to run sleeps on its run queue's
+semaphore, and a thread made ready from another core wakes it. Games hand
+work between their cores many times a frame, and each handoff to a
+sleeping core then waits on the host's thread wake-up, which on the PS5
+is slow enough to show: ProsperoEden, whose emulated cores do the same,
+spins 100 us on its interrupt flag before sleeping, which took a racing
+game's heavy phase from about 55 to 59.6 fps. Here an idle core spins
+g_ps5IdleSpinIterations PAUSEs (about 20 ns each on the console) on the
+semaphore's count before it sleeps; the port sets it (0: sleep at once,
+as everywhere else).
+---
+ src/Cafe/OS/libs/coreinit/coreinit_Thread.cpp | 12 ++++++++++++
+ src/util/helpers/Semaphore.h                  |  8 ++++++++
+ 2 files changed, 20 insertions(+)
+
+diff --git a/src/Cafe/OS/libs/coreinit/coreinit_Thread.cpp b/src/Cafe/OS/libs/coreinit/coreinit_Thread.cpp
+index 9fe4bea..dddf176 100644
+--- a/src/Cafe/OS/libs/coreinit/coreinit_Thread.cpp
++++ b/src/Cafe/OS/libs/coreinit/coreinit_Thread.cpp
+@@ -1242,6 +1242,11 @@ namespace coreinit
+ 	}
+ 
+ 	Fiber* g_idleLoopFiber[3]{};
++#if defined(CEMU_PS5)
++	// PS5: how long an idle core spins for a thread to run before it sleeps, in PAUSEs (about 20 ns
++	// each on the console); the port sets it before a game starts (idleSpinUs), 0 sleeps at once
++	uint32 g_ps5IdleSpinIterations = 0;
++#endif
+ 
+ 	// idle fiber per core if no thread is runnable
+ 	// this is necessary since we can't block in __OSThreadSwitchToNext() (__OSStoreThread + thread switch must happen inside same scheduler lock)
+@@ -1272,6 +1277,13 @@ namespace coreinit
+ 			else
+ 			{
+ 				// wait for semaphore (only in multicore mode)
++#if defined(CEMU_PS5)
++				// PS5: a while spinning first, so that a thread made ready from another core (games
++				// hand work between their cores many times a frame) starts without the console's
++				// thread wake-up latency; then asleep, as everywhere else
++				for (uint32 spin = g_ps5IdleSpinIterations; spin && g_coreRunQueueThreadCount[t_assignedCoreIndex].isZeroNow(); spin--)
++					_mm_pause();
++#endif
+ 				g_coreRunQueueThreadCount[t_assignedCoreIndex].waitUntilNonZero();
+ 				if (!sSchedulerActive.load(std::memory_order::relaxed))
+ 					Fiber::Switch(*t_schedulerFiber); // switch back to original thread to exit
+diff --git a/src/util/helpers/Semaphore.h b/src/util/helpers/Semaphore.h
+index 46761b8..e20644a 100644
+--- a/src/util/helpers/Semaphore.h
++++ b/src/util/helpers/Semaphore.h
+@@ -117,6 +117,14 @@ public:
+ 		return m_count == 0;
+ 	}
+ 
++#if defined(CEMU_PS5)
++	// PS5: the count read again each time, for a loop that spins on it without the lock
++	bool isZeroNow() const
++	{
++		return *reinterpret_cast<const volatile sint64*>(&m_count) == 0;
++	}
++#endif
++
+ private:
+ 	std::mutex m_mutex;
+ 	std::condition_variable m_condition;

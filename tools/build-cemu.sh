@@ -55,5 +55,10 @@ elf=$build/ps5cemu.elf
 if [[ -f $elf.linkcheck && ${PS5CEMU_LINK_CHECK:-0} != 1 ]] || [[ -f $elf && ! -f $elf.linkcheck && ${PS5CEMU_LINK_CHECK:-0} == 1 ]]; then
     rm -f "$elf" "$elf.linkcheck"
 fi
+# and when RADV was rebuilt (patches/mesa): tools/link.sh takes its archive, which ninja does not know
+radv_archive=${RADV_ARCHIVE:-$PS5CEMU_ROOT/.deps/PS5_Vulkan/.deps/native/radv-release/lib/libvulkan_radeon.ps5.a}
+if [[ -f $elf && -f $radv_archive && $radv_archive -nt $elf ]]; then
+    rm -f "$elf"
+fi
 
 ninja -C "$build" -j "$JOBS" "$@"

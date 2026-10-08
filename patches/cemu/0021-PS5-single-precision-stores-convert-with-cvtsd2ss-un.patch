@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Sun, 4 Oct 2026 23:16:28 +0000
+Subject: [PATCH] PS5: single-precision stores convert with cvtsd2ss unless
+ asked otherwise
+
+Upstream's exact stfs conversion (stfs truncates where cvtsd2ss rounds,
+and keeps denormals) costs about seven instructions and a branch a store
+where cvtsd2ss costs one, and the console's Zen 2 takes the shift path
+(no fast PEXT). Single stores the optimizer has not already lowered to
+SINGLE_FTZ convert with cvtsd2ss again, as every Cemu release before the
+exact one did and every PS5CEMU-HAR release so far has, unless the port
+sets g_ps5AccurateSingleStores before a game starts (accurateSingleStores
+in ps5cemu.json). Which of the two costs a game more on the console has
+not been measured yet.
+---
+ .../Recompiler/BackendX64/BackendX64FPU.cpp         | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/src/Cafe/HW/Espresso/Recompiler/BackendX64/BackendX64FPU.cpp b/src/Cafe/HW/Espresso/Recompiler/BackendX64/BackendX64FPU.cpp
+index 8751a04..45d17b4 100644
+--- a/src/Cafe/HW/Espresso/Recompiler/BackendX64/BackendX64FPU.cpp
++++ b/src/Cafe/HW/Espresso/Recompiler/BackendX64/BackendX64FPU.cpp
+@@ -191,6 +191,15 @@ static void PPCRecompilerX64Gen_fprConvertToSingleBits(x64GenContext_t* x64GenCo
+ 	});
+ }
+ 
++#ifdef CEMU_PS5
++// PS5: stfs's exact conversion (above) costs about seven instructions and a branch a store where
++// cvtsd2ss costs one. Stores convert with cvtsd2ss, as every Cemu release before the exact one did
++// and every PS5CEMU-HAR release so far has, unless the port asks for the exact conversion
++// (accurateSingleStores in ps5cemu.json) before a game starts. Which costs a game more on the
++// console's CPU has not been measured yet.
++bool g_ps5AccurateSingleStores = false;
++#endif
++
+ // store to memory
+ bool PPCRecompilerX64Gen_imlInstruction_fpr_store(PPCRecFunction_t* PPCRecFunction, ppcImlGenContext_t* ppcImlGenContext, x64GenContext_t* x64GenContext, IMLInstruction* imlInstruction, bool indexed)
+ {
+@@ -207,7 +216,11 @@ bool PPCRecompilerX64Gen_imlInstruction_fpr_store(PPCRecFunction_t* PPCRecFuncti
+ 			// value is already in single format
+ 			x64Gen_movd_reg64Low32_xmmReg(x64GenContext, REG_RESV_TEMP, realRegisterXMM);
+ 		}
++#ifdef CEMU_PS5
++		else if (mode == PPCREC_FPR_ST_MODE_SINGLE_FTZ || !g_ps5AccurateSingleStores)
++#else
+ 		else if (mode == PPCREC_FPR_ST_MODE_SINGLE_FTZ)
++#endif
+ 		{
+ 			x64Gen_cvtsd2ss_xmmReg_xmmReg(x64GenContext, REG_RESV_FPR_TEMP, realRegisterXMM);
+ 			x64Gen_movd_reg64Low32_xmmReg(x64GenContext, REG_RESV_TEMP, REG_RESV_FPR_TEMP);

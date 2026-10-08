@@ -18,13 +18,34 @@
 #include "frontend/settings.h"
 #include "ps5/crash.h"
 #include "ps5/display.h"
+#include "ps5/driver_clock.h"
 #include "ps5/kernel.h"
 #include "ps5/log.h"
 #include "ps5/notify.h"
 #include "ps5/pad.h"
 #include "ps5/privilege.h"
+#include "ps5/profiler.h"
 #include "ps5/threads.h"
 #include "ps5/window.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <string>
+#include <unistd.h>
+
+// Cemu's recompiler: the exact stfs conversion, or cvtsd2ss (Cemu patch 0021)
+extern bool g_ps5AccurateSingleStores;
+// patches/cemu: the GPU's time on Cemu's command buffers (VulkanRenderer.cpp), for profiling runs
+extern bool g_ps5GpuTimestamps;
+// patches/cemu: Cemu's samplers without custom border colours (VulkanRenderer.cpp)
+extern bool g_ps5StandardBorderColors;
+// patches/cemu: Cemu's millisecond clock on the TSC (Common/unix/platform.cpp)
+void PS5Cemu_UseTscTickCount(bool enabled);
+// patches/cemu: an idle emulated core's spin before it sleeps, in PAUSEs (coreinit_Thread.cpp)
+namespace coreinit
+{
+	extern uint32_t g_ps5IdleSpinIterations;
+}
 
 // The PS4 SDK's version record: its size is set by the caller (libkernel)
 struct SceKernelSwVersion
@@ -87,9 +108,23 @@ int main(int argc, char* argv[])
 	// before any thread starts: the HEN jailbreaks the process as it is
 	const ps5privilege::Result privileges = ps5privilege::Acquire();
 	if (privileges.filesystem)
+	{
 		ps5log::Open(ps5paths::kLogs);
+		// what the libraries print on stderr, the Vulkan driver's own reports among it (its submissions'
+		// timing every ten seconds, a stalled GPU), kept as boot.log is, the session before alongside
+		const std::string driverLog = std::string(ps5paths::kLogs) + "/driver.log";
+		std::rename(driverLog.c_str(), (std::string(ps5paths::kLogs) + "/driver.prev.log").c_str());
+		if (std::freopen(driverLog.c_str(), "w", stderr))
+			ps5log::BufferStderr();
+	}
 	ps5log::Line("[main] firmware {}", Firmware());
 	ps5log::Line("[main] {}", privileges.summary);
+	{
+		bool image = false;
+		const std::string source = ps5paths::MountSource(&image);
+		ps5log::Line("[main] app folder {}{}", ps5paths::AppDir(),
+			!source.empty() ? fmt::format(" (mounted from {})", source) : image ? " (mounted from an image)" : "");
+	}
 	ps5crash::Install(); // Cemu's own replaces it, in a session Cemu runs in
 	{
 		// how the console starts the CPU's floating point: desktop systems keep denormals (0x1f80);
@@ -108,8 +143,54 @@ int main(int argc, char* argv[])
 	// still before any thread: the game folders and drives the HEN may have left out (#16)
 	if (privileges.filesystem)
 		ps5privilege::ReachFolders({settings.gamesFolder, settings.n3ds.gamesFolder});
+	// the first thread but main: the boot log's writer, after the elevation helper is done with the
+	// process (it must find it single-threaded)
+	ps5log::StartWriter();
 	ps5threads::SetPinning(settings.pinCpuThreads);
-	// before either emulator's Vulkan driver starts, which reads it once
+	ps5threads::SetCompileBelowNormal(settings.compileBelowNormal);
+	// before a game starts: about 20 ns a PAUSE on the console's CPU
+	coreinit::g_ps5IdleSpinIterations = (uint32_t)settings.idleSpinUs * 50;
+	if (settings.idleSpinUs)
+		ps5log::Line("[threads] an idle emulated core spins {} us before it sleeps (idleSpinUs in ps5cemu.json)", settings.idleSpinUs);
+	if (settings.profile && privileges.filesystem)
+		ps5profile::Start();
+	// before Cemu's renderer starts: with the profiler, the [perf] lines say how busy the GPU is too
+	g_ps5GpuTimestamps = settings.profile;
+	g_ps5StandardBorderColors = settings.standardBorderColors;
+	if (settings.standardBorderColors)
+		ps5log::Line("[vulkan] Cemu's samplers: standard border colours only (standardBorderColors in ps5cemu.json)");
+	// before Cemu starts: its millisecond clock, taken at every draw call
+	PS5Cemu_UseTscTickCount(settings.tscTickCount);
+	ps5log::Line("[clock] Cemu's millisecond clock: {} (tscTickCount in ps5cemu.json)", settings.tscTickCount ? "the TSC" : "clock_gettime");
+	// before either emulator's Vulkan driver starts: the driver's clock without a system call a read
+	// (driverClockTsc in ps5cemu.json, an experiment)
+	if (settings.driverClockTsc)
+		ps5clock::UseTscForDriver();
+	else
+		ps5log::Line("[vulkan] the driver's clock is clock_gettime (driverClockTsc in ps5cemu.json)");
+	// before Cemu recompiles any of a game's code
+	g_ps5AccurateSingleStores = settings.accurateSingleStores;
+	if (settings.accurateSingleStores)
+		ps5log::Line("[emu] single-precision stores: Cemu's exact conversion (accurateSingleStores in ps5cemu.json)");
+	// before either emulator's Vulkan driver starts, which reads them once. RADV keeps its shader
+	// cache in /app0 unless told otherwise, and a jailbroken process has none: told here, so the 3DS's
+	// side has it too (it was set as Cemu started, which a 3DS game's process never does)
+	setenv("MESA_SHADER_CACHE_DIR", ps5paths::kRadvCache, 1);
+	// The driver keeps the shaders it compiles for the next start, as on a PC (shaderDiskCache in
+	// ps5cemu.json, on by default). Mesa keeps no disk cache in a process whose effective user or
+	// group is not its real one, and the HEN makes only the effective ones root: the real ones are
+	// made the effective ones.
+	if (!settings.shaderDiskCache)
+		setenv("MESA_SHADER_CACHE_DISABLE", "true", 1);
+	else if (geteuid() != getuid() || getegid() != getgid())
+	{
+		const int user = setreuid(geteuid(), geteuid()), group = setregid(getegid(), getegid());
+		ps5log::Line("[vulkan] RADV's shader cache: real user {} (euid {}){}, real group {} (egid {}){}", getuid(), geteuid(),
+			user ? " (refused)" : "", getgid(), getegid(), group ? " (refused)" : "");
+	}
+	ps5log::Line("[vulkan] RADV's shader cache in {}: {}", ps5paths::kRadvCache,
+		!settings.shaderDiskCache ? "off (shaderDiskCache in ps5cemu.json)" :
+		geteuid() == getuid() && getegid() == getgid() ? "on" : "off (the console kept the real user)");
 	if (!settings.radvDebug.empty())
 	{
 		setenv("RADV_DEBUG", settings.radvDebug.c_str(), 1);
@@ -218,6 +299,8 @@ int main(int argc, char* argv[])
 
 		ps5emu::ApplyOptions(Options(settings));
 		ps5display::SetHighFrameRate(settings.highFrameRate);
+		// a Wii U game only (its threads' names): before its emulated CPU cores and GPU thread start
+		ps5threads::SetIsolation(settings.isolateCores);
 		ps5window::Initialize();
 		if (ps5emu::LaunchGame(game, error))
 		{
