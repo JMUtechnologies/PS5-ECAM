@@ -46,6 +46,11 @@ namespace ps5azahar
 		return {};
 	}
 
+	int InstalledVersion(uint64_t)
+	{
+		return -1;
+	}
+
 	bool HomeMenu(int, ps5emu::Game&)
 	{
 		return false;

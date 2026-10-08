@@ -595,6 +595,7 @@ namespace ps5update
 		ps5packs::Stop();
 		// the program just installed: where ShadowMountPlus mounted the app from, as AppFolder()
 		const std::string eboot = (AppFolder().empty() ? fs::path(ps5paths::kInstallDir) : AppFolder()).string() + "/eboot.bin";
+		ps5log::FlushAll(); // the log's lines in the file before the process is replaced
 		const int result = sceSystemServiceLoadExec(eboot.c_str(), nullptr);
 		// it does not come back when it works; allow for one that returns before ending the process
 		if (result == 0)

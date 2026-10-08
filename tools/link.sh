@@ -70,6 +70,10 @@ if [[ -f $radv_archive && -f $radv_sdk/target/lib/libps5platform.a ]]; then
     # shellcheck source=/dev/null
     source "$vulkan/tools/radv-link.sh"
     PS5_CLANG=$work/clang radv_link_recipe "$vulkan" "$sdk" "$radv_archive"
+    # Mesa's clock for the driver: clock_gettime, a system call of about 20 us on the console,
+    # read around every submission and on every turn of its GPU waits; port/ps5/driver_clock.cpp
+    # answers it from the TSC instead
+    radv_link_flags+=(--wrap=os_time_get_nano)
     # everything is linked in one group below, and lld takes no group inside another
     flattened=()
     for input in "${radv_link_inputs[@]}"; do

@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Mon, 5 Oct 2026 05:29:11 +0000
+Subject: [PATCH] PS5: pipeline compile threads below normal priority, as on
+ Windows
+
+On Windows every pipeline compile thread but the first runs below normal
+priority, so a burst of new pipelines does not starve the emulated CPU
+cores and the GPU thread; elsewhere they all run at normal priority. On
+the PS5 that is up to eight threads sharing the console's CPUs equally
+with the threads a game's frame rate rests on (Breath of the Wild
+dropped into the 40s while streaming an area in). They now go below
+normal as on Windows, through the port (PS5Cemu_ThreadBelowNormal).
+---
+ .../Latte/Renderer/Vulkan/VulkanPipelineCompiler.cpp   | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanPipelineCompiler.cpp b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanPipelineCompiler.cpp
+index 7179087..f45dd79 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanPipelineCompiler.cpp
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanPipelineCompiler.cpp
+@@ -1077,6 +1077,11 @@ static std::vector<std::thread> s_compileThreads;
+ static std::atomic_bool s_compileThreadsShutdownSignal{};
+ static ConcurrentQueue<PipelineCompiler*> s_pipelineCompileRequests;
+ 
++#if defined(CEMU_PS5)
++// The port: the calling thread below the others' priority, as Windows' THREAD_PRIORITY_BELOW_NORMAL
++void PS5Cemu_ThreadBelowNormal();
++#endif
++
+ static void compilePipeline_thread(sint32 threadIndex)
+ {
+ 	SetThreadName("compilePl");
+@@ -1085,6 +1090,11 @@ static void compilePipeline_thread(sint32 threadIndex)
+ 	// except for one thread which we always run at normal priority to prevent the opposite scenario where all compile threads are starved
+ 	if(threadIndex != 0)
+ 		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL);
++#elif defined(CEMU_PS5)
++	// as on Windows: up to eight of these threads otherwise share the console's CPUs equally with the
++	// emulated CPU cores and the GPU thread, while a game streams in new pipelines
++	if(threadIndex != 0)
++		PS5Cemu_ThreadBelowNormal();
+ #endif
+ 	while (!s_compileThreadsShutdownSignal)
+ 	{

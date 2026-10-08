@@ -62,4 +62,6 @@ namespace ps5azahar
 	bool StartInstall(const std::string& cia, std::string& error);
 	ps5emu::InstallStatus GetInstallStatus();
 	void CancelInstall();
+	// The version of a title the 3DS's storage has now; -1 for none
+	int InstalledVersion(uint64_t titleId);
 }

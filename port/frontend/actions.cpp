@@ -108,6 +108,7 @@ namespace ps5actions
 	// USB drive that takes one. What it did, as the row shows it.
 	std::string CopyLogsToUsb()
 	{
+		ps5log::FlushAll(); // the boot log as it stands, all of it
 		char stamp[32] = "logs";
 		const std::time_t now = std::time(nullptr);
 		if (const std::tm* local = std::localtime(&now))

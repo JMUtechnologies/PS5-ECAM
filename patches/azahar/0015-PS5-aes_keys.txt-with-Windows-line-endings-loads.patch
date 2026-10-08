@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Mon, 5 Oct 2026 06:09:00 +0000
+Subject: [PATCH] PS5: aes_keys.txt with Windows line endings loads
+
+The key file's parsers read it line by line with std::getline, which
+keeps a carriage return: in a file saved with Windows line endings the
+":AES" section's header read as ":AES\r", which no parser knows, so not
+one key was loaded and nothing said so (an amiibo then could not be
+written). The stream the parsers read (GetKeysStream, which the RSA and
+ECC keys use as well) now has the carriage returns taken out.
+---
+ src/core/hw/aes/key.cpp | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/src/core/hw/aes/key.cpp b/src/core/hw/aes/key.cpp
+index 2c7fe1341..3df7ddb5b 100644
+--- a/src/core/hw/aes/key.cpp
++++ b/src/core/hw/aes/key.cpp
+@@ -299,7 +299,12 @@ std::istringstream GetKeysStream() {
+     std::ifstream file(filepath, std::ios_base::in | std::ios_base::binary);
+     std::istringstream ret;
+     if (file.is_open()) {
+-        return std::istringstream(std::string(std::istreambuf_iterator<char>(file), {}));
++        // PS5: without the carriage returns of a file saved with Windows line endings, which the
++        // parsers' std::getline would keep: ":AES\r" is no section they know, so not one key
++        // loaded (the RSA and ECC sections read this stream too)
++        std::string text(std::istreambuf_iterator<char>(file), {});
++        std::erase(text, '\r');
++        return std::istringstream(std::move(text));
+     } else {
+ #ifdef ENABLE_BUILTIN_KEYBLOB
+         // The key data is encrypted in the source to prevent easy access to it for unintended

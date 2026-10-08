@@ -9,7 +9,7 @@ SHELL := /bin/bash
 MAKEFLAGS += --no-print-directory
 
 # The release's version, set here only: port/CMakeLists.txt and tools/package.sh (param.json) read it
-VERSION := 3.5.0
+VERSION := 3.5.1
 APP := build/app/PPSA99360
 JOBS ?= $(shell nproc)
 export JOBS
@@ -23,8 +23,9 @@ help: ## List the targets
 	@echo
 	@echo 'Variables:'
 	@echo '  JOBS=$(JOBS)                parallel compile jobs'
-	@echo '  RADV_PATCHES=0006           the driver patches (patches/mesa) RADV is built with: their numbers,'
-	@echo '                              all, or empty for none (0006: 120 Hz output after the new launcher)'
+	@echo '  RADV_PATCHES=0006,0007      the driver patches (patches/mesa) RADV is built with: their numbers,'
+	@echo '                              all, or empty for none (0006: 120 Hz output after the new launcher;'
+	@echo '                              0007: no GPU fault on a buffer freed while the GPU still uses it)'
 	@echo '  RADV_ARCHIVE, RADV_SDK      a RADV built elsewhere, and the SDK fork it was built with'
 
 deps: ## Fetch the pinned inputs and build the libraries Cemu needs for the PS5

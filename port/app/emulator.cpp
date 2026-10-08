@@ -18,6 +18,7 @@
 #include "../ps5/notify.h"
 #include "../ps5/pad.h"
 #include "../ps5/privilege.h"
+#include "../ps5/threads.h"
 #include "ps5platform/exec.h"
 #include "ps5platform/heap.h"
 #include "PS5PadController.h"
@@ -44,11 +45,14 @@
 #include "config/NetworkSettings.h"
 #include "input/InputManager.h"
 #include "util/crypto/aes128.h"
+#include "util/highresolutiontimer/HighResolutionTimer.h"
 
 #include <atomic>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
+#include <thread>
+#include <x86intrin.h>
 
 extern "C" int32_t sceSystemServiceParamGetInt(int32_t paramId, int32_t* value);
 extern uint64 _rdtscFrequency; // Cafe/HW/Espresso/PPCTimer.cpp
@@ -60,6 +64,9 @@ extern uint64 _rdtscFrequency; // Cafe/HW/Espresso/PPCTimer.cpp
 
 // MemMapperPS5.cpp
 void PS5Cemu_MemMapperUsage(size_t& committed, size_t& jit);
+// patches/cemu: the GPU's time on Cemu's command buffers, when measured (VulkanRenderer.cpp)
+extern bool g_ps5GpuTimestamps;
+extern std::atomic<uint64> g_ps5GpuBusyNs;
 // patches/cemu: Cemu's VulkanPipelineStableCache.cpp
 void PS5Cemu_PipelineCacheProgress(uint32& loaded, uint32& queued, uint32& lastIndex);
 
@@ -72,6 +79,48 @@ namespace ps5emu
 		// the draws Cemu records in a command buffer before it submits it (PS5Cemu_SubmitDraws)
 		constexpr uint32_t kCemuSubmitDraws = 300;
 		std::atomic<uint32_t> s_submitDraws{kCemuSubmitDraws};
+
+		// What a call to each clock (and a yield) costs on this console, in nanoseconds, measured as a
+		// game starts: Cemu's GPU thread takes its millisecond clock at every draw call and its timer on
+		// its waits, and those that call into the kernel cost far more here than on a PC.
+		void LogClockCosts()
+		{
+			const auto nsPerCall = [](int count, auto&& call) {
+				timespec start{}, end{};
+				clock_gettime(CLOCK_MONOTONIC, &start);
+				for (int i = 0; i < count; i++)
+					call();
+				clock_gettime(CLOCK_MONOTONIC, &end);
+				return ((end.tv_sec - start.tv_sec) * 1e9 + (end.tv_nsec - start.tv_nsec)) / count;
+			};
+			volatile uint64_t sink = 0;
+			constexpr int kCount = 5000;
+			const double monotonic = nsPerCall(kCount, [&] {
+				timespec now;
+				clock_gettime(CLOCK_MONOTONIC, &now);
+				sink = sink + now.tv_nsec;
+			});
+			const double tickCount = nsPerCall(kCount, [&] { sink = sink + GetTickCount(); });
+			const double timer = nsPerCall(kCount, [&] { sink = sink + HighResolutionTimer::now().getTick(); });
+			const double processTime = nsPerCall(kCount, [&] { sink = sink + sceKernelGetProcessTime(); });
+			const double tsc = nsPerCall(kCount, [&] { sink = sink + __rdtsc(); });
+			const double yield = nsPerCall(kCount / 4, [] { std::this_thread::yield(); });
+			ps5log::Line("[clock] ns a call: clock_gettime {:.0f}, Cemu's GetTickCount {:.0f}, its timer {:.0f}, "
+						 "sceKernelGetProcessTime {:.0f}, rdtsc {:.0f}, yield {:.0f}",
+				monotonic, tickCount, timer, processTime, tsc, yield);
+		}
+
+		// draws a frame over Cemu's performance monitor's last few seconds (what its overlay shows)
+		uint32_t DrawsPerFrame()
+		{
+			uint64_t draws = 0, frames = 0;
+			for (const auto& cycle : performanceMonitor.cycle)
+			{
+				draws += cycle.drawCallCounter;
+				frames += cycle.frameCounter;
+			}
+			return frames ? (uint32_t)(draws / frames) : 0;
+		}
 
 		// the app's heap in use, MiB (0 without the platform's statistics)
 		uint64_t HeapMiB()
@@ -360,8 +409,7 @@ namespace ps5emu
 		CreateDirectories(ps5paths::kGames);
 		CreateDirectories(ps5paths::kLogs);
 		ps5log::Line("[emu] app folder: {}", ps5paths::AppDir());
-		// RADV keeps its shader cache in /app0 unless told otherwise, and a jailbroken process has none
-		setenv("MESA_SHADER_CACHE_DIR", ps5paths::kRadvCache, 1);
+		// (RADV's shader cache folder is set as the app starts: main_ps5.cpp)
 
 		GetConfigHandle().SetFilename(ActiveSettings::GetConfigPath("settings.xml").generic_wstring());
 		std::error_code ec;
@@ -532,6 +580,7 @@ namespace ps5emu
 		timespec resolution{};
 		clock_getres(CLOCK_MONOTONIC, &resolution);
 		ps5log::Line("[emu] clocks: monotonic resolution {} ns, TSC {:.2f} MHz", resolution.tv_nsec, _rdtscFrequency / 1e6);
+		LogClockCosts();
 		return true;
 	}
 
@@ -576,11 +625,35 @@ namespace ps5emu
 		LogMemory();
 		uint32_t loggedFrames = LatteGPUState.frameCounter;
 		uint64_t loggedAt = sceKernelGetProcessTime();
+		// where Cemu's GPU thread's time went, as running totals (Cemu patch 0025): waiting for the
+		// game's commands (the emulated CPU behind), on the PS5's GPU, or for results the game asked for
+		// a game that stops drawing after it has drawn (a hang): where its threads are, at 8 s and again
+		// at 20 s, so a thread stuck in one place can be told from one that spins
+		uint32_t watchedFrames = LatteGPUState.frameCounter;
+		uint64_t lastFrameAt = sceKernelGetProcessTime();
+		int hangDumps = 0;
+		uint64_t idleAt = performanceMonitor.gpuTime_idleTime.getTotal(), hostGpuAt = performanceMonitor.gpuTime_waitForHostGPU.getTotal(),
+				 asyncAt = performanceMonitor.gpuTime_waitForAsync.getTotal(), gpuBusyAt = g_ps5GpuBusyNs.load();
 		ps5usb::GameStarted(); // the portals the game was started with
 		ps5usb::Refresh();
 		for (;;)
 		{
 			sceKernelUsleep(16000);
+			if (LatteGPUState.frameCounter != watchedFrames)
+			{
+				watchedFrames = LatteGPUState.frameCounter;
+				lastFrameAt = sceKernelGetProcessTime();
+				hangDumps = 0;
+			}
+			else if (watchedFrames > 0 && hangDumps < 2)
+			{
+				const uint64_t stalled = sceKernelGetProcessTime() - lastFrameAt;
+				if (stalled >= (hangDumps == 0 ? 8000000u : 20000000u))
+				{
+					ps5threads::DumpStacks(fmt::format("no frame for {} s", stalled / 1000000).c_str());
+					hangDumps++;
+				}
+			}
 			// the in-game menu's graphic pack changes and figures, made here as Cemu's windows make them
 			ServiceGraphicPackRequests();
 			ps5usb::ServiceRequests();
@@ -600,13 +673,24 @@ namespace ps5emu
 				PS5Cemu_PipelineCacheProgress(loaded, queued, lastIndex);
 				const std::string pipelines = frames == loggedFrames || loaded != queued ?
 					fmt::format("; pipeline cache {} compiled, {} read of {}", loaded, queued, lastIndex + 1) : std::string();
+				const uint64_t idle = performanceMonitor.gpuTime_idleTime.getTotal(), hostGpu = performanceMonitor.gpuTime_waitForHostGPU.getTotal(),
+							   async = performanceMonitor.gpuTime_waitForAsync.getTotal();
+				const auto percent = [&](uint64_t ticks) { return now > loggedAt ? PPCTimer_tscToMicroseconds(ticks) * 100.0 / (now - loggedAt) : 0.0; };
+				// the GPU itself, when its time is measured (profiling runs): how much more it could draw
+				const uint64_t gpuBusy = g_ps5GpuBusyNs.load();
+				const std::string gpu = g_ps5GpuTimestamps && now > loggedAt ?
+					fmt::format("; GPU busy {:.0f}%", (gpuBusy - gpuBusyAt) / 1000.0 * 100.0 / (now - loggedAt)) : std::string();
+				// the GPU thread: idle (the emulated CPU behind), or waiting on the PS5's GPU (it behind),
+				// or neither (the GPU thread itself the limit)
 				if (now > loggedAt)
-					ps5log::Line("[perf] {:.1f} fps over {:.0f} s; accurate barriers {}{}; heap {} MiB; descriptor sets {}, image samplers {}",
-						(frames - loggedFrames) * 1e6 / (now - loggedAt),
-						(now - loggedAt) / 1e6, GetConfig().vk_accurate_barriers ? "on" : "off", pipelines, HeapMiB(), performanceMonitor.vk.numDescriptorSets.get(),
-						performanceMonitor.vk.numDescriptorSamplerTextures.get());
+					ps5log::Line("[perf] {:.1f} fps over {:.0f} s; GPU thread idle {:.0f}%, waiting on the GPU {:.0f}%, for results {:.0f}%; "
+						"{} draws a frame{}; accurate barriers {}{}; heap {} MiB; descriptor sets {}, image samplers {}",
+						(frames - loggedFrames) * 1e6 / (now - loggedAt), (now - loggedAt) / 1e6, percent(idle - idleAt), percent(hostGpu - hostGpuAt),
+						percent(async - asyncAt), DrawsPerFrame(), gpu, GetConfig().vk_accurate_barriers ? "on" : "off", pipelines, HeapMiB(),
+						performanceMonitor.vk.numDescriptorSets.get(), performanceMonitor.vk.numDescriptorSamplerTextures.get());
 				loggedFrames = frames;
 				loggedAt = now;
+				idleAt = idle, hostGpuAt = hostGpu, asyncAt = async, gpuBusyAt = gpuBusy;
 			}
 			switch (ps5pad::TakeShortcut())
 			{
@@ -650,6 +734,7 @@ namespace ps5emu
 		const std::string source = ps5paths::MountSource();
 		const std::string eboot = !source.empty() ? source + "/eboot.bin" :
 			fs::exists(ps5paths::kMountedEboot, ec) ? ps5paths::kMountedEboot : ps5paths::Eboot();
+		ps5log::FlushAll(); // the log's lines in the file before the process is replaced
 		const int result = sceSystemServiceLoadExec(eboot.c_str(), nullptr);
 		// it does not come back when it works; allow for one that returns before ending the process
 		if (result == 0)
