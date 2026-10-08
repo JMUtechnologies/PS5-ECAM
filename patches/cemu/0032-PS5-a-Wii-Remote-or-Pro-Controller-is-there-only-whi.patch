@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Thu, 8 Oct 2026 16:17:34 +0000
+Subject: [PATCH] PS5: a Wii Remote or Pro Controller is there only while its
+ DualSense is
+
+InputManager::get_wpad_controller, through which padscore answers every
+question about channels 0-3, gives no controller for one whose mapped
+DualSense the port says is not there (PS5Cemu_WpadPresent). The port sets
+up players 2-4 as Pro Controllers whether anyone holds their DualSenses
+or not, and padscore calls a game's connect and sampling callbacks for
+every controller it is given, from the first 5 ms tick: three Pro
+Controllers paired and on from boot, where a Wii U has none until one is
+connected. Skylanders Giants reads through a null pointer in its
+callback at that point and the app ends (PS5CEMU-HAR #29; Cemu's wiki has
+it crash at startup with any controller other than the GamePad on a PC
+too). A player who signs in later gets theirs then, reported connected as
+Cemu reports a new one.
+---
+ src/input/InputManager.cpp | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/src/input/InputManager.cpp b/src/input/InputManager.cpp
+index a492742..663a65e 100644
+--- a/src/input/InputManager.cpp
++++ b/src/input/InputManager.cpp
+@@ -705,13 +705,28 @@ std::shared_ptr<VPADController> InputManager::get_vpad_controller(size_t index)
+ 	return std::dynamic_pointer_cast<VPADController>(m_vpad[index]);
+ }
+ 
++#if defined(CEMU_PS5)
++// the port (PS5PadController.cpp): whether a player's DualSense the controller is mapped to is there
++bool PS5Cemu_WpadPresent(const EmulatedController& controller);
++#endif
++
+ std::shared_ptr<WPADController> InputManager::get_wpad_controller(size_t index) const
+ {
+ 	if (index >= m_wpad.size())
+ 		return {};
+ 
+ 	std::shared_lock lock(m_mutex);
++#if defined(CEMU_PS5)
++	// PS5: a Wii Remote or Pro Controller is there for the game only while its DualSense is, as on a
++	// Wii U one is only once paired and on (the port sets up players 2-4 whether or not anyone holds
++	// their controllers, and a game sees every one it is given from its first frame)
++	auto controller = std::dynamic_pointer_cast<WPADController>(m_wpad[index]);
++	if (controller && !PS5Cemu_WpadPresent(*controller))
++		return {};
++	return controller;
++#else
+ 	return std::dynamic_pointer_cast<WPADController>(m_wpad[index]);
++#endif
+ }
+ 
+ std::pair<size_t, size_t> InputManager::get_controller_count() const

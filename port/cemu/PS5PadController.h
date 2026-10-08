@@ -54,6 +54,7 @@ public:
 	InputAPI::Type api() const override { return InputAPI::PS5Pad; }
 
 	bool is_connected() override;
+	int Player() const { return m_player; }
 
 	bool has_motion() override { return true; }
 	MotionSample get_motion_sample() override;

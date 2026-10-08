@@ -196,6 +196,12 @@ namespace ps5pad
 		return Read(player, data);
 	}
 
+	bool HasController(int player)
+	{
+		std::lock_guard lock(s_mutex);
+		return player >= 0 && player < kMaxPlayers && s_slots[player].handle >= 0;
+	}
+
 	int32_t UserId(int player)
 	{
 		std::lock_guard lock(s_mutex);

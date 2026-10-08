@@ -2,6 +2,7 @@
 #include "PS5PadController.h"
 #include "../app/ingame.h"
 #include "../ps5/pad.h"
+#include "input/emulated/EmulatedController.h"
 
 #include <array>
 #include <atomic>
@@ -32,6 +33,26 @@ PS5PadController::PS5PadController(std::string_view uuid, std::string_view displ
 bool PS5PadController::is_connected()
 {
 	return ps5pad::IsConnected(m_player);
+}
+
+// patches/cemu (InputManager::get_wpad_controller): a Wii Remote or Pro Controller is there for the
+// game only while a player's DualSense it is mapped to is, as on a Wii U one is only once paired and
+// on. The port gives players 2-4 a Pro Controller each, so without this a game always saw three, from
+// its first frame (Skylanders Giants crashes at boot with one, as on a PC: #29). One mapped to no
+// DualSense keeps Cemu's own behaviour: it is always there.
+bool PS5Cemu_WpadPresent(const EmulatedController& controller)
+{
+	bool mapped = false;
+	for (const auto& base : controller.get_controllers())
+	{
+		if (const auto* pad = dynamic_cast<const PS5PadController*>(base.get()))
+		{
+			if (ps5pad::HasController(pad->Player()))
+				return true;
+			mapped = true;
+		}
+	}
+	return !mapped;
 }
 
 ControllerState PS5PadController::raw_state()
