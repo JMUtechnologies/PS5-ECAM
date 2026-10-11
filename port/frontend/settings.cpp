@@ -210,14 +210,12 @@ namespace ps5settings
 		ReadBool(json, "boxArt", settings.boxArt);
 		ReadBool(json, "asyncShaders", settings.asyncShaders);
 		ReadBool(json, "gamePadSpeaker", settings.gamePadSpeaker);
+		ReadBool(json, "remoteScreen", settings.remoteScreen);
 		ReadBool(json, "menuSounds", settings.menuSounds);
 		if (json.HasMember("ui") && json["ui"].IsObject())
 		{
 			const rapidjson::Value& ui = json["ui"];
 			Ui& out = settings.ui;
-			ReadString(ui, "startOn", out.startOn);
-			if (out.startOn != "ask")
-				out.startOn = "last";
 			ReadString(ui, "lastSide", out.lastSide);
 			ReadBool(ui, "largerText", out.largerText);
 			ReadBool(ui, "highContrast", out.highContrast);
@@ -311,6 +309,8 @@ namespace ps5settings
 		writer.Bool(settings.asyncShaders);
 		writer.Key("gamePadSpeaker");
 		writer.Bool(settings.gamePadSpeaker);
+		writer.Key("remoteScreen");
+		writer.Bool(settings.remoteScreen);
 		writer.Key("menuSounds");
 		writer.Bool(settings.menuSounds);
 		writer.Key("side");
@@ -319,8 +319,6 @@ namespace ps5settings
 		writer.String(settings.launchError.c_str());
 		writer.Key("ui");
 		writer.StartObject();
-		writer.Key("startOn");
-		writer.String(settings.ui.startOn.c_str());
 		writer.Key("lastSide");
 		writer.String(settings.ui.lastSide.c_str());
 		writer.Key("largerText");
@@ -514,6 +512,15 @@ namespace ps5settings
 		// should the app start over from here, it comes back to this side
 		merged.side = side;
 		Save(merged);
+	}
+
+	void SaveRemoteScreen(bool on)
+	{
+		Launcher all = Load();
+		if (all.remoteScreen == on)
+			return;
+		all.remoteScreen = on;
+		Save(all);
 	}
 
 	void AddRecent(uint64_t& lastGame, std::vector<uint64_t>& recent, uint64_t titleId)

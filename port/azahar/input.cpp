@@ -2,6 +2,7 @@
 #include "input.h"
 #include "controls.h"
 #include "../ps5/pad.h"
+#include "../stream/stream.h"
 
 #include "common/settings.h"
 #include "common/vector_math.h"
@@ -318,6 +319,17 @@ namespace ps5azahar::input
 			cursorY = s_cursorY;
 			wasTouching = s_touching;
 			s_touching = touch;
+		}
+
+		// the remote touch screen's touch (port/stream), wherever the TV's layout puts the bottom screen,
+		// or whether it shows it, before the DualSense's: let go on a later call, below
+		float remoteX = 0, remoteY = 0;
+		if (ps5stream::Touch(remoteX, remoteY) && !blocked)
+		{
+			window.TouchNormalized(remoteX, remoteY);
+			std::lock_guard lock(s_mutex);
+			s_touching = true;
+			return;
 		}
 
 		// where the cursor is (where it last was, without a finger)

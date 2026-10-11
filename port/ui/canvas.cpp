@@ -443,6 +443,11 @@ namespace ui
 			line(0.14f, 0.38f, 0.14f, 0.62f, 0.07f);
 			line(0.86f, 0.38f, 0.86f, 0.62f, 0.07f);
 			break;
+		case Icon::Phone: // a phone, upright, a finger's touch on its screen
+			Ring({X(0.28f), Y(0.08f), s * 0.44f, s * 0.84f}, s * 0.1f, stroke * 0.85f, colour);
+			line(0.44f, 0.8f, 0.56f, 0.8f, 0.065f);
+			dot(0.5f, 0.44f, 0.1f);
+			break;
 		}
 	}
 

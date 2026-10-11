@@ -4,6 +4,7 @@
 // timing and alignment patterns, masked, then the format (and from version 7 the version) bits.
 
 #include "qr.h"
+#include "canvas.h"
 
 #include <algorithm>
 #include <array>

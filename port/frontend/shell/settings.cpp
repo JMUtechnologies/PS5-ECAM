@@ -23,6 +23,7 @@
 #include "../../ps5/display.h"
 #include "../../ps5/log.h"
 #include "../../ps5/pad.h"
+#include "../../stream/stream.h"
 
 #include <algorithm>
 #include <cmath>
@@ -85,6 +86,7 @@ namespace ps5shell
 		pages.push_back({"audio", "Audio", "The games' sound, and the launcher's.", Icon::Speaker});
 		pages.push_back({"controls", "Controls", IsWiiU() ? "What each player's DualSense is to the Wii U." : Is3ds() ? "The DualSense as the 3DS." : "The DualSense as the DS.",
 			Icon::Pad});
+		pages.push_back({"remote", "Remote touch screen", "For every side. From dolphin78's idea and prototype.", Icon::Phone});
 		if (IsWiiU())
 			pages.push_back({"usb", "USB devices", "Cemu's emulated portals.", Icon::Usb});
 		if (!IsWiiU())
@@ -96,7 +98,7 @@ namespace ps5shell
 		if (Is3ds())
 			pages.push_back({"artic", "Artic Base", "Play from your 3DS, over your network.", Icon::Artic});
 		pages.push_back({"online", "Online", IsWiiU() ? "Box art, graphic packs and PS5CEMU-HAR itself." : "Box art and PS5CEMU-HAR itself.", Icon::Globe});
-		pages.push_back({"launcher", "Launcher", "Where it opens, how it looks, and how it reads.", Icon::Sparkle});
+		pages.push_back({"launcher", "Launcher", "How it looks, and how it reads.", Icon::Sparkle});
 		pages.push_back({"diagnostics", "Diagnostics", "The Setup check, logs, caches and what this session is.", Icon::Pulse});
 		pages.push_back({"about", "About", "Who made what.", Icon::Info});
 		if (!InGameSettings())
@@ -374,6 +376,18 @@ namespace ps5shell
 					Is3ds() ? "Default buttons, motion and deadzone." : "Default buttons and deadzone.", "The default buttons, motion and deadzone.");
 			}
 		}
+		else if (page == "remote")
+		{
+			const char* screen = IsWiiU() ? "The GamePad's screen" : Is3ds() ? "The bottom screen" : "The touch screen";
+			toggle("remote", "Remote touch screen", settings.remoteScreen, fmt::format("{} in a phone's or tablet's browser, with touch.", screen),
+				fmt::format("{} in any browser on the same network as the PS5, a phone's, a tablet's or a computer's, with nothing to install, "
+							"and its touches sent back to the game: the Wii U GamePad's screen for player 1, the 3DS's bottom screen, the DS's "
+							"touch screen. Scan the code shown here, or open the address. The DualSense stays the buttons, and the sound stays on "
+							"the PS5.\nWhile a browser shows it, the PS5 copies that screen up to 30 times a second, so a game can run a little "
+							"slower; with no browser, it costs nothing. Any device on your network can open the page, so turn it off on a network "
+							"you share. The same switch is in a game's menu (touchpad click + Options).\nFrom dolphin78's idea and prototype (#38).",
+					screen));
+		}
 		else if (page == "usb")
 		{
 			for (ps5usb::Device device : ps5usb::kDevices)
@@ -473,11 +487,6 @@ namespace ps5shell
 		}
 		else if (page == "launcher")
 		{
-			choice("starton", "Start on", Options({"The side last used", "Ask each time"}), settings.ui.startOn == "ask" ? 1 : 0,
-				"Where PS5CEMU-HAR opens.",
-				"The side last used: PS5CEMU-HAR opens on the side you were on, in its Library, and after a game on that game.\nAsk each time: "
-				"it shows the three sides first, as the start screen did.",
-				Kind::Segmented);
 			toggle("pictures", "Game pictures behind menus", settings.ui.gamePictures, "The focused game's cover, softened, behind the screens.",
 				"The focused game's picture fills the screen behind the menus, softened and dimmed, so moving the focus changes the whole "
 				"screen. Off: the game's colours only.");
@@ -557,6 +566,9 @@ namespace ps5shell
 		if (page == "files" && IsDs())
 			return "Saves: /data/ps5cemu/melonds/saves (a .sav beside the game is taken the first time). Save states: melonds/states. Cheats: "
 				   "melonds/cheats/<game file>.mch, melonDS's format. DSi games, the DS's wireless and its GBA slot are not there.";
+		if (page == "remote" && !m_settings.remoteScreen)
+			return "On, a code here opens the game's second screen in a phone's browser. Nothing to install; the PS5 and the phone on the "
+				   "same network.";
 		if (page == "usb")
 			return "Figure dumps go in /data/ps5cemu/figures: skylanders, infinity and dimensions. Switch a portal on here, start the game, then "
 				   "put figures on it from the in-game menu (touchpad click + Options > USB devices).";
@@ -564,7 +576,7 @@ namespace ps5shell
 			return "Cemu, the Wii U emulator, by the Cemu team and its contributors; RADV on the PS5 by Mihawk-99 and mpereiraesaa; the "
 				   "community graphic packs' authors.\nAzahar, the 3DS emulator, by the Azahar team and the Citra contributors before them; "
 				   "Mihawk-99's PS5 port of it and dynarmic.\nmelonDS, the DS emulator, by Arisotura and the melonDS team.\nBox art and game "
-				   "information: GameTDB. The font: Lexend.\nAn unofficial port, not affiliated with the Cemu, Azahar or melonDS teams, Nintendo "
+				   "information: GameTDB. The font: Lexend.\nThe remote touch screen: dolphin78's idea and prototype.\nAn unofficial port, not affiliated with the Cemu, Azahar or melonDS teams, Nintendo "
 				   "or Sony.\n\nWii U games: /data/ps5cemu/games, storage and saves: /data/ps5cemu/mlc01, keys: /data/ps5cemu/keys.txt\n3DS "
 				   "games: /data/ps5cemu/azahar/games, storage: /data/ps5cemu/azahar/sdmc\nDS games: /data/ps5cemu/melonds/games, saves: "
 				   "/data/ps5cemu/melonds/saves\n\nVersion " +
@@ -577,9 +589,7 @@ namespace ps5shell
 	void Shell::SetRowIndex(ps5settings::Launcher& settings, const std::string& id, int index)
 	{
 		ps5settings::N3ds& hand = m_side == System::Nds ? settings.nds : settings.n3ds;
-		if (id == "starton")
-			settings.ui.startOn = index == 1 ? "ask" : "last";
-		else if (id == "music")
+		if (id == "music")
 			settings.music = kMusic[std::clamp(index, 0, 1)];
 		else if (id == "holdms")
 			settings.ui.holdMs = kHolds[std::clamp(index, 0, 5)];
@@ -625,6 +635,8 @@ namespace ps5shell
 				settings.menuSounds = on;
 			else if (id == "gamepadspeaker")
 				settings.gamePadSpeaker = on;
+			else if (id == "remote")
+				settings.remoteScreen = on;
 			else if (id == "rumble")
 				settings.rumble = on;
 			else if (id == "boxart")
@@ -712,6 +724,8 @@ namespace ps5shell
 		ps5sound::SetMusic(m_settings.music, m_settings.musicVolume);
 		ps5sound::SetMenuSounds(m_settings.menuSounds);
 		ps5pad::SetVibrationEnabled(m_settings.rumble);
+		if (id == "remote")
+			ps5stream::Configure(m_settings.remoteScreen);
 		if (id == "boxart")
 		{
 			ps5boxart::SetEnabled(m_settings.boxArt);
@@ -1076,6 +1090,54 @@ namespace ps5shell
 		}
 	}
 
+	// The remote touch screen's card (6.5): the QR code on white, the address in large type, the state in
+	// a chip, one line of what to know
+	void Shell::DrawRemoteScreen(Canvas& canvas, const Box& card)
+	{
+		const ps5stream::State state = ps5stream::Current();
+		canvas.Rect(card, kRadiusCard, Surface());
+		canvas.Ring(card, kRadiusCard, 1.5f, kGlassEdge);
+		const float pad = 36, qr = 300;
+		float tx = card.x + pad;
+		if (!state.address.empty())
+		{
+			auto code = m_qrCodes.find(state.address);
+			if (code == m_qrCodes.end())
+				code = m_qrCodes.emplace(state.address, ui::QrCode(state.address)).first;
+			ui::DrawQr(canvas, code->second, {card.x + pad, card.y + (card.h - qr) * 0.5f, qr, qr}, 18);
+			tx += qr + 44;
+		}
+		const float tw = card.Right() - pad - tx;
+		const bool working = state.kind == ps5stream::State::Kind::Waiting || state.kind == ps5stream::State::Kind::Showing;
+		const ui::TextBlock overline = m_fonts.Layout(Style(kOverlineStyle), working ? "Scan it, or open" : "Remote touch screen", tw, 1);
+		const ui::TextBlock address = m_fonts.Layout(Style({46, ui::Weight::SemiBold, 1.1f}), state.address, tw, 1);
+		const std::string what = ps5stream::Describe(state.kind);
+		const ui::TextStyle chipStyle = Style({22, ui::Weight::Medium, 1.0f});
+		const float chipW = m_fonts.Width(chipStyle, what) + 60, chipH = 44;
+		const ui::TextBlock note = m_fonts.Layout(Style({21, ui::Weight::Regular, 1.5f}),
+			working ? "Same network as the PS5. Nothing to install: the browser is enough. Sound stays on the PS5. Any browser on the network can "
+					  "see it and touch." :
+					  "Turn it off and on again once that is fixed.",
+			std::min(tw, 660.0f), 3);
+		const float height = overline.height + 14 + (address.lines.empty() ? 0 : address.height + 22) + chipH + 22 + note.height;
+		float y = card.y + (card.h - height) * 0.5f;
+		canvas.Text(overline, tx, y, Tertiary());
+		y += overline.height + 14;
+		if (!state.address.empty())
+		{
+			canvas.Text(address, tx, y, kText);
+			y += address.height + 22;
+		}
+		const uint32_t dot = state.kind == ps5stream::State::Kind::Showing ? kGood : working ? kWarn : kBad;
+		canvas.Rect({tx, y, chipW, chipH}, chipH * 0.5f, 0x14ffffff);
+		canvas.Rect({tx + 18, y + chipH * 0.5f - 11, 22, 22}, 11, ui::SetAlpha(dot, 0.2f));
+		canvas.Rect({tx + 23, y + chipH * 0.5f - 6, 12, 12}, 6, dot);
+		const ui::TextBlock chip = m_fonts.Layout(chipStyle, what, chipW, 1);
+		canvas.Text(chip, tx + 48, y + (chipH - chip.height) * 0.5f, kText);
+		y += chipH + 22;
+		canvas.Text(note, tx, y, Secondary());
+	}
+
 	void Shell::SettingsDraw(Canvas& canvas)
 	{
 		// a game's settings have no tabs to go to
@@ -1146,6 +1208,13 @@ namespace ps5shell
 				HoldRing(canvas, box, m_holdProgress);
 		}
 		canvas.PopClip();
+		// the remote touch screen, while it is on: the code to scan, the address, what is happening
+		if (m_page == "remote" && m_settings.remoteScreen && !InGameSettings())
+		{
+			DrawRemoteScreen(canvas, {px, ry + rows.size() * (rowH + 12) + 18, pw, 372});
+			canvas.PopAlpha();
+			return;
+		}
 		// what the page says under its rows
 		const std::string panel = PanelText(m_page);
 		if (!panel.empty())

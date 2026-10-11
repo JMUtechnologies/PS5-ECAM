@@ -1,0 +1,269 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Sat, 10 Oct 2026 06:54:11 +0000
+Subject: [PATCH] PS5: the bottom screen for the remote touch screen, and its
+ touches
+
+The remote touch screen (PS5CEMU-HAR #38, from dolphin78's prototype)
+shows the 3DS's bottom screen in a browser on the local network and
+sends its touches back. While a browser shows it, the port asks for a
+picture at most 30 times a second (AzaharPS5_StreamWantFrame): the
+screenshot's staging-copy path draws the bottom screen alone at its own
+320 x 240, without the stereo mode, the cursor or the port's overlays,
+whether or not the TV's layout shows it, and hands the RGB rows to the
+port (AzaharPS5_StreamFrame) instead of the screenshot's buffer. The
+copy is made visible to the host before it is read.
+
+EmuWindow::TouchNormalized touches the bottom screen at a point from 0
+to 1 across it, whatever the TV's layout, for the browser's touches.
+---
+ src/core/frontend/emu_window.cpp              |  10 ++
+ src/core/frontend/emu_window.h                |   5 +
+ .../renderer_vulkan/renderer_vulkan.cpp       | 107 +++++++++++++++---
+ .../renderer_vulkan/renderer_vulkan.h         |   5 +-
+ 4 files changed, 109 insertions(+), 18 deletions(-)
+
+diff --git a/src/core/frontend/emu_window.cpp b/src/core/frontend/emu_window.cpp
+index 0819743..46f0885 100644
+--- a/src/core/frontend/emu_window.cpp
++++ b/src/core/frontend/emu_window.cpp
+@@ -2,6 +2,7 @@
+ // Licensed under GPLv2 or any later version
+ // Refer to the license.txt file included.
+ 
++#include <algorithm>
+ #include <cmath>
+ #include <mutex>
+ #include "common/settings.h"
+@@ -152,6 +153,15 @@ bool EmuWindow::TouchPressed(unsigned framebuffer_x, unsigned framebuffer_y) {
+     return true;
+ }
+ 
++#ifdef __PROSPERO__
++void EmuWindow::TouchNormalized(float x, float y) {
++    std::scoped_lock guard{touch_state->mutex};
++    touch_state->touch_x = std::clamp(x, 0.0f, 1.0f);
++    touch_state->touch_y = std::clamp(y, 0.0f, 1.0f);
++    touch_state->touch_pressed = true;
++}
++#endif
++
+ void EmuWindow::TouchReleased() {
+     std::scoped_lock guard{touch_state->mutex};
+     touch_state->touch_pressed = false;
+diff --git a/src/core/frontend/emu_window.h b/src/core/frontend/emu_window.h
+index d0466a2..00a33bd 100644
+--- a/src/core/frontend/emu_window.h
++++ b/src/core/frontend/emu_window.h
+@@ -203,6 +203,11 @@ public:
+     /// Signal that a touch released event has occurred (e.g. mouse click released)
+     void TouchReleased();
+ 
++#ifdef __PROSPERO__
++    /// Touch the native bottom screen independently of the TV layout.
++    void TouchNormalized(float x, float y);
++#endif
++
+     /**
+      * Signal that a touch movement event has occurred (e.g. mouse was moved over the emu window)
+      * @param framebuffer_x Framebuffer x-coordinate
+diff --git a/src/video_core/renderer_vulkan/renderer_vulkan.cpp b/src/video_core/renderer_vulkan/renderer_vulkan.cpp
+index 775f7b0..ade438a 100644
+--- a/src/video_core/renderer_vulkan/renderer_vulkan.cpp
++++ b/src/video_core/renderer_vulkan/renderer_vulkan.cpp
+@@ -35,6 +35,13 @@
+ 
+ MICROPROFILE_DEFINE(Vulkan_RenderFrame, "Vulkan", "Render Frame", MP_RGB(128, 128, 64));
+ 
++#ifdef __PROSPERO__
++// The remote touch screen (PS5CEMU-HAR's port/stream): whether a browser wants the bottom screen now,
++// and the picture, as RGB rows
++bool AzaharPS5_StreamWantFrame();
++void AzaharPS5_StreamFrame(const u8* rgb, int width, int height);
++#endif
++
+ namespace Vulkan {
+ 
+ struct ScreenRectVertex {
+@@ -233,7 +240,11 @@ void RendererVulkan::PrepareDraw(Frame* frame, const Layout::FramebufferLayout&
+     renderpass_cache.EndRendering();
+     scheduler.Record([this, layout, frame, present_set,
+                       renderpass = main_present_window.Renderpass(),
+-                      index = current_pipeline](vk::CommandBuffer cmdbuf) {
++                      index = current_pipeline
++#ifdef __PROSPERO__
++                      , capture = stream_capture
++#endif
++                      ](vk::CommandBuffer cmdbuf) {
+         const vk::Viewport viewport = {
+             .x = 0.0f,
+             .y = 0.0f,
+@@ -266,7 +277,8 @@ void RendererVulkan::PrepareDraw(Frame* frame, const Layout::FramebufferLayout&
+         };
+ 
+ #ifdef __PROSPERO__
+-        DrawFrontendOverlay(cmdbuf, renderpass, frame->width, frame->height, false);
++        if (!capture)
++            DrawFrontendOverlay(cmdbuf, renderpass, frame->width, frame->height, false);
+ #endif
+         cmdbuf.beginRenderPass(renderpass_begin_info, vk::SubpassContents::eInline);
+         cmdbuf.bindPipeline(vk::PipelineBindPoint::eGraphics, present_pipelines[index]);
+@@ -1058,7 +1070,11 @@ void RendererVulkan::DrawScreens(Frame* frame, const Layout::FramebufferLayout&
+         clear_color.float32[1] = Settings::values.bg_green.GetValue();
+         clear_color.float32[2] = Settings::values.bg_blue.GetValue();
+     }
+-    if (settings.shader_update_requested.exchange(false)) {
++    if (
++#ifdef __PROSPERO__
++        !stream_capture &&
++#endif
++        settings.shader_update_requested.exchange(false)) {
+         ReloadPipeline(layout.render_3d_mode);
+     }
+ 
+@@ -1098,12 +1114,16 @@ void RendererVulkan::DrawScreens(Frame* frame, const Layout::FramebufferLayout&
+         }
+     }
+ 
+-    DrawCursor(layout);
++#ifdef __PROSPERO__
++    if (!stream_capture)
++#endif
++        DrawCursor(layout);
+ 
+ #ifdef __PROSPERO__
+     scheduler.Record([this, renderpass = main_present_window.Renderpass(), width = frame->width,
+-                      height = frame->height](vk::CommandBuffer cmdbuf) {
+-        DrawFrontendOverlay(cmdbuf, renderpass, width, height, true);
++                      height = frame->height, capture = stream_capture](vk::CommandBuffer cmdbuf) {
++        if (!capture)
++            DrawFrontendOverlay(cmdbuf, renderpass, width, height, true);
+     });
+ #endif
+     scheduler.Record([](vk::CommandBuffer cmdbuf) { cmdbuf.endRenderPass(); });
+@@ -1192,6 +1212,20 @@ void RendererVulkan::SwapBuffers() {
+     const Layout::FramebufferLayout& layout = render_window.GetFramebufferLayout();
+     PrepareRendertarget();
+     RenderScreenshot();
++#ifdef __PROSPERO__
++    // the remote touch screen: the bottom screen at its own size, whether or not the TV shows it, at
++    // most 30 times a second while a browser shows it (while none does, a call that reads a flag)
++    if (AzaharPS5_StreamWantFrame()) {
++        const auto previous_pipeline = current_pipeline;
++        const auto previous_interlaced = draw_info.reverse_interlaced;
++        ReloadPipeline(Settings::StereoRenderOption::Off);
++        stream_capture = true;
++        RenderScreenshotWithStagingCopy(true);
++        stream_capture = false;
++        current_pipeline = previous_pipeline;
++        draw_info.reverse_interlaced = previous_interlaced;
++    }
++#endif
+     isSecondaryWindow = false;
+     RenderToWindow(main_present_window, layout, false);
+ #ifndef ANDROID
+@@ -1241,10 +1275,21 @@ void RendererVulkan::RenderScreenshot() {
+     settings.screenshot_complete_callback(false);
+ }
+ 
+-void RendererVulkan::RenderScreenshotWithStagingCopy() {
++void RendererVulkan::RenderScreenshotWithStagingCopy(bool stream) {
+     const vk::Device device = instance.GetDevice();
+ 
+-    const Layout::FramebufferLayout layout{settings.screenshot_framebuffer_layout};
++    Layout::FramebufferLayout layout{settings.screenshot_framebuffer_layout};
++#ifdef __PROSPERO__
++    if (stream) {
++        // the bottom screen alone, at its own 320 x 240, whether or not the TV's layout shows it
++        layout = {};
++        layout.width = 320;
++        layout.height = 240;
++        layout.bottom_screen_enabled = true;
++        layout.bottom_screen = {0, 0, 320, 240};
++        layout.render_3d_mode = Settings::StereoRenderOption::Off;
++    }
++#endif
+     const u32 width = layout.width;
+     const u32 height = layout.height;
+ 
+@@ -1344,20 +1389,48 @@ void RendererVulkan::RenderScreenshotWithStagingCopy() {
+             cmdbuf.pipelineBarrier(
+                 vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eAllCommands,
+                 vk::DependencyFlagBits::eByRegion, memory_write_barrier, {}, write_barrier);
++            const vk::BufferMemoryBarrier host_barrier = {
++                .srcAccessMask = vk::AccessFlagBits::eTransferWrite,
++                .dstAccessMask = vk::AccessFlagBits::eHostRead,
++                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
++                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
++                .buffer = staging_buffer,
++                .offset = 0,
++                .size = VK_WHOLE_SIZE,
++            };
++            cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer,
++                                   vk::PipelineStageFlagBits::eHost, {}, {}, host_barrier, {});
+         });
+ 
+     // Ensure the copy is fully completed before saving the screenshot
+     scheduler.Finish();
+ 
+-    // Copy backing image data to the QImage screenshot buffer
+-    std::memcpy(settings.screenshot_bits, alloc_info.pMappedData, staging_buffer_info.size);
+-
+-    // QImage::Format_RGB32 expects BGRA byte order. If the swapchain format is RGBA,
+-    // swap R and B channels so the screenshot colors are correct.
+-    if (main_present_window.GetSurfaceFormat() == vk::Format::eR8G8B8A8Unorm) {
+-        u8* pixels = static_cast<u8*>(settings.screenshot_bits);
+-        for (u32 i = 0; i < width * height; i++) {
+-            std::swap(pixels[i * 4 + 0], pixels[i * 4 + 2]);
++    // Make non-coherent host memory visible after the GPU has finished writing.
++    vmaInvalidateAllocation(instance.GetAllocator(), allocation, 0, VK_WHOLE_SIZE);
++#ifdef __PROSPERO__
++    if (stream) {
++        const auto* pixels = static_cast<const u8*>(alloc_info.pMappedData);
++        const bool rgba = main_present_window.GetSurfaceFormat() == vk::Format::eR8G8B8A8Unorm;
++        std::vector<u8> rgb(width * height * 3);
++        for (u32 i = 0; i < width * height; ++i) {
++            rgb[i * 3] = pixels[i * 4 + (rgba ? 0 : 2)];
++            rgb[i * 3 + 1] = pixels[i * 4 + 1];
++            rgb[i * 3 + 2] = pixels[i * 4 + (rgba ? 2 : 0)];
++        }
++        AzaharPS5_StreamFrame(rgb.data(), static_cast<int>(width), static_cast<int>(height));
++    } else
++#endif
++    {
++        // Copy backing image data to the QImage screenshot buffer
++        std::memcpy(settings.screenshot_bits, alloc_info.pMappedData, staging_buffer_info.size);
++
++        // QImage::Format_RGB32 expects BGRA byte order. If the swapchain format is RGBA,
++        // swap R and B channels so the screenshot colors are correct.
++        if (main_present_window.GetSurfaceFormat() == vk::Format::eR8G8B8A8Unorm) {
++            u8* pixels = static_cast<u8*>(settings.screenshot_bits);
++            for (u32 i = 0; i < width * height; i++) {
++                std::swap(pixels[i * 4 + 0], pixels[i * 4 + 2]);
++            }
+         }
+     }
+ 
+diff --git a/src/video_core/renderer_vulkan/renderer_vulkan.h b/src/video_core/renderer_vulkan/renderer_vulkan.h
+index 111d71a..de7060b 100644
+--- a/src/video_core/renderer_vulkan/renderer_vulkan.h
++++ b/src/video_core/renderer_vulkan/renderer_vulkan.h
+@@ -94,7 +94,7 @@ private:
+     void ConfigureRenderPipeline();
+     void PrepareRendertarget();
+     void RenderScreenshot();
+-    void RenderScreenshotWithStagingCopy();
++    void RenderScreenshotWithStagingCopy(bool stream = false);
+     bool TryRenderScreenshotWithHostMemory();
+     void PrepareDraw(Frame* frame, const Layout::FramebufferLayout& layout);
+     void RenderToWindow(PresentWindow& window, const Layout::FramebufferLayout& layout,
+@@ -160,6 +160,9 @@ private:
+     bool isSecondaryWindow;
+     bool secondaryWindowEnabled;
+     bool screenRendered;
++#ifdef __PROSPERO__
++    bool stream_capture = false;
++#endif
+ };
+ 
+ } // namespace Vulkan

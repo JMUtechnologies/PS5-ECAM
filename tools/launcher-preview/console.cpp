@@ -19,6 +19,7 @@
 #include "ps5/notify.h"
 #include "ps5/pad.h"
 #include "ps5/privilege.h"
+#include "stream/stream.h"
 
 #include <zlib.h>
 
@@ -729,4 +730,32 @@ namespace ps5emu
 
 	void CancelInstall() { s_install.state = InstallStatus::State::Cancelled; }
 	void ReloadGraphicPacks() {}
+}
+
+// The remote touch screen (port/stream), without a network: on, it is at a made-up address, and a
+// browser shows it after a while
+namespace ps5stream
+{
+	static bool s_enabled = false;
+	static int s_asked = 0;
+	void Configure(bool enabled) { s_enabled = enabled; }
+	bool Enabled() { return s_enabled; }
+	State Current()
+	{
+		if (!s_enabled)
+			return {};
+		return {++s_asked > 240 ? State::Kind::Showing : State::Kind::Waiting, "http://192.168.1.25:8080/"};
+	}
+	const char* Describe(State::Kind kind)
+	{
+		switch (kind)
+		{
+		case State::Kind::Off: return "Off";
+		case State::Kind::Waiting: return "Waiting for a browser";
+		case State::Kind::Showing: return "A browser is showing it";
+		case State::Kind::NoNetwork: return "No network: connect the PS5 to Wi-Fi or a cable";
+		case State::Kind::NoPort: return "No free port for the server";
+		}
+		return "";
+	}
 }

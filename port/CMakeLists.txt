@@ -126,6 +126,13 @@ add_library(CemuPS5 STATIC
 	ps5/vulkan_display.h
 	ps5/window.h
 	ps5/window_system.cpp
+	stream/browser.h
+	stream/jpeg.cpp
+	stream/jpeg.h
+	stream/stream.cpp
+	stream/stream.h
+	stream/websocket.cpp
+	stream/websocket.h
 	ui/canvas.cpp
 	ui/canvas.h
 	ui/feedback.cpp
@@ -180,6 +187,9 @@ set_source_files_properties(
 	ps5/privilege.cpp
 	ps5/threads.cpp
 	ps5/vulkan_display.cpp
+	stream/jpeg.cpp
+	stream/stream.cpp
+	stream/websocket.cpp
 	ui/canvas.cpp
 	ui/feedback.cpp
 	ui/gfx.cpp
@@ -224,6 +234,7 @@ target_link_libraries(CemuPS5 PUBLIC
 	"${BZ2_LIBRARY}"
 	"${PSL_LIBRARY}"
 	"${TURBOJPEG_LIBRARY}"
+	OpenSSL::Crypto # the remote touch screen's WebSocket handshake (stream/websocket.cpp)
 	ZLIB::ZLIB
 	libzip::zip
 )

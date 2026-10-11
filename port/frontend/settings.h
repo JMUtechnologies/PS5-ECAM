@@ -63,7 +63,6 @@ namespace ps5settings
 	// The new launcher's own (docs/UI-REDESIGN.md, 9.8), under "ui"
 	struct Ui
 	{
-		std::string startOn = "last"; // "last": the side last used; "ask": the side chooser
 		std::string lastSide;		 // "wiiu", "3ds" or "ds": the side last used, restored at every start
 		bool largerText = false;
 		bool highContrast = false;
@@ -86,6 +85,7 @@ namespace ps5settings
 		bool overlay = false;		  // Cemu's performance overlay from the start
 		bool asyncShaders = true;	  // Cemu's async_compile (Settings > Graphics, and the in-game menu's Graphics)
 		bool gamePadSpeaker = false;  // the GamePad's sound on player 1's DualSense speaker (Settings > Audio)
+		bool remoteScreen = false;	  // the remote touch screen (stream/stream.h), every side's: Settings and the in-game menus
 		bool rumble = true;
 		bool pinCpuThreads = false;	  // an experiment (ps5/threads.h): only in ps5cemu.json
 		// only in ps5cemu.json: RADV_DEBUG for the Vulkan driver (e.g. "nongg,nohiz"), to narrow down
@@ -140,6 +140,9 @@ namespace ps5settings
 	// with, to after) saved in ps5cemu.json, into the game's own settings when it has some and the
 	// setting is one a game can have, else into the side's; the rest of the side's as after has them.
 	void SaveChanges(const std::string& side, uint64_t titleId, const Launcher& before, const Launcher& after);
+	// The remote touch screen turned on or off in a game's menu: saved at once, for every side, the
+	// rest of ps5cemu.json as it is
+	void SaveRemoteScreen(bool on);
 	// The game played last and first among the recent ones (at most four).
 	void AddRecent(uint64_t& lastGame, std::vector<uint64_t>& recent, uint64_t titleId);
 	inline void AddRecent(Launcher& settings, uint64_t titleId) { AddRecent(settings.lastGame, settings.recent, titleId); }

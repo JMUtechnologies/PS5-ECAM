@@ -1,0 +1,28 @@
+# The remote touch screen's page on each side, turned on
+# (PREVIEW_REMOTE=1 tools/preview-shell.sh tools/launcher-preview/shell-remote.txt).
+wait 90
+press r1                      # Settings
+wait 45
+press down down down          # Remote touch screen, after Controls
+wait 30
+shot remote-wiiu
+press right                   # its row
+wait 25
+shot remote-wiiu-row
+press triangle                # its help
+wait 30
+shot remote-wiiu-help
+press circle
+press cross                   # off
+wait 30
+shot remote-wiiu-off
+press cross                   # on again; the preview's browser joins a while later
+wait 260
+shot remote-wiiu-showing
+press circle
+press touchpad                # the 3DS side's
+wait 60
+shot remote-3ds
+press touchpad                # the DS side's
+wait 60
+shot remote-ds

@@ -1,0 +1,170 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Sat, 10 Oct 2026 06:53:46 +0000
+Subject: [PATCH] PS5: the GamePad's picture for the remote touch screen
+
+The remote touch screen (PS5CEMU-HAR #38, from dolphin78's prototype)
+shows the GamePad in a browser on the local network, whether or not the
+TV shows it. While a browser shows it, the port asks for a picture at
+most 30 times a second (PS5Cemu_StreamWantFrame): the GamePad's scan
+buffer is brought up to date as the TV's would be, read back with the
+screenshot's own path, and handed to the port (PS5Cemu_StreamFrame)
+instead of saved. A screenshot asked for meanwhile is left alone.
+
+The readback now ends the open render pass before its copies, makes
+the buffer's writes visible to the host before it is read, waits on
+the command buffer it submitted, and sizes the RGB buffer for formats
+that were copied into an empty one.
+---
+ src/Cafe/HW/Latte/Core/LatteRenderTarget.cpp  | 11 ++++
+ src/Cafe/HW/Latte/Renderer/Renderer.h         |  6 +++
+ .../Latte/Renderer/Vulkan/VulkanRenderer.cpp  | 51 +++++++++++++------
+ 3 files changed, 53 insertions(+), 15 deletions(-)
+
+diff --git a/src/Cafe/HW/Latte/Core/LatteRenderTarget.cpp b/src/Cafe/HW/Latte/Core/LatteRenderTarget.cpp
+index acf2ed1..dff0c79 100644
+--- a/src/Cafe/HW/Latte/Core/LatteRenderTarget.cpp
++++ b/src/Cafe/HW/Latte/Core/LatteRenderTarget.cpp
+@@ -870,6 +870,8 @@ void LatteRenderTarget_getScreenImageArea(sint32* x, sint32* y, sint32* width, s
+ bool PS5Cemu_SecondScreenInCorner(bool gamePadIsPrimary);
+ void PS5Cemu_SetGamePadArea(bool visible, sint32 x, sint32 y, sint32 width, sint32 height);
+ void PS5Cemu_RenderOverlay();
++// The remote touch screen (port/stream): whether a browser wants the GamePad's picture now
++bool PS5Cemu_StreamWantFrame();
+ 
+ // The PS5 has one screen. It shows the TV or the GamePad whole, and can show the other one in its
+ // bottom right corner, from the scan buffer that screen was last copied from.
+@@ -1071,6 +1073,15 @@ void LatteRenderTarget_itHLECopyColorBufferToScanBuffer(MPTR colorBufferPtr, uin
+ 			s_ps5ScanBufferSource[screen] = {true, colorBufferPtr, colorBufferWidth, colorBufferHeight, colorBufferFormat, colorBufferPitch, colorBufferSwizzle, colorBufferTilemode};
+ 	}
+ 	s_ps5GamePadIsPrimary = showDRC;
++	// the remote touch screen: the GamePad's picture, whether or not the TV shows it, at most 30 times
++	// a second while a browser shows it (the port's port/stream: while none does, a call that reads a flag)
++	if ((renderTarget & RENDER_TARGET_DRC) && PS5Cemu_StreamWantFrame())
++	{
++		// a GamePad the TV does not show still needs the cache refresh the TV's picture gets
++		LatteTexture_UpdateDataToLatest(texView->baseTexture);
++		LatteTC_MarkTextureStillInUse(texView->baseTexture);
++		g_renderer->CaptureGamePadStream(texView);
++	}
+ #endif
+ 	if ((renderTarget & RENDER_TARGET_DRC) && g_renderer->IsPadWindowActive())
+ 		LatteRenderTarget_copyToBackbuffer(texView, true);
+diff --git a/src/Cafe/HW/Latte/Renderer/Renderer.h b/src/Cafe/HW/Latte/Renderer/Renderer.h
+index fa77fd9..557519c 100644
+--- a/src/Cafe/HW/Latte/Renderer/Renderer.h
++++ b/src/Cafe/HW/Latte/Renderer/Renderer.h
+@@ -72,6 +72,12 @@ public:
+ 	void RequestScreenshot(ScreenshotSaveFunction onSaveScreenshot);
+ 	void CancelScreenshotRequest();
+ 
++#if defined(CEMU_PS5)
++	// the remote touch screen's GamePad picture: the screenshot's readback, sent to the port instead of
++	// saved, and leaving a screenshot asked for meanwhile alone
++	bool m_ps5StreamCapture = false;
++	void CaptureGamePadStream(LatteTextureView* view) { m_ps5StreamCapture = true; HandleScreenshotRequest(view, true); m_ps5StreamCapture = false; }
++#endif
+ 	virtual void HandleScreenshotRequest(LatteTextureView* texView, bool padView){}
+ 
+ 	virtual void DrawBackbufferQuad(LatteTextureView* texView, RendererOutputShader* shader, bool useLinearTexFilter,
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+index 009f128..8d2d89c 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+@@ -10,6 +10,8 @@ void PS5Cemu_ImguiUploads();
+ // cemuSubmitDraws, 300 as Cemu's own unless set). On the PS5 each submission costs the driver a copy
+ // of its words and an AGC submission, and the GPU a reset of its state and a write-back of its caches
+ uint32 PS5Cemu_SubmitDraws();
++// The remote touch screen (port/stream): the GamePad's picture, as RGB rows
++void PS5Cemu_StreamFrame(const uint8* rgb, int width, int height);
+ #endif
+ #include "Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h"
+ #include "Cafe/HW/Latte/Renderer/Vulkan/LatteTextureVk.h"
+@@ -1027,26 +1029,35 @@ bool VulkanRenderer::IsPadWindowActive()
+ 
+ void VulkanRenderer::HandleScreenshotRequest(LatteTextureView* texView, bool padView)
+ {
+-	if (!m_screenshot_requested && m_screenshot_state == ScreenshotState::None)
+-		return;
+-
+-	if (IsSwapchainInfoValid(false))
++#if defined(CEMU_PS5)
++	if (!m_ps5StreamCapture)
++#endif
+ 	{
+-		// we already took a pad view screenshow and want a main window screenshot
+-		if (m_screenshot_state == ScreenshotState::Main && padView)
++		if (!m_screenshot_requested && m_screenshot_state == ScreenshotState::None)
+ 			return;
+ 
+-		if (m_screenshot_state == ScreenshotState::Pad && !padView)
+-			return;
++		if (IsSwapchainInfoValid(false))
++		{
++			// we already took a pad view screenshow and want a main window screenshot
++			if (m_screenshot_state == ScreenshotState::Main && padView)
++				return;
+ 
+-		// remember which screenshot is left to take
+-		if (m_screenshot_state == ScreenshotState::None)
+-			m_screenshot_state = padView ? ScreenshotState::Main : ScreenshotState::Pad;
++			if (m_screenshot_state == ScreenshotState::Pad && !padView)
++				return;
++
++			// remember which screenshot is left to take
++			if (m_screenshot_state == ScreenshotState::None)
++				m_screenshot_state = padView ? ScreenshotState::Main : ScreenshotState::Pad;
++			else
++				m_screenshot_state = ScreenshotState::None;
++		}
+ 		else
+ 			m_screenshot_state = ScreenshotState::None;
+ 	}
+-	else
+-		m_screenshot_state = ScreenshotState::None;
++
++	// a GamePad picture for the remote touch screen can come while the game's render pass is still
++	// open: the copies and layout changes below are recorded outside it
++	draw_endRenderPass();
+ 
+ 	auto texViewVk = (LatteTextureViewVk*)texView;
+ 	auto baseImageTex = texViewVk->GetBaseImage();
+@@ -1246,8 +1257,10 @@ void VulkanRenderer::HandleScreenshotRequest(LatteTextureView* texView, bool pad
+ 		barrier_image<TRANSFER_READ, TRANSFER_WRITE | IMAGE_WRITE>(baseImageTex, region.imageSubresource, baseImageTex->GetDefaultLayout());
+ 	}
+ 
++	barrier_bufferRange<TRANSFER_WRITE, HOST_READ>(buffer, 0, size);
++	const auto captureCommandBuffer = GetCurrentCommandBufferId();
+ 	SubmitCommandBuffer();
+-	WaitCommandBufferFinished(GetCurrentCommandBufferId());
++	WaitCommandBufferFinished(captureCommandBuffer);
+ 
+ 	bool formatValid = true;
+ 
+@@ -1273,9 +1286,10 @@ void VulkanRenderer::HandleScreenshotRequest(LatteTextureView* texView, bool pad
+ 		}
+ 		break;
+ 	case VK_FORMAT_R8G8B8_UNORM:
+-		std::copy((uint8*)bufferPtr, (uint8*)bufferPtr + size, rgb_data.begin());
++		rgb_data.assign((uint8*)bufferPtr, (uint8*)bufferPtr + size);
+ 		break;
+ 	case VK_FORMAT_R8G8B8_SRGB:
++		rgb_data.resize(size);
+ 		std::transform((uint8*)bufferPtr, (uint8*)bufferPtr + size, rgb_data.begin(), SRGBComponentToRGB);
+ 		break;
+ 	default:
+@@ -1293,7 +1307,14 @@ void VulkanRenderer::HandleScreenshotRequest(LatteTextureView* texView, bool pad
+ 		vkFreeMemory(m_logicalDevice, imageMemory, nullptr);
+ 
+ 	if (formatValid)
++	{
++#if defined(CEMU_PS5)
++		if (m_ps5StreamCapture)
++			PS5Cemu_StreamFrame(rgb_data.data(), width, height);
++		else
++#endif
+ 		SaveScreenshot(rgb_data, width, height, !padView);
++	}
+ }
+ 
+ static const float kQueuePriority = 1.0f;

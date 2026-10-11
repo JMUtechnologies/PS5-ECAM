@@ -78,8 +78,7 @@ background from when it was first registered; register it again in your loader t
 | Circle | Back |
 
 The app opens on the Library of the side a game came back from, or else the side you used last,
-with the game you played last in focus. **Settings > Launcher > Start on: Ask each time** brings back
-a chooser at start. You can switch sides without the app restarting. Each emulator's core only starts
+with the game you played last in focus. You can switch sides without the app restarting. Each emulator's core only starts
 with one of its games, so the emulators never run at the same time, and the launcher's background
 work stops before a game starts.
 
@@ -220,6 +219,28 @@ next games. A 3DS game pauses while its menu is open.
 - **3DS:** **Border**, **CPU clock**, **Speed limit** (100% by default; higher or None to
   fast-forward, for the current game only), and **Save states, cheats, amiibo**.
 
+## Remote touch screen: a phone as the second screen
+
+Your phone, tablet or computer can be the game's touch screen: the Wii U GamePad's screen, the 3DS's
+bottom screen or the DS's touch screen, in its browser, with touch. Nothing to install. (dolphin78's
+idea and prototype, #38.)
+
+1. Turn on **Settings > Remote touch screen** (on any side), or **Remote touch screen** in a game's
+   menu (touchpad click + Options). It stays on for your next games.
+2. Put the phone on the same network as the PS5 and scan the QR code shown there, or type the address
+   under it (`http://<the PS5's address>:8080/`; the first free port from 8080).
+3. Start a game: the page shows the second screen, even when the TV doesn't. Tap or drag on it to
+   touch: player 1's GamePad on the Wii U, the bottom screen on the 3DS and the DS. The DualSense
+   stays the buttons, and the sound stays on the PS5.
+
+- **What it costs:** nothing while no browser shows it. While one does, the PS5 copies that screen up
+  to 30 times a second (on the Wii U and the 3DS from the GPU), so a game can run a little slower.
+- **Privacy:** any device on your network can open the page and touch. The traffic is plain HTTP on
+  your local network. Turn it off on a network you share.
+- **If the phone can't reach it:** guest Wi-Fi often keeps devices apart (client isolation); use the
+  main network. The page shows "Waiting for video" until a game is running. A phone that goes to
+  sleep or leaves the page lets go of its touch within a second, and reconnects when you come back.
+
 ## Amiibo, save states, cheats and mods
 
 - **Amiibo (both).** Put your own amiibo dumps (`.bin`) in `/data/ps5cemu/amiibo`. When a game asks
@@ -335,6 +356,11 @@ every 10 seconds with the frame rate, and `[crash]` lines if an emulator crashes
   had it.
 - **Game settings:** any game can have its own graphics, screens, sound and system settings
   (Options on the game, then Game settings).
+- **Remote touch screen** (#38, dolphin78's idea and prototype): the GamePad's, the 3DS's or the DS's
+  touch screen in a phone's browser, with touch, by scanning a QR code; in Settings and in every
+  game's menu (see [Remote touch screen](#remote-touch-screen-a-phone-as-the-second-screen)).
+- **No side chooser:** *Start on: Ask each time* is gone; the app always opens on the side you used
+  last. The DS's in-game menu is green, like its side.
 
 ## What's new in 3.5.0
 
@@ -474,6 +500,8 @@ a ZIP to `dist/`. See [docs/BUILDING.md](docs/BUILDING.md), or run `make help` f
 - **John Törnblom** for the [PS5 Payload SDK](https://github.com/ps5-payload-dev/sdk), and
   **pacbrew** for their PS5 libraries
 - **Swordpdf** for the etaHEN jailbreak request from PS5SX2
+- **dolphin78** for the remote touch screen: the idea, and the prototype its server, page and
+  emulator patches come from (#38)
 - [GameTDB](https://www.gametdb.com/) and its contributors for the box art
 - The authors of the [Cemu community graphic packs](https://github.com/cemu-project/cemu_graphic_packs)
 

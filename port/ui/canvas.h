@@ -84,6 +84,7 @@ namespace ui
 		Info,
 		Chip,
 		Artic,
+		Phone, // the remote touch screen
 	};
 
 	class Canvas

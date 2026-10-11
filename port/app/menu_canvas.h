@@ -89,6 +89,7 @@ namespace ps5menu
 	}
 	constexpr Palette kBlue = Side(0x5aa9ff, 0x071a33);
 	constexpr Palette kGold = Side(0xf4b63f, 0x2a1a02);
+	constexpr Palette kGreen = Side(0x7ed957, 0x0c2606); // the DS side's melon green
 
 	// The type styles the menus use (docs/UI-REDESIGN.md, 7.2), each a font made at its size
 	struct Fonts

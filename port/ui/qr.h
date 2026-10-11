@@ -6,14 +6,16 @@
 
 #pragma once
 
-#include "canvas.h"
-
 #include <cstdint>
 #include <string_view>
 #include <vector>
 
 namespace ui
 {
+	class Canvas;
+	struct Box;
+
+	// (The encoder needs nothing of the kit, so the in-game menus use it too: app/remote_menu.h.)
 	class QrCode
 	{
 	public:

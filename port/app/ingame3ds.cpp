@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "ingame3ds.h"
 #include "menu_canvas.h"
+#include "remote_menu.h"
 #include "side_menu.h"
 #include "tga.h"
 #include "../ps5/kernel.h"
@@ -29,7 +30,6 @@ namespace ps5ingame3ds
 	namespace
 	{
 		using ps5menu::Canvas;
-		const ps5menu::Palette& kColours = ps5menu::kGold;
 
 		// What the game's loop and the menu share
 		std::mutex s_mutex;
@@ -40,6 +40,12 @@ namespace ps5ingame3ds
 		std::string s_coverPath; // the game's box art, or its icon
 		uint64_t s_titleId = 0;
 		Console s_console = Console::N3ds;
+
+		// the side's colours: the 3DS's sand, the DS's green
+		const ps5menu::Palette& Colours()
+		{
+			return s_console == Console::Nds ? ps5menu::kGreen : ps5menu::kGold;
+		}
 		double s_fps = 0, s_speed = 0;
 		std::string s_breakdown;
 		std::atomic<bool> s_open{false};
@@ -505,6 +511,7 @@ namespace ps5ingame3ds
 			for (Row& row : rows)
 				if (row.id == "states")
 					row.rows.push_back(load);
+			rows.push_back(ps5menu::RemoteRow(ds ? "The touch screen" : "The bottom screen"));
 			rows.push_back(library);
 			return rows;
 		}
@@ -576,6 +583,11 @@ namespace ps5ingame3ds
 				next.deadzone = chosen && settings.deadzone >= 50 ? 0 : std::clamp(settings.deadzone + change * 5, 0, 50);
 			else if (id == "ab")
 				next.aOnCircle = !settings.aOnCircle;
+			else if (id == ps5menu::kRemoteRow)
+			{
+				ps5menu::ToggleRemote(); // the app's setting, not the game's
+				changed = false;
+			}
 			else
 			{
 				changed = false;
@@ -644,7 +656,7 @@ namespace ps5ingame3ds
 
 			ImGuiIO& io = ImGui::GetIO();
 			const ImVec2 origin{(io.DisplaySize.x - 1920.0f * scale) * 0.5f, (io.DisplaySize.y - 1080.0f * scale) * 0.5f};
-			const Canvas canvas{ImGui::GetForegroundDrawList(), scale, origin, kColours};
+			const Canvas canvas{ImGui::GetForegroundDrawList(), scale, origin, Colours()};
 			ps5menu::Header header;
 			header.system = s_console == Console::Nds ? "DS" : "3DS";
 			header.status = "PAUSED";
@@ -655,6 +667,7 @@ namespace ps5ingame3ds
 			header.coverHeight = (float)g.coverHeight;
 			s_side.Draw(canvas, {g.head, g.body, g.row, g.small, g.chip}, header, MenuRows(settings), Tiles(settings),
 				{{"cross", "Choose"}, {"leftright", "Change"}, {"circle", s_side.Open().empty() ? "Back to the game" : "Back"}});
+			ps5menu::DrawRemoteCard(canvas, {g.head, g.body, g.row, g.small, g.chip}, s_side.Focus());
 		}
 
 		// -- the keyboard ----------------------------------------------------------------------------
@@ -713,17 +726,17 @@ namespace ps5ingame3ds
 				const bool appearing = ImGui::IsWindowAppearing();
 				if (appearing)
 					ImGui::GetCurrentContext()->NavDisableHighlight = false;
-				const Canvas canvas{ImGui::GetWindowDrawList(), scale, origin, kColours};
-				canvas.draw->AddRectFilled({0, 0}, io.DisplaySize, kColours.dim);
+				const Canvas canvas{ImGui::GetWindowDrawList(), scale, origin, Colours()};
+				canvas.draw->AddRectFilled({0, 0}, io.DisplaySize, Colours().dim);
 				canvas.Panel(260, 110, 1400, 860);
-				canvas.Text(g.small, 20, 300, 136, kColours.kicker, "THE GAME ASKS FOR");
-				canvas.Text(g.head, 32, 300, 170, kColours.title, request.hint.empty() ? "Some text" : request.hint, 1320);
+				canvas.Text(g.small, 20, 300, 136, Colours().kicker, "THE GAME ASKS FOR");
+				canvas.Text(g.head, 32, 300, 170, Colours().title, request.hint.empty() ? "Some text" : request.hint, 1320);
 				canvas.Row(300, 236, 1320, 72, false);
-				canvas.Text(g.row, 24, 330, 258, kColours.text, s_typed + "_");
+				canvas.Text(g.row, 24, 330, 258, Colours().text, s_typed + "_");
 				if (request.maxLength > 0)
-					canvas.TextRight(g.small, 20, 1590, 262, kColours.accent, fmt::format("{} / {}", s_typed.size(), request.maxLength));
+					canvas.TextRight(g.small, 20, 1590, 262, Colours().accent, fmt::format("{} / {}", s_typed.size(), request.maxLength));
 				if (!error.empty())
-					canvas.Text(g.small, 20, 300, 320, kColours.accent, error, 1320);
+					canvas.Text(g.small, 20, 300, 320, Colours().accent, error, 1320);
 
 				// a key: true when chosen (Cross, or a touch of the touchpad's click)
 				int keyIndex = 0;
@@ -734,7 +747,7 @@ namespace ps5ingame3ds
 						ImGui::SetFocusID(ImGui::GetItemID(), ImGui::GetCurrentWindow());
 					canvas.Row(x, y, width, 72, ImGui::IsItemFocused());
 					const ImVec2 size = g.row->CalcTextSizeA(24 * scale, FLT_MAX, 0.0f, label.c_str());
-					canvas.draw->AddText(g.row, 24 * scale, canvas.At(x + width / 2 - size.x / scale / 2, y + 22), kColours.text, label.c_str());
+					canvas.draw->AddText(g.row, 24 * scale, canvas.At(x + width / 2 - size.x / scale / 2, y + 22), Colours().text, label.c_str());
 					return chosen;
 				};
 				const auto& rows = kKeys[s_shift ? 1 : 0];
@@ -761,7 +774,7 @@ namespace ps5ingame3ds
 						FinishKeyboard(button);
 				}
 
-				canvas.draw->AddLine(canvas.At(300, 900), canvas.At(1620, 900), kColours.line, scale);
+				canvas.draw->AddLine(canvas.At(300, 900), canvas.At(1620, 900), Colours().line, scale);
 				float x = 300;
 				x = canvas.Hint(g.small, x, 915, "cross", "Type");
 				x = canvas.Hint(g.small, x, 915, "circle", "Delete");
@@ -802,8 +815,8 @@ namespace ps5ingame3ds
 			const ImVec2 at{24 * scale, 20 * scale};
 			const ImVec2 size = g.small->CalcTextSizeA(20 * scale, FLT_MAX, 0.0f, text.c_str());
 			draw->AddRectFilled({at.x - 12 * scale, at.y - 8 * scale}, {at.x + size.x + 12 * scale, at.y + size.y + 8 * scale},
-				kColours.panel, 10 * scale);
-			draw->AddText(g.small, 20 * scale, at, kColours.title, text.c_str());
+				Colours().panel, 10 * scale);
+			draw->AddText(g.small, 20 * scale, at, Colours().title, text.c_str());
 		}
 	}
 

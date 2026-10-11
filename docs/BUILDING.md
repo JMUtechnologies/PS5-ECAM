@@ -146,4 +146,22 @@ in place of the emulators (`tools/launcher-preview/console.cpp`). A script press
 buttons and says when to save a screen. It needs `make deps` first, and zlib's headers
 (`zlib1g-dev`). Its scripts are
 `tools/launcher-preview/shell-screens.txt` (every screen), `shell-first.txt` (a first start, with
-`PREVIEW_FIRST=1`) and `shell-ask.txt` (the side chooser, with `PREVIEW_ASK=1`).
+`PREVIEW_FIRST=1`) and `shell-remote.txt` (the remote touch screen's page on each side, with
+`PREVIEW_REMOTE=1`).
+
+## The remote touch screen on a PC
+
+The remote touch screen's server (`port/stream`) builds on a Linux PC too, with a stand-in for its
+JPEGs, so its protocol can be tested without a console: ports, routes, the WebSockets, the video's
+back-pressure, touches and their edges, validation, expiry, takeover and restart
+(`tools/tests/test-stream.py`), and the page's touches and pictures in node
+(`tools/tests/test-stream-browser.js`). It needs OpenSSL's headers (`libssl-dev`) and pacbrew's fmt
+from `make deps`:
+
+```sh
+mkdir -p build/tests/fmt && cp -r .deps/pacbrew-*/opt/ps5-payload-sdk/target/user/homebrew/include/fmt build/tests/fmt/
+c++ -std=c++20 -pthread -DFMT_HEADER_ONLY -Ibuild/tests/fmt -Iport/stream tools/tests/stream-host.cpp \
+    port/stream/stream.cpp port/stream/websocket.cpp -lcrypto -o build/tests/stream-host
+python3 tools/tests/test-stream.py build/tests/stream-host
+node tools/tests/test-stream-browser.js
+```

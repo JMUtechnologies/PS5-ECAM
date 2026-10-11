@@ -26,6 +26,7 @@
 #include "../ps5/notify.h"
 #include "../ps5/pad.h"
 #include "../ps5/privilege.h"
+#include "../stream/stream.h"
 
 #include "ARCodeFile.h"
 #include "Args.h"
@@ -473,6 +474,21 @@ namespace ps5melonds
 			ShowCheats();
 		}
 
+		// The remote touch screen's picture (port/stream): the DS's touch screen, as melonDS drew it, in
+		// RGB rows. A copy on the CPU: the DS's screens are not on the GPU until they are shown.
+		void SendTouchScreen(const uint32_t* pixels)
+		{
+			static std::vector<uint8_t> rgb(256 * 192 * 3);
+			for (int i = 0; i < 256 * 192; i++)
+			{
+				const uint32_t pixel = pixels[i]; // blue, green, red, unused: 0x--RRGGBB
+				rgb[i * 3] = (uint8_t)(pixel >> 16);
+				rgb[i * 3 + 1] = (uint8_t)(pixel >> 8);
+				rgb[i * 3 + 2] = (uint8_t)pixel;
+			}
+			ps5stream::SubmitFrame(rgb.data(), 256, 192);
+		}
+
 		void Emulate()
 		{
 			melonDS::NDS& nds = *s_nds;
@@ -501,7 +517,12 @@ namespace ps5melonds
 				{
 					nds.SetKeyMask(input::KeyMask());
 					int x, y;
-					if (input::Touch(x, y))
+					float remoteX, remoteY;
+					// the remote touch screen's touch (port/stream) before the touchpad's, whether or not
+					// the TV shows the touch screen
+					if (ps5stream::Touch(remoteX, remoteY))
+						nds.TouchScreen((melonDS::u16)std::clamp((int)(remoteX * 256.0f), 0, 255), (melonDS::u16)std::clamp((int)(remoteY * 192.0f), 0, 191));
+					else if (input::Touch(x, y))
 						nds.TouchScreen((melonDS::u16)x, (melonDS::u16)y);
 					else
 						nds.ReleaseScreen();
@@ -523,6 +544,8 @@ namespace ps5melonds
 					sound::Pace(nds, refresh, view.speedLimit);
 					frame.top = nds.GPU.Framebuffer[nds.GPU.FrontBuffer][0].get();
 					frame.bottom = nds.GPU.Framebuffer[nds.GPU.FrontBuffer][1].get();
+					if (ps5stream::WantFrame())
+						SendTouchScreen(frame.bottom);
 					// VideoOut's flips pace the frames; should they not, a frame is not shown more than
 					// 2 ms before it is due
 					const uint64_t now = sceKernelGetProcessTime();

@@ -29,6 +29,7 @@
 #include "ps5/privilege.h"
 #include "ps5/threads.h"
 #include "ps5/window.h"
+#include "stream/stream.h"
 
 // The PS4 SDK's version record: its size is set by the caller (libkernel)
 struct SceKernelSwVersion
@@ -187,6 +188,8 @@ int main(int argc, char* argv[])
 	ps5pad::Init();
 	ps5pad::SetVibrationEnabled(settings.rumble);
 	ps5window::Initialize();
+	// the remote touch screen, when it is on: the app's, so it runs from here through the game
+	ps5stream::Configure(settings.remoteScreen);
 
 	ps5launcher::Status status;
 	status.diagnostics = Diagnostics(ps5privilege::Current());

@@ -4,6 +4,7 @@
 #include "emulator.h"
 #include "gameinfo.h"
 #include "menu_canvas.h"
+#include "remote_menu.h"
 #include "paths.h"
 #include "side_menu.h"
 #include "tga.h"
@@ -272,6 +273,7 @@ namespace
 			{"layout", "A and B", !faceButtons ? "-" : aOnCircle ? "A on Circle" : "A on Cross", true,
 				"A on Circle as on the Wii U, or on Cross, with X and Y swapped to match. Every button: launcher's Settings > Controls."},
 		}});
+		rows.push_back(ps5menu::RemoteRow("The GamePad's screen"));
 		Row library{"library", "Quit to the library", "", false,
 			"Leaves the game for the library. What you have not saved in the game is lost, so Cross is held."};
 		library.apart = true;
@@ -347,6 +349,8 @@ namespace
 			SetVolume(chosen && config.tv_volume >= 100 ? 0 : config.tv_volume + change * 10);
 		else if (id == "library")
 			s_libraryRequested = true; // held to here
+		else if (id == ps5menu::kRemoteRow)
+			ps5menu::ToggleRemote();
 		else if (id.rfind("usb:", 0) == 0)
 		{
 			const auto device = (ps5usb::Device)std::stoi(id.substr(4));
@@ -479,6 +483,7 @@ namespace
 		header.coverHeight = (float)s_coverHeight;
 		s_side.Draw(canvas, fonts, header, MenuRows(), Tiles(),
 			{{"cross", "Choose"}, {"leftright", "Change"}, {"circle", s_side.Open().empty() ? "Back to the game" : "Back"}});
+		ps5menu::DrawRemoteCard(canvas, fonts, s_side.Focus());
 	}
 }
 

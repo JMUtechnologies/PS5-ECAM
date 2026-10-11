@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the Setup check (docs/UI-REDESIGN.md, 6.7) and the side chooser (5.3). The Setup check
-// answers "why doesn't it work?" in one place: storage, the recompilers, each side's games and keys,
+// PS5CEMU-HAR: the Setup check (docs/UI-REDESIGN.md, 6.7). It answers "why doesn't it work?" in one place: storage, the recompilers, each side's games and keys,
 // the 3DS's system files, the DS's BIOS and box art, each with its status, what it means and what to
 // do, and a QR code to the guide's page about it. It shows on the first start and whenever storage or
 // the recompilers fail at start, then the app opens on a side's Library; Settings > Diagnostics opens
-// it at any time. The chooser, a card for each of the three sides, shows only with Start on: Ask each
-// time, which is off by default: nothing else ever asks which side.
+// it at any time. Nothing asks which side (5.3): the app opens on the side last used.
 
 #include "shell_internal.h"
 #include "../actions.h"
@@ -76,86 +74,6 @@ namespace ps5shell
 			}
 			return covers;
 		}
-
-		// The three consoles, drawn as shapes in their side's colour (the classic start screen's icons, and
-		// the DS Lite beside them)
-		void DrawGamePad(Canvas& canvas, float cx, float cy, uint32_t accent)
-		{
-			const uint32_t shell = 0xfffbf7f4, grey = 0xff8b7464;
-			const Box body{cx - 168, cy - 86, 336, 172};
-			canvas.Shadow(body, 40, 18, 34, 0x73000000);
-			canvas.Rect(body, 40, shell);
-			const Box screen{body.x + 82, body.y + 21, 172, 122};
-			canvas.Rect(screen.Inset(-6), 15, accent);
-			canvas.LinearGradient(screen, 10, ui::Mix(accent, kInk1, 0.62f) | 0xff000000, kInk1, screen.x, screen.y, screen.x, screen.Bottom());
-			canvas.Draw(Icon::Play, {screen.CentreX() - 26, screen.CentreY() - 26, 52, 52}, accent);
-			for (float x : {body.x + 31, body.Right() - 31})
-				canvas.Ring({x - 16, body.y + 28, 32, 32}, 16, 6, grey);
-			// the D-pad, and the four buttons
-			canvas.Rect({body.x + 13, body.y + 104, 36, 12}, 3, grey);
-			canvas.Rect({body.x + 25, body.y + 92, 12, 36}, 3, grey);
-			const float bx = body.Right() - 31, by = body.y + 110;
-			canvas.Rect({bx - 6, by - 22, 12, 12}, 6, accent);
-			for (const auto& [dx, dy] : {std::pair{-15.0f, 0.0f}, {15.0f, 0.0f}, {0.0f, 16.0f}})
-				canvas.Rect({bx + dx - 6, by + dy - 6, 12, 12}, 6, grey);
-		}
-
-		void DrawN3ds(Canvas& canvas, float cx, float cy, uint32_t accent)
-		{
-			const uint32_t shell = 0xffd2d2d2, hinge = 0xff6c7a87, grey = 0xff7c7066;
-			const Box top{cx - 130, cy - 154, 260, 147}, bottom{cx - 130, cy + 8, 260, 146};
-			canvas.Shadow({top.x, top.y, top.w, bottom.Bottom() - top.y}, 24, 18, 34, 0x73000000);
-			canvas.Rect({top.x + 10, top.Bottom() - 4, 240, 20}, 6, hinge);
-			canvas.Rect(top, 22, shell);
-			canvas.Rect(bottom, 22, shell);
-			const Box upper{top.x + 40, top.y + 18, 180, 110};
-			canvas.Rect(upper.Inset(-5), 9, accent);
-			canvas.LinearGradient(upper, 5, ui::Mix(accent, kInk1, 0.6f) | 0xff000000, kInk1, upper.x, upper.y, upper.x, upper.Bottom());
-			canvas.Draw(Icon::Play, {upper.CentreX() - 24, upper.CentreY() - 24, 48, 48}, accent);
-			const Box lower{bottom.x + 76, bottom.y + 23, 108, 82};
-			canvas.Rect(lower.Inset(-4), 7, grey);
-			canvas.LinearGradient(lower, 4, ui::Mix(accent, kInk1, 0.75f) | 0xff000000, kInk1, lower.x, lower.y, lower.x, lower.Bottom());
-			canvas.Ring({bottom.x + 17, bottom.y + 22, 32, 32}, 16, 6, grey);
-			canvas.Rect({bottom.x + 15, bottom.y + 89, 36, 12}, 3, grey);
-			canvas.Rect({bottom.x + 27, bottom.y + 77, 12, 36}, 3, grey);
-			const float bx = bottom.Right() - 33, by = bottom.y + 53;
-			canvas.Rect({bx - 6, by - 22, 12, 12}, 6, accent);
-			for (const auto& [dx, dy] : {std::pair{-15.0f, 0.0f}, {15.0f, 0.0f}, {0.0f, 16.0f}})
-				canvas.Rect({bx + dx - 6, by + dy - 6, 12, 12}, 6, grey);
-			for (int i = 0; i < 3; i++)
-				canvas.Rect({bottom.x + 92 + i * 28, bottom.y + 120, 18, 5}, 2.5f, grey);
-		}
-	}
-
-	namespace
-	{
-		void DrawNds(Canvas& canvas, float cx, float cy, uint32_t accent)
-		{
-			// a DS Lite, open: two screens of the same size, the top one between its speakers
-			const uint32_t shell = 0xfff4f2f0, hinge = 0xff6c7a87, grey = 0xff7c7066;
-			const Box top{cx - 124, cy - 150, 248, 140}, bottom{cx - 124, cy + 10, 248, 140};
-			canvas.Shadow({top.x, top.y, top.w, bottom.Bottom() - top.y}, 22, 18, 34, 0x73000000);
-			canvas.Rect({top.x + 14, top.Bottom() - 4, 220, 18}, 6, hinge);
-			canvas.Rect(top, 20, shell);
-			canvas.Rect(bottom, 20, shell);
-			const Box upper{top.x + 64, top.y + 22, 120, 92};
-			canvas.Rect(upper.Inset(-5), 8, accent);
-			canvas.LinearGradient(upper, 4, ui::Mix(accent, kInk1, 0.6f) | 0xff000000, kInk1, upper.x, upper.y, upper.x, upper.Bottom());
-			canvas.Draw(Icon::Play, {upper.CentreX() - 22, upper.CentreY() - 22, 44, 44}, accent);
-			for (float x : {top.x + 34, top.Right() - 34})
-				for (int i = 0; i < 3; i++)
-					canvas.Rect({x - 3, top.y + 52 + i * 14, 6, 6}, 3, grey);
-			const Box lower{bottom.x + 64, bottom.y + 22, 120, 92};
-			canvas.Rect(lower.Inset(-4), 7, grey);
-			canvas.LinearGradient(lower, 4, ui::Mix(accent, kInk1, 0.75f) | 0xff000000, kInk1, lower.x, lower.y, lower.x, lower.Bottom());
-			// the D-pad, and A, B, X and Y (A in the side's colour)
-			canvas.Rect({bottom.x + 16, bottom.y + 62, 34, 11}, 3, grey);
-			canvas.Rect({bottom.x + 27, bottom.y + 51, 11, 34}, 3, grey);
-			const float bx = bottom.Right() - 33, by = bottom.y + 66;
-			canvas.Rect({bx + 9, by - 5, 11, 11}, 5.5f, accent);
-			for (const auto& [dx, dy] : {std::pair{-20.0f, 0.0f}, {-4.0f, -14.0f}, {-4.0f, 14.0f}})
-				canvas.Rect({bx + dx - 1, by + dy - 5, 11, 11}, 5.5f, grey);
-		}
 	}
 
 	// -- the Setup check ------------------------------------------------------------------------------
@@ -193,10 +111,7 @@ namespace ps5shell
 	void Shell::FinishStart()
 	{
 		m_setupFirst = false;
-		if (m_askSide)
-			Show(ScreenId::Chooser);
-		else
-			OpenSide(m_side, true);
+		OpenSide(m_side, true);
 	}
 
 	void Shell::RunChecks()
@@ -586,7 +501,7 @@ namespace ps5shell
 		canvas.PopAlpha();
 	}
 
-	// -- what the Setup check and the chooser stand on: both sides, meeting at the seam -----------------
+	// -- what the Setup check stands on: the sides, meeting at the seam -----------------
 
 	void Shell::DrawBrandBackdrop(Canvas& canvas, float seam)
 	{
@@ -609,72 +524,5 @@ namespace ps5shell
 		if (!m_settings.ui.highContrast)
 			canvas.Grain(screen, 0x0cffffff);
 		canvas.RadialGradient(screen, 0, 0x00000000, 0x8c000000, 960, 432, 1248, 1026, 0.55f);
-	}
-
-	// -- the side chooser: only with Start on: Ask each time ---------------------------------------------
-
-	void Shell::ChooserUpdate(const ui::Press& press)
-	{
-		switch (press.button)
-		{
-		case Button::Left:
-		case Button::Right:
-		{
-			const int next = m_chooserSide + (press.button == Button::Right ? 1 : -1);
-			if (next < 0 || next > 2)
-				m_feedback.Play(ui::Cue::Edge, press.repeat);
-			else
-			{
-				m_chooserSide = next;
-				m_feedback.Play(ui::Cue::Focus);
-			}
-			break;
-		}
-		case Button::Cross:
-			m_feedback.Play(ui::Cue::Select);
-			OpenSide((System)std::clamp(m_chooserSide, 0, 2), true);
-			break;
-		default: break;
-		}
-	}
-
-	void Shell::ChooserDraw(Canvas& canvas)
-	{
-		canvas.PushAlpha(Enter(0));
-		canvas.Text(Style({40, ui::Weight::Bold, 1.0f, 10, true}), 960, 92, "PS5CEMU-HAR", kText, 0, 0, ui::Align::Centre);
-		canvas.PopAlpha();
-		for (int i = 0; i < 3; i++)
-		{
-			const System side = (System)i;
-			const bool focused = i == m_chooserSide;
-			const uint32_t accent = AccentOf(side);
-			const Box card = Box{120.0f + i * 570.0f, 190, 540, 720}.Scaled(focused ? 1.02f : 1.0f);
-			canvas.PushAlpha(Enter(1 + i) * (focused ? 1.0f : 0.55f));
-			canvas.PushOffset(0, (1 - Enter(1 + i)) * 30);
-			if (focused)
-				canvas.Shadow(card, kRadiusSheet, 0, 70, ui::SetAlpha(accent, 0.30f));
-			canvas.Rect(card, kRadiusSheet, focused ? ui::SetAlpha(ui::Mix(accent, kInk1, 0.7f), 0.85f) : Surface());
-			canvas.Ring(card, kRadiusSheet, 1.5f, kGlassEdge);
-			if (side == System::WiiU)
-				DrawGamePad(canvas, card.CentreX(), card.y + 280, accent);
-			else if (side == System::N3ds)
-				DrawN3ds(canvas, card.CentreX(), card.y + 280, accent);
-			else
-				DrawNds(canvas, card.CentreX(), card.y + 280, accent);
-			canvas.Text(Style({56, ui::Weight::Bold, 1.1f}), card.CentreX(), card.y + 470, SystemName(side), kText, 0, 0, ui::Align::Centre);
-			const int games = std::max<int>((int)ps5catalog::Games((ps5catalog::System)i).size(),
-				side == System::WiiU ? m_settings.gameCount : Handheld(side).gameCount);
-			const bool missing = (side == System::N3ds && !ps5azahar::Available()) || (side == System::Nds && !ps5melonds::Available());
-			const std::string count = missing ? "Not in this build" :
-				games < 0											  ? "Open to look for games" :
-				games == 0											  ? "No games yet" :
-																		Plural(games, "game", "games");
-			canvas.Text(Style({28, ui::Weight::Regular, 1.2f}), card.CentreX(), card.y + 560, count, Secondary(), 0, 0, ui::Align::Centre);
-			if (focused)
-				Focus(card, kRadiusSheet, accent);
-			canvas.PopOffset();
-			canvas.PopAlpha();
-		}
-		canvas.Text(Style(kCaptionStyle), 120, 1080 - kHintsBottom - 30, ps5update::Readable(PS5CEMU_VERSION), Tertiary());
 	}
 }

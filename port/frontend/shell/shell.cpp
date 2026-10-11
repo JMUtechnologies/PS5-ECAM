@@ -160,13 +160,9 @@ namespace ps5shell
 					launchError[0] = (char)(launchError[0] - 'a' + 'A'); // a sentence of its own now
 				notice->clear();
 			}
-		m_askSide = !returning && m_settings.ui.startOn == "ask";
 		m_side = ps5launcher::SideNamed(side);
-		m_chooserSide = SideIndex();
 		if (!m_settings.ui.setupDone || SetupNeeded())
 			SetupOpen(true); // then the side (FinishStart)
-		else if (m_askSide)
-			Show(ScreenId::Chooser);
 		else
 		{
 			// the side's Library, on the game played last: after a game, that game (6.8)
@@ -299,7 +295,6 @@ namespace ps5shell
 				continue;
 			switch (m_screen)
 			{
-			case ScreenId::Chooser: ChooserUpdate(press); break;
 			case ScreenId::Setup: SetupUpdate(press); break;
 			case ScreenId::Library: LibraryUpdate(press); break;
 			case ScreenId::Hub: HubUpdate(press); break;
@@ -331,7 +326,6 @@ namespace ps5shell
 		canvas.PushAlpha(appear);
 		switch (m_screen)
 		{
-		case ScreenId::Chooser: ChooserDraw(canvas); break;
 		case ScreenId::Setup: SetupDraw(canvas); break;
 		case ScreenId::Library: LibraryDraw(canvas); break;
 		case ScreenId::Hub: HubDraw(canvas); break;
@@ -886,14 +880,13 @@ namespace ps5shell
 			return {{Icon::LeftRight, "Move"}, {Icon::Cross, m_barFocus < 3 && m_barFocus != SideIndex() ? "Switch" : "Open"}, {Icon::Touchpad, other}};
 		switch (m_screen)
 		{
-		case ScreenId::Chooser: return {{Icon::LeftRight, "Choose"}, {Icon::Cross, "Start"}};
 		case ScreenId::Setup:
 		{
 			std::vector<Hint> hints;
 			if (m_setupRow < (int)m_checks.size() && !m_checks[m_setupRow].action.empty())
 				hints.push_back({Icon::Cross, m_checks[m_setupRow].action});
 			hints.push_back({Icon::Triangle, "Check again"});
-			hints.push_back({Icon::Circle, !m_setupFirst ? "Back" : m_askSide ? "Continue" : "Continue to the Library"});
+			hints.push_back({Icon::Circle, !m_setupFirst ? "Back" : "Continue to the Library"});
 			return hints;
 		}
 		case ScreenId::Library:
@@ -967,10 +960,10 @@ namespace ps5shell
 
 	void Shell::DrawBackdrop(Canvas& canvas)
 	{
-		// the Setup check and the chooser belong to neither side: both sides' colours, and the seam
-		if (m_screen == ScreenId::Setup || m_screen == ScreenId::Chooser)
+		// the Setup check belongs to no side: the sides' colours, and the seam
+		if (m_screen == ScreenId::Setup)
 		{
-			DrawBrandBackdrop(canvas, m_screen == ScreenId::Setup ? 1140.0f : 960.0f);
+			DrawBrandBackdrop(canvas, 1140.0f);
 			return;
 		}
 		// the colours glide to the focused game's

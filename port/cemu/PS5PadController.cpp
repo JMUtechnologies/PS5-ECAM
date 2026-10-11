@@ -2,6 +2,7 @@
 #include "PS5PadController.h"
 #include "../app/ingame.h"
 #include "../ps5/pad.h"
+#include "../stream/stream.h"
 
 #include <array>
 #include <atomic>
@@ -82,6 +83,16 @@ ControllerState PS5PadController::raw_state()
 	m_touching = filtered.touch;
 	if (m_touching)
 		m_touch = m_cursor;
+	// the remote touch screen's touch (port/stream), on player 1's GamePad, before the touchpad's
+	if (m_player == 0)
+	{
+		float x, y;
+		if (ps5stream::Touch(x, y))
+		{
+			m_touching = true;
+			m_touch = {x, y};
+		}
+	}
 	// a Wii Remote's pointer: where a finger rests, else aimed from there by the gyroscope (below)
 	m_previousAim = m_aim;
 	if (finger)

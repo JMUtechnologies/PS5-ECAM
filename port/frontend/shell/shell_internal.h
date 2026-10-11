@@ -43,7 +43,6 @@ namespace ps5shell
 
 	enum class ScreenId
 	{
-		Chooser,
 		Setup,
 		Library,
 		Hub,
@@ -219,14 +218,11 @@ namespace ps5shell
 		bool BarUpdate(const ui::Press& press);
 		void FocusBar();
 
-		// the side chooser: only with Start on: Ask each time (5.3); nothing else asks which side
-		void ChooserUpdate(const ui::Press& press);
-		void ChooserDraw(Canvas& canvas);
 		void SetupOpen(bool first);
 		void SetupUpdate(const ui::Press& press);
 		void SetupDraw(Canvas& canvas);
 		bool SetupNeeded() const; // a check that fails at start: the Setup check comes first
-		void FinishStart();		  // the first Setup check done: the side, or the chooser when asked for
+		void FinishStart();		  // the first Setup check done: the side's Library
 		void DrawBrandBackdrop(Canvas& canvas, float seam); // both sides' colours meeting at the seam
 
 		void LibraryUpdate(const ui::Press& press);
@@ -258,6 +254,7 @@ namespace ps5shell
 		bool ApplyRow(ps5settings::Launcher& settings, const Row& row, int step, bool cross);
 		void SetRowIndex(ps5settings::Launcher& settings, const std::string& id, int index);
 		void ChooseIndex(const Row& row, int index); // a dropdown's choice
+		void DrawRemoteScreen(Canvas& canvas, const Box& card); // the remote touch screen's card
 		void SettingsChanged(const std::string& id); // the side's settings changed: saved, and what they change at once
 		void KeepGameSetting(const std::string& setting, const ps5settings::Launcher& view);
 		// game settings (6.5): the same pages, scoped to one game
@@ -465,8 +462,6 @@ namespace ps5shell
 		std::vector<Check> m_checks;
 		void RunChecks();
 		std::unordered_map<std::string, ui::QrCode> m_qrCodes; // made once each
-		bool m_askSide = false; // Start on: Ask each time, at this start
-		int m_chooserSide = 0;
 
 		// overlays
 		struct Picker

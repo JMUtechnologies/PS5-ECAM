@@ -5,7 +5,7 @@
 #
 #   tools/preview-shell.sh [SCRIPT]    default: tools/launcher-preview/shell-screens.txt
 #
-# PREVIEW_FIRST=1 starts it as on a first start, PREVIEW_ASK=1 with Start on: Ask each time,
+# PREVIEW_FIRST=1 starts it as on a first start, PREVIEW_REMOTE=1 with the remote touch screen on,
 # PREVIEW_UPDATE=1 with a newer release found, PREVIEW_NO_DATA=1 with /data out of reach,
 # PREVIEW_LAUNCH_ERROR=1 after a game that did not start.
 #
