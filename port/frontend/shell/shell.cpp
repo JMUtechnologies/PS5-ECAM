@@ -86,6 +86,7 @@ namespace ps5shell
 		ui::SetLog([](const std::string& line) { ps5log::Write(line); });
 		std::string error;
 		const double started = host.clock();
+		m_fonts.SetLanguage(ps5lang::Current()); // before the atlas: a CJK language's has more room
 		if (!m_fonts.Load(host.assets + "/fonts/lexend.sdf", error))
 		{
 			ps5log::Line("[ui] {}", error);
@@ -107,6 +108,7 @@ namespace ps5shell
 			return m_videoOut ? Outcome::Restart : Outcome::Classic;
 		}
 		m_gfx.SetAtlas(m_fonts.AtlasWidth(), m_fonts.AtlasHeight(), m_fonts.Atlas());
+		m_atlasHeight = m_fonts.AtlasHeight();
 		uint32_t first, rows;
 		m_fonts.TakeChanged(first, rows);
 		m_images = std::make_unique<ui::Images>(m_gfx);
@@ -148,17 +150,14 @@ namespace ps5shell
 			const int ndsGames = std::max<int>(m_settings.nds.gameCount, (int)ps5catalog::Games(ps5catalog::System::Nds).size());
 			side = wiiuGames > 0 ? "wiiu" : n3dsGames > 0 ? "3ds" : ndsGames > 0 ? "ds" : "wiiu";
 		}
-		// why the last game did not start (main_ps5.cpp puts it in the side's notice, as the classic launcher
-		// shows it): said once here, not a state that keeps every game from starting
+		// why the last game did not start (main_ps5.cpp's): said once here, not a state that keeps every
+		// game from starting
 		std::string launchError;
-		for (std::string* notice : {&m_status.notice, &m_status.notice3ds, &m_status.noticeDs})
-			if (notice->starts_with("The game could not start"))
+		for (std::string* error : {&m_status.launchError, &m_status.launchError3ds, &m_status.launchErrorDs})
+			if (!error->empty())
 			{
-				const size_t reason = notice->find_first_not_of(' ', notice->find(':') + 1);
-				launchError = reason == std::string::npos ? *notice : notice->substr(reason);
-				if (!launchError.empty() && launchError[0] >= 'a' && launchError[0] <= 'z')
-					launchError[0] = (char)(launchError[0] - 'a' + 'A'); // a sentence of its own now
-				notice->clear();
+				launchError = *error;
+				error->clear();
 			}
 		m_side = ps5launcher::SideNamed(side);
 		if (!m_settings.ui.setupDone || SetupNeeded())
@@ -168,10 +167,10 @@ namespace ps5shell
 			// the side's Library, on the game played last: after a game, that game (6.8)
 			OpenSide(m_side, true);
 			if (returning)
-				Toast("Saved your place in the library");
+				Toast(Tr("Saved your place in the library"));
 		}
 		if (!launchError.empty())
-			OpenHelp("The game could not start", launchError);
+			OpenHelp(Tr("The game could not start"), launchError);
 		ps5log::Line("[ui] the new launcher is up in {:.0f} ms", (host.clock() - started) * 1000);
 
 		while (!m_done && !m_failed)
@@ -195,6 +194,15 @@ namespace ps5shell
 		}
 		ps5catalog::Save();
 		Frame();
+		// the in-game menus' font for what Lexend lacks: the console's, for this language's words and this
+		// game's name (docs/UI-REDESIGN.md, 7.7); none for a Latin language and title
+		if (m_choice)
+		{
+			const ui::Fonts::FontFile font = m_fonts.FileFor(ps5lang::MenuCharacters() + ui::Decode(m_choice->game.name));
+			ps5lang::SetMenuFont({font.path, font.face});
+			if (!font.path.empty())
+				ps5log::Line("[ui] the in-game menu's second font: {} (face {})", font.path, font.face);
+		}
 		ps5sound::Stop();
 		m_feedback.Stop();
 		m_images->Stop();
@@ -240,12 +248,18 @@ namespace ps5shell
 
 		m_images->SetUploads(!m_launch.active);
 		m_images->Update();
-		uint32_t first, rows;
-		if (m_fonts.TakeChanged(first, rows))
-			m_gfx.AtlasChanged(first, rows);
 		m_list.Clear();
 		Canvas canvas(m_list, m_fonts);
 		Draw(canvas);
+		// the glyphs this frame rendered, uploaded with it; the atlas made again when they made it grow
+		if (m_fonts.AtlasHeight() != m_atlasHeight)
+		{
+			m_atlasHeight = m_fonts.AtlasHeight();
+			m_gfx.SetAtlas(m_fonts.AtlasWidth(), m_fonts.AtlasHeight(), m_fonts.Atlas());
+		}
+		uint32_t first, rows;
+		if (m_fonts.TakeChanged(first, rows))
+			m_gfx.AtlasChanged(first, rows);
 		if (!m_gfx.Frame(m_list, (float)(m_now - m_start)))
 		{
 			ps5log::Line("[ui] the GPU stopped drawing the launcher");
@@ -558,7 +572,7 @@ namespace ps5shell
 			return Join({game.info.publisher, ps5gameinfo::Year(game.info.released)}, "  ·  ");
 		if (!IsWiiU())
 			return Join({g.publisher, g.format}, "  ·  ");
-		return Join({fmt::format("v{}", g.version), g.dlcCount ? "DLC" : "", g.format}, "  ·  ");
+		return Join({fmt::format("v{}", g.version), g.dlcCount ? Tr("DLC") : "", g.format}, "  ·  ");
 	}
 
 	std::string Shell::Played(const Game& game) const
@@ -567,8 +581,8 @@ namespace ps5shell
 		if (minutes == 0)
 			return {};
 		if (minutes < 60)
-			return fmt::format("{} min played", minutes);
-		return fmt::format("{} h played", minutes / 60);
+			return TrP(minutes, "{0} min played", "{0} min played");
+		return TrP(minutes / 60, "{0} h played", "{0} h played");
 	}
 
 	std::string Shell::LastPlayedWords(int64_t when) const
@@ -581,15 +595,24 @@ namespace ps5shell
 		if (!localtime_r(&t0, &today) || !localtime_r(&t1, &then))
 			return {};
 		const int64_t days = (now - when) / 86400;
+		// tr: how long ago a game was last played, as Home's kicker says it ("Last played {0}")
 		if (today.tm_yday == then.tm_yday && today.tm_year == then.tm_year)
-			return "today";
+			return Tr("today");
 		if (days <= 1)
-			return "yesterday";
+			return Tr("yesterday");
 		if (days < 7)
-			return fmt::format("{} days ago", days);
+			return TrP(days, "{0} day ago", "{0} days ago");
 		if (days < 60)
-			return fmt::format("{} weeks ago", days / 7);
-		return fmt::format("{} months ago", days / 30);
+			return TrP(days / 7, "{0} week ago", "{0} weeks ago");
+		return TrP(days / 30, "{0} month ago", "{0} months ago");
+	}
+
+	void Shell::ApplyLanguage()
+	{
+		ps5lang::Load(m_settings.ui.language);
+		m_fonts.SetLanguage(ps5lang::Current());
+		if (m_screen == ScreenId::Setup)
+			RunChecks();
 	}
 
 	void Shell::SaveSettings()
@@ -624,7 +647,7 @@ namespace ps5shell
 		if (!CoreReady() || !Notice().empty())
 		{
 			m_feedback.Play(ui::Cue::Denied);
-			Toast(Notice().empty() ? "Cemu is still starting" : Notice());
+			Toast(Notice().empty() ? Tr("Cemu is still starting") : Notice());
 			return;
 		}
 		Game& game = m_games[index];
@@ -636,7 +659,7 @@ namespace ps5shell
 		Box from = m_launch.from;
 		if (from.w <= 0)
 			from = {760, 240, 400, 560};
-		LaunchGame(game.entry.game, std::string("Starting ") + EmulatorName(m_side), from);
+		LaunchGame(game.entry.game, IsDs() ? Tr("Starting melonDS") : Is3ds() ? Tr("Starting Azahar") : Tr("Starting Cemu"), from);
 		m_launch.game = index;
 	}
 
@@ -818,7 +841,8 @@ namespace ps5shell
 		{
 			canvas.Draw(Icon::L1, {x, y + 12, 36, 32}, Tertiary());
 			x += 36 + 14;
-			const char* labels[2] = {"Library", "Settings"};
+			// tr: the launcher's tabs
+			const char* labels[2] = {TrC("tab", "Library"), TrC("tab", "Settings")};
 			for (int i = 0; i < 2; i++)
 			{
 				const bool selected = (i == 0 && m_tab == ScreenId::Library) || (i == 1 && m_tab == ScreenId::Settings);
@@ -868,25 +892,29 @@ namespace ps5shell
 		const std::string other = SystemName(NextSide(m_side)); // the touchpad's next side
 		if (m_update.open)
 			return {};
+		// tr: the hints along the bottom: what a button does on this screen, a word or two
 		if (m_keyboard.open)
-			return {{Icon::Cross, "Type"}, {Icon::Square, "Delete"}, {Icon::Options, "Done"}, {Icon::Circle, "Close"}};
+			return {{Icon::Cross, Tr("Type")}, {Icon::Square, Tr("Delete")}, {Icon::Options, Tr("Done")}, {Icon::Circle, Tr("Close")}};
 		if (m_picker.open)
-			return {{Icon::Cross, "Choose"}, {Icon::Circle, "Cancel"}};
+			return {{Icon::Cross, Tr("Choose")}, {Icon::Circle, Tr("Cancel")}};
 		if (m_help.open)
-			return {{Icon::Circle, "Close"}};
+			return {{Icon::Circle, Tr("Close")}};
 		if (m_menu.open)
-			return {{Icon::Cross, "Choose"}, {Icon::Circle, "Close"}};
+			return {{Icon::Cross, Tr("Choose")}, {Icon::Circle, Tr("Close")}};
 		if (m_onBar && (m_screen == ScreenId::Library || m_screen == ScreenId::Settings) && !InGameSettings())
-			return {{Icon::LeftRight, "Move"}, {Icon::Cross, m_barFocus < 3 && m_barFocus != SideIndex() ? "Switch" : "Open"}, {Icon::Touchpad, other}};
+			return {{Icon::LeftRight, Tr("Move")}, {Icon::Cross, m_barFocus < 3 && m_barFocus != SideIndex() ? Tr("Switch") : Tr("Open")},
+				{Icon::Touchpad, other}};
 		switch (m_screen)
 		{
 		case ScreenId::Setup:
 		{
 			std::vector<Hint> hints;
-			if (m_setupRow < (int)m_checks.size() && !m_checks[m_setupRow].action.empty())
+			if (m_setupOnLanguage)
+				hints.push_back({Icon::Cross, Tr("Change the language")});
+			else if (m_setupRow < (int)m_checks.size() && !m_checks[m_setupRow].action.empty())
 				hints.push_back({Icon::Cross, m_checks[m_setupRow].action});
-			hints.push_back({Icon::Triangle, "Check again"});
-			hints.push_back({Icon::Circle, !m_setupFirst ? "Back" : "Continue to the Library"});
+			hints.push_back({Icon::Triangle, Tr("Check again")});
+			hints.push_back({Icon::Circle, !m_setupFirst ? Tr("Back") : Tr("Continue to the Library")});
 			return hints;
 		}
 		case ScreenId::Library:
@@ -894,41 +922,43 @@ namespace ps5shell
 			std::string kicker, title, text;
 			std::vector<std::string> buttons;
 			if (LibraryState(kicker, title, text, buttons))
-				return buttons.empty() ? std::vector<Hint>{{Icon::Touchpad, other}} : std::vector<Hint>{{Icon::Cross, "Choose"}, {Icon::Touchpad, other}};
+				return buttons.empty() ? std::vector<Hint>{{Icon::Touchpad, other}} : std::vector<Hint>{{Icon::Cross, Tr("Choose")}, {Icon::Touchpad, other}};
 			if (m_libraryZone == 0)
-				return {{Icon::LeftRight, "Filters"}, {Icon::Square, "Sort"}, {Icon::Triangle, "Search"}, {Icon::Touchpad, other}};
+				return {{Icon::LeftRight, Tr("Filters")}, {Icon::Square, Tr("Sort")}, {Icon::Triangle, Tr("Search")}, {Icon::Touchpad, other}};
 			if (m_libraryIndex < ArticTiles())
-				return {{Icon::Cross, "Open"}, {Icon::Touchpad, other}};
-			return {{Icon::Cross, "Play"}, {Icon::Options, "Options"}, {Icon::R2, "Jump by letter"}, {Icon::Touchpad, other}};
+				return {{Icon::Cross, Tr("Open")}, {Icon::Touchpad, other}};
+			return {{Icon::Cross, Tr("Play")}, {Icon::Options, Tr("Options")}, {Icon::R2, Tr("Jump by letter")}, {Icon::Touchpad, other}};
 		}
-		case ScreenId::Hub: return {{Icon::Cross, m_hubAbout ? "Back to the buttons" : "Choose"}, {Icon::Options, "Options"}, {Icon::UpDown, "Scroll"},
-			{Icon::Circle, "Back"}};
+		case ScreenId::Hub: return {{Icon::Cross, m_hubAbout ? Tr("Back to the buttons") : Tr("Choose")}, {Icon::Options, Tr("Options")},
+			{Icon::UpDown, Tr("Scroll")}, {Icon::Circle, Tr("Back")}};
 		case ScreenId::Settings:
 			if (InGameSettings())
 			{
 				if (!m_onRows)
-					return {{Icon::UpDown, "Pages"}, {Icon::Cross, "Open"}, {Icon::Circle, "Done"}};
-				return {{Icon::LeftRight, "Change"}, {Icon::Square, "Default"}, {Icon::Triangle, "More about it"}, {Icon::Circle, "Back"}};
+					return {{Icon::UpDown, Tr("Pages")}, {Icon::Cross, Tr("Open")}, {Icon::Circle, Tr("Done")}};
+				return {{Icon::LeftRight, Tr("Change")}, {Icon::Square, Tr("Default")}, {Icon::Triangle, Tr("More about it")}, {Icon::Circle, Tr("Back")}};
 			}
 			if (!m_onRows)
-				return {{Icon::UpDown, "Pages"}, {Icon::Cross, "Open"}, {Icon::Circle, "Library"}, {Icon::Touchpad, other}};
-			return {{Icon::LeftRight, "Change"}, {Icon::Triangle, "More about it"}, {Icon::Circle, "Back"}};
+				return {{Icon::UpDown, Tr("Pages")}, {Icon::Cross, Tr("Open")}, {Icon::Circle, TrC("tab", "Library")}, {Icon::Touchpad, other}};
+			return {{Icon::LeftRight, Tr("Change")}, {Icon::Triangle, Tr("More about it")}, {Icon::Circle, Tr("Back")}};
 		case ScreenId::Packs:
-			return m_presetsFocus ? std::vector<Hint>{{Icon::Cross, "Choose"}, {Icon::LeftRight, "Change"}, {Icon::Circle, "Back to the packs"}} :
-									std::vector<Hint>{{Icon::Cross, "On / off"}, {Icon::LeftRight, "Presets"}, {Icon::Circle, "Back"}};
-		case ScreenId::Player: return {{Icon::Cross, "Choose"}, {Icon::LeftRight, "Change"}, {Icon::Triangle, "More about it"}, {Icon::Circle, "Back"}};
+			return m_presetsFocus ?
+				std::vector<Hint>{{Icon::Cross, Tr("Choose")}, {Icon::LeftRight, Tr("Change")}, {Icon::Circle, Tr("Back to the packs")}} :
+				std::vector<Hint>{{Icon::Cross, Tr("On / off")}, {Icon::LeftRight, Tr("Presets")}, {Icon::Circle, Tr("Back")}};
+		case ScreenId::Player:
+			return {{Icon::Cross, Tr("Choose")}, {Icon::LeftRight, Tr("Change")}, {Icon::Triangle, Tr("More about it")}, {Icon::Circle, Tr("Back")}};
 		case ScreenId::Mapping:
 			if (m_capture.active)
-				return {{Icon::Touchpad, "Cancel"}};
-			return {{Icon::Cross, "Assign"}, {Icon::Square, "Clear"}, {Icon::Circle, "Back"}};
+				return {{Icon::Touchpad, Tr("Cancel")}};
+			return {{Icon::Cross, Tr("Assign")}, {Icon::Square, Tr("Clear")}, {Icon::Circle, Tr("Back")}};
 		case ScreenId::Files:
 			if (m_installing)
-				return {{Icon::Circle, "Cancel"}};
-			return {{Icon::Cross, "Open"}, {Icon::Triangle, m_filesMode == 0 ? "Use this folder" : "Install"}, {Icon::Circle, "Back"}};
+				return {{Icon::Circle, Tr("Cancel")}};
+			return {{Icon::Cross, Tr("Open")}, {Icon::Triangle, m_filesMode == 0 ? Tr("Use this folder") : Tr("Install")}, {Icon::Circle, Tr("Back")}};
 		case ScreenId::Artic:
 			if (m_articEditing)
-				return {{Icon::LeftRight, "Number"}, {Icon::UpDown, "Change"}, {Icon::Cross, "Keep"}};
-			return {{Icon::Cross, m_articRow == 0 ? "Edit" : m_articRow == 1 ? "Connect" : "Hold to set up"}, {Icon::Circle, "Back"}};
+				return {{Icon::LeftRight, Tr("Number")}, {Icon::UpDown, Tr("Change")}, {Icon::Cross, Tr("Keep")}};
+			return {{Icon::Cross, m_articRow == 0 ? Tr("Edit") : m_articRow == 1 ? Tr("Connect") : Tr("Hold to set up")}, {Icon::Circle, Tr("Back")}};
 		}
 		return {};
 	}
@@ -1108,16 +1138,16 @@ namespace ps5shell
 		m_menu.selected = 0;
 		m_menu.at = m_now;
 		const Game& g = m_games[game];
-		m_menu.items = {{"play", "Play"}};
+		m_menu.items = {{"play", Tr("Play")}};
 		if (m_screen != ScreenId::Hub)
-			m_menu.items.push_back({"hub", "Game hub"});
+			m_menu.items.push_back({"hub", Tr("Game hub")});
 		// a game with settings of its own says so
 		const bool own = m_settings.games.count(ps5settings::GameKey(ps5launcher::SideName(m_side), g.entry.game.titleId)) > 0;
-		m_menu.items.push_back({"settings", own ? "Game settings: its own" : "Game settings"});
+		m_menu.items.push_back({"settings", own ? Tr("Game settings: its own") : Tr("Game settings")});
 		if (IsWiiU() && m_status.coreReady)
-			m_menu.items.push_back({"packs", "Graphic packs"});
-		m_menu.items.push_back({"favourite", g.entry.favourite ? "Not a favourite" : "Favourite"});
-		m_menu.items.push_back({"where", "Show where it is"});
+			m_menu.items.push_back({"packs", Tr("Graphic packs")});
+		m_menu.items.push_back({"favourite", g.entry.favourite ? Tr("Not a favourite") : Tr("Favourite")});
+		m_menu.items.push_back({"where", Tr("Show where it is")});
 		m_feedback.Play(ui::Cue::Sheet);
 	}
 
@@ -1137,14 +1167,8 @@ namespace ps5shell
 		{
 			const auto status = ps5update::GetStatus();
 			using State = ps5update::Status::State;
-			std::vector<std::string> choices;
-			if (status.state == State::Available)
-				choices = {"Update now", "Later"};
-			else if (status.state == State::Ready)
-				choices = {"Restart now"};
-			else if (status.state == State::Failed)
-				choices = {"OK"};
-			if ((b == Button::Left || b == Button::Right) && choices.size() > 1)
+			const int choices = status.state == State::Available ? 2 : status.state == State::Ready || status.state == State::Failed ? 1 : 0;
+			if ((b == Button::Left || b == Button::Right) && choices > 1)
 			{
 				m_update.choice = 1 - m_update.choice;
 				m_feedback.Play(ui::Cue::Focus);
@@ -1154,12 +1178,12 @@ namespace ps5shell
 				ps5update::Dismiss();
 				m_feedback.Play(ui::Cue::Back);
 			}
-			else if (b == Button::Cross && !choices.empty())
+			else if (b == Button::Cross && choices > 0)
 			{
-				const std::string choice = choices[std::min<size_t>(m_update.choice, choices.size() - 1)];
-				if (choice == "Update now")
+				// Available: Update now, Later; Ready: Restart now; Failed: OK
+				if (status.state == State::Available && m_update.choice == 0)
 					ps5update::Install();
-				else if (choice == "Restart now")
+				else if (status.state == State::Ready)
 					ps5update::Restart();
 				else
 					ps5update::Dismiss();
@@ -1317,17 +1341,17 @@ namespace ps5shell
 					ps5catalog::SetFavourite(CatalogSide(), g.entry.game.titleId, g.entry.favourite);
 					ps5catalog::Save();
 					m_feedback.Play(ui::Cue::Toggle);
-					Toast(g.entry.favourite ? "Added to Favourites" : "Taken out of Favourites");
+					Toast(g.entry.favourite ? Tr("Added to Favourites") : Tr("Taken out of Favourites"));
 					LibraryRefresh();
 				}
 				else if (id == "where")
 				{
 					const std::string path = g.entry.game.path.string();
-					std::string drive = "The PS5's storage";
+					std::string drive = Tr("The PS5's storage");
 					for (const std::string& d : ConnectedDrives())
 						if (path.starts_with(d))
 							drive = DriveName(d);
-					OpenHelp(g.entry.game.name, fmt::format("{}\n\n{}\n\nTitle ID {}  ·  {}", path, drive, Hex(g.entry.game.titleId), g.entry.game.format));
+					OpenHelp(g.entry.game.name, path + "\n\n" + drive + "\n\n" + TrF("Title ID {0}", Hex(g.entry.game.titleId)) + "  ·  " + g.entry.game.format);
 				}
 			}
 			return true;
@@ -1365,7 +1389,13 @@ namespace ps5shell
 			Scrim(canvas, 0.7f * a);
 			const int count = (int)m_picker.options.size(), visible = std::min(count, 8);
 			const float rowH = 64;
-			const Box sheet{1920 - kSafeX - 620, 540 - (visible * rowH + 170) / 2, 620, visible * rowH + 170};
+			// wider, to 900, for a longer language's options (the one in use has a check and "In use" after it)
+			float widest = 0;
+			for (const std::string& option : m_picker.options)
+				widest = std::max(widest, m_fonts.Width(Style(kBodyStyle), option));
+			const float inUseWidth = m_fonts.Width(Style(kCaptionStyle), Tr("In use"));
+			const float sheetWidth = std::clamp(widest + 40 + 20 + 20 + 56 + std::min(160.0f, inUseWidth) + 40, 620.0f, 900.0f);
+			const Box sheet{1920 - kSafeX - sheetWidth, 540 - (visible * rowH + 170) / 2, sheetWidth, visible * rowH + 170};
 			canvas.PushAlpha(a);
 			canvas.PushOffset((1 - a) * 40, 0);
 			DrawSheet(canvas, sheet, a);
@@ -1385,12 +1415,16 @@ namespace ps5shell
 				const bool focused = i == m_picker.selected;
 				if (focused)
 					canvas.Rect(row, 14, Surface2());
-				canvas.Text(Style(kBodyStyle), row.x + 20, row.CentreY() - 19, m_picker.options[i], focused ? kText : Secondary(), row.w - 180, 1);
+				// the option, and on the one in use a check and "In use" (at most 160 wide) after it
+				float labelWidth = row.w - 180;
 				if (i == m_picker.active)
 				{
 					canvas.Draw(Icon::Check, {row.Right() - 46, row.CentreY() - 13, 26, 26}, Accent());
-					canvas.Text(Style(kCaptionStyle), row.Right() - 56, row.CentreY() - 13, "In use", Secondary(), 0, 0, ui::Align::Right);
+					const ui::TextBlock inUse = canvas.Text(Style(kCaptionStyle), row.Right() - 216, row.CentreY() - 13, Tr("In use"), Secondary(), 160, 1,
+						ui::Align::Right);
+					labelWidth = std::min(labelWidth, row.w - 20 - 56 - inUse.width - 20);
 				}
+				canvas.Text(Style(kBodyStyle), row.x + 20, row.CentreY() - 19, m_picker.options[i], focused ? kText : Secondary(), labelWidth, 1);
 			}
 			canvas.PopClip();
 			canvas.PopOffset();
@@ -1451,7 +1485,7 @@ namespace ps5shell
 			canvas.PushOffset(0, (1 - a) * 60);
 			DrawSheet(canvas, sheet, a);
 			canvas.Draw(Icon::Search, {sheet.x + 36, sheet.y + 30, 30, 30}, Secondary());
-			canvas.Text(Style(kHeadingStyle), sheet.x + 80, sheet.y + 26, m_search.empty() ? "Search" : m_search + "_", m_search.empty() ? Tertiary() : kText,
+			canvas.Text(Style(kHeadingStyle), sheet.x + 80, sheet.y + 26, m_search.empty() ? Tr("Search") : m_search + "_", m_search.empty() ? Tertiary() : kText,
 				sheet.w - 120, 1);
 			const float keyW = 92, keyH = 56, gap = 10;
 			for (int row = 0; row < kKeyboardRows; row++)
@@ -1469,8 +1503,9 @@ namespace ps5shell
 					const Box key{x, y, w, keyH};
 					const bool focused = m_keyboard.row == row && m_keyboard.column == k;
 					canvas.Rect(key, 12, focused ? kText : Surface2());
-					const std::string label = row < 4 ? std::string(1, kKeyRows[row][k]) : k == 0 ? "Space" : k == 1 ? "Delete" : "Done";
-					canvas.Text(Style({26, ui::Weight::Medium, 1.0f}), key.CentreX(), key.CentreY() - 15, label, focused ? kInk1 : kText, 0, 0,
+					// tr: the on-screen keyboard's keys
+					const std::string label = row < 4 ? std::string(1, kKeyRows[row][k]) : k == 0 ? Tr("Space") : k == 1 ? Tr("Delete") : Tr("Done");
+					canvas.Text(Style({26, ui::Weight::Medium, 1.0f}), key.x + 8, key.CentreY() - 15, label, focused ? kInk1 : kText, key.w - 16, 1,
 						ui::Align::Centre);
 					x += w + gap;
 				}
@@ -1491,42 +1526,42 @@ namespace ps5shell
 			switch (status.state)
 			{
 			case State::Available:
-				title = fmt::format("PS5CEMU-HAR {} is out", next);
-				text = fmt::format("This is {}. Download and install it now? Your games, saves and settings stay as they are.", mine);
-				choices = {"Update now", "Later"};
+				title = TrF("PS5CEMU-HAR {0} is out", next);
+				text = TrF("This is {0}. Download and install it now? Your games, saves and settings stay as they are.", mine);
+				choices = {Tr("Update now"), Tr("Later")};
 				break;
 			case State::Downloading:
-				title = fmt::format("Updating to {}", next);
-				text = status.total ? fmt::format("Downloading: {} of {} MB", status.received >> 20, status.total >> 20) : "Downloading…";
+				title = TrF("Updating to {0}", next);
+				text = status.total ? TrF("Downloading: {0} of {1} MB", status.received >> 20, status.total >> 20) : Tr("Downloading…");
 				done = status.total ? (float)status.received / (float)status.total : 0.0f;
 				break;
 			case State::Verifying:
-				title = fmt::format("Updating to {}", next);
-				text = "Checking the download";
+				title = TrF("Updating to {0}", next);
+				text = Tr("Checking the download");
 				done = 1;
 				break;
 			case State::Installing:
-				title = fmt::format("Updating to {}", next);
-				text = "Installing";
+				title = TrF("Updating to {0}", next);
+				text = Tr("Installing");
 				done = 1;
 				break;
 			case State::Ready:
-				title = fmt::format("{} is installed", next);
-				text = "PS5CEMU-HAR starts again to finish the update.";
-				choices = {"Restart now"};
+				title = TrF("{0} is installed", next);
+				text = Tr("PS5CEMU-HAR starts again to finish the update.");
+				choices = {Tr("Restart now")};
 				break;
 			case State::Failed:
-				title = "The update did not finish";
-				text = fmt::format("{}\nPS5CEMU-HAR is still {}.", status.message, mine);
-				choices = {"OK"};
+				title = Tr("The update did not finish");
+				text = status.message + "\n" + TrF("PS5CEMU-HAR is still {0}.", mine);
+				choices = {Tr("OK")};
 				break;
-			default: title = "Checking for updates"; break;
+			default: title = Tr("Checking for updates"); break;
 			}
 			const Box sheet{960 - 520, 300, 1040, 440};
 			canvas.PushAlpha(a);
 			canvas.PushOffset(0, (1 - a) * 40);
 			DrawSheet(canvas, sheet, a);
-			canvas.Text(Style(kOverlineStyle), sheet.x + 48, sheet.y + 44, "PS5CEMU-HAR update", Secondary());
+			canvas.Text(Style(kOverlineStyle), sheet.x + 48, sheet.y + 44, Tr("PS5CEMU-HAR update"), Secondary(), sheet.w - 96, 1);
 			canvas.Text(Style(kTitleStyle), sheet.x + 48, sheet.y + 72, title, kText, sheet.w - 96, 1);
 			ui::TextStyle body = Style(kBodyStyle);
 			body.tabular = true;
@@ -1546,8 +1581,8 @@ namespace ps5shell
 			}
 			DrawFocusRing(canvas);
 			if (!choices.empty())
-				DrawHints(canvas, choices.size() > 1 ? std::vector<Hint>{{Icon::LeftRight, "Choose"}, {Icon::Cross, "Select"}, {Icon::Circle, "Later"}} :
-													   std::vector<Hint>{{Icon::Cross, choices.front() == "OK" ? "OK" : "Restart"}});
+				DrawHints(canvas, choices.size() > 1 ? std::vector<Hint>{{Icon::LeftRight, Tr("Choose")}, {Icon::Cross, Tr("Select")}, {Icon::Circle, Tr("Later")}} :
+													   std::vector<Hint>{{Icon::Cross, status.state == State::Failed ? Tr("OK") : Tr("Restart")}});
 			canvas.PopOffset();
 			canvas.PopAlpha();
 		}

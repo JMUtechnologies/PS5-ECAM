@@ -35,20 +35,29 @@ namespace ps5shell
 
 	namespace
 	{
-		constexpr const char* kBorderThemes[] = {"None", "Midnight", "Waves", "Aurora", "Shell", "PS5CEMU-HAR"};
-		constexpr const char* kRegions[] = {"Automatic", "Japan", "USA", "Europe", "Australia", "China", "Korea", "Taiwan"};
-		constexpr const char* kLanguages[] = {"Automatic", "Japanese", "English", "French", "German", "Italian", "Spanish",
-			"Chinese (simplified)", "Korean", "Dutch", "Portuguese", "Russian", "Chinese (traditional)"};
+		// tr: the 3DS borders' names (artwork around the screens)
+		constexpr const char* kBorderThemes[] = {TrMarkC("border", "None"), TrMarkC("border", "Midnight"), TrMarkC("border", "Waves"),
+			TrMarkC("border", "Aurora"), TrMarkC("border", "Shell"), "PS5CEMU-HAR"};
+		constexpr const char* kRegions[] = {TrMark("Automatic"), TrMark("Japan"), TrMark("USA"), TrMark("Europe"), TrMark("Australia"),
+			TrMark("China"), TrMark("Korea"), TrMark("Taiwan")};
+		// tr: the languages the emulated 3DS can be set to
+		constexpr const char* kLanguages[] = {TrMark("Automatic"), TrMark("Japanese"), TrMark("English"), TrMark("French"), TrMark("German"),
+			TrMark("Italian"), TrMark("Spanish"), TrMark("Chinese (simplified)"), TrMark("Korean"), TrMark("Dutch"), TrMark("Portuguese"),
+			TrMark("Russian"), TrMark("Chinese (traditional)")};
 		constexpr const char* kResolutions[] = {"1x (400 × 240)", "2x (800 × 480)", "3x (1200 × 720)", "4x (1600 × 960)", "5x (2000 × 1200)",
 			"6x (2400 × 1440)", "7x (2800 × 1680)", "8x (3200 × 1920)", "9x (3600 × 2160)", "10x (4000 × 2400)"};
-		constexpr const char* kLayouts[] = {"Top above bottom", "Top screen only", "Large top screen", "Side by side"};
-		constexpr const char* kTextureFilters[] = {"None", "Anime4K", "Bicubic", "ScaleForce", "xBRZ", "MMPX"};
-		constexpr const char* kUpscaleFilters[] = {"Linear", "Bicubic", "Bicubic Hermite", "Nearest neighbour"};
+		// tr: the 3DS's screen layouts
+		constexpr const char* kLayouts[] = {TrMark("Top above bottom"), TrMark("Top screen only"), TrMark("Large top screen"), TrMark("Side by side")};
+		// tr: texture filters: None, then the filters' own names
+		constexpr const char* kTextureFilters[] = {TrMarkC("texture filter", "None"), "Anime4K", TrMark("Bicubic"), "ScaleForce", "xBRZ", "MMPX"};
+		// tr: how a game's picture is scaled: the methods' names
+		constexpr const char* kUpscaleFilters[] = {TrMark("Linear"), TrMark("Bicubic"), TrMark("Bicubic Hermite"), TrMark("Nearest neighbour")};
 		constexpr const char* kMusic[] = {"setup", "off"};
-		constexpr const char* kMusicNames[] = {"Setup theme", "Off"};
+		constexpr const char* kMusicNames[] = {TrMark("Setup theme"), TrMark("Off")};
 		constexpr int kHolds[] = {400, 600, 800, 1000, 1200, 1500};
 		constexpr int kClocks[] = {25, 50, 75, 100, 125, 150, 200, 300, 400}; // the 3DS's CPU clock, as its in-game menu has them
-		constexpr const char* kDsFilters[] = {"Sharp", "Smooth", "Square pixels"};
+		// tr: how the DS's screens are scaled to the TV: the filters' names
+		constexpr const char* kDsFilters[] = {TrMark("Sharp"), TrMark("Smooth"), TrMark("Square pixels")};
 
 		int ClockIndex(int clock)
 		{
@@ -58,49 +67,64 @@ namespace ps5shell
 			return (int)std::size(kClocks) - 1;
 		}
 
-		std::vector<std::string> Options(std::initializer_list<const char*> list)
-		{
-			return std::vector<std::string>(list.begin(), list.end());
-		}
-
+		// a table of names, in the language
 		template<size_t N>
-		std::vector<std::string> Options(const char* const (&list)[N])
+		std::vector<std::string> Options(const char* const (&list)[N], const char* context = nullptr)
 		{
-			return std::vector<std::string>(std::begin(list), std::end(list));
+			std::vector<std::string> options;
+			for (const char* name : list)
+				options.push_back(context ? TrC(context, name) : Tr(name));
+			return options;
 		}
 
-		std::string Percent(int value)
+		// the border names' context: kBorderThemes' first five
+		std::vector<std::string> BorderNames()
 		{
-			return fmt::format("{}%", value);
+			std::vector<std::string> names;
+			for (size_t i = 0; i < std::size(kBorderThemes); i++)
+				names.push_back(i + 1 < std::size(kBorderThemes) ? TrC("border", kBorderThemes[i]) : kBorderThemes[i]);
+			return names;
 		}
+
+		std::vector<std::string> TextureFilterNames()
+		{
+			std::vector<std::string> names;
+			for (size_t i = 0; i < std::size(kTextureFilters); i++)
+				names.push_back(i == 0 ? TrC("texture filter", kTextureFilters[i]) : Tr(kTextureFilters[i]));
+			return names;
+		}
+
+		using ps5lang::Percent;
 	}
 
 	std::vector<SettingsPage> Shell::SettingsPages() const
 	{
 		// the side's pages, as docs/UI-REDESIGN.md 6.5 lists them; the shared ones on every side
 		std::vector<SettingsPage> pages;
-		const char* every = IsWiiU() ? "For every Wii U game." : Is3ds() ? "For every 3DS game." : "For every DS game.";
-		pages.push_back({"graphics", "Graphics", every, Icon::Monitor});
+		// the menus' language first, with a globe, which reads in any language (docs/UI-REDESIGN.md 7.7)
+		pages.push_back({"ui-language", Tr("Language"), Tr("The language of the menus: the PS5's own, unless you choose another."), Icon::Globe});
+		const char* every = IsWiiU() ? Tr("For every Wii U game.") : Is3ds() ? Tr("For every 3DS game.") : Tr("For every DS game.");
+		pages.push_back({"graphics", Tr("Graphics"), every, Icon::Monitor});
 		if (!IsWiiU())
-			pages.push_back({"screens", "Screens", every, Icon::Screens});
-		pages.push_back({"audio", "Audio", "The games' sound, and the launcher's.", Icon::Speaker});
-		pages.push_back({"controls", "Controls", IsWiiU() ? "What each player's DualSense is to the Wii U." : Is3ds() ? "The DualSense as the 3DS." : "The DualSense as the DS.",
+			pages.push_back({"screens", Tr("Screens"), every, Icon::Screens});
+		pages.push_back({"audio", Tr("Audio"), Tr("The games' sound, and the launcher's."), Icon::Speaker});
+		pages.push_back({"controls", Tr("Controls"), IsWiiU() ? Tr("What each player's DualSense is to the Wii U.") : Is3ds() ? Tr("The DualSense as the 3DS.") : Tr("The DualSense as the DS."),
 			Icon::Pad});
-		pages.push_back({"remote", "Remote touch screen", "For every side. From dolphin78's idea and prototype.", Icon::Phone});
+		pages.push_back({"remote", Tr("Remote touch screen"), Tr("For every side. From dolphin78's idea and prototype."), Icon::Phone});
 		if (IsWiiU())
-			pages.push_back({"usb", "USB devices", "Cemu's emulated portals.", Icon::Usb});
+			pages.push_back({"usb", Tr("USB devices"), Tr("Cemu's emulated portals."), Icon::Usb});
 		if (!IsWiiU())
-			pages.push_back({"system", "System", Is3ds() ? "The emulated 3DS's region, language and speed." : "The emulated DS's language and BIOS.", Icon::Chip});
-		pages.push_back({"files", "Game files", IsWiiU() ? "Where your Wii U games are, and installs into the Wii U's storage." :
-										Is3ds()		 ? "Where your 3DS games are, and installs into the 3DS's storage." :
-													   "Where your DS games are, and where their saves go.",
+			pages.push_back({"system", Tr("System"), Is3ds() ? Tr("The emulated 3DS's region, language and speed.") : Tr("The emulated DS's language and BIOS."), Icon::Chip});
+		pages.push_back({"files", Tr("Game files"), IsWiiU() ? Tr("Where your Wii U games are, and installs into the Wii U's storage.") :
+										Is3ds()		 ? Tr("Where your 3DS games are, and installs into the 3DS's storage.") :
+													   Tr("Where your DS games are, and where their saves go."),
 			Icon::Folder});
 		if (Is3ds())
-			pages.push_back({"artic", "Artic Base", "Play from your 3DS, over your network.", Icon::Artic});
-		pages.push_back({"online", "Online", IsWiiU() ? "Box art, graphic packs and PS5CEMU-HAR itself." : "Box art and PS5CEMU-HAR itself.", Icon::Globe});
-		pages.push_back({"launcher", "Launcher", "How it looks, and how it reads.", Icon::Sparkle});
-		pages.push_back({"diagnostics", "Diagnostics", "The Setup check, logs, caches and what this session is.", Icon::Pulse});
-		pages.push_back({"about", "About", "Who made what.", Icon::Info});
+			pages.push_back({"artic", Tr("Artic Base"), Tr("Play from your 3DS, over your network."), Icon::Artic});
+		pages.push_back({"online", Tr("Online"), IsWiiU() ? Tr("Box art, graphic packs and PS5CEMU-HAR itself.") : Tr("Box art and PS5CEMU-HAR itself."), Icon::Globe});
+		pages.push_back({"launcher", Tr("Launcher"), Tr("How it looks, and how it reads."), Icon::Sparkle});
+		pages.push_back({"diagnostics", Tr("Diagnostics"), Tr("The Setup check, logs, caches and what this session is."), Icon::Pulse});
+		pages.push_back({"about", TrC("app", "About"), Tr("Who made what."), Icon::Info});
 		if (!InGameSettings())
 			return pages;
 		// a game's settings: only the pages with something a game can have its own of (SideRows' rows
@@ -108,7 +132,7 @@ namespace ps5shell
 		std::vector<SettingsPage> game;
 		for (const SettingsPage& page : pages)
 			if (page.id == "graphics" || page.id == "screens" || page.id == "audio" || page.id == "system")
-				game.push_back({page.id, page.title, "For " + m_gameName + " only. Its other settings are its side's.", page.icon});
+				game.push_back({page.id, page.title, TrF("For {0} only. Its other settings are its side's.", m_gameName), page.icon});
 		return game;
 	}
 
@@ -133,17 +157,17 @@ namespace ps5shell
 		const std::string installed = ps5packs::InstalledVersion();
 		switch (status.state)
 		{
-		case State::Checking: return "Checking GitHub…";
+		case State::Checking: return Tr("Checking GitHub…");
 		case State::Downloading:
-			return status.total ? fmt::format("Downloading: {}%", (int)(status.received * 100 / status.total)) :
-								  fmt::format("Downloading: {} MB", status.received >> 20);
-		case State::Installing: return "Installing…";
-		case State::UpToDate: return "Up to date: " + installed;
-		case State::Done: return "Installed: " + status.version;
+			return status.total ? TrF("Downloading: {0}", Percent((int)(status.received * 100 / status.total))) :
+								  TrF("Downloading: {0} MB", status.received >> 20);
+		case State::Installing: return Tr("Installing…");
+		case State::UpToDate: return TrF("Up to date: {0}", installed);
+		case State::Done: return TrF("Installed: {0}", status.version);
 		case State::Failed: return status.message;
 		case State::Idle: break;
 		}
-		return installed.empty() ? "Cross to download" : installed;
+		return installed.empty() ? std::string(Tr("Cross to download")) : installed;
 	}
 
 	std::string Shell::AppUpdateStatus()
@@ -152,18 +176,19 @@ namespace ps5shell
 		const auto status = ps5update::GetStatus();
 		switch (status.state)
 		{
-		case State::Checking: return "Checking GitHub…";
-		case State::UpToDate: return "Up to date: " + ps5update::Readable(PS5CEMU_VERSION);
-		case State::Available: return ps5update::Readable(status.latest) + ": Cross to install";
+		case State::Checking: return Tr("Checking GitHub…");
+		case State::UpToDate: return TrF("Up to date: {0}", ps5update::Readable(PS5CEMU_VERSION));
+		// tr: {0} is a version, as in 3.5.0
+		case State::Available: return TrF("{0}: Cross to install", ps5update::Readable(status.latest));
 		case State::Downloading:
-			return status.total ? fmt::format("Downloading: {}%", (int)(status.received * 100 / status.total)) : "Downloading…";
-		case State::Verifying: return "Checking the download…";
-		case State::Installing: return "Installing…";
-		case State::Ready: return "Installed: Cross to restart";
+			return status.total ? TrF("Downloading: {0}", Percent((int)(status.received * 100 / status.total))) : std::string(Tr("Downloading…"));
+		case State::Verifying: return Tr("Checking the download…");
+		case State::Installing: return Tr("Installing…");
+		case State::Ready: return Tr("Installed: Cross to restart");
 		case State::Failed: return status.message;
 		case State::Idle: break;
 		}
-		return "Cross to check";
+		return Tr("Cross to check");
 	}
 
 	void Shell::PollPacks()
@@ -182,19 +207,19 @@ namespace ps5shell
 		using Kind = Row::Kind;
 		const ps5settings::N3ds& hand = m_side == System::Nds ? settings.nds : settings.n3ds;
 		std::vector<Row> rows;
-		auto toggle = [&](const char* id, const char* label, bool on, const std::string& description, const std::string& help) {
+		auto toggle = [&](const char* id, const std::string& label, bool on, const std::string& description, const std::string& help) {
 			Row row;
 			row.kind = Kind::Toggle;
 			row.id = id;
 			row.label = label;
 			row.on = on;
-			row.value = on ? "On" : "Off";
+			row.value = on ? Tr("On") : Tr("Off");
 			row.description = description;
 			row.help = help;
 			rows.push_back(row);
 			return &rows.back();
 		};
-		auto choice = [&](const char* id, const char* label, std::vector<std::string> options, int index, const std::string& description,
+		auto choice = [&](const char* id, const std::string& label, std::vector<std::string> options, int index, const std::string& description,
 						  const std::string& help, Kind kind = Kind::Choice) {
 			Row row;
 			row.kind = kind;
@@ -208,7 +233,7 @@ namespace ps5shell
 			rows.push_back(row);
 			return &rows.back();
 		};
-		auto slider = [&](const char* id, const char* label, int value, int most, const std::string& description, const std::string& help) {
+		auto slider = [&](const char* id, const std::string& label, int value, int most, const std::string& description, const std::string& help) {
 			Row row;
 			row.kind = Kind::Slider;
 			row.id = id;
@@ -238,110 +263,119 @@ namespace ps5shell
 			if (!m_status.coreReady)
 			{
 				row->dimmed = true;
-				row->description = "Cemu did not start, so this cannot be changed.";
+				row->description = Tr("Cemu did not start, so this cannot be changed.");
 			}
 		};
 		const std::string side = ps5launcher::SideName(m_side);
 		auto own = [&](Row* row, const char* setting) { row->setting = setting; };
 
-		if (page == "graphics" && IsWiiU())
+		if (page == "ui-language")
 		{
-			own(choice("upscaling", "Upscaling to 4K", Options(kUpscaleFilters), settings.upscaleFilter, "How the picture is scaled to the TV.",
-					"Bicubic is sharp, Bicubic Hermite a little softer, Linear softer still; Nearest neighbour keeps pixels square."),
+			// Cross, Left or Right opens the list
+			int index = 0;
+			choice("ui-language", Tr("Language"), LanguageOptions(index), index, Tr("The menus' language. Game names and descriptions stay as they are."),
+				Tr("PS5CEMU-HAR speaks the PS5's own language unless you choose another here; the first start's Setup check has the same "
+				   "choice. Game names, their descriptions and graphic packs come from GameTDB, the games and the packs' authors, and stay as "
+				   "they wrote them."));
+		}
+		else if (page == "graphics" && IsWiiU())
+		{
+			own(choice("upscaling", Tr("Upscaling to 4K"), Options(kUpscaleFilters), settings.upscaleFilter, Tr("How the picture is scaled to the TV."),
+					Tr("Bicubic is sharp, Bicubic Hermite a little softer, Linear softer still; Nearest neighbour keeps pixels square.")),
 				"upscaleFilter");
-			own(toggle("highframerate", "120 Hz output", settings.highFrameRate, "For displays that take 120 Hz.",
-					"The 119.88 Hz mode, on displays that support it. Games still run at their own speed, and a frame that misses a refresh "
-					"waits 8 ms for the next instead of 17."),
+			own(toggle("highframerate", Tr("120 Hz output"), settings.highFrameRate, Tr("For displays that take 120 Hz."),
+					Tr("The 119.88 Hz mode, on displays that support it. Games still run at their own speed, and a frame that misses a refresh "
+					"waits 8 ms for the next instead of 17.")),
 				"highFrameRate");
 			std::vector<std::string> pacing;
 			for (int i = 1; i <= 3; i++)
 				pacing.push_back(ps5display::FramePacingName(i, settings.highFrameRate));
-			own(choice("framepacing", "Frame pacing", pacing, settings.framePacing - 1, "Holds a game to an even frame rate.",
-					"Each frame stays on screen for at least two or three refreshes, so a game that cannot hold the display's rate runs at an "
+			own(choice("framepacing", Tr("Frame pacing"), pacing, settings.framePacing - 1, Tr("Holds a game to an even frame rate."),
+					Tr("Each frame stays on screen for at least two or three refreshes, so a game that cannot hold the display's rate runs at an "
 					"even one: 60 or 40 fps with 120 Hz output, 30 or 20 without. 60 fps with 120 Hz output suits a game at 4K that sometimes "
-					"drops under 60; 30 fps at 60 Hz suits one at 8K. Also in the in-game menu.",
+					"drops under 60; 30 fps at 60 Hz suits one at 8K. Also in the in-game menu."),
 					Kind::Segmented),
 				"framePacing");
-			own(toggle("overlay", "Performance overlay", settings.overlay, "Frame rate, CPU and memory in a corner.",
-					"Frames per second, CPU and memory use in the top left corner, as Cemu shows them. Also in the in-game menu."),
+			own(toggle("overlay", Tr("Performance overlay"), settings.overlay, Tr("Frame rate, CPU and memory in a corner."),
+					Tr("Frames per second, CPU and memory use in the top left corner, as Cemu shows them. Also in the in-game menu.")),
 				"overlay");
-			own(toggle("async", "Async shader compile", settings.asyncShaders, "No stutter while new shaders build.",
-					"On, a new shader is built while the game carries on, so it does not stutter, but some things may be missing for a moment. "
-					"Off, the game waits for each one: stutter, but nothing drawn wrong."),
+			own(toggle("async", Tr("Async shader compile"), settings.asyncShaders, Tr("No stutter while new shaders build."),
+					Tr("On, a new shader is built while the game carries on, so it does not stutter, but some things may be missing for a moment. "
+					"Off, the game waits for each one: stutter, but nothing drawn wrong.")),
 				"asyncShaders");
 		}
 		else if (page == "graphics" && Is3ds())
 		{
-			own(choice("resolution", "Internal resolution", Options(kResolutions), hand.resolution - 1, "Higher is sharper and asks more of the GPU.",
-					"How large the 3DS's 3D scenes are drawn before they are scaled to the TV. Higher is sharper and asks more of the GPU, and "
-					"each time a game reads a picture back the wait grows with it.",
+			own(choice("resolution", Tr("Internal resolution"), Options(kResolutions), hand.resolution - 1, Tr("Higher is sharper and asks more of the GPU."),
+					Tr("How large the 3DS's 3D scenes are drawn before they are scaled to the TV. Higher is sharper and asks more of the GPU, and "
+					"each time a game reads a picture back the wait grows with it."),
 					Kind::Stepper),
 				"resolution");
-			own(choice("filter", "Texture filter", Options(kTextureFilters), hand.textureFilter, "Smooths textures as they are scaled up.",
-					"Smooths the game's textures as they are scaled up; None keeps them as the 3DS draws them. A filter redraws every texture "
-					"at the internal resolution: at high resolutions it is the costliest setting. If a game stutters, try None first."),
+			own(choice("filter", Tr("Texture filter"), Options(kTextureFilters), hand.textureFilter, Tr("Smooths textures as they are scaled up."),
+					Tr("Smooths the game's textures as they are scaled up; None keeps them as the 3DS draws them. A filter redraws every texture "
+					"at the internal resolution: at high resolutions it is the costliest setting. If a game stutters, try None first.")),
 				"textureFilter");
-			own(toggle("customtextures", "Custom textures", hand.customTextures, "Texture packs from azahar/load/textures.",
-					"Texture packs in /data/ps5cemu/azahar/load/textures/<title ID>, as the desktop Azahar loads them."),
+			own(toggle("customtextures", Tr("Custom textures"), hand.customTextures, Tr("Texture packs from azahar/load/textures."),
+					Tr("Texture packs in /data/ps5cemu/azahar/load/textures/<title ID>, as the desktop Azahar loads them.")),
 				"customTextures");
 		}
 		else if (page == "graphics")
 		{
-			own(choice("dsfilter", "Screen filter", Options(kDsFilters), hand.dsFilter, "How the DS's screens are scaled.",
-					"How the DS's 256 x 192 screens are scaled to the TV. Sharp keeps every pixel square and even at any size; Smooth blurs "
+			own(choice("dsfilter", Tr("Screen filter"), Options(kDsFilters), hand.dsFilter, Tr("How the DS's screens are scaled."),
+					Tr("How the DS's 256 x 192 screens are scaled to the TV. Sharp keeps every pixel square and even at any size; Smooth blurs "
 					"them together; Square pixels takes the nearest, uneven where the size is not a whole number. The in-game menu changes it "
-					"too.",
+					"too."),
 					Kind::Segmented),
 				"dsFilter");
 			const bool executable = ps5privilege::Current().executable;
-			own(toggle("dsjit", "Recompiler", hand.dsJit,
-					executable ? "melonDS's JIT: much faster than its interpreter." : "No executable memory: the interpreter runs.",
-					"Runs the DS's two CPUs on melonDS's recompiler, in the executable memory the PS5 gives (Diagnostics says whether it "
+			own(toggle("dsjit", Tr("Recompiler"), hand.dsJit,
+					executable ? "melonDS's JIT: much faster than its interpreter." : Tr("No executable memory: the interpreter runs."),
+					Tr("Runs the DS's two CPUs on melonDS's recompiler, in the executable memory the PS5 gives (Diagnostics says whether it "
 					"does), much faster than its interpreter. Off: the interpreter, slower, for a game the recompiler gets wrong. Applies to "
-					"the next game."),
+					"the next game.")),
 				"dsJit");
 		}
 		else if (page == "screens")
 		{
-			own(choice("layout", "Screen layout", Options(kLayouts), hand.layout, "How the two screens share the TV.",
-					"One above the other, the top one alone, the top one large with the bottom one beside it, or the two side by side. In a "
-					"game, touchpad click + R1 goes to the next."),
+			own(choice("layout", Tr("Screen layout"), Options(kLayouts), hand.layout, Tr("How the two screens share the TV."),
+					Tr("One above the other, the top one alone, the top one large with the bottom one beside it, or the two side by side. In a "
+					"game, touchpad click + R1 goes to the next.")),
 				"layout");
-			own(choice("border", "Border", Options(kBorderThemes), hand.border, "Artwork around the screens.",
-					"Artwork around the screens, never over them. It follows every layout, and the in-game menu changes it too.",
+			own(choice("border", Tr("Border"), Options(kBorderThemes), hand.border, Tr("Artwork around the screens."),
+					Tr("Artwork around the screens, never over them. It follows every layout, and the in-game menu changes it too."),
 					Kind::Swatches),
 				"border");
 		}
 		else if (page == "audio")
 		{
-			own(slider("volume", IsWiiU() ? "Wii U games' volume" : Is3ds() ? "3DS games' volume" : "DS games' volume",
-					IsWiiU() ? settings.volume : hand.volume, 100, "The games' sound.", "The games' sound on this side. Left and Right change it by 10%."),
+			own(slider("volume", IsWiiU() ? Tr("Wii U games' volume") : Is3ds() ? "3DS games' volume" : Tr("DS games' volume"),
+					IsWiiU() ? settings.volume : hand.volume, 100, Tr("The games' sound."), Tr("The games' sound on this side. Left and Right change it by 10%.")),
 				"volume");
 			if (IsWiiU())
-				toggle("gamepadspeaker", "GamePad speaker", settings.gamePadSpeaker, "The Wii U GamePad's own sound, on the DualSense.",
-					"The sounds games play on the Wii U GamePad's speaker, from player 1's DualSense speaker. Many games send their whole sound "
-					"there too, so it is off unless you want it. Applies to the next game.");
+				toggle("gamepadspeaker", Tr("GamePad speaker"), settings.gamePadSpeaker, Tr("The Wii U GamePad's own sound, on the DualSense."),
+					Tr("The sounds games play on the Wii U GamePad's speaker, from player 1's DualSense speaker. Many games send their whole sound "
+					"there too, so it is off unless you want it. Applies to the next game."));
 			const int music = (int)(std::find(std::begin(kMusic), std::end(kMusic), settings.music) - std::begin(kMusic));
-			choice("music", "Launcher music", Options(kMusicNames), music, "The music under the menus.",
-				"The launcher's own music, in the spirit of a console's setup screen, or none. Every side has the same.");
-			slider("musicvolume", "Music volume", settings.musicVolume, 100, "How loud the menus' music is.",
-				"How loud the launcher's music is. Left and Right change it by 10%.");
-			toggle("menusounds", "Menu sounds", settings.menuSounds, "The sounds of moving and choosing.",
-				"The launcher's sounds as you move, choose and go back.");
+			choice("music", Tr("Launcher music"), Options(kMusicNames), music, Tr("The music under the menus."),
+				Tr("The launcher's own music, in the spirit of a console's setup screen, or none. Every side has the same."));
+			slider("musicvolume", Tr("Music volume"), settings.musicVolume, 100, Tr("How loud the menus' music is."),
+				Tr("How loud the launcher's music is. Left and Right change it by 10%."));
+			toggle("menusounds", Tr("Menu sounds"), settings.menuSounds, Tr("The sounds of moving and choosing."),
+				Tr("The launcher's sounds as you move, choose and go back."));
 		}
 		else if (page == "controls")
 		{
-			toggle("rumble", "Vibration", settings.rumble, "The DualSense's rumble, in games and in the launcher.",
-				"Off, the DualSense never rumbles: not for a game's vibration, nor for the launcher's. Every side has the same.");
+			toggle("rumble", Tr("Vibration"), settings.rumble, Tr("The DualSense's rumble, in games and in the launcher."),
+				Tr("Off, the DualSense never rumbles: not for a game's vibration, nor for the launcher's. Every side has the same."));
 			if (IsWiiU())
 			{
 				for (int player = 0; player < ps5pad::kMaxPlayers; player++)
 				{
 					const auto controls = m_status.coreReady ? ps5emu::GetPlayerControls(player) : ps5emu::PlayerControls{};
-					Row* row = action(Kind::Link, "player", fmt::format("Player {}", player + 1), m_status.coreReady ? TypeName(controls.type) : "",
-						controls.connected ? "Cross: this player's controller, motion and buttons." : "No DualSense for this player yet.",
-						"What the game sees in this player's hands, and its motion, vibration, deadzones and buttons. Player 1 is the signed-in "
-						"user who started the app; the other signed-in users' DualSenses are players 2 to 4.");
+					Row* row = action(Kind::Link, "player", TrF("Player {0}", player + 1), m_status.coreReady ? TypeName(controls.type) : "",
+						controls.connected ? Tr("Cross: this player's controller, motion and buttons.") : Tr("No DualSense for this player yet."),
+						Tr("What the game sees in this player's hands, and its motion, vibration, deadzones and buttons. Player 1 is the signed-in "
+						"user who started the app; the other signed-in users' DualSenses are players 2 to 4."));
 					row->index = player;
 					row->dimmed = m_status.coreReady && !controls.connected;
 					cemu(row);
@@ -350,13 +384,13 @@ namespace ps5shell
 			else
 			{
 				if (Is3ds())
-					toggle("motion", "Motion controls", hand.motion, "The DualSense's motion as the 3DS's.",
-						"The DualSense's gyroscope and accelerometer as the 3DS's own, for the games that aim or steer by tilting it.");
-				slider("deadzone", "Stick deadzone", hand.deadzone, 50, "How far a stick moves before it counts.",
-					Is3ds() ? "How far a stick moves before the game sees it, for the circle pad and the C-stick. Raise it if something drifts "
-							  "when you let go of the stick; lower it for finer control." :
-							  "How far the left stick moves before it presses the DS's D-pad. Raise it if a direction is pressed when you let go "
-							  "of the stick.")
+					toggle("motion", Tr("Motion controls"), hand.motion, Tr("The DualSense's motion as the 3DS's."),
+						Tr("The DualSense's gyroscope and accelerometer as the 3DS's own, for the games that aim or steer by tilting it."));
+				slider("deadzone", Tr("Stick deadzone"), hand.deadzone, 50, Tr("How far a stick moves before it counts."),
+					Is3ds() ? Tr("How far a stick moves before the game sees it, for the circle pad and the C-stick. Raise it if something drifts "
+							  "when you let go of the stick; lower it for finer control.") :
+							  Tr("How far the left stick moves before it presses the DS's D-pad. Raise it if a direction is pressed when you let go "
+							  "of the stick."))
 					->value = Percent(hand.deadzone);
 				int mapped = 0;
 				if (Is3ds())
@@ -367,20 +401,20 @@ namespace ps5shell
 				else
 					for (ps5azahar::Button button : ps5azahar::DsButtons())
 						mapped += ps5azahar::MappedInput(hand, button) != ps5emu::PadInput::None;
-				action(Kind::Link, "buttons", "Buttons", Plural(mapped, "button set", "buttons set"), "Which DualSense button is which.",
-					Is3ds() ? "Which DualSense button is which of the 3DS's. A is on Circle and B on Cross by default, where the 3DS has them; "
-							  "the circle pad is the left stick, the C-stick the right one, and the touchpad the touch screen." :
-							  "Which DualSense button is which of the DS's. A is on Circle and B on Cross by default, where the DS has them; the "
-							  "left stick is a second D-pad, the touchpad the touch screen, and R3 held blows into the microphone.");
-				action(Kind::Hold, "resetcontrols", "Reset to defaults", m_message.empty() ? "Hold Cross" : m_message,
-					Is3ds() ? "Default buttons, motion and deadzone." : "Default buttons and deadzone.", "The default buttons, motion and deadzone.");
+				action(Kind::Link, "buttons", Tr("Buttons"), TrP(mapped, "{0} button set", "{0} buttons set"), Tr("Which DualSense button is which."),
+					Is3ds() ? Tr("Which DualSense button is which of the 3DS's. A is on Circle and B on Cross by default, where the 3DS has them; "
+							  "the circle pad is the left stick, the C-stick the right one, and the touchpad the touch screen.") :
+							  Tr("Which DualSense button is which of the DS's. A is on Circle and B on Cross by default, where the DS has them; the "
+							  "left stick is a second D-pad, the touchpad the touch screen, and R3 held blows into the microphone."));
+				action(Kind::Hold, "resetcontrols", Tr("Reset to defaults"), m_message.empty() ? Tr("Hold Cross") : m_message,
+					Is3ds() ? Tr("Default buttons, motion and deadzone.") : Tr("Default buttons and deadzone."), Tr("The default buttons, motion and deadzone."));
 			}
 		}
 		else if (page == "remote")
 		{
-			const char* screen = IsWiiU() ? "The GamePad's screen" : Is3ds() ? "The bottom screen" : "The touch screen";
-			toggle("remote", "Remote touch screen", settings.remoteScreen, fmt::format("{} in a phone's or tablet's browser, with touch.", screen),
-				fmt::format("{} in any browser on the PS5's network, a phone's, a tablet's or a computer's, with nothing to install, and its "
+			const char* screen = IsWiiU() ? Tr("The GamePad's screen") : Is3ds() ? Tr("The bottom screen") : Tr("The touch screen");
+			toggle("remote", Tr("Remote touch screen"), settings.remoteScreen, TrF("{0} in a phone's or tablet's browser, with touch.", screen),
+				TrF("{0} in any browser on the PS5's network, a phone's, a tablet's or a computer's, with nothing to install, and its "
 							"touches sent back to the game. Scan the code shown here, or open the address. The DualSense stays the buttons, "
 							"and the sound stays on the PS5.\nWhile a browser shows it, the PS5 copies that screen up to 30 times a second, so "
 							"a game can run a little slower; with no browser, it costs nothing. Any device on your network can open the page, "
@@ -393,11 +427,11 @@ namespace ps5shell
 			for (ps5usb::Device device : ps5usb::kDevices)
 			{
 				Row* row = toggle("usb", ps5usb::Name(device), m_status.coreReady && ps5usb::Enabled(device),
-					device == ps5usb::Device::Skylanders ? "For the Skylanders games." :
-					device == ps5usb::Device::Infinity	 ? "For Disney Infinity 3.0." :
-														   "For LEGO Dimensions.",
-					"Cemu's emulated portal, plugged in as a game starts. In the game, the menu's USB devices category puts figures on it: dumps "
-					"in " + ps5usb::Folder(device) + ". A real portal on the PS5's USB is not reached.");
+					device == ps5usb::Device::Skylanders ? Tr("For the Skylanders games.") :
+					device == ps5usb::Device::Infinity	 ? Tr("For Disney Infinity 3.0.") :
+														   Tr("For LEGO Dimensions."),
+					Tr("Cemu's emulated portal, plugged in as a game starts. In the game, the menu's USB devices category puts figures on it: dumps "
+					"in ") + ps5usb::Folder(device) + ". A real portal on the PS5's USB is not reached.");
 				row->index = (int)device;
 				cemu(row);
 			}
@@ -407,33 +441,33 @@ namespace ps5shell
 			// Azahar looks for it in its own files, which only the 3DS side opens
 			ps5emu::Game home;
 			const bool homeMenu = m_prepared == System::N3ds && ps5azahar::HomeMenu(hand.region, home);
-			own(choice("region", "Region", Options(kRegions), hand.region + 1, "The emulated 3DS's region.",
-					"Automatic takes each game's own region. A game made for another region may refuse to start or show other languages. "
-					"Applies to the next game."),
+			own(choice("region", Tr("Region"), Options(kRegions), hand.region + 1, Tr("The emulated 3DS's region."),
+					Tr("Automatic takes each game's own region. A game made for another region may refuse to start or show other languages. "
+					"Applies to the next game.")),
 				"region");
-			own(choice("language", "Language", Options(kLanguages), hand.language + 1, "The emulated 3DS's language.",
-					"The language games that follow the console's show their text in. Applies to the next game."),
+			own(choice("language", Tr("Language"), Options(kLanguages), hand.language + 1, Tr("The emulated 3DS's language."),
+					Tr("The language games that follow the console's show their text in. Applies to the next game.")),
 				"language");
 			std::vector<std::string> clocks;
 			for (int clock : kClocks)
 				clocks.push_back(fmt::format("{}%", clock));
-			own(choice("cpuclock", "CPU clock", clocks, ClockIndex(hand.cpuClock), "The emulated 3DS's CPU speed.",
-					"How fast the emulated CPU runs, against a 3DS's: higher can steady a game that slows down where a 3DS would not, and asks "
-					"more of the PS5; lower can speed up one held back by its own pacing. 100% is a 3DS. Also in the in-game menu."),
+			own(choice("cpuclock", Tr("CPU clock"), clocks, ClockIndex(hand.cpuClock), Tr("The emulated 3DS's CPU speed."),
+					Tr("How fast the emulated CPU runs, against a 3DS's: higher can steady a game that slows down where a 3DS would not, and asks "
+					"more of the PS5; lower can speed up one held back by its own pacing. 100% is a 3DS. Also in the in-game menu.")),
 				"cpuClock");
-			Row* row = action(Kind::Action, "homemenu", "Home Menu", homeMenu ? "Start" : "Run Artic Setup first",
-				"The 3DS Home Menu, from your console's files.",
-				"Starts the 3DS Home Menu, once Artic Base's setup has copied your own console's system files (Artic Base).");
+			Row* row = action(Kind::Action, "homemenu", Tr("Home Menu"), homeMenu ? Tr("Start") : Tr("Run Artic Setup first"),
+				Tr("The 3DS Home Menu, from your console's files."),
+				Tr("Starts the 3DS Home Menu, once Artic Base's setup has copied your own console's system files (Artic Base)."));
 			row->dimmed = !homeMenu;
 		}
 		else if (page == "system")
 		{
-			own(choice("language", "Language", Options(kLanguages), hand.language + 1, "The emulated DS's language.",
-					"The language games that follow the console's show their text in, up to Chinese: the DS has no others (Korean and the "
-					"rest are English). Applies to the next game."),
+			own(choice("language", Tr("Language"), Options(kLanguages), hand.language + 1, Tr("The emulated DS's language."),
+					Tr("The language games that follow the console's show their text in, up to Chinese: the DS has no others (Korean and the "
+					"rest are English). Applies to the next game.")),
 				"language");
 			const bool found = ps5melonds::OwnBiosFound();
-			own(toggle("dsownbios", "Your DS's BIOS", hand.dsOwnBios, found ? "Found in melonds/bios." : "Not found: melonDS's own run the games.",
+			own(toggle("dsownbios", Tr("Your DS's BIOS"), hand.dsOwnBios, found ? Tr("Found in melonds/bios.") : Tr("Not found: melonDS's own run the games."),
 					"bios7.bin, bios9.bin and firmware.bin, dumped from your own DS, in /data/ps5cemu/melonds/bios: melonDS runs on them when "
 					"they are there and this is on. Without them, its own replacements (FreeBIOS) run most games as well. Applies to the next "
 					"game."),
@@ -442,82 +476,82 @@ namespace ps5shell
 		else if (page == "files")
 		{
 			const std::string& folder = GamesFolder(m_side);
-			action(Kind::Link, "folder", fmt::format("{} games", SideTitle(m_side)), ShortPath(folder, 34),
-				"Where your games are. Cross picks another.",
-				IsWiiU() ? "Your Wii U games: .wua, .wud, .wux, or folders with code, content and meta. Encrypted .wud and .wux need their keys "
-						   "in /data/ps5cemu/keys.txt." :
-				Is3ds()	 ? "Your 3DS games: .3ds or .cci, .cxi, .3dsx and Azahar's compressed dumps, decrypted, here or in the folders in it. "
+			action(Kind::Link, "folder", Is3ds() ? Tr("3DS games") : IsDs() ? Tr("DS games") : Tr("Wii U games"), ShortPath(folder, 34),
+				Tr("Where your games are. Cross picks another."),
+				IsWiiU() ? Tr("Your Wii U games: .wua, .wud, .wux, or folders with code, content and meta. Encrypted .wud and .wux need their keys "
+						   "in /data/ps5cemu/keys.txt.") :
+				Is3ds()	 ? Tr("Your 3DS games: .3ds or .cci, .cxi, .3dsx and Azahar's compressed dumps, decrypted, here or in the folders in it. "
 						   "CIA files are installed (Install a CIA file). Encrypted dumps need the 3DS's aes_keys.txt in "
-						   "/data/ps5cemu/azahar/sysdata." :
-						   "Your DS games: .nds files, here or in the folders in it.");
-			action(Kind::Action, "rescan", "Look for games now", m_scanning ? "Looking…" : "", "This side's folder, again.",
-				"Looks through this side's folder again, as it does each time the side opens.");
+						   "/data/ps5cemu/azahar/sysdata.") :
+						   Tr("Your DS games: .nds files, here or in the folders in it."));
+			action(Kind::Action, "rescan", Tr("Look for games now"), m_scanning ? Tr("Looking…") : "", Tr("This side's folder, again."),
+				Tr("Looks through this side's folder again, as it does each time the side opens."));
 			if (IsWiiU())
 			{
 				const bool keys = IsFile(std::string(ps5paths::kRoot) + "/keys.txt");
-				action(Kind::Action, "keys", "Wii U disc keys", keys ? "keys.txt found" : "keys.txt missing", "Only encrypted .wud and .wux need them.",
-					"Encrypted .wud and .wux dumps need their disc keys in /data/ps5cemu/keys.txt, one a line. Decrypted dumps, .wua and "
-					"folders need none.");
-				cemu(action(Kind::Link, "install", "Install updates and DLC", "", "An update, DLC or game (code, content and meta).",
-					"Installs into the Wii U's storage (mlc01), as Cemu's Install game title, update or DLC does. Updates and DLC in the game "
-					"files folder work as they are, too."));
+				action(Kind::Action, "keys", Tr("Wii U disc keys"), keys ? "keys.txt found" : "keys.txt missing", Tr("Only encrypted .wud and .wux need them."),
+					Tr("Encrypted .wud and .wux dumps need their disc keys in /data/ps5cemu/keys.txt, one a line. Decrypted dumps, .wua and "
+					"folders need none."));
+				cemu(action(Kind::Link, "install", Tr("Install updates and DLC"), "", Tr("An update, DLC or game (code, content and meta)."),
+					Tr("Installs into the Wii U's storage (mlc01), as Cemu's Install game title, update or DLC does. Updates and DLC in the game "
+					"files folder work as they are, too.")));
 			}
 			else if (Is3ds())
-				action(Kind::Link, "installcia", "Install a CIA file", "", "A game, an update or DLC.",
-					"Installs a CIA into the 3DS's storage, as Azahar's Install CIA does: an update or DLC goes with its game, and a game joins "
-					"the library. Circle cancels while it runs.");
+				action(Kind::Link, "installcia", Tr("Install a CIA file"), "", Tr("A game, an update or DLC."),
+					Tr("Installs a CIA into the 3DS's storage, as Azahar's Install CIA does: an update or DLC goes with its game, and a game joins "
+					"the library. Circle cancels while it runs."));
 		}
 		else if (page == "artic")
-			action(Kind::Link, "artic", "Artic Base", settings.n3ds.articAddress, "Play a game from your 3DS, and set up from it.",
-				"Artic Base plays a game from a 3DS on your network, its saves staying on the 3DS; Artic Setup copies a 3DS's system files "
-				"into Azahar, for the Home Menu and the games that need them.");
+			action(Kind::Link, "artic", Tr("Artic Base"), settings.n3ds.articAddress, Tr("Play a game from your 3DS, and set up from it."),
+				Tr("Artic Base plays a game from a 3DS on your network, its saves staying on the 3DS; Artic Setup copies a 3DS's system files "
+				"into Azahar, for the Home Menu and the games that need them."));
 		else if (page == "online")
 		{
-			toggle("boxart", "Box art from GameTDB", settings.boxArt, "Covers for the library, downloaded once.",
-				"The first time a game shows up, its cover is downloaded from GameTDB (art.gametdb.com) by the ID on its box. Off: nothing "
-				"more is downloaded.");
+			toggle("boxart", Tr("Box art from GameTDB"), settings.boxArt, Tr("Covers for the library, downloaded once."),
+				Tr("The first time a game shows up, its cover is downloaded from GameTDB (art.gametdb.com) by the ID on its box. Off: nothing "
+				"more is downloaded."));
 			if (IsWiiU())
-				action(Kind::Action, "packs", "Community graphic packs", PacksStatus(), "Cross checks GitHub for newer ones.",
-					"Cemu's community graphic packs, from GitHub's latest release when it is newer than the ones installed. The packs bundled "
-					"with the app stay as the fallback.");
-			action(Kind::Action, "appupdate", "PS5CEMU-HAR updates", AppUpdateStatus(), "Cross checks GitHub for a newer version.",
-				"PS5CEMU-HAR asks GitHub for its latest release each time it starts. Cross asks again, or installs the newer version it found: "
-				"the release's files are downloaded, checked and put in place of these, and the app starts again. Your games, saves and "
-				"settings stay as they are.");
+				action(Kind::Action, "packs", Tr("Community graphic packs"), PacksStatus(), Tr("Cross checks GitHub for newer ones."),
+					Tr("Cemu's community graphic packs, from GitHub's latest release when it is newer than the ones installed. The packs bundled "
+					"with the app stay as the fallback."));
+			action(Kind::Action, "appupdate", Tr("PS5CEMU-HAR updates"), AppUpdateStatus(), Tr("Cross checks GitHub for a newer version."),
+				Tr("PS5CEMU-HAR asks GitHub for its latest release each time it starts. Cross asks again, or installs the newer version it found: "
+				   "the release's files are downloaded, checked and put in place of these, and the app starts again. Your games, saves and "
+				   "settings stay as they are."));
 		}
 		else if (page == "launcher")
 		{
-			toggle("pictures", "Game pictures behind menus", settings.ui.gamePictures, "The focused game's cover, softened, behind the screens.",
-				"The focused game's picture fills the screen behind the menus, softened and dimmed, so moving the focus changes the whole "
-				"screen. Off: the game's colours only.");
-			toggle("largertext", "Larger text", settings.ui.largerText, "Every size of text a step up.",
-				"Every style of text a step larger: captions from 20 to 23, reading text from 26 to 30.");
-			toggle("highcontrast", "High contrast", settings.ui.highContrast, "Opaque panels, full-strength text, a thicker ring.",
-				"Opaque panels instead of glass, all text at full strength, a thicker focus ring and no grain or pictures behind the menus.");
-			toggle("reducemotion", "Reduce motion", settings.ui.reduceMotion, "Fades in place of movement.",
-				"Springs become short fades; nothing drifts, breathes or rises behind the menus.");
+			toggle("pictures", Tr("Game pictures behind menus"), settings.ui.gamePictures, Tr("The focused game's cover, softened, behind the screens."),
+				Tr("The focused game's picture fills the screen behind the menus, softened and dimmed, so moving the focus changes the whole "
+				"screen. Off: the game's colours only."));
+			toggle("largertext", Tr("Larger text"), settings.ui.largerText, Tr("Every size of text a step up."),
+				Tr("Every style of text a step larger: captions from 20 to 23, reading text from 26 to 30."));
+			toggle("highcontrast", Tr("High contrast"), settings.ui.highContrast, Tr("Opaque panels, full-strength text, a thicker ring."),
+				Tr("Opaque panels instead of glass, all text at full strength, a thicker focus ring and no grain or pictures behind the menus."));
+			toggle("reducemotion", Tr("Reduce motion"), settings.ui.reduceMotion, Tr("Fades in place of movement."),
+				Tr("Springs become short fades; nothing drifts, breathes or rises behind the menus."));
 			int hold = 2;
 			for (int i = 0; i < 6; i++)
 				if (kHolds[i] <= settings.ui.holdMs)
 					hold = i;
-			choice("holdms", "Hold to confirm", Options({"0.4 s", "0.6 s", "0.8 s", "1.0 s", "1.2 s", "1.5 s"}), hold,
-				"How long Cross is held for what cannot be undone.",
-				"Clearing caches, Artic Setup and resetting controls are held to confirm, never pressed twice. This is how long.", Kind::Stepper);
+			choice("holdms", Tr("Hold to confirm"), Options({"0.4 s", "0.6 s", "0.8 s", "1.0 s", "1.2 s", "1.5 s"}), hold,
+				Tr("How long Cross is held for what cannot be undone."),
+				Tr("Clearing caches, Artic Setup and resetting controls are held to confirm, never pressed twice. This is how long."), Kind::Stepper);
 		}
 		else if (page == "diagnostics")
 		{
-			action(Kind::Link, "setupcheck", "Setup check", "", "Storage, recompilers, games, keys and box art, checked.",
-				"Each check has a status, what it means and what to do. It is also shown on the first start and whenever a check fails as "
-				"the app starts.");
-			action(Kind::Action, "copylogs", "Copy logs to USB", m_diagnosticsDone[0], "The logs a report needs, onto a USB drive.",
-				"Copies the last five sessions' logs and the settings into a dated folder on a USB drive, to attach to a report.");
+			action(Kind::Link, "setupcheck", Tr("Setup check"), "", Tr("Storage, recompilers, games, keys and box art, checked."),
+				Tr("Each check has a status, what it means and what to do. It is also shown on the first start and whenever a check fails as "
+				"the app starts."));
+			action(Kind::Action, "copylogs", Tr("Copy logs to USB"), m_diagnosticsDone[0], Tr("The logs a report needs, onto a USB drive."),
+				Tr("Copies the last five sessions' logs and the settings into a dated folder on a USB drive, to attach to a report."));
 			if (IsWiiU())
-				action(Kind::Hold, "clearcaches", "Clear shader caches", m_diagnosticsDone[1].empty() ? "Hold Cross" : m_diagnosticsDone[1],
-					"For a game that crashes on a bad cache.", "Deletes Cemu's shader caches. Games build them again as they run: the first minutes stutter.");
+				action(Kind::Hold, "clearcaches", Tr("Clear shader caches"), m_diagnosticsDone[1].empty() ? Tr("Hold Cross") : m_diagnosticsDone[1],
+					Tr("For a game that crashes on a bad cache."), Tr("Deletes Cemu's shader caches. Games build them again as they run: the first minutes stutter."));
 			else if (Is3ds())
-				action(Kind::Hold, "clearcaches", "Clear shader caches", m_diagnosticsDone[2].empty() ? "Hold Cross" : m_diagnosticsDone[2],
-					"For a game that crashes on a bad cache.",
-					"Deletes Azahar's shader caches. Games build them again as they run: the first minutes stutter.");
+				action(Kind::Hold, "clearcaches", Tr("Clear shader caches"), m_diagnosticsDone[2].empty() ? Tr("Hold Cross") : m_diagnosticsDone[2],
+					Tr("For a game that crashes on a bad cache."),
+					Tr("Deletes Azahar's shader caches. Games build them again as they run: the first minutes stutter."));
 		}
 		(void)side;
 		return rows;
@@ -543,10 +577,10 @@ namespace ps5shell
 			Row reset;
 			reset.kind = Row::Kind::Hold;
 			reset.id = "resetgame";
-			reset.label = "Back to defaults";
-			reset.value = m_message.empty() ? "Hold Cross" : m_message;
-			reset.description = "Every setting of this game its side's again.";
-			reset.help = "Clears this game's own settings: it starts with its side's again, as every game without settings of its own does.";
+			reset.label = Tr("Back to defaults");
+			reset.value = m_message.empty() ? Tr("Hold Cross") : m_message;
+			reset.description = Tr("Every setting of this game its side's again.");
+			reset.help = Tr("Clears this game's own settings: it starts with its side's again, as every game without settings of its own does.");
 			rows.push_back(reset);
 		}
 		return rows;
@@ -564,24 +598,57 @@ namespace ps5shell
 			return text;
 		}
 		if (page == "files" && IsDs())
-			return "Saves: /data/ps5cemu/melonds/saves (a .sav beside the game is taken the first time). Save states: melonds/states. Cheats: "
-				   "melonds/cheats/<game file>.mch, melonDS's format. DSi games, the DS's wireless and its GBA slot are not there.";
+			return Tr("Saves: /data/ps5cemu/melonds/saves (a .sav beside the game is taken the first time). Save states: melonds/states. Cheats: "
+				   "melonds/cheats/<game file>.mch, melonDS's format. DSi games, the DS's wireless and its GBA slot are not there.");
 		if (page == "remote" && !m_settings.remoteScreen)
-			return "On, a code here opens the game's second screen in a phone's browser. Nothing to install; the PS5 and the phone on the "
-				   "same network.";
+			return Tr("On, a code here opens the game's second screen in a phone's browser. Nothing to install; the PS5 and the phone on the "
+				   "same network.");
 		if (page == "usb")
-			return "Figure dumps go in /data/ps5cemu/figures: skylanders, infinity and dimensions. Switch a portal on here, start the game, then "
-				   "put figures on it from the in-game menu (touchpad click + Options > USB devices).";
+			return Tr("Figure dumps go in /data/ps5cemu/figures: skylanders, infinity and dimensions. Switch a portal on here, start the game, then "
+				   "put figures on it from the in-game menu (touchpad click + Options > USB devices).");
 		if (page == "about")
-			return "Cemu, the Wii U emulator, by the Cemu team and its contributors; RADV on the PS5 by Mihawk-99 and mpereiraesaa; the "
+			return Tr("Cemu, the Wii U emulator, by the Cemu team and its contributors; RADV on the PS5 by Mihawk-99 and mpereiraesaa; the "
 				   "community graphic packs' authors.\nAzahar, the 3DS emulator, by the Azahar team and the Citra contributors before them; "
 				   "Mihawk-99's PS5 port of it and dynarmic.\nmelonDS, the DS emulator, by Arisotura and the melonDS team.\nBox art and game "
 				   "information: GameTDB. The font: Lexend.\nThe remote touch screen: dolphin78's idea and prototype.\nAn unofficial port, not affiliated with the Cemu, Azahar or melonDS teams, Nintendo "
 				   "or Sony.\n\nWii U games: /data/ps5cemu/games, storage and saves: /data/ps5cemu/mlc01, keys: /data/ps5cemu/keys.txt\n3DS "
 				   "games: /data/ps5cemu/azahar/games, storage: /data/ps5cemu/azahar/sdmc\nDS games: /data/ps5cemu/melonds/games, saves: "
-				   "/data/ps5cemu/melonds/saves\n\nVersion " +
+				   "/data/ps5cemu/melonds/saves\n\nVersion ") +
 				ps5update::Readable(PS5CEMU_VERSION);
 		return {};
+	}
+
+	// -- the menus' language ----------------------------------------------------------------------------
+
+	std::vector<std::string> Shell::LanguageOptions(int& index) const
+	{
+		// tr: the first choice in the language list: the PS5's own ({0}, in its own words)
+		std::vector<std::string> options{TrF("The PS5's language: {0}", ps5lang::NameOf(ps5lang::SystemLanguage()))};
+		index = 0;
+		for (const ps5lang::Language& language : ps5lang::Languages())
+		{
+			if (m_settings.ui.language == language.code)
+				index = (int)options.size();
+			options.push_back(language.name);
+		}
+		return options;
+	}
+
+	void Shell::OpenLanguagePicker(const std::string& kicker)
+	{
+		int index = 0;
+		std::vector<std::string> options = LanguageOptions(index);
+		OpenPicker(kicker, Tr("Language"), std::move(options), index, [this](int choice) { SetLanguage(choice); });
+	}
+
+	void Shell::SetLanguage(int index)
+	{
+		// the first choice is the PS5's own; the rest are ps5lang's, in its order
+		const auto& languages = ps5lang::Languages();
+		m_settings.ui.language = index > 0 && index <= (int)languages.size() ? languages[index - 1].code : "";
+		SaveSettings();
+		ApplyLanguage();
+		Toast(TrF("Language: {0}", ps5lang::NameOf(ps5lang::Current())));
 	}
 
 	// -- changing a row ---------------------------------------------------------------------------------
@@ -672,7 +739,8 @@ namespace ps5shell
 		case Row::Kind::Swatches:
 		{
 			const int count = (int)row.options.size();
-			if (cross && row.kind == Row::Kind::Choice)
+			// the language: its list, whichever way it is asked for (stepping would change every word at each press)
+			if (row.kind == Row::Kind::Choice && (cross || id == "ui-language"))
 			{
 				// the dropdown: its choice is made where the row's value lives (the side's, or the game's)
 				const Row chosen = row;
@@ -749,6 +817,11 @@ namespace ps5shell
 
 	void Shell::ChooseIndex(const Row& row, int index)
 	{
+		if (row.id == "ui-language")
+		{
+			SetLanguage(index);
+			return;
+		}
 		if (InGameSettings())
 		{
 			ps5settings::Launcher view = m_gameView;
@@ -784,7 +857,7 @@ namespace ps5shell
 		if (g.titleId == 0)
 		{
 			m_feedback.Play(ui::Cue::Denied);
-			Toast("This game has no ID to keep settings by");
+			Toast(Tr("This game has no ID to keep settings by"));
 			return;
 		}
 		m_gameFrom = m_screen == ScreenId::Hub ? ScreenId::Hub : ScreenId::Library;
@@ -917,7 +990,7 @@ namespace ps5shell
 			// the 3DS Home Menu, from the console's files Artic Setup copied
 			ps5emu::Game home;
 			if (ps5azahar::HomeMenu(hand.region, home))
-				LaunchGame(home, "Starting the 3DS", {760, 240, 400, 400});
+				LaunchGame(home, Tr("Starting the 3DS"), {760, 240, 400, 400});
 			else
 				m_feedback.Play(ui::Cue::Denied);
 		}
@@ -936,14 +1009,15 @@ namespace ps5shell
 		{
 			ps5azahar::ResetControls(Handheld(m_side));
 			SaveSettings();
-			m_message = "Done";
+			// tr: what a held row says once it has done its work
+			m_message = TrC("finished", "Done");
 		}
 		else if (id == "resetgame")
 		{
 			m_settings.games.erase(ps5settings::GameKey(ps5launcher::SideName(m_side), m_gameTitle));
 			SaveSettings();
 			m_gameView = ps5settings::ForGame(m_settings, ps5launcher::SideName(m_side), m_gameTitle);
-			m_message = "Done: its side's settings";
+			m_message = Tr("Done: its side's settings");
 		}
 	}
 
@@ -1109,15 +1183,15 @@ namespace ps5shell
 		}
 		const float tw = card.Right() - pad - tx;
 		const bool working = state.kind == ps5stream::State::Kind::Waiting || state.kind == ps5stream::State::Kind::Showing;
-		const ui::TextBlock overline = m_fonts.Layout(Style(kOverlineStyle), working ? "Scan it, or open" : "Remote touch screen", tw, 1);
+		const ui::TextBlock overline = m_fonts.Layout(Style(kOverlineStyle), working ? Tr("Scan it, or open") : Tr("Remote touch screen"), tw, 1);
 		const ui::TextBlock address = m_fonts.Layout(Style({46, ui::Weight::SemiBold, 1.1f}), state.address, tw, 1);
 		const std::string what = ps5stream::Describe(state.kind);
 		const ui::TextStyle chipStyle = Style({22, ui::Weight::Medium, 1.0f});
 		const float chipW = m_fonts.Width(chipStyle, what) + 60, chipH = 44;
 		const ui::TextBlock note = m_fonts.Layout(Style({21, ui::Weight::Regular, 1.5f}),
-			working ? "Same network as the PS5. Nothing to install: the browser is enough. Sound stays on the PS5. Any browser on the network can "
-					  "see it and touch." :
-					  "Turn it off and on again once that is fixed.",
+			working ? Tr("Same network as the PS5. Nothing to install: the browser is enough. Sound stays on the PS5. Any browser on the network can "
+					  "see it and touch.") :
+					  Tr("Turn it off and on again once that is fixed."),
 			std::min(tw, 660.0f), 3);
 		const float height = overline.height + 14 + (address.lines.empty() ? 0 : address.height + 22) + chipH + 22 + note.height;
 		float y = card.y + (card.h - height) * 0.5f;
@@ -1186,7 +1260,7 @@ namespace ps5shell
 		float ty = 140;
 		if (InGameSettings())
 		{
-			canvas.Text(Style(kOverlineStyle), px, 140, "Game settings · " + m_gameName, Accent(), pw, 1);
+			canvas.Text(Style(kOverlineStyle), px, 140, Tr("Game settings · ") + m_gameName, Accent(), pw, 1);
 			ty += 36;
 		}
 		canvas.Text(Style(kTitleStyle), px, ty, current.title, kText, pw, 1);

@@ -217,6 +217,7 @@ namespace ps5settings
 			const rapidjson::Value& ui = json["ui"];
 			Ui& out = settings.ui;
 			ReadString(ui, "lastSide", out.lastSide);
+			ReadString(ui, "language", out.language);
 			ReadBool(ui, "largerText", out.largerText);
 			ReadBool(ui, "highContrast", out.highContrast);
 			ReadBool(ui, "reduceMotion", out.reduceMotion);
@@ -321,6 +322,8 @@ namespace ps5settings
 		writer.StartObject();
 		writer.Key("lastSide");
 		writer.String(settings.ui.lastSide.c_str());
+		writer.Key("language");
+		writer.String(settings.ui.language.c_str());
 		writer.Key("largerText");
 		writer.Bool(settings.ui.largerText);
 		writer.Key("highContrast");

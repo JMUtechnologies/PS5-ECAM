@@ -7,7 +7,9 @@
 
 #pragma once
 
+#include "lang.h"
 #include "paths.h"
+#include "../ui/text.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -19,7 +21,9 @@
 #include <cstring>
 #include <fstream>
 #include <iterator>
+#include <functional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace ps5menu
@@ -35,9 +39,47 @@ namespace ps5menu
 		return (colour & ~IM_COL32_A_MASK) | ((ImU32)(a + 0.5f) << IM_COL32_A_SHIFT);
 	}
 
-	// The characters the menus ask Lexend for: Latin-1, and the dashes, quotes, bullet, ellipsis and
-	// angle quotes (tools/render-menu-fonts.py cuts the fonts to these)
-	inline constexpr ImWchar kGlyphRanges[] = {0x0020, 0x00ff, 0x2010, 0x2027, 0x2039, 0x203a, 0};
+	// The characters the menus' fonts are made with (docs/UI-REDESIGN.md, 7.7): Latin-1 and the dashes,
+	// quotes, bullet, ellipsis and angle quotes, then only those the language's words and the game's
+	// name have besides, so a menu in English costs what it always did. Lexend has the Latin ones
+	// (tools/render-menu-fonts.py), the console's font the rest (MenuFont). Kept: ImGui's atlases read
+	// them as they are built.
+	inline const ImWchar* GlyphRanges(const std::string& title)
+	{
+		static std::vector<ImWchar> ranges;
+		ranges = {0x0020, 0x00ff, 0x2010, 0x2027, 0x2039, 0x203a};
+		std::u32string extra = ps5lang::MenuCharacters();
+		extra += ui::Decode(title);
+		extra += ui::Upper(extra, ps5lang::Current() == "tr"); // the badges' capitals
+		std::sort(extra.begin(), extra.end());
+		extra.erase(std::unique(extra.begin(), extra.end()), extra.end());
+		for (char32_t c : extra)
+			if (c > 0xff && c <= 0xffff && !(c >= 0x2010 && c <= 0x2027) && c != 0x2039 && c != 0x203a && c != 0x200b)
+				ranges.insert(ranges.end(), {(ImWchar)c, (ImWchar)c});
+		// Arabic is drawn in its joined forms (Canvas::Shaped): the presentation forms its letters take
+		if (ui::HasRightToLeft(extra))
+			ranges.insert(ranges.end(), {(ImWchar)0xfe70, (ImWchar)0xfefc});
+		ranges.push_back(0);
+		return ranges.data();
+	}
+
+	// The console's font for what Lexend lacks (a Russian menu's Cyrillic, a Japanese title's kanji),
+	// as the launcher chose it (ps5lang::GetMenuFont), read once and kept: ImGui's atlases read it as
+	// they are built. Empty when the menus need none.
+	inline const std::vector<unsigned char>& MergeFont(int& face)
+	{
+		static std::vector<unsigned char> data;
+		static bool read = false;
+		const ps5lang::MenuFont& font = ps5lang::GetMenuFont();
+		face = font.face;
+		if (!read && !font.path.empty())
+		{
+			read = true;
+			std::ifstream in(font.path, std::ios::binary);
+			data.assign(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
+		}
+		return data;
+	}
 
 	// The three weights, as the menus' files name them (assets/ui/fonts)
 	enum class Weight
@@ -111,9 +153,126 @@ namespace ps5menu
 
 		ImVec2 At(float x, float y) const { return {origin.x + x * scale, origin.y + y * scale}; }
 
+		// What ImGui is given to draw. Arabic joined, with each form the font lacks as its plain letters,
+		// and in the order it is drawn, a line at a time (the launcher's ShapeArabic and VisualOrder,
+		// port/ui/text.h); zero-width spaces (Thai's break chances, which no font draws) left out. Text
+		// with neither, every menu's but an Arabic or a Thai one, goes to ImGui as it is.
+		static bool Plain(const std::string& text)
+		{
+			for (size_t i = 0; i < text.size(); i++)
+			{
+				const unsigned char b = (unsigned char)text[i];
+				if ((b >= 0xd8 && b <= 0xdb) ||
+					(b == 0xe2 && i + 2 < text.size() && (unsigned char)text[i + 1] == 0x80 && (unsigned char)text[i + 2] == 0x8b))
+					return false;
+			}
+			return true;
+		}
+
+		static std::u32string Shaped(ImFont* font, std::u32string_view text)
+		{
+			if (!ui::HasRightToLeft(text))
+				return std::u32string(text);
+			std::u32string out;
+			for (char32_t c : ui::ShapeArabic(text))
+				if (c >= 0xfe70 && c <= 0xfeff && !font->FindGlyphNoFallback((ImWchar)c))
+					out += ui::ArabicLetters(c);
+				else
+					out.push_back(c);
+			return out;
+		}
+
+		static std::string Visual(std::u32string line, bool rtl)
+		{
+			line.erase(std::remove(line.begin(), line.end(), U'\u200b'), line.end());
+			return ui::Encode(rtl || ui::HasRightToLeft(line) ? ui::VisualOrder(line, rtl) : line);
+		}
+
+		// Text's lines: broken a width wide as the launcher breaks them (BreakLines: between CJK
+		// characters, at Thai's break chances, never inside a letter and its marks), or only at its new
+		// lines when width is 0; logical, in reading order and shaped, and drawn, as ImGui is given them.
+		// rtl: the text is Arabic's, its lines right-aligned. The menus draw the same words every frame,
+		// so the lines are kept: only an open menu asks for them.
+		struct Lines
+		{
+			std::vector<std::u32string> logical;
+			std::vector<std::string> drawn;
+			bool rtl = false;
+		};
+		Lines Break(ImFont* font, float size, const std::string& text, float width) const
+		{
+			struct Key
+			{
+				ImFont* font;
+				float size, width;
+				std::string text;
+				bool operator==(const Key& other) const = default;
+			};
+			struct Hash
+			{
+				size_t operator()(const Key& key) const
+				{
+					return std::hash<std::string>()(key.text) ^ (std::hash<float>()(key.size * 4096 + key.width) << 1) ^ (size_t)key.font;
+				}
+			};
+			static std::unordered_map<Key, Lines, Hash> kept;
+			if (kept.size() > 512)
+				kept.clear();
+			auto [at, added] = kept.try_emplace(Key{font, size, width, text});
+			Lines& lines = at->second;
+			if (added)
+			{
+				const std::u32string shaped = Shaped(font, ui::Decode(text));
+				const float unit = size / font->FontSize;
+				lines.rtl = ui::RightToLeftParagraph(shaped, ps5lang::RightToLeft());
+				lines.logical = ui::BreakLines(shaped, width, [&](char32_t c) { return c == 0x200b ? 0.0f : font->GetCharAdvance((ImWchar)c) * unit; });
+				for (const std::u32string& line : lines.logical)
+					lines.drawn.push_back(Visual(line, lines.rtl));
+			}
+			return lines;
+		}
+
+		float Measure(ImFont* font, float size, const std::string& drawn) const
+		{
+			return font->CalcTextSizeA(size * scale, FLT_MAX, 0.0f, drawn.c_str()).x / scale;
+		}
+
 		float Width(ImFont* font, float size, const std::string& text) const
 		{
-			return font->CalcTextSizeA(size * scale, FLT_MAX, 0.0f, text.c_str()).x / scale;
+			if (Plain(text))
+				return Measure(font, size, text);
+			float widest = 0;
+			for (const std::string& line : Break(font, size, text, 0).drawn)
+				widest = std::max(widest, Measure(font, size, line));
+			return widest;
+		}
+
+		// Its last word gone (a character, in a language written without spaces or in one long word),
+		// for an ellipsis to take its place
+		static void CutLast(std::u32string& t)
+		{
+			const size_t space = t.find_last_of(U" \u200b");
+			if (!t.empty() && !ui::CutsAnywhere(t.back()) && space != std::u32string::npos && space > t.size() / 2)
+				t.resize(space);
+			else
+			{
+				if (!t.empty())
+					t.pop_back();
+				while (!t.empty() && ui::IsCombiningMark(t.back()))
+					t.pop_back(); // never a mark without its letter
+			}
+			while (!t.empty() && (t.back() == ' ' || t.back() == ',' || t.back() == '.' || t.back() == ':' || t.back() == 0x3001 ||
+									 t.back() == 0x3002 || t.back() == 0x060c || t.back() == 0x200b))
+				t.pop_back();
+		}
+
+		void DrawLines(ImFont* font, float size, float x, float y, ImU32 colour, const std::vector<std::string>& drawn, bool rtl, float wrap) const
+		{
+			for (size_t i = 0; i < drawn.size(); i++)
+			{
+				const float at = rtl && wrap > 0 ? x + wrap - Measure(font, size, drawn[i]) : x;
+				draw->AddText(font, size * scale, At(at, y + size * (float)i), colour, drawn[i].c_str());
+			}
 		}
 
 		// A sheet: ink at 92 % with a one-pixel light edge, the launcher's sheet radius
@@ -151,7 +310,13 @@ namespace ps5menu
 
 		void Text(ImFont* font, float size, float x, float y, ImU32 colour, const std::string& text, float wrap = 0.0f) const
 		{
-			draw->AddText(font, size * scale, At(x, y), colour, text.c_str(), nullptr, wrap * scale);
+			if (wrap <= 0 && Plain(text))
+			{
+				draw->AddText(font, size * scale, At(x, y), colour, text.c_str());
+				return;
+			}
+			const Lines lines = Break(font, size, text, std::max(0.0f, wrap));
+			DrawLines(font, size, x, y, colour, lines.drawn, lines.rtl, wrap);
 		}
 
 		void TextRight(ImFont* font, float size, float right, float y, ImU32 colour, const std::string& text) const
@@ -164,53 +329,120 @@ namespace ps5menu
 			Text(font, size, centre - Width(font, size, text) / 2, y, colour, text);
 		}
 
+		// The size text fits a width at: its own, or down to a fifth smaller (a longer language's words)
+		float FitSize(ImFont* font, float size, const std::string& text, float width) const
+		{
+			const float natural = Width(font, size, text);
+			return natural <= width || natural <= 0 ? size : std::max(size * 0.8f, size * width / natural);
+		}
+
+		// Text in a width, as the launcher's: a little smaller when it needs to be, then cut with an
+		// ellipsis, its middle where it would have been. Returns its width.
+		enum class Align
+		{
+			Left,
+			Centre,
+			Right
+		};
+		float TextFit(ImFont* font, float size, float x, float y, ImU32 colour, const std::string& text, float width, Align align = Align::Left) const
+		{
+			const float fitted = FitSize(font, size, text, width);
+			const std::string shown = Fit(font, fitted, text, width);
+			const float w = Width(font, fitted, shown);
+			const float at = align == Align::Centre ? x - w / 2 : align == Align::Right ? x - w : x;
+			Text(font, fitted, at, y + (size - fitted) * 0.5f, colour, shown);
+			return w;
+		}
+
+		// Text wrapped to a width on at most lines lines: a little smaller first, then cut
+		void TextLines(ImFont* font, float size, float x, float y, ImU32 colour, const std::string& text, float width, int lines) const
+		{
+			lines = std::max(lines, 1);
+			auto fits = [&](const Lines& broken, float s) {
+				if ((int)broken.drawn.size() > lines)
+					return false;
+				for (const std::string& line : broken.drawn)
+					if (Measure(font, s, line) > width + 0.5f)
+						return false;
+				return true;
+			};
+			float s = size;
+			Lines broken = Break(font, s, text, width);
+			while (s > size * 0.8f && !fits(broken, s))
+				broken = Break(font, s -= 1, text, width);
+			if (!fits(broken, s))
+			{
+				// still too long: the lines that fit, the last one's words going (characters, where
+				// it has no spaces) until it and an ellipsis fit
+				broken.drawn.resize(std::min<size_t>(lines, broken.drawn.size()));
+				std::u32string last = broken.logical[broken.drawn.size() - 1];
+				while (!last.empty() && Measure(font, s, Visual(last + U"…", broken.rtl)) > width)
+					CutLast(last);
+				broken.drawn.back() = Visual(last + U"…", broken.rtl);
+			}
+			DrawLines(font, s, x, y, colour, broken.drawn, broken.rtl, width);
+		}
+
 		// Text that never overflows: cut at a word where it can be, ending in an ellipsis
 		std::string Fit(ImFont* font, float size, const std::string& text, float width) const
 		{
 			if (Width(font, size, text) <= width)
 				return text;
-			std::string cut = text;
-			while (!cut.empty() && Width(font, size, cut + "…") > width)
+			std::u32string cut = ui::Decode(text);
+			while (!cut.empty() && Width(font, size, ui::Encode(cut + U"…")) > width)
+				CutLast(cut);
+			return ui::Encode(cut + U"…");
+		}
+
+		// Each character of UTF-8 text, as its own string (a letter spaced from the next)
+		template<typename Each>
+		static void Letters(const std::string& text, Each each)
+		{
+			for (size_t i = 0; i < text.size();)
 			{
-				const size_t space = cut.find_last_of(' ');
-				if (space != std::string::npos && space > cut.size() / 2)
-					cut.resize(space);
-				else
-				{
-					cut.pop_back();
-					while (!cut.empty() && ((unsigned char)cut.back() & 0xc0) == 0x80)
-						cut.pop_back(); // never half a character
-				}
+				const unsigned char lead = (unsigned char)text[i];
+				size_t length = lead < 0x80 ? 1 : (lead >> 5) == 6 ? 2 : (lead >> 4) == 14 ? 3 : (lead >> 3) == 30 ? 4 : 1;
+				length = std::min(length, text.size() - i);
+				each(text.substr(i, length));
+				i += length;
 			}
-			while (!cut.empty() && (cut.back() == ' ' || cut.back() == ',' || cut.back() == '.' || cut.back() == ':'))
-				cut.pop_back();
-			return cut + "…";
 		}
 
 		// Capitals spaced out, as the launcher's overlines and badges have them. Returns the end.
+		// Whether text is spaced a letter at a time: Latin, Greek and Cyrillic (Arabic's letters join,
+		// Thai's marks sit on their letters, CJK has no capitals to space out)
+		static bool Spaced(const std::string& text)
+		{
+			for (char32_t c : ui::Decode(text))
+				if (c >= 0x0530 && !(c >= 0x1e00 && c <= 0x1fff) && !(c >= 0x2000 && c <= 0x206f))
+					return false;
+			return true;
+		}
+
 		float Tracked(ImFont* font, float size, float x, float y, ImU32 colour, const std::string& text, float tracking = 2.0f) const
 		{
-			char letter[2] = {};
-			for (const char c : text)
+			if (!Spaced(text))
 			{
-				letter[0] = c;
-				draw->AddText(font, size * scale, At(x, y), colour, letter);
-				x += font->CalcTextSizeA(size * scale, FLT_MAX, 0.0f, letter).x / scale + tracking;
+				Text(font, size, x, y, colour, text);
+				return x + Width(font, size, text);
 			}
+			Letters(text, [&](const std::string& letter) {
+				draw->AddText(font, size * scale, At(x, y), colour, letter.c_str());
+				x += font->CalcTextSizeA(size * scale, FLT_MAX, 0.0f, letter.c_str()).x / scale + tracking;
+			});
 			return x - tracking;
 		}
 
-		// A badge: a small rounded chip, its words in capitals; a square of the colour first when dot.
-		// Returns where the next one goes.
-		float Chip(ImFont* font, float x, float y, const std::string& text, ImU32 colour, ImU32 fill, bool dot = false) const
+		// A badge: a small rounded chip, its words in capitals (the language's: Cyrillic, Greek too); a
+		// square of the colour first when dot. Returns where the next one goes.
+		float Chip(ImFont* font, float x, float y, const std::string& words, ImU32 colour, ImU32 fill, bool dot = false) const
 		{
+			const std::string text = ui::Upper(words, ps5lang::Current() == "tr");
 			float width = 24 + (dot ? 22 : 0);
-			char letter[2] = {};
-			for (const char c : text)
-			{
-				letter[0] = c;
-				width += font->CalcTextSizeA(kChip * scale, FLT_MAX, 0.0f, letter).x / scale + 1.5f;
-			}
+			if (Spaced(text))
+				Letters(text, [&](const std::string& letter) { width += font->CalcTextSizeA(kChip * scale, FLT_MAX, 0.0f, letter.c_str()).x / scale + 1.5f; });
+			else
+				width += Width(font, kChip, text) + 1.5f;
 			draw->AddRectFilled(At(x, y), At(x + width, y + 34), fill, 10 * scale);
 			float textX = x + 12;
 			if (dot)
@@ -281,11 +513,21 @@ namespace ps5menu
 
 		// A controller hint, as the launcher's: the button's mark and what it does. Returns where the
 		// next one goes.
-		float Hint(ImFont* font, float x, float y, const char* button, const std::string& label) const
+		float Hint(ImFont* font, float x, float y, const char* button, const std::string& label, float size = kLabel - 2) const
 		{
 			Button(x + 11, y + 14, button, colours.copy);
-			Text(font, kLabel - 2, x + 30, y + 1, colours.copy, label);
-			return x + 30 + Width(font, kLabel - 2, label) + 32;
+			Text(font, size, x + 30, y + 1 + (kLabel - 2 - size) * 0.5f, colours.copy, label);
+			return x + 30 + Width(font, size, label) + 32 * size / (kLabel - 2);
+		}
+
+		// The size hints take to fit in a width together (a longer language's words), a quarter
+		// smaller at the most
+		float HintsSize(ImFont* font, const std::vector<std::pair<const char*, std::string>>& hints, float width) const
+		{
+			float total = 0;
+			for (const auto& hint : hints)
+				total += 30 + Width(font, kLabel - 2, hint.second) + 32;
+			return total <= width ? kLabel - 2 : std::max((kLabel - 2) * 0.75f, (kLabel - 2) * width / total);
 		}
 
 		// A quick action's picture, drawn in lines around x, y: resume, save, load, screens, swap,

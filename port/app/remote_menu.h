@@ -17,13 +17,15 @@
 
 namespace ps5menu
 {
+	using ps5lang::Tr;
+
 	inline constexpr const char* kRemoteRow = "remote";
 
 	// The row, for the side's second screen ("The GamePad's screen", "The bottom screen", ...)
 	inline Row RemoteRow(const std::string& screen)
 	{
 		const bool on = ps5stream::Enabled();
-		return {kRemoteRow, "Remote touch screen", on ? "On" : "Off", true,
+		return {kRemoteRow, Tr("Remote touch screen"), on ? Tr("On") : Tr("Off"), true,
 			screen + " in a phone's or tablet's browser, with touch: scan the code beside this. Kept for the next games."};
 	}
 
@@ -101,6 +103,6 @@ namespace ps5menu
 		canvas.Text(fonts.caption, kCaption, tx + 36, y + 8, c.text, canvas.Fit(fonts.caption, kCaption, what, chipWidth - 44));
 		y += 56;
 		canvas.Text(fonts.caption, kCaption, tx, y, c.copy,
-			working ? "A phone or tablet on the PS5's network. Sound stays on the PS5." : "Turn it off and on again once that is fixed.", tw);
+			working ? Tr("A phone or tablet on the PS5's network. Sound stays on the PS5.") : Tr("Turn it off and on again once that is fixed."), tw);
 	}
 }

@@ -216,6 +216,8 @@ namespace ui
 
 	void Canvas::Text(const TextBlock& block, float x, float y, uint32_t colour, Align align, float alignWidth)
 	{
+		// the glyphs' places in the atlas are in texels: its size now (it grows as glyphs are rendered)
+		const float pixelU = 1.0f / std::max(1u, m_fonts.AtlasWidth()), pixelV = 1.0f / std::max(1u, m_fonts.AtlasHeight());
 		for (const TextBlock::Line& line : block.lines)
 		{
 			float dx = 0;
@@ -228,10 +230,10 @@ namespace ui
 				const PlacedGlyph& glyph = block.glyphs[i];
 				const Box quad{x + dx + glyph.x, y + glyph.y, glyph.width, glyph.height};
 				Instance instance = Make(quad, quad, 0, kGlyph, colour);
-				instance.uv[0] = glyph.u0;
-				instance.uv[1] = glyph.v0;
-				instance.uv[2] = glyph.u1;
-				instance.uv[3] = glyph.v1;
+				instance.uv[0] = glyph.u0 * pixelU;
+				instance.uv[1] = glyph.v0 * pixelV;
+				instance.uv[2] = glyph.u1 * pixelU;
+				instance.uv[3] = glyph.v1 * pixelV;
 				instance.extra[2] = glyph.weight;
 				Add(instance);
 			}

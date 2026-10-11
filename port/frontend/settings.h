@@ -64,6 +64,7 @@ namespace ps5settings
 	struct Ui
 	{
 		std::string lastSide;		 // "wiiu", "3ds" or "ds": the side last used, restored at every start
+		std::string language;		 // the menus' language (ps5lang's code, "de"); empty: the PS5's
 		bool largerText = false;
 		bool highContrast = false;
 		bool reduceMotion = false;

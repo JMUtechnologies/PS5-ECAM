@@ -41,6 +41,9 @@ namespace ps5launcher
 		std::string notice;		 // a problem to show on the Wii U side's Library (empty: none)
 		std::string notice3ds;	 // and on the 3DS side's
 		std::string noticeDs;	 // and on the DS side's
+		std::string launchError; // why the last Wii U game did not start, said once (empty: it did)
+		std::string launchError3ds; // and the last 3DS game
+		std::string launchErrorDs;  // and the last DS game
 		std::vector<std::string> diagnostics; // the lines Settings > Diagnostics shows
 	};
 
