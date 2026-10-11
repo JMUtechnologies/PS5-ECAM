@@ -380,12 +380,12 @@ namespace ps5shell
 		{
 			const char* screen = IsWiiU() ? "The GamePad's screen" : Is3ds() ? "The bottom screen" : "The touch screen";
 			toggle("remote", "Remote touch screen", settings.remoteScreen, fmt::format("{} in a phone's or tablet's browser, with touch.", screen),
-				fmt::format("{} in any browser on the same network as the PS5, a phone's, a tablet's or a computer's, with nothing to install, "
-							"and its touches sent back to the game: the Wii U GamePad's screen for player 1, the 3DS's bottom screen, the DS's "
-							"touch screen. Scan the code shown here, or open the address. The DualSense stays the buttons, and the sound stays on "
-							"the PS5.\nWhile a browser shows it, the PS5 copies that screen up to 30 times a second, so a game can run a little "
-							"slower; with no browser, it costs nothing. Any device on your network can open the page, so turn it off on a network "
-							"you share. The same switch is in a game's menu (touchpad click + Options).\nFrom dolphin78's idea and prototype (#38).",
+				fmt::format("{} in any browser on the PS5's network, a phone's, a tablet's or a computer's, with nothing to install, and its "
+							"touches sent back to the game. Scan the code shown here, or open the address. The DualSense stays the buttons, "
+							"and the sound stays on the PS5.\nWhile a browser shows it, the PS5 copies that screen up to 30 times a second, so "
+							"a game can run a little slower; with no browser, it costs nothing. Any device on your network can open the page, "
+							"so turn it off on a network you share.\nOne switch for every side (the GamePad's screen is player 1's), also in "
+							"a game's menu (touchpad click + Options). From dolphin78's idea and prototype (#38).",
 					screen));
 		}
 		else if (page == "usb")
