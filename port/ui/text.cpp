@@ -15,6 +15,7 @@
 #include <cstring>
 #include <dirent.h>
 #include <fstream>
+#include <functional>
 #include <iterator>
 #include <sys/stat.h>
 
@@ -401,6 +402,102 @@ namespace ui
 				i = end;
 			}
 		return out;
+	}
+
+	bool RightToLeftParagraph(std::u32string_view text, bool arabicMenu)
+	{
+		for (char32_t c : text)
+		{
+			const Direction d = DirectionOf(c);
+			if (d == Direction::Left || d == Direction::Right)
+			{
+				if (d == Direction::Right)
+					return true;
+				break;
+			}
+		}
+		return arabicMenu && HasRightToLeft(text);
+	}
+
+	std::u32string ArabicLetters(char32_t form)
+	{
+		// lam and alef's ligatures: the lam, then which alef
+		if (form >= 0xfef5 && form <= 0xfefc)
+		{
+			static constexpr char32_t kAlef[] = {0x0622, 0x0623, 0x0625, 0x0627};
+			return {0x0644, kAlef[(form - 0xfef5) / 2]};
+		}
+		for (const ArabicForms& forms : kArabic)
+			if (form == forms.isolated || form == forms.final || form == forms.initial || form == forms.medial)
+				return {forms.letter};
+		return {form};
+	}
+
+	bool CutsAnywhere(char32_t c)
+	{
+		return (IsCjk(c) && !IsHangul(c)) || IsThai(c);
+	}
+
+	bool IsCombiningMark(char32_t c)
+	{
+		return IsMark(c);
+	}
+
+	std::vector<std::u32string> BreakLines(std::u32string_view text, float maxWidth, const std::function<float(char32_t)>& advanceOf)
+	{
+		std::vector<std::u32string> lines;
+		size_t start = 0;
+		while (start <= text.size())
+		{
+			size_t end = text.find(U'\n', start);
+			if (end == std::u32string::npos)
+				end = text.size();
+			const std::u32string_view paragraph(text.data() + start, end - start);
+			// greedy: as many words as fit; a word longer than a line is broken where it must be
+			size_t lineStart = 0;
+			while (lineStart < paragraph.size() || (lineStart == 0 && paragraph.empty()))
+			{
+				float width = 0;
+				size_t at = lineStart, lastBreak = std::u32string::npos;
+				for (; at < paragraph.size(); at++)
+				{
+					const char32_t c = paragraph[at];
+					if (IsSpace(c) || c == kZeroWidthSpace)
+						lastBreak = at;
+					else if (at > lineStart && (IsCjk(c) || IsCjk(paragraph[at - 1])) && !IsHangul(c) && !NoBreakBefore(c) &&
+						!NoBreakAfter(paragraph[at - 1]) && !IsSpace(paragraph[at - 1]))
+						lastBreak = at; // before it
+					const float advance = advanceOf(c);
+					if (maxWidth > 0 && !IsSpace(c) && width + advance > maxWidth + 0.01f && at > lineStart)
+						break;
+					width += advance;
+				}
+				size_t lineEnd = at, next = at;
+				if (at < paragraph.size())
+				{
+					if (lastBreak != std::u32string::npos && lastBreak > lineStart)
+						lineEnd = next = lastBreak;
+					else
+						// in the middle of a word: never between a letter and its mark, nor after a Thai
+						// vowel that goes before its consonant
+						while (lineEnd > lineStart + 1 && (IsMark(paragraph[lineEnd]) || NoBreakAfter(paragraph[lineEnd - 1])))
+							lineEnd = --next;
+				}
+				std::u32string line(paragraph.substr(lineStart, lineEnd - lineStart));
+				while (!line.empty() && (IsSpace(line.back()) || line.back() == kZeroWidthSpace))
+					line.pop_back();
+				lines.push_back(std::move(line));
+				while (next < paragraph.size() && (IsSpace(paragraph[next]) || paragraph[next] == kZeroWidthSpace))
+					next++;
+				if (next == lineStart)
+					next++;
+				lineStart = next;
+				if (paragraph.empty())
+					break;
+			}
+			start = end + 1;
+		}
+		return lines;
 	}
 
 	struct Fonts::Fallback
@@ -821,72 +918,10 @@ namespace ui
 	TextBlock Fonts::LayoutAt(const TextStyle& style, const std::u32string& text, float maxWidth, int maxLines)
 	{
 		// the paragraph's direction: Arabic's when its first letter (or, in an Arabic menu, any) is Arabic
-		bool rtl = false;
-		for (char32_t c : text)
-		{
-			const Direction d = DirectionOf(c);
-			if (d == Direction::Left || d == Direction::Right)
-			{
-				rtl = d == Direction::Right;
-				break;
-			}
-		}
-		if (!rtl && m_language == "ar")
-			rtl = HasRightToLeft(text);
+		const bool rtl = RightToLeftParagraph(text, m_language == "ar");
 		// the lines, as runs of the text
-		std::vector<std::u32string> lines;
+		std::vector<std::u32string> lines = BreakLines(text, maxWidth, [&](char32_t c) { return Advance(c, style); });
 		bool truncated = false;
-		size_t start = 0;
-		while (start <= text.size())
-		{
-			size_t end = text.find(U'\n', start);
-			if (end == std::u32string::npos)
-				end = text.size();
-			const std::u32string_view paragraph(text.data() + start, end - start);
-			// greedy: as many words as fit; a word longer than a line is broken where it must be
-			size_t lineStart = 0;
-			while (lineStart < paragraph.size() || (lineStart == 0 && paragraph.empty()))
-			{
-				float width = 0;
-				size_t at = lineStart, lastBreak = std::u32string::npos;
-				for (; at < paragraph.size(); at++)
-				{
-					const char32_t c = paragraph[at];
-					if (IsSpace(c) || c == kZeroWidthSpace)
-						lastBreak = at;
-					else if (at > lineStart && (IsCjk(c) || IsCjk(paragraph[at - 1])) && !IsHangul(c) && !NoBreakBefore(c) &&
-						!NoBreakAfter(paragraph[at - 1]) && !IsSpace(paragraph[at - 1]))
-						lastBreak = at; // before it
-					const float advance = Advance(c, style);
-					if (maxWidth > 0 && !IsSpace(c) && width + advance > maxWidth + 0.01f && at > lineStart)
-						break;
-					width += advance;
-				}
-				size_t lineEnd = at, next = at;
-				if (at < paragraph.size())
-				{
-					if (lastBreak != std::u32string::npos && lastBreak > lineStart)
-						lineEnd = next = lastBreak;
-					else
-						// in the middle of a word: never between a letter and its mark, nor after a Thai
-						// vowel that goes before its consonant
-						while (lineEnd > lineStart + 1 && (IsMark(paragraph[lineEnd]) || NoBreakAfter(paragraph[lineEnd - 1])))
-							lineEnd = --next;
-				}
-				std::u32string line(paragraph.substr(lineStart, lineEnd - lineStart));
-				while (!line.empty() && (IsSpace(line.back()) || line.back() == kZeroWidthSpace))
-					line.pop_back();
-				lines.push_back(std::move(line));
-				while (next < paragraph.size() && (IsSpace(paragraph[next]) || paragraph[next] == kZeroWidthSpace))
-					next++;
-				if (next == lineStart)
-					next++;
-				lineStart = next;
-				if (paragraph.empty())
-					break;
-			}
-			start = end + 1;
-		}
 		if (maxLines > 0 && (int)lines.size() > maxLines)
 		{
 			lines.resize(maxLines);

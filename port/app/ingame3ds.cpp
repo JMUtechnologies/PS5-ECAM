@@ -741,8 +741,8 @@ namespace ps5ingame3ds
 					if (keyIndex++ == 0 && appearing)
 						ImGui::SetFocusID(ImGui::GetItemID(), ImGui::GetCurrentWindow());
 					canvas.Row(x, y, width, 72, ImGui::IsItemFocused());
-					const ImVec2 size = g.row->CalcTextSizeA(24 * scale, FLT_MAX, 0.0f, label.c_str());
-					canvas.draw->AddText(g.row, 24 * scale, canvas.At(x + width / 2 - size.x / scale / 2, y + 22), kColours.text, label.c_str());
+					// a longer language's word a little smaller, never out of its key
+					canvas.TextFit(g.row, 24, x + width / 2, y + 22, kColours.text, label, width - 16, Canvas::Align::Centre);
 					return chosen;
 				};
 				const auto& rows = kKeys[s_shift ? 1 : 0];
@@ -772,11 +772,12 @@ namespace ps5ingame3ds
 
 				canvas.draw->AddLine(canvas.At(300, 900), canvas.At(1620, 900), kColours.line, scale);
 				float x = 300;
-				// tr: the 3DS keyboard's hints: Cross types the focused key
-				x = canvas.Hint(g.small, x, 915, "cross", Tr("Type"));
-				x = canvas.Hint(g.small, x, 915, "circle", Tr("Delete"));
-				x = canvas.Hint(g.small, x, 915, "triangle", Tr("Shift"));
-				canvas.Hint(g.small, x, 915, "options", request.buttons.back());
+				const std::vector<std::pair<const char*, std::string>> hints = {
+					// tr: the 3DS keyboard's hints: Cross types the focused key
+					{"cross", Tr("Type")}, {"circle", Tr("Delete")}, {"triangle", Tr("Shift")}, {"options", request.buttons.back()}};
+				const float hintSize = canvas.HintsSize(g.small, hints, 1320);
+				for (const auto& [button, label] : hints)
+					x = canvas.Hint(g.small, x, 915, button, label, hintSize);
 			}
 			ImGui::End();
 			ImGui::PopStyleColor();

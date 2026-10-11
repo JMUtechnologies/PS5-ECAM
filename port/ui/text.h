@@ -19,6 +19,7 @@
 #pragma once
 
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -161,4 +162,19 @@ namespace ui
 	std::u32string ShapeArabic(std::u32string_view text);
 	std::u32string VisualOrder(std::u32string_view line, bool rtl);
 	bool HasRightToLeft(std::u32string_view text);
+	// A paragraph's direction: right to left when its first letter is Arabic or, in an Arabic menu
+	// (arabicMenu), when it has any Arabic
+	bool RightToLeftParagraph(std::u32string_view text, bool arabicMenu);
+	// A presentation form's letters (a lam and alef ligature's two), for a font that lacks the form
+	std::u32string ArabicLetters(char32_t form);
+	// A script cut a character at a time, not at spaces, when it must be (CJK but Korean, Thai)
+	bool CutsAnywhere(char32_t c);
+	// A mark drawn over or under the character before it, never the first of a line
+	bool IsCombiningMark(char32_t c);
+	// Text in lines a width wide, as the launcher breaks them: at spaces and zero-width spaces (Thai's
+	// break chances), between CJK characters (not before a closing mark nor after an opening one;
+	// Korean at its spaces), a word longer than a line where it must be, never between a letter and
+	// its mark nor after a Thai vowel written before its consonant. advance is a character's width;
+	// "\n" starts a line; maxWidth 0 breaks only there. Each line without the spaces at its ends.
+	std::vector<std::u32string> BreakLines(std::u32string_view text, float maxWidth, const std::function<float(char32_t)>& advance);
 }
