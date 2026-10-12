@@ -34,6 +34,9 @@ namespace ps5shell
 			TrMark("AMD FSR 1 for Wii U games: a sharper picture without the cost of a higher resolution."),
 			TrMark("Cemu's shader notices can be hidden, Skylanders are chosen from a list, and the 3DS's outline fix is a setting."),
 			TrMark("Azahar's latest fixes for its Vulkan renderer and for installing CIA files."),
+			TrMark("Settings opens over your library on every side, and the Meyer Oscar themes show your recently played games first."),
+			TrMark("Your own music in the launcher: put MP3 or WAV files in /data/ps5cemu/music."),
+			TrMark("Box art downloads again when the network was slow to start, and Settings > Online can download missing covers."),
 		};
 
 		// tr: what a Wii U player's touchpad click does (as Settings > Controls > Player names them)
