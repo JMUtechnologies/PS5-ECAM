@@ -578,6 +578,18 @@ namespace ps5shell
 		if (ps5boxart::Arrivals() != m_boxArrivals)
 		{
 			m_boxArrivals = ps5boxart::Arrivals();
+			// a cover downloaded again (Settings > Online) is read again; a new one is shown
+			for (const std::string& arrived : ps5boxart::TakeArrived())
+			{
+				const size_t slash = arrived.find('/');
+				const std::string id = slash == std::string::npos ? arrived : arrived.substr(slash + 1);
+				for (Game& game : m_games)
+					if (game.entry.game.gameId == id)
+					{
+						game.boxArt = ps5boxart::Path(BoxOf(game.entry.game), id);
+						m_images->Forget(game.boxArt);
+					}
+			}
 			for (Game& game : m_games)
 				if (game.boxArt.empty())
 					game.boxArt = ps5boxart::Path(BoxOf(game.entry.game), game.entry.game.gameId);

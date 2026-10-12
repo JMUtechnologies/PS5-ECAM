@@ -362,6 +362,9 @@ namespace ps5boxart
 		return !id.empty() && std::ifstream(path).good() ? path : std::string();
 	}
 	void Fetch(System, const std::vector<std::string>&) {}
+	void Refetch(System, const std::vector<std::string>&, bool) {}
+	size_t Pending() { return 0; }
+	std::vector<std::string> TakeArrived() { return {}; }
 	uint32_t Arrivals() { return 0; }
 	void SetEnabled(bool) {}
 	void Stop() {}

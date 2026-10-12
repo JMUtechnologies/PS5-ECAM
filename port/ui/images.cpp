@@ -243,6 +243,9 @@ namespace ui
 				if (it == m_entries.end())
 					continue; // let go of meanwhile
 				Picture& picture = it->second.picture;
+				if (picture.texture)
+					m_gfx.DestroyTexture(picture.texture); // an older read of a file read again (Forget)
+				picture.texture = 0;
 				picture.failed = done.failed;
 				picture.ambient[0] = done.ambient[0];
 				picture.ambient[1] = done.ambient[1];
@@ -268,6 +271,19 @@ namespace ui
 		{
 			m_gfx.DestroyTexture(m_entries[order[i].second].picture.texture);
 			m_entries.erase(order[i].second);
+		}
+	}
+
+	void Images::Forget(const std::string& path)
+	{
+		for (const std::string& key : {path, path + "#blurred"})
+		{
+			const auto it = m_entries.find(key);
+			if (it == m_entries.end())
+				continue;
+			if (it->second.picture.texture)
+				m_gfx.DestroyTexture(it->second.picture.texture); // freed once the frames drawing it are done
+			m_entries.erase(it);
 		}
 	}
 

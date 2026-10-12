@@ -19,6 +19,7 @@
 #include <deque>
 #include <filesystem>
 #include <fstream>
+#include <map>
 #include <mutex>
 #include <set>
 #include <thread>
@@ -42,6 +43,8 @@ namespace ps5boxart
 	namespace
 	{
 		constexpr size_t kMaxDownload = 8 * 1024 * 1024;
+		constexpr auto kNoneAgain = std::chrono::hours(24 * 14); // a cover GameTDB had none of, asked for again after
+		constexpr int kTriesEach = 4;							   // a cover that keeps failing waits for the next start
 		constexpr const char* kHost = "art.gametdb.com";
 		constexpr int kMaxDecoded = 8192; // a side, before scaling
 
@@ -55,6 +58,8 @@ namespace ps5boxart
 		std::atomic<bool> s_stopped{false}; // for good: a game is starting
 		std::atomic<bool> s_busy{false};	// a cover is being fetched
 		std::atomic<int> s_answered{-1};	// Answered()
+		bool s_retryNow = false;			// under s_mutex: Refetch asked while the worker waits to try again
+		std::vector<std::string> s_arrived;  // folder/ID, under s_mutex: TakeArrived's
 
 		const char* Folder(System system)
 		{
@@ -116,6 +121,7 @@ namespace ps5boxart
 		{
 			out.clear();
 			char error[CURL_ERROR_SIZE] = {};
+			static const std::string ca = ps5paths::Assets() + "/cacert.pem"; // for a redirect to HTTPS: the console has no store
 			curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, error);
 			curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &Receive);
@@ -123,8 +129,11 @@ namespace ps5boxart
 			curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 8L);
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
 			curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
-			curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
-			curl_easy_setopt(curl, CURLOPT_USERAGENT, "PS5CEMU-HAR");
+			// GameTDB moving its pictures (to HTTPS, or another host) is followed, as a browser would
+			curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+			curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 4L);
+			curl_easy_setopt(curl, CURLOPT_CAINFO, ca.c_str());
+			curl_easy_setopt(curl, CURLOPT_USERAGENT, "PS5CEMU-HAR/" PS5CEMU_VERSION);
 			const CURLcode result = curl_easy_perform(curl);
 			if (result != CURLE_OK)
 			{
@@ -231,9 +240,15 @@ namespace ps5boxart
 			return !ec;
 		}
 
-		// One game's cover: GameTDB's large one in each region, then its small one. False when there
-		// is no network.
-		bool FetchOne(CURL* curl, System system, const std::string& id)
+		enum class Outcome
+		{
+			Fetched, // here now
+			None,	 // GameTDB answered "not found" in every region: remembered (<ID>.none)
+			Later,	 // no network, or GameTDB refused or was busy: tried again later, nothing remembered
+		};
+
+		// One game's cover: GameTDB's large one in each region, then its small one
+		Outcome FetchOne(CURL* curl, System system, const std::string& id)
 		{
 			const std::string base = Base(system, id);
 			std::error_code ec;
@@ -245,9 +260,16 @@ namespace ps5boxart
 					const std::string url = fmt::format("http://art.gametdb.com/{}/{}/{}/{}.jpg", Folder(system), size, region, id);
 					const long status = Get(curl, url, data);
 					if (status < 0)
-						return false;
+						return Outcome::Later;
+					if (status == 404 || status == 410)
+						continue; // not in this region: the next
 					if (status != 200 || data.size() < 8)
-						continue;
+					{
+						// anything but "found" or "not found" (refused, too many requests, a server error):
+						// never taken as "no cover"
+						ps5log::Line("[boxart] {}: HTTP {}; tried again later", url, status);
+						return Outcome::Later;
+					}
 					std::vector<uint8_t> rgba;
 					int width = 0, height = 0;
 					const bool png = std::memcmp(data.data(), "\x89PNG", 4) == 0;
@@ -260,15 +282,29 @@ namespace ps5boxart
 					const std::vector<uint8_t> fitted = Fit(rgba, width, height, fitWidth, fitHeight);
 					if (WriteTga(base + ".tga", fitted, fitWidth, fitHeight))
 					{
+						fs::remove(base + ".none", ec);
+						{
+							std::lock_guard lock(s_mutex);
+							s_arrived.push_back(fmt::format("{}/{}", Folder(system), id));
+						}
 						s_arrivals++;
 						ps5log::Line("[boxart] {} {}: {}x{} from {}", Folder(system), id, fitWidth, fitHeight, url);
 					}
-					return true;
+					return Outcome::Fetched;
 				}
-			// GameTDB has none: not asked for again
+			// GameTDB has none: asked for again in two weeks, or when Settings asks
 			std::ofstream(base + ".none").put('\n');
 			ps5log::Line("[boxart] {} {}: GameTDB has no cover", Folder(system), id);
-			return true;
+			return Outcome::None;
+		}
+
+		// A cover GameTDB had none of, lately: not asked for again yet
+		bool RecentlyNone(System system, const std::string& id)
+		{
+			std::error_code ec;
+			const fs::path none = Base(system, id) + ".none";
+			const auto when = fs::last_write_time(none, ec);
+			return !ec && fs::file_time_type::clock::now() - when < kNoneAgain;
 		}
 
 		// GameTDB's address through the PS5's resolver, as "host:80:address" for curl; empty when
@@ -322,7 +358,10 @@ namespace ps5boxart
 			if (entry.empty())
 				return nullptr;
 			ps5log::Line("[boxart] {} through the PS5's resolver", entry);
-			return curl_slist_append(nullptr, entry.c_str());
+			// and for HTTPS, should GameTDB send its pictures there
+			std::string secure = entry;
+			secure.replace(secure.find(":80:"), 4, ":443:");
+			return curl_slist_append(curl_slist_append(nullptr, entry.c_str()), secure.c_str());
 		}
 
 		void Worker()
@@ -331,6 +370,8 @@ namespace ps5boxart
 			CURL* curl = curl_easy_init();
 			if (curl && resolved)
 				curl_easy_setopt(curl, CURLOPT_RESOLVE, resolved);
+			std::map<std::string, int> tries; // folder/ID: how many times it came back Later
+			auto seconds = std::chrono::seconds(15);
 			for (;;)
 			{
 				std::pair<System, std::string> item;
@@ -340,22 +381,44 @@ namespace ps5boxart
 					item = std::move(s_queue.front());
 					s_queue.pop_front();
 				}
-				if (!s_enabled || s_stopped || !curl || !Path(item.first, item.second).empty())
+				const std::string key = fmt::format("{}/{}", Folder(item.first), item.second);
+				auto forget = [&] {
+					// let go of: a later Fetch (box art turned on again, the next scan) asks for it again
+					std::lock_guard lock(s_mutex);
+					s_queued.erase(key);
+				};
+				if (!s_enabled || s_stopped || !curl)
+				{
+					forget();
 					continue;
-				std::error_code ec;
-				if (fs::exists(Base(item.first, item.second) + ".none", ec))
+				}
+				if (!Path(item.first, item.second).empty() || RecentlyNone(item.first, item.second))
 					continue;
 				s_busy = true;
-				const bool fetched = FetchOne(curl, item.first, item.second);
+				const Outcome outcome = FetchOne(curl, item.first, item.second);
 				s_busy = false;
-				s_answered = fetched ? 1 : 0;
-				if (!fetched)
+				if (outcome != Outcome::Later)
 				{
-					// no network: the rest wait for the next start
-					ps5log::Line("[boxart] GameTDB did not answer: no covers fetched until PS5CEMU-HAR starts again");
-					std::lock_guard lock(s_mutex);
-					s_queue.clear();
+					s_answered = 1;
+					seconds = std::chrono::seconds(15);
+					continue;
 				}
+				// no network, or GameTDB busy: this one goes back first, and everything waits a while
+				// (15 s, doubling to 4 min), or until Settings asks again; a game starting ends the wait
+				if (s_answered != 1)
+					s_answered = 0;
+				std::unique_lock lock(s_mutex);
+				if (++tries[key] < kTriesEach)
+					s_queue.emplace_front(item);
+				else
+				{
+					s_queued.erase(key);
+					ps5log::Line("[boxart] {}: tried {} times, left for the next start", key, kTriesEach);
+				}
+				ps5log::Line("[boxart] GameTDB did not answer: trying again in {} s ({} covers waiting)", seconds.count(), s_queue.size());
+				s_wake.wait_for(lock, seconds, [] { return s_retryNow || s_stopped.load(); });
+				s_retryNow = false;
+				seconds = std::min(seconds * 2, std::chrono::seconds(240));
 			}
 		}
 	}
@@ -391,6 +454,45 @@ namespace ps5boxart
 		s_wake.notify_one();
 	}
 
+	void Refetch(System system, const std::vector<std::string>& ids, bool replace)
+	{
+		std::vector<std::string> again;
+		{
+			std::lock_guard lock(s_mutex);
+			for (const std::string& id : ids)
+			{
+				if (!Valid(id))
+					continue;
+				std::error_code ec;
+				fs::remove(Base(system, id) + ".none", ec);
+				if (replace)
+					fs::remove(Base(system, id) + ".tga", ec); // the launcher keeps showing its copy until the new one arrives
+				const std::string key = fmt::format("{}/{}", Folder(system), id);
+				if (std::none_of(s_queue.begin(), s_queue.end(), [&](const auto& item) { return item.first == system && item.second == id; }))
+					s_queued.erase(key);
+				again.push_back(id);
+			}
+			s_retryNow = true;
+			s_answered = -1;
+		}
+		ps5log::Line("[boxart] {}: {} covers asked for again{}", Folder(system), again.size(), replace ? ", those here replaced" : "");
+		Fetch(system, again);
+	}
+
+	size_t Pending()
+	{
+		std::lock_guard lock(s_mutex);
+		return s_queue.size() + (s_busy ? 1 : 0);
+	}
+
+	std::vector<std::string> TakeArrived()
+	{
+		std::lock_guard lock(s_mutex);
+		std::vector<std::string> arrived;
+		arrived.swap(s_arrived);
+		return arrived;
+	}
+
 	uint32_t Arrivals()
 	{
 		return s_arrivals;
@@ -415,6 +517,7 @@ namespace ps5boxart
 			dropped = s_queue.size();
 			s_queue.clear();
 		}
+		s_wake.notify_all(); // a wait to try again ends
 		// a cover on its way is let finish (30 s at most, most take well under one), so no download
 		// or file write runs beside the game; past 5 s the game starts anyway
 		int waited = 0;

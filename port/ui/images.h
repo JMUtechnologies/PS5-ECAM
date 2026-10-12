@@ -39,6 +39,8 @@ namespace ui
 		// A picture by its path, asked for when not known yet. blurred: shrunk and softened, for a
 		// backdrop. Call each frame it is drawn (that keeps it).
 		const Picture& Get(const std::string& path, bool blurred = false);
+		// A picture whose file changed (a cover downloaded again): read again the next time it is asked for
+		void Forget(const std::string& path);
 		// The decoded pictures onto the GPU (a few a frame), and the least recently drawn let go of
 		void Update();
 		// The worker stopped and joined, every texture destroyed
