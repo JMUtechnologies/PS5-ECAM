@@ -4,9 +4,9 @@
 
 <p align="center">
   <strong>Wii U, Nintendo 3DS and Nintendo DS emulation in one PlayStation 5 homebrew app</strong><br>
-  <a href="https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v3.5.0.zip"><strong>Download PS5CEMU-HAR 3.5.0</strong></a> (ZIP, 47.0 MB) ·
-  <a href="https://github.com/premohq/PS5CEMU-HAR/releases/tag/v3.5.0">Release notes</a> ·
-  <a href="#whats-new-in-350">What's new</a><br>
+  <a href="https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v4.0.0.zip"><strong>Download PS5CEMU-HAR 4.0.0</strong></a> (ZIP, @SIZE@ MB) ·
+  <a href="https://github.com/premohq/PS5CEMU-HAR/releases/tag/v4.0.0">Release notes</a> ·
+  <a href="#whats-new-in-400">What's new</a><br>
   <a href="#install">Install</a> · <a href="#wii-u-cemu">Wii U</a> · <a href="#nintendo-3ds-azahar">3DS</a> ·
   <a href="#nintendo-ds-melonds">DS</a> ·
   <a href="#controls">Controls</a> · <a href="docs/COMPATIBILITY.md">Compatibility</a> ·
@@ -18,7 +18,7 @@ with the DualSense, the first two rendering with Vulkan through Mihawk's PS5 por
 
 - [Cemu](https://github.com/cemu-project/Cemu) for Wii U games
 - [Azahar](https://github.com/azahar-emu/azahar) for Nintendo 3DS games
-- [melonDS](https://github.com/melonDS-emu/melonDS) for Nintendo DS games (in the 3.5.1 beta)
+- [melonDS](https://github.com/melonDS-emu/melonDS) for Nintendo DS games (new in 4.0.0)
 
 One launcher holds them all: it opens on the Library of the side you used last, Wii U (Cemu), 3DS
 (Azahar) or DS (melonDS), and a touchpad click goes to the next side. Each side has its own game
@@ -41,8 +41,8 @@ Nintendo or Sony. All credit for the emulators goes to their developers.
 > OnionHEN, or just an ELF loader on port 9021**, PS5CEMU-HAR runs. The
 > [firmware and setup guide](docs/HEN-SETUP.md) has the full picture, per firmware and per HEN.
 
-1. Download [PS5CEMU-HAR-v3.5.0.zip](https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v3.5.0.zip)
-   ([release notes](https://github.com/premohq/PS5CEMU-HAR/releases/tag/v3.5.0), [all releases](https://github.com/premohq/PS5CEMU-HAR/releases)) and extract it, or
+1. Download [PS5CEMU-HAR-v4.0.0.zip](https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v4.0.0.zip)
+   ([release notes](https://github.com/premohq/PS5CEMU-HAR/releases/tag/v4.0.0), [all releases](https://github.com/premohq/PS5CEMU-HAR/releases)) and extract it, or
    [build it yourself](docs/BUILDING.md).
 2. Copy the `PPSA99360` folder to `/data/homebrew/PPSA99360` on your PS5.
 3. Load your HEN and let it jailbreak `PPSA99360`:
@@ -149,7 +149,7 @@ work stops before a game starts.
 
 ## Nintendo DS (melonDS)
 
-New in the 3.5.1 beta: a side of its own, in melonDS's green, to the right of the 3DS.
+New in 4.0.0: a side of its own, in melonDS's green, to the right of the 3DS.
 
 - melonDS 1.1's core, with its ARM recompiler in the executable memory the PS5 gives (its
   interpreter otherwise) and its software renderer on a thread of its own.
@@ -363,7 +363,7 @@ It asks for your firmware, HEN, app version and logs, which almost every problem
 The boot log also gets a `[memory]` line once a minute, a `[perf]` (Wii U) or `[perf3ds]` (3DS) line
 every 10 seconds with the frame rate, and `[crash]` lines if an emulator crashes.
 
-## What's new in the 3.5.1 beta
+## What's new in 4.0.0
 
 - **3.5.0 starts again on older firmwares and kstuff setups** (#34). Where the HEN leaves a drive out
   (kstuff and ShadowMount+ on 5.50 and 8.60 among them), the app's sandbox helper opens it, and 3.5.0

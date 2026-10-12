@@ -248,7 +248,7 @@ namespace ps5settings
 			ReadInt(ui, "libraryFilterWiiU", out.libraryFilter[0], 0, 3);
 			ReadInt(ui, "libraryFilter3ds", out.libraryFilter[1], 0, 3);
 			if (out.libraryFilter[1] == 3)
-				out.libraryFilter[1] = 0; // the 3.5.1 beta's DS games, which have a side of their own now
+				out.libraryFilter[1] = 0; // the 4.0.0 beta's DS games, which have a side of their own now
 			// filters: the Wii U's four (Graphic packs on), the handhelds' three; sorts: four on every side
 			auto readSides = [&](const char* key, int (&values)[3], int wiiuMost, int handheldMost) {
 				if (ui.HasMember(key) && ui[key].IsArray())
