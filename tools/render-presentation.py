@@ -186,7 +186,7 @@ def wordmark(size, banner, centre_x, baseline, mark_size, tagline_size=0):
     draw = ImageDraw.Draw(text)
     draw.text((centre_x, baseline), "PS5CEMU-HAR", font=font(HEAVY, round(mark_size)), fill=ICONS.BODY + (255,), anchor="ms")
     if tagline_size:
-        draw.text((centre_x, baseline + 0.48 * mark_size), "Wii U and Nintendo 3DS on PlayStation 5", font=font(SEMIBOLD, round(tagline_size)),
+        draw.text((centre_x, baseline + 0.48 * mark_size), "Wii U, 3DS and DS on PlayStation 5", font=font(SEMIBOLD, round(tagline_size)),
                   fill=TAGLINE + (255,), anchor="ms")
     shadow = Image.new("RGBA", size, (0, 0, 0, 0))
     shadow.putalpha(text.getchannel("A").point(lambda a: a * 0.45))

@@ -2,20 +2,28 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Draw the README's banner, with nothing but the standard library (and fontTools for --title-font).
 
-    render-banner.py [--title-font FONT] OUTPUT_SVG
+    render-banner.py [--title-font FONT | --title-from SVG] OUTPUT_SVG
 
-writes docs/banner.svg (1280x320): PS5CEMU-HAR's two sides, split down the middle as its start
-screen is. On the left Cemu's: the Wii U GamePad (tools/render-icons.py's shapes) on the Wii U
-Homebrew Launcher's background as the launcher draws it (tools/render-background.py: its gradient
-and the discs of the top 320 rows of its 1280x720 screen), dimmed to the app's dark blue. On the right
+writes docs/banner.svg (1280x320): PS5CEMU-HAR's three sides, in the order of the launcher's switch.
+On the left Cemu's: the Wii U GamePad (tools/render-icons.py's shapes) on the Wii U Homebrew
+Launcher's background as the launcher draws it (tools/render-background.py: its gradient and the
+discs of the top 320 rows of its 1280x720 screen), dimmed to the app's dark blue. On the right
 Azahar's: the 3DS on the 3DS Homebrew Launcher's waves, glowing gold on a dark amber ground
-(port/frontend/wave.cpp's colours). Where they meet, a soft seam; the app's name runs across the
-middle, lit blue from the left and gold from the right. The trailer opens and closes on it.
+(port/frontend/wave.cpp's colours); and melonDS's: the DS Lite on rounded pixels rising in melonDS's
+green (the launcher's DS motif, Shell::DrawPixels). Where the sides meet, a soft seam; the app's
+name runs across the middle, lit blue from the left and gold from the right. The trailer opens and
+closes on it.
+
+--title-font draws the name from the developer's copy of its typeface; --title-from takes the
+outlined name from a banner drawn before (docs/banner.svg), so the banner can be drawn again
+without the font.
 """
 
 import importlib.util
 import math
 import os
+import random
+import re
 import sys
 
 W, H = 1280, 320
@@ -25,6 +33,12 @@ OVERLAY, WAVE_OVERLAY = 0.7, 0.8  # dark, as the app's start screen has its two 
 BODY = '#f4f8fc'
 BLUE = {'top': '#163b62', 'bottom': '#071225', 'accent': '#5aa9ff', 'detail': '#6a7e93'}
 GOLD = {'top': '#6b4a0e', 'bottom': '#170f04', 'accent': '#f4b63f', 'detail': '#8f826c'}
+# melonDS's green (UI-REDESIGN 5.2: nds, #7ed957)
+GREEN = {'top': '#1f5a18', 'bottom': '#071a05', 'accent': '#7ed957', 'detail': '#748c6c'}
+MELON_TOP, MELON_BOTTOM, MELON_OVERLAY = (126, 217, 87), (52, 128, 36), 0.8
+T_SMALL = 224  # the 3DS's and the DS's unit square: the two share the right of the name
+CX_3DS, CX_DS = 974, 1164  # their centres
+SEAM = 1069  # between them: the 3DS's waves to its left, the DS's pixels to its right
 WAVE_TOP, WAVE_BOTTOM = (255, 204, 64), (236, 158, 22)
 # top, wavelength, amplitude, colour, alpha: port/frontend/wave.cpp's layers, at the banner's size
 WAVES = [(196, 430, 12, '#f4b63f', 0.16), (228, 320, 9, '#f8c65a', 0.18), (262, 240, 7, '#ffd98a', 0.20)]
@@ -42,21 +56,21 @@ def background():
 class Device:
     """SVG shapes in a device's unit square, T pixels wide, its corner at (ox, oy)."""
 
-    def __init__(self, ox, oy, palette, gradient):
-        self.ox, self.oy, self.palette, self.gradient = ox, oy, palette, gradient
+    def __init__(self, ox, oy, palette, gradient, size=T):
+        self.ox, self.oy, self.palette, self.gradient, self.t = ox, oy, palette, gradient, size
 
     def x(self, u):
-        return round(self.ox + u * T, 2)
+        return round(self.ox + u * self.t, 2)
 
     def y(self, v):
-        return round(self.oy + v * T, 2)
+        return round(self.oy + v * self.t, 2)
 
     def box(self, cx, cy, hw, hh, r, fill, extra=''):
-        return (f'<rect x="{self.x(cx - hw)}" y="{self.y(cy - hh)}" width="{round(2 * hw * T, 2)}" '
-                f'height="{round(2 * hh * T, 2)}" rx="{round(r * T, 2)}" fill="{fill}"{extra}/>')
+        return (f'<rect x="{self.x(cx - hw)}" y="{self.y(cy - hh)}" width="{round(2 * hw * self.t, 2)}" '
+                f'height="{round(2 * hh * self.t, 2)}" rx="{round(r * self.t, 2)}" fill="{fill}"{extra}/>')
 
     def dot(self, cx, cy, r, fill):
-        return f'<circle cx="{self.x(cx)}" cy="{self.y(cy)}" r="{round(r * T, 2)}" fill="{fill}"/>'
+        return f'<circle cx="{self.x(cx)}" cy="{self.y(cy)}" r="{round(r * self.t, 2)}" fill="{fill}"/>'
 
     def play(self, cx, cy, size):
         # render-icons.py's play(): from cx - 0.45 size to its tip at cx + 0.55 size
@@ -101,6 +115,50 @@ def n3ds(d):
     return shapes
 
 
+def nds(d):
+    """render-icons.py's DS Lite: two screens of the same size (4:3), the top one framed by the speakers."""
+    accent, detail = d.palette['accent'], d.palette['detail']
+    shapes = [
+        f'<g filter="url(#shadow)">{d.box(0.5, 0.495, 0.27, 0.03, 0.02, detail)}'
+        f'{d.box(0.5, 0.30, 0.30, 0.17, 0.045, BODY)}{d.box(0.5, 0.69, 0.30, 0.17, 0.045, BODY)}</g>',
+        d.box(0.5, 0.30, 0.155, 0.12, 0.014, accent),
+        d.box(0.5, 0.30, 0.14, 0.105, 0.008, f'url(#{d.gradient})'),
+        d.play(0.51, 0.30, 0.08),
+        d.box(0.5, 0.685, 0.15, 0.115, 0.012, detail),
+        d.box(0.5, 0.685, 0.14, 0.105, 0.008, f'url(#{d.gradient})'),
+        d.box(0.27, 0.66, 0.04, 0.013, 0.004, detail), d.box(0.27, 0.66, 0.013, 0.04, 0.004, detail),
+    ]
+    for cx in (0.285, 0.715):  # the speakers
+        shapes += [d.dot(cx, cy, 0.008, detail) for cy in (0.27, 0.30, 0.33)]
+    for cx, cy, c in ((0.765, 0.66, accent), (0.73, 0.695, detail), (0.73, 0.625, detail), (0.695, 0.66, detail)):
+        shapes.append(d.dot(cx, cy, 0.0155, c))
+    shapes += [d.dot(0.735, cy, 0.008, detail) for cy in (0.75, 0.78)]  # Start and Select
+    return shapes
+
+
+def pixels():
+    """The DS side's motif as the launcher draws it (Shell::DrawPixels): squares with rounded corners in
+    melonDS's green, rising, fewer and larger than the bubbles; a fixed scatter, so the file stays the same."""
+    rng = random.Random(1144)
+    squares = []
+    for _ in range(26):
+        size = rng.uniform(9, 30)
+        x, y = rng.uniform(SEAM - 10, W + 10), rng.uniform(-10, H + 10)
+        alpha = rng.uniform(0.14, 0.42)
+        squares.append(f'<rect x="{x - size / 2:.1f}" y="{y - size / 2:.1f}" width="{size:.1f}" height="{size:.1f}" '
+                       f'rx="{size * 0.22:.1f}" fill="{GREEN["accent"]}" fill-opacity="{alpha:.2f}"/>')
+    return squares
+
+
+def title_from(path):
+    """The outlined name of a banner drawn before: the path in its title's group."""
+    with open(path, encoding='utf-8') as file:
+        found = re.search(r'filter="url\(#text-shadow\)"[^>]*>\s*<path d="([^"]+)"', file.read())
+    if not found:
+        sys.exit(f'{path} has no outlined name')
+    return found.group(1)
+
+
 def wave(top, length, amplitude):
     points = [f'{x},{top + amplitude * (1 - math.cos(2 * math.pi * (x - HALF) / length)):.1f}' for x in range(HALF, W + 1, 8)]
     return f'M{HALF},{H} L' + ' L'.join(points) + f' L{W},{H} Z'
@@ -132,15 +190,16 @@ def outlined(font_path, text, centre_x, baseline, size, tracking):
 
 def main():
     args = sys.argv[1:]
-    title_font = None
+    title = f'<text x="{HALF}" y="176" font-size="88" font-weight="800" letter-spacing="-1" fill="{BODY}">PS5CEMU-HAR</text>'
     if len(args) >= 2 and args[0] == '--title-font':
-        title_font = args[1]
+        title = f'<path d="{outlined(args[1], "PS5CEMU-HAR", HALF, 176, 88, 1)}" fill="{BODY}"/>'
+        args = args[2:]
+    elif len(args) >= 2 and args[0] == '--title-from':
+        title = f'<path d="{title_from(args[1])}" fill="{BODY}"/>'
         args = args[2:]
     if len(args) != 1:
         sys.exit(__doc__)
     sys.argv = [sys.argv[0]] + args
-    title = (f'<text x="{HALF}" y="176" font-size="88" font-weight="800" letter-spacing="-1" fill="{BODY}">PS5CEMU-HAR</text>'
-             if not title_font else f'<path d="{outlined(title_font, "PS5CEMU-HAR", HALF, 176, 88, 1)}" fill="{BODY}"/>')
     hbl = background()
     top = '#%02x%02x%02x' % hbl.TOP
     # the gradient runs over the launcher's whole 720 rows; the banner shows the top 320
@@ -152,11 +211,15 @@ def main():
             discs.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" fill="#fff" fill-opacity="{alpha:.2f}"/>')
     waves = [f'<path d="{wave(t, l, a)}" fill="{c}" fill-opacity="{alpha}"/>' for t, l, a, c, alpha in WAVES]
     left = Device(HALF // 2 - T // 2 - 150, 18, BLUE, 'screen-blue')
-    right = Device(HALF + HALF // 2 - T // 2 + 150, 30, GOLD, 'screen-gold')
-    svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" aria-label="PS5CEMU-HAR: Cemu and Azahar, the Wii U and Nintendo 3DS emulators, on PlayStation 5 homebrew">
+    # the 3DS and the DS centred on a row a little above the middle, as the GamePad is
+    middle = Device(CX_3DS - T_SMALL / 2, 160 - 0.49 * T_SMALL, GOLD, 'screen-gold', T_SMALL)
+    right = Device(CX_DS - T_SMALL / 2, 160 - 0.495 * T_SMALL, GREEN, 'screen-green', T_SMALL)
+    svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" aria-label="PS5CEMU-HAR: Cemu, Azahar and melonDS, the Wii U, Nintendo 3DS and DS emulators, on PlayStation 5 homebrew">
   <defs>
     <clipPath id="tile"><rect width="{W}" height="{H}" rx="32"/></clipPath>
     <clipPath id="left"><rect width="{HALF}" height="{H}"/></clipPath>
+    <clipPath id="gold"><rect x="{HALF}" width="{SEAM - HALF}" height="{H}"/></clipPath>
+    <clipPath id="green"><rect x="{SEAM}" width="{W - SEAM}" height="{H}"/></clipPath>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="{top}"/>
       <stop offset="1" stop-color="{bottom}"/>
@@ -164,6 +227,14 @@ def main():
     <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#{'%02x%02x%02x' % WAVE_TOP}"/>
       <stop offset="1" stop-color="#{'%02x%02x%02x' % WAVE_BOTTOM}"/>
+    </linearGradient>
+    <linearGradient id="melon" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#{'%02x%02x%02x' % MELON_TOP}"/>
+      <stop offset="1" stop-color="#{'%02x%02x%02x' % MELON_BOTTOM}"/>
+    </linearGradient>
+    <linearGradient id="screen-green" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="{GREEN['top']}"/>
+      <stop offset="1" stop-color="{GREEN['bottom']}"/>
     </linearGradient>
     <linearGradient id="screen-blue" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="{BLUE['top']}"/>
@@ -193,19 +264,29 @@ def main():
       {(chr(10) + '      ').join(discs)}
       <rect width="{HALF}" height="{H}" fill="#000" fill-opacity="{OVERLAY}"/>
     </g>
-    <rect x="{HALF}" width="{W - HALF}" height="{H}" fill="url(#sand)"/>
-    <rect x="{HALF}" width="{W - HALF}" height="{H}" fill="#000" fill-opacity="{WAVE_OVERLAY}"/>
-    {(chr(10) + '    ').join(waves)}
+    <g clip-path="url(#gold)">
+      <rect x="{HALF}" width="{SEAM - HALF}" height="{H}" fill="url(#sand)"/>
+      <rect x="{HALF}" width="{SEAM - HALF}" height="{H}" fill="#000" fill-opacity="{WAVE_OVERLAY}"/>
+      {(chr(10) + '      ').join(waves)}
+    </g>
+    <g clip-path="url(#green)">
+      <rect x="{SEAM}" width="{W - SEAM}" height="{H}" fill="url(#melon)"/>
+      <rect x="{SEAM}" width="{W - SEAM}" height="{H}" fill="#000" fill-opacity="{MELON_OVERLAY}"/>
+      {(chr(10) + '      ').join(pixels())}
+    </g>
     <rect x="{HALF - 1}" width="2" height="{H}" fill="url(#seam)"/>
+    <rect x="{SEAM - 1}" width="2" height="{H}" fill="url(#seam)"/>
   </g>
-  {(chr(10) + '  ').join(gamepad(left))}
-  {(chr(10) + '  ').join(n3ds(right))}
   <ellipse cx="{HALF - 170}" cy="160" rx="190" ry="62" fill="{BLUE['accent']}" fill-opacity="0.42" filter="url(#glow)"/>
   <ellipse cx="{HALF + 170}" cy="160" rx="190" ry="62" fill="{GOLD['accent']}" fill-opacity="0.38" filter="url(#glow)"/>
+  <ellipse cx="{CX_DS}" cy="160" rx="110" ry="90" fill="{GREEN['accent']}" fill-opacity="0.22" filter="url(#glow)"/>
+  {(chr(10) + '  ').join(gamepad(left))}
+  {(chr(10) + '  ').join(n3ds(middle))}
+  {(chr(10) + '  ').join(nds(right))}
   <rect x="{HALF - 330}" y="104" width="660" height="128" rx="40" fill="#040810" fill-opacity="0.4" filter="url(#soft)"/>
   <g font-family="{FONT}" filter="url(#text-shadow)" text-anchor="middle">
     {title}
-    <text x="{HALF}" y="218" font-size="26" font-weight="600" fill="#e6eef6">Wii U and Nintendo 3DS on PlayStation 5</text>
+    <text x="{HALF}" y="218" font-size="26" font-weight="600" fill="#e6eef6">Wii U, 3DS and DS on PlayStation 5</text>
   </g>
 </svg>
 '''
