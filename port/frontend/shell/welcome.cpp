@@ -25,7 +25,7 @@ namespace ps5shell
 		// update): changed with each release that has something to say
 		constexpr const char* kWhatsNew[] = {
 			TrMark("Nintendo DS games, on melonDS, as a third side."),
-			TrMark("Menus in your PS5's language: most European languages, Indonesian and Arabic so far."),
+			TrMark("Menus in your PS5's language, every one it offers: Arabic, Asian and European."),
 			TrMark("The remote touch screen: the second screen in a phone's browser, with touch."),
 			TrMark("Rumble works again, and Skylanders Giants starts."),
 			TrMark("Wii U accounts, and every side's saves backed up to a USB drive."),
