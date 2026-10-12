@@ -501,7 +501,7 @@ namespace ps5shell
 		m_themes = ui::AllThemes(folder);
 		const ui::Theme theme = ui::FindTheme(m_settings.ui.theme, folder);
 		ui::ApplyTheme(theme);
-		ps5log::Line("[ui] theme: {}", theme.id.empty() ? std::string("PS5CEMU-HAR") : theme.id);
+		ps5log::Line("[ui] theme: {}", theme.id.empty() ? std::string("Link Jack") : theme.id);
 	}
 
 	void Shell::SwitchSide(System side)

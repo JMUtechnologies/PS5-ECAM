@@ -87,7 +87,7 @@ namespace ui
 		static const std::vector<Theme> themes = [] {
 			std::vector<Theme> list;
 			Theme standard;
-			standard.name = "PS5CEMU-HAR";
+			standard.name = "Link Jack";
 			standard.description = "Glass over each side's colours, as the design has it.";
 			list.push_back(standard);
 

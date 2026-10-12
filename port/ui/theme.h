@@ -44,7 +44,7 @@ namespace ui
 		Motif motif = Motif::Side;
 	};
 
-	// The built-in themes, the default (PS5CEMU-HAR, id "") first
+	// The built-in themes, the default (Link Jack, id "") first
 	const std::vector<Theme>& BuiltInThemes();
 	// The themes in a folder's .json files (/data/ps5cemu/themes), by file name; one that cannot be read
 	// is left out, and why goes in error (one line per file)

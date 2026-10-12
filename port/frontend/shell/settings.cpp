@@ -88,7 +88,7 @@ namespace ps5shell
 		}
 
 		// the built-in themes' names and lines (ui/theme.cpp), for the translations
-		[[maybe_unused]] constexpr const char* kThemeWords[] = {TrMark("Classic (3.0)"), TrMark("Midnight"), TrMark("Phantom"), TrMark("Terminal"),
+		[[maybe_unused]] constexpr const char* kThemeWords[] = {TrMark("Link Jack"), TrMark("Classic (3.0)"), TrMark("Midnight"), TrMark("Phantom"), TrMark("Terminal"),
 			TrMark("Glass over each side's colours, as the design has it."), TrMark("3.0.0's launcher: deep blue panels, flatter, a little squarer."),
 			TrMark("True black behind everything and nothing moving: for OLED screens."),
 			TrMark("Black, white and one loud colour per side, sharp corners, bands slashing across."),
