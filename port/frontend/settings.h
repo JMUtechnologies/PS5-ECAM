@@ -79,6 +79,7 @@ namespace ps5settings
 		std::string theme;			 // the launcher's look (ui/theme.h): a built-in theme's id, or user:<file> in themes/; empty: the default
 		int libraryFilter[3] = {0, 0, 0}; // per side (Wii U, 3DS, DS): All, Recently added, Favourites, Graphic packs on (Wii U)
 		int librarySort[3] = {0, 0, 0};   // Recently played (the default: the Library is where a side opens), A to Z, Release year, How it runs
+		int libraryDisplay[3] = {0, 0, 0}; // Meyer Oscar's library, per side: 0 a grid of covers, 1 a list
 	};
 
 	struct Launcher

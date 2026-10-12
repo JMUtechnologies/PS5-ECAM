@@ -12,6 +12,9 @@
 //     "motif": "side"                     side (each side's own), none, slashes or grid
 //   }
 //
+// A file based on meyer-oscar or meyer-oscar-light takes its Library's layout too. Meyer Oscar and
+// Meyer Oscar Light are always the list's last two, after the player's own.
+//
 // Only the launcher has themes: the in-game menus keep their own look, and nothing of a theme runs
 // in a game.
 
@@ -33,6 +36,13 @@ namespace ui
 		Grid,	 // a fine grid with a line scanning down it (Terminal)
 	};
 
+	// How a side's Library is laid out
+	enum class Layout
+	{
+		Shelf,	// covers on a shelf of equal rows, filters across the top (6.2)
+		Recent, // the games played last first, the last one large, then the whole library (Meyer Oscar, 6.11)
+	};
+
 	struct Theme
 	{
 		std::string id;			 // "phantom"; a user's: "user:<file name>"
@@ -42,6 +52,8 @@ namespace ui
 		std::map<std::string, uint32_t> colours; // over tokens.json's, by its names ("ink-0", "wiiu")
 		float corners = 1.0f;
 		Motif motif = Motif::Side;
+		Layout layout = Layout::Shelf;
+		bool light = false; // a light ground with dark text: what is drawn on a picture stays white
 	};
 
 	// The built-in themes, the default (Link Jack, id "") first
@@ -49,7 +61,7 @@ namespace ui
 	// The themes in a folder's .json files (/data/ps5cemu/themes), by file name; one that cannot be read
 	// is left out, and why goes in error (one line per file)
 	std::vector<Theme> UserThemes(const std::string& folder, std::string* error = nullptr);
-	// Every theme the list offers: the built-in ones, then the folder's
+	// Every theme the list offers: the built-in ones, then the folder's, then Meyer Oscar and Meyer Oscar Light
 	std::vector<Theme> AllThemes(const std::string& folder);
 	// The theme by its id among AllThemes, else the default
 	Theme FindTheme(const std::string& id, const std::string& folder);
@@ -58,6 +70,8 @@ namespace ui
 	void ApplyTheme(const Theme& theme);
 	const Theme& CurrentTheme();
 	Motif CurrentMotif();
+	Layout CurrentLayout();
+	bool LightTheme();
 
 	// How round the kit draws corners: every shape's radius times this (Canvas)
 	float CornerScale();

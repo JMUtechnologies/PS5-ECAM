@@ -50,11 +50,18 @@ namespace ps5shell
 
 	uint32_t Shell::Surface2() const
 	{
-		return m_settings.ui.highContrast ? ui::Mix(kInk2, 0xffffffff, 0.06f) : kGlass2;
+		return m_settings.ui.highContrast ? ui::Mix(kInk2, kText, 0.06f) : kGlass2;
+	}
+
+	uint32_t Shell::Wash(float alpha) const
+	{
+		return ui::SetAlpha(kText, alpha);
 	}
 
 	void Shell::Focus(const Box& box, float radius, uint32_t glow)
 	{
+		if (m_behind)
+			return; // the screen under a dialog: the dialog has the focus
 		m_ringAsked = true;
 		m_ringBox = box;
 		m_ringRadius = radius;
@@ -165,11 +172,11 @@ namespace ps5shell
 		const float width = 16 + dot + m_fonts.Width(style, text) + 16;
 		const Box box{x, y, width, height};
 		const uint32_t colour = KindColour(k);
-		canvas.Rect(box, kRadiusChip, k.empty() ? 0x17ffffff : ui::SetAlpha(colour, 0.16f));
+		canvas.Rect(box, kRadiusChip, k.empty() ? Wash(0.09f) : ui::SetAlpha(colour, 0.16f));
 		if (!k.empty())
 			canvas.Rect({x + 16, box.CentreY() - 4.5f, 9, 9}, 4.5f, colour);
 		const ui::TextBlock block = m_fonts.Layout(style, text);
-		canvas.Text(block, x + 16 + dot, box.CentreY() - block.height * 0.5f, k.empty() ? kText : Lighter(colour, 0.45f));
+		canvas.Text(block, x + 16 + dot, box.CentreY() - block.height * 0.5f, k.empty() ? kText : ui::LightTheme() ? colour : Lighter(colour, 0.45f));
 		return width;
 	}
 
@@ -183,7 +190,7 @@ namespace ps5shell
 		canvas.Rect(box, 10, ui::SetAlpha(colour, 0.16f));
 		canvas.Rect({x + 10, y + 8, 18, 18}, 5, colour);
 		const ui::TextBlock block = m_fonts.Layout(style, text);
-		canvas.Text(block, x + 36, box.CentreY() - block.height * 0.5f, Lighter(colour, 0.5f));
+		canvas.Text(block, x + 36, box.CentreY() - block.height * 0.5f, ui::LightTheme() ? colour : Lighter(colour, 0.5f));
 		return width;
 	}
 
@@ -191,7 +198,7 @@ namespace ps5shell
 	{
 		const ui::TextStyle style{std::clamp(box.w * 0.11f, 13.0f, 30.0f), ui::Weight::Bold, 1.08f};
 		const ui::TextBlock block = m_fonts.Layout(style, game.entry.game.name, box.w * 0.82f, 3);
-		canvas.Text(block, box.x + box.w * 0.09f, box.Bottom() - box.w * 0.09f - block.height, kText);
+		canvas.Text(block, box.x + box.w * 0.09f, box.Bottom() - box.w * 0.09f - block.height, 0xffffffff); // on the cover: white, whatever the theme
 	}
 
 	void Shell::DrawCover(Canvas& canvas, Game& game, const Box& box, bool focused, float lift)
@@ -238,9 +245,9 @@ namespace ps5shell
 	void Shell::DrawToggle(Canvas& canvas, float x, float y, bool on, bool focused)
 	{
 		const Box track{x, y, 64, 36};
-		canvas.Rect(track, 18, on ? Accent() : 0x2effffff);
+		canvas.Rect(track, 18, on ? Accent() : Wash(0.18f));
 		const float thumb = on ? x + 64 - 4 - 28 : x + 4;
-		canvas.Rect({thumb, y + 4, 28, 28}, 14, on ? 0xffffffff : (focused ? 0xffd8dde6 : 0xffb4bac6));
+		canvas.Rect({thumb, y + 4, 28, 28}, 14, on || ui::LightTheme() ? 0xffffffff : (focused ? 0xffd8dde6 : 0xffb4bac6));
 	}
 
 	void Shell::DrawRow(Canvas& canvas, const Row& row, const Box& box, bool focused)
@@ -313,7 +320,7 @@ namespace ps5shell
 		case Row::Kind::Slider:
 		{
 			const float x = right - kTrack;
-			canvas.Rect({x, centre - 3, kTrack, 6}, 3, 0x2effffff);
+			canvas.Rect({x, centre - 3, kTrack, 6}, 3, Wash(0.18f));
 			canvas.Rect({x, centre - 3, kTrack * row.fraction, 6}, 3, Accent());
 			canvas.Rect({x + kTrack * row.fraction - 11, centre - 11, 22, 22}, 11, 0xffffffff);
 			const ui::TextBlock text = m_fonts.Layout(value, row.value, valueRoom, 1);
@@ -326,7 +333,7 @@ namespace ps5shell
 			float x = right - count * (kPip + kPipGap) + kPipGap;
 			for (int i = 0; i < count; i++, x += kPip + kPipGap)
 				canvas.Rect({x, centre - (i == row.index ? 9.0f : 5.0f), kPip, i == row.index ? 18.0f : 10.0f}, 4,
-					i <= row.index ? (i == row.index ? Accent() : ui::SetAlpha(Accent(), 0.45f)) : 0x2effffff);
+					i <= row.index ? (i == row.index ? Accent() : ui::SetAlpha(Accent(), 0.45f)) : Wash(0.18f));
 			const ui::TextBlock text = m_fonts.Layout(value, row.value, valueRoom, 1);
 			canvas.Text(text, right - count * (kPip + kPipGap) - 16 - text.width, centre - text.height * 0.5f, focused ? kText : Secondary());
 			break;
@@ -341,7 +348,7 @@ namespace ps5shell
 			for (const auto& option : row.options)
 				width += segmentWidth(option);
 			float x = right - width;
-			canvas.Rect({x, centre - 26, width, 52}, 14, 0x12ffffff);
+			canvas.Rect({x, centre - 26, width, 52}, 14, Wash(0.07f));
 			x += 4;
 			for (int i = 0; i < (int)row.options.size(); i++)
 			{
@@ -369,7 +376,7 @@ namespace ps5shell
 				const Box swatch{x, centre - 16, kSwatch, 32};
 				const uint32_t* colours = kSwatches[std::min(i, 5)];
 				canvas.LinearGradient(swatch, 8, colours[0], colours[1], swatch.x, swatch.y, swatch.Right(), swatch.y);
-				canvas.Ring(swatch, 8, i == row.index ? 3.0f : 1.5f, i == row.index ? Accent() : 0x33ffffff);
+				canvas.Ring(swatch, 8, i == row.index ? 3.0f : 1.5f, i == row.index ? Accent() : Wash(0.2f));
 				x -= 8;
 			}
 			break;
@@ -420,6 +427,8 @@ namespace ps5shell
 
 	float Shell::Enter(int part) const
 	{
+		if (m_behind)
+			return 1.0f; // under a dialog, it stays as it was
 		const float duration = m_settings.ui.reduceMotion ? kReducedSeconds : kScreenSeconds;
 		const float t = (float)((m_now - m_screenAt - part * kStaggerSeconds) / duration);
 		return m_settings.ui.reduceMotion ? std::clamp(t, 0.0f, 1.0f) : ui::ease::QuintOut(t);
@@ -428,7 +437,7 @@ namespace ps5shell
 	void Shell::DrawSheet(Canvas& canvas, const Box& box, float appear)
 	{
 		canvas.Shadow(box, kRadiusSheet, 24, 60, ui::WithAlpha(0x99000000, appear));
-		canvas.Rect(box, kRadiusSheet, m_settings.ui.highContrast ? kInk2 : 0xf51b0f0a);
+		canvas.Rect(box, kRadiusSheet, m_settings.ui.highContrast ? kInk2 : ui::SetAlpha(kInk1, 0.96f));
 		canvas.Ring(box, kRadiusSheet, 1.5f, kGlassEdge);
 	}
 

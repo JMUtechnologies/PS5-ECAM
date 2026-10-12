@@ -45,7 +45,7 @@ namespace ps5shell
 
 	int Shell::LibraryColumns() const
 	{
-		return IsWiiU() ? 8 : 6;
+		return IsWiiU() ? 8 : RecentLayout() ? 7 : 6;
 	}
 
 	int Shell::LibraryFilters() const
@@ -55,6 +55,9 @@ namespace ps5shell
 
 	int Shell::LibraryGame() const
 	{
+		// Meyer Oscar's, in its Recently played row
+		if (RecentLayout() && m_oscarZone == 0 && m_recentIndex >= 0 && m_recentIndex < (int)m_recent.size())
+			return m_recent[m_recentIndex] < (int)m_games.size() ? m_recent[m_recentIndex] : -1;
 		const int at = m_libraryIndex - ArticTiles();
 		const int game = at >= 0 && at < (int)m_shelf.size() ? m_shelf[at] : -1;
 		return game < (int)m_games.size() ? game : -1; // a shelf of a side being left has none
@@ -179,6 +182,7 @@ namespace ps5shell
 		int& filter = m_settings.ui.libraryFilter[side];
 		if (filter >= LibraryFilters())
 			filter = 0;
+		const int shown = RecentLayout() ? 0 : filter; // Meyer Oscar's Library has no filters: every game
 		const int sort = std::clamp(m_settings.ui.librarySort[side], 0, 3);
 		const int focused = LibraryGame();
 		if (focused >= 0)
@@ -189,11 +193,11 @@ namespace ps5shell
 		for (int i = 0; i < (int)m_games.size(); i++)
 		{
 			Game& game = m_games[i];
-			if (filter == 1 && game.entry.added < recent)
+			if (shown == 1 && game.entry.added < recent)
 				continue;
-			if (filter == 2 && !game.entry.favourite)
+			if (shown == 2 && !game.entry.favourite)
 				continue;
-			if (filter == 3 && IsWiiU())
+			if (shown == 3 && IsWiiU())
 			{
 				if (game.packsOn < 0)
 					game.packsOn = ps5emu::EnabledGraphicPackCount(game.entry.game.titleId);
@@ -233,6 +237,7 @@ namespace ps5shell
 		for (int i = 0; i < (int)m_shelf.size(); i++)
 			if (m_games[m_shelf[i]].entry.game.titleId == m_libraryFocusTitle)
 				m_libraryIndex = i + offset;
+		RecentRefresh();
 	}
 
 	void Shell::LibraryUpdate(const ui::Press& press)
@@ -246,6 +251,11 @@ namespace ps5shell
 				LibraryStateUpdate(press);
 				return;
 			}
+		}
+		if (RecentLayout())
+		{
+			RecentUpdate(press);
+			return;
 		}
 		const int side = SideIndex();
 		const int columns = LibraryColumns();
@@ -449,6 +459,11 @@ namespace ps5shell
 				return;
 			}
 		}
+		if (RecentLayout())
+		{
+			RecentDraw(canvas);
+			return;
+		}
 		const int side = SideIndex();
 		const bool wiiu = IsWiiU();
 		const int offset = ArticTiles();
@@ -575,7 +590,7 @@ namespace ps5shell
 			if (index < offset)
 			{
 				// Artic Base: a game from your 3DS
-				canvas.Rect(box, kRadiusCard, 0x0dffffff);
+				canvas.Rect(box, kRadiusCard, Wash(0.05f));
 				canvas.Ring(box, kRadiusCard, 2, ui::SetAlpha(kN3ds, 0.45f));
 				canvas.Text(Style({26, ui::Weight::SemiBold, 1.2f}), box.x + 16, box.y + box.h * 0.22f, Tr("Play from your 3DS"), kText, box.w - 32, 2,
 					ui::Align::Centre);
@@ -591,7 +606,7 @@ namespace ps5shell
 			if (m_libraryIndex < offset)
 			{
 				const Box box = focusedBox.Scaled(1 + lift);
-				canvas.Rect(box, kRadiusCard, 0x1affffff);
+				canvas.Rect(box, kRadiusCard, Wash(0.1f));
 				canvas.Text(Style({26, ui::Weight::SemiBold, 1.2f}), box.x + 16, box.y + box.h * 0.22f, Tr("Play from your 3DS"), kText, box.w - 32, 2,
 					ui::Align::Centre);
 				canvas.Text(Style({19, ui::Weight::Regular, 1.3f}), box.x + 16, box.y + box.h * 0.6f, Tr("Artic Base, over your network"), Secondary(),

@@ -102,6 +102,7 @@ add_library(CemuPS5 STATIC
 	frontend/shell/hub.cpp
 	frontend/shell/library.cpp
 	frontend/shell/pages.cpp
+	frontend/shell/recent.cpp
 	frontend/shell/settings.cpp
 	frontend/shell/setup.cpp
 	frontend/shell/shell.cpp
@@ -180,6 +181,7 @@ set_source_files_properties(
 	frontend/shell/hub.cpp
 	frontend/shell/library.cpp
 	frontend/shell/pages.cpp
+	frontend/shell/recent.cpp
 	frontend/shell/settings.cpp
 	frontend/shell/setup.cpp
 	frontend/shell/shell.cpp

@@ -92,7 +92,9 @@ namespace ps5shell
 			TrMark("Glass over each side's colours, as the design has it."), TrMark("3.0.0's launcher: deep blue panels, flatter, a little squarer."),
 			TrMark("True black behind everything and nothing moving: for OLED screens."),
 			TrMark("Black, white and one loud colour per side, sharp corners, bands slashing across."),
-			TrMark("A hacker's console: phosphor on near-black, square corners, a grid with a scan line.")};
+			TrMark("A hacker's console: phosphor on near-black, square corners, a grid with a scan line."), TrMark("Meyer Oscar"),
+			TrMark("Meyer Oscar Light"), TrMark("Your recently played games first, then your whole library."),
+			TrMark("Meyer Oscar with a light background.")};
 
 		int ClockIndex(int clock)
 		{
@@ -951,6 +953,7 @@ namespace ps5shell
 		{
 			ApplyTheme();
 			m_feedback.SetLight(Accent());
+			LibraryRefresh(); // Meyer Oscar's Library has no filters, the others' have
 		}
 		if (id == "side-wiiu" || id == "side-3ds" || id == "side-ds")
 			SidesChanged();
@@ -1225,12 +1228,7 @@ namespace ps5shell
 			{
 			case Button::Up:
 				if (page == 0)
-				{
-					if (InGameSettings())
-						m_feedback.Play(ui::Cue::Edge, press.repeat);
-					else
-						FocusBar();
-				}
+					m_feedback.Play(ui::Cue::Edge, press.repeat); // a dialog: the bar is under its dim
 				else
 				{
 					m_page = pages[page - 1].id;
@@ -1367,7 +1365,7 @@ namespace ps5shell
 			y += address.height + 22;
 		}
 		const uint32_t dot = state.kind == ps5stream::State::Kind::Showing ? kGood : working ? kWarn : kBad;
-		canvas.Rect({tx, y, chipW, chipH}, chipH * 0.5f, 0x14ffffff);
+		canvas.Rect({tx, y, chipW, chipH}, chipH * 0.5f, Wash(0.08f));
 		canvas.Rect({tx + 18, y + chipH * 0.5f - 11, 22, 22}, 11, ui::SetAlpha(dot, 0.2f));
 		canvas.Rect({tx + 23, y + chipH * 0.5f - 6, 12, 12}, 6, dot);
 		const ui::TextBlock chip = m_fonts.Layout(chipStyle, what, chipW, 1);
@@ -1378,10 +1376,17 @@ namespace ps5shell
 
 	void Shell::SettingsDraw(Canvas& canvas)
 	{
-		// a game's settings have no tabs to go to
-		DrawBar(canvas, !InGameSettings());
+		// a dialog over the screen it was opened from, on every side and in every theme (6.5): that
+		// screen as it was, dimmed, taking no input and asking for no focus
+		m_behind = true;
+		if (InGameSettings() && m_gameFrom == ScreenId::Hub)
+			HubDraw(canvas);
+		else
+			LibraryDraw(canvas);
+		m_behind = false;
+		const float appear = Enter(0);
+		Scrim(canvas, appear);
 		const auto pages = SettingsPages();
-		WantBackdrop(nullptr);
 		if (pages.empty())
 			return;
 		int page = 0;
@@ -1390,73 +1395,81 @@ namespace ps5shell
 				page = i;
 		m_page = pages[page].id;
 
-		// the pages: one short list, each with its icon (3.0.0's, the side's own)
-		canvas.PushAlpha(Enter(1));
-		const float railTop = 150, railBottom = 1040, step = 64;
+		// the dialog: rising a little as it appears
+		const Box dialog = SettingsDialog().Offset(0, (1 - appear) * 24);
+		canvas.PushAlpha(appear);
+		canvas.Shadow(dialog, kRadiusSheet, 40, 120, 0xb3000000);
+		canvas.Rect(dialog, kRadiusSheet, m_settings.ui.highContrast ? kInk2 : ui::SetAlpha(ui::Mix(kInk1, kInk2, 0.5f), 0.97f));
+		canvas.Ring(dialog, kRadiusSheet, 1.5f, kGlassEdge);
+		const float navW = 380;
+		canvas.PushClip(dialog, kRadiusSheet);
+		canvas.Rect({dialog.x, dialog.y, navW, dialog.h}, 0, Wash(0.03f));
+		canvas.Rect({dialog.x + navW, dialog.y, 1.5f, dialog.h}, 0, kLine);
+		canvas.PopClip();
+
+		// the pages down its left: one short list, each with its icon; above them whose settings they are
+		const float navX = dialog.x + 20, navTop = dialog.y + 30;
+		// tr: above Settings' pages: whose settings they are ({0}: Wii U, Nintendo 3DS or Nintendo DS)
+		const std::string head = InGameSettings() ? m_gameName : TrF("{0} settings", SystemName(m_side));
+		canvas.Text(Style(kOverlineStyle), navX + 22, navTop, head, Tertiary(), navW - 64, 1);
+		const float railTop = navTop + 40, railBottom = dialog.Bottom() - 20, step = 56;
 		const float listHeight = pages.size() * step;
-		m_railScroll.target = std::clamp(page * step - 380, 0.0f, std::max(0.0f, listHeight - (railBottom - railTop)));
+		m_railScroll.target = std::clamp(page * step - (railBottom - railTop) * 0.5f, 0.0f, std::max(0.0f, listHeight - (railBottom - railTop)));
 		m_railScroll.omega = kScrollOmega;
 		m_railScroll.Update(m_dt);
-		canvas.PushClip({0, railTop - 10, 540, railBottom - railTop + 10});
+		canvas.PushClip({dialog.x, railTop - 6, navW, railBottom - railTop + 6});
 		for (int i = 0; i < (int)pages.size(); i++)
 		{
 			const float ry = railTop + i * step - m_railScroll.value;
 			const bool selected = i == page;
-			const Box item{96, ry, 420, step - 6};
+			const Box item{navX, ry, navW - 40, step - 4};
 			if (selected)
 			{
-				canvas.Rect(item, 16, m_onRows ? 0x0fffffff : Surface2());
-				if (!m_onBar && !m_onRows)
-					Focus(item, 16);
+				canvas.Rect(item, 14, m_onRows ? Wash(0.06f) : Surface2());
+				if (!m_onRows)
+					Focus(item, 14);
 			}
-			canvas.Draw(pages[i].icon, {item.x + 22, item.CentreY() - 15, 30, 30}, selected ? Accent() : Secondary());
-			const ui::TextStyle style = Style({26, selected ? ui::Weight::SemiBold : ui::Weight::Medium, 1.0f});
-			const ui::TextBlock text = m_fonts.Layout(style, pages[i].title, item.w - 90, 1);
-			canvas.Text(text, item.x + 72, item.CentreY() - text.height * 0.5f, selected ? kText : Secondary());
+			canvas.Draw(pages[i].icon, {item.x + 22, item.CentreY() - 14, 28, 28}, selected ? Accent() : Secondary());
+			const ui::TextStyle style = Style({24, selected ? ui::Weight::SemiBold : ui::Weight::Medium, 1.0f});
+			const ui::TextBlock text = m_fonts.Layout(style, pages[i].title, item.w - 86, 1);
+			canvas.Text(text, item.x + 68, item.CentreY() - text.height * 0.5f, selected ? kText : Secondary());
 		}
 		canvas.PopClip();
-		canvas.PopAlpha();
 
-		// the page: its title, what it is for, its rows across the rest of the screen
+		// the page: its title, what it is for, its rows filling the rest of the dialog
 		const SettingsPage& current = pages[page];
-		canvas.PushAlpha(Enter(2));
-		const float px = 600, pw = 1920 - kSafeX - px;
-		float ty = 140;
-		if (InGameSettings())
-		{
-			canvas.Text(Style(kOverlineStyle), px, 140, Tr("Game settings · ") + m_gameName, Accent(), pw, 1);
-			ty += 36;
-		}
+		const float px = dialog.x + navW + 48, pw = dialog.Right() - 48 - px;
+		float ty = dialog.y + 36;
 		canvas.Text(Style(kTitleStyle), px, ty, current.title, kText, pw, 1);
 		canvas.Text(Style({22, ui::Weight::Regular, 1.3f}), px, ty + 62, current.subtitle, Secondary(), pw, 1);
 		auto rows = SettingRows(m_page);
 		m_settingRow = std::clamp(m_settingRow, 0, std::max(0, (int)rows.size() - 1));
 		const float ry = ty + 112;
 		const float rowH = 96;
-		// rows past the page's height scroll with the focus
-		const float available = 1080 - 120 - ry;
+		// rows past the dialog's height scroll with the focus
+		const float available = dialog.Bottom() - 28 - ry;
 		const float scroll = std::max(0.0f, (m_settingRow + 1) * (rowH + 12) - available);
 		canvas.PushClip({px - 20, ry - 12, pw + 40, available + 24});
 		for (int i = 0; i < (int)rows.size(); i++)
 		{
 			const Box box{px, ry + i * (rowH + 12) - scroll, pw, rowH};
-			const bool focused = m_onRows && !m_onBar && i == m_settingRow;
+			const bool focused = m_onRows && i == m_settingRow;
 			DrawRow(canvas, rows[i], box, focused);
 			if (focused && rows[i].kind == Row::Kind::Hold)
 				HoldRing(canvas, box, m_holdProgress);
 		}
-		canvas.PopClip();
 		// the remote touch screen, while it is on: the code to scan, the address, what is happening
+		const float under = ry + rows.size() * (rowH + 12) - scroll;
 		if (m_page == "remote" && m_settings.remoteScreen && !InGameSettings())
+			DrawRemoteScreen(canvas, {px, under + 18, pw, 372});
+		else
 		{
-			DrawRemoteScreen(canvas, {px, ry + rows.size() * (rowH + 12) + 18, pw, 372});
-			canvas.PopAlpha();
-			return;
+			// what the page says under its rows
+			const std::string panel = PanelText(m_page);
+			if (!panel.empty())
+				canvas.Text(Style({22, ui::Weight::Regular, 1.45f}), px, under + (rows.empty() ? 0 : 8), panel, Secondary(), pw, 12);
 		}
-		// what the page says under its rows
-		const std::string panel = PanelText(m_page);
-		if (!panel.empty())
-			canvas.Text(Style({22, ui::Weight::Regular, 1.45f}), px, ry + rows.size() * (rowH + 12) + (rows.empty() ? 0 : 20), panel, Secondary(), pw, 16);
+		canvas.PopClip();
 		canvas.PopAlpha();
 	}
 }

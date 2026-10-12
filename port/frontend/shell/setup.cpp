@@ -398,7 +398,7 @@ namespace ps5shell
 		const int ready = (int)std::count_if(m_checks.begin(), m_checks.end(), [](const Check& check) { return check.state != 1; });
 		float x = kSafeX;
 		for (int i = 0; i < count; i++, x += 50)
-			canvas.Rect({x, 243, 40, 6}, 3, i < ready ? kText : 0x24ffffff);
+			canvas.Rect({x, 243, 40, 6}, 3, i < ready ? kText : Wash(0.14f));
 		// tr: the Setup check's progress: how many checks are ready, and how many need a look
 		const std::string progress = ready == count ? TrP(count, "The {0} check is ready.", "All {0} checks are ready.") :
 			ready == 0								? TrP(count, "The {0} check needs a look.", "All {0} checks need a look.") :
@@ -440,11 +440,11 @@ namespace ps5shell
 			const bool focused = i == m_setupRow && !m_setupOnLanguage;
 			canvas.Rect(row, kRadiusCard, focused ? Surface2() : Surface());
 			if (focused)
-				canvas.Rect(row, kRadiusCard, 0x0dffffff);
+				canvas.Rect(row, kRadiusCard, Wash(0.05f));
 			// its status
 			const uint32_t colour = check.state == 0 ? kGood : check.state == 1 ? kWarn : Tertiary();
 			const Box icon{row.x + 22, row.CentreY() - 22, 44, 44};
-			canvas.Rect(icon, 22, check.state == 2 ? 0x14ffffff : ui::SetAlpha(colour, 0.16f));
+			canvas.Rect(icon, 22, check.state == 2 ? Wash(0.08f) : ui::SetAlpha(colour, 0.16f));
 			canvas.Draw(check.state == 0 ? Icon::Check : check.state == 1 ? Icon::Warning : Icon::Dash, icon.Inset(10), colour);
 			// what Cross does, on the right
 			float right = row.Right() - 28;
@@ -509,7 +509,7 @@ namespace ps5shell
 		const Box aside{kAsideX, kListTop + 10, kAsideWidth, height};
 		canvas.PushAlpha(Enter(2));
 		canvas.PushOffset((1 - Enter(2)) * 30, 0);
-		canvas.Rect(aside, kRadiusSheet, m_settings.ui.highContrast ? kInk2 : 0xbf1e130e);
+		canvas.Rect(aside, kRadiusSheet, m_settings.ui.highContrast ? kInk2 : ui::SetAlpha(kInk1, 0.75f));
 		canvas.Ring(aside, kRadiusSheet, 1.5f, kGlassEdge);
 		float y = aside.y + kAsidePad;
 		const float ax = aside.x + kAsidePad;

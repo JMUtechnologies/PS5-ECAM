@@ -454,6 +454,7 @@ namespace ps5shell
 			m_sideMix.Go(1, m_now, m_settings.ui.reduceMotion ? kReducedSeconds : kAmbientSeconds), m_sideMix.from = 0;
 		// the Library, on the game this side had in focus, else the one played last (6.1)
 		m_libraryZone = 1;
+		m_oscarZone = 0; // Meyer Oscar's: on Recently played, the game played last first
 		m_libraryIndex = -1; // no game in focus, so the refresh finds the one asked for
 		m_libraryFocusTitle = m_sideFocus[SideIndex()] ? m_sideFocus[SideIndex()] : LastGame(side);
 		m_search.clear();
@@ -758,8 +759,10 @@ namespace ps5shell
 
 	void Shell::Show(ScreenId screen)
 	{
+		// Settings' dialog closing onto the screen it was over (6.5): that screen was there all along
+		const bool under = m_screen == ScreenId::Settings && (screen == ScreenId::Library || screen == ScreenId::Hub);
 		if (screen != m_screen)
-			m_screenAt = m_now;
+			m_screenAt = under ? m_now - 10 : m_now;
 		m_screen = screen;
 	}
 
@@ -773,6 +776,8 @@ namespace ps5shell
 			m_onRows = false;
 			m_settingRow = 0;
 		}
+		if (tab == ScreenId::Settings)
+			m_onBar = false; // the dialog has the focus: the bar is under its dim
 		Show(tab);
 	}
 
@@ -896,7 +901,7 @@ namespace ps5shell
 				pillWidth += widths[i] + (shown++ ? 4 : 0);
 		}
 		const Box pill{x, y, pillWidth, h};
-		canvas.Rect(pill, h / 2, 0x0fffffff);
+		canvas.Rect(pill, h / 2, Wash(0.06f));
 		canvas.Ring(pill, h / 2, 1.5f, kGlassEdge);
 		float sx = x + 4;
 		for (int i = 0; i < 3; i++)
@@ -929,7 +934,7 @@ namespace ps5shell
 				const float w = m_fonts.Width(style, labels[i]) + 52;
 				const Box tab{x, y, w, h};
 				if (selected)
-					canvas.Rect(tab, h / 2, 0xf0ffffff);
+					canvas.Rect(tab, h / 2, ui::SetAlpha(kText, 0.94f));
 				const ui::TextBlock text = m_fonts.Layout(style, labels[i]);
 				canvas.Text(text, x + 26, tab.CentreY() - text.height * 0.5f, selected ? kInk1 : Secondary());
 				if (m_onBar && m_barFocus == i + 3)
@@ -958,7 +963,7 @@ namespace ps5shell
 			if (player == 0)
 				canvas.Rect(pad, 7, kText);
 			else
-				canvas.Ring(pad, 7, 2, 0x59ffffff);
+				canvas.Ring(pad, 7, 2, Wash(0.35f));
 			const ui::TextBlock text = m_fonts.Layout({14, ui::Weight::Bold, 1.0f}, fmt::format("P{}", player + 1));
 			canvas.Text(text, pad.CentreX() - text.width * 0.5f, pad.CentreY() - text.height * 0.5f, player == 0 ? kInk1 : Secondary());
 			right -= 44;
@@ -1006,6 +1011,13 @@ namespace ps5shell
 			std::vector<std::string> buttons;
 			if (LibraryState(kicker, title, text, buttons))
 				return buttons.empty() ? std::vector<Hint>{{Icon::Touchpad, other}} : std::vector<Hint>{{Icon::Cross, Tr("Choose")}, {Icon::Touchpad, other}};
+			if (RecentLayout())
+			{
+				if (m_oscarZone == 1 && m_libraryIndex < ArticTiles())
+					return {{Icon::Cross, Tr("Open")}, {Icon::Touchpad, other}};
+				// tr: Up and Down on Meyer Oscar's Library: between its two parts
+				return {{Icon::Cross, Tr("Play")}, {Icon::Options, Tr("Options")}, {Icon::UpDown, Tr("Recently played / Library")}, {Icon::Touchpad, other}};
+			}
 			if (m_libraryZone == 0)
 				return {{Icon::LeftRight, Tr("Filters")}, {Icon::Square, Tr("Sort")}, {Icon::Triangle, Tr("Search")}, {Icon::Touchpad, other}};
 			if (m_libraryIndex < ArticTiles())
@@ -1022,7 +1034,7 @@ namespace ps5shell
 				return {{Icon::LeftRight, Tr("Change")}, {Icon::Square, Tr("Default")}, {Icon::Triangle, Tr("More about it")}, {Icon::Circle, Tr("Back")}};
 			}
 			if (!m_onRows)
-				return {{Icon::UpDown, Tr("Pages")}, {Icon::Cross, Tr("Open")}, {Icon::Circle, TrC("tab", "Library")}, {Icon::Touchpad, other}};
+				return {{Icon::UpDown, Tr("Pages")}, {Icon::Cross, Tr("Open")}, {Icon::Circle, Tr("Close")}, {Icon::Touchpad, other}};
 			return {{Icon::LeftRight, Tr("Change")}, {Icon::Triangle, Tr("More about it")}, {Icon::Circle, Tr("Back")}};
 		case ScreenId::Packs:
 			return m_presetsFocus ?
@@ -1103,9 +1115,16 @@ namespace ps5shell
 		const float side = m_sideMix.Value(m_now);
 		const Box screen{0, 0, 1920, 1080};
 		canvas.PushAlpha(side);
+		// a light theme keeps the game's colours faint: its ground stays light under dark text
+		const bool light = ui::LightTheme();
 		const uint32_t base = ui::Mix(Accent(), kInk0, 0.86f);
-		const uint32_t glow = m_ambient[0] ? m_ambient[0] : ui::Mix(Accent(), kInk0, 0.55f);
-		const uint32_t deep = m_ambient[1] ? m_ambient[1] : kInk0;
+		uint32_t glow = m_ambient[0] ? m_ambient[0] : ui::Mix(Accent(), kInk0, 0.55f);
+		uint32_t deep = m_ambient[1] ? m_ambient[1] : kInk0;
+		if (light)
+		{
+			glow = ui::Mix(glow, kInk0, 0.7f);
+			deep = ui::Mix(deep, kInk0, 0.9f);
+		}
 		canvas.LinearGradient(screen, 0, base, deep | 0xff000000, 0, 0, 0, 1080);
 		canvas.RadialGradient(screen, 0, ui::SetAlpha(glow, 0.75f), ui::SetAlpha(glow, 0), 1380, 260, 1250, 900);
 		// the focused game's picture, softened
@@ -1117,7 +1136,7 @@ namespace ps5shell
 					return;
 				const ui::Picture& p = m_images->Get(path, true);
 				if (p.texture)
-					canvas.ImageCover(p.texture, p.width, p.height, screen, 0, ui::SetAlpha(0xffffffff, alpha * 0.42f));
+					canvas.ImageCover(p.texture, p.width, p.height, screen, 0, ui::SetAlpha(0xffffffff, alpha * (light ? 0.3f : 0.42f)));
 			};
 			picture(m_backdropOld, 1 - pictureMix);
 			picture(m_backdrop, pictureMix);
@@ -1140,11 +1159,11 @@ namespace ps5shell
 		case ui::Motif::None: break;
 		}
 		// scrims, grain and a vignette
-		canvas.LinearGradient(screen, 0, 0xb305070d, 0x0005070d, 0, 0, 1300, 0);
-		canvas.LinearGradient(screen, 0, 0x0005070d, 0xcc05070d, 0, 640, 0, 1080);
+		canvas.LinearGradient(screen, 0, ui::SetAlpha(kInk0, 0.7f), ui::SetAlpha(kInk0, 0), 0, 0, 1300, 0);
+		canvas.LinearGradient(screen, 0, ui::SetAlpha(kInk0, 0), ui::SetAlpha(kInk0, 0.8f), 0, 640, 0, 1080);
 		if (!m_settings.ui.highContrast)
-			canvas.Grain(screen, 0x0cffffff);
-		canvas.RadialGradient(screen, 0, 0x00000000, 0x8c000000, 960, 432, 1248, 1026, 0.55f);
+			canvas.Grain(screen, Wash(0.05f));
+		canvas.RadialGradient(screen, 0, 0x00000000, light ? 0x1f000000 : 0x8c000000, 960, 432, 1248, 1026, 0.55f);
 		canvas.PopAlpha();
 	}
 
@@ -1701,7 +1720,7 @@ namespace ps5shell
 			if (done >= 0)
 			{
 				const Box bar{sheet.x + 48, sheet.y + 260, sheet.w - 96, 12};
-				canvas.Rect(bar, 6, 0x24ffffff);
+				canvas.Rect(bar, 6, Wash(0.14f));
 				canvas.Rect({bar.x, bar.y, bar.w * std::clamp(done, 0.0f, 1.0f), bar.h}, 6, Accent());
 			}
 			m_update.choice = std::min<int>(m_update.choice, std::max<int>(0, (int)choices.size() - 1));

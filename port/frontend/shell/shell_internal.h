@@ -216,6 +216,9 @@ namespace ps5shell
 		uint32_t Tertiary() const;
 		uint32_t Surface() const;	 // glass, or opaque in high contrast
 		uint32_t Surface2() const;
+		// the theme's text colour, faint: white over a dark theme, ink over a light one (for a track, a
+		// hairline, a chip's ground); what is drawn on a picture stays white instead
+		uint32_t Wash(float alpha) const;
 		void Focus(const Box& box, float radius, uint32_t glow = 0);
 		void DrawFocusRing(Canvas& canvas);
 		void Panel(Canvas& canvas, const Box& box, float radius);
@@ -263,6 +266,13 @@ namespace ps5shell
 
 		void LibraryUpdate(const ui::Press& press);
 		void LibraryDraw(Canvas& canvas);
+		// Meyer Oscar's Library (6.11): Recently played, a row of covers, then the Library, every game as
+		// a grid or a list
+		bool RecentLayout() const { return ui::CurrentLayout() == ui::Layout::Recent; }
+		void RecentRefresh();
+		void RecentUpdate(const ui::Press& press);
+		void RecentDraw(Canvas& canvas);
+		Box CoverBox(Game& game, float x, float bottom, float height, float maxWidth); // the whole box art at its own shape
 		void LibraryRefresh(); // the filter and the sort again
 		int LibraryGame() const;
 		int LibraryColumns() const;
@@ -281,6 +291,7 @@ namespace ps5shell
 		void SettingsOpen(const std::string& page, bool onRows = false, int row = 0);
 		void SettingsUpdate(const ui::Press& press, const ui::Actions& actions);
 		void SettingsDraw(Canvas& canvas);
+		Box SettingsDialog() const { return {200, 136, 1520, 820}; } // over the Library, on every side and theme (6.5)
 		std::vector<SettingsPage> SettingsPages() const; // the side's (or the game's, in game settings)
 		std::vector<Row> SettingRows(const std::string& page);
 		std::vector<Row> SideRows(const std::string& page, const ps5settings::Launcher& settings);
@@ -402,6 +413,10 @@ namespace ps5shell
 		// what the backdrop is asked to show (the focused game's picture and colours)
 		void WantBackdrop(Game* game);
 
+		// a screen drawn behind another (the Library under Settings' dialog): it asks for no focus and
+		// does not arrive again
+		bool m_behind = false;
+
 		// the Library's state card (no games, a notice): its buttons, and the one in focus
 		std::vector<Box> m_stateButtons;
 		int m_stateButton = 0;
@@ -413,6 +428,13 @@ namespace ps5shell
 		ui::Spring m_libraryScroll;
 		std::string m_search;
 		uint64_t m_libraryFocusTitle = 0;
+
+		// Meyer Oscar's Library: the recent games (indices in m_games, the last played first), the focus
+		// in the row (m_oscarZone 0) or in the library under it (1, m_libraryIndex in m_shelf)
+		std::vector<int> m_recent;
+		int m_recentIndex = 0;
+		int m_oscarZone = 0;
+		ui::Spring m_recentScroll;
 
 		// each side keeps its focus across a switch (5.3): its Library game, by title
 		uint64_t m_sideFocus[3] = {};

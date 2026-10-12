@@ -258,6 +258,7 @@ namespace ps5settings
 			};
 			readSides("libraryFilter", out.libraryFilter, 3, 2);
 			readSides("librarySort", out.librarySort, 3, 3);
+			readSides("libraryDisplay", out.libraryDisplay, 1, 1);
 		}
 		return settings;
 	}
@@ -390,6 +391,11 @@ namespace ps5settings
 		writer.StartArray();
 		for (int sort : settings.ui.librarySort)
 			writer.Int(sort);
+		writer.EndArray();
+		writer.Key("libraryDisplay");
+		writer.StartArray();
+		for (int display : settings.ui.libraryDisplay)
+			writer.Int(display);
 		writer.EndArray();
 		writer.EndObject();
 		writer.EndObject();

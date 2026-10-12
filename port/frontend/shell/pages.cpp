@@ -122,8 +122,8 @@ namespace ps5shell
 			// where in the list the rows shown are
 			const float track = box.h, thumb = std::max(40.0f, track * box.h / (count * rowHeight));
 			const float at = (track - thumb) * scroll / std::max(1.0f, count * rowHeight - box.h);
-			canvas.Rect({box.Right() + 18, box.y, 4, track}, 2, 0x14ffffff);
-			canvas.Rect({box.Right() + 18, box.y + at, 4, thumb}, 2, 0x66ffffff);
+			canvas.Rect({box.Right() + 18, box.y, 4, track}, 2, Wash(0.08f));
+			canvas.Rect({box.Right() + 18, box.y + at, 4, thumb}, 2, Wash(0.4f));
 		}
 	}
 
@@ -655,7 +655,7 @@ namespace ps5shell
 			if (player == m_player)
 				canvas.Rect(pad, 10, Accent());
 			else
-				canvas.Ring(pad, 10, 2, other.connected ? 0x80ffffff : 0x33ffffff);
+				canvas.Ring(pad, 10, 2, other.connected ? Wash(0.5f) : Wash(0.2f));
 			canvas.Text(Style({18, ui::Weight::Bold, 1.0f}), pad.CentreX(), pad.y + 10, fmt::format("P{}", player + 1),
 				player == m_player ? kInk1 : Secondary(), 0, 0, ui::Align::Centre);
 			canvas.Text(Style(kBodyStyle), panel.x + 116, y + 2, TypeName(other.type), other.connected ? kText : Tertiary(), 420, 1);
@@ -826,7 +826,7 @@ namespace ps5shell
 		canvas.Text(Style(kOverlineStyle), panel.x + 40, panel.y + 36, Tr("This button"), Tertiary(), panel.w - 80, 1);
 		canvas.Text(Style(kTitleStyle), panel.x + 40, panel.y + 66, ButtonName(mapping.button), kText, panel.w - 80, 1);
 		const Box input{panel.x + 40, panel.y + 140, panel.w - 80, 110};
-		canvas.Rect(input, kRadiusCard, m_capture.active ? ui::SetAlpha(Accent(), 0.18f) : 0x12ffffff);
+		canvas.Rect(input, kRadiusCard, m_capture.active ? ui::SetAlpha(Accent(), 0.18f) : Wash(0.07f));
 		if (m_capture.active)
 			canvas.Ring(input, kRadiusCard, 2, Accent());
 		canvas.Text(Style({40, ui::Weight::SemiBold, 1.0f}), input.x + 20, input.CentreY() - 20,
@@ -1236,7 +1236,7 @@ namespace ps5shell
 		if (m_installing && m_installFraction >= 0)
 		{
 			const Box bar{panel.x + 40, y, panel.w - 80, 12};
-			canvas.Rect(bar, 6, 0x24ffffff);
+			canvas.Rect(bar, 6, Wash(0.14f));
 			canvas.Rect({bar.x, bar.y, bar.w * m_installFraction, bar.h}, 6, Accent());
 			y += 36;
 		}

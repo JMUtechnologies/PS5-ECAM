@@ -136,6 +136,25 @@ namespace ui
 			terminal.corners = 0.0f;
 			terminal.motif = Motif::Grid;
 			list.push_back(terminal);
+
+			// the games played last first and large, then the whole library: always the list's last two
+			Theme oscar;
+			oscar.id = "meyer-oscar";
+			oscar.name = "Meyer Oscar";
+			oscar.description = "Your recently played games first, then your whole library.";
+			oscar.layout = Layout::Recent;
+			list.push_back(oscar);
+
+			Theme oscarLight = oscar;
+			oscarLight.id = "meyer-oscar-light";
+			oscarLight.name = "Meyer Oscar Light";
+			oscarLight.description = "Meyer Oscar with a light background.";
+			oscarLight.light = true;
+			oscarLight.colours = Colours({{"ink-0", "#eef2f7"}, {"ink-1", "#ffffff"}, {"ink-2", "#e3e8f0"}, {"glass", "#ffffffb8"},
+				{"glass-2", "#ffffffeb"}, {"glass-edge", "#0c16281a"}, {"line", "#0c16281a"}, {"scrim", "#0c1628a6"}, {"text", "#0d1526"},
+				{"text-2", "#0d1526a8"}, {"text-3", "#0d152675"}, {"wiiu", "#1f73d6"}, {"n3ds", "#c4870f"}, {"nds", "#3f9e2a"},
+				{"good", "#13a578"}, {"warn", "#c47a00"}, {"bad", "#d23c3c"}, {"focus", "#0d1526"}});
+			list.push_back(oscarLight);
 			return list;
 		}();
 		return themes;
@@ -203,9 +222,12 @@ namespace ui
 
 	std::vector<Theme> AllThemes(const std::string& folder)
 	{
-		std::vector<Theme> themes = BuiltInThemes();
+		// the built-in ones but the last two, the player's own, then Meyer Oscar and Meyer Oscar Light
+		const std::vector<Theme>& builtIn = BuiltInThemes();
+		std::vector<Theme> themes(builtIn.begin(), builtIn.end() - 2);
 		for (Theme& theme : UserThemes(folder))
 			themes.push_back(std::move(theme));
+		themes.insert(themes.end(), builtIn.end() - 2, builtIn.end());
 		return themes;
 	}
 
@@ -255,6 +277,16 @@ namespace ui
 	Motif CurrentMotif()
 	{
 		return s_current.motif;
+	}
+
+	Layout CurrentLayout()
+	{
+		return s_current.layout;
+	}
+
+	bool LightTheme()
+	{
+		return s_current.light;
 	}
 
 	float CornerScale()
