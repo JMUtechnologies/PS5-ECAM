@@ -7,13 +7,14 @@ sce_sys/icon0.png.
 
 The PS5 shows pic0.dds behind the app while it is selected on the home screen, and pic1.dds while
 it starts; tools/package.sh installs this one image as both. It is the README's banner
-(tools/render-banner.py) made the size of the screen: the app's two sides split down the middle as
-its start screen is, Cemu's dark Wii U Homebrew Launcher blue with its bubbles on the left
-(tools/render-background.py) and Azahar's dark gold with the 3DS Homebrew Launcher's waves on the
-right; the Wii U GamePad and the 3DS either side (tools/render-icons.py's), and between them the
-app's name in the banner's heavy type, lit blue from the left and gold from the right, over the
-tagline. It sits above the middle: the shell draws its own title, a Play button and its shading
-over the lower left. icon0.png, the tile, is the same in a square: the two devices above the name.
+(tools/render-banner.py, whose layout this reads) made the size of the screen: the app's three sides
+in three equal bands, in the order of the launcher's switch. Cemu's dark Wii U Homebrew Launcher blue
+with its bubbles (tools/render-background.py), Azahar's dark gold with the 3DS Homebrew Launcher's
+waves, and melonDS's dark green with its rounded pixels rising; the Wii U GamePad, the 3DS and the DS
+Lite each in the middle of its own band (tools/render-icons.py's), glowing in its side's colour; and
+under them the app's name, large, over the tagline. It sits above the middle: the shell draws its own
+title, a Play button and its shading over the lower left. icon0.png, the tile, is the same in a
+square: the three devices above the name.
 
 The console takes a single 3840x2160 BC7_UNORM DX10 DDS without mipmaps
 (ps5-native-app-boilerplate's tools/validate-assets.sh), which this encodes itself in BC7's mode 6:
@@ -31,6 +32,7 @@ a time.
 
 import importlib.util
 import os
+import random
 import struct
 import sys
 
@@ -39,18 +41,12 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 W, H = 3840, 2160
 HALF = W // 2
-# the banner's darkness: as render-banner.py's OVERLAY and WAVE_OVERLAY
-DARK, DARK_WAVES = 0.7, 0.8
 FONT_DIRS = ["C:/Windows/Fonts", "/mnt/c/Windows/Fonts"]
 HEAVY = [os.path.join(d, "seguibl.ttf") for d in FONT_DIRS] + ["/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"]
 # the tagline: Segoe UI Semibold from Windows, else the launcher's own Lexend at its semibold weight
 LEXEND = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts", "Lexend[wght].ttf")
 SEMIBOLD = [os.path.join(d, "seguisb.ttf") for d in FONT_DIRS] + [LEXEND, "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"]
-BLUE, GOLD = (0x5a, 0xa9, 0xff), (0xf4, 0xb6, 0x3f)
 TAGLINE = (0xe6, 0xee, 0xf6)
-# render-banner.py's waves (top, wavelength, amplitude, colour, alpha), in its 1280x320 pixels
-BANNER_WAVES = [(196, 430, 12, (0xf4, 0xb6, 0x3f), 0.16), (228, 320, 9, (0xf8, 0xc6, 0x5a), 0.18),
-                (262, 240, 7, (0xff, 0xd9, 0x8a), 0.20)]
 
 
 def load(name, file):
@@ -62,10 +58,15 @@ def load(name, file):
 
 ICONS = load("render_icons", "render-icons.py")
 HBL = load("render_background", "render-background.py")
+BANNER = load("render_banner", "render-banner.py")
+
+
+def rgb(hex_colour):
+    return tuple(int(hex_colour[i:i + 2], 16) for i in (1, 3, 5))
 
 
 class Banner:
-    """render-banner.py's picture at scale, its (0, 0) at origin: where its pieces go."""
+    """render-banner.py's picture (1280x320) at scale, its (0, 0) at origin: where its pieces go."""
 
     def __init__(self, scale, origin):
         self.scale, self.origin = scale, origin
@@ -77,58 +78,115 @@ class Banner:
         return self.origin[1] + value * self.scale
 
 
-def bubbles(width, height, region):
-    """The Homebrew Launcher's background: region (x, y, w, h) of its 1280x720 screen at this size,
-    darkened as the banner is."""
-    rx, ry, rw, rh = region
-    sx, sy = width / rw, height / rh
-    t = (ry + (np.arange(height, dtype=np.float64)[:, None] + 0.5) / sy) / 720.0
+def gradient(width, height, top, bottom, t0=0.0, t1=1.0):
+    """A top-to-bottom gradient, t0 to t1 of the way between the two colours (clamped)."""
+    t = np.clip(t0 + (t1 - t0) * (np.arange(height, dtype=np.float64)[:, None] + 0.5) / height, 0.0, 1.0)
     image = np.empty((height, width, 3))
     for c in range(3):
-        image[:, :, c] = HBL.TOP[c] + (HBL.BOTTOM[c] - HBL.TOP[c]) * t
+        image[:, :, c] = top[c] + (bottom[c] - top[c]) * t
+    return image
+
+
+def bubbles(width, height, banner, x0):
+    """Cemu's band: the Wii U Homebrew Launcher's background where the banner shows it (its discs
+    at x * 1280 - 320, its rows as they are), at this scale, darkened as the banner's."""
+    bx0, by0 = (x0 - banner.origin[0]) / banner.scale, (0 - banner.origin[1]) / banner.scale
+    bh = height / banner.scale
+    image = gradient(width, height, HBL.TOP, HBL.BOTTOM, by0 / 720.0, (by0 + bh) / 720.0)
+    s = banner.scale
     for x, y, radius, alpha in HBL.particles():
-        cx, cy, r = (x * 1280 - rx) * sx, (y * 720 - ry) * sy, radius * 1280 * sx
+        cx, cy, r = (x * 1280 - 320 - bx0) * s, (y * 720 - by0) * s, radius * 1280 * s
         if r < 0.5 or cx + r < 0 or cx - r > width or cy + r < 0 or cy - r > height:
             continue
-        x0, x1 = max(0, int(cx - r - 1)), min(width, int(cx + r + 2))
-        y0, y1 = max(0, int(cy - r - 1)), min(height, int(cy + r + 2))
-        px = np.arange(x0, x1) + 0.5 - cx
-        py = np.arange(y0, y1)[:, None] + 0.5 - cy
+        xa, xb = max(0, int(cx - r - 1)), min(width, int(cx + r + 2))
+        ya, yb = max(0, int(cy - r - 1)), min(height, int(cy + r + 2))
+        px = np.arange(xa, xb) + 0.5 - cx
+        py = np.arange(ya, yb)[:, None] + 0.5 - cy
         a = alpha * np.clip(r - np.hypot(px, py) + 0.5, 0.0, 1.0)
-        region_pixels = image[y0:y1, x0:x1]
-        region_pixels += (255.0 - region_pixels) * a[:, :, None]
-    return image * (1.0 - DARK)
+        part = image[ya:yb, xa:xb]
+        part += (255.0 - part) * a[:, :, None]
+    return image * (1.0 - BANNER.OVERLAY)
 
 
-def sand(width, height, banner, left):
-    """Azahar's side as the banner has it: the 3DS Homebrew Launcher's gold, darkened, and the
-    banner's waves over it, from its middle (left: this picture's x there)."""
-    t = (np.arange(height, dtype=np.float64)[:, None] + 0.5) / height
-    image = np.empty((height, width, 3))
-    for c in range(3):
-        image[:, :, c] = (ICONS.WAVE_TOP[c] + (ICONS.WAVE_BOTTOM[c] - ICONS.WAVE_TOP[c]) * t) * (1.0 - DARK_WAVES)
-    fx = (np.arange(width, dtype=np.float64)[None, :] + 0.5 + left - banner.x(640)) / banner.scale  # banner pixels from its middle
-    fy = np.arange(height, dtype=np.float64)[:, None] + 0.5
+def sand(width, height, banner, x0, seam):
+    """Azahar's band: the 3DS Homebrew Launcher's gold, darkened, and the banner's waves from its seam
+    (seam: the banner's x where the band starts), fading back into the ground below the banner."""
+    image = gradient(width, height, BANNER.WAVE_TOP, BANNER.WAVE_BOTTOM) * (1.0 - BANNER.WAVE_OVERLAY)
     ground = image.copy()
-    for top, length, amplitude, colour, alpha in BANNER_WAVES:
+    fx = (np.arange(width, dtype=np.float64)[None, :] + 0.5 + x0 - banner.x(seam)) / banner.scale
+    fy = np.arange(height, dtype=np.float64)[:, None] + 0.5
+    for top, length, amplitude, colour, alpha in BANNER.WAVES:
         surface = banner.y(top + amplitude * (1.0 - np.cos(2.0 * np.pi * fx / length)))
         a = np.clip(fy - surface + 0.5, 0.0, 1.0) * alpha
-        image += (np.array(colour, dtype=np.float64) - image) * a[:, :, None]
-    # below the banner's bottom the waves fade back into the dark ground, as the start screen's do
-    fade = np.clip((fy - banner.y(320)) / (180.0 * banner.scale), 0.0, 1.0) * 0.75
+        image += (np.array(rgb(colour), dtype=np.float64) - image) * a[:, :, None]
+    fade = np.clip((fy - banner.y(BANNER.H)) / (180.0 * banner.scale), 0.0, 1.0) * 0.75
     return image + (ground - image) * fade[:, :, None]
 
 
-def background(width, height, banner, region):
-    half = width // 2
-    left = bubbles(half, height, region)
-    right = sand(width - half, height, banner, half)
-    image = np.concatenate([left, right], axis=1)
-    # the soft line between the two halves, brightest at the banner's middle
+def melon(width, height, banner, x0, squares):
+    """melonDS's band: its green, darkened, and rounded pixels rising: squares (x, y, size, alpha in
+    the banner's pixels)."""
+    image = gradient(width, height, BANNER.MELON_TOP, BANNER.MELON_BOTTOM) * (1.0 - BANNER.MELON_OVERLAY)
+    colour = np.array(rgb(BANNER.GREEN["accent"]), dtype=np.float64)
+    for x, y, size, alpha in squares:
+        cx, cy, half = banner.x(x) - x0, banner.y(y), size * banner.scale / 2
+        radius = size * banner.scale * 0.22
+        xa, xb = max(0, int(cx - half - 1)), min(width, int(cx + half + 2))
+        ya, yb = max(0, int(cy - half - 1)), min(height, int(cy + half + 2))
+        if xa >= xb or ya >= yb:
+            continue
+        px = np.abs(np.arange(xa, xb) + 0.5 - cx) - (half - radius)
+        py = np.abs(np.arange(ya, yb)[:, None] + 0.5 - cy) - (half - radius)
+        d = np.hypot(np.maximum(px, 0), np.maximum(py, 0)) + np.minimum(np.maximum(px, py), 0) - radius
+        a = alpha * np.clip(0.5 - d, 0.0, 1.0)
+        part = image[ya:yb, xa:xb]
+        part += (colour - part) * a[:, :, None]
+    return image
+
+
+def banner_squares(top, bottom):
+    """render-banner.py's pixels (the same scatter, by its seed), and more of them at the banner's
+    density above and below it, from top to bottom (the banner's y)."""
+    rng = random.Random(1144)
+    squares = []
+    for _ in range(26):
+        size = rng.uniform(9, 30)
+        x, y = rng.uniform(BANNER.SEAMS[1] - 10, BANNER.W + 10), rng.uniform(-10, BANNER.H + 10)
+        squares.append((x, y, size, rng.uniform(0.14, 0.42)))
+    more = random.Random(1145)
+    for low, high in ((top, -10), (BANNER.H + 10, bottom)):
+        for _ in range(max(0, round(26 * (high - low) / (BANNER.H + 20)))):
+            size = more.uniform(9, 30)
+            x, y = more.uniform(BANNER.SEAMS[1] - 10, BANNER.W + 10), more.uniform(low, high)
+            squares.append((x, y, size, more.uniform(0.14, 0.42)))
+    return squares
+
+
+def background(width, height, banner, squares):
+    """The three bands, side by side, and the soft seams between them, brightest at the banner's middle."""
+    left, middle = (round(banner.x(seam)) for seam in BANNER.SEAMS)
+    image = np.concatenate([bubbles(left, height, banner, 0), sand(middle - left, height, banner, left, BANNER.SEAMS[0]),
+                            melon(width - middle, height, banner, middle, squares)], axis=1)
     seam = max(2, round(banner.scale * 2))
-    fade = np.clip(1.0 - np.abs(np.arange(height) + 0.5 - banner.y(160)) / (height * 0.5), 0.0, 1.0)[:, None, None] * 0.45
-    image[:, half - seam // 2:half + seam // 2] += (255.0 - image[:, half - seam // 2:half + seam // 2]) * fade
+    fade = np.clip(1.0 - np.abs(np.arange(height) + 0.5 - banner.y(BANNER.H / 2)) / (height * 0.5), 0.0, 1.0)[:, None, None] * 0.45
+    for x in (left, middle):
+        part = image[:, x - seam // 2:x + seam // 2]
+        part += (255.0 - part) * fade
     return Image.fromarray(np.clip(np.rint(image), 0, 255).astype(np.uint8), "RGB").convert("RGBA")
+
+
+def glows(size, banner, row_y, unit):
+    """Each console's glow in its side's colour, as the banner's (an ellipse 150 by 80 and blurred 34 for
+    a device 172 wide), on the row, for devices unit wide."""
+    layer = Image.new("RGBA", size, (0, 0, 0, 0))
+    k = unit / BANNER.T
+    for cx, palette, opacity in zip(BANNER.CENTRES, (BANNER.BLUE, BANNER.GOLD, BANNER.GREEN), (0.34, 0.32, 0.28)):
+        single = Image.new("RGBA", size, (0, 0, 0, 0))
+        x = banner.x(cx)
+        ImageDraw.Draw(single).ellipse((x - 150 * k, row_y - 80 * k, x + 150 * k, row_y + 80 * k),
+                                       fill=rgb(palette["accent"]) + (round(255 * opacity),))
+        layer = Image.alpha_composite(layer, single.filter(ImageFilter.GaussianBlur(34 * k)))
+    return layer
 
 
 def device(kind, scale, centre, size):
@@ -157,6 +215,17 @@ def device(kind, scale, centre, size):
     return Image.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(0.02 * scale)), layer)
 
 
+# each device and where its body's middle is in its unit square (the GamePad's at v 0.53, the 3DS's at
+# 0.4925, the DS's at 0.495): on the row, as render-banner.py places them
+KINDS = (("wiiu", 0.53), ("3ds", 0.4925), ("ds", 0.495))
+
+
+def devices(image, banner, unit, row_y):
+    for (kind, body), cx in zip(KINDS, BANNER.CENTRES):
+        image = Image.alpha_composite(image, device(kind, unit, (banner.x(cx), row_y + (0.5 - body) * unit), image.size))
+    return image
+
+
 def font(candidates, size):
     for path in candidates:
         if os.path.isfile(path):
@@ -167,56 +236,58 @@ def font(candidates, size):
     sys.exit("no font found: " + ", ".join(candidates))
 
 
-def wordmark(size, banner, centre_x, baseline, mark_size, tagline_size=0):
-    """The banner's middle: the blue and gold glows, the dark plate, the app's name and the tagline
-    under it, with their soft shadow."""
-    s = banner.scale
-    glow = Image.new("RGBA", size, (0, 0, 0, 0))
-    draw = ImageDraw.Draw(glow)
-    middle = baseline - 0.18 * mark_size
-    for side, colour, alpha in ((-1, BLUE, 0.42), (1, GOLD, 0.38)):
-        cx = centre_x + side * 170 * s
-        draw.ellipse((cx - 190 * s, middle - 62 * s, cx + 190 * s, middle + 62 * s), fill=colour + (int(255 * alpha),))
-    glow = glow.filter(ImageFilter.GaussianBlur(34 * s))
-    plate = Image.new("RGBA", size, (0, 0, 0, 0))
-    ImageDraw.Draw(plate).rounded_rectangle((centre_x - 330 * s, middle - 56 * s, centre_x + 330 * s, middle + 72 * s), radius=40 * s,
-                                            fill=(4, 8, 16, 102))
-    plate = plate.filter(ImageFilter.GaussianBlur(14 * s))
+def wordmark(size, s, centre_x, baseline, mark_size, plate, tagline_y=0, tagline_size=0):
+    """The banner's name under the consoles: its dark plate (x0, y0, x1, y1), the name and the tagline,
+    with their soft shadow; s is the banner's scale here."""
+    back = Image.new("RGBA", size, (0, 0, 0, 0))
+    ImageDraw.Draw(back).rounded_rectangle(plate, radius=44 * s, fill=(4, 8, 16, round(255 * 0.34)))
+    back = back.filter(ImageFilter.GaussianBlur(26 * s))
     text = Image.new("RGBA", size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(text)
-    draw.text((centre_x, baseline), "PS5CEMU-HAR", font=font(HEAVY, round(mark_size)), fill=ICONS.BODY + (255,), anchor="ms")
+    draw.text((centre_x, baseline), "PS5CEMU-HAR", font=font(HEAVY, round(mark_size)), fill=rgb(BANNER.BODY) + (255,), anchor="ms")
     if tagline_size:
-        draw.text((centre_x, baseline + 0.48 * mark_size), "Wii U, 3DS and DS on PlayStation 5", font=font(SEMIBOLD, round(tagline_size)),
+        draw.text((centre_x, tagline_y), "Wii U, 3DS and DS on PlayStation 5", font=font(SEMIBOLD, round(tagline_size)),
                   fill=TAGLINE + (255,), anchor="ms")
     shadow = Image.new("RGBA", size, (0, 0, 0, 0))
     shadow.putalpha(text.getchannel("A").point(lambda a: a * 0.45))
     shadow = shadow.transform(size, Image.AFFINE, (1, 0, 0, 0, 1, -max(1, round(2 * s)))).filter(ImageFilter.GaussianBlur(3 * s))
-    return Image.alpha_composite(Image.alpha_composite(Image.alpha_composite(glow, plate), shadow), text)
+    return Image.alpha_composite(Image.alpha_composite(back, shadow), text)
 
 
 def picture():
     """pic0: the banner three times its size, its middle a little above the screen's."""
     banner = Banner(3, (0, 384))
-    image = background(W, H, banner, (373, 0, 640, 720))
-    # render-banner.py's devices: each one's unit square, 272 banner pixels, at its corner there
-    for kind, corner in (("wiiu", (34, 18)), ("3ds", (974, 30))):
-        image = Image.alpha_composite(image, device(kind, 272 * banner.scale, (banner.x(corner[0] + 136), banner.y(corner[1] + 136)), (W, H)))
-    image = Image.alpha_composite(image, wordmark((W, H), banner, HALF, banner.y(176), 88 * banner.scale, 26 * banner.scale))
+    top, bottom = -banner.origin[1] / banner.scale, (H - banner.origin[1]) / banner.scale
+    image = background(W, H, banner, banner_squares(top, bottom))
+    row = banner.y(BANNER.ROW)
+    unit = BANNER.T * banner.scale
+    image = Image.alpha_composite(image, glows((W, H), banner, row, unit))
+    image = devices(image, banner, unit, row)
+    s = banner.scale
+    mark = 88 * BANNER.TITLE_SCALE * s
+    plate = (banner.x(BANNER.HALF - 420), banner.y(BANNER.BASELINE - 100), banner.x(BANNER.HALF + 420), banner.y(BANNER.BASELINE + 50))
+    image = Image.alpha_composite(image, wordmark((W, H), s, HALF, banner.y(BANNER.BASELINE), mark, plate, banner.y(BANNER.TAGLINE), 26 * s))
     return image.convert("RGB")
 
 
 def tile():
-    """icon0: the two devices side by side above the app's name, on the two sides' grounds."""
+    """icon0: the banner's three bands in a square, the three devices across them and the name under them."""
     size = 512
-    scale = size / 1280 * 1.15
-    banner = Banner(scale, (size / 2 - 640 * scale, 232))
-    image = background(size, size, banner, (480, 0, 360, 720))
-    for kind, scale, centre in (("wiiu", 236, (128, 196)), ("3ds", 216, (384, 200))):
-        image = Image.alpha_composite(image, device(kind, scale, centre, (size, size)))
-    mark = 72
-    while font(HEAVY, mark).getlength("PS5CEMU-HAR") > 452:  # the name fits, with room for its shadow
+    # the banner's width over the square: its bands at that scale, the consoles' row in the upper half
+    row, unit = 158, 184  # the devices as large as their bands allow: each band is 171 wide
+    banner = Banner(size / BANNER.W, (0, 0))
+    banner.origin = (0, row - BANNER.ROW * banner.scale)
+    top, bottom = -banner.origin[1] / banner.scale, (size - banner.origin[1]) / banner.scale
+    image = background(size, size, banner, banner_squares(top, bottom))
+    image = Image.alpha_composite(image, glows((size, size), banner, row, unit))
+    image = devices(image, banner, unit, row)
+    mark = 96
+    while font(HEAVY, mark).getlength("PS5CEMU-HAR") > 460:  # the name fits, with room for its shadow
         mark -= 1
-    image = Image.alpha_composite(image, wordmark((size, size), Banner(0.72, (0, 0)), size // 2, 430, mark))
+    tag = 26
+    while font(SEMIBOLD, tag).getlength("Wii U, 3DS and DS on PlayStation 5") > 430:
+        tag -= 1
+    image = Image.alpha_composite(image, wordmark((size, size), 0.75, size // 2, 392, mark, (36, 304, size - 36, 474), 446, tag))
     return image.convert("RGB")
 
 
