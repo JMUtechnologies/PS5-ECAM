@@ -87,14 +87,22 @@ work stops before a game starts.
 - **Game pages:** a game's description, developer, publisher, release date, genre, players and
   rating from GameTDB, and how it runs from the [compatibility list](docs/COMPATIBILITY.md); a Wii U
   game's graphic packs
-- **Settings:** the side you're on and nothing else, one short list of pages with icons (Graphics,
-  Screens, Audio, Controls, System, Game files, Online, Launcher, Diagnostics, About), a line under
-  each setting saying what it does, and Triangle for more.
+- **Settings:** opens over the Library, for the side you're on and nothing else: one short list of
+  pages with icons (Language, Graphics, Audio, Controls, Remote touch screen, Game files, Accounts and
+  saves, Online, Launcher, Diagnostics, About, and the side's own: Screens, System, USB devices or
+  Artic Base), a line under each setting saying what it does, and Triangle for more.
 - **Game settings:** Options on a game, then **Game settings**: the same pages for that game alone.
   Each value shows **Default** (its side's) until you change it, Square puts it back, and the in-game
   menu saves its changes to the game's settings when it has some.
-- **Music and menu sounds:** an original setup theme; **Settings > Audio** sets its volume or turns
-  it off
+- **Music and menu sounds:** an original setup theme, or your own: put MP3 or WAV files in
+  `/data/ps5cemu/music` and choose one, or *Shuffle your music*, in **Settings > Audio > Launcher
+  music**, which also sets its volume or turns it off
+- **Themes** (**Settings > Launcher > Theme**): Link Jack (the default), Classic (3.0.0's look),
+  Midnight (true black, for OLED screens), Meyer Oscar and Meyer Oscar Light (your recently played
+  games first), and two experiments, Phantom and Terminal. Your own: a JSON file in
+  `/data/ps5cemu/themes`; the Theme row's help (Triangle) shows the format. **Settings > Launcher**
+  also hides any side you don't use.
+- **Your language:** the menus follow the PS5's language; **Settings > Language** chooses another
 
 ## Wii U (Cemu)
 
@@ -109,8 +117,14 @@ work stops before a game starts.
   without a Nunchuk, with motion controls, rumble, stick deadzones and button mapping.
 - The TV or the GamePad screen as the main picture, with the other one in a corner if you want; the
   touchpad works as the GamePad's touch screen.
-- Updates and DLC: installed from **Settings > Game files > Install updates and DLC**, or picked up automatically
-  from your game folder or a WUA.
+- Updates and DLC: **Settings > Game files > Updates and DLC** looks on every USB drive, extended
+  storage, the games folder and `/data`, lists what it finds by game with what is installed now, and
+  installs one with Cross or every new one with Square (Triangle picks a folder by hand). A game's own
+  are in its Options menu too. Unpacked updates in your game folder and WUAs are picked up as they are.
+- **Accounts** (**Settings > Accounts and saves**): up to twelve Wii U accounts, each with its own
+  saves, or one for each PS5 user, so everyone who signs in to the PS5 plays on their own saves.
+- **AMD FSR 1** as the fifth *Upscaling to 4K* filter, in Settings, a game's settings and the in-game
+  menu: a sharper picture for a game drawn below 4K.
 - Amiibo, from the in-game menu (see [Amiibo, save states, cheats and mods](#amiibo-save-states-cheats-and-mods)).
 - Text entry with Cemu's on-screen keyboard.
 
@@ -268,8 +282,9 @@ idea and prototype, #38.)
 
 - **Box art:** the first time a game shows up, the app downloads its cover from GameTDB
   (`art.gametdb.com`) by the ID on the game's box, in the background, into
-  `/data/ps5cemu/covers/boxart`. A cover GameTDB doesn't have leaves a `.none` file there; delete it
-  to try again. **Settings > Online** turns the downloads off.
+  `/data/ps5cemu/covers/boxart`. A failed download is tried again a few seconds later; a cover
+  GameTDB doesn't have is asked for again after two weeks. **Settings > Online** turns the downloads
+  off, and has *Download missing box art* and *Download all box art again*.
 - **Updates:** when the app starts fresh, it asks GitHub for the latest release. When a newer
   PS5CEMU-HAR is out, it asks whether to install it: **Update now** downloads the release, checks it
   against the release's SHA-256, puts its files in place of the old ones and starts the app again.
@@ -310,10 +325,17 @@ Everything the app writes goes to `/data/ps5cemu`, except your game files:
 │   ├── cheats/                     DS cheats, <game file>.mch
 │   └── bios/                       your DS's bios7.bin, bios9.bin and firmware.bin, if you add them
 ├── covers/                         game icons and box art (boxart/)
+├── music/                          your own launcher music (.mp3, .wav)
+├── themes/                         your own launcher themes (.json)
 ├── log.txt                         Cemu log
 └── logs/                           app logs: boot.log, and boot.prev.log to boot.4.log for the
                                     four sessions before, each with its Cemu log (cemu.prev.txt...)
 ```
+
+**Backups:** **Settings > Accounts and saves > Back up to USB** copies every side's saves, save
+states and the Wii U's accounts (never the games) to `PS5CEMU-HAR-saves/<date and time>` on the
+first USB drive plugged in. **Restore from USB** puts a backup back, moving the saves there now to
+`/data/ps5cemu/saves-before` first.
 
 **Wii U saves from Cemu on PC:** with the game closed, copy
 `mlc01/usr/save/00050000/<title ID>/user/<account>` from your PC to
@@ -361,6 +383,33 @@ every 10 seconds with the frame rate, and `[crash]` lines if an emulator crashes
   game's menu (see [Remote touch screen](#remote-touch-screen-a-phone-as-the-second-screen)).
 - **No side chooser:** *Start on: Ask each time* is gone; the app always opens on the side you used
   last. The DS's in-game menu is green, like its side.
+- **Menus in your language:** the launcher and the in-game menus follow the PS5's language, or
+  **Settings > Language**: German, French (France and Canada), Spanish (Spain and Latin America),
+  Italian, Dutch, Portuguese (Portugal and Brazil), Russian, Ukrainian, Polish, Czech, Hungarian,
+  Romanian, Greek, Turkish, Finnish, Swedish, Danish, Norwegian and Indonesian, as well as British and
+  American English. Japanese, Korean, Chinese, Thai, Vietnamese and Arabic show in English for now.
+- **Rumble works** (#41, 3lmerx503's fix): each DualSense opens in its two-motor vibration mode, so
+  games and the launcher rumble again, the Pro Controller's included (#25).
+- **Skylanders Giants starts** (#29): players 2 to 4 get a controller in a game only while their
+  DualSense is signed in, and figures are chosen from a list (Cross puts one on).
+- **Wii U accounts** (#39): up to twelve, each with its own saves, or one for each PS5 user.
+  **Back up to USB** and **Restore from USB** cover every side's saves and save states.
+- **Updates and DLC found on your drives**, listed by game with what is installed now, and installed
+  with one press (or every new one at once); installs copy four files at a time. The folder browser
+  has a tab for each drive.
+- **AMD FSR 1** for Wii U games, as an *Upscaling to 4K* filter.
+- **Themes**, your own included, and any mix of sides: **Settings > Launcher**. **Make it yours**
+  opens on a first start, and once after an update with what's new.
+- **Buttons** (#37): a button given an input another one uses swaps with it, A and B are one choice,
+  a turbo button, and the touchpad's click can be any Wii U button, `−` included. Cemu's shader
+  notices can be hidden (**Settings > Graphics**).
+- **Pokémon X, Y, Omega Ruby and Alpha Sapphire** (#23): the 3DS's *Outline fix* is on by default
+  for them, and any game can have it in its game settings.
+- **Your own music** in the launcher (MP3 or WAV), and **box art** that downloads again when the
+  network was slow to start, with *Download missing box art* in **Settings > Online**.
+- **A quicker start:** Cemu's library loads in the background while the launcher is already up.
+- Azahar's latest fixes for its Vulkan renderer and for installing CIA files, and a support link in
+  **Settings > About**.
 
 ## What's new in 3.5.0
 
@@ -501,7 +550,8 @@ a ZIP to `dist/`. See [docs/BUILDING.md](docs/BUILDING.md), or run `make help` f
   **pacbrew** for their PS5 libraries
 - **Swordpdf** for the etaHEN jailbreak request from PS5SX2
 - **dolphin78** for the remote touch screen: the idea, and the prototype its server, page and
-  emulator patches come from (#38)
+  emulator patches come from (#38), and the fix for a long press on iOS Safari
+- **3lmerx503** for the DualSense rumble fix (#41)
 - [GameTDB](https://www.gametdb.com/) and its contributors for the box art
 - The authors of the [Cemu community graphic packs](https://github.com/cemu-project/cemu_graphic_packs)
 

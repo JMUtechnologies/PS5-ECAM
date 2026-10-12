@@ -1350,7 +1350,7 @@ namespace ps5shell
 			m_menu.items.push_back({"hub", Tr("Game hub")});
 		// a game with settings of its own says so
 		const bool own = m_settings.games.count(ps5settings::GameKey(ps5launcher::SideName(m_side), g.entry.game.titleId)) > 0;
-		m_menu.items.push_back({"settings", own ? Tr("Game settings: its own") : Tr("Game settings")});
+		m_menu.items.push_back({"settings", own ? Tr("Game settings: custom") : Tr("Game settings")});
 		if (IsWiiU() && m_status.coreReady)
 		{
 			m_menu.items.push_back({"packs", Tr("Graphic packs")});

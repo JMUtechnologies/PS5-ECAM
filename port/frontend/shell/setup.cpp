@@ -256,7 +256,7 @@ namespace ps5shell
 		const bool dsBios = ps5melonds::OwnBiosFound();
 		Check nds{"ds-bios", "DS BIOS"};
 		nds.state = dsBios ? 0 : 2;
-		nds.detail = dsBios ? Tr("Your DS's BIOS found: DS games run on it") : Tr("melonDS's own run DS games; your DS's are optional");
+		nds.detail = dsBios ? Tr("Your DS's BIOS found: DS games run on it") : Tr("melonDS's built-in BIOS runs DS games; your DS's is optional");
 		nds.action = dsBios ? "" : Tr("How to");
 		nds.aboutTitle = Tr("Your DS's own BIOS and firmware");
 		nds.about = TrF("melonDS runs DS games on its own BIOS (FreeBIOS) and firmware, which most games are happy with. The few that "

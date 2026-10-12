@@ -300,12 +300,12 @@ namespace
 			{"right", Tr("Right stick deadzone"), Percent(controls.rightDeadzone), true,
 				Tr("How far the right stick moves before the game sees it. Raise it if the camera drifts.")},
 			{"layout", Tr("A and B"), !faceButtons ? std::string("-") : aOnCircle ? Tr("A on Circle") : Tr("A on Cross"), true,
-				Tr("A on Circle as on the Wii U, or on Cross, with X and Y swapped to match. Every button: the launcher's Settings > Controls.")},
+				Tr("A on Circle as on the Wii U, or on Cross, with X and Y swapped to match. Every other button: Settings > Controls in the launcher.")},
 			{"touchpad", Tr("Touchpad click"),
 				ps5emu::TouchpadClick(player) == 1 ? std::string(Tr("Touches the screen")) : ps5emu::TouchpadClick(player) == 2 ?
 					std::string(Tr("Presses a button")) : TrF("{0}: {1}", Tr("Automatic"), ps5pad::TouchpadButton(player) ? Tr("a button") : Tr("a touch")),
 				true,
-				Tr("A touch of the GamePad's screen, or the button set to Touchpad click (- by default when chosen here). The shortcuts stay.")},
+				Tr("Touches the GamePad's screen, or presses the button set to Touchpad click (- if none is set). The shortcuts still work.")},
 		}});
 		// tr: the remote touch screen's row: which screen a phone or a tablet shows
 		rows.push_back(ps5menu::RemoteRow(Tr("The GamePad's screen")));

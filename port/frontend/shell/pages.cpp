@@ -442,8 +442,8 @@ namespace ps5shell
 					   "finger is.\nPresses a button: it presses the Wii U button set to Touchpad click under Buttons; choosing this moves - "
 					   "(Select) there when nothing is.\nAutomatic: a touch with the GamePad, a button with the other controllers, which have "
 					   "no screen.\nEither way, touchpad click + Options, L1 or R1 stay the shortcuts."),
-				TrMark("Which DualSense button is which of the controller's.\nA is on Circle and B on Cross by default, where the Wii U has them. "
-					   "Giving a DualSense button that another of the controller's buttons has swaps the two."),
+				TrMark("Which DualSense button presses each of the controller's buttons.\nA is on Circle and B on Cross by default, where the "
+					   "Wii U has them. Giving one button a DualSense input that another already uses swaps the two."),
 				TrMark("The default buttons, vibration, motion and deadzones for this controller. Held to confirm."),
 			};
 			static const char* kNames[kPlayerRows] = {TrMark("Emulated controller"), TrMark("Motion controls"), TrMark("Vibration"),
@@ -628,7 +628,7 @@ namespace ps5shell
 			rows[kRowTouchpad].options = {Tr(kTouchpadClicks[0]), Tr(kTouchpadClicks[1]), Tr(kTouchpadClicks[2])};
 			rows[kRowTouchpad].index = click;
 		}
-		rows[kRowButtons] = {Row::Kind::Link, "", Tr("Buttons"), TrP(mapped, "{0} button set", "{0} buttons set"), Tr("Which DualSense button is which.")};
+		rows[kRowButtons] = {Row::Kind::Link, "", Tr("Buttons"), TrP(mapped, "{0} button set", "{0} buttons set"), Tr("Which DualSense button presses each button.")};
 		rows[kRowReset] = {Row::Kind::Hold, "", Tr("Reset to defaults"), m_message.empty() ? std::string(Tr("Hold Cross")) : m_message,
 			Tr("The default buttons, vibration, motion and deadzones.")};
 		canvas.PushAlpha(Enter(1));
@@ -808,7 +808,7 @@ namespace ps5shell
 		m_mapSelected = std::clamp(m_mapSelected, 0, std::max(0, count - 1));
 		if (m_mappingSide != System::WiiU)
 			DrawPageHeader(canvas, std::string(SystemName(m_mappingSide)) + " · " + Tr("Controls"), Tr("Buttons"),
-				TrF("The DualSense's buttons for the {0}'s", SideTitle(m_mappingSide)));
+				TrF("Which DualSense button presses each {0} button", SideTitle(m_mappingSide)));
 		else
 		{
 			const auto controls = ps5emu::GetPlayerControls(m_player);
@@ -858,8 +858,8 @@ namespace ps5shell
 		}
 		else
 			message = (m_mapMessage.empty() ? "" : m_mapMessage + "\n\n") +
-				Tr("Cross, then a DualSense button, trigger or stick direction: it becomes this one. One another button had moves to this "
-				   "one's old input, so the two swap.\nSquare clears it.");
+				Tr("Cross, then a DualSense button, trigger or stick direction: it becomes this one. If another button already had it, the "
+				   "two swap.\nSquare clears it.");
 		ui::TextStyle body = Style({24, ui::Weight::Regular, 1.45f});
 		body.tabular = true;
 		canvas.Text(body, panel.x + 40, panel.y + 280, message, Secondary(), panel.w - 80, 7);
@@ -1254,7 +1254,7 @@ namespace ps5shell
 			else if (nds)
 			{
 				const bool bios = ps5melonds::OwnBiosFound();
-				lines[1] = {Tr("Your DS's BIOS"), bios ? Tr("Found in melonds/bios") : Tr("Not there (melonDS's own run most games)")};
+				lines[1] = {Tr("Your DS's BIOS"), bios ? Tr("Found in melonds/bios") : Tr("Not there (melonDS's built-in BIOS runs most games)")};
 				ready[1] = bios;
 			}
 			else

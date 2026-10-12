@@ -88,7 +88,7 @@ namespace ui
 			std::vector<Theme> list;
 			Theme standard;
 			standard.name = "Link Jack";
-			standard.description = "Glass over each side's colours, as the design has it.";
+			standard.description = "Frosted glass over each side's colours: the default look.";
 			list.push_back(standard);
 
 			Theme classic;
@@ -200,8 +200,10 @@ namespace ui
 			theme.experimental = false;
 			if (json.HasMember("name") && json["name"].IsString() && json["name"].GetStringLength() > 0)
 				theme.name = json["name"].GetString();
-			if (json.HasMember("colours") && json["colours"].IsObject())
-				for (const auto& member : json["colours"].GetObject())
+			// "colours", or "colors" as American English writes it
+			const char* colours = json.HasMember("colours") ? "colours" : "colors";
+			if (json.HasMember(colours) && json[colours].IsObject())
+				for (const auto& member : json[colours].GetObject())
 				{
 					uint32_t colour = 0;
 					const std::string name = member.name.GetString();

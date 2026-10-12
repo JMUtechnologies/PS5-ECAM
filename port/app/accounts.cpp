@@ -101,12 +101,12 @@ namespace ps5emu
 		const auto& accounts = Account::GetAccounts();
 		if (accounts.size() <= 1)
 		{
-			error = ps5lang::Tr("The last account stays.");
+			error = ps5lang::Tr("The last account cannot be deleted.");
 			return false;
 		}
 		if (id == CurrentAccount())
 		{
-			error = ps5lang::Tr("Games start on this one: choose another first.");
+			error = ps5lang::Tr("Games start on this account: choose another one first.");
 			return false;
 		}
 		for (const Account& account : accounts)

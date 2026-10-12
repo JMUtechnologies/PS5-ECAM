@@ -24,19 +24,17 @@ namespace ps5shell
 		// what this version brings, as its release notes say it, a line each (Make it yours, after an
 		// update): changed with each release that has something to say
 		constexpr const char* kWhatsNew[] = {
-			TrMark("Rumble works again, in games and in the launcher."),
-			TrMark("Players 2 to 4 have a controller in a game only while their DualSense is signed in: Skylanders Giants starts."),
-			TrMark("Themes, two of them experiments (Phantom and Terminal), and your own from /data/ps5cemu/themes."),
-			TrMark("Any mix of the Wii U, 3DS and DS sides in the bar."),
-			TrMark("Buttons: a button given another's input swaps with it, A and B in one choice, a turbo button, the touchpad's click as a button."),
-			TrMark("Wii U accounts, so each player keeps their own saves, and every side's saves backed up to a USB drive."),
-			TrMark("Updates and DLC found on your drives, in one list, installed with one press."),
-			TrMark("AMD FSR 1 for Wii U games: a sharper picture without the cost of a higher resolution."),
-			TrMark("Cemu's shader notices can be hidden, Skylanders are chosen from a list, and the 3DS's outline fix is a setting."),
-			TrMark("Azahar's latest fixes for its Vulkan renderer and for installing CIA files."),
-			TrMark("Settings opens over your library on every side, and the Meyer Oscar themes show your recently played games first."),
-			TrMark("Your own music in the launcher: put MP3 or WAV files in /data/ps5cemu/music."),
-			TrMark("Box art downloads again when the network was slow to start, and Settings > Online can download missing covers."),
+			TrMark("Nintendo DS games, on melonDS, as a third side."),
+			TrMark("Menus in your PS5's language: most European languages and Indonesian so far."),
+			TrMark("The remote touch screen: the second screen in a phone's browser, with touch."),
+			TrMark("Rumble works again, and Skylanders Giants starts."),
+			TrMark("Wii U accounts, and every side's saves backed up to a USB drive."),
+			TrMark("Updates and DLC found on your drives and installed with one press."),
+			TrMark("AMD FSR 1 for a sharper Wii U picture at 4K."),
+			TrMark("Themes, your own too, and any mix of sides in the bar."),
+			TrMark("Buttons that swap, a turbo button, and the touchpad's click as any button."),
+			TrMark("Settings for one game alone, and Settings over your library."),
+			TrMark("Your own music, box art that downloads again, and a quicker start."),
 		};
 
 		// tr: what a Wii U player's touchpad click does (as Settings > Controls > Player names them)
@@ -120,7 +118,7 @@ namespace ps5shell
 		next.id = "continue";
 		next.label = m_welcomeThenSetup ? Tr("Continue to the Setup check") : m_welcomeFromSettings ? Tr("Back to Settings") : Tr("Continue to the Library");
 		next.description = Tr("Everything here is in Settings too.");
-		next.help = Tr("Goes on. Nothing here has to be chosen now: Settings has every row of this page, on the side each belongs to.");
+		next.help = Tr("Continues. Nothing here has to be chosen now: every row of this page is also in Settings, on its own side.");
 		rows.push_back(next);
 		return rows;
 	}

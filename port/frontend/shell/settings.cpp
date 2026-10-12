@@ -125,7 +125,7 @@ namespace ps5shell
 
 		// the built-in themes' names and lines (ui/theme.cpp), for the translations
 		[[maybe_unused]] constexpr const char* kThemeWords[] = {TrMark("Link Jack"), TrMark("Classic (3.0)"), TrMark("Midnight"), TrMark("Phantom"), TrMark("Terminal"),
-			TrMark("Glass over each side's colours, as the design has it."), TrMark("3.0.0's launcher: deep blue panels, flatter, a little squarer."),
+			TrMark("Frosted glass over each side's colours: the default look."), TrMark("3.0.0's launcher: deep blue panels, flatter, a little squarer."),
 			TrMark("True black behind everything and nothing moving: for OLED screens."),
 			TrMark("Black, white and one loud colour per side, sharp corners, bands slashing across."),
 			TrMark("A hacker's console: phosphor on near-black, square corners, a grid with a scan line."), TrMark("Meyer Oscar"),
@@ -194,13 +194,13 @@ namespace ps5shell
 			Icon::Folder});
 		// the Wii U's accounts and every side's saves (6.13); a handheld has one player, so its page is saves alone
 		pages.push_back({"saves", IsWiiU() ? Tr("Accounts and saves") : Tr("Saves"),
-			IsWiiU() ? Tr("Each account has its own saves of every game. Backups hold every side's.") : Tr("Backups hold every side's saves."),
+			IsWiiU() ? Tr("Each account has its own saves for every game. Backups hold every side's saves.") : Tr("Backups hold every side's saves."),
 			Icon::Save});
 		if (Is3ds())
 			pages.push_back({"artic", Tr("Artic Base"), Tr("Play from your 3DS, over your network."), Icon::Artic});
-		pages.push_back({"online", Tr("Online"), IsWiiU() ? Tr("Box art, graphic packs and PS5CEMU-HAR itself.") : Tr("Box art and PS5CEMU-HAR itself."), Icon::Globe});
-		pages.push_back({"launcher", Tr("Launcher"), Tr("How it looks, and how it reads."), Icon::Sparkle});
-		pages.push_back({"diagnostics", Tr("Diagnostics"), Tr("The Setup check, logs, caches and what this session is."), Icon::Pulse});
+		pages.push_back({"online", Tr("Online"), IsWiiU() ? Tr("Box art, graphic packs and PS5CEMU-HAR's updates.") : Tr("Box art and PS5CEMU-HAR's updates."), Icon::Globe});
+		pages.push_back({"launcher", Tr("Launcher"), Tr("Theme, sides, language and text."), Icon::Sparkle});
+		pages.push_back({"diagnostics", Tr("Diagnostics"), Tr("The Setup check, logs, caches and this session's details."), Icon::Pulse});
 		// the version always in sight, whatever the credits' length in a language
 		pages.push_back({"about", TrC("app", "About"), std::string(Tr("Who made what.")) + " · " + Tr("Version") + " " + ps5update::Readable(PS5CEMU_VERSION),
 			Icon::Info});
@@ -211,7 +211,7 @@ namespace ps5shell
 		std::vector<SettingsPage> game;
 		for (const SettingsPage& page : pages)
 			if (page.id == "graphics" || page.id == "screens" || page.id == "audio" || page.id == "system")
-				game.push_back({page.id, page.title, TrF("For {0} only. Its other settings are its side's.", m_gameName), page.icon});
+				game.push_back({page.id, page.title, TrF("For {0} only. Its other settings follow its side's.", m_gameName), page.icon});
 		return game;
 	}
 
@@ -342,7 +342,7 @@ namespace ps5shell
 			if (!m_status.coreReady)
 			{
 				row->dimmed = true;
-				row->description = m_status.coreStarting ? Tr("Cemu is still starting: a moment.") : Tr("Cemu did not start, so this cannot be changed.");
+				row->description = m_status.coreStarting ? Tr("Cemu is still starting. One moment.") : Tr("Cemu did not start, so this cannot be changed.");
 			}
 			return row;
 		};
@@ -402,7 +402,7 @@ namespace ps5shell
 			own(toggle("customtextures", Tr("Custom textures"), hand.customTextures, Tr("Texture packs from azahar/load/textures."),
 					Tr("Texture packs in /data/ps5cemu/azahar/load/textures/<title ID>, as the desktop Azahar loads them.")),
 				"customTextures");
-			own(toggle("outlinefix", Tr("Outline fix"), hand.invariantPosition, Tr("For black dots moving over outlined 3D models."),
+			own(toggle("outlinefix", Tr("Outline fix"), hand.invariantPosition, Tr("Fixes moving black dots on outlined 3D models."),
 					Tr("Computes every 3D position the same way twice, as Azahar does on Apple's GPUs, so the outlines games such as Pokémon X "
 					   "and Y draw around their models stop showing moving black dots (#23). On by default for Pokémon X, Y, Omega Ruby and "
 					   "Alpha Sapphire; for other games, turn it on in their game settings if they show the same. Applies to the next game.")),
@@ -418,7 +418,7 @@ namespace ps5shell
 				"dsFilter");
 			const bool executable = ps5privilege::Current().executable;
 			own(toggle("dsjit", Tr("Recompiler"), hand.dsJit,
-					executable ? "melonDS's JIT: much faster than its interpreter." : Tr("No executable memory: the interpreter runs."),
+					executable ? "melonDS's JIT: much faster than its interpreter." : Tr("No executable memory: the slower interpreter runs."),
 					Tr("Runs the DS's two CPUs on melonDS's recompiler, in the executable memory the PS5 gives (Diagnostics says whether it "
 					"does), much faster than its interpreter. Off: the interpreter, slower, for a game the recompiler gets wrong. Applies to "
 					"the next game.")),
@@ -461,11 +461,11 @@ namespace ps5shell
 		else if (page == "controls")
 		{
 			toggle("rumble", Tr("Vibration"), settings.rumble, Tr("The DualSense's rumble, in games and in the launcher."),
-				Tr("Off, the DualSense never rumbles: not for a game's vibration, nor for the launcher's. Every side has the same."));
+				Tr("Off, the DualSense never rumbles, in games or in the launcher. The same on every side."));
 			{
 				int index = 0;
 				auto options = TurboOptions(IsWiiU() ? settings.turbo : hand.turbo, index);
-				choice("turbo", Tr("Turbo button"), std::move(options), index, Tr("Held, it presses again and again by itself."),
+				choice("turbo", Tr("Turbo button"), std::move(options), index, Tr("Hold it and it presses again and again by itself."),
 					Tr("Choose a DualSense button: while you hold it in a game, it presses and lets go by itself about fifteen times a second, "
 					   "for games that make you mash. The button keeps whatever it is mapped to. None turns it off. Every player on this side "
 					   "has it."));
@@ -513,11 +513,11 @@ namespace ps5shell
 				else
 					for (ps5azahar::Button button : ps5azahar::DsButtons())
 						mapped += ps5azahar::MappedInput(hand, button) != ps5emu::PadInput::None;
-				action(Kind::Link, "buttons", Tr("Buttons"), TrP(mapped, "{0} button set", "{0} buttons set"), Tr("Which DualSense button is which."),
-					Is3ds() ? Tr("Which DualSense button is which of the 3DS's. A is on Circle and B on Cross by default, where the 3DS has them; "
-							  "the circle pad is the left stick, the C-stick the right one, and the touchpad the touch screen.") :
-							  Tr("Which DualSense button is which of the DS's. A is on Circle and B on Cross by default, where the DS has them; the "
-							  "left stick is a second D-pad, the touchpad the touch screen, and R3 held blows into the microphone."));
+				action(Kind::Link, "buttons", Tr("Buttons"), TrP(mapped, "{0} button set", "{0} buttons set"), Tr("Which DualSense button presses each button."),
+					Is3ds() ? Tr("Which DualSense button presses each of the 3DS's buttons. A is on Circle and B on Cross by default, where the 3DS has "
+							  "them; the circle pad is the left stick, the C-stick the right one, and the touchpad the touch screen.") :
+							  Tr("Which DualSense button presses each of the DS's buttons. A is on Circle and B on Cross by default, where the DS has "
+							  "them; the left stick is a second D-pad, the touchpad the touch screen, and holding R3 blows into the microphone."));
 				action(Kind::Hold, "resetcontrols", Tr("Reset to defaults"), m_message.empty() ? Tr("Hold Cross") : m_message,
 					Is3ds() ? Tr("Default buttons, motion and deadzone.") : Tr("Default buttons and deadzone."), Tr("The default buttons, motion and deadzone."));
 			}
@@ -542,8 +542,9 @@ namespace ps5shell
 					device == ps5usb::Device::Skylanders ? Tr("For the Skylanders games.") :
 					device == ps5usb::Device::Infinity	 ? Tr("For Disney Infinity 3.0.") :
 														   Tr("For LEGO Dimensions."),
-					Tr("Cemu's emulated portal, plugged in as a game starts. In the game, the menu's USB devices category puts figures on it: dumps "
-					"in ") + ps5usb::Folder(device) + ". A real portal on the PS5's USB is not reached.");
+					TrF("Cemu's emulated portal, plugged in as a game starts. In the game, the menu's USB devices category puts figures on it: dumps "
+						"in {0}. A real portal plugged into the PS5 is not supported.",
+						ps5usb::Folder(device)));
 				row->index = (int)device;
 				cemu(row);
 			}
@@ -575,11 +576,11 @@ namespace ps5shell
 		else if (page == "system")
 		{
 			own(choice("language", Tr("Language"), Options(kLanguages), hand.language + 1, Tr("The emulated DS's language."),
-					Tr("The language games that follow the console's show their text in, up to Chinese: the DS has no others (Korean and the "
-					"rest are English). Applies to the next game.")),
+					Tr("The DS's own language, which many games follow. The DS has Japanese, English, French, German, Italian, Spanish and "
+					"Chinese; any other language uses English. Applies to the next game.")),
 				"language");
 			const bool found = ps5melonds::OwnBiosFound();
-			own(toggle("dsownbios", Tr("Your DS's BIOS"), hand.dsOwnBios, found ? Tr("Found in melonds/bios.") : Tr("Not found: melonDS's own run the games."),
+			own(toggle("dsownbios", Tr("Your DS's BIOS"), hand.dsOwnBios, found ? Tr("Found in melonds/bios.") : Tr("Not found: melonDS's built-in BIOS runs the games."),
 					"bios7.bin, bios9.bin and firmware.bin, dumped from your own DS, in /data/ps5cemu/melonds/bios: melonDS runs on them when "
 					"they are there and this is on. Without them, its own replacements (FreeBIOS) run most games as well. Applies to the next "
 					"game."),
@@ -644,7 +645,7 @@ namespace ps5shell
 					account->dimmed = true;
 				// tr: how many Wii U accounts there are, of the twelve a Wii U has at most
 				cemu(action(Kind::Link, "newaccount", Tr("New account"), TrF("{0} of 12", (int)accounts.size()),
-					Tr("Its own saves of every game, from the start."), Tr("Name it with the keyboard, ten letters at most. Games start on it from then on.")));
+					Tr("A new account starts with no saves."), Tr("Name it with the keyboard, ten letters at most. Games start on it from then on.")));
 				cemu(action(Kind::Link, "renameaccount", TrF("Rename {0}", currentName), "", Tr("The account games start on."),
 					Tr("The name games show for this account, ten letters at most. Its saves stay as they are.")));
 				// deleting: Left and Right choose which, never the one games start on
@@ -656,9 +657,9 @@ namespace ps5shell
 				which = others.empty() ? 0 : std::clamp(which, 0, (int)others.size() - 1);
 				Row* remove = cemu(action(Kind::Hold, "deleteaccount", Tr("Delete an account"),
 					others.empty() ? std::string(Tr("Only one")) : others[which] + "  ·  " + Tr("Hold Cross"),
-					others.empty() ? Tr("There is only the one games start on.") : Tr("Left and Right choose which. Its saves stay in the Wii U's storage."),
-					Tr("The account goes; its saves stay in the Wii U's storage (and in any backup), so making one again does not lose them. The "
-					   "account games start on cannot be deleted: choose another first.")));
+					others.empty() ? Tr("There is only one account, and games start on it.") : Tr("Left and Right choose which. Its saves stay in the Wii U's storage."),
+					Tr("The account is removed; its saves stay in the Wii U's storage (and in any backup), so nothing is lost. The account "
+					   "games start on cannot be deleted: choose another first.")));
 				remove->options = others;
 				remove->index = which;
 				if (others.empty())
@@ -780,14 +781,14 @@ namespace ps5shell
 			}
 			// the sides the bar offers: any mix, at least one
 			toggle("side-wiiu", Tr("Wii U side"), SideShown(System::WiiU), Tr("Cemu's games, in the bar."),
-				Tr("Whether the bar offers the Wii U side (Cemu). Hidden, its games and settings stay as they are, and turning it on again "
-				   "brings them back. At least one side stays on."));
+				Tr("Whether the bar shows the Wii U side (Cemu). Hidden, its games and settings are kept and come back when it is turned on "
+				   "again. At least one side stays on."));
 			toggle("side-3ds", Tr("3DS side"), SideShown(System::N3ds), Tr("Azahar's games, in the bar."),
-				Tr("Whether the bar offers the 3DS side (Azahar). Hidden, its games and settings stay as they are, and turning it on again "
-				   "brings them back. At least one side stays on."));
+				Tr("Whether the bar shows the 3DS side (Azahar). Hidden, its games and settings are kept and come back when it is turned on "
+				   "again. At least one side stays on."));
 			toggle("side-ds", Tr("DS side"), SideShown(System::Nds), Tr("melonDS's games, in the bar."),
-				Tr("Whether the bar offers the DS side (melonDS). Hidden, its games and settings stay as they are, and turning it on again "
-				   "brings them back. At least one side stays on."));
+				Tr("Whether the bar shows the DS side (melonDS). Hidden, its games and settings are kept and come back when it is turned on "
+				   "again. At least one side stays on."));
 			toggle("pictures", Tr("Game pictures behind menus"), settings.ui.gamePictures, Tr("The focused game's cover, softened, behind the screens."),
 				Tr("The focused game's picture fills the screen behind the menus, softened and dimmed, so moving the focus changes the whole "
 				"screen. Off: the game's colours only."));
@@ -797,7 +798,7 @@ namespace ps5shell
 				Tr("Opaque panels instead of glass, all text at full strength, a thicker focus ring and no grain or pictures behind the menus."));
 			toggle("reducemotion", Tr("Reduce motion"), settings.ui.reduceMotion, Tr("Fades in place of movement."),
 				Tr("Springs become short fades; nothing drifts, breathes or rises behind the menus."));
-			action(Kind::Link, "makeityours", Tr("Make it yours"), "", Tr("The first start's choices again: sides, theme, buttons."),
+			action(Kind::Link, "makeityours", Tr("Make it yours"), "", Tr("The first-start choices again: sides, theme, buttons."),
 				Tr("The page the first start opens on: the language, the sides, the theme, A and B, the music, vibration and the games' "
 				   "pictures, on one page."));
 			int hold = 2;
@@ -849,8 +850,8 @@ namespace ps5shell
 			reset.id = "resetgame";
 			reset.label = Tr("Back to defaults");
 			reset.value = m_message.empty() ? Tr("Hold Cross") : m_message;
-			reset.description = Tr("Every setting of this game its side's again.");
-			reset.help = Tr("Clears this game's own settings: it starts with its side's again, as every game without settings of its own does.");
+			reset.description = Tr("This game goes back to its side's settings.");
+			reset.help = Tr("Clears this game's own settings, so it uses its side's settings again, like every other game.");
 			rows.push_back(reset);
 		}
 		return rows;
@@ -879,20 +880,20 @@ namespace ps5shell
 			return Tr("Saves: /data/ps5cemu/melonds/saves (a .sav beside the game is taken the first time). Save states: melonds/states. Cheats: "
 				   "melonds/cheats/<game file>.mch, melonDS's format. DSi games, the DS's wireless and its GBA slot are not there.");
 		if (page == "remote" && !m_settings.remoteScreen)
-			return Tr("On, a code here opens the game's second screen in a phone's browser. Nothing to install; the PS5 and the phone on the "
-				   "same network.");
+			return Tr("On, a QR code here opens the game's second screen in a phone's browser. Nothing to install; the phone must be on the "
+				   "PS5's network.");
 		if (page == "usb")
 			return Tr("Figure dumps go in /data/ps5cemu/figures: skylanders, infinity and dimensions. Switch a portal on here, start the game, then "
 				   "put figures on it from the in-game menu (touchpad click + Options > USB devices).");
 		if (page == "about")
-			return Tr("Cemu, the Wii U emulator, by the Cemu team and its contributors; RADV on the PS5 by Mihawk-99 and mpereiraesaa; the "
+			return TrF("Cemu, the Wii U emulator, by the Cemu team and its contributors; RADV on the PS5 by Mihawk-99 and mpereiraesaa; the "
 				   "community graphic packs' authors.\nAzahar, the 3DS emulator, by the Azahar team and the Citra contributors before them; "
 				   "Mihawk-99's PS5 port of it and dynarmic.\nmelonDS, the DS emulator, by Arisotura and the melonDS team.\nBox art and game "
 				   "information: GameTDB. The font: Lexend.\nThe remote touch screen: dolphin78's idea and prototype.\nAn unofficial port, not affiliated with the Cemu, Azahar or melonDS teams, Nintendo "
 				   "or Sony.\n\nWii U games: /data/ps5cemu/games, storage and saves: /data/ps5cemu/mlc01, keys: /data/ps5cemu/keys.txt\n3DS "
 				   "games: /data/ps5cemu/azahar/games, storage: /data/ps5cemu/azahar/sdmc\nDS games: /data/ps5cemu/melonds/games, saves: "
-				   "/data/ps5cemu/melonds/saves\n\nVersion ") +
-				ps5update::Readable(PS5CEMU_VERSION);
+				   "/data/ps5cemu/melonds/saves\n\nVersion {0}",
+				ps5update::Readable(PS5CEMU_VERSION));
 		return {};
 	}
 
@@ -1217,7 +1218,7 @@ namespace ps5shell
 		if (g.titleId == 0)
 		{
 			m_feedback.Play(ui::Cue::Denied);
-			Toast(Tr("This game has no ID to keep settings by"));
+			Toast(Tr("This game has no ID to save settings under"));
 			return;
 		}
 		m_gameFrom = m_screen == ScreenId::Hub ? ScreenId::Hub : ScreenId::Library;
@@ -1497,7 +1498,7 @@ namespace ps5shell
 			m_settings.games.erase(ps5settings::GameKey(ps5launcher::SideName(m_side), m_gameTitle));
 			SaveSettings();
 			m_gameView = ps5settings::ForGame(m_settings, ps5launcher::SideName(m_side), m_gameTitle);
-			m_message = Tr("Done: its side's settings");
+			m_message = Tr("Done: back to its side's settings");
 		}
 	}
 

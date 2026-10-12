@@ -45,7 +45,7 @@ namespace ps5shell
 		std::string Status(const ps5emu::Installable& item)
 		{
 			if (item.packed)
-				return Tr("Read as it is: no install needed");
+				return Tr("Runs from where it is: no install needed");
 			if (item.installedVersion < 0)
 				return Tr("Not installed");
 			if (item.version > item.installedVersion)
@@ -187,7 +187,7 @@ namespace ps5shell
 		else if (status.state == State::Cancelled)
 		{
 			m_updates.queue.clear();
-			m_updates.message = Tr("Stopped. What was installed before is as it was.");
+			m_updates.message = Tr("Stopped. What was installed before is back as it was.");
 		}
 		else
 		{
@@ -402,9 +402,9 @@ namespace ps5shell
 			Panel(canvas, card, kRadiusSheet);
 			canvas.Text(Style(kHeadingStyle), card.x + 40, card.y + 36, Tr("Nothing found to install"), kText, card.w - 80, 1);
 			canvas.Text(Style({22, ui::Weight::Regular, 1.45f}), card.x + 40, card.y + 96,
-				Tr("It looked on every USB drive and extended storage plugged in, in the games folder and in /data, four folders deep, for "
-				   "updates, DLC and games as folders with code, content and meta, as Cemu installs them. Put them on a USB drive, or "
-				   "Triangle chooses a folder anywhere."),
+				Tr("Every USB drive and extended storage plugged in, the games folder and /data were searched, four folders deep, for "
+				   "updates, DLC and games as folders with code, content and meta (the format Cemu installs). Put them on a USB drive, or "
+				   "press Triangle to choose a folder anywhere."),
 				Secondary(), card.w - 80, 6);
 		}
 		// the list: a heading for each game, its rows under it
@@ -501,7 +501,7 @@ namespace ps5shell
 		const Box aside{kAsideX, kTop, kAsideW, 560};
 		Panel(canvas, aside, kRadiusSheet);
 		float ay = aside.y + 36;
-		canvas.Text(Style(kOverlineStyle), aside.x + 36, ay, item.packed ? Tr("Read as it is") : Tr("To install"), Tertiary(), aside.w - 72, 1);
+		canvas.Text(Style(kOverlineStyle), aside.x + 36, ay, item.packed ? Tr("Runs from where it is") : Tr("To install"), Tertiary(), aside.w - 72, 1);
 		ay += 34;
 		const int game = FindGame(item.baseTitleId);
 		const std::string title = (game >= 0 ? m_games[game].entry.game.name : !item.name.empty() ? item.name : Hex(item.baseTitleId)) + "\n" + WhatItIs(item);
@@ -522,8 +522,8 @@ namespace ps5shell
 		canvas.Rect({aside.x + 36, ay, aside.w - 72, 1.5f}, 0, kLine);
 		ay += 20;
 		const std::string note = !m_updates.message.empty() ? m_updates.message :
-			item.packed ? std::string(Tr("Cemu reads it from the game files folder as it is (title.tmd and .app files): put it there, and the library has it with its game.")) :
-						  std::string(Tr("It goes into the Wii U's storage (mlc01). What is installed now waits aside until it is done, and comes back if you stop."));
+			item.packed ? std::string(Tr("Cemu runs it straight from the game files folder (title.tmd and .app files): put it there and the library lists it with its game.")) :
+						  std::string(Tr("It is installed into the Wii U's storage (mlc01). What is installed now is set aside until it finishes, and put back if you stop."));
 		canvas.Text(Style({20, ui::Weight::Regular, 1.5f}), aside.x + 36, ay, note, Secondary(), aside.w - 72, 6);
 		canvas.PopAlpha();
 	}

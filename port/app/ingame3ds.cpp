@@ -535,11 +535,11 @@ namespace ps5ingame3ds
 			if (ds)
 				// tr: the DS's lid, closed or open
 				rows.push_back({"controls", Tr("Controls"), settings.lidClosed ? std::string(Tr("Lid closed")) : ab, false,
-					Tr("The lid, the left stick's deadzone and where A and B are. R3 held blows into the microphone."), {
+					Tr("The lid, the left stick's deadzone and where A and B are. Hold R3 to blow into the microphone."), {
 					{"lid", Tr("Lid"), settings.lidClosed ? Tr("Closed") : Tr("Open"), true,
-						Tr("Closes the DS, for the games that ask you to (it sleeps until it opens again). Choose it again to open it.")},
+						Tr("Closes the DS's lid, for games that ask you to; the DS sleeps until it is opened. Choose it again to open it.")},
 					{"deadzone", Tr("Stick deadzone"), Percent(settings.deadzone), true,
-						Tr("How far the left stick moves before the D-pad does. Raise it if something drifts when you let go.")},
+						Tr("How far the left stick moves before it presses the D-pad. Raise it if something drifts when you let go.")},
 					{"ab", Tr("A and B"), ab, true,
 						Tr("A on Circle and B on Cross, where the DS has them, or the other way round, with X and Y swapped to match.")},
 				}});

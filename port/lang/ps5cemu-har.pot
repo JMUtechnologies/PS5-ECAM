@@ -7,6 +7,22 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: port/app/accounts.cpp:68 port/frontend/shell/settings.cpp:1326
+msgid "The Wii U has twelve accounts at most."
+msgstr ""
+
+#: port/app/accounts.cpp:104
+msgid "The last account cannot be deleted."
+msgstr ""
+
+#: port/app/accounts.cpp:109
+msgid "Games start on this account: choose another one first."
+msgstr ""
+
+#: port/app/accounts.cpp:128
+msgid "There is no such account."
+msgstr ""
+
 #. the compatibility list's statuses, as the launcher shows them
 #: port/app/compatibility.cpp:96
 msgctxt "status"
@@ -29,54 +45,54 @@ msgctxt "status"
 msgid "Won't start"
 msgstr ""
 
-#: port/app/emulator.cpp:323
+#: port/app/emulator.cpp:325
 msgid "the PS5 Vulkan driver did not start"
 msgstr ""
 
-#: port/app/emulator.cpp:369
+#: port/app/emulator.cpp:374
 msgid "PS5CEMU-HAR cannot write to {0}. Is the HEN loaded?"
 msgstr ""
 
-#: port/app/emulator.cpp:392
+#: port/app/emulator.cpp:397
 msgid "PS5CEMU-HAR cannot create the MLC folder {0}"
 msgstr ""
 
 #. why a Wii U game did not start
-#: port/app/emulator.cpp:495
+#: port/app/emulator.cpp:547
 msgid "The game's base files were not found."
 msgstr ""
 
-#: port/app/emulator.cpp:501
+#: port/app/emulator.cpp:553
 msgid "The game could not be mounted. Check that its files are still in the game files folder."
 msgstr ""
 
-#: port/app/emulator.cpp:506 port/azahar/core.cpp:533
+#: port/app/emulator.cpp:558 port/azahar/core.cpp:541
 #, menu
 msgid "The game could not be started."
 msgstr ""
 
-#: port/app/emulator.cpp:515
+#: port/app/emulator.cpp:567
 msgid "This is not a Wii U game PS5CEMU-HAR can start."
 msgstr ""
 
-#: port/app/emulator.cpp:517
+#: port/app/emulator.cpp:569
 msgid "Its disc key is missing from /data/ps5cemu/keys.txt."
 msgstr ""
 
-#: port/app/emulator.cpp:519
+#: port/app/emulator.cpp:571
 msgid "Its title.tik is missing."
 msgstr ""
 
-#: port/app/emulator.cpp:524
+#: port/app/emulator.cpp:576
 msgid "The executable could not be started."
 msgstr ""
 
-#: port/app/emulator.cpp:537
+#: port/app/emulator.cpp:589
 msgid "The Vulkan renderer did not start: {0}"
 msgstr ""
 
 #. the PS5's notification as a Wii U game starts
-#: port/app/emulator.cpp:591
+#: port/app/emulator.cpp:646
 msgid "Touchpad click + Options: the in-game menu (screens, picture, volume, controls, the library)"
 msgstr ""
 
@@ -536,1039 +552,1111 @@ msgid "Wrestling"
 msgstr ""
 
 #. the Wii U's controllers, by the names Nintendo gave them in the language
-#: port/app/ingame.cpp:135 port/frontend/actions.cpp:316
+#: port/app/ingame.cpp:139 port/frontend/actions.cpp:316
 #, menu
 msgid "Wii U GamePad"
 msgstr ""
 
-#: port/app/ingame.cpp:136 port/frontend/actions.cpp:317
+#: port/app/ingame.cpp:140 port/frontend/actions.cpp:317
 #, menu
 msgid "Wii U Pro Controller"
 msgstr ""
 
-#: port/app/ingame.cpp:137 port/frontend/actions.cpp:318
+#: port/app/ingame.cpp:141 port/frontend/actions.cpp:318
 #, menu
 msgid "Classic Controller"
 msgstr ""
 
-#: port/app/ingame.cpp:138 port/frontend/actions.cpp:319
+#: port/app/ingame.cpp:142 port/frontend/actions.cpp:319
 #, menu
 msgid "Wii Remote"
 msgstr ""
 
-#: port/app/ingame.cpp:139 port/frontend/actions.cpp:320
+#: port/app/ingame.cpp:143 port/frontend/actions.cpp:320
 #, menu
 msgid "Wii Remote + Nunchuk"
 msgstr ""
 
-#: port/app/ingame.cpp:142 port/frontend/actions.cpp:323
+#: port/app/ingame.cpp:146 port/frontend/actions.cpp:323
 #, menu
 msgid "No controller"
 msgstr ""
 
 #. how a game's picture is scaled: the methods' names
-#: port/app/ingame.cpp:165
+#: port/app/ingame.cpp:169
 #, menu
 msgid "Bilinear"
 msgstr ""
 
 #. how a game's picture is scaled: the methods' names
 #. texture filters: None, then the filters' own names
-#: port/app/ingame.cpp:165 port/app/ingame3ds.cpp:128 port/frontend/shell/settings.cpp:52 port/frontend/shell/settings.cpp:54
+#: port/app/ingame.cpp:169 port/app/ingame3ds.cpp:128 port/frontend/shell/settings.cpp:54 port/frontend/shell/settings.cpp:67
 #, menu
 msgid "Bicubic"
 msgstr ""
 
 #. how a game's picture is scaled: the methods' names
-#: port/app/ingame.cpp:165 port/frontend/shell/settings.cpp:54
+#: port/app/ingame.cpp:169 port/frontend/shell/settings.cpp:67
 #, menu
 msgid "Bicubic Hermite"
 msgstr ""
 
 #. how a game's picture is scaled: the methods' names
-#: port/app/ingame.cpp:165 port/frontend/shell/settings.cpp:54
+#: port/app/ingame.cpp:169 port/frontend/shell/settings.cpp:67
 #, menu
 msgid "Nearest neighbour"
 msgstr ""
 
-#: port/app/ingame.cpp:179 port/app/ingame.cpp:245 port/app/ingame.cpp:245 port/app/ingame3ds.cpp:452 port/app/remote_menu.h:28 port/frontend/shell/pages.cpp:541 port/frontend/shell/settings.cpp:216
+#. how a game's picture is scaled: the methods' names
+#: port/app/ingame.cpp:169 port/frontend/shell/settings.cpp:67
+#, menu
+msgid "AMD FSR 1"
+msgstr ""
+
+#: port/app/ingame.cpp:183 port/app/ingame.cpp:251 port/app/ingame.cpp:251 port/app/ingame3ds.cpp:454 port/app/remote_menu.h:28 port/frontend/shell/pages.cpp:595 port/frontend/shell/settings.cpp:295
 #, menu
 msgid "On"
 msgstr ""
 
-#: port/app/ingame.cpp:179 port/app/ingame.cpp:245 port/app/ingame.cpp:245 port/app/ingame.cpp:263 port/app/ingame3ds.cpp:452 port/app/remote_menu.h:28 port/frontend/shell/pages.cpp:541 port/frontend/shell/pages.cpp:547 port/frontend/shell/settings.cpp:56 port/frontend/shell/settings.cpp:216 port/ps5/display.h:43
+#: port/app/ingame.cpp:183 port/app/ingame.cpp:251 port/app/ingame.cpp:251 port/app/ingame.cpp:277 port/app/ingame3ds.cpp:454 port/app/remote_menu.h:28 port/frontend/shell/pages.cpp:595 port/frontend/shell/pages.cpp:603 port/frontend/shell/settings.cpp:68 port/frontend/shell/settings.cpp:295 port/ps5/display.h:43
 #, menu
 msgid "Off"
 msgstr ""
 
 #. the screens in the Wii U's menu: the TV's picture and the GamePad's
-#: port/app/ingame.cpp:181
+#: port/app/ingame.cpp:185
 #, menu
 msgid "TV"
 msgstr ""
 
 #. the screens in the Wii U's menu: the TV's picture and the GamePad's
-#: port/app/ingame.cpp:181
+#: port/app/ingame.cpp:185
 #, menu
 msgid "GamePad"
 msgstr ""
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
-#: port/app/ingame.cpp:182 port/app/ingame.cpp:306 port/app/ingame3ds.cpp:586 port/frontend/shell/settings.cpp:109
+#: port/app/ingame.cpp:186 port/app/ingame.cpp:325 port/app/ingame3ds.cpp:588 port/frontend/shell/settings.cpp:182
 #, menu
 msgid "Screens"
 msgstr ""
 
-#: port/app/ingame.cpp:182 port/app/ingame.cpp:188
+#: port/app/ingame.cpp:186 port/app/ingame.cpp:192
 #, menu
 msgid "Stretched"
 msgstr ""
 
-#: port/app/ingame.cpp:182
+#: port/app/ingame.cpp:186
 #, menu
 msgid "Its shape"
 msgstr ""
 
-#: port/app/ingame.cpp:183
+#: port/app/ingame.cpp:187
 #, menu
 msgid "The TV's and the GamePad's pictures, and how they fill the screen."
 msgstr ""
 
 #. the 3DS's top and bottom screens
-#: port/app/ingame.cpp:184 port/app/ingame3ds.cpp:458
+#: port/app/ingame.cpp:188 port/app/ingame3ds.cpp:460
 #, menu
 msgid "Main screen"
 msgstr ""
 
-#: port/app/ingame.cpp:185
+#: port/app/ingame.cpp:189
 #, menu
 msgid "Which picture fills the TV: the TV's or the GamePad's. In the game, touchpad click + L1 swaps them."
 msgstr ""
 
-#: port/app/ingame.cpp:186
+#: port/app/ingame.cpp:190
 #, menu
 msgid "TV in a corner"
 msgstr ""
 
-#: port/app/ingame.cpp:186
+#: port/app/ingame.cpp:190
 #, menu
 msgid "GamePad in a corner"
 msgstr ""
 
-#: port/app/ingame.cpp:187
+#: port/app/ingame.cpp:191
 #, menu
 msgid "The other screen, small in the bottom right corner. In the game, touchpad click + R1."
 msgstr ""
 
-#: port/app/ingame.cpp:188
+#: port/app/ingame.cpp:192
 #, menu
 msgid "Picture"
 msgstr ""
 
-#: port/app/ingame.cpp:188
+#: port/app/ingame.cpp:192
 #, menu
 msgid "Its own shape"
 msgstr ""
 
-#: port/app/ingame.cpp:189
+#: port/app/ingame.cpp:193
 #, menu
 msgid "Its own shape keeps the picture's proportions, with bars where they differ from the screen's; Stretched fills it."
 msgstr ""
 
-#: port/app/ingame.cpp:191 port/app/ingame3ds.cpp:464 port/app/ingame3ds.cpp:473 port/frontend/shell/settings.cpp:107
+#: port/app/ingame.cpp:195 port/app/ingame3ds.cpp:466 port/app/ingame3ds.cpp:475 port/frontend/shell/settings.cpp:180
 #, menu
 msgid "Graphics"
 msgstr ""
 
-#: port/app/ingame.cpp:192
+#: port/app/ingame.cpp:196
 #, menu
 msgid "Upscaling, Cemu's accuracy settings and the performance overlay. Kept for the next games."
 msgstr ""
 
-#: port/app/ingame.cpp:193 port/frontend/shell/settings.cpp:283
+#: port/app/ingame.cpp:197 port/frontend/shell/settings.cpp:363
 #, menu
 msgid "Upscaling to 4K"
 msgstr ""
 
-#: port/app/ingame.cpp:194
+#: port/app/ingame.cpp:198
 #, menu
 msgid "How the picture is scaled to the screen: Bicubic is sharp, Hermite softer, Bilinear softer still."
 msgstr ""
 
-#: port/app/ingame.cpp:195
+#: port/app/ingame.cpp:199
 #, menu
 msgid "Accurate barriers"
 msgstr ""
 
-#: port/app/ingame.cpp:196
+#: port/app/ingame.cpp:200
 #, menu
 msgid "Off can raise the frame rate, but some games then flicker or show wrong shadows. It changes at once."
 msgstr ""
 
-#: port/app/ingame.cpp:197 port/frontend/shell/settings.cpp:302
+#: port/app/ingame.cpp:201 port/frontend/shell/settings.cpp:386
 #, menu
 msgid "Async shader compile"
 msgstr ""
 
-#: port/app/ingame.cpp:198
+#: port/app/ingame.cpp:202
 #, menu
 msgid "On, new shaders build while the game carries on: no stutter, but things may be missing for a moment."
 msgstr ""
 
-#: port/app/ingame.cpp:199 port/frontend/shell/settings.cpp:293
+#: port/app/ingame.cpp:203 port/frontend/shell/settings.cpp:374
 #, menu
 msgid "Frame pacing"
 msgstr ""
 
-#: port/app/ingame.cpp:200
+#: port/app/ingame.cpp:204
 #, menu
 msgid "Holds the game to an even rate: 60 fps for 4K at 120 Hz, 30 for 8K at 60 Hz. Off shows each frame when it is done."
 msgstr ""
 
-#: port/app/ingame.cpp:201 port/app/ingame3ds.cpp:468 port/app/ingame3ds.cpp:479 port/frontend/shell/settings.cpp:299
+#: port/app/ingame.cpp:205 port/app/ingame3ds.cpp:470 port/app/ingame3ds.cpp:481 port/frontend/shell/settings.cpp:380
 #, menu
 msgid "Performance overlay"
 msgstr ""
 
-#: port/app/ingame.cpp:202
+#: port/app/ingame.cpp:206
 #, menu
 msgid "Frames per second, CPU and memory use in the top left corner, as Cemu shows them."
 msgstr ""
 
-#: port/app/ingame.cpp:215 port/app/ingame.cpp:245
+#: port/app/ingame.cpp:207 port/frontend/shell/settings.cpp:383
+#, menu
+msgid "Shader notices"
+msgstr ""
+
+#: port/app/ingame.cpp:208
+#, menu
+msgid "Cemu's notes in a corner while the game builds shaders. Off hides them; they are built either way."
+msgstr ""
+
+#: port/app/ingame.cpp:221 port/app/ingame.cpp:251
 #, menu
 msgid "{0} (next start)"
 msgstr ""
 
-#: port/app/ingame.cpp:216
+#: port/app/ingame.cpp:222
 #, menu
 msgid "This pack replaces textures: the game shows the change when it starts again."
 msgstr ""
 
-#: port/app/ingame.cpp:217
+#: port/app/ingame.cpp:223
 #, menu
 msgid "Cross turns it on or off; the game shows it at once."
 msgstr ""
 
-#: port/app/ingame.cpp:225 port/frontend/shell/pages.cpp:269 port/frontend/shell/pages.cpp:358
+#: port/app/ingame.cpp:231 port/frontend/shell/pages.cpp:279 port/frontend/shell/pages.cpp:368
 #, menu
 msgid "Preset"
 msgstr ""
 
-#: port/app/ingame.cpp:227
+#: port/app/ingame.cpp:233
 #, menu
 msgid "Left and Right choose another; the game shows it at once."
 msgstr ""
 
-#: port/app/ingame.cpp:231
+#: port/app/ingame.cpp:237
 #, menu
 msgid "None for this game"
 msgstr ""
 
-#: port/app/ingame.cpp:231
+#: port/app/ingame.cpp:237
 #, menu
 msgid "Reading the packs…"
 msgstr ""
 
-#: port/app/ingame.cpp:232
+#: port/app/ingame.cpp:238
 #, menu
 msgid "The community graphic packs have none for this game."
 msgstr ""
 
-#: port/app/ingame.cpp:234 port/app/ingame.cpp:307 port/frontend/shell/hub.cpp:231 port/frontend/shell/pages.cpp:293 port/frontend/shell/shell.cpp:1148
+#: port/app/ingame.cpp:240 port/app/ingame.cpp:326 port/frontend/shell/hub.cpp:231 port/frontend/shell/pages.cpp:303 port/frontend/shell/shell.cpp:1356
 #, menu
 msgid "Graphic packs"
 msgstr ""
 
 #. amiibo is Nintendo's name for its figures, as it writes it in the language
-#: port/app/ingame.cpp:234 port/app/ingame.cpp:270 port/app/ingame.cpp:307 port/app/ingame3ds.cpp:444
+#: port/app/ingame.cpp:240 port/app/ingame.cpp:284 port/app/ingame.cpp:326 port/app/ingame3ds.cpp:446
 #, menu
 msgid "None"
 msgstr ""
 
-#: port/app/ingame.cpp:234 port/app/ingame.cpp:263
+#: port/app/ingame.cpp:240 port/app/ingame.cpp:277
 #, menu
 msgid "{0} on"
 msgid_plural "{0} on"
 msgstr[0] ""
 msgstr[1] ""
 
-#: port/app/ingame.cpp:235
+#: port/app/ingame.cpp:241
 #, menu
 msgid "The game's community graphic packs: resolution, frame rate and mods, as Cemu's Graphic Packs window has them."
 msgstr ""
 
-#: port/app/ingame.cpp:246
+#: port/app/ingame.cpp:252
 #, menu
 msgid "The game sees the change when it starts again: the portal is plugged in as a game starts."
 msgstr ""
 
-#: port/app/ingame.cpp:247
+#: port/app/ingame.cpp:253
 #, menu
 msgid "Plugged in as a game starts, as in Cemu. Its figures are below while it is on."
 msgstr ""
 
-#: port/app/ingame.cpp:255 port/app/ingame3ds.cpp:560
+#: port/app/ingame.cpp:258 port/app/ingame3ds.cpp:562
 #, menu
 msgid "Empty"
 msgstr ""
 
-#: port/app/ingame.cpp:256
+#: port/app/ingame.cpp:267
+#, menu
+msgid "{0} (Cross to put on)"
+msgstr ""
+
+#. {0} is a folder of figure dumps
+#: port/app/ingame.cpp:269
 #, menu
 msgid "Put figure dumps in {0} to put them on here."
 msgstr ""
 
-#: port/app/ingame.cpp:257
+#: port/app/ingame.cpp:270
 #, menu
-msgid "Left and Right put the next figure on it; Empty takes it off."
+msgid "Left and Right choose a figure, Cross puts it on; Empty takes the one there off."
 msgstr ""
 
-#: port/app/ingame.cpp:261
+#: port/app/ingame.cpp:275
 #, menu
 msgid "The last figure could not be put on."
 msgstr ""
 
-#: port/app/ingame.cpp:263 port/frontend/shell/settings.cpp:115
+#: port/app/ingame.cpp:277 port/frontend/shell/settings.cpp:188
 #, menu
 msgid "USB devices"
 msgstr ""
 
-#: port/app/ingame.cpp:264
+#: port/app/ingame.cpp:278
 #, menu
 msgid "Skylanders, Disney Infinity and LEGO Dimensions figures on Cemu's emulated portals, as amiibo are scanned."
 msgstr ""
 
-#: port/app/ingame.cpp:266 port/app/ingame3ds.cpp:497
+#: port/app/ingame.cpp:280 port/app/ingame3ds.cpp:499
 #, menu
 msgid "Volume"
 msgstr ""
 
-#: port/app/ingame.cpp:266 port/app/ingame3ds.cpp:497
+#: port/app/ingame.cpp:280 port/app/ingame3ds.cpp:499
 #, menu
 msgid "The game's sound. Left and Right change it by 10%."
 msgstr ""
 
 #. amiibo is Nintendo's name for its figures, as it writes it in the language
-#: port/app/ingame.cpp:270 port/app/ingame.cpp:307 port/app/ingame3ds.cpp:524 port/app/ingame3ds.cpp:525
+#: port/app/ingame.cpp:284 port/app/ingame.cpp:326 port/app/ingame3ds.cpp:526 port/app/ingame3ds.cpp:527
 #, menu
 msgid "Amiibo"
 msgstr ""
 
-#: port/app/ingame.cpp:272 port/app/ingame3ds.cpp:526
+#: port/app/ingame.cpp:286 port/app/ingame3ds.cpp:528
 #, menu
 msgid "Put amiibo dumps (.bin) in /data/ps5cemu/amiibo to scan them here."
 msgstr ""
 
-#: port/app/ingame.cpp:273
+#: port/app/ingame.cpp:287
 #, menu
 msgid "Left and Right choose an amiibo dump; Cross touches it to the GamePad when the game asks for one."
 msgstr ""
 
 #. the DS's lid, closed or open
-#: port/app/ingame.cpp:274 port/app/ingame3ds.cpp:535 port/app/ingame3ds.cpp:546 port/frontend/shell/pages.cpp:719 port/frontend/shell/settings.cpp:111
+#: port/app/ingame.cpp:288 port/app/ingame3ds.cpp:537 port/app/ingame3ds.cpp:548 port/frontend/shell/pages.cpp:810 port/frontend/shell/settings.cpp:184
 #, menu
 msgid "Controls"
 msgstr ""
 
-#: port/app/ingame.cpp:275
+#: port/app/ingame.cpp:289
 #, menu
 msgid "Each player's controller, motion, vibration, deadzones and A and B."
 msgstr ""
 
-#: port/app/ingame.cpp:276
+#: port/app/ingame.cpp:290
 #, menu
 msgid "Player"
 msgstr ""
 
-#: port/app/ingame.cpp:276
+#: port/app/ingame.cpp:290
 #, menu
 msgid "{0} (no DualSense)"
 msgstr ""
 
-#: port/app/ingame.cpp:277
+#: port/app/ingame.cpp:291
 #, menu
 msgid "Whose controller the settings below are: Left and Right choose the player."
 msgstr ""
 
-#: port/app/ingame.cpp:278 port/frontend/shell/pages.cpp:432 port/frontend/shell/pages.cpp:469 port/frontend/shell/pages.cpp:540
+#: port/app/ingame.cpp:292 port/frontend/shell/pages.cpp:449 port/frontend/shell/pages.cpp:487 port/frontend/shell/pages.cpp:594
 #, menu
 msgid "Emulated controller"
 msgstr ""
 
-#: port/app/ingame.cpp:279
+#: port/app/ingame.cpp:293
 #, menu
 msgid "What the game sees in this player's hands. Most games want the GamePad for player 1."
 msgstr ""
 
-#: port/app/ingame.cpp:280 port/app/ingame3ds.cpp:547 port/frontend/shell/pages.cpp:432 port/frontend/shell/pages.cpp:541 port/frontend/shell/settings.cpp:387
+#: port/app/ingame.cpp:294 port/app/ingame3ds.cpp:549 port/frontend/shell/pages.cpp:449 port/frontend/shell/pages.cpp:595 port/frontend/shell/settings.cpp:499
 #, menu
 msgid "Motion controls"
 msgstr ""
 
-#: port/app/ingame.cpp:280 port/frontend/shell/pages.cpp:541
+#: port/app/ingame.cpp:294 port/frontend/shell/pages.cpp:595
 #, menu
 msgid "None on this one"
 msgstr ""
 
-#: port/app/ingame.cpp:281
+#: port/app/ingame.cpp:295
 #, menu
 msgid "The DualSense's gyroscope and accelerometer, for the games that aim or steer by tilting."
 msgstr ""
 
-#: port/app/ingame.cpp:282 port/frontend/shell/pages.cpp:432 port/frontend/shell/pages.cpp:547 port/frontend/shell/settings.cpp:368
+#: port/app/ingame.cpp:296 port/frontend/shell/pages.cpp:449 port/frontend/shell/pages.cpp:603 port/frontend/shell/settings.cpp:463
 #, menu
 msgid "Vibration"
 msgstr ""
 
-#: port/app/ingame.cpp:283
+#: port/app/ingame.cpp:297
 #, menu
 msgid "How strongly the DualSense rumbles. Left and Right change it by 10%."
 msgstr ""
 
-#: port/app/ingame.cpp:284 port/frontend/shell/pages.cpp:433 port/frontend/shell/pages.cpp:550
+#: port/app/ingame.cpp:298 port/frontend/shell/pages.cpp:450 port/frontend/shell/pages.cpp:606
 #, menu
 msgid "Left stick deadzone"
 msgstr ""
 
-#: port/app/ingame.cpp:285
+#: port/app/ingame.cpp:299
 #, menu
 msgid "How far the left stick moves before the game sees it. Raise it if a character drifts."
 msgstr ""
 
-#: port/app/ingame.cpp:286 port/frontend/shell/pages.cpp:433 port/frontend/shell/pages.cpp:553
+#: port/app/ingame.cpp:300 port/frontend/shell/pages.cpp:450 port/frontend/shell/pages.cpp:609
 #, menu
 msgid "Right stick deadzone"
 msgstr ""
 
-#: port/app/ingame.cpp:287
+#: port/app/ingame.cpp:301
 #, menu
 msgid "How far the right stick moves before the game sees it. Raise it if the camera drifts."
 msgstr ""
 
-#: port/app/ingame.cpp:288 port/app/ingame3ds.cpp:541 port/app/ingame3ds.cpp:551
+#: port/app/ingame.cpp:302 port/app/ingame3ds.cpp:543 port/app/ingame3ds.cpp:553 port/frontend/shell/pages.cpp:450 port/frontend/shell/pages.cpp:615 port/frontend/shell/settings.cpp:476 port/frontend/shell/welcome.cpp:73
 #, menu
 msgid "A and B"
 msgstr ""
 
-#: port/app/ingame.cpp:288 port/app/ingame3ds.cpp:532
+#: port/app/ingame.cpp:302 port/app/ingame3ds.cpp:534 port/frontend/shell/pages.cpp:617 port/frontend/shell/settings.cpp:476 port/frontend/shell/welcome.cpp:74
 #, menu
 msgid "A on Circle"
 msgstr ""
 
-#: port/app/ingame.cpp:288 port/app/ingame3ds.cpp:532
+#: port/app/ingame.cpp:302 port/app/ingame3ds.cpp:534 port/frontend/shell/pages.cpp:617 port/frontend/shell/settings.cpp:476 port/frontend/shell/welcome.cpp:74
 #, menu
 msgid "A on Cross"
 msgstr ""
 
-#: port/app/ingame.cpp:289
+#: port/app/ingame.cpp:303
 #, menu
-msgid "A on Circle as on the Wii U, or on Cross, with X and Y swapped to match. Every button: the launcher's Settings > Controls."
+msgid "A on Circle as on the Wii U, or on Cross, with X and Y swapped to match. Every other button: Settings > Controls in the launcher."
+msgstr ""
+
+#: port/app/ingame.cpp:304 port/frontend/shell/pages.cpp:450 port/frontend/shell/pages.cpp:625 port/frontend/shell/welcome.cpp:102
+#, menu
+msgid "Touchpad click"
+msgstr ""
+
+#. what a Wii U player's touchpad click does (as Settings > Controls > Player names them)
+#: port/app/ingame.cpp:305 port/frontend/shell/pages.cpp:52 port/frontend/shell/welcome.cpp:41
+#, menu
+msgid "Touches the screen"
+msgstr ""
+
+#. what a Wii U player's touchpad click does (as Settings > Controls > Player names them)
+#: port/app/ingame.cpp:306 port/frontend/shell/pages.cpp:52 port/frontend/shell/welcome.cpp:41
+#, menu
+msgid "Presses a button"
+msgstr ""
+
+#: port/app/ingame.cpp:306 port/frontend/shell/pages.cpp:626
+#, menu
+msgid "{0}: {1}"
+msgstr ""
+
+#. the languages the emulated 3DS can be set to
+#. what a Wii U player's touchpad click does (as Settings > Controls > Player names them)
+#: port/app/ingame.cpp:306 port/frontend/shell/pages.cpp:52 port/frontend/shell/settings.cpp:43 port/frontend/shell/settings.cpp:46 port/frontend/shell/welcome.cpp:41
+#, menu
+msgid "Automatic"
+msgstr ""
+
+#: port/app/ingame.cpp:306 port/frontend/shell/pages.cpp:626
+#, menu
+msgid "a button"
+msgstr ""
+
+#: port/app/ingame.cpp:306 port/frontend/shell/pages.cpp:626
+#, menu
+msgid "a touch"
+msgstr ""
+
+#: port/app/ingame.cpp:308
+#, menu
+msgid "Touches the GamePad's screen, or presses the button set to Touchpad click (- if none is set). The shortcuts still work."
 msgstr ""
 
 #. the remote touch screen's row: which screen a phone or a tablet shows
-#: port/app/ingame.cpp:292 port/frontend/shell/settings.cpp:415
+#: port/app/ingame.cpp:311 port/frontend/shell/settings.cpp:527
 #, menu
 msgid "The GamePad's screen"
 msgstr ""
 
-#: port/app/ingame.cpp:293 port/app/ingame3ds.cpp:555
+#: port/app/ingame.cpp:312 port/app/ingame3ds.cpp:557
 #, menu
 msgid "Quit to the library"
 msgstr ""
 
-#: port/app/ingame.cpp:294 port/app/ingame3ds.cpp:556
+#: port/app/ingame.cpp:313 port/app/ingame3ds.cpp:558
 #, menu
 msgid "Leaves the game for the library. What you have not saved in the game is lost, so Cross is held."
 msgstr ""
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
 #. the quick actions: big tiles at the top of the in-game menu, a word or two each
-#: port/app/ingame.cpp:306 port/app/ingame3ds.cpp:583
+#: port/app/ingame.cpp:325 port/app/ingame3ds.cpp:585
 #, menu
 msgid "Resume"
 msgstr ""
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
-#: port/app/ingame.cpp:306
+#: port/app/ingame.cpp:325
 #, menu
 msgid "GamePad main"
 msgstr ""
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
-#: port/app/ingame.cpp:306
+#: port/app/ingame.cpp:325
 #, menu
 msgid "TV main"
 msgstr ""
 
-#: port/app/ingame.cpp:307
+#: port/app/ingame.cpp:326
 #, menu
 msgid "Scan"
 msgstr ""
 
 #. {0} is an amiibo dump's file name
-#: port/app/ingame.cpp:361 port/azahar/core.cpp:267
+#: port/app/ingame.cpp:386 port/azahar/core.cpp:267
 #, menu
 msgid "Scanned {0}"
 msgstr ""
 
 #. {0} is an amiibo dump's file name
-#: port/app/ingame.cpp:361
+#: port/app/ingame.cpp:386
 #, menu
 msgid "Not scanned (error {0})"
 msgstr ""
 
 #. the in-game menu's badge: the game goes on behind the menu (Cemu cannot pause it)
-#: port/app/ingame.cpp:494
+#: port/app/ingame.cpp:538
 #, menu
 msgid "Running"
 msgstr ""
 
-#: port/app/ingame.cpp:504 port/app/ingame3ds.cpp:723 port/frontend/shell/shell.cpp:899 port/frontend/shell/shell.cpp:903 port/frontend/shell/shell.cpp:925 port/frontend/shell/shell.cpp:932 port/frontend/shell/shell.cpp:946 port/frontend/shell/shell.cpp:949 port/frontend/shell/shell.cpp:1584
+#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:731 port/frontend/shell/shell.cpp:1037 port/frontend/shell/shell.cpp:1041 port/frontend/shell/shell.cpp:1066 port/frontend/shell/shell.cpp:1082 port/frontend/shell/shell.cpp:1096 port/frontend/shell/shell.cpp:1099 port/frontend/shell/shell.cpp:1852
 #, menu
 msgid "Choose"
 msgstr ""
 
-#: port/app/ingame.cpp:504 port/app/ingame3ds.cpp:723 port/frontend/shell/shell.cpp:939 port/frontend/shell/shell.cpp:943 port/frontend/shell/shell.cpp:946 port/frontend/shell/shell.cpp:949 port/frontend/shell/shell.cpp:960
+#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:731 port/frontend/shell/shell.cpp:1048 port/frontend/shell/shell.cpp:1089 port/frontend/shell/shell.cpp:1093 port/frontend/shell/shell.cpp:1096 port/frontend/shell/shell.cpp:1099 port/frontend/shell/shell.cpp:1110
 #, menu
 msgid "Change"
 msgstr ""
 
-#: port/app/ingame.cpp:504 port/app/ingame3ds.cpp:723
+#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:731
 #, menu
 msgid "Back to the game"
 msgstr ""
 
-#: port/app/ingame.cpp:504 port/app/ingame3ds.cpp:723 port/frontend/shell/shell.cpp:917 port/frontend/shell/shell.cpp:933 port/frontend/shell/shell.cpp:939 port/frontend/shell/shell.cpp:943 port/frontend/shell/shell.cpp:947 port/frontend/shell/shell.cpp:949 port/frontend/shell/shell.cpp:953 port/frontend/shell/shell.cpp:957 port/frontend/shell/shell.cpp:961
+#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:731 port/frontend/shell/installs.cpp:329 port/frontend/shell/shell.cpp:1049 port/frontend/shell/shell.cpp:1058 port/frontend/shell/shell.cpp:1083 port/frontend/shell/shell.cpp:1089 port/frontend/shell/shell.cpp:1093 port/frontend/shell/shell.cpp:1097 port/frontend/shell/shell.cpp:1099 port/frontend/shell/shell.cpp:1103 port/frontend/shell/shell.cpp:1107 port/frontend/shell/shell.cpp:1111
 #, menu
 msgid "Back"
 msgstr ""
 
+#. the in-game menu's top: the Wii U account the game runs on ({0}: its name)
+#: port/app/ingame.cpp:592
+#, menu
+msgid "{0}'s saves"
+msgstr ""
+
 #. the 3DS's screen layouts
-#: port/app/ingame3ds.cpp:126 port/frontend/shell/settings.cpp:50
+#: port/app/ingame3ds.cpp:126 port/frontend/shell/settings.cpp:52
 #, menu
 msgid "Top above bottom"
 msgstr ""
 
 #. the 3DS's screen layouts
-#: port/app/ingame3ds.cpp:126 port/frontend/shell/settings.cpp:50
+#: port/app/ingame3ds.cpp:126 port/frontend/shell/settings.cpp:52
 #, menu
 msgid "Top screen only"
 msgstr ""
 
 #. the 3DS's screen layouts
-#: port/app/ingame3ds.cpp:126 port/frontend/shell/settings.cpp:50
+#: port/app/ingame3ds.cpp:126 port/frontend/shell/settings.cpp:52
 #, menu
 msgid "Large top screen"
 msgstr ""
 
 #. the 3DS's screen layouts
-#: port/app/ingame3ds.cpp:126 port/frontend/shell/settings.cpp:50
+#: port/app/ingame3ds.cpp:126 port/frontend/shell/settings.cpp:52
 #, menu
 msgid "Side by side"
 msgstr ""
 
 #. texture filters: None, then the filters' own names
-#: port/app/ingame3ds.cpp:128 port/frontend/shell/settings.cpp:52
+#: port/app/ingame3ds.cpp:128 port/frontend/shell/settings.cpp:54
 #, menu
 msgctxt "texture filter"
 msgid "None"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:453
+#: port/app/ingame3ds.cpp:455
 #, menu
 msgid "Screens and border"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:454
+#: port/app/ingame3ds.cpp:456
 #, menu
 msgid "The screens' layout, which one is the main one, and the border."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:455
+#: port/app/ingame3ds.cpp:457
 #, menu
 msgid "Layout"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:456
+#: port/app/ingame3ds.cpp:458
 #, menu
 msgid "How the two screens share the TV. In the game, touchpad click + R1 goes to the next."
 msgstr ""
 
 #. the 3DS's top and bottom screens
-#: port/app/ingame3ds.cpp:458
+#: port/app/ingame3ds.cpp:460
 #, menu
 msgid "Bottom"
 msgstr ""
 
 #. the 3DS's top and bottom screens
-#: port/app/ingame3ds.cpp:458
+#: port/app/ingame3ds.cpp:460
 #, menu
 msgid "Top"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:459
+#: port/app/ingame3ds.cpp:461
 #, menu
 msgid "Which screen takes the top screen's place. In the game, touchpad click + L1 swaps them."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:460 port/frontend/shell/settings.cpp:344
+#: port/app/ingame3ds.cpp:462 port/frontend/shell/settings.cpp:433
 #, menu
 msgid "Border"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:461
+#: port/app/ingame3ds.cpp:463
 #, menu
 msgid "Artwork around the screens, never over them. Also in the launcher's Settings > Screens."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:464
+#: port/app/ingame3ds.cpp:466
 #, menu
 msgid "The screen filter and the performance overlay."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:465 port/frontend/shell/settings.cpp:324
+#: port/app/ingame3ds.cpp:467 port/frontend/shell/settings.cpp:413
 #, menu
 msgid "Screen filter"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:466
+#: port/app/ingame3ds.cpp:468
 #, menu
 msgid "How the DS's 256 x 192 screens are scaled to the TV. Sharp keeps every pixel square and even; Smooth blurs them together; Square pixels takes the nearest, uneven at most sizes."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:469 port/app/ingame3ds.cpp:480
+#: port/app/ingame3ds.cpp:471 port/app/ingame3ds.cpp:482
 #, menu
 msgid "The frame rate and the emulation's speed, in the top left corner."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:474
+#: port/app/ingame3ds.cpp:476
 #, menu
 msgid "Internal resolution, texture filter and the performance overlay."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:475 port/frontend/shell/settings.cpp:309
+#: port/app/ingame3ds.cpp:477 port/frontend/shell/settings.cpp:393
 #, menu
 msgid "Internal resolution"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:476
+#: port/app/ingame3ds.cpp:478
 #, menu
 msgid "How large the 3D scenes are drawn before they are scaled to the TV. Higher is sharper and asks more of the GPU."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:477 port/frontend/shell/settings.cpp:314
+#: port/app/ingame3ds.cpp:479 port/frontend/shell/settings.cpp:398
 #, menu
 msgid "Texture filter"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:478
+#: port/app/ingame3ds.cpp:480
 #, menu
 msgid "Smooths textures as they are scaled up. The costliest setting here: if a game stutters, try None first."
 msgstr ""
 
 #. no speed limit
-#: port/app/ingame3ds.cpp:484
+#: port/app/ingame3ds.cpp:486
 #, menu
 msgid "Speed limit"
 msgstr ""
 
 #. no speed limit
-#: port/app/ingame3ds.cpp:484
+#: port/app/ingame3ds.cpp:486
 #, menu
 msgctxt "speed limit"
 msgid "None"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:485
+#: port/app/ingame3ds.cpp:487
 #, menu
 msgid "Above 100% hurries through slow scenes; None runs as fast as the PS5 can. For this game only."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:486
+#: port/app/ingame3ds.cpp:488
 #, menu
 msgid "Unlimited"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:488 port/app/ingame3ds.cpp:491
+#: port/app/ingame3ds.cpp:490 port/app/ingame3ds.cpp:493
 #, menu
 msgid "Speed"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:488
+#: port/app/ingame3ds.cpp:490
 #, menu
 msgid "How fast the game may run."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:491
+#: port/app/ingame3ds.cpp:493
 #, menu
 msgid "The emulated CPU's clock, and how fast the game may run."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:492 port/frontend/shell/settings.cpp:454
+#: port/app/ingame3ds.cpp:494 port/frontend/shell/settings.cpp:567
 #, menu
 msgid "CPU clock"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:493
+#: port/app/ingame3ds.cpp:495
 #, menu
 msgid "Below 100% can bring a slow game to full speed; above it smooths games that dropped frames on the 3DS."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:499
+#: port/app/ingame3ds.cpp:501
 #, menu
 msgid "Save states"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:499 port/app/ingame3ds.cpp:584 port/app/ingame3ds.cpp:585
+#: port/app/ingame3ds.cpp:501 port/app/ingame3ds.cpp:586 port/app/ingame3ds.cpp:587
 #, menu
 msgid "Slot {0}"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:500
+#: port/app/ingame3ds.cpp:502
 #, menu
 msgid "Five slots for this game: save exactly where you are, and come back to it."
 msgstr ""
 
 #. a save state slot's number, then when it was saved (or empty)
-#: port/app/ingame3ds.cpp:502
+#: port/app/ingame3ds.cpp:504
 #, menu
 msgid "Slot"
 msgstr ""
 
 #. a save state slot's number, then when it was saved (or empty)
-#: port/app/ingame3ds.cpp:502
+#: port/app/ingame3ds.cpp:504
 #, menu
 msgid "(empty)"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:503
+#: port/app/ingame3ds.cpp:505
 #, menu
 msgid "Which of this game's five slots to save to or load from."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:504
+#: port/app/ingame3ds.cpp:506
 #, menu
 msgid "Save to this slot"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:505
+#: port/app/ingame3ds.cpp:507
 #, menu
 msgid "Saves the game as it is now, replacing what the slot had. Newer app versions may not load it: keep saving in the game too."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:507
+#: port/app/ingame3ds.cpp:509
 #, menu
 msgid "Cheats"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:508
+#: port/app/ingame3ds.cpp:510
 #, menu
 msgid "The game's cheats, from melonds/cheats/<game file>.mch (melonDS's format)."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:509
+#: port/app/ingame3ds.cpp:511
 #, menu
 msgid "The game's cheats, from azahar/cheats/<title ID>.txt (Gateway format)."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:512
+#: port/app/ingame3ds.cpp:514
 #, menu
 msgid "Cross, Left or Right turns it on or off, at once; it is kept for next time."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:514
+#: port/app/ingame3ds.cpp:516
 #, menu
 msgid "No cheats for this game"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:515
+#: port/app/ingame3ds.cpp:517
 #, menu
 msgid "Put them in /data/ps5cemu/melonds/cheats/<game file>.mch (the game's file name, .mch for .nds), then start the game again."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:517
+#: port/app/ingame3ds.cpp:519
 #, menu
 msgid "Put them in /data/ps5cemu/azahar/cheats/<title ID>.txt, then start the game again."
 msgstr ""
 
 #. how many of the game's cheats are on: {0} of {1}
-#: port/app/ingame3ds.cpp:520
+#: port/app/ingame3ds.cpp:522
 #, menu
 msgid "{0} of {1} on"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:524
+#: port/app/ingame3ds.cpp:526
 #, menu
 msgid "Hold an amiibo dump to the 3DS's reader when the game asks for one."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:527
+#: port/app/ingame3ds.cpp:529
 #, menu
 msgid "Left and Right choose an amiibo dump; Cross holds it to the reader."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:528
+#: port/app/ingame3ds.cpp:530
 #, menu
 msgid "Take the amiibo away"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:528
+#: port/app/ingame3ds.cpp:530
 #, menu
 msgid "Takes the amiibo off the reader, as lifting it off would."
 msgstr ""
 
 #. the DS's lid, closed or open
-#: port/app/ingame3ds.cpp:535
+#: port/app/ingame3ds.cpp:537
 #, menu
 msgid "Lid closed"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:536
+#: port/app/ingame3ds.cpp:538
 #, menu
-msgid "The lid, the left stick's deadzone and where A and B are. R3 held blows into the microphone."
+msgid "The lid, the left stick's deadzone and where A and B are. Hold R3 to blow into the microphone."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:537
+#: port/app/ingame3ds.cpp:539
 #, menu
 msgid "Lid"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:537
+#: port/app/ingame3ds.cpp:539
 #, menu
 msgid "Closed"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:537 port/frontend/shell/shell.cpp:905 port/frontend/shell/shell.cpp:929 port/frontend/shell/shell.cpp:938 port/frontend/shell/shell.cpp:942 port/frontend/shell/shell.cpp:957
+#: port/app/ingame3ds.cpp:539 port/frontend/shell/shell.cpp:1043 port/frontend/shell/shell.cpp:1070 port/frontend/shell/shell.cpp:1079 port/frontend/shell/shell.cpp:1088 port/frontend/shell/shell.cpp:1092 port/frontend/shell/shell.cpp:1107
 #, menu
 msgid "Open"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:538
+#: port/app/ingame3ds.cpp:540
 #, menu
-msgid "Closes the DS, for the games that ask you to (it sleeps until it opens again). Choose it again to open it."
+msgid "Closes the DS's lid, for games that ask you to; the DS sleeps until it is opened. Choose it again to open it."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:539 port/app/ingame3ds.cpp:549 port/frontend/shell/settings.cpp:389
+#: port/app/ingame3ds.cpp:541 port/app/ingame3ds.cpp:551 port/frontend/shell/settings.cpp:501
 #, menu
 msgid "Stick deadzone"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:540
+#: port/app/ingame3ds.cpp:542
 #, menu
-msgid "How far the left stick moves before the D-pad does. Raise it if something drifts when you let go."
+msgid "How far the left stick moves before it presses the D-pad. Raise it if something drifts when you let go."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:542
+#: port/app/ingame3ds.cpp:544
 #, menu
 msgid "A on Circle and B on Cross, where the DS has them, or the other way round, with X and Y swapped to match."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:546
+#: port/app/ingame3ds.cpp:548
 #, menu
 msgid "Motion controls, the sticks' deadzone and where A and B are."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:548
+#: port/app/ingame3ds.cpp:550
 #, menu
 msgid "The DualSense's gyroscope and accelerometer as the 3DS's, for the games that aim or steer by tilting."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:550
+#: port/app/ingame3ds.cpp:552
 #, menu
 msgid "How far a stick moves before the game sees it. Raise it if something drifts when you let go."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:552
+#: port/app/ingame3ds.cpp:554
 #, menu
 msgid "A on Circle and B on Cross, where the 3DS has them, or the other way round, with X and Y swapped to match."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:560
+#: port/app/ingame3ds.cpp:562
 #, menu
 msgid "Load this slot"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:561
+#: port/app/ingame3ds.cpp:563
 #, menu
 msgid "Goes back to the moment the slot was saved. What you did since is lost, so Cross is held."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:566 port/frontend/shell/settings.cpp:415
+#: port/app/ingame3ds.cpp:568 port/frontend/shell/settings.cpp:527
 #, menu
 msgid "The touch screen"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:566 port/frontend/shell/settings.cpp:415
+#: port/app/ingame3ds.cpp:568 port/frontend/shell/settings.cpp:527
 #, menu
 msgid "The bottom screen"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:584
+#: port/app/ingame3ds.cpp:586
 #, menu
 msgid "Save state"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:585
+#: port/app/ingame3ds.cpp:587
 #, menu
 msgid "Load state"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:585
+#: port/app/ingame3ds.cpp:587
 #, menu
 msgid "Slot {0} empty"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:592
+#: port/app/ingame3ds.cpp:594
 #, menu
 msgid "Slot {0}: {1}"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:655
+#: port/app/ingame3ds.cpp:663
 #, menu
 msgid "Slot {0} is empty"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:663
+#: port/app/ingame3ds.cpp:671
 #, menu
 msgid "Saving…"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:663
+#: port/app/ingame3ds.cpp:671
 #, menu
 msgid "Loading…"
 msgstr ""
 
 #. the in-game menu's badge: the game waits behind the menu
-#: port/app/ingame3ds.cpp:716
+#: port/app/ingame3ds.cpp:724
 #, menu
 msgid "Paused"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:770 port/frontend/shell/shell.cpp:1556 port/frontend/shell/shell.cpp:1585
+#: port/app/ingame3ds.cpp:778 port/frontend/shell/shell.cpp:1824 port/frontend/shell/shell.cpp:1853
 #, menu
 msgid "OK"
 msgstr ""
 
 #. over the 3DS's keyboard: what the game asks to have typed
-#: port/app/ingame3ds.cpp:787
+#: port/app/ingame3ds.cpp:795
 #, menu
 msgid "The game asks for"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:788
+#: port/app/ingame3ds.cpp:796
 #, menu
 msgid "Some text"
 msgstr ""
 
 #. the 3DS keyboard's keys
-#: port/app/ingame3ds.cpp:817
+#: port/app/ingame3ds.cpp:825
 #, menu
 msgid "Shift: on"
 msgstr ""
 
 #. the 3DS keyboard's keys
 #. the 3DS keyboard's hints: Cross types the focused key
-#: port/app/ingame3ds.cpp:817 port/app/ingame3ds.cpp:837
+#: port/app/ingame3ds.cpp:825 port/app/ingame3ds.cpp:845
 #, menu
 msgid "Shift"
 msgstr ""
 
 #. the on-screen keyboard's keys
-#: port/app/ingame3ds.cpp:819 port/frontend/shell/shell.cpp:1507
+#: port/app/ingame3ds.cpp:827 port/frontend/shell/shell.cpp:1775
 #, menu
 msgid "Space"
 msgstr ""
 
 #. the 3DS keyboard's hints: Cross types the focused key
 #. the on-screen keyboard's keys
-#: port/app/ingame3ds.cpp:821 port/app/ingame3ds.cpp:837 port/frontend/shell/shell.cpp:897 port/frontend/shell/shell.cpp:1507
+#: port/app/ingame3ds.cpp:829 port/app/ingame3ds.cpp:845 port/frontend/shell/shell.cpp:1035 port/frontend/shell/shell.cpp:1775
 #, menu
 msgid "Delete"
 msgstr ""
 
 #. the 3DS keyboard's hints: Cross types the focused key
-#: port/app/ingame3ds.cpp:837 port/frontend/shell/shell.cpp:897
+#: port/app/ingame3ds.cpp:845 port/frontend/shell/shell.cpp:1035
 #, menu
 msgid "Type"
 msgstr ""
 
 #. how the DS's screens are scaled to the TV: the filters' names
-#: port/app/ingame3ds.h:55 port/frontend/shell/settings.cpp:60
+#: port/app/ingame3ds.h:55 port/frontend/shell/settings.cpp:107
 #, menu
 msgid "Sharp"
 msgstr ""
 
 #. how the DS's screens are scaled to the TV: the filters' names
-#: port/app/ingame3ds.h:55 port/frontend/shell/settings.cpp:60
+#: port/app/ingame3ds.h:55 port/frontend/shell/settings.cpp:107
 #, menu
 msgid "Smooth"
 msgstr ""
 
 #. how the DS's screens are scaled to the TV: the filters' names
-#: port/app/ingame3ds.h:55 port/frontend/shell/settings.cpp:60
+#: port/app/ingame3ds.h:55 port/frontend/shell/settings.cpp:107
 #, menu
 msgid "Square pixels"
 msgstr ""
 
 #. the 3DS borders' names (artwork around the screens)
-#: port/app/ingame3ds.h:124 port/frontend/shell/settings.cpp:39
+#: port/app/ingame3ds.h:124 port/frontend/shell/settings.cpp:41
 #, menu
 msgctxt "border"
 msgid "None"
 msgstr ""
 
 #. the 3DS borders' names (artwork around the screens)
-#: port/app/ingame3ds.h:124 port/frontend/shell/settings.cpp:39
+#: port/app/ingame3ds.h:124 port/frontend/shell/settings.cpp:41
 #, menu
 msgctxt "border"
 msgid "Midnight"
 msgstr ""
 
 #. the 3DS borders' names (artwork around the screens)
-#: port/app/ingame3ds.h:125 port/frontend/shell/settings.cpp:39
+#: port/app/ingame3ds.h:125 port/frontend/shell/settings.cpp:41
 #, menu
 msgctxt "border"
 msgid "Waves"
 msgstr ""
 
-#: port/app/ingame3ds.h:125 port/frontend/shell/settings.cpp:40
+#: port/app/ingame3ds.h:125 port/frontend/shell/settings.cpp:42
 #, menu
 msgctxt "border"
 msgid "Aurora"
 msgstr ""
 
-#: port/app/ingame3ds.h:125 port/frontend/shell/settings.cpp:40
+#: port/app/ingame3ds.h:125 port/frontend/shell/settings.cpp:42
 #, menu
 msgctxt "border"
 msgid "Shell"
 msgstr ""
 
 #. {0} and {1} are sizes (2.4 GB)
-#: port/app/install.cpp:103
+#: port/app/install.cpp:144
 msgid "There is not enough space: it needs {0}, and {1} is free."
 msgstr ""
 
-#: port/app/install.cpp:118
+#: port/app/install.cpp:159
 msgid "What is installed there now could not be moved aside: {0}"
 msgstr ""
 
-#: port/app/install.cpp:176
+#: port/app/install.cpp:406
 msgid "This one is not unpacked (title.tmd and .app files). Cemu reads it from the game files folder as it is: no install needed."
 msgstr ""
 
-#: port/app/install.cpp:177
+#: port/app/install.cpp:407
 msgid "There is no title here: a game, update or DLC to install is a folder with code, content and meta."
 msgstr ""
 
-#: port/app/install.cpp:183
+#: port/app/install.cpp:413
 msgid "Its meta folder does not describe a Wii U title (meta.xml)."
 msgstr ""
 
-#: port/app/install.cpp:202
+#: port/app/install.cpp:432
 msgid "This is where it is installed already."
 msgstr ""
 
-#: port/app/install.cpp:218 port/azahar/core.cpp:854
+#: port/app/install.cpp:448 port/azahar/core.cpp:862
 #, menu
 msgid "An install is already running."
 msgstr ""
@@ -1875,7 +1963,7 @@ msgstr ""
 msgid "The download did not finish"
 msgstr ""
 
-#: port/app/pack_updates.cpp:300 port/frontend/shell/pages.cpp:1016
+#: port/app/pack_updates.cpp:300 port/frontend/shell/installs.cpp:195 port/frontend/shell/pages.cpp:1149
 msgid "It could not be installed: {0}"
 msgstr ""
 
@@ -1883,7 +1971,7 @@ msgstr ""
 msgid "The new packs could not take the old ones' place"
 msgstr ""
 
-#: port/app/remote_menu.h:28 port/frontend/shell/settings.cpp:113 port/frontend/shell/settings.cpp:416 port/frontend/shell/settings.cpp:1186
+#: port/app/remote_menu.h:28 port/frontend/shell/settings.cpp:186 port/frontend/shell/settings.cpp:528 port/frontend/shell/settings.cpp:1662
 #, menu
 msgid "Remote touch screen"
 msgstr ""
@@ -1893,9 +1981,29 @@ msgstr ""
 msgid "A phone or tablet on the PS5's network. Sound stays on the PS5."
 msgstr ""
 
-#: port/app/remote_menu.h:106 port/frontend/shell/settings.cpp:1194
+#: port/app/remote_menu.h:106 port/frontend/shell/settings.cpp:1670
 #, menu
 msgid "Turn it off and on again once that is fixed."
+msgstr ""
+
+#: port/app/saves.cpp:173
+msgid "A save could not be moved aside: {0}"
+msgstr ""
+
+#: port/app/saves.cpp:180
+msgid "A file could not be copied: {0}"
+msgstr ""
+
+#: port/app/saves.cpp:199
+msgid "A backup is already running."
+msgstr ""
+
+#: port/app/saves.cpp:270
+msgid "No USB drive found: plug one in, formatted exFAT or FAT32."
+msgstr ""
+
+#: port/app/saves.cpp:279
+msgid "That backup is not there any more."
 msgstr ""
 
 #. beside a row held to confirm: hold Cross
@@ -2212,104 +2320,104 @@ msgid "It did not work"
 msgstr ""
 
 #. why a 3DS game did not start
-#: port/azahar/core.cpp:519
+#: port/azahar/core.cpp:527
 #, menu
 msgid "This is not a 3DS game Azahar can start."
 msgstr ""
 
-#: port/azahar/core.cpp:520
+#: port/azahar/core.cpp:528
 #, menu
 msgid "The game could not be loaded."
 msgstr ""
 
-#: port/azahar/core.cpp:522
+#: port/azahar/core.cpp:530
 #, menu
 msgid "The game is encrypted: decrypt it, or put the 3DS's aes_keys.txt in /data/ps5cemu/azahar/sysdata."
 msgstr ""
 
-#: port/azahar/core.cpp:523
+#: port/azahar/core.cpp:531
 #, menu
 msgid "The game's format is not supported."
 msgstr ""
 
-#: port/azahar/core.cpp:524
+#: port/azahar/core.cpp:532
 #, menu
 msgid "GBA Virtual Console games are not supported."
 msgstr ""
 
-#: port/azahar/core.cpp:525
+#: port/azahar/core.cpp:533
 #, menu
 msgid "The game's system mode could not be found."
 msgstr ""
 
-#: port/azahar/core.cpp:526
+#: port/azahar/core.cpp:534
 #, menu
 msgid "The game needs 3DS system files Azahar does not have."
 msgstr ""
 
-#: port/azahar/core.cpp:528
+#: port/azahar/core.cpp:536
 #, menu
 msgid "The game's patches could not be applied."
 msgstr ""
 
-#: port/azahar/core.cpp:529
+#: port/azahar/core.cpp:537
 #, menu
 msgid "Azahar's renderer or CPU did not start."
 msgstr ""
 
-#: port/azahar/core.cpp:531
+#: port/azahar/core.cpp:539
 #, menu
 msgid "The Artic Base server did not answer: check the 3DS's address, that Artic Base runs on it, and that the 3DS and the PS5 are on the same network."
 msgstr ""
 
-#: port/azahar/core.cpp:576
+#: port/azahar/core.cpp:584
 #, menu
 msgid "The game is busy: try again"
 msgstr ""
 
-#: port/azahar/core.cpp:591
+#: port/azahar/core.cpp:599
 #, menu
 msgid "The 3DS game stopped: {0}"
 msgstr ""
 
-#: port/azahar/core.cpp:640
+#: port/azahar/core.cpp:648
 #, menu
 msgid "A CIA file is installed, not played: install it from Settings > Game files, then start the game."
 msgstr ""
 
-#: port/azahar/core.cpp:664
+#: port/azahar/core.cpp:672
 #, menu
 msgid "Azahar did not start: {0}"
 msgstr ""
 
 #. the PS5's notification as a 3DS game starts
-#: port/azahar/core.cpp:727
+#: port/azahar/core.cpp:735
 #, menu
 msgid "Touchpad click + Options: the in-game menu. A touchpad click alone: the bottom screen"
 msgstr ""
 
 #. why a CIA file could not be installed, after "It could not be installed:"
-#: port/azahar/core.cpp:893
+#: port/azahar/core.cpp:901
 #, menu
 msgid "it is encrypted, the CIA or the game inside it. Azahar installs only fully decrypted CIA files: decrypt it with GodMode9 on a 3DS, or play the game's decrypted .3ds or .cci file instead"
 msgstr ""
 
-#: port/azahar/core.cpp:896
+#: port/azahar/core.cpp:904
 #, menu
 msgid "it is not a CIA file, or it is damaged (check the file's size)"
 msgstr ""
 
-#: port/azahar/core.cpp:898
+#: port/azahar/core.cpp:906
 #, menu
 msgid "the file could not be read"
 msgstr ""
 
-#: port/azahar/core.cpp:900
+#: port/azahar/core.cpp:908
 #, menu
 msgid "Azahar stopped part-way through; /data/ps5cemu/azahar/log/azahar_log.txt says why"
 msgstr ""
 
-#: port/azahar/core.cpp:902
+#: port/azahar/core.cpp:910
 #, menu
 msgid "it is not a CIA Azahar can install"
 msgstr ""
@@ -2362,7 +2470,8 @@ msgstr ""
 msgid "Update"
 msgstr ""
 
-#: port/frontend/actions.cpp:333 port/frontend/actions.cpp:412 port/frontend/shell/hub.cpp:209 port/frontend/shell/shell.cpp:575
+#. an update found to install ({0}: its version, as 208)
+#: port/frontend/actions.cpp:333 port/frontend/actions.cpp:412 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:698
 msgid "DLC"
 msgstr ""
 
@@ -2594,15 +2703,17 @@ msgid "None"
 msgstr ""
 
 #. a chip: the game's update, by its version ("Update v208")
-#: port/frontend/shell/hub.cpp:207
+#. an update found to install ({0}: its version, as 208)
+#. the update a Wii U game has installed ({0}: its version, as 208)
+#: port/frontend/shell/hub.cpp:207 port/frontend/shell/installs.cpp:42 port/frontend/shell/recent.cpp:327
 msgid "Update v{0}"
 msgstr ""
 
-#: port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1149
+#: port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1359
 msgid "Favourite"
 msgstr ""
 
-#: port/frontend/shell/hub.cpp:225 port/frontend/shell/shell.cpp:930 port/frontend/shell/shell.cpp:1141
+#: port/frontend/shell/hub.cpp:225 port/frontend/shell/shell.cpp:1073 port/frontend/shell/shell.cpp:1074 port/frontend/shell/shell.cpp:1080 port/frontend/shell/shell.cpp:1348
 msgid "Play"
 msgstr ""
 
@@ -2613,10 +2724,10 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: port/frontend/shell/hub.cpp:236
-msgid "Game settings · its own"
+msgid "Game settings · custom"
 msgstr ""
 
-#: port/frontend/shell/hub.cpp:236 port/frontend/shell/shell.cpp:1146
+#: port/frontend/shell/hub.cpp:236 port/frontend/shell/shell.cpp:1353
 msgid "Game settings"
 msgstr ""
 
@@ -2656,11 +2767,11 @@ msgstr ""
 msgid "Publisher"
 msgstr ""
 
-#: port/frontend/shell/hub.cpp:273 port/frontend/shell/pages.cpp:572
+#: port/frontend/shell/hub.cpp:273 port/frontend/shell/pages.cpp:651
 msgid "Players"
 msgstr ""
 
-#: port/frontend/shell/hub.cpp:277 port/frontend/shell/pages.cpp:1074 port/frontend/shell/pages.cpp:1124
+#: port/frontend/shell/hub.cpp:277 port/frontend/shell/installs.cpp:512 port/frontend/shell/pages.cpp:1230 port/frontend/shell/pages.cpp:1280
 msgid "Title ID"
 msgstr ""
 
@@ -2673,209 +2784,384 @@ msgstr ""
 msgid "The compatibility list has it as “{0}”."
 msgstr ""
 
+#. an update found to install ({0}: its version, as 208)
+#: port/frontend/shell/installs.cpp:42
+msgid "The game"
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:48
+msgid "Runs from where it is: no install needed"
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:50
+msgid "Not installed"
+msgstr ""
+
+#. {0} is the version installed now, older than the one found
+#: port/frontend/shell/installs.cpp:53
+msgid "v{0} installed: this is newer"
+msgstr ""
+
+#. {0} is the version installed now, newer than the one found
+#: port/frontend/shell/installs.cpp:56
+msgid "v{0} installed: this is older"
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:57 port/frontend/shell/installs.cpp:210 port/frontend/shell/pages.cpp:1141
+msgid "Installed"
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:62
+msgid "The PS5"
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:190
+msgid "Stopped. What was installed before is back as it was."
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:210
+msgid "{0} installed"
+msgid_plural "{0} installed"
+msgstr[0] ""
+msgstr[1] ""
+
+#: port/frontend/shell/installs.cpp:284
+msgid "Everything found is installed already"
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:318
+msgid "Stopping…"
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:318
+msgid "Stop"
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:324 port/frontend/shell/pages.cpp:1157 port/frontend/shell/shell.cpp:1107
+msgid "Install"
+msgstr ""
+
+#. Square on Updates and DLC: install every one not installed yet, or newer ({0}: how many)
+#: port/frontend/shell/installs.cpp:327
+msgid "Install every new one ({0})"
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:328 port/frontend/shell/library.cpp:107 port/frontend/shell/pages.cpp:1161 port/frontend/shell/setup.cpp:183
+msgid "Choose a folder"
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:350
+msgid "Looking in {0}…"
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:352
+msgid "Nothing to install was found on the drives plugged in."
+msgstr ""
+
+#. where updates and DLC were found ({0}: "USB drive 1, The PS5"), then how many are new
+#: port/frontend/shell/installs.cpp:359
+msgid "Found on {0}."
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:360
+msgid "{0} new to install."
+msgid_plural "{0} new to install."
+msgstr[0] ""
+msgstr[1] ""
+
+#: port/frontend/shell/installs.cpp:360
+msgid "Everything found is installed."
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:363 port/frontend/shell/settings.cpp:191
+msgid "Game files"
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:364 port/frontend/shell/settings.cpp:608 port/frontend/shell/shell.cpp:1357
+msgid "Updates and DLC"
+msgstr ""
+
+#. Updates and DLC, installing: which of how many ({0} of {1})
+#: port/frontend/shell/installs.cpp:377
+msgid "Installing {0} of {1}"
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:379 port/frontend/shell/pages.cpp:323 port/frontend/shell/pages.cpp:821 port/frontend/shell/pages.cpp:1194
+msgid "{0} of {1}"
+msgstr ""
+
+#. how fast an install copies, in megabytes a second
+#: port/frontend/shell/installs.cpp:383
+msgid "{0} MB/s"
+msgstr ""
+
+#. an install's time left, in seconds or minutes
+#: port/frontend/shell/installs.cpp:386
+msgid "about {0} second left"
+msgid_plural "about {0} seconds left"
+msgstr[0] ""
+msgstr[1] ""
+
+#: port/frontend/shell/installs.cpp:387
+msgid "about {0} minute left"
+msgid_plural "about {0} minutes left"
+msgstr[0] ""
+msgstr[1] ""
+
+#: port/frontend/shell/installs.cpp:403
+msgid "Nothing found to install"
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:405
+msgid "Every USB drive and extended storage plugged in, the games folder and /data were searched, four folders deep, for updates, DLC and games as folders with code, content and meta (the format Cemu installs). Put them on a USB drive, or press Triangle to choose a folder anywhere."
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:459
+msgid "v{0} installed"
+msgstr ""
+
+#. a row of Updates and DLC while it installs ({0}: a percentage)
+#: port/frontend/shell/installs.cpp:480
+msgid "Installing · {0}"
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:482
+msgid "Waiting"
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:504
+msgid "Runs from where it is"
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:504 port/frontend/shell/pages.cpp:1296
+msgid "To install"
+msgstr ""
+
+#. a title's version to install ({0}), and the one installed now ({1})
+#: port/frontend/shell/installs.cpp:511 port/frontend/shell/pages.cpp:1231 port/frontend/shell/pages.cpp:1282 port/frontend/shell/settings.cpp:205
+msgid "Version"
+msgstr ""
+
+#. a title's version to install ({0}), and the one installed now ({1})
+#: port/frontend/shell/installs.cpp:511 port/frontend/shell/pages.cpp:1282
+msgid "v{0}, not installed yet"
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:511 port/frontend/shell/pages.cpp:1283
+msgid "v{0}, v{1} installed now"
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:513
+msgid "Where it is"
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:525
+msgid "Cemu runs it straight from the game files folder (title.tmd and .app files): put it there and the library lists it with its game."
+msgstr ""
+
+#: port/frontend/shell/installs.cpp:526
+msgid "It is installed into the Wii U's storage (mlc01). What is installed now is set aside until it finishes, and put back if you stop."
+msgstr ""
+
 #. the Library's orders (Square)
-#: port/frontend/shell/library.cpp:26
+#. the Library's orders (Square), as library.cpp names them
+#: port/frontend/shell/library.cpp:26 port/frontend/shell/recent.cpp:26 port/frontend/shell/recent.cpp:288
 msgid "Recently played"
 msgstr ""
 
 #. the Library's orders (Square)
-#: port/frontend/shell/library.cpp:26
+#. the Library's orders (Square), as library.cpp names them
+#: port/frontend/shell/library.cpp:26 port/frontend/shell/recent.cpp:26
 msgid "A to Z"
 msgstr ""
 
 #. the Library's orders (Square)
-#: port/frontend/shell/library.cpp:26
+#. the Library's orders (Square), as library.cpp names them
+#: port/frontend/shell/library.cpp:26 port/frontend/shell/recent.cpp:26
 msgid "Release year"
 msgstr ""
 
 #. the Library's orders (Square)
-#: port/frontend/shell/library.cpp:26
+#. the Library's orders (Square), as library.cpp names them
+#: port/frontend/shell/library.cpp:26 port/frontend/shell/recent.cpp:26
 msgid "How it runs"
 msgstr ""
 
-#: port/frontend/shell/library.cpp:68 port/frontend/shell/setup.cpp:335
+#: port/frontend/shell/library.cpp:71 port/frontend/shell/setup.cpp:341
 msgid "Setup"
 msgstr ""
 
-#: port/frontend/shell/library.cpp:69
+#: port/frontend/shell/library.cpp:72
 msgid "Something needs a look"
 msgstr ""
 
-#: port/frontend/shell/library.cpp:71 port/frontend/shell/library.cpp:103 port/frontend/shell/settings.cpp:543
+#: port/frontend/shell/library.cpp:74 port/frontend/shell/library.cpp:107 port/frontend/shell/settings.cpp:814
 msgid "Setup check"
 msgstr ""
 
-#: port/frontend/shell/library.cpp:71 port/frontend/shell/settings.cpp:126
+#: port/frontend/shell/library.cpp:74 port/frontend/shell/settings.cpp:203
 msgid "Diagnostics"
 msgstr ""
 
-#: port/frontend/shell/library.cpp:77 port/frontend/shell/shell.cpp:662
+#: port/frontend/shell/library.cpp:81 port/frontend/shell/shell.cpp:785
 msgid "Starting Cemu"
 msgstr ""
 
-#: port/frontend/shell/library.cpp:78
+#: port/frontend/shell/library.cpp:82
 msgid "Its settings, graphic packs and controllers are loading, and then it looks for your games."
 msgstr ""
 
-#: port/frontend/shell/library.cpp:86 port/frontend/shell/library.cpp:537
+#: port/frontend/shell/library.cpp:90 port/frontend/shell/library.cpp:553 port/frontend/shell/recent.cpp:378
 msgid "Looking for games…"
 msgstr ""
 
-#: port/frontend/shell/library.cpp:87
+#: port/frontend/shell/library.cpp:91
 msgid "In {0}."
 msgstr ""
 
-#: port/frontend/shell/library.cpp:91
+#: port/frontend/shell/library.cpp:95
 msgid "Welcome"
 msgstr ""
 
-#: port/frontend/shell/library.cpp:92
+#: port/frontend/shell/library.cpp:96
 msgid "Your games go here"
 msgstr ""
 
 #. {0} is the games folder
-#: port/frontend/shell/library.cpp:94
+#: port/frontend/shell/library.cpp:98
 msgid "Put your 3DS games (.3ds, .cci, .cxi, .3dsx, decrypted) in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are searched too."
 msgstr ""
 
-#: port/frontend/shell/library.cpp:97
+#: port/frontend/shell/library.cpp:101
 msgid "Put your DS games (.nds) in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are searched too."
 msgstr ""
 
-#: port/frontend/shell/library.cpp:100
+#: port/frontend/shell/library.cpp:104
 msgid "Put your Wii U games (.wua, .wud, .wux, or folders with code, content and meta) in {0}, or choose any folder the PS5 can read, such as one on a USB drive."
 msgstr ""
 
-#: port/frontend/shell/library.cpp:103 port/frontend/shell/pages.cpp:1028 port/frontend/shell/setup.cpp:181
-msgid "Choose a folder"
-msgstr ""
-
-#: port/frontend/shell/library.cpp:105 port/frontend/shell/library.cpp:580 port/frontend/shell/library.cpp:595
+#: port/frontend/shell/library.cpp:109 port/frontend/shell/library.cpp:596 port/frontend/shell/library.cpp:611 port/frontend/shell/recent.cpp:400 port/frontend/shell/recent.cpp:419
 msgid "Play from your 3DS"
 msgstr ""
 
 #. the launcher's tabs
-#: port/frontend/shell/library.cpp:255 port/frontend/shell/shell.cpp:845 port/frontend/shell/shell.cpp:942
+#: port/frontend/shell/library.cpp:266 port/frontend/shell/recent.cpp:99 port/frontend/shell/recent.cpp:334 port/frontend/shell/shell.cpp:982
 msgctxt "tab"
 msgid "Library"
 msgstr ""
 
-#: port/frontend/shell/library.cpp:255 port/frontend/shell/shell.cpp:927
+#: port/frontend/shell/library.cpp:266 port/frontend/shell/recent.cpp:99 port/frontend/shell/shell.cpp:1077
 msgid "Sort"
 msgstr ""
 
 #. the Library's filters, each with its count after it
-#: port/frontend/shell/library.cpp:471
+#: port/frontend/shell/library.cpp:487
 msgctxt "filter"
 msgid "All"
 msgstr ""
 
 #. the Library's filters, each with its count after it
-#: port/frontend/shell/library.cpp:471
+#: port/frontend/shell/library.cpp:487
 msgid "Recently added"
 msgstr ""
 
 #. the Library's filters, each with its count after it
-#: port/frontend/shell/library.cpp:471
+#: port/frontend/shell/library.cpp:487
 msgid "Favourites"
 msgstr ""
 
 #. the Library's filters, each with its count after it
-#: port/frontend/shell/library.cpp:471
+#: port/frontend/shell/library.cpp:487
 msgid "Graphic packs on"
 msgstr ""
 
-#: port/frontend/shell/library.cpp:477
+#: port/frontend/shell/library.cpp:493 port/frontend/shell/recent.cpp:368
 msgid "Sort: {0}"
 msgstr ""
 
-#: port/frontend/shell/library.cpp:478 port/frontend/shell/library.cpp:520 port/frontend/shell/shell.cpp:927 port/frontend/shell/shell.cpp:1488
+#: port/frontend/shell/library.cpp:494 port/frontend/shell/library.cpp:536 port/frontend/shell/recent.cpp:363 port/frontend/shell/shell.cpp:1077 port/frontend/shell/shell.cpp:1754
 msgid "Search"
 msgstr ""
 
-#: port/frontend/shell/library.cpp:515
+#: port/frontend/shell/library.cpp:531 port/frontend/shell/recent.cpp:363
 msgid "Search: {0}"
 msgstr ""
 
-#: port/frontend/shell/library.cpp:517
+#: port/frontend/shell/library.cpp:533
 msgid "Looking for new games…"
 msgstr ""
 
-#: port/frontend/shell/library.cpp:538
+#: port/frontend/shell/library.cpp:554
 msgid "Nothing matches “{0}”"
 msgstr ""
 
-#: port/frontend/shell/library.cpp:539
+#: port/frontend/shell/library.cpp:555
 msgid "None here yet"
 msgstr ""
 
-#: port/frontend/shell/library.cpp:540
+#: port/frontend/shell/library.cpp:556
 msgid "No games yet"
 msgstr ""
 
-#: port/frontend/shell/library.cpp:543
+#: port/frontend/shell/library.cpp:559
 msgid "Circle clears the search."
 msgstr ""
 
-#: port/frontend/shell/library.cpp:544
+#: port/frontend/shell/library.cpp:560
 msgid "Options on a game, then Favourite, puts it here."
 msgstr ""
 
-#: port/frontend/shell/library.cpp:545
+#: port/frontend/shell/library.cpp:561
 msgid "All shows every game."
 msgstr ""
 
-#: port/frontend/shell/library.cpp:546
+#: port/frontend/shell/library.cpp:562
 msgid "Settings > Game files says where they go."
 msgstr ""
 
-#: port/frontend/shell/library.cpp:582 port/frontend/shell/library.cpp:597
+#: port/frontend/shell/library.cpp:598 port/frontend/shell/library.cpp:613
 msgid "Artic Base, over your network"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:294
+#: port/frontend/shell/pages.cpp:304
 msgid "Cross turns a pack on or off; Right goes to its presets. Choosing a preset turns its pack on. Changes apply at the next start."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:306
+#: port/frontend/shell/pages.cpp:316
 msgid "No graphic packs for this game"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:307
+#: port/frontend/shell/pages.cpp:317
 msgid "Settings > Online gets the community's newest."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:313 port/frontend/shell/pages.cpp:730 port/frontend/shell/pages.cpp:1038
-msgid "{0} of {1}"
-msgstr ""
-
-#: port/frontend/shell/pages.cpp:340 port/frontend/shell/pages.cpp:340
+#: port/frontend/shell/pages.cpp:350 port/frontend/shell/pages.cpp:350
 msgid "Graphic pack"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:346
+#: port/frontend/shell/pages.cpp:356
 msgid "This pack has no description."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:349
+#: port/frontend/shell/pages.cpp:359
 msgid "No presets"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:349 port/frontend/shell/shell.cpp:947
+#: port/frontend/shell/pages.cpp:359 port/frontend/shell/shell.cpp:1097
 msgid "Presets"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:349
+#: port/frontend/shell/pages.cpp:359
 msgid "Presets · choosing one turns it on"
 msgstr ""
 
 #. what a held row says once it has done its work
-#: port/frontend/shell/pages.cpp:386 port/frontend/shell/settings.cpp:1013
+#: port/frontend/shell/pages.cpp:396 port/frontend/shell/settings.cpp:1464
 msgctxt "finished"
 msgid "Done"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:418
+#: port/frontend/shell/pages.cpp:428
 msgid ""
 "What the game sees in this player's hands.\n"
 "\n"
@@ -2884,1275 +3170,1695 @@ msgid ""
 "Cemu has two GamePads at most."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:422
+#: port/frontend/shell/pages.cpp:432
 msgid ""
 "The DualSense's gyroscope and accelerometer as the controller's own, for the games that aim or steer by tilting the GamePad or the Wii Remote.\n"
 "The Pro Controller and the Classic Controller have none."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:424
+#: port/frontend/shell/pages.cpp:434
 msgid ""
 "How strongly the DualSense rumbles when the game makes the controller vibrate.\n"
 "Left and Right change it by 10%."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:425
+#: port/frontend/shell/pages.cpp:435
 msgid "How far the left stick moves before the game sees it. Raise it if a character drifts when you let go of the stick; lower it for finer control."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:427
+#: port/frontend/shell/pages.cpp:437
 msgid "How far the right stick moves before the game sees it. Raise it if the camera drifts when you let go of the stick; lower it for finer control."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:429
-msgid ""
-"Which DualSense button is which of the controller's.\n"
-"A is on Circle and B on Cross by default, where the Wii U has them."
+#: port/frontend/shell/pages.cpp:439
+msgid "A on Circle and B on Cross, where the Wii U has them, or A on Cross and B on Circle, as PlayStation games confirm with Cross. X and Y swap to match. The Wii Remote has no X and Y: its buttons are under Buttons."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:430
+#: port/frontend/shell/pages.cpp:441
+msgid ""
+"What a click of the touchpad is for this player.\n"
+"Touches the screen: it touches the GamePad's screen where your finger is.\n"
+"Presses a button: it presses the Wii U button set to Touchpad click under Buttons; choosing this moves - (Select) there when nothing is.\n"
+"Automatic: a touch with the GamePad, a button with the other controllers, which have no screen.\n"
+"Either way, touchpad click + Options, L1 or R1 stay the shortcuts."
+msgstr ""
+
+#: port/frontend/shell/pages.cpp:445
+msgid ""
+"Which DualSense button presses each of the controller's buttons.\n"
+"A is on Circle and B on Cross by default, where the Wii U has them. Giving one button a DualSense input that another already uses swaps the two."
+msgstr ""
+
+#: port/frontend/shell/pages.cpp:447
 msgid "The default buttons, vibration, motion and deadzones for this controller. Held to confirm."
 msgstr ""
 
 #. {0} is the player's number, {1} an emulated controller (Wii U GamePad)
-#: port/frontend/shell/pages.cpp:433 port/frontend/shell/pages.cpp:556 port/frontend/shell/pages.cpp:719 port/frontend/shell/pages.cpp:725 port/frontend/shell/settings.cpp:404
+#: port/frontend/shell/pages.cpp:450 port/frontend/shell/pages.cpp:631 port/frontend/shell/pages.cpp:810 port/frontend/shell/pages.cpp:816 port/frontend/shell/settings.cpp:516
 msgid "Buttons"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:433 port/frontend/shell/pages.cpp:557 port/frontend/shell/settings.cpp:409
+#: port/frontend/shell/pages.cpp:451 port/frontend/shell/pages.cpp:632 port/frontend/shell/settings.cpp:521
 msgid "Reset to defaults"
 msgstr ""
 
 #. {0} is an emulated controller (Wii U GamePad)
-#: port/frontend/shell/pages.cpp:469 port/frontend/shell/pages.cpp:536 port/frontend/shell/settings.cpp:375
+#: port/frontend/shell/pages.cpp:487 port/frontend/shell/pages.cpp:590 port/frontend/shell/settings.cpp:487
 msgid "Player {0}"
 msgstr ""
 
+#: port/frontend/shell/pages.cpp:564
+msgid "Touchpad click: {0}"
+msgstr ""
+
 #. {0} is an emulated controller (Wii U GamePad)
-#: port/frontend/shell/pages.cpp:536
+#: port/frontend/shell/pages.cpp:590
 msgid "Controllers"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:537
+#: port/frontend/shell/pages.cpp:591
 msgid "{0}, on this player's DualSense"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:538
+#: port/frontend/shell/pages.cpp:592
 msgid "{0}, on a DualSense that is not connected"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:540
+#: port/frontend/shell/pages.cpp:594
 msgid "What the game sees in this player's hands."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:542
+#: port/frontend/shell/pages.cpp:596
 msgid "The DualSense's motion as the controller's."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:542
-msgid "The Pro and Classic Controllers have none."
+#: port/frontend/shell/pages.cpp:598
+msgid "The {0} has no motion sensors. For motion, choose the GamePad or a Wii Remote."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:548
+#: port/frontend/shell/pages.cpp:604
 msgid "How strongly the DualSense rumbles."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:551
+#: port/frontend/shell/pages.cpp:607
 msgid "How far the left stick moves before it counts."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:554
+#: port/frontend/shell/pages.cpp:610
 msgid "How far the right stick moves before it counts."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:556 port/frontend/shell/settings.cpp:404
+#: port/frontend/shell/pages.cpp:615
+msgid "The Wii Remote's buttons are under Buttons."
+msgstr ""
+
+#: port/frontend/shell/pages.cpp:616
+msgid "Where A is: on Circle, as on the Wii U, or on Cross."
+msgstr ""
+
+#: port/frontend/shell/pages.cpp:619
+msgid "Your own"
+msgstr ""
+
+#: port/frontend/shell/pages.cpp:627
+msgid "The click presses the button set to Touchpad click."
+msgstr ""
+
+#: port/frontend/shell/pages.cpp:627
+msgid "The click touches the GamePad's screen."
+msgstr ""
+
+#: port/frontend/shell/pages.cpp:631 port/frontend/shell/settings.cpp:516
 msgid "{0} button set"
 msgid_plural "{0} buttons set"
 msgstr[0] ""
 msgstr[1] ""
 
-#: port/frontend/shell/pages.cpp:556 port/frontend/shell/settings.cpp:404
-msgid "Which DualSense button is which."
+#: port/frontend/shell/pages.cpp:631 port/frontend/shell/settings.cpp:516
+msgid "Which DualSense button presses each button."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:557 port/frontend/shell/pages.cpp:1313 port/frontend/shell/pages.cpp:1317 port/frontend/shell/settings.cpp:409 port/frontend/shell/settings.cpp:549 port/frontend/shell/settings.cpp:552 port/frontend/shell/settings.cpp:581
+#: port/frontend/shell/pages.cpp:632 port/frontend/shell/pages.cpp:1469 port/frontend/shell/pages.cpp:1473 port/frontend/shell/settings.cpp:521 port/frontend/shell/settings.cpp:659 port/frontend/shell/settings.cpp:711 port/frontend/shell/settings.cpp:745 port/frontend/shell/settings.cpp:820 port/frontend/shell/settings.cpp:823 port/frontend/shell/settings.cpp:852
 msgid "Hold Cross"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:558
+#: port/frontend/shell/pages.cpp:633
 msgid "The default buttons, vibration, motion and deadzones."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:585
+#: port/frontend/shell/pages.cpp:664
 msgid "Connected"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:585
+#: port/frontend/shell/pages.cpp:664
 msgid "No DualSense"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:655
+#: port/frontend/shell/pages.cpp:734
 msgid "Cleared: no DualSense button is this one now."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:692
+#: port/frontend/shell/pages.cpp:774
 msgid "No button was pressed, so it stays as it was."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:699
+#: port/frontend/shell/pages.cpp:781
 msgid "Cancelled: it stays as it was."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:708
+#: port/frontend/shell/pages.cpp:790
 msgid "Done."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:720
-msgid "The DualSense's buttons for the {0}'s"
+#: port/frontend/shell/pages.cpp:797
+msgid "Done. The touchpad's click is now a button for this player, not a touch of the GamePad's screen: their Touchpad click setting changes it back."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:726
+#: port/frontend/shell/pages.cpp:811
+msgid "Which DualSense button presses each {0} button"
+msgstr ""
+
+#: port/frontend/shell/pages.cpp:817
 msgid "Player {0}: the DualSense's buttons for the {1}"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:737 port/frontend/shell/pages.cpp:755
+#: port/frontend/shell/pages.cpp:828 port/frontend/shell/pages.cpp:846
 msgid "Not set"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:748
+#: port/frontend/shell/pages.cpp:839
 msgid "This button"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:755
+#: port/frontend/shell/pages.cpp:846
 msgid "Press a button"
 msgstr ""
 
 #. {0} is a button of the Wii U's or the 3DS's controller
-#: port/frontend/shell/pages.cpp:762
+#: port/frontend/shell/pages.cpp:853
 msgid "Press the DualSense button, trigger or stick direction for {0} now."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:763
+#: port/frontend/shell/pages.cpp:855
+msgid "{0} second left; then it stays as it was. The touchpad's click counts too."
+msgid_plural "{0} seconds left; then it stays as it was. The touchpad's click counts too."
+msgstr[0] ""
+msgstr[1] ""
+
+#: port/frontend/shell/pages.cpp:857
 msgid "{0} second left. A touchpad click cancels."
 msgid_plural "{0} seconds left. A touchpad click cancels."
 msgstr[0] ""
 msgstr[1] ""
 
-#: port/frontend/shell/pages.cpp:767
+#: port/frontend/shell/pages.cpp:861
 msgid ""
-"Cross, then a DualSense button, trigger or stick direction: it becomes this one.\n"
+"Cross, then a DualSense button, trigger or stick direction: it becomes this one. If another button already had it, the two swap.\n"
 "Square clears it."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:850
+#: port/frontend/shell/pages.cpp:962
 msgid "Cancelling: what it copied is removed…"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:855
+#: port/frontend/shell/pages.cpp:967
 msgid "Cancelling: what was installed before is put back…"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:898
+#: port/frontend/shell/pages.cpp:994
+msgid "This drive cannot be opened."
+msgstr ""
+
+#: port/frontend/shell/pages.cpp:1031
 msgid "This folder cannot be opened."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:943
+#: port/frontend/shell/pages.cpp:1076
 msgid "The folder could not be saved. Please try again."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:944
+#: port/frontend/shell/pages.cpp:1077
 msgid "Saved. PS5CEMU-HAR is looking for games there."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:945
+#: port/frontend/shell/pages.cpp:1078
 msgid "Saved. That side looks for games there when it opens."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:948
+#: port/frontend/shell/pages.cpp:1081
 msgid "Looking for games in {0}"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:953
+#: port/frontend/shell/pages.cpp:1086
 msgid "Choose a CIA file first."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:966
+#: port/frontend/shell/pages.cpp:1099
 msgid "Cemu did not start, so nothing can be installed."
 msgstr ""
 
 #. {0} is a percentage, {1} and {2} sizes (2.4 GB)
-#: port/frontend/shell/pages.cpp:986
+#: port/frontend/shell/pages.cpp:1119
 msgid ""
 "Installing: {0}, {1} of {2}.\n"
 "\n"
 "Circle cancels."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:988
+#: port/frontend/shell/pages.cpp:1121
 msgid "Installing: counting the files…"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:997
+#: port/frontend/shell/pages.cpp:1130
 msgid "Installed. The library has it with its game."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1008
-msgid "Installed"
-msgstr ""
-
-#: port/frontend/shell/pages.cpp:1011
+#: port/frontend/shell/pages.cpp:1144
 msgid "Cancelled. What it copied was removed, with any earlier copy of the same title: install it again to play it. Its saves are kept."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1014
+#: port/frontend/shell/pages.cpp:1147
 msgid "Cancelled. What was installed before is as it was."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1024 port/frontend/shell/shell.cpp:957
-msgid "Install"
-msgstr ""
-
-#: port/frontend/shell/pages.cpp:1025 port/frontend/shell/settings.cpp:479 port/frontend/shell/setup.cpp:179
+#: port/frontend/shell/pages.cpp:1158 port/frontend/shell/settings.cpp:592 port/frontend/shell/setup.cpp:181
 msgid "3DS games"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1026 port/frontend/shell/settings.cpp:479 port/frontend/shell/setup.cpp:179
+#: port/frontend/shell/pages.cpp:1159 port/frontend/shell/settings.cpp:592 port/frontend/shell/setup.cpp:181
 msgid "DS games"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1027 port/frontend/shell/settings.cpp:479 port/frontend/shell/setup.cpp:179
+#: port/frontend/shell/pages.cpp:1160 port/frontend/shell/settings.cpp:592 port/frontend/shell/setup.cpp:181
 msgid "Wii U games"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1028
+#: port/frontend/shell/pages.cpp:1161
 msgid "Install CIA files"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1028 port/frontend/shell/settings.cpp:495
+#: port/frontend/shell/pages.cpp:1161
 msgid "Install updates and DLC"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1029
+#: port/frontend/shell/pages.cpp:1162
 msgid "Choose a CIA file: a game, an update or DLC"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1030
+#: port/frontend/shell/pages.cpp:1163
 msgid "Choose a folder with an update, DLC or game (code, content and meta)"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1031
+#: port/frontend/shell/pages.cpp:1164
 msgid "Choose the folder that holds your 3DS games"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1032
+#: port/frontend/shell/pages.cpp:1165
 msgid "Choose the folder that holds your DS games"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1033
+#: port/frontend/shell/pages.cpp:1166
 msgid "Choose the folder that holds your Wii U games"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1040
+#: port/frontend/shell/pages.cpp:1179
+msgid "PS5"
+msgstr ""
+
+#: port/frontend/shell/pages.cpp:1196
 msgid "This folder is empty."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1048
+#: port/frontend/shell/pages.cpp:1204
 msgid "Parent folder"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1050
+#: port/frontend/shell/pages.cpp:1206
 msgid "Drive"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1073 port/frontend/shell/pages.cpp:1123
+#: port/frontend/shell/pages.cpp:1229 port/frontend/shell/pages.cpp:1279
 msgctxt "kind"
 msgid "Type"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1073
+#: port/frontend/shell/pages.cpp:1229
 msgid "A folder"
 msgstr ""
 
-#. a title's version to install ({0}), and the one installed now ({1})
-#: port/frontend/shell/pages.cpp:1075 port/frontend/shell/pages.cpp:1126
-msgid "Version"
-msgstr ""
-
-#: port/frontend/shell/pages.cpp:1078
+#: port/frontend/shell/pages.cpp:1234
 msgid "Triangle installs it into the 3DS's storage: an update or DLC goes with its game, and a game joins the library."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1079
+#: port/frontend/shell/pages.cpp:1235
 msgid "Choose a CIA file to install: a game, an update or DLC."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1091
+#: port/frontend/shell/pages.cpp:1247
 msgid "Games here"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1091
+#: port/frontend/shell/pages.cpp:1247
 msgid "Cannot be read"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1091
+#. how many games the Library has
+#: port/frontend/shell/pages.cpp:1247 port/frontend/shell/recent.cpp:336
 msgid "{0} game"
 msgid_plural "{0} games"
 msgstr[0] ""
 msgstr[1] ""
 
-#: port/frontend/shell/pages.cpp:1095
+#: port/frontend/shell/pages.cpp:1251
 msgid "Found"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1095
+#: port/frontend/shell/pages.cpp:1251
 msgid "Missing (only encrypted dumps need it)"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1101 port/frontend/shell/settings.cpp:470
+#: port/frontend/shell/pages.cpp:1257 port/frontend/shell/settings.cpp:583
 msgid "Your DS's BIOS"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1101
+#: port/frontend/shell/pages.cpp:1257
 msgid "Found in melonds/bios"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1101
-msgid "Not there (melonDS's own run most games)"
+#: port/frontend/shell/pages.cpp:1257
+msgid "Not there (melonDS's built-in BIOS runs most games)"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1107
+#: port/frontend/shell/pages.cpp:1263
 msgid "Found in /data/ps5cemu"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1107
+#: port/frontend/shell/pages.cpp:1263
 msgid "Missing (only .wud/.wux need it)"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1110 port/frontend/shell/shell.cpp:1396 port/frontend/shell/shell.cpp:1423
+#: port/frontend/shell/pages.cpp:1266 port/frontend/shell/shell.cpp:1662 port/frontend/shell/shell.cpp:1689
 msgid "In use"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1114
+#: port/frontend/shell/pages.cpp:1270
 msgid "Games can be .3ds or .cci, .cxi, .cia or .3dsx, decrypted, here or in the folders in it. Triangle uses the folder shown."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1115
+#: port/frontend/shell/pages.cpp:1271
 msgid "Games are .nds files, here or in the folders in it. Triangle uses the folder shown."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1116
+#: port/frontend/shell/pages.cpp:1272
 msgid "Games can be .wua, .wud, .wux, or folders with code, content and meta. Triangle uses the folder shown."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1123
+#: port/frontend/shell/pages.cpp:1279
 msgid "Nothing to install"
 msgstr ""
 
-#. a title's version to install ({0}), and the one installed now ({1})
-#: port/frontend/shell/pages.cpp:1126
-msgid "v{0}, not installed yet"
-msgstr ""
-
-#: port/frontend/shell/pages.cpp:1127
-msgid "v{0}, v{1} installed now"
-msgstr ""
-
-#: port/frontend/shell/pages.cpp:1131
+#: port/frontend/shell/pages.cpp:1287
 msgid "Triangle installs it into the Wii U's storage (mlc01). Updates and DLC in the game files folder work as they are, too."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1140
-msgid "To install"
-msgstr ""
-
-#: port/frontend/shell/pages.cpp:1140
+#: port/frontend/shell/pages.cpp:1296
 msgid "This folder"
 msgstr ""
 
 #. {0} is a 3DS's network address
-#: port/frontend/shell/pages.cpp:1196
+#: port/frontend/shell/pages.cpp:1352
 msgid "Connecting to {0}"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1207
+#: port/frontend/shell/pages.cpp:1363
 msgid "Artic Setup Tool"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1279 port/frontend/shell/pages.cpp:1290 port/frontend/shell/settings.cpp:123 port/frontend/shell/settings.cpp:505 port/frontend/shell/setup.cpp:242
+#: port/frontend/shell/pages.cpp:1435 port/frontend/shell/pages.cpp:1446 port/frontend/shell/settings.cpp:200 port/frontend/shell/settings.cpp:724 port/frontend/shell/setup.cpp:246
 msgid "Artic Base"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1290
+#: port/frontend/shell/pages.cpp:1446
 msgid "Play a game from your 3DS over your network, or set Azahar up from it"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1306
+#: port/frontend/shell/pages.cpp:1462
 msgid "3DS address"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1307
+#: port/frontend/shell/pages.cpp:1463
 msgid ""
 "The address Artic Base shows on the 3DS's screen when it is ready.\n"
 "Cross edits it: Left and Right choose a number, Up and Down change it by 1, L1 and R1 by 10, and Cross again keeps it.\n"
 "The 3DS and the PS5 must be on the same network."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1309
+#: port/frontend/shell/pages.cpp:1465
 msgid "Connect and play"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1310
+#: port/frontend/shell/pages.cpp:1466
 msgid ""
 "On the 3DS, start the Artic Base app (homebrew, from Azahar's team) and choose a game in it: the cartridge or an installed one. Then connect from here: the game plays on the PS5 from the 3DS, and its saves stay on the 3DS.\n"
 "It is only as smooth as the network: a strong Wi-Fi signal for the 3DS and a wired PS5 help."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1313
+#: port/frontend/shell/pages.cpp:1469
 msgid "Set up from an Old 3DS"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1314
+#: port/frontend/shell/pages.cpp:1470
 msgid ""
 "With the Artic Setup Tool app running on an Old 3DS or 2DS: copies its system files and its own data (system settings, friend code, Mii and eShop data) into Azahar, so games that need the 3DS's system applets or files start, and the Home Menu can (Settings > System).\n"
 "That data is your console's: do not share Azahar's folder afterwards."
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1317
+#: port/frontend/shell/pages.cpp:1473
 msgid "Set up from a New 3DS"
 msgstr ""
 
-#: port/frontend/shell/pages.cpp:1317
+#: port/frontend/shell/pages.cpp:1473
 msgid "As above, from a New 3DS or New 2DS running the Artic Setup Tool app."
 msgstr ""
 
-#. the languages the emulated 3DS can be set to
-#: port/frontend/shell/settings.cpp:41 port/frontend/shell/settings.cpp:44
-msgid "Automatic"
+#. when the games in Recently played were last played: the labels over the row
+#: port/frontend/shell/recent.cpp:290
+msgid "Today"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:41
+#. when the games in Recently played were last played: the labels over the row
+#: port/frontend/shell/recent.cpp:290
+msgid "This week"
+msgstr ""
+
+#. when the games in Recently played were last played: the labels over the row
+#: port/frontend/shell/recent.cpp:290
+msgid "Earlier"
+msgstr ""
+
+#: port/frontend/shell/recent.cpp:329
+msgid "{0} DLC"
+msgid_plural "{0} DLC"
+msgstr[0] ""
+msgstr[1] ""
+
+#: port/frontend/shell/recent.cpp:358 port/frontend/shell/shell.cpp:1073
+msgid "Display"
+msgstr ""
+
+#: port/frontend/shell/recent.cpp:377
+msgid "Nothing matches “{0}”. Circle clears the search."
+msgstr ""
+
+#: port/frontend/shell/recent.cpp:379
+msgid "No games yet. Settings > Game files says where they go."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:43
 msgid "Japan"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:41
+#: port/frontend/shell/settings.cpp:43
 msgid "USA"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:41
+#: port/frontend/shell/settings.cpp:43
 msgid "Europe"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:41
+#: port/frontend/shell/settings.cpp:43
 msgid "Australia"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:42
+#: port/frontend/shell/settings.cpp:44
 msgid "China"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:42
+#: port/frontend/shell/settings.cpp:44
 msgid "Korea"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:42
+#: port/frontend/shell/settings.cpp:44
 msgid "Taiwan"
 msgstr ""
 
 #. the languages the emulated 3DS can be set to
-#: port/frontend/shell/settings.cpp:44
+#: port/frontend/shell/settings.cpp:46
 msgid "Japanese"
 msgstr ""
 
 #. the languages the emulated 3DS can be set to
-#: port/frontend/shell/settings.cpp:44
+#: port/frontend/shell/settings.cpp:46
 msgid "English"
 msgstr ""
 
 #. the languages the emulated 3DS can be set to
-#: port/frontend/shell/settings.cpp:44
+#: port/frontend/shell/settings.cpp:46
 msgid "French"
 msgstr ""
 
 #. the languages the emulated 3DS can be set to
-#: port/frontend/shell/settings.cpp:44
+#: port/frontend/shell/settings.cpp:46
 msgid "German"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:45
+#: port/frontend/shell/settings.cpp:47
 msgid "Italian"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:45
+#: port/frontend/shell/settings.cpp:47
 msgid "Spanish"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:45
+#: port/frontend/shell/settings.cpp:47
 msgid "Chinese (simplified)"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:45
+#: port/frontend/shell/settings.cpp:47
 msgid "Korean"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:45
+#: port/frontend/shell/settings.cpp:47
 msgid "Dutch"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:45
+#: port/frontend/shell/settings.cpp:47
 msgid "Portuguese"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:46
+#: port/frontend/shell/settings.cpp:48
 msgid "Russian"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:46
+#: port/frontend/shell/settings.cpp:48
 msgid "Chinese (traditional)"
 msgstr ""
 
 #. how a game's picture is scaled: the methods' names
-#: port/frontend/shell/settings.cpp:54
+#: port/frontend/shell/settings.cpp:67
 msgid "Linear"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:56
+#: port/frontend/shell/settings.cpp:68
 msgid "Setup theme"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:105 port/frontend/shell/settings.cpp:276 port/frontend/shell/settings.cpp:448 port/frontend/shell/settings.cpp:465 port/frontend/shell/settings.cpp:641 port/frontend/shell/setup.cpp:477
-msgid "Language"
+#. Launcher music's choice that plays every file of the player's, in a random order
+#: port/frontend/shell/settings.cpp:97
+msgid "Shuffle your music"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:105
-msgid "The language of the menus: the PS5's own, unless you choose another."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:106
-msgid "For every Wii U game."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:106
-msgid "For every 3DS game."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:106
-msgid "For every DS game."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:110
-msgid "Audio"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:110
-msgid "The games' sound, and the launcher's."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:111
-msgid "What each player's DualSense is to the Wii U."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:111
-msgid "The DualSense as the 3DS."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:111
-msgid "The DualSense as the DS."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:113
-msgid "For every side. From dolphin78's idea and prototype."
-msgstr ""
-
+#. the turbo button's first choice: no button is one
 #: port/frontend/shell/settings.cpp:115
-msgid "Cemu's emulated portals."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:117
-msgid "System"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:117
-msgid "The emulated 3DS's region, language and speed."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:117
-msgid "The emulated DS's language and BIOS."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:118
-msgid "Game files"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:118
-msgid "Where your Wii U games are, and installs into the Wii U's storage."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:119
-msgid "Where your 3DS games are, and installs into the 3DS's storage."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:120
-msgid "Where your DS games are, and where their saves go."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:123
-msgid "Play from your 3DS, over your network."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:124
-msgid "Online"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:124
-msgid "Box art, graphic packs and PS5CEMU-HAR itself."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:124
-msgid "Box art and PS5CEMU-HAR itself."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:125
-msgid "Launcher"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:125
-msgid "How it looks, and how it reads."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:126
-msgid "The Setup check, logs, caches and what this session is."
+msgctxt "turbo"
+msgid "None"
 msgstr ""
 
 #: port/frontend/shell/settings.cpp:127
+msgid "Link Jack"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:127
+msgid "Classic (3.0)"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:127
+msgid "Midnight"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:127
+msgid "Phantom"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:127
+msgid "Terminal"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:128
+msgid "Frosted glass over each side's colours: the default look."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:128
+msgid "3.0.0's launcher: deep blue panels, flatter, a little squarer."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:129
+msgid "True black behind everything and nothing moving: for OLED screens."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:130
+msgid "Black, white and one loud colour per side, sharp corners, bands slashing across."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:131
+msgid "A hacker's console: phosphor on near-black, square corners, a grid with a scan line."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:131
+msgid "Meyer Oscar"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:132
+msgid "Meyer Oscar Light"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:132
+msgid "Your recently played games first, then your whole library."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:133
+msgid "Meyer Oscar with a light background."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:178 port/frontend/shell/settings.cpp:356 port/frontend/shell/settings.cpp:561 port/frontend/shell/settings.cpp:578 port/frontend/shell/settings.cpp:920 port/frontend/shell/setup.cpp:483
+msgid "Language"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:178
+msgid "The language of the menus: the PS5's own, unless you choose another."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:179
+msgid "For every Wii U game."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:179
+msgid "For every 3DS game."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:179
+msgid "For every DS game."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:183
+msgid "Audio"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:183
+msgid "The games' sound, and the launcher's."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:184
+msgid "What each player's DualSense is to the Wii U."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:184
+msgid "The DualSense as the 3DS."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:184
+msgid "The DualSense as the DS."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:186
+msgid "For every side. From dolphin78's idea and prototype."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:188
+msgid "Cemu's emulated portals."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:190
+msgid "System"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:190
+msgid "The emulated 3DS's region, language and speed."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:190
+msgid "The emulated DS's language and BIOS."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:191
+msgid "Where your Wii U games are, and installs into the Wii U's storage."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:192
+msgid "Where your 3DS games are, and installs into the 3DS's storage."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:193
+msgid "Where your DS games are, and where their saves go."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:196
+msgid "Accounts and saves"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:196
+msgid "Saves"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:197
+msgid "Each account has its own saves for every game. Backups hold every side's saves."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:197
+msgid "Backups hold every side's saves."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:200
+msgid "Play from your 3DS, over your network."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:201
+msgid "Online"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:201
+msgid "Box art, graphic packs and PS5CEMU-HAR's updates."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:201
+msgid "Box art and PS5CEMU-HAR's updates."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:202
+msgid "Launcher"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:202
+msgid "Theme, sides, language and text."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:203
+msgid "The Setup check, logs, caches and this session's details."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:205
 msgctxt "app"
 msgid "About"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:127
+#: port/frontend/shell/settings.cpp:205
 msgid "Who made what."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:135
-msgid "For {0} only. Its other settings are its side's."
+#: port/frontend/shell/settings.cpp:214
+msgid "For {0} only. Its other settings follow its side's."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:160 port/frontend/shell/settings.cpp:179
+#: port/frontend/shell/settings.cpp:239 port/frontend/shell/settings.cpp:258
 msgid "Checking GitHub…"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:162 port/frontend/shell/settings.cpp:184
+#: port/frontend/shell/settings.cpp:241 port/frontend/shell/settings.cpp:263
 msgid "Downloading: {0}"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:163
+#: port/frontend/shell/settings.cpp:242
 msgid "Downloading: {0} MB"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:164 port/frontend/shell/settings.cpp:186
+#: port/frontend/shell/settings.cpp:243 port/frontend/shell/settings.cpp:265
 msgid "Installing…"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:165 port/frontend/shell/settings.cpp:180
+#: port/frontend/shell/settings.cpp:244 port/frontend/shell/settings.cpp:259
 msgid "Up to date: {0}"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:166
+#: port/frontend/shell/settings.cpp:245
 msgid "Installed: {0}"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:170
+#: port/frontend/shell/settings.cpp:249
 msgid "Cross to download"
 msgstr ""
 
 #. {0} is a version, as in 3.5.0
-#: port/frontend/shell/settings.cpp:182
+#: port/frontend/shell/settings.cpp:261
 msgid "{0}: Cross to install"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:184 port/frontend/shell/shell.cpp:1535
+#: port/frontend/shell/settings.cpp:263 port/frontend/shell/shell.cpp:1803
 msgid "Downloading…"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:185
+#: port/frontend/shell/settings.cpp:264
 msgid "Checking the download…"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:187
+#: port/frontend/shell/settings.cpp:266
 msgid "Installed: Cross to restart"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:191
+#: port/frontend/shell/settings.cpp:270
 msgid "Cross to check"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:266
-msgid "Cemu did not start, so this cannot be changed."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:276
-msgid "The menus' language. Game names and descriptions stay as they are."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:277
-msgid "PS5CEMU-HAR speaks the PS5's own language unless you choose another here; the first start's Setup check has the same choice. Game names, their descriptions and graphic packs come from GameTDB, the games and the packs' authors, and stay as they wrote them."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:283
-msgid "How the picture is scaled to the TV."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:284
-msgid "Bicubic is sharp, Bicubic Hermite a little softer, Linear softer still; Nearest neighbour keeps pixels square."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:286
-msgid "120 Hz output"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:286
-msgid "For displays that take 120 Hz."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:287
-msgid "The 119.88 Hz mode, on displays that support it. Games still run at their own speed, and a frame that misses a refresh waits 8 ms for the next instead of 17."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:293
-msgid "Holds a game to an even frame rate."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:294
-msgid "Each frame stays on screen for at least two or three refreshes, so a game that cannot hold the display's rate runs at an even one: 60 or 40 fps with 120 Hz output, 30 or 20 without. 60 fps with 120 Hz output suits a game at 4K that sometimes drops under 60; 30 fps at 60 Hz suits one at 8K. Also in the in-game menu."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:299
-msgid "Frame rate, CPU and memory in a corner."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:300
-msgid "Frames per second, CPU and memory use in the top left corner, as Cemu shows them. Also in the in-game menu."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:302
-msgid "No stutter while new shaders build."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:303
-msgid "On, a new shader is built while the game carries on, so it does not stutter, but some things may be missing for a moment. Off, the game waits for each one: stutter, but nothing drawn wrong."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:309
-msgid "Higher is sharper and asks more of the GPU."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:310
-msgid "How large the 3DS's 3D scenes are drawn before they are scaled to the TV. Higher is sharper and asks more of the GPU, and each time a game reads a picture back the wait grows with it."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:314
-msgid "Smooths textures as they are scaled up."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:315
-msgid "Smooths the game's textures as they are scaled up; None keeps them as the 3DS draws them. A filter redraws every texture at the internal resolution: at high resolutions it is the costliest setting. If a game stutters, try None first."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:318
-msgid "Custom textures"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:318
-msgid "Texture packs from azahar/load/textures."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:319
-msgid "Texture packs in /data/ps5cemu/azahar/load/textures/<title ID>, as the desktop Azahar loads them."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:324
-msgid "How the DS's screens are scaled."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:325
-msgid "How the DS's 256 x 192 screens are scaled to the TV. Sharp keeps every pixel square and even at any size; Smooth blurs them together; Square pixels takes the nearest, uneven where the size is not a whole number. The in-game menu changes it too."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:331
-msgid "Recompiler"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:332
-msgid "No executable memory: the interpreter runs."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:333
-msgid "Runs the DS's two CPUs on melonDS's recompiler, in the executable memory the PS5 gives (Diagnostics says whether it does), much faster than its interpreter. Off: the interpreter, slower, for a game the recompiler gets wrong. Applies to the next game."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:340
-msgid "Screen layout"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:340
-msgid "How the two screens share the TV."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:341
-msgid "One above the other, the top one alone, the top one large with the bottom one beside it, or the two side by side. In a game, touchpad click + R1 goes to the next."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:344
-msgid "Artwork around the screens."
+#: port/frontend/shell/settings.cpp:345
+msgid "Cemu is still starting. One moment."
 msgstr ""
 
 #: port/frontend/shell/settings.cpp:345
-msgid "Artwork around the screens, never over them. It follows every layout, and the in-game menu changes it too."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:351
-msgid "Wii U games' volume"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:351
-msgid "DS games' volume"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:352
-msgid "The games' sound."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:352
-msgid "The games' sound on this side. Left and Right change it by 10%."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:355
-msgid "GamePad speaker"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:355
-msgid "The Wii U GamePad's own sound, on the DualSense."
+msgid "Cemu did not start, so this cannot be changed."
 msgstr ""
 
 #: port/frontend/shell/settings.cpp:356
-msgid "The sounds games play on the Wii U GamePad's speaker, from player 1's DualSense speaker. Many games send their whole sound there too, so it is off unless you want it. Applies to the next game."
+msgid "The menus' language. Game names and descriptions stay as they are."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:359
-msgid "Launcher music"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:359
-msgid "The music under the menus."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:360
-msgid "The launcher's own music, in the spirit of a console's setup screen, or none. Every side has the same."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:361
-msgid "Music volume"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:361
-msgid "How loud the menus' music is."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:362
-msgid "How loud the launcher's music is. Left and Right change it by 10%."
+#: port/frontend/shell/settings.cpp:357
+msgid "PS5CEMU-HAR speaks the PS5's own language unless you choose another here; the first start's Setup check has the same choice. Game names, their descriptions and graphic packs come from GameTDB, the games and the packs' authors, and stay as they wrote them."
 msgstr ""
 
 #: port/frontend/shell/settings.cpp:363
-msgid "Menu sounds"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:363
-msgid "The sounds of moving and choosing."
+msgid "How the picture is scaled to the TV."
 msgstr ""
 
 #: port/frontend/shell/settings.cpp:364
-msgid "The launcher's sounds as you move, choose and go back."
+msgid "Bicubic is sharp, Bicubic Hermite a little softer, Linear softer still; Nearest neighbour keeps pixels square. AMD FSR 1 keeps edges clean for a game drawn below 4K, for a little more work by the GPU than Bicubic."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:367
+msgid "120 Hz output"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:367
+msgid "For displays that take 120 Hz."
 msgstr ""
 
 #: port/frontend/shell/settings.cpp:368
-msgid "The DualSense's rumble, in games and in the launcher."
+msgid "The 119.88 Hz mode, on displays that support it. Games still run at their own speed, and a frame that misses a refresh waits 8 ms for the next instead of 17."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:369
-msgid "Off, the DualSense never rumbles: not for a game's vibration, nor for the launcher's. Every side has the same."
+#: port/frontend/shell/settings.cpp:374
+msgid "Holds a game to an even frame rate."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:376
-msgid "Cross: this player's controller, motion and buttons."
+#: port/frontend/shell/settings.cpp:375
+msgid "Each frame stays on screen for at least two or three refreshes, so a game that cannot hold the display's rate runs at an even one: 60 or 40 fps with 120 Hz output, 30 or 20 without. 60 fps with 120 Hz output suits a game at 4K that sometimes drops under 60; 30 fps at 60 Hz suits one at 8K. Also in the in-game menu."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:376
-msgid "No DualSense for this player yet."
+#: port/frontend/shell/settings.cpp:380
+msgid "Frame rate, CPU and memory in a corner."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:377
-msgid "What the game sees in this player's hands, and its motion, vibration, deadzones and buttons. Player 1 is the signed-in user who started the app; the other signed-in users' DualSenses are players 2 to 4."
+#: port/frontend/shell/settings.cpp:381
+msgid "Frames per second, CPU and memory use in the top left corner, as Cemu shows them. Also in the in-game menu."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:383
+msgid "Cemu's \"compiled shaders\" notes over a game."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:384
+msgid "The notes Cemu shows in a corner while a game builds its shaders and pipelines (\"Loaded 1200 shaders\"). Off hides them; the shaders are built either way. Also in the in-game menu."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:386
+msgid "No stutter while new shaders build."
 msgstr ""
 
 #: port/frontend/shell/settings.cpp:387
-msgid "The DualSense's motion as the 3DS's."
+msgid "On, a new shader is built while the game carries on, so it does not stutter, but some things may be missing for a moment. Off, the game waits for each one: stutter, but nothing drawn wrong."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:388
-msgid "The DualSense's gyroscope and accelerometer as the 3DS's own, for the games that aim or steer by tilting it."
+#: port/frontend/shell/settings.cpp:393
+msgid "Higher is sharper and asks more of the GPU."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:389
-msgid "How far a stick moves before it counts."
+#: port/frontend/shell/settings.cpp:394
+msgid "How large the 3DS's 3D scenes are drawn before they are scaled to the TV. Higher is sharper and asks more of the GPU, and each time a game reads a picture back the wait grows with it."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:390
-msgid "How far a stick moves before the game sees it, for the circle pad and the C-stick. Raise it if something drifts when you let go of the stick; lower it for finer control."
+#: port/frontend/shell/settings.cpp:398
+msgid "Smooths textures as they are scaled up."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:392
-msgid "How far the left stick moves before it presses the DS's D-pad. Raise it if a direction is pressed when you let go of the stick."
+#: port/frontend/shell/settings.cpp:399
+msgid "Smooths the game's textures as they are scaled up; None keeps them as the 3DS draws them. A filter redraws every texture at the internal resolution: at high resolutions it is the costliest setting. If a game stutters, try None first."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:402
+msgid "Custom textures"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:402
+msgid "Texture packs from azahar/load/textures."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:403
+msgid "Texture packs in /data/ps5cemu/azahar/load/textures/<title ID>, as the desktop Azahar loads them."
 msgstr ""
 
 #: port/frontend/shell/settings.cpp:405
-msgid "Which DualSense button is which of the 3DS's. A is on Circle and B on Cross by default, where the 3DS has them; the circle pad is the left stick, the C-stick the right one, and the touchpad the touch screen."
+msgid "Outline fix"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:407
-msgid "Which DualSense button is which of the DS's. A is on Circle and B on Cross by default, where the DS has them; the left stick is a second D-pad, the touchpad the touch screen, and R3 held blows into the microphone."
+#: port/frontend/shell/settings.cpp:405
+msgid "Fixes moving black dots on outlined 3D models."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:410
+#: port/frontend/shell/settings.cpp:406
+msgid "Computes every 3D position the same way twice, as Azahar does on Apple's GPUs, so the outlines games such as Pokémon X and Y draw around their models stop showing moving black dots (#23). On by default for Pokémon X, Y, Omega Ruby and Alpha Sapphire; for other games, turn it on in their game settings if they show the same. Applies to the next game."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:413
+msgid "How the DS's screens are scaled."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:414
+msgid "How the DS's 256 x 192 screens are scaled to the TV. Sharp keeps every pixel square and even at any size; Smooth blurs them together; Square pixels takes the nearest, uneven where the size is not a whole number. The in-game menu changes it too."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:420
+msgid "Recompiler"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:421
+msgid "No executable memory: the slower interpreter runs."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:422
+msgid "Runs the DS's two CPUs on melonDS's recompiler, in the executable memory the PS5 gives (Diagnostics says whether it does), much faster than its interpreter. Off: the interpreter, slower, for a game the recompiler gets wrong. Applies to the next game."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:429
+msgid "Screen layout"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:429
+msgid "How the two screens share the TV."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:430
+msgid "One above the other, the top one alone, the top one large with the bottom one beside it, or the two side by side. In a game, touchpad click + R1 goes to the next."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:433
+msgid "Artwork around the screens."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:434
+msgid "Artwork around the screens, never over them. It follows every layout, and the in-game menu changes it too."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:440
+msgid "Wii U games' volume"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:440
+msgid "DS games' volume"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:441
+msgid "The games' sound."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:441
+msgid "The games' sound on this side. Left and Right change it by 10%."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:444
+msgid "GamePad speaker"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:444
+msgid "The Wii U GamePad's own sound, on the DualSense."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:445
+msgid "The sounds games play on the Wii U GamePad's speaker, from player 1's DualSense speaker. Many games send their whole sound there too, so it is off unless you want it. Applies to the next game."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:452
+msgid "Launcher music"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:452
+msgid "Music that plays in the menus."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:453
+msgid "The launcher's own music, one of yours, or none. To use your own, put MP3 or WAV files in {0}; they appear here. Every side plays the same."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:456
+msgid "Music volume"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:456
+msgid "How loud the menus' music is."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:457
+msgid "How loud the launcher's music is. Left and Right change it by 10%."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:458
+msgid "Menu sounds"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:458
+msgid "The sounds of moving and choosing."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:459
+msgid "The launcher's sounds as you move, choose and go back."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:463
+msgid "The DualSense's rumble, in games and in the launcher."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:464
+msgid "Off, the DualSense never rumbles, in games or in the launcher. The same on every side."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:468
+msgid "Turbo button"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:468
+msgid "Hold it and it presses again and again by itself."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:469
+msgid "Choose a DualSense button: while you hold it in a game, it presses and lets go by itself about fifteen times a second, for games that make you mash. The button keeps whatever it is mapped to. None turns it off. Every player on this side has it."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:477
+msgid "Where A is: on Circle, as on the console, or on Cross."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:478
+msgid "A on Circle and B on Cross, where the console has them, or A on Cross and B on Circle, as PlayStation games confirm. X and Y swap to match. Also in the in-game menu."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:488
+msgid "Cross: this player's controller, motion and buttons."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:488
+msgid "No DualSense for this player yet."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:489
+msgid "What the game sees in this player's hands, and its motion, vibration, deadzones and buttons. Player 1 is the signed-in user who started the app; the other signed-in users' DualSenses are players 2 to 4."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:499
+msgid "The DualSense's motion as the 3DS's."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:500
+msgid "The DualSense's gyroscope and accelerometer as the 3DS's own, for the games that aim or steer by tilting it."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:501
+msgid "How far a stick moves before it counts."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:502
+msgid "How far a stick moves before the game sees it, for the circle pad and the C-stick. Raise it if something drifts when you let go of the stick; lower it for finer control."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:504
+msgid "How far the left stick moves before it presses the DS's D-pad. Raise it if a direction is pressed when you let go of the stick."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:517
+msgid "Which DualSense button presses each of the 3DS's buttons. A is on Circle and B on Cross by default, where the 3DS has them; the circle pad is the left stick, the C-stick the right one, and the touchpad the touch screen."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:519
+msgid "Which DualSense button presses each of the DS's buttons. A is on Circle and B on Cross by default, where the DS has them; the left stick is a second D-pad, the touchpad the touch screen, and holding R3 blows into the microphone."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:522
 msgid "Default buttons, motion and deadzone."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:410
+#: port/frontend/shell/settings.cpp:522
 msgid "Default buttons and deadzone."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:410
+#: port/frontend/shell/settings.cpp:522
 msgid "The default buttons, motion and deadzone."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:416
+#: port/frontend/shell/settings.cpp:528
 msgid "{0} in a phone's or tablet's browser, with touch."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:417
+#: port/frontend/shell/settings.cpp:529
 msgid ""
 "{0} in any browser on the PS5's network, a phone's, a tablet's or a computer's, with nothing to install, and its touches sent back to the game. Scan the code shown here, or open the address. The DualSense stays the buttons, and the sound stays on the PS5.\n"
 "While a browser shows it, the PS5 copies that screen up to 30 times a second, so a game can run a little slower; with no browser, it costs nothing. Any device on your network can open the page, so turn it off on a network you share.\n"
 "One switch for every side (the GamePad's screen is player 1's), also in a game's menu (touchpad click + Options). From dolphin78's idea and prototype (#38)."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:430
+#: port/frontend/shell/settings.cpp:542
 msgid "For the Skylanders games."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:431
+#: port/frontend/shell/settings.cpp:543
 msgid "For Disney Infinity 3.0."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:432
+#: port/frontend/shell/settings.cpp:544
 msgid "For LEGO Dimensions."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:433
-msgid "Cemu's emulated portal, plugged in as a game starts. In the game, the menu's USB devices category puts figures on it: dumps in "
+#: port/frontend/shell/settings.cpp:545
+msgid "Cemu's emulated portal, plugged in as a game starts. In the game, the menu's USB devices category puts figures on it: dumps in {0}. A real portal plugged into the PS5 is not supported."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:444
+#: port/frontend/shell/settings.cpp:557
 msgid "Region"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:444
+#: port/frontend/shell/settings.cpp:557
 msgid "The emulated 3DS's region."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:445
+#: port/frontend/shell/settings.cpp:558
 msgid "Automatic takes each game's own region. A game made for another region may refuse to start or show other languages. Applies to the next game."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:448
+#: port/frontend/shell/settings.cpp:561
 msgid "The emulated 3DS's language."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:449
+#: port/frontend/shell/settings.cpp:562
 msgid "The language games that follow the console's show their text in. Applies to the next game."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:454
+#: port/frontend/shell/settings.cpp:567
 msgid "The emulated 3DS's CPU speed."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:455
+#: port/frontend/shell/settings.cpp:568
 msgid "How fast the emulated CPU runs, against a 3DS's: higher can steady a game that slows down where a 3DS would not, and asks more of the PS5; lower can speed up one held back by its own pacing. 100% is a 3DS. Also in the in-game menu."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:458
+#: port/frontend/shell/settings.cpp:571
 msgid "Home Menu"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:458
+#: port/frontend/shell/settings.cpp:571
 msgid "Start"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:458
+#: port/frontend/shell/settings.cpp:571
 msgid "Run Artic Setup first"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:459
+#: port/frontend/shell/settings.cpp:572
 msgid "The 3DS Home Menu, from your console's files."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:460
+#: port/frontend/shell/settings.cpp:573
 msgid "Starts the 3DS Home Menu, once Artic Base's setup has copied your own console's system files (Artic Base)."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:465
+#: port/frontend/shell/settings.cpp:578
 msgid "The emulated DS's language."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:466
-msgid "The language games that follow the console's show their text in, up to Chinese: the DS has no others (Korean and the rest are English). Applies to the next game."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:470
-msgid "Found in melonds/bios."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:470
-msgid "Not found: melonDS's own run the games."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:480
-msgid "Where your games are. Cross picks another."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:481
-msgid "Your Wii U games: .wua, .wud, .wux, or folders with code, content and meta. Encrypted .wud and .wux need their keys in /data/ps5cemu/keys.txt."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:483
-msgid "Your 3DS games: .3ds or .cci, .cxi, .3dsx and Azahar's compressed dumps, decrypted, here or in the folders in it. CIA files are installed (Install a CIA file). Encrypted dumps need the 3DS's aes_keys.txt in /data/ps5cemu/azahar/sysdata."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:486
-msgid "Your DS games: .nds files, here or in the folders in it."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:487
-msgid "Look for games now"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:487
-msgid "Looking…"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:487
-msgid "This side's folder, again."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:488
-msgid "Looks through this side's folder again, as it does each time the side opens."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:492 port/frontend/shell/setup.cpp:208
-msgid "Wii U disc keys"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:492
-msgid "Only encrypted .wud and .wux need them."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:493
-msgid "Encrypted .wud and .wux dumps need their disc keys in /data/ps5cemu/keys.txt, one a line. Decrypted dumps, .wua and folders need none."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:495
-msgid "An update, DLC or game (code, content and meta)."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:496
-msgid "Installs into the Wii U's storage (mlc01), as Cemu's Install game title, update or DLC does. Updates and DLC in the game files folder work as they are, too."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:500
-msgid "Install a CIA file"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:500
-msgid "A game, an update or DLC."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:501
-msgid "Installs a CIA into the 3DS's storage, as Azahar's Install CIA does: an update or DLC goes with its game, and a game joins the library. Circle cancels while it runs."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:505
-msgid "Play a game from your 3DS, and set up from it."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:506
-msgid "Artic Base plays a game from a 3DS on your network, its saves staying on the 3DS; Artic Setup copies a 3DS's system files into Azahar, for the Home Menu and the games that need them."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:510
-msgid "Box art from GameTDB"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:510
-msgid "Covers for the library, downloaded once."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:511
-msgid "The first time a game shows up, its cover is downloaded from GameTDB (art.gametdb.com) by the ID on its box. Off: nothing more is downloaded."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:514
-msgid "Community graphic packs"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:514
-msgid "Cross checks GitHub for newer ones."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:515
-msgid "Cemu's community graphic packs, from GitHub's latest release when it is newer than the ones installed. The packs bundled with the app stay as the fallback."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:517
-msgid "PS5CEMU-HAR updates"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:517
-msgid "Cross checks GitHub for a newer version."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:518
-msgid "PS5CEMU-HAR asks GitHub for its latest release each time it starts. Cross asks again, or installs the newer version it found: the release's files are downloaded, checked and put in place of these, and the app starts again. Your games, saves and settings stay as they are."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:524
-msgid "Game pictures behind menus"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:524
-msgid "The focused game's cover, softened, behind the screens."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:525
-msgid "The focused game's picture fills the screen behind the menus, softened and dimmed, so moving the focus changes the whole screen. Off: the game's colours only."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:527
-msgid "Larger text"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:527
-msgid "Every size of text a step up."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:528
-msgid "Every style of text a step larger: captions from 20 to 23, reading text from 26 to 30."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:529
-msgid "High contrast"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:529
-msgid "Opaque panels, full-strength text, a thicker ring."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:530
-msgid "Opaque panels instead of glass, all text at full strength, a thicker focus ring and no grain or pictures behind the menus."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:531
-msgid "Reduce motion"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:531
-msgid "Fades in place of movement."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:532
-msgid "Springs become short fades; nothing drifts, breathes or rises behind the menus."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:537
-msgid "Hold to confirm"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:538
-msgid "How long Cross is held for what cannot be undone."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:539
-msgid "Clearing caches, Artic Setup and resetting controls are held to confirm, never pressed twice. This is how long."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:543
-msgid "Storage, recompilers, games, keys and box art, checked."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:544
-msgid "Each check has a status, what it means and what to do. It is also shown on the first start and whenever a check fails as the app starts."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:546
-msgid "Copy logs to USB"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:546
-msgid "The logs a report needs, onto a USB drive."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:547
-msgid "Copies the last five sessions' logs and the settings into a dated folder on a USB drive, to attach to a report."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:549 port/frontend/shell/settings.cpp:552
-msgid "Clear shader caches"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:550 port/frontend/shell/settings.cpp:553
-msgid "For a game that crashes on a bad cache."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:550
-msgid "Deletes Cemu's shader caches. Games build them again as they run: the first minutes stutter."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:554
-msgid "Deletes Azahar's shader caches. Games build them again as they run: the first minutes stutter."
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:580
-msgid "Back to defaults"
-msgstr ""
-
-#: port/frontend/shell/settings.cpp:582
-msgid "Every setting of this game its side's again."
+#: port/frontend/shell/settings.cpp:579
+msgid "The DS's own language, which many games follow. The DS has Japanese, English, French, German, Italian, Spanish and Chinese; any other language uses English. Applies to the next game."
 msgstr ""
 
 #: port/frontend/shell/settings.cpp:583
-msgid "Clears this game's own settings: it starts with its side's again, as every game without settings of its own does."
+msgid "Found in melonds/bios."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:583
+msgid "Not found: melonDS's built-in BIOS runs the games."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:593
+msgid "Where your games are. Cross picks another."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:594
+msgid "Your Wii U games: .wua, .wud, .wux, or folders with code, content and meta. Encrypted .wud and .wux need their keys in /data/ps5cemu/keys.txt."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:596
+msgid "Your 3DS games: .3ds or .cci, .cxi, .3dsx and Azahar's compressed dumps, decrypted, here or in the folders in it. CIA files are installed (Install a CIA file). Encrypted dumps need the 3DS's aes_keys.txt in /data/ps5cemu/azahar/sysdata."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:599
+msgid "Your DS games: .nds files, here or in the folders in it."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:600
+msgid "Look for games now"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:600
+msgid "Looking…"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:600
+msgid "This side's folder, again."
 msgstr ""
 
 #: port/frontend/shell/settings.cpp:601
+msgid "Looks through this side's folder again, as it does each time the side opens."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:605 port/frontend/shell/setup.cpp:210
+msgid "Wii U disc keys"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:605
+msgid "Only encrypted .wud and .wux need them."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:606
+msgid "Encrypted .wud and .wux dumps need their disc keys in /data/ps5cemu/keys.txt, one a line. Decrypted dumps, .wua and folders need none."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:608
+msgid "Found on your drives, each installed with one press."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:609
+msgid "Looks on every USB drive and extended storage plugged in, in the games folder and in /data for updates, DLC and games (folders with code, content and meta), and lists them by game with what is installed now. Cross installs one, Square every new one; each goes into the Wii U's storage (mlc01), as Cemu's Install game title, update or DLC does. Triangle there chooses a folder anywhere else."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:615
+msgid "Install a CIA file"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:615
+msgid "A game, an update or DLC."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:616
+msgid "Installs a CIA into the 3DS's storage, as Azahar's Install CIA does: an update or DLC goes with its game, and a game joins the library. Circle cancels while it runs."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:639
+msgid "Account games start on"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:640
+msgid "Chosen by your PS5 user: One account for each PS5 user is on."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:641
+msgid "The next game starts on these saves. A game already running keeps its own."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:642
+msgid "Each Wii U account has its own saves of every game, as on a Wii U. The next game you start uses the one shown here; a game already running keeps the one it started with."
+msgstr ""
+
+#. how many Wii U accounts there are, of the twelve a Wii U has at most
+#: port/frontend/shell/settings.cpp:647
+msgid "New account"
+msgstr ""
+
+#. how many Wii U accounts there are, of the twelve a Wii U has at most
+#: port/frontend/shell/settings.cpp:647
+msgid "{0} of 12"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:648
+msgid "A new account starts with no saves."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:648
+msgid "Name it with the keyboard, ten letters at most. Games start on it from then on."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:649
+msgid "Rename {0}"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:649
+msgid "The account games start on."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:650
+msgid "The name games show for this account, ten letters at most. Its saves stay as they are."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:658
+msgid "Delete an account"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:659
+msgid "Only one"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:660
+msgid "There is only one account, and games start on it."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:660
+msgid "Left and Right choose which. Its saves stay in the Wii U's storage."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:661
+msgid "The account is removed; its saves stay in the Wii U's storage (and in any backup), so nothing is lost. The account games start on cannot be deleted: choose another first."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:667
+msgid "One account for each PS5 user"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:668
+msgid "Whoever starts PS5CEMU-HAR plays on their own saves."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:669
+msgid "The PS5 user who starts the app plays on a Wii U account of their own, made the first time with their PS5 name, so brothers and sisters each keep their own saves just by starting the app from their own PS5 user."
+msgstr ""
+
+#. a backup or restore of the saves, finished ({0}: how many files)
+#: port/frontend/shell/settings.cpp:688
+msgid "Done: {0} file"
+msgid_plural "Done: {0} files"
+msgstr[0] ""
+msgstr[1] ""
+
+#. a backup of the saves, as it copies ({0}: a percentage)
+#: port/frontend/shell/settings.cpp:698 port/frontend/shell/settings.cpp:713
+msgid "Copying: {0}"
+msgstr ""
+
+#. the newest backup of the saves: when, and on which drive
+#: port/frontend/shell/settings.cpp:701
+msgid "Last: {0} · {1}"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:702
+msgid "Back up to USB"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:702
+msgid "Every side's saves, save states and Wii U accounts."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:703
+msgid "Copies the Wii U's saves (every account's, with the accounts), the 3DS's saves, extra data and save states, and the DS's saves and save states to PS5CEMU-HAR-saves on the first USB drive plugged in, in a folder named by the date and time. Never the games, so a backup stays small."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:711
+msgid "No backups found"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:714
+msgid "Restore from USB"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:715
+msgid "Back up first, or plug in the drive with your backups."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:715
+msgid "Left and Right choose which backup, the newest first."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:716
+msgid "Puts the chosen backup's saves back where they came from. The saves there now are moved first to /data/ps5cemu/saves-before, so nothing is lost; saves the backup does not have stay as they are."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:724
+msgid "Play a game from your 3DS, and set up from it."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:725
+msgid "Artic Base plays a game from a 3DS on your network, its saves staying on the 3DS; Artic Setup copies a 3DS's system files into Azahar, for the Home Menu and the games that need them."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:729
+msgid "Box art from GameTDB"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:729
+msgid "Covers for the library, downloaded once."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:730
+msgid "The first time a game shows up, its cover is downloaded from GameTDB (art.gametdb.com) by the ID on its box. Off: nothing more is downloaded."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:738
+msgid "Downloading: {0} left"
+msgid_plural "Downloading: {0} left"
+msgstr[0] ""
+msgstr[1] ""
+
+#: port/frontend/shell/settings.cpp:739
+msgid "GameTDB did not answer: is the PS5 online?"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:740
+msgid "{0} game without box art"
+msgid_plural "{0} games without box art"
+msgstr[0] ""
+msgstr[1] ""
+
+#: port/frontend/shell/settings.cpp:741
+msgid "Every game has box art"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:742
+msgid "Download missing box art"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:742
+msgid "Tries again for every game without a cover."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:743
+msgid "Asks GameTDB again for the cover of every game on this side that has none, including games it had no cover for before. Covers are downloaded in the background while you use the launcher."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:745
+msgid "Download all box art again"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:746
+msgid "Replaces every cover on this side with a fresh download."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:747
+msgid "Downloads the cover of every game on this side again, replacing the ones you have. Useful when a cover is wrong or looks broken."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:751
+msgid "Community graphic packs"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:751
+msgid "Cross checks GitHub for newer ones."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:752
+msgid "Cemu's community graphic packs, from GitHub's latest release when it is newer than the ones installed. The packs bundled with the app stay as the fallback."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:754
+msgid "PS5CEMU-HAR updates"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:754
+msgid "Cross checks GitHub for a newer version."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:755
+msgid "PS5CEMU-HAR asks GitHub for its latest release each time it starts. Cross asks again, or installs the newer version it found: the release's files are downloaded, checked and put in place of these, and the app starts again. Your games, saves and settings stay as they are."
+msgstr ""
+
+#. a theme that is still being tried out: "Phantom (experimental)"
+#: port/frontend/shell/settings.cpp:770
+msgid "{0} (experimental)"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:775
+msgid "Theme"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:777
+msgid "How the launcher looks: its colours, its corners and what moves behind the menus. Phantom and Terminal are experiments of their own. Make your own as a JSON file in {0}/themes, starting from any of these: the text under this page says how. Only the launcher changes: the in-game menus and the games stay as they are."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:783
+msgid "Wii U side"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:783
+msgid "Cemu's games, in the bar."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:784
+msgid "Whether the bar shows the Wii U side (Cemu). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:786
+msgid "3DS side"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:786
+msgid "Azahar's games, in the bar."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:787
+msgid "Whether the bar shows the 3DS side (Azahar). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:789
+msgid "DS side"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:789
+msgid "melonDS's games, in the bar."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:790
+msgid "Whether the bar shows the DS side (melonDS). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:792
+msgid "Game pictures behind menus"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:792
+msgid "The focused game's cover, softened, behind the screens."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:793
+msgid "The focused game's picture fills the screen behind the menus, softened and dimmed, so moving the focus changes the whole screen. Off: the game's colours only."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:795
+msgid "Larger text"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:795
+msgid "Every size of text a step up."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:796
+msgid "Every style of text a step larger: captions from 20 to 23, reading text from 26 to 30."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:797
+msgid "High contrast"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:797
+msgid "Opaque panels, full-strength text, a thicker ring."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:798
+msgid "Opaque panels instead of glass, all text at full strength, a thicker focus ring and no grain or pictures behind the menus."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:799
+msgid "Reduce motion"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:799
+msgid "Fades in place of movement."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:800
+msgid "Springs become short fades; nothing drifts, breathes or rises behind the menus."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:801 port/frontend/shell/welcome.cpp:223
+msgid "Make it yours"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:801
+msgid "The first-start choices again: sides, theme, buttons."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:802
+msgid "The page the first start opens on: the language, the sides, the theme, A and B, the music, vibration and the games' pictures, on one page."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:808
+msgid "Hold to confirm"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:809
+msgid "How long Cross is held for what cannot be undone."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:810
+msgid "Clearing caches, Artic Setup and resetting controls are held to confirm, never pressed twice. This is how long."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:814
+msgid "Storage, recompilers, games, keys and box art, checked."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:815
+msgid "Each check has a status, what it means and what to do. It is also shown on the first start and whenever a check fails as the app starts."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:817
+msgid "Copy logs to USB"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:817
+msgid "The logs a report needs, onto a USB drive."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:818
+msgid "Copies the last five sessions' logs and the settings into a dated folder on a USB drive, to attach to a report."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:820 port/frontend/shell/settings.cpp:823
+msgid "Clear shader caches"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:821 port/frontend/shell/settings.cpp:824
+msgid "For a game that crashes on a bad cache."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:821
+msgid "Deletes Cemu's shader caches. Games build them again as they run: the first minutes stutter."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:825
+msgid "Deletes Azahar's shader caches. Games build them again as they run: the first minutes stutter."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:851
+msgid "Back to defaults"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:853
+msgid "This game goes back to its side's settings."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:854
+msgid "Clears this game's own settings, so it uses its side's settings again, like every other game."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:872
+msgid ""
+"Your own theme: a file such as sunset.json in {0}/themes, read as the app starts, then listed under Theme by its name:\n"
+"{{\"name\": \"Sunset\", \"base\": \"midnight\", \"colours\": {{\"wiiu\": \"#ff7a59\", \"ink-0\": \"#120806\"}}, \"corners\": 0.5, \"motif\": \"slashes\"}}\n"
+"base: a theme to start from (classic, midnight, phantom, terminal). colours: ink-0 to ink-2 (the background), text, wiiu, n3ds and nds (each side's), glass, line, good, warn, bad and focus, as #rrggbb. corners: 0 square to 1.5 round. motif: side, none, slashes or grid."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:880
 msgid "Saves: /data/ps5cemu/melonds/saves (a .sav beside the game is taken the first time). Save states: melonds/states. Cheats: melonds/cheats/<game file>.mch, melonDS's format. DSi games, the DS's wireless and its GBA slot are not there."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:604
-msgid "On, a code here opens the game's second screen in a phone's browser. Nothing to install; the PS5 and the phone on the same network."
+#: port/frontend/shell/settings.cpp:883
+msgid "On, a QR code here opens the game's second screen in a phone's browser. Nothing to install; the phone must be on the PS5's network."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:607
+#: port/frontend/shell/settings.cpp:886
 msgid "Figure dumps go in /data/ps5cemu/figures: skylanders, infinity and dimensions. Switch a portal on here, start the game, then put figures on it from the in-game menu (touchpad click + Options > USB devices)."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:610
+#: port/frontend/shell/settings.cpp:889
 msgid ""
 "Cemu, the Wii U emulator, by the Cemu team and its contributors; RADV on the PS5 by Mihawk-99 and mpereiraesaa; the community graphic packs' authors.\n"
 "Azahar, the 3DS emulator, by the Azahar team and the Citra contributors before them; Mihawk-99's PS5 port of it and dynarmic.\n"
@@ -4165,40 +4871,87 @@ msgid ""
 "3DS games: /data/ps5cemu/azahar/games, storage: /data/ps5cemu/azahar/sdmc\n"
 "DS games: /data/ps5cemu/melonds/games, saves: /data/ps5cemu/melonds/saves\n"
 "\n"
-"Version "
+"Version {0}"
 msgstr ""
 
 #. the first choice in the language list: the PS5's own ({0}, in its own words)
-#: port/frontend/shell/settings.cpp:626
+#: port/frontend/shell/settings.cpp:905
 msgid "The PS5's language: {0}"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:651
+#: port/frontend/shell/settings.cpp:930
 msgid "Language: {0}"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:860
-msgid "This game has no ID to keep settings by"
+#: port/frontend/shell/settings.cpp:1025
+msgid "One side at least stays on"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:993
+#. the Wii U account games start on now ({0}: its name)
+#: port/frontend/shell/settings.cpp:1138 port/frontend/shell/settings.cpp:1293 port/frontend/shell/settings.cpp:1334
+msgid "Games start on {0}'s saves"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:1221
+msgid "This game has no ID to save settings under"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:1329
+msgid "A name for the new account"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:1346
+msgid "A new name"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:1348
+msgid "Renamed {0}"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:1357
+msgid "Backing up every side's saves…"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:1436
 msgid "Starting the 3DS"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:1020
-msgid "Done: its side's settings"
+#. a held row's result: the covers are on their way
+#: port/frontend/shell/settings.cpp:1457
+msgid "Downloading in the background"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:1186
+#: port/frontend/shell/settings.cpp:1478
+msgid "{0} is deleted; its saves stay"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:1491
+msgid "Restoring the saves of {0}…"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:1501
+msgid "Done: back to its side's settings"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:1662
 msgid "Scan it, or open"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:1192
+#: port/frontend/shell/settings.cpp:1668
 msgid "Same network as the PS5. Nothing to install: the browser is enough. Sound stays on the PS5. Any browser on the network can see it and touch."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:1263
-msgid "Game settings · "
+#: port/frontend/shell/settings.cpp:1700
+msgid "Support PS5CEMU-HAR"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:1711
+msgid "PS5CEMU-HAR is free. If it brings your games back, you can support its work here."
+msgstr ""
+
+#. above Settings' pages: whose settings they are ({0}: Wii U, Nintendo 3DS or Nintendo DS)
+#: port/frontend/shell/settings.cpp:1751
+msgid "{0} settings"
 msgstr ""
 
 #. free space on the PS5's storage, as in 412 GB free
@@ -4268,515 +5021,624 @@ msgid "Neither your HEN's JIT memory nor executable memory could be made, so Wii
 msgstr ""
 
 #. {1} is a folder
-#: port/frontend/shell/setup.cpp:185
+#: port/frontend/shell/setup.cpp:187
 msgid "{0} game in {1}"
 msgid_plural "{0} games in {1}"
 msgstr[0] ""
 msgstr[1] ""
 
-#: port/frontend/shell/setup.cpp:186
+#: port/frontend/shell/setup.cpp:188
 msgid "None in {0} yet"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:187
+#: port/frontend/shell/setup.cpp:189
 msgid "{0} cannot be read"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:188
+#: port/frontend/shell/setup.cpp:190
 msgid "Where your 3DS games go"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:188
+#: port/frontend/shell/setup.cpp:190
 msgid "Where your DS games go"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:188
+#: port/frontend/shell/setup.cpp:190
 msgid "Where your Wii U games go"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:189
+#: port/frontend/shell/setup.cpp:191
 msgid "Put them in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are searched too. CIA files are installed, from Settings > Game files on the 3DS side."
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:192
+#: port/frontend/shell/setup.cpp:194
 msgid "Put them in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are searched too."
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:195
+#: port/frontend/shell/setup.cpp:197
 msgid "Put them in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Updates and DLC go in from Settings > Game files, or come with a .wua."
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:200
+#: port/frontend/shell/setup.cpp:202
 msgid "code · content · meta"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:202 port/frontend/shell/setup.cpp:217 port/frontend/shell/setup.cpp:230
+#: port/frontend/shell/setup.cpp:204 port/frontend/shell/setup.cpp:219 port/frontend/shell/setup.cpp:233
 msgid "the game files page"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:210
+#: port/frontend/shell/setup.cpp:212
 msgid "keys.txt found"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:210
+#: port/frontend/shell/setup.cpp:212
 msgid "keys.txt is missing: only encrypted .wud and .wux need it"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:211 port/frontend/shell/setup.cpp:224 port/frontend/shell/setup.cpp:255
+#: port/frontend/shell/setup.cpp:213 port/frontend/shell/setup.cpp:227 port/frontend/shell/setup.cpp:260
 msgid "How to"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:212
+#: port/frontend/shell/setup.cpp:214
 msgid "Keys for encrypted discs"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:213
+#: port/frontend/shell/setup.cpp:215
 msgid "Encrypted .wud and .wux dumps need their disc keys in {0}/keys.txt, one a line. Decrypted dumps, .wua files and folders with code, content and meta need none."
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:221
+#: port/frontend/shell/setup.cpp:224
 msgid "3DS keys"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:223
+#: port/frontend/shell/setup.cpp:226
 msgid "aes_keys.txt found"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:223
+#: port/frontend/shell/setup.cpp:226
 msgid "aes_keys.txt is missing: only encrypted dumps need it"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:225
+#: port/frontend/shell/setup.cpp:228
 msgid "Keys for encrypted 3DS dumps"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:226
+#: port/frontend/shell/setup.cpp:229
 msgid "Encrypted dumps need aes_keys.txt from your own console in {0}/sysdata. Decrypted dumps, homebrew and installed CIAs need none. No keys come with PS5CEMU-HAR."
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:239
+#: port/frontend/shell/setup.cpp:243
 msgid "3DS system files"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:241
+#: port/frontend/shell/setup.cpp:245
 msgid "Artic Setup has run: the Home Menu can start"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:241
+#: port/frontend/shell/setup.cpp:245
 msgid "Artic Setup copies them from your 3DS, for the Home Menu"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:243
+#: port/frontend/shell/setup.cpp:247
 msgid "Your 3DS's own files"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:244
+#: port/frontend/shell/setup.cpp:248
 msgid "The 3DS Home Menu, and the few games that need the console's system files, run once Artic Setup has copied them from your own 3DS over the network: start the Artic Setup Tool on the 3DS, then Artic Base here."
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:247
+#: port/frontend/shell/setup.cpp:251
 msgid "the 3DS page"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:254
+#: port/frontend/shell/setup.cpp:259
 msgid "Your DS's BIOS found: DS games run on it"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:254
-msgid "melonDS's own run DS games; your DS's are optional"
+#: port/frontend/shell/setup.cpp:259
+msgid "melonDS's built-in BIOS runs DS games; your DS's is optional"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:256
+#: port/frontend/shell/setup.cpp:261
 msgid "Your DS's own BIOS and firmware"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:257
+#: port/frontend/shell/setup.cpp:262
 msgid "melonDS runs DS games on its own BIOS (FreeBIOS) and firmware, which most games are happy with. The few that are not run on your own DS's: bios7.bin, bios9.bin and firmware.bin, dumped from it, in {0}/bios. No BIOS comes with PS5CEMU-HAR."
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:262
+#: port/frontend/shell/setup.cpp:267
 msgid "the DS page"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:266
+#: port/frontend/shell/setup.cpp:272
 msgid "Box art"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:268
+#: port/frontend/shell/setup.cpp:274
 msgid "what PS5CEMU-HAR fetches online"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:269
+#: port/frontend/shell/setup.cpp:275
 msgid "Covers from GameTDB"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:270
+#: port/frontend/shell/setup.cpp:276
 msgid "The first time a game shows up, its cover comes from GameTDB (art.gametdb.com), by the ID on its box. Without a connection the games' own icons are shown, and the next start tries again."
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:276
+#: port/frontend/shell/setup.cpp:282
 msgid "Off: the games' icons are shown instead"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:277
+#: port/frontend/shell/setup.cpp:283
 msgid "Turn on"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:282
+#: port/frontend/shell/setup.cpp:288
 msgid "GameTDB did not answer: the games' icons are shown instead"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:287
+#: port/frontend/shell/setup.cpp:293
 msgid "GameTDB is reachable · {0} cover"
 msgid_plural "GameTDB is reachable · {0} covers"
 msgstr[0] ""
 msgstr[1] ""
 
-#: port/frontend/shell/setup.cpp:288
+#: port/frontend/shell/setup.cpp:294
 msgid "On · {0} cover"
 msgid_plural "On · {0} covers"
 msgstr[0] ""
 msgstr[1] ""
 
-#: port/frontend/shell/setup.cpp:289
+#: port/frontend/shell/setup.cpp:295
 msgid "On: covers come as your games show up"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:366
+#: port/frontend/shell/setup.cpp:372
 msgid "Checked again"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:390
+#: port/frontend/shell/setup.cpp:396 port/frontend/shell/welcome.cpp:222
 msgid "Welcome to PS5CEMU-HAR"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:390
+#: port/frontend/shell/setup.cpp:396
 msgid "Help"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:391
+#: port/frontend/shell/setup.cpp:397
 msgid "Let’s check your setup"
 msgstr ""
 
 #. the Setup check's progress: how many checks are ready, and how many need a look
-#: port/frontend/shell/setup.cpp:397
+#: port/frontend/shell/setup.cpp:403
 msgid "The {0} check is ready."
 msgid_plural "All {0} checks are ready."
 msgstr[0] ""
 msgstr[1] ""
 
-#: port/frontend/shell/setup.cpp:398
+#: port/frontend/shell/setup.cpp:404
 msgid "The {0} check needs a look."
 msgid_plural "All {0} checks need a look."
 msgstr[0] ""
 msgstr[1] ""
 
-#: port/frontend/shell/setup.cpp:399
+#: port/frontend/shell/setup.cpp:405
 msgid "{0} of {1} is ready."
 msgid_plural "{0} of {1} are ready."
 msgstr[0] ""
 msgstr[1] ""
 
-#: port/frontend/shell/setup.cpp:400
+#: port/frontend/shell/setup.cpp:406
 msgid "{0} needs a look."
 msgid_plural "{0} need a look."
 msgstr[0] ""
 msgstr[1] ""
 
-#: port/frontend/shell/setup.cpp:406
+#: port/frontend/shell/setup.cpp:412
 msgid "{0} · as the PS5"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:459 port/frontend/shell/setup.cpp:463
+#: port/frontend/shell/setup.cpp:465 port/frontend/shell/setup.cpp:469
 msgid "· optional"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:478
+#: port/frontend/shell/setup.cpp:484
 msgid "The menus' language"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:479
+#: port/frontend/shell/setup.cpp:485
 msgid "PS5CEMU-HAR speaks the language your PS5 is set to. Cross chooses another; Settings > Language changes it at any time."
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:547
+#: port/frontend/shell/setup.cpp:553
 msgid "The guide, on your phone"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:550
+#: port/frontend/shell/setup.cpp:556
 msgid "Scan it for {0}: {1}"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:170
+#: port/frontend/shell/shell.cpp:188
 msgid "Saved your place in the library"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:173
+#: port/frontend/shell/shell.cpp:191
 msgid "The game could not start"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:584
+#: port/frontend/shell/shell.cpp:593
+msgid "Cemu did not start: {0}"
+msgstr ""
+
+#: port/frontend/shell/shell.cpp:707
 msgid "{0} min played"
 msgid_plural "{0} min played"
 msgstr[0] ""
 msgstr[1] ""
 
-#: port/frontend/shell/shell.cpp:585
+#: port/frontend/shell/shell.cpp:708
 msgid "{0} h played"
 msgid_plural "{0} h played"
 msgstr[0] ""
 msgstr[1] ""
 
-#: port/frontend/shell/shell.cpp:600
+#: port/frontend/shell/shell.cpp:723
 msgid "today"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:602
+#: port/frontend/shell/shell.cpp:725
 msgid "yesterday"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:604
+#: port/frontend/shell/shell.cpp:727
 msgid "{0} day ago"
 msgid_plural "{0} days ago"
 msgstr[0] ""
 msgstr[1] ""
 
-#: port/frontend/shell/shell.cpp:606
+#: port/frontend/shell/shell.cpp:729
 msgid "{0} week ago"
 msgid_plural "{0} weeks ago"
 msgstr[0] ""
 msgstr[1] ""
 
-#: port/frontend/shell/shell.cpp:607
+#: port/frontend/shell/shell.cpp:730
 msgid "{0} month ago"
 msgid_plural "{0} months ago"
 msgstr[0] ""
 msgstr[1] ""
 
-#: port/frontend/shell/shell.cpp:650
+#: port/frontend/shell/shell.cpp:773
 msgid "Cemu is still starting"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:662
+#: port/frontend/shell/shell.cpp:785
 msgid "Starting melonDS"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:662
+#: port/frontend/shell/shell.cpp:785
 msgid "Starting Azahar"
 msgstr ""
 
 #. the launcher's tabs
-#: port/frontend/shell/shell.cpp:845
+#: port/frontend/shell/shell.cpp:982
 msgctxt "tab"
 msgid "Settings"
 msgstr ""
 
 #. the on-screen keyboard's keys
-#: port/frontend/shell/shell.cpp:897 port/frontend/shell/shell.cpp:938 port/frontend/shell/shell.cpp:1507
+#: port/frontend/shell/shell.cpp:1035 port/frontend/shell/shell.cpp:1088 port/frontend/shell/shell.cpp:1775
 msgid "Done"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:897 port/frontend/shell/shell.cpp:901 port/frontend/shell/shell.cpp:903
+#: port/frontend/shell/shell.cpp:1035 port/frontend/shell/shell.cpp:1039 port/frontend/shell/shell.cpp:1041 port/frontend/shell/shell.cpp:1092
 msgid "Close"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:899 port/frontend/shell/shell.cpp:952 port/frontend/shell/shell.cpp:956
+#: port/frontend/shell/shell.cpp:1037 port/frontend/shell/shell.cpp:1102 port/frontend/shell/shell.cpp:1106
 msgid "Cancel"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:905
+#: port/frontend/shell/shell.cpp:1043
 msgid "Move"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:905
+#: port/frontend/shell/shell.cpp:1043
 msgid "Switch"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:913
-msgid "Change the language"
-msgstr ""
-
-#: port/frontend/shell/shell.cpp:916
-msgid "Check again"
-msgstr ""
-
-#: port/frontend/shell/shell.cpp:917
-msgid "Continue to the Library"
-msgstr ""
-
-#: port/frontend/shell/shell.cpp:927
-msgid "Filters"
-msgstr ""
-
-#: port/frontend/shell/shell.cpp:930 port/frontend/shell/shell.cpp:932
-msgid "Options"
-msgstr ""
-
-#: port/frontend/shell/shell.cpp:930
-msgid "Jump by letter"
-msgstr ""
-
-#: port/frontend/shell/shell.cpp:932
-msgid "Back to the buttons"
-msgstr ""
-
-#: port/frontend/shell/shell.cpp:933
-msgid "Scroll"
-msgstr ""
-
-#: port/frontend/shell/shell.cpp:938 port/frontend/shell/shell.cpp:942
-msgid "Pages"
-msgstr ""
-
-#: port/frontend/shell/shell.cpp:939 port/frontend/shell/widgets.cpp:302
-msgid "Default"
-msgstr ""
-
-#: port/frontend/shell/shell.cpp:939 port/frontend/shell/shell.cpp:943 port/frontend/shell/shell.cpp:949
+#: port/frontend/shell/shell.cpp:1048 port/frontend/shell/shell.cpp:1089 port/frontend/shell/shell.cpp:1093 port/frontend/shell/shell.cpp:1099
 msgid "More about it"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:946
+#: port/frontend/shell/shell.cpp:1049 port/frontend/shell/welcome.cpp:119
+msgid "Continue to the Setup check"
+msgstr ""
+
+#: port/frontend/shell/shell.cpp:1049 port/frontend/shell/shell.cpp:1058 port/frontend/shell/welcome.cpp:119
+msgid "Continue to the Library"
+msgstr ""
+
+#: port/frontend/shell/shell.cpp:1054
+msgid "Change the language"
+msgstr ""
+
+#: port/frontend/shell/shell.cpp:1057
+msgid "Check again"
+msgstr ""
+
+#: port/frontend/shell/shell.cpp:1073 port/frontend/shell/shell.cpp:1074 port/frontend/shell/shell.cpp:1080 port/frontend/shell/shell.cpp:1082
+msgid "Options"
+msgstr ""
+
+#: port/frontend/shell/shell.cpp:1074
+msgid "Recently played / Library"
+msgstr ""
+
+#: port/frontend/shell/shell.cpp:1077
+msgid "Filters"
+msgstr ""
+
+#: port/frontend/shell/shell.cpp:1080
+msgid "Jump by letter"
+msgstr ""
+
+#: port/frontend/shell/shell.cpp:1082
+msgid "Back to the buttons"
+msgstr ""
+
+#: port/frontend/shell/shell.cpp:1083
+msgid "Scroll"
+msgstr ""
+
+#: port/frontend/shell/shell.cpp:1088 port/frontend/shell/shell.cpp:1092
+msgid "Pages"
+msgstr ""
+
+#: port/frontend/shell/shell.cpp:1089 port/frontend/shell/widgets.cpp:313
+msgid "Default"
+msgstr ""
+
+#: port/frontend/shell/shell.cpp:1096
 msgid "Back to the packs"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:947
+#: port/frontend/shell/shell.cpp:1097
 msgid "On / off"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:953
+#: port/frontend/shell/shell.cpp:1103
 msgid "Assign"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:953
+#: port/frontend/shell/shell.cpp:1103
 msgid "Clear"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:957
+#: port/frontend/shell/shell.cpp:1107
 msgid "Use this folder"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:960
+#: port/frontend/shell/shell.cpp:1110
 msgid "Number"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:960
+#: port/frontend/shell/shell.cpp:1110
 msgid "Keep"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:961
+#: port/frontend/shell/shell.cpp:1111
 msgid "Edit"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:961
+#: port/frontend/shell/shell.cpp:1111
 msgid "Connect"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:961
+#: port/frontend/shell/shell.cpp:1111
 msgid "Hold to set up"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1143
+#: port/frontend/shell/shell.cpp:1350
 msgid "Game hub"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1146
-msgid "Game settings: its own"
+#: port/frontend/shell/shell.cpp:1353
+msgid "Game settings: custom"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1149
+#: port/frontend/shell/shell.cpp:1359
 msgid "Not a favourite"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1150
+#: port/frontend/shell/shell.cpp:1360
 msgid "Show where it is"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1344
+#: port/frontend/shell/shell.cpp:1610
 msgid "Added to Favourites"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1344
+#: port/frontend/shell/shell.cpp:1610
 msgid "Taken out of Favourites"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1350
+#: port/frontend/shell/shell.cpp:1616
 msgid "The PS5's storage"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1354
+#: port/frontend/shell/shell.cpp:1620
 msgid "Title ID {0}"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1529
+#: port/frontend/shell/shell.cpp:1797
 msgid "PS5CEMU-HAR {0} is out"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1530
+#: port/frontend/shell/shell.cpp:1798
 msgid "This is {0}. Download and install it now? Your games, saves and settings stay as they are."
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1531
+#: port/frontend/shell/shell.cpp:1799
 msgid "Update now"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1531 port/frontend/shell/shell.cpp:1584
+#: port/frontend/shell/shell.cpp:1799 port/frontend/shell/shell.cpp:1852
 msgid "Later"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1534 port/frontend/shell/shell.cpp:1539 port/frontend/shell/shell.cpp:1544
+#: port/frontend/shell/shell.cpp:1802 port/frontend/shell/shell.cpp:1807 port/frontend/shell/shell.cpp:1812
 msgid "Updating to {0}"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1535
+#: port/frontend/shell/shell.cpp:1803
 msgid "Downloading: {0} of {1} MB"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1540
+#: port/frontend/shell/shell.cpp:1808
 msgid "Checking the download"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1545
+#: port/frontend/shell/shell.cpp:1813
 msgid "Installing"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1549
+#: port/frontend/shell/shell.cpp:1817
 msgid "{0} is installed"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1550
+#: port/frontend/shell/shell.cpp:1818
 msgid "PS5CEMU-HAR starts again to finish the update."
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1551
+#: port/frontend/shell/shell.cpp:1819
 msgid "Restart now"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1554
+#: port/frontend/shell/shell.cpp:1822
 msgid "The update did not finish"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1555
+#: port/frontend/shell/shell.cpp:1823
 msgid "PS5CEMU-HAR is still {0}."
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1558
+#: port/frontend/shell/shell.cpp:1826
 msgid "Checking for updates"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1564
+#: port/frontend/shell/shell.cpp:1832
 msgid "PS5CEMU-HAR update"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1584
+#: port/frontend/shell/shell.cpp:1852
 msgid "Select"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1585
+#: port/frontend/shell/shell.cpp:1853
 msgid "Restart"
 msgstr ""
 
-#: port/frontend/shell/widgets.cpp:302
+#: port/frontend/shell/welcome.cpp:27
+msgid "Nintendo DS games, on melonDS, as a third side."
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:28
+msgid "Menus in your PS5's language: most European languages and Indonesian so far."
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:29
+msgid "The remote touch screen: the second screen in a phone's browser, with touch."
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:30
+msgid "Rumble works again, and Skylanders Giants starts."
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:31
+msgid "Wii U accounts, and every side's saves backed up to a USB drive."
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:32
+msgid "Updates and DLC found on your drives and installed with one press."
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:33
+msgid "AMD FSR 1 for a sharper Wii U picture at 4K."
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:34
+msgid "Themes, your own too, and any mix of sides in the bar."
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:35
+msgid "Buttons that swap, a turbo button, and the touchpad's click as any button."
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:36
+msgid "Settings for one game alone, and Settings over your library."
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:37
+msgid "Your own music, box art that downloads again, and a quicker start."
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:78
+msgid "On every side: A on Circle, as Nintendo's consoles have it, or on Cross."
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:79
+msgid "A on Circle and B on Cross, where the Wii U, the 3DS and the DS have them, or A on Cross and B on Circle, as PlayStation games confirm. X and Y swap to match. Each side's Controls, and each Wii U player, can change it later."
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:106
+msgid "Wii U player 1's: a touch of the GamePad's screen, or a button."
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:107
+msgid "What a click of the touchpad is for Wii U player 1: a touch of the GamePad's screen, or the button set to Touchpad click under Buttons (- (Select) when nothing is). Automatic: a touch with the GamePad, a button with the other controllers. Each player's own: Settings > Controls on the Wii U side."
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:119
+msgid "Back to Settings"
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:120
+msgid "Everything here is in Settings too."
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:121
+msgid "Continues. Nothing here has to be chosen now: every row of this page is also in Settings, on its own side."
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:222
+msgid "PS5CEMU-HAR {0}"
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:223
+msgid "New in this version"
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:225
+msgid "How the app looks and feels, chosen once. Settings has all of it too."
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:226
+msgid "A few new options to set up once. Settings has all of them too."
+msgstr ""
+
+#. the heading over the list of what a new version brings
+#: port/frontend/shell/welcome.cpp:271
+msgid "What it brings"
+msgstr ""
+
+#: port/frontend/shell/welcome.cpp:278
+msgid "This row"
+msgstr ""
+
+#: port/frontend/shell/widgets.cpp:313
 msgid "This game"
 msgstr ""
 
@@ -4792,31 +5654,27 @@ msgstr ""
 msgid "Boot log not written (/data is unreachable)"
 msgstr ""
 
-#: port/main_ps5.cpp:206
+#: port/main_ps5.cpp:207
 msgid "PS5CEMU-HAR cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5CEMU-HAR."
 msgstr ""
 
-#: port/main_ps5.cpp:235
+#: port/main_ps5.cpp:236
 msgid "This session: Azahar (3DS); Cemu's emulated Wii U is not started"
 msgstr ""
 
-#: port/main_ps5.cpp:249
+#: port/main_ps5.cpp:250
 msgid "This session: Cemu (Wii U); Azahar's core is not started"
 msgstr ""
 
-#: port/main_ps5.cpp:255
-msgid "Cemu did not start: {0}"
-msgstr ""
-
-#: port/main_ps5.cpp:263
+#: port/main_ps5.cpp:258
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr ""
 
-#: port/main_ps5.cpp:285
+#: port/main_ps5.cpp:282
 msgid "The launcher could not start. The boot log in /data/ps5cemu/logs says why."
 msgstr ""
 
-#: port/main_ps5.cpp:286
+#: port/main_ps5.cpp:283
 msgid "The launcher could not start: {0}. The boot log in /data/ps5cemu/logs has more."
 msgstr ""
 
@@ -4841,11 +5699,35 @@ msgstr ""
 #. a note from the compatibility list, about how the game runs
 #: docs/COMPATIBILITY.md:25
 msgctxt "compatibility note"
+msgid "Crashes before it boots on 3.5.0 and earlier: every game started with Pro Controllers for players 2 to 4, and Giants only takes the GamePad at boot. The 3.5.1 beta gives players 2 to 4 a controller only while their DualSense is signed in; not yet confirmed on a console"
+msgstr ""
+
+#. a note from the compatibility list, about how the game runs
+#: docs/COMPATIBILITY.md:26
+msgctxt "compatibility note"
+msgid "Crashes after making its save, before the title menu, with every setting at default and no graphic packs"
+msgstr ""
+
+#. a note from the compatibility list, about how the game runs
+#: docs/COMPATIBILITY.md:27
+msgctxt "compatibility note"
+msgid "Crashes with its 1440p graphic pack on"
+msgstr ""
+
+#. a note from the compatibility list, about how the game runs
+#: docs/COMPATIBILITY.md:28
+msgctxt "compatibility note"
 msgid "Plays with its 60 FPS graphic pack turned off; with it on, it glitches and crashes once gameplay loads. Up to 2.0.0 C it crashed there either way (Cemu ran out of Vulkan descriptors)"
 msgstr ""
 
 #. a note from the compatibility list, about how the game runs
-#: docs/COMPATIBILITY.md:31
+#: docs/COMPATIBILITY.md:34
 msgctxt "compatibility note"
 msgid "Save states work from the in-game menu"
+msgstr ""
+
+#. a note from the compatibility list, about how the game runs
+#: docs/COMPATIBILITY.md:35
+msgctxt "compatibility note"
+msgid "Moving black dots on outlined 3D models (the Poké Ball and Professor Sycamore in the introduction, then the characters), at any internal resolution. The 3.5.1 beta's Outline fix removes them and is on by default for X, Y, Omega Ruby and Alpha Sapphire; it costs some speed"
 msgstr ""

@@ -32,42 +32,42 @@ msgctxt "genre"
 msgid "Skateboarding"
 msgstr "Patineta"
 
-#: port/app/ingame.cpp:136 port/frontend/actions.cpp:317
+#: port/app/ingame.cpp:140 port/frontend/actions.cpp:317
 #, menu
 msgid "Wii U Pro Controller"
 msgstr "Control Pro de Wii U"
 
-#: port/app/ingame.cpp:137 port/frontend/actions.cpp:318
+#: port/app/ingame.cpp:141 port/frontend/actions.cpp:318
 #, menu
 msgid "Classic Controller"
 msgstr "Control Clásico"
 
-#: port/app/ingame.cpp:138 port/frontend/actions.cpp:319
+#: port/app/ingame.cpp:142 port/frontend/actions.cpp:319
 #, menu
 msgid "Wii Remote"
 msgstr "Control remoto Wii"
 
-#: port/app/ingame.cpp:139 port/frontend/actions.cpp:320
+#: port/app/ingame.cpp:143 port/frontend/actions.cpp:320
 #, menu
 msgid "Wii Remote + Nunchuk"
 msgstr "Control remoto Wii + Nunchuk"
 
-#: port/app/ingame.cpp:142 port/frontend/actions.cpp:323
+#: port/app/ingame.cpp:146 port/frontend/actions.cpp:323
 #, menu
 msgid "No controller"
 msgstr "Sin control"
 
-#: port/app/ingame.cpp:275
+#: port/app/ingame.cpp:289
 #, menu
 msgid "Each player's controller, motion, vibration, deadzones and A and B."
 msgstr "El control de cada jugador, movimiento, vibración, zonas muertas, y A y B."
 
-#: port/app/ingame.cpp:277
+#: port/app/ingame.cpp:291
 #, menu
 msgid "Whose controller the settings below are: Left and Right choose the player."
 msgstr "De quién es el control de los ajustes de abajo: Izquierda y Derecha eligen el jugador."
 
-#: port/app/ingame.cpp:278 port/frontend/shell/pages.cpp:432 port/frontend/shell/pages.cpp:469 port/frontend/shell/pages.cpp:540
+#: port/app/ingame.cpp:292 port/frontend/shell/pages.cpp:449 port/frontend/shell/pages.cpp:487 port/frontend/shell/pages.cpp:594
 #, menu
 msgid "Emulated controller"
 msgstr "Control emulado"
@@ -79,11 +79,16 @@ msgctxt "decimal separator"
 msgid "."
 msgstr "."
 
-#: port/frontend/shell/library.cpp:78
+#: port/app/remote_menu.h:106
+#, menu
+msgid "A phone or tablet on the PS5's network. Sound stays on the PS5."
+msgstr "Un celular o una tableta en la red de la PS5. El sonido se queda en la PS5."
+
+#: port/frontend/shell/library.cpp:82
 msgid "Its settings, graphic packs and controllers are loading, and then it looks for your games."
 msgstr "Se están cargando sus ajustes, paquetes gráficos y controles, y después buscará tus juegos."
 
-#: port/frontend/shell/pages.cpp:418
+#: port/frontend/shell/pages.cpp:428
 msgid ""
 "What the game sees in this player's hands.\n"
 "\n"
@@ -97,7 +102,7 @@ msgstr ""
 "Un Control remoto Wii apunta donde un dedo se apoya en el panel táctil, o hacia donde apuntes el DualSense.\n"
 "Cemu admite dos GamePads como máximo."
 
-#: port/frontend/shell/pages.cpp:422
+#: port/frontend/shell/pages.cpp:432
 msgid ""
 "The DualSense's gyroscope and accelerometer as the controller's own, for the games that aim or steer by tilting the GamePad or the Wii Remote.\n"
 "The Pro Controller and the Classic Controller have none."
@@ -105,7 +110,7 @@ msgstr ""
 "El giroscopio y el acelerómetro del DualSense como los del control, para los juegos en los que se apunta o se conduce inclinando el GamePad o el Control remoto Wii.\n"
 "El Control Pro y el Control Clásico no tienen."
 
-#: port/frontend/shell/pages.cpp:424
+#: port/frontend/shell/pages.cpp:434
 msgid ""
 "How strongly the DualSense rumbles when the game makes the controller vibrate.\n"
 "Left and Right change it by 10%."
@@ -113,39 +118,97 @@ msgstr ""
 "Con qué fuerza vibra el DualSense cuando el juego hace vibrar el control.\n"
 "Izquierda y Derecha la cambian un 10 %."
 
-#: port/frontend/shell/pages.cpp:429
-msgid ""
-"Which DualSense button is which of the controller's.\n"
-"A is on Circle and B on Cross by default, where the Wii U has them."
-msgstr ""
-"Qué botón del DualSense es cada botón del control.\n"
-"Por defecto, A está en Círculo y B en Cruz, donde los tiene la Wii U."
+#: port/frontend/shell/pages.cpp:439
+msgid "A on Circle and B on Cross, where the Wii U has them, or A on Cross and B on Circle, as PlayStation games confirm with Cross. X and Y swap to match. The Wii Remote has no X and Y: its buttons are under Buttons."
+msgstr "A en Círculo y B en Cruz, donde los tiene la Wii U, o A en Cruz y B en Círculo, como los juegos de PlayStation, que confirman con Cruz. X e Y se intercambian para que coincidan. El Control remoto Wii no tiene X ni Y: sus botones están en Botones."
 
-#: port/frontend/shell/pages.cpp:430
+#: port/frontend/shell/pages.cpp:441
+msgid ""
+"What a click of the touchpad is for this player.\n"
+"Touches the screen: it touches the GamePad's screen where your finger is.\n"
+"Presses a button: it presses the Wii U button set to Touchpad click under Buttons; choosing this moves - (Select) there when nothing is.\n"
+"Automatic: a touch with the GamePad, a button with the other controllers, which have no screen.\n"
+"Either way, touchpad click + Options, L1 or R1 stay the shortcuts."
+msgstr ""
+"Qué hace un clic en el panel táctil para este jugador.\n"
+"Toca la pantalla: toca la pantalla del GamePad donde está tu dedo.\n"
+"Pulsa un botón: pulsa el botón de Wii U asignado a Clic en el panel táctil en Botones; si no hay ninguno, al elegir esta opción se le asigna - (Select).\n"
+"Automática: un toque con el GamePad y un botón con los demás controles, que no tienen pantalla.\n"
+"En cualquier caso, clic en el panel táctil + OPTIONS, L1 o R1 siguen siendo los atajos."
+
+#: port/frontend/shell/pages.cpp:445
+msgid ""
+"Which DualSense button presses each of the controller's buttons.\n"
+"A is on Circle and B on Cross by default, where the Wii U has them. Giving one button a DualSense input that another already uses swaps the two."
+msgstr ""
+"Qué botón del DualSense pulsa cada botón del control.\n"
+"Por defecto, A está en Círculo y B en Cruz, donde los tiene la Wii U. Si das a un botón una entrada del DualSense que ya usa otro, los dos se intercambian."
+
+#: port/frontend/shell/pages.cpp:447
 msgid "The default buttons, vibration, motion and deadzones for this controller. Held to confirm."
 msgstr "Los botones, la vibración, el movimiento y las zonas muertas por defecto de este control. Se mantiene para confirmar."
 
 #. {0} is an emulated controller (Wii U GamePad)
-#: port/frontend/shell/pages.cpp:536
+#: port/frontend/shell/pages.cpp:590
 msgid "Controllers"
 msgstr "Controles"
 
-#: port/frontend/shell/pages.cpp:542
+#: port/frontend/shell/pages.cpp:596
 msgid "The DualSense's motion as the controller's."
 msgstr "El movimiento del DualSense como el del control."
 
-#: port/frontend/shell/pages.cpp:542
-msgid "The Pro and Classic Controllers have none."
-msgstr "El Control Pro y el Control Clásico no tienen."
+#: port/frontend/shell/pages.cpp:598
+msgid "The {0} has no motion sensors. For motion, choose the GamePad or a Wii Remote."
+msgstr "El {0} no tiene sensores de movimiento. Para el movimiento, elige el GamePad o un Control remoto Wii."
 
-#: port/frontend/shell/settings.cpp:319
+#: port/frontend/shell/pages.cpp:615
+msgid "The Wii Remote's buttons are under Buttons."
+msgstr "Los botones del Control remoto Wii están en Botones."
+
+#: port/frontend/shell/settings.cpp:403
 msgid "Texture packs in /data/ps5cemu/azahar/load/textures/<title ID>, as the desktop Azahar loads them."
 msgstr "Paquetes de texturas en /data/ps5cemu/azahar/load/textures/<ID del título>, como los carga Azahar para computadora."
 
-#: port/frontend/shell/settings.cpp:376
+#: port/frontend/shell/settings.cpp:469
+msgid "Choose a DualSense button: while you hold it in a game, it presses and lets go by itself about fifteen times a second, for games that make you mash. The button keeps whatever it is mapped to. None turns it off. Every player on this side has it."
+msgstr "Elige un botón del DualSense: mientras lo mantengas pulsado en un juego, se pulsa y se suelta solo unas quince veces por segundo, para los juegos en los que hay que presionar un botón muy rápido. El botón conserva su asignación. Ninguno lo desactiva. Lo tienen todos los jugadores de este lado."
+
+#: port/frontend/shell/settings.cpp:488
 msgid "Cross: this player's controller, motion and buttons."
 msgstr "Cruz: el control, el movimiento y los botones de este jugador."
 
-#: port/frontend/shell/setup.cpp:547
+#: port/frontend/shell/settings.cpp:528
+msgid "{0} in a phone's or tablet's browser, with touch."
+msgstr "{0} en el navegador de un celular o una tableta, con control táctil."
+
+#: port/frontend/shell/settings.cpp:529
+msgid ""
+"{0} in any browser on the PS5's network, a phone's, a tablet's or a computer's, with nothing to install, and its touches sent back to the game. Scan the code shown here, or open the address. The DualSense stays the buttons, and the sound stays on the PS5.\n"
+"While a browser shows it, the PS5 copies that screen up to 30 times a second, so a game can run a little slower; with no browser, it costs nothing. Any device on your network can open the page, so turn it off on a network you share.\n"
+"One switch for every side (the GamePad's screen is player 1's), also in a game's menu (touchpad click + Options). From dolphin78's idea and prototype (#38)."
+msgstr ""
+"{0} en cualquier navegador de la red de la PS5, ya sea de un celular, una tableta o una computadora, sin instalar nada, y sus toques se envían al juego. Escanea el código que aparece aquí o abre la dirección. Los botones siguen en el DualSense y el sonido se queda en la PS5.\n"
+"Mientras un navegador la muestra, la PS5 copia esa pantalla hasta 30 veces por segundo, así que un juego puede ir algo más lento; sin navegador, no cuesta nada. Cualquier dispositivo de tu red puede abrir la página, así que desactívala en una red compartida.\n"
+"Un solo interruptor para todos los lados (la pantalla del GamePad es la del jugador 1), también en el menú de cada juego (clic en el panel táctil + OPTIONS). A partir de la idea y el prototipo de dolphin78 (#38)."
+
+#: port/frontend/shell/settings.cpp:883
+msgid "On, a QR code here opens the game's second screen in a phone's browser. Nothing to install; the phone must be on the PS5's network."
+msgstr "Activado, un código QR aquí abre la segunda pantalla del juego en el navegador de un celular. No hay que instalar nada; el celular debe estar en la red de la PS5."
+
+#: port/frontend/shell/setup.cpp:553
 msgid "The guide, on your phone"
 msgstr "La guía, en tu celular"
+
+#: port/frontend/shell/welcome.cpp:29
+msgid "The remote touch screen: the second screen in a phone's browser, with touch."
+msgstr "La pantalla táctil remota: la segunda pantalla en el navegador de un celular, con control táctil."
+
+#: port/frontend/shell/welcome.cpp:107
+msgid "What a click of the touchpad is for Wii U player 1: a touch of the GamePad's screen, or the button set to Touchpad click under Buttons (- (Select) when nothing is). Automatic: a touch with the GamePad, a button with the other controllers. Each player's own: Settings > Controls on the Wii U side."
+msgstr "Qué hace un clic en el panel táctil para el jugador 1 de Wii U: un toque en la pantalla del GamePad, o el botón asignado a Clic en el panel táctil en Botones (- (Select) si no hay ninguno). Automática: un toque con el GamePad y un botón con los demás controles. Para cada jugador: Ajustes > Controles en el lado de Wii U."
+
+#. a note from the compatibility list, about how the game runs
+#: docs/COMPATIBILITY.md:25
+msgctxt "compatibility note"
+msgid "Crashes before it boots on 3.5.0 and earlier: every game started with Pro Controllers for players 2 to 4, and Giants only takes the GamePad at boot. The 3.5.1 beta gives players 2 to 4 a controller only while their DualSense is signed in; not yet confirmed on a console"
+msgstr "Se cuelga antes de arrancar en la 3.5.0 y anteriores: todos los juegos arrancaban con Controles Pro para los jugadores 2 a 4, y Giants solo acepta el GamePad al arrancar. La beta de la 3.5.1 solo da un control a los jugadores 2 a 4 mientras su DualSense tiene la sesión iniciada; aún sin confirmar en consola"
