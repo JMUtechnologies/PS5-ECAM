@@ -352,11 +352,8 @@ namespace ps5shell
 			summary = Tr("Nothing to install was found on the drives plugged in.");
 		else
 		{
-			std::string joined;
-			for (const std::string& place : places)
-				joined += (joined.empty() ? "" : ", ") + place;
 			// tr: where updates and DLC were found ({0}: "USB drive 1, The PS5"), then how many are new
-			summary = TrF("Found on {0}.", joined) + " " +
+			summary = TrF("Found on {0}.", ps5lang::List(places)) + " " +
 				(fresh ? TrP(fresh, "{0} new to install.", "{0} new to install.") : std::string(Tr("Everything found is installed.")));
 		}
 		const int only = m_updates.only ? FindGame(m_updates.only) : -1;

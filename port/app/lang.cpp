@@ -397,6 +397,15 @@ namespace ps5lang
 		}
 	}
 
+	std::string List(const std::vector<std::string>& items)
+	{
+		std::string out;
+		for (const std::string& item : items)
+			// tr: two items of a list ("Action, Adventure"); a longer one joins each next item the same way
+			out = out.empty() ? item : TrFC("list", "{0}, {1}", out, item);
+		return out;
+	}
+
 	std::string Percent(long long value)
 	{
 		// tr: a percentage: where the % goes, and the space before it where the language has one

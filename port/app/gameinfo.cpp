@@ -188,7 +188,7 @@ namespace ps5gameinfo
 			{"turn-based strategy", TrMarkC("genre", "Turn-based strategy")}, {"virtual pet", TrMarkC("genre", "Virtual pet")},
 			{"volleyball", TrMarkC("genre", "Volleyball")}, {"wargame", TrMarkC("genre", "Wargame")},
 			{"watercraft racing", TrMarkC("genre", "Watercraft racing")}, {"wrestling", TrMarkC("genre", "Wrestling")}};
-		std::string out;
+		std::vector<std::string> names;
 		int count = 0;
 		for (size_t start = 0; start <= genre.size();)
 		{
@@ -206,9 +206,9 @@ namespace ps5gameinfo
 				name = ps5lang::TrC("genre", known->second);
 			else
 				name[0] = (char)std::toupper((unsigned char)name[0]);
-			out += (out.empty() ? "" : ", ") + name;
+			names.push_back(name);
 		}
-		return out;
+		return ps5lang::List(names);
 	}
 
 	void SetFolder(const std::string& folder)

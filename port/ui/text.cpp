@@ -73,11 +73,12 @@ namespace ui
 				(c >= 0x0e47 && c <= 0x0e4e) || c == 0x0e30 || c == 0x0e32 || c == 0x0e45;
 		}
 
-		// a letter of a script whose letters join (Arabic, and its presentation forms once shaped): never
-		// spaced apart by a style's tracking, which would break the joins
+		// a letter of a script whose letters join (Arabic, and its presentation forms once shaped), or
+		// carry vowels and tone marks over and under them (Thai): never spaced apart by a style's
+		// tracking, which would break the joins or leave the marks beside their letters
 		bool Joins(char32_t c)
 		{
-			return (c >= 0x0600 && c <= 0x08ff) || (c >= 0xfb50 && c <= 0xfdff) || (c >= 0xfe70 && c <= 0xfeff);
+			return (c >= 0x0600 && c <= 0x08ff) || (c >= 0xfb50 && c <= 0xfdff) || (c >= 0xfe70 && c <= 0xfeff) || IsThai(c);
 		}
 
 		// CJK line breaking's rules (kinsoku): what never starts a line, and what never ends one

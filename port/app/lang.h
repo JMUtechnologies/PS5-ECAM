@@ -101,6 +101,8 @@ namespace ps5lang
 		return detail::Format(detail::Plural(count, nullptr, one, other), count == 1 ? one : other, count, args...);
 	}
 
+	// Items as the language lists them: "Action, Adventure" ("アクション、アドベンチャー")
+	std::string List(const std::vector<std::string>& items);
 	// Numbers as the language writes them: a percentage ("50 %", "%50"), a decimal ("0,4"), seconds
 	std::string Percent(long long value);
 	std::string Decimal(double value, int decimals);
