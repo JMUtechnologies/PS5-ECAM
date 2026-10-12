@@ -353,10 +353,10 @@ namespace ps5shell
 		{
 			// Cross, Left or Right opens the list
 			int index = 0;
-			choice("ui-language", Tr("Language"), LanguageOptions(index), index, Tr("The menus' language. Game names and descriptions stay as they are."),
+			choice("ui-language", Tr("Language"), LanguageOptions(index), index, Tr("The menus' language, and the games' names where they have one in it."),
 				Tr("PS5CEMU-HAR speaks the PS5's own language unless you choose another here; the first start's Setup check has the same "
-				   "choice. Game names, their descriptions and graphic packs come from GameTDB, the games and the packs' authors, and stay as "
-				   "they wrote them."));
+				   "choice. A game's name follows it where the game has one in that language, as on a console set to it; otherwise it is "
+				   "the English one. Descriptions come from GameTDB in English, and graphic packs from their authors, as they wrote them."));
 		}
 		else if (page == "graphics" && IsWiiU())
 		{

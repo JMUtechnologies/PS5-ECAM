@@ -389,6 +389,9 @@ every 10 seconds with the frame rate, and `[crash]` lines if an emulator crashes
   Romanian, Greek, Turkish, Finnish, Swedish, Danish, Norwegian, Indonesian, Arabic (right to left),
   Japanese, Korean, Chinese (Simplified and Traditional), Thai and Vietnamese, as well as British and
   American English: every language the PS5 offers.
+- **Game names in your language:** a game's own name in the menus' language where it has one (a Wii
+  U game's in twelve languages, a 3DS game's in twelve, a DS game's in six to eight), its English one
+  otherwise. The search and the compatibility list still find it by its English name.
 - **Rumble works** (#41, 3lmerx503's fix): each DualSense opens in its two-motor vibration mode, so
   games and the launcher rumble again, the Pro Controller's included (#25).
 - **Skylanders Giants starts** (#29): players 2 to 4 get a controller in a game only while their

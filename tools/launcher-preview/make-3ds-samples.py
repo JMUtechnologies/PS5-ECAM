@@ -16,12 +16,25 @@ import struct
 import sys
 
 
+# the Japanese names some samples have, as their Japanese releases are called, so the menus in
+# Japanese show a game's own name in their language (docs/UI-REDESIGN.md, 7.7)
+JAPANESE = {
+    "Super Mario 3D Land": "スーパーマリオ 3Dランド",
+    "Mario Kart 7": "マリオカート7",
+    "Kirby: Planet Robobot": "星のカービィ ロボボプラネット",
+    "Fire Emblem Awakening": "ファイアーエムブレム 覚醒",
+    "MARIO KART DS\nNintendo": "マリオカートDS\n任天堂",
+    "New SUPER MARIO BROS.\nNintendo": "New スーパーマリオブラザーズ\n任天堂",
+}
+
+
 def smdh(title, publisher, colour):
     data = bytearray(0x36C0)
     data[0:4] = b"SMDH"
     for language in range(16):
         entry = 0x8 + language * 0x200
-        for offset, text, size in ((0, title, 0x80), (0x80, title, 0x100), (0x180, publisher, 0x80)):
+        name = JAPANESE.get(title, title) if language == 0 else title
+        for offset, text, size in ((0, name, 0x80), (0x80, name, 0x100), (0x180, publisher, 0x80)):
             encoded = text.encode("utf-16-le")[:size - 2]
             data[entry + offset:entry + offset + len(encoded)] = encoded
     # the large icon: the colour, lighter towards the top, with a white disc; RGB565 in 8x8 tiles
@@ -102,7 +115,7 @@ def nds(code, title, colour, unit=0):
             at = 0x20 + tile * 32 + (y % 8) * 4 + (x % 8) // 2
             banner[at] |= index << 4 if x & 1 else index
     for language in range(6):
-        encoded = title.encode("utf-16-le")[:0xFE]
+        encoded = (JAPANESE.get(title, title) if language == 0 else title).encode("utf-16-le")[:0xFE]
         banner[0x240 + language * 0x100:0x240 + language * 0x100 + len(encoded)] = encoded
     header = bytearray(0x4000)
     header[0:12] = title.split("\n")[0].upper().encode("ascii", "replace")[:12].ljust(12, b"\0")
