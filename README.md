@@ -386,8 +386,9 @@ every 10 seconds with the frame rate, and `[crash]` lines if an emulator crashes
 - **Menus in your language:** the launcher and the in-game menus follow the PS5's language, or
   **Settings > Language**: German, French (France and Canada), Spanish (Spain and Latin America),
   Italian, Dutch, Portuguese (Portugal and Brazil), Russian, Ukrainian, Polish, Czech, Hungarian,
-  Romanian, Greek, Turkish, Finnish, Swedish, Danish, Norwegian and Indonesian, as well as British and
-  American English. Japanese, Korean, Chinese, Thai, Vietnamese and Arabic show in English for now.
+  Romanian, Greek, Turkish, Finnish, Swedish, Danish, Norwegian, Indonesian and Arabic (right to
+  left), as well as British and American English. Japanese, Korean, Chinese, Thai and Vietnamese show
+  in English for now.
 - **Rumble works** (#41, 3lmerx503's fix): each DualSense opens in its two-motor vibration mode, so
   games and the launcher rumble again, the Pro Controller's included (#25).
 - **Skylanders Giants starts** (#29): players 2 to 4 get a controller in a game only while their
