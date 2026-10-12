@@ -38,6 +38,7 @@ namespace ps5launcher
 	struct Status
 	{
 		bool coreReady = false;	 // Cemu started: its library can open
+		bool coreStarting = false; // Cemu's library loading beside the launcher (ps5emu::StartCore), which polls it
 		std::string notice;		 // a problem to show on the Wii U side's Library (empty: none)
 		std::string notice3ds;	 // and on the 3DS side's
 		std::string noticeDs;	 // and on the DS side's

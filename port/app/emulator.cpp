@@ -47,6 +47,7 @@
 #include "util/crypto/aes128.h"
 
 #include <atomic>
+#include <thread>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
@@ -404,11 +405,54 @@ namespace ps5emu
 		return true;
 	}
 
+	namespace
+	{
+		std::thread s_coreThread;
+		std::atomic<int> s_coreState{0}; // 0 not started, 1 starting, 2 finished
+		bool s_coreOk = false;			 // with s_coreError: as InitializeCore said, once finished
+		std::string s_coreError;
+	}
+
+	void StartCore(const Options& options)
+	{
+		if (s_coreState != 0)
+			return;
+		s_coreState = 1;
+		const uint64_t started = sceKernelGetProcessTime();
+		s_coreThread = std::thread([options, started] {
+			std::string error;
+			const bool ok = InitializeCore(error);
+			if (ok)
+				ApplyOptions(options);
+			ps5log::Line("[emu] Cemu's library {} in {} ms, beside the launcher", ok ? "loaded" : "failed", (sceKernelGetProcessTime() - started) / 1000);
+			s_coreOk = ok;
+			s_coreError = error;
+			s_coreState = 2;
+		});
+	}
+
+	bool CoreStarted(bool& ok, std::string& error)
+	{
+		if (s_coreState != 2)
+			return false;
+		if (s_coreThread.joinable())
+			s_coreThread.join();
+		ok = s_coreOk;
+		error = s_coreError;
+		return true;
+	}
+
+	void FinishCoreStart()
+	{
+		if (s_coreThread.joinable())
+			s_coreThread.join();
+	}
+
 	void ApplyOptions(const Options& options)
 	{
 		auto& config = GetConfig();
 		config.tv_volume = std::clamp(options.volume, 0, 100);
-		config.upscale_filter = std::clamp(options.upscaleFilter, (int)kLinearFilter, (int)kNearestNeighborFilter);
+		config.upscale_filter = std::clamp(options.upscaleFilter, (int)kLinearFilter, (int)kFsrFilter);
 		config.async_compile = options.asyncShaders;
 		// the GamePad's own sound: on the DualSense's speaker (cemu/PS5AudioAPI.h), or nowhere, as
 		// before; Cemu opens it as the game starts

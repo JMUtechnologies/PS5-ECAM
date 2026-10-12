@@ -14,6 +14,7 @@
 #include "../../app/compatibility.h"
 #include "../../app/gameinfo.h"
 #include "../../app/lang.h"
+#include "../../app/saves.h"
 #include "../../ui/canvas.h"
 #include "../../ui/feedback.h"
 #include "../../ui/images.h"
@@ -62,6 +63,7 @@ namespace ps5shell
 		Mapping,
 		Files,
 		Artic,
+		Updates, // Updates and DLC (6.12)
 	};
 
 	// A game as the shell shows it: the catalogue's entry, and what was looked up for it
@@ -186,6 +188,7 @@ namespace ps5shell
 		void SwitchSide(System side);
 		void LoadGames();
 		void PollGames();
+		void PollCore(); // Cemu's library, loading beside the launcher (ps5emu::StartCore): ready, or why not
 		void MakeGame(Game& game, const ps5catalog::Entry& entry);
 		std::string IconOf(Game& game);
 		std::string CoverOf(Game& game); // box art, else the icon (looked for at most one a frame)
@@ -302,6 +305,7 @@ namespace ps5shell
 		void SetRowIndex(ps5settings::Launcher& settings, const std::string& id, int index);
 		void ChooseIndex(const Row& row, int index); // a dropdown's choice
 		void DrawRemoteScreen(Canvas& canvas, const Box& card); // the remote touch screen's card
+		void DrawSupport(Canvas& canvas, const Box& card);		 // About's: the developer's PayPal.me, as a QR code
 		void SettingsChanged(const std::string& id); // the side's settings changed: saved, and what they change at once
 		void KeepGameSetting(const std::string& setting, const ps5settings::Launcher& view);
 		// game settings (6.5): the same pages, scoped to one game
@@ -331,11 +335,24 @@ namespace ps5shell
 		void SetHandheldMapping(int index, ps5emu::PadInput input);
 		void FilesOpen(int mode);
 		bool BrowseTo(const std::string& folder);
+		// the folder browser's tabs (6.6): the PS5's own storage ("/data"), then each drive plugged in
+		std::vector<std::string> BrowseTabs() const;
+		int BrowseTab() const; // the one the folder shown is on
+		std::map<std::string, std::string> m_tabFolders; // each tab's folder, kept as L1 and R1 go between them
 		void FilesUpdate(const ui::Press& press);
 		void FilesDraw(Canvas& canvas);
 		void PollInstall();
 		bool IsFileEntry(int index) const;
 		const ps5emu::InstallCandidate& Inspect(const std::string& folder);
+		// Updates and DLC (installs.cpp, 6.12): what the drives have to install, by game; game: a base
+		// title ID for that game's alone, 0 for every game's
+		void UpdatesOpen(uint64_t game, ScreenId from);
+		void UpdatesUpdate(const ui::Press& press);
+		void UpdatesDraw(Canvas& canvas);
+		void PollUpdates();
+		void UpdatesSort();
+		void UpdatesInstallNext();
+		std::vector<Hint> UpdatesHints() const;
 		void ArticOpen();
 		void ArticUpdate(const ui::Press& press, const ui::Actions& actions);
 		void ArticDraw(Canvas& canvas);
@@ -350,6 +367,7 @@ namespace ps5shell
 		void OpenHelp(const std::string& title, const std::string& text);
 		void OpenGameMenu(int game);
 		void OpenKeyboard();
+		void OpenNameKeyboard(const std::string& title, const std::string& text, size_t limit, std::function<void(const std::string&)> done);
 		bool OverlayUpdate(const ui::Press& press);
 
 		// -- state ----------------------------------------------------------------------------
@@ -460,6 +478,12 @@ namespace ps5shell
 		bool m_packsReloaded = false;
 		bool m_holdFired = false;
 		std::string m_message; // a row's outcome
+		std::map<std::string, int> m_holdChoice; // a held row with choices (Left and Right): the one chosen
+		std::vector<ps5saves::Backup> m_backups;  // Accounts and saves: those on the drives, looked for now and then
+		double m_backupsAt = -100;
+		std::string m_savesMessage;			   // what the last backup or restore came to
+		int m_savesFinished = 0;			   // the saves' runs seen ending (ps5saves::Status::finished)
+		void UseOwnAccount();				   // One account for each PS5 user: the user who started the app's
 		float m_holdProgress = 0; // a Hold row's, 0 to 1
 		bool m_rescan[3] = {};	   // a side's folder changed while another side was open
 		// game settings: the game's title ID (0: the side's settings), its name, what the side's
@@ -505,6 +529,25 @@ namespace ps5shell
 		float m_installFraction = -1;
 		std::map<std::string, ps5emu::InstallCandidate> m_inspected;
 		bool m_installing = false;
+		struct Updates
+		{
+			uint64_t only = 0; // a game's base title ID: its own alone
+			ScreenId from = ScreenId::Settings;
+			std::vector<ps5emu::Installable> found;
+			std::vector<int> rows; // found's, by game
+			int selected = 0;
+			float scroll = 0;
+			bool looking = false;
+			std::string where;			   // the folder being looked in
+			std::vector<std::string> queue; // folders to install, the first installing
+			int queued = 0, finished = 0;  // the run: how many asked for, how many done
+			uint64_t runBytes = 0, runDone = 0; // the run's bytes, and those of the installs done
+			bool installing = false, stopping = false;
+			uint64_t lastCopied = 0;
+			double lastAt = 0;
+			float speed = 0; // bytes a second, over the last few seconds
+			std::string message;
+		} m_updates;
 		int m_articRow = 0, m_articOctet = 3;
 		bool m_articEditing = false;
 		std::array<int, 4> m_articOctets{192, 168, 1, 2};
@@ -563,6 +606,12 @@ namespace ps5shell
 			bool open = false;
 			int row = 1, column = 0;
 			double at = 0;
+			// naming something (an account) instead of the Library's search: its text, what the sheet
+			// calls it, how long it may be, and what Done does with it (Circle leaves it as it was)
+			bool naming = false;
+			std::string text, title;
+			size_t limit = 0;
+			std::function<void(const std::string&)> done;
 		} m_keyboard;
 		struct UpdateSheet
 		{

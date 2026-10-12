@@ -76,6 +76,8 @@ namespace ps5shell
 			RunChecks();
 			Show(ScreenId::Setup);
 		}
+		else if (to == ScreenId::Updates)
+			UpdatesOpen(m_updates.only, m_updates.from); // looked for again: the folder browser may have installed one
 		else
 			ShowTab(to);
 	}
@@ -754,8 +756,10 @@ namespace ps5shell
 		}
 	}
 
-	// Waits for everything to be let go (the Cross that started it), then takes the next press. The
-	// touchpad cancels, unless the player's click is a button (#37): then it is the press.
+	// Waits for everything to be let go (the Cross that started it), then takes the next press. On the Wii U
+	// the touchpad's click is a press like any other, for any button (- included, #37): taking it makes
+	// that player's click a button, not a touch of the GamePad's screen. A handheld's touchpad is its
+	// touch screen, so there it cancels.
 	void Shell::PollCapture()
 	{
 		ps5pad::Data data{};
@@ -771,7 +775,7 @@ namespace ps5shell
 		}
 		else if (!m_capture.released)
 			m_capture.released = idle;
-		else if ((data.buttons & ps5pad::kTouchPad) && !touchpadButton)
+		else if ((data.buttons & ps5pad::kTouchPad) && m_mappingSide != System::WiiU)
 		{
 			m_capture.active = false;
 			m_mapMessage = Tr("Cancelled: it stays as it was.");
@@ -784,6 +788,15 @@ namespace ps5shell
 			else
 				ps5emu::SetMapping(m_player, m_mapSelected, input);
 			m_mapMessage = Tr("Done.");
+			if (input == ps5emu::PadInput::TouchPad && !touchpadButton)
+			{
+				// the click becomes this player's button: Touchpad click on their page says so, and changes it back
+				m_settings.touchpadClick[m_player] = 2;
+				ps5emu::ApplyTouchpadClick(m_player, 2, false);
+				SaveSettings();
+				m_mapMessage = Tr("Done. The touchpad's click is now a button for this player, not a touch of the GamePad's screen: their Touchpad "
+								  "click setting changes it back.");
+			}
 			m_feedback.Play(ui::Cue::Select);
 		}
 	}
@@ -838,7 +851,7 @@ namespace ps5shell
 			const int seconds = (int)std::max(0.0, m_capture.until - m_now) + 1;
 			// tr: {0} is a button of the Wii U's or the 3DS's controller
 			message = TrF("Press the DualSense button, trigger or stick direction for {0} now.", ButtonName(mapping.button)) + "\n" +
-				(m_mappingSide == System::WiiU && ps5pad::TouchpadButton(m_player) ?
+				(m_mappingSide == System::WiiU ?
 						TrP(seconds, "{0} second left; then it stays as it was. The touchpad's click counts too.",
 							"{0} seconds left; then it stays as it was. The touchpad's click counts too.") :
 						TrP(seconds, "{0} second left. A touchpad click cancels.", "{0} seconds left. A touchpad click cancels."));
@@ -862,7 +875,9 @@ namespace ps5shell
 			m_filesSide = System::WiiU;
 		else if (mode == 2)
 			m_filesSide = System::N3ds;
-		if (m_screen != ScreenId::Files && m_screen != ScreenId::Settings && m_screen != ScreenId::Setup)
+		if (m_screen == ScreenId::Updates)
+			m_pageFrom = ScreenId::Updates; // Triangle there: Circle comes back to it
+		else if (m_screen != ScreenId::Files && m_screen != ScreenId::Settings && m_screen != ScreenId::Setup)
 			m_pageFrom = ScreenId::Library;
 		else if (m_screen == ScreenId::Setup)
 			m_pageFrom = ScreenId::Setup;
@@ -885,12 +900,10 @@ namespace ps5shell
 		m_browseEntries.clear();
 		if (folder != "/")
 			m_browseEntries.push_back("..");
-		// the drives plugged in, as shortcuts, except the one already open (and in /mnt, which lists them)
-		if (folder != "/mnt")
-			for (const std::string& drive : ConnectedDrives())
-				if (folder != drive && !folder.starts_with(drive + "/"))
-					m_browseEntries.push_back(drive);
+		// the drives are tabs across the top now (6.6), not rows
 		m_browseEntries.insert(m_browseEntries.end(), folders.begin(), folders.end());
+		const std::vector<std::string> tabs = BrowseTabs();
+		m_tabFolders[tabs[BrowseTab()]] = folder;
 		m_browseFiles = 0;
 		if (m_filesMode == 2)
 			for (const auto& file : ListEntries(folder, false, ok))
@@ -902,6 +915,23 @@ namespace ps5shell
 		m_browseSelected = 0;
 		m_folderCounts.clear();
 		return true;
+	}
+
+	std::vector<std::string> Shell::BrowseTabs() const
+	{
+		std::vector<std::string> tabs{"/data"};
+		for (const std::string& drive : ConnectedDrives())
+			tabs.push_back(drive);
+		return tabs;
+	}
+
+	int Shell::BrowseTab() const
+	{
+		const std::vector<std::string> tabs = BrowseTabs();
+		for (int i = 1; i < (int)tabs.size(); i++)
+			if (m_browseFolder == tabs[i] || m_browseFolder.starts_with(tabs[i] + "/"))
+				return i;
+		return 0; // anywhere else is the PS5's
 	}
 
 	bool Shell::IsFileEntry(int index) const
@@ -947,14 +977,35 @@ namespace ps5shell
 			if (m_pageFrom == ScreenId::Settings)
 				SettingsOpen("files", true);
 			return;
-		case Button::Up:
-		case Button::Down:
 		case Button::L1:
 		case Button::R1:
+		{
+			// the next drive's tab, on the folder it was on
+			const std::vector<std::string> tabs = BrowseTabs();
+			const int tab = BrowseTab() + (b == Button::R1 ? 1 : -1);
+			if (tab < 0 || tab >= (int)tabs.size())
+			{
+				m_feedback.Play(ui::Cue::Edge, press.repeat);
+				return;
+			}
+			const auto kept = m_tabFolders.find(tabs[tab]);
+			if ((kept == m_tabFolders.end() || !BrowseTo(kept->second)) && !BrowseTo(tabs[tab]))
+			{
+				m_filesMessage = Tr("This drive cannot be opened.");
+				m_feedback.Play(ui::Cue::Denied);
+				return;
+			}
+			m_filesMessage.clear();
+			m_listScroll.Snap(0);
+			m_feedback.Play(ui::Cue::Focus);
+			return;
+		}
+		case Button::Up:
+		case Button::Down:
 		case Button::L2:
 		case Button::R2:
 		{
-			const int step = b == Button::Up ? -1 : b == Button::Down ? 1 : b == Button::L1 || b == Button::L2 ? -7 : 7;
+			const int step = b == Button::Up ? -1 : b == Button::Down ? 1 : b == Button::L2 ? -7 : 7;
 			const int next = std::clamp(m_browseSelected + step, 0, std::max(0, count - 1));
 			if (next == m_browseSelected)
 				m_feedback.Play(ui::Cue::Edge, press.repeat);
@@ -1115,12 +1166,35 @@ namespace ps5shell
 					  std::string(Tr("Choose the folder that holds your Wii U games")));
 		const int count = (int)m_browseEntries.size();
 		canvas.PushAlpha(Enter(1));
-		canvas.Text(Style(kOverlineStyle), kListX, kListTop - 40, ShortPath(m_browseFolder, 56), Secondary(), kListWidth - 140, 1);
-		canvas.Text(Style({20, ui::Weight::Medium, 1.0f, 0, false, true}), kListX + kListWidth, kListTop - 40,
+		// a tab for each drive (6.6): the PS5's own storage, then each USB drive and extended storage
+		{
+			const std::vector<std::string> tabs = BrowseTabs();
+			const int current = BrowseTab();
+			const ui::TextStyle style = Style({21, ui::Weight::Medium, 1.0f});
+			float x = kListX + 44;
+			const float y = 200, h = 44;
+			canvas.Draw(Icon::L1, {kListX, y + 7, 34, 30}, tabs.size() > 1 ? Secondary() : Tertiary());
+			for (int i = 0; i < (int)tabs.size(); i++)
+			{
+				const std::string label = i == 0 ? std::string(Tr("PS5")) : DriveName(tabs[i]);
+				const float w = m_fonts.Width(style, label) + 66;
+				const Box tab{x, y, w, h};
+				const bool on = i == current;
+				canvas.Rect(tab, h / 2, on ? ui::SetAlpha(Accent(), 0.22f) : Surface());
+				canvas.Ring(tab, h / 2, 1.5f, on ? ui::SetAlpha(Accent(), 0.55f) : kGlassEdge);
+				canvas.Draw(i == 0 ? Icon::Folder : tabs[i].starts_with("/mnt/usb") ? Icon::Usb : Icon::Drive, {x + 16, y + 11, 22, 22}, on ? Accent() : Secondary());
+				canvas.Text(style, x + 46, y + 11, label, on ? kText : Secondary(), w - 56, 1);
+				x += w + 10;
+			}
+			canvas.Draw(Icon::R1, {x + 4, y + 7, 34, 30}, tabs.size() > 1 ? Secondary() : Tertiary());
+		}
+		constexpr float kTabbedTop = kListTop + 56; // the list under the tabs and the folder's path
+		canvas.Text(Style(kOverlineStyle), kListX, kTabbedTop - 36, ShortPath(m_browseFolder, 56), Secondary(), kListWidth - 140, 1);
+		canvas.Text(Style({20, ui::Weight::Medium, 1.0f, 0, false, true}), kListX + kListWidth, kTabbedTop - 36,
 			TrF("{0} of {1}", count ? m_browseSelected + 1 : 0, count), Tertiary(), 0, 0, ui::Align::Right);
 		if (count == 0)
-			canvas.Text(Style(kBodyStyle), kListX, kListTop + 10, Tr("This folder is empty."), Secondary(), kListWidth, 2);
-		DrawList(canvas, {kListX, kListTop, kListWidth, kListBottom - kListTop}, count, m_browseSelected, m_listScroll.value, 72,
+			canvas.Text(Style(kBodyStyle), kListX, kTabbedTop + 10, Tr("This folder is empty."), Secondary(), kListWidth, 2);
+		DrawList(canvas, {kListX, kTabbedTop, kListWidth, kListBottom - kTabbedTop}, count, m_browseSelected, m_listScroll.value, 72,
 			[&](int i, const Box& box, bool focused) {
 				const std::string& entry = m_browseEntries[i];
 				const bool up = entry == "..", drive = entry.starts_with('/'), file = IsFileEntry(i);

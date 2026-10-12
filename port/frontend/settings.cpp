@@ -160,7 +160,7 @@ namespace ps5settings
 		if (json.Parse(text.str().c_str()).HasParseError() || !json.IsObject())
 			return settings;
 		ReadString(json, "gamesFolder", settings.gamesFolder);
-		ReadInt(json, "upscaleFilter", settings.upscaleFilter, 0, 3);
+		ReadInt(json, "upscaleFilter", settings.upscaleFilter, 0, 4);
 		ReadBool(json, "highFrameRate", settings.highFrameRate);
 		ReadInt(json, "framePacing", settings.framePacing, 1, 3);
 		ReadBool(json, "overlay", settings.overlay);
@@ -428,7 +428,7 @@ namespace ps5settings
 		const std::vector<Field>& WiiUFields()
 		{
 			static const std::vector<Field> fields = {
-				{"upscaleFilter", &Launcher::upscaleFilter, nullptr, nullptr, nullptr, 0, 3},
+				{"upscaleFilter", &Launcher::upscaleFilter, nullptr, nullptr, nullptr, 0, 4},
 				{"highFrameRate", nullptr, &Launcher::highFrameRate},
 				{"framePacing", &Launcher::framePacing, nullptr, nullptr, nullptr, 1, 3},
 				{"overlay", nullptr, &Launcher::overlay},

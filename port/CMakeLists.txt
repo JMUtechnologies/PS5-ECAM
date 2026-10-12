@@ -52,6 +52,7 @@ find_library(TURBOJPEG_LIBRARY turbojpeg REQUIRED)
 add_library(CemuPS5 STATIC
 	app/emulator.cpp
 	app/emulator.h
+	app/accounts.cpp
 	app/controllers.cpp
 	app/boxart.cpp
 	app/boxart.h
@@ -68,6 +69,8 @@ add_library(CemuPS5 STATIC
 	app/ingame3ds.cpp
 	app/ingame3ds.h
 	app/install.cpp
+	app/saves.cpp
+	app/saves.h
 	app/lang.cpp
 	app/lang.h
 	app/updates.cpp
@@ -100,6 +103,7 @@ add_library(CemuPS5 STATIC
 	frontend/shell.h
 	frontend/shell/host_ps5.cpp
 	frontend/shell/hub.cpp
+	frontend/shell/installs.cpp
 	frontend/shell/library.cpp
 	frontend/shell/pages.cpp
 	frontend/shell/recent.cpp
@@ -166,6 +170,7 @@ add_library(CemuPS5 STATIC
 cemu_use_precompiled_header(CemuPS5)
 set_source_files_properties(
 	app/boxart.cpp
+	app/saves.cpp
 	app/catalog.cpp
 	app/compatibility.cpp
 	app/gameinfo.cpp
@@ -179,6 +184,7 @@ set_source_files_properties(
 	frontend/settings.cpp
 	frontend/shell/host_ps5.cpp
 	frontend/shell/hub.cpp
+	frontend/shell/installs.cpp
 	frontend/shell/library.cpp
 	frontend/shell/pages.cpp
 	frontend/shell/recent.cpp

@@ -226,9 +226,9 @@ namespace ps5shell
 		float bx = b.Right() + 20;
 		if (packs)
 		{
-			if (game.packsOn < 0)
+			if (game.packsOn < 0 && m_status.coreReady)
 				game.packsOn = ps5emu::EnabledGraphicPackCount(g.titleId);
-			b = PillButton(canvas, bx, ay, game.packsOn ? TrP(game.packsOn, "Graphic packs · {0} on", "Graphic packs · {0} on") : std::string(Tr("Graphic packs")),
+			b = PillButton(canvas, bx, ay, game.packsOn > 0 ? TrP(game.packsOn, "Graphic packs · {0} on", "Graphic packs · {0} on") : std::string(Tr("Graphic packs")),
 				false, !m_hubAbout && m_hubAction == 1, Icon::Play, false, 72, 620);
 			bx = b.Right() + 20;
 		}

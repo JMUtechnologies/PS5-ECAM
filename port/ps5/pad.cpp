@@ -37,6 +37,7 @@ extern "C"
 	int32_t sceUserServiceGetForegroundUser(int32_t* userId);
 	int32_t sceUserServiceGetInitialUser(int32_t* userId);
 	int32_t sceUserServiceGetLoginUserIdList(LoginUserIdList* list);
+	int32_t sceUserServiceGetUserName(int32_t userId, char* name, size_t size);
 	int32_t scePadInit();
 	int32_t scePadOpen(int32_t userId, int32_t type, int32_t index, const void* parameters);
 	int32_t scePadGetHandle(int32_t userId, int32_t type, int32_t index);
@@ -208,6 +209,15 @@ namespace ps5pad
 	{
 		std::lock_guard lock(s_mutex);
 		return player >= 0 && player < kMaxPlayers && s_slots[player].handle >= 0 ? s_slots[player].user : -1;
+	}
+
+	std::string UserName(int player)
+	{
+		const int32_t user = UserId(player);
+		char name[32] = {};
+		if (user < 0 || sceUserServiceGetUserName(user, name, sizeof(name) - 1) != 0)
+			return {};
+		return name;
 	}
 
 	void TouchResolution(int player, float& width, float& height)

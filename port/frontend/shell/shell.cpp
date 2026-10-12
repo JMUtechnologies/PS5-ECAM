@@ -204,6 +204,8 @@ namespace ps5shell
 		// the background work stops behind the launch (4.2, rule 4), the screen kept drawn
 		ps5boxart::Stop();
 		ps5packs::Stop();
+		ps5emu::StopFindingInstallables();
+		ps5saves::Finish(); // a backup or restore running finishes first
 		for (int waited = 0; SystemScanning() && !m_failed; waited++)
 		{
 			if (waited == 0)
@@ -252,10 +254,14 @@ namespace ps5shell
 		}
 		m_feedback.Update(m_now);
 		Update(actions);
+		if (m_status.coreStarting)
+			PollCore();
 		PollGames();
 		PollPacks();
 		if (m_installing)
 			PollInstall();
+		if (m_screen == ScreenId::Updates || m_updates.installing)
+			PollUpdates();
 		const bool prompting = ps5update::Prompting();
 		if (prompting != m_update.open)
 		{
@@ -337,6 +343,7 @@ namespace ps5shell
 			case ScreenId::Mapping: MappingUpdate(press); break;
 			case ScreenId::Files: FilesUpdate(press); break;
 			case ScreenId::Artic: ArticUpdate(press, actions); break;
+			case ScreenId::Updates: UpdatesUpdate(press); break;
 			}
 		}
 		// what is held to confirm goes on without presses
@@ -370,6 +377,7 @@ namespace ps5shell
 		case ScreenId::Mapping: MappingDraw(canvas); break;
 		case ScreenId::Files: FilesDraw(canvas); break;
 		case ScreenId::Artic: ArticDraw(canvas); break;
+		case ScreenId::Updates: UpdatesDraw(canvas); break;
 		}
 		const bool overlay = m_picker.open || m_help.open || m_menu.open || m_keyboard.open || m_update.open;
 		if (overlay)
@@ -571,6 +579,37 @@ namespace ps5shell
 		}
 		m_libraryIndex = -1;
 		LibraryRefresh();
+	}
+
+	void Shell::PollCore()
+	{
+		bool ok = false;
+		std::string error;
+		if (!ps5emu::CoreStarted(ok, error))
+			return;
+		m_status.coreStarting = false;
+		if (!ok)
+		{
+			m_status.notice = TrF("Cemu did not start: {0}", error);
+			ps5log::Line("[launcher] {}", m_status.notice);
+		}
+		else
+		{
+			m_status.coreReady = true;
+			ps5emu::LogMemory(); // Cemu's start, against the 3DS side's
+			// A and B chosen for every side before Cemu was up (Make it yours): the Wii U players' now
+			if (m_settings.wiiuFaceLayout)
+			{
+				for (int player = 0; player < ps5pad::kMaxPlayers; player++)
+					ps5emu::SetFaceLayout(player, m_settings.wiiuFaceLayout == 1 ? ps5emu::FaceLayout::Nintendo : ps5emu::FaceLayout::PlayStation);
+				m_settings.wiiuFaceLayout = 0;
+				SaveSettings();
+			}
+			UseOwnAccount(); // One account for each PS5 user: whoever started the app plays on theirs
+		}
+		// the side's games, now from Cemu's own scan (the catalogue's were shown meanwhile)
+		if (IsWiiU())
+			LoadGames();
 	}
 
 	void Shell::PollGames()
@@ -1059,8 +1098,8 @@ namespace ps5shell
 		case ScreenId::Player:
 			return {{Icon::Cross, Tr("Choose")}, {Icon::LeftRight, Tr("Change")}, {Icon::Triangle, Tr("More about it")}, {Icon::Circle, Tr("Back")}};
 		case ScreenId::Mapping:
-			if (m_capture.active)
-				return {{Icon::Touchpad, Tr("Cancel")}};
+			if (m_capture.active) // the Wii U takes the touchpad's click as a press; a handheld's cancels
+				return m_mappingSide == System::WiiU ? std::vector<Hint>{} : std::vector<Hint>{{Icon::Touchpad, Tr("Cancel")}};
 			return {{Icon::Cross, Tr("Assign")}, {Icon::Square, Tr("Clear")}, {Icon::Circle, Tr("Back")}};
 		case ScreenId::Files:
 			if (m_installing)
@@ -1070,6 +1109,7 @@ namespace ps5shell
 			if (m_articEditing)
 				return {{Icon::LeftRight, Tr("Number")}, {Icon::UpDown, Tr("Change")}, {Icon::Cross, Tr("Keep")}};
 			return {{Icon::Cross, m_articRow == 0 ? Tr("Edit") : m_articRow == 1 ? Tr("Connect") : Tr("Hold to set up")}, {Icon::Circle, Tr("Back")}};
+		case ScreenId::Updates: return UpdatesHints();
 		}
 		return {};
 	}
@@ -1312,14 +1352,29 @@ namespace ps5shell
 		const bool own = m_settings.games.count(ps5settings::GameKey(ps5launcher::SideName(m_side), g.entry.game.titleId)) > 0;
 		m_menu.items.push_back({"settings", own ? Tr("Game settings: its own") : Tr("Game settings")});
 		if (IsWiiU() && m_status.coreReady)
+		{
 			m_menu.items.push_back({"packs", Tr("Graphic packs")});
+			m_menu.items.push_back({"updates", Tr("Updates and DLC")});
+		}
 		m_menu.items.push_back({"favourite", g.entry.favourite ? Tr("Not a favourite") : Tr("Favourite")});
 		m_menu.items.push_back({"where", Tr("Show where it is")});
 		m_feedback.Play(ui::Cue::Sheet);
 	}
 
+	void Shell::OpenNameKeyboard(const std::string& title, const std::string& text, size_t limit, std::function<void(const std::string&)> done)
+	{
+		OpenKeyboard();
+		m_keyboard.naming = true;
+		m_keyboard.title = title;
+		m_keyboard.text = text;
+		m_keyboard.limit = limit;
+		m_keyboard.done = std::move(done);
+	}
+
 	void Shell::OpenKeyboard()
 	{
+		m_keyboard.naming = false;
+		m_keyboard.done = nullptr;
 		m_keyboard.open = true;
 		m_keyboard.row = 1;
 		m_keyboard.column = 0;
@@ -1429,31 +1484,73 @@ namespace ps5shell
 				break;
 			}
 			case Button::Cross:
-				if (m_keyboard.row < 4)
-					m_search += (char)std::tolower((unsigned char)kKeyRows[m_keyboard.row][m_keyboard.column]);
-				else if (m_keyboard.column == 0)
-					m_search += ' ';
-				else if (m_keyboard.column == 1 && !m_search.empty())
-					m_search.pop_back();
-				else if (m_keyboard.column == 2)
+			{
+				std::string& text = m_keyboard.naming ? m_keyboard.text : m_search;
+				const bool room = !m_keyboard.naming || text.size() < m_keyboard.limit;
+				if (m_keyboard.row < 4 && room)
+				{
+					// a name starts each word with a capital (Lena); a search is in small letters
+					const char key = kKeyRows[m_keyboard.row][m_keyboard.column];
+					const bool capital = m_keyboard.naming && (text.empty() || text.back() == ' ');
+					text += capital ? key : (char)std::tolower((unsigned char)key);
+				}
+				else if (m_keyboard.row == 4 && m_keyboard.column == 0 && room)
+					text += ' ';
+				else if (m_keyboard.row == 4 && m_keyboard.column == 1 && !text.empty())
+					text.pop_back();
+				else if (m_keyboard.row == 4 && m_keyboard.column == 2)
+				{
 					m_keyboard.open = false;
+					if (m_keyboard.naming && m_keyboard.done)
+					{
+						// what was typed, its spaces at the ends left out
+						const size_t first = text.find_first_not_of(' '), last = text.find_last_not_of(' ');
+						m_keyboard.done(first == std::string::npos ? std::string() : text.substr(first, last - first + 1));
+					}
+				}
+				else if (!room)
+				{
+					m_feedback.Play(ui::Cue::Denied);
+					break;
+				}
 				m_feedback.Play(ui::Cue::Select);
-				LibraryRefresh();
+				if (!m_keyboard.naming)
+					LibraryRefresh();
 				break;
+			}
 			case Button::Square:
-				if (!m_search.empty())
-					m_search.pop_back();
+			{
+				std::string& text = m_keyboard.naming ? m_keyboard.text : m_search;
+				if (!text.empty())
+					text.pop_back();
 				m_feedback.Play(ui::Cue::Back);
-				LibraryRefresh();
+				if (!m_keyboard.naming)
+					LibraryRefresh();
 				break;
+			}
 			case Button::Triangle:
-				m_search += ' ';
+			{
+				std::string& text = m_keyboard.naming ? m_keyboard.text : m_search;
+				if (!m_keyboard.naming || text.size() < m_keyboard.limit)
+					text += ' ';
 				m_feedback.Play(ui::Cue::Select);
-				LibraryRefresh();
+				if (!m_keyboard.naming)
+					LibraryRefresh();
 				break;
+			}
 			case Button::Options:
-			case Button::Circle:
+				// Done, as the hints have it: a name is kept
 				m_keyboard.open = false;
+				if (m_keyboard.naming && m_keyboard.done)
+				{
+					const std::string& text = m_keyboard.text;
+					const size_t first = text.find_first_not_of(' '), last = text.find_last_not_of(' ');
+					m_keyboard.done(first == std::string::npos ? std::string() : text.substr(first, last - first + 1));
+				}
+				m_feedback.Play(ui::Cue::Select);
+				break;
+			case Button::Circle:
+				m_keyboard.open = false; // a name is left as it was
 				m_feedback.Play(ui::Cue::Back);
 				break;
 			default: break;
@@ -1497,6 +1594,8 @@ namespace ps5shell
 					m_feedback.Play(ui::Cue::Select);
 					PacksOpen(game, m_screen);
 				}
+				else if (id == "updates") // that game's alone (6.12)
+					UpdatesOpen(g.entry.game.titleId, m_screen);
 				else if (id == "settings")
 				{
 					m_feedback.Play(ui::Cue::Select);
@@ -1627,7 +1726,7 @@ namespace ps5shell
 			Badge(canvas, sheet.x + 36, sheet.y + 32, m_side);
 			canvas.Text(Style(kHeadingStyle), sheet.x + 36, sheet.y + 78, game.entry.game.name, kText, sheet.w - 72, 1);
 			static const std::map<std::string, Icon> kIcons = {{"play", Icon::Play}, {"hub", Icon::ChevronRight}, {"settings", Icon::Sparkle},
-				{"packs", Icon::Gear}, {"favourite", Icon::Star}, {"where", Icon::Folder}};
+				{"packs", Icon::Gear}, {"updates", Icon::Download}, {"favourite", Icon::Star}, {"where", Icon::Folder}};
 			for (int i = 0; i < count; i++)
 			{
 				const Box row{sheet.x + 20, sheet.y + 136 + i * rowH, sheet.w - 40, rowH - 6};
@@ -1651,8 +1750,10 @@ namespace ps5shell
 			canvas.PushAlpha(a);
 			canvas.PushOffset(0, (1 - a) * 60);
 			DrawSheet(canvas, sheet, a);
-			canvas.Draw(Icon::Search, {sheet.x + 36, sheet.y + 30, 30, 30}, Secondary());
-			canvas.Text(Style(kHeadingStyle), sheet.x + 80, sheet.y + 26, m_search.empty() ? Tr("Search") : m_search + "_", m_search.empty() ? Tertiary() : kText,
+			const std::string& typed = m_keyboard.naming ? m_keyboard.text : m_search;
+			const std::string empty = m_keyboard.naming ? m_keyboard.title : std::string(Tr("Search"));
+			canvas.Draw(m_keyboard.naming ? Icon::Sparkle : Icon::Search, {sheet.x + 36, sheet.y + 30, 30, 30}, Secondary());
+			canvas.Text(Style(kHeadingStyle), sheet.x + 80, sheet.y + 26, typed.empty() ? empty : typed + "_", typed.empty() ? Tertiary() : kText,
 				sheet.w - 120, 1);
 			const float keyW = 92, keyH = 56, gap = 10;
 			for (int row = 0; row < kKeyboardRows; row++)

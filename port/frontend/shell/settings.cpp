@@ -62,7 +62,7 @@ namespace ps5shell
 			return 0;
 		}
 		// tr: how a game's picture is scaled: the methods' names
-		constexpr const char* kUpscaleFilters[] = {TrMark("Linear"), TrMark("Bicubic"), TrMark("Bicubic Hermite"), TrMark("Nearest neighbour")};
+		constexpr const char* kUpscaleFilters[] = {TrMark("Linear"), TrMark("Bicubic"), TrMark("Bicubic Hermite"), TrMark("Nearest neighbour"), TrMark("AMD FSR 1")};
 		constexpr const char* kMusic[] = {"setup", "off"};
 		constexpr const char* kMusicNames[] = {TrMark("Setup theme"), TrMark("Off")};
 		constexpr int kHolds[] = {400, 600, 800, 1000, 1200, 1500};
@@ -156,12 +156,18 @@ namespace ps5shell
 										Is3ds()		 ? Tr("Where your 3DS games are, and installs into the 3DS's storage.") :
 													   Tr("Where your DS games are, and where their saves go."),
 			Icon::Folder});
+		// the Wii U's accounts and every side's saves (6.13); a handheld has one player, so its page is saves alone
+		pages.push_back({"saves", IsWiiU() ? Tr("Accounts and saves") : Tr("Saves"),
+			IsWiiU() ? Tr("Each account has its own saves of every game. Backups hold every side's.") : Tr("Backups hold every side's saves."),
+			Icon::Save});
 		if (Is3ds())
 			pages.push_back({"artic", Tr("Artic Base"), Tr("Play from your 3DS, over your network."), Icon::Artic});
 		pages.push_back({"online", Tr("Online"), IsWiiU() ? Tr("Box art, graphic packs and PS5CEMU-HAR itself.") : Tr("Box art and PS5CEMU-HAR itself."), Icon::Globe});
 		pages.push_back({"launcher", Tr("Launcher"), Tr("How it looks, and how it reads."), Icon::Sparkle});
 		pages.push_back({"diagnostics", Tr("Diagnostics"), Tr("The Setup check, logs, caches and what this session is."), Icon::Pulse});
-		pages.push_back({"about", TrC("app", "About"), Tr("Who made what."), Icon::Info});
+		// the version always in sight, whatever the credits' length in a language
+		pages.push_back({"about", TrC("app", "About"), std::string(Tr("Who made what.")) + " · " + Tr("Version") + " " + ps5update::Readable(PS5CEMU_VERSION),
+			Icon::Info});
 		if (!InGameSettings())
 			return pages;
 		// a game's settings: only the pages with something a game can have its own of (SideRows' rows
@@ -300,8 +306,9 @@ namespace ps5shell
 			if (!m_status.coreReady)
 			{
 				row->dimmed = true;
-				row->description = Tr("Cemu did not start, so this cannot be changed.");
+				row->description = m_status.coreStarting ? Tr("Cemu is still starting: a moment.") : Tr("Cemu did not start, so this cannot be changed.");
 			}
+			return row;
 		};
 		const std::string side = ps5launcher::SideName(m_side);
 		auto own = [&](Row* row, const char* setting) { row->setting = setting; };
@@ -318,7 +325,8 @@ namespace ps5shell
 		else if (page == "graphics" && IsWiiU())
 		{
 			own(choice("upscaling", Tr("Upscaling to 4K"), Options(kUpscaleFilters), settings.upscaleFilter, Tr("How the picture is scaled to the TV."),
-					Tr("Bicubic is sharp, Bicubic Hermite a little softer, Linear softer still; Nearest neighbour keeps pixels square.")),
+					Tr("Bicubic is sharp, Bicubic Hermite a little softer, Linear softer still; Nearest neighbour keeps pixels square. AMD FSR 1 keeps "
+					   "edges clean for a game drawn below 4K, for a little more work by the GPU than Bicubic.")),
 				"upscaleFilter");
 			own(toggle("highframerate", Tr("120 Hz output"), settings.highFrameRate, Tr("For displays that take 120 Hz."),
 					Tr("The 119.88 Hz mode, on displays that support it. Games still run at their own speed, and a frame that misses a refresh "
@@ -554,14 +562,120 @@ namespace ps5shell
 				action(Kind::Action, "keys", Tr("Wii U disc keys"), keys ? "keys.txt found" : "keys.txt missing", Tr("Only encrypted .wud and .wux need them."),
 					Tr("Encrypted .wud and .wux dumps need their disc keys in /data/ps5cemu/keys.txt, one a line. Decrypted dumps, .wua and "
 					"folders need none."));
-				cemu(action(Kind::Link, "install", Tr("Install updates and DLC"), "", Tr("An update, DLC or game (code, content and meta)."),
-					Tr("Installs into the Wii U's storage (mlc01), as Cemu's Install game title, update or DLC does. Updates and DLC in the game "
-					"files folder work as they are, too.")));
+				cemu(action(Kind::Link, "install", Tr("Updates and DLC"), "", Tr("Found on your drives, each installed with one press."),
+					Tr("Looks on every USB drive and extended storage plugged in, in the games folder and in /data for updates, DLC and games "
+					   "(folders with code, content and meta), and lists them by game with what is installed now. Cross installs one, Square "
+					   "every new one; each goes into the Wii U's storage (mlc01), as Cemu's Install game title, update or DLC does. Triangle "
+					   "there chooses a folder anywhere else.")));
 			}
 			else if (Is3ds())
 				action(Kind::Link, "installcia", Tr("Install a CIA file"), "", Tr("A game, an update or DLC."),
 					Tr("Installs a CIA into the 3DS's storage, as Azahar's Install CIA does: an update or DLC goes with its game, and a game joins "
 					"the library. Circle cancels while it runs."));
+		}
+		else if (page == "saves")
+		{
+			if (IsWiiU())
+			{
+				const auto accounts = m_status.coreReady ? ps5emu::ListAccounts() : std::vector<ps5emu::WiiuAccount>{};
+				const uint32_t current = m_status.coreReady ? ps5emu::CurrentAccount() : 0;
+				std::vector<std::string> names;
+				int index = 0;
+				std::string currentName;
+				for (int i = 0; i < (int)accounts.size(); i++)
+				{
+					names.push_back(accounts[i].name);
+					if (accounts[i].id == current)
+					{
+						index = i;
+						currentName = accounts[i].name;
+					}
+				}
+				if (names.empty())
+					names.push_back("-");
+				Row* account = cemu(choice("account", Tr("Account games start on"), names, index,
+					settings.accountPerUser ? Tr("Chosen by your PS5 user: One account for each PS5 user is on.") :
+											  Tr("The next game starts on these saves. A game already running keeps its own."),
+					Tr("Each Wii U account has its own saves of every game, as on a Wii U. The next game you start uses the one shown here; a game "
+					   "already running keeps the one it started with.")));
+				if (settings.accountPerUser)
+					account->dimmed = true;
+				// tr: how many Wii U accounts there are, of the twelve a Wii U has at most
+				cemu(action(Kind::Link, "newaccount", Tr("New account"), TrF("{0} of 12", (int)accounts.size()),
+					Tr("Its own saves of every game, from the start."), Tr("Name it with the keyboard, ten letters at most. Games start on it from then on.")));
+				cemu(action(Kind::Link, "renameaccount", TrF("Rename {0}", currentName), "", Tr("The account games start on."),
+					Tr("The name games show for this account, ten letters at most. Its saves stay as they are.")));
+				// deleting: Left and Right choose which, never the one games start on
+				std::vector<std::string> others;
+				for (const auto& a : accounts)
+					if (a.id != current)
+						others.push_back(a.name);
+				int& which = m_holdChoice["deleteaccount"];
+				which = others.empty() ? 0 : std::clamp(which, 0, (int)others.size() - 1);
+				Row* remove = cemu(action(Kind::Hold, "deleteaccount", Tr("Delete an account"),
+					others.empty() ? std::string(Tr("Only one")) : others[which] + "  ·  " + Tr("Hold Cross"),
+					others.empty() ? Tr("There is only the one games start on.") : Tr("Left and Right choose which. Its saves stay in the Wii U's storage."),
+					Tr("The account goes; its saves stay in the Wii U's storage (and in any backup), so making one again does not lose them. The "
+					   "account games start on cannot be deleted: choose another first.")));
+				remove->options = others;
+				remove->index = which;
+				if (others.empty())
+					remove->dimmed = true;
+				cemu(toggle("accountperuser", Tr("One account for each PS5 user"), settings.accountPerUser,
+					Tr("Whoever starts PS5CEMU-HAR plays on their own saves."),
+					Tr("The PS5 user who starts the app plays on a Wii U account of their own, made the first time with their PS5 name, so "
+					   "brothers and sisters each keep their own saves just by starting the app from their own PS5 user.")));
+			}
+			// every side's saves, to a USB drive and back
+			if (m_now - m_backupsAt > 3)
+			{
+				m_backups = ps5saves::FindBackups();
+				m_backupsAt = m_now;
+			}
+			const ps5saves::Status saves = ps5saves::Current();
+			const bool running = saves.state == ps5saves::Status::State::Running;
+			if (saves.finished != m_savesFinished)
+			{
+				// a backup or restore has ended: said once, and what it changed read again
+				m_savesFinished = saves.finished;
+				m_backupsAt = -100;
+				if (saves.state == ps5saves::Status::State::Done)
+				{
+					// tr: a backup or restore of the saves, finished ({0}: how many files)
+					m_savesMessage = TrP(saves.files, "Done: {0} file", "Done: {0} files");
+					if (saves.restoring && m_status.coreReady)
+						ps5emu::ReloadAccounts();
+				}
+				else
+					m_savesMessage = saves.message;
+			}
+			std::string backupValue = m_savesMessage;
+			if (running && !saves.restoring)
+				// tr: a backup of the saves, as it copies ({0}: a percentage)
+				backupValue = TrF("Copying: {0}", Percent(saves.total ? (int)(saves.copied * 100 / saves.total) : 0));
+			else if (backupValue.empty() && !m_backups.empty())
+				// tr: the newest backup of the saves: when, and on which drive
+				backupValue = TrF("Last: {0} · {1}", m_backups.front().when, DriveName(m_backups.front().drive));
+			action(Kind::Action, "backup", Tr("Back up to USB"), backupValue, Tr("Every side's saves, save states and Wii U accounts."),
+				Tr("Copies the Wii U's saves (every account's, with the accounts), the 3DS's saves, extra data and save states, and the DS's "
+				   "saves and save states to PS5CEMU-HAR-saves on the first USB drive plugged in, in a folder named by the date and time. Never "
+				   "the games, so a backup stays small."));
+			std::vector<std::string> backups;
+			for (const auto& backup : m_backups)
+				backups.push_back(backup.when + " · " + DriveName(backup.drive));
+			int& chosen = m_holdChoice["restore"];
+			chosen = backups.empty() ? 0 : std::clamp(chosen, 0, (int)backups.size() - 1);
+			std::string restoreValue = backups.empty() ? std::string(Tr("No backups found")) : backups[chosen] + "  ·  " + Tr("Hold Cross");
+			if (running && saves.restoring)
+				restoreValue = TrF("Copying: {0}", Percent(saves.total ? (int)(saves.copied * 100 / saves.total) : 0));
+			Row* restore = action(Kind::Hold, "restore", Tr("Restore from USB"), restoreValue,
+				backups.empty() ? Tr("Back up first, or plug in the drive with your backups.") : Tr("Left and Right choose which backup, the newest first."),
+				Tr("Puts the chosen backup's saves back where they came from. The saves there now are moved first to "
+				   "/data/ps5cemu/saves-before, so nothing is lost; saves the backup does not have stay as they are."));
+			restore->options = backups;
+			restore->index = chosen;
+			if (backups.empty())
+				restore->dimmed = true;
 		}
 		else if (page == "artic")
 			action(Kind::Link, "artic", Tr("Artic Base"), settings.n3ds.articAddress, Tr("Play a game from your 3DS, and set up from it."),
@@ -765,7 +879,7 @@ namespace ps5shell
 		else if (id == "holdms")
 			settings.ui.holdMs = kHolds[std::clamp(index, 0, 5)];
 		else if (id == "upscaling")
-			settings.upscaleFilter = std::clamp(index, 0, 3);
+			settings.upscaleFilter = std::clamp(index, 0, 4);
 		else if (id == "framepacing")
 			settings.framePacing = std::clamp(index + 1, 1, 3);
 		else if (id == "resolution")
@@ -861,6 +975,8 @@ namespace ps5shell
 				settings.rumble = on;
 			else if (id == "boxart")
 				settings.boxArt = on;
+			else if (id == "accountperuser")
+				settings.accountPerUser = on;
 			else if (id == "largertext")
 				settings.ui.largerText = on;
 			else if (id == "highcontrast")
@@ -944,6 +1060,20 @@ namespace ps5shell
 	}
 
 	// What a changed setting changes at once: the launcher's sound, the DualSense's rumble, box art
+	void Shell::UseOwnAccount()
+	{
+		if (!m_status.coreReady || !m_settings.accountPerUser)
+			return;
+		const int32_t user = ps5pad::UserId(0);
+		if (user < 0)
+			return;
+		const uint32_t id = ps5emu::AccountForUser(fmt::format("{:#010x}", user), ps5pad::UserName(0), m_settings.accountsByUser);
+		SaveSettings();
+		for (const auto& account : ps5emu::ListAccounts())
+			if (account.id == id)
+				Toast(TrF("Games start on {0}'s saves", account.name));
+	}
+
 	void Shell::SettingsChanged(const std::string& id)
 	{
 		ps5sound::SetMusic(m_settings.music, m_settings.musicVolume);
@@ -957,6 +1087,8 @@ namespace ps5shell
 		}
 		if (id == "side-wiiu" || id == "side-3ds" || id == "side-ds")
 			SidesChanged();
+		if (id == "accountperuser" && m_settings.accountPerUser)
+			UseOwnAccount();
 		if (id == "remote")
 			ps5stream::Configure(m_settings.remoteScreen);
 		if (id == "boxart")
@@ -1069,6 +1201,32 @@ namespace ps5shell
 				m_feedback.Play(ui::Cue::Denied); // held, not pressed
 				m_message.clear();
 			}
+			else if (step != 0 && row.options.size() > 1)
+			{
+				// a held row with choices (which account, which backup): Left and Right choose
+				int& which = m_holdChoice[id];
+				which = (which + step + (int)row.options.size()) % (int)row.options.size();
+				m_feedback.Play(ui::Cue::Focus);
+			}
+			else if (step != 0)
+				m_feedback.Play(ui::Cue::Edge);
+			return;
+		}
+		if (id == "account")
+		{
+			// the account games start on: the next, or the one before
+			const auto accounts = ps5emu::ListAccounts();
+			if (accounts.size() < 2 || m_settings.accountPerUser)
+			{
+				m_feedback.Play(ui::Cue::Denied);
+				return;
+			}
+			const int count = (int)accounts.size();
+			const int next = (row.index + (step < 0 ? -1 : 1) + count) % count;
+			ps5emu::SetCurrentAccount(accounts[next].id);
+			m_feedback.Play(ui::Cue::Focus);
+			// tr: the Wii U account games start on now ({0}: its name)
+			Toast(TrF("Games start on {0}'s saves", accounts[next].name));
 			return;
 		}
 		if (InGameSettings())
@@ -1097,7 +1255,50 @@ namespace ps5shell
 			return;
 		m_feedback.Play(ui::Cue::Select);
 		auto& hand = Handheld(m_side);
-		if (id == "folder")
+		if (id == "newaccount")
+		{
+			if (ps5emu::ListAccounts().size() >= 12)
+			{
+				Toast(Tr("The Wii U has twelve accounts at most."));
+				return;
+			}
+			OpenNameKeyboard(Tr("A name for the new account"), "", 10, [this](const std::string& name) {
+				if (name.empty())
+					return;
+				std::string error;
+				if (ps5emu::CreateAccount(name, error))
+					Toast(TrF("Games start on {0}'s saves", name));
+				else
+					Toast(error);
+			});
+		}
+		else if (id == "renameaccount")
+		{
+			const uint32_t current = ps5emu::CurrentAccount();
+			std::string name;
+			for (const auto& account : ps5emu::ListAccounts())
+				if (account.id == current)
+					name = account.name;
+			OpenNameKeyboard(Tr("A new name"), name, 10, [this, current](const std::string& name) {
+				if (!name.empty() && ps5emu::RenameAccount(current, name))
+					Toast(TrF("Renamed {0}", name));
+			});
+		}
+		else if (id == "backup")
+		{
+			std::string error;
+			if (ps5saves::StartBackup(error))
+			{
+				m_savesMessage.clear();
+				Toast(Tr("Backing up every side's saves…"));
+			}
+			else
+			{
+				m_savesMessage = error;
+				m_feedback.Play(ui::Cue::Denied);
+			}
+		}
+		else if (id == "folder")
 		{
 			m_filesSide = m_side;
 			m_pageFrom = ScreenId::Settings;
@@ -1129,11 +1330,7 @@ namespace ps5shell
 		else if (id == "player")
 			PlayerOpen(row.index);
 		else if (id == "install")
-		{
-			m_filesSide = System::WiiU;
-			m_pageFrom = ScreenId::Settings;
-			FilesOpen(1);
-		}
+			UpdatesOpen(0, ScreenId::Settings); // Updates and DLC: what the drives have (6.12)
 		else if (id == "installcia")
 		{
 			m_filesSide = System::N3ds;
@@ -1178,6 +1375,36 @@ namespace ps5shell
 			SaveSettings();
 			// tr: what a held row says once it has done its work
 			m_message = TrC("finished", "Done");
+		}
+		else if (id == "deleteaccount")
+		{
+			const uint32_t current = ps5emu::CurrentAccount();
+			std::vector<ps5emu::WiiuAccount> others;
+			for (const auto& account : ps5emu::ListAccounts())
+				if (account.id != current)
+					others.push_back(account);
+			const int which = m_holdChoice["deleteaccount"];
+			if (which < (int)others.size())
+			{
+				std::string error;
+				if (ps5emu::DeleteAccount(others[which].id, error))
+					Toast(TrF("{0} is deleted; its saves stay", others[which].name));
+				else
+					Toast(error);
+				m_holdChoice["deleteaccount"] = 0;
+			}
+		}
+		else if (id == "restore")
+		{
+			const int which = m_holdChoice["restore"];
+			std::string error;
+			if (which < (int)m_backups.size() && ps5saves::StartRestore(m_backups[which], error))
+			{
+				m_savesMessage.clear();
+				Toast(TrF("Restoring the saves of {0}…", m_backups[which].when));
+			}
+			else if (!error.empty())
+				Toast(error);
 		}
 		else if (id == "resetgame")
 		{
@@ -1374,6 +1601,30 @@ namespace ps5shell
 		canvas.Text(note, tx, y, Secondary());
 	}
 
+	// About's card (6.5): the developer's PayPal.me as a QR code on white, the address under it in words,
+	// one line saying what it is; never shown anywhere else
+	void Shell::DrawSupport(Canvas& canvas, const Box& card)
+	{
+		static constexpr const char* kSupport = "https://www.paypal.com/paypalme/empthe";
+		canvas.Rect(card, kRadiusCard, Surface());
+		canvas.Ring(card, kRadiusCard, 1.5f, kGlassEdge);
+		const float pad = 32, qr = std::min(card.w - 2 * pad, 260.0f);
+		float y = card.y + pad;
+		canvas.Text(Style(kOverlineStyle), card.x + pad, y, Tr("Support PS5CEMU-HAR"), Accent(), card.w - 2 * pad, 1);
+		y += 40;
+		auto code = m_qrCodes.find(kSupport);
+		if (code == m_qrCodes.end())
+			code = m_qrCodes.emplace(kSupport, ui::QrCode(kSupport)).first;
+		ui::DrawQr(canvas, code->second, {card.CentreX() - qr * 0.5f, y, qr, qr}, 16);
+		y += qr + 20;
+		const ui::TextBlock address = canvas.Text(Style({26, ui::Weight::SemiBold, 1.1f}), card.x + pad, y, "paypal.me/empthe", kText, card.w - 2 * pad, 1,
+			ui::Align::Centre);
+		y += address.height + 14;
+		canvas.Text(Style({20, ui::Weight::Regular, 1.45f}), card.x + pad, y,
+			Tr("PS5CEMU-HAR is free. If it brings your games back, you can support its work here."), Secondary(), card.w - 2 * pad, 4,
+			ui::Align::Centre);
+	}
+
 	void Shell::SettingsDraw(Canvas& canvas)
 	{
 		// a dialog over the screen it was opened from, on every side and in every theme (6.5): that
@@ -1464,10 +1715,23 @@ namespace ps5shell
 			DrawRemoteScreen(canvas, {px, under + 18, pw, 372});
 		else
 		{
-			// what the page says under its rows
+			// what the page says under its rows, in as many lines as the dialog has room for; About's beside
+			// its support card
 			const std::string panel = PanelText(m_page);
+			float textW = pw;
+			if (m_page == "about")
+			{
+				const float cardW = 380;
+				DrawSupport(canvas, {px + pw - cardW, under, cardW, std::min(560.0f, dialog.Bottom() - 28 - under)});
+				textW = pw - cardW - 40;
+			}
 			if (!panel.empty())
-				canvas.Text(Style({22, ui::Weight::Regular, 1.45f}), px, under + (rows.empty() ? 0 : 8), panel, Secondary(), pw, 12);
+			{
+				const ui::TextStyle style = Style({m_page == "about" ? 20.0f : 22.0f, ui::Weight::Regular, 1.45f});
+				const float top = under + (rows.empty() ? 0 : 8);
+				const int lines = std::max(1, (int)((dialog.Bottom() - 28 - top) / (style.size * style.lineHeight)));
+				canvas.Text(style, px, top, panel, Secondary(), textW, lines);
+			}
 		}
 		canvas.PopClip();
 		canvas.PopAlpha();

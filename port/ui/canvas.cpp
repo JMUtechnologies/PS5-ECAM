@@ -459,6 +459,24 @@ namespace ui
 			line(0.44f, 0.8f, 0.56f, 0.8f, 0.065f);
 			dot(0.5f, 0.44f, 0.1f);
 			break;
+		case Icon::Save: // a floppy disk: its outline, the shutter at the top, the label below
+			Ring({X(0.16f), Y(0.16f), s * 0.68f, s * 0.68f}, s * 0.08f, stroke * 0.85f, colour);
+			Rect({X(0.32f), Y(0.16f), s * 0.3f, s * 0.2f}, s * 0.03f, colour);
+			Ring({X(0.3f), Y(0.54f), s * 0.4f, s * 0.3f}, s * 0.04f, stroke * 0.7f, colour);
+			break;
+		case Icon::Download: // an arrow down into a tray
+			line(0.5f, 0.12f, 0.5f, 0.6f);
+			line(0.5f, 0.62f, 0.3f, 0.42f);
+			line(0.5f, 0.62f, 0.7f, 0.42f);
+			line(0.16f, 0.66f, 0.16f, 0.84f);
+			line(0.16f, 0.84f, 0.84f, 0.84f);
+			line(0.84f, 0.84f, 0.84f, 0.66f);
+			break;
+		case Icon::Heart: // two lobes and a point
+			dot(0.34f, 0.38f, 0.18f);
+			dot(0.66f, 0.38f, 0.18f);
+			Triangle(X(0.17f), Y(0.44f), X(0.83f), Y(0.44f), X(0.5f), Y(0.84f), colour, 0, s * 0.02f);
+			break;
 		}
 	}
 

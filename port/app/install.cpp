@@ -9,6 +9,7 @@
 
 #include "emulator.h"
 #include "lang.h"
+#include "../ps5/kernel.h"
 #include "../ps5/log.h"
 
 #include "Cafe/TitleList/TitleId.h"
@@ -16,7 +17,13 @@
 #include "Cafe/TitleList/TitleList.h"
 #include "config/ActiveSettings.h"
 
+#include <algorithm>
+#include <atomic>
 #include <cstdio>
+#include <fstream>
+#include <mutex>
+#include <set>
+#include <thread>
 
 namespace ps5emu
 {
@@ -58,6 +65,9 @@ namespace ps5emu
 				std::fclose(in);
 				return false;
 			}
+			// the C library's own buffers off: the pieces are large already
+			std::setvbuf(in, nullptr, _IONBF, 0);
+			std::setvbuf(out, nullptr, _IONBF, 0);
 			bool ok = true;
 			for (;;)
 			{
@@ -84,14 +94,45 @@ namespace ps5emu
 			return ok;
 		}
 
+		// How many files are copied at once: an update or DLC is thousands of small files, each of which
+		// would otherwise wait for the one before (opening, closing, the drive's latency), and a USB drive
+		// and the PS5's storage are kept busy together
+		constexpr int kCopiers = 4;
+		constexpr size_t kPiece = 8 << 20;
+
+		struct FileToCopy
+		{
+			fs::path relative;
+			uint64_t size;
+		};
+
 		void Work(fs::path source, fs::path target, std::string title)
 		{
 			std::error_code ec;
+			// the folder read once: every folder to make, every file and its size
+			std::vector<fs::path> folders;
+			std::vector<FileToCopy> files;
 			uint64_t total = 0;
 			for (const char* part : kParts)
-				for (const auto& entry : fs::recursive_directory_iterator(source / part, ec))
-					if (entry.is_regular_file(ec))
-						total += entry.file_size(ec);
+			{
+				if (!fs::is_directory(source / part, ec))
+					continue;
+				folders.push_back(part);
+				for (auto it = fs::recursive_directory_iterator(source / part, ec); !ec && it != fs::recursive_directory_iterator(); it.increment(ec))
+				{
+					const fs::path relative = it->path().lexically_relative(source);
+					if (it->is_directory(ec))
+						folders.push_back(relative);
+					else if (it->is_regular_file(ec))
+					{
+						const uint64_t size = it->file_size(ec);
+						files.push_back({relative, ec ? 0 : size});
+						total += ec ? 0 : size;
+					}
+				}
+			}
+			// the large ones first, so the last to finish is a small one and the copiers end together
+			std::stable_sort(files.begin(), files.end(), [](const FileToCopy& a, const FileToCopy& b) { return a.size > b.size; });
 			{
 				std::lock_guard lock(s_mutex);
 				s_status.total = total;
@@ -120,49 +161,238 @@ namespace ps5emu
 				}
 			}
 
-			std::vector<char> buffer(4 << 20);
+			const uint64_t started = sceKernelGetProcessTime();
 			std::string failure;
-			for (const char* part : kParts)
-			{
-				if (!fs::is_directory(source / part, ec))
-					continue;
-				fs::create_directories(target / part, ec);
-				for (auto it = fs::recursive_directory_iterator(source / part, ec); !ec && it != fs::recursive_directory_iterator(); it.increment(ec))
+			for (const fs::path& folder : folders)
+				fs::create_directories(target / folder, ec);
+			std::atomic<size_t> next{0};
+			std::mutex failureMutex;
+			auto copier = [&] {
+				std::vector<char> buffer(kPiece);
+				for (size_t i = next++; i < files.size() && !s_cancel; i = next++)
 				{
-					if (s_cancel)
-						break;
-					const fs::path relative = it->path().lexically_relative(source);
-					if (it->is_directory(ec))
+					if (!CopyInPieces(source / files[i].relative, target / files[i].relative, buffer) && !s_cancel)
 					{
-						fs::create_directories(target / relative, ec);
-						continue;
-					}
-					if (!CopyInPieces(it->path(), target / relative, buffer) && !s_cancel)
-					{
-						failure = "A file could not be copied: " + _pathToUtf8(relative);
-						break;
+						std::lock_guard lock(failureMutex);
+						if (failure.empty())
+							failure = "A file could not be copied: " + _pathToUtf8(files[i].relative);
+						s_cancel = true; // the others stop too
 					}
 				}
-				if (ec && failure.empty())
-					failure = "The folder could not be read: " + ec.message();
-				if (s_cancel || !failure.empty())
-					break;
-			}
+			};
+			std::vector<std::thread> copiers;
+			for (int i = 1; i < kCopiers; i++)
+				copiers.emplace_back(copier);
+			copier();
+			for (std::thread& thread : copiers)
+				thread.join();
+			const bool cancelled = s_cancel && failure.empty();
 
-			if (s_cancel || !failure.empty())
+			if (cancelled || !failure.empty())
 			{
 				fs::remove_all(target, ec);
 				if (!backup.empty())
 					fs::rename(backup, target, ec);
-				ps5log::Line("[install] {}: {}", title, s_cancel ? "cancelled" : failure);
-				SetStatus(s_cancel ? InstallStatus::State::Cancelled : InstallStatus::State::Failed, failure);
+				ps5log::Line("[install] {}: {}", title, cancelled ? "cancelled" : failure);
+				SetStatus(cancelled ? InstallStatus::State::Cancelled : InstallStatus::State::Failed, failure);
 				return;
 			}
 			if (!backup.empty())
 				fs::remove_all(backup, ec);
-			ps5log::Line("[install] {} installed in {}", title, _pathToUtf8(target));
+			const uint64_t ms = std::max<uint64_t>(1, (sceKernelGetProcessTime() - started) / 1000);
+			ps5log::Line("[install] {} installed in {}: {} files, {} MB in {:.1f} s ({} MB/s)", title, _pathToUtf8(target), files.size(), total / 1000000,
+				ms / 1000.0, total / 1000 / ms);
 			SetStatus(InstallStatus::State::Done);
 		}
+
+		// -- what can be installed, on the drives (6.12) ------------------------------------------------
+
+		std::mutex s_findMutex;
+		std::vector<Installable> s_found; // under s_findMutex
+		std::string s_findWhere;		  // the folder being looked in, under s_findMutex
+		std::thread s_finder;
+		std::atomic<bool> s_finding{false}, s_stopFinding{false};
+
+		uint64_t ReadBig(const std::vector<uint8_t>& data, size_t at, int bytes)
+		{
+			uint64_t value = 0;
+			for (int i = 0; i < bytes && at + i < data.size(); i++)
+				value = value << 8 | data[at + i];
+			return value;
+		}
+
+		InstallCandidate::Kind KindOf(uint64_t titleId)
+		{
+			switch ((uint32_t)(titleId >> 32))
+			{
+			case 0x00050000:
+			case 0x00050002: return InstallCandidate::Kind::Game;
+			case 0x0005000E: return InstallCandidate::Kind::Update;
+			case 0x0005000C: return InstallCandidate::Kind::Dlc;
+			default: return InstallCandidate::Kind::System;
+			}
+		}
+
+		uint64_t FolderBytes(const fs::path& folder)
+		{
+			std::error_code ec;
+			uint64_t bytes = 0;
+			for (auto it = fs::recursive_directory_iterator(folder, ec); !ec && it != fs::recursive_directory_iterator() && !s_stopFinding; it.increment(ec))
+				if (it->is_regular_file(ec))
+					bytes += it->file_size(ec);
+			return bytes;
+		}
+
+		// A folder that is a title: unpacked (code, content, meta), or packed (title.tmd and .app files,
+		// which Cemu reads as they are)
+		bool Look(const fs::path& folder, const std::string& drive)
+		{
+			std::error_code ec;
+			Installable found;
+			found.folder = _pathToUtf8(folder);
+			found.drive = drive;
+			if (fs::is_directory(folder / "meta", ec) && fs::is_directory(folder / "content", ec))
+			{
+				const InstallCandidate candidate = InspectInstall(found.folder);
+				if (candidate.kind == InstallCandidate::Kind::None || candidate.kind == InstallCandidate::Kind::System)
+					return true; // a title, but nothing to install (already where it goes): not looked into
+				found.kind = candidate.kind;
+				found.name = candidate.name;
+				found.titleId = candidate.titleId;
+				found.version = candidate.version;
+				found.installedVersion = candidate.installedVersion;
+			}
+			else if (fs::is_regular_file(folder / "title.tmd", ec))
+			{
+				std::ifstream file(folder / "title.tmd", std::ios::binary);
+				std::vector<uint8_t> tmd(0x1E0);
+				file.read((char*)tmd.data(), tmd.size());
+				if (file.gcount() < (std::streamsize)tmd.size())
+					return true;
+				found.titleId = ReadBig(tmd, 0x18C, 8);
+				found.version = (uint16_t)ReadBig(tmd, 0x1DC, 2);
+				found.kind = KindOf(found.titleId);
+				found.packed = true;
+				if (found.kind == InstallCandidate::Kind::System)
+					return true;
+			}
+			else
+				return false;
+			found.baseTitleId = found.titleId & 0x00000000FFFFFFFFull | 0x0005000000000000ull;
+			std::lock_guard lock(s_findMutex);
+			s_found.push_back(found);
+			return true;
+		}
+
+		bool Skipped(const std::string& name)
+		{
+			static const char* const kSkipped[] = {"mlc01", "covers", "logs", "shaderCache", "cache", "graphicPacks", "azahar", "melonds",
+				"controllerProfiles", "gameProfiles", "themes", "figures", "amiibo", "saves-before", "PS5CEMU-HAR-saves", "PS5CEMU-HAR-logs",
+				"System Volume Information", "$RECYCLE.BIN", "homebrew", "etaHEN"};
+			if (name.empty() || name[0] == '.')
+				return true;
+			for (const char* skipped : kSkipped)
+				if (name == skipped)
+					return true;
+			return false;
+		}
+
+		void Find(const fs::path& folder, const std::string& drive, int depth)
+		{
+			if (s_stopFinding)
+				return;
+			{
+				std::lock_guard lock(s_findMutex);
+				s_findWhere = _pathToUtf8(folder);
+			}
+			if (Look(folder, drive) || depth == 0)
+				return;
+			std::error_code ec;
+			std::vector<fs::path> children;
+			for (auto it = fs::directory_iterator(folder, ec); !ec && it != fs::directory_iterator(); it.increment(ec))
+				if (it->is_directory(ec) && !Skipped(_pathToUtf8(it->path().filename())))
+					children.push_back(it->path());
+			std::sort(children.begin(), children.end());
+			for (const fs::path& child : children)
+				Find(child, drive, depth - 1);
+		}
+	}
+
+	void StartFindingInstallables(const std::vector<FindRoot>& roots)
+	{
+		StopFindingInstallables();
+		{
+			std::lock_guard lock(s_findMutex);
+			s_found.clear();
+			s_findWhere.clear();
+		}
+		s_stopFinding = false;
+		s_finding = true;
+		s_finder = std::thread([roots] {
+			std::set<std::string> looked;
+			for (const FindRoot& root : roots)
+			{
+				std::error_code ec;
+				const fs::path folder = _utf8ToPath(root.folder);
+				if (!fs::is_directory(folder, ec) || !looked.insert(_pathToUtf8(fs::weakly_canonical(folder, ec))).second)
+					continue;
+				Find(folder, root.drive, root.depth);
+			}
+			// then how large each is, the list already shown
+			std::vector<std::string> folders;
+			{
+				std::lock_guard lock(s_findMutex);
+				for (const Installable& found : s_found)
+					folders.push_back(found.folder);
+			}
+			for (const std::string& folder : folders)
+			{
+				if (s_stopFinding)
+					break;
+				const uint64_t bytes = FolderBytes(_utf8ToPath(folder));
+				std::lock_guard lock(s_findMutex);
+				for (Installable& found : s_found)
+					if (found.folder == folder)
+						found.bytes = bytes;
+			}
+			{
+				std::lock_guard lock(s_findMutex);
+				s_findWhere.clear();
+				ps5log::Line("[install] {} updates, DLC and games found to install", s_found.size());
+			}
+			s_finding = false;
+		});
+	}
+
+	bool FindingInstallables(std::string* where)
+	{
+		if (where)
+		{
+			std::lock_guard lock(s_findMutex);
+			*where = s_findWhere;
+		}
+		return s_finding;
+	}
+
+	std::vector<Installable> FoundInstallables()
+	{
+		std::lock_guard lock(s_findMutex);
+		return s_found;
+	}
+
+	void RefreshInstalledVersions(std::vector<Installable>& found)
+	{
+		for (Installable& item : found)
+			if (!item.packed)
+				item.installedVersion = InspectInstall(item.folder).installedVersion;
+	}
+
+	void StopFindingInstallables()
+	{
+		s_stopFinding = true;
+		if (s_finder.joinable())
+			s_finder.join();
+		s_finding = false;
 	}
 
 	InstallCandidate InspectInstall(const std::string& folder)

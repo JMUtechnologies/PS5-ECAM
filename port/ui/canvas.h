@@ -85,6 +85,9 @@ namespace ui
 		Chip,
 		Artic,
 		Phone, // the remote touch screen
+		Save,	  // a floppy disk: Accounts and saves
+		Download, // an arrow into a tray: Updates and DLC, installing
+		Heart,	  // About's support card
 	};
 
 	class Canvas

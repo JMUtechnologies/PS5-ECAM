@@ -74,7 +74,8 @@ namespace ps5shell
 			buttons = {Tr("Setup check"), Tr("Diagnostics")};
 			return true;
 		}
-		if (!CoreReady())
+		// while Cemu's library loads, the games the catalogue has are shown (Play waits for it)
+		if (!CoreReady() && (!m_status.coreStarting || m_games.empty()))
 		{
 			kicker = "Wii U";
 			title = Tr("Starting Cemu");
@@ -199,8 +200,8 @@ namespace ps5shell
 				continue;
 			if (shown == 3 && IsWiiU())
 			{
-				if (game.packsOn < 0)
-					game.packsOn = ps5emu::EnabledGraphicPackCount(game.entry.game.titleId);
+				if (game.packsOn < 0) // none known while Cemu's library loads; asked again once it has
+					game.packsOn = m_status.coreReady ? ps5emu::EnabledGraphicPackCount(game.entry.game.titleId) : 0;
 				if (game.packsOn == 0)
 					continue;
 			}

@@ -8,6 +8,7 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -38,7 +39,7 @@ namespace ps5emu
 		std::string gamesFolder;
 		bool overlay = false; // the performance overlay from the start
 		int volume = 100;	  // the TV's, in percent
-		int upscaleFilter = 1; // Cemu's upscale_filter: 0 linear, 1 bicubic, 2 bicubic Hermite, 3 nearest
+		int upscaleFilter = 1; // Cemu's upscale_filter: 0 linear, 1 bicubic, 2 bicubic Hermite, 3 nearest, 4 AMD FSR 1
 		bool asyncShaders = true; // Cemu's async_compile
 		bool gamePadSpeaker = false; // the GamePad's sound on player 1's DualSense speaker (Cemu's pad_device)
 		bool shaderNotices = true;	 // Cemu's "compiled shaders/pipelines" notices (its notification.shader_compiling)
@@ -51,6 +52,14 @@ namespace ps5emu
 
 	// Writes the launcher's settings into Cemu's (settings.xml). A new games folder is scanned.
 	void ApplyOptions(const Options& options);
+
+	// InitializeCore, then ApplyOptions, on a thread of their own, so the launcher draws (from its
+	// catalogue) while Cemu's settings, graphic packs and controllers load; nothing more once started.
+	// CoreStarted says when it has finished, with how, and joins the thread; FinishCoreStart waits
+	// for it (before a game: the launcher leaves no thread behind, UI-REDESIGN 4.2).
+	void StartCore(const Options& options);
+	bool CoreStarted(bool& ok, std::string& error);
+	void FinishCoreStart();
 
 	// The game about to start and the settings it starts with (its side's, with its own over them:
 	// ps5settings::ForGame), so that what its menu changes is saved where it belongs
@@ -252,6 +261,49 @@ namespace ps5emu
 	InstallStatus GetInstallStatus();
 	// Stops an install and puts back what was there.
 	void CancelInstall();
+
+	// The Wii U's accounts (accounts.cpp; docs/UI-REDESIGN.md, 6.13): Cemu's, each with its own saves of
+	// every game; the one games start on is Cemu's setting. Names are a Mii's, ten letters at most.
+	struct WiiuAccount
+	{
+		uint32_t id; // Cemu's persistent ID, 80000001 and up
+		std::string name;
+	};
+	std::vector<WiiuAccount> ListAccounts();
+	void ReloadAccounts(); // their files read again (a backup restored)
+	uint32_t CurrentAccount();
+	void SetCurrentAccount(uint32_t id); // the next game starts on it
+	uint32_t CreateAccount(const std::string& name, std::string& error); // games start on it; 0 when it cannot
+	bool RenameAccount(uint32_t id, const std::string& name);
+	bool DeleteAccount(uint32_t id, std::string& error); // never the one games start on, never the last; its saves stay
+	// One account for each PS5 user: theirs (byUser: user ID to persistent ID, as ps5cemu.json keeps it),
+	// made the first time with their name; games start on it
+	uint32_t AccountForUser(const std::string& user, const std::string& userName, std::map<std::string, std::string>& byUser);
+
+	// Updates and DLC (and games) to install, found on the drives (docs/UI-REDESIGN.md, 6.12), on a
+	// thread of their own: each folder given looked through so many folders deep for titles, unpacked
+	// (code, content and meta: installable) or packed (title.tmd and .app: Cemu reads them as they are)
+	struct FindRoot
+	{
+		std::string folder, drive; // drive: "/mnt/usb0", "/mnt/ext0", or "/data" for the PS5's own
+		int depth = 4;
+	};
+	struct Installable
+	{
+		std::string folder, drive;
+		std::string name;			// from its meta.xml (empty for a packed one)
+		uint64_t titleId = 0, baseTitleId = 0; // its own, and its game's (00050000...)
+		InstallCandidate::Kind kind = InstallCandidate::Kind::None;
+		uint16_t version = 0;
+		int installedVersion = -1;	// what the MLC has in its place; -1 for nothing
+		uint64_t bytes = 0;			// 0 until measured, after the list is made
+		bool packed = false;		// read as it is: nothing to install
+	};
+	void StartFindingInstallables(const std::vector<FindRoot>& roots);
+	bool FindingInstallables(std::string* where = nullptr); // where: the folder being looked in
+	std::vector<Installable> FoundInstallables();
+	void RefreshInstalledVersions(std::vector<Installable>& found); // after an install
+	void StopFindingInstallables(); // and joins its thread (before a game)
 	// The boot log's memory line, once a minute in a game (Cemu's or Azahar's).
 	void LogMemory();
 

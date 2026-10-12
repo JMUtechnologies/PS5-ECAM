@@ -1,0 +1,228 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Mon, 12 Oct 2026 08:12:40 +0000
+Subject: [PATCH] PS5: AMD FSR 1 as an upscale filter (kFsrFilter)
+
+FSR 1's edge adaptive upsampling (EASU, after AMD's ffx_fsr1.h, MIT licence) in the output pass that
+already scales the game's picture to the TV, then a light sharpen held within the four nearest
+pixels. Its shaders are made the first time upscale_filter asks for them, so a game that never uses
+it pays nothing; where the renderer has no GLSL, bicubic.
+---
+ src/Cafe/HW/Latte/Core/LatteRenderTarget.cpp  |   8 +
+ .../HW/Latte/Renderer/RendererOuputShader.cpp | 140 ++++++++++++++++++
+ .../HW/Latte/Renderer/RendererOuputShader.h   |   7 +
+ src/config/CemuConfig.h                       |   1 +
+ 4 files changed, 156 insertions(+)
+
+diff --git a/src/Cafe/HW/Latte/Core/LatteRenderTarget.cpp b/src/Cafe/HW/Latte/Core/LatteRenderTarget.cpp
+index dff0c79..5554e2e 100644
+--- a/src/Cafe/HW/Latte/Core/LatteRenderTarget.cpp
++++ b/src/Cafe/HW/Latte/Core/LatteRenderTarget.cpp
+@@ -1011,6 +1011,14 @@ void LatteRenderTarget_copyToBackbuffer(LatteTextureView* textureView, bool isPa
+ 
+ 			filter = LatteTextureView::MagFilter::kNearestNeighbor;
+ 		}
++		else if (scaling_filter == kFsrFilter)
++		{
++			// PS5: AMD FSR 1, made the first time it is asked for; bicubic where it cannot be
++			shader = RendererOutputShader::GetFsrShader(renderUpsideDown);
++			if (!shader)
++				shader = renderUpsideDown ? RendererOutputShader::s_bicubic_shader_ud : RendererOutputShader::s_bicubic_shader;
++			filter = LatteTextureView::MagFilter::kLinear;
++		}
+ 	}
+ 	cemu_assert(shader);
+ 	g_renderer->DrawBackbufferQuad(textureView, shader, filter==LatteTextureView::MagFilter::kLinear, imageX, imageY, imageWidth, imageHeight, isPadView, clearBackground);
+diff --git a/src/Cafe/HW/Latte/Renderer/RendererOuputShader.cpp b/src/Cafe/HW/Latte/Renderer/RendererOuputShader.cpp
+index a43b7ee..3bfd476 100644
+--- a/src/Cafe/HW/Latte/Renderer/RendererOuputShader.cpp
++++ b/src/Cafe/HW/Latte/Renderer/RendererOuputShader.cpp
+@@ -244,6 +244,142 @@ fragment float4 main0(VertexOut in [[stage_in]], texture2d<float> textureSrc [[t
+ }
+ )";
+ 
++// PS5: AMD FidelityFX Super Resolution 1.0's edge adaptive spatial upsampling (EASU), after AMD's
++// ffx_fsr1.h (MIT licence, Copyright (c) 2021 Advanced Micro Devices, Inc.) in one fragment pass, as
++// Porpoise's screen filter has it: twelve of the game's pixels around the spot, weighted along the edge
++// they make, so edges stay clean as the picture is scaled up to the TV. Then a light sharpen, as FSR's
++// own second pass gives, held within the four nearest pixels so nothing rings.
++const std::string RendererOutputShader::s_fsr_shader_source =
++R"(
++vec3 fsrTap(ivec2 q)
++{
++	return texelFetch(textureSrc, clamp(q, ivec2(0), ivec2(textureSrcResolution) - 1), 0).rgb;
++}
++
++float fsrLuma(vec3 c)
++{
++	return c.b * 0.5 + (c.r * 0.5 + c.g);
++}
++
++void fsrSet(inout vec2 dir, inout float len, float w, float la, float lb, float lc, float ld, float le)
++{
++	float dc = ld - lc, cb = lc - lb;
++	float lenX = max(abs(dc), abs(cb));
++	lenX = lenX > 0.0 ? 1.0 / lenX : 0.0;
++	float dirX = ld - lb;
++	dir.x += dirX * w;
++	lenX = clamp(abs(dirX) * lenX, 0.0, 1.0);
++	len += lenX * lenX * w;
++	float ec = le - lc, ca = lc - la;
++	float lenY = max(abs(ec), abs(ca));
++	lenY = lenY > 0.0 ? 1.0 / lenY : 0.0;
++	float dirY = le - la;
++	dir.y += dirY * w;
++	lenY = clamp(abs(dirY) * lenY, 0.0, 1.0);
++	len += lenY * lenY * w;
++}
++
++void fsrAdd(inout vec3 ac, inout float aw, vec2 off, vec2 dir, vec2 len2, float lob, float clp, vec3 c)
++{
++	vec2 v = vec2(off.x * dir.x + off.y * dir.y, off.x * -dir.y + off.y * dir.x) * len2;
++	float d2 = min(v.x * v.x + v.y * v.y, clp);
++	float wb = 0.4 * d2 - 1.0;
++	float wa = lob * d2 - 1.0;
++	wb *= wb;
++	wa *= wa;
++	wb = 1.5625 * wb - 0.5625;
++	float w = wb * wa;
++	ac += c * w;
++	aw += w;
++}
++
++void outputShader()
++{
++	vec2 pp = passUV * textureSrcResolution - 0.5;
++	vec2 fp = floor(pp);
++	pp -= fp;
++	ivec2 q = ivec2(fp);
++	//    b c
++	//  e f g h
++	//  i j k l
++	//    n o
++	vec3 b = fsrTap(q + ivec2(0, -1)), c = fsrTap(q + ivec2(1, -1));
++	vec3 e = fsrTap(q + ivec2(-1, 0)), f = fsrTap(q), g = fsrTap(q + ivec2(1, 0)), h = fsrTap(q + ivec2(2, 0));
++	vec3 i = fsrTap(q + ivec2(-1, 1)), j = fsrTap(q + ivec2(0, 1)), k = fsrTap(q + ivec2(1, 1)), l = fsrTap(q + ivec2(2, 1));
++	vec3 n = fsrTap(q + ivec2(0, 2)), o = fsrTap(q + ivec2(1, 2));
++	float bl = fsrLuma(b), cl = fsrLuma(c), el = fsrLuma(e), fl = fsrLuma(f), gl = fsrLuma(g), hl = fsrLuma(h);
++	float il = fsrLuma(i), jl = fsrLuma(j), kl = fsrLuma(k), ll = fsrLuma(l), nl = fsrLuma(n), ol = fsrLuma(o);
++	vec2 dir = vec2(0.0);
++	float len = 0.0;
++	fsrSet(dir, len, (1.0 - pp.x) * (1.0 - pp.y), bl, el, fl, gl, jl);
++	fsrSet(dir, len, pp.x * (1.0 - pp.y), cl, fl, gl, hl, kl);
++	fsrSet(dir, len, (1.0 - pp.x) * pp.y, fl, il, jl, kl, nl);
++	fsrSet(dir, len, pp.x * pp.y, gl, jl, kl, ll, ol);
++	vec2 dir2 = dir * dir;
++	float dirR = dir2.x + dir2.y;
++	bool zero = dirR < 1.0 / 32768.0;
++	dirR = zero ? 1.0 : inversesqrt(dirR);
++	dir.x = zero ? 1.0 : dir.x;
++	dir *= dirR;
++	len = len * 0.5;
++	len *= len;
++	float stretch = (dir.x * dir.x + dir.y * dir.y) / max(abs(dir.x), abs(dir.y));
++	vec2 len2 = vec2(1.0 + (stretch - 1.0) * len, 1.0 - 0.5 * len);
++	float lob = 0.5 + ((1.0 / 4.0 - 0.04) - 0.5) * len;
++	float clp = 1.0 / lob;
++	vec3 ac = vec3(0.0);
++	float aw = 0.0;
++	fsrAdd(ac, aw, vec2(0.0, -1.0) - pp, dir, len2, lob, clp, b);
++	fsrAdd(ac, aw, vec2(1.0, -1.0) - pp, dir, len2, lob, clp, c);
++	fsrAdd(ac, aw, vec2(-1.0, 1.0) - pp, dir, len2, lob, clp, i);
++	fsrAdd(ac, aw, vec2(0.0, 1.0) - pp, dir, len2, lob, clp, j);
++	fsrAdd(ac, aw, vec2(0.0, 0.0) - pp, dir, len2, lob, clp, f);
++	fsrAdd(ac, aw, vec2(-1.0, 0.0) - pp, dir, len2, lob, clp, e);
++	fsrAdd(ac, aw, vec2(1.0, 1.0) - pp, dir, len2, lob, clp, k);
++	fsrAdd(ac, aw, vec2(2.0, 1.0) - pp, dir, len2, lob, clp, l);
++	fsrAdd(ac, aw, vec2(2.0, 0.0) - pp, dir, len2, lob, clp, h);
++	fsrAdd(ac, aw, vec2(1.0, 0.0) - pp, dir, len2, lob, clp, g);
++	fsrAdd(ac, aw, vec2(1.0, 2.0) - pp, dir, len2, lob, clp, o);
++	fsrAdd(ac, aw, vec2(0.0, 2.0) - pp, dir, len2, lob, clp, n);
++	// within the four nearest pixels: no ringing
++	vec3 mn = min(min(f, g), min(j, k));
++	vec3 mx = max(max(f, g), max(j, k));
++	vec3 col = clamp(ac / max(aw, 1e-6), mn, mx);
++	// a light sharpen: away from the blur of the pixels around, still within the four nearest
++	vec2 texel = 1.0 / textureSrcResolution;
++	vec3 blur = 0.25 * (texture(textureSrc, passUV + vec2(-0.5, -0.5) * texel).rgb + texture(textureSrc, passUV + vec2(0.5, -0.5) * texel).rgb +
++		texture(textureSrc, passUV + vec2(-0.5, 0.5) * texel).rgb + texture(textureSrc, passUV + vec2(0.5, 0.5) * texel).rgb);
++	col = clamp(col + 0.3 * (col - blur), mn, mx);
++	colorOut0 = vec4(col, 1.0);
++}
++)";
++
++RendererOutputShader* RendererOutputShader::s_fsr_shader = nullptr;
++RendererOutputShader* RendererOutputShader::s_fsr_shader_ud = nullptr;
++
++RendererOutputShader* RendererOutputShader::GetFsrShader(bool render_upside_down)
++{
++	RendererOutputShader*& shader = render_upside_down ? s_fsr_shader_ud : s_fsr_shader;
++	if (shader)
++		return shader;
++	switch (g_renderer->GetType())
++	{
++#ifdef ENABLE_OPENGL
++	case RendererAPI::OpenGL:
++		shader = new RendererOutputShader(GetOpenGlVertexSource(render_upside_down), s_fsr_shader_source);
++		break;
++#endif
++#ifdef ENABLE_VULKAN
++	case RendererAPI::Vulkan:
++		shader = new RendererOutputShader(GetVulkanVertexSource(render_upside_down), s_fsr_shader_source);
++		break;
++#endif
++	default:
++		break;
++	}
++	return shader;
++}
++
+ RendererOutputShader::RendererOutputShader(const std::string& vertex_source, const std::string& fragment_source)
+ {
+     std::string finalFragmentSrc;
+@@ -562,4 +698,8 @@ void RendererOutputShader::ShutdownStatic()
+ 
+ 	delete s_hermit_shader;
+ 	delete s_hermit_shader_ud;
++
++	delete s_fsr_shader;
++	delete s_fsr_shader_ud;
++	s_fsr_shader = s_fsr_shader_ud = nullptr;
+ }
+diff --git a/src/Cafe/HW/Latte/Renderer/RendererOuputShader.h b/src/Cafe/HW/Latte/Renderer/RendererOuputShader.h
+index 433a330..94389e5 100644
+--- a/src/Cafe/HW/Latte/Renderer/RendererOuputShader.h
++++ b/src/Cafe/HW/Latte/Renderer/RendererOuputShader.h
+@@ -50,6 +50,10 @@ public:
+ 	static RendererOutputShader* s_hermit_shader;
+ 	static RendererOutputShader* s_hermit_shader_ud;
+ 
++	// PS5: AMD FSR 1 (EASU and a light sharpen), made the first time it is asked for, so a game that never
++	// uses it pays nothing for it; nullptr where the renderer has no GLSL (Metal)
++	static RendererOutputShader* GetFsrShader(bool render_upside_down);
++
+ 	static std::string GetOpenGlVertexSource(bool render_upside_down);
+ 	static std::string GetVulkanVertexSource(bool render_upside_down);
+ 	static std::string GetMetalVertexSource(bool render_upside_down);
+@@ -65,6 +69,9 @@ private:
+ 	static const std::string s_copy_shader_source;
+ 	static const std::string s_bicubic_shader_source;
+ 	static const std::string s_hermite_shader_source;
++	static const std::string s_fsr_shader_source;
++	static RendererOutputShader* s_fsr_shader;
++	static RendererOutputShader* s_fsr_shader_ud;
+ 
+ 	static const std::string s_bicubic_shader_source_vk;
+ 	static const std::string s_hermite_shader_source_vk;
+diff --git a/src/config/CemuConfig.h b/src/config/CemuConfig.h
+index 48c396f..1b369f7 100644
+--- a/src/config/CemuConfig.h
++++ b/src/config/CemuConfig.h
+@@ -94,6 +94,7 @@ enum UpscalingFilter
+ 	kBicubicFilter,
+ 	kBicubicHermiteFilter,
+ 	kNearestNeighborFilter,
++	kFsrFilter, // PS5: AMD FSR 1's edge adaptive upscaler (RendererOutputShader::GetFsrShader)
+ };
+ 
+ enum FullscreenScaling

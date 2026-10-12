@@ -81,6 +81,8 @@ namespace ps5pad
 	bool IsConnected(int player);
 	// The signed-in user whose controller a player's is (for its speaker's audio port); -1: none.
 	int32_t UserId(int player);
+	// That user's name, as the PS5 shows it (empty when there is none)
+	std::string UserName(int player);
 	// The touchpad's resolution, for normalising touch positions.
 	void TouchResolution(int player, float& width, float& height);
 	void SetVibration(int player, uint8_t largeMotor, uint8_t smallMotor);

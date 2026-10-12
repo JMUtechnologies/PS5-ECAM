@@ -337,6 +337,8 @@ namespace ps5pad
 		return true;
 	}
 	bool IsConnected(int player) { return player == 0; }
+	int32_t UserId(int player) { return player == 0 ? 0x10fd1069 : -1; }
+	std::string UserName(int player) { return player == 0 ? "Lena" : ""; }
 	void TouchResolution(int, float& width, float& height) { width = 1920, height = 1070; }
 	void SetVibration(int, uint8_t, uint8_t) {}
 	void SetVibrationEnabled(bool) {}
@@ -600,6 +602,15 @@ namespace ps5emu
 
 	bool Scanning() { return false; }
 	void ApplyOptions(const Options&) {}
+	// the preview's Cemu is up at once (shell.cpp sets coreReady): nothing loads beside it
+	void StartCore(const Options&) {}
+	bool CoreStarted(bool& ok, std::string&)
+	{
+		ok = true;
+		return true;
+	}
+	void FinishCoreStart() {}
+	void LogMemory() {}
 	void Rescan() {}
 	// the games' icons, when build/preview/covers has them (copied there by hand, as the box art)
 	std::string CoverPath(uint64_t titleId)
@@ -776,6 +787,99 @@ namespace ps5emu
 
 	void CancelInstall() { s_install.state = InstallStatus::State::Cancelled; }
 	void ReloadGraphicPacks() {}
+
+	// Wii U accounts: two to begin with, as Cemu keeps them
+	static std::vector<WiiuAccount> s_accounts = {{0x80000001, "Lena"}, {0x80000002, "Sam"}};
+	static uint32_t s_currentAccount = 0x80000001;
+	std::vector<WiiuAccount> ListAccounts() { return s_accounts; }
+	void ReloadAccounts() {}
+	uint32_t CurrentAccount() { return s_currentAccount; }
+	void SetCurrentAccount(uint32_t id) { s_currentAccount = id; }
+	uint32_t CreateAccount(const std::string& name, std::string& error)
+	{
+		if (s_accounts.size() >= 12)
+		{
+			error = "The Wii U has twelve accounts at most.";
+			return 0;
+		}
+		const uint32_t id = s_accounts.back().id + 1;
+		s_accounts.push_back({id, name.substr(0, 10)});
+		s_currentAccount = id;
+		return id;
+	}
+	bool RenameAccount(uint32_t id, const std::string& name)
+	{
+		for (auto& account : s_accounts)
+			if (account.id == id)
+				account.name = name.substr(0, 10);
+		return true;
+	}
+	bool DeleteAccount(uint32_t id, std::string& error)
+	{
+		if (id == s_currentAccount || s_accounts.size() <= 1)
+		{
+			error = "Games start on this one: choose another first.";
+			return false;
+		}
+		std::erase_if(s_accounts, [id](const WiiuAccount& account) { return account.id == id; });
+		return true;
+	}
+	uint32_t AccountForUser(const std::string& user, const std::string& name, std::map<std::string, std::string>& byUser)
+	{
+		std::string error;
+		if (!byUser.count(user))
+			byUser[user] = fmt::format("{:08x}", CreateAccount(name, error));
+		s_currentAccount = (uint32_t)std::strtoul(byUser[user].c_str(), nullptr, 16);
+		return s_currentAccount;
+	}
+
+	// Updates and DLC found on the drives: a made-up few, as if on a USB drive, extended storage and
+	// the PS5's own storage, the first found at once and the rest a moment later
+	static int s_findFrames = 0;
+	void StartFindingInstallables(const std::vector<FindRoot>&) { s_findFrames = 0; }
+	bool FindingInstallables(std::string* where)
+	{
+		if (where)
+			*where = "/mnt/usb0/Wii U/BotW";
+		return ++s_findFrames < 20;
+	}
+	std::vector<Installable> FoundInstallables()
+	{
+		std::vector<Installable> found;
+		auto add = [&](const char* folder, const char* drive, const char* name, uint64_t titleId, InstallCandidate::Kind kind, uint16_t version,
+					   int installed, uint64_t bytes, bool packed = false) {
+			Installable item;
+			item.folder = folder;
+			item.drive = drive;
+			item.name = name;
+			item.titleId = titleId;
+			item.baseTitleId = (titleId & 0xffffffffull) | 0x0005000000000000ull;
+			item.kind = kind;
+			item.version = version;
+			item.installedVersion = installed;
+			item.bytes = s_findFrames > 10 ? bytes : 0;
+			item.packed = packed;
+			found.push_back(item);
+		};
+		using Kind = InstallCandidate::Kind;
+		add("/mnt/usb0/Wii U/BotW v208", "/mnt/usb0", "The Legend of Zelda: Breath of the Wild", 0x0005000E101C9400, Kind::Update, 208, 176, 2900000000ull);
+		add("/mnt/usb0/Wii U/BotW DLC", "/mnt/usb0", "The Legend of Zelda: Breath of the Wild", 0x0005000C101C9400, Kind::Dlc, 80, -1, 1400000000ull);
+		if (s_findFrames > 5)
+		{
+			add("/mnt/ext0/updates/MK8 DLC", "/mnt/ext0", "Mario Kart 8", 0x0005000C1010EC00, Kind::Dlc, 112, -1, 2300000000ull);
+			add("/mnt/ext0/updates/MK8 v64", "/mnt/ext0", "Mario Kart 8", 0x0005000E1010EC00, Kind::Update, 64, 64, 1100000000ull);
+			add("/data/ps5cemu/games/XCX update", "/data", "Xenoblade Chronicles X", 0x0005000E1014B800, Kind::Update, 16, 33, 100000000ull);
+			add("/data/ps5cemu/games/Splatoon v288 (NUS)", "/data", "", 0x0005000E10176900, Kind::Update, 288, -1, 1600000000ull, true);
+		}
+		return found;
+	}
+	void RefreshInstalledVersions(std::vector<Installable>& found)
+	{
+		for (Installable& item : found)
+			if (!item.packed && item.installedVersion < item.version)
+				item.installedVersion = item.version;
+	}
+	void StopFindingInstallables() {}
 }
 
 // The remote touch screen (port/stream), without a network: on, it is at a made-up address, and a

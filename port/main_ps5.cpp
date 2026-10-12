@@ -248,31 +248,27 @@ int main(int argc, char* argv[])
 		}
 		ps5log::Line("[main] the Wii U side: Azahar's core is not started");
 		status.diagnostics.push_back(ps5lang::Tr("This session: Cemu (Wii U); Azahar's core is not started"));
-		if (!privileges.filesystem)
+		if (!privileges.filesystem || status.coreReady || status.coreStarting)
 			return;
-		std::string coreError;
-		if (!ps5emu::InitializeCore(coreError))
-		{
-			status.notice = ps5lang::TrF("Cemu did not start: {0}", coreError);
-			ps5log::Line("[main] {}", status.notice);
-			ps5notify::Send(status.notice);
-			return;
-		}
-		status.coreReady = true;
-		ps5emu::ApplyOptions(Options(settings));
+		// Cemu's library loads on a thread of its own while the launcher draws, from its catalogue: the
+		// app opens at once (the launcher polls it, and says why when it fails)
+		status.coreStarting = true;
+		ps5emu::StartCore(Options(settings));
 		if (!privileges.jit)
 			ps5notify::Send(ps5lang::Tr("No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"));
-		ps5emu::LogMemory(); // Cemu's start, against the 3DS side's
 	};
 
 	if (freshStart && privileges.filesystem)
 		ps5update::Start();
+	// how long the app took to get here, from the PS5 starting it: the launcher's first frame follows
+	ps5log::Line("[main] the launcher starts {} ms into the app", sceKernelGetProcessTime() / 1000);
 	for (;;)
 	{
 		SetHighFrameRate(false); // the launcher at 59.94 Hz
 		ps5display::SetFramePacing(1); // and the 3DS's games every refresh
 		std::optional<ps5launcher::Choice> choice;
 		const ps5shell::Outcome outcome = ps5shell::Run(settings, status, prepare, choice);
+		ps5emu::FinishCoreStart(); // a 3DS or DS game chosen while Cemu's library was still loading waits for it
 		ps5update::Stop(); // nothing of the launcher's runs beside a game
 		ps5packs::Stop();
 		if (outcome != ps5shell::Outcome::Chosen || !choice)

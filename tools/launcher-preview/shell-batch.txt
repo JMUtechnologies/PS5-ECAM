@@ -1,0 +1,59 @@
+# 3.5.1's newer screens (tools/preview-shell.sh tools/launcher-preview/shell-batch.txt): Accounts and
+# saves (6.13), Updates and DLC (6.12) and the folder browser's drive tabs (6.6), About's support card,
+# and the Game menu's Updates and DLC.
+wait 90
+press r1                      # Settings, on Graphics
+wait 40
+press down down down down down down # Accounts and saves
+wait 30
+shot saves
+press right                   # its rows: the account games start on
+wait 25
+shot saves-rows
+press right                   # the next account
+wait 25
+shot saves-account
+press down down down          # Delete an account
+press right
+wait 20
+shot saves-delete
+press up up                   # New account: the keyboard, naming
+press cross
+wait 30
+press cross right cross right cross # Q, w, e
+wait 10
+shot saves-keyboard
+press options                 # Done: the account is made, and games start on it
+wait 30
+shot saves-made
+press circle                  # the pages
+press up                      # Game files
+press right down down down cross # Updates and DLC
+wait 8
+shot updates-looking
+wait 60
+shot updates
+press down
+wait 20
+shot updates-row2
+press square                  # every new one
+wait 40
+shot updates-installing
+wait 300
+shot updates-done
+press triangle                # the folder browser, its tabs
+wait 45
+shot files-tabs
+press circle                  # Updates and DLC again
+wait 40
+press circle                  # Game files
+wait 30
+press circle                  # the pages
+press down down down down down # About
+wait 30
+shot about
+press circle                  # the Library
+wait 30
+press options                 # the Game menu: Updates and DLC
+wait 30
+shot game-menu-updates

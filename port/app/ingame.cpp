@@ -166,11 +166,11 @@ namespace
 	{
 		auto& config = GetConfig();
 		// tr: how a game's picture is scaled: the methods' names
-		static const char* kFilters[] = {TrMark("Bilinear"), TrMark("Bicubic"), TrMark("Bicubic Hermite"), TrMark("Nearest neighbour")};
+		static const char* kFilters[] = {TrMark("Bilinear"), TrMark("Bicubic"), TrMark("Bicubic Hermite"), TrMark("Nearest neighbour"), TrMark("AMD FSR 1")};
 		const bool gamePadMain = LatteGPUState.isDRCPrimary;
 		const bool stretch = config.fullscreen_scaling == kStretch;
 		const bool overlay = config.overlay.position != ScreenPosition::kDisabled;
-		const int filter = std::clamp((int)config.upscale_filter, 0, 3);
+		const int filter = std::clamp((int)config.upscale_filter, 0, 4);
 		const int player = s_controlsPlayer;
 		const auto controls = ps5emu::GetPlayerControls(player);
 		const auto mappings = ps5emu::ListMappings(player);
@@ -342,7 +342,7 @@ namespace
 		else if (id == "corner")
 			ps5ingame::ToggleCornerScreen();
 		else if (id == "upscaling")
-			config.upscale_filter = (std::clamp((int)config.upscale_filter, 0, 3) + (change < 0 ? 3 : 1)) % 4;
+			config.upscale_filter = (std::clamp((int)config.upscale_filter, 0, 4) + (change < 0 ? 4 : 1)) % 5; // the five of kFilters
 		else if (id == "scaling")
 			config.fullscreen_scaling = config.fullscreen_scaling == kStretch ? kKeepAspectRatio : kStretch;
 		else if (id == "overlay")
@@ -584,6 +584,12 @@ namespace ps5ingame
 			add(ps5gameinfo::Year(info.released));
 		}
 		add(fmt::format("v{}", game.version));
+		// the account it runs on, where there is more than one (6.13): read once, as the game starts
+		if (const auto accounts = ps5emu::ListAccounts(); accounts.size() > 1)
+			for (const auto& account : accounts)
+				if (account.id == ps5emu::CurrentAccount())
+					// tr: the in-game menu's top: the Wii U account the game runs on ({0}: its name)
+					add(TrF("{0}'s saves", account.name));
 		std::string cover = ps5boxart::Path(ps5boxart::System::WiiU, game.gameId);
 		if (cover.empty())
 			cover = ps5emu::CoverPath(game.titleId);
