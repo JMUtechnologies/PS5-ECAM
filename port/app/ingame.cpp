@@ -32,6 +32,7 @@
 #include <cstdio>
 #include <cstring>
 #include <filesystem>
+#include <map>
 #include <mutex>
 
 namespace
@@ -73,6 +74,9 @@ namespace
 	std::vector<std::string> s_amiibo;
 	int s_amiiboIndex = 0;
 	std::string s_amiiboMessage;
+	// a portal's slot: the figure Left and Right moved to, not put on yet (Cross puts it on), by device
+	// and slot; empty: Empty
+	std::map<std::pair<int, size_t>, std::string> s_figurePick;
 
 	void FindAmiibo()
 	{
@@ -200,6 +204,8 @@ namespace
 				Tr("Holds the game to an even rate: 60 fps for 4K at 120 Hz, 30 for 8K at 60 Hz. Off shows each frame when it is done.")},
 			{"overlay", Tr("Performance overlay"), overlay ? on : off, true,
 				Tr("Frames per second, CPU and memory use in the top left corner, as Cemu shows them.")},
+			{"notices", Tr("Shader notices"), config.notification.shader_compiling ? on : off, true,
+				Tr("Cemu's notes in a corner while the game builds shaders. Off hides them; they are built either way.")},
 		}});
 		// the game's graphic packs, as the main thread last listed them: each one on or off, and the
 		// presets of those that are on
@@ -249,12 +255,20 @@ namespace
 					continue;
 				const auto figures = ps5usb::Figures(device);
 				const auto slots = ps5usb::Slots(device);
+				auto figureName = [](const std::string& figure) { return figure.empty() ? std::string(Tr("Empty")) : fs::path(figure).stem().string(); };
 				for (size_t s = 0; s < slots.size(); s++)
-					// tr: {0} is a folder of figure dumps
+				{
+					// the figure on the slot, or the one chosen to go on it next (#29: each one between used
+					// to go on the portal as Left and Right passed it, and the game reacted to every one)
+					const auto pick = s_figurePick.find({d, s});
+					const bool pending = pick != s_figurePick.end() && pick->second != slots[s].figure;
+					// tr: a figure chosen in the in-game menu, not on the portal yet: "Spyro (Cross to put on)"
 					usb.push_back({fmt::format("figure:{}:{}", d, s), "   " + slots[s].label,
-						slots[s].figure.empty() ? std::string(Tr("Empty")) : fs::path(slots[s].figure).stem().string(), true,
+						pending ? TrF("{0} (Cross to put on)", figureName(pick->second)) : figureName(slots[s].figure), true,
+						// tr: {0} is a folder of figure dumps
 						figures.empty() ? TrF("Put figure dumps in {0} to put them on here.", ps5usb::Folder(device)) :
-										  std::string(Tr("Left and Right put the next figure on it; Empty takes it off."))});
+										  std::string(Tr("Left and Right choose a figure, Cross puts it on; Empty takes the one there off."))});
+				}
 			}
 			const std::string error = ps5usb::LastError();
 			if (!error.empty())
@@ -287,6 +301,11 @@ namespace
 				Tr("How far the right stick moves before the game sees it. Raise it if the camera drifts.")},
 			{"layout", Tr("A and B"), !faceButtons ? std::string("-") : aOnCircle ? Tr("A on Circle") : Tr("A on Cross"), true,
 				Tr("A on Circle as on the Wii U, or on Cross, with X and Y swapped to match. Every button: the launcher's Settings > Controls.")},
+			{"touchpad", Tr("Touchpad click"),
+				ps5emu::TouchpadClick(player) == 1 ? std::string(Tr("Touches the screen")) : ps5emu::TouchpadClick(player) == 2 ?
+					std::string(Tr("Presses a button")) : TrF("{0}: {1}", Tr("Automatic"), ps5pad::TouchpadButton(player) ? Tr("a button") : Tr("a touch")),
+				true,
+				Tr("A touch of the GamePad's screen, or the button set to Touchpad click (- by default when chosen here). The shortcuts stay.")},
 		}});
 		// tr: the remote touch screen's row: which screen a phone or a tablet shows
 		rows.push_back(ps5menu::RemoteRow(Tr("The GamePad's screen")));
@@ -332,6 +351,12 @@ namespace
 			config.overlay.position = overlay ? ScreenPosition::kDisabled : ScreenPosition::kTopLeft;
 			config.overlay.fps = config.overlay.cpu_usage = config.overlay.ram_usage = true;
 		}
+		else if (id == "notices")
+		{
+			// read as Cemu draws its notices: hidden from the next one on (#37)
+			config.notification.shader_compiling = !config.notification.shader_compiling;
+			ps5log::Line("[ingame] shader notices: {}", config.notification.shader_compiling ? "on" : "off");
+		}
 		else if (id == "barriers")
 		{
 			// the renderer reads it at each draw; settings.xml keeps it, as Cemu's menu does
@@ -376,7 +401,8 @@ namespace
 		}
 		else if (id.rfind("figure:", 0) == 0)
 		{
-			// the next figure in the folder, or the one before; Empty between the last and the first
+			// Left and Right: the next figure in the folder (sorted by name), or the one before, Empty
+			// between the last and the first, only chosen; Cross puts the chosen one on
 			int d = 0;
 			size_t slot = 0;
 			std::sscanf(id.c_str(), "figure:%d:%zu", &d, &slot);
@@ -385,12 +411,24 @@ namespace
 			const auto slots = ps5usb::Slots(device);
 			if (slot < slots.size())
 			{
-				std::vector<std::string> choices{""};
-				choices.insert(choices.end(), figures.begin(), figures.end());
-				const auto at = std::find(choices.begin(), choices.end(), slots[slot].figure);
-				const int now = at == choices.end() ? 0 : (int)(at - choices.begin());
-				const int count = (int)choices.size();
-				ps5usb::RequestFigure(device, slot, choices[(now + (change < 0 ? count - 1 : 1)) % count]);
+				const auto key = std::make_pair(d, slot);
+				const auto pick = s_figurePick.find(key);
+				const std::string& current = pick != s_figurePick.end() ? pick->second : slots[slot].figure;
+				if (chosen)
+				{
+					if (current != slots[slot].figure)
+						ps5usb::RequestFigure(device, slot, current);
+					s_figurePick.erase(key);
+				}
+				else
+				{
+					std::vector<std::string> choices{""};
+					choices.insert(choices.end(), figures.begin(), figures.end());
+					const auto at = std::find(choices.begin(), choices.end(), current);
+					const int now = at == choices.end() ? 0 : (int)(at - choices.begin());
+					const int count = (int)choices.size();
+					s_figurePick[key] = choices[(now + (change < 0 ? count - 1 : 1)) % count];
+				}
 			}
 		}
 		else if (id.rfind("pack:", 0) == 0)
@@ -440,6 +478,12 @@ namespace
 				value = 0;
 			value = std::clamp(value, 0, 50);
 			ps5emu::SetDeadzones(player, leftStick ? value : controls.leftDeadzone, leftStick ? controls.rightDeadzone : value);
+		}
+		else if (id == "touchpad")
+		{
+			const int next = (ps5emu::TouchpadClick(player) + (change < 0 ? 2 : 1)) % 3;
+			ps5emu::ApplyTouchpadClick(player, next, true);
+			ps5log::Line("[ingame] player {}'s touchpad click: {}", player + 1, next);
 		}
 		else if (id == "layout")
 		{

@@ -33,7 +33,9 @@ namespace ps5azahar
 	// One button's mapping, as ListMappings has it (a DS's circle pad named as the D-pad it is)
 	ps5emu::ButtonMapping Mapping(const ps5settings::N3ds& settings, Button button, bool ds = false);
 	ps5emu::PadInput MappedInput(const ps5settings::N3ds& settings, Button button);
-	void SetMapping(ps5settings::N3ds& settings, size_t index, ps5emu::PadInput input);
+	// A DualSense input for a 3DS button (Button's index). The button that had the input takes this
+	// one's, so they swap (on the DS, ds: among the DS's buttons only)
+	void SetMapping(ps5settings::N3ds& settings, size_t index, ps5emu::PadInput input, bool ds = false);
 	void ClearMapping(ps5settings::N3ds& settings, size_t index);
 	void ResetControls(ps5settings::N3ds& settings);
 

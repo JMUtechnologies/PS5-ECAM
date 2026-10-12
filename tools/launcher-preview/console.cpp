@@ -343,6 +343,11 @@ namespace ps5pad
 	void SetLightBar(int, uint8_t, uint8_t, uint8_t) {}
 	Filtered FilterShortcuts(int, uint32_t buttons) { return {buttons, false}; }
 	Shortcut TakeShortcut() { return Shortcut::None; }
+	std::array<bool, kMaxPlayers> s_touchpadButton{};
+	void SetTouchpadButton(int player, bool button) { s_touchpadButton[player & 3] = button; }
+	bool TouchpadButton(int player) { return s_touchpadButton[player & 3]; }
+	void SetTurbo(uint32_t) {}
+	uint32_t ApplyTurbo(uint32_t buttons) { return buttons; }
 }
 
 // -- GameTDB's box art, in brief: what the preview's own folder has ---------------------------------
@@ -690,10 +695,41 @@ namespace ps5emu
 	{
 		static const char* kNames[] = {"", "Cross", "Circle", "Square", "Triangle", "L1", "R1", "L2", "R2", "L3", "R3", "Create", "Options",
 			"D-pad up", "D-pad down", "D-pad left", "D-pad right", "Left stick up", "Left stick down", "Left stick left", "Left stick right",
-			"Right stick up", "Right stick down", "Right stick left", "Right stick right"};
-		if (index < Mappings(player).size())
-			Mappings(player)[index].input = kNames[(int)input];
+			"Right stick up", "Right stick down", "Right stick left", "Right stick right", "Touchpad click"};
+		auto& list = Mappings(player);
+		if (index >= list.size())
+			return;
+		// as controllers.cpp: the button that had it takes this one's, so they swap
+		for (size_t other = 0; other < list.size(); other++)
+			if (other != index && list[other].input == kNames[(int)input])
+				list[other].input = list[index].input;
+		list[index].input = kNames[(int)input];
 	}
+	FaceLayout GetFaceLayout(int player)
+	{
+		const auto& list = Mappings(player);
+		if (list.size() < 4 || list[0].button != "A")
+			return FaceLayout::None;
+		return list[0].input == "Circle" ? FaceLayout::Nintendo : list[0].input == "Cross" ? FaceLayout::PlayStation : FaceLayout::None;
+	}
+	void SetFaceLayout(int player, FaceLayout layout)
+	{
+		const bool nintendo = layout == FaceLayout::Nintendo;
+		SetMapping(player, 0, nintendo ? PadInput::Circle : PadInput::Cross);
+		SetMapping(player, 1, nintendo ? PadInput::Cross : PadInput::Circle);
+		SetMapping(player, 2, nintendo ? PadInput::Triangle : PadInput::Square);
+		SetMapping(player, 3, nintendo ? PadInput::Square : PadInput::Triangle);
+	}
+	std::array<int, 4> s_touchpadClick{};
+	void ApplyTouchpadClick(int player, int setting, bool chosen)
+	{
+		s_touchpadClick[player & 3] = setting;
+		const bool button = setting == 2 || (setting == 0 && s_players[player & 3].type != EmulatedType::GamePad);
+		ps5pad::SetTouchpadButton(player, button);
+		if (chosen && setting == 2)
+			SetMapping(player, 9, PadInput::TouchPad); // - (Select)
+	}
+	int TouchpadClick(int player) { return s_touchpadClick[player & 3]; }
 	void ClearMapping(int player, size_t index)
 	{
 		if (index < Mappings(player).size())

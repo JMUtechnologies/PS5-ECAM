@@ -131,6 +131,7 @@ namespace ps5emu
 			case PadInput::RightStickDown: return kRotationYP;
 			case PadInput::RightStickLeft: return kRotationXN;
 			case PadInput::RightStickRight: return kRotationXP;
+			case PadInput::TouchPad: return PS5PadController::kTouchPadClick;
 			case PadInput::None: break;
 			}
 			return 0;
@@ -177,6 +178,17 @@ namespace ps5emu
 				if (controller->api() == InputAPI::PS5Pad)
 					return controller;
 			return {};
+		}
+
+		// the DualSense input a mapping's name is (PS5PadController::get_button_name's), or None
+		PadInput InputNamed(const std::shared_ptr<ControllerBase>& pad, const std::string& name)
+		{
+			if (name.empty())
+				return PadInput::None;
+			for (int input = (int)PadInput::Cross; input <= (int)PadInput::TouchPad; input++)
+				if (pad->get_button_name(InputId((PadInput)input)) == name)
+					return (PadInput)input;
+			return PadInput::None;
 		}
 
 		void Save(int player)
@@ -237,6 +249,8 @@ namespace ps5emu
 		// (DetachAbsentPlayers), kept to be put back as it comes
 		std::mutex s_detachedMutex;
 		std::array<EmulatedControllerPtr, ps5pad::kMaxPlayers> s_detached;
+		// each player's touchpad click setting (ApplyTouchpadClick), for when their controller changes
+		std::array<int, ps5pad::kMaxPlayers> s_touchpadClick{};
 	}
 
 	PlayerControls GetPlayerControls(int player)
@@ -291,6 +305,7 @@ namespace ps5emu
 		DefaultMapping(emulated, pad);
 		Save(player);
 		PS5PadController::SetWiiRemote(player, cemuType == EmulatedController::Type::Wiimote); // it points
+		ApplyTouchpadClick(player, s_touchpadClick[player]); // an automatic touchpad click follows the new controller
 		ps5log::Line("[controls] player {}: {}", player + 1, emulated->type_string());
 	}
 
@@ -353,9 +368,82 @@ namespace ps5emu
 		const auto pad = PadOf(emulated);
 		if (index >= buttons.size() || !pad || input == PadInput::None)
 			return;
+		// the button that had this input takes the one this button had (or none), so they swap
+		const PadInput previous = InputNamed(pad, emulated->get_mapping_name(buttons[index].id));
+		const std::string wanted = pad->get_button_name(InputId(input));
+		for (size_t other = 0; other < buttons.size(); other++)
+		{
+			if (other == index || emulated->get_mapping_name(buttons[other].id) != wanted)
+				continue;
+			if (previous != PadInput::None)
+				emulated->set_mapping(buttons[other].id, pad, InputId(previous));
+			else
+				emulated->delete_mapping(buttons[other].id);
+			ps5log::Line("[controls] player {}: {} moves to {}", player + 1, buttons[other].label,
+				previous != PadInput::None ? pad->get_button_name(InputId(previous)) : std::string("nothing"));
+		}
 		emulated->set_mapping(buttons[index].id, pad, InputId(input));
 		Save(player);
 		ps5log::Line("[controls] player {}: {} is {}", player + 1, buttons[index].label, emulated->get_mapping_name(buttons[index].id));
+	}
+
+	FaceLayout GetFaceLayout(int player)
+	{
+		const auto mappings = ListMappings(player);
+		if (mappings.size() < 4 || mappings[0].button != "A" || mappings[3].button != "Y")
+			return FaceLayout::None;
+		if (mappings[0].input == "Circle" && mappings[1].input == "Cross" && mappings[2].input == "Triangle" && mappings[3].input == "Square")
+			return FaceLayout::Nintendo;
+		if (mappings[0].input == "Cross" && mappings[1].input == "Circle" && mappings[2].input == "Square" && mappings[3].input == "Triangle")
+			return FaceLayout::PlayStation;
+		return FaceLayout::None;
+	}
+
+	void SetFaceLayout(int player, FaceLayout layout)
+	{
+		const auto mappings = ListMappings(player);
+		if (layout == FaceLayout::None || mappings.size() < 4 || mappings[0].button != "A" || mappings[3].button != "Y")
+			return;
+		const bool nintendo = layout == FaceLayout::Nintendo;
+		// each set with the swap SetMapping makes, so wherever the four were, they end up as asked
+		SetMapping(player, 0, nintendo ? PadInput::Circle : PadInput::Cross);
+		SetMapping(player, 1, nintendo ? PadInput::Cross : PadInput::Circle);
+		SetMapping(player, 2, nintendo ? PadInput::Triangle : PadInput::Square);
+		SetMapping(player, 3, nintendo ? PadInput::Square : PadInput::Triangle);
+	}
+
+	int TouchpadClick(int player)
+	{
+		return player >= 0 && player < ps5pad::kMaxPlayers ? s_touchpadClick[player] : 0;
+	}
+
+	void ApplyTouchpadClick(int player, int setting, bool chosen)
+	{
+		if (player < 0 || player >= ps5pad::kMaxPlayers)
+			return;
+		s_touchpadClick[player] = setting;
+		const auto emulated = InputManager::instance().get_controller((size_t)player);
+		const EmulatedType type = TypeOf(emulated);
+		// automatic: the GamePad has a screen to touch, the others none
+		const bool button = setting == 2 || (setting == 0 && type != EmulatedType::GamePad && type != EmulatedType::None);
+		ps5pad::SetTouchpadButton(player, button);
+		if (!chosen || setting != 2)
+			return;
+		// chosen to be a button with nothing on it: - (Select), which #37 asked for there
+		const auto buttons = ButtonsOf(type);
+		const auto pad = PadOf(emulated);
+		if (!pad)
+			return;
+		const std::string touchpad = pad->get_button_name(InputId(PadInput::TouchPad));
+		for (const Button& b : buttons)
+			if (emulated->get_mapping_name(b.id) == touchpad)
+				return;
+		for (size_t i = 0; i < buttons.size(); i++)
+			if (std::string_view(buttons[i].label).starts_with("- ") || std::string_view(buttons[i].label) == "-")
+			{
+				SetMapping(player, i, PadInput::TouchPad);
+				return;
+			}
 	}
 
 	void ClearMapping(int player, size_t index)

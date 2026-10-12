@@ -32,9 +32,9 @@ namespace ps5settings
 		bool customTextures = false;  // texture packs from azahar/load/textures/<title ID> (Azahar's custom_textures)
 		int border = 0;				  // artwork around the screens: 0 none, else ps5ingame3ds::kBorderNames' theme
 		int cpuClock = 100;			  // the emulated CPU's speed, percent of the 3DS's (Azahar's cpu_clock_percentage)
-		// only in ps5cemu.json: every 3DS vertex position computed invariantly (Azahar patch 0010), as
-		// Azahar does on Apple GPUs, for Pokemon X's moving black stipples (#23). Off, as on a PC,
-		// until a console has shown it fixes them, and what it costs
+		// every 3DS vertex position computed invariantly (Azahar patch 0010), as Azahar does on Apple
+		// GPUs, for Pokemon X's moving black stipples (#23): Settings > Graphics' Outline fix, which a
+		// game can have its own of; on by default for the games known to need it (InvariantByDefault)
 		bool invariantPosition = false;
 		// the DS's games (melonDS: port/melonds)
 		int dsFilter = 0;			  // how the DS's screens are scaled to the TV: sharp, smooth, square pixels (ps5melonds::screens::Filter)
@@ -43,6 +43,7 @@ namespace ps5settings
 		std::string articAddress;	  // the last Artic Base server's IPv4 address, a 3DS on the network
 		int gameCount = -1;			  // the library's games when last looked for (the start screen's); -1: never
 		std::map<std::string, std::string> buttons; // 3DS button: DualSense input, where not the default
+		std::string turbo;			  // the DualSense input that presses again and again while held (Controls > Turbo button); empty: none
 		uint64_t lastGame = 0;		  // title ID, or one made from the path
 		std::vector<uint64_t> recent; // newest first, at most four
 	};
@@ -71,6 +72,11 @@ namespace ps5settings
 		int holdMs = 800;			 // hold to confirm, 400 to 1500
 		bool gamePictures = true;	 // the focused game's picture behind the menus
 		bool setupDone = false;		 // the Setup check was shown once
+		// the sides the bar offers, Wii U 1, 3DS 2, DS 4 (Settings > Launcher > Sides, and the first start's
+		// Make it yours); at least one
+		int sides = 7;
+		std::string lastVersion;	 // the version that ran last: a newer one says what it brings, once (Make it yours)
+		std::string theme;			 // the launcher's look (ui/theme.h): a built-in theme's id, or user:<file> in themes/; empty: the default
 		int libraryFilter[3] = {0, 0, 0}; // per side (Wii U, 3DS, DS): All, Recently added, Favourites, Graphic packs on (Wii U)
 		int librarySort[3] = {0, 0, 0};   // Recently played (the default: the Library is where a side opens), A to Z, Release year, How it runs
 	};
@@ -85,9 +91,18 @@ namespace ps5settings
 		int framePacing = 1;
 		bool overlay = false;		  // Cemu's performance overlay from the start
 		bool asyncShaders = true;	  // Cemu's async_compile (Settings > Graphics, and the in-game menu's Graphics)
+		bool shaderNotices = true;	  // Cemu's "compiled shaders/pipelines" notices over a game (its notification.shader_compiling, #37)
 		bool gamePadSpeaker = false;  // the GamePad's sound on player 1's DualSense speaker (Settings > Audio)
 		bool remoteScreen = false;	  // the remote touch screen (stream/stream.h), every side's: Settings and the in-game menus
 		bool rumble = true;
+		std::string turbo;			  // the Wii U's turbo button: a DualSense input that presses again and again while held; empty: none
+		// what each Wii U player's touchpad click is (#37): 0 as their controller suits (it touches the
+		// GamePad's screen, a button on the others), 1 it touches the screen, 2 it presses a button
+		int touchpadClick[4] = {0, 0, 0, 0};
+		// Wii U accounts (Settings > Accounts and saves): each PS5 user who starts the app plays on a Wii U
+		// account of their own, by their PS5 user ID ("0x10fd1069") to Cemu's persistent ID ("80000002")
+		bool accountPerUser = false;
+		std::map<std::string, std::string> accountsByUser;
 		bool pinCpuThreads = false;	  // an experiment (ps5/threads.h): only in ps5cemu.json
 		// only in ps5cemu.json: RADV_DEBUG for the Vulkan driver (e.g. "nongg,nohiz"), to narrow down
 		// a GPU hang by turning hardware features off; empty by default
@@ -135,8 +150,10 @@ namespace ps5settings
 	// The Wii U's are the Launcher's own, the 3DS's n3ds', the DS's nds'.
 	bool Value(const Launcher& settings, const std::string& side, const std::string& name, int& value);
 	void SetValue(Launcher& settings, const std::string& side, const std::string& name, int value);
-	// The settings a game starts with: its side's, with the game's own over them
+	// The settings a game starts with: its side's, with the game's own over them (and the outline fix on
+	// for the 3DS games known to need it, InvariantByDefault, unless the game says otherwise)
 	Launcher ForGame(const Launcher& settings, const std::string& side, uint64_t titleId);
+	bool InvariantByDefault(uint64_t titleId);
 	// After a game's menu changed settings: each one it changed (from before, what the game started
 	// with, to after) saved in ps5cemu.json, into the game's own settings when it has some and the
 	// setting is one a game can have, else into the side's; the rest of the side's as after has them.

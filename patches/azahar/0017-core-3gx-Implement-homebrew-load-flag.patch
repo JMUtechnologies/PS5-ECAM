@@ -1,0 +1,81 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: PabloMK7 <hackyglitch2@gmail.com>
+Date: Thu, 8 Oct 2026 18:47:31 +0200
+Subject: [PATCH] core: 3gx: Implement homebrew load flag
+
+(cherry picked from commit 76bbd3a4c0b24a9ad187bfd5795210903aa979a8)
+---
+ src/core/file_sys/plugin_3gx.cpp       | 17 ++++++++++++++++-
+ src/core/file_sys/plugin_3gx.h         |  1 +
+ src/core/hle/service/plgldr/plgldr.cpp | 11 -----------
+ 3 files changed, 17 insertions(+), 12 deletions(-)
+
+diff --git a/src/core/file_sys/plugin_3gx.cpp b/src/core/file_sys/plugin_3gx.cpp
+index 5e59207..27f8d10 100644
+--- a/src/core/file_sys/plugin_3gx.cpp
++++ b/src/core/file_sys/plugin_3gx.cpp
+@@ -76,7 +76,7 @@ Loader::ResultStatus FileSys::Plugin3GXLoader::Load(
+         return Loader::ResultStatus::Error;
+     }
+ 
+-    // Load CIA Header
++    // Load 3GX Header
+     std::vector<u8> header_data(sizeof(_3gx_Header));
+     if (file.ReadBytes(header_data.data(), sizeof(_3gx_Header)) != sizeof(_3gx_Header)) {
+         LOG_ERROR(Service_PLGLDR, "Failed to load 3GX plugin. File corrupted: {}",
+@@ -99,6 +99,21 @@ Loader::ResultStatus FileSys::Plugin3GXLoader::Load(
+         return Loader::ResultStatus::Error;
+     }
+ 
++    if (!header.infos.flags.allow_homebrew_load) {
++        // Same check as original plugin loader, plugins are not supported in homebrew apps
++        u32 value1, value2;
++        kernel.memory.ReadBlock(process, process.codeset->CodeSegment().addr, &value1, 4);
++        kernel.memory.ReadBlock(process, process.codeset->CodeSegment().addr + 32, &value2, 4);
++        // Check for "B #0x20" and "MOV R4, LR" instructions
++        bool is_homebrew = u32_le(value1) == 0xEA000006 && u32_le(value2) == 0xE1A0400E;
++        if (is_homebrew) {
++            LOG_ERROR(Service_PLGLDR,
++                      "Failed to load 3GX plugin. Not compatible with homebrew apps: {}",
++                      plg_context.plugin_path);
++            return Loader::ResultStatus::Error;
++        }
++    }
++
+     // Load strings
+     author = ReadTextInfo(file, header.infos.author_msg_offset, header.infos.author_len);
+     title = ReadTextInfo(file, header.infos.title_msg_offset, header.infos.title_len);
+diff --git a/src/core/file_sys/plugin_3gx.h b/src/core/file_sys/plugin_3gx.h
+index 0769e12..ea2a871 100644
+--- a/src/core/file_sys/plugin_3gx.h
++++ b/src/core/file_sys/plugin_3gx.h
+@@ -97,6 +97,7 @@ private:
+             BitField<6, 1, u32_le> events_self_managed;
+             BitField<7, 1, u32_le> swap_not_needed;
+             BitField<8, 1, u32_le> use_private_memory;
++            BitField<9, 1, u32_le> allow_homebrew_load;
+         } flags;
+         u32_le exe_load_checksum;
+         u32_le builtin_load_exe_args[4];
+diff --git a/src/core/hle/service/plgldr/plgldr.cpp b/src/core/hle/service/plgldr/plgldr.cpp
+index c913096..b92767c 100644
+--- a/src/core/hle/service/plgldr/plgldr.cpp
++++ b/src/core/hle/service/plgldr/plgldr.cpp
+@@ -103,17 +103,6 @@ void PLG_LDR::OnProcessRun(Kernel::Process& process, Kernel::KernelSystem& kerne
+             TITLE_ID_APP_VALUE) {
+         return;
+     }
+-    {
+-        // Same check as original plugin loader, plugins are not supported in homebrew apps
+-        u32 value1, value2;
+-        kernel.memory.ReadBlock(process, process.codeset->CodeSegment().addr, &value1, 4);
+-        kernel.memory.ReadBlock(process, process.codeset->CodeSegment().addr + 32, &value2, 4);
+-        // Check for "B #0x20" and "MOV R4, LR" instructions
+-        bool is_homebrew = u32_le(value1) == 0xEA000006 && u32_le(value2) == 0xE1A0400E;
+-        if (is_homebrew) {
+-            return;
+-        }
+-    }
+     FileSys::Plugin3GXLoader plugin_loader;
+     const auto low_title_Id = plgldr_context.user_load_parameters.low_title_Id;
+     if (plgldr_context.use_user_load_parameters &&

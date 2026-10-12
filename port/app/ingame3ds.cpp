@@ -135,6 +135,8 @@ namespace ps5ingame3ds
 		std::string FilterName(int filter)
 		{
 			filter = std::clamp(filter, 0, 5);
+			if (filter == 1)
+				filter = 0; // Anime4K, OpenGL's only: Azahar's Vulkan renderer draws with none
 			return filter == 0 ? TrC("texture filter", kFilters[0]) : Tr(kFilters[filter]);
 		}
 
@@ -617,7 +619,13 @@ namespace ps5ingame3ds
 			else if (id == "resolution")
 				next.resolution = chosen && resolution >= 10 ? 1 : std::clamp(resolution + change, 1, 10);
 			else if (id == "filter")
-				next.textureFilter = (settings.textureFilter + change + 6) % 6;
+			{
+				// the next filter, past Anime4K (1), which is Azahar's OpenGL renderer's only
+				next.textureFilter = settings.textureFilter == 1 ? 0 : settings.textureFilter;
+				do
+					next.textureFilter = (next.textureFilter + change + 6) % 6;
+				while (next.textureFilter == 1);
+			}
 			else if (id == "dsfilter")
 				next.screenFilter = (std::clamp(settings.screenFilter, 0, kScreenFilterCount - 1) + change + kScreenFilterCount) % kScreenFilterCount;
 			else if (id == "lid")

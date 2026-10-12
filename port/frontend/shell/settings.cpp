@@ -50,6 +50,17 @@ namespace ps5shell
 		constexpr const char* kLayouts[] = {TrMark("Top above bottom"), TrMark("Top screen only"), TrMark("Large top screen"), TrMark("Side by side")};
 		// tr: texture filters: None, then the filters' own names
 		constexpr const char* kTextureFilters[] = {TrMarkC("texture filter", "None"), "Anime4K", TrMark("Bicubic"), "ScaleForce", "xBRZ", "MMPX"};
+		// the ones the list offers, by Azahar's number: Anime4K is its OpenGL renderer's only (the PS5 runs
+		// its Vulkan one), so it is left out, and a setting that has it shows as None
+		constexpr int kOfferedFilters[] = {0, 2, 3, 4, 5};
+
+		int FilterIndex(int filter)
+		{
+			for (int i = 0; i < (int)std::size(kOfferedFilters); i++)
+				if (kOfferedFilters[i] == filter)
+					return i;
+			return 0;
+		}
 		// tr: how a game's picture is scaled: the methods' names
 		constexpr const char* kUpscaleFilters[] = {TrMark("Linear"), TrMark("Bicubic"), TrMark("Bicubic Hermite"), TrMark("Nearest neighbour")};
 		constexpr const char* kMusic[] = {"setup", "off"};
@@ -58,6 +69,23 @@ namespace ps5shell
 		constexpr int kClocks[] = {25, 50, 75, 100, 125, 150, 200, 300, 400}; // the 3DS's CPU clock, as its in-game menu has them
 		// tr: how the DS's screens are scaled to the TV: the filters' names
 		constexpr const char* kDsFilters[] = {TrMark("Sharp"), TrMark("Smooth"), TrMark("Square pixels")};
+
+		// the DualSense buttons a turbo can be on, by the names the settings keep them by (ps5pad::ButtonNamed)
+		constexpr const char* kTurboInputs[] = {"Cross", "Circle", "Square", "Triangle", "L1", "R1", "L2", "R2", "L3", "R3", "Create"};
+
+		std::vector<std::string> TurboOptions(const std::string& turbo, int& index)
+		{
+			// tr: the turbo button's first choice: no button is one
+			std::vector<std::string> options{TrC("turbo", "None")};
+			index = 0;
+			for (const char* input : kTurboInputs)
+			{
+				if (turbo == input)
+					index = (int)options.size();
+				options.push_back(ButtonName(input));
+			}
+			return options;
+		}
 
 		int ClockIndex(int clock)
 		{
@@ -89,8 +117,8 @@ namespace ps5shell
 		std::vector<std::string> TextureFilterNames()
 		{
 			std::vector<std::string> names;
-			for (size_t i = 0; i < std::size(kTextureFilters); i++)
-				names.push_back(i == 0 ? TrC("texture filter", kTextureFilters[i]) : Tr(kTextureFilters[i]));
+			for (int filter : kOfferedFilters)
+				names.push_back(filter == 0 ? TrC("texture filter", kTextureFilters[filter]) : Tr(kTextureFilters[filter]));
 			return names;
 		}
 
@@ -299,6 +327,9 @@ namespace ps5shell
 			own(toggle("overlay", Tr("Performance overlay"), settings.overlay, Tr("Frame rate, CPU and memory in a corner."),
 					Tr("Frames per second, CPU and memory use in the top left corner, as Cemu shows them. Also in the in-game menu.")),
 				"overlay");
+			toggle("shadernotices", Tr("Shader notices"), settings.shaderNotices, Tr("Cemu's \"compiled shaders\" notes over a game."),
+				Tr("The notes Cemu shows in a corner while a game builds its shaders and pipelines (\"Loaded 1200 shaders\"). Off hides "
+				   "them; the shaders are built either way. Also in the in-game menu."));
 			own(toggle("async", Tr("Async shader compile"), settings.asyncShaders, Tr("No stutter while new shaders build."),
 					Tr("On, a new shader is built while the game carries on, so it does not stutter, but some things may be missing for a moment. "
 					"Off, the game waits for each one: stutter, but nothing drawn wrong.")),
@@ -311,13 +342,18 @@ namespace ps5shell
 					"each time a game reads a picture back the wait grows with it."),
 					Kind::Stepper),
 				"resolution");
-			own(choice("filter", Tr("Texture filter"), Options(kTextureFilters), hand.textureFilter, Tr("Smooths textures as they are scaled up."),
+			own(choice("filter", Tr("Texture filter"), TextureFilterNames(), FilterIndex(hand.textureFilter), Tr("Smooths textures as they are scaled up."),
 					Tr("Smooths the game's textures as they are scaled up; None keeps them as the 3DS draws them. A filter redraws every texture "
 					"at the internal resolution: at high resolutions it is the costliest setting. If a game stutters, try None first.")),
 				"textureFilter");
 			own(toggle("customtextures", Tr("Custom textures"), hand.customTextures, Tr("Texture packs from azahar/load/textures."),
 					Tr("Texture packs in /data/ps5cemu/azahar/load/textures/<title ID>, as the desktop Azahar loads them.")),
 				"customTextures");
+			own(toggle("outlinefix", Tr("Outline fix"), hand.invariantPosition, Tr("For black dots moving over outlined 3D models."),
+					Tr("Computes every 3D position the same way twice, as Azahar does on Apple's GPUs, so the outlines games such as Pokémon X "
+					   "and Y draw around their models stop showing moving black dots (#23). On by default for Pokémon X, Y, Omega Ruby and "
+					   "Alpha Sapphire; for other games, turn it on in their game settings if they show the same. Applies to the next game.")),
+				"invariantPosition");
 		}
 		else if (page == "graphics")
 		{
@@ -367,6 +403,23 @@ namespace ps5shell
 		{
 			toggle("rumble", Tr("Vibration"), settings.rumble, Tr("The DualSense's rumble, in games and in the launcher."),
 				Tr("Off, the DualSense never rumbles: not for a game's vibration, nor for the launcher's. Every side has the same."));
+			{
+				int index = 0;
+				auto options = TurboOptions(IsWiiU() ? settings.turbo : hand.turbo, index);
+				choice("turbo", Tr("Turbo button"), std::move(options), index, Tr("Held, it presses again and again by itself."),
+					Tr("Choose a DualSense button: while you hold it in a game, it presses and lets go by itself about fifteen times a second, "
+					   "for games that make you mash. The button keeps whatever it is mapped to. None turns it off. Every player on this side "
+					   "has it."));
+			}
+			if (!IsWiiU())
+			{
+				const bool aOnCircle = ps5azahar::MappedInput(hand, ps5azahar::Button::A) == ps5emu::PadInput::Circle;
+				choice("abbuttons", Tr("A and B"), {Tr("A on Circle"), Tr("A on Cross")}, aOnCircle ? 0 : 1,
+					Tr("Where A is: on Circle, as on the console, or on Cross."),
+					Tr("A on Circle and B on Cross, where the console has them, or A on Cross and B on Circle, as PlayStation games confirm. X "
+					   "and Y swap to match. Also in the in-game menu."),
+					Kind::Segmented);
+			}
 			if (IsWiiU())
 			{
 				for (int player = 0; player < ps5pad::kMaxPlayers; player++)
@@ -667,7 +720,7 @@ namespace ps5shell
 		else if (id == "resolution")
 			hand.resolution = std::clamp(index + 1, 1, 10);
 		else if (id == "filter")
-			hand.textureFilter = std::clamp(index, 0, 5);
+			hand.textureFilter = kOfferedFilters[std::clamp(index, 0, (int)std::size(kOfferedFilters) - 1)];
 		else if (id == "layout")
 			hand.layout = std::clamp(index, 0, 3);
 		else if (id == "border")
@@ -680,6 +733,18 @@ namespace ps5shell
 			hand.cpuClock = kClocks[std::clamp(index, 0, (int)std::size(kClocks) - 1)];
 		else if (id == "dsfilter")
 			hand.dsFilter = std::clamp(index, 0, 2);
+		else if (id == "turbo")
+			(IsWiiU() ? settings.turbo : hand.turbo) = index <= 0 || index > (int)std::size(kTurboInputs) ? "" : kTurboInputs[index - 1];
+		else if (id == "abbuttons")
+		{
+			using ps5azahar::Button;
+			using ps5emu::PadInput;
+			const bool aOnCircle = index == 0, ds = m_side == System::Nds;
+			ps5azahar::SetMapping(hand, (size_t)Button::A, aOnCircle ? PadInput::Circle : PadInput::Cross, ds);
+			ps5azahar::SetMapping(hand, (size_t)Button::B, aOnCircle ? PadInput::Cross : PadInput::Circle, ds);
+			ps5azahar::SetMapping(hand, (size_t)Button::X, aOnCircle ? PadInput::Triangle : PadInput::Square, ds);
+			ps5azahar::SetMapping(hand, (size_t)Button::Y, aOnCircle ? PadInput::Square : PadInput::Triangle, ds);
+		}
 	}
 
 	bool Shell::ApplyRow(ps5settings::Launcher& settings, const Row& row, int step, bool cross)
@@ -720,8 +785,12 @@ namespace ps5shell
 				settings.overlay = on;
 			else if (id == "async")
 				settings.asyncShaders = on;
+			else if (id == "shadernotices")
+				settings.shaderNotices = on;
 			else if (id == "customtextures")
 				hand.customTextures = on;
+			else if (id == "outlinefix")
+				hand.invariantPosition = on;
 			else if (id == "motion")
 				hand.motion = on;
 			else if (id == "dsjit")

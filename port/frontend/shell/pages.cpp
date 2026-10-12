@@ -39,10 +39,17 @@ namespace ps5shell
 			kRowRumble,
 			kRowLeftDeadzone,
 			kRowRightDeadzone,
+			kRowLayout,
+			kRowTouchpad,
 			kRowButtons,
 			kRowReset,
 			kPlayerRows,
 		};
+		constexpr float kPlayerRowStep = 100, kPlayerRowHeight = 90;
+
+		// tr: what a Wii U player's touchpad click does: as their controller suits, touch the GamePad's
+		// screen, or press a button
+		constexpr const char* kTouchpadClicks[] = {TrMark("Automatic"), TrMark("Touches the screen"), TrMark("Presses a button")};
 
 		enum ArticRow
 		{
@@ -76,7 +83,8 @@ namespace ps5shell
 	void Shell::ApplyCemuOptions()
 	{
 		ps5emu::ApplyOptions({m_settings.gamesFolder, m_settings.overlay, m_settings.volume, m_settings.upscaleFilter, m_settings.asyncShaders,
-			m_settings.gamePadSpeaker});
+			m_settings.gamePadSpeaker, m_settings.shaderNotices,
+			{m_settings.touchpadClick[0], m_settings.touchpadClick[1], m_settings.touchpadClick[2], m_settings.touchpadClick[3]}});
 	}
 
 	void Shell::DrawPageHeader(Canvas& canvas, const std::string& kicker, const std::string& title, const std::string& copy)
@@ -426,11 +434,19 @@ namespace ps5shell
 					   "lower it for finer control."),
 				TrMark("How far the right stick moves before the game sees it. Raise it if the camera drifts when you let go of the stick; "
 					   "lower it for finer control."),
-				TrMark("Which DualSense button is which of the controller's.\nA is on Circle and B on Cross by default, where the Wii U has them."),
+				TrMark("A on Circle and B on Cross, where the Wii U has them, or A on Cross and B on Circle, as PlayStation games confirm with "
+					   "Cross. X and Y swap to match. The Wii Remote has no X and Y: its buttons are under Buttons."),
+				TrMark("What a click of the touchpad is for this player.\nTouches the screen: it touches the GamePad's screen where your "
+					   "finger is.\nPresses a button: it presses the Wii U button set to Touchpad click under Buttons; choosing this moves - "
+					   "(Select) there when nothing is.\nAutomatic: a touch with the GamePad, a button with the other controllers, which have "
+					   "no screen.\nEither way, touchpad click + Options, L1 or R1 stay the shortcuts."),
+				TrMark("Which DualSense button is which of the controller's.\nA is on Circle and B on Cross by default, where the Wii U has them. "
+					   "Giving a DualSense button that another of the controller's buttons has swaps the two."),
 				TrMark("The default buttons, vibration, motion and deadzones for this controller. Held to confirm."),
 			};
 			static const char* kNames[kPlayerRows] = {TrMark("Emulated controller"), TrMark("Motion controls"), TrMark("Vibration"),
-				TrMark("Left stick deadzone"), TrMark("Right stick deadzone"), TrMark("Buttons"), TrMark("Reset to defaults")};
+				TrMark("Left stick deadzone"), TrMark("Right stick deadzone"), TrMark("A and B"), TrMark("Touchpad click"), TrMark("Buttons"),
+				TrMark("Reset to defaults")};
 			OpenHelp(Tr(kNames[m_playerRow]), Tr(kHelp[m_playerRow]));
 			return;
 		}
@@ -513,6 +529,42 @@ namespace ps5shell
 			m_feedback.Play(ui::Cue::Focus);
 			break;
 		}
+		case kRowLayout:
+		{
+			const auto layout = ps5emu::GetFaceLayout(m_player);
+			const auto type = controls.type;
+			if (type == ps5emu::EmulatedType::Wiimote || type == ps5emu::EmulatedType::Nunchuk)
+			{
+				m_feedback.Play(ui::Cue::Denied);
+				break;
+			}
+			ps5emu::SetFaceLayout(m_player,
+				layout == ps5emu::FaceLayout::PlayStation ? ps5emu::FaceLayout::Nintendo : ps5emu::FaceLayout::PlayStation);
+			m_feedback.Play(ui::Cue::Toggle);
+			break;
+		}
+		case kRowTouchpad:
+		{
+			int& click = m_settings.touchpadClick[m_player];
+			const int next = cross ? (click + 1) % 3 : std::clamp(click + (right ? 1 : -1), 0, 2);
+			if (next == click)
+			{
+				m_feedback.Play(ui::Cue::Edge);
+				break;
+			}
+			click = next;
+			ps5emu::ApplyTouchpadClick(m_player, click, true);
+			SaveSettings();
+			if (click == 2)
+				for (const auto& mapping : ps5emu::ListMappings(m_player))
+					if (mapping.input == "Touchpad click")
+					{
+						Toast(TrF("Touchpad click: {0}", ButtonName(mapping.button)));
+						break;
+					}
+			m_feedback.Play(ui::Cue::Focus);
+			break;
+		}
 		case kRowButtons:
 			if (cross)
 			{
@@ -539,7 +591,9 @@ namespace ps5shell
 		std::vector<Row> rows(kPlayerRows);
 		rows[kRowType] = {Row::Kind::Choice, "", Tr("Emulated controller"), TypeName(controls.type), Tr("What the game sees in this player's hands.")};
 		rows[kRowMotion] = {Row::Kind::Toggle, "", Tr("Motion controls"), controls.hasMotion ? (controls.motion ? Tr("On") : Tr("Off")) : Tr("None on this one"),
-			controls.hasMotion ? Tr("The DualSense's motion as the controller's.") : Tr("The Pro and Classic Controllers have none.")};
+			controls.hasMotion ? Tr("The DualSense's motion as the controller's.") :
+								 // F9 (#25): what to choose instead, where the real controller has no motion sensors
+								 TrF("The {0} has no motion sensors. For motion, choose the GamePad or a Wii Remote.", TypeName(controls.type))};
 		rows[kRowMotion].on = controls.motion;
 		rows[kRowMotion].dimmed = !controls.hasMotion;
 		if (!controls.hasMotion)
@@ -553,17 +607,40 @@ namespace ps5shell
 		rows[kRowRightDeadzone] = {Row::Kind::Slider, "", Tr("Right stick deadzone"), ps5lang::Percent(controls.rightDeadzone),
 			Tr("How far the right stick moves before it counts.")};
 		rows[kRowRightDeadzone].fraction = controls.rightDeadzone / 50.0f;
+		{
+			const auto layout = ps5emu::GetFaceLayout(m_player);
+			const bool wiiRemote = controls.type == ps5emu::EmulatedType::Wiimote || controls.type == ps5emu::EmulatedType::Nunchuk;
+			rows[kRowLayout] = {Row::Kind::Segmented, "", Tr("A and B"), "", wiiRemote ? Tr("The Wii Remote's buttons are under Buttons.") :
+				Tr("Where A is: on Circle, as on the Wii U, or on Cross.")};
+			rows[kRowLayout].options = {Tr("A on Circle"), Tr("A on Cross")};
+			rows[kRowLayout].index = layout == ps5emu::FaceLayout::PlayStation ? 1 : 0;
+			rows[kRowLayout].value = layout == ps5emu::FaceLayout::None ? std::string(Tr("Your own")) : rows[kRowLayout].options[rows[kRowLayout].index];
+			if (wiiRemote || layout == ps5emu::FaceLayout::None)
+				rows[kRowLayout].kind = Row::Kind::Action;
+			rows[kRowLayout].dimmed = wiiRemote;
+			const int click = std::clamp(m_settings.touchpadClick[m_player], 0, 2);
+			const bool button = ps5pad::TouchpadButton(m_player);
+			rows[kRowTouchpad] = {Row::Kind::Choice, "", Tr("Touchpad click"),
+				click == 0 ? TrF("{0}: {1}", Tr(kTouchpadClicks[0]), button ? Tr("a button") : Tr("a touch")) : std::string(Tr(kTouchpadClicks[click])),
+				button ? Tr("The click presses the button set to Touchpad click.") : Tr("The click touches the GamePad's screen.")};
+			rows[kRowTouchpad].options = {Tr(kTouchpadClicks[0]), Tr(kTouchpadClicks[1]), Tr(kTouchpadClicks[2])};
+			rows[kRowTouchpad].index = click;
+		}
 		rows[kRowButtons] = {Row::Kind::Link, "", Tr("Buttons"), TrP(mapped, "{0} button set", "{0} buttons set"), Tr("Which DualSense button is which.")};
 		rows[kRowReset] = {Row::Kind::Hold, "", Tr("Reset to defaults"), m_message.empty() ? std::string(Tr("Hold Cross")) : m_message,
 			Tr("The default buttons, vibration, motion and deadzones.")};
 		canvas.PushAlpha(Enter(1));
+		// rows past the page's foot scroll with the focus
+		const float scroll = std::max(0.0f, (m_playerRow + 1) * kPlayerRowStep - (kListBottom - kListTop));
+		canvas.PushClip({kListX - 20, kListTop - 12, kListWidth + 40, kListBottom - kListTop + 24});
 		for (int i = 0; i < kPlayerRows; i++)
 		{
-			const Box box{kListX, kListTop + i * 108.0f, kListWidth, 96};
+			const Box box{kListX, kListTop + i * kPlayerRowStep - scroll, kListWidth, kPlayerRowHeight};
 			DrawRow(canvas, rows[i], box, i == m_playerRow);
 			if (i == kRowReset && i == m_playerRow)
 				HoldRing(canvas, box, m_holdProgress);
 		}
+		canvas.PopClip();
 		canvas.PopAlpha();
 		// the DualSense's players, as they are connected
 		canvas.PushAlpha(Enter(2));
@@ -619,7 +696,7 @@ namespace ps5shell
 		if (ds && (index < 0 || index >= (int)ps5azahar::DsButtons().size()))
 			return;
 		const size_t button = ds ? (size_t)ps5azahar::DsButtons()[index] : (size_t)index;
-		ps5azahar::SetMapping(Handheld(m_mappingSide), button, input);
+		ps5azahar::SetMapping(Handheld(m_mappingSide), button, input, ds);
 		SaveSettings();
 	}
 
@@ -678,11 +755,12 @@ namespace ps5shell
 	}
 
 	// Waits for everything to be let go (the Cross that started it), then takes the next press. The
-	// touchpad cancels.
+	// touchpad cancels, unless the player's click is a button (#37): then it is the press.
 	void Shell::PollCapture()
 	{
 		ps5pad::Data data{};
 		const int player = m_mappingSide != System::WiiU ? 0 : m_player;
+		const bool touchpadButton = m_mappingSide == System::WiiU && ps5pad::TouchpadButton(player);
 		if (!ps5pad::Read(player, data) && !ps5pad::Read(0, data))
 			return;
 		const bool idle = Pressed(data) == ps5emu::PadInput::None && !(data.buttons & ps5pad::kTouchPad) && data.l2 < 60 && data.r2 < 60;
@@ -693,12 +771,12 @@ namespace ps5shell
 		}
 		else if (!m_capture.released)
 			m_capture.released = idle;
-		else if (data.buttons & ps5pad::kTouchPad)
+		else if ((data.buttons & ps5pad::kTouchPad) && !touchpadButton)
 		{
 			m_capture.active = false;
 			m_mapMessage = Tr("Cancelled: it stays as it was.");
 		}
-		else if (const auto input = Pressed(data); input != ps5emu::PadInput::None)
+		else if (const auto input = data.buttons & ps5pad::kTouchPad ? ps5emu::PadInput::TouchPad : Pressed(data); input != ps5emu::PadInput::None)
 		{
 			m_capture.active = false;
 			if (m_mappingSide != System::WiiU)
@@ -760,11 +838,15 @@ namespace ps5shell
 			const int seconds = (int)std::max(0.0, m_capture.until - m_now) + 1;
 			// tr: {0} is a button of the Wii U's or the 3DS's controller
 			message = TrF("Press the DualSense button, trigger or stick direction for {0} now.", ButtonName(mapping.button)) + "\n" +
-				TrP(seconds, "{0} second left. A touchpad click cancels.", "{0} seconds left. A touchpad click cancels.");
+				(m_mappingSide == System::WiiU && ps5pad::TouchpadButton(m_player) ?
+						TrP(seconds, "{0} second left; then it stays as it was. The touchpad's click counts too.",
+							"{0} seconds left; then it stays as it was. The touchpad's click counts too.") :
+						TrP(seconds, "{0} second left. A touchpad click cancels.", "{0} seconds left. A touchpad click cancels."));
 		}
 		else
 			message = (m_mapMessage.empty() ? "" : m_mapMessage + "\n\n") +
-				Tr("Cross, then a DualSense button, trigger or stick direction: it becomes this one.\nSquare clears it.");
+				Tr("Cross, then a DualSense button, trigger or stick direction: it becomes this one. One another button had moves to this "
+				   "one's old input, so the two swap.\nSquare clears it.");
 		ui::TextStyle body = Style({24, ui::Weight::Regular, 1.45f});
 		body.tabular = true;
 		canvas.Text(body, panel.x + 40, panel.y + 280, message, Secondary(), panel.w - 80, 7);

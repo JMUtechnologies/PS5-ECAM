@@ -65,7 +65,8 @@ ControllerState PS5PadController::raw_state()
 		return result;
 	}
 
-	const uint32 buttons = filtered.buttons;
+	// the turbo button, held, presses and lets go again and again (ps5pad::SetTurbo)
+	const uint32 buttons = ps5pad::ApplyTurbo(filtered.buttons);
 	static constexpr std::pair<uint32, uint64> kButtons[] = {
 		{ps5pad::kCross, kCross}, {ps5pad::kCircle, kCircle}, {ps5pad::kSquare, kSquare}, {ps5pad::kTriangle, kTriangle},
 		{ps5pad::kCreate, kCreate}, {ps5pad::kOptions, kOptions}, {ps5pad::kL3, kL3}, {ps5pad::kR3, kR3},
@@ -74,10 +75,14 @@ ControllerState PS5PadController::raw_state()
 	};
 	for (const auto& [mask, id] : kButtons)
 		result.buttons.SetButtonState((uint32)id, (buttons & mask) != 0);
+	result.buttons.SetButtonState((uint32)kTouchPadClick, filtered.touchClick);
 
 	result.axis = {StickAxis(data.leftX), StickAxis(data.leftY)};
 	result.rotation = {StickAxis(data.rightX), StickAxis(data.rightY)};
-	result.trigger = {data.l2 / 255.0f, data.r2 / 255.0f};
+	// a trigger the turbo lets go of reads as released
+	const bool l2Up = (filtered.buttons & ps5pad::kL2) && !(buttons & ps5pad::kL2);
+	const bool r2Up = (filtered.buttons & ps5pad::kR2) && !(buttons & ps5pad::kR2);
+	result.trigger = {l2Up ? 0.0f : data.l2 / 255.0f, r2Up ? 0.0f : data.r2 / 255.0f};
 
 	m_previousTouch = m_touch;
 	m_touching = filtered.touch;
@@ -198,6 +203,7 @@ std::string PS5PadController::get_button_name(uint64 button) const
 	case kDpadDown: return "D-pad down";
 	case kDpadLeft: return "D-pad left";
 	case kDpadRight: return "D-pad right";
+	case kTouchPadClick: return "Touchpad click";
 	case kTriggerXP: return "L2";
 	case kTriggerYP: return "R2";
 	case kAxisYN: return "Left stick up";

@@ -90,6 +90,7 @@ namespace ps5melonds::input
 			case PadInput::RightStickDown: return std::max(0.0f, -sample.rightY);
 			case PadInput::RightStickLeft: return std::max(0.0f, -sample.rightX);
 			case PadInput::RightStickRight: return std::max(0.0f, sample.rightX);
+			case PadInput::TouchPad: // the touch screen here, never a button
 			case PadInput::None: break;
 			}
 			return 0.0f;
@@ -157,6 +158,7 @@ namespace ps5melonds::input
 			{
 				s_heldOver &= sample.buttons;
 				sample.buttons &= ~s_heldOver;
+				sample.buttons = ps5pad::ApplyTurbo(sample.buttons); // the turbo button, held, presses again and again
 				s_sticksHeldOver = s_sticksHeldOver && sticksMoved;
 				if (s_sticksHeldOver)
 					sample.leftX = sample.leftY = sample.rightX = sample.rightY = 0;

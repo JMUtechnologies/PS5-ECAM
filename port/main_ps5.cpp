@@ -95,7 +95,8 @@ namespace
 
 	ps5emu::Options Options(const ps5settings::Launcher& settings)
 	{
-		return {settings.gamesFolder, settings.overlay, settings.volume, settings.upscaleFilter, settings.asyncShaders, settings.gamePadSpeaker};
+		return {settings.gamesFolder, settings.overlay, settings.volume, settings.upscaleFilter, settings.asyncShaders, settings.gamePadSpeaker,
+			settings.shaderNotices, {settings.touchpadClick[0], settings.touchpadClick[1], settings.touchpadClick[2], settings.touchpadClick[3]}};
 	}
 
 	// The side the launcher opens on when the app starts over (and only then), and why the game did
@@ -293,6 +294,19 @@ int main(int argc, char* argv[])
 		const ps5settings::Launcher forGame = ps5settings::ForGame(settings, side, game.titleId);
 		if (settings.games.count(ps5settings::GameKey(side, game.titleId)))
 			ps5log::Line("[main] {} starts with settings of its own", game.name);
+		// a handheld's touchpad is its touch screen, whatever a Wii U player's click was made earlier on
+		if (choice->system != ps5launcher::System::WiiU)
+			for (int player = 0; player < ps5pad::kMaxPlayers; player++)
+				ps5pad::SetTouchpadButton(player, false);
+		// the side's turbo button, held, presses again and again in the game (Settings > Controls)
+		{
+			const std::string& turbo = choice->system == ps5launcher::System::N3ds ? forGame.n3ds.turbo :
+				choice->system == ps5launcher::System::Nds						   ? forGame.nds.turbo :
+																					 forGame.turbo;
+			ps5pad::SetTurbo(ps5pad::ButtonNamed(turbo));
+			if (!turbo.empty())
+				ps5log::Line("[main] turbo button: {}", turbo);
+		}
 
 		if (choice->system == ps5launcher::System::Nds)
 		{

@@ -377,10 +377,10 @@ namespace ps5melonds
 			if (menu.aOnCircle != aOnCircle)
 			{
 				// A, B, X and Y: on Circle, Cross, Triangle and Square, or on Cross, Circle, Square and Triangle
-				ps5azahar::SetMapping(s_settings, (size_t)Button::A, menu.aOnCircle ? PadInput::Circle : PadInput::Cross);
-				ps5azahar::SetMapping(s_settings, (size_t)Button::B, menu.aOnCircle ? PadInput::Cross : PadInput::Circle);
-				ps5azahar::SetMapping(s_settings, (size_t)Button::X, menu.aOnCircle ? PadInput::Triangle : PadInput::Square);
-				ps5azahar::SetMapping(s_settings, (size_t)Button::Y, menu.aOnCircle ? PadInput::Square : PadInput::Triangle);
+				ps5azahar::SetMapping(s_settings, (size_t)Button::A, menu.aOnCircle ? PadInput::Circle : PadInput::Cross, true);
+				ps5azahar::SetMapping(s_settings, (size_t)Button::B, menu.aOnCircle ? PadInput::Cross : PadInput::Circle, true);
+				ps5azahar::SetMapping(s_settings, (size_t)Button::X, menu.aOnCircle ? PadInput::Triangle : PadInput::Square, true);
+				ps5azahar::SetMapping(s_settings, (size_t)Button::Y, menu.aOnCircle ? PadInput::Square : PadInput::Triangle, true);
 			}
 			{
 				std::lock_guard lock(s_viewMutex);

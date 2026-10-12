@@ -1,0 +1,105 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: PabloMK7 <hackyglitch2@gmail.com>
+Date: Tue, 6 Oct 2026 23:08:27 +0200
+Subject: [PATCH] core: kernel: Allow shared page on MapProcessMemoryEx (#2641)
+
+(cherry picked from commit c9e1e946a0b5d30a58ae14dee83c1f203a49622d)
+---
+ src/core/hle/kernel/kernel.cpp |  8 ++++++++
+ src/core/hle/kernel/kernel.h   |  2 ++
+ src/core/hle/kernel/svc.cpp    | 23 ++++++++++++++++-------
+ 3 files changed, 26 insertions(+), 7 deletions(-)
+
+diff --git a/src/core/hle/kernel/kernel.cpp b/src/core/hle/kernel/kernel.cpp
+index d8febca..89f925e 100644
+--- a/src/core/hle/kernel/kernel.cpp
++++ b/src/core/hle/kernel/kernel.cpp
+@@ -139,10 +139,18 @@ const SharedPage::Handler& KernelSystem::GetSharedPageHandler() const {
+     return *shared_page_handler;
+ }
+ 
++MemoryRef KernelSystem::GetSharedPageMemoryRef(u64 offset) {
++    return MemoryRef(shared_page_handler, offset);
++}
++
+ ConfigMem::Handler& KernelSystem::GetConfigMemHandler() {
+     return *config_mem_handler;
+ }
+ 
++MemoryRef KernelSystem::GetConfigMemMemoryRef(u64 offset) {
++    return MemoryRef{config_mem_handler, offset};
++}
++
+ IPCDebugger::Recorder& KernelSystem::GetIPCRecorder() {
+     return *ipc_recorder;
+ }
+diff --git a/src/core/hle/kernel/kernel.h b/src/core/hle/kernel/kernel.h
+index 20ea679..30b7f0b 100644
+--- a/src/core/hle/kernel/kernel.h
++++ b/src/core/hle/kernel/kernel.h
+@@ -339,8 +339,10 @@ public:
+ 
+     SharedPage::Handler& GetSharedPageHandler();
+     const SharedPage::Handler& GetSharedPageHandler() const;
++    MemoryRef GetSharedPageMemoryRef(u64 offset);
+ 
+     ConfigMem::Handler& GetConfigMemHandler();
++    MemoryRef GetConfigMemMemoryRef(u64 offset);
+ 
+     IPCDebugger::Recorder& GetIPCRecorder();
+     const IPCDebugger::Recorder& GetIPCRecorder() const;
+diff --git a/src/core/hle/kernel/svc.cpp b/src/core/hle/kernel/svc.cpp
+index 14d0998..164fc3e 100644
+--- a/src/core/hle/kernel/svc.cpp
++++ b/src/core/hle/kernel/svc.cpp
+@@ -36,6 +36,7 @@
+ #include "core/hle/kernel/server_session.h"
+ #include "core/hle/kernel/session.h"
+ #include "core/hle/kernel/shared_memory.h"
++#include "core/hle/kernel/shared_page.h"
+ #include "core/hle/kernel/svc.h"
+ #include "core/hle/kernel/svc_wrapper.h"
+ #include "core/hle/kernel/thread.h"
+@@ -2109,7 +2110,7 @@ Result SVC::MapProcessMemoryEx(Handle dst_process_handle, u32 dst_address,
+ 
+     // TODO(PabloMK7) Fix-up this svc.
+ 
+-    // Only linear memory supported
++    // Only FCRAM and kernel shared pages supported
+     auto vma = src_process->vm_manager.FindVMA(src_address);
+     R_UNLESS(vma != src_process->vm_manager.vma_map.end() &&
+                  vma->second.type == VMAType::BackingMemory,
+@@ -2118,11 +2119,20 @@ Result SVC::MapProcessMemoryEx(Handle dst_process_handle, u32 dst_address,
+     const u32 offset = src_address - vma->second.base;
+     R_UNLESS(offset + size <= vma->second.size, ResultInvalidAddress);
+ 
+-    auto vma_res = dst_process->vm_manager.MapBackingMemory(
+-        dst_address,
+-        memory.GetFCRAMRef(vma->second.backing_memory.GetPtr() + offset -
+-                           kernel.memory.GetFCRAMPointer(0)),
+-        size, map_as_private ? MemoryState::Private : MemoryState::Shared);
++    MemoryRef src_memory_ref;
++    // TODO(PabloMK7): This is hacky, make a proper fix
++    if (vma->second.backing_memory.GetPtr() == kernel.GetSharedPageHandler().GetPtr()) {
++        src_memory_ref = kernel.GetSharedPageMemoryRef(offset);
++    } else if (vma->second.backing_memory.GetPtr() == kernel.GetConfigMemHandler().GetPtr()) {
++        src_memory_ref = kernel.GetConfigMemMemoryRef(offset);
++    } else {
++        src_memory_ref = memory.GetFCRAMRef(vma->second.backing_memory.GetPtr() + offset -
++                                            kernel.memory.GetFCRAMPointer(0));
++    }
++
++    auto vma_res = dst_process->vm_manager.MapBackingMemory(dst_address, src_memory_ref, size,
++                                                            map_as_private ? MemoryState::Private
++                                                                           : MemoryState::Shared);
+ 
+     if (!vma_res.Succeeded()) {
+         return ResultInvalidAddressState;
+@@ -2141,7 +2151,6 @@ Result SVC::UnmapProcessMemoryEx(Handle process, u32 dst_address, u32 size) {
+         size = (size & ~0xFFF) + Memory::CITRA_PAGE_SIZE;
+     }
+ 
+-    // Only linear memory supported
+     auto vma = dst_process->vm_manager.FindVMA(dst_address);
+     R_UNLESS(vma != dst_process->vm_manager.vma_map.end() &&
+                  vma->second.type == VMAType::BackingMemory,

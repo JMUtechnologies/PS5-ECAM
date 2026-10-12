@@ -13,6 +13,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <string>
 
 namespace ps5pad
 {
@@ -101,13 +102,28 @@ namespace ps5pad
 	};
 	struct Filtered
 	{
-		uint32_t buttons; // what the game sees
-		bool touch;		  // the touchpad clicked to touch the GamePad's screen
+		uint32_t buttons;		 // what the game sees
+		bool touch;				 // the touchpad clicked to touch the GamePad's screen
+		bool touchClick = false; // the touchpad clicked as a button (SetTouchpadButton), which a mapping can use
 	};
 	// Feeds a controller's sample through the shortcut detector. A click touches once it has lasted
 	// a moment with no shortcut (whose buttons usually follow at once), or as a tap on its release
-	// when it was shorter.
+	// when it was shorter. For a player whose click is a button, it presses that instead, held while
+	// the click is, from the same moment, or as a tap on the release of a shorter one; a shortcut's
+	// click presses nothing.
 	Filtered FilterShortcuts(int player, uint32_t buttons);
+	// Whether a player's touchpad click is a button rather than a touch of the GamePad's screen (#37)
+	void SetTouchpadButton(int player, bool button);
+	bool TouchpadButton(int player);
+	// A DualSense button (Button's bits) that, while held, presses and lets go again and again by
+	// itself, about fifteen times a second, for games that make you mash; 0: none (the app's turbo
+	// button setting, one for every player)
+	void SetTurbo(uint32_t buttons);
+	// A DualSense button's bit by the name the settings keep it by ("Cross", "L2", "D-pad up"); 0 for
+	// a stick's direction or anything else
+	uint32_t ButtonNamed(const std::string& name);
+	// The turbo's beat: buttons with the turbo's held ones let go every other beat
+	uint32_t ApplyTurbo(uint32_t buttons);
 	// The next shortcut pressed since the last call (or None).
 	Shortcut TakeShortcut();
 }

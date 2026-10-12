@@ -41,6 +41,8 @@ namespace ps5emu
 		int upscaleFilter = 1; // Cemu's upscale_filter: 0 linear, 1 bicubic, 2 bicubic Hermite, 3 nearest
 		bool asyncShaders = true; // Cemu's async_compile
 		bool gamePadSpeaker = false; // the GamePad's sound on player 1's DualSense speaker (Cemu's pad_device)
+		bool shaderNotices = true;	 // Cemu's "compiled shaders/pipelines" notices (its notification.shader_compiling)
+		int touchpadClick[4] = {0, 0, 0, 0}; // each player's touchpad click (ApplyTouchpadClick)
 	};
 
 	// Paths, settings (with PS5 defaults on first start), MLC, graphic packs, controllers and
@@ -184,6 +186,7 @@ namespace ps5emu
 		Up, Down, Left, Right,
 		LeftStickUp, LeftStickDown, LeftStickLeft, LeftStickRight,
 		RightStickUp, RightStickDown, RightStickLeft, RightStickRight,
+		TouchPad, // the touchpad's click, for a player whose click is a button (ps5pad::SetTouchpadButton)
 	};
 	struct ButtonMapping
 	{
@@ -191,7 +194,25 @@ namespace ps5emu
 		std::string input;	// the DualSense's ("L2"), empty when unmapped
 	};
 	std::vector<ButtonMapping> ListMappings(int player);
+	// A DualSense input for one of the controller's buttons (ListMappings' index). One another of its
+	// buttons had moves to the input this one had, so the two swap and none is pressed twice by mistake.
 	void SetMapping(int player, size_t index, PadInput input);
+	// A, B, X and Y where the Wii U has them (A on Circle), or with A on Cross (and B on Circle, X on
+	// Square, Y on Triangle), as PlayStation games confirm; for the controllers that have the four
+	enum class FaceLayout
+	{
+		None,	   // no A, B, X and Y (a Wii Remote), or set some other way
+		Nintendo,  // A on Circle
+		PlayStation, // A on Cross
+	};
+	FaceLayout GetFaceLayout(int player);
+	void SetFaceLayout(int player, FaceLayout layout);
+	// The touchpad's click as a button for this player (or a touch of the GamePad's screen): the
+	// DualSense's, as ps5pad::SetTouchpadButton; setting as ps5settings::Launcher::touchpadClick has it.
+	// Whether the emulated controller has a screen to touch decides when the setting is automatic (0).
+	// chosen: the player just made it a button, and with nothing on it, - (Select) moves to it (#37).
+	void ApplyTouchpadClick(int player, int setting, bool chosen = false);
+	int TouchpadClick(int player); // the setting ApplyTouchpadClick was last given
 	void ClearMapping(int player, size_t index);
 
 	// Installing a game, update or DLC into the MLC, as Cemu's "Install game title, update or DLC"

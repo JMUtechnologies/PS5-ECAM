@@ -344,6 +344,14 @@ namespace ps5azahar
 			});
 		}
 
+		// The launcher's texture filter as Azahar's: Anime4K (1) is OpenGL's only, as Azahar's own frontends
+		// now say (upstream 0e486b07), so a setting from an earlier build asks for none on its Vulkan
+		Settings::TextureFilter TextureFilterOf(int filter)
+		{
+			filter = std::clamp(filter, 0, 5);
+			return filter == (int)Settings::TextureFilter::Anime4K ? Settings::TextureFilter::NoFilter : (Settings::TextureFilter)filter;
+		}
+
 		Settings::LayoutOption LayoutOf(int layout)
 		{
 			switch ((Layout)layout)
@@ -371,7 +379,7 @@ namespace ps5azahar
 			values.use_skip_duplicate_frames = false; // every frame drawn, so the menu is too
 			values.frame_limit = 100;
 			values.resolution_factor = (u32)std::clamp(settings.resolution, 1, 10);
-			values.texture_filter = (Settings::TextureFilter)std::clamp(settings.textureFilter, 0, 5);
+			values.texture_filter = TextureFilterOf(settings.textureFilter);
 			values.layout_option = LayoutOf(settings.layout);
 			values.swap_screen = false;
 			// dynarmic's code goes in executable direct memory (ps5platform/exec.h): where the console
@@ -480,7 +488,7 @@ namespace ps5azahar
 			values.layout_option = LayoutOf(menu.layout);
 			values.swap_screen = menu.swapScreens;
 			values.resolution_factor = (u32)std::clamp(menu.resolution, 1, 10);
-			values.texture_filter = (Settings::TextureFilter)std::clamp(menu.textureFilter, 0, 5);
+			values.texture_filter = TextureFilterOf(menu.textureFilter);
 			values.volume = std::clamp(menu.volume, 0, 100) / 100.0f;
 			s_window->UpdateLayout();
 			if (controls)

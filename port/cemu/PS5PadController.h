@@ -36,6 +36,7 @@ public:
 		kDpadDown = kButton12,
 		kDpadLeft = kButton13,
 		kDpadRight = kButton14,
+		kTouchPadClick = kButton15, // the touchpad's click, for a player whose click is a button (ps5pad::SetTouchpadButton)
 	};
 
 	explicit PS5PadController(int player);

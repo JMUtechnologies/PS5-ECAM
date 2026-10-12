@@ -1,0 +1,298 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: quickstraw <nathanmcgraw64@gmail.com>
+Date: Fri, 9 Oct 2026 14:39:36 -0500
+Subject: [PATCH] video_core: fix color blend min/max mode in Vulkan (#2427)
+
+* video_core: fix color blend min/max mode in Vulkan
+
+* Updated license headers
+
+---------
+
+Co-authored-by: OpenSauce04 <opensauce04@gmail.com>
+(cherry picked from commit fdc7f7acfa5786277087518ade03192794111b2a)
+---
+ .../renderer_vulkan/vk_graphics_pipeline.cpp  | 35 +++++++++++++++----
+ .../renderer_vulkan/vk_graphics_pipeline.h    | 21 ++++++-----
+ .../renderer_vulkan/vk_pipeline_cache.cpp     | 12 ++++++-
+ .../renderer_vulkan/vk_pipeline_cache.h       |  4 +++
+ .../renderer_vulkan/vk_rasterizer.cpp         | 23 +++++++++++-
+ .../shader/generator/glsl_fs_shader_gen.cpp   |  4 +++
+ .../shader/generator/pica_fs_config.cpp       | 14 +++++++-
+ .../shader/generator/pica_fs_config.h         | 12 +++++--
+ 8 files changed, 104 insertions(+), 21 deletions(-)
+
+diff --git a/src/video_core/renderer_vulkan/vk_graphics_pipeline.cpp b/src/video_core/renderer_vulkan/vk_graphics_pipeline.cpp
+index 290b187..26ac05d 100644
+--- a/src/video_core/renderer_vulkan/vk_graphics_pipeline.cpp
++++ b/src/video_core/renderer_vulkan/vk_graphics_pipeline.cpp
+@@ -167,14 +167,35 @@ bool GraphicsPipeline::Build(bool fail_on_compile_required) {
+         .sampleShadingEnable = false,
+     };
+ 
++    const auto& blending = info.state.blending;
++    auto src_color_factor = PicaToVK::BlendFunc(blending.src_color_blend_factor);
++    auto dst_color_factor = PicaToVK::BlendFunc(blending.dst_color_blend_factor);
++    auto color_op = PicaToVK::BlendEquation(blending.color_blend_eq);
++    auto src_alpha_factor = PicaToVK::BlendFunc(blending.src_alpha_blend_factor);
++    auto dst_alpha_factor = PicaToVK::BlendFunc(blending.dst_alpha_blend_factor);
++    auto alpha_op = PicaToVK::BlendEquation(blending.alpha_blend_eq);
++
++    // Blending with min/max equations is emulated in the fragment shader so
++    // configure blending to not modify the incoming fragment color.
++    if (blending.rgb_blend_emulation) {
++        src_color_factor = vk::BlendFactor::eOne;
++        dst_color_factor = vk::BlendFactor::eZero;
++        color_op = vk::BlendOp::eAdd;
++    }
++    if (blending.alpha_blend_emulation) {
++        src_alpha_factor = vk::BlendFactor::eOne;
++        dst_alpha_factor = vk::BlendFactor::eZero;
++        alpha_op = vk::BlendOp::eAdd;
++    }
++
+     const vk::PipelineColorBlendAttachmentState colorblend_attachment = {
+-        .blendEnable = info.state.blending.blend_enable,
+-        .srcColorBlendFactor = PicaToVK::BlendFunc(info.state.blending.src_color_blend_factor),
+-        .dstColorBlendFactor = PicaToVK::BlendFunc(info.state.blending.dst_color_blend_factor),
+-        .colorBlendOp = PicaToVK::BlendEquation(info.state.blending.color_blend_eq),
+-        .srcAlphaBlendFactor = PicaToVK::BlendFunc(info.state.blending.src_alpha_blend_factor),
+-        .dstAlphaBlendFactor = PicaToVK::BlendFunc(info.state.blending.dst_alpha_blend_factor),
+-        .alphaBlendOp = PicaToVK::BlendEquation(info.state.blending.alpha_blend_eq),
++        .blendEnable = blending.blend_enable,
++        .srcColorBlendFactor = src_color_factor,
++        .dstColorBlendFactor = dst_color_factor,
++        .colorBlendOp = color_op,
++        .srcAlphaBlendFactor = src_alpha_factor,
++        .dstAlphaBlendFactor = dst_alpha_factor,
++        .alphaBlendOp = alpha_op,
+         .colorWriteMask =
+             static_cast<vk::ColorComponentFlags>(info.GetFinalColorWriteMask(instance)),
+     };
+diff --git a/src/video_core/renderer_vulkan/vk_graphics_pipeline.h b/src/video_core/renderer_vulkan/vk_graphics_pipeline.h
+index 20e3e66..7d63ea5 100644
+--- a/src/video_core/renderer_vulkan/vk_graphics_pipeline.h
++++ b/src/video_core/renderer_vulkan/vk_graphics_pipeline.h
+@@ -120,23 +120,26 @@ struct BlendingState {
+         BitField<11, 4, Pica::FramebufferRegs::BlendFactor> src_alpha_blend_factor;
+         BitField<15, 4, Pica::FramebufferRegs::BlendFactor> dst_alpha_blend_factor;
+         BitField<19, 3, Pica::FramebufferRegs::BlendEquation> alpha_blend_eq;
++        BitField<22, 1, u32> rgb_blend_emulation;
++        BitField<23, 1, u32> alpha_blend_emulation;
+     };
+ 
+     static consteval u64 StructHash() {
+         constexpr u64 STRUCT_VERSION = 0;
+ 
+         using T = BlendingState;
+-        return Common::HashCombine(STRUCT_VERSION,
++        return Common::HashCombine(
++            STRUCT_VERSION,
+ 
+-                                   // layout
+-                                   LAYOUT_HASH,
++            // layout
++            LAYOUT_HASH,
+ 
+-                                   // fields
+-                                   FIELD_HASH(blend_enable), FIELD_HASH(color_write_mask),
+-                                   FIELD_HASH(logic_op), FIELD_HASH(src_color_blend_factor),
+-                                   FIELD_HASH(dst_color_blend_factor), FIELD_HASH(color_blend_eq),
+-                                   FIELD_HASH(src_alpha_blend_factor),
+-                                   FIELD_HASH(dst_alpha_blend_factor), FIELD_HASH(alpha_blend_eq));
++            // fields
++            FIELD_HASH(blend_enable), FIELD_HASH(color_write_mask), FIELD_HASH(logic_op),
++            FIELD_HASH(src_color_blend_factor), FIELD_HASH(dst_color_blend_factor),
++            FIELD_HASH(color_blend_eq), FIELD_HASH(src_alpha_blend_factor),
++            FIELD_HASH(dst_alpha_blend_factor), FIELD_HASH(alpha_blend_eq),
++            FIELD_HASH(rgb_blend_emulation), FIELD_HASH(alpha_blend_emulation));
+     }
+ };
+ static_assert(std::is_trivial_v<BlendingState>);
+diff --git a/src/video_core/renderer_vulkan/vk_pipeline_cache.cpp b/src/video_core/renderer_vulkan/vk_pipeline_cache.cpp
+index 53ffcc4..46ba04d 100644
+--- a/src/video_core/renderer_vulkan/vk_pipeline_cache.cpp
++++ b/src/video_core/renderer_vulkan/vk_pipeline_cache.cpp
+@@ -67,11 +67,13 @@ constexpr std::array<vk::DescriptorSetLayoutBinding, 6> BUFFER_BINDINGS = {{
+ }};
+ 
+ template <u32 NumTex0>
+-constexpr std::array<vk::DescriptorSetLayoutBinding, 3> TEXTURE_BINDINGS = {{
++constexpr std::array<vk::DescriptorSetLayoutBinding, 4> TEXTURE_BINDINGS = {{
+     {0, vk::DescriptorType::eCombinedImageSampler, NumTex0,
+      vk::ShaderStageFlagBits::eFragment},                                                  // tex0
+     {1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment}, // tex1
+     {2, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment}, // tex2
++    {3, vk::DescriptorType::eCombinedImageSampler, 1,
++     vk::ShaderStageFlagBits::eFragment}, // tex_color
+ }};
+ 
+ constexpr std::array<vk::DescriptorSetLayoutBinding, 2> UTILITY_BINDINGS = {{
+@@ -580,6 +582,14 @@ void PipelineCache::UseFragmentShader(const Pica::RegsInternal& regs,
+     }
+ }
+ 
++void PipelineCache::QueryBlendEmulation(const Pica::RegsInternal& regs, bool& rgb_emulation,
++                                        bool& alpha_emulation) const {
++    Pica::Shader::FramebufferConfig framebuffer_config{regs};
++    framebuffer_config.ApplyProfile(profile);
++    rgb_emulation = framebuffer_config.requested_rgb_blend.RequiresMinMaxEmulation();
++    alpha_emulation = framebuffer_config.requested_alpha_blend.RequiresMinMaxEmulation();
++}
++
+ bool PipelineCache::IsCacheValid(std::span<const u8> data) const {
+     if (data.size() < sizeof(vk::PipelineCacheHeaderVersionOne)) {
+         LOG_ERROR(Render_Vulkan, "Pipeline cache failed validation: Invalid header");
+diff --git a/src/video_core/renderer_vulkan/vk_pipeline_cache.h b/src/video_core/renderer_vulkan/vk_pipeline_cache.h
+index a943486..8ab5556 100644
+--- a/src/video_core/renderer_vulkan/vk_pipeline_cache.h
++++ b/src/video_core/renderer_vulkan/vk_pipeline_cache.h
+@@ -88,6 +88,10 @@ public:
+     /// Binds a fragment shader generated from PICA state
+     void UseFragmentShader(const Pica::RegsInternal& regs, const Pica::Shader::UserConfig& user);
+ 
++    /// Queries which channels need min/max blend emulation in the fragment shader
++    void QueryBlendEmulation(const Pica::RegsInternal& regs, bool& rgb_emulation,
++                             bool& alpha_emulation) const;
++
+     /// Gets the current program ID
+     u64 GetProgramID() const {
+         return current_program_id;
+diff --git a/src/video_core/renderer_vulkan/vk_rasterizer.cpp b/src/video_core/renderer_vulkan/vk_rasterizer.cpp
+index 64d9034..889363d 100644
+--- a/src/video_core/renderer_vulkan/vk_rasterizer.cpp
++++ b/src/video_core/renderer_vulkan/vk_rasterizer.cpp
+@@ -12,6 +12,7 @@
+ #include "core/loader/loader.h"
+ #include "core/memory.h"
+ #include "video_core/pica/pica_core.h"
++#include "video_core/renderer_vulkan/pica_to_vk.h"
+ #include "video_core/renderer_vulkan/renderer_vulkan.h"
+ #include "video_core/renderer_vulkan/vk_instance.h"
+ #include "video_core/renderer_vulkan/vk_rasterizer.h"
+@@ -130,7 +131,7 @@ RasterizerVulkan::RasterizerVulkan(Memory::MemorySystem& memory, Pica::PicaCore&
+         instance.IsNullDescriptorSupported() ? vk::ImageView{} : null_surface.StorageView();
+ 
+     // Prepare texture and utility descriptor sets.
+-    for (u32 i = 0; i < 3; i++) {
++    for (u32 i = 0; i < 4; i++) {
+         update_queue.AddImageSampler(texture_set, i, 0, null_surface_view, null_sampler.Handle());
+     }
+ 
+@@ -193,6 +194,11 @@ void RasterizerVulkan::SyncDrawState() {
+     pipeline_info.state.blending.dst_alpha_blend_factor.Assign(
+         regs.framebuffer.output_merger.alpha_blending.factor_dest_a);
+     // SyncBlendColor();
++    const auto blend_color = PicaToVK::ColorRGBA8(regs.framebuffer.output_merger.blend_const.raw);
++    if (fs_data.blend_color != blend_color) {
++        fs_data.blend_color = blend_color;
++        fs_data_dirty = true;
++    }
+     pipeline_info.dynamic_info.blend_color = regs.framebuffer.output_merger.blend_const.raw;
+     // SyncLogicOp();
+     // SyncColorWriteMask();
+@@ -203,6 +209,12 @@ void RasterizerVulkan::SyncDrawState() {
+                                : 0;
+     pipeline_info.state.blending.color_write_mask = color_mask;
+ 
++    bool rgb_blend_emulation = false;
++    bool alpha_blend_emulation = false;
++    pipeline_cache.QueryBlendEmulation(regs, rgb_blend_emulation, alpha_blend_emulation);
++    pipeline_info.state.blending.rgb_blend_emulation.Assign(rgb_blend_emulation);
++    pipeline_info.state.blending.alpha_blend_emulation.Assign(alpha_blend_emulation);
++
+     // SyncStencilTest();
+     const auto& stencil_test = regs.framebuffer.output_merger.stencil_test;
+     const bool test_enable = stencil_test.enable && regs.framebuffer.framebuffer.depth_format ==
+@@ -709,6 +721,15 @@ void RasterizerVulkan::SyncTextureUnits(const Framebuffer* framebuffer) {
+             is_feedback_loop ? surface.CopyImageView() : surface.ImageView();
+         update_queue.AddImageSampler(texture_set, texture_index, 0, texture_view, sampler.Handle());
+     }
++
++    if ((pipeline_info.state.blending.rgb_blend_emulation ||
++         pipeline_info.state.blending.alpha_blend_emulation) &&
++        framebuffer->color_id) {
++        const Sampler& null_sampler = res_cache.GetSampler(VideoCore::NULL_SAMPLER_ID);
++        Surface& color_surface = res_cache.GetSurface(framebuffer->color_id);
++        update_queue.AddImageSampler(texture_set, 3, 0, color_surface.CopyImageView(),
++                                     null_sampler.Handle());
++    }
+ }
+ 
+ void RasterizerVulkan::SyncUtilityTextures(const Framebuffer* framebuffer) {
+diff --git a/src/video_core/shader/generator/glsl_fs_shader_gen.cpp b/src/video_core/shader/generator/glsl_fs_shader_gen.cpp
+index 912a988..71eb1bc 100644
+--- a/src/video_core/shader/generator/glsl_fs_shader_gen.cpp
++++ b/src/video_core/shader/generator/glsl_fs_shader_gen.cpp
+@@ -1316,6 +1316,10 @@ void FragmentModule::DefineBindingsVK() {
+                            num_descriptors);
+     }
+ 
++    if (use_blend_fallback) {
++        out += "layout(set = 1, binding = 3) uniform sampler2D tex_color;\n";
++    }
++
+     // Utility textures
+     if (config.framebuffer.shadow_rendering) {
+         out += "layout(set = 2, binding = 0, r32ui) uniform uimage2D shadow_buffer;\n\n";
+diff --git a/src/video_core/shader/generator/pica_fs_config.cpp b/src/video_core/shader/generator/pica_fs_config.cpp
+index 5eb54f1..e64a39e 100644
+--- a/src/video_core/shader/generator/pica_fs_config.cpp
++++ b/src/video_core/shader/generator/pica_fs_config.cpp
+@@ -37,10 +37,22 @@ void FramebufferConfig::ApplyProfile(const Profile& profile) {
+         logic_op.Assign(requested_logic_op);
+     }
+ 
++    if (!alphablend_enable) {
++        return;
++    }
++
+     // Check if we don't need blend min/max emulation.
+-    if ((profile.has_blend_minmax_factor || profile.is_vulkan) && alphablend_enable) {
++    if (profile.has_blend_minmax_factor) {
+         requested_rgb_blend.SetMinMaxEmulationDisabled();
+         requested_alpha_blend.SetMinMaxEmulationDisabled();
++    } else if (profile.is_vulkan) {
++        // VK_BLEND_OP_MIN/MAX ignore the blend factors, unlike the PICA hardware.
++        if (requested_rgb_blend.UsesNoOpFactors()) {
++            requested_rgb_blend.SetMinMaxEmulationDisabled();
++        }
++        if (requested_alpha_blend.UsesNoOpFactors()) {
++            requested_alpha_blend.SetMinMaxEmulationDisabled();
++        }
+     }
+ }
+ 
+diff --git a/src/video_core/shader/generator/pica_fs_config.h b/src/video_core/shader/generator/pica_fs_config.h
+index a62f81b..e6bd387 100644
+--- a/src/video_core/shader/generator/pica_fs_config.h
++++ b/src/video_core/shader/generator/pica_fs_config.h
+@@ -50,10 +50,15 @@ struct BlendConfig {
+         eq = static_cast<Pica::FramebufferRegs::BlendEquation>(UINT32_MAX);
+     }
+ 
+-    bool RequiresMinMaxEmulation() {
++    bool RequiresMinMaxEmulation() const {
+         return eq == Pica::FramebufferRegs::BlendEquation::Min ||
+                eq == Pica::FramebufferRegs::BlendEquation::Max;
+     }
++
++    bool UsesNoOpFactors() const {
++        return src_factor == Pica::FramebufferRegs::BlendFactor::One &&
++               dst_factor == Pica::FramebufferRegs::BlendFactor::One;
++    }
+ };
+ static_assert(std::has_unique_object_representations_v<BlendConfig>);
+ 
+@@ -402,7 +407,10 @@ struct FSConfig {
+     [[nodiscard]] bool UsesSpirvIncompatibleConfig() const {
+         const auto texture0_type = texture.texture0_type.Value();
+         return texture0_type == Pica::TexturingRegs::TextureConfig::ShadowCube ||
+-               framebuffer.shadow_rendering.Value();
++               framebuffer.shadow_rendering.Value() ||
++               // Min/max blend emulation is only implemented in the GLSL generator.
++               framebuffer.requested_rgb_blend.RequiresMinMaxEmulation() ||
++               framebuffer.requested_alpha_blend.RequiresMinMaxEmulation();
+     }
+ 
+     void ApplyProfile(const Profile& profile) {

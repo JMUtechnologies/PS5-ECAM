@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "controls.h"
 
+#include <algorithm>
 #include <array>
 
 namespace ps5azahar
@@ -44,8 +45,9 @@ namespace ps5azahar
 
 		constexpr const char* kInputNames[] = {"", "Cross", "Circle", "Square", "Triangle", "L1", "R1", "L2", "R2", "L3", "R3",
 			"Create", "Options", "D-pad up", "D-pad down", "D-pad left", "D-pad right", "Left stick up", "Left stick down",
-			"Left stick left", "Left stick right", "Right stick up", "Right stick down", "Right stick left", "Right stick right"};
-		static_assert(std::size(kInputNames) == (size_t)PadInput::RightStickRight + 1);
+			"Left stick left", "Left stick right", "Right stick up", "Right stick down", "Right stick left", "Right stick right",
+			"Touchpad click"};
+		static_assert(std::size(kInputNames) == (size_t)PadInput::TouchPad + 1);
 
 		PadInput InputByName(const std::string& name)
 		{
@@ -91,14 +93,32 @@ namespace ps5azahar
 		return {label, InputName(MappedInput(settings, button))};
 	}
 
-	void SetMapping(ps5settings::N3ds& settings, size_t index, PadInput input)
+	namespace
+	{
+		void Store(ps5settings::N3ds& settings, size_t index, PadInput input)
+		{
+			if (input == kButtons[index].defaultInput)
+				settings.buttons.erase(kButtons[index].key);
+			else
+				settings.buttons[kButtons[index].key] = input == PadInput::None ? "None" : InputName(input);
+		}
+	}
+
+	void SetMapping(ps5settings::N3ds& settings, size_t index, PadInput input, bool ds)
 	{
 		if (index >= kButtons.size())
 			return;
-		if (input == kButtons[index].defaultInput)
-			settings.buttons.erase(kButtons[index].key);
-		else
-			settings.buttons[kButtons[index].key] = input == PadInput::None ? "None" : InputName(input);
+		// the button that had this input takes the one this button had (or none), so they swap; on the
+		// DS, among the DS's buttons only
+		const PadInput previous = MappedInput(settings, (Button)index);
+		if (input != PadInput::None && input != previous)
+			for (size_t other = 0; other < kButtons.size(); other++)
+			{
+				const bool candidate = !ds || std::find(DsButtons().begin(), DsButtons().end(), (Button)other) != DsButtons().end();
+				if (other != index && candidate && MappedInput(settings, (Button)other) == input)
+					Store(settings, other, previous);
+			}
+		Store(settings, index, input);
 	}
 
 	void ClearMapping(ps5settings::N3ds& settings, size_t index)

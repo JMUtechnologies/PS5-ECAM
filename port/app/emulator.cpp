@@ -345,6 +345,9 @@ namespace ps5emu
 			after.overlay = config.overlay.position != ScreenPosition::kDisabled;
 			after.volume = config.tv_volume;
 			after.asyncShaders = config.async_compile;
+			after.shaderNotices = config.notification.shader_compiling;
+			for (int player = 0; player < 4; player++)
+				after.touchpadClick[player] = TouchpadClick(player);
 			after.framePacing = ps5display::FramePacing();
 			ps5settings::SaveChanges("wiiu", s_gameTitle, before, after);
 			// what was saved is what the game now has: the next change is measured from it
@@ -413,6 +416,10 @@ namespace ps5emu
 		if (options.gamePadSpeaker && config.pad_volume <= 0)
 			config.pad_volume = 100;
 		config.overlay.position = options.overlay ? ScreenPosition::kTopLeft : ScreenPosition::kDisabled;
+		// read as Cemu draws its notices, so the in-game menu's change shows at once (#37)
+		config.notification.shader_compiling = options.shaderNotices;
+		for (int player = 0; player < 4; player++)
+			ApplyTouchpadClick(player, options.touchpadClick[player]);
 		if (options.overlay)
 			config.overlay.fps = config.overlay.cpu_usage = config.overlay.ram_usage = true;
 		const bool newFolder = !options.gamesFolder.empty() &&

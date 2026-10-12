@@ -76,6 +76,8 @@ namespace ps5pad
 		bool s_initialized = false;
 		std::atomic<bool> s_vibrationEnabled{true};
 		std::atomic<Shortcut> s_pendingShortcut{Shortcut::None};
+		std::array<std::atomic<bool>, kMaxPlayers> s_touchpadButton{};
+		std::atomic<uint32_t> s_turbo{0};
 
 		void OpenSlot(int player, int32_t user)
 		{
@@ -275,11 +277,58 @@ namespace ps5pad
 			slot.tapUntil = now + kTapUs;
 		if (now < slot.tapUntil)
 			result.touch = true;
+		// a button instead, for a player whose click is one: pressed when the touch would be
+		const int index = std::clamp(player, 0, kMaxPlayers - 1);
+		if (s_touchpadButton[index])
+		{
+			result.touchClick = result.touch;
+			result.touch = false;
+		}
 		return result;
 	}
 
 	Shortcut TakeShortcut()
 	{
 		return s_pendingShortcut.exchange(Shortcut::None);
+	}
+
+	void SetTouchpadButton(int player, bool button)
+	{
+		if (player >= 0 && player < kMaxPlayers)
+			s_touchpadButton[player] = button;
+	}
+
+	bool TouchpadButton(int player)
+	{
+		return player >= 0 && player < kMaxPlayers && s_touchpadButton[player];
+	}
+
+	void SetTurbo(uint32_t buttons)
+	{
+		s_turbo = buttons;
+	}
+
+	uint32_t ButtonNamed(const std::string& name)
+	{
+		static constexpr std::pair<const char*, uint32_t> kNames[] = {
+			{"Cross", kCross}, {"Circle", kCircle}, {"Square", kSquare}, {"Triangle", kTriangle}, {"L1", kL1}, {"R1", kR1},
+			{"L2", kL2}, {"R2", kR2}, {"L3", kL3}, {"R3", kR3}, {"Create", kCreate}, {"Options", kOptions},
+			{"D-pad up", kUp}, {"D-pad down", kDown}, {"D-pad left", kLeft}, {"D-pad right", kRight},
+		};
+		for (const auto& [text, bit] : kNames)
+			if (name == text)
+				return bit;
+		return 0;
+	}
+
+	uint32_t ApplyTurbo(uint32_t buttons)
+	{
+		const uint32_t turbo = s_turbo.load(std::memory_order_relaxed);
+		if (!(buttons & turbo))
+			return buttons;
+		// down for 33 ms, up for 33 ms: about fifteen presses a second, which games read as presses
+		constexpr uint64_t kBeatUs = 33333;
+		const bool up = (sceKernelGetProcessTime() / kBeatUs) & 1;
+		return up ? buttons & ~turbo : buttons;
 	}
 }

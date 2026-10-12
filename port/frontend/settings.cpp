@@ -75,6 +75,7 @@ namespace ps5settings
 			ReadBool(json, "performance", n3ds.performance);
 			ReadInt(json, "cpuClock", n3ds.cpuClock, 25, 400);
 			ReadBool(json, "invariantPosition", n3ds.invariantPosition);
+			ReadString(json, "turbo", n3ds.turbo);
 			ReadInt(json, "region", n3ds.region, -1, 6);
 			ReadInt(json, "language", n3ds.language, -1, 11);
 			ReadBool(json, "customTextures", n3ds.customTextures);
@@ -114,6 +115,8 @@ namespace ps5settings
 			writer.Int(n3ds.cpuClock);
 			writer.Key("invariantPosition");
 			writer.Bool(n3ds.invariantPosition);
+			writer.Key("turbo");
+			writer.String(n3ds.turbo.c_str());
 			writer.Key("region");
 			writer.Int(n3ds.region);
 			writer.Key("language");
@@ -162,6 +165,16 @@ namespace ps5settings
 		ReadInt(json, "framePacing", settings.framePacing, 1, 3);
 		ReadBool(json, "overlay", settings.overlay);
 		ReadBool(json, "rumble", settings.rumble);
+		ReadString(json, "turbo", settings.turbo);
+		if (json.HasMember("touchpadClick") && json["touchpadClick"].IsArray())
+			for (rapidjson::SizeType i = 0; i < json["touchpadClick"].Size() && i < 4; i++)
+				if (json["touchpadClick"][i].IsInt())
+					settings.touchpadClick[i] = std::clamp(json["touchpadClick"][i].GetInt(), 0, 2);
+		ReadBool(json, "accountPerUser", settings.accountPerUser);
+		if (json.HasMember("accountsByUser") && json["accountsByUser"].IsObject())
+			for (const auto& member : json["accountsByUser"].GetObject())
+				if (member.value.IsString())
+					settings.accountsByUser[member.name.GetString()] = member.value.GetString();
 		ReadBool(json, "pinCpuThreads", settings.pinCpuThreads);
 		ReadString(json, "radvDebug", settings.radvDebug);
 		if (json.HasMember("radvEnvironment") && json["radvEnvironment"].IsObject())
@@ -209,6 +222,7 @@ namespace ps5settings
 		ReadInt(json, "musicVolume", settings.musicVolume, 0, 100);
 		ReadBool(json, "boxArt", settings.boxArt);
 		ReadBool(json, "asyncShaders", settings.asyncShaders);
+		ReadBool(json, "shaderNotices", settings.shaderNotices);
 		ReadBool(json, "gamePadSpeaker", settings.gamePadSpeaker);
 		ReadBool(json, "remoteScreen", settings.remoteScreen);
 		ReadBool(json, "menuSounds", settings.menuSounds);
@@ -224,6 +238,9 @@ namespace ps5settings
 			ReadInt(ui, "holdMs", out.holdMs, 400, 1500);
 			ReadBool(ui, "gamePictures", out.gamePictures);
 			ReadBool(ui, "setupDone", out.setupDone);
+			ReadInt(ui, "sides", out.sides, 1, 7);
+			ReadString(ui, "lastVersion", out.lastVersion);
+			ReadString(ui, "theme", out.theme);
 			// each side's filter and sort (3.5.0 kept two of each under names of their own; its sort, A to
 			// Z by default, is not taken: the Library opens on the games played last now that it is
 			// where a side opens)
@@ -261,6 +278,23 @@ namespace ps5settings
 		writer.Bool(settings.overlay);
 		writer.Key("rumble");
 		writer.Bool(settings.rumble);
+		writer.Key("turbo");
+		writer.String(settings.turbo.c_str());
+		writer.Key("touchpadClick");
+		writer.StartArray();
+		for (int click : settings.touchpadClick)
+			writer.Int(click);
+		writer.EndArray();
+		writer.Key("accountPerUser");
+		writer.Bool(settings.accountPerUser);
+		writer.Key("accountsByUser");
+		writer.StartObject();
+		for (const auto& [user, account] : settings.accountsByUser)
+		{
+			writer.Key(user.c_str());
+			writer.String(account.c_str());
+		}
+		writer.EndObject();
 		writer.Key("pinCpuThreads");
 		writer.Bool(settings.pinCpuThreads);
 		writer.Key("radvDebug");
@@ -308,6 +342,8 @@ namespace ps5settings
 		writer.Bool(settings.boxArt);
 		writer.Key("asyncShaders");
 		writer.Bool(settings.asyncShaders);
+		writer.Key("shaderNotices");
+		writer.Bool(settings.shaderNotices);
 		writer.Key("gamePadSpeaker");
 		writer.Bool(settings.gamePadSpeaker);
 		writer.Key("remoteScreen");
@@ -336,6 +372,12 @@ namespace ps5settings
 		writer.Bool(settings.ui.gamePictures);
 		writer.Key("setupDone");
 		writer.Bool(settings.ui.setupDone);
+		writer.Key("sides");
+		writer.Int(settings.ui.sides);
+		writer.Key("lastVersion");
+		writer.String(settings.ui.lastVersion.c_str());
+		writer.Key("theme");
+		writer.String(settings.ui.theme.c_str());
 		writer.Key("libraryFilter");
 		writer.StartArray();
 		for (int filter : settings.ui.libraryFilter)
@@ -402,6 +444,7 @@ namespace ps5settings
 				{"dsFilter", nullptr, nullptr, &N3ds::dsFilter, nullptr, 0, 2},
 				{"dsJit", nullptr, nullptr, nullptr, &N3ds::dsJit},
 				{"dsOwnBios", nullptr, nullptr, nullptr, &N3ds::dsOwnBios},
+				{"invariantPosition", nullptr, nullptr, nullptr, &N3ds::invariantPosition},
 			};
 			return fields;
 		}
@@ -433,8 +476,8 @@ namespace ps5settings
 	const std::vector<std::string>& GameSettingNames(const std::string& side)
 	{
 		static const std::vector<std::string> wiiu = {"upscaleFilter", "highFrameRate", "framePacing", "overlay", "asyncShaders", "volume"};
-		static const std::vector<std::string> n3ds = {"resolution", "textureFilter", "customTextures", "layout", "border", "volume", "region",
-			"language", "cpuClock"};
+		static const std::vector<std::string> n3ds = {"resolution", "textureFilter", "customTextures", "invariantPosition", "layout", "border",
+			"volume", "region", "language", "cpuClock"};
 		static const std::vector<std::string> nds = {"dsFilter", "dsJit", "layout", "border", "volume", "language", "dsOwnBios"};
 		static const std::vector<std::string> none;
 		return side == "wiiu" ? wiiu : side == "3ds" ? n3ds : side == "ds" ? nds : none;
@@ -472,10 +515,24 @@ namespace ps5settings
 			Handheld(settings, side).*(field->handheldFlag) = value != 0;
 	}
 
+	bool InvariantByDefault(uint64_t titleId)
+	{
+		// the games the moving black stipples were seen in (#23): Pokemon X and Y, Omega Ruby and Alpha
+		// Sapphire, released worldwide under one title ID each
+		static constexpr uint64_t kTitles[] = {
+			0x0004000000055D00, 0x0004000000055E00, // X, Y
+			0x000400000011C400, 0x000400000011C500, // Omega Ruby, Alpha Sapphire
+		};
+		return std::find(std::begin(kTitles), std::end(kTitles), titleId) != std::end(kTitles);
+	}
+
 	Launcher ForGame(const Launcher& settings, const std::string& side, uint64_t titleId)
 	{
 		Launcher game = settings;
 		const auto found = settings.games.find(GameKey(side, titleId));
+		// a game known to need the outline fix has it unless it says otherwise
+		if (side == "3ds" && InvariantByDefault(titleId) && (found == settings.games.end() || !found->second.count("invariantPosition")))
+			game.n3ds.invariantPosition = true;
 		if (found != settings.games.end())
 			for (const auto& [name, value] : found->second)
 				SetValue(game, side, name, value);
@@ -489,7 +546,11 @@ namespace ps5settings
 		// what the menu changes that no game has its own of: as after has it (the buttons, motion,
 		// the deadzone, the performance overlay of a handheld), all else the launcher's as it is
 		if (side == "wiiu")
+		{
 			merged.gamePadSpeaker = after.gamePadSpeaker;
+			merged.shaderNotices = after.shaderNotices;
+			std::copy(std::begin(after.touchpadClick), std::end(after.touchpadClick), std::begin(merged.touchpadClick));
+		}
 		else
 		{
 			N3ds& to = Handheld(merged, side);

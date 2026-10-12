@@ -1,0 +1,96 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: PabloMK7 <hackyglitch2@gmail.com>
+Date: Tue, 6 Oct 2026 21:52:40 +0200
+Subject: [PATCH] core: pm: Add DebugNextApplicationByForce (#2640)
+
+(cherry picked from commit cd3af463eceab75e61a69a71164a980f8bb2482d)
+---
+ src/core/hle/service/pm/pm.cpp     |  2 +-
+ src/core/hle/service/pm/pm_dbg.cpp | 20 +++++++++++++++++++-
+ src/core/hle/service/pm/pm_dbg.h   |  7 ++++++-
+ 3 files changed, 26 insertions(+), 3 deletions(-)
+
+diff --git a/src/core/hle/service/pm/pm.cpp b/src/core/hle/service/pm/pm.cpp
+index d200ffe..a4cb0b4 100644
+--- a/src/core/hle/service/pm/pm.cpp
++++ b/src/core/hle/service/pm/pm.cpp
+@@ -12,7 +12,7 @@ namespace Service::PM {
+ void InstallInterfaces(Core::System& system) {
+     auto& service_manager = system.ServiceManager();
+     std::make_shared<PM_APP>(system)->InstallAsService(service_manager);
+-    std::make_shared<PM_DBG>()->InstallAsService(service_manager);
++    std::make_shared<PM_DBG>(system)->InstallAsService(service_manager);
+ }
+ 
+ } // namespace Service::PM
+diff --git a/src/core/hle/service/pm/pm_dbg.cpp b/src/core/hle/service/pm/pm_dbg.cpp
+index 50d1ff5..78fa5d4 100644
+--- a/src/core/hle/service/pm/pm_dbg.cpp
++++ b/src/core/hle/service/pm/pm_dbg.cpp
+@@ -3,23 +3,41 @@
+ // Refer to the license.txt file included.
+ 
+ #include "common/archives.h"
++#include "core/core.h"
+ #include "core/hle/ipc_helpers.h"
+ #include "core/hle/service/pm/pm_dbg.h"
+ 
++SERVICE_CONSTRUCT_IMPL(Service::PM::PM_DBG)
+ SERIALIZE_EXPORT_IMPL(Service::PM::PM_DBG)
+ 
+ namespace Service::PM {
+ 
+-PM_DBG::PM_DBG() : ServiceFramework("pm:dbg", 3) {
++PM_DBG::PM_DBG(Core::System& _system) : ServiceFramework("pm:dbg", 3), system(_system) {
+     static const FunctionInfo functions[] = {
+         // clang-format off
+         {0x0001, nullptr, "LaunchAppDebug"},
+         {0x0002, nullptr, "LaunchApp"},
+         {0x0003, nullptr, "RunQueuedProcess"},
++        // Custom
++        {0x0101, &PM_DBG::DebugNextApplicationByForce, "DebugNextApplicationByForce"},
+         // clang-format on
+     };
+ 
+     RegisterHandlers(functions);
+ }
+ 
++void PM_DBG::DebugNextApplicationByForce(Kernel::HLERequestContext& ctx) {
++    IPC::RequestParser rp(ctx);
++    bool enable = rp.Pop<bool>();
++
++    if (enable) {
++        system.SetDebugNextProcessFlag();
++    } else {
++        system.ClearDebugNextProcessFlag();
++    }
++
++    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
++    rb.Push(ResultSuccess);
++}
++
+ } // namespace Service::PM
+diff --git a/src/core/hle/service/pm/pm_dbg.h b/src/core/hle/service/pm/pm_dbg.h
+index 3a6e3c5..2ac99c8 100644
+--- a/src/core/hle/service/pm/pm_dbg.h
++++ b/src/core/hle/service/pm/pm_dbg.h
+@@ -10,13 +10,18 @@ namespace Service::PM {
+ 
+ class PM_DBG final : public ServiceFramework<PM_DBG> {
+ public:
+-    PM_DBG();
++    explicit PM_DBG(Core::System& system);
+     ~PM_DBG() = default;
+ 
+ private:
++    Core::System& system;
++
++    void DebugNextApplicationByForce(Kernel::HLERequestContext& ctx);
++
+     SERVICE_SERIALIZATION_SIMPLE
+ };
+ 
+ } // namespace Service::PM
+ 
++SERVICE_CONSTRUCT(Service::PM::PM_DBG)
+ BOOST_CLASS_EXPORT_KEY(Service::PM::PM_DBG)
