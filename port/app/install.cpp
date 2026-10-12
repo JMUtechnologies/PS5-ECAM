@@ -12,6 +12,7 @@
 #include "../ps5/kernel.h"
 #include "../ps5/log.h"
 
+#include "Cafe/TitleList/ParsedMetaXml.h"
 #include "Cafe/TitleList/TitleId.h"
 #include "Cafe/TitleList/TitleInfo.h"
 #include "Cafe/TitleList/TitleList.h"
@@ -413,7 +414,9 @@ namespace ps5emu
 			candidate.note = ps5lang::Tr("Its meta folder does not describe a Wii U title (meta.xml).");
 			return candidate;
 		}
-		candidate.name = title.GetMetaTitleName();
+		// its own name in the menus' language, its English one where it has none (UI-REDESIGN 7.7)
+		ParsedMetaXml* meta = title.GetMetaInfo();
+		candidate.name = meta ? meta->GetLongName((CafeConsoleLanguage)ps5lang::NintendoLanguage()) : title.GetMetaTitleName();
 		candidate.titleId = title.GetAppTitleId();
 		candidate.version = title.GetAppTitleVersion();
 		const TitleIdParser parser(candidate.titleId);

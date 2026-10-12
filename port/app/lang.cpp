@@ -123,6 +123,7 @@ namespace ps5lang
 		std::vector<std::unique_ptr<Table>> s_tables; // every one read, kept (Tr's results stay valid)
 		std::atomic<const Table*> s_current{nullptr};
 		std::string s_code = kSource;
+		std::atomic<int> s_nintendo{1}; // s_code as NintendoLanguage numbers it, for the libraries' threads
 		std::string s_folder;
 		MenuFont s_menuFont;
 
@@ -312,6 +313,19 @@ namespace ps5lang
 		return SystemLanguage();
 	}
 
+	namespace
+	{
+		int Nintendo(const std::string& code)
+		{
+			static const std::pair<const char*, int> kNintendo[] = {{"ja", 0}, {"fr", 2}, {"fr-CA", 2}, {"de", 3}, {"it", 4}, {"es", 5},
+				{"es-419", 5}, {"zh-Hans", 6}, {"ko", 7}, {"nl", 8}, {"pt-PT", 9}, {"pt-BR", 9}, {"ru", 10}, {"zh-Hant", 11}};
+			for (const auto& [name, number] : kNintendo)
+				if (code == name)
+					return number;
+			return 1;
+		}
+	}
+
 	bool Load(const std::string& setting)
 	{
 		std::lock_guard lock(s_mutex);
@@ -320,6 +334,7 @@ namespace ps5lang
 		if (code == kSource)
 		{
 			s_current = nullptr;
+			s_nintendo = Nintendo(s_code);
 			ps5log::Line("[lang] {}: the English the app is written in", code);
 			return true;
 		}
@@ -327,6 +342,7 @@ namespace ps5lang
 		s_current = table;
 		if (!table)
 			s_code = kSource;
+		s_nintendo = Nintendo(s_code);
 		return table != nullptr;
 	}
 
@@ -338,6 +354,11 @@ namespace ps5lang
 	const std::string& Current()
 	{
 		return s_code;
+	}
+
+	int NintendoLanguage()
+	{
+		return s_nintendo;
 	}
 
 	bool RightToLeft()

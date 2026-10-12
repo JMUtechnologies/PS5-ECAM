@@ -505,11 +505,13 @@ namespace ps5emu
 				continue; // updates and DLC are listed with their base
 			Game game;
 			game.titleId = titleId;
-			game.name = base.GetMetaTitleName();
+			// the game's own name in the menus' language, its English one where it has none (UI-REDESIGN 7.7)
+			ParsedMetaXml* meta = base.GetMetaInfo();
+			game.name = meta ? meta->GetLongName((CafeConsoleLanguage)ps5lang::NintendoLanguage()) : base.GetMetaTitleName();
 			if (game.name.empty())
 				game.name = fmt::format("{:016x}", titleId);
 			game.path = base.GetPath();
-			if (ParsedMetaXml* meta = base.GetMetaInfo())
+			if (meta)
 				game.gameId = BoxId(meta->GetProductCode(), meta->GetCompanyCode());
 			game.hasUpdate = info.HasUpdate();
 			game.version = game.hasUpdate ? info.GetUpdate().GetAppTitleVersion() : base.GetAppTitleVersion();

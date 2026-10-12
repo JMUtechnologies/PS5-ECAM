@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "library.h"
 #include "melonds.h"
+#include "../app/lang.h"
 #include "../app/paths.h"
 #include "../ps5/log.h"
 
@@ -85,11 +86,20 @@ namespace ps5melonds
 			return lines;
 		}
 
-		// The banner's title in English (or the first language that has one): its last line the
-		// publisher, the lines before it the name (a subtitle after a colon)
+		// The banner's title in the menus' language, as a DS set to it shows it (UI-REDESIGN 7.7), else
+		// in English (or the first language that has one): its last line the publisher, the lines
+		// before it the name (a subtitle after a colon). A banner has Japanese, English, French,
+		// German, Italian and Spanish; from its version 2 Chinese (the iQue's, simplified), from 3 Korean.
 		void ReadTitle(const std::vector<uint8_t>& banner, Title& title)
 		{
-			for (const int language : {1, 0, 2, 3, 4, 5})
+			const int version = banner[0] | banner[1] << 8;
+			const int languages = version >= 3 ? 8 : version >= 2 ? 7 : 6;
+			int wanted = ps5lang::NintendoLanguage();
+			if (wanted == 11)
+				wanted = 6; // traditional Chinese: the banner's Chinese is the nearest
+			if (wanted >= languages)
+				wanted = 1;
+			for (const int language : {wanted, 1, 0, 2, 3, 4, 5})
 			{
 				const std::vector<std::string> lines = Lines(banner.data() + 0x240 + language * 0x100, 0x100);
 				if (lines.empty())

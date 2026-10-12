@@ -46,6 +46,11 @@ namespace ps5lang
 	// Where the tables are: the app's assets/lang (the preview's port/lang)
 	void SetFolder(std::string folder);
 	const std::string& Current(); // the code in use
+	// The language in use as Nintendo's consoles number theirs, for a game's own name in it (a Wii U
+	// game's meta.xml, a 3DS game's SMDH, a DS game's banner): 0 Japanese, 1 English, 2 French,
+	// 3 German, 4 Italian, 5 Spanish, 6 Chinese, 7 Korean, 8 Dutch, 9 Portuguese, 10 Russian,
+	// 11 Traditional Chinese; English for a language they never had. Safe from any thread.
+	int NintendoLanguage();
 	bool RightToLeft();			  // Arabic's
 
 	const char* Tr(const char* english);

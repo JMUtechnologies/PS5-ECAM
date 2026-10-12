@@ -541,8 +541,12 @@ namespace ps5shell
 	{
 		game.entry = entry;
 		game.boxArt = ps5boxart::Path(BoxOf(entry.game), entry.game.gameId);
-		game.report = IsDs() ? nullptr : ps5compat::Find(Is3ds(), entry.game.name); // the list has no DS games yet
 		game.known = ps5gameinfo::Find(BoxOf(entry.game), entry.game.gameId, game.info);
+		// the list names games in English: GameTDB's title finds one whose own name is in the menus'
+		// language (7.7). It has no DS games yet.
+		game.report = IsDs() ? nullptr : ps5compat::Find(Is3ds(), entry.game.name);
+		if (!game.report && game.known && !IsDs())
+			game.report = ps5compat::Find(Is3ds(), game.info.title);
 		game.year = game.known && game.info.released.size() >= 4 ? std::atoi(game.info.released.substr(0, 4).c_str()) : 0;
 		std::string name = Lower(entry.game.name);
 		if (name.rfind("the ", 0) == 0)

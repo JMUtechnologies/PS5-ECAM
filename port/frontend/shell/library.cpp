@@ -205,7 +205,9 @@ namespace ps5shell
 				if (game.packsOn == 0)
 					continue;
 			}
-			if (!search.empty() && Lower(game.entry.game.name).find(search) == std::string::npos)
+			// the keyboard's letters are Latin: a name in another script is found by GameTDB's English one too
+			if (!search.empty() && Lower(game.entry.game.name).find(search) == std::string::npos &&
+				Lower(game.info.title).find(search) == std::string::npos)
 				continue;
 			m_shelf.push_back(i);
 		}

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "library.h"
 #include "azahar.h"
+#include "../app/lang.h"
 #include "../app/paths.h"
 #include "../ps5/log.h"
 
@@ -110,12 +111,13 @@ namespace ps5azahar
 			return out;
 		}
 
-		// The SMDH's English name and publisher (or the first language that has them), and its large icon.
+		// The SMDH's name and publisher in the menus' language, as a 3DS set to it shows them (UI-REDESIGN
+		// 7.7), else in English (or the first language that has them), and its large icon.
 		bool ReadSmdh(const std::vector<uint8_t>& smdh, Title& title)
 		{
 			if (smdh.size() < kSmdhSize || std::memcmp(smdh.data(), "SMDH", 4) != 0)
 				return false;
-			for (const int language : {1, 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11})
+			for (const int language : {ps5lang::NintendoLanguage(), 1, 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11})
 			{
 				const uint8_t* entry = smdh.data() + 0x8 + language * 0x200;
 				const std::string name = Utf8(entry, 0x80);
