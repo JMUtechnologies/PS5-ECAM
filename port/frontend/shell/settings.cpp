@@ -686,6 +686,24 @@ namespace ps5shell
 			toggle("boxart", Tr("Box art from GameTDB"), settings.boxArt, Tr("Covers for the library, downloaded once."),
 				Tr("The first time a game shows up, its cover is downloaded from GameTDB (art.gametdb.com) by the ID on its box. Off: nothing "
 				"more is downloaded."));
+			// downloading the covers now: the missing ones, or every one again
+			{
+				int missing = 0;
+				for (const Game& game : m_games)
+					missing += !game.entry.game.gameId.empty() && game.boxArt.empty();
+				const size_t pending = ps5boxart::Pending();
+				const std::string status = pending ? TrP((long long)pending, "Downloading: {0} left", "Downloading: {0} left") :
+					ps5boxart::Answered() == 0 ? std::string(Tr("GameTDB did not answer: is the PS5 online?")) :
+					missing				   ? TrP(missing, "{0} game without box art", "{0} games without box art") :
+											 std::string(Tr("Every game has box art"));
+				action(Kind::Action, "boxartmissing", Tr("Download missing box art"), status, Tr("Tries again for every game without a cover."),
+					Tr("Asks GameTDB again for the cover of every game on this side that has none, including games it had no cover for "
+					   "before. Covers are downloaded in the background while you use the launcher."));
+				action(Kind::Hold, "boxartall", Tr("Download all box art again"), m_message.empty() ? Tr("Hold Cross") : m_message,
+					Tr("Replaces every cover on this side with a fresh download."),
+					Tr("Downloads the cover of every game on this side again, replacing the ones you have. Useful when a cover is wrong or "
+					   "looks broken."));
+			}
 			if (IsWiiU())
 				action(Kind::Action, "packs", Tr("Community graphic packs"), PacksStatus(), Tr("Cross checks GitHub for newer ones."),
 					Tr("Cemu's community graphic packs, from GitHub's latest release when it is newer than the ones installed. The packs bundled "
@@ -1314,6 +1332,23 @@ namespace ps5shell
 				ps5emu::Rescan();
 			m_scanning = CoreReady();
 		}
+		else if (id == "boxartmissing" || id == "boxartall")
+		{
+			std::vector<std::string> ids;
+			for (const Game& game : m_games)
+				if (!game.entry.game.gameId.empty() && (id == "boxartall" || game.boxArt.empty()))
+					ids.push_back(game.entry.game.gameId);
+			if (!m_settings.boxArt)
+			{
+				// asking for covers turns box art on
+				m_settings.boxArt = true;
+				ps5boxart::SetEnabled(true);
+				SaveSettings();
+			}
+			ps5boxart::Refetch(BoxSide(m_side), ids, id == "boxartall");
+			if (ids.empty())
+				m_feedback.Play(ui::Cue::Denied);
+		}
 		else if (id == "packs")
 			ps5packs::Start(); // GitHub's latest community packs, when newer
 		else if (id == "appupdate")
@@ -1369,6 +1404,12 @@ namespace ps5shell
 		m_feedback.Play(ui::Cue::Hold);
 		if (id == "clearcaches")
 			m_diagnosticsDone[Is3ds() ? 2 : 1] = ClearShaderCaches(Is3ds());
+		else if (id == "boxartall")
+		{
+			ChangeSetting(Row{Row::Kind::Action, "boxartall"}, 0, true);
+			// tr: a held row's result: the covers are on their way
+			m_message = Tr("Downloading in the background");
+		}
 		else if (id == "resetcontrols")
 		{
 			ps5azahar::ResetControls(Handheld(m_side));
