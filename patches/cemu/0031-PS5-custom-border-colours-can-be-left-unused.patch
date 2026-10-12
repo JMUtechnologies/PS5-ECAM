@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Mon, 5 Oct 2026 12:08:08 +0000
+Subject: [PATCH] PS5: custom border colours can be left unused
+
+ProsperoEden, on the same Vulkan driver, leaves custom sampler border
+colours off: with them some games faulted the console's GPU at page 0,
+for a cause still open, and a GPU fault stops the whole console. Here
+they stay on, as on a PC, unless the port asks otherwise
+(g_ps5StandardBorderColors, before the renderer starts): then Cemu sees
+no VK_EXT_custom_border_color and samplers take the nearest standard
+colour, as without the extension anywhere. For a game that stops the
+GPU, to tell whether this is why.
+---
+ .../HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp     | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+index f8fef3f..9be4251 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+@@ -10,6 +10,7 @@ void PS5Cemu_ImguiUploads();
+ // cemuSubmitDraws, 300 as Cemu's own unless set). On the PS5 each submission costs the driver a copy
+ // of its words and an AGC submission, and the GPU a reset of its state and a write-back of its caches
+ uint32 PS5Cemu_SubmitDraws();
++extern bool g_ps5StandardBorderColors; // below
+ #endif
+ #include "Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h"
+ #include "Cafe/HW/Latte/Renderer/Vulkan/LatteTextureVk.h"
+@@ -1448,6 +1449,14 @@ bool VulkanRenderer::CheckDeviceExtensionSupport(const VkPhysicalDevice device,
+ 	info.deviceExtensions.pipeline_feedback = isExtensionAvailable(VK_EXT_PIPELINE_CREATION_FEEDBACK_EXTENSION_NAME);
+ 	info.deviceExtensions.cubic_filter = isExtensionAvailable(VK_EXT_FILTER_CUBIC_EXTENSION_NAME);
+ 	info.deviceExtensions.custom_border_color = isExtensionAvailable(VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME);
++#if defined(CEMU_PS5)
++	// PS5: as if the driver had no custom border colours, when the port asks (standardBorderColors):
++	// samplers then take the nearest standard colour, as without the extension anywhere. With them,
++	// ProsperoEden saw some games fault the console's GPU at page 0 (cause open), and a GPU fault
++	// stops the whole console: a game that does that can be tried without them.
++	if (g_ps5StandardBorderColors)
++		info.deviceExtensions.custom_border_color = false;
++#endif
+ 	info.deviceExtensions.driver_properties = isExtensionAvailable(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME);
+ 	info.deviceExtensions.external_memory_host = isExtensionAvailable(VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME);
+ 	info.deviceExtensions.synchronization2 = isExtensionAvailable(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
+@@ -1697,6 +1706,10 @@ void VulkanRenderer::CreateCommandPool()
+ }
+ 
+ #if defined(CEMU_PS5)
++// PS5: custom border colours left unused (the port's standardBorderColors), set before the renderer
++// starts
++bool g_ps5StandardBorderColors = false;
++
+ // PS5: the port turns these on before the renderer starts (its profiler's runs), and reads the sum
+ bool g_ps5GpuTimestamps = false;
+ std::atomic<uint64> g_ps5GpuBusyNs{0};

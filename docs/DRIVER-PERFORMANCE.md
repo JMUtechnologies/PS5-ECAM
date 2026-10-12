@@ -223,7 +223,9 @@ check that the words copied equal the words planned held throughout). The consol
 against PS5_PayloadSDK's headers. None of them has run on a console. 0001-0004 were written against
 `0b2d6d1a` and apply to `7b59ef27` unchanged (the four commits between touch only the swapchain);
 0005 and 0006 were written against `7b59ef27`. RADV builds with all six there, and with 0006 alone.
-`make radv` builds 0006 alone by default; `RADV_PATCHES` chooses others ([below](#building-with-the-patches)).
+`make radv` builds 0006 and 0007 by default (0005 needs 0001-0004 under it); `RADV_PATCHES` chooses others ([below](#building-with-the-patches)).
+0007 is not a performance change: it is the driver fix 3.0.0's archive was built with (Mesa
+`13aa9a88`), which the newer driver lacks, against GPU faults that stop the console.
 
 | Patch | What it changes | Expected effect | Risk |
 | --- | --- | --- | --- |
@@ -233,6 +235,7 @@ against PS5_PayloadSDK's headers. None of them has run on a console. 0001-0004 w
 | 0004 GPU busy time | With `RADV_PS5_GPU_TIME=1`, each submission carries a start timestamp (`COPY_DATA` of the GPU clock, RADV's top-of-pipe timestamp) and an end one (the bottom-of-pipe `RELEASE_MEM` the driver's GPU clock read already uses), and the statistics line gains `gpu_busy_pct` | Says whether BotW at 4K is GPU-bound | Low: off by default, and then nothing changes |
 | 0005 Flips on the GPU | With `RADV_PS5_GPU_FLIP=1`, a present puts `sceAgcDcbSetFlip`'s packets (mode 1, the flip's argument as their marker, as ps5vk flipped) on the queue in a submission of their own, behind the frame (`radv_ps5_submit_after`, which the swapchain links weak), instead of handing the frame to the flip thread | The GPU hands the flip to VideoOut as the frame's work ends: no core spinning on each frame's fence, no sleep between the frame and its flip, so a frame done just before a vblank makes it | Medium: off by default. Flips from the CPU and the GPU are never mixed out of order (a present goes to the thread only while the thread still holds flips, or when its frame's submission was deferred, which Cemu's never is), but whether VideoOut paces the GPU's flips with the flip rate as it paces `sceVideoOutSubmitFlip`'s is unmeasured |
 | 0006 Refresh rate asked for again | `wsi_videoout_set_high_frame_rate(high)` configures the open output again once no swapchain presents on it: 119.88 Hz where `param.json` (`PS5_VIDEOOUT_PARAM_JSON`, read again) declares high-frame-rate output, else 59.94 Hz; the display modes offered follow. The app calls it, weak, before each Wii U game (`ps5display::ConfigureOutput`) | **120 Hz output works after the new launcher**, which opens VideoOut first at 59.94 Hz: without it, the driver keeps the launcher's rate for the process. The boot log says `VideoOut configured again for the next surface: 119.88 Hz` | Low: **in the default build**. A process that never calls it behaves as before; it refuses (-1) while a swapchain still presents |
+| 0007 Freed buffers wait for the GPU | A destroyed buffer's direct memory waits, with the newest submission's sequence number, until the queue has run that far; what the GPU is done with is freed at each later destroy | **No GPU fault on memory freed while submitted work still uses it** (the whole console hangs on such a fault: Breath of the Wild's runes and scope did it before 3.0.0) | Low: **in the default build**, as in 3.0.0's driver. Memory is freed a little later |
 
 0005 on the PC model: 2,000,000 presents through three images, two submissions a frame (the frame
 and the flip's 72 words); a frame held behind a timeline semaphore that another thread opens 30 ms
@@ -296,7 +299,7 @@ with the recipe's own release options, cross files and `mesa_clc`, into
 `.deps/PS5_Vulkan/.deps/native/radv-ps5cemu` (its `PROVENANCE.txt` lists the patches):
 
 ```sh
-make release                          # 0006 alone, the default: 120 Hz output after the new launcher
+make release                          # 0006 and 0007, the default: 120 Hz output after the new launcher, freed buffers safe
 make release RADV_PATCHES=all         # every patch, for the A/B runs below
 make release RADV_PATCHES=0004,0006   # some of them, by number
 make release RADV_PATCHES=            # none: the recipe's archive as it is
@@ -328,7 +331,7 @@ Plateau tower.
 2. The two columns of "Breath of the Wild at 4K60 and 8K30" as they stand, then with frame pacing
    off, for what pacing changes.
 3. Each row of "Settings to test", one at a time, at 4K.
-4. The default driver at 4K (`make release`: 0006 alone, which leaves submissions as they were), for
+4. The default driver at 4K (`make release`: 0006 and 0007, which leave submissions as they were), for
    the other patches' own effect (`copy_ms`, `flush_ms` and FPS).
 5. `RADV_PS5_GPU_FLIP=1` at 4K, with the 4K60 column's settings: the boot log's `flips on the GPU`
    lines, FPS, and with frame pacing at 60 fps whether the pacing still holds.

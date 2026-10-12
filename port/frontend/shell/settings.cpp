@@ -402,6 +402,12 @@ namespace ps5shell
 			own(toggle("customtextures", Tr("Custom textures"), hand.customTextures, Tr("Texture packs from azahar/load/textures."),
 					Tr("Texture packs in /data/ps5cemu/azahar/load/textures/<title ID>, as the desktop Azahar loads them.")),
 				"customTextures");
+			// off by default, as desktop Azahar: on, a draw whose shader is still building is skipped (Alpha
+			// Sapphire's first cutscene drew its Pokemon as their dark outlines alone)
+			own(toggle("async-3ds", Tr("Async shader compile"), hand.asyncShaders, Tr("No stutter while new shaders build."),
+					Tr("On, a new shader is built while the game carries on, so it does not stutter, but some things may be missing for a moment. "
+					"Off, the game waits for each one: stutter, but nothing drawn wrong.")),
+				"asyncShaderCompilation");
 			own(toggle("outlinefix", Tr("Outline fix"), hand.invariantPosition, Tr("Fixes moving black dots on outlined 3D models."),
 					Tr("Computes every 3D position the same way twice, as Azahar does on Apple's GPUs, so the outlines games such as Pokémon X "
 					   "and Y draw around their models stop showing moving black dots (#23). On by default for Pokémon X, Y, Omega Ruby and "
@@ -1057,6 +1063,8 @@ namespace ps5shell
 				settings.shaderNotices = on;
 			else if (id == "customtextures")
 				hand.customTextures = on;
+			else if (id == "async-3ds")
+				hand.asyncShaders = on;
 			else if (id == "outlinefix")
 				hand.invariantPosition = on;
 			else if (id == "motion")

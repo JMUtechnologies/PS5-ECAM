@@ -527,7 +527,7 @@ namespace ps5stream
 	}
 }
 
-// What the emulators' patches call, by these names (Cemu's 0023, Azahar's 0013): they declare them
+// What the emulators' patches call, by these names (Cemu's 0033, Azahar's 0013): they declare them
 // rather than include the port's headers, as their other hooks do.
 bool PS5Cemu_StreamWantFrame()
 {

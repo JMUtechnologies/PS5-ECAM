@@ -13,6 +13,7 @@
 #include <filesystem>
 #include <fstream>
 #include <mutex>
+#include <optional>
 #include <thread>
 
 namespace fs = std::filesystem;
@@ -209,11 +210,24 @@ namespace ps5azahar
 			}
 			if (U32(header + 0x14) >= 0x400 + kSmdhSize)
 				ReadSmdh(file.Read(meta + 0x400, kSmdhSize), title);
-			// the first content's NCCH header, for the product code, when the CIA's contents are not
-			// encrypted with its title key
+			// Encrypted, the CIA's contents with its title key or the game with its own, and Azahar
+			// installs nothing (Service::AM::CheckCIAToInstall), whatever keys it has. The first: the
+			// TMD's content chunk records (after its header and the 64 content info records), whose
+			// type has bit 0 for a content encrypted with the title key
+			const uint16_t contents = tmdHeader.size() == 0x140 + 0xA0 ? (uint16_t)(tmdHeader[0x140 + 0x9E] << 8 | tmdHeader[0x140 + 0x9F]) : 0;
+			const std::vector<uint8_t> chunks = file.Read(tmd + 0x140 + 0xC4 + 0x900, std::min<size_t>(contents, 64) * 0x30);
+			for (size_t at = 0; at + 0x30 <= chunks.size(); at += 0x30)
+				if (chunks[at + 7] & 0x1)
+					title.encrypted = true;
+			// the second: the first content's NCCH header, which also has the product code, when the
+			// title key does not hide it
 			uint8_t ncch[0x200];
 			if (file.Read(content, ncch, sizeof(ncch)) && std::memcmp(ncch + 0x100, "NCCH", 4) == 0)
+			{
 				title.boxId = BoxId(ncch + 0x150);
+				if ((ncch[0x18F] & 0x4) == 0) // NoCrypto
+					title.encrypted = true;
+			}
 			return true;
 		}
 
@@ -314,6 +328,52 @@ namespace ps5azahar
 			}
 		}
 
+		// The title version in the newest TMD of a title's content folder in the 3DS's storage (the
+		// TMD's signature, then its header with the version at 0x9C, big-endian), if it has one
+		std::optional<uint16_t> InstalledTmdVersion(const fs::path& content)
+		{
+			std::error_code ec;
+			fs::path newest;
+			for (const auto& entry : fs::directory_iterator(content, ec))
+				if (Lower(entry.path().extension().string()) == ".tmd" && entry.path() > newest)
+					newest = entry.path();
+			if (newest.empty())
+				return std::nullopt;
+			File file(newest.string());
+			uint8_t version[2];
+			if (!file.stream || !file.Read(0x140 + 0x9C, version, sizeof(version)))
+				return std::nullopt;
+			return (uint16_t)(version[0] << 8 | version[1]);
+		}
+
+		// What Settings > Install CIA files put in the 3DS's storage for each game: its update (the game's
+		// version is then the update's) and its DLC, for the game's page, as the Wii U side shows them
+		void AddInstalledUpdates(std::vector<ps5emu::Game>& games)
+		{
+			std::error_code ec;
+			const fs::path root = fs::path(kRoot) / "sdmc" / "Nintendo 3DS";
+			std::vector<fs::path> titleFolders; // <ID0>/<ID1>/title
+			for (const auto& id0 : fs::directory_iterator(root, ec))
+				for (const auto& id1 : fs::directory_iterator(id0.path(), ec))
+					titleFolders.push_back(id1.path() / "title");
+			for (ps5emu::Game& game : games)
+			{
+				if ((game.titleId >> 32) != 0x00040000)
+					continue;
+				const std::string low = fmt::format("{:08x}", (uint32_t)game.titleId);
+				for (const fs::path& title : titleFolders)
+				{
+					if (const auto version = InstalledTmdVersion(title / "0004000e" / low / "content"))
+					{
+						game.hasUpdate = true;
+						game.version = *version;
+					}
+					if (InstalledTmdVersion(title / "0004008c" / low / "content"))
+						game.dlcCount = 1;
+				}
+			}
+		}
+
 		// The games installed from CIA files into the 3DS's SD card (Azahar's sdmc): title/00040000/
 		// <id>/content holds the game's contents (00040002/<id> a demo's), the one with an ExeFS
 		// (and its SMDH) the program Azahar starts.
@@ -410,6 +470,7 @@ namespace ps5azahar
 			std::vector<ps5emu::Game> games;
 			Scan(folder, 0, games);
 			ScanInstalled(games);
+			AddInstalledUpdates(games);
 			std::sort(games.begin(), games.end(), [](const ps5emu::Game& a, const ps5emu::Game& b) { return Lower(a.name) < Lower(b.name); });
 			ps5log::Line("[azahar] {} 3DS games in {}", games.size(), folder);
 			{

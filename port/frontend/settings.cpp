@@ -74,11 +74,13 @@ namespace ps5settings
 			ReadInt(json, "deadzone", n3ds.deadzone, 0, 50);
 			ReadBool(json, "performance", n3ds.performance);
 			ReadInt(json, "cpuClock", n3ds.cpuClock, 25, 400);
+			ReadBool(json, "tscClock", n3ds.tscClock);
 			ReadBool(json, "invariantPosition", n3ds.invariantPosition);
 			ReadString(json, "turbo", n3ds.turbo);
 			ReadInt(json, "region", n3ds.region, -1, 6);
 			ReadInt(json, "language", n3ds.language, -1, 11);
 			ReadBool(json, "customTextures", n3ds.customTextures);
+			ReadBool(json, "asyncShaderCompilation", n3ds.asyncShaders);
 			ReadInt(json, "border", n3ds.border, 0, 5);
 			ReadInt(json, "dsFilter", n3ds.dsFilter, 0, 2);
 			ReadBool(json, "dsJit", n3ds.dsJit);
@@ -113,6 +115,8 @@ namespace ps5settings
 			writer.Bool(n3ds.performance);
 			writer.Key("cpuClock");
 			writer.Int(n3ds.cpuClock);
+			writer.Key("tscClock");
+			writer.Bool(n3ds.tscClock);
 			writer.Key("invariantPosition");
 			writer.Bool(n3ds.invariantPosition);
 			writer.Key("turbo");
@@ -123,6 +127,8 @@ namespace ps5settings
 			writer.Int(n3ds.language);
 			writer.Key("customTextures");
 			writer.Bool(n3ds.customTextures);
+			writer.Key("asyncShaderCompilation");
+			writer.Bool(n3ds.asyncShaders);
 			writer.Key("border");
 			writer.Int(n3ds.border);
 			writer.Key("dsFilter");
@@ -177,6 +183,16 @@ namespace ps5settings
 				if (member.value.IsString())
 					settings.accountsByUser[member.name.GetString()] = member.value.GetString();
 		ReadBool(json, "pinCpuThreads", settings.pinCpuThreads);
+		ReadBool(json, "compileBelowNormal", settings.compileBelowNormal);
+		ReadInt(json, "idleSpinUs", settings.idleSpinUs, 0, 2000);
+		ReadBool(json, "isolateCores", settings.isolateCores);
+		ReadBool(json, "standardBorderColors", settings.standardBorderColors);
+		ReadBool(json, "shaderDiskCache", settings.shaderDiskCache);
+		ReadBool(json, "accurateSingleStores", settings.accurateSingleStores);
+		ReadBool(json, "tscTickCount", settings.tscTickCount);
+		ReadBool(json, "driverClockTsc", settings.driverClockTsc);
+		ReadBool(json, "profile", settings.profile);
+		ReadBool(json, "heapThreadCache", settings.heapThreadCache);
 		ReadString(json, "radvDebug", settings.radvDebug);
 		if (json.HasMember("radvEnvironment") && json["radvEnvironment"].IsObject())
 			for (const auto& member : json["radvEnvironment"].GetObject())
@@ -301,6 +317,26 @@ namespace ps5settings
 		writer.EndObject();
 		writer.Key("pinCpuThreads");
 		writer.Bool(settings.pinCpuThreads);
+		writer.Key("compileBelowNormal");
+		writer.Bool(settings.compileBelowNormal);
+		writer.Key("idleSpinUs");
+		writer.Int(settings.idleSpinUs);
+		writer.Key("isolateCores");
+		writer.Bool(settings.isolateCores);
+		writer.Key("standardBorderColors");
+		writer.Bool(settings.standardBorderColors);
+		writer.Key("shaderDiskCache");
+		writer.Bool(settings.shaderDiskCache);
+		writer.Key("accurateSingleStores");
+		writer.Bool(settings.accurateSingleStores);
+		writer.Key("tscTickCount");
+		writer.Bool(settings.tscTickCount);
+		writer.Key("driverClockTsc");
+		writer.Bool(settings.driverClockTsc);
+		writer.Key("profile");
+		writer.Bool(settings.profile);
+		writer.Key("heapThreadCache");
+		writer.Bool(settings.heapThreadCache);
 		writer.Key("radvDebug");
 		writer.String(settings.radvDebug.c_str());
 		writer.Key("radvEnvironment");
@@ -444,6 +480,7 @@ namespace ps5settings
 				{"resolution", nullptr, nullptr, &N3ds::resolution, nullptr, 1, 10},
 				{"textureFilter", nullptr, nullptr, &N3ds::textureFilter, nullptr, 0, 5},
 				{"customTextures", nullptr, nullptr, nullptr, &N3ds::customTextures},
+				{"asyncShaderCompilation", nullptr, nullptr, nullptr, &N3ds::asyncShaders},
 				{"layout", nullptr, nullptr, &N3ds::layout, nullptr, 0, 3},
 				{"border", nullptr, nullptr, &N3ds::border, nullptr, 0, 5},
 				{"volume", nullptr, nullptr, &N3ds::volume, nullptr, 0, 100},
@@ -485,7 +522,7 @@ namespace ps5settings
 	const std::vector<std::string>& GameSettingNames(const std::string& side)
 	{
 		static const std::vector<std::string> wiiu = {"upscaleFilter", "highFrameRate", "framePacing", "overlay", "asyncShaders", "volume"};
-		static const std::vector<std::string> n3ds = {"resolution", "textureFilter", "customTextures", "invariantPosition", "layout", "border",
+		static const std::vector<std::string> n3ds = {"resolution", "textureFilter", "customTextures", "asyncShaderCompilation", "invariantPosition", "layout", "border",
 			"volume", "region", "language", "cpuClock"};
 		static const std::vector<std::string> nds = {"dsFilter", "dsJit", "layout", "border", "volume", "language", "dsOwnBios"};
 		static const std::vector<std::string> none;

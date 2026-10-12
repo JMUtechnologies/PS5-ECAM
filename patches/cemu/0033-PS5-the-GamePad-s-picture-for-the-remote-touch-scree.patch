@@ -68,19 +68,19 @@ index fa77fd9..557519c 100644
  
  	virtual void DrawBackbufferQuad(LatteTextureView* texView, RendererOutputShader* shader, bool useLinearTexFilter,
 diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
-index 009f128..8d2d89c 100644
+index 9be4251..464fd12 100644
 --- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
 +++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
-@@ -10,6 +10,8 @@ void PS5Cemu_ImguiUploads();
- // cemuSubmitDraws, 300 as Cemu's own unless set). On the PS5 each submission costs the driver a copy
+@@ -11,6 +11,8 @@ void PS5Cemu_ImguiUploads();
  // of its words and an AGC submission, and the GPU a reset of its state and a write-back of its caches
  uint32 PS5Cemu_SubmitDraws();
+ extern bool g_ps5StandardBorderColors; // below
 +// The remote touch screen (port/stream): the GamePad's picture, as RGB rows
 +void PS5Cemu_StreamFrame(const uint8* rgb, int width, int height);
  #endif
  #include "Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h"
  #include "Cafe/HW/Latte/Renderer/Vulkan/LatteTextureVk.h"
-@@ -1027,26 +1029,35 @@ bool VulkanRenderer::IsPadWindowActive()
+@@ -1032,26 +1034,35 @@ bool VulkanRenderer::IsPadWindowActive()
  
  void VulkanRenderer::HandleScreenshotRequest(LatteTextureView* texView, bool padView)
  {
@@ -129,7 +129,7 @@ index 009f128..8d2d89c 100644
  
  	auto texViewVk = (LatteTextureViewVk*)texView;
  	auto baseImageTex = texViewVk->GetBaseImage();
-@@ -1246,8 +1257,10 @@ void VulkanRenderer::HandleScreenshotRequest(LatteTextureView* texView, bool pad
+@@ -1251,8 +1262,10 @@ void VulkanRenderer::HandleScreenshotRequest(LatteTextureView* texView, bool pad
  		barrier_image<TRANSFER_READ, TRANSFER_WRITE | IMAGE_WRITE>(baseImageTex, region.imageSubresource, baseImageTex->GetDefaultLayout());
  	}
  
@@ -141,7 +141,7 @@ index 009f128..8d2d89c 100644
  
  	bool formatValid = true;
  
-@@ -1273,9 +1286,10 @@ void VulkanRenderer::HandleScreenshotRequest(LatteTextureView* texView, bool pad
+@@ -1278,9 +1291,10 @@ void VulkanRenderer::HandleScreenshotRequest(LatteTextureView* texView, bool pad
  		}
  		break;
  	case VK_FORMAT_R8G8B8_UNORM:
@@ -153,7 +153,7 @@ index 009f128..8d2d89c 100644
  		std::transform((uint8*)bufferPtr, (uint8*)bufferPtr + size, rgb_data.begin(), SRGBComponentToRGB);
  		break;
  	default:
-@@ -1293,7 +1307,14 @@ void VulkanRenderer::HandleScreenshotRequest(LatteTextureView* texView, bool pad
+@@ -1298,7 +1312,14 @@ void VulkanRenderer::HandleScreenshotRequest(LatteTextureView* texView, bool pad
  		vkFreeMemory(m_logicalDevice, imageMemory, nullptr);
  
  	if (formatValid)

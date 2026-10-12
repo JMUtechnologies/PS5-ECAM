@@ -2,8 +2,8 @@
 // PS5CEMU-HAR: Azahar's core on the PS5 (azahar.h), built in Azahar's tree against its libraries
 // (tools/build-azahar.sh) and linked into the app with Cemu.
 //
-//  - its data under kRoot: the 3DS's storage (sdmc, nand), sysdata (where aes_keys.txt goes for
-//    encrypted games), the shader cache, its log (log/azahar_log.txt);
+//  - its data under kRoot: the 3DS's storage (sdmc, nand), sysdata (where aes_keys.txt goes, for
+//    amiibo: Azahar plays no encrypted game), the shader cache, its log (log/azahar_log.txt);
 //  - the window is VideoOut, a VK_KHR_display surface (ps5/vulkan_display.h) for Azahar's own
 //    Vulkan renderer, whose instance takes RADV's vkGetInstanceProcAddr (the hooks below, which
 //    patches/azahar adds to vk_platform.cpp);
@@ -49,6 +49,7 @@
 #include "core/hle/service/nfc/nfc.h"
 #include "core/cheats/cheat_base.h"
 #include "core/cheats/cheats.h"
+#include "core/file_sys/title_metadata.h"
 #include "core/hle/service/hid/hid.h"
 #include "core/hle/service/ir/ir_rst.h"
 #include "core/hle/service/ir/ir_user.h"
@@ -371,9 +372,12 @@ namespace ps5azahar
 			values.graphics_api = Settings::GraphicsAPI::Vulkan;
 			values.physical_device = 0;
 			values.use_hw_shader = true;
-			values.use_shader_jit = true;
 			values.use_disk_shader_cache = true;
-			values.async_shader_compilation = true; // a draw waits for no shader: no stutter
+			// off by default, as desktop Azahar: on, a draw waits for no shader, and one whose shader is
+			// not built yet is skipped (Settings > Graphics)
+			values.async_shader_compilation = settings.asyncShaders;
+			// the statistics' and frame limiter's clock, read for every SVC (Azahar patch 0023)
+			Core::g_ps5TscClock = settings.tscClock;
 			values.async_presentation = true;
 			values.use_vsync = true;
 			values.use_skip_duplicate_frames = false; // every frame drawn, so the menu is too
@@ -382,17 +386,14 @@ namespace ps5azahar
 			values.texture_filter = TextureFilterOf(settings.textureFilter);
 			values.layout_option = LayoutOf(settings.layout);
 			values.swap_screen = false;
-			// dynarmic's code goes in executable direct memory (ps5platform/exec.h): where the console
-			// refuses it, Azahar's interpreter runs the game (slower) rather than nothing at all
+			// dynarmic's code and the shader JIT's go in executable direct memory (ps5platform/exec.h):
+			// where the console refuses it, Azahar's interpreters run the game (slower) rather than
+			// nothing at all
 			values.use_cpu_jit = ps5privilege::Current().executable;
+			values.use_shader_jit = ps5privilege::Current().executable;
 			if (!values.use_cpu_jit.GetValue())
-				ps5log::Line("[azahar] no executable direct memory: the 3DS CPU runs on Azahar's interpreter");
+				ps5log::Line("[azahar] no executable direct memory: the 3DS CPU and shaders run on Azahar's interpreters");
 			values.cpu_clock_percentage = std::clamp(settings.cpuClock, 25, 400);
-			// every vertex position computed invariantly, as Azahar does on Apple GPUs (patch 0010):
-			// for Pokemon X's moving black stipples (#23)
-			Pica::Shader::Generator::GLSL::g_ps5InvariantPosition = settings.invariantPosition;
-			if (settings.invariantPosition)
-				ps5log::Line("[azahar] vertex positions invariant (n3ds.invariantPosition)");
 			values.is_new_3ds = true;
 			// automatic (-1) takes the game's own region; a game made for another one may refuse to
 			// start or show other languages (#17)
@@ -527,7 +528,10 @@ namespace ps5azahar
 			case Status::ErrorGetLoader: return ps5lang::Tr("This is not a 3DS game Azahar can start.");
 			case Status::ErrorLoader: return ps5lang::Tr("The game could not be loaded.");
 			case Status::ErrorLoader_ErrorEncrypted:
-				return ps5lang::Tr("The game is encrypted: decrypt it, or put the 3DS's aes_keys.txt in /data/ps5cemu/azahar/sysdata.");
+				// Azahar plays no encrypted game, whatever keys it has (NCCHContainer, "Encrypted NCCH are not
+				// supported"): aes_keys.txt does not change that
+				return ps5lang::Tr("The game is encrypted, and Azahar plays only decrypted games, with keys or without: decrypt it on your "
+								   "3DS first (GodMode9).");
 			case Status::ErrorLoader_ErrorInvalidFormat: return ps5lang::Tr("The game's format is not supported.");
 			case Status::ErrorLoader_ErrorGbaTitle: return ps5lang::Tr("GBA Virtual Console games are not supported.");
 			case Status::ErrorSystemMode: return ps5lang::Tr("The game's system mode could not be found.");
@@ -878,6 +882,26 @@ namespace ps5azahar
 			// and comes back as ErrorAborted
 			bool compressed = false;
 			auto result = Service::AM::CheckCIAToInstall(cia, compressed, true);
+			// What the 3DS's storage has of the title already goes aside while the CIA installs, and
+			// back when the install is cancelled or fails: Azahar removes a title's contents when an
+			// install ends part-way, which took an installed game with its update. (DLC's contents are
+			// not removed, so they stay where they are.)
+			std::string content, aside;
+			if (result == Result::Success && !s_cancelInstall)
+			{
+				const uint64_t titleId = Inspect(cia).titleId;
+				if (titleId && (titleId >> 32) != 0x0004008C)
+				{
+					content = Service::AM::GetTitlePath(Service::AM::GetTitleMediaType(titleId), titleId) + "content";
+					aside = content + ".before-install";
+					// one left by an install the app did not see the end of
+					if (FileUtil::IsDirectory(aside) && !FileUtil::IsDirectory(content))
+						FileUtil::Rename(aside, content);
+					FileUtil::DeleteDirRecursively(aside);
+					if (!FileUtil::IsDirectory(content) || !FileUtil::Rename(content, aside))
+						aside.clear();
+				}
+			}
 			if (result == Result::Success && s_cancelInstall)
 				result = Result::Cancelled;
 			else if (result == Result::Success)
@@ -889,6 +913,16 @@ namespace ps5azahar
 						s_install.total = total;
 					},
 					&s_cancelInstall);
+			if (!aside.empty())
+			{
+				if (result == Result::Success)
+					FileUtil::DeleteDirRecursively(aside);
+				else
+				{
+					FileUtil::DeleteDirRecursively(content);
+					FileUtil::Rename(aside, content);
+				}
+			}
 			std::lock_guard lock(s_installMutex);
 			switch (result)
 			{
@@ -911,8 +945,9 @@ namespace ps5azahar
 			}
 			if (result != Result::Success && result != Result::Cancelled)
 				s_install.state = ps5emu::InstallStatus::State::Failed;
-			ps5log::Line("[azahar] install of {}: {}", cia,
-				result == Result::Success ? "done" : result == Result::Cancelled ? "cancelled, what it wrote removed" : s_install.message);
+			ps5log::Line("[azahar] install of {}: {}{}", cia,
+				result == Result::Success ? "done" : result == Result::Cancelled ? "cancelled, what it wrote removed" : s_install.message,
+				!aside.empty() && result != Result::Success ? ", the copy installed before put back" : "");
 			s_installing = false;
 		}).detach();
 		return true;
@@ -927,7 +962,18 @@ namespace ps5azahar
 	void CancelInstall()
 	{
 		// Azahar writes a CIA's contents in place as it reads them: its install loop stops at its next
-		// 64 KiB and removes the title's contents, as it does for an install that fails part-way
+		// 64 KiB and removes what it wrote, as it does for an install that fails part-way (StartInstall
+		// then puts back what was installed before)
 		s_cancelInstall = true;
+	}
+
+	int InstalledVersion(uint64_t titleId)
+	{
+		SetUp();
+		const std::string tmd = Service::AM::GetTitleMetadataPath(Service::AM::GetTitleMediaType(titleId), titleId);
+		FileSys::TitleMetadata metadata;
+		if (!FileUtil::Exists(tmd) || metadata.Load(tmd) != Loader::ResultStatus::Success)
+			return -1;
+		return metadata.GetTitleVersion();
 	}
 }

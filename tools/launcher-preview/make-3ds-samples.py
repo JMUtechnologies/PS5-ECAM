@@ -2,13 +2,15 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Write sample 3DS and DS files for the launcher's preview, with nothing but the standard library.
 
-    make-3ds-samples.py 3DS_FOLDER DS_FOLDER
+    make-3ds-samples.py 3DS_FOLDER DS_FOLDER [DATA]
 
 Each is only what Azahar's side's library reads (port/azahar/library.cpp): an SMDH (names,
 publisher, a 48x48 icon) where each kind of file keeps it, in an NCSD's NCCH ExeFS (.3ds, .cci),
 an NCCH's (.cxi), a CIA's meta section, a 3DSX's extended header, and one encrypted dump, which
 the library lists by its file name; and for the DS side's games (port/melonds/library.cpp), a DS
-header and its banner (titles, a 32x32 icon in 16 colours). They hold no game.
+header and its banner (titles, a 32x32 icon in 16 colours). They hold no game. With DATA (the
+preview's data folder), an update and DLC are also "installed" there, as an install would leave
+their TMDs.
 """
 
 import os
@@ -76,7 +78,7 @@ def ncsd(title_id, icon, encrypted=False, product=""):
     return bytes(header) + partition
 
 
-def cia(title_id, version, icon):
+def cia(title_id, version, icon, encrypted=False):
     align = lambda value: (value + 63) & ~63
     certs, ticket, tmd, content, meta = 0xA00, 0x350, 0xB34, 0x100, 0x3AC0
     header = bytearray(0x2020)
@@ -87,6 +89,9 @@ def cia(title_id, version, icon):
     data[tmd_at:tmd_at + 4] = b"\x00\x01\x00\x04"  # RSA-2048, SHA-256
     struct.pack_into(">Q", data, tmd_at + 0x140 + 0x4C, title_id)
     struct.pack_into(">H", data, tmd_at + 0x140 + 0x9C, version)
+    if encrypted:  # one content, encrypted with the title key: its chunk record's type has bit 0
+        struct.pack_into(">H", data, tmd_at + 0x140 + 0x9E, 1)
+        struct.pack_into(">H", data, tmd_at + 0x140 + 0xC4 + 0x900 + 6, 0x0001)
     meta_at = tmd_at + align(tmd) + align(content)
     data[meta_at + 0x400:meta_at + 0x400 + len(icon)] = icon
     return bytes(data)
@@ -135,6 +140,7 @@ SAMPLES = [
     ("Fire Emblem Awakening.cxi", lambda i: ncch(0x00040000000A0500, i), "Fire Emblem Awakening", "Nintendo", (40, 80, 180)),
     ("Kirby Planet Robobot.cia", lambda i: cia(0x000400000017C100, 1040, i), "Kirby: Planet Robobot", "Nintendo", (240, 120, 180)),
     ("Kirby Planet Robobot Update.cia", lambda i: cia(0x0004000E0017C100, 1040, i), "Kirby: Planet Robobot", "Nintendo", (240, 120, 180)),
+    ("Pilotwings Resort.cia", lambda i: cia(0x0004000000032000, 0, i, encrypted=True), "Pilotwings Resort", "Nintendo", (60, 150, 220)),
     ("Luigi's Mansion Dark Moon.3ds", lambda i: ncsd(0x0004000000055F00, i, encrypted=True), "", "", (40, 160, 60)),
     ("Checkpoint.3dsx", lambda i: threedsx(i), "Checkpoint", "Bernardo Giordano, FlagBrew", (60, 60, 60)),
     ("FBI.3dsx", lambda i: threedsx(i), "FBI", "Steveice10", (30, 120, 200)),
@@ -150,8 +156,20 @@ DS_SAMPLES = [
 ]
 
 
+def installed_tmd(data, high, low, version):
+    """A title's TMD in the 3DS's storage under DATA (the app's data folder), as an install leaves it."""
+    folder = os.path.join(data, "azahar", "sdmc", "Nintendo 3DS", "0" * 32, "0" * 32, "title", f"{high:08x}", f"{low:08x}", "content")
+    os.makedirs(folder, exist_ok=True)
+    tmd = bytearray(0xB34)
+    tmd[0:4] = b"\x00\x01\x00\x04"  # RSA-2048, SHA-256
+    struct.pack_into(">Q", tmd, 0x140 + 0x4C, high << 32 | low)
+    struct.pack_into(">H", tmd, 0x140 + 0x9C, version)
+    with open(os.path.join(folder, "00000000.tmd"), "wb") as file:
+        file.write(tmd)
+
+
 def main():
-    if len(sys.argv) != 3:
+    if len(sys.argv) not in (3, 4):
         sys.exit(__doc__)
     for name, make, title, publisher, colour in SAMPLES:
         path = os.path.join(sys.argv[1], name)
@@ -163,6 +181,10 @@ def main():
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "wb") as file:
             file.write(nds(code, title, colour, *unit))
+    if len(sys.argv) == 4:
+        # an update installed for Super Mario 3D Land, and DLC for Fire Emblem Awakening
+        installed_tmd(sys.argv[3], 0x0004000E, 0x00053F00, 1040)
+        installed_tmd(sys.argv[3], 0x0004008C, 0x000A0500, 0)
 
 
 if __name__ == "__main__":

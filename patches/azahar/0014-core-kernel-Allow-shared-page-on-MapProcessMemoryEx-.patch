@@ -11,7 +11,7 @@ Subject: [PATCH] core: kernel: Allow shared page on MapProcessMemoryEx (#2641)
  3 files changed, 26 insertions(+), 7 deletions(-)
 
 diff --git a/src/core/hle/kernel/kernel.cpp b/src/core/hle/kernel/kernel.cpp
-index d8febca..89f925e 100644
+index d8febca08..89f925ea9 100644
 --- a/src/core/hle/kernel/kernel.cpp
 +++ b/src/core/hle/kernel/kernel.cpp
 @@ -139,10 +139,18 @@ const SharedPage::Handler& KernelSystem::GetSharedPageHandler() const {
@@ -34,7 +34,7 @@ index d8febca..89f925e 100644
      return *ipc_recorder;
  }
 diff --git a/src/core/hle/kernel/kernel.h b/src/core/hle/kernel/kernel.h
-index 20ea679..30b7f0b 100644
+index 20ea6790b..30b7f0b5a 100644
 --- a/src/core/hle/kernel/kernel.h
 +++ b/src/core/hle/kernel/kernel.h
 @@ -339,8 +339,10 @@ public:
@@ -49,7 +49,7 @@ index 20ea679..30b7f0b 100644
      IPCDebugger::Recorder& GetIPCRecorder();
      const IPCDebugger::Recorder& GetIPCRecorder() const;
 diff --git a/src/core/hle/kernel/svc.cpp b/src/core/hle/kernel/svc.cpp
-index 14d0998..164fc3e 100644
+index 14d099854..164fc3ed4 100644
 --- a/src/core/hle/kernel/svc.cpp
 +++ b/src/core/hle/kernel/svc.cpp
 @@ -36,6 +36,7 @@

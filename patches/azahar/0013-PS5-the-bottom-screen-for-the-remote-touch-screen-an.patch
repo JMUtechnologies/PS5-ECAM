@@ -24,7 +24,7 @@ to 1 across it, whatever the TV's layout, for the browser's touches.
  4 files changed, 109 insertions(+), 18 deletions(-)
 
 diff --git a/src/core/frontend/emu_window.cpp b/src/core/frontend/emu_window.cpp
-index 0819743..46f0885 100644
+index 081974305..46f0885d6 100644
 --- a/src/core/frontend/emu_window.cpp
 +++ b/src/core/frontend/emu_window.cpp
 @@ -2,6 +2,7 @@
@@ -52,7 +52,7 @@ index 0819743..46f0885 100644
      std::scoped_lock guard{touch_state->mutex};
      touch_state->touch_pressed = false;
 diff --git a/src/core/frontend/emu_window.h b/src/core/frontend/emu_window.h
-index d0466a2..00a33bd 100644
+index d0466a2bd..00a33bd47 100644
 --- a/src/core/frontend/emu_window.h
 +++ b/src/core/frontend/emu_window.h
 @@ -203,6 +203,11 @@ public:
@@ -68,7 +68,7 @@ index d0466a2..00a33bd 100644
       * Signal that a touch movement event has occurred (e.g. mouse was moved over the emu window)
       * @param framebuffer_x Framebuffer x-coordinate
 diff --git a/src/video_core/renderer_vulkan/renderer_vulkan.cpp b/src/video_core/renderer_vulkan/renderer_vulkan.cpp
-index 775f7b0..ade438a 100644
+index 775f7b092..ade438ad7 100644
 --- a/src/video_core/renderer_vulkan/renderer_vulkan.cpp
 +++ b/src/video_core/renderer_vulkan/renderer_vulkan.cpp
 @@ -35,6 +35,13 @@
@@ -245,7 +245,7 @@ index 775f7b0..ade438a 100644
      }
  
 diff --git a/src/video_core/renderer_vulkan/renderer_vulkan.h b/src/video_core/renderer_vulkan/renderer_vulkan.h
-index 111d71a..de7060b 100644
+index 111d71add..de7060bd8 100644
 --- a/src/video_core/renderer_vulkan/renderer_vulkan.h
 +++ b/src/video_core/renderer_vulkan/renderer_vulkan.h
 @@ -94,7 +94,7 @@ private:

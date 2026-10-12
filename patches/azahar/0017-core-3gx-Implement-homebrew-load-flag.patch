@@ -11,7 +11,7 @@ Subject: [PATCH] core: 3gx: Implement homebrew load flag
  3 files changed, 17 insertions(+), 12 deletions(-)
 
 diff --git a/src/core/file_sys/plugin_3gx.cpp b/src/core/file_sys/plugin_3gx.cpp
-index 5e59207..27f8d10 100644
+index 5e592076a..27f8d10c4 100644
 --- a/src/core/file_sys/plugin_3gx.cpp
 +++ b/src/core/file_sys/plugin_3gx.cpp
 @@ -76,7 +76,7 @@ Loader::ResultStatus FileSys::Plugin3GXLoader::Load(
@@ -46,7 +46,7 @@ index 5e59207..27f8d10 100644
      author = ReadTextInfo(file, header.infos.author_msg_offset, header.infos.author_len);
      title = ReadTextInfo(file, header.infos.title_msg_offset, header.infos.title_len);
 diff --git a/src/core/file_sys/plugin_3gx.h b/src/core/file_sys/plugin_3gx.h
-index 0769e12..ea2a871 100644
+index 0769e1278..ea2a8714a 100644
 --- a/src/core/file_sys/plugin_3gx.h
 +++ b/src/core/file_sys/plugin_3gx.h
 @@ -97,6 +97,7 @@ private:
@@ -58,7 +58,7 @@ index 0769e12..ea2a871 100644
          u32_le exe_load_checksum;
          u32_le builtin_load_exe_args[4];
 diff --git a/src/core/hle/service/plgldr/plgldr.cpp b/src/core/hle/service/plgldr/plgldr.cpp
-index c913096..b92767c 100644
+index c91309624..b92767c66 100644
 --- a/src/core/hle/service/plgldr/plgldr.cpp
 +++ b/src/core/hle/service/plgldr/plgldr.cpp
 @@ -103,17 +103,6 @@ void PLG_LDR::OnProcessRun(Kernel::Process& process, Kernel::KernelSystem& kerne

@@ -1,0 +1,49 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Mon, 5 Oct 2026 12:06:04 +0000
+Subject: [PATCH] PS5: the GPU thread waits for commands without yielding, with
+ idle spinning
+
+When the GPU thread runs out of commands it spins 80 PAUSEs, looks at
+its timers and yields, round and round. On the PS5 a yield is a call into
+the kernel, and while every CPU is busy (pipelines compiling as a game
+streams an area in) it can give the thread's CPU to another thread for a
+whole time slice, so the next commands the emulated CPU writes wait for
+it. With the port's idle spinning on (g_ps5IdleSpinIterations, the same
+experiment as the idle cores'), the wait spins without yielding.
+---
+ src/Cafe/HW/Latte/Core/LatteCommandProcessor.cpp | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/src/Cafe/HW/Latte/Core/LatteCommandProcessor.cpp b/src/Cafe/HW/Latte/Core/LatteCommandProcessor.cpp
+index de67772..1a48877 100644
+--- a/src/Cafe/HW/Latte/Core/LatteCommandProcessor.cpp
++++ b/src/Cafe/HW/Latte/Core/LatteCommandProcessor.cpp
+@@ -8,6 +8,14 @@
+ #include "Cafe/HW/Latte/Core/LattePerformanceMonitor.h"
+ #include "Cafe/HW/Latte/Core/LatteIndices.h"
+ #include "Cafe/HW/Latte/Core/LatteBufferCache.h"
++#if defined(CEMU_PS5)
++// PS5: the port's idle spinning (coreinit_Thread.cpp), which the GPU thread's wait for commands
++// follows too
++namespace coreinit
++{
++	extern uint32 g_ps5IdleSpinIterations;
++}
++#endif
+ #include "Cafe/HW/Latte/Core/LattePM4.h"
+ #include "Cafe/HW/Latte/Core/LatteSurfaceCopy.h"
+ 
+@@ -191,6 +199,12 @@ uint32 LatteCP_readU32Deprc()
+ 		// still no command data available, do some other tasks
+ 		LatteTiming_HandleTimedVsync();
+ 		LatteAsyncCommands_checkAndExecute();
++#if defined(CEMU_PS5)
++		// PS5: with idle spinning on, no yield: on the console it is a call into the kernel, and while
++		// every CPU is busy (pipelines compiling) it can give this thread's CPU away for a whole time
++		// slice, so the next commands wait. The 80 PAUSEs above keep the wait polite.
++		if (coreinit::g_ps5IdleSpinIterations == 0)
++#endif
+ 		std::this_thread::yield();
+ 		performanceMonitor.gpuTime_idleTime.endMeasuring();
+ 	}

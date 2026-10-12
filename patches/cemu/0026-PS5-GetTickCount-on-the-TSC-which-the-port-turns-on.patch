@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Mon, 5 Oct 2026 05:16:58 +0000
+Subject: [PATCH] PS5: GetTickCount on the TSC, which the port turns on
+
+clock_gettime is a call into the PS5's kernel, about 890 ns a call on a
+console, and Cemu's GPU thread takes its millisecond clock at every draw
+call (LatteCommandProcessor, for its texture cache's ages). Breath of the
+Wild draws about 4,300 times a frame, so the clock took 3.3 ms of each
+16.7 ms frame from the GPU thread; on the TSC it takes 11 ns a call. An
+A/B on a console (2026-10-03) gave the GPU thread that time back. The
+port turns it on before Cemu starts (PS5Cemu_UseTscTickCount), and can
+leave it on clock_gettime.
+---
+ src/Common/unix/platform.cpp | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+
+diff --git a/src/Common/unix/platform.cpp b/src/Common/unix/platform.cpp
+index 879ae4d..9462c65 100644
+--- a/src/Common/unix/platform.cpp
++++ b/src/Common/unix/platform.cpp
+@@ -1,8 +1,33 @@
+ #include <cstdint>
+ #include <ctime>
+ 
++#if defined(CEMU_PS5)
++#include <x86intrin.h>
++extern "C" uint64_t sceKernelGetTscFrequency();
++
++// PS5: GetTickCount on the TSC, which the port turns on before Cemu starts (PS5Cemu_UseTscTickCount;
++// tscTickCount in ps5cemu.json). clock_gettime is a call into the console's kernel (about 890 ns a
++// call, measured), and the GPU thread takes the time at every draw call (LatteCommandProcessor, for
++// its texture cache's ages, in milliseconds): Breath of the Wild's 4,300 draws a frame cost its GPU
++// thread 3.3 ms of each 16.7 ms frame, which the TSC gave back (A/B on a console, 2026-10-03).
++static bool s_tscTickCount = false;
++static uint64_t s_tscPerMillisecond = 1;
++
++void PS5Cemu_UseTscTickCount(bool enabled)
++{
++	const uint64_t frequency = sceKernelGetTscFrequency();
++	s_tscTickCount = enabled && frequency >= 1000;
++	if (s_tscTickCount)
++		s_tscPerMillisecond = frequency / 1000;
++}
++#endif
++
+ uint32_t GetTickCount()
+ {
++#if defined(CEMU_PS5)
++	if (s_tscTickCount)
++		return (uint32_t)(__rdtsc() / s_tscPerMillisecond);
++#endif
+ #if BOOST_OS_LINUX
+ 	struct timespec ts;
+ 	clock_gettime(CLOCK_MONOTONIC_RAW, &ts);

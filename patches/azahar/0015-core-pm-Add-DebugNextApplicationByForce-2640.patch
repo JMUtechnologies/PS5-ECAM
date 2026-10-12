@@ -11,7 +11,7 @@ Subject: [PATCH] core: pm: Add DebugNextApplicationByForce (#2640)
  3 files changed, 26 insertions(+), 3 deletions(-)
 
 diff --git a/src/core/hle/service/pm/pm.cpp b/src/core/hle/service/pm/pm.cpp
-index d200ffe..a4cb0b4 100644
+index d200ffef0..a4cb0b423 100644
 --- a/src/core/hle/service/pm/pm.cpp
 +++ b/src/core/hle/service/pm/pm.cpp
 @@ -12,7 +12,7 @@ namespace Service::PM {
@@ -24,7 +24,7 @@ index d200ffe..a4cb0b4 100644
  
  } // namespace Service::PM
 diff --git a/src/core/hle/service/pm/pm_dbg.cpp b/src/core/hle/service/pm/pm_dbg.cpp
-index 50d1ff5..78fa5d4 100644
+index 50d1ff570..78fa5d4ef 100644
 --- a/src/core/hle/service/pm/pm_dbg.cpp
 +++ b/src/core/hle/service/pm/pm_dbg.cpp
 @@ -3,23 +3,41 @@
@@ -71,7 +71,7 @@ index 50d1ff5..78fa5d4 100644
 +
  } // namespace Service::PM
 diff --git a/src/core/hle/service/pm/pm_dbg.h b/src/core/hle/service/pm/pm_dbg.h
-index 3a6e3c5..2ac99c8 100644
+index 3a6e3c5c7..2ac99c84b 100644
 --- a/src/core/hle/service/pm/pm_dbg.h
 +++ b/src/core/hle/service/pm/pm_dbg.h
 @@ -10,13 +10,18 @@ namespace Service::PM {

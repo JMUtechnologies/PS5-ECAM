@@ -12,8 +12,8 @@
 #include "../ps5/kernel.h"
 #include "../ps5/log.h"
 
-#include "Cafe/TitleList/ParsedMetaXml.h"
 #include "Cafe/TitleList/TitleId.h"
+#include "Cafe/TitleList/ParsedMetaXml.h"
 #include "Cafe/TitleList/TitleInfo.h"
 #include "Cafe/TitleList/TitleList.h"
 #include "config/ActiveSettings.h"

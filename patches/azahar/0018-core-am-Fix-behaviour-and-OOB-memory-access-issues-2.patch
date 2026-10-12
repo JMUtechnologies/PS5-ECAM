@@ -21,7 +21,7 @@ Subject: [PATCH] core: am: Fix behaviour and OOB memory access issues (#2648)
  9 files changed, 729 insertions(+), 368 deletions(-)
 
 diff --git a/src/core/file_sys/ncch_container.cpp b/src/core/file_sys/ncch_container.cpp
-index be2b24f..666d603 100644
+index be2b24f0e..666d6037f 100644
 --- a/src/core/file_sys/ncch_container.cpp
 +++ b/src/core/file_sys/ncch_container.cpp
 @@ -40,6 +40,9 @@ u64 GetModId(u64 program_id) {
@@ -62,7 +62,7 @@ index be2b24f..666d603 100644
      std::memset(decompressed.data(), 0, decompressed.size());
      std::memcpy(decompressed.data(), compressed.data(), compressed.size());
 diff --git a/src/core/file_sys/ncch_container.h b/src/core/file_sys/ncch_container.h
-index 211e0e6..1559ee5 100644
+index 211e0e6c1..1559ee5dc 100644
 --- a/src/core/file_sys/ncch_container.h
 +++ b/src/core/file_sys/ncch_container.h
 @@ -355,7 +355,7 @@ public:
@@ -75,7 +75,7 @@ index 211e0e6..1559ee5 100644
      ExHeader_Header exheader_header;
  
 diff --git a/src/core/file_sys/ticket.cpp b/src/core/file_sys/ticket.cpp
-index b4902b5..e1acfe6 100644
+index b4902b5b9..e1acfe675 100644
 --- a/src/core/file_sys/ticket.cpp
 +++ b/src/core/file_sys/ticket.cpp
 @@ -63,6 +63,9 @@ Loader::ResultStatus Ticket::DoTitlekeyFixup() {
@@ -159,7 +159,7 @@ index b4902b5..e1acfe6 100644
          }
      }
 diff --git a/src/core/file_sys/ticket.h b/src/core/file_sys/ticket.h
-index 478e2e1..b9da9f1 100644
+index 478e2e1d1..b9da9f1f6 100644
 --- a/src/core/file_sys/ticket.h
 +++ b/src/core/file_sys/ticket.h
 @@ -108,9 +108,13 @@ public:
@@ -190,7 +190,7 @@ index 478e2e1..b9da9f1 100644
  
  private:
 diff --git a/src/core/file_sys/title_metadata.cpp b/src/core/file_sys/title_metadata.cpp
-index f245c42..f3626f7 100644
+index f245c420b..f3626f7fe 100644
 --- a/src/core/file_sys/title_metadata.cpp
 +++ b/src/core/file_sys/title_metadata.cpp
 @@ -31,6 +31,9 @@ Loader::ResultStatus TitleMetadata::Load(const std::string& file_path) {
@@ -221,7 +221,7 @@ index f245c42..f3626f7 100644
  
              const ContentChunk& chunk = tmd_chunks[j];
 diff --git a/src/core/hle/service/am/am.cpp b/src/core/hle/service/am/am.cpp
-index 776f375..25d9a47 100644
+index 776f3750d..25d9a477a 100644
 --- a/src/core/hle/service/am/am.cpp
 +++ b/src/core/hle/service/am/am.cpp
 @@ -5,6 +5,7 @@
@@ -1730,7 +1730,7 @@ index 776f375..25d9a47 100644
      FileUtil::CreateFullPath(GetTicketDirectory());
      ScanForAllTitles();
 diff --git a/src/core/hle/service/am/am.h b/src/core/hle/service/am/am.h
-index 3048597..533a7e7 100644
+index 3048597cb..533a7e7de 100644
 --- a/src/core/hle/service/am/am.h
 +++ b/src/core/hle/service/am/am.h
 @@ -10,7 +10,10 @@
@@ -1923,7 +1923,7 @@ index 3048597..533a7e7 100644
          force_old_device_id = true;
      }
 diff --git a/src/core/hle/service/fs/archive.h b/src/core/hle/service/fs/archive.h
-index e3124a0..5cfee5e 100644
+index e3124a073..5cfee5e56 100644
 --- a/src/core/hle/service/fs/archive.h
 +++ b/src/core/hle/service/fs/archive.h
 @@ -52,7 +52,14 @@ enum class ArchiveIdCode : u32 {
@@ -1943,7 +1943,7 @@ index e3124a0..5cfee5e 100644
  bool IsInstalledApplication(std::string_view path);
  MediaType GetMediaTypeFromPath(std::string_view path);
 diff --git a/src/core/hle/service/fs/file.cpp b/src/core/hle/service/fs/file.cpp
-index b37c19d..94420cf 100644
+index b37c19dd0..94420cf22 100644
 --- a/src/core/hle/service/fs/file.cpp
 +++ b/src/core/hle/service/fs/file.cpp
 @@ -2,6 +2,7 @@

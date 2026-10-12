@@ -23,7 +23,7 @@ Co-authored-by: OpenSauce04 <opensauce04@gmail.com>
  8 files changed, 104 insertions(+), 21 deletions(-)
 
 diff --git a/src/video_core/renderer_vulkan/vk_graphics_pipeline.cpp b/src/video_core/renderer_vulkan/vk_graphics_pipeline.cpp
-index 290b187..26ac05d 100644
+index 290b1871d..26ac05d18 100644
 --- a/src/video_core/renderer_vulkan/vk_graphics_pipeline.cpp
 +++ b/src/video_core/renderer_vulkan/vk_graphics_pipeline.cpp
 @@ -167,14 +167,35 @@ bool GraphicsPipeline::Build(bool fail_on_compile_required) {
@@ -70,7 +70,7 @@ index 290b187..26ac05d 100644
              static_cast<vk::ColorComponentFlags>(info.GetFinalColorWriteMask(instance)),
      };
 diff --git a/src/video_core/renderer_vulkan/vk_graphics_pipeline.h b/src/video_core/renderer_vulkan/vk_graphics_pipeline.h
-index 20e3e66..7d63ea5 100644
+index 20e3e6633..7d63ea5b5 100644
 --- a/src/video_core/renderer_vulkan/vk_graphics_pipeline.h
 +++ b/src/video_core/renderer_vulkan/vk_graphics_pipeline.h
 @@ -120,23 +120,26 @@ struct BlendingState {
@@ -110,7 +110,7 @@ index 20e3e66..7d63ea5 100644
  };
  static_assert(std::is_trivial_v<BlendingState>);
 diff --git a/src/video_core/renderer_vulkan/vk_pipeline_cache.cpp b/src/video_core/renderer_vulkan/vk_pipeline_cache.cpp
-index 53ffcc4..46ba04d 100644
+index 53ffcc4f5..46ba04d9c 100644
 --- a/src/video_core/renderer_vulkan/vk_pipeline_cache.cpp
 +++ b/src/video_core/renderer_vulkan/vk_pipeline_cache.cpp
 @@ -67,11 +67,13 @@ constexpr std::array<vk::DescriptorSetLayoutBinding, 6> BUFFER_BINDINGS = {{
@@ -144,7 +144,7 @@ index 53ffcc4..46ba04d 100644
      if (data.size() < sizeof(vk::PipelineCacheHeaderVersionOne)) {
          LOG_ERROR(Render_Vulkan, "Pipeline cache failed validation: Invalid header");
 diff --git a/src/video_core/renderer_vulkan/vk_pipeline_cache.h b/src/video_core/renderer_vulkan/vk_pipeline_cache.h
-index a943486..8ab5556 100644
+index a943486c9..8ab5556ba 100644
 --- a/src/video_core/renderer_vulkan/vk_pipeline_cache.h
 +++ b/src/video_core/renderer_vulkan/vk_pipeline_cache.h
 @@ -88,6 +88,10 @@ public:
@@ -159,7 +159,7 @@ index a943486..8ab5556 100644
      u64 GetProgramID() const {
          return current_program_id;
 diff --git a/src/video_core/renderer_vulkan/vk_rasterizer.cpp b/src/video_core/renderer_vulkan/vk_rasterizer.cpp
-index 64d9034..889363d 100644
+index 64d90340c..889363d34 100644
 --- a/src/video_core/renderer_vulkan/vk_rasterizer.cpp
 +++ b/src/video_core/renderer_vulkan/vk_rasterizer.cpp
 @@ -12,6 +12,7 @@
@@ -221,7 +221,7 @@ index 64d9034..889363d 100644
  
  void RasterizerVulkan::SyncUtilityTextures(const Framebuffer* framebuffer) {
 diff --git a/src/video_core/shader/generator/glsl_fs_shader_gen.cpp b/src/video_core/shader/generator/glsl_fs_shader_gen.cpp
-index 912a988..71eb1bc 100644
+index 912a988a4..71eb1bc73 100644
 --- a/src/video_core/shader/generator/glsl_fs_shader_gen.cpp
 +++ b/src/video_core/shader/generator/glsl_fs_shader_gen.cpp
 @@ -1316,6 +1316,10 @@ void FragmentModule::DefineBindingsVK() {
@@ -236,7 +236,7 @@ index 912a988..71eb1bc 100644
      if (config.framebuffer.shadow_rendering) {
          out += "layout(set = 2, binding = 0, r32ui) uniform uimage2D shadow_buffer;\n\n";
 diff --git a/src/video_core/shader/generator/pica_fs_config.cpp b/src/video_core/shader/generator/pica_fs_config.cpp
-index 5eb54f1..e64a39e 100644
+index 5eb54f1db..e64a39e67 100644
 --- a/src/video_core/shader/generator/pica_fs_config.cpp
 +++ b/src/video_core/shader/generator/pica_fs_config.cpp
 @@ -37,10 +37,22 @@ void FramebufferConfig::ApplyProfile(const Profile& profile) {
@@ -264,7 +264,7 @@ index 5eb54f1..e64a39e 100644
  }
  
 diff --git a/src/video_core/shader/generator/pica_fs_config.h b/src/video_core/shader/generator/pica_fs_config.h
-index a62f81b..e6bd387 100644
+index a62f81b9d..e6bd38758 100644
 --- a/src/video_core/shader/generator/pica_fs_config.h
 +++ b/src/video_core/shader/generator/pica_fs_config.h
 @@ -50,10 +50,15 @@ struct BlendConfig {
