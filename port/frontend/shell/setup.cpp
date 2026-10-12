@@ -165,6 +165,8 @@ namespace ps5shell
 		// each side's games: as its last scan found them, else as its folder holds them
 		for (System side : {System::WiiU, System::N3ds, System::Nds})
 		{
+			if (!SideShown(side))
+				continue; // a side the bar does not offer (Settings > Launcher) has nothing to check
 			const bool n3ds = side == System::N3ds, nds = side == System::Nds;
 			const std::string& folder = GamesFolder(side);
 			const int catalogued = (int)ps5catalog::Games((ps5catalog::System)SideIndex(side)).size();
@@ -215,7 +217,8 @@ namespace ps5shell
 			ps5paths::kRoot);
 		wiiuKeys.guide = std::string(kRepository) + "#wii-u";
 		wiiuKeys.guideTitle = Tr("the game files page");
-		m_checks.push_back(wiiuKeys);
+		if (SideShown(System::WiiU))
+			m_checks.push_back(wiiuKeys);
 
 		const bool aesKeys = IsFile(std::string(ps5azahar::kRoot) + "/sysdata/aes_keys.txt");
 		Check n3dsKeys{"3ds-keys", Tr("3DS keys")};
@@ -228,7 +231,8 @@ namespace ps5shell
 			ps5azahar::kRoot);
 		n3dsKeys.guide = std::string(kRepository) + "#nintendo-3ds";
 		n3dsKeys.guideTitle = Tr("the game files page");
-		m_checks.push_back(n3dsKeys);
+		if (SideShown(System::N3ds))
+			m_checks.push_back(n3dsKeys);
 
 		// the 3DS's own files, which only the Home Menu and a few games need. Azahar looks for them in its
 		// own files, which only the 3DS side opens (asked from elsewhere, its logging would start and run
@@ -245,7 +249,8 @@ namespace ps5shell
 						  "from your own 3DS over the network: start the Artic Setup Tool on the 3DS, then Artic Base here.");
 		system.guide = std::string(kRepository) + "#nintendo-3ds-azahar";
 		system.guideTitle = Tr("the 3DS page");
-		m_checks.push_back(system);
+		if (SideShown(System::N3ds))
+			m_checks.push_back(system);
 
 		// a DS's own BIOS, which DS games run without (melonDS's FreeBIOS) but a few run better with
 		const bool dsBios = ps5melonds::OwnBiosFound();
@@ -260,7 +265,8 @@ namespace ps5shell
 			ps5melonds::kRoot);
 		nds.guide = std::string(kRepository) + "#nintendo-ds-melonds";
 		nds.guideTitle = Tr("the DS page");
-		m_checks.push_back(nds);
+		if (SideShown(System::Nds))
+			m_checks.push_back(nds);
 
 		// covers
 		Check boxArt{"boxart", Tr("Box art")};
@@ -560,21 +566,34 @@ namespace ps5shell
 	void Shell::DrawBrandBackdrop(Canvas& canvas, float seam)
 	{
 		const Box screen{0, 0, 1920, 1080};
-		canvas.LinearGradient(screen, 0, 0xff160c08, kInk0, 0, 0, 0, 1080);
+		const bool themed = ui::CurrentMotif() != ui::Motif::Side;
+		canvas.LinearGradient(screen, 0, themed ? kInk1 : 0xff160c08, kInk0, 0, 0, 0, 1080);
 		// the Wii U's blue far behind the left, the 3DS's gold behind the right, as the banner has them, and
-		// the DS's green rising from below the middle
-		canvas.RadialGradient(screen, 0, ui::SetAlpha(0xffdf9f3b, 0.30f), ui::SetAlpha(0xffdf9f3b, 0), 0.18f * 1920, 0.40f * 1080, 605, 529);
+		// the DS's green rising from below the middle (the theme's colours for them)
+		const uint32_t wiiu = themed ? kWiiu : 0xffdf9f3b;
+		canvas.RadialGradient(screen, 0, ui::SetAlpha(wiiu, 0.30f), ui::SetAlpha(wiiu, 0), 0.18f * 1920, 0.40f * 1080, 605, 529);
 		canvas.RadialGradient(screen, 0, ui::SetAlpha(kN3ds, 0.20f), ui::SetAlpha(kN3ds, 0), 0.88f * 1920, 0.60f * 1080, 605, 529);
 		canvas.RadialGradient(screen, 0, ui::SetAlpha(kNds, 0.14f), ui::SetAlpha(kNds, 0), 0.5f * 1920, 1.05f * 1080, 700, 420);
-		// bubbles on the one side of the seam, waves on the other
-		canvas.PushClip({0, 0, seam, 1080});
-		DrawBubbles(canvas, 0.6f);
-		canvas.PopClip();
-		canvas.PushClip({seam, 0, 1920 - seam, 1080});
-		DrawWaves(canvas, 0.8f);
-		canvas.PopClip();
-		canvas.LinearGradient({seam - 1, 0, 2, 540}, 0, 0x00ffffff, 0x38ffffff, seam, 0, seam, 540);
-		canvas.LinearGradient({seam - 1, 540, 2, 540}, 0, 0x38ffffff, 0x00ffffff, seam, 540, seam, 1080);
+		if (themed)
+		{
+			// a theme's own motif across the whole screen, no seam
+			if (ui::CurrentMotif() == ui::Motif::Slashes)
+				DrawSlashes(canvas, 0.8f);
+			else if (ui::CurrentMotif() == ui::Motif::Grid)
+				DrawGrid(canvas, 0.8f);
+		}
+		else
+		{
+			// bubbles on the one side of the seam, waves on the other
+			canvas.PushClip({0, 0, seam, 1080});
+			DrawBubbles(canvas, 0.6f);
+			canvas.PopClip();
+			canvas.PushClip({seam, 0, 1920 - seam, 1080});
+			DrawWaves(canvas, 0.8f);
+			canvas.PopClip();
+			canvas.LinearGradient({seam - 1, 0, 2, 540}, 0, 0x00ffffff, 0x38ffffff, seam, 0, seam, 540);
+			canvas.LinearGradient({seam - 1, 540, 2, 540}, 0, 0x38ffffff, 0x00ffffff, seam, 540, seam, 1080);
+		}
 		if (!m_settings.ui.highContrast)
 			canvas.Grain(screen, 0x0cffffff);
 		canvas.RadialGradient(screen, 0, 0x00000000, 0x8c000000, 960, 432, 1248, 1026, 0.55f);

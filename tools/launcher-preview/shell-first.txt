@@ -1,6 +1,23 @@
 # The new launcher's first start (PREVIEW_FIRST=1 tools/preview-shell.sh tools/launcher-preview/shell-first.txt):
-# the Setup check, then the Library of the first side with games, nothing asking which.
+# Make it yours, the Setup check, then the Library of the first side with games, nothing asking which.
 wait 90
+shot first-welcome            # Make it yours: the look and feel, chosen once
+press down down down down     # the theme
+wait 25
+shot first-welcome-theme
+press right                   # Classic (3.0)
+wait 30
+shot first-theme-classic
+press right right             # Phantom, an experiment
+wait 30
+shot first-theme-phantom
+press right                   # Terminal, the other
+wait 30
+shot first-theme-terminal
+press left left left left     # back to the default
+wait 20
+press circle                  # on to the Setup check
+wait 60
 shot first-setup              # the Setup check, its language focused
 press cross                   # the languages
 wait 40

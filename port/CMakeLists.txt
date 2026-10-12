@@ -106,6 +106,7 @@ add_library(CemuPS5 STATIC
 	frontend/shell/setup.cpp
 	frontend/shell/shell.cpp
 	frontend/shell/shell_internal.h
+	frontend/shell/welcome.cpp
 	frontend/shell/widgets.cpp
 	frontend/sound.cpp
 	frontend/sound.h
@@ -151,6 +152,8 @@ add_library(CemuPS5 STATIC
 	ui/shaders.h
 	ui/text.cpp
 	ui/text.h
+	ui/theme.cpp
+	ui/theme.h
 	ui/tokens.h
 	ui/vkfn.cpp
 	ui/vkfn.h
@@ -180,6 +183,7 @@ set_source_files_properties(
 	frontend/shell/settings.cpp
 	frontend/shell/setup.cpp
 	frontend/shell/shell.cpp
+	frontend/shell/welcome.cpp
 	frontend/shell/widgets.cpp
 	frontend/sound.cpp
 	ps5/display.cpp
@@ -199,6 +203,7 @@ set_source_files_properties(
 	ui/input.cpp
 	ui/qr.cpp
 	ui/text.cpp
+	ui/theme.cpp
 	ui/vkfn.cpp
 	"${SANDBOX_ELEVATION}/src/elevation.cpp"
 	PROPERTIES SKIP_PRECOMPILE_HEADERS ON)

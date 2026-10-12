@@ -52,7 +52,8 @@ def main():
     lines = [
         "// SPDX-License-Identifier: GPL-3.0-or-later",
         "// Written by tools/render-tokens.py from port/ui/tokens.json: the UI's colours, sizes, type and",
-        "// motion (docs/UI-REDESIGN.md, section 7). Colours are RGBA, R in the lowest byte.",
+        "// motion (docs/UI-REDESIGN.md, section 7). Colours are RGBA, R in the lowest byte; the launcher's theme",
+        "// (ui/theme.h) sets the colours it draws with, which start as tokens.json's.",
         "",
         "#pragma once",
         "",
@@ -63,8 +64,13 @@ def main():
         "namespace ui::tokens",
         "{",
     ]
+    # the colours as tokens.json has them (k...Default), and the ones the UI draws with, which the
+    # launcher's theme sets (ui/theme.h; the default theme is these)
     for name, value in tokens["colour"].items():
-        lines.append(f"\tinline constexpr uint32_t {camel(name)} = 0x{rgba(value):08x}; // {value}")
+        lines.append(f"\tinline constexpr uint32_t {camel(name)}Default = 0x{rgba(value):08x}; // {value}")
+    lines.append("")
+    for name in tokens["colour"]:
+        lines.append(f"\tinline uint32_t {camel(name)} = {camel(name)}Default;")
     lines.append("")
     for group in ("space", "radius"):
         for name, value in tokens[group].items():

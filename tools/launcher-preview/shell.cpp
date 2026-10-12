@@ -28,6 +28,8 @@
 // a newer release found; PREVIEW_NO_DATA, /data out of reach; PREVIEW_LAUNCH_ERROR, the last game not
 // started. PREVIEW_LANGUAGE names the menus' language ("de"; "qps", tools/lang.py pseudo's, for text
 // that does not fit), PREVIEW_SYSTEM_LANGUAGE the PS5's (its number: 4 is German, 0 Japanese).
+// PREVIEW_WHATSNEW starts as after an update (Make it yours, with what the version brings); PREVIEW_THEME
+// names a theme (ui/theme.h's id: phantom, terminal...); PREVIEW_SIDES the sides shown (1 Wii U, 2 3DS, 4 DS).
 
 #include "console.h"
 
@@ -96,6 +98,8 @@ int main(int argc, char* argv[])
 	{
 		// earlier sessions: the side last used, the games last played, the counts their scans saved
 		settings.ui.setupDone = true;
+		// the version run last: this one, unless the preview is of what an update brings
+		settings.ui.lastVersion = std::getenv("PREVIEW_WHATSNEW") ? "3.5.0" : PS5CEMU_VERSION;
 		settings.ui.lastSide = "wiiu";
 		settings.lastGame = 0x00050000101C9400;
 		settings.recent = {0x00050000101C9400, 0x0005000010143500, 0x000500001010EC00, 0x0005000010101D00};
@@ -107,6 +111,10 @@ int main(int argc, char* argv[])
 	}
 	if (std::getenv("PREVIEW_REMOTE"))
 		settings.remoteScreen = true;
+	if (const char* theme = std::getenv("PREVIEW_THEME"))
+		settings.ui.theme = theme;
+	if (const char* sides = std::getenv("PREVIEW_SIDES"))
+		settings.ui.sides = std::clamp(std::atoi(sides), 1, 7);
 	ps5stream::Configure(settings.remoteScreen); // as main does
 	// the menus' language: PREVIEW_LANGUAGE's code (qps: tools/lang.py pseudo's), else the PS5's, which
 	// PREVIEW_SYSTEM_LANGUAGE gives as the console's number (console.cpp)

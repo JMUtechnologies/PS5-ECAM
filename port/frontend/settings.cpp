@@ -170,6 +170,7 @@ namespace ps5settings
 			for (rapidjson::SizeType i = 0; i < json["touchpadClick"].Size() && i < 4; i++)
 				if (json["touchpadClick"][i].IsInt())
 					settings.touchpadClick[i] = std::clamp(json["touchpadClick"][i].GetInt(), 0, 2);
+		ReadInt(json, "wiiuFaceLayout", settings.wiiuFaceLayout, 0, 2);
 		ReadBool(json, "accountPerUser", settings.accountPerUser);
 		if (json.HasMember("accountsByUser") && json["accountsByUser"].IsObject())
 			for (const auto& member : json["accountsByUser"].GetObject())
@@ -285,6 +286,8 @@ namespace ps5settings
 		for (int click : settings.touchpadClick)
 			writer.Int(click);
 		writer.EndArray();
+		writer.Key("wiiuFaceLayout");
+		writer.Int(settings.wiiuFaceLayout);
 		writer.Key("accountPerUser");
 		writer.Bool(settings.accountPerUser);
 		writer.Key("accountsByUser");

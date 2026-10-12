@@ -140,5 +140,6 @@ namespace ui
 		std::vector<float> m_alpha;
 		std::vector<std::pair<float, float>> m_offsets;
 		float m_dx = 0, m_dy = 0;
+		bool m_exactCorners = false; // an icon's shapes: their radii as drawn, not the theme's (theme.h)
 	};
 }

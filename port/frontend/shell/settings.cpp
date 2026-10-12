@@ -87,6 +87,13 @@ namespace ps5shell
 			return options;
 		}
 
+		// the built-in themes' names and lines (ui/theme.cpp), for the translations
+		[[maybe_unused]] constexpr const char* kThemeWords[] = {TrMark("Classic (3.0)"), TrMark("Midnight"), TrMark("Phantom"), TrMark("Terminal"),
+			TrMark("Glass over each side's colours, as the design has it."), TrMark("3.0.0's launcher: deep blue panels, flatter, a little squarer."),
+			TrMark("True black behind everything and nothing moving: for OLED screens."),
+			TrMark("Black, white and one loud colour per side, sharp corners, bands slashing across."),
+			TrMark("A hacker's console: phosphor on near-black, square corners, a grid with a scan line.")};
+
 		int ClockIndex(int clock)
 		{
 			for (int i = 0; i < (int)std::size(kClocks); i++)
@@ -574,6 +581,37 @@ namespace ps5shell
 		}
 		else if (page == "launcher")
 		{
+			{
+				// the themes: the built-in ones, then your own (themes/*.json)
+				std::vector<std::string> names;
+				int index = 0;
+				for (int i = 0; i < (int)m_themes.size(); i++)
+				{
+					const ui::Theme& theme = m_themes[i];
+					const std::string name = theme.id.rfind("user:", 0) == 0 ? theme.name : std::string(Tr(theme.name.c_str()));
+					// tr: a theme that is still being tried out: "Phantom (experimental)"
+					names.push_back(theme.experimental ? TrF("{0} (experimental)", name) : name);
+					if (theme.id == settings.ui.theme)
+						index = i;
+				}
+				const ui::Theme& current = m_themes.empty() ? ui::BuiltInThemes().front() : m_themes[std::min(index, (int)m_themes.size() - 1)];
+				choice("theme", Tr("Theme"), names, index,
+					current.id.rfind("user:", 0) == 0 ? current.description : std::string(Tr(current.description.c_str())),
+					TrF("How the launcher looks: its colours, its corners and what moves behind the menus. Phantom and Terminal are experiments "
+						"of their own. Make your own as a JSON file in {0}/themes, starting from any of these: the text under this page says "
+						"how. Only the launcher changes: the in-game menus and the games stay as they are.",
+						ps5paths::kRoot));
+			}
+			// the sides the bar offers: any mix, at least one
+			toggle("side-wiiu", Tr("Wii U side"), SideShown(System::WiiU), Tr("Cemu's games, in the bar."),
+				Tr("Whether the bar offers the Wii U side (Cemu). Hidden, its games and settings stay as they are, and turning it on again "
+				   "brings them back. At least one side stays on."));
+			toggle("side-3ds", Tr("3DS side"), SideShown(System::N3ds), Tr("Azahar's games, in the bar."),
+				Tr("Whether the bar offers the 3DS side (Azahar). Hidden, its games and settings stay as they are, and turning it on again "
+				   "brings them back. At least one side stays on."));
+			toggle("side-ds", Tr("DS side"), SideShown(System::Nds), Tr("melonDS's games, in the bar."),
+				Tr("Whether the bar offers the DS side (melonDS). Hidden, its games and settings stay as they are, and turning it on again "
+				   "brings them back. At least one side stays on."));
 			toggle("pictures", Tr("Game pictures behind menus"), settings.ui.gamePictures, Tr("The focused game's cover, softened, behind the screens."),
 				Tr("The focused game's picture fills the screen behind the menus, softened and dimmed, so moving the focus changes the whole "
 				"screen. Off: the game's colours only."));
@@ -583,6 +621,9 @@ namespace ps5shell
 				Tr("Opaque panels instead of glass, all text at full strength, a thicker focus ring and no grain or pictures behind the menus."));
 			toggle("reducemotion", Tr("Reduce motion"), settings.ui.reduceMotion, Tr("Fades in place of movement."),
 				Tr("Springs become short fades; nothing drifts, breathes or rises behind the menus."));
+			action(Kind::Link, "makeityours", Tr("Make it yours"), "", Tr("The first start's choices again: sides, theme, buttons."),
+				Tr("The page the first start opens on: the language, the sides, the theme, A and B, the music, vibration and the games' "
+				   "pictures, on one page."));
 			int hold = 2;
 			for (int i = 0; i < 6; i++)
 				if (kHolds[i] <= settings.ui.holdMs)
@@ -650,6 +691,14 @@ namespace ps5shell
 				text += line + "\n";
 			return text;
 		}
+		if (page == "launcher")
+			return TrF("Your own theme: a file such as sunset.json in {0}/themes, read as the app starts, then listed under Theme by its name:\n"
+					   "{{\"name\": \"Sunset\", \"base\": \"midnight\", \"colours\": {{\"wiiu\": \"#ff7a59\", \"ink-0\": \"#120806\"}}, "
+					   "\"corners\": 0.5, \"motif\": \"slashes\"}}\n"
+					   "base: a theme to start from (classic, midnight, phantom, terminal). colours: ink-0 to ink-2 (the background), text, "
+					   "wiiu, n3ds and nds (each side's), glass, line, good, warn, bad and focus, as #rrggbb. corners: 0 square to 1.5 round. "
+					   "motif: side, none, slashes or grid.",
+				ps5paths::kRoot);
 		if (page == "files" && IsDs())
 			return Tr("Saves: /data/ps5cemu/melonds/saves (a .sav beside the game is taken the first time). Save states: melonds/states. Cheats: "
 				   "melonds/cheats/<game file>.mch, melonDS's format. DSi games, the DS's wireless and its GBA slot are not there.");
@@ -733,6 +782,31 @@ namespace ps5shell
 			hand.cpuClock = kClocks[std::clamp(index, 0, (int)std::size(kClocks) - 1)];
 		else if (id == "dsfilter")
 			hand.dsFilter = std::clamp(index, 0, 2);
+		else if (id == "theme")
+			settings.ui.theme = index >= 0 && index < (int)m_themes.size() ? m_themes[index].id : "";
+		else if (id == "abeverywhere")
+		{
+			// A and B on every side: the 3DS's and the DS's now, the Wii U players' now when Cemu is up, else
+			// as the Wii U side next opens (OpenSide)
+			using ps5azahar::Button;
+			using ps5emu::PadInput;
+			const bool aOnCircle = index == 0;
+			for (ps5settings::N3ds* handheld : {&settings.n3ds, &settings.nds})
+			{
+				const bool ds = handheld == &settings.nds;
+				ps5azahar::SetMapping(*handheld, (size_t)Button::A, aOnCircle ? PadInput::Circle : PadInput::Cross, ds);
+				ps5azahar::SetMapping(*handheld, (size_t)Button::B, aOnCircle ? PadInput::Cross : PadInput::Circle, ds);
+				ps5azahar::SetMapping(*handheld, (size_t)Button::X, aOnCircle ? PadInput::Triangle : PadInput::Square, ds);
+				ps5azahar::SetMapping(*handheld, (size_t)Button::Y, aOnCircle ? PadInput::Square : PadInput::Triangle, ds);
+			}
+			settings.wiiuFaceLayout = aOnCircle ? 1 : 2;
+			if (m_status.coreReady)
+			{
+				for (int player = 0; player < ps5pad::kMaxPlayers; player++)
+					ps5emu::SetFaceLayout(player, aOnCircle ? ps5emu::FaceLayout::Nintendo : ps5emu::FaceLayout::PlayStation);
+				settings.wiiuFaceLayout = 0;
+			}
+		}
 		else if (id == "turbo")
 			(IsWiiU() ? settings.turbo : hand.turbo) = index <= 0 || index > (int)std::size(kTurboInputs) ? "" : kTurboInputs[index - 1];
 		else if (id == "abbuttons")
@@ -761,7 +835,19 @@ namespace ps5shell
 				return false;
 			}
 			const bool on = !row.on;
-			if (id == "pictures")
+			if (id == "side-wiiu" || id == "side-3ds" || id == "side-ds")
+			{
+				const int bit = id == "side-wiiu" ? 1 : id == "side-3ds" ? 2 : 4;
+				const int sides = on ? settings.ui.sides | bit : settings.ui.sides & ~bit;
+				if (sides == 0)
+				{
+					m_feedback.Play(ui::Cue::Denied);
+					Toast(Tr("One side at least stays on"));
+					return false;
+				}
+				settings.ui.sides = sides;
+			}
+			else if (id == "pictures")
 				settings.ui.gamePictures = on;
 			else if (id == "menusounds")
 				settings.menuSounds = on;
@@ -861,6 +947,13 @@ namespace ps5shell
 		ps5sound::SetMusic(m_settings.music, m_settings.musicVolume);
 		ps5sound::SetMenuSounds(m_settings.menuSounds);
 		ps5pad::SetVibrationEnabled(m_settings.rumble);
+		if (id == "theme")
+		{
+			ApplyTheme();
+			m_feedback.SetLight(Accent());
+		}
+		if (id == "side-wiiu" || id == "side-3ds" || id == "side-ds")
+			SidesChanged();
 		if (id == "remote")
 			ps5stream::Configure(m_settings.remoteScreen);
 		if (id == "boxart")
@@ -1063,6 +1156,8 @@ namespace ps5shell
 			else
 				m_feedback.Play(ui::Cue::Denied);
 		}
+		else if (id == "makeityours")
+			WelcomeOpen(true);
 		else if (id == "copylogs")
 			m_diagnosticsDone[0] = CopyLogsToUsb();
 		else if (id == "setupcheck")

@@ -20,6 +20,7 @@
 #include "../../ui/input.h"
 #include "../../ui/motion.h"
 #include "../../ui/qr.h"
+#include "../../ui/theme.h"
 #include "../../ui/tokens.h"
 
 #include <fmt/format.h>
@@ -51,6 +52,7 @@ namespace ps5shell
 
 	enum class ScreenId
 	{
+		Welcome, // Make it yours: a first start's look and feel, or what a new version brings
 		Setup,
 		Library,
 		Hub,
@@ -149,6 +151,12 @@ namespace ps5shell
 		static int SideIndex(System side) { return (int)side; } // 0 Wii U, 1 3DS, 2 DS: the bar's order
 		int SideIndex() const { return SideIndex(m_side); }
 		static System NextSide(System side) { return (System)((SideIndex(side) + 1) % 3); }
+		// the sides the bar offers (Settings > Launcher, ui.sides): at least one
+		bool SideShown(System side) const { return m_settings.ui.sides & (1 << SideIndex(side)); }
+		int SidesShown() const { return (m_settings.ui.sides & 1) + (m_settings.ui.sides >> 1 & 1) + (m_settings.ui.sides >> 2 & 1); }
+		System NextShownSide(System side) const;
+		System FirstShownSide() const;
+		void SidesChanged(); // a side hidden while open: the first one shown instead
 		static const char* SideTitle(System side) { return ps5launcher::SideTitle(side); }
 		static const char* SystemName(System side) { return side == System::N3ds ? "Nintendo 3DS" : side == System::Nds ? "Nintendo DS" : "Wii U"; }
 		static const char* EmulatorName(System side) { return side == System::N3ds ? "Azahar" : side == System::Nds ? "melonDS" : "Cemu"; }
@@ -232,6 +240,19 @@ namespace ps5shell
 		void NextTab(int direction);
 		bool BarUpdate(const ui::Press& press);
 		void FocusBar();
+
+		// Make it yours (docs/UI-REDESIGN.md, 6.10): first, a first start's look and feel, else what this
+		// version brings that the last did not have
+		void WelcomeOpen(bool first);
+		void WelcomeUpdate(const ui::Press& press, const ui::Actions& actions);
+		void WelcomeDraw(Canvas& canvas);
+		std::vector<Row> WelcomeRows();
+		void WelcomeDone();
+		// the theme Settings names (ui.theme), made the kit's; the themes the list offers
+		void ApplyTheme();
+		std::vector<ui::Theme> m_themes;
+		void DrawSlashes(Canvas& canvas, float alpha); // Phantom's motif
+		void DrawGrid(Canvas& canvas, float alpha);	   // Terminal's
 
 		void SetupOpen(bool first);
 		void SetupUpdate(const ui::Press& press);
@@ -462,6 +483,13 @@ namespace ps5shell
 		int m_articRow = 0, m_articOctet = 3;
 		bool m_articEditing = false;
 		std::array<int, 4> m_articOctets{192, 168, 1, 2};
+
+		// Make it yours
+		bool m_welcomeFirst = false; // a first start's (else what is new)
+		int m_welcomeRow = 0;
+		bool m_welcomeThenSetup = false; // the Setup check follows (a first start)
+		bool m_welcomeFromSettings = false; // opened from Settings > Launcher: back there when done
+		float m_welcomeScroll = 0;
 
 		// Setup check
 		bool m_setupFirst = false; // as the app starts, before a side opens

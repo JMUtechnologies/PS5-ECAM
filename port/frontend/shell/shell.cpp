@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <filesystem>
 
 namespace ps5shell
 {
@@ -94,6 +95,7 @@ namespace ps5shell
 			return Outcome::Classic;
 		}
 		m_fonts.SetFallbackFolders(host.fontFolders);
+		ApplyTheme();
 		ui::Target target = host.target();
 		const auto createSurface = target.createSurface;
 		if (createSurface)
@@ -160,8 +162,24 @@ namespace ps5shell
 				error->clear();
 			}
 		m_side = ps5launcher::SideNamed(side);
-		if (!m_settings.ui.setupDone || SetupNeeded())
+		if (!SideShown(m_side))
+			m_side = FirstShownSide();
+		// a version this console has not run before: what it brings, once (Make it yours), unless this is
+		// the app's first start, which shows the look and feel to choose instead
+		const bool firstStart = !m_settings.ui.setupDone;
+		const bool updated = !firstStart && !returning && m_settings.ui.lastVersion != PS5CEMU_VERSION;
+		if (m_settings.ui.lastVersion != PS5CEMU_VERSION)
+		{
+			ps5log::Line("[ui] version {} (last run: {})", PS5CEMU_VERSION, m_settings.ui.lastVersion.empty() ? "3.5.0 or earlier" : m_settings.ui.lastVersion);
+			m_settings.ui.lastVersion = PS5CEMU_VERSION;
+			SaveSettings();
+		}
+		if (firstStart)
+			WelcomeOpen(true); // then the Setup check, then the side
+		else if (SetupNeeded())
 			SetupOpen(true); // then the side (FinishStart)
+		else if (updated)
+			WelcomeOpen(false); // then the side
 		else
 		{
 			// the side's Library, on the game played last: after a game, that game (6.8)
@@ -309,6 +327,7 @@ namespace ps5shell
 				continue;
 			switch (m_screen)
 			{
+			case ScreenId::Welcome: WelcomeUpdate(press, actions); break;
 			case ScreenId::Setup: SetupUpdate(press); break;
 			case ScreenId::Library: LibraryUpdate(press); break;
 			case ScreenId::Hub: HubUpdate(press); break;
@@ -340,6 +359,7 @@ namespace ps5shell
 		canvas.PushAlpha(appear);
 		switch (m_screen)
 		{
+		case ScreenId::Welcome: WelcomeDraw(canvas); break;
 		case ScreenId::Setup: SetupDraw(canvas); break;
 		case ScreenId::Library: LibraryDraw(canvas); break;
 		case ScreenId::Hub: HubDraw(canvas); break;
@@ -415,6 +435,14 @@ namespace ps5shell
 			}
 			m_prepare(side);
 			m_prepared = side;
+			// A and B chosen for every side before Cemu was up (Make it yours): the Wii U players' now
+			if (side == System::WiiU && m_status.coreReady && m_settings.wiiuFaceLayout)
+			{
+				for (int player = 0; player < ps5pad::kMaxPlayers; player++)
+					ps5emu::SetFaceLayout(player, m_settings.wiiuFaceLayout == 1 ? ps5emu::FaceLayout::Nintendo : ps5emu::FaceLayout::PlayStation);
+				m_settings.wiiuFaceLayout = 0;
+				SaveSettings();
+			}
 		}
 		const bool changed = m_side != side || first;
 		m_side = side;
@@ -433,6 +461,47 @@ namespace ps5shell
 		LibraryRefresh();
 		m_tab = ScreenId::Library;
 		Show(ScreenId::Library);
+	}
+
+	System Shell::NextShownSide(System side) const
+	{
+		for (int i = 1; i <= 3; i++)
+		{
+			const System next = (System)((SideIndex(side) + i) % 3);
+			if (SideShown(next))
+				return next;
+		}
+		return side;
+	}
+
+	System Shell::FirstShownSide() const
+	{
+		for (System side : {System::WiiU, System::N3ds, System::Nds})
+			if (SideShown(side))
+				return side;
+		return System::WiiU;
+	}
+
+	void Shell::SidesChanged()
+	{
+		if (SideShown(m_side))
+			return;
+		// the side open was hidden: the first one shown, opened where a side is (Settings stays Settings)
+		if (m_prepared && m_screen != ScreenId::Welcome && m_screen != ScreenId::Setup)
+			SwitchSide(FirstShownSide());
+		else
+			m_side = FirstShownSide();
+	}
+
+	void Shell::ApplyTheme()
+	{
+		const std::string folder = std::string(ps5paths::kRoot) + "/themes";
+		std::error_code ec;
+		std::filesystem::create_directories(folder, ec); // where your own go, there to be found over FTP
+		m_themes = ui::AllThemes(folder);
+		const ui::Theme theme = ui::FindTheme(m_settings.ui.theme, folder);
+		ui::ApplyTheme(theme);
+		ps5log::Line("[ui] theme: {}", theme.id.empty() ? std::string("PS5CEMU-HAR") : theme.id);
 	}
 
 	void Shell::SwitchSide(System side)
@@ -735,7 +804,10 @@ namespace ps5shell
 		}
 		if (press.button == Button::Touchpad)
 		{
-			SwitchSide(NextSide(m_side));
+			if (SidesShown() > 1)
+				SwitchSide(NextShownSide(m_side));
+			else
+				m_feedback.Play(ui::Cue::Denied);
 			return true;
 		}
 		if (!m_onBar)
@@ -745,7 +817,10 @@ namespace ps5shell
 		case Button::Left:
 		case Button::Right:
 		{
-			const int next = m_barFocus + (press.button == Button::Right ? 1 : -1);
+			const int step = press.button == Button::Right ? 1 : -1;
+			int next = m_barFocus + step;
+			while (next >= 0 && next < 3 && !SideShown((System)next)) // past the sides not shown
+				next += step;
 			if (next < 0 || next > 4)
 			{
 				m_feedback.Play(ui::Cue::Edge, press.repeat);
@@ -813,10 +888,12 @@ namespace ps5shell
 		constexpr float kTile = 34;
 		float widths[3];
 		float pillWidth = 8;
+		int shown = 0;
 		for (int i = 0; i < 3; i++)
 		{
 			widths[i] = 12 + kTile + 10 + m_fonts.Width(sideStyle, SideTitle((System)i)) + 20;
-			pillWidth += widths[i] + (i ? 4 : 0);
+			if (SideShown((System)i))
+				pillWidth += widths[i] + (shown++ ? 4 : 0);
 		}
 		const Box pill{x, y, pillWidth, h};
 		canvas.Rect(pill, h / 2, 0x0fffffff);
@@ -824,6 +901,8 @@ namespace ps5shell
 		float sx = x + 4;
 		for (int i = 0; i < 3; i++)
 		{
+			if (!SideShown((System)i))
+				continue;
 			const bool on = i == SideIndex();
 			const uint32_t colour = AccentOf((System)i);
 			const Box segment{sx, y + 5, widths[i], h - 10};
@@ -889,7 +968,8 @@ namespace ps5shell
 
 	std::vector<Hint> Shell::Hints() const
 	{
-		const std::string other = SystemName(NextSide(m_side)); // the touchpad's next side
+		// the touchpad's next side; none when one side is shown (its hint goes: DrawHints leaves out an empty one)
+		const std::string other = SidesShown() > 1 ? SystemName(NextShownSide(m_side)) : "";
 		if (m_update.open)
 			return {};
 		// tr: the hints along the bottom: what a button does on this screen, a word or two
@@ -906,6 +986,9 @@ namespace ps5shell
 				{Icon::Touchpad, other}};
 		switch (m_screen)
 		{
+		case ScreenId::Welcome:
+			return {{Icon::LeftRight, Tr("Change")}, {Icon::Triangle, Tr("More about it")},
+				{Icon::Circle, m_welcomeThenSetup ? Tr("Continue to the Setup check") : m_welcomeFromSettings ? Tr("Back") : Tr("Continue to the Library")}};
 		case ScreenId::Setup:
 		{
 			std::vector<Hint> hints;
@@ -970,6 +1053,8 @@ namespace ps5shell
 		const float y = 1080 - kHintsBottom - 30;
 		for (auto it = hints.rbegin(); it != hints.rend(); ++it)
 		{
+			if (it->text.empty())
+				continue; // a hint with nothing to say (the touchpad's, with one side shown)
 			const ui::TextBlock text = m_fonts.Layout(style, it->text);
 			x -= text.width;
 			canvas.Text(text, x, y + 15 - text.height * 0.5f, Secondary());
@@ -991,7 +1076,7 @@ namespace ps5shell
 	void Shell::DrawBackdrop(Canvas& canvas)
 	{
 		// the Setup check belongs to no side: the sides' colours, and the seam
-		if (m_screen == ScreenId::Setup)
+		if (m_screen == ScreenId::Setup || m_screen == ScreenId::Welcome)
 		{
 			DrawBrandBackdrop(canvas, 1140.0f);
 			return;
@@ -1039,12 +1124,21 @@ namespace ps5shell
 		}
 		// the motif: bubbles rising on the Wii U side, waves rolling on the 3DS side, pixels rising on the
 		// DS side
-		if (IsWiiU())
-			DrawBubbles(canvas, 1);
-		else if (Is3ds())
-			DrawWaves(canvas, 1);
-		else
-			DrawPixels(canvas, 1);
+		// (the theme's own instead, or none: theme.h)
+		switch (ui::CurrentMotif())
+		{
+		case ui::Motif::Side:
+			if (IsWiiU())
+				DrawBubbles(canvas, 1);
+			else if (Is3ds())
+				DrawWaves(canvas, 1);
+			else
+				DrawPixels(canvas, 1);
+			break;
+		case ui::Motif::Slashes: DrawSlashes(canvas, 1); break;
+		case ui::Motif::Grid: DrawGrid(canvas, 1); break;
+		case ui::Motif::None: break;
+		}
 		// scrims, grain and a vignette
 		canvas.LinearGradient(screen, 0, 0xb305070d, 0x0005070d, 0, 0, 1300, 0);
 		canvas.LinearGradient(screen, 0, 0x0005070d, 0xcc05070d, 0, 640, 0, 1080);
@@ -1102,6 +1196,44 @@ namespace ps5shell
 			canvas.Wave({0, kTop[layer] - 4, 1920, 1080 - kTop[layer] + 4}, kTop[layer] + kAmplitude[layer], kAmplitude[layer],
 				kWave[layer] / 6.2831853f, m_wavePhase[layer], ui::SetAlpha(kColour[layer], (0.05f + 0.015f * layer) * alpha));
 		}
+	}
+
+	// Phantom's motif: bands at an angle in the side's colour and white, sweeping slowly across, and a few
+	// thin slashes, as a game's menu might cut across its screen
+	void Shell::DrawSlashes(Canvas& canvas, float alpha)
+	{
+		const float t = m_settings.ui.reduceMotion ? 0.0f : (float)(m_now - m_start);
+		auto band = [&](float x, float width, float slant, uint32_t colour) {
+			// a parallelogram: its top edge slant pixels right of its bottom one
+			canvas.Triangle(x, 1080, x + slant, 0, x + slant + width, 0, colour);
+			canvas.Triangle(x, 1080, x + slant + width, 0, x + width, 1080, colour);
+		};
+		const uint32_t accent = Accent();
+		const float sweep = std::fmod(t * 18.0f, 2600.0f);
+		band(1180 - sweep * 0.25f, 420, 520, ui::SetAlpha(accent, 0.20f * alpha));
+		band(1460 - sweep * 0.25f, 90, 520, ui::SetAlpha(0xffffffff, 0.07f * alpha));
+		band(-600 + sweep, 140, 520, ui::SetAlpha(accent, 0.10f * alpha));
+		for (int i = 0; i < 5; i++)
+		{
+			const float x = std::fmod(300.0f + i * 410.0f + t * (30.0f + i * 7.0f), 2400.0f) - 400.0f;
+			band(x, 6 + (i % 2) * 6, 520, ui::SetAlpha(i % 2 ? accent : 0xffffffff, (i % 2 ? 0.30f : 0.10f) * alpha));
+		}
+	}
+
+	// Terminal's motif: a fine grid in the side's colour, and a bright line scanning down it
+	void Shell::DrawGrid(Canvas& canvas, float alpha)
+	{
+		const uint32_t accent = Accent();
+		const uint32_t line = ui::SetAlpha(accent, 0.06f * alpha);
+		for (float x = 0; x <= 1920; x += 48)
+			canvas.Line(x, 0, x, 1080, 1, line);
+		for (float y = 0; y <= 1080; y += 48)
+			canvas.Line(0, y, 1920, y, 1, line);
+		if (m_settings.ui.reduceMotion)
+			return;
+		const float y = std::fmod((float)(m_now - m_start) * 90.0f, 1240.0f) - 80.0f;
+		canvas.LinearGradient({0, y - 80, 1920, 80}, 0, ui::SetAlpha(accent, 0), ui::SetAlpha(accent, 0.10f * alpha), 0, y - 80, 0, y);
+		canvas.Line(0, y, 1920, y, 2, ui::SetAlpha(accent, 0.35f * alpha));
 	}
 
 	// -- overlays: the dropdown, help, the Game menu, the keyboard, the update sheet, toasts, the launch --

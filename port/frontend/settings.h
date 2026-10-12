@@ -99,6 +99,9 @@ namespace ps5settings
 		// what each Wii U player's touchpad click is (#37): 0 as their controller suits (it touches the
 		// GamePad's screen, a button on the others), 1 it touches the screen, 2 it presses a button
 		int touchpadClick[4] = {0, 0, 0, 0};
+		// A and B for every Wii U player, chosen before Cemu was up (Make it yours): 1 on Circle, 2 on Cross,
+		// made the players' as the Wii U side next opens; 0: nothing waiting
+		int wiiuFaceLayout = 0;
 		// Wii U accounts (Settings > Accounts and saves): each PS5 user who starts the app plays on a Wii U
 		// account of their own, by their PS5 user ID ("0x10fd1069") to Cemu's persistent ID ("80000002")
 		bool accountPerUser = false;

@@ -2,6 +2,7 @@
 // PS5CEMU-HAR's UI kit: drawing a frame (canvas.h).
 
 #include "canvas.h"
+#include "theme.h"
 
 #include <algorithm>
 #include <cmath>
@@ -56,7 +57,7 @@ namespace ui
 		instance.box[1] = shape.y + m_dy;
 		instance.box[2] = shape.w;
 		instance.box[3] = shape.h;
-		instance.shape[0] = radius;
+		instance.shape[0] = m_exactCorners ? radius : radius * CornerScale(); // the theme's corners (theme.h), but an icon's own
 		instance.shape[3] = (float)kind;
 		instance.colour0 = instance.colour1 = WithAlpha(colour, Alpha());
 		return instance;
@@ -252,6 +253,14 @@ namespace ui
 
 	void Canvas::Draw(Icon icon, const Box& box, uint32_t colour)
 	{
+		// an icon keeps its shapes whatever the theme's corners: a circle stays the Circle button
+		struct Exact
+		{
+			bool& flag;
+			bool was;
+			~Exact() { flag = was; }
+		} exact{m_exactCorners, m_exactCorners};
+		m_exactCorners = true;
 		const float s = std::min(box.w, box.h);
 		const float ox = box.x + (box.w - s) * 0.5f, oy = box.y + (box.h - s) * 0.5f;
 		auto X = [&](float f) { return ox + f * s; };
@@ -463,7 +472,7 @@ namespace ui
 			const float right = std::min(clip.Right(), outer.Right()), bottom = std::min(clip.Bottom(), outer.Bottom());
 			clip = {left, top, std::max(0.0f, right - left), std::max(0.0f, bottom - top)};
 		}
-		m_clips.push_back({clip, radius});
+		m_clips.push_back({clip, radius * CornerScale()});
 	}
 
 	void Canvas::PopClip()

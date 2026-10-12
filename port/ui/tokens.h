@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Written by tools/render-tokens.py from port/ui/tokens.json: the UI's colours, sizes, type and
-// motion (docs/UI-REDESIGN.md, section 7). Colours are RGBA, R in the lowest byte.
+// motion (docs/UI-REDESIGN.md, section 7). Colours are RGBA, R in the lowest byte; the launcher's theme
+// (ui/theme.h) sets the colours it draws with, which start as tokens.json's.
 
 #pragma once
 
@@ -10,30 +11,55 @@
 
 namespace ui::tokens
 {
-	inline constexpr uint32_t kInk0 = 0xff0d0705; // #05070d
-	inline constexpr uint32_t kInk1 = 0xff1b0f0a; // #0a0f1b
-	inline constexpr uint32_t kInk2 = 0xff271811; // #111827
-	inline constexpr uint32_t kGlass = 0x0effffff; // #ffffff0e
-	inline constexpr uint32_t kGlass2 = 0x16ffffff; // #ffffff16
-	inline constexpr uint32_t kGlassEdge = 0x1affffff; // #ffffff1a
-	inline constexpr uint32_t kLine = 0x17ffffff; // #ffffff17
-	inline constexpr uint32_t kScrim = 0x9e0a0503; // #03050a9e
-	inline constexpr uint32_t kText = 0xfffbf7f5; // #f5f7fb
-	inline constexpr uint32_t kText2 = 0xb3fbf7f5; // #f5f7fbb3
-	inline constexpr uint32_t kText3 = 0x75fbf7f5; // #f5f7fb75
-	inline constexpr uint32_t kWiiu = 0xffffa95a; // #5aa9ff
-	inline constexpr uint32_t kWiiuStrong = 0xffe87f2f; // #2f7fe8
-	inline constexpr uint32_t kWiiuInk = 0xff331a07; // #071a33
-	inline constexpr uint32_t kN3ds = 0xff3fb6f4; // #f4b63f
-	inline constexpr uint32_t kN3dsStrong = 0xff1b96d9; // #d9961b
-	inline constexpr uint32_t kN3dsInk = 0xff021a2a; // #2a1a02
-	inline constexpr uint32_t kNds = 0xff57d97e; // #7ed957
-	inline constexpr uint32_t kNdsStrong = 0xff38af4c; // #4caf38
-	inline constexpr uint32_t kNdsInk = 0xff06260c; // #0c2606
-	inline constexpr uint32_t kGood = 0xffa3d63d; // #3dd6a3
-	inline constexpr uint32_t kWarn = 0xff47b5ff; // #ffb547
-	inline constexpr uint32_t kBad = 0xff7272ff; // #ff7272
-	inline constexpr uint32_t kFocus = 0xffffffff; // #ffffff
+	inline constexpr uint32_t kInk0Default = 0xff0d0705; // #05070d
+	inline constexpr uint32_t kInk1Default = 0xff1b0f0a; // #0a0f1b
+	inline constexpr uint32_t kInk2Default = 0xff271811; // #111827
+	inline constexpr uint32_t kGlassDefault = 0x0effffff; // #ffffff0e
+	inline constexpr uint32_t kGlass2Default = 0x16ffffff; // #ffffff16
+	inline constexpr uint32_t kGlassEdgeDefault = 0x1affffff; // #ffffff1a
+	inline constexpr uint32_t kLineDefault = 0x17ffffff; // #ffffff17
+	inline constexpr uint32_t kScrimDefault = 0x9e0a0503; // #03050a9e
+	inline constexpr uint32_t kTextDefault = 0xfffbf7f5; // #f5f7fb
+	inline constexpr uint32_t kText2Default = 0xb3fbf7f5; // #f5f7fbb3
+	inline constexpr uint32_t kText3Default = 0x75fbf7f5; // #f5f7fb75
+	inline constexpr uint32_t kWiiuDefault = 0xffffa95a; // #5aa9ff
+	inline constexpr uint32_t kWiiuStrongDefault = 0xffe87f2f; // #2f7fe8
+	inline constexpr uint32_t kWiiuInkDefault = 0xff331a07; // #071a33
+	inline constexpr uint32_t kN3dsDefault = 0xff3fb6f4; // #f4b63f
+	inline constexpr uint32_t kN3dsStrongDefault = 0xff1b96d9; // #d9961b
+	inline constexpr uint32_t kN3dsInkDefault = 0xff021a2a; // #2a1a02
+	inline constexpr uint32_t kNdsDefault = 0xff57d97e; // #7ed957
+	inline constexpr uint32_t kNdsStrongDefault = 0xff38af4c; // #4caf38
+	inline constexpr uint32_t kNdsInkDefault = 0xff06260c; // #0c2606
+	inline constexpr uint32_t kGoodDefault = 0xffa3d63d; // #3dd6a3
+	inline constexpr uint32_t kWarnDefault = 0xff47b5ff; // #ffb547
+	inline constexpr uint32_t kBadDefault = 0xff7272ff; // #ff7272
+	inline constexpr uint32_t kFocusDefault = 0xffffffff; // #ffffff
+
+	inline uint32_t kInk0 = kInk0Default;
+	inline uint32_t kInk1 = kInk1Default;
+	inline uint32_t kInk2 = kInk2Default;
+	inline uint32_t kGlass = kGlassDefault;
+	inline uint32_t kGlass2 = kGlass2Default;
+	inline uint32_t kGlassEdge = kGlassEdgeDefault;
+	inline uint32_t kLine = kLineDefault;
+	inline uint32_t kScrim = kScrimDefault;
+	inline uint32_t kText = kTextDefault;
+	inline uint32_t kText2 = kText2Default;
+	inline uint32_t kText3 = kText3Default;
+	inline uint32_t kWiiu = kWiiuDefault;
+	inline uint32_t kWiiuStrong = kWiiuStrongDefault;
+	inline uint32_t kWiiuInk = kWiiuInkDefault;
+	inline uint32_t kN3ds = kN3dsDefault;
+	inline uint32_t kN3dsStrong = kN3dsStrongDefault;
+	inline uint32_t kN3dsInk = kN3dsInkDefault;
+	inline uint32_t kNds = kNdsDefault;
+	inline uint32_t kNdsStrong = kNdsStrongDefault;
+	inline uint32_t kNdsInk = kNdsInkDefault;
+	inline uint32_t kGood = kGoodDefault;
+	inline uint32_t kWarn = kWarnDefault;
+	inline uint32_t kBad = kBadDefault;
+	inline uint32_t kFocus = kFocusDefault;
 
 	inline constexpr float kGrid = 8.0f;
 	inline constexpr float kSafeX = 96.0f;
