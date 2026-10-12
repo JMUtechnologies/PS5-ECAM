@@ -31,7 +31,7 @@ set(PS5CEMU_DEPS "${PS5CEMU_ROOT}/.deps")
 # the boilerplate's sandbox elevation client (port/ps5/privilege.cpp)
 set(SANDBOX_ELEVATION "${PS5CEMU_DEPS}/ps5-native-app-boilerplate/examples/sandbox-elevation")
 
-foreach(input "${SANDBOX_ELEVATION}/src/elevation.cpp" "${PS5CEMU_DEPS}/reshade/deps/stb/stb_image.h")
+foreach(input "${SANDBOX_ELEVATION}/src/elevation.cpp" "${PS5CEMU_DEPS}/reshade/deps/stb/stb_image.h" "${PS5CEMU_DEPS}/dr_libs/dr_mp3.h")
 	if(NOT EXISTS "${input}")
 		message(FATAL_ERROR "${input} is missing: run make deps")
 	endif()
@@ -113,6 +113,8 @@ add_library(CemuPS5 STATIC
 	frontend/shell/shell_internal.h
 	frontend/shell/welcome.cpp
 	frontend/shell/widgets.cpp
+	frontend/music.cpp
+	frontend/music.h
 	frontend/sound.cpp
 	frontend/sound.h
 	ps5/crash.cpp
@@ -193,6 +195,7 @@ set_source_files_properties(
 	frontend/shell/shell.cpp
 	frontend/shell/welcome.cpp
 	frontend/shell/widgets.cpp
+	frontend/music.cpp
 	frontend/sound.cpp
 	ps5/display.cpp
 	ps5/log.cpp
@@ -227,6 +230,8 @@ target_include_directories(CemuPS5 PRIVATE
 	"${SANDBOX_ELEVATION}"
 	"${FREETYPE_INCLUDE_DIR}"
 	"${STB_INCLUDE_DIR}"
+	# the launcher's music from the player's MP3s (frontend/music.cpp)
+	"${PS5CEMU_DEPS}/dr_libs"
 )
 # the version the launcher and the boot log show (the app's param.json has it as 02.000.004)
 target_compile_definitions(CemuPS5 PUBLIC PS5CEMU_VERSION="${PS5CEMU_VERSION}"

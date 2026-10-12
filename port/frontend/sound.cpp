@@ -6,16 +6,20 @@
 //
 // The files are WAVs (tools/render-sounds.py): the music IMA ADPCM in stereo, the menu's sounds
 // 16-bit PCM in mono, all at 48 kHz. Each is decoded whole, into 16-bit stereo frames, as it is
-// first needed.
+// first needed. The player's own music (MP3, or 16-bit PCM WAV, at any rate) is read as it plays, a
+// grain at a time, and resampled to 48 kHz: nothing of it is held whole.
 
 #include "sound.h"
 #include "../app/paths.h"
 #include "../ps5/log.h"
 
+#include "music.h"
+
 #include <algorithm>
 #include <array>
 #include <cstdint>
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <iterator>
 #include <mutex>
@@ -191,7 +195,7 @@ namespace ps5sound
 		float LevelOf(const std::string& music, int volume)
 		{
 			const float setting = (float)std::clamp(volume, 0, 100) / 100.0f;
-			return music == "setup" ? setting * setting * kMusicHeadroom : 0.0f;
+			return !music.empty() && music != "off" ? setting * setting * kMusicHeadroom : 0.0f;
 		}
 
 		void RaisePriority()
@@ -214,10 +218,17 @@ namespace ps5sound
 				size_t at;
 			};
 			std::vector<Voice> voices;
-			Clip music;
-			std::string playing; // the piece in music
-			size_t position = 0; // the next frame of it
-			float level = 0;	 // its level now, gliding to the wanted one
+			float level = 0; // the music's level now, gliding to the wanted one
+			std::string playing; // what the player was given ("setup", "file:<name>", "shuffle", "off")
+			// the launcher's own piece, read once, when first played
+			Clip setup;
+			bool setupRead = false;
+			ps5music::Player music(MusicFolder(), [&]() -> std::unique_ptr<ps5music::Source> {
+				if (!setupRead && !ReadWav(SoundPath("music-setup"), setup))
+					ps5log::Line("[sound] {} is missing or unreadable", SoundPath("music-setup"));
+				setupRead = true;
+				return setup.empty() ? nullptr : ps5music::FromFrames(setup);
+			});
 			std::array<float, kGrain * 2> mix;
 			std::array<int16_t, kGrain * 2> grain;
 			for (;;)
@@ -233,18 +244,17 @@ namespace ps5sound
 					closing = s_wanted.closing;
 					starts.swap(s_wanted.effects);
 				}
-				// another piece: the one playing fades out, then the next is read and fades in
+				// another piece: the one playing fades out, then the next is opened and fades in
 				if (want != playing)
 				{
 					target = 0;
-					if (level == 0 || music.empty())
+					if (level == 0 || !music.Playing())
 					{
 						playing = want;
-						position = 0;
 						level = 0;
-						music.clear();
-						if (LevelOf(want, 100) > 0 && !ReadWav(SoundPath("music-" + want), music))
-							ps5log::Line("[sound] {} is missing or unreadable", SoundPath("music-" + want));
+						music.Choose(want);
+						if (!music.Current().empty())
+							ps5log::Line("[sound] playing {}/{}", MusicFolder(), music.Current());
 					}
 				}
 				if (closing)
@@ -255,15 +265,15 @@ namespace ps5sound
 
 				mix.fill(0);
 				const float fade = closing ? kCloseFade : kFade;
-				const size_t frames = music.size() / 2;
-				for (uint32_t frame = 0; frame < kGrain && frames; frame++)
+				for (uint32_t frame = 0; frame < kGrain && music.Playing(); frame++)
 				{
 					level = level < target ? std::min(target, level + fade) : std::max(target, level - fade);
-					mix[frame * 2] += music[position * 2] * level;
-					mix[frame * 2 + 1] += music[position * 2 + 1] * level;
-					position = (position + 1) % frames;
+					float left, right;
+					music.Next(left, right);
+					mix[frame * 2] += left * level;
+					mix[frame * 2 + 1] += right * level;
 				}
-				if (!frames)
+				if (!music.Playing())
 					level = 0;
 				for (Voice& voice : voices)
 				{
@@ -292,8 +302,21 @@ namespace ps5sound
 		}
 	}
 
+	std::string MusicFolder()
+	{
+		return std::string(ps5paths::kRoot) + "/music";
+	}
+
+	std::vector<std::string> MusicFiles()
+	{
+		return ps5music::Files(MusicFolder());
+	}
+
 	void Start(const std::string& music, int volume, bool menuSounds)
 	{
+		// where the player's own music goes, there to be found
+		std::error_code ec;
+		std::filesystem::create_directories(MusicFolder(), ec);
 		if (s_thread.joinable())
 			return;
 		static const int initialized = sceAudioOutInit(); // Cemu's and Azahar's own calls then report it done

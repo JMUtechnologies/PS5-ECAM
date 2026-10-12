@@ -300,6 +300,12 @@ namespace ps5notify
 namespace ps5sound
 {
 	bool s_menuSounds = true;
+	std::string MusicFolder() { return output + "/data/music"; }
+	std::vector<std::string> MusicFiles()
+	{
+		// what a player might have put there, to see the list
+		return {"Bubble Bobble remix.mp3", "Sunset drive.mp3", "shop theme.wav"};
+	}
 	void Start(const std::string& music, int volume, bool menuSounds)
 	{
 		s_menuSounds = menuSounds;

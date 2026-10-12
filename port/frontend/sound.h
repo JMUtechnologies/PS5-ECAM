@@ -2,11 +2,13 @@
 // PS5CEMU-HAR: the launcher's sound: its music, looping under every screen, and its menu's sounds as
 // the cursor moves and choices are made. Both are PS5CEMU-HAR's own, synthesised by
 // tools/render-sounds.py into assets/ui/sounds; the music is in the spirit of a Nintendo console's
-// shop and setup screens, written for the launcher.
+// shop and setup screens, written for the launcher. The player's own music plays in its place when
+// chosen: the MP3 and WAV files in /data/ps5cemu/music (docs/UI-REDESIGN.md, 8.2).
 
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace ps5sound
 {
@@ -19,7 +21,12 @@ namespace ps5sound
 		Launch, // a game is starting
 	};
 
-	// The music as ps5cemu.json names it: "setup" or "off"; its volume in percent.
+	// The player's own music: where it goes, and the MP3 and WAV files there, by file name, in order
+	std::string MusicFolder();
+	std::vector<std::string> MusicFiles();
+
+	// The music as ps5cemu.json names it: "setup" (the launcher's own), "file:<a file in MusicFolder>"
+	// (looping), "shuffle" (every file there, in a random order) or "off"; its volume in percent.
 	// Opens AudioOut and starts the music, fading in. Without AudioOut the launcher is silent.
 	void Start(const std::string& music, int volume, bool menuSounds);
 	// At once: another piece fades out and the new one in, a volume glides to its new level.

@@ -26,7 +26,9 @@
 #include "../../stream/stream.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
+#include <filesystem>
 
 namespace ps5shell
 {
@@ -63,8 +65,42 @@ namespace ps5shell
 		}
 		// tr: how a game's picture is scaled: the methods' names
 		constexpr const char* kUpscaleFilters[] = {TrMark("Linear"), TrMark("Bicubic"), TrMark("Bicubic Hermite"), TrMark("Nearest neighbour"), TrMark("AMD FSR 1")};
-		constexpr const char* kMusic[] = {"setup", "off"};
 		constexpr const char* kMusicNames[] = {TrMark("Setup theme"), TrMark("Off")};
+
+		// The launcher music's choices, as ps5cemu.json names them: its own piece, each of the player's
+		// files (ps5sound::MusicFolder), all of them shuffled when there are two or more, none. The folder
+		// is read again at most every 3 s: the rows are built each frame Settings draws them.
+		std::vector<std::string> MusicValues(std::vector<std::string>* names)
+		{
+			static std::vector<std::string> s_files;
+			static auto s_listed = std::chrono::steady_clock::time_point{};
+			const auto now = std::chrono::steady_clock::now();
+			if (now - s_listed > std::chrono::seconds(3))
+			{
+				s_files = ps5sound::MusicFiles();
+				s_listed = now;
+			}
+			std::vector<std::string> values{"setup"};
+			if (names)
+				names->assign({Tr(kMusicNames[0])});
+			for (const std::string& file : s_files)
+			{
+				values.push_back("file:" + file);
+				if (names)
+					names->push_back(std::filesystem::path(file).stem().string());
+			}
+			if (s_files.size() > 1)
+			{
+				values.push_back("shuffle");
+				if (names)
+					// tr: Launcher music's choice that plays every file of the player's, in a random order
+					names->push_back(Tr("Shuffle your music"));
+			}
+			values.push_back("off");
+			if (names)
+				names->push_back(Tr(kMusicNames[1]));
+			return values;
+		}
 		constexpr int kHolds[] = {400, 600, 800, 1000, 1200, 1500};
 		constexpr int kClocks[] = {25, 50, 75, 100, 125, 150, 200, 300, 400}; // the 3DS's CPU clock, as its in-game menu has them
 		// tr: how the DS's screens are scaled to the TV: the filters' names
@@ -408,9 +444,15 @@ namespace ps5shell
 				toggle("gamepadspeaker", Tr("GamePad speaker"), settings.gamePadSpeaker, Tr("The Wii U GamePad's own sound, on the DualSense."),
 					Tr("The sounds games play on the Wii U GamePad's speaker, from player 1's DualSense speaker. Many games send their whole sound "
 					"there too, so it is off unless you want it. Applies to the next game."));
-			const int music = (int)(std::find(std::begin(kMusic), std::end(kMusic), settings.music) - std::begin(kMusic));
-			choice("music", Tr("Launcher music"), Options(kMusicNames), music, Tr("The music under the menus."),
-				Tr("The launcher's own music, in the spirit of a console's setup screen, or none. Every side has the same."));
+			std::vector<std::string> musicNames;
+			const std::vector<std::string> musicValues = MusicValues(&musicNames);
+			const auto chosen = std::find(musicValues.begin(), musicValues.end(), settings.music);
+			// a file no longer there plays the launcher's own piece: the row says so too
+			const int music = chosen == musicValues.end() ? 0 : (int)(chosen - musicValues.begin());
+			choice("music", Tr("Launcher music"), musicNames, music, Tr("Music that plays in the menus."),
+				TrF("The launcher's own music, one of yours, or none. To use your own, put MP3 or WAV files in {0}; they appear here. Every "
+					"side plays the same.",
+					ps5sound::MusicFolder()));
 			slider("musicvolume", Tr("Music volume"), settings.musicVolume, 100, Tr("How loud the menus' music is."),
 				Tr("How loud the launcher's music is. Left and Right change it by 10%."));
 			toggle("menusounds", Tr("Menu sounds"), settings.menuSounds, Tr("The sounds of moving and choosing."),
@@ -893,7 +935,10 @@ namespace ps5shell
 	{
 		ps5settings::N3ds& hand = m_side == System::Nds ? settings.nds : settings.n3ds;
 		if (id == "music")
-			settings.music = kMusic[std::clamp(index, 0, 1)];
+		{
+			const std::vector<std::string> values = MusicValues(nullptr);
+			settings.music = values[std::clamp(index, 0, (int)values.size() - 1)];
+		}
 		else if (id == "holdms")
 			settings.ui.holdMs = kHolds[std::clamp(index, 0, 5)];
 		else if (id == "upscaling")
