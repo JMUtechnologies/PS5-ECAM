@@ -9,8 +9,10 @@
 //     (touchpad + Options) asks for the library, which starts PS5CEMU-HAR over (app/emulator.h,
 //     RestartToLibrary) on that emulator's side.
 
+#include "app/achievements.h"
 #include "app/emulator.h"
 #include "app/lang.h"
+#include "app/netfs.h"
 #include "app/pack_updates.h"
 #include "app/paths.h"
 #include "app/updates.h"
@@ -197,6 +199,17 @@ int main(int argc, char* argv[])
 	// the menus' language, from the app's assets (so only once its folder is decided), before
 	// anything says a word: the PS5's, unless Settings names another
 	ps5lang::Load(settings.ui.language);
+	// a RetroAchievements account signed in from Settings > Online (6.16): the file alone, no network
+	ps5cheevos::Load();
+	{
+		// the network shares (6.14), as /net/<name>: connected only when a file on one is first read
+		std::vector<ps5netfs::Share> shares;
+		if (ps5netfs::load(std::string(ps5paths::kRoot) + "/network-shares.txt", shares) && !shares.empty())
+		{
+			ps5netfs::set_shares(shares);
+			ps5log::Line("[netfs] {} network share(s)", shares.size());
+		}
+	}
 	ps5threads::SetPinning(settings.pinCpuThreads);
 	// the driver's messages into the boot log (a thread: after the elevation helper too)
 	ps5log::ForwardDriverMessages();

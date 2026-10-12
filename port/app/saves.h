@@ -56,4 +56,42 @@ namespace ps5saves
 	bool StartRestore(const Backup& backup, std::string& error);
 	Status Current();
 	void Finish(); // waits for the thread (before a game)
+
+	// -- one game's saves (docs/UI-REDESIGN.md, 6.15) ------------------------------------------------
+	// The game whose saves these are: its side (0 Wii U, 1 3DS, 2 DS, as the launcher numbers them), its
+	// title ID (the Wii U's and the 3DS's), and its file (the DS's saves and states are named by it)
+	struct GameRef
+	{
+		int side = 0;
+		uint64_t titleId = 0;
+		std::string file;
+	};
+	// One of its saves: a Wii U account's, or the save every account shares; the 3DS's save data, extra
+	// data or save states; the DS's save or save states
+	struct GameSave
+	{
+		enum class Kind
+		{
+			Account,  // a Wii U account's (account: its persistent ID)
+			Common,	  // the Wii U save every account of the game shares
+			Data,	  // the 3DS's save data, or the DS's save
+			ExtData,  // the 3DS's extra data
+			States,	  // save states
+		} kind = Kind::Data;
+		uint32_t account = 0;
+		std::vector<std::string> paths; // the files or folders it is
+		uint64_t bytes = 0;
+		int files = 0;
+		int64_t changed = 0; // its newest file's time, seconds since 1970
+	};
+	std::vector<GameSave> FindGameSaves(const GameRef& game);
+	// Moved, never deleted: to /data/ps5cemu/saves-before/<date and time>/, in the same shape, as a
+	// restore moves what it replaces. Where to, or empty with why in error.
+	std::string MoveAside(const GameSave& save, std::string& error);
+	// This game's saves alone, as a whole backup is, so Restore from USB knows it too
+	bool StartGameBackup(const GameRef& game, std::string& error);
+	// The backups on the drives that hold some of this game's saves, newest first
+	std::vector<Backup> FindGameBackups(const GameRef& game);
+	// This game's saves alone from a backup, what is there now moved aside first
+	bool StartGameRestore(const Backup& backup, const GameRef& game, std::string& error);
 }

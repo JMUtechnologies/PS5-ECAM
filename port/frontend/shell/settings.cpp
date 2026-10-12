@@ -9,6 +9,7 @@
 #include "shell_internal.h"
 #include "../actions.h"
 #include "../sound.h"
+#include "../../app/achievements.h"
 #include "../../app/boxart.h"
 #include "../../app/pack_updates.h"
 #include "../../app/paths.h"
@@ -198,7 +199,10 @@ namespace ps5shell
 			Icon::Save});
 		if (Is3ds())
 			pages.push_back({"artic", Tr("Artic Base"), Tr("Play from your 3DS, over your network."), Icon::Artic});
-		pages.push_back({"online", Tr("Online"), IsWiiU() ? Tr("Box art, graphic packs and PS5CEMU-HAR's updates.") : Tr("Box art and PS5CEMU-HAR's updates."), Icon::Globe});
+		pages.push_back({"online", Tr("Online"), IsWiiU() ? Tr("Box art, graphic packs and PS5CEMU-HAR's updates.") :
+										   IsDs()	 ? Tr("Box art, RetroAchievements and PS5CEMU-HAR's updates.") :
+													   Tr("Box art and PS5CEMU-HAR's updates."),
+			Icon::Globe});
 		pages.push_back({"launcher", Tr("Launcher"), Tr("Theme, sides, language and text."), Icon::Sparkle});
 		pages.push_back({"diagnostics", Tr("Diagnostics"), Tr("The Setup check, logs, caches and this session's details."), Icon::Pulse});
 		// the version always in sight, whatever the credits' length in a language
@@ -212,6 +216,8 @@ namespace ps5shell
 		for (const SettingsPage& page : pages)
 			if (page.id == "graphics" || page.id == "screens" || page.id == "audio" || page.id == "system")
 				game.push_back({page.id, page.title, TrF("For {0} only. Its other settings follow its side's.", m_gameName), page.icon});
+		// its saves alone (6.15), whatever settings it has of its own
+		game.push_back({"gamesaves", Tr("Saves"), TrF("{0}'s saves only. Settings has every side's.", m_gameName), Icon::Save});
 		return game;
 	}
 
@@ -600,11 +606,20 @@ namespace ps5shell
 				IsWiiU() ? Tr("Your Wii U games: .wua, .wud, .wux, or folders with code, content and meta. Encrypted .wud and .wux need their keys "
 						   "in /data/ps5cemu/keys.txt.") :
 				Is3ds()	 ? Tr("Your 3DS games: .3ds or .cci, .cxi, .3dsx and Azahar's compressed dumps, decrypted, here or in the folders in it. "
-						   "CIA files are installed (Install a CIA file). Encrypted dumps need the 3DS's aes_keys.txt in "
-						   "/data/ps5cemu/azahar/sysdata.") :
+						   "CIA files are installed (Install a CIA file). Encrypted dumps do not start, with keys or without: decrypt them on "
+						   "your 3DS first (GodMode9).") :
 						   Tr("Your DS games: .nds files, here or in the folders in it."));
 			action(Kind::Action, "rescan", Tr("Look for games now"), m_scanning ? Tr("Looking…") : "", Tr("This side's folder, again."),
 				Tr("Looks through this side's folder again, as it does each time the side opens."));
+			{
+				// network shares (6.14): a folder on one can be this side's
+				const size_t shares = ps5netfs::shares().size();
+				action(Kind::Link, "shares", Tr("Network shares"), shares ? TrP((long long)shares, "{0} share", "{0} shares") : std::string(),
+					Tr("Games on a computer or a NAS, over SMB or NFS."),
+					Tr("A folder shared by a Windows, macOS or Linux computer or a NAS, read where it is: add it here, then choose a games folder "
+					   "on it with the folder browser, where each share is a tab. Nothing is ever written to it; saves and installs stay on "
+					   "the PS5. A cable does better than Wi-Fi for Wii U games."));
+			}
 			if (IsWiiU())
 			{
 				const bool keys = IsFile(std::string(ps5paths::kRoot) + "/keys.txt");
@@ -757,6 +772,28 @@ namespace ps5shell
 				action(Kind::Action, "packs", Tr("Community graphic packs"), PacksStatus(), Tr("Cross checks GitHub for newer ones."),
 					Tr("Cemu's community graphic packs, from GitHub's latest release when it is newer than the ones installed. The packs bundled "
 					"with the app stay as the fallback."));
+			if (IsDs())
+			{
+				// RetroAchievements (6.16): only the DS has sets
+				const ps5cheevos::Account account = ps5cheevos::Get();
+				const char* about = Tr("Earn RetroAchievements in DS games with your account, as RetroArch does. Cross signs in with your user name "
+									   "and password; only the sign-in's token is kept on the PS5, never the password. Softcore: save states, "
+									   "cheats and speed stay as they are. RetroAchievements has no sets for the Wii U or the 3DS.");
+				if (account.signedIn)
+					// tr: the RetroAchievements account signed in: its name ({1}) and softcore points ({0})
+					action(Kind::Hold, "cheevos", Tr("RetroAchievements"),
+						TrP((long long)account.points, "{1} · {0} point", "{1} · {0} points", account.user) + "  ·  " + Tr("Hold Cross to sign out"),
+						Tr("Signed in: DS games with a set earn achievements."), about);
+				else
+					action(Kind::Action, "cheevos", Tr("RetroAchievements"),
+						account.busy ? std::string(Tr("Signing in…")) : !account.message.empty() ? account.message : std::string(Tr("Cross to sign in")),
+						Tr("Achievements in DS games, with your RetroAchievements account."), about);
+				Row* notices = toggle("cheevosnotices", Tr("Unlock notices"), account.notices, Tr("Each unlock as the PS5's notification."),
+					Tr("An achievement earned, and the count as a game starts, shown as the PS5's own notifications. Off: they are only in the "
+					   "in-game menu's Achievements."));
+				if (!account.signedIn)
+					notices->dimmed = true;
+			}
 			action(Kind::Action, "appupdate", Tr("PS5CEMU-HAR updates"), AppUpdateStatus(), Tr("Cross checks GitHub for a newer version."),
 				Tr("PS5CEMU-HAR asks GitHub for its latest release each time it starts. Cross asks again, or installs the newer version it found: "
 				   "the release's files are downloaded, checked and put in place of these, and the app starts again. Your games, saves and "
@@ -838,6 +875,8 @@ namespace ps5shell
 	{
 		if (!InGameSettings())
 			return SideRows(page, m_settings);
+		if (page == "gamesaves")
+			return GameSaveRows();
 		// a game's: its rows only, each its own value or the side's (Default)
 		const std::string side = ps5launcher::SideName(m_side);
 		const auto found = m_settings.games.find(ps5settings::GameKey(side, m_gameTitle));
@@ -860,6 +899,114 @@ namespace ps5shell
 			reset.help = Tr("Clears this game's own settings, so it uses its side's settings again, like every other game.");
 			rows.push_back(reset);
 		}
+		return rows;
+	}
+
+	std::string Shell::SaveLabel(const ps5saves::GameSave& save) const
+	{
+		using Kind = ps5saves::GameSave::Kind;
+		switch (save.kind)
+		{
+		case Kind::Account:
+			if (m_status.coreReady)
+				for (const auto& account : ps5emu::ListAccounts())
+					if (account.id == save.account)
+						return account.name;
+			// tr: a Wii U account by its number, when its name cannot be read
+			return TrF("Account {0}", fmt::format("{:08x}", save.account));
+		// tr: a Wii U game's save that all its accounts share
+		case Kind::Common: return Tr("Every account's");
+		case Kind::Data: return Tr("Save data");
+		// tr: a 3DS game's extra data (its extdata), which some games keep beside their saves
+		case Kind::ExtData: return Tr("Extra data");
+		case Kind::States: return TrP((int)save.paths.size(), "{0} save state", "{0} save states");
+		}
+		return {};
+	}
+
+	// A game's saves (6.15): a row for each, held Cross to move it aside; this game's alone backed up
+	// and restored
+	std::vector<Row> Shell::GameSaveRows()
+	{
+		using Kind = Row::Kind;
+		if (m_now - m_gameSavesAt > 3)
+		{
+			m_gameSaves = ps5saves::FindGameSaves(m_gameRef);
+			m_gameBackups = ps5saves::FindGameBackups(m_gameRef);
+			m_gameSavesAt = m_now;
+		}
+		const ps5saves::Status status = ps5saves::Current();
+		const bool running = status.state == ps5saves::Status::State::Running;
+		if (status.finished != m_savesFinished)
+		{
+			m_savesFinished = status.finished;
+			m_gameSavesAt = -100;
+			m_savesMessage = status.state == ps5saves::Status::State::Done ? TrP(status.files, "Done: {0} file", "Done: {0} files") : status.message;
+		}
+		std::vector<Row> rows;
+		for (size_t i = 0; i < m_gameSaves.size(); i++)
+		{
+			const ps5saves::GameSave& save = m_gameSaves[i];
+			Row row;
+			row.kind = Kind::Hold;
+			row.id = fmt::format("gamesave:{}", i);
+			row.label = SaveLabel(save);
+			std::string when;
+			const std::time_t changed = (std::time_t)save.changed;
+			std::tm local{};
+			if (save.changed > 0 && localtime_r(&changed, &local))
+				when = ps5lang::ShortDateTime(local.tm_mon + 1, local.tm_mday, local.tm_hour, local.tm_min);
+			row.value = SizeWords(save.bytes) + (when.empty() ? "" : " · " + when) + "  ·  " + Tr("Hold Cross");
+			row.description = Tr("Held: moved to saves-before on the PS5, so it can still come back.");
+			row.help = Tr("Holding Cross moves these files to /data/ps5cemu/saves-before, in a folder named by the date and time, and the game "
+						  "starts without them next time. Nothing is deleted: copy them back from there (or restore a backup) to have them again.");
+			rows.push_back(std::move(row));
+		}
+		if (m_gameSaves.empty())
+		{
+			Row none;
+			none.kind = Kind::Action;
+			none.id = "gamenosaves";
+			none.label = Tr("No saves yet");
+			none.description = Tr("They appear here once the game has saved.");
+			none.dimmed = true;
+			rows.push_back(std::move(none));
+		}
+		Row backup;
+		backup.kind = Kind::Action;
+		backup.id = "gamebackup";
+		backup.label = Tr("Back up to USB");
+		backup.value = m_savesMessage;
+		if (running && !status.restoring)
+			backup.value = TrF("Copying: {0}", Percent(status.total ? (int)(status.copied * 100 / status.total) : 0));
+		else if (backup.value.empty() && !m_gameBackups.empty())
+			backup.value = TrF("Last: {0} · {1}", m_gameBackups.front().when, DriveName(m_gameBackups.front().drive));
+		backup.description = Tr("This game's saves, to the first USB drive.");
+		backup.help = Tr("Copies this game's saves (every account's, on the Wii U) and its save states to PS5CEMU-HAR-saves on the first USB "
+						 "drive plugged in, in a folder named by the date and time, the same way a backup of every side's saves is made.");
+		if (m_gameSaves.empty())
+			backup.dimmed = true;
+		rows.push_back(std::move(backup));
+		std::vector<std::string> backups;
+		for (const auto& found : m_gameBackups)
+			backups.push_back(found.when + " · " + DriveName(found.drive));
+		int& chosen = m_holdChoice["gamerestore"];
+		chosen = backups.empty() ? 0 : std::clamp(chosen, 0, (int)backups.size() - 1);
+		Row restore;
+		restore.kind = Kind::Hold;
+		restore.id = "gamerestore";
+		restore.label = Tr("Restore from USB");
+		restore.value = backups.empty() ? std::string(Tr("No backups found")) : backups[chosen] + "  ·  " + Tr("Hold Cross");
+		if (running && status.restoring)
+			restore.value = TrF("Copying: {0}", Percent(status.total ? (int)(status.copied * 100 / status.total) : 0));
+		restore.description = backups.empty() ? Tr("No backup on the drives plugged in has this game's saves.") : Tr("Left and Right choose which backup, the newest first.");
+		restore.help = Tr("Puts this game's saves from the chosen backup back where they came from, and nothing else. Its saves there now are "
+						  "moved first to /data/ps5cemu/saves-before, so nothing is lost.");
+		restore.options = backups;
+		restore.index = chosen;
+		if (backups.empty())
+			restore.dimmed = true;
+		rows.push_back(std::move(restore));
 		return rows;
 	}
 
@@ -1234,6 +1381,9 @@ namespace ps5shell
 		m_gameTitle = g.titleId;
 		m_gameName = g.name;
 		m_gameView = ps5settings::ForGame(m_settings, ps5launcher::SideName(m_side), g.titleId);
+		m_gameRef = {SideIndex(), g.titleId, g.path.string()};
+		m_gameSavesAt = -100;
+		m_savesMessage.clear();
 		const auto pages = SettingsPages();
 		m_page = pages.empty() ? "graphics" : pages.front().id;
 		m_onRows = false;
@@ -1299,6 +1449,40 @@ namespace ps5shell
 			m_feedback.Play(ui::Cue::Focus);
 			// tr: the Wii U account games start on now ({0}: its name)
 			Toast(TrF("Games start on {0}'s saves", accounts[next].name));
+			return;
+		}
+		if (id == "cheevosnotices")
+		{
+			if (row.dimmed)
+			{
+				m_feedback.Play(ui::Cue::Denied);
+				return;
+			}
+			ps5cheevos::SetNotices(!row.on);
+			m_feedback.Play(ui::Cue::Toggle);
+			return;
+		}
+		if (InGameSettings() && id == "gamebackup")
+		{
+			if (!cross)
+				return;
+			std::string error;
+			if (ps5saves::StartGameBackup(m_gameRef, error))
+			{
+				m_savesMessage.clear();
+				m_feedback.Play(ui::Cue::Select);
+				Toast(TrF("Backing up {0}'s saves…", m_gameName));
+			}
+			else
+			{
+				m_savesMessage = error;
+				m_feedback.Play(ui::Cue::Denied);
+			}
+			return;
+		}
+		if (InGameSettings() && row.setting.empty())
+		{
+			m_feedback.Play(ui::Cue::Denied); // a row with nothing to change (No saves yet)
 			return;
 		}
 		if (InGameSettings())
@@ -1376,6 +1560,8 @@ namespace ps5shell
 			m_pageFrom = ScreenId::Settings;
 			FilesOpen(0);
 		}
+		else if (id == "shares")
+			SharesOpen(ScreenId::Settings);
 		else if (id == "rescan")
 		{
 			if (Is3ds())
@@ -1445,6 +1631,20 @@ namespace ps5shell
 			else
 				m_feedback.Play(ui::Cue::Denied);
 		}
+		else if (id == "cheevos")
+		{
+			// RetroAchievements (6.16): the user name, then the password; only the answer's token is kept
+			if (ps5cheevos::Get().busy)
+				return;
+			OpenTextKeyboard(Tr("Your RetroAchievements user name"), "", 32, false, [this](const std::string& user) {
+				if (user.empty())
+					return;
+				OpenTextKeyboard(TrF("{0}'s RetroAchievements password", user), "", 64, true, [this, user](const std::string& password) {
+					if (!password.empty() && ps5cheevos::BeginSignIn(user, password))
+						Toast(Tr("Signing in to RetroAchievements…"));
+				});
+			});
+		}
 		else if (id == "makeityours")
 			WelcomeOpen(true);
 		else if (id == "copylogs")
@@ -1500,6 +1700,38 @@ namespace ps5shell
 			}
 			else if (!error.empty())
 				Toast(error);
+		}
+		else if (id == "cheevos")
+		{
+			ps5cheevos::SignOut();
+			Toast(Tr("Signed out of RetroAchievements"));
+		}
+		else if (id == "gamerestore")
+		{
+			const int which = m_holdChoice["gamerestore"];
+			std::string error;
+			if (which < (int)m_gameBackups.size() && ps5saves::StartGameRestore(m_gameBackups[which], m_gameRef, error))
+			{
+				m_savesMessage.clear();
+				Toast(TrF("Restoring {0}'s saves of {1}…", m_gameName, m_gameBackups[which].when));
+			}
+			else if (!error.empty())
+				Toast(error);
+		}
+		else if (id.starts_with("gamesave:"))
+		{
+			const size_t which = (size_t)std::strtoul(id.c_str() + 9, nullptr, 10);
+			if (which < m_gameSaves.size())
+			{
+				std::string error;
+				const std::string label = SaveLabel(m_gameSaves[which]);
+				if (!ps5saves::MoveAside(m_gameSaves[which], error).empty())
+					// tr: one of a game's saves moved out of the way ({0}: which, as its row names it)
+					Toast(TrF("{0}: moved to saves-before", label));
+				else
+					Toast(error);
+				m_gameSavesAt = -100;
+			}
 		}
 		else if (id == "resetgame")
 		{

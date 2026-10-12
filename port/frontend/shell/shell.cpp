@@ -47,6 +47,17 @@ namespace ps5shell
 		// the keyboard's keys (Search)
 		const char* const kKeyRows[] = {"1234567890", "QWERTYUIOP", "ASDFGHJKL'", "ZXCVBNM-:.", nullptr};
 		constexpr int kKeyboardRows = 5; // the last: space, delete, done
+		// the keyboard for text typed as it is (a user name, a password, a computer's name): small letters,
+		// capitals and symbols, R1 and L1 going between them, each row as long as kKeyRows'
+		const char* const kRawRows[3][4] = {
+			{"1234567890", "qwertyuiop", "asdfghjkl'", "zxcvbnm-:."},
+			{"1234567890", "QWERTYUIOP", "ASDFGHJKL\"", "ZXCVBNM_;,"},
+			{"!@#$%^&*()", "~`+=[]{}\\|", "<>?/_-;:,.", "'\"%@#&*!?^"},
+		};
+		const char* KeyRow(bool raw, int layer, int row)
+		{
+			return raw ? kRawRows[layer][row] : kKeyRows[row];
+		}
 	}
 
 	const std::string& LastFailure()
@@ -344,6 +355,7 @@ namespace ps5shell
 			case ScreenId::Files: FilesUpdate(press); break;
 			case ScreenId::Artic: ArticUpdate(press, actions); break;
 			case ScreenId::Updates: UpdatesUpdate(press); break;
+			case ScreenId::Shares: SharesUpdate(press, actions); break;
 			}
 		}
 		// what is held to confirm goes on without presses
@@ -356,6 +368,8 @@ namespace ps5shell
 				PlayerUpdate(none, actions);
 			else if (m_screen == ScreenId::Artic)
 				ArticUpdate(none, actions);
+			else if (m_screen == ScreenId::Shares)
+				SharesUpdate(none, actions);
 		}
 	}
 
@@ -378,6 +392,7 @@ namespace ps5shell
 		case ScreenId::Files: FilesDraw(canvas); break;
 		case ScreenId::Artic: ArticDraw(canvas); break;
 		case ScreenId::Updates: UpdatesDraw(canvas); break;
+		case ScreenId::Shares: SharesDraw(canvas); break;
 		}
 		const bool overlay = m_picker.open || m_help.open || m_menu.open || m_keyboard.open || m_update.open;
 		if (overlay)
@@ -1090,6 +1105,8 @@ namespace ps5shell
 			{
 				if (!m_onRows)
 					return {{Icon::UpDown, Tr("Pages")}, {Icon::Cross, Tr("Open")}, {Icon::Circle, Tr("Done")}};
+				if (m_page == "gamesaves") // a game's saves: held to move one aside, no defaults
+					return {{Icon::Cross, Tr("Choose")}, {Icon::Triangle, Tr("More about it")}, {Icon::Circle, Tr("Back")}};
 				return {{Icon::LeftRight, Tr("Change")}, {Icon::Square, Tr("Default")}, {Icon::Triangle, Tr("More about it")}, {Icon::Circle, Tr("Back")}};
 			}
 			if (!m_onRows)
@@ -1114,6 +1131,7 @@ namespace ps5shell
 				return {{Icon::LeftRight, Tr("Number")}, {Icon::UpDown, Tr("Change")}, {Icon::Cross, Tr("Keep")}};
 			return {{Icon::Cross, m_articRow == 0 ? Tr("Edit") : m_articRow == 1 ? Tr("Connect") : Tr("Hold to set up")}, {Icon::Circle, Tr("Back")}};
 		case ScreenId::Updates: return UpdatesHints();
+		case ScreenId::Shares: return SharesHints();
 		}
 		return {};
 	}
@@ -1355,6 +1373,8 @@ namespace ps5shell
 		// a game with settings of its own says so
 		const bool own = m_settings.games.count(ps5settings::GameKey(ps5launcher::SideName(m_side), g.entry.game.titleId)) > 0;
 		m_menu.items.push_back({"settings", own ? Tr("Game settings: custom") : Tr("Game settings")});
+		if (g.entry.game.titleId != 0)
+			m_menu.items.push_back({"saves", Tr("Saves")}); // its own, by account (6.15)
 		if (IsWiiU() && m_status.coreReady)
 		{
 			m_menu.items.push_back({"packs", Tr("Graphic packs")});
@@ -1375,9 +1395,20 @@ namespace ps5shell
 		m_keyboard.done = std::move(done);
 	}
 
+	void Shell::OpenTextKeyboard(const std::string& title, const std::string& text, size_t limit, bool secret,
+		std::function<void(const std::string&)> done)
+	{
+		OpenNameKeyboard(title, text, limit, std::move(done));
+		m_keyboard.raw = true;
+		m_keyboard.secret = secret;
+	}
+
 	void Shell::OpenKeyboard()
 	{
 		m_keyboard.naming = false;
+		m_keyboard.raw = false;
+		m_keyboard.secret = false;
+		m_keyboard.layer = 0;
 		m_keyboard.done = nullptr;
 		m_keyboard.open = true;
 		m_keyboard.row = 1;
@@ -1463,8 +1494,31 @@ namespace ps5shell
 		if (m_keyboard.open)
 		{
 			auto rowLength = [](int row) { return row < 4 ? (int)std::strlen(kKeyRows[row]) : 3; };
+			// what was typed, its spaces at the ends left out, to the one who asked (who may open the
+			// keyboard again for the next field: the call is made from a copy)
+			auto finish = [this] {
+				m_keyboard.open = false;
+				if (m_keyboard.naming && m_keyboard.done)
+				{
+					const std::string& text = m_keyboard.text;
+					const size_t first = text.find_first_not_of(' '), last = text.find_last_not_of(' ');
+					const std::string typed = m_keyboard.raw ? text : first == std::string::npos ? std::string() : text.substr(first, last - first + 1);
+					auto done = std::move(m_keyboard.done);
+					m_keyboard.done = nullptr;
+					done(typed);
+				}
+			};
 			switch (b)
 			{
+			case Button::R1:
+			case Button::L1:
+				// typed as it is: small letters, capitals, symbols
+				if (m_keyboard.raw)
+				{
+					m_keyboard.layer = (m_keyboard.layer + (b == Button::R1 ? 1 : 2)) % 3;
+					m_feedback.Play(ui::Cue::Focus);
+				}
+				break;
 			case Button::Up:
 			case Button::Down:
 			{
@@ -1493,25 +1547,18 @@ namespace ps5shell
 				const bool room = !m_keyboard.naming || text.size() < m_keyboard.limit;
 				if (m_keyboard.row < 4 && room)
 				{
-					// a name starts each word with a capital (Lena); a search is in small letters
-					const char key = kKeyRows[m_keyboard.row][m_keyboard.column];
+					// a name starts each word with a capital (Lena); a search is in small letters; text typed
+					// as it is (a password) takes the key as it shows
+					const char key = KeyRow(m_keyboard.raw, m_keyboard.layer, m_keyboard.row)[m_keyboard.column];
 					const bool capital = m_keyboard.naming && (text.empty() || text.back() == ' ');
-					text += capital ? key : (char)std::tolower((unsigned char)key);
+					text += m_keyboard.raw ? key : capital ? key : (char)std::tolower((unsigned char)key);
 				}
 				else if (m_keyboard.row == 4 && m_keyboard.column == 0 && room)
 					text += ' ';
 				else if (m_keyboard.row == 4 && m_keyboard.column == 1 && !text.empty())
 					text.pop_back();
 				else if (m_keyboard.row == 4 && m_keyboard.column == 2)
-				{
-					m_keyboard.open = false;
-					if (m_keyboard.naming && m_keyboard.done)
-					{
-						// what was typed, its spaces at the ends left out
-						const size_t first = text.find_first_not_of(' '), last = text.find_last_not_of(' ');
-						m_keyboard.done(first == std::string::npos ? std::string() : text.substr(first, last - first + 1));
-					}
-				}
+					finish();
 				else if (!room)
 				{
 					m_feedback.Play(ui::Cue::Denied);
@@ -1544,13 +1591,7 @@ namespace ps5shell
 			}
 			case Button::Options:
 				// Done, as the hints have it: a name is kept
-				m_keyboard.open = false;
-				if (m_keyboard.naming && m_keyboard.done)
-				{
-					const std::string& text = m_keyboard.text;
-					const size_t first = text.find_first_not_of(' '), last = text.find_last_not_of(' ');
-					m_keyboard.done(first == std::string::npos ? std::string() : text.substr(first, last - first + 1));
-				}
+				finish();
 				m_feedback.Play(ui::Cue::Select);
 				break;
 			case Button::Circle:
@@ -1604,6 +1645,14 @@ namespace ps5shell
 				{
 					m_feedback.Play(ui::Cue::Select);
 					GameSettingsOpen(game);
+				}
+				else if (id == "saves")
+				{
+					// its game settings, on their Saves page (6.15)
+					m_feedback.Play(ui::Cue::Select);
+					GameSettingsOpen(game);
+					if (InGameSettings())
+						m_page = "gamesaves";
 				}
 				else if (id == "favourite")
 				{
@@ -1730,7 +1779,7 @@ namespace ps5shell
 			Badge(canvas, sheet.x + 36, sheet.y + 32, m_side);
 			canvas.Text(Style(kHeadingStyle), sheet.x + 36, sheet.y + 78, game.entry.game.name, kText, sheet.w - 72, 1);
 			static const std::map<std::string, Icon> kIcons = {{"play", Icon::Play}, {"hub", Icon::ChevronRight}, {"settings", Icon::Sparkle},
-				{"packs", Icon::Gear}, {"updates", Icon::Download}, {"favourite", Icon::Star}, {"where", Icon::Folder}};
+				{"saves", Icon::Save}, {"packs", Icon::Gear}, {"updates", Icon::Download}, {"favourite", Icon::Star}, {"where", Icon::Folder}};
 			for (int i = 0; i < count; i++)
 			{
 				const Box row{sheet.x + 20, sheet.y + 136 + i * rowH, sheet.w - 40, rowH - 6};
@@ -1754,11 +1803,26 @@ namespace ps5shell
 			canvas.PushAlpha(a);
 			canvas.PushOffset(0, (1 - a) * 60);
 			DrawSheet(canvas, sheet, a);
-			const std::string& typed = m_keyboard.naming ? m_keyboard.text : m_search;
+			std::string typed = m_keyboard.naming ? m_keyboard.text : m_search;
+			if (m_keyboard.secret)
+			{
+				// a password: a dot for each character
+				std::string dots;
+				for (size_t i = 0; i < typed.size(); i++)
+					dots += "•";
+				typed = dots;
+			}
 			const std::string empty = m_keyboard.naming ? m_keyboard.title : std::string(Tr("Search"));
 			canvas.Draw(m_keyboard.naming ? Icon::Sparkle : Icon::Search, {sheet.x + 36, sheet.y + 30, 30, 30}, Secondary());
 			canvas.Text(Style(kHeadingStyle), sheet.x + 80, sheet.y + 26, typed.empty() ? empty : typed + "_", typed.empty() ? Tertiary() : kText,
-				sheet.w - 120, 1);
+				sheet.w - 120 - (m_keyboard.raw ? 260 : 0), 1);
+			if (m_keyboard.raw)
+			{
+				// tr: the keyboard's other keys, for text typed as it is: R1 and L1 go to capitals and symbols
+				const char* const layers[] = {Tr("abc"), Tr("ABC"), Tr("#+=")};
+				canvas.Text(Style({22, ui::Weight::Medium, 1.0f}), sheet.Right() - 40 - 240, sheet.y + 34,
+					TrF("L1 R1: {0}", layers[(m_keyboard.layer + 1) % 3]), Secondary(), 240, 1, ui::Align::Right);
+			}
 			const float keyW = 92, keyH = 56, gap = 10;
 			for (int row = 0; row < kKeyboardRows; row++)
 			{
@@ -1776,7 +1840,7 @@ namespace ps5shell
 					const bool focused = m_keyboard.row == row && m_keyboard.column == k;
 					canvas.Rect(key, 12, focused ? kText : Surface2());
 					// tr: the on-screen keyboard's keys
-					const std::string label = row < 4 ? std::string(1, kKeyRows[row][k]) : k == 0 ? Tr("Space") : k == 1 ? Tr("Delete") : Tr("Done");
+					const std::string label = row < 4 ? std::string(1, KeyRow(m_keyboard.raw, m_keyboard.layer, row)[k]) : k == 0 ? Tr("Space") : k == 1 ? Tr("Delete") : Tr("Done");
 					canvas.Text(Style({26, ui::Weight::Medium, 1.0f}), key.x + 8, key.CentreY() - 15, label, focused ? kInk1 : kText, key.w - 16, 1,
 						ui::Align::Centre);
 					x += w + gap;

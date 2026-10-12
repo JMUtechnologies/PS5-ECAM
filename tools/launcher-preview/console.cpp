@@ -4,8 +4,10 @@
 
 #include "console.h"
 
+#include "app/achievements.h"
 #include "app/boxart.h"
 #include "app/compatibility.h"
+#include "app/netfs.h"
 #include "app/emulator.h"
 #include "app/gameinfo.h"
 #include "app/pack_updates.h"
@@ -289,6 +291,7 @@ namespace ps5log
 	void Open(const char*) {}
 	void Write(std::string_view line) { std::fprintf(stderr, "%.*s\n", (int)line.size(), line.data()); }
 	const char* Path() { return ""; }
+	void FlushAll() {}
 }
 
 namespace ps5notify
@@ -914,4 +917,61 @@ namespace ps5stream
 		}
 		return "";
 	}
+}
+
+// Network shares (app/netfs.h), without a network: two computers answer a look around, one lists its
+// shared folders, and every test connects; PREVIEW_SHARES=1 starts with a share saved
+namespace ps5netfs
+{
+	const char* const kRoot = "/net";
+	static std::vector<Share> s_shares = std::getenv("PREVIEW_SHARES") ?
+		std::vector<Share>{{"Games on DESKTOP-LENA", "192.168.1.20", "Games", "", "", "", ""}} : std::vector<Share>{};
+	bool is_net(std::string_view path) { return path.rfind("/net", 0) == 0; }
+	void set_shares(const std::vector<Share>& shares) { s_shares = shares; }
+	std::vector<Share> shares() { return s_shares; }
+	std::string root_of(const Share& share) { return "/net/" + share.name; }
+	std::string unique_name(const Share& share, const std::vector<Share>&) { return share.share.empty() ? share.host : share.share + " on " + share.host; }
+	bool load(const std::string&, std::vector<Share>& out)
+	{
+		out = s_shares;
+		return true;
+	}
+	bool save(const std::string&, const std::vector<Share>&) { return true; }
+	Problem test(const Share& share, std::string*) { return share.host.empty() ? Problem::NoComputer : Problem::None; }
+	Problem enumerate(const Share&, std::vector<std::string>& out, std::string*)
+	{
+		out = {"Games", "Music", "roms", "Users"};
+		return Problem::None;
+	}
+	std::vector<Found> discover()
+	{
+		return {{"192.168.1.20", "DESKTOP-LENA", true, false}, {"192.168.1.31", "DISKSTATION", true, true}, {"192.168.1.44", "", false, true}};
+	}
+}
+
+// RetroAchievements (app/achievements.h), without a network: PREVIEW_CHEEVOS=1 starts signed in, and a
+// sign-in succeeds
+namespace ps5cheevos
+{
+	static Account s_account = [] {
+		Account account;
+		if (std::getenv("PREVIEW_CHEEVOS"))
+		{
+			account.signedIn = true;
+			account.user = "Lena";
+			account.points = 1240;
+		}
+		return account;
+	}();
+	void Load() {}
+	Account Get() { return s_account; }
+	bool BeginSignIn(const std::string& user, const std::string&)
+	{
+		s_account.signedIn = true;
+		s_account.user = user;
+		s_account.points = 0;
+		return true;
+	}
+	void SignOut() { s_account = {}; }
+	void SetNotices(bool on) { s_account.notices = on; }
 }

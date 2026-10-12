@@ -23,6 +23,7 @@ namespace ps5actions
 	std::string Lower(std::string text);
 	std::string Upper(std::string text);
 	std::string Gigabytes(uint64_t bytes);
+	std::string SizeWords(uint64_t bytes); // KB, MB or GB, whichever reads best (a save's size)
 	// "a  /  b  /  c" from the parts that are not empty
 	std::string Join(std::initializer_list<std::string> parts, const char* between = "  /  ");
 	const char* TypeName(ps5emu::EmulatedType type);		 // "Wii U GamePad"

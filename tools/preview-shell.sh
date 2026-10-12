@@ -37,6 +37,13 @@ for title in "BotW Update v208" "BotW DLC"; do
     echo '<menu/>' >"$games/Installs/$title/meta/meta.xml"
 done
 python3 -B tools/launcher-preview/make-3ds-samples.py "$games/3ds" "$games/ds"
+# a game's saves for its Saves page (docs/UI-REDESIGN.md 6.15): Breath of the Wild's, two accounts' and the
+# one they share
+for save in 80000001:4100000 80000002:3800000 common:12000; do
+    folder=$out/data/mlc01/usr/save/00050000/101c9400/user/${save%%:*}
+    mkdir -p "$folder"
+    head -c "${save#*:}" /dev/zero >"$folder/game_data.sav"
+done
 
 # in place of the console's own fonts (the fallback for what Lexend lacks: CJK, Cyrillic, Greek, Thai,
 # Arabic), the few the PC has that do the same, where it has them (fonts-noto-core, fonts-noto-cjk)
@@ -54,7 +61,7 @@ flags=(-std=c++20 -O1 -g -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-
     -I "$PS5CEMU_ROOT/.deps/reshade/deps/stb" $(pkg-config --cflags freetype2))
 sources=(tools/launcher-preview/shell.cpp tools/launcher-preview/console.cpp
     port/frontend/shell/hub.cpp port/frontend/shell/installs.cpp port/frontend/shell/library.cpp port/frontend/shell/pages.cpp port/frontend/shell/recent.cpp
-    port/frontend/shell/settings.cpp port/frontend/shell/setup.cpp port/frontend/shell/shell.cpp port/frontend/shell/welcome.cpp port/frontend/shell/widgets.cpp
+    port/frontend/shell/settings.cpp port/frontend/shell/setup.cpp port/frontend/shell/shares.cpp port/frontend/shell/shell.cpp port/frontend/shell/welcome.cpp port/frontend/shell/widgets.cpp
     port/ui/canvas.cpp port/ui/feedback.cpp port/ui/gfx.cpp port/ui/images.cpp port/ui/input.cpp port/ui/qr.cpp port/ui/text.cpp port/ui/theme.cpp
     port/ui/vkfn.cpp port/app/catalog.cpp port/app/saves.cpp port/app/gameinfo.cpp port/app/lang.cpp port/app/compatibility.cpp port/frontend/actions.cpp
     port/frontend/settings.cpp port/azahar/library.cpp port/azahar/controls.cpp port/azahar/unavailable.cpp

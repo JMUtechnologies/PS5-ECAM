@@ -128,6 +128,18 @@ namespace ps5ingame3ds
 	{
 		float left, top, right, bottom;
 	};
+	// RetroAchievements (app/achievements.h), a DS game's Achievements category, while someone is signed
+	// in: a line saying how many are earned (or why there are none), and each achievement, the earned
+	// first. From the game's loop; shown false takes the category away.
+	struct Achievement
+	{
+		std::string title, description;
+		uint32_t points = 0;
+		bool unlocked = false;
+		std::string when; // when it was earned, as the menu says it
+	};
+	void SetAchievements(bool shown, const std::string& summary, const std::vector<Achievement>& achievements);
+
 	void SetBorder(int theme, std::vector<uint8_t> rgba, int width, int height);
 	// The theme's picture from the app's assets/borders (tools/render-borders.py), as SetBorder takes it
 	void LoadBorder(int theme);

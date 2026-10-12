@@ -14,6 +14,7 @@
 #include "../../app/compatibility.h"
 #include "../../app/gameinfo.h"
 #include "../../app/lang.h"
+#include "../../app/netfs.h"
 #include "../../app/saves.h"
 #include "../../ui/canvas.h"
 #include "../../ui/feedback.h"
@@ -64,7 +65,10 @@ namespace ps5shell
 		Files,
 		Artic,
 		Updates, // Updates and DLC (6.12)
+		Shares,	 // Network shares (6.14)
 	};
+
+	struct ShareJob; // shares.cpp: a test or a look around the network, on a thread of its own
 
 	// A game as the shell shows it: the catalogue's entry, and what was looked up for it
 	struct Game
@@ -353,6 +357,37 @@ namespace ps5shell
 		void UpdatesSort();
 		void UpdatesInstallNext();
 		std::vector<Hint> UpdatesHints() const;
+		// Network shares (shares.cpp, 6.14): the list, and the sheet that adds or changes one
+		void SharesOpen(ScreenId from);
+		void SharesEdit(int index); // -1: a new one
+		void SharesScan();			// the computers on the network that share files
+		void SharesFind();			// the computer's shared folders
+		void SharesPoll();
+		void SharesSave();
+		void SharesRemove();
+		std::vector<Row> ShareRows();
+		void SharesUpdate(const ui::Press& press, const ui::Actions& actions);
+		void SharesDraw(Canvas& canvas);
+		std::vector<Hint> SharesHints() const;
+		struct Shares
+		{
+			std::vector<ps5netfs::Share> list;
+			std::vector<std::string> status; // each share's last test, in words
+			int selected = 0;				 // in list, and Add a share after it
+			ScreenId from = ScreenId::Settings;
+			bool editing = false;			 // the sheet is open
+			int index = -1;					 // the share it changes; -1 a new one
+			ps5netfs::Share share;			 // as the sheet has it
+			int row = 0;
+			std::vector<ps5netfs::Found> found; // the computers that share files
+			int foundIndex = 0;
+			std::vector<std::string> names; // the computer's shared folders
+			int nameIndex = 0;
+			std::shared_ptr<ShareJob> scan, find, test;
+			bool saving = false; // Save: the test first, then kept
+			std::string message;
+			bool messageGood = false;
+		} m_shares;
 		void ArticOpen();
 		void ArticUpdate(const ui::Press& press, const ui::Actions& actions);
 		void ArticDraw(Canvas& canvas);
@@ -368,6 +403,9 @@ namespace ps5shell
 		void OpenGameMenu(int game);
 		void OpenKeyboard();
 		void OpenNameKeyboard(const std::string& title, const std::string& text, size_t limit, std::function<void(const std::string&)> done);
+		// text as it is typed: no capitals put in, with capitals and symbols on R1 and L1; secret shows dots
+		void OpenTextKeyboard(const std::string& title, const std::string& text, size_t limit, bool secret,
+			std::function<void(const std::string&)> done);
 		bool OverlayUpdate(const ui::Press& press);
 
 		// -- state ----------------------------------------------------------------------------
@@ -493,6 +531,14 @@ namespace ps5shell
 		ps5settings::Launcher m_gameView;
 		ScreenId m_gameFrom = ScreenId::Library;
 		std::string m_sidePage = "graphics"; // the side's page, kept while game settings are open
+		// a game's saves (6.15), its game settings' Saves page: the game, its saves and the backups that
+		// hold some of them, looked for now and then
+		ps5saves::GameRef m_gameRef;
+		std::vector<ps5saves::GameSave> m_gameSaves;
+		std::vector<ps5saves::Backup> m_gameBackups;
+		double m_gameSavesAt = -100;
+		std::vector<Row> GameSaveRows();
+		std::string SaveLabel(const ps5saves::GameSave& save) const;
 
 		// pages
 		ScreenId m_pageFrom = ScreenId::Settings; // where Files and Artic Base go back to
@@ -612,6 +658,10 @@ namespace ps5shell
 			std::string text, title;
 			size_t limit = 0;
 			std::function<void(const std::string&)> done;
+			// text typed as it is (a user name, a password, a computer's name): no capitals put in,
+			// small letters, capitals or symbols (layer, R1 and L1); secret: shown as dots
+			bool raw = false, secret = false;
+			int layer = 0;
 		} m_keyboard;
 		struct UpdateSheet
 		{

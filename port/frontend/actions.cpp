@@ -64,6 +64,17 @@ namespace ps5actions
 		return TrFC("size", "{0} GB", ps5lang::Decimal(bytes / 1e9, 1));
 	}
 
+	std::string SizeWords(uint64_t bytes)
+	{
+		if (bytes >= 1000000000ull)
+			return Gigabytes(bytes);
+		if (bytes >= 1000000ull)
+			// tr: a size in megabytes, as in 4.1 MB
+			return TrFC("size", "{0} MB", ps5lang::Decimal(bytes / 1e6, 1));
+		// tr: a size in kilobytes, as in 12 KB
+		return TrFC("size", "{0} KB", std::max<uint64_t>(1, (bytes + 999) / 1000));
+	}
+
 	// "a  /  b  /  c" from the parts that are not empty
 	std::string Join(std::initializer_list<std::string> parts, const char* between)
 	{
@@ -178,6 +189,8 @@ namespace ps5actions
 			return TrF("USB drive {0}", std::atoi(path.c_str() + 8) + 1);
 		if (path.starts_with("/mnt/ext"))
 			return TrF("Extended storage {0}", std::atoi(path.c_str() + 8) + 1);
+		if (path.starts_with("/net/"))
+			return path.substr(5, path.find('/', 5) == std::string::npos ? std::string::npos : path.find('/', 5) - 5); // a share, by its name
 		return path;
 	}
 

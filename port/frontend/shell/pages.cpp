@@ -922,6 +922,9 @@ namespace ps5shell
 		std::vector<std::string> tabs{"/data"};
 		for (const std::string& drive : ConnectedDrives())
 			tabs.push_back(drive);
+		// each network share after the drives (6.14), as /net/<its name>
+		for (const ps5netfs::Share& share : ps5netfs::shares())
+			tabs.push_back(ps5netfs::root_of(share));
 		return tabs;
 	}
 
@@ -1182,7 +1185,8 @@ namespace ps5shell
 				const bool on = i == current;
 				canvas.Rect(tab, h / 2, on ? ui::SetAlpha(Accent(), 0.22f) : Surface());
 				canvas.Ring(tab, h / 2, 1.5f, on ? ui::SetAlpha(Accent(), 0.55f) : kGlassEdge);
-				canvas.Draw(i == 0 ? Icon::Folder : tabs[i].starts_with("/mnt/usb") ? Icon::Usb : Icon::Drive, {x + 16, y + 11, 22, 22}, on ? Accent() : Secondary());
+				canvas.Draw(i == 0 ? Icon::Folder : tabs[i].starts_with("/mnt/usb") ? Icon::Usb : tabs[i].starts_with("/net/") ? Icon::Globe : Icon::Drive,
+					{x + 16, y + 11, 22, 22}, on ? Accent() : Secondary());
 				canvas.Text(style, x + 46, y + 11, label, on ? kText : Secondary(), w - 56, 1);
 				x += w + 10;
 			}

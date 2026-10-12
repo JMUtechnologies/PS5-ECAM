@@ -74,9 +74,30 @@ if [[ -f $radv_archive && -f $radv_sdk/target/lib/libps5platform.a ]]; then
     # read around every submission and on every turn of its GPU waits; port/ps5/driver_clock.cpp
     # answers it from the TSC instead
     radv_link_flags+=(--wrap=os_time_get_nano)
-    # everything is linked in one group below, and lld takes no group inside another
+    # access and the directory calls are bound to the platform layer's with --defsym, which a --wrap
+    # cannot come before: they are bound to port/ps5/netfs_files.cpp's instead, which answers /net
+    # paths and calls the platform's for every other (kept in the link by name)
+    for index in "${!radv_link_flags[@]}"; do
+        for name in access opendir readdir closedir; do
+            if [[ ${radv_link_flags[index]} == "--defsym=$name=ps5_$name" ]]; then
+                radv_link_flags[index]="--defsym=$name=ps5cemu_$name"
+                radv_link_flags+=("--undefined=ps5_$name")
+            fi
+        done
+    done
+    # everything is linked in one group below, and lld takes no group inside another. The platform
+    # layer's fclose and fflush wraps (its open_memstream) are renamed ps5_memstream_fclose and
+    # ps5_memstream_fflush in a copy of its archive: port/ps5/netfs_files.cpp wraps the two for /net
+    # files and calls these for every other FILE.
     flattened=()
     for input in "${radv_link_inputs[@]}"; do
+        if [[ $input == */libps5platform.a ]]; then
+            if [[ ! -f $work/libps5platform-netfs.a || $input -nt $work/libps5platform-netfs.a || ${BASH_SOURCE[0]} -nt $work/libps5platform-netfs.a ]]; then
+                llvm-objcopy-18 --redefine-sym=__wrap_fclose=ps5_memstream_fclose --redefine-sym=__wrap_fflush=ps5_memstream_fflush \
+                    "$input" "$work/libps5platform-netfs.a"
+            fi
+            input=$work/libps5platform-netfs.a
+        fi
         [[ $input == --start-group || $input == --end-group ]] || flattened+=("$input")
     done
     radv_link_inputs=("${flattened[@]}")
@@ -123,6 +144,21 @@ done
 # RADV's platform layer has the real thread-local destructor registration; a link check has none
 ((check)) && absent+=(--defsym=__cxa_thread_atexit_impl=0)
 
+# Network shares (docs/UI-REDESIGN.md 6.14): the C library's file calls go through
+# port/ps5/netfs_files.cpp, which answers those on /net paths and passes every other on after one check
+netfs_wraps=()
+for name in open read pread lseek close fstat stat lstat realpath fopen fclose fflush fread fwrite \
+        fseek fseeko ftell ftello rewind feof ferror clearerr fgetc getc ungetc fgets fileno; do
+    netfs_wraps+=("--wrap=$name")
+done
+# with no platform layer (a link check), access and the directory calls are wrapped too (above, the
+# app's are bound by name)
+if ((check)); then
+    for name in access opendir readdir closedir; do
+        netfs_wraps+=("--wrap=$name")
+    done
+fi
+
 # The system modules a title imports from: all the SDK names, but the web process's (WebKit's POSIX
 # layer and its libkernel, which a title does not load; the SDK's libc.a below has what they would
 # have supplied, fnmatch) and the Mono runtime's.
@@ -138,7 +174,7 @@ done
 # RADV goes first: its archive, linked whole, has zlib built in (Mesa's subproject), which then
 # stands for the zlib pacbrew's libz.a would otherwise add a second time.
 "$sdk/bin/prospero-lld" "${radv_linker_script[@]}" --eh-frame-hdr --no-dynamic-linker -z nodynamic-undefined-weak \
-    "${radv_link_flags[@]}" "${absent[@]}" \
+    "${radv_link_flags[@]}" "${netfs_wraps[@]}" "${absent[@]}" \
     --version-script "$vulkan/tooling/native/app-symbols.map" --exclude-libs=ALL --gc-sections \
     --error-limit=0 -Map="$output.map" -e _start -o "$output" \
     "$work/app_crt.o" "$work/app_cpp_runtime.o" "${objects[@]}" \

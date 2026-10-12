@@ -37,6 +37,42 @@ foreach(input "${SANDBOX_ELEVATION}/src/elevation.cpp" "${PS5CEMU_DEPS}/reshade/
 	endif()
 endforeach()
 
+# rcheevos (MIT), RetroAchievements' client, for DS games' achievements (app/achievements.cpp,
+# docs/UI-REDESIGN.md 6.16): its client, runtime and API, and the hashes a DS ROM needs (no discs, zips
+# or encrypted files)
+set(RCHEEVOS "${PS5CEMU_DEPS}/rcheevos")
+if(NOT EXISTS "${RCHEEVOS}/src/rc_client.c")
+	message(FATAL_ERROR "${RCHEEVOS} is missing: run make deps")
+endif()
+file(GLOB RCHEEVOS_SOURCES "${RCHEEVOS}/src/rcheevos/*.c" "${RCHEEVOS}/src/rapi/*.c")
+add_library(rcheevos STATIC ${RCHEEVOS_SOURCES} "${RCHEEVOS}/src/rc_client.c" "${RCHEEVOS}/src/rc_compat.c" "${RCHEEVOS}/src/rc_util.c"
+	"${RCHEEVOS}/src/rc_version.c" "${RCHEEVOS}/src/rhash/hash.c" "${RCHEEVOS}/src/rhash/hash_rom.c" "${RCHEEVOS}/src/rhash/md5.c")
+target_include_directories(rcheevos PUBLIC "${RCHEEVOS}/include")
+target_compile_definitions(rcheevos PUBLIC RC_CLIENT_SUPPORTS_HASH PRIVATE RC_DISABLE_LUA RC_HASH_NO_DISC RC_HASH_NO_ENCRYPTED RC_HASH_NO_ZIP)
+target_compile_options(rcheevos PRIVATE -w)
+
+# Network shares (app/netfs.cpp, docs/UI-REDESIGN.md 6.14): libsmb2 and libnfs (LGPL-2.1-or-later), as
+# third_party keeps them with their PS5 configurations. Their name lookups and the like are netfs.cpp's
+# (porpoise_netfs_*): the console's libc gives a title no resolver.
+set(THIRD_PARTY "${PS5CEMU_ROOT}/third_party")
+file(STRINGS "${THIRD_PARTY}/libsmb2/sources.txt" SMB2_SOURCES)
+list(TRANSFORM SMB2_SOURCES PREPEND "${THIRD_PARTY}/libsmb2/lib/")
+add_library(smb2 STATIC ${SMB2_SOURCES})
+target_include_directories(smb2 BEFORE PRIVATE "${THIRD_PARTY}/libsmb2/ps5" "${THIRD_PARTY}/libsmb2/include/smb2")
+target_include_directories(smb2 PUBLIC "${THIRD_PARTY}/libsmb2/include")
+target_compile_definitions(smb2 PRIVATE HAVE_CONFIG_H getaddrinfo=porpoise_netfs_getaddrinfo freeaddrinfo=porpoise_netfs_freeaddrinfo
+	getlogin_r=porpoise_netfs_getlogin_r gethostname=porpoise_netfs_gethostname __isthreaded=porpoise_netfs_isthreaded SOL_TCP=IPPROTO_TCP)
+target_compile_options(smb2 PRIVATE -std=gnu11 -w)
+file(STRINGS "${THIRD_PARTY}/libnfs/sources.txt" NFS_SOURCES)
+list(TRANSFORM NFS_SOURCES PREPEND "${THIRD_PARTY}/libnfs/")
+add_library(nfs STATIC ${NFS_SOURCES})
+target_include_directories(nfs BEFORE PRIVATE "${THIRD_PARTY}/libnfs/ps5" "${THIRD_PARTY}/libnfs/include/nfsc" "${THIRD_PARTY}/libnfs/mount"
+	"${THIRD_PARTY}/libnfs/nfs" "${THIRD_PARTY}/libnfs/nfs4" "${THIRD_PARTY}/libnfs/portmap")
+target_include_directories(nfs PUBLIC "${THIRD_PARTY}/libnfs/include")
+target_compile_definitions(nfs PRIVATE HAVE_CONFIG_H NDEBUG getaddrinfo=porpoise_netfs_getaddrinfo freeaddrinfo=porpoise_netfs_freeaddrinfo
+	getprotobyname=porpoise_netfs_getprotobyname getservbyport=porpoise_netfs_getservbyport getnameinfo=porpoise_netfs_getnameinfo)
+target_compile_options(nfs PRIVATE -std=gnu11 -w)
+
 find_library(FREETYPE_LIBRARY freetype REQUIRED)
 # the UI kit (ui/): FreeType for the glyphs Lexend lacks (ui/text.cpp), and stb's image loaders for
 # covers and backdrops (ui/images.cpp, compiled static to that file), ReShade's copy
@@ -53,6 +89,10 @@ add_library(CemuPS5 STATIC
 	app/emulator.cpp
 	app/emulator.h
 	app/accounts.cpp
+	app/achievements.cpp
+	app/achievements.h
+	app/netfs.cpp
+	app/netfs.h
 	app/controllers.cpp
 	app/boxart.cpp
 	app/boxart.h
@@ -109,6 +149,7 @@ add_library(CemuPS5 STATIC
 	frontend/shell/recent.cpp
 	frontend/shell/settings.cpp
 	frontend/shell/setup.cpp
+	frontend/shell/shares.cpp
 	frontend/shell/shell.cpp
 	frontend/shell/shell_internal.h
 	frontend/shell/welcome.cpp
@@ -128,6 +169,7 @@ add_library(CemuPS5 STATIC
 	ps5/kernel.h
 	ps5/log.cpp
 	ps5/log.h
+	ps5/netfs_files.cpp
 	ps5/notify.cpp
 	ps5/notify.h
 	ps5/pad.cpp
@@ -175,6 +217,8 @@ add_library(CemuPS5 STATIC
 # launcher's and the console layer's files do not.
 cemu_use_precompiled_header(CemuPS5)
 set_source_files_properties(
+	app/achievements.cpp
+	app/netfs.cpp
 	app/boxart.cpp
 	app/saves.cpp
 	app/catalog.cpp
@@ -196,6 +240,7 @@ set_source_files_properties(
 	frontend/shell/recent.cpp
 	frontend/shell/settings.cpp
 	frontend/shell/setup.cpp
+	frontend/shell/shares.cpp
 	frontend/shell/shell.cpp
 	frontend/shell/welcome.cpp
 	frontend/shell/widgets.cpp
@@ -205,6 +250,7 @@ set_source_files_properties(
 	ps5/driver_clock.cpp
 	ps5/profiler.cpp
 	ps5/log.cpp
+	ps5/netfs_files.cpp
 	ps5/notify.cpp
 	ps5/pad.cpp
 	ps5/privilege.cpp
@@ -260,6 +306,9 @@ target_link_libraries(CemuPS5 PUBLIC
 	"${BZ2_LIBRARY}"
 	"${PSL_LIBRARY}"
 	"${TURBOJPEG_LIBRARY}"
+	rcheevos # RetroAchievements (app/achievements.cpp)
+	smb2 # network shares (app/netfs.cpp)
+	nfs
 	OpenSSL::Crypto # the remote touch screen's WebSocket handshake (stream/websocket.cpp)
 	ZLIB::ZLIB
 	libzip::zip

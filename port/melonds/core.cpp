@@ -16,6 +16,7 @@
 #include "frontend.h"
 #include "library.h"
 #include "screens.h"
+#include "../app/achievements.h"
 #include "../app/boxart.h"
 #include "../app/gameinfo.h"
 #include "../app/ingame3ds.h"
@@ -41,6 +42,7 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <cstring>
 #include <ctime>
 #include <filesystem>
 #include <fstream>
@@ -111,6 +113,33 @@ namespace ps5melonds
 
 		// the emulation's frames, for the overlay's numbers
 		std::atomic<uint32_t> s_framesEmulated{0}, s_framesShown{0};
+
+		// RetroAchievements (app/achievements.h): signed in, the game's set is checked after each frame
+		bool s_cheevos = false;
+
+		// The DS's memory as rcheevos' DS map has it: 0 to 0x3FFFFF the main RAM (4 MiB at 0x02000000; a
+		// DSi's more is not there), 0x1000000 to 0x1003FFF the ARM9's data TCM. From the emulation's thread,
+		// between two frames.
+		uint32_t ReadDsMemory(uint32_t address, uint8_t* buffer, uint32_t size)
+		{
+			melonDS::NDS* nds = s_nds;
+			if (!nds)
+				return 0;
+			if (address < 0x400000)
+			{
+				const uint32_t count = std::min<uint32_t>(size, 0x400000 - address);
+				std::memcpy(buffer, nds->MainRAM + address, count);
+				return count;
+			}
+			if (address >= 0x1000000 && address < 0x1004000)
+			{
+				const uint32_t offset = address - 0x1000000;
+				const uint32_t count = std::min<uint32_t>(size, 0x4000 - offset);
+				std::memcpy(buffer, nds->ARM9.DTCM + offset, count);
+				return count;
+			}
+			return 0;
+		}
 
 		std::string Folder(const char* name)
 		{
@@ -307,6 +336,25 @@ namespace ps5melonds
 			ps5ingame3ds::SetExtras({}, cheats);
 		}
 
+		// The menu's Achievements: the set as RetroAchievements has it now, the earned first
+		void ShowAchievements()
+		{
+			std::vector<ps5cheevos::Item> items;
+			std::string summary;
+			ps5cheevos::List(items, summary);
+			std::vector<ps5ingame3ds::Achievement> shown;
+			for (const ps5cheevos::Item& item : items)
+			{
+				ps5ingame3ds::Achievement a{item.title, item.description, item.points, item.unlocked, {}};
+				const std::time_t when = (std::time_t)item.unlockedAt;
+				std::tm local{};
+				if (item.unlocked && when > 0 && localtime_r(&when, &local))
+					a.when = ps5lang::ShortDateTime(local.tm_mon + 1, local.tm_mday, local.tm_hour, local.tm_min);
+				shown.push_back(std::move(a));
+			}
+			ps5ingame3ds::SetAchievements(true, summary, shown);
+		}
+
 		ps5ingame3ds::Settings MenuSettings()
 		{
 			View view;
@@ -435,7 +483,10 @@ namespace ps5melonds
 				{
 					melonDS::Savestate state(data.data(), (u32)data.size(), false);
 					if (!state.Error && nds.DoSavestate(&state) && !state.Error)
+					{
 						message = fmt::format("Loaded slot {}", slot);
+						ps5cheevos::Reset(); // the set's conditions start again from the state's memory
+					}
 					else
 					{
 						backup->Rewind(false);
@@ -540,6 +591,8 @@ namespace ps5melonds
 					{
 						nds.RunFrame();
 						s_framesEmulated++;
+						if (s_cheevos)
+							ps5cheevos::DoFrame();
 					}
 					sound::Pace(nds, refresh, view.speedLimit);
 					frame.top = nds.GPU.Framebuffer[nds.GPU.FrontBuffer][0].get();
@@ -553,6 +606,8 @@ namespace ps5melonds
 						sceKernelUsleep((uint32_t)(nextFrame - now - 1000));
 					nextFrame = std::max(nextFrame + period, sceKernelGetProcessTime());
 				}
+				else if (s_cheevos)
+					ps5cheevos::Idle(); // paused: what the server answered is still dealt with
 				if (!screens::Present(frame))
 				{
 					ps5log::Line("[ds] the screens stopped: the GPU's device was lost");
@@ -728,6 +783,10 @@ namespace ps5melonds
 		s_running = true;
 		s_framesEmulated = 0;
 		s_framesShown = 0;
+		// RetroAchievements, when someone has signed in: the game's ROM hashed to find its set
+		if (const melonDS::NDSCart::CartCommon* loaded = s_nds->GetNDSCart())
+			s_cheevos = ps5cheevos::StartGame(path, ReadDsMemory, loaded->GetROM(), loaded->GetROMLength());
+		ps5ingame3ds::SetAchievements(s_cheevos, {}, {});
 		s_emulation = std::thread(Emulate);
 		ps5log::Line("[ds] {} is running", game.name);
 		return true;
@@ -765,6 +824,9 @@ namespace ps5melonds
 					ps5log::Line("[perfds] {:.0f} fps, speed {:.0f}%; {}; filter {}", fps, speed, s_jit ? "JIT" : "interpreter", s_settings.dsFilter);
 			}
 			FlushSave(false);
+			// RetroAchievements in the menu: what is earned, read again about once a second while it is open
+			if (s_cheevos && polls % 250 == 1 && ps5ingame3ds::MenuOpen())
+				ShowAchievements();
 			switch (ps5pad::TakeShortcut())
 			{
 			case ps5pad::Shortcut::Menu:
@@ -844,6 +906,8 @@ namespace ps5melonds
 			s_emulation.join();
 		ps5log::Line("[ds] emulation stopped in {} ms", elapsed());
 		FlushSave(true);
+		if (s_cheevos)
+			ps5cheevos::EndGame(2000); // an unlock still on its way, a moment to go
 		sound::Stop();
 		screens::Stop();
 		delete s_nds; // its 3D renderer's thread with it

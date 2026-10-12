@@ -64,6 +64,9 @@ namespace ps5ingame3ds
 		int s_stateRequest = 0; // a save to slot n (n), a load from it (-n)
 		std::vector<std::string> s_amiibo; // under s_mutex, with the four below
 		std::vector<std::pair<std::string, bool>> s_cheats;
+		bool s_cheevosShown = false; // RetroAchievements, under s_mutex with the two below
+		std::string s_cheevosSummary;
+		std::vector<Achievement> s_cheevos;
 		std::string s_extrasMessage;
 		ExtrasRequest s_extrasRequest;
 		int s_amiiboIndex = 0;
@@ -436,8 +439,14 @@ namespace ps5ingame3ds
 			std::string time, stateMessage, amiibo, amiiboMessage;
 			std::vector<std::pair<std::string, bool>> cheats;
 			bool noAmiibo;
+			bool cheevosShown;
+			std::string cheevosSummary;
+			std::vector<Achievement> cheevos;
 			{
 				std::lock_guard lock(s_mutex);
+				cheevosShown = s_cheevosShown;
+				cheevosSummary = s_cheevosSummary;
+				cheevos = s_cheevos;
 				if (s_stateSlot <= (int)s_stateTimes.size())
 					time = s_stateTimes[s_stateSlot - 1];
 				stateMessage = s_stateMessage;
@@ -521,6 +530,25 @@ namespace ps5ingame3ds
 				// tr: how many of the game's cheats are on: {0} of {1}
 				cheatRows.value = TrF("{0} of {1} on", std::count_if(cheats.begin(), cheats.end(), [](const auto& c) { return c.second; }), cheats.size());
 			rows.push_back(cheatRows);
+			if (ds && cheevosShown)
+			{
+				// RetroAchievements (6.16): how many are earned, then each, the earned first
+				const int earned = (int)std::count_if(cheevos.begin(), cheevos.end(), [](const Achievement& a) { return a.unlocked; });
+				Row cheevoRows{"cheevos", Tr("Achievements"), cheevos.empty() ? std::string() : TrF("{0} of {1}", earned, cheevos.size()), false,
+					cheevosSummary.empty() ? std::string(Tr("This game's RetroAchievements.")) : cheevosSummary};
+				for (size_t i = 0; i < cheevos.size(); i++)
+				{
+					const Achievement& a = cheevos[i];
+					// tr: an achievement earned, and when ({0})
+					cheevoRows.rows.push_back({fmt::format("cheevo{}", i), a.title,
+						a.unlocked ? (a.when.empty() ? std::string(Tr("Earned")) : TrF("Earned {0}", a.when)) : ps5lang::TrP((int)a.points, "{0} point", "{0} points"),
+						false, a.description});
+				}
+				if (cheevos.empty())
+					cheevoRows.rows.push_back({"nocheevos", cheevosSummary.empty() ? std::string(Tr("No achievements")) : cheevosSummary, "", false,
+						Tr("RetroAchievements lists a game's achievements once it has a set for it.")});
+				rows.push_back(cheevoRows);
+			}
 			if (!ds)
 			{
 				rows.push_back({"amiibos", Tr("Amiibo"), amiibo, false, Tr("Hold an amiibo dump to the 3DS's reader when the game asks for one."), {
@@ -1012,6 +1040,14 @@ namespace ps5ingame3ds
 		std::lock_guard lock(s_mutex);
 		s_amiibo = amiibo;
 		s_cheats = cheats;
+	}
+
+	void SetAchievements(bool shown, const std::string& summary, const std::vector<Achievement>& achievements)
+	{
+		std::lock_guard lock(s_mutex);
+		s_cheevosShown = shown;
+		s_cheevosSummary = summary;
+		s_cheevos = achievements;
 	}
 
 	void SetExtrasMessage(const std::string& message)
