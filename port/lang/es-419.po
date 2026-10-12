@@ -7,6 +7,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: port/app/achievements.cpp:256
+msgid "RetroAchievements did not answer. Is the PS5 online?"
+msgstr "RetroAchievements no responde. ¿La PS5 está conectada a internet?"
+
 #: port/app/gameinfo.cpp:153
 msgctxt "genre"
 msgid "Basketball"
@@ -32,27 +36,27 @@ msgctxt "genre"
 msgid "Skateboarding"
 msgstr "Patineta"
 
-#: port/app/ingame.cpp:140 port/frontend/actions.cpp:317
+#: port/app/ingame.cpp:140 port/frontend/actions.cpp:331
 #, menu
 msgid "Wii U Pro Controller"
 msgstr "Control Pro de Wii U"
 
-#: port/app/ingame.cpp:141 port/frontend/actions.cpp:318
+#: port/app/ingame.cpp:141 port/frontend/actions.cpp:332
 #, menu
 msgid "Classic Controller"
 msgstr "Control Clásico"
 
-#: port/app/ingame.cpp:142 port/frontend/actions.cpp:319
+#: port/app/ingame.cpp:142 port/frontend/actions.cpp:333
 #, menu
 msgid "Wii Remote"
 msgstr "Control remoto Wii"
 
-#: port/app/ingame.cpp:143 port/frontend/actions.cpp:320
+#: port/app/ingame.cpp:143 port/frontend/actions.cpp:334
 #, menu
 msgid "Wii Remote + Nunchuk"
 msgstr "Control remoto Wii + Nunchuk"
 
-#: port/app/ingame.cpp:146 port/frontend/actions.cpp:323
+#: port/app/ingame.cpp:146 port/frontend/actions.cpp:337
 #, menu
 msgid "No controller"
 msgstr "Sin control"
@@ -165,23 +169,23 @@ msgstr "El {0} no tiene sensores de movimiento. Para el movimiento, elige el Gam
 msgid "The Wii Remote's buttons are under Buttons."
 msgstr "Los botones del Control remoto Wii están en Botones."
 
-#: port/frontend/shell/settings.cpp:403
+#: port/frontend/shell/settings.cpp:409
 msgid "Texture packs in /data/ps5cemu/azahar/load/textures/<title ID>, as the desktop Azahar loads them."
 msgstr "Paquetes de texturas en /data/ps5cemu/azahar/load/textures/<ID del título>, como los carga Azahar para computadora."
 
-#: port/frontend/shell/settings.cpp:469
+#: port/frontend/shell/settings.cpp:481
 msgid "Choose a DualSense button: while you hold it in a game, it presses and lets go by itself about fifteen times a second, for games that make you mash. The button keeps whatever it is mapped to. None turns it off. Every player on this side has it."
 msgstr "Elige un botón del DualSense: mientras lo mantengas pulsado en un juego, se pulsa y se suelta solo unas quince veces por segundo, para los juegos en los que hay que presionar un botón muy rápido. El botón conserva su asignación. Ninguno lo desactiva. Lo tienen todos los jugadores de este lado."
 
-#: port/frontend/shell/settings.cpp:488
+#: port/frontend/shell/settings.cpp:500
 msgid "Cross: this player's controller, motion and buttons."
 msgstr "Cruz: el control, el movimiento y los botones de este jugador."
 
-#: port/frontend/shell/settings.cpp:528
+#: port/frontend/shell/settings.cpp:540
 msgid "{0} in a phone's or tablet's browser, with touch."
 msgstr "{0} en el navegador de un celular o una tableta, con control táctil."
 
-#: port/frontend/shell/settings.cpp:529
+#: port/frontend/shell/settings.cpp:541
 msgid ""
 "{0} in any browser on the PS5's network, a phone's, a tablet's or a computer's, with nothing to install, and its touches sent back to the game. Scan the code shown here, or open the address. The DualSense stays the buttons, and the sound stays on the PS5.\n"
 "While a browser shows it, the PS5 copies that screen up to 30 times a second, so a game can run a little slower; with no browser, it costs nothing. Any device on your network can open the page, so turn it off on a network you share.\n"
@@ -191,13 +195,95 @@ msgstr ""
 "Mientras un navegador la muestra, la PS5 copia esa pantalla hasta 30 veces por segundo, así que un juego puede ir algo más lento; sin navegador, no cuesta nada. Cualquier dispositivo de tu red puede abrir la página, así que desactívala en una red compartida.\n"
 "Un solo interruptor para todos los lados (la pantalla del GamePad es la del jugador 1), también en el menú de cada juego (clic en el panel táctil + OPTIONS). A partir de la idea y el prototipo de dolphin78 (#38)."
 
-#: port/frontend/shell/settings.cpp:883
+#: port/frontend/shell/settings.cpp:618
+msgid "Games on a computer or a NAS, over SMB or NFS."
+msgstr "Juegos en una computadora o un NAS, por SMB o NFS."
+
+#: port/frontend/shell/settings.cpp:619
+msgid "A folder shared by a Windows, macOS or Linux computer or a NAS, read where it is: add it here, then choose a games folder on it with the folder browser, where each share is a tab. Nothing is ever written to it; saves and installs stay on the PS5. A cable does better than Wi-Fi for Wii U games."
+msgstr "Una carpeta compartida por una computadora con Windows, macOS o Linux o por un NAS, leída donde está: agrégala aquí y elige después una carpeta de juegos en ella con el explorador de carpetas, donde cada recurso compartido es una pestaña. Nunca se escribe nada en ella; las partidas guardadas y las instalaciones se quedan en la PS5. Para los juegos de Wii U, un cable funciona mejor que el wifi."
+
+#: port/frontend/shell/settings.cpp:1036
 msgid "On, a QR code here opens the game's second screen in a phone's browser. Nothing to install; the phone must be on the PS5's network."
 msgstr "Activado, un código QR aquí abre la segunda pantalla del juego en el navegador de un celular. No hay que instalar nada; el celular debe estar en la red de la PS5."
 
 #: port/frontend/shell/setup.cpp:553
 msgid "The guide, on your phone"
 msgstr "La guía, en tu celular"
+
+#: port/frontend/shell/shares.cpp:73
+msgid "Enter the computer's address or name first."
+msgstr "Escribe primero la dirección o el nombre de la computadora."
+
+#: port/frontend/shell/shares.cpp:75
+msgid "Enter the shared folder's name, or choose one the computer lists."
+msgstr "Escribe el nombre de la carpeta compartida o elige una de las que muestra la computadora."
+
+#: port/frontend/shell/shares.cpp:76
+msgid "No computer answers to that name. Try its address, like 192.168.1.20."
+msgstr "Ninguna computadora responde a ese nombre. Prueba con su dirección, como 192.168.1.20."
+
+#: port/frontend/shell/shares.cpp:77
+msgid "Nothing answered. Is the computer on, with file sharing turned on?"
+msgstr "Nadie respondió. ¿La computadora está encendida y con el uso compartido de archivos activado?"
+
+#: port/frontend/shell/shares.cpp:78
+msgid "The computer did not accept the user name or password."
+msgstr "La computadora no aceptó el nombre de usuario o la contraseña."
+
+#: port/frontend/shell/shares.cpp:79
+msgid "The computer shares no folder by that name."
+msgstr "La computadora no comparte ninguna carpeta con ese nombre."
+
+#: port/frontend/shell/shares.cpp:81
+msgid "The computer did not let the PS5 in: allow the PS5's address in the export's settings."
+msgstr "La computadora no deja entrar a la PS5: permite la dirección de la PS5 en la configuración de la exportación."
+
+#: port/frontend/shell/shares.cpp:82
+msgid "The computer did not let the PS5 in: check the folder's sharing permissions, or sign in."
+msgstr "La computadora no deja entrar a la PS5: revisa los permisos de uso compartido de la carpeta o inicia sesión."
+
+#: port/frontend/shell/shares.cpp:84
+msgid "The computer did not list its exports. Type the export's path, like /volume1/games."
+msgstr "La computadora no muestra sus exportaciones. Escribe la ruta de la exportación, como /volume1/games."
+
+#: port/frontend/shell/shares.cpp:293
+msgid "Computers on the PS5's network that share files."
+msgstr "Computadoras de la red de la PS5 que comparten archivos."
+
+#: port/frontend/shell/shares.cpp:303
+msgid "Computer"
+msgstr "Computadora"
+
+#: port/frontend/shell/shares.cpp:306
+msgid "Its path on the computer, like /volume1/games."
+msgstr "Su ruta en la computadora, como /volume1/games."
+
+#: port/frontend/shell/shares.cpp:307
+msgid "The computer shares {0} folder. Left and Right choose; Cross types another."
+msgid_plural "The computer shares {0} folders. Left and Right choose; Cross types another."
+msgstr[0] "La computadora comparte {0} carpeta. Izquierda y Derecha eligen; Cruz escribe otra."
+msgstr[1] "La computadora comparte {0} carpetas. Izquierda y Derecha eligen; Cruz escribe otra."
+
+#: port/frontend/shell/shares.cpp:469
+msgid "The computer's address or name"
+msgstr "La dirección o el nombre de la computadora"
+
+#: port/frontend/shell/shares.cpp:520
+msgid "Add"
+msgstr "Agregar"
+
+#: port/frontend/shell/shares.cpp:538
+msgid "Games on a computer or a NAS, played where they are. Each share is a tab of the folder browser. Read only."
+msgstr "Juegos en una computadora o un NAS, jugados donde están. Cada recurso compartido es una pestaña del explorador de carpetas. Solo lectura."
+
+#: port/frontend/shell/shares.cpp:555 port/frontend/shell/shares.cpp:579
+msgid "Add a share"
+msgstr "Agregar un recurso compartido"
+
+#: port/frontend/shell/shares.cpp:570
+msgid "Turn on file sharing for a folder on your computer or NAS, then add it here. The PS5 reads games from it; it never writes to it. A cable does better than Wi-Fi for Wii U games."
+msgstr "Activa el uso compartido de archivos para una carpeta de tu computadora o NAS y agrégala aquí. La PS5 lee los juegos de ella; nunca escribe en ella. Para los juegos de Wii U, un cable funciona mejor que el wifi."
 
 #: port/frontend/shell/welcome.cpp:28
 msgid "Menus in your PS5's language, every one it offers: Arabic, Asian and European."
