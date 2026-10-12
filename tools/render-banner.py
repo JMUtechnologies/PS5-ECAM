@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Draw the README's banner, with nothing but the standard library.
+"""Draw the README's banner, with nothing but the standard library (and fontTools for --title-font).
 
-    render-banner.py OUTPUT_SVG
+    render-banner.py [--title-font FONT] OUTPUT_SVG
 
 writes docs/banner.svg (1280x320): PS5CEMU-HAR's two sides, split down the middle as its start
 screen is. On the left Cemu's: the Wii U GamePad (tools/render-icons.py's shapes) on the Wii U
@@ -106,9 +106,41 @@ def wave(top, length, amplitude):
     return f'M{HALF},{H} L' + ' L'.join(points) + f' L{W},{H} Z'
 
 
+def outlined(font_path, text, centre_x, baseline, size, tracking):
+    """The app's name as paths, not text: the name's typeface (Typodermic's Zrnic) may be used for
+    fixed artwork such as an outlined SVG, but not shared, so the banner carries its letters' shapes
+    and never the font. Centred on centre_x, each letter its advance plus tracking apart."""
+    from fontTools.pens.svgPathPen import SVGPathPen
+    from fontTools.pens.transformPen import TransformPen
+    from fontTools.ttLib import TTFont
+    font = TTFont(font_path)
+    glyphs = font.getGlyphSet()
+    cmap = font.getBestCmap()
+    scale = size / font['head'].unitsPerEm
+    names = [cmap[ord(c)] for c in text]
+    width = sum(glyphs[n].width * scale for n in names) + tracking * (len(names) - 1)
+    x = centre_x - width / 2
+    paths = []
+    for name in names:
+        pen = SVGPathPen(glyphs)
+        glyphs[name].draw(TransformPen(pen, (scale, 0, 0, -scale, x, baseline)))
+        if pen.getCommands():
+            paths.append(pen.getCommands())
+        x += glyphs[name].width * scale + tracking
+    return ' '.join(paths)
+
+
 def main():
-    if len(sys.argv) != 2:
+    args = sys.argv[1:]
+    title_font = None
+    if len(args) >= 2 and args[0] == '--title-font':
+        title_font = args[1]
+        args = args[2:]
+    if len(args) != 1:
         sys.exit(__doc__)
+    sys.argv = [sys.argv[0]] + args
+    title = (f'<text x="{HALF}" y="176" font-size="88" font-weight="800" letter-spacing="-1" fill="{BODY}">PS5CEMU-HAR</text>'
+             if not title_font else f'<path d="{outlined(title_font, "PS5CEMU-HAR", HALF, 176, 88, 1)}" fill="{BODY}"/>')
     hbl = background()
     top = '#%02x%02x%02x' % hbl.TOP
     # the gradient runs over the launcher's whole 720 rows; the banner shows the top 320
@@ -172,7 +204,7 @@ def main():
   <ellipse cx="{HALF + 170}" cy="160" rx="190" ry="62" fill="{GOLD['accent']}" fill-opacity="0.38" filter="url(#glow)"/>
   <rect x="{HALF - 330}" y="104" width="660" height="128" rx="40" fill="#040810" fill-opacity="0.4" filter="url(#soft)"/>
   <g font-family="{FONT}" filter="url(#text-shadow)" text-anchor="middle">
-    <text x="{HALF}" y="176" font-size="88" font-weight="800" letter-spacing="-1" fill="{BODY}">PS5CEMU-HAR</text>
+    {title}
     <text x="{HALF}" y="218" font-size="26" font-weight="600" fill="#e6eef6">Wii U and Nintendo 3DS on PlayStation 5</text>
   </g>
 </svg>

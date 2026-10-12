@@ -3,7 +3,7 @@
 """Draw PS5CEMU-HAR's home-screen art: its background, sce_sys/pic0.dds, and its tile,
 sce_sys/icon0.png.
 
-    render-presentation.py SCE_SYS_DIR [PREVIEW_PNG]
+    render-presentation.py [--title-font FONT] SCE_SYS_DIR [PREVIEW_PNG]
 
 The PS5 shows pic0.dds behind the app while it is selected on the home screen, and pic1.dds while
 it starts; tools/package.sh installs this one image as both. It is the README's banner
@@ -20,9 +20,12 @@ The console takes a single 3840x2160 BC7_UNORM DX10 DDS without mipmaps
 per 4x4 block, a line between two colours, along the block's principal axis, and a 4-bit position
 on it for each pixel. The tile is a 512x512 opaque PNG; the console rounds its corners.
 
-This needs Pillow and numpy, and the banner's fonts (Segoe UI Black and Semibold, from Windows;
-DejaVu Sans stands in elsewhere); its output is committed (sce_sys/pic0.dds, sce_sys/icon0.png), so
-the build needs none of them. The devices take a minute or so: render-icons.py draws them a pixel at
+This needs Pillow and numpy, and the banner's fonts: the name's is Typodermic's Zrnic, which its
+licence lets the developer use for fixed artwork like these images but not share, so it is not in
+this repository: --title-font names the developer's own copy (zrnic rg.otf; without it, Segoe UI
+Black from Windows, or DejaVu Sans Bold, stand in); the tagline's is Segoe UI Semibold (the launcher's
+Lexend SemiBold, tools/fonts, elsewhere). The output is committed (sce_sys/pic0.dds, sce_sys/icon0.png), so the build needs none
+of them. The devices take a minute or so: render-icons.py draws them a pixel at
 a time.
 """
 
@@ -40,7 +43,9 @@ HALF = W // 2
 DARK, DARK_WAVES = 0.7, 0.8
 FONT_DIRS = ["C:/Windows/Fonts", "/mnt/c/Windows/Fonts"]
 HEAVY = [os.path.join(d, "seguibl.ttf") for d in FONT_DIRS] + ["/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"]
-SEMIBOLD = [os.path.join(d, "seguisb.ttf") for d in FONT_DIRS] + ["/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"]
+# the tagline: Segoe UI Semibold from Windows, else the launcher's own Lexend at its semibold weight
+LEXEND = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts", "Lexend[wght].ttf")
+SEMIBOLD = [os.path.join(d, "seguisb.ttf") for d in FONT_DIRS] + [LEXEND, "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"]
 BLUE, GOLD = (0x5a, 0xa9, 0xff), (0xf4, 0xb6, 0x3f)
 TAGLINE = (0xe6, 0xee, 0xf6)
 # render-banner.py's waves (top, wavelength, amplitude, colour, alpha), in its 1280x320 pixels
@@ -155,7 +160,10 @@ def device(kind, scale, centre, size):
 def font(candidates, size):
     for path in candidates:
         if os.path.isfile(path):
-            return ImageFont.truetype(path, size)
+            face = ImageFont.truetype(path, size)
+            if path == LEXEND:
+                face.set_variation_by_axes([600])  # SemiBold, as the launcher's tokens use it
+            return face
     sys.exit("no font found: " + ", ".join(candidates))
 
 
@@ -290,8 +298,15 @@ def write_dds(path, blocks):
 
 
 def main():
-    if len(sys.argv) not in (2, 3):
+    args = sys.argv[1:]
+    if len(args) >= 2 and args[0] == "--title-font":
+        if not os.path.isfile(args[1]):
+            sys.exit("no font at " + args[1])
+        HEAVY.insert(0, args[1])
+        args = args[2:]
+    if len(args) not in (1, 2):
         sys.exit(__doc__)
+    sys.argv = [sys.argv[0]] + args
     out = sys.argv[1]
     rgb = np.asarray(picture())
     blocks = encode_bc7(rgb)

@@ -131,8 +131,8 @@ and drawn again:
 | `tools/render-background.py` | The Wii U Homebrew Launcher's background as a still picture, which the icons, the home screen background and the banner draw on. The launcher draws it moving (`port/frontend/shell/shell.cpp`) |
 | `tools/render-icons.py` | The launcher's icons: the GamePad on the bubbles, the 3DS on the waves, the DS on melon green with its pixels, and the Wii U and 3DS side by side. Run by `package.sh` |
 | `tools/render-shaders.sh` | The UI kit's and the DS screens' SPIR-V (`port/ui/shaders.h`, `port/melonds/shaders.h`, committed), with a glslangValidator |
-| `tools/render-presentation.py` | The PS5 home screen's art: the background (`sce_sys/pic0.dds`, installed as `pic0.dds` and `pic1.dds`, a 3840x2160 BC7 DDS it encodes itself) and the tile (`sce_sys/icon0.png`), both the README banner's design. Needs Pillow, numpy and the banner's fonts; its output is committed, so the build does not |
-| `tools/render-banner.py` | This repository's banner, `docs/banner.svg` |
+| `tools/render-presentation.py` | The PS5 home screen's art: the background (`sce_sys/pic0.dds`, installed as `pic0.dds` and `pic1.dds`, a 3840x2160 BC7 DDS it encodes itself) and the tile (`sce_sys/icon0.png`), both the README banner's design. Needs Pillow, numpy and the banner's fonts: the name's is Typodermic's Zrnic, whose licence allows fixed artwork but not sharing the font, so it is not in this repository and `--title-font` names your own copy. Its output is committed, so the build does not |
+| `tools/render-banner.py` | This repository's banner, `docs/banner.svg`; with `--title-font`, the name in Zrnic as outlines (fontTools), never the font itself |
 
 All but `render-presentation.py` and `render-menu-fonts.py` need only Python's standard library.
 
