@@ -354,6 +354,7 @@ namespace ps5shell
 
 	void Shell::Draw(Canvas& canvas)
 	{
+		m_drawing = &canvas;
 		DrawBackdrop(canvas);
 		const float appear = m_launch.active ? 1.0f - ui::ease::CubicOut((float)((m_now - m_launch.at) / kLaunchSeconds)) * 0.85f : 1.0f;
 		canvas.PushAlpha(appear);
@@ -379,6 +380,7 @@ namespace ps5shell
 			DrawHints(canvas, Hints());
 		canvas.PopAlpha();
 		DrawOverlays(canvas);
+		m_drawing = nullptr;
 	}
 
 	// -- sides and games ------------------------------------------------------------------------
@@ -1028,6 +1030,8 @@ namespace ps5shell
 				if (m_oscarZone == 1 && m_libraryIndex < ArticTiles())
 					return {{Icon::Cross, Tr("Open")}, {Icon::Touchpad, other}};
 				// tr: Up and Down on Meyer Oscar's Library: between its two parts
+				if (m_recent.empty()) // nothing played on this side yet: the Library alone
+					return {{Icon::Cross, Tr("Play")}, {Icon::Options, Tr("Options")}, {Icon::R2, Tr("Display")}, {Icon::Touchpad, other}};
 				return {{Icon::Cross, Tr("Play")}, {Icon::Options, Tr("Options")}, {Icon::UpDown, Tr("Recently played / Library")}, {Icon::Touchpad, other}};
 			}
 			if (m_libraryZone == 0)

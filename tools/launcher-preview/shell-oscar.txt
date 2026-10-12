@@ -1,0 +1,32 @@
+# Meyer Oscar's Library (UI-REDESIGN 6.11), with PREVIEW_THEME=meyer-oscar or meyer-oscar-light
+# (tools/preview-shell.sh tools/launcher-preview/shell-oscar.txt): Recently played, the Library as a
+# grid and as a list, Settings' dialog over it, then the 3DS and DS sides.
+wait 90
+shot oscar                    # Recently played, the game played last in focus
+press right                   # the next one in the row
+wait 25
+shot oscar-next
+press down                    # the Library, under the row
+wait 30
+shot oscar-library
+press down                    # its second row: the page scrolls as one
+wait 40
+shot oscar-library-row2
+press r2                      # Display: a list
+wait 30
+shot oscar-list
+press r2                      # a grid again
+press up up                   # back on Recently played
+wait 30
+press r1                      # Settings, a dialog over it
+wait 45
+shot oscar-settings
+press circle                  # closed: back on the game in focus
+wait 30
+shot oscar-settings-closed
+press touchpad                # the 3DS side
+wait 60
+shot oscar-3ds
+press touchpad                # the DS side
+wait 60
+shot oscar-ds

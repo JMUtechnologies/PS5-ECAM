@@ -437,11 +437,24 @@ namespace ps5shell
 		canvas.PopOffset();
 		canvas.PopClip();
 
-		// in the grid, the focused game's name and facts at the bottom left
+		// the Library fades into the page under its last row seen, over the hints, as the mockup has it
+		canvas.LinearGradient({0, 880, 1920, 200}, 0, ui::SetAlpha(kInk0, 0), ui::SetAlpha(kInk0, 1), 0, 880, 0, 1020);
+		// where in the Library the page is: a thin bar at the right, while it has more than is seen
+		const int rows = (total + columns - 1) / std::max(1, columns);
+		const float content = rows * pitch, viewTop = std::max(gridTop - scroll, 196.0f), view = 960 - viewTop;
+		if (total > 0 && content > view + 1 && view > 80)
+		{
+			const float seen = std::clamp(scroll + viewTop - gridTop, 0.0f, content - view);
+			const float thumb = std::max(48.0f, view * view / content);
+			const float x = 1920 - 52 - 4;
+			canvas.Rect({x, viewTop, 4, view}, 2, Wash(0.08f));
+			canvas.Rect({x, viewTop + (view - thumb) * seen / std::max(1.0f, content - view), 4, thumb}, 2, Wash(0.4f));
+		}
+
+		// in the grid, the focused game's name and facts at the bottom left, over the fade
 		if (!list && m_oscarZone == 1 && game >= 0)
 		{
 			Game& g = m_games[game];
-			canvas.Rect({0, 980, 1920, 100}, 0, ui::SetAlpha(kInk0, 0.82f));
 			const ui::TextBlock name = canvas.Text(Style({26, ui::Weight::SemiBold, 1.0f}), kSafeX, 1006, g.entry.game.name, kText, 760, 1);
 			canvas.Text(Style({22, ui::Weight::Regular, 1.0f}), kSafeX + name.width + 16, 1010, Facts({Played(g), LastPlayedWords(g.entry.lastPlayed)}),
 				Secondary(), 300, 1);

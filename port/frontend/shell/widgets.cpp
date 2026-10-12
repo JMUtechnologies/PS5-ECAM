@@ -63,7 +63,7 @@ namespace ps5shell
 		if (m_behind)
 			return; // the screen under a dialog: the dialog has the focus
 		m_ringAsked = true;
-		m_ringBox = box;
+		m_ringBox = m_drawing ? m_drawing->Placed(box) : box;
 		m_ringRadius = radius;
 		m_ringGlow = glow;
 	}
@@ -196,6 +196,8 @@ namespace ps5shell
 
 	void Shell::DrawGameName(Canvas& canvas, Game& game, const Box& box)
 	{
+		if (box.w < 100)
+			return; // a list's small cover: the name is beside it, and would not fit on it
 		const ui::TextStyle style{std::clamp(box.w * 0.11f, 13.0f, 30.0f), ui::Weight::Bold, 1.08f};
 		const ui::TextBlock block = m_fonts.Layout(style, game.entry.game.name, box.w * 0.82f, 3);
 		canvas.Text(block, box.x + box.w * 0.09f, box.Bottom() - box.w * 0.09f - block.height, 0xffffffff); // on the cover: white, whatever the theme
@@ -214,9 +216,11 @@ namespace ps5shell
 			canvas.ImageCover(picture.texture, picture.width, picture.height, drawn, kRadiusCover, 0xffffffff, 0.0f);
 		else
 		{
-			// no box art: a card in the game's colours (or the side's), the side's band, its icon and name
-			const uint32_t top = game.entry.ambient[0] ? ui::Mix(game.entry.ambient[0], 0xffffffff, 0.1f) : ui::Mix(Accent(), kInk1, 0.55f);
-			const uint32_t bottom = game.entry.ambient[1] ? game.entry.ambient[1] : kInk1;
+			// no box art: a card in the game's colours (or the side's), the side's band, its icon and name;
+			// its ground stays dark in a light theme too, as a picture's would, so the white name reads
+			const uint32_t ink = ui::LightTheme() ? kInk1Default : kInk1;
+			const uint32_t top = game.entry.ambient[0] ? ui::Mix(game.entry.ambient[0], 0xffffffff, 0.1f) : ui::Mix(Accent(), ink, 0.55f);
+			const uint32_t bottom = game.entry.ambient[1] ? game.entry.ambient[1] : ink;
 			canvas.LinearGradient(drawn, kRadiusCover, top | 0xff000000, bottom | 0xff000000, drawn.x, drawn.y, drawn.x, drawn.Bottom());
 			canvas.PushClip(drawn, kRadiusCover);
 			const float band = drawn.h * 0.09f;

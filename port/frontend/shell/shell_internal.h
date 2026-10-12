@@ -416,6 +416,9 @@ namespace ps5shell
 		// a screen drawn behind another (the Library under Settings' dialog): it asks for no focus and
 		// does not arrive again
 		bool m_behind = false;
+		// the canvas being drawn (Draw), so the focus ring goes where the focused box is drawn, offsets
+		// (a page scrolled, a screen sliding in) included
+		Canvas* m_drawing = nullptr;
 
 		// the Library's state card (no games, a notice): its buttons, and the one in focus
 		std::vector<Box> m_stateButtons;

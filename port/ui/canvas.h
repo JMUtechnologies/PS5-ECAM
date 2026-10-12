@@ -124,6 +124,8 @@ namespace ui
 		void PushOffset(float dx, float dy);
 		void PopOffset();
 		float Alpha() const { return m_alpha.empty() ? 1.0f : m_alpha.back(); }
+		// where a box given now is drawn: the offsets pushed, added up
+		Box Placed(const Box& box) const { return box.Offset(m_dx, m_dy); }
 
 	private:
 		void Add(Instance instance, TextureId texture = 0);
