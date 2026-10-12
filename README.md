@@ -577,3 +577,11 @@ licenses.
   warranty, breach the platform's terms of service, or cause data loss.
 - **Legal use only.** Only use it with hardware, accounts and content you own. This project does not
   support or enable piracy.
+
+## Support
+
+PS5CEMU-HAR is free. If it brings your games back, you can support its work at
+[paypal.me/empthe](https://www.paypal.com/paypalme/empthe), or scan the code (the same one as in the
+app's Settings > About):
+
+<a href="https://www.paypal.com/paypalme/empthe"><img src="docs/support-qr.svg" width="120" alt="QR code for paypal.me/empthe"></a>
