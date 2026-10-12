@@ -8,6 +8,7 @@
 
 #include "emulator.h"
 #include "../ps5/log.h"
+#include "../ps5/pad.h"
 #include "PS5PadController.h"
 
 #include "input/InputManager.h"
@@ -16,6 +17,8 @@
 #include "input/emulated/VPADController.h"
 #include "input/emulated/WiimoteController.h"
 
+#include <array>
+#include <mutex>
 #include <span>
 
 namespace ps5emu
@@ -229,6 +232,11 @@ namespace ps5emu
 			for (const auto& [button, input] : mapping)
 				emulated->set_mapping(button, pad, InputId(input));
 		}
+
+		// players 2-4's emulated controllers taken out of the game while their DualSense is away
+		// (DetachAbsentPlayers), kept to be put back as it comes
+		std::mutex s_detachedMutex;
+		std::array<EmulatedControllerPtr, ps5pad::kMaxPlayers> s_detached;
 	}
 
 	PlayerControls GetPlayerControls(int player)
@@ -358,5 +366,66 @@ namespace ps5emu
 			return;
 		emulated->delete_mapping(buttons[index].id);
 		Save(player);
+	}
+
+	void DetachAbsentPlayers()
+	{
+		auto& input = InputManager::instance();
+		ps5pad::Rescan(); // who is signed in now, not two seconds ago
+		std::lock_guard lock(s_detachedMutex);
+		// every one of players 2-4 out first, then those present back in their order, so they take
+		// the first Wii Remote channels whoever is missing (a player 3 alone is the game's player 2,
+		// as on a Wii U)
+		std::array<EmulatedControllerPtr, ps5pad::kMaxPlayers> taken;
+		for (int player = 1; player < ps5pad::kMaxPlayers; player++)
+			taken[player] = input.delete_controller((size_t)player);
+		for (int player = 1; player < ps5pad::kMaxPlayers; player++)
+		{
+			if (!taken[player])
+				continue;
+			if (ps5pad::IsConnected(player))
+			{
+				input.set_controller(taken[player]);
+				ps5log::Line("[controls] player {}: {} for the game", player + 1, taken[player]->type_string());
+			}
+			else
+			{
+				s_detached[player] = std::move(taken[player]);
+				ps5log::Line("[controls] player {}: no DualSense, so no {} for the game until one signs in", player + 1,
+					s_detached[player]->type_string());
+			}
+		}
+	}
+
+	void AttachJoinedPlayers()
+	{
+		auto& input = InputManager::instance();
+		std::lock_guard lock(s_detachedMutex);
+		for (int player = 1; player < ps5pad::kMaxPlayers; player++)
+		{
+			const bool present = ps5pad::IsConnected(player);
+			if (s_detached[player] && present)
+			{
+				// a controller of its own set since (the in-game menu) wins over the one kept
+				if (!input.get_controller((size_t)player))
+				{
+					// the game hears of it as a Wii Remote switched on (padscore's connect callback)
+					if (const auto wpad = std::dynamic_pointer_cast<WPADController>(s_detached[player]))
+						wpad->m_status = wpad->m_extension_status = WPADController::ConnectCallbackStatus::ReportConnect;
+					input.set_controller(s_detached[player]);
+					ps5log::Line("[controls] player {} joined: {}", player + 1, s_detached[player]->type_string());
+				}
+				s_detached[player].reset();
+			}
+			else if (!s_detached[player] && !present)
+			{
+				// signed out mid-game: the controller goes until they come back
+				if (auto emulated = input.delete_controller((size_t)player))
+				{
+					ps5log::Line("[controls] player {} left: their {} is disconnected", player + 1, emulated->type_string());
+					s_detached[player] = std::move(emulated);
+				}
+			}
+		}
 	}
 }

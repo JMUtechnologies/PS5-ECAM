@@ -234,7 +234,8 @@ namespace ps5emu
 		}
 
 		// Player 1 is the GamePad on the DualSense of whoever started PS5Cemu, players 2-4 Pro
-		// Controllers on the other signed-in users' DualSenses. Only when no profile exists yet.
+		// Controllers on the other signed-in users' DualSenses. Only when no profile exists yet. A
+		// game sees players 2-4's only while their DualSense is there (DetachAbsentPlayers).
 		void DefaultControllers()
 		{
 			auto& input = InputManager::instance();
@@ -537,6 +538,9 @@ namespace ps5emu
 			error = ps5lang::TrF("The Vulkan renderer did not start: {0}", ex.what());
 			return false;
 		}
+		// players 2-4 with no DualSense have no controller in the game (#29), after the game's profile
+		// had its say about controllers (PrepareForegroundTitle)
+		DetachAbsentPlayers();
 		CafeSystem::LaunchForegroundTitle();
 		ps5log::Line("[emu] {} is running ({})", CafeSystem::GetForegroundTitleName(), CpuModeName(ActiveSettings::GetCPUMode()));
 		// Cemu's own profile for the game (gameProfiles/), which can set the CPU mode and more
@@ -602,7 +606,10 @@ namespace ps5emu
 			ServiceGraphicPackRequests();
 			ps5usb::ServiceRequests();
 			if (++polls % 120 == 0)
+			{
 				ps5pad::Rescan(); // controllers joining or leaving, about every two seconds
+				AttachJoinedPlayers(); // and theirs in the game with them
+			}
 			if (polls % 3750 == 0)
 				LogMemory();
 			if (polls % 625 == 0)

@@ -165,6 +165,14 @@ namespace ps5emu
 	void SetDeadzones(int player, int left, int right);
 	// The default buttons and settings for the emulated controller the player has.
 	void ResetControls(int player);
+	// Players 2-4 in a game: their emulated controller exists for the game only while their
+	// DualSense is there, so a game sees no Pro Controller nobody holds (Skylanders Giants could not
+	// start with three, #29). Each player keeps the controller chosen for them, in the launcher and
+	// in their profile. Detach before the game starts; Attach as players come and go (RunGame's
+	// controller rescan, about every two seconds), which a game sees as a controller connected or
+	// disconnected.
+	void DetachAbsentPlayers();
+	void AttachJoinedPlayers();
 
 	// What a mapping can be: a DualSense input. Sticks and triggers count in one direction each.
 	enum class PadInput

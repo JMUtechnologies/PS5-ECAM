@@ -46,6 +46,7 @@ extern "C"
 	int32_t scePadSetVibration(int32_t handle, const PadVibration* vibration);
 	int32_t scePadSetLightBar(int32_t handle, const PadColor* color);
 	int32_t scePadSetMotionSensorState(int32_t handle, bool enabled);
+	int32_t scePadSetVibrationMode(int32_t handle, int32_t mode);
 }
 static_assert(sizeof(PadControllerInformation) == 28);
 
@@ -54,6 +55,9 @@ namespace ps5pad
 	namespace
 	{
 		constexpr int32_t kPortTypeStandard = 0;
+		// the two motors scePadSetVibration drives; the pad opens in haptics mode, where they do
+		// nothing (#41, found and tested on a console by 3lmerx503)
+		constexpr int32_t kVibrationModeCompatible = 2;
 
 		struct Slot
 		{
@@ -100,6 +104,8 @@ namespace ps5pad
 				slot.touchHeight = info.touchResolutionY;
 			}
 			scePadSetMotionSensorState(handle, true);
+			if (int32_t result = scePadSetVibrationMode(handle, kVibrationModeCompatible); result < 0)
+				ps5log::Line("[pad] player {}'s vibration mode could not be set: {:#x}", player + 1, (uint32_t)result);
 			ps5log::Line("[pad] player {} is user {:#x} (handle {})", player + 1, user, handle);
 		}
 
