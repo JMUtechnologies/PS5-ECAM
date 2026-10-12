@@ -19,7 +19,7 @@ namespace ps5shell
 	namespace
 	{
 		constexpr float kListTop = 290, kListWidth = 1000, kRowStep = 104, kRowHeight = 92;
-		constexpr float kAsideX = 1196, kAsideWidth = 628, kAsidePad = 36;
+		constexpr float kAsideX = 1196, kAsideWidth = 628, kAsidePad = 36, kAsideNewsTop = 96;
 
 		// what this version brings, as its release notes say it, a line each (Make it yours, after an
 		// update): changed with each release that has something to say
@@ -254,10 +254,17 @@ namespace ps5shell
 				news += std::string("•  ") + Tr(line) + "\n";
 		const ui::TextBlock newsBlock = m_fonts.Layout(Style({20, ui::Weight::Regular, 1.45f}), news, inner, 24);
 		const ui::TextBlock heading = m_fonts.Layout(Style({30, ui::Weight::SemiBold, 1.2f}), row.label, inner, 2);
-		const ui::TextBlock about = m_fonts.Layout(Style({21, ui::Weight::Regular, 1.55f}), row.help, inner, m_welcomeFirst ? 12 : 6);
 		const float newsHeight = news.empty() ? 0.0f : 18 + 10 + newsBlock.height + 28 + 2 + 26;
-		const float height = std::min(kListBottom - kListTop - 10, kAsidePad + newsHeight + 18 + 10 + heading.height + 14 + about.height + kAsidePad);
-		const Box aside{kAsideX, kListTop + 10, kAsideWidth, height};
+		// with what the version brings, the panel starts level with the page's title (nothing is beside
+		// it there), so the focused row's help still fits under the version's lines, in as many whole
+		// lines as are left (the rest behind Triangle)
+		const float top = news.empty() ? kListTop + 10 : kAsideNewsTop;
+		const ui::TextStyle aboutStyle = Style({21, ui::Weight::Regular, 1.55f});
+		const float aboutRoom = kListBottom - top - (kAsidePad + newsHeight + 18 + 10 + heading.height + 14 + kAsidePad);
+		const int aboutLines = std::clamp((int)(aboutRoom / (aboutStyle.size * aboutStyle.lineHeight)), 1, m_welcomeFirst ? 12 : 6);
+		const ui::TextBlock about = m_fonts.Layout(aboutStyle, row.help, inner, aboutLines);
+		const float height = std::min(kListBottom - top, kAsidePad + newsHeight + 18 + 10 + heading.height + 14 + about.height + kAsidePad);
+		const Box aside{kAsideX, top, kAsideWidth, height};
 		canvas.PushAlpha(Enter(2));
 		canvas.PushOffset((1 - Enter(2)) * 30, 0);
 		canvas.Rect(aside, kRadiusSheet, m_settings.ui.highContrast ? kInk2 : ui::SetAlpha(kInk1, 0.80f));
