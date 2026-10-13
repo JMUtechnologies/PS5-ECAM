@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Tue, 13 Oct 2026 03:23:28 +0000
+Subject: [PATCH] PS5: a draw whose pipeline finished compiling mid-sequence is
+ skipped, not an assert
+
+draw_execute_first leaves m_state.activeVertexDS null when the sequence's pipeline is still being compiled (async shader compile) and returns. When the compile thread finishes it before a later draw of the same sequence, draw_execute_continued sees a valid pipeline and no descriptor sets and hit cemu_assert(false), which raises SIGTRAP in a release build: Super Smash Bros. for Wii U ended about a minute in while its shaders were still compiling (signal 5 in VulkanRenderer::draw_execute). That draw is now skipped, as it would have been a moment earlier; the next sequence's first draw prepares the descriptor sets.
+---
+ src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRendererCore.cpp | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRendererCore.cpp b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRendererCore.cpp
+index c765a42..10f538f 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRendererCore.cpp
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRendererCore.cpp
+@@ -1656,7 +1656,10 @@ void VulkanRenderer::draw_execute_continued(uint32 baseVertex, uint32 baseInstan
+ 	}
+ 	else
+ 	{
+-		cemu_assert(false); // should never happen unless draw_prepareDescriptorSets can fail?
++		// the sequence's first draw found its pipeline still compiling (async shader compile) and left no
++		// descriptor sets; the pipeline finished since. Skip the draw, as while it was compiling, rather
++		// than end the app (Super Smash Bros. for Wii U); the next sequence prepares them
++		return;
+ 	}
+ 
+ 	draw_setRenderPass();
