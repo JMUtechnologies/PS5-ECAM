@@ -141,6 +141,11 @@ namespace ps5settings
 		// locks the other cores and the audio threads need. 20 in 4.0.0's test builds, for the A/B
 		// that decides it; 0: every turn, as before
 		int idleEventsUs = 20;
+		// only in ps5cemu.json: thread_local reads from a per-thread cache (patches/compiler-rt) rather than
+		// a call to libkernel's pthread_getspecific each time: on the console every thread_local is
+		// emulated, about 2% of each emulated core in Breath of the Wild's profile (2026-10-13). Tested
+		// on a PC (14,400 threads, sanitizers); off until a console A/B has measured it
+		bool fastTls = false;
 		// only in ps5cemu.json: the emulated CPU cores and Cemu's GPU thread each alone on a physical core
 		// of its own, every other thread kept off them, as ProsperoEden 1.001 places its threads, the
 		// cores found by a timing where CPUID does not tell them apart (ps5/threads.h). Read as the app

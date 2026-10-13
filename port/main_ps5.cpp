@@ -63,6 +63,9 @@ namespace coreinit
 // patches/cemu 0037: how long a thread retries the taken scheduler lock before it sleeps, in PAUSEs
 // (coreinit_Scheduler.cpp)
 extern uint32_t g_ps5SchedulerSpins;
+// patches/compiler-rt: thread_local reads from a per-thread cache (weak: builtins without the patch
+// have none)
+extern "C" __attribute__((weak)) int __ps5_emutls_fast;
 extern "C" uint64_t sceKernelGetTscFrequency();
 
 // The PS4 SDK's version record: its size is set by the caller (libkernel)
@@ -234,6 +237,13 @@ int main(int argc, char* argv[])
 	coreinit::g_ps5IdleSpinIterations = (uint32_t)settings.idleSpinUs * 50;
 	if (settings.idleSpinUs)
 		ps5log::Line("[threads] an idle emulated core spins {} us before it sleeps (idleSpinUs in ps5cemu.json)", settings.idleSpinUs);
+	// thread_local reads from a per-thread cache instead of a libkernel call each (fastTls)
+	if (&__ps5_emutls_fast)
+	{
+		__ps5_emutls_fast = settings.fastTls ? 1 : 0;
+		ps5log::Line("[threads] thread_local reads: {} (fastTls in ps5cemu.json)",
+			settings.fastTls ? "a per-thread cache" : "pthread_getspecific each time");
+	}
 	// the scheduler lock retried a while before a thread sleeps on it in the kernel (schedulerSpinUs),
 	// and the main core's idle loop looking at the system events at most so often (idleEventsUs)
 	g_ps5SchedulerSpins = (uint32_t)settings.schedulerSpinUs * 50;

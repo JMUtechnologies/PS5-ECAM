@@ -1,0 +1,133 @@
+emutls: a per-thread cache of the address array, found from the thread's control block
+
+On the PS5 every thread_local is emulated (-femulated-tls), and each access
+called pthread_getspecific in libkernel: about 2% of each emulated Wii U
+core's time in Cemu (Breath of the Wild's profile, 2026-10-13). A thread's
+%fs points at its control block, whose first word is its own address
+(FreeBSD's TLS variant II, as glibc's), so that address names the thread
+in a small table of (address, array) slots. A thread caches its array only
+where the block's third word is its pthread_self(); a slot's own thread
+alone writes or reads its array, the others only compare the address, and
+a thread gives its slot back as its array is freed. On while
+__ps5_emutls_fast is set (the port's fastTls); off, nothing changes.
+
+--- a/emutls.c
++++ b/emutls.c
+@@ -97,6 +97,82 @@
+   return (emutls_address_array *)pthread_getspecific(emutls_pthread_key);
+ }
+ 
++#if defined(__x86_64__)
++// PS5CEMU-HAR: a cache of each thread's address array, found from the thread's
++// control block without a call into the system library. On the console every
++// thread_local is emulated, and each access called pthread_getspecific in
++// libkernel: about 2% of each emulated Wii U core's time in Cemu (profile,
++// 2026-10-13). A thread's %fs points at its control block, whose first word
++// is its own address (FreeBSD's TLS variant II, glibc's too), so that address
++// names the thread: a slot of the table below holds it and the thread's
++// array. A thread caches its array only when the block's third word is its
++// pthread_self(), as FreeBSD and glibc lay it out; otherwise it keeps calling
++// pthread_getspecific. Only a slot's own thread writes its array or reads it;
++// the others only compare the address. On while __ps5_emutls_fast is set.
++#define EMUTLS_FAST_SLOTS 1024u
++#define EMUTLS_FAST_PROBES 4u
++typedef struct {
++  uintptr_t tcb;
++  emutls_address_array *array;
++} emutls_fast_slot;
++static emutls_fast_slot emutls_fast[EMUTLS_FAST_SLOTS];
++int __ps5_emutls_fast = 0;
++
++static __inline uintptr_t emutls_fast_tcb(void) {
++  uintptr_t tcb;
++  __asm__("movq %%fs:0, %0" : "=r"(tcb));
++  return tcb;
++}
++
++static __inline unsigned emutls_fast_hash(uintptr_t tcb) {
++  return (unsigned)((tcb >> 12) ^ (tcb >> 22) ^ (tcb >> 32)) &
++         (EMUTLS_FAST_SLOTS - 1);
++}
++
++// The calling thread's slot, or NULL.
++static __inline emutls_fast_slot *emutls_fast_find(uintptr_t tcb) {
++  const unsigned first = emutls_fast_hash(tcb);
++  for (unsigned i = 0; i < EMUTLS_FAST_PROBES; i++) {
++    emutls_fast_slot *slot = &emutls_fast[(first + i) & (EMUTLS_FAST_SLOTS - 1)];
++    if (__atomic_load_n(&slot->tcb, __ATOMIC_RELAXED) == tcb)
++      return slot;
++  }
++  return NULL;
++}
++
++// The calling thread's array, now its cached one: its slot, or a free one it
++// takes (none free: it stays uncached).
++static void emutls_fast_remember(emutls_address_array *array) {
++  const uintptr_t tcb = emutls_fast_tcb();
++  if (!tcb || *(const uintptr_t *)tcb != tcb ||
++      ((const uintptr_t *)tcb)[2] != (uintptr_t)pthread_self())
++    return;
++  emutls_fast_slot *slot = emutls_fast_find(tcb);
++  if (slot == NULL) {
++    const unsigned first = emutls_fast_hash(tcb);
++    for (unsigned i = 0; i < EMUTLS_FAST_PROBES && slot == NULL; i++) {
++      emutls_fast_slot *candidate = &emutls_fast[(first + i) & (EMUTLS_FAST_SLOTS - 1)];
++      uintptr_t free_tcb = 0;
++      if (__atomic_compare_exchange_n(&candidate->tcb, &free_tcb, tcb, false,
++                                      __ATOMIC_ACQ_REL, __ATOMIC_RELAXED))
++        slot = candidate;
++    }
++    if (slot == NULL)
++      return;
++  }
++  slot->array = array;
++}
++
++// The calling thread's slot given back, as its array is freed.
++static void emutls_fast_forget(void) {
++  emutls_fast_slot *slot = emutls_fast_find(emutls_fast_tcb());
++  if (slot != NULL) {
++    slot->array = NULL;
++    __atomic_store_n(&slot->tcb, 0, __ATOMIC_RELEASE);
++  }
++}
++#endif
++
+ static void emutls_key_destructor(void *ptr) {
+   emutls_address_array *array = (emutls_address_array *)ptr;
+   if (array->skip_destructor_rounds > 0) {
+@@ -109,6 +185,9 @@
+     array->skip_destructor_rounds--;
+     emutls_setspecific(array);
+   } else {
++#if defined(__x86_64__)
++    emutls_fast_forget();
++#endif
+     emutls_shutdown(array);
+     free(ptr);
+   }
+@@ -390,10 +469,24 @@
+ __attribute__((visibility("default"), weak))
+ #endif
+ void *__emutls_get_address(__emutls_control *control) {
++#if defined(__x86_64__) && !defined(_WIN32)
++  // the thread's cached array, when it has one that already holds the object
++  if (__ps5_emutls_fast) {
++    const uintptr_t cached = __atomic_load_n(&control->object.index, __ATOMIC_ACQUIRE);
++    emutls_fast_slot *slot = cached ? emutls_fast_find(emutls_fast_tcb()) : NULL;
++    emutls_address_array *fast = slot != NULL ? slot->array : NULL;
++    if (fast != NULL && cached <= fast->size && fast->data[cached - 1] != NULL)
++      return fast->data[cached - 1];
++  }
++#endif
+   uintptr_t index = emutls_get_index(control);
+   emutls_address_array *array = emutls_get_address_array(index--);
+   if (array->data[index] == NULL)
+     array->data[index] = emutls_allocate_object(control);
++#if defined(__x86_64__) && !defined(_WIN32)
++  if (__ps5_emutls_fast)
++    emutls_fast_remember(array);
++#endif
+   return array->data[index];
+ }
+ 

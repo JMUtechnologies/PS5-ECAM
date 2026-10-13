@@ -187,6 +187,7 @@ namespace ps5settings
 		ReadInt(json, "idleSpinUs", settings.idleSpinUs, 0, 2000);
 		ReadInt(json, "schedulerSpinUs", settings.schedulerSpinUs, 0, 1000);
 		ReadInt(json, "idleEventsUs", settings.idleEventsUs, 0, 1000);
+		ReadBool(json, "fastTls", settings.fastTls);
 		ReadBool(json, "isolateCores", settings.isolateCores);
 		ReadBool(json, "standardBorderColors", settings.standardBorderColors);
 		ReadBool(json, "shaderDiskCache", settings.shaderDiskCache);
@@ -331,6 +332,8 @@ namespace ps5settings
 		writer.Int(settings.schedulerSpinUs);
 		writer.Key("idleEventsUs");
 		writer.Int(settings.idleEventsUs);
+		writer.Key("fastTls");
+		writer.Bool(settings.fastTls);
 		writer.Key("isolateCores");
 		writer.Bool(settings.isolateCores);
 		writer.Key("standardBorderColors");

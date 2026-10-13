@@ -99,17 +99,25 @@ EOF
     mark_done glm
 fi
 
-if ! done_already compiler-rt-builtins; then
+# built again whenever patches/compiler-rt changes
+compiler_rt_stamp=compiler-rt-builtins-$(cat "$PS5CEMU_ROOT"/patches/compiler-rt/*.patch 2>/dev/null | sha256sum | cut -c1-12)
+if ! done_already "$compiler_rt_stamp"; then
     # Clang's builtins, which the host's Clang does not have for the PS5, from the same LLVM
     # release, where PS5_Vulkan's link recipe (tools/radv-link.sh) looks for them:
     # __emutls_get_address for -femulated-tls code (emutls.c; the destructor rounds as ProsperoEden
-    # has them, one, for libc++abi's pthread-key fallback) and __cpu_model for
+    # has them, one, for libc++abi's pthread-key fallback; patches/compiler-rt: a per-thread cache
+    # of the address array, which the port turns on with fastTls) and __cpu_model for
     # __builtin_cpu_supports, which RADV's address library calls (x86.c).
     rt=$deps/compiler-rt-18.1.8
     out=$PS5CEMU_SYSROOT/clang-rt/lib/linux
     mkdir -p "$out" "$work/compiler-rt"
     sed 's/#define EMUTLS_SKIP_DESTRUCTOR_ROUNDS 0/#define EMUTLS_SKIP_DESTRUCTOR_ROUNDS 1/' "$rt/emutls.c" \
         >"$work/compiler-rt/emutls.c"
+    for patch in "$PS5CEMU_ROOT"/patches/compiler-rt/*.patch; do
+        [[ -f $patch ]] || continue
+        patch -s -p1 -d "$work/compiler-rt" <"$patch" ||
+            { echo "patches/compiler-rt/${patch##*/} does not apply to emutls.c" >&2; exit 1; }
+    done
     for source in "$work/compiler-rt/emutls.c" "$rt/x86.c"; do
         object=$work/compiler-rt/$(basename "$source" .c).o
         clang-18 -target x86_64-sie-ps5 -isysroot "$PS5_PAYLOAD_SDK" -isystem "$PS5_PAYLOAD_SDK/target/include" \
@@ -118,7 +126,7 @@ if ! done_already compiler-rt-builtins; then
     done
     rm -f "$out/libclang_rt.builtins-x86_64.a"
     llvm-ar-18 rcs "$out/libclang_rt.builtins-x86_64.a" "$work/compiler-rt/emutls.o" "$work/compiler-rt/x86.o"
-    mark_done compiler-rt-builtins
+    mark_done "$compiler_rt_stamp"
 fi
 
 echo "==> [deps] all libraries are in $PS5CEMU_SYSROOT"
