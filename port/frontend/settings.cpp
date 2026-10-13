@@ -193,6 +193,7 @@ namespace ps5settings
 		ReadBool(json, "driverClockTsc", settings.driverClockTsc);
 		ReadBool(json, "profile", settings.profile);
 		ReadBool(json, "heapThreadCache", settings.heapThreadCache);
+		ReadBool(json, "alwaysAskHen", settings.alwaysAskHen);
 		ReadString(json, "radvDebug", settings.radvDebug);
 		if (json.HasMember("radvEnvironment") && json["radvEnvironment"].IsObject())
 			for (const auto& member : json["radvEnvironment"].GetObject())
@@ -337,6 +338,8 @@ namespace ps5settings
 		writer.Bool(settings.profile);
 		writer.Key("heapThreadCache");
 		writer.Bool(settings.heapThreadCache);
+		writer.Key("alwaysAskHen");
+		writer.Bool(settings.alwaysAskHen);
 		writer.Key("radvDebug");
 		writer.String(settings.radvDebug.c_str());
 		writer.Key("radvEnvironment");

@@ -161,6 +161,9 @@ namespace ps5settings
 		// call: Cemu's recompiler spent about a third of its time in them. An experiment, off until a
 		// console has measured it
 		bool heapThreadCache = false;
+		// only in ps5cemu.json: ask a HEN (etaHEN, OnionHEN) at every start, as before 4.0.0, even when
+		// the app has what it needs without one; off: only when something is out of reach without it
+		bool alwaysAskHen = false;
 		// only in ps5cemu.json: RADV_DEBUG for the Vulkan driver (e.g. "nongg,nohiz"), to narrow down
 		// a GPU hang by turning hardware features off; empty by default
 		std::string radvDebug;

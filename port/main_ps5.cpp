@@ -160,8 +160,12 @@ int main(int argc, char* argv[])
 {
 	ps5log::Line("[main] PS5CEMU-HAR {} starting (Cemu at {}, Azahar at {}, melonDS at {})", PS5CEMU_VERSION, PS5CEMU_CEMU_COMMIT,
 		PS5CEMU_AZAHAR_COMMIT, PS5CEMU_MELONDS_COMMIT);
-	// before any thread starts: the HEN jailbreaks the process as it is
-	const ps5privilege::Result privileges = ps5privilege::Acquire();
+	// before any thread starts: the HEN jailbreaks the process as it is. The game folders are read
+	// first, so a HEN is asked only when something the app needs is out of reach without one
+	// (ps5cemu.json as it is: the defaults when /data is not open yet)
+	const ps5settings::Launcher early = ps5settings::Load();
+	const ps5privilege::Result privileges =
+		ps5privilege::Acquire({early.gamesFolder, early.n3ds.gamesFolder, early.nds.gamesFolder}, early.alwaysAskHen);
 	if (privileges.filesystem)
 		ps5log::Open(ps5paths::kLogs);
 	ps5log::Line("[main] firmware {}", Firmware());

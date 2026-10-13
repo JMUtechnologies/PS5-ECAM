@@ -30,8 +30,11 @@ namespace ps5privilege
 		std::string summary;	 // one line for the log and the launcher's status
 	};
 
-	// Blocking, at most a few seconds; call it before starting threads.
-	Result Acquire();
+	// Call it before starting threads. A HEN is asked (blocking, up to 5 s while the PS5's loading
+	// screen stays up) only when the app needs one: /data, executable memory or one of folders (the
+	// sides' game folders) or a drive plugged in is out of reach without it; or always, with
+	// alwaysAskHen (ps5cemu.json).
+	Result Acquire(const std::vector<std::string>& folders, bool alwaysAskHen);
 	const Result& Current();
 	// Once the settings are read, still before threads start: when a game folder, or a drive
 	// plugged in, is there but refused (a HEN that opened /data but not the drives), the bundled

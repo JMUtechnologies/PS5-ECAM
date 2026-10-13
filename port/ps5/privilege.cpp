@@ -192,7 +192,40 @@ namespace ps5privilege
 		}
 	}
 
-	Result Acquire()
+	namespace
+	{
+		// Seen but refused: what the sandbox does to a drive it keeps out (a missing folder is just
+		// missing, an unplugged drive, and is no reason to ask)
+		bool Refused(const std::string& path)
+		{
+			if (path.empty())
+				return false;
+			const int fd = open(path.c_str(), O_RDONLY | O_DIRECTORY);
+			if (fd >= 0)
+			{
+				close(fd);
+				return false;
+			}
+			return errno == EACCES || errno == EPERM;
+		}
+
+		// The first of the game folders, the USB drives and the extended storage that is there but
+		// refused; empty when every one can be read (or is missing)
+		std::string FirstRefused(const std::vector<std::string>& folders)
+		{
+			std::vector<std::string> wanted = folders;
+			for (int i = 0; i < 8; i++)
+				wanted.push_back(fmt::format("/mnt/usb{}", i));
+			wanted.push_back("/mnt/ext0");
+			wanted.push_back("/mnt/ext1");
+			for (const std::string& folder : wanted)
+				if (Refused(folder))
+					return folder;
+			return {};
+		}
+	}
+
+	Result Acquire(const std::vector<std::string>& folders, bool alwaysAskHen)
 	{
 		Result r;
 		std::string henDetail;
@@ -200,6 +233,10 @@ namespace ps5privilege
 		// download0 (/mnt/sandbox/PPSA99360_000/download0 from outside), no HEN is asked
 		if (access("/download0/ps5cemu_skip_hen", F_OK) == 0)
 			henDetail = "not asked: download0/ps5cemu_skip_hen is there";
+		// as other homebrew starts: no HEN asked, and no 5 s on the PS5's loading screen, when the
+		// app has all it needs without one (the recompilers' executable memory, /data, the folders)
+		else if (!alwaysAskHen && CanReachData() && ProbeExecutableDirect() && FirstRefused(folders).empty())
+			henDetail = "not asked: executable memory, /data and the game folders are there without one (alwaysAskHen in ps5cemu.json asks)";
 		else if (NoHenThisBoot() && CanReachData() && ProbeExecutableDirect())
 			henDetail = "not asked: none took the request earlier since the console started (no-hen-since-boot)";
 		else
@@ -242,38 +279,9 @@ namespace ps5privilege
 		return s_result;
 	}
 
-	namespace
-	{
-		// Seen but refused: what the sandbox does to a drive it keeps out (a missing folder is just
-		// missing, an unplugged drive, and is no reason to ask)
-		bool Refused(const std::string& path)
-		{
-			if (path.empty())
-				return false;
-			const int fd = open(path.c_str(), O_RDONLY | O_DIRECTORY);
-			if (fd >= 0)
-			{
-				close(fd);
-				return false;
-			}
-			return errno == EACCES || errno == EPERM;
-		}
-	}
-
 	void ReachFolders(const std::vector<std::string>& folders)
 	{
-		std::vector<std::string> wanted = folders;
-		for (int i = 0; i < 8; i++)
-			wanted.push_back(fmt::format("/mnt/usb{}", i));
-		wanted.push_back("/mnt/ext0");
-		wanted.push_back("/mnt/ext1");
-		std::string refused;
-		for (const std::string& folder : wanted)
-			if (Refused(folder))
-			{
-				refused = folder;
-				break;
-			}
+		const std::string refused = FirstRefused(folders);
 		if (refused.empty())
 			return;
 		// a HEN that opened /data but not the drives (games on USB on 13.x, #16): the bundled helper
