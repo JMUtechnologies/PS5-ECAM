@@ -80,7 +80,54 @@ to look first if 8K stops or stutters where 4K does not.
   a heavier GPU load (a deferred renderer, Cemu's translated shaders, its surface copies), so that
   is a ceiling, not a forecast.
 - **Nothing measures whether BotW is GPU-bound on the console.** That decides which of the changes
-  below matter, which is why the first two are measurements.
+  below matter, which is why the first two are measurements. (Measured since: it is not. See the
+  next section.)
+
+## Measured on the console, 2026-10-13: BotW at 4K is bound by the CPU side
+
+Profiles and boot logs of Breath of the Wild at 4K (FPS++ at 60, 120 Hz output with frame pacing at
+60) on PS5-680: `~/sessions/2026-10-13-botw4k` (the 4.0.0 build then on the console, 709d296) and the
+A/B sessions `~/sessions/ab-perf-*` in WSL, each with its ELF in `~/builds`.
+
+**Before (709d296):** 54-61 fps, median 56.5 over the last 80 s; the GPU 58-71% busy, so not the
+limit. Cemu's GPU thread was:
+
+| Where its time went | Share | A PC pays |
+| --- | --- | --- |
+| Blocked in `sceAgcDriverSubmitDcb` (`agc_ms` 1,300-1,800 in each 10 s, 100-250 us a submission, almost none of it on the CPU) | 13-18% of its wall time | a few us a submission |
+| `clock_gettime`, 890 ns a call (Cemu's vsync timer in the command loop; the driver's waits and its seven reads a submission) | about 10% of its CPU time | ~20 ns a call (vDSO) |
+| Waiting for the emulated CPU (the command ring empty) | 10-20% | |
+
+The emulated cores ran the same clock call too: about 20% of the main core's time, though most of
+that in its idle loop, which on the main core never sleeps and checks the system events every turn.
+
+**The first round (0f7012f):** patches/mesa 0008 (the driver's own submit thread, `asyncSubmit`),
+0009 (the waits' sleep, `gpuWaitSleepUs` 200), Cemu's timers and the driver's clock on the TSC
+(`tscClocks`, `driverClockTsc`, both only once the TSC's reported rate checks out:
+`ps5clock::TscAgrees`, 1596.30 MHz reported, 1596.40 measured). A/B on the console, the same build,
+alternating settings: the GPU thread went from 8-19% idle to 30-55% idle, and from 14% waiting on the
+GPU to 1-3%. No run was slower. But the frame rate stayed about 58 at ~4,400 draws a frame either
+way: the next limit is the emulated CPU.
+
+**The emulated CPU (profiles of the same runs):** the third emulated core was busy 83-92%, and about
+a fifth of it was not the game's code:
+
+| Cost on core 2 | Share | Why it is the console's |
+| --- | --- | --- |
+| `_umtx_op` (a sleep or a wake in the kernel) | 6-9% | Cemu's scheduler lock is a pthread mutex outside Windows; a default-type mutex found taken sleeps in the kernel at once, and its unlock wakes the sleeper with another call |
+| Spinning on `sTimerSpinlock` in `PPCTimer_getFromRDTSC`, inlined into every thread switch | ~1.4% | with the clocks on the TSC the main core's idle loop took that lock some ten million times a second |
+| Two `MFENCE`s around every fiber switch | ~0.7% | FiberUnix's, copied by FiberPS5; Cemu's Windows fibers have none |
+| `__emutls_get_address` and libkernel's `pthread_getspecific` | ~2.5% | every `thread_local` is emulated on the console |
+| Switching between the game's threads (context, fiber, the thread map) | ~4% | the same code as on a PC, on a slower core |
+
+**The second round (fbd3780, 3b0d0a5, 4ccc57d), awaiting its A/B:** Cemu patch 0037 (the scheduler
+lock retried for `schedulerSpinUs` 20 before a thread sleeps on it; the main core's idle loop looks
+at the system events every `idleEventsUs` 20 at most), `isolateCores` and `idleSpinUs` 100 on, the
+fiber switch without fences, a cache line's round trip between cores in the boot log (which cores
+share an L3, for where the four busy threads should sit), and `fastTls` (patches/compiler-rt: a
+per-thread cache in front of `pthread_getspecific`, off until measured). The profiler now reads the
+fibers' stacks, so the emulated cores' samples get callers: the next profile says who makes each
+call into the kernel.
 
 ## How the driver works
 
@@ -223,7 +270,7 @@ check that the words copied equal the words planned held throughout). The consol
 against PS5_PayloadSDK's headers. None of them has run on a console. 0001-0004 were written against
 `0b2d6d1a` and apply to `7b59ef27` unchanged (the four commits between touch only the swapchain);
 0005 and 0006 were written against `7b59ef27`. RADV builds with all six there, and with 0006 alone.
-`make radv` builds 0006 and 0007 by default (0005 needs 0001-0004 under it); `RADV_PATCHES` chooses others ([below](#building-with-the-patches)).
+`make radv` builds 0006-0009 by default (0005 needs 0001-0004 under it; 0008 and 0009 replace parts of 0001-0003 and do not apply over them); `RADV_PATCHES` chooses others ([below](#building-with-the-patches)).
 0007 is not a performance change: it is the driver fix 3.0.0's archive was built with (Mesa
 `13aa9a88`), which the newer driver lacks, against GPU faults that stop the console.
 
@@ -236,6 +283,8 @@ against PS5_PayloadSDK's headers. None of them has run on a console. 0001-0004 w
 | 0005 Flips on the GPU | With `RADV_PS5_GPU_FLIP=1`, a present puts `sceAgcDcbSetFlip`'s packets (mode 1, the flip's argument as their marker, as ps5vk flipped) on the queue in a submission of their own, behind the frame (`radv_ps5_submit_after`, which the swapchain links weak), instead of handing the frame to the flip thread | The GPU hands the flip to VideoOut as the frame's work ends: no core spinning on each frame's fence, no sleep between the frame and its flip, so a frame done just before a vblank makes it | Medium: off by default. Flips from the CPU and the GPU are never mixed out of order (a present goes to the thread only while the thread still holds flips, or when its frame's submission was deferred, which Cemu's never is), but whether VideoOut paces the GPU's flips with the flip rate as it paces `sceVideoOutSubmitFlip`'s is unmeasured |
 | 0006 Refresh rate asked for again | `wsi_videoout_set_high_frame_rate(high)` configures the open output again once no swapchain presents on it: 119.88 Hz where `param.json` (`PS5_VIDEOOUT_PARAM_JSON`, read again) declares high-frame-rate output, else 59.94 Hz; the display modes offered follow. The app calls it, weak, before each Wii U game (`ps5display::ConfigureOutput`) | **120 Hz output works after the new launcher**, which opens VideoOut first at 59.94 Hz: without it, the driver keeps the launcher's rate for the process. The boot log says `VideoOut configured again for the next surface: 119.88 Hz` | Low: **in the default build**. A process that never calls it behaves as before; it refuses (-1) while a swapchain still presents |
 | 0007 Freed buffers wait for the GPU | A destroyed buffer's direct memory waits, with the newest submission's sequence number, until the queue has run that far; what the GPU is done with is freed at each later destroy | **No GPU fault on memory freed while submitted work still uses it** (the whole console hangs on such a fault: Breath of the Wild's runes and scope did it before 3.0.0) | Low: **in the default build**, as in 3.0.0's driver. Memory is freed a little later |
+| 0008 Submissions on a thread of their own | With `RADV_PS5_SUBMIT_THREAD=1` (the app's `asyncSubmit`), a submission is planned, numbered and copied into the ring where it is made; a thread of the driver's own flushes it and calls `sceAgcDriverSubmitDcb`, in order, spinning `RADV_PS5_SUBMIT_SPIN_US` (2000) before it sleeps. What AGC is told outside a submission (the GPU clock read, the tessellation rings) waits for it to empty | The GPU thread no longer blocks in AGC: measured 8-19% idle before, 30-55% after (BotW at 4K, 2026-10-13) | Low: stress-tested (the real code, up to 8 submitters, sleeps and wakes, a full job ring, a refused submission; clean under ThreadSanitizer); off unless asked |
+| 0009 Waits' spin and sleep at run time | `RADV_PS5_WAIT_SPIN_US` and `RADV_PS5_WAIT_SLEEP_US` (1500 and 1000, as before; the app's `gpuWaitSleepUs`) for the waits for the GPU; `vkGetFenceStatus` answers without the clock. Replaces 0003's fixed 200 us | A wait wakes within a fifth of the time after the GPU gets there | Low: unchanged unless asked |
 
 0005 on the PC model: 2,000,000 presents through three images, two submissions a frame (the frame
 and the flip's 72 words); a frame held behind a timeline semaphore that another thread opens 30 ms
@@ -299,8 +348,8 @@ with the recipe's own release options, cross files and `mesa_clc`, into
 `.deps/PS5_Vulkan/.deps/native/radv-ps5cemu` (its `PROVENANCE.txt` lists the patches):
 
 ```sh
-make release                          # 0006 and 0007, the default: 120 Hz output after the new launcher, freed buffers safe
-make release RADV_PATCHES=all         # every patch, for the A/B runs below
+make release                          # 0006-0009, the default: 120 Hz output after the new launcher, freed buffers safe, the submit thread and wait timing the app can ask for
+make release RADV_PATCHES=all         # the earlier experiments, 0001-0007, for the A/B runs below
 make release RADV_PATCHES=0004,0006   # some of them, by number
 make release RADV_PATCHES=            # none: the recipe's archive as it is
 ```
