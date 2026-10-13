@@ -66,6 +66,8 @@ namespace ps5shell
 		Artic,
 		Updates, // Updates and DLC (6.12)
 		Shares,	 // Network shares (6.14)
+		Home,	 // Eden's (eden.cpp, 6.17): the game to continue, its cover, the recent games
+		About,	 // Eden's: who made what, the version, the support card
 	};
 
 	struct ShareJob; // shares.cpp: a test or a look around the network, on a thread of its own
@@ -263,7 +265,69 @@ namespace ps5shell
 		std::vector<ui::Theme> m_themes;
 		void DrawSlashes(Canvas& canvas, float alpha); // Phantom's motif
 		void DrawGrid(Canvas& canvas, float alpha);	   // Terminal's
-		void DrawEden(Canvas& canvas, float alpha);	   // Eden's (ProsperoEden 1.001's light and motes)
+		void DrawEden(Canvas& canvas, float alpha);	   // Eden's (ProsperoEden 1.001's light), under the scrims
+		void DrawMotes(Canvas& canvas, float alpha);   // and its motes of light rising, over them
+
+		// -- Eden (eden.cpp, docs/UI-REDESIGN.md 6.17): ProsperoEden 1.001's launcher, in each side's colours.
+		// A rail of sections at the left (Home, Library, Settings, About; L1 and R1 between them, the sides
+		// under them), Home around the game to continue, the Library's covers beside the focused game's
+		// details, Settings as a board of tiles whose pages (and a game's settings) are pages of three parts,
+		// the launch picture opening into it, and a launch of its own. Every other page is the one every
+		// theme has.
+		bool EdenLayout() const { return ui::CurrentLayout() == ui::Layout::Eden; }
+		int EdenSectionIndex() const;  // the rail's section the screen is (0 Home, 1 Library, 2 Settings, 3 About), else -1
+		bool EdenOnBoard() const;	   // where L1 and R1 go between the sections and Left reaches the rail
+		void EdenGo(int section);
+		bool EdenBarUpdate(const ui::Press& press);
+		std::vector<System> RailSides() const; // the sides shown, as the rail lists them under the sections
+		void SideTile(Canvas& canvas, System side, const Box& box, float radius, uint32_t tint); // a side's square, its console's glyph in it
+		void EdenDrawRail(Canvas& canvas);
+		float EdenDrawClock(Canvas& canvas); // the clock and the controllers at the top right; where they begin
+		void EdenDrawTitle(Canvas& canvas, const std::string& title, const std::string& copy);
+		void EdenDrawHints(Canvas& canvas, const std::vector<Hint>& hints);
+		std::vector<Hint> EdenHints(bool& handled) const;
+		void EdenDrawScrims(Canvas& canvas);
+		void EdenArrive(Canvas& canvas, int part, float rise); // a part of the screen arriving (pushes an alpha and an offset)
+		void EdenLeave(Canvas& canvas);
+		int EdenContinueGame() const; // the side's game to continue (the one played last), else -1
+		std::vector<int> EdenRecentGames(int continuing) const; // up to four played before it
+		int OwnSettings(const Game& game) const; // how many settings the game has of its own
+		std::string EdenRunsWith(Game& game);	 // its side, emulator, graphic packs and own settings, in a line
+		void EdenHomeUpdate(const ui::Press& press);
+		void EdenHomeDraw(Canvas& canvas);
+		void EdenStateDraw(Canvas& canvas, float x, float y, float width); // LibraryState's card, beside the rail
+		void EdenLibraryUpdate(const ui::Press& press);
+		void EdenLibraryDraw(Canvas& canvas);
+		void EdenDetailDraw(Canvas& canvas, int game);
+		std::vector<SettingsPage> EdenBoardPages() const; // Settings' pages but About (the rail's)
+		void EdenBoardUpdate(const ui::Press& press);
+		void EdenSettingsDraw(Canvas& canvas);
+		void EdenBoardDraw(Canvas& canvas);
+		void EdenPageDraw(Canvas& canvas); // a page of Settings, or a game's settings, in three parts
+		std::string EdenSummary(const std::string& page); // a page's values in a few words, one page refreshed a frame
+		void EdenAboutUpdate(const ui::Press& press);
+		void EdenAboutDraw(Canvas& canvas);
+		void EdenDrawLaunch(Canvas& canvas);
+		void EdenStartOpening();
+		bool EdenOpeningUpdate(const ui::Press& press); // a press skips it
+		void EdenDrawOpening(Canvas& canvas);
+		bool m_railFocus = false;
+		int m_railIndex = 0;	   // the sections, then the sides
+		ui::Spring m_railOpen;	   // 0 its icons, 1 open with their names (the focus on it)
+		ui::Spring m_railLit[4];   // the section shown
+		ui::Spring m_edenShade;	   // 0 Home's shade (the artwork clear at the right), 1 an even one
+		int m_edenDirection = 1;   // the way a section arrives from: 1 below the last, -1 above
+		int m_homeFocus = 0;	   // Play, Game settings, the recent games (2 to 5), View all games (6)
+		ui::Spring m_edenScroll;   // the Library's covers
+		std::map<std::string, std::string> m_edenSummaries; // the pages' values, by page id ("game:" a game's)
+		std::string m_edenSummaryOwner;						// whose they are: the side, and the game
+		size_t m_edenSummaryNext = 0;
+		Box m_edenLaunchFrom;	   // what Cross would start, where it is drawn this frame: the launch flies from there
+		int m_edenDetailGame = -2; // the game the Library's details show, and since when (they fade in)
+		double m_edenDetailAt = 0;
+		bool m_openingOn = false; // the launch picture opening into the launcher
+		double m_openingAt = -1;  // when it began: once its picture is in, the splash let go of
+		bool m_splashHidden = false;
 
 		void SetupOpen(bool first);
 		void SetupUpdate(const ui::Press& press);

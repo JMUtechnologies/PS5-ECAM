@@ -113,12 +113,14 @@ python3 -B "$boilerplate/tools/validate-elevation-helper.py" "$app/sandbox-eleva
 # The launcher (port/ui, docs/UI-REDESIGN.md): Lexend's four weights as one signed-distance atlas
 # (tools/render-sdf-font.sh, committed), three as TrueType for the in-game menus' ImGui
 # (tools/render-menu-fonts.py, committed) and their licence, the menu's sounds and the music
-# (tools/render-sounds.py, committed), and the two sides' tiles the bar shows (tools/render-icons.py)
+# (tools/render-sounds.py, committed), the two sides' tiles the bar shows (tools/render-icons.py), and
+# the launch picture Eden opens out of (sce_sys/pic0.dds as a 1920x1080 JPEG, committed: shell/eden.cpp)
 ui=$app/assets/ui
 mkdir -p "$ui/fonts" "$ui/sounds" "$ui/icons"
 cp "$PS5CEMU_ROOT/port/ui/fonts/lexend.sdf" "$PS5CEMU_ROOT"/port/ui/fonts/Lexend-*.ttf "$PS5CEMU_ROOT/tools/fonts/OFL.txt" "$ui/fonts/"
 cp "$PS5CEMU_ROOT"/port/frontend/ui/sounds/*.wav "$ui/sounds/"
 cp "$work/icons/ui/icons/ps5cemu-72.tga" "$work/icons/ui/icons/azahar-72.tga" "$work/icons/ui/icons/melonds-72.tga" "$ui/icons/"
+cp "$PS5CEMU_ROOT/port/frontend/ui/opening.jpg" "$ui/"
 
 # Cemu's read-only data: game profiles, and the Wii U's system fonts games draw text with.
 mkdir -p "$app/assets/cemu/resources"

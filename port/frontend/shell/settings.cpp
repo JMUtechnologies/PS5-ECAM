@@ -132,7 +132,7 @@ namespace ps5shell
 			TrMark("A hacker's console: phosphor on near-black, square corners, a grid with a scan line."), TrMark("Meyer Oscar"),
 			TrMark("Meyer Oscar Light"), TrMark("Your recently played games first, then your whole library."),
 			TrMark("Meyer Oscar with a light background."), TrMark("Eden"),
-			TrMark("ProsperoEden's frosted glass and drifting light, in each side's own colour.")};
+			TrMark("ProsperoEden's launcher: a rail of sections, Home around your game, Settings as tiles.")};
 
 		int ClockIndex(int clock)
 		{
@@ -1378,7 +1378,7 @@ namespace ps5shell
 			Toast(Tr("This game has no ID to save settings under"));
 			return;
 		}
-		m_gameFrom = m_screen == ScreenId::Hub ? ScreenId::Hub : ScreenId::Library;
+		m_gameFrom = m_screen == ScreenId::Hub ? ScreenId::Hub : m_screen == ScreenId::Home ? ScreenId::Home : ScreenId::Library;
 		m_sidePage = m_page;
 		m_gameTitle = g.titleId;
 		m_gameName = g.name;
@@ -1406,7 +1406,7 @@ namespace ps5shell
 		if (m_gameFrom == ScreenId::Hub)
 			Show(ScreenId::Hub);
 		else
-			ShowTab(ScreenId::Library);
+			ShowTab(m_gameFrom); // the Library, or Eden's Home
 	}
 
 	// A row changed by Left or Right (step) or Cross
@@ -1746,6 +1746,12 @@ namespace ps5shell
 
 	void Shell::SettingsUpdate(const ui::Press& press, const ui::Actions& actions)
 	{
+		// Eden's board of tiles (eden.cpp, 6.17); its pages' rows are every theme's
+		if (EdenLayout() && !InGameSettings() && !m_onRows)
+		{
+			EdenBoardUpdate(press);
+			return;
+		}
 		const auto pages = SettingsPages();
 		if (pages.empty())
 		{
@@ -1956,7 +1962,12 @@ namespace ps5shell
 
 	void Shell::SettingsDraw(Canvas& canvas)
 	{
-		// a dialog over the screen it was opened from, on every side and in every theme (6.5): that
+		if (EdenLayout())
+		{
+			EdenSettingsDraw(canvas); // a board of tiles, and pages of three parts (6.17)
+			return;
+		}
+		// a dialog over the screen it was opened from, on every side and in every theme but Eden (6.5): that
 		// screen as it was, dimmed, taking no input and asking for no focus
 		m_behind = true;
 		if (InGameSettings() && m_gameFrom == ScreenId::Hub)

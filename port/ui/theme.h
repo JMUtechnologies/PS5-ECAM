@@ -12,7 +12,7 @@
 //     "motif": "side"                     side (each side's own), none, slashes, grid or eden
 //   }
 //
-// A file based on meyer-oscar or meyer-oscar-light takes its Library's layout too. Meyer Oscar and
+// A file based on meyer-oscar, meyer-oscar-light or eden takes its layout too. Meyer Oscar and
 // Meyer Oscar Light are always the list's last two, after the player's own.
 //
 // Only the launcher has themes: the in-game menus keep their own look, and nothing of a theme runs
@@ -37,11 +37,13 @@ namespace ui
 		Eden,	 // the side's light drifting, its own motif faint, motes rising (Eden: ProsperoEden 1.001's look)
 	};
 
-	// How a side's Library is laid out
+	// How the launcher is laid out
 	enum class Layout
 	{
 		Shelf,	// covers on a shelf of equal rows, filters across the top (6.2)
 		Recent, // the games played last first, the last one large, then the whole library (Meyer Oscar, 6.11)
+		Eden,	// ProsperoEden 1.001's launcher: a rail at the left (Home, Library, Settings, About), Home around the
+				// game to continue, covers beside the focused game's details, Settings as tiles (6.17)
 	};
 
 	struct Theme

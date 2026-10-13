@@ -88,6 +88,8 @@ namespace ui
 		Save,	  // a floppy disk: Accounts and saves
 		Download, // an arrow into a tray: Updates and DLC, installing
 		Heart,	  // About's support card
+		Home,	  // a house: Eden's rail
+		Grid,	  // four squares: Eden's Library
 	};
 
 	class Canvas

@@ -36,6 +36,7 @@
 #include "app/compatibility.h"
 #include "app/gameinfo.h"
 #include "app/lang.h"
+#include "app/paths.h"
 #include "app/updates.h"
 #include "azahar/library.h"
 #include "melonds/library.h"
@@ -84,6 +85,9 @@ int main(int argc, char* argv[])
 		return 2;
 	}
 	preview::output = argv[1];
+	// the app's folder: preview-shell.sh's, with the assets the launcher reads pictures from (the sides'
+	// tiles, Eden's launch picture)
+	ps5paths::detail::AppDirSlot() = preview::output + "/app";
 	ps5gameinfo::SetFolder("port/app/gametdb"); // the repository's: the preview runs from its root
 	ps5compat::SetPath("docs/COMPATIBILITY.md");
 	if (std::getenv("PREVIEW_UPDATE"))

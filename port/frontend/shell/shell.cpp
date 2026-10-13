@@ -200,6 +200,10 @@ namespace ps5shell
 		}
 		if (!launchError.empty())
 			OpenHelp(Tr("The game could not start"), launchError);
+		// Eden's opening: the PS5's launch picture handed over to the launcher, as the app starts (not
+		// after a game, nor over what a failed one says)
+		else if (EdenLayout() && !returning && m_screen == ScreenId::Home)
+			EdenStartOpening();
 		ps5log::Line("[ui] the new launcher is up in {:.0f} ms", (host.clock() - started) * 1000);
 
 		while (!m_done && !m_failed)
@@ -301,9 +305,13 @@ namespace ps5shell
 			m_failed = true;
 		}
 		if (m_frames == 1)
+			ps5log::Line("[ui] first frame: {} instances, {} draws", m_list.instances.size(), m_list.runs.size());
+		// the PS5's splash goes once the launcher is drawn; with Eden's opening, once its picture (the
+		// splash's own) is drawn under it, so the one becomes the other
+		if (!m_splashHidden && (!m_openingOn || m_openingAt >= 0 || m_now - m_start > 1.5))
 		{
 			sceSystemServiceHideSplashScreen();
-			ps5log::Line("[ui] first frame: {} instances, {} draws", m_list.instances.size(), m_list.runs.size());
+			m_splashHidden = true;
 		}
 		// the tour log's line (docs/UI-REDESIGN.md, 9.9), every 600 frames
 		static double s_worst = 0, s_sum = 0;
@@ -333,14 +341,31 @@ namespace ps5shell
 				m_done = true;
 			return;
 		}
+		// Eden's own screens with another theme in use (it was changed): the Library
+		if (!EdenLayout())
+		{
+			m_railFocus = false;
+			if (m_screen == ScreenId::Home || m_screen == ScreenId::About)
+				ShowTab(ScreenId::Library);
+		}
 		for (const ui::Press& press : actions.presses)
 		{
 			if (m_launch.active || m_capture.active)
 				break;
+			if (m_openingOn)
+			{
+				EdenOpeningUpdate(press);
+				continue;
+			}
 			if (OverlayUpdate(press))
 				continue;
 			const bool tabbed = m_screen == ScreenId::Library || m_screen == ScreenId::Settings;
-			if (tabbed && BarUpdate(press))
+			if (EdenLayout() && EdenSectionIndex() >= 0)
+			{
+				if (EdenBarUpdate(press))
+					continue;
+			}
+			else if (tabbed && BarUpdate(press))
 				continue;
 			switch (m_screen)
 			{
@@ -356,6 +381,8 @@ namespace ps5shell
 			case ScreenId::Artic: ArticUpdate(press, actions); break;
 			case ScreenId::Updates: UpdatesUpdate(press); break;
 			case ScreenId::Shares: SharesUpdate(press, actions); break;
+			case ScreenId::Home: EdenHomeUpdate(press); break;
+			case ScreenId::About: EdenAboutUpdate(press); break;
 			}
 		}
 		// what is held to confirm goes on without presses
@@ -376,9 +403,11 @@ namespace ps5shell
 	void Shell::Draw(Canvas& canvas)
 	{
 		m_drawing = &canvas;
+		m_edenLaunchFrom = {};
 		DrawBackdrop(canvas);
 		const float appear = m_launch.active ? 1.0f - ui::ease::CubicOut((float)((m_now - m_launch.at) / kLaunchSeconds)) * 0.85f : 1.0f;
 		canvas.PushAlpha(appear);
+		const bool rail = EdenLayout() && EdenSectionIndex() >= 0;
 		switch (m_screen)
 		{
 		case ScreenId::Welcome: WelcomeDraw(canvas); break;
@@ -393,16 +422,31 @@ namespace ps5shell
 		case ScreenId::Artic: ArticDraw(canvas); break;
 		case ScreenId::Updates: UpdatesDraw(canvas); break;
 		case ScreenId::Shares: SharesDraw(canvas); break;
+		case ScreenId::Home: EdenHomeDraw(canvas); break;
+		case ScreenId::About: EdenAboutDraw(canvas); break;
 		}
+		if (rail)
+			EdenDrawRail(canvas);
 		const bool overlay = m_picker.open || m_help.open || m_menu.open || m_keyboard.open || m_update.open;
-		if (overlay)
-			m_ringAsked = false; // the overlay's own focus is drawn with it
+		if (overlay || m_openingOn)
+			m_ringAsked = false; // the overlay's own focus is drawn with it; the ring comes after Eden's opening
 		if (!m_launch.active)
 			DrawFocusRing(canvas);
 		if (!m_launch.active)
-			DrawHints(canvas, Hints());
+		{
+			if (rail)
+			{
+				canvas.PushAlpha(Enter(0)); // with the section (and after Eden's opening)
+				EdenDrawHints(canvas, Hints());
+				canvas.PopAlpha();
+			}
+			else
+				DrawHints(canvas, Hints());
+		}
 		canvas.PopAlpha();
 		DrawOverlays(canvas);
+		if (m_openingOn)
+			EdenDrawOpening(canvas);
 		m_drawing = nullptr;
 	}
 
@@ -455,7 +499,7 @@ namespace ps5shell
 			if (!first || m_frames > 0)
 			{
 				// what is happening shows while the side starts (Cemu takes a few seconds)
-				Show(ScreenId::Library);
+				Show(EdenLayout() ? ScreenId::Home : ScreenId::Library);
 				Frame();
 			}
 			m_prepare(side);
@@ -485,8 +529,10 @@ namespace ps5shell
 		m_search.clear();
 		m_stateButton = 0;
 		LibraryRefresh();
-		m_tab = ScreenId::Library;
-		Show(ScreenId::Library);
+		// Eden opens on Home, the game to continue in front (6.17)
+		m_homeFocus = 0;
+		m_tab = EdenLayout() ? ScreenId::Home : ScreenId::Library;
+		Show(m_tab);
 	}
 
 	System Shell::NextShownSide(System side) const
@@ -537,8 +583,12 @@ namespace ps5shell
 		m_feedback.Play(ui::Cue::Select);
 		// where the side being left was, for coming back to it
 		m_sideFocus[SideIndex()] = LibraryGame() >= 0 ? m_games[LibraryGame()].entry.game.titleId : 0;
-		const ScreenId tab = m_screen == ScreenId::Settings ? ScreenId::Settings : ScreenId::Library;
+		// the same tab (Eden: the same section) on the other side
+		const ScreenId tab = m_screen == ScreenId::Settings						 ? ScreenId::Settings :
+			EdenLayout() && (m_screen == ScreenId::Home || m_screen == ScreenId::About) ? m_screen :
+																						  ScreenId::Library;
 		OpenSide(side, false);
+		m_railFocus = false;
 		ShowTab(tab);
 		if (tab == ScreenId::Settings)
 		{
@@ -798,7 +848,8 @@ namespace ps5shell
 		ps5catalog::Played(CatalogSide(), game.entry.game.titleId, std::time(nullptr));
 		game.entry.lastPlayed = std::time(nullptr);
 		ps5catalog::Save();
-		Box from = m_launch.from;
+		// from where the game was in focus (Eden's covers say where), else the middle
+		Box from = EdenLayout() && m_edenLaunchFrom.w > 0 ? m_edenLaunchFrom : Box{};
 		if (from.w <= 0)
 			from = {760, 240, 400, 560};
 		LaunchGame(game.entry.game, IsDs() ? Tr("Starting melonDS") : Is3ds() ? Tr("Starting Azahar") : Tr("Starting Cemu"), from);
@@ -832,7 +883,8 @@ namespace ps5shell
 	void Shell::Show(ScreenId screen)
 	{
 		// Settings' dialog closing onto the screen it was over (6.5): that screen was there all along
-		const bool under = m_screen == ScreenId::Settings && (screen == ScreenId::Library || screen == ScreenId::Hub);
+		// (Eden's Settings are a section of their own: the screen arrives)
+		const bool under = !EdenLayout() && m_screen == ScreenId::Settings && (screen == ScreenId::Library || screen == ScreenId::Hub);
 		if (screen != m_screen)
 			m_screenAt = under ? m_now - 10 : m_now;
 		m_screen = screen;
@@ -864,6 +916,15 @@ namespace ps5shell
 
 	void Shell::FocusBar()
 	{
+		if (EdenLayout() && EdenSectionIndex() >= 0)
+		{
+			// Eden's bar is its rail, on the section shown
+			m_railFocus = true;
+			m_railIndex = std::max(0, EdenSectionIndex());
+			m_onBar = false;
+			m_feedback.Play(ui::Cue::Focus);
+			return;
+		}
 		m_onBar = true;
 		m_barFocus = m_tab == ScreenId::Library ? 3 : 4;
 		m_feedback.Play(ui::Cue::Focus);
@@ -1058,6 +1119,13 @@ namespace ps5shell
 			return {{Icon::Circle, Tr("Close")}};
 		if (m_menu.open)
 			return {{Icon::Cross, Tr("Choose")}, {Icon::Circle, Tr("Close")}};
+		if (EdenLayout() && EdenSectionIndex() >= 0)
+		{
+			bool handled = false;
+			std::vector<Hint> hints = EdenHints(handled);
+			if (handled)
+				return hints;
+		}
 		if (m_onBar && (m_screen == ScreenId::Library || m_screen == ScreenId::Settings) && !InGameSettings())
 			return {{Icon::LeftRight, Tr("Move")}, {Icon::Cross, m_barFocus < 3 && m_barFocus != SideIndex() ? Tr("Switch") : Tr("Open")},
 				{Icon::Touchpad, other}};
@@ -1132,6 +1200,8 @@ namespace ps5shell
 			return {{Icon::Cross, m_articRow == 0 ? Tr("Edit") : m_articRow == 1 ? Tr("Connect") : Tr("Hold to set up")}, {Icon::Circle, Tr("Back")}};
 		case ScreenId::Updates: return UpdatesHints();
 		case ScreenId::Shares: return SharesHints();
+		case ScreenId::Home:
+		case ScreenId::About: break; // Eden's (EdenHints)
 		}
 		return {};
 	}
@@ -1237,12 +1307,20 @@ namespace ps5shell
 		case ui::Motif::Eden: DrawEden(canvas, 1); break;
 		case ui::Motif::None: break;
 		}
-		// scrims, grain and a vignette
-		canvas.LinearGradient(screen, 0, ui::SetAlpha(kInk0, 0.7f), ui::SetAlpha(kInk0, 0), 0, 0, 1300, 0);
-		canvas.LinearGradient(screen, 0, ui::SetAlpha(kInk0, 0), ui::SetAlpha(kInk0, 0.8f), 0, 640, 0, 1080);
+		// scrims (Eden's where its rail is: 6.17), grain and a vignette
+		if (EdenLayout() && EdenSectionIndex() >= 0)
+			EdenDrawScrims(canvas);
+		else
+		{
+			canvas.LinearGradient(screen, 0, ui::SetAlpha(kInk0, 0.7f), ui::SetAlpha(kInk0, 0), 0, 0, 1300, 0);
+			canvas.LinearGradient(screen, 0, ui::SetAlpha(kInk0, 0), ui::SetAlpha(kInk0, 0.8f), 0, 640, 0, 1080);
+		}
 		if (!m_settings.ui.highContrast)
 			canvas.Grain(screen, Wash(0.05f));
 		canvas.RadialGradient(screen, 0, 0x00000000, light ? 0x1f000000 : 0x8c000000, 960, 432, 1248, 1026, 0.55f);
+		// Eden's motes of light, over the shade so they show
+		if (ui::CurrentMotif() == ui::Motif::Eden)
+			DrawMotes(canvas, 1);
 		canvas.PopAlpha();
 	}
 
@@ -1335,19 +1413,18 @@ namespace ps5shell
 	}
 
 	// Eden's motif, after ProsperoEden 1.001's Canopy (its backdrop's light, drift and motes): the side's
-	// light drifting slowly where Canopy's sun is, the side's own bubbles, waves or pixels faint behind the
-	// glass, and 26 motes of light rising, each swaying and glowing on its own
+	// light drifting slowly where Canopy's sun is, and the side's own bubbles, waves or pixels faint behind
+	// the glass; DrawMotes adds its motes of light over the shade
 	void Shell::DrawEden(Canvas& canvas, float alpha)
 	{
 		const Box screen{0, 0, 1920, 1080};
 		const bool still = m_settings.ui.reduceMotion;
 		const float t = still ? 0.0f : (float)(m_now - m_start);
-		const uint32_t accent = Accent();
-		const uint32_t light = ui::Mix(accent, 0xffffffff, 0.45f);
+		const uint32_t light = ui::Mix(Accent(), 0xffffffff, 0.45f);
 		// the light: at Canopy's sun (0.71, 0.39 of the screen), wandering a little
 		const float lx = 1363 + std::sin(t * 0.05f) * 60, ly = 422 + std::cos(t * 0.04f) * 30;
-		canvas.RadialGradient(screen, 0, ui::SetAlpha(light, 0.30f * alpha), ui::SetAlpha(light, 0), lx, ly, 960, 640);
-		canvas.RadialGradient(screen, 0, ui::SetAlpha(0xffffffff, 0.10f * alpha), ui::SetAlpha(0xffffffff, 0), lx, ly, 280, 210);
+		canvas.RadialGradient(screen, 0, ui::SetAlpha(light, 0.34f * alpha), ui::SetAlpha(light, 0), lx, ly, 960, 640);
+		canvas.RadialGradient(screen, 0, ui::SetAlpha(0xffffffff, 0.12f * alpha), ui::SetAlpha(0xffffffff, 0), lx, ly, 280, 210);
 		// the side's own, faint behind the glass
 		if (IsWiiU())
 			DrawBubbles(canvas, 0.45f * alpha);
@@ -1355,7 +1432,15 @@ namespace ps5shell
 			DrawWaves(canvas, 0.5f * alpha);
 		else
 			DrawPixels(canvas, 0.45f * alpha);
-		// the motes: each from its own seed, rising 14 to 36 pixels a second, fading out near the top
+	}
+
+	// 26 motes of light rising, each from its own seed, 14 to 36 pixels a second, swaying and glowing on its
+	// own, fading out near the top
+	void Shell::DrawMotes(Canvas& canvas, float alpha)
+	{
+		const bool still = m_settings.ui.reduceMotion;
+		const float t = still ? 0.0f : (float)(m_now - m_start);
+		const uint32_t light = ui::Mix(Accent(), 0xffffffff, 0.45f);
 		auto fraction = [](float x) { return x - std::floor(x); };
 		for (int i = 0; i < 26; i++)
 		{
@@ -1364,8 +1449,10 @@ namespace ps5shell
 			const float y = 1120 - std::fmod(t * speed + b * 1200, 1240.0f);
 			const float x = a * 1920 + std::sin(t * 0.6f + i) * 18;
 			const float glow = (0.45f + 0.35f * std::sin(t * 1.3f + i * 1.7f)) * std::clamp(y / 540.0f, 0.0f, 1.0f) * alpha;
-			canvas.Glow({x - size * 3, y - size * 3, size * 6, size * 6}, size * 3, 1.0f, ui::SetAlpha(light, 0.35f * glow));
-			canvas.Rect({x - size / 2, y - size / 2, size, size}, size / 2, ui::SetAlpha(0xffffffff, 0.8f * glow));
+			// its light, fading out from it, then the mote
+			const float reach = size * 4;
+			canvas.RadialGradient({x - reach, y - reach, reach * 2, reach * 2}, 0, ui::SetAlpha(light, 0.4f * glow), ui::SetAlpha(light, 0), x, y, reach, reach);
+			canvas.Rect({x - size / 2, y - size / 2, size, size}, size / 2, ui::SetAlpha(0xffffffff, 0.85f * glow));
 		}
 	}
 
@@ -1968,8 +2055,11 @@ namespace ps5shell
 			canvas.PopAlpha();
 		}
 
-		// the launch (6.8): the cover to the centre, growing, the rest dimmed, and what is happening
-		if (m_launch.active)
+		// the launch (6.8): the cover to the centre, growing, the rest dimmed, and what is happening; Eden's
+		// its own (6.17)
+		if (m_launch.active && EdenLayout())
+			EdenDrawLaunch(canvas);
+		else if (m_launch.active)
 		{
 			const float t = ui::ease::QuintOut((float)((m_now - m_launch.at) / kLaunchSeconds));
 			const float height = 560, width = height * std::clamp(m_launch.aspect, 0.5f, 1.4f);

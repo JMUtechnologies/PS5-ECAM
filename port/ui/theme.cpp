@@ -110,15 +110,17 @@ namespace ui
 			midnight.motif = Motif::None;
 			list.push_back(midnight);
 
-			// Eden: ProsperoEden 1.001's launcher look (its Canopy theme, blackbearreloaded/ProsperoEden,
-			// GPL-3.0-or-later): frosted glass tinted dark, a pale ring of light as the focus, rounder
-			// corners, and behind it the side's light drifting where Canopy's sun is, with motes of light
-			// rising. In each side's own colours (Wii U blue, 3DS gold, DS green), its bubbles, waves or
-			// pixels faint behind the glass.
+			// Eden: ProsperoEden 1.001's launcher (blackbearreloaded/ProsperoEden, GPL-3.0-or-later): its
+			// layout (a rail of sections at the left, Home around the game to continue, the Library's covers
+			// beside the game's details, Settings as tiles, its opening and launch: shell/eden.cpp) and its
+			// Canopy theme's look: frosted glass tinted dark, a pale ring of light as the focus, rounder
+			// corners, the side's light drifting where Canopy's sun is, with motes of light rising. In each
+			// side's own colours (Wii U blue, 3DS gold, DS green), its bubbles, waves or pixels faint behind.
 			Theme eden;
 			eden.id = "eden";
 			eden.name = "Eden";
-			eden.description = "ProsperoEden's frosted glass and drifting light, in each side's own colour.";
+			eden.description = "ProsperoEden's launcher: a rail of sections, Home around your game, Settings as tiles.";
+			eden.layout = Layout::Eden;
 			eden.colours = Colours({{"ink-0", "#05080c"}, {"ink-1", "#0a1219"}, {"ink-2", "#121c26"}, {"glass", "#14202cb8"},
 				{"glass-2", "#22344ac8"}, {"glass-edge", "#8fa4b85c"}, {"line", "#53667a52"}, {"scrim", "#010407cc"}, {"text", "#f0f5f8"},
 				{"text-2", "#c5d0d9"}, {"text-3", "#8c9aa6"}, {"focus", "#e8f1ff"}, {"warn", "#e8b39a"}});

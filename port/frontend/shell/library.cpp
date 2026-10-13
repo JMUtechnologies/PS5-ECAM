@@ -132,15 +132,16 @@ namespace ps5shell
 				return;
 			}
 			m_feedback.Play(ui::Cue::Select);
+			// the buttons are in the menus' language: each is told by its words there
 			const std::string& chosen = buttons[std::clamp(m_stateButton, 0, count - 1)];
-			if (chosen == "Setup check")
+			if (chosen == Tr("Setup check"))
 				SetupOpen(false);
-			else if (chosen == "Play from your 3DS")
+			else if (chosen == Tr("Play from your 3DS"))
 			{
 				m_pageFrom = ScreenId::Library;
 				ArticOpen();
 			}
-			else if (chosen == "Diagnostics")
+			else if (chosen == Tr("Diagnostics"))
 			{
 				ShowTab(ScreenId::Settings);
 				SettingsOpen("diagnostics");
@@ -245,6 +246,11 @@ namespace ps5shell
 
 	void Shell::LibraryUpdate(const ui::Press& press)
 	{
+		if (EdenLayout())
+		{
+			EdenLibraryUpdate(press); // covers beside the game's details (eden.cpp, 6.17)
+			return;
+		}
 		const Button b = press.button;
 		{
 			std::string kicker, title, text;
@@ -452,6 +458,11 @@ namespace ps5shell
 
 	void Shell::LibraryDraw(Canvas& canvas)
 	{
+		if (EdenLayout())
+		{
+			EdenLibraryDraw(canvas);
+			return;
+		}
 		DrawBar(canvas, true);
 		{
 			std::string kicker, title, text;

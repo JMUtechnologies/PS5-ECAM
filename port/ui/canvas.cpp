@@ -477,6 +477,19 @@ namespace ui
 			dot(0.66f, 0.38f, 0.18f);
 			Triangle(X(0.17f), Y(0.44f), X(0.83f), Y(0.44f), X(0.5f), Y(0.84f), colour, 0, s * 0.02f);
 			break;
+		case Icon::Home: // a house: its roof, its walls, a door
+			line(0.12f, 0.5f, 0.5f, 0.16f);
+			line(0.5f, 0.16f, 0.88f, 0.5f);
+			line(0.24f, 0.42f, 0.24f, 0.84f);
+			line(0.24f, 0.84f, 0.76f, 0.84f);
+			line(0.76f, 0.84f, 0.76f, 0.42f);
+			Rect({X(0.42f), Y(0.6f), s * 0.16f, s * 0.24f}, s * 0.03f, colour);
+			break;
+		case Icon::Grid: // four squares
+			for (float y : {0.16f, 0.54f})
+				for (float x : {0.16f, 0.54f})
+					Ring({X(x), Y(y), s * 0.3f, s * 0.3f}, s * 0.07f, stroke * 0.85f, colour);
+			break;
 		}
 	}
 
