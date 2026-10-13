@@ -75,7 +75,8 @@ namespace ui
 
 		Motif MotifNamed(const std::string& name, Motif fallback)
 		{
-			return name == "side" ? Motif::Side : name == "none" ? Motif::None : name == "slashes" ? Motif::Slashes : name == "grid" ? Motif::Grid : fallback;
+			return name == "side" ? Motif::Side : name == "none" ? Motif::None : name == "slashes" ? Motif::Slashes : name == "grid" ? Motif::Grid :
+				name == "eden" ? Motif::Eden : fallback;
 		}
 
 		Theme s_current;
@@ -108,6 +109,22 @@ namespace ui
 				{"glass-2", "#ffffff12"}, {"glass-edge", "#ffffff16"}, {"wiiu", "#4d9cff"}, {"n3ds", "#f0ad2e"}, {"nds", "#6fcf4a"}});
 			midnight.motif = Motif::None;
 			list.push_back(midnight);
+
+			// Eden: ProsperoEden 1.001's launcher look (its Canopy theme, blackbearreloaded/ProsperoEden,
+			// GPL-3.0-or-later): frosted glass tinted dark, a pale ring of light as the focus, rounder
+			// corners, and behind it the side's light drifting where Canopy's sun is, with motes of light
+			// rising. In each side's own colours (Wii U blue, 3DS gold, DS green), its bubbles, waves or
+			// pixels faint behind the glass.
+			Theme eden;
+			eden.id = "eden";
+			eden.name = "Eden";
+			eden.description = "ProsperoEden's frosted glass and drifting light, in each side's own colour.";
+			eden.colours = Colours({{"ink-0", "#05080c"}, {"ink-1", "#0a1219"}, {"ink-2", "#121c26"}, {"glass", "#14202cb8"},
+				{"glass-2", "#22344ac8"}, {"glass-edge", "#8fa4b85c"}, {"line", "#53667a52"}, {"scrim", "#010407cc"}, {"text", "#f0f5f8"},
+				{"text-2", "#c5d0d9"}, {"text-3", "#8c9aa6"}, {"focus", "#e8f1ff"}, {"warn", "#e8b39a"}});
+			eden.corners = 1.2f;
+			eden.motif = Motif::Eden;
+			list.push_back(eden);
 
 			// experimental: two looks of their own, inspired by games' menus rather than a console's
 			Theme phantom;

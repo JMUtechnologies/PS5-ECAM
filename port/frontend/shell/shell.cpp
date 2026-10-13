@@ -1234,6 +1234,7 @@ namespace ps5shell
 			break;
 		case ui::Motif::Slashes: DrawSlashes(canvas, 1); break;
 		case ui::Motif::Grid: DrawGrid(canvas, 1); break;
+		case ui::Motif::Eden: DrawEden(canvas, 1); break;
 		case ui::Motif::None: break;
 		}
 		// scrims, grain and a vignette
@@ -1331,6 +1332,41 @@ namespace ps5shell
 		const float y = std::fmod((float)(m_now - m_start) * 90.0f, 1240.0f) - 80.0f;
 		canvas.LinearGradient({0, y - 80, 1920, 80}, 0, ui::SetAlpha(accent, 0), ui::SetAlpha(accent, 0.10f * alpha), 0, y - 80, 0, y);
 		canvas.Line(0, y, 1920, y, 2, ui::SetAlpha(accent, 0.35f * alpha));
+	}
+
+	// Eden's motif, after ProsperoEden 1.001's Canopy (its backdrop's light, drift and motes): the side's
+	// light drifting slowly where Canopy's sun is, the side's own bubbles, waves or pixels faint behind the
+	// glass, and 26 motes of light rising, each swaying and glowing on its own
+	void Shell::DrawEden(Canvas& canvas, float alpha)
+	{
+		const Box screen{0, 0, 1920, 1080};
+		const bool still = m_settings.ui.reduceMotion;
+		const float t = still ? 0.0f : (float)(m_now - m_start);
+		const uint32_t accent = Accent();
+		const uint32_t light = ui::Mix(accent, 0xffffffff, 0.45f);
+		// the light: at Canopy's sun (0.71, 0.39 of the screen), wandering a little
+		const float lx = 1363 + std::sin(t * 0.05f) * 60, ly = 422 + std::cos(t * 0.04f) * 30;
+		canvas.RadialGradient(screen, 0, ui::SetAlpha(light, 0.30f * alpha), ui::SetAlpha(light, 0), lx, ly, 960, 640);
+		canvas.RadialGradient(screen, 0, ui::SetAlpha(0xffffffff, 0.10f * alpha), ui::SetAlpha(0xffffffff, 0), lx, ly, 280, 210);
+		// the side's own, faint behind the glass
+		if (IsWiiU())
+			DrawBubbles(canvas, 0.45f * alpha);
+		else if (Is3ds())
+			DrawWaves(canvas, 0.5f * alpha);
+		else
+			DrawPixels(canvas, 0.45f * alpha);
+		// the motes: each from its own seed, rising 14 to 36 pixels a second, fading out near the top
+		auto fraction = [](float x) { return x - std::floor(x); };
+		for (int i = 0; i < 26; i++)
+		{
+			const float a = fraction(std::sin(i * 12.9898f) * 43758.5453f), b = fraction(std::sin(i * 78.233f) * 12543.21f);
+			const float speed = 14 + b * 22, size = 3 + a * 5;
+			const float y = 1120 - std::fmod(t * speed + b * 1200, 1240.0f);
+			const float x = a * 1920 + std::sin(t * 0.6f + i) * 18;
+			const float glow = (0.45f + 0.35f * std::sin(t * 1.3f + i * 1.7f)) * std::clamp(y / 540.0f, 0.0f, 1.0f) * alpha;
+			canvas.Glow({x - size * 3, y - size * 3, size * 6, size * 6}, size * 3, 1.0f, ui::SetAlpha(light, 0.35f * glow));
+			canvas.Rect({x - size / 2, y - size / 2, size, size}, size / 2, ui::SetAlpha(0xffffffff, 0.8f * glow));
+		}
 	}
 
 	// -- overlays: the dropdown, help, the Game menu, the keyboard, the update sheet, toasts, the launch --

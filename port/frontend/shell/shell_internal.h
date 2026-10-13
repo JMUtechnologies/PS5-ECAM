@@ -263,6 +263,7 @@ namespace ps5shell
 		std::vector<ui::Theme> m_themes;
 		void DrawSlashes(Canvas& canvas, float alpha); // Phantom's motif
 		void DrawGrid(Canvas& canvas, float alpha);	   // Terminal's
+		void DrawEden(Canvas& canvas, float alpha);	   // Eden's (ProsperoEden 1.001's light and motes)
 
 		void SetupOpen(bool first);
 		void SetupUpdate(const ui::Press& press);

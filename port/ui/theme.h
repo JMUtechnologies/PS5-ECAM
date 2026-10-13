@@ -9,7 +9,7 @@
 //     "base": "midnight",                 a built-in theme's id; its colours are the starting point
 //     "colours": {"wiiu": "#ff7a59", "ink-0": "#120806"},   tokens.json's names, #rrggbb or #rrggbbaa
 //     "corners": 0.5,                     0 square to 1.5 rounder; 1 is the design's
-//     "motif": "side"                     side (each side's own), none, slashes or grid
+//     "motif": "side"                     side (each side's own), none, slashes, grid or eden
 //   }
 //
 // A file based on meyer-oscar or meyer-oscar-light takes its Library's layout too. Meyer Oscar and
@@ -34,6 +34,7 @@ namespace ui
 		None,	 // still: the colours and the game's picture only
 		Slashes, // bands at an angle, sweeping across (Phantom)
 		Grid,	 // a fine grid with a line scanning down it (Terminal)
+		Eden,	 // the side's light drifting, its own motif faint, motes rising (Eden: ProsperoEden 1.001's look)
 	};
 
 	// How a side's Library is laid out

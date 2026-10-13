@@ -581,6 +581,8 @@ namespace ps5shell
 				DrawSlashes(canvas, 0.8f);
 			else if (ui::CurrentMotif() == ui::Motif::Grid)
 				DrawGrid(canvas, 0.8f);
+			else if (ui::CurrentMotif() == ui::Motif::Eden)
+				DrawEden(canvas, 0.8f);
 		}
 		else
 		{

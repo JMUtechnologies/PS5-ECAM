@@ -131,7 +131,8 @@ namespace ps5shell
 			TrMark("Black, white and one loud colour per side, sharp corners, bands slashing across."),
 			TrMark("A hacker's console: phosphor on near-black, square corners, a grid with a scan line."), TrMark("Meyer Oscar"),
 			TrMark("Meyer Oscar Light"), TrMark("Your recently played games first, then your whole library."),
-			TrMark("Meyer Oscar with a light background.")};
+			TrMark("Meyer Oscar with a light background."), TrMark("Eden"),
+			TrMark("ProsperoEden's frosted glass and drifting light, in each side's own colour.")};
 
 		int ClockIndex(int clock)
 		{
