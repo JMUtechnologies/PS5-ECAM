@@ -38,16 +38,18 @@ msgstr "A on Circle and B on Cross, where the 3DS has them, or the other way aro
 msgid "Centre pad"
 msgstr "Center pad"
 
-#: port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1419
+#: port/frontend/shell/eden.cpp:732 port/frontend/shell/eden.cpp:1231 port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1502
 msgid "Favourite"
 msgstr "Favorite"
 
+#. Eden's Library: which games it shows (L2), the Library's filters
+#. the Library's filters, as library.cpp names them
 #. the Library's filters, each with its count after it
-#: port/frontend/shell/library.cpp:489
+#: port/frontend/shell/eden.cpp:879 port/frontend/shell/eden.cpp:1002 port/frontend/shell/library.cpp:500
 msgid "Favourites"
 msgstr "Favorites"
 
-#: port/frontend/shell/library.cpp:562
+#: port/frontend/shell/eden.cpp:1043 port/frontend/shell/library.cpp:573
 msgid "Options on a game, then Favourite, puts it here."
 msgstr "Options on a game, then Favorite, puts it here."
 
@@ -79,10 +81,6 @@ msgstr "Frosted glass over each side's colors: the default look."
 msgid "Black, white and one loud colour per side, sharp corners, bands slashing across."
 msgstr "Black, white and one loud color per side, sharp corners, bands slashing across."
 
-#: port/frontend/shell/settings.cpp:135
-msgid "ProsperoEden's frosted glass and drifting light, in each side's own colour."
-msgstr "ProsperoEden's frosted glass and drifting light, in each side's own color."
-
 #: port/frontend/shell/settings.cpp:371
 msgid "Bicubic is sharp, Bicubic Hermite a little softer, Linear softer still; Nearest neighbour keeps pixels square. AMD FSR 1 keeps edges clean for a game drawn below 4K, for a little more work by the GPU than Bicubic."
 msgstr "Bicubic is sharp, Bicubic Hermite a little softer, Linear softer still; Nearest neighbor keeps pixels square. AMD FSR 1 keeps edges clean for a game drawn below 4K, for a little more work by the GPU than Bicubic."
@@ -105,14 +103,14 @@ msgstr ""
 "{{\"name\": \"Sunset\", \"base\": \"midnight\", \"colors\": {{\"wiiu\": \"#ff7a59\", \"ink-0\": \"#120806\"}}, \"corners\": 0.5, \"motif\": \"slashes\"}}\n"
 "base: a theme to start from (classic, midnight, phantom, terminal). colors: ink-0 to ink-2 (the background), text, wiiu, n3ds and nds (each side's), glass, line, good, warn, bad and focus, as #rrggbb. corners: 0 square to 1.5 round. motif: side, none, slashes or grid."
 
-#: port/frontend/shell/shell.cpp:1419
+#: port/frontend/shell/shell.cpp:1502
 msgid "Not a favourite"
 msgstr "Not a favorite"
 
-#: port/frontend/shell/shell.cpp:1705
+#: port/frontend/shell/shell.cpp:1788
 msgid "Added to Favourites"
 msgstr "Added to Favorites"
 
-#: port/frontend/shell/shell.cpp:1705
+#: port/frontend/shell/shell.cpp:1788
 msgid "Taken out of Favourites"
 msgstr "Taken out of Favorites"
