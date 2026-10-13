@@ -164,6 +164,7 @@ add_library(CemuPS5 STATIC
 	ps5/display.h
 	ps5/driver_clock.cpp
 	ps5/driver_clock.h
+	ps5/fcntl.cpp
 	ps5/profiler.cpp
 	ps5/profiler.h
 	ps5/kernel.h
@@ -248,6 +249,7 @@ set_source_files_properties(
 	frontend/sound.cpp
 	ps5/display.cpp
 	ps5/driver_clock.cpp
+	ps5/fcntl.cpp
 	ps5/profiler.cpp
 	ps5/log.cpp
 	ps5/netfs_files.cpp

@@ -159,6 +159,9 @@ if ((check)); then
     done
 fi
 
+# fcntl (port/ps5/fcntl.cpp): the console refuses F_SETFD on a socket, which curl's connections need
+netfs_wraps+=(--wrap=fcntl)
+
 # The system modules a title imports from: all the SDK names, but the web process's (WebKit's POSIX
 # layer and its libkernel, which a title does not load; the SDK's libc.a below has what they would
 # have supplied, fnmatch) and the Mono runtime's.
