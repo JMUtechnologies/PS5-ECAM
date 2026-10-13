@@ -125,14 +125,28 @@ namespace ps5settings
 		// to run before it sleeps (Cemu patch 0029); any but 0 also has the GPU thread wait for
 		// commands without yielding (Cemu patch 0030). Games hand work between their cores many times a
 		// frame, and a sleeping core then waits on the console's thread wake-up; ProsperoEden spins
-		// 100 us for the same reason (a racing game's heavy phase from ~55 to ~59.6 fps). An
-		// experiment: 0, Cemu's own (sleep at once), until a console has measured it
-		int idleSpinUs = 0;
+		// 100 us for the same reason (a racing game's heavy phase from ~55 to ~59.6 fps). 100 in 4.0.0's
+		// test builds, for the A/B that decides it; 0: Cemu's own (sleep at once)
+		int idleSpinUs = 100;
+		// only in ps5cemu.json: how long, in microseconds, an emulated core that finds Cemu's scheduler
+		// lock taken retries it before it sleeps in the kernel (Cemu patch 0037). The three cores take
+		// it at every switch between the game's threads and every guest mutex, event and alarm; on the
+		// console a pthread mutex found taken sleeps in the kernel at once, and its unlock wakes the
+		// sleeper with another call. 20 in 4.0.0's test builds, for the A/B that decides it; 0: sleeps
+		// at once, as before
+		int schedulerSpinUs = 20;
+		// only in ps5cemu.json: the least time, in microseconds, between the main emulated core's looks
+		// at the system events (the audio output, alarms, NFP) while it idles (Cemu patch 0037). With
+		// the clocks on the TSC its idle loop turns in a fraction of a microsecond, each turn taking
+		// locks the other cores and the audio threads need. 20 in 4.0.0's test builds, for the A/B
+		// that decides it; 0: every turn, as before
+		int idleEventsUs = 20;
 		// only in ps5cemu.json: the emulated CPU cores and Cemu's GPU thread each alone on a physical core
 		// of its own, every other thread kept off them, as ProsperoEden 1.001 places its threads, the
 		// cores found by a timing where CPUID does not tell them apart (ps5/threads.h). Read as the app
-		// starts. An experiment, off until a console has measured it
-		bool isolateCores = false;
+		// starts. On in 4.0.0's test builds, for the A/B that decides it: the driver's submit thread and
+		// the main core's idle loop now spin, and must not share a physical core with an emulated one
+		bool isolateCores = true;
 		// only in ps5cemu.json: Cemu's samplers with standard border colours only (Cemu patch 0031), for
 		// a game that stops the console's GPU: ProsperoEden saw custom ones fault it in some games.
 		// Off, as on a PC

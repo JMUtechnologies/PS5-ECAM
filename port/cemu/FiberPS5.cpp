@@ -10,6 +10,7 @@
 #include "util/Fiber/Fiber.h"
 #include "../ps5/kernel.h"
 #include "../ps5/log.h"
+#include "../ps5/profiler.h"
 
 #include <signal.h>
 
@@ -144,6 +145,8 @@ Fiber::Fiber(void (*FiberEntryPoint)(void* userParam), void* userParam, void* pr
 	frame[9] = 0;
 	ctx->stackPointer = frame;
 	m_implData = ctx;
+	// the profiler reads a game thread's stack, above its guard page, when it samples it
+	ps5profile::FiberStack(reinterpret_cast<uint8*>(m_stackPtr) + kGuardSize, kStackSize, true);
 }
 
 Fiber::Fiber(void* privateData) : m_privateData(privateData)
@@ -158,6 +161,7 @@ Fiber::~Fiber()
 	auto* ctx = static_cast<FiberContext*>(m_implData);
 	if (m_stackPtr)
 	{
+		ps5profile::FiberStack(reinterpret_cast<uint8*>(m_stackPtr) + kGuardSize, kStackSize, false);
 		// the heap writes its own bookkeeping into a freed block
 		if (ctx->guarded)
 			sceKernelMprotect(m_stackPtr, kGuardSize, ps5::kProtRead | ps5::kProtWrite);

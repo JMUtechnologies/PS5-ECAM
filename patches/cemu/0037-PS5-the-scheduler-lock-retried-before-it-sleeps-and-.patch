@@ -1,0 +1,131 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Tue, 13 Oct 2026 19:37:55 +0000
+Subject: [PATCH] PS5: the scheduler lock retried before it sleeps, and the
+ main core's idle loop calmer
+
+Breath of the Wild at 4K on the console, with its GPU thread freed by the
+driver's own submit thread, settles at about 58 fps with the third
+emulated core busy 83-92% of the time, 6-9% of it inside the kernel's
+_umtx_op (a sleep or a wake) and some 8% switching between the game's
+threads (profiles, 2026-10-13).
+
+The scheduler lock, which every emulated core takes at each switch
+between the game's threads and at each guest mutex, event and alarm, is a
+pthread mutex outside Windows. A default-type mutex on the console sleeps
+in the kernel as soon as it is found taken, and its unlock then wakes the
+sleeper with another call: microseconds each, for a lock held a fraction
+of one. When the port asks (g_ps5SchedulerSpins), a thread that finds it
+taken retries it for a while, its holder running on another core, before
+it sleeps as before.
+
+The main core's idle loop looks at the system events (the audio output,
+alarms, NFP) on every turn. With the clocks on the TSC a turn takes a
+fraction of a microsecond, and each took the audio output's locks and the
+PowerPC timer's spinlock, which the other cores, the game's audio thread
+and the console's audio output use too. When the port asks
+(g_ps5IdleEventTicks), it looks at them at most that often and watches
+its run queue in between; the audio wants them every 3 ms, alarms in tens
+of microseconds.
+
+The other cores' idle spin reads the core's index from a local instead of
+a thread_local, which on the console is emulated (a library call a turn).
+
+Both are off unless the port asks: then nothing changes.
+---
+ .../OS/libs/coreinit/coreinit_Scheduler.cpp   | 25 ++++++++++++++++++
+ src/Cafe/OS/libs/coreinit/coreinit_Thread.cpp | 26 ++++++++++++++++++-
+ 2 files changed, 50 insertions(+), 1 deletion(-)
+
+diff --git a/src/Cafe/OS/libs/coreinit/coreinit_Scheduler.cpp b/src/Cafe/OS/libs/coreinit/coreinit_Scheduler.cpp
+index bb31077..8d68cab 100644
+--- a/src/Cafe/OS/libs/coreinit/coreinit_Scheduler.cpp
++++ b/src/Cafe/OS/libs/coreinit/coreinit_Scheduler.cpp
+@@ -11,10 +11,35 @@ CRITICAL_SECTION s_csSchedulerLock;
+ pthread_mutex_t s_ptmSchedulerLock;
+ #endif
+ 
++#if defined(CEMU_PS5)
++// PS5: how many PAUSEs (about 20 ns each) a thread that finds the scheduler lock taken spends
++// retrying it before it sleeps in the kernel; the port sets it (schedulerSpinUs). 0: it sleeps at
++// once, as before
++uint32 g_ps5SchedulerSpins = 0;
++#endif
++
+ void __OSLockScheduler(void* obj)
+ {
+ #if BOOST_OS_WINDOWS
+ 	EnterCriticalSection(&s_csSchedulerLock);
++#elif defined(CEMU_PS5)
++	// PS5: a pthread mutex of the default type sleeps in the console's kernel as soon as it is found
++	// taken, and its unlock then wakes the sleeper with another call into the kernel: microseconds
++	// each, for a lock held a fraction of one. Every emulated core takes it at each switch between
++	// the game's threads and at each guest mutex, event and alarm, so the three of them meet on it
++	// many times a frame. It is retried for a while first, as its holder runs on another core.
++	if (g_ps5SchedulerSpins == 0 || pthread_mutex_trylock(&s_ptmSchedulerLock) != 0)
++	{
++		bool locked = false;
++		for (uint32 spin = g_ps5SchedulerSpins; spin && !locked; spin--)
++		{
++			_mm_pause();
++			if ((spin & 7) == 0)
++				locked = pthread_mutex_trylock(&s_ptmSchedulerLock) == 0;
++		}
++		if (!locked)
++			pthread_mutex_lock(&s_ptmSchedulerLock);
++	}
+ #else
+ 	pthread_mutex_lock(&s_ptmSchedulerLock);
+ #endif
+diff --git a/src/Cafe/OS/libs/coreinit/coreinit_Thread.cpp b/src/Cafe/OS/libs/coreinit/coreinit_Thread.cpp
+index dddf176..fc0fb38 100644
+--- a/src/Cafe/OS/libs/coreinit/coreinit_Thread.cpp
++++ b/src/Cafe/OS/libs/coreinit/coreinit_Thread.cpp
+@@ -1246,6 +1246,11 @@ namespace coreinit
+ 	// PS5: how long an idle core spins for a thread to run before it sleeps, in PAUSEs (about 20 ns
+ 	// each on the console); the port sets it before a game starts (idleSpinUs), 0 sleeps at once
+ 	uint32 g_ps5IdleSpinIterations = 0;
++	// PS5: the least time between two looks at the system events (the audio output, alarms, NFP) by
++	// the main core's idle loop, in TSC ticks; the port sets it before a game starts (idleEventsUs).
++	// 0: at every turn of the loop, as everywhere else
++	uint64 g_ps5IdleEventTicks = 0;
++	static uint64 s_ps5LastIdleEvents = 0; // the main core's thread's only
+ #endif
+ 
+ 	// idle fiber per core if no thread is runnable
+@@ -1270,7 +1275,24 @@ namespace coreinit
+ 			}
+ 			if (isMainCore)
+ 			{
++#if defined(CEMU_PS5)
++				// PS5: with the clocks on the TSC a turn of this loop takes a fraction of a
++				// microsecond, and each turn took the audio output's locks and the PowerPC timer's
++				// spinlock, which the other emulated cores, the game's audio thread and the console's
++				// audio output need too. The events want milliseconds (the audio, every 3 ms) or tens
++				// of microseconds (alarms): looked at every g_ps5IdleEventTicks at most, the core only
++				// watches its run queue in between.
++				const uint64 now = __rdtsc();
++				if (g_ps5IdleEventTicks == 0 || now - s_ps5LastIdleEvents >= g_ps5IdleEventTicks)
++				{
++					s_ps5LastIdleEvents = now;
++					__OSCheckSystemEvents();
++				}
++				else
++					_mm_pause();
++#else
+ 				__OSCheckSystemEvents();
++#endif
+ 				if(g_isMulticoreMode == false)
+ 					coreIndex = (coreIndex + 1) % 3;
+ 			}
+@@ -1281,7 +1303,9 @@ namespace coreinit
+ 				// PS5: a while spinning first, so that a thread made ready from another core (games
+ 				// hand work between their cores many times a frame) starts without the console's
+ 				// thread wake-up latency; then asleep, as everywhere else
+-				for (uint32 spin = g_ps5IdleSpinIterations; spin && g_coreRunQueueThreadCount[t_assignedCoreIndex].isZeroNow(); spin--)
++				// (coreIndex is t_assignedCoreIndex here, without a thread-local read each turn: on the
++				// console thread_local is emulated, a call into the system library)
++				for (uint32 spin = g_ps5IdleSpinIterations; spin && g_coreRunQueueThreadCount[coreIndex].isZeroNow(); spin--)
+ 					_mm_pause();
+ #endif
+ 				g_coreRunQueueThreadCount[t_assignedCoreIndex].waitUntilNonZero();

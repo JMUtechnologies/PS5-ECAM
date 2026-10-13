@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <mutex>
 #include <string>
 #include <thread>
 #include <unordered_map>
@@ -82,6 +83,34 @@ namespace
 				return nullptr;
 		}
 		return nullptr;
+	}
+
+	// The emulated CPU cores' fibers' stacks (port/cemu/FiberPS5.cpp), so that a sample taken on one
+	// is read too: a stack that holds the sample's RSP is the running fiber's, alive while it runs.
+	// An entry is free while its top is 0; bounds are written bottom first, read top first.
+	struct FiberStackEntry
+	{
+		std::atomic<uint64_t> bottom, top;
+	};
+	constexpr uint64_t kFiberStacks = 2048;
+	FiberStackEntry s_fiberStacks[kFiberStacks];
+	std::mutex s_fiberStacksLock; // the adders' and removers', never the handler's
+
+	bool FindFiberStack(uint64_t rsp, uint64_t& bottom, uint64_t& top)
+	{
+		for (FiberStackEntry& entry : s_fiberStacks)
+		{
+			const uint64_t t = entry.top.load(std::memory_order_acquire);
+			if (t == 0 || rsp >= t)
+				continue;
+			const uint64_t b = entry.bottom.load(std::memory_order_acquire);
+			if (rsp >= b && entry.top.load(std::memory_order_acquire) == t)
+			{
+				bottom = b, top = t;
+				return true;
+			}
+		}
+		return false;
 	}
 
 	// the writer's only
@@ -254,18 +283,23 @@ extern "C" void PS5Cemu_ProfileSignal(int, siginfo_t*, void* context)
 	sample.rip = machine[kRip];
 	sample.thread = (uint64_t)(uintptr_t)pthread_self();
 	int found = 0;
+	const uint64_t rsp = machine[kRsp] & ~uint64_t(7);
+	uint64_t bottom = 0, top = 0;
 	if (const Stack* stack = FindStack(sample.thread))
 	{
-		const uint64_t bottom = stack->bottom.load(std::memory_order_acquire), top = stack->top.load(std::memory_order_acquire);
-		const uint64_t rsp = machine[kRsp] & ~uint64_t(7);
-		if (top && rsp >= bottom && rsp < top)
-			for (uint64_t at = rsp, end = std::min(top, rsp + kStackBytes); at + 8 <= end && found < kCallers; at += 8)
-			{
-				const uint64_t word = *reinterpret_cast<const uint64_t*>(at);
-				if (word - s_codeLow < s_codeHigh - s_codeLow)
-					sample.callers[found++] = word;
-			}
+		bottom = stack->bottom.load(std::memory_order_acquire);
+		top = stack->top.load(std::memory_order_acquire);
 	}
+	// not on the thread's own stack: on an emulated CPU core's fiber's, if on any
+	if (!(top && rsp >= bottom && rsp < top) && !FindFiberStack(rsp, bottom, top))
+		top = 0;
+	if (top && rsp >= bottom && rsp < top)
+		for (uint64_t at = rsp, end = std::min(top, rsp + kStackBytes); at + 8 <= end && found < kCallers; at += 8)
+		{
+			const uint64_t word = *reinterpret_cast<const uint64_t*>(at);
+			if (word - s_codeLow < s_codeHigh - s_codeLow)
+				sample.callers[found++] = word;
+		}
 	while (found < kCallers)
 		sample.callers[found++] = 0;
 	slot->sequence.store(position + 1, std::memory_order_release);
@@ -327,5 +361,25 @@ namespace ps5profile
 	{
 		if (s_ring && name)
 			AddNamed((uint64_t)(uintptr_t)pthread_self(), name);
+	}
+
+	void FiberStack(const void* bottom, size_t bytes, bool add)
+	{
+		const uint64_t low = (uint64_t)(uintptr_t)bottom, high = low + bytes;
+		std::lock_guard lock(s_fiberStacksLock);
+		for (FiberStackEntry& entry : s_fiberStacks)
+		{
+			if (add && entry.top.load(std::memory_order_relaxed) == 0)
+			{
+				entry.bottom.store(low, std::memory_order_release);
+				entry.top.store(high, std::memory_order_release);
+				return;
+			}
+			if (!add && entry.bottom.load(std::memory_order_relaxed) == low && entry.top.load(std::memory_order_relaxed) == high)
+			{
+				entry.top.store(0, std::memory_order_release);
+				return;
+			}
+		}
 	}
 }

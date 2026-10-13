@@ -53,11 +53,17 @@ extern "C" __attribute__((weak)) int g_ps5HeapThreadCache;
 void PS5Cemu_UseTscTickCount(bool enabled);
 // patches/cemu: Cemu's other host clocks on the TSC (Common/unix/platform.cpp)
 void PS5Cemu_UseTscClocks(bool enabled);
-// patches/cemu: an idle emulated core's spin before it sleeps, in PAUSEs (coreinit_Thread.cpp)
+// patches/cemu: an idle emulated core's spin before it sleeps, in PAUSEs (coreinit_Thread.cpp), and
+// the least time between the main core's idle looks at the system events, in TSC ticks (0037)
 namespace coreinit
 {
 	extern uint32_t g_ps5IdleSpinIterations;
+	extern uint64_t g_ps5IdleEventTicks;
 }
+// patches/cemu 0037: how long a thread retries the taken scheduler lock before it sleeps, in PAUSEs
+// (coreinit_Scheduler.cpp)
+extern uint32_t g_ps5SchedulerSpins;
+extern "C" uint64_t sceKernelGetTscFrequency();
 
 // The PS4 SDK's version record: its size is set by the caller (libkernel)
 struct SceKernelSwVersion
@@ -228,6 +234,15 @@ int main(int argc, char* argv[])
 	coreinit::g_ps5IdleSpinIterations = (uint32_t)settings.idleSpinUs * 50;
 	if (settings.idleSpinUs)
 		ps5log::Line("[threads] an idle emulated core spins {} us before it sleeps (idleSpinUs in ps5cemu.json)", settings.idleSpinUs);
+	// the scheduler lock retried a while before a thread sleeps on it in the kernel (schedulerSpinUs),
+	// and the main core's idle loop looking at the system events at most so often (idleEventsUs)
+	g_ps5SchedulerSpins = (uint32_t)settings.schedulerSpinUs * 50;
+	coreinit::g_ps5IdleEventTicks = (uint64_t)settings.idleEventsUs * (sceKernelGetTscFrequency() / 1000000);
+	ps5log::Line("[threads] Cemu's scheduler lock: {} (schedulerSpinUs); the main core's idle loop looks at the system events "
+				 "{} (idleEventsUs)",
+		settings.schedulerSpinUs ? fmt::format("retried {} us before a thread sleeps on it", settings.schedulerSpinUs) :
+								   std::string("a thread sleeps on it at once"),
+		settings.idleEventsUs ? fmt::format("every {} us at most", settings.idleEventsUs) : std::string("at every turn"));
 	if (settings.profile && privileges.filesystem)
 		ps5profile::Start();
 	// before Cemu's renderer starts: with the profiler, the [perf] lines say how busy the GPU is too

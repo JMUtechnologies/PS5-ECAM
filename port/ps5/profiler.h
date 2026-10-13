@@ -10,10 +10,16 @@
 
 #pragma once
 
+#include <cstddef>
+
 namespace ps5profile
 {
 	// Starts sampling. From the main thread, after the log is open and before the emulators start.
 	void Start();
 	// The calling thread's name, from Cemu's SetThreadName, for the threads' file.
 	void Named(const char* name);
+	// A fiber's stack (port/cemu/FiberPS5.cpp) as it is made (add) and freed, so that samples taken
+	// while an emulated CPU core runs a game's thread on it get their callers too. Cheap; kept
+	// whether or not the profiler runs.
+	void FiberStack(const void* bottom, size_t bytes, bool add);
 }
