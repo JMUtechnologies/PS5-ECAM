@@ -239,15 +239,27 @@ int main(int argc, char* argv[])
 	PS5Cemu_UseTscTickCount(settings.tscTickCount);
 	ps5log::Line("[clock] Cemu's millisecond clock: {} (tscTickCount in ps5cemu.json)", settings.tscTickCount ? "the TSC" : "clock_gettime");
 	// and its other clocks: the emulated vsync's timer and the audio output's, which the main emulated
-	// core reads at every switch between the game's threads (tscClocks, an experiment)
-	PS5Cemu_UseTscClocks(settings.tscClocks);
-	ps5log::Line("[clock] Cemu's timers: {} (tscClocks in ps5cemu.json)", settings.tscClocks ? "the TSC" : "clock_gettime");
+	// core reads at every switch between the game's threads (tscClocks), once the TSC's reported rate
+	// has checked out: every timer on it runs at that rate
+	const bool tscClocks = settings.tscClocks && ps5clock::TscAgrees();
+	PS5Cemu_UseTscClocks(tscClocks);
+	ps5log::Line("[clock] Cemu's timers: {} (tscClocks in ps5cemu.json)", tscClocks ? "the TSC" : "clock_gettime");
 	// before either emulator's Vulkan driver starts: the driver's clock without a system call a read
-	// (driverClockTsc in ps5cemu.json, an experiment)
+	// (driverClockTsc in ps5cemu.json)
 	if (settings.driverClockTsc)
 		ps5clock::UseTscForDriver();
 	else
 		ps5log::Line("[vulkan] the driver's clock is clock_gettime (driverClockTsc in ps5cemu.json)");
+	// the driver's submissions on a thread of its own, off the GPU thread that records them
+	// (asyncSubmit; patches/mesa 0008), and how long its waits for the GPU sleep between looks
+	// (gpuWaitSleepUs; 0009). Read once, as the driver makes its first submission or wait
+	if (settings.asyncSubmit)
+		setenv("RADV_PS5_SUBMIT_THREAD", "1", 1);
+	if (settings.gpuWaitSleepUs > 0)
+		setenv("RADV_PS5_WAIT_SLEEP_US", std::to_string(settings.gpuWaitSleepUs).c_str(), 1);
+	ps5log::Line("[vulkan] submissions: {} (asyncSubmit in ps5cemu.json); waits for the GPU sleep {} us between looks "
+				 "(gpuWaitSleepUs)", settings.asyncSubmit ? "on the driver's own thread" : "on the thread that records them",
+		settings.gpuWaitSleepUs > 0 ? settings.gpuWaitSleepUs : 1000);
 	// before Cemu recompiles any of a game's code
 	// before the game's threads start: they keep their own lists of small blocks
 	if (&g_ps5HeapThreadCache)

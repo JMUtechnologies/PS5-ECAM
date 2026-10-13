@@ -21,7 +21,7 @@ sudo apt install rsync flex glslang-tools llvm-18-dev libclang-18-dev libclc-18-
 ## Targets
 
 ```bash
-make radv      # RADV, the Vulkan driver, with the driver patches RADV_PATCHES names (0006,0007 by default)
+make radv      # RADV, the Vulkan driver, with the driver patches RADV_PATCHES names (0006-0009 by default)
 make azahar    # Azahar's core and its PS5 frontend (build/azahar)
 make melonds   # melonDS's core and its PS5 frontend (build/melonds)
 make release   # the app (build/app/PPSA99360), dist/PS5CEMU-HAR-vVERSION.zip with its SHA256SUMS,
@@ -60,14 +60,19 @@ the payload SDK fork, whose platform layer the PS5 winsys is built on. It then b
 revision again with the port's driver patches (`patches/mesa`) that `RADV_PATCHES` names, configured
 as the recipe configures its release, and that build is the one the app links:
 
-- `RADV_PATCHES=0006,0007`, the default. 0006: VideoOut's refresh rate asked for again once the new
-  launcher is gone. Without it, a game with **120 Hz output** stays at the launcher's 59.94 Hz,
-  because the driver opens VideoOut once per process and the new launcher opens it first. 0007: a
-  destroyed buffer's memory is kept until the GPU has run the work already submitted with it.
-  Without it, that work can reach unmapped memory, and a GPU fault stops the whole console (3.0.0's
-  driver had this fix; the newer driver does not).
-- `RADV_PATCHES=0004,0006`: those patches, by number; `RADV_PATCHES=all`: every patch, for
-  [DRIVER-PERFORMANCE.md](DRIVER-PERFORMANCE.md)'s A/B runs; `RADV_PATCHES=` (empty): the recipe's
+- `RADV_PATCHES=0006,0007,0008,0009`, the default. 0006: VideoOut's refresh rate asked for again once
+  the new launcher is gone. Without it, a game with **120 Hz output** stays at the launcher's
+  59.94 Hz, because the driver opens VideoOut once per process and the new launcher opens it first.
+  0007: a destroyed buffer's memory is kept until the GPU has run the work already submitted with
+  it. Without it, that work can reach unmapped memory, and a GPU fault stops the whole console
+  (3.0.0's driver had this fix; the newer driver does not). 0008: submissions handed to a thread of
+  their own when the app asks (`asyncSubmit` in `ps5cemu.json`), so the AGC call no longer blocks
+  Cemu's GPU thread. 0009: how long the waits for the GPU sleep between looks, chosen by the app
+  (`gpuWaitSleepUs`), and fence status without a clock read. Neither changes anything unless the
+  app asks.
+- `RADV_PATCHES=0004,0006`: those patches, by number; `RADV_PATCHES=all`: the earlier experiments,
+  0001-0007, for [DRIVER-PERFORMANCE.md](DRIVER-PERFORMANCE.md)'s first A/B runs (0008 and 0009
+  replace parts of 0001-0003 and do not apply over them); `RADV_PATCHES=` (empty): the recipe's
   archive as it is.
 
 The patched tree is made in a temporary index of the fork's repository, so its checkout stays at

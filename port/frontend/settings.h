@@ -155,14 +155,28 @@ namespace ps5settings
 		// paces the emulated vsync, which the GPU thread reads in its command loop, and the one the
 		// main emulated core reads at every switch between the game's threads (the audio output's).
 		// clock_gettime took 22% of the emulated CPU thread and 11-13% of the GPU thread in 8-player
-		// Super Smash Bros. at 4K (profile, 2026-10-13). An experiment, off until a console A/B: the
-		// timer was on the TSC once before (2026-10-03, Cemu patch 0011 took it back), together with
-		// thread pinning, when Breath of the Wild fell to the 40s, and neither was measured alone
-		bool tscClocks = false;
+		// Super Smash Bros. at 4K, and 20% of Breath of the Wild's main emulated core and 10% of its GPU
+		// thread at 4K (profiles, 2026-10-13). Only when the TSC's reported rate checks out
+		// (ps5clock::TscAgrees). On in 4.0.0's test builds, for the A/B that decides it: the timer was
+		// on the TSC once before (2026-10-03, Cemu patch 0011 took it back) together with thread
+		// pinning, when Breath of the Wild fell to the 40s, and neither was measured alone (the
+		// pinning put the driver's kick thread on the GPU thread's CPU, the likelier cause)
+		bool tscClocks = true;
 		// only in ps5cemu.json: the Vulkan driver reads the time from the TSC (ps5/driver_clock.h)
-		// rather than with clock_gettime, a 20 us system call on the console. An experiment: off
-		// until a console has measured it against clock_gettime
-		bool driverClockTsc = false;
+		// rather than with clock_gettime, an 890 ns system call here: seven reads a submission and
+		// every turn of its waits for the GPU. On in 4.0.0's test builds, for the A/B that decides it
+		bool driverClockTsc = true;
+		// only in ps5cemu.json: the driver hands each submission to a thread of its own, which makes
+		// the AGC call (patches/mesa 0008, RADV_PS5_SUBMIT_THREAD): sceAgcDriverSubmitDcb blocked Cemu's
+		// GPU thread for 13-18% of its time in Breath of the Wild at 4K (agc_ms, 2026-10-13), time a
+		// PC's driver does not take. On in 4.0.0's test builds, for the A/B that decides it; false:
+		// the GPU thread submits itself, as before
+		bool asyncSubmit = true;
+		// only in ps5cemu.json: how long the driver's waits for the GPU sleep between looks once their
+		// 1.5 ms of spinning is over, in microseconds (patches/mesa 0009, RADV_PS5_WAIT_SLEEP_US): Cemu
+		// waits so for the previous frame at every swap, and wakes up to a sleep late. 0: the driver's
+		// own 1000. 200 in 4.0.0's test builds, for the A/B that decides it
+		int gpuWaitSleepUs = 200;
 		// only in ps5cemu.json: the sampling profiler (ps5/profiler.h), into logs/profile.bin
 		bool profile = false;
 		// only in ps5cemu.json: a per-thread cache of small blocks in front of the title heap

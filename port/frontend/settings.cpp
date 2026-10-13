@@ -192,6 +192,8 @@ namespace ps5settings
 		ReadBool(json, "tscTickCount", settings.tscTickCount);
 		ReadBool(json, "tscClocks", settings.tscClocks);
 		ReadBool(json, "driverClockTsc", settings.driverClockTsc);
+		ReadBool(json, "asyncSubmit", settings.asyncSubmit);
+		ReadInt(json, "gpuWaitSleepUs", settings.gpuWaitSleepUs, 0, 10000);
 		ReadBool(json, "profile", settings.profile);
 		ReadBool(json, "heapThreadCache", settings.heapThreadCache);
 		ReadBool(json, "alwaysAskHen", settings.alwaysAskHen);
@@ -337,6 +339,10 @@ namespace ps5settings
 		writer.Bool(settings.tscClocks);
 		writer.Key("driverClockTsc");
 		writer.Bool(settings.driverClockTsc);
+		writer.Key("asyncSubmit");
+		writer.Bool(settings.asyncSubmit);
+		writer.Key("gpuWaitSleepUs");
+		writer.Int(settings.gpuWaitSleepUs);
 		writer.Key("profile");
 		writer.Bool(settings.profile);
 		writer.Key("heapThreadCache");

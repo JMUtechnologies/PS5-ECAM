@@ -9,13 +9,18 @@
 #     configured as the recipe configures its release, into
 #     .deps/PS5_Vulkan/.deps/native/radv-ps5cemu, where tools/link.sh finds it:
 #
-#       RADV_PATCHES=0006,0007  the default: 0006, VideoOut's refresh rate asked for again once the
+#       RADV_PATCHES=0006,0007,0008,0009
+#                               the default: 0006, VideoOut's refresh rate asked for again once the
 #                               new launcher's swapchain is gone, without which a game's 120 Hz
 #                               output stays at the launcher's 59.94 Hz; 0007, a destroyed buffer's
-#                               memory kept until the GPU is done with it (3.0.0's driver had it).
-#                               0005 builds only on 0001-0004 (it uses their submission path)
+#                               memory kept until the GPU is done with it (3.0.0's driver had it);
+#                               0008, submissions on a thread of their own when the app asks
+#                               (asyncSubmit); 0009, the waits for the GPU's sleep chosen by the app
+#                               (gpuWaitSleepUs), and fence status without the clock. 0008 and 0009
+#                               replace parts of 0001-0003 and do not apply over them; 0005 builds
+#                               only on 0001-0004 (it uses their submission path)
 #       RADV_PATCHES=0004,0006  those patches, by number, applied in order
-#       RADV_PATCHES=all        every patch in patches/mesa (docs/DRIVER-PERFORMANCE.md's A/B runs)
+#       RADV_PATCHES=all        the earlier experiments, 0001-0007 (docs/DRIVER-PERFORMANCE.md)
 #       RADV_PATCHES=           none: the recipe's archive as it is
 #
 # The patched tree is made in a temporary index of the fork's repository and exported with git
@@ -51,10 +56,10 @@ install=$PS5CEMU_RADV
 work=$vulkan/.deps/work
 
 # the patches asked for, in order
-wanted=${RADV_PATCHES-0006,0007}
+wanted=${RADV_PATCHES-0006,0007,0008,0009}
 patches=()
 if [[ $wanted == all ]]; then
-    patches=("$PS5CEMU_ROOT"/patches/mesa/*.patch)
+    patches=("$PS5CEMU_ROOT"/patches/mesa/000[1-7]-*.patch)
 else
     for number in ${wanted//,/ }; do
         matches=("$PS5CEMU_ROOT"/patches/mesa/"$number"-*.patch)
