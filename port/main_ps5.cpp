@@ -190,6 +190,10 @@ int main(int argc, char* argv[])
 	// still before any thread: the game folders and drives the HEN may have left out (#16)
 	if (privileges.filesystem)
 		ps5privilege::ReachFolders({settings.gamesFolder, settings.n3ds.gamesFolder, settings.nds.gamesFolder});
+	// the experiment that gives the Wii U's emulated CPU cores and GPU thread cores of their own: once
+	// the elevation helper is done (its timing starts threads) and before any thread that should
+	// inherit the other CPUs
+	ps5threads::SetIsolation(settings.isolateCores);
 	// the first thread but main: the boot log's writer, after the elevation helper is done with the
 	// process (it must find it single-threaded)
 	ps5log::StartWriter();
@@ -401,8 +405,9 @@ int main(int argc, char* argv[])
 
 		if (choice->system == ps5launcher::System::Nds)
 		{
-			// melonDS, its screens on VideoOut at 59.94 Hz, as Azahar's below
+			// melonDS, its screens on VideoOut at 59.94 Hz, as Azahar's below; its threads on every CPU
 			SetHighFrameRate(false);
+			ps5threads::EndIsolation();
 			if (ps5melonds::LaunchGame(game, forGame.nds, error))
 			{
 				ps5melonds::RunGame();
@@ -426,8 +431,10 @@ int main(int argc, char* argv[])
 		if (choice->system == ps5launcher::System::N3ds)
 		{
 			// VideoOut configured again once the new launcher's surface is gone, as before Cemu's below:
-			// Azahar's surface follows on the output the launcher presented on, at 59.94 Hz
+			// Azahar's surface follows on the output the launcher presented on, at 59.94 Hz; its threads
+			// on every CPU
 			SetHighFrameRate(false);
+			ps5threads::EndIsolation();
 			if (ps5azahar::LaunchGame(game, forGame.n3ds, error))
 			{
 				ps5azahar::RunGame();
@@ -452,8 +459,6 @@ int main(int argc, char* argv[])
 		ps5emu::SetGameSettings(game.titleId, forGame);
 		SetHighFrameRate(forGame.highFrameRate);
 		ps5display::SetFramePacing(forGame.framePacing);
-		// a Wii U game only (its threads' names): before its emulated CPU cores and GPU thread start
-		ps5threads::SetIsolation(settings.isolateCores);
 		ps5window::Initialize();
 		if (ps5emu::LaunchGame(game, error))
 		{

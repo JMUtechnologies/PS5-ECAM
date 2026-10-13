@@ -18,11 +18,14 @@
 #include <cstdio>
 #include <cstring>
 #include <mutex>
+#include <thread>
 #include <vector>
+#include <x86intrin.h>
 
 extern "C"
 {
 	int sceKernelGetCurrentCpu();
+	uint64_t sceKernelGetTscFrequency();
 	// Sony's thread affinity, a mask of the 64 CPUs a thread may run on: what titles use. FreeBSD's
 	// pthread_getaffinity_np, with userland's 256-CPU set, is refused to a title.
 	void* scePthreadSelf();
@@ -112,18 +115,97 @@ namespace ps5threads
 
 		// -- isolation (SetIsolation) --------------------------------------------------------------
 		std::atomic<bool> s_isolating{false};
-		uint64_t s_dedicated[4] = {}; // OSSched[core=0..2], LatteThread: a physical core's CPUs each
-		uint64_t s_secondary = 0;	  // every other thread's CPUs
-		// the threads named so far, by Sony's handle, to move when isolation starts
-		std::vector<std::pair<void*, std::string>> s_named; // under s_mutex
+		int s_dedicated[4] = {-1, -1, -1, -1}; // OSSched[core=0..2], LatteThread: one logical CPU each
+		uint64_t s_dedicatedCores = 0;		   // both logical CPUs of those four physical cores
+		uint64_t s_secondary = 0;			   // every other thread's CPUs
+		uint64_t s_compilers = 0;			   // the compilers': those and the four cores' idle halves
 
-		// The dedicated core of a thread of that name, or -1
+		// The dedicated CPU's slot of a thread of that name, or -1
 		int DedicatedSlot(const char* name)
 		{
 			if (std::strcmp(name, "LatteThread") == 0)
 				return 3;
 			const int core = SlotOf(name);
 			return core >= 0 && core < 3 ? core : -1; // the Wii U's three
+		}
+
+		// Cemu's shader and pipeline compilers, which load a game's caches on many threads at once
+		bool IsCompiler(const char* name)
+		{
+			for (const char* compiler : {"compilePl", "vkShaderComp", "plCacheCompiler", "vkDriverPlCache"})
+				if (std::strcmp(name, compiler) == 0)
+					return true;
+			return false;
+		}
+
+		// The calling thread's time, in TSC ticks, on four chains of multiplies, steps long each. A step
+		// of a chain is a multiply and an add, four cycles on Zen 2, and a core's one multiplier takes
+		// the four chains' multiplies one a cycle: four cycles a step either way, whatever the clock.
+		uint64_t MultiplyTicks(uint32_t steps)
+		{
+			uint64_t a = 1, b = 3, c = 5, d = 7;
+			const uint64_t begin = __rdtsc();
+			for (uint32_t i = 0; i < steps; i++)
+			{
+				a = a * 6364136223846793005ull + 1;
+				b = b * 2862933555777941757ull + 3;
+				c = c * 3202034522624059733ull + 5;
+				d = d * 1442695040888963407ull + 7;
+				asm volatile("" : "+r"(a), "+r"(b), "+r"(c), "+r"(d)); // each step as written
+			}
+			const uint64_t end = __rdtsc();
+			asm volatile("" : : "r"(a ^ b ^ c ^ d));
+			return end - begin;
+		}
+
+		// The clock, in MHz, that ran steps of MultiplyTicks in ticks
+		unsigned ClockMhz(uint32_t steps, uint64_t ticks)
+		{
+			const uint64_t tsc = sceKernelGetTscFrequency();
+			return ticks && tsc ? (unsigned)(4.0 * steps * (double)tsc / (double)ticks / 1e6 + 0.5) : 0;
+		}
+
+		constexpr uint32_t kPairSteps = 1500000; // six million multiplies: about 1.7 ms at 3.5 GHz
+
+		// Two threads on CPUs a and b running MultiplyTicks at the same time: the longer one's ticks, 0
+		// when either could not be put on its CPU. Two logical CPUs of one core share its multiplier and
+		// take about twice as long as two CPUs of different cores (ProsperoEden's test).
+		uint64_t PairTicks(int a, int b)
+		{
+			std::atomic<int> ready{0};
+			std::atomic<bool> go{false};
+			uint64_t ticks[2] = {};
+			const auto body = [&](int cpu, int slot) {
+				const bool placed = WriteAffinity(1ull << cpu).empty();
+				ready.fetch_add(1);
+				if (!placed)
+					return;
+				// bounded: the console does not time-slice threads of one priority
+				for (uint32_t spins = 0; !go.load(std::memory_order_acquire) && spins < 200000000; spins++)
+				{
+				}
+				ticks[slot] = MultiplyTicks(kPairSteps);
+			};
+			std::thread first(body, a, 0), second(body, b, 1);
+			while (ready.load() < 2)
+				std::this_thread::yield();
+			go.store(true, std::memory_order_release);
+			first.join();
+			second.join();
+			return ticks[0] && ticks[1] ? std::max(ticks[0], ticks[1]) : 0;
+		}
+
+		// The shortest of three runs of a pair, for whatever else ran meanwhile
+		uint64_t BestPair(int a, int b)
+		{
+			uint64_t best = 0;
+			for (int run = 0; run < 3; run++)
+			{
+				const uint64_t ticks = PairTicks(a, b);
+				if (ticks && (!best || ticks < best))
+					best = ticks;
+			}
+			return best;
 		}
 
 		// Each of the title's CPUs' physical core, from its x2APIC ID (CPUID leaf 0xB: the ID above
@@ -160,48 +242,124 @@ namespace ps5threads
 			WriteAffinity(s_title); // the main thread back on every CPU
 			return cores;
 		}
+
+		// The title's whole physical cores (both of whose logical CPUs it has), in order, each as its
+		// two CPUs; how they were told apart goes in how, or why they could not be
+		std::vector<uint64_t> WholeCores(std::string& how)
+		{
+			std::string error;
+			std::vector<uint64_t> whole;
+			for (const auto& [id, cpus] : PhysicalCores(error))
+				if (__builtin_popcountll(cpus) == 2)
+					whole.push_back(cpus);
+			if (whole.size() >= 5)
+			{
+				how = "CPUID's x2APIC IDs";
+				return whole;
+			}
+			whole.clear();
+			// CPUID does not tell them apart (newer system software gives every CPU one x2APIC ID): a
+			// timing says whether CPU 0's other half is CPU 1 (2n and 2n+1 one core) or CPU 8 (n and n+8),
+			// against CPU 2, of another core either way. The main thread waits on a CPU none of them is.
+			const std::string cpuid = error.empty() ? "gives every CPU one core" : error;
+			const int spare = 63 - __builtin_clzll(s_title);
+			const uint64_t timed = (1ull << 0) | (1ull << 1) | (1ull << 2) | (1ull << 8);
+			if ((s_title & timed) != timed || spare <= 8)
+			{
+				how = fmt::format("CPUID {}, and CPUs 0, 1, 2 and 8 are not all the title's to time", cpuid);
+				return whole;
+			}
+			WriteAffinity(1ull << spare);
+			const uint64_t adjacent = BestPair(0, 1), apart = BestPair(0, 2), half = BestPair(0, 8);
+			WriteAffinity(s_title);
+			const double tsc = (double)sceKernelGetTscFrequency();
+			const auto ms = [&](uint64_t ticks) { return tsc > 0 ? ticks * 1000.0 / tsc : 0.0; };
+			// one thread alone on a core runs the multiplies at the core's clock
+			const std::string timings = fmt::format("six million multiplies on CPUs 0 and 1 at once {:.2f} ms, 0 and 2 {:.2f} ms, "
+				"0 and 8 {:.2f} ms; a core alone at about {} MHz", ms(adjacent), ms(apart), ms(half), ClockMhz(kPairSteps, apart));
+			// a pair of one core takes at least a quarter longer than a pair of two
+			const auto shares = [&](uint64_t pair) { return pair && apart && pair * 4 >= apart * 5; };
+			int step = 0;
+			if (shares(adjacent) && !shares(half))
+				step = 1;
+			else if (shares(half) && !shares(adjacent))
+				step = 8;
+			if (!step)
+			{
+				how = fmt::format("neither CPUID ({}) nor a timing ({}) told the cores apart", cpuid, timings);
+				return whole;
+			}
+			for (int cpu = 0; cpu + step < kMaxCpus; cpu++)
+			{
+				const bool first = step == 1 ? (cpu & 1) == 0 : cpu < 8;
+				if (first && (s_title >> cpu & 1) && (s_title >> (cpu + step) & 1))
+					whole.push_back((1ull << cpu) | (1ull << (cpu + step)));
+			}
+			how = fmt::format("a timing, as CPUID {}: CPUs {} share a core ({})", cpuid, step == 1 ? "2n and 2n+1" : "n and n+8", timings);
+			return whole;
+		}
 	}
 
 	void SetIsolation(bool enabled)
 	{
 		if (!enabled || !s_ready)
 			return;
-		std::string error;
-		const auto cores = PhysicalCores(error);
-		// the cores with both logical CPUs, in order; the first one is left to the system and the
-		// rest of the app, as the console's own work favours it
-		std::vector<uint64_t> whole;
-		for (const auto& [id, cpus] : cores)
-			if (__builtin_popcountll(cpus) == 2)
-				whole.push_back(cpus);
-		if (whole.size() < 6)
+		std::string how;
+		const std::vector<uint64_t> whole = WholeCores(how);
+		// the first whole core is left to the system and the rest of the app, as the console's own
+		// work favours it; the next four are the emulated CPU cores' and the GPU thread's
+		if (whole.size() < 5)
 		{
-			ps5log::Line("[threads] isolating the emulated CPU cores and the GPU thread: off, {}", error.empty() ?
-				fmt::format("{} whole physical cores (6 needed)", whole.size()) : error);
+			ps5log::Line("[threads] isolating the emulated CPU cores and the GPU thread: off, {} whole physical cores (5 needed); {}",
+				whole.size(), how);
 			return;
 		}
-		uint64_t dedicated = 0;
+		uint64_t halves = 0;
 		for (int i = 0; i < 4; i++)
 		{
-			s_dedicated[i] = whole[i + 1];
-			dedicated |= s_dedicated[i];
+			const uint64_t core = whole[(size_t)i + 1];
+			s_dedicated[i] = __builtin_ctzll(core);
+			s_dedicatedCores |= core;
+			halves |= core & ~(1ull << s_dedicated[i]);
 		}
-		s_secondary = s_title & ~dedicated;
-		s_isolating = true;
-		// the main thread, and so every thread it starts from now on, on the other cores
-		WriteAffinity(s_secondary);
-		std::vector<std::pair<void*, std::string>> named;
+		s_secondary = s_title & ~s_dedicatedCores;
+		s_compilers = s_secondary | halves;
+		// the main thread, and so every thread from now on: Cemu's threads place themselves as they
+		// take their names (Place)
+		const std::string error = WriteAffinity(s_secondary);
+		if (!error.empty())
 		{
-			std::lock_guard lock(s_mutex);
-			named = s_named;
+			ps5log::Line("[threads] isolating the emulated CPU cores and the GPU thread: off, the main thread could not be put on "
+				"CPUs {} ({})", List(s_secondary), error);
+			return;
 		}
-		int moved = 0;
-		for (const auto& [thread, name] : named)
-			if (DedicatedSlot(name.c_str()) < 0 && scePthreadSetaffinity(thread, s_secondary) == 0)
-				moved++;
-		ps5log::Line("[threads] isolated (isolateCores): emulated CPU cores on CPUs {}, {} and {}, the GPU thread on {}; every "
-			"other thread on {} ({} named threads moved there)", List(s_dedicated[0]), List(s_dedicated[1]), List(s_dedicated[2]),
-			List(s_dedicated[3]), List(s_secondary), moved);
+		s_isolating = true;
+		ps5log::Line("[threads] isolated (isolateCores; cores told apart by {}): the emulated CPU cores on CPUs {}, {} and {}, the "
+			"GPU thread on {}, each with its core to itself; the compilers on {}; every other thread on {}", how, s_dedicated[0],
+			s_dedicated[1], s_dedicated[2], s_dedicated[3], List(s_compilers), List(s_secondary));
+	}
+
+	void EndIsolation()
+	{
+		if (!s_isolating.exchange(false))
+			return;
+		WriteAffinity(s_title);
+		ps5log::Line("[threads] isolation off for this side: the threads started from now on get every CPU");
+	}
+
+	unsigned MeasureClockMhz()
+	{
+		// the shortest of three runs of a million multiplies (about 0.3 ms each), for a core still
+		// waking up or another thread
+		constexpr uint32_t kSteps = 250000;
+		uint64_t best = 0;
+		for (int run = 0; run < 3; run++)
+		{
+			const uint64_t ticks = MultiplyTicks(kSteps);
+			if (ticks && (!best || ticks < best))
+				best = ticks;
+		}
+		return ClockMhz(kSteps, best);
 	}
 
 	void Initialize()
@@ -221,6 +379,8 @@ namespace ps5threads
 			s_cores.erase(s_cores.begin());
 		s_ready = !s_cores.empty();
 		ps5log::Line("[threads] {}; the emulated CPU cores get console cores from CPU {} on", Describe(), s_ready ? s_cores.front() : -1);
+		// whether the console gives the app its CPU's full clock (about 3500 MHz), every start
+		ps5log::Line("[threads] the CPU's clock: about {} MHz (multiplies on the main thread)", MeasureClockMhz());
 	}
 
 	std::string Describe()
@@ -244,17 +404,13 @@ namespace ps5threads
 		if (s_isolating)
 		{
 			const int slot = DedicatedSlot(name);
-			const uint64_t mask = slot >= 0 ? s_dedicated[slot] : s_secondary;
+			const uint64_t mask = slot >= 0 ? 1ull << s_dedicated[slot] : IsCompiler(name) ? s_compilers : s_secondary;
 			const std::string error = WriteAffinity(mask);
 			if (!error.empty())
 				ps5log::Line("[threads] {} could not be put on CPUs {} ({})", name, List(mask), error);
 			else if (slot >= 0)
-				ps5log::Line("[threads] {} on CPUs {} (isolated)", name, List(mask));
+				ps5log::Line("[threads] {} on CPU {}, its core to itself (isolated)", name, s_dedicated[slot]);
 			return;
-		}
-		{
-			std::lock_guard lock(s_mutex);
-			s_named.emplace_back(scePthreadSelf(), name);
 		}
 		if (!s_pinning)
 			return;
@@ -471,4 +627,32 @@ void PS5Cemu_ThreadNamed(const char* name)
 	ps5profile::Named(name);
 	ps5threads::Place(name);
 	ps5threads::Remember(name);
+}
+
+// The platform library's thread start (PS5_PayloadSDK platform/src/threads.c: a 2 MiB stack in direct
+// memory), its __wrap_pthread_create, which tools/link.sh renames so that the one below comes first.
+// Weak for a link check, which has no platform library and wraps nothing: pthread_create is then the
+// system's own.
+extern "C" int ps5_platform_pthread_create(pthread_t* thread, const pthread_attr_t* attributes, void* (*start)(void*),
+	void* argument) __attribute__((weak));
+
+// Every thread the app and its libraries start. A thread starts on its creator's CPUs, and one an
+// isolated thread starts (the driver starts its flip and submission threads on whichever thread first
+// presents or submits) would share that thread's one CPU, where the console does not time-slice threads
+// of one priority: such a thread is started on the other threads' CPUs instead.
+extern "C" int __wrap_pthread_create(pthread_t* thread, const pthread_attr_t* attributes, void* (*start)(void*), void* argument)
+{
+	using namespace ps5threads;
+	const auto create = [&] {
+		return ps5_platform_pthread_create ? ps5_platform_pthread_create(thread, attributes, start, argument) :
+											 pthread_create(thread, attributes, start, argument);
+	};
+	uint64_t mine = 0;
+	if (!s_isolating.load(std::memory_order_relaxed) || scePthreadGetaffinity(scePthreadSelf(), &mine) != 0 ||
+		__builtin_popcountll(mine) != 1 || !(mine & s_dedicatedCores))
+		return create();
+	scePthreadSetaffinity(scePthreadSelf(), s_secondary);
+	const int result = create();
+	scePthreadSetaffinity(scePthreadSelf(), mine);
+	return result;
 }

@@ -88,12 +88,16 @@ if [[ -f $radv_archive && -f $radv_sdk/target/lib/libps5platform.a ]]; then
     # everything is linked in one group below, and lld takes no group inside another. The platform
     # layer's fclose and fflush wraps (its open_memstream) are renamed ps5_memstream_fclose and
     # ps5_memstream_fflush in a copy of its archive: port/ps5/netfs_files.cpp wraps the two for /net
-    # files and calls these for every other FILE.
+    # files and calls these for every other FILE. Its pthread_create wrap (a thread's stack) is renamed
+    # ps5_platform_pthread_create, which port/ps5/threads.cpp's wrap calls once it has chosen the new
+    # thread's CPUs (kept in the link by name: that wrap refers to it weakly).
+    radv_link_flags+=(--undefined=ps5_platform_pthread_create)
     flattened=()
     for input in "${radv_link_inputs[@]}"; do
         if [[ $input == */libps5platform.a ]]; then
             if [[ ! -f $work/libps5platform-netfs.a || $input -nt $work/libps5platform-netfs.a || ${BASH_SOURCE[0]} -nt $work/libps5platform-netfs.a ]]; then
                 llvm-objcopy-18 --redefine-sym=__wrap_fclose=ps5_memstream_fclose --redefine-sym=__wrap_fflush=ps5_memstream_fflush \
+                    --redefine-sym=__wrap_pthread_create=ps5_platform_pthread_create \
                     "$input" "$work/libps5platform-netfs.a"
             fi
             input=$work/libps5platform-netfs.a

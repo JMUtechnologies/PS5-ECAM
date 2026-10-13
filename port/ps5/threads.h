@@ -21,14 +21,23 @@ namespace ps5threads
 	void SetPinning(bool enabled);
 	// Puts the calling thread on the CPUs a thread of that name gets, when pinning or isolation is on.
 	void Place(const char* name);
-	// Another experiment, as ProsperoEden places its threads (+17% in its heaviest measured window):
-	// the Wii U's three emulated CPU cores and Cemu's GPU thread each get a physical core of their own,
-	// both of its logical CPUs, and every other thread is kept off those four cores, so none of the
-	// four shares its core (Zen 2's SMT halves a core between two busy threads) and none waits on
-	// another thread. Physical cores are told by their x2APIC IDs. Off: the system places every
-	// thread. From the main thread, as a Wii U game starts (isolateCores in ps5cemu.json); the
-	// threads named before are moved then.
+	// Another experiment, as ProsperoEden 1.001 places its threads (a large open-world game at 20 fps
+	// with the system placing them, 26 to 29 placed): the Wii U's three emulated CPU cores and Cemu's
+	// GPU thread each get one logical CPU of a physical core of their own, whose other logical CPU no
+	// busy thread shares (Zen 2's SMT halves a core between two busy threads), and every other thread
+	// is kept off those four cores. Shader and pipeline compilers may also use the idle halves, so a
+	// game's caches still load on nine CPUs. Physical cores are told by their x2APIC IDs where CPUID
+	// tells them apart, and by a timing where it does not (newer system software gives every CPU the
+	// same ID, which left ProsperoEden's threads sharing cores). Off: the system places every thread.
+	// From the main thread once the elevation helper is done and before any other thread starts
+	// (isolateCores in ps5cemu.json), so that every thread inherits the other CPUs; a thread an
+	// isolated one starts begins there too (__wrap_pthread_create).
 	void SetIsolation(bool enabled);
+	// Before a 3DS or DS game: the threads started from now on get every CPU again.
+	void EndIsolation();
+	// The CPU's clock as a chain of multiplies on the calling thread measures it, in MHz (about 3500 at
+	// the PS5's full clock), or 0: whether the console runs Cemu slower than it could.
+	unsigned MeasureClockMhz();
 	// For a game that stops drawing (a hang, not a crash): Cemu's GPU thread (LatteThread) and its
 	// emulated CPU cores (OSSched[core=N]), remembered as they name themselves, each write to the boot
 	// log from a signal handler on itself where it is: "[hang] NAME: rip ..., code on the stack: ...",

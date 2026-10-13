@@ -128,9 +128,10 @@ namespace ps5settings
 		// 100 us for the same reason (a racing game's heavy phase from ~55 to ~59.6 fps). An
 		// experiment: 0, Cemu's own (sleep at once), until a console has measured it
 		int idleSpinUs = 0;
-		// only in ps5cemu.json: the emulated CPU cores and Cemu's GPU thread on physical cores of their
-		// own, every other thread kept off them, as ProsperoEden places its threads (ps5/threads.h).
-		// An experiment, off until a console has measured it
+		// only in ps5cemu.json: the emulated CPU cores and Cemu's GPU thread each alone on a physical core
+		// of its own, every other thread kept off them, as ProsperoEden 1.001 places its threads, the
+		// cores found by a timing where CPUID does not tell them apart (ps5/threads.h). Read as the app
+		// starts. An experiment, off until a console has measured it
 		bool isolateCores = false;
 		// only in ps5cemu.json: Cemu's samplers with standard border colours only (Cemu patch 0031), for
 		// a game that stops the console's GPU: ProsperoEden saw custom ones fault it in some games.
