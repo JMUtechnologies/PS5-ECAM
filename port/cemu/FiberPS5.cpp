@@ -182,10 +182,15 @@ void Fiber::Switch(Fiber& targetFiber)
 {
 	Fiber* leavingFiber = sCurrentFiber;
 	sCurrentFiber = &targetFiber;
-	std::atomic_thread_fence(std::memory_order_seq_cst);
+	// Compiler barriers only, as Cemu's Windows fibers switch (SwitchToFiber, no fence): the switch
+	// stays on this thread, and a fiber that resumes on another core's thread later is handed over
+	// under the scheduler lock, which orders its saved context. FiberUnix's two full fences
+	// (MFENCE) cost each emulated core about 0.7% of its time at every switch between the game's
+	// threads (Breath of the Wild's profile, 2026-10-13).
+	std::atomic_signal_fence(std::memory_order_seq_cst);
 	PS5Cemu_FiberSwitch(&static_cast<FiberContext*>(leavingFiber->m_implData)->stackPointer,
 		&static_cast<FiberContext*>(targetFiber.m_implData)->stackPointer);
-	std::atomic_thread_fence(std::memory_order_seq_cst);
+	std::atomic_signal_fence(std::memory_order_seq_cst);
 }
 
 void* Fiber::GetFiberPrivateData()

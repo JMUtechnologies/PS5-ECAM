@@ -208,6 +208,57 @@ namespace ps5threads
 			return best;
 		}
 
+		// Two threads on CPUs a and b passing a cache line back and forth: nanoseconds a round trip, the
+		// best of three runs of 20,000, or 0 when either could not be put on its CPU. Two cores of one
+		// core complex share its L3 and pass a line in some tens of nanoseconds; between complexes it
+		// crosses the fabric, a few times slower. Where the emulated cores and the GPU thread should
+		// sit (one complex, or both) depends on it.
+		double RoundTripNs(int a, int b)
+		{
+			constexpr uint32_t kTrips = 20000;
+			constexpr uint64_t kGiveUp = 200000000; // bounded: the console does not time-slice one priority
+			double best = 0;
+			for (int run = 0; run < 3; run++)
+			{
+				alignas(64) std::atomic<uint32_t> ball{0};
+				std::atomic<int> ready{0};
+				std::atomic<bool> failed{false};
+				uint64_t ticks = 0;
+				const auto player = [&](int cpu, uint32_t parity) {
+					if (!WriteAffinity(1ull << cpu).empty())
+						failed = true;
+					ready.fetch_add(1);
+					for (uint64_t spins = 0; ready.load() < 2 && spins < kGiveUp; spins++)
+					{
+					}
+					const uint64_t begin = __rdtsc();
+					for (uint32_t i = 0; i < kTrips && !failed.load(std::memory_order_relaxed); i++)
+					{
+						const uint32_t mine = 2 * i + parity;
+						for (uint64_t spins = 0; ball.load(std::memory_order_acquire) != mine; spins++)
+							if (spins > kGiveUp || failed.load(std::memory_order_relaxed))
+							{
+								failed = true;
+								break;
+							}
+						ball.store(mine + 1, std::memory_order_release);
+					}
+					if (parity == 0)
+						ticks = __rdtsc() - begin;
+				};
+				std::thread first(player, a, 0u), second(player, b, 1u);
+				first.join();
+				second.join();
+				const double tsc = (double)sceKernelGetTscFrequency();
+				if (failed.load() || !tsc)
+					return 0;
+				const double ns = (double)ticks / kTrips * 1e9 / tsc;
+				if (!best || ns < best)
+					best = ns;
+			}
+			return best;
+		}
+
 		// Each of the title's CPUs' physical core, from its x2APIC ID (CPUID leaf 0xB: the ID above
 		// the SMT level's shift), read on the CPU itself: OS numbering need not follow it
 		std::map<uint32_t, uint64_t> PhysicalCores(std::string& error)
@@ -313,6 +364,18 @@ namespace ps5threads
 			ps5log::Line("[threads] isolating the emulated CPU cores and the GPU thread: off, {} whole physical cores (5 needed); {}",
 				whole.size(), how);
 			return;
+		}
+		{
+			// which cores share an L3, for where the four should go next: measured, before any of
+			// Cemu's threads, from the first whole core to the first CPU of each other
+			const int from = __builtin_ctzll(whole[0]);
+			std::string trips;
+			for (size_t i = 1; i < whole.size(); i++)
+			{
+				const int to = __builtin_ctzll(whole[i]);
+				trips += fmt::format("{}{}: {:.0f} ns", trips.empty() ? "" : ", ", to, RoundTripNs(from, to));
+			}
+			ps5log::Line("[threads] a cache line's round trip from CPU {} to CPUs {}", from, trips);
 		}
 		uint64_t halves = 0;
 		for (int i = 0; i < 4; i++)
