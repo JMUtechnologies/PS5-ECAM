@@ -15,8 +15,10 @@
 
 #include <cerrno>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <csetjmp>
+#include <ctime>
 #include <dirent.h>
 #include <fcntl.h>
 #include <signal.h>
@@ -32,6 +34,11 @@ namespace ps5privilege
 		constexpr int kPollUs = 16667;
 		constexpr int kMaxPolls = 300;				 // ~5 s for the HEN to take the request
 		constexpr int kMaxPollsAfterConsume = 180;	 // ~3 s for it to finish the jailbreak
+		// No HEN took the request since the console started (the console's start time, in seconds since
+		// 1970): the app's later starts in that session (each game hands back to a fresh start) need not
+		// wait the 5 s again, when they have what they need without one (executable memory and /data)
+		constexpr char kNoHenPath[] = PS5CEMU_DATA "/no-hen-since-boot";
+		constexpr long kBootSlackS = 60;
 
 		Result s_result;
 
@@ -58,8 +65,42 @@ namespace ps5privilege
 			return true;
 		}
 
-		bool HenJailbreak(std::string& detail)
+		// When the console started, from the wall clock less the time since: the same, give or take a
+		// second, for every start in one session; it moves on after a restart (and after rest mode, whose
+		// time the monotonic clock leaves out), so the HEN is asked again then
+		long BootTime()
 		{
+			timespec since{};
+			if (clock_gettime(CLOCK_MONOTONIC, &since) != 0)
+				return 0;
+			return (long)time(nullptr) - (long)since.tv_sec;
+		}
+
+		bool NoHenThisBoot()
+		{
+			FILE* file = fopen(kNoHenPath, "r");
+			if (!file)
+				return false;
+			char line[32] = {};
+			const bool read = fgets(line, sizeof(line), file) != nullptr;
+			fclose(file);
+			const long boot = read ? strtol(line, nullptr, 10) : 0;
+			const long now = BootTime();
+			return read && now != 0 && boot > now - kBootSlackS && boot < now + kBootSlackS;
+		}
+
+		void RememberNoHen()
+		{
+			if (FILE* file = fopen(kNoHenPath, "w"))
+			{
+				fprintf(file, "%ld\n", BootTime());
+				fclose(file);
+			}
+		}
+
+		bool HenJailbreak(std::string& detail, bool& unanswered)
+		{
+			unanswered = false;
 			if (geteuid() == 0)
 			{
 				detail = "already root";
@@ -77,6 +118,7 @@ namespace ps5privilege
 				if (++polls >= kMaxPolls)
 				{
 					unlink(kRequestPath);
+					unanswered = true;
 					detail = "no HEN took the request (is a HEN loaded, with PPSA99360 in its app jailbreak list: etaHEN's list, or OnionHEN's exact_title_ids with no trailing comma?)";
 					return false;
 				}
@@ -158,8 +200,17 @@ namespace ps5privilege
 		// download0 (/mnt/sandbox/PPSA99360_000/download0 from outside), no HEN is asked
 		if (access("/download0/ps5cemu_skip_hen", F_OK) == 0)
 			henDetail = "not asked: download0/ps5cemu_skip_hen is there";
+		else if (NoHenThisBoot() && CanReachData() && ProbeExecutableDirect())
+			henDetail = "not asked: none took the request earlier since the console started (no-hen-since-boot)";
 		else
-			r.jailbroken = HenJailbreak(henDetail);
+		{
+			bool unanswered = false;
+			r.jailbroken = HenJailbreak(henDetail, unanswered);
+			if (unanswered && CanReachData())
+				RememberNoHen();
+			else if (r.jailbroken)
+				unlink(kNoHenPath);
+		}
 		// euid may stay 1 even with working credentials: the JIT probe is the ground truth. The
 		// HEN's JIT memory first (what the recompiler has used since 1.0), else executable direct
 		// memory, which any title gets: the recompiler runs either way
