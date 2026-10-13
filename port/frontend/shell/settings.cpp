@@ -623,7 +623,8 @@ namespace ps5shell
 			if (IsWiiU())
 			{
 				const bool keys = IsFile(std::string(ps5paths::kRoot) + "/keys.txt");
-				action(Kind::Action, "keys", Tr("Wii U disc keys"), keys ? "keys.txt found" : "keys.txt missing", Tr("Only encrypted .wud and .wux need them."),
+				action(Kind::Action, "keys", Tr("Wii U disc keys"), keys ? std::string(Tr("keys.txt found")) : std::string(),
+					keys ? Tr("Only encrypted .wud and .wux need them.") : Tr("keys.txt is missing: only encrypted .wud and .wux need it"),
 					Tr("Encrypted .wud and .wux dumps need their disc keys in /data/ps5cemu/keys.txt, one a line. Decrypted dumps, .wua and "
 					"folders need none."));
 				cemu(action(Kind::Link, "install", Tr("Updates and DLC"), "", Tr("Found on your drives, each installed with one press."),
