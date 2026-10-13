@@ -394,6 +394,12 @@ namespace ps5azahar
 			if (!values.use_cpu_jit.GetValue())
 				ps5log::Line("[azahar] no executable direct memory: the 3DS CPU and shaders run on Azahar's interpreters");
 			values.cpu_clock_percentage = std::clamp(settings.cpuClock, 25, 400);
+			// every vertex position computed invariantly, as Azahar does on Apple GPUs (patch 0010): the
+			// Outline fix for Pokemon X's moving black stipples (#23), Settings > Graphics or the game's
+			// own, on by default for the games known to need it (ps5settings::ForGame)
+			Pica::Shader::Generator::GLSL::g_ps5InvariantPosition = settings.invariantPosition;
+			if (settings.invariantPosition)
+				ps5log::Line("[azahar] vertex positions invariant (the Outline fix)");
 			values.is_new_3ds = true;
 			// automatic (-1) takes the game's own region; a game made for another one may refuse to
 			// start or show other languages (#17)
