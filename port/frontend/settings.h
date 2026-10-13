@@ -151,6 +151,14 @@ namespace ps5settings
 		// Breath of the Wild's GPU thread back 3.3 ms of each 16.7 ms frame (A/B on a console,
 		// 2026-10-03, at 4,300 draws a frame); false: clock_gettime
 		bool tscTickCount = true;
+		// only in ps5cemu.json: Cemu's other host clocks on the TSC too (Cemu patch 0036): the timer that
+		// paces the emulated vsync, which the GPU thread reads in its command loop, and the one the
+		// main emulated core reads at every switch between the game's threads (the audio output's).
+		// clock_gettime took 22% of the emulated CPU thread and 11-13% of the GPU thread in 8-player
+		// Super Smash Bros. at 4K (profile, 2026-10-13). An experiment, off until a console A/B: the
+		// timer was on the TSC once before (2026-10-03, Cemu patch 0011 took it back), together with
+		// thread pinning, when Breath of the Wild fell to the 40s, and neither was measured alone
+		bool tscClocks = false;
 		// only in ps5cemu.json: the Vulkan driver reads the time from the TSC (ps5/driver_clock.h)
 		// rather than with clock_gettime, a 20 us system call on the console. An experiment: off
 		// until a console has measured it against clock_gettime

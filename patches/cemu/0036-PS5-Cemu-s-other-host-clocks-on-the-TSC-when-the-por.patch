@@ -1,0 +1,133 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Tue, 13 Oct 2026 17:57:26 +0000
+Subject: [PATCH] PS5: Cemu's other host clocks on the TSC, when the port asks
+
+HighResolutionTimer, which paces the emulated vsync and which the GPU
+thread reads in its command loop, and now_cached and tick_cached, which
+the main emulated CPU core reads at every switch between the game's
+threads (the audio output's check, snd_core::AXOut_update), take the
+time with clock_gettime on the console: a call into its kernel of about
+890 ns, where Windows reads QueryPerformanceCounter and Linux the vDSO's
+clock_gettime. A profile of Super Smash Bros. with eight players at 4K
+found 22% of the emulated CPU thread and 11-13% of the GPU thread there.
+When the port asks (PS5Cemu_UseTscClocks), they count the TSC's
+nanoseconds from CLOCK_MONOTONIC's start instead, so that times taken
+either way still compare. Off, nothing changes.
+---
+ src/Common/precompiled.h                      | 14 ++++++++
+ src/Common/unix/platform.cpp                  | 34 +++++++++++++++++++
+ .../HighResolutionTimer.cpp                   | 10 ++++++
+ 3 files changed, 58 insertions(+)
+
+diff --git a/src/Common/precompiled.h b/src/Common/precompiled.h
+index 6f43fd8..d362e60 100644
+--- a/src/Common/precompiled.h
++++ b/src/Common/precompiled.h
+@@ -477,6 +477,12 @@ bool match_any_of(T1&& value, Types&&... others)
+     return ((value == others) || ...);
+ }
+ 
++#if defined(CEMU_PS5)
++// PS5: the clocks below on the TSC when the port turns them on (tscClocks; Common/unix/platform.cpp)
++extern bool g_ps5TscClocks;
++uint64_t PS5Cemu_TscNanoseconds();
++#endif
++
+ // we cache the frequency in a static variable
+ [[nodiscard]] static std::chrono::high_resolution_clock::time_point now_cached() noexcept
+ {
+@@ -489,6 +495,10 @@ bool match_any_of(T1&& value, Types&&... others)
+ 	const long long _Part = (_Ctr % _Freq) * std::nano::den / _Freq;
+ 	return (std::chrono::high_resolution_clock::time_point(std::chrono::nanoseconds(_Whole + _Part)));
+ #else
++#if defined(CEMU_PS5)
++	if (g_ps5TscClocks)
++		return std::chrono::high_resolution_clock::time_point(std::chrono::nanoseconds(PS5Cemu_TscNanoseconds()));
++#endif
+     return std::chrono::high_resolution_clock::now();
+ #endif
+ }
+@@ -512,6 +522,10 @@ bool match_any_of(T1&& value, Types&&... others)
+ 	return std::chrono::steady_clock::time_point(
+ 		std::chrono::nanoseconds(clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)));
+ #elif BOOST_OS_BSD
++#if defined(CEMU_PS5)
++	if (g_ps5TscClocks)
++		return std::chrono::steady_clock::time_point(std::chrono::nanoseconds(PS5Cemu_TscNanoseconds()));
++#endif
+ 	struct timespec tp;
+ 	clock_gettime(CLOCK_MONOTONIC, &tp);
+ 	return std::chrono::steady_clock::time_point(
+diff --git a/src/Common/unix/platform.cpp b/src/Common/unix/platform.cpp
+index 9462c65..8be6bf3 100644
+--- a/src/Common/unix/platform.cpp
++++ b/src/Common/unix/platform.cpp
+@@ -20,6 +20,40 @@ void PS5Cemu_UseTscTickCount(bool enabled)
+ 	if (s_tscTickCount)
+ 		s_tscPerMillisecond = frequency / 1000;
+ }
++
++// PS5: Cemu's other host clocks on the TSC as well, when the port turns them on before Cemu starts
++// (PS5Cemu_UseTscClocks; tscClocks in ps5cemu.json): HighResolutionTimer, which paces the emulated
++// vsync and which the GPU thread reads in its command loop, and now_cached and tick_cached, which
++// the main emulated CPU core reads at every switch between the game's threads (the audio output's
++// check, snd_core::AXOut_update). On Windows those are QueryPerformanceCounter and on Linux the
++// vDSO's clock_gettime, some tens of nanoseconds; on the console clock_gettime is a call into the
++// kernel, about 890 ns. Super Smash Bros. with eight players at 4K spent 22% of its emulated CPU
++// thread and 11-13% of the GPU thread in it (profile, 2026-10-13). Nanoseconds counted from
++// CLOCK_MONOTONIC's start, so that a time taken either way compares with the other.
++bool g_ps5TscClocks = false;
++static uint64_t s_tscNanosecondsPerTick = 0; // 32.32 fixed point
++static uint64_t s_tscNanosecondsOffset = 0;
++
++uint64_t PS5Cemu_TscNanoseconds()
++{
++	const unsigned __int128 scaled = (unsigned __int128)__rdtsc() * s_tscNanosecondsPerTick;
++	return (uint64_t)(scaled >> 32) + s_tscNanosecondsOffset;
++}
++
++void PS5Cemu_UseTscClocks(bool enabled)
++{
++	const uint64_t frequency = sceKernelGetTscFrequency();
++	g_ps5TscClocks = false;
++	if (!enabled || frequency < 1000000)
++		return;
++	s_tscNanosecondsPerTick = (uint64_t)(((unsigned __int128)1000000000 << 32) / frequency);
++	s_tscNanosecondsOffset = 0;
++	timespec ts;
++	clock_gettime(CLOCK_MONOTONIC, &ts);
++	// wraps if the TSC's count runs ahead of the clock's; the sum wraps back
++	s_tscNanosecondsOffset = ((uint64_t)ts.tv_sec * 1000000000ull + (uint64_t)ts.tv_nsec) - PS5Cemu_TscNanoseconds();
++	g_ps5TscClocks = true;
++}
+ #endif
+ 
+ uint32_t GetTickCount()
+diff --git a/src/util/highresolutiontimer/HighResolutionTimer.cpp b/src/util/highresolutiontimer/HighResolutionTimer.cpp
+index 54fa4fb..239101e 100644
+--- a/src/util/highresolutiontimer/HighResolutionTimer.cpp
++++ b/src/util/highresolutiontimer/HighResolutionTimer.cpp
+@@ -1,5 +1,11 @@
+ #include "util/highresolutiontimer/HighResolutionTimer.h"
+ 
++#if defined(CEMU_PS5)
++// PS5: nanoseconds from the TSC when the port turns it on (tscClocks; Common/unix/platform.cpp)
++extern bool g_ps5TscClocks;
++uint64_t PS5Cemu_TscNanoseconds();
++#endif
++
+ HighResolutionTimer HighResolutionTimer::now()
+ {
+ #if BOOST_OS_WINDOWS
+@@ -14,6 +20,10 @@ HighResolutionTimer HighResolutionTimer::now()
+ #elif BOOST_OS_MACOS
+ 	return HighResolutionTimer(clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW));
+ #elif BOOST_OS_BSD
++#if defined(CEMU_PS5)
++	if (g_ps5TscClocks)
++		return HighResolutionTimer(PS5Cemu_TscNanoseconds());
++#endif
+     timespec pc;
+     clock_gettime(CLOCK_MONOTONIC, &pc);
+     uint64 nsec = (uint64)pc.tv_sec * (uint64)1000000000 + (uint64)pc.tv_nsec;

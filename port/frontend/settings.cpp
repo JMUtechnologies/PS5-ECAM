@@ -190,6 +190,7 @@ namespace ps5settings
 		ReadBool(json, "shaderDiskCache", settings.shaderDiskCache);
 		ReadBool(json, "accurateSingleStores", settings.accurateSingleStores);
 		ReadBool(json, "tscTickCount", settings.tscTickCount);
+		ReadBool(json, "tscClocks", settings.tscClocks);
 		ReadBool(json, "driverClockTsc", settings.driverClockTsc);
 		ReadBool(json, "profile", settings.profile);
 		ReadBool(json, "heapThreadCache", settings.heapThreadCache);
@@ -332,6 +333,8 @@ namespace ps5settings
 		writer.Bool(settings.accurateSingleStores);
 		writer.Key("tscTickCount");
 		writer.Bool(settings.tscTickCount);
+		writer.Key("tscClocks");
+		writer.Bool(settings.tscClocks);
 		writer.Key("driverClockTsc");
 		writer.Bool(settings.driverClockTsc);
 		writer.Key("profile");

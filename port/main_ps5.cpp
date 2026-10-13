@@ -51,6 +51,8 @@ extern bool g_ps5StandardBorderColors;
 extern "C" __attribute__((weak)) int g_ps5HeapThreadCache;
 // patches/cemu: Cemu's millisecond clock on the TSC (Common/unix/platform.cpp)
 void PS5Cemu_UseTscTickCount(bool enabled);
+// patches/cemu: Cemu's other host clocks on the TSC (Common/unix/platform.cpp)
+void PS5Cemu_UseTscClocks(bool enabled);
 // patches/cemu: an idle emulated core's spin before it sleeps, in PAUSEs (coreinit_Thread.cpp)
 namespace coreinit
 {
@@ -236,6 +238,10 @@ int main(int argc, char* argv[])
 	// before Cemu starts: its millisecond clock, taken at every draw call
 	PS5Cemu_UseTscTickCount(settings.tscTickCount);
 	ps5log::Line("[clock] Cemu's millisecond clock: {} (tscTickCount in ps5cemu.json)", settings.tscTickCount ? "the TSC" : "clock_gettime");
+	// and its other clocks: the emulated vsync's timer and the audio output's, which the main emulated
+	// core reads at every switch between the game's threads (tscClocks, an experiment)
+	PS5Cemu_UseTscClocks(settings.tscClocks);
+	ps5log::Line("[clock] Cemu's timers: {} (tscClocks in ps5cemu.json)", settings.tscClocks ? "the TSC" : "clock_gettime");
 	// before either emulator's Vulkan driver starts: the driver's clock without a system call a read
 	// (driverClockTsc in ps5cemu.json, an experiment)
 	if (settings.driverClockTsc)
