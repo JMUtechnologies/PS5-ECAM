@@ -44,19 +44,19 @@ namespace ps5shell
 			return s_host;
 		}
 
-		// the keyboard's keys (Search)
-		const char* const kKeyRows[] = {"1234567890", "QWERTYUIOP", "ASDFGHJKL'", "ZXCVBNM-:.", nullptr};
-		constexpr int kKeyboardRows = 5; // the last: space, delete, done
-		// the keyboard for text typed as it is (a user name, a password, a computer's name): small letters,
-		// capitals and symbols, R1 and L1 going between them, each row as long as kKeyRows'
-		const char* const kRawRows[3][4] = {
-			{"1234567890", "qwertyuiop", "asdfghjkl'", "zxcvbnm-:."},
-			{"1234567890", "QWERTYUIOP", "ASDFGHJKL\"", "ZXCVBNM_;,"},
-			{"!@#$%^&*()", "~`+=[]{}\\|", "<>?/_-;:,.", "'\"%@#&*!?^"},
+		// the keyboard's keys, as the 3DS's in-game keyboard has them (app/ingame3ds.cpp, kKeys), so the
+		// app has one keyboard: small letters, capitals with Shift (its key or Triangle), and symbols on
+		// L1 and R1 (a password, a user name). Ten keys a row; the last row is Shift, Space, Delete, Done.
+		const char* const kKeyRows[3][4] = {
+			{"1234567890", "qwertyuiop", "asdfghjkl'", "zxcvbnm,.-"},
+			{"!?#$%&*()+", "QWERTYUIOP", "ASDFGHJKL\"", "ZXCVBNM;:_"},
+			{"@#$%^&*()=", "~`[]{}\\|/+", "<>;:'\"!?_-", "1234567890"},
 		};
-		const char* KeyRow(bool raw, int layer, int row)
+		constexpr int kKeyboardRows = 5;
+		constexpr int kKeyboardLastRow = 4; // Shift, Space, Delete, Done
+		const char* KeyRow(bool shift, bool symbols, int row)
 		{
-			return raw ? kRawRows[layer][row] : kKeyRows[row];
+			return kKeyRows[symbols ? 2 : shift ? 1 : 0][row];
 		}
 	}
 
@@ -1051,7 +1051,7 @@ namespace ps5shell
 			return {};
 		// tr: the hints along the bottom: what a button does on this screen, a word or two
 		if (m_keyboard.open)
-			return {{Icon::Cross, Tr("Type")}, {Icon::Square, Tr("Delete")}, {Icon::Options, Tr("Done")}, {Icon::Circle, Tr("Close")}};
+			return {{Icon::Cross, Tr("Type")}, {Icon::Circle, Tr("Delete")}, {Icon::Triangle, Tr("Shift")}, {Icon::Options, Tr("Done")}};
 		if (m_picker.open)
 			return {{Icon::Cross, Tr("Choose")}, {Icon::Circle, Tr("Cancel")}};
 		if (m_help.open)
@@ -1408,7 +1408,8 @@ namespace ps5shell
 		m_keyboard.naming = false;
 		m_keyboard.raw = false;
 		m_keyboard.secret = false;
-		m_keyboard.layer = 0;
+		m_keyboard.shift = false;
+		m_keyboard.symbols = false;
 		m_keyboard.done = nullptr;
 		m_keyboard.open = true;
 		m_keyboard.row = 1;
@@ -1493,7 +1494,7 @@ namespace ps5shell
 		}
 		if (m_keyboard.open)
 		{
-			auto rowLength = [](int row) { return row < 4 ? (int)std::strlen(kKeyRows[row]) : 3; };
+			auto rowLength = [](int row) { return row < kKeyboardLastRow ? 10 : 4; };
 			// what was typed, its spaces at the ends left out, to the one who asked (who may open the
 			// keyboard again for the next field: the call is made from a copy)
 			auto finish = [this] {
@@ -1512,12 +1513,9 @@ namespace ps5shell
 			{
 			case Button::R1:
 			case Button::L1:
-				// typed as it is: small letters, capitals, symbols
-				if (m_keyboard.raw)
-				{
-					m_keyboard.layer = (m_keyboard.layer + (b == Button::R1 ? 1 : 2)) % 3;
-					m_feedback.Play(ui::Cue::Focus);
-				}
+				// the symbols, and back to the letters
+				m_keyboard.symbols = !m_keyboard.symbols;
+				m_feedback.Play(ui::Cue::Focus);
 				break;
 			case Button::Up:
 			case Button::Down:
@@ -1545,19 +1543,17 @@ namespace ps5shell
 			{
 				std::string& text = m_keyboard.naming ? m_keyboard.text : m_search;
 				const bool room = !m_keyboard.naming || text.size() < m_keyboard.limit;
-				if (m_keyboard.row < 4 && room)
-				{
-					// a name starts each word with a capital (Lena); a search is in small letters; text typed
-					// as it is (a password) takes the key as it shows
-					const char key = KeyRow(m_keyboard.raw, m_keyboard.layer, m_keyboard.row)[m_keyboard.column];
-					const bool capital = m_keyboard.naming && (text.empty() || text.back() == ' ');
-					text += m_keyboard.raw ? key : capital ? key : (char)std::tolower((unsigned char)key);
-				}
-				else if (m_keyboard.row == 4 && m_keyboard.column == 0 && room)
+				const bool last = m_keyboard.row == kKeyboardLastRow;
+				// a key types what it shows
+				if (!last && room)
+					text += KeyRow(m_keyboard.shift, m_keyboard.symbols, m_keyboard.row)[m_keyboard.column];
+				else if (last && m_keyboard.column == 0)
+					m_keyboard.shift = !m_keyboard.shift;
+				else if (last && m_keyboard.column == 1 && room)
 					text += ' ';
-				else if (m_keyboard.row == 4 && m_keyboard.column == 1 && !text.empty())
+				else if (last && m_keyboard.column == 2 && !text.empty())
 					text.pop_back();
-				else if (m_keyboard.row == 4 && m_keyboard.column == 2)
+				else if (last && m_keyboard.column == 3)
 					finish();
 				else if (!room)
 				{
@@ -1580,24 +1576,34 @@ namespace ps5shell
 				break;
 			}
 			case Button::Triangle:
-			{
-				std::string& text = m_keyboard.naming ? m_keyboard.text : m_search;
-				if (!m_keyboard.naming || text.size() < m_keyboard.limit)
-					text += ' ';
-				m_feedback.Play(ui::Cue::Select);
-				if (!m_keyboard.naming)
-					LibraryRefresh();
+				// Shift, as on the in-game keyboards: capitals and the second symbols until pressed again
+				m_keyboard.shift = !m_keyboard.shift;
+				m_feedback.Play(ui::Cue::Toggle);
 				break;
-			}
 			case Button::Options:
 				// Done, as the hints have it: a name is kept
 				finish();
 				m_feedback.Play(ui::Cue::Select);
 				break;
 			case Button::Circle:
-				m_keyboard.open = false; // a name is left as it was
-				m_feedback.Play(ui::Cue::Back);
+			{
+				// deletes, as on the in-game keyboards; with nothing left, a fresh press closes the
+				// keyboard (a name is left as it was), a held one stops at empty
+				std::string& text = m_keyboard.naming ? m_keyboard.text : m_search;
+				if (!text.empty())
+				{
+					text.pop_back();
+					m_feedback.Play(ui::Cue::Back);
+					if (!m_keyboard.naming)
+						LibraryRefresh();
+				}
+				else if (!press.repeat)
+				{
+					m_keyboard.open = false;
+					m_feedback.Play(ui::Cue::Back);
+				}
 				break;
+			}
 			default: break;
 			}
 			return true;
@@ -1816,31 +1822,34 @@ namespace ps5shell
 			canvas.Draw(m_keyboard.naming ? Icon::Sparkle : Icon::Search, {sheet.x + 36, sheet.y + 30, 30, 30}, Secondary());
 			canvas.Text(Style(kHeadingStyle), sheet.x + 80, sheet.y + 26, typed.empty() ? empty : typed + "_", typed.empty() ? Tertiary() : kText,
 				sheet.w - 120 - (m_keyboard.raw ? 260 : 0), 1);
-			if (m_keyboard.raw)
 			{
 				// tr: the keyboard's other keys, for text typed as it is: R1 and L1 go to capitals and symbols
-				const char* const layers[] = {Tr("abc"), Tr("ABC"), Tr("#+=")};
+				const char* const layers[] = {Tr("abc"), Tr("#+=")};
 				canvas.Text(Style({22, ui::Weight::Medium, 1.0f}), sheet.Right() - 40 - 240, sheet.y + 34,
-					TrF("L1 R1: {0}", layers[(m_keyboard.layer + 1) % 3]), Secondary(), 240, 1, ui::Align::Right);
+					TrF("L1 R1: {0}", layers[m_keyboard.symbols ? 0 : 1]), Secondary(), 240, 1, ui::Align::Right);
 			}
 			const float keyW = 92, keyH = 56, gap = 10;
 			for (int row = 0; row < kKeyboardRows; row++)
 			{
-				const int length = row < 4 ? (int)std::strlen(kKeyRows[row]) : 3;
-				const float widths[3] = {keyW * 4 + gap * 3, keyW * 2 + gap, keyW * 2 + gap};
+				const bool last = row == kKeyboardLastRow;
+				const int length = last ? 4 : 10;
+				// the last row as wide as the others: Shift 2 keys, Space 4, Delete 2, Done 2
+				const float widths[4] = {keyW * 2 + gap, keyW * 4 + gap * 3, keyW * 2 + gap, keyW * 2 + gap};
 				float total = 0;
 				for (int k = 0; k < length; k++)
-					total += (row < 4 ? keyW : widths[k]) + (k ? gap : 0);
+					total += (last ? widths[k] : keyW) + (k ? gap : 0);
 				float x = sheet.CentreX() - total / 2;
 				const float y = sheet.y + 86 + row * (keyH + gap);
 				for (int k = 0; k < length; k++)
 				{
-					const float w = row < 4 ? keyW : widths[k];
+					const float w = last ? widths[k] : keyW;
 					const Box key{x, y, w, keyH};
 					const bool focused = m_keyboard.row == row && m_keyboard.column == k;
-					canvas.Rect(key, 12, focused ? kText : Surface2());
+					const bool lit = last && k == 0 && m_keyboard.shift; // Shift held on
+					canvas.Rect(key, 12, focused ? kText : lit ? Accent() : Surface2());
 					// tr: the on-screen keyboard's keys
-					const std::string label = row < 4 ? std::string(1, KeyRow(m_keyboard.raw, m_keyboard.layer, row)[k]) : k == 0 ? Tr("Space") : k == 1 ? Tr("Delete") : Tr("Done");
+					const std::string label = !last ? std::string(1, KeyRow(m_keyboard.shift, m_keyboard.symbols, row)[k]) :
+						k == 0 ? std::string(m_keyboard.shift ? Tr("Shift: on") : Tr("Shift")) : k == 1 ? Tr("Space") : k == 2 ? Tr("Delete") : Tr("Done");
 					canvas.Text(Style({26, ui::Weight::Medium, 1.0f}), key.x + 8, key.CentreY() - 15, label, focused ? kInk1 : kText, key.w - 16, 1,
 						ui::Align::Centre);
 					x += w + gap;

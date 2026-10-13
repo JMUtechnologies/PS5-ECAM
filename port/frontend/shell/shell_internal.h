@@ -658,10 +658,12 @@ namespace ps5shell
 			std::string text, title;
 			size_t limit = 0;
 			std::function<void(const std::string&)> done;
-			// text typed as it is (a user name, a password, a computer's name): no capitals put in,
-			// small letters, capitals or symbols (layer, R1 and L1); secret: shown as dots
+			// text typed as it is (a user name, a password, a computer's name): its spaces at the ends
+			// kept; secret: shown as dots
 			bool raw = false, secret = false;
-			int layer = 0;
+			// the keys shown: capitals (Shift, its key or Triangle) and symbols (L1, R1), as on the in-game
+			// keyboard (app/ingame3ds.cpp)
+			bool shift = false, symbols = false;
 		} m_keyboard;
 		struct UpdateSheet
 		{

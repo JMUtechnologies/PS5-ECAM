@@ -764,9 +764,12 @@ namespace ps5ingame3ds
 
 		std::string s_typed;		  // the renderer's
 		bool s_shift = false;		  // capitals and the second symbols
-		constexpr const char* kKeys[2][4] = {
+		bool s_symbols = false;		  // the symbols (L1, R1), as the launcher's keyboard has them
+		// the same keys as the launcher's keyboard (frontend/shell/shell.cpp, kKeyRows)
+		constexpr const char* kKeys[3][4] = {
 			{"1234567890", "qwertyuiop", "asdfghjkl'", "zxcvbnm,.-"},
 			{"!?#$%&*()+", "QWERTYUIOP", "ASDFGHJKL\"", "ZXCVBNM;:_"},
+			{"@#$%^&*()=", "~`[]{}\\|/+", "<>;:'\"!?_-", "1234567890"},
 		};
 
 		void FinishKeyboard(int button)
@@ -799,6 +802,7 @@ namespace ps5ingame3ds
 				{
 					s_typed.clear();
 					s_shift = false;
+					s_symbols = false;
 					s_keyboardFresh = false;
 				}
 			}
@@ -841,7 +845,7 @@ namespace ps5ingame3ds
 					canvas.TextFit(g.row, 24, x + width / 2, y + 22, Colours().text, label, width - 16, Canvas::Align::Centre);
 					return chosen;
 				};
-				const auto& rows = kKeys[s_shift ? 1 : 0];
+				const auto& rows = kKeys[s_symbols ? 2 : s_shift ? 1 : 0];
 				for (int row = 0; row < 4; row++)
 					for (int column = 0; column < 10; column++)
 					{
@@ -883,8 +887,10 @@ namespace ps5ingame3ds
 			// keyboard); not while the touchpad is held for a shortcut
 			if (!(s_buttons & ps5pad::kTouchPad))
 			{
-				if ((s_pressed & ps5pad::kCircle) && !s_typed.empty())
+				if ((s_pressed & (ps5pad::kCircle | ps5pad::kSquare)) && !s_typed.empty())
 					s_typed.pop_back();
+				if (s_pressed & (ps5pad::kL1 | ps5pad::kR1))
+					s_symbols = !s_symbols;
 				if (s_pressed & ps5pad::kTriangle)
 					s_shift = !s_shift;
 				if (s_pressed & ps5pad::kOptions)
