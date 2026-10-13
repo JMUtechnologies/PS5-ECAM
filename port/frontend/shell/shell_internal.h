@@ -275,6 +275,47 @@ namespace ps5shell
 		// the launch picture opening into it, and a launch of its own. Every other page is the one every
 		// theme has.
 		bool EdenLayout() const { return ui::CurrentLayout() == ui::Layout::Eden; }
+		// the launchers of sections (Home, Library, Settings, About) beside a rail: Eden, and the experiments
+		// Phantom and Terminal (experiments.cpp), which share its navigation and draw every part their own way
+		bool PhantomLayout() const { return ui::CurrentLayout() == ui::Layout::Phantom; }
+		bool TerminalLayout() const { return ui::CurrentLayout() == ui::Layout::Terminal; }
+		bool SectionLayout() const { return EdenLayout() || PhantomLayout() || TerminalLayout(); }
+		int SectionColumns() const; // the Library's columns: Eden's grid, the experiments' one-column list
+
+		// -- Phantom (experiments.cpp, 6.18): after a heist game's menus. Black, white and the side's loud
+		// colour; slanted name plates; the Library as a list of names beside the focused cover on a burst
+		void PhantomPlate(Canvas& canvas, const Box& box, float skew, uint32_t colour); // a parallelogram
+		void PhantomBurst(Canvas& canvas, float cx, float cy, float radius, uint32_t colour, float turn); // a spiked star
+		float PhantomTag(Canvas& canvas, float x, float y, const std::string& text, uint32_t ground, uint32_t ink, float size = 20);
+		void PhantomBackdrop(Canvas& canvas);
+		void PhantomDrawRail(Canvas& canvas);
+		void PhantomDrawHints(Canvas& canvas, const std::vector<Hint>& hints);
+		void PhantomHomeDraw(Canvas& canvas);
+		void PhantomLibraryDraw(Canvas& canvas);
+		void PhantomSettingsDraw(Canvas& canvas);
+		void PhantomAboutDraw(Canvas& canvas);
+		void PhantomDrawLaunch(Canvas& canvas);
+		void PhantomDrawOpening(Canvas& canvas);
+		void PhantomStateDraw(Canvas& canvas, float y); // LibraryState's card, Phantom's way
+		void TermStateDraw(Canvas& canvas, const Box& panel);
+		Box TermButton(Canvas& canvas, float x, float y, Icon icon, const std::string& label, bool focused, bool primary);
+		// -- Terminal (experiments.cpp, 6.19): after a hacker's console. Panels with a title on their edge, a
+		// status line, the sections as a file tree, the Library as a table, a log of what was done, scanlines
+		void TermPanel(Canvas& canvas, const Box& box, const std::string& title);
+		void TermStatus(Canvas& canvas);
+		void TermLog(const std::string& line); // a line of the log (what was done), as a command
+		void TermBackdrop(Canvas& canvas);
+		void TermDrawRail(Canvas& canvas);
+		void TermDrawHints(Canvas& canvas, const std::vector<Hint>& hints);
+		void TermHomeDraw(Canvas& canvas);
+		void TermLibraryDraw(Canvas& canvas);
+		void TermSettingsDraw(Canvas& canvas);
+		void TermAboutDraw(Canvas& canvas);
+		void TermDrawLaunch(Canvas& canvas);
+		void TermDrawOpening(Canvas& canvas);
+		void TermDrawCrt(Canvas& canvas); // scanlines, a rolling band, the tube's vignette: over everything
+		std::vector<std::string> m_termLog;
+		double m_termLogAt = 0;
 		int EdenSectionIndex() const;  // the rail's section the screen is (0 Home, 1 Library, 2 Settings, 3 About), else -1
 		bool EdenOnBoard() const;	   // where L1 and R1 go between the sections and Left reaches the rail
 		void EdenGo(int section);

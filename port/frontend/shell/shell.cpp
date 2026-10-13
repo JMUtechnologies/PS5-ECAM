@@ -202,7 +202,7 @@ namespace ps5shell
 			OpenHelp(Tr("The game could not start"), launchError);
 		// Eden's opening: the PS5's launch picture handed over to the launcher, as the app starts (not
 		// after a game, nor over what a failed one says)
-		else if (EdenLayout() && !returning && m_screen == ScreenId::Home)
+		else if (SectionLayout() && !returning && m_screen == ScreenId::Home)
 			EdenStartOpening();
 		ps5log::Line("[ui] the new launcher is up in {:.0f} ms", (host.clock() - started) * 1000);
 
@@ -342,7 +342,7 @@ namespace ps5shell
 			return;
 		}
 		// Eden's own screens with another theme in use (it was changed): the Library
-		if (!EdenLayout())
+		if (!SectionLayout())
 		{
 			m_railFocus = false;
 			if (m_screen == ScreenId::Home || m_screen == ScreenId::About)
@@ -360,7 +360,7 @@ namespace ps5shell
 			if (OverlayUpdate(press))
 				continue;
 			const bool tabbed = m_screen == ScreenId::Library || m_screen == ScreenId::Settings;
-			if (EdenLayout() && EdenSectionIndex() >= 0)
+			if (SectionLayout() && EdenSectionIndex() >= 0)
 			{
 				if (EdenBarUpdate(press))
 					continue;
@@ -407,7 +407,7 @@ namespace ps5shell
 		DrawBackdrop(canvas);
 		const float appear = m_launch.active ? 1.0f - ui::ease::CubicOut((float)((m_now - m_launch.at) / kLaunchSeconds)) * 0.85f : 1.0f;
 		canvas.PushAlpha(appear);
-		const bool rail = EdenLayout() && EdenSectionIndex() >= 0;
+		const bool rail = SectionLayout() && EdenSectionIndex() >= 0;
 		switch (m_screen)
 		{
 		case ScreenId::Welcome: WelcomeDraw(canvas); break;
@@ -447,6 +447,8 @@ namespace ps5shell
 		DrawOverlays(canvas);
 		if (m_openingOn)
 			EdenDrawOpening(canvas);
+		if (TerminalLayout())
+			TermDrawCrt(canvas); // the tube, over every screen of Terminal's
 		m_drawing = nullptr;
 	}
 
@@ -499,7 +501,7 @@ namespace ps5shell
 			if (!first || m_frames > 0)
 			{
 				// what is happening shows while the side starts (Cemu takes a few seconds)
-				Show(EdenLayout() ? ScreenId::Home : ScreenId::Library);
+				Show(SectionLayout() ? ScreenId::Home : ScreenId::Library);
 				Frame();
 			}
 			m_prepare(side);
@@ -531,7 +533,7 @@ namespace ps5shell
 		LibraryRefresh();
 		// Eden opens on Home, the game to continue in front (6.17)
 		m_homeFocus = 0;
-		m_tab = EdenLayout() ? ScreenId::Home : ScreenId::Library;
+		m_tab = SectionLayout() ? ScreenId::Home : ScreenId::Library;
 		Show(m_tab);
 	}
 
@@ -581,11 +583,12 @@ namespace ps5shell
 		if (side == m_side)
 			return;
 		m_feedback.Play(ui::Cue::Select);
+		TermLog(std::string("ssh ") + Lower(SideTitle(side))); // Terminal's log
 		// where the side being left was, for coming back to it
 		m_sideFocus[SideIndex()] = LibraryGame() >= 0 ? m_games[LibraryGame()].entry.game.titleId : 0;
 		// the same tab (Eden: the same section) on the other side
 		const ScreenId tab = m_screen == ScreenId::Settings						 ? ScreenId::Settings :
-			EdenLayout() && (m_screen == ScreenId::Home || m_screen == ScreenId::About) ? m_screen :
+			SectionLayout() && (m_screen == ScreenId::Home || m_screen == ScreenId::About) ? m_screen :
 																						  ScreenId::Library;
 		OpenSide(side, false);
 		m_railFocus = false;
@@ -849,7 +852,7 @@ namespace ps5shell
 		game.entry.lastPlayed = std::time(nullptr);
 		ps5catalog::Save();
 		// from where the game was in focus (Eden's covers say where), else the middle
-		Box from = EdenLayout() && m_edenLaunchFrom.w > 0 ? m_edenLaunchFrom : Box{};
+		Box from = SectionLayout() && m_edenLaunchFrom.w > 0 ? m_edenLaunchFrom : Box{};
 		if (from.w <= 0)
 			from = {760, 240, 400, 560};
 		LaunchGame(game.entry.game, IsDs() ? Tr("Starting melonDS") : Is3ds() ? Tr("Starting Azahar") : Tr("Starting Cemu"), from);
@@ -868,6 +871,7 @@ namespace ps5shell
 		m_choice = ps5launcher::Choice{m_side, game};
 		m_feedback.Play(ui::Cue::Launch);
 		ps5log::Line("[launcher] {} chosen on the {} side", game.name, SideTitle(m_side));
+		TermLog(fmt::format("run \"{}\"", game.name));
 	}
 
 	void Shell::Toast(const std::string& text)
@@ -884,7 +888,7 @@ namespace ps5shell
 	{
 		// Settings' dialog closing onto the screen it was over (6.5): that screen was there all along
 		// (Eden's Settings are a section of their own: the screen arrives)
-		const bool under = !EdenLayout() && m_screen == ScreenId::Settings && (screen == ScreenId::Library || screen == ScreenId::Hub);
+		const bool under = !SectionLayout() && m_screen == ScreenId::Settings && (screen == ScreenId::Library || screen == ScreenId::Hub);
 		if (screen != m_screen)
 			m_screenAt = under ? m_now - 10 : m_now;
 		m_screen = screen;
@@ -916,7 +920,7 @@ namespace ps5shell
 
 	void Shell::FocusBar()
 	{
-		if (EdenLayout() && EdenSectionIndex() >= 0)
+		if (SectionLayout() && EdenSectionIndex() >= 0)
 		{
 			// Eden's bar is its rail, on the section shown
 			m_railFocus = true;
@@ -1119,7 +1123,7 @@ namespace ps5shell
 			return {{Icon::Circle, Tr("Close")}};
 		if (m_menu.open)
 			return {{Icon::Cross, Tr("Choose")}, {Icon::Circle, Tr("Close")}};
-		if (EdenLayout() && EdenSectionIndex() >= 0)
+		if (SectionLayout() && EdenSectionIndex() >= 0)
 		{
 			bool handled = false;
 			std::vector<Hint> hints = EdenHints(handled);
@@ -1308,7 +1312,7 @@ namespace ps5shell
 		case ui::Motif::None: break;
 		}
 		// scrims (Eden's where its rail is: 6.17), grain and a vignette
-		if (EdenLayout() && EdenSectionIndex() >= 0)
+		if (SectionLayout() && EdenSectionIndex() >= 0)
 			EdenDrawScrims(canvas);
 		else
 		{
@@ -2057,7 +2061,7 @@ namespace ps5shell
 
 		// the launch (6.8): the cover to the centre, growing, the rest dimmed, and what is happening; Eden's
 		// its own (6.17)
-		if (m_launch.active && EdenLayout())
+		if (m_launch.active && SectionLayout())
 			EdenDrawLaunch(canvas);
 		else if (m_launch.active)
 		{

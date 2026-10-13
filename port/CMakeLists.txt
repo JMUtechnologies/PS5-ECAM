@@ -142,6 +142,7 @@ add_library(CemuPS5 STATIC
 	frontend/settings.h
 	frontend/shell.h
 	frontend/shell/eden.cpp
+	frontend/shell/experiments.cpp
 	frontend/shell/host_ps5.cpp
 	frontend/shell/hub.cpp
 	frontend/shell/installs.cpp
@@ -235,6 +236,7 @@ set_source_files_properties(
 	frontend/actions.cpp
 	frontend/settings.cpp
 	frontend/shell/eden.cpp
+	frontend/shell/experiments.cpp
 	frontend/shell/host_ps5.cpp
 	frontend/shell/hub.cpp
 	frontend/shell/installs.cpp

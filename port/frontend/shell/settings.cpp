@@ -128,8 +128,8 @@ namespace ps5shell
 		[[maybe_unused]] constexpr const char* kThemeWords[] = {TrMark("Link Jack"), TrMark("Classic (3.0)"), TrMark("Midnight"), TrMark("Phantom"), TrMark("Terminal"),
 			TrMark("Frosted glass over each side's colours: the default look."), TrMark("3.0.0's launcher: deep blue panels, flatter, a little squarer."),
 			TrMark("True black behind everything and nothing moving: for OLED screens."),
-			TrMark("Black, white and one loud colour per side, sharp corners, bands slashing across."),
-			TrMark("A hacker's console: phosphor on near-black, square corners, a grid with a scan line."), TrMark("Meyer Oscar"),
+			TrMark("A heist game's menus as a launcher: slanted name plates, your games as a list, bursts behind the covers."),
+			TrMark("A hacker's console as a launcher: a file tree, your games as a table, a log, phosphor and scanlines."), TrMark("Meyer Oscar"),
 			TrMark("Meyer Oscar Light"), TrMark("Your recently played games first, then your whole library."),
 			TrMark("Meyer Oscar with a light background."), TrMark("Eden"),
 			TrMark("ProsperoEden's launcher: a rail of sections, Home around your game, Settings as tiles.")};
@@ -1827,11 +1827,17 @@ namespace ps5shell
 				m_feedback.Play(ui::Cue::Back);
 				if (InGameSettings())
 					GameSettingsClose();
+				else if (SectionLayout())
+					EdenGo(0); // the experiments' Settings, a section: Home
 				else
 				{
 					ShowTab(ScreenId::Library);
 					m_barFocus = 3;
 				}
+				break;
+			case Button::Left:
+				if (SectionLayout() && !InGameSettings())
+					FocusBar(); // the experiments' rail
 				break;
 			default: break;
 			}
@@ -1962,7 +1968,7 @@ namespace ps5shell
 
 	void Shell::SettingsDraw(Canvas& canvas)
 	{
-		if (EdenLayout())
+		if (SectionLayout())
 		{
 			EdenSettingsDraw(canvas); // a board of tiles, and pages of three parts (6.17)
 			return;

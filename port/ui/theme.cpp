@@ -128,12 +128,14 @@ namespace ui
 			eden.motif = Motif::Eden;
 			list.push_back(eden);
 
-			// experimental: two looks of their own, inspired by games' menus rather than a console's
+			// experimental: two launchers of their own (shell/experiments.cpp), inspired by games' menus rather
+			// than a console's
 			Theme phantom;
 			phantom.id = "phantom";
 			phantom.name = "Phantom";
-			phantom.description = "Black, white and one loud colour per side, sharp corners, bands slashing across.";
+			phantom.description = "A heist game's menus as a launcher: slanted name plates, your games as a list, bursts behind the covers.";
 			phantom.experimental = true;
+			phantom.layout = Layout::Phantom;
 			phantom.colours = Colours({{"ink-0", "#0a0708"}, {"ink-1", "#140c0e"}, {"ink-2", "#22141a"}, {"glass", "#ffffff12"},
 				{"glass-2", "#ffffff1c"}, {"glass-edge", "#ffffff38"}, {"line", "#ffffff22"}, {"text", "#ffffff"}, {"text-2", "#ffffffc8"},
 				{"text-3", "#ffffff80"}, {"wiiu", "#ff2a46"}, {"wiiu-strong", "#d0102c"}, {"wiiu-ink", "#2a0408"}, {"n3ds", "#ffe14d"},
@@ -145,8 +147,9 @@ namespace ui
 			Theme terminal;
 			terminal.id = "terminal";
 			terminal.name = "Terminal";
-			terminal.description = "A hacker's console: phosphor on near-black, square corners, a grid with a scan line.";
+			terminal.description = "A hacker's console as a launcher: a file tree, your games as a table, a log, phosphor and scanlines.";
 			terminal.experimental = true;
+			terminal.layout = Layout::Terminal;
 			terminal.colours = Colours({{"ink-0", "#03080a"}, {"ink-1", "#071216"}, {"ink-2", "#0c1c22"}, {"glass", "#39ffd60d"},
 				{"glass-2", "#39ffd61a"}, {"glass-edge", "#39ffd640"}, {"line", "#39ffd626"}, {"text", "#d6fff4"}, {"text-2", "#d6fff4b0"},
 				{"text-3", "#d6fff470"}, {"wiiu", "#39ffd6"}, {"wiiu-strong", "#12c9a6"}, {"wiiu-ink", "#032a22"}, {"n3ds", "#ffb238"},

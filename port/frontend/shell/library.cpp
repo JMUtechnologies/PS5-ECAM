@@ -246,7 +246,7 @@ namespace ps5shell
 
 	void Shell::LibraryUpdate(const ui::Press& press)
 	{
-		if (EdenLayout())
+		if (SectionLayout())
 		{
 			EdenLibraryUpdate(press); // covers beside the game's details (eden.cpp, 6.17)
 			return;
@@ -458,7 +458,7 @@ namespace ps5shell
 
 	void Shell::LibraryDraw(Canvas& canvas)
 	{
-		if (EdenLayout())
+		if (SectionLayout())
 		{
 			EdenLibraryDraw(canvas);
 			return;

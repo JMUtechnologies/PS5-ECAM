@@ -152,6 +152,8 @@ namespace ps5shell
 		if (section == from && EdenOnBoard())
 			return;
 		m_edenDirection = section >= from ? 1 : -1;
+		static constexpr const char* kPaths[kSections] = {"~/home", "~/library", "~/settings", "~/about"};
+		TermLog(std::string("cd ") + kPaths[section]); // Terminal's log
 		switch (section)
 		{
 		case 0: ShowTab(ScreenId::Home); break;
@@ -263,6 +265,10 @@ namespace ps5shell
 
 	void Shell::EdenDrawRail(Canvas& canvas)
 	{
+		if (PhantomLayout())
+			return PhantomDrawRail(canvas); // experiments.cpp
+		if (TerminalLayout())
+			return TermDrawRail(canvas);
 		const bool still = m_settings.ui.reduceMotion;
 		m_railOpen.target = m_railFocus ? 1.0f : 0.0f;
 		m_railOpen.omega = still ? 60.0f : 18.0f;
@@ -276,13 +282,17 @@ namespace ps5shell
 			slide = -width * (1 - ui::ease::InOut(m_openingAt < 0 ? 0.0f : (float)((m_now - m_openingAt - kReveal) / kHandover)));
 		canvas.PushOffset(slide, 0);
 
-		// its body: it opens over the screen beside it while the focus is on it
+		// its body: it opens over the screen beside it while the focus is on it, that screen dimmed so what
+		// the rail covers half of reads as behind it
 		if (open > 0.01f)
+		{
+			canvas.Rect({width, 0, 1920 - width, 1080}, 0, ui::SetAlpha(kInk0, 0.6f * open));
 			canvas.Shadow({0, 0, width, 1080}, 0, 0, 60, ui::SetAlpha(0xff000000, 0.5f * open));
+		}
 		if (m_settings.ui.highContrast)
 			canvas.Rect({0, 0, width, 1080}, 0, kInk2);
 		else
-			canvas.LinearGradient({0, 0, width, 1080}, 0, ui::SetAlpha(kInk1, 0.9f + 0.08f * open), ui::SetAlpha(kInk0, 0.94f + 0.05f * open), 0, 0, 0, 1080);
+			canvas.LinearGradient({0, 0, width, 1080}, 0, ui::SetAlpha(kInk1, 0.9f + 0.1f * open), ui::SetAlpha(kInk0, 0.94f + 0.06f * open), 0, 0, 0, 1080);
 		canvas.Rect({width - 1.5f, 0, 1.5f, 1080}, 0, ui::WithAlpha(kGlassEdge, 0.7f + 0.3f * open));
 
 		// the mark: the three sides' squares, as the bar has them (the opening brings them here)
@@ -391,9 +401,23 @@ namespace ps5shell
 
 	void Shell::EdenDrawHints(Canvas& canvas, const std::vector<Hint>& hints)
 	{
-		// along the foot from the left, as ProsperoEden has them (beside the rail, as wide as it is open)
-		const ui::TextStyle style = Style({22, ui::Weight::Medium, 1.0f});
+		if (PhantomLayout())
+			return PhantomDrawHints(canvas, hints); // experiments.cpp
+		if (TerminalLayout())
+			return TermDrawHints(canvas, hints);
+		// along the foot from the left, as ProsperoEden has them (beside the rail, as wide as it is open),
+		// smaller when a language's words would reach the Library's place at the right
+		ui::TextStyle style = Style({22, ui::Weight::Medium, 1.0f});
 		float x = kLeft + (kRailWide - kRail) * std::clamp(m_railOpen.value, 0.0f, 1.0f);
+		auto width = [&] {
+			float total = 0;
+			for (const Hint& hint : hints)
+				if (!hint.text.empty())
+					total += (hint.icon == Icon::R1 ? 34 : 0) + 30 + 10 + m_fonts.Width(style, hint.text) + 34;
+			return total;
+		};
+		while (width() > kRight - 140 - x && style.size > 16)
+			style.size -= 1;
 		const float y = kFooter - 15;
 		for (const Hint& hint : hints)
 		{
@@ -440,6 +464,8 @@ namespace ps5shell
 			return {{Icon::Cross, Tr("Play")}, {Icon::Triangle, Tr("Game settings")}, {Icon::Options, Tr("Options")}, {Icon::Square, Tr("Sort")},
 				{Icon::L2, Tr("Filter")}, {Icon::R2, Tr("Search")}, sections};
 		case ScreenId::Settings:
+			if (EdenOnBoard() && !EdenLayout()) // the experiments' list of pages
+				return {{Icon::UpDown, Tr("Pages")}, {Icon::Cross, Tr("Open")}, {Icon::Circle, Tr("Back")}, sections, {Icon::Touchpad, other}};
 			if (EdenOnBoard())
 				return {{Icon::Cross, Tr("Open")}, {Icon::Circle, Tr("Back")}, sections, {Icon::Touchpad, other}};
 			handled = false; // a page's rows: as every theme has them
@@ -451,6 +477,10 @@ namespace ps5shell
 
 	void Shell::EdenDrawScrims(Canvas& canvas)
 	{
+		if (PhantomLayout())
+			return PhantomBackdrop(canvas); // experiments.cpp
+		if (TerminalLayout())
+			return TermBackdrop(canvas);
 		// the artwork shows where a screen leaves it room: Home keeps its right side clear, the others
 		// lie over an even shade (ProsperoEden's draw_scrims)
 		m_edenShade.target = m_screen == ScreenId::Home ? 0.0f : 1.0f;
@@ -660,6 +690,10 @@ namespace ps5shell
 
 	void Shell::EdenHomeDraw(Canvas& canvas)
 	{
+		if (PhantomLayout())
+			return PhantomHomeDraw(canvas); // experiments.cpp
+		if (TerminalLayout())
+			return TermHomeDraw(canvas);
 		const bool still = m_settings.ui.reduceMotion;
 		// the top bar: the app, its version, the side
 		EdenArrive(canvas, 0, -16);
@@ -857,7 +891,7 @@ namespace ps5shell
 		const int side = SideIndex();
 		const int offset = ArticTiles();
 		const int total = (int)m_shelf.size() + offset;
-		const int columns = IsWiiU() ? 5 : 4;
+		const int columns = SectionColumns(); // Eden's grid; the experiments' list
 		const int game = LibraryGame();
 		switch (b)
 		{
@@ -979,6 +1013,10 @@ namespace ps5shell
 
 	void Shell::EdenLibraryDraw(Canvas& canvas)
 	{
+		if (PhantomLayout())
+			return PhantomLibraryDraw(canvas); // experiments.cpp
+		if (TerminalLayout())
+			return TermLibraryDraw(canvas);
 		const int side = SideIndex();
 		EdenArrive(canvas, 0, 0);
 		EdenDrawTitle(canvas, TrC("tab", "Library"), m_games.empty() ? std::string() : TrP((int)m_games.size(), "{0} game", "{0} games"));
@@ -1052,15 +1090,17 @@ namespace ps5shell
 		const int game = LibraryGame();
 		WantBackdrop(game >= 0 ? &m_games[game] : nullptr);
 
-		// the covers: the focused row kept in sight
+		// the covers, whole rows at a time: the focused row kept in sight, a row going out of the window
+		// fading as it goes (no row is ever shown cut)
 		const int focusRow = m_libraryIndex / columns;
 		const float view = kGridBottom - kGridTop;
-		float target = m_edenScroll.target;
-		if (focusRow * pitch < target)
-			target = focusRow * pitch;
-		if (focusRow * pitch + coverH + 90 - target > view)
-			target = focusRow * pitch + coverH + 90 - view;
-		m_edenScroll.target = std::max(0.0f, target);
+		const int visibleRows = std::max(1, (int)((view + 20) / pitch));
+		int shownFirst = (int)std::round(m_edenScroll.target / pitch);
+		if (focusRow < shownFirst)
+			shownFirst = focusRow;
+		if (focusRow >= shownFirst + visibleRows)
+			shownFirst = focusRow - visibleRows + 1;
+		m_edenScroll.target = std::max(0, shownFirst) * pitch;
 		m_edenScroll.omega = still ? 60.0f : kScrollOmega;
 		m_edenScroll.Update(m_dt);
 		const float scroll = m_edenScroll.value;
@@ -1073,8 +1113,13 @@ namespace ps5shell
 			const Box cell{kLeft + column * (cellW + gapX), kGridTop + row * pitch - scroll, cellW, coverH};
 			if (cell.y > kGridBottom)
 				break;
+			// a row past the window's foot, or above its top, fades out
+			const float inside = std::clamp(1 - (cell.Bottom() + 92 - kGridBottom) / 80.0f, 0.0f, 1.0f) * std::clamp(1 - (kGridTop - cell.y) / 80.0f, 0.0f, 1.0f);
+			if (inside <= 0.01f)
+				continue;
 			const bool focused = !m_railFocus && index == m_libraryIndex;
 			EdenArrive(canvas, 1 + std::min(row - firstRow, 3), 20);
+			canvas.PushAlpha(inside);
 			if (index < offset)
 			{
 				// Artic Base: a game from your 3DS
@@ -1086,6 +1131,7 @@ namespace ps5shell
 				canvas.Text(nameStyle, cell.x, cell.Bottom() + 12, Tr("Play from your 3DS"), focused ? kText : Secondary(), cellW, 2);
 				if (focused)
 					Focus(cell, kRadiusCard, kN3ds);
+				canvas.PopAlpha();
 				EdenLeave(canvas);
 				continue;
 			}
@@ -1100,6 +1146,7 @@ namespace ps5shell
 			const ui::TextBlock name = canvas.Text(nameStyle, cell.x, cell.Bottom() + 12, g.entry.game.name, focused ? kText : Secondary(), cellW, 2);
 			const std::string meta = Join({g.report ? std::string(TrC("status", g.report->status)) : std::string(), g.entry.game.format});
 			canvas.Text(metaStyle, cell.x, cell.Bottom() + 18 + name.height, meta, focused ? Pale(Accent()) : Tertiary(), cellW, 1);
+			canvas.PopAlpha();
 			EdenLeave(canvas);
 		}
 		if (focusedBox.w > 0 && game >= 0)
@@ -1114,12 +1161,8 @@ namespace ps5shell
 			m_edenLaunchFrom = lifted;
 		}
 		canvas.PopClip();
-		// more rows wait under the window: it fades out over them
 		const int rows = (total + columns - 1) / columns;
-		if (rows * pitch - scroll > view + 40 && !m_settings.ui.highContrast)
-			canvas.LinearGradient({kLeft - 40, kGridBottom - 140, gridW + 80, 140}, 0, ui::SetAlpha(kInk0, 0), ui::SetAlpha(kInk0, 0.92f), 0,
-				kGridBottom - 140, 0, kGridBottom);
-		// where in it the window is
+		// where in it the window is (more rows wait under it)
 		if (rows * pitch > view + 1)
 		{
 			const float content = rows * pitch, thumb = std::max(48.0f, view * view / content);
@@ -1438,6 +1481,10 @@ namespace ps5shell
 
 	void Shell::EdenSettingsDraw(Canvas& canvas)
 	{
+		if (PhantomLayout())
+			return PhantomSettingsDraw(canvas); // experiments.cpp
+		if (TerminalLayout())
+			return TermSettingsDraw(canvas);
 		if (InGameSettings() || m_onRows)
 			EdenPageDraw(canvas);
 		else
@@ -1654,6 +1701,10 @@ namespace ps5shell
 
 	void Shell::EdenAboutDraw(Canvas& canvas)
 	{
+		if (PhantomLayout())
+			return PhantomAboutDraw(canvas); // experiments.cpp
+		if (TerminalLayout())
+			return TermAboutDraw(canvas);
 		WantBackdrop(nullptr);
 		EdenArrive(canvas, 0, 0);
 		EdenDrawTitle(canvas, TrC("app", "About"), Tr("Who made what."));
@@ -1689,6 +1740,10 @@ namespace ps5shell
 
 	void Shell::EdenDrawLaunch(Canvas& canvas)
 	{
+		if (PhantomLayout())
+			return PhantomDrawLaunch(canvas); // experiments.cpp
+		if (TerminalLayout())
+			return TermDrawLaunch(canvas);
 		// the menu dims, the game's cover flies from where it was to the middle, a little past its size
 		// before it rests, and its name comes in under it; it stays there while the game loads
 		const float total = kLaunchSeconds + 0.25f;
@@ -1739,6 +1794,10 @@ namespace ps5shell
 
 	void Shell::EdenDrawOpening(Canvas& canvas)
 	{
+		if (PhantomLayout())
+			return PhantomDrawOpening(canvas); // experiments.cpp
+		if (TerminalLayout())
+			return TermDrawOpening(canvas);
 		// the picture the PS5 showed while the app started (sce_sys/pic0.dds, as assets/ui/opening.jpg): the
 		// splash is let go of once it is drawn here, so the two are one
 		static const std::string kPicture = ps5paths::Assets() + "/ui/opening.jpg";
