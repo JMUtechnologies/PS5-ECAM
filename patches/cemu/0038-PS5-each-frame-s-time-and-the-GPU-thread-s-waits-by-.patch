@@ -1,0 +1,175 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Tue, 13 Oct 2026 23:39:50 +0000
+Subject: [PATCH] PS5: each frame's time and the GPU thread's waits by what
+ they wait for, and two frames in flight when asked
+
+Ten-second averages hide the frames a player feels while Breath of the
+Wild streams an area in, and "waiting on the GPU" lumps five waits
+together. For the port's [perf] line:
+
+- LatteRenderTarget_itHLESwapScanBuffer times each frame, swap to swap, on
+  the TSC: how many took longer than 20, 34 and 50 ms, and the longest
+  (g_ps5FramesOver, g_ps5LongestFrameUs), which the port takes and clears
+- VulkanRenderer adds each wait's TSC ticks to g_ps5GpuWaitTicks by kind:
+  the previous frame at a swap, a swapchain image, its fence, a present to
+  finish, presenting, or any other command buffer
+
+At 4K the GPU thread waited on the GPU up to 19% of the time in the
+heaviest views while the GPU was a quarter idle. When the port asks
+(PS5Cemu_FramesInFlight, 2), a swap waits for the frame before the
+previous one instead, so the two can overlap, a frame later on screen.
+Otherwise nothing changes.
+---
+ src/Cafe/HW/Latte/Core/LatteRenderTarget.cpp  | 31 +++++++++++
+ .../Latte/Renderer/Vulkan/VulkanRenderer.cpp  | 54 +++++++++++++++++--
+ 2 files changed, 82 insertions(+), 3 deletions(-)
+
+diff --git a/src/Cafe/HW/Latte/Core/LatteRenderTarget.cpp b/src/Cafe/HW/Latte/Core/LatteRenderTarget.cpp
+index 5554e2e..f3b07a3 100644
+--- a/src/Cafe/HW/Latte/Core/LatteRenderTarget.cpp
++++ b/src/Cafe/HW/Latte/Core/LatteRenderTarget.cpp
+@@ -677,8 +677,39 @@ void LatteRenderTarget_trackUpdates()
+ 	}
+ }
+ 
++#if defined(CEMU_PS5)
++// PS5: each frame's time, from one swap to the next on the GPU thread, for the port's [perf] line,
++// which takes and clears them: how many frames took longer than 20, 34 and 50 ms (at 60 fps, one
++// shown for a third refresh or more, below 30 fps, a stutter) and the longest, in microseconds.
++// Averages over ten seconds hide the frames a player feels while the game streams an area in.
++std::atomic<uint32> g_ps5FramesOver[3]{};
++std::atomic<uint32> g_ps5LongestFrameUs{0};
++extern uint64 _rdtscFrequency;
++static uint64 s_ps5LastSwapTsc = 0;
++#endif
++
+ void LatteRenderTarget_itHLESwapScanBuffer()
+ {
++#if defined(CEMU_PS5)
++	{
++		const uint64 now = __rdtsc();
++		if (s_ps5LastSwapTsc && _rdtscFrequency)
++		{
++			const uint32 us = (uint32)std::min<uint64>((now - s_ps5LastSwapTsc) * 1000000ull / _rdtscFrequency, 0xFFFFFFFFull);
++			if (us > 20000)
++				g_ps5FramesOver[0].fetch_add(1, std::memory_order_relaxed);
++			if (us > 34000)
++				g_ps5FramesOver[1].fetch_add(1, std::memory_order_relaxed);
++			if (us > 50000)
++				g_ps5FramesOver[2].fetch_add(1, std::memory_order_relaxed);
++			uint32 longest = g_ps5LongestFrameUs.load(std::memory_order_relaxed);
++			while (us > longest && !g_ps5LongestFrameUs.compare_exchange_weak(longest, us, std::memory_order_relaxed))
++			{
++			}
++		}
++		s_ps5LastSwapTsc = now;
++	}
++#endif
+ 	performanceMonitor.cycle[performanceMonitor.cycleIndex].frameCounter++;
+ 	if(LatteGPUState.frameCounter > 5)
+ 		performanceMonitor.gpuTime_frameTime.endMeasuring();
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+index 464fd12..b9a5160 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+@@ -2327,12 +2327,32 @@ void VulkanRenderer::ProcessFinishedCommandBuffers()
+ 	}
+ }
+ 
++#if defined(CEMU_PS5)
++// PS5: the GPU thread's waits on the GPU, in TSC ticks, by what it waits for, for the port's [perf]
++// line ("waiting on the GPU" is all of them): [0] the previous frame's last command buffer at each
++// swap, [1] a swapchain image, [2] that image's fence, [3] a present to finish (present_wait), [4]
++// vkQueuePresentKHR, [5] any other command buffer (readbacks, queries, a full pool)
++std::atomic<uint64> g_ps5GpuWaitTicks[6]{};
++static bool s_ps5WaitingForPreviousFrame = false;
++// the port's: frames the GPU may still be drawing when the next is presented (1: Cemu's own)
++uint32 PS5Cemu_FramesInFlight();
++#define PS5_WAIT_BEGIN() const uint64 ps5WaitStart = __rdtsc()
++#define PS5_WAIT_END(kind) g_ps5GpuWaitTicks[kind].fetch_add(__rdtsc() - ps5WaitStart, std::memory_order_relaxed)
++#else
++#define PS5_WAIT_BEGIN()
++#define PS5_WAIT_END(kind)
++#endif
++
+ void VulkanRenderer::WaitForNextFinishedCommandBuffer()
+ {
+ 	cemu_assert_debug(m_commandBufferSyncIndex != m_commandBufferIndex);
+ 	// wait on least recently submitted command buffer
+ 	performanceMonitor.gpuTime_waitForHostGPU.beginMeasuring();
++	PS5_WAIT_BEGIN();
+ 	VkResult result = vkWaitForFences(m_logicalDevice, 1, &m_cmdBufferFences[m_commandBufferSyncIndex], true, UINT64_MAX);
++#if defined(CEMU_PS5)
++	PS5_WAIT_END(s_ps5WaitingForPreviousFrame ? 0 : 5);
++#endif
+ 	performanceMonitor.gpuTime_waitForHostGPU.endMeasuring();
+ 	if (result == VK_TIMEOUT)
+ 	{
+@@ -3183,7 +3203,13 @@ bool VulkanRenderer::UpdateSwapchainProperties(bool mainWindow)
+ void VulkanRenderer::SwapBuffer(bool mainWindow)
+ {
+ 	performanceMonitor.gpuTime_waitForHostGPU.beginMeasuring();
++#if defined(CEMU_PS5)
++	const uint64 ps5AcquireStart = __rdtsc();
++#endif
+ 	const bool acquired = AcquireNextSwapchainImage(mainWindow);
++#if defined(CEMU_PS5)
++	g_ps5GpuWaitTicks[1].fetch_add(__rdtsc() - ps5AcquireStart, std::memory_order_relaxed);
++#endif
+ 	performanceMonitor.gpuTime_waitForHostGPU.endMeasuring();
+ 	if(!acquired)
+ 		return;
+@@ -3205,12 +3231,30 @@ void VulkanRenderer::SwapBuffer(bool mainWindow)
+ 	cemu_assert_debug(m_numSubmittedCmdBuffers > 0);
+ 
+ 	// wait for the previous frame to finish rendering
++#if defined(CEMU_PS5)
++	// PS5: or, when the port asks for two frames in flight (framesInFlight), for the one before it:
++	// at 4K the GPU thread waited here while the GPU, still on the previous frame's last passes, had
++	// nothing of this one yet; one frame later on screen, the two overlap
++	static uint64 s_ps5CmdBufIdTwoFramesAgo = 0;
++	s_ps5WaitingForPreviousFrame = true;
++	if (PS5Cemu_FramesInFlight() >= 2)
++		WaitCommandBufferFinished(s_ps5CmdBufIdTwoFramesAgo);
++	else
++		WaitCommandBufferFinished(m_commandBufferIDOfPrevFrame);
++	s_ps5WaitingForPreviousFrame = false;
++	s_ps5CmdBufIdTwoFramesAgo = m_commandBufferIDOfPrevFrame;
++#else
+ 	WaitCommandBufferFinished(m_commandBufferIDOfPrevFrame);
++#endif
+ 	m_commandBufferIDOfPrevFrame = currentFrameCmdBufferID;
+ 
+-	performanceMonitor.gpuTime_waitForHostGPU.beginMeasuring();
+-	chainInfo.WaitAvailableFence();
+-	performanceMonitor.gpuTime_waitForHostGPU.endMeasuring();
++	{
++		performanceMonitor.gpuTime_waitForHostGPU.beginMeasuring();
++		PS5_WAIT_BEGIN();
++		chainInfo.WaitAvailableFence();
++		PS5_WAIT_END(2);
++		performanceMonitor.gpuTime_waitForHostGPU.endMeasuring();
++	}
+ 
+ 	VkPresentIdKHR presentId = {};
+ 
+@@ -3237,14 +3281,18 @@ void VulkanRenderer::SwapBuffer(bool mainWindow)
+ 		{
+ 			uint64 waitFrameId = chainInfo.m_presentId - chainInfo.m_queueDepth;
+ 			performanceMonitor.gpuTime_waitForHostGPU.beginMeasuring();
++			PS5_WAIT_BEGIN();
+ 			vkWaitForPresentKHR(m_logicalDevice, chainInfo.m_swapchain, waitFrameId, 40'000'000);
++			PS5_WAIT_END(3);
+ 			performanceMonitor.gpuTime_waitForHostGPU.endMeasuring();
+ 			chainInfo.m_queueDepth--;
+ 		}
+ 	}
+ 
+ 	performanceMonitor.gpuTime_waitForHostGPU.beginMeasuring();
++	PS5_WAIT_BEGIN();
+ 	VkResult result = vkQueuePresentKHR(m_presentQueue, &presentInfo);
++	PS5_WAIT_END(4);
+ 	performanceMonitor.gpuTime_waitForHostGPU.endMeasuring();
+ 	if (result < 0 && result != VK_ERROR_OUT_OF_DATE_KHR)
+ 	{

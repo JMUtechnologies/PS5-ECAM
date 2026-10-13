@@ -69,6 +69,11 @@ void PS5Cemu_MemMapperUsage(size_t& committed, size_t& jit);
 // patches/cemu: the GPU's time on Cemu's command buffers, when measured (VulkanRenderer.cpp)
 extern bool g_ps5GpuTimestamps;
 extern std::atomic<uint64> g_ps5GpuBusyNs;
+// patches/cemu 0038: frames longer than 20, 34 and 50 ms, and the longest (LatteRenderTarget.cpp),
+// and the GPU thread's waits on the GPU by what it waits for, in TSC ticks (VulkanRenderer.cpp)
+extern std::atomic<uint32> g_ps5FramesOver[3];
+extern std::atomic<uint32> g_ps5LongestFrameUs;
+extern std::atomic<uint64> g_ps5GpuWaitTicks[6];
 // patches/cemu: Cemu's VulkanPipelineStableCache.cpp
 void PS5Cemu_PipelineCacheProgress(uint32& loaded, uint32& queued, uint32& lastIndex);
 
@@ -81,6 +86,8 @@ namespace ps5emu
 		// the draws Cemu records in a command buffer before it submits it (PS5Cemu_SubmitDraws)
 		constexpr uint32_t kCemuSubmitDraws = 300;
 		std::atomic<uint32_t> s_submitDraws{kCemuSubmitDraws};
+		// the frames the GPU may still be drawing as the next is presented (PS5Cemu_FramesInFlight)
+		std::atomic<uint32_t> s_framesInFlight{1};
 
 		// What a call to each clock (and a yield) costs on this console, in nanoseconds, measured as a
 		// game starts: Cemu's GPU thread takes its millisecond clock at every draw call and its timer on
@@ -535,6 +542,13 @@ namespace ps5emu
 				kCemuSubmitDraws);
 	}
 
+	void SetFramesInFlight(int frames)
+	{
+		s_framesInFlight = frames >= 2 ? 2u : 1u;
+		if (frames >= 2)
+			ps5log::Line("[vulkan] the GPU may still draw the previous two frames as the next is presented (framesInFlight in ps5cemu.json; Cemu's own is 1)");
+	}
+
 	bool Scanning()
 	{
 		return CafeTitleList::IsScanning();
@@ -708,6 +722,9 @@ namespace ps5emu
 		int hangDumps = 0;
 		uint64_t idleAt = performanceMonitor.gpuTime_idleTime.getTotal(), hostGpuAt = performanceMonitor.gpuTime_waitForHostGPU.getTotal(),
 				 asyncAt = performanceMonitor.gpuTime_waitForAsync.getTotal(), gpuBusyAt = g_ps5GpuBusyNs.load();
+		uint64_t gpuWaitAt[6];
+		for (int i = 0; i < 6; i++)
+			gpuWaitAt[i] = g_ps5GpuWaitTicks[i].load();
 		ps5usb::GameStarted(); // the portals the game was started with
 		ps5usb::Refresh();
 		for (;;)
@@ -757,17 +774,32 @@ namespace ps5emu
 				const uint64_t gpuBusy = g_ps5GpuBusyNs.load();
 				const std::string gpu = g_ps5GpuTimestamps && now > loggedAt ?
 					fmt::format("; GPU busy {:.0f}%", (gpuBusy - gpuBusyAt) / 1000.0 * 100.0 / (now - loggedAt)) : std::string();
+				// the frames a player feels: how many took longer than 20, 34 and 50 ms, and the longest
+				const uint32_t over20 = g_ps5FramesOver[0].exchange(0), over34 = g_ps5FramesOver[1].exchange(0),
+							   over50 = g_ps5FramesOver[2].exchange(0), longestUs = g_ps5LongestFrameUs.exchange(0);
+				// and what the GPU thread waited on the GPU for: the previous frame at a swap, a swapchain
+				// image, its fence, a present to finish, presenting, or another command buffer
+				uint64_t gpuWaits[6];
+				for (int i = 0; i < 6; i++)
+					gpuWaits[i] = g_ps5GpuWaitTicks[i].load();
 				// the GPU thread: idle (the emulated CPU behind), or waiting on the PS5's GPU (it behind),
 				// or neither (the GPU thread itself the limit)
 				if (now > loggedAt)
-					ps5log::Line("[perf] {:.1f} fps over {:.0f} s; GPU thread idle {:.0f}%, waiting on the GPU {:.0f}%, for results {:.0f}%; "
-						"{} draws a frame{}; accurate barriers {}{}; heap {} MiB; descriptor sets {}, image samplers {}",
-						(frames - loggedFrames) * 1e6 / (now - loggedAt), (now - loggedAt) / 1e6, percent(idle - idleAt), percent(hostGpu - hostGpuAt),
-						percent(async - asyncAt), DrawsPerFrame(), gpu, GetConfig().vk_accurate_barriers ? "on" : "off", pipelines, HeapMiB(),
-						performanceMonitor.vk.numDescriptorSets.get(), performanceMonitor.vk.numDescriptorSamplerTextures.get());
+					ps5log::Line("[perf] {:.1f} fps over {:.0f} s; frames over 20/34/50 ms: {}/{}/{}, the longest {:.1f} ms; GPU thread "
+						"idle {:.0f}%, waiting on the GPU {:.0f}% (the previous frame {:.0f}, an image {:.0f}, its fence {:.0f}, a present {:.0f}, "
+						"presenting {:.0f}, other {:.0f}), for results {:.0f}%; {} draws a frame{}; accurate barriers {}{}; heap {} MiB; "
+						"descriptor sets {}, image samplers {}",
+						(frames - loggedFrames) * 1e6 / (now - loggedAt), (now - loggedAt) / 1e6, over20, over34, over50, longestUs / 1000.0,
+						percent(idle - idleAt), percent(hostGpu - hostGpuAt), percent(gpuWaits[0] - gpuWaitAt[0]),
+						percent(gpuWaits[1] - gpuWaitAt[1]), percent(gpuWaits[2] - gpuWaitAt[2]), percent(gpuWaits[3] - gpuWaitAt[3]),
+						percent(gpuWaits[4] - gpuWaitAt[4]), percent(gpuWaits[5] - gpuWaitAt[5]), percent(async - asyncAt), DrawsPerFrame(), gpu,
+						GetConfig().vk_accurate_barriers ? "on" : "off", pipelines, HeapMiB(), performanceMonitor.vk.numDescriptorSets.get(),
+						performanceMonitor.vk.numDescriptorSamplerTextures.get());
 				loggedFrames = frames;
 				loggedAt = now;
 				idleAt = idle, hostGpuAt = hostGpu, asyncAt = async, gpuBusyAt = gpuBusy;
+				for (int i = 0; i < 6; i++)
+					gpuWaitAt[i] = gpuWaits[i];
 			}
 			switch (ps5pad::TakeShortcut())
 			{
@@ -827,4 +859,11 @@ namespace ps5emu
 uint32 PS5Cemu_SubmitDraws()
 {
 	return ps5emu::s_submitDraws.load(std::memory_order_relaxed);
+}
+
+// patches/cemu 0038: Cemu's VulkanRenderer::SwapBuffer, at each swap: how many frames back it waits
+// for (1, the previous one, as Cemu does; 2, the one before it)
+uint32 PS5Cemu_FramesInFlight()
+{
+	return ps5emu::s_framesInFlight.load(std::memory_order_relaxed);
 }

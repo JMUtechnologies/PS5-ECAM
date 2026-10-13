@@ -206,6 +206,7 @@ namespace ps5settings
 				if (member.value.IsString())
 					settings.radvEnvironment[member.name.GetString()] = member.value.GetString();
 		ReadInt(json, "cemuSubmitDraws", settings.cemuSubmitDraws, 0, 5000);
+		ReadInt(json, "framesInFlight", settings.framesInFlight, 1, 2);
 		ReadInt(json, "volume", settings.volume, 0, 100);
 		ReadInt(json, "gameCount", settings.gameCount, -1, 1000000);
 		ReadString(json, "launchError", settings.launchError);
@@ -370,6 +371,8 @@ namespace ps5settings
 		writer.EndObject();
 		writer.Key("cemuSubmitDraws");
 		writer.Int(settings.cemuSubmitDraws);
+		writer.Key("framesInFlight");
+		writer.Int(settings.framesInFlight);
 		writer.Key("volume");
 		writer.Int(settings.volume);
 		writer.Key("gameCount");

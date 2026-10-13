@@ -217,6 +217,11 @@ namespace ps5settings
 		// for the driver's performance experiments (docs/DRIVER-PERFORMANCE.md); 0, the default,
 		// keeps Cemu's own 300
 		int cemuSubmitDraws = 0;
+		// only in ps5cemu.json: how many frames the GPU may still be drawing as Cemu presents the next
+		// (Cemu patch 0038): 1, Cemu's own, waits at each swap for the previous frame; 2 for the one
+		// before it, so the GPU thread and the GPU overlap more at 4K, a frame later on screen. An
+		// experiment, 1 until the [perf] lines' waits show the previous frame is what the GPU thread waits on
+		int framesInFlight = 1;
 		int volume = 100;			  // the TV sound, in percent
 		int gameCount = -1;			  // the Wii U library's games when last looked for (the start screen's); -1: never
 		uint64_t lastGame = 0;		  // title ID

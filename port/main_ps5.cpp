@@ -334,6 +334,7 @@ int main(int argc, char* argv[])
 		ps5log::Line("[vulkan] {}={} (radvEnvironment in ps5cemu.json)", name, value);
 	}
 	ps5emu::SetSubmitDraws(settings.cemuSubmitDraws);
+	ps5emu::SetFramesInFlight(settings.framesInFlight);
 	ps5pad::Init();
 	ps5pad::SetVibrationEnabled(settings.rumble);
 	ps5window::Initialize();

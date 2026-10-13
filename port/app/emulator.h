@@ -71,6 +71,11 @@ namespace ps5emu
 	// Cemu's own 300.
 	void SetSubmitDraws(int draws);
 
+	// How many frames the GPU may still be drawing as the next is presented, from the process's start
+	// (ps5cemu.json's framesInFlight, an experiment): 1, Cemu's own, waits at each swap for the
+	// previous frame; 2 for the one before it, a frame later on screen.
+	void SetFramesInFlight(int frames);
+
 	// Whether Cemu is still looking for games (the library fills in when it is done).
 	bool Scanning();
 
