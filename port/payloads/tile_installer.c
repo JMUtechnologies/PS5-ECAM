@@ -10,9 +10,11 @@
 //     not PS5CEMU-HAR's own;
 //   - replaces /data/homebrew/<title ID> only when that folder is itself such a tile (the same game's
 //     tile made again), never another app's folder;
-//   - moves the folder in (a rename, both being on /data; a copy where they are not), and writes
-//     <title ID>.result beside the pending folder: "ok", or "error <errno> <what>".
-// Then it exits. It reads and writes nothing else.
+//   - moves the folder in (a rename, both being on /data; a copy where they are not), gives it the
+//     modes all homebrew there has (0777: eboot.bin must be executable), and writes <title ID>.result
+//     beside the pending folder: "ok", or "error <errno> <what>".
+// Then it gives the same modes to every PS5CEMU-HAR tile already in /data/homebrew (those of the first
+// helper, which left eboot.bin 0666), and exits. It reads and writes nothing else.
 
 #include <dirent.h>
 #include <errno.h>
@@ -148,9 +150,9 @@ static int copy_tree(const char* from, const char* to)
 	return result;
 }
 
-// Folders 0777 and files 0666, as the homebrew a file manager puts in /data/homebrew has them: the
-// sandboxed app made these files, and whoever reads the tile (ShadowMount Plus, the system) must not be
-// kept out by their owner
+// Everything 0777, as all the homebrew in /data/homebrew has it and as psfwd gives the tile program:
+// the system starts eboot.bin only with its execute bits (4.0.0's first helper made the files 0666, and
+// no tile started), and the sandboxed app that made the files must not keep anyone out of them
 static void open_tree(const char* path)
 {
 	struct stat st;
@@ -159,7 +161,7 @@ static void open_tree(const char* path)
 	if (!S_ISDIR(st.st_mode))
 	{
 		if (S_ISREG(st.st_mode))
-			chmod(path, 0666);
+			chmod(path, 0777);
 		return;
 	}
 	chmod(path, 0777);
@@ -265,5 +267,20 @@ int main(void)
 	closedir(dir);
 	for (int i = 0; i < count; i++)
 		install(ids[i]);
+	// and the tiles made before (4.0.0's first helper left their eboot.bin 0666, so they did not start):
+	// each PS5CEMU-HAR tile in /data/homebrew opened again, never another app's folder
+	dir = opendir(HOMEBREW);
+	if (dir)
+	{
+		while ((entry = readdir(dir)) != NULL)
+			if (valid_id(entry->d_name))
+			{
+				char path[512];
+				snprintf(path, sizeof(path), "%s/%s", HOMEBREW, entry->d_name);
+				if (our_tile(path))
+					open_tree(path);
+			}
+		closedir(dir);
+	}
 	return 0;
 }
