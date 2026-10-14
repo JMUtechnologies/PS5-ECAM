@@ -19,6 +19,11 @@ namespace melonDS
 
 namespace ps5melonds
 {
+	// A DS's frame rate, 59.83 a second: its 33.51 MHz clock over a frame's 263 lines of 355 dots, 6
+	// cycles a dot. (Twice as many of the ARM9's 67 MHz cycles, which melonDS counts: those over this
+	// clock made it 29.91, the sound twice as fast and the speed shown twice the DS's, #47.)
+	constexpr double kDsFrameRate = 33513982.0 / (6 * 263 * 355);
+
 	// melonDS stopped the console itself (Platform::SignalStop): the game shut the DS down, or tried
 	// to start the GBA mode it has not
 	void Stopped(int reason);

@@ -65,8 +65,6 @@ namespace ps5melonds
 		using melonDS::u8;
 		using melonDS::u32;
 
-		// a DS's frame rate: its clock over the frame's cycles
-		constexpr double kDsFrameRate = 33513982.0 / (2 * 6 * 263 * 355);
 		constexpr int kStateSlots = ps5ingame3ds::kStateSlots;
 
 		melonDS::NDS* s_nds = nullptr;

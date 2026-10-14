@@ -47,8 +47,6 @@ namespace ps5melonds::sound
 		// as Azahar's sound thread: above the emulation's, so a busy CPU does not leave AudioOut without
 		// its next grain (256 the highest, 767 the lowest, threads start at 700)
 		constexpr int kAudioPriority = 384;
-		// a DS's frame rate: its clock over the frame's cycles (355 dots of 6 cycles, 263 lines, twice)
-		constexpr double kDsFrameRate = 33513982.0 / (2 * 6 * 263 * 355);
 		// the buffer's fill kept here, in frames (melonDS's holds 2048; a frame adds about 800 at once)
 		constexpr double kTargetFill = 1200;
 
