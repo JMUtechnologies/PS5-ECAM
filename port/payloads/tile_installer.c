@@ -148,6 +148,36 @@ static int copy_tree(const char* from, const char* to)
 	return result;
 }
 
+// Folders 0777 and files 0666, as the homebrew a file manager puts in /data/homebrew has them: the
+// sandboxed app made these files, and whoever reads the tile (ShadowMount Plus, the system) must not be
+// kept out by their owner
+static void open_tree(const char* path)
+{
+	struct stat st;
+	if (lstat(path, &st) != 0)
+		return;
+	if (!S_ISDIR(st.st_mode))
+	{
+		if (S_ISREG(st.st_mode))
+			chmod(path, 0666);
+		return;
+	}
+	chmod(path, 0777);
+	DIR* dir = opendir(path);
+	if (!dir)
+		return;
+	struct dirent* entry;
+	while ((entry = readdir(dir)) != NULL)
+	{
+		if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+			continue;
+		char child[1024];
+		snprintf(child, sizeof(child), "%s/%s", path, entry->d_name);
+		open_tree(child);
+	}
+	closedir(dir);
+}
+
 static void report(const char* id, int error, const char* what)
 {
 	char path[512];
@@ -193,6 +223,7 @@ static void install(const char* id)
 	}
 	if (rename(from, to) == 0)
 	{
+		open_tree(to);
 		report(id, 0, NULL);
 		return;
 	}
@@ -209,6 +240,7 @@ static void install(const char* id)
 		return;
 	}
 	remove_tree(from);
+	open_tree(to);
 	report(id, 0, NULL);
 }
 
