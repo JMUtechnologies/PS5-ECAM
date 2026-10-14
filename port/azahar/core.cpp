@@ -688,7 +688,13 @@ namespace ps5azahar
 		}
 		if (status != Core::System::ResultStatus::Success)
 		{
-			error = LoadError(status);
+			// an Artic Setup that stopped reads as a disconnection too, but its server answered: the
+			// Artic Setup Tool's screen says why (patches/azahar 0025, for keys aes_keys.txt lacks)
+			if (IsArticSetup(path) && status == Core::System::ResultStatus::ErrorArticDisconnected)
+				error = ps5lang::Tr("Artic Setup did not finish: the Artic Setup Tool on the 3DS says why. If it says nothing, check the "
+									"3DS's address, and that the 3DS and the PS5 are on the same network.");
+			else
+				error = LoadError(status);
 			const std::string details = system.GetStatusDetails();
 			ps5log::Line("[azahar] load failed: {} ({})", error, details);
 			return false;

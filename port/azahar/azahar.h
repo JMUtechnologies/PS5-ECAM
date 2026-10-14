@@ -47,9 +47,13 @@ namespace ps5azahar
 	constexpr const char* kArticBase = "articbase://";
 	constexpr const char* kArticSetupOld = "articinio://";
 	constexpr const char* kArticSetupNew = "articinin://";
+	inline bool IsArticSetup(const std::string& path)
+	{
+		return path.starts_with(kArticSetupOld) || path.starts_with(kArticSetupNew);
+	}
 	inline bool IsArtic(const std::string& path)
 	{
-		return path.starts_with(kArticBase) || path.starts_with(kArticSetupOld) || path.starts_with(kArticSetupNew);
+		return path.starts_with(kArticBase) || IsArticSetup(path);
 	}
 
 	// The 3DS Home Menu, as Azahar's own frontend boots it (System > Boot Home Menu): when Artic Setup

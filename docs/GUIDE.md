@@ -97,6 +97,9 @@ work stops before a game starts.
 - Install CIA files (games, updates and DLC) from **Settings > Game files > Install a CIA file**.
 - **Artic Base:** play a game straight from your own 3DS over the network. Start Artic Base on the
   3DS, open **Settings > Artic Base** and enter the address the 3DS shows. The same page runs the Artic Setup Tool, which copies your 3DS's system files.
+  PS5CEMU-HAR comes with no keys, so the setup needs three in your own console's `aes_keys.txt` in
+  `/data/ps5cemu/azahar/sysdata`: `otpKey` and `otpIV` under its `:AES` line, and `rootPublicXY`
+  under its `:ECC` line. The page says which ones are missing.
 - An on-screen keyboard for games that ask for text.
 
 ## Nintendo DS (melonDS)

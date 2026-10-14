@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Wed, 14 Oct 2026 16:00:00 +0000
+Subject: [PATCH] PS5: Artic Setup says which keys it lacks before it copies
+ anything
+
+The port builds no keys in (ENABLE_BUILTIN_KEYBLOB=OFF), so the OTP the
+3DS sends can only be decrypted, and its CTCert checked, with the
+otpKey, otpIV and the ECC rootPublicXY of the player's aes_keys.txt.
+Without them the setup copied the 3DS's files into the NAND and then
+ended with "Some console unique data is invalid", which named nothing
+(#45). The keys are now checked first, and the 3DS's screen says which
+ones Azahar needs.
+---
+ src/core/loader/artic.cpp | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+diff --git a/src/core/loader/artic.cpp b/src/core/loader/artic.cpp
+index bcd843c..ab78197 100644
+--- a/src/core/loader/artic.cpp
++++ b/src/core/loader/artic.cpp
+@@ -32,6 +32,8 @@
+ #include "core/hle/service/fs/archive.h"
+ #include "core/hle/service/fs/fs_user.h"
+ #include "core/hle/service/hid/hid_user.h"
++#include "core/hw/aes/key.h"
++#include "core/hw/ecc.h"
+ #include "core/hw/unique_data.h"
+ #include "core/loader/artic.h"
+ #include "core/loader/smdh.h"
+@@ -412,6 +414,24 @@ ResultStatus Apploader_Artic::Load(std::shared_ptr<Kernel::Process>& process) {
+ 
+     if (is_initial_setup) {
+ 
++        // PS5: no keys are built in (ENABLE_BUILTIN_KEYBLOB=OFF), so the console unique data can
++        // only be checked with the player's aes_keys.txt. Without its OTP key and IV and the ECC
++        // root key, the setup would copy everything and then end with "Some console unique data
++        // is invalid": said on the 3DS before anything is copied instead.
++        HW::AES::InitKeys();
++        const auto [otp_key, otp_iv] = HW::AES::GetOTPKeyIV();
++        const auto all_zero = [](const auto& bytes) {
++            return std::all_of(bytes.begin(), bytes.end(), [](u8 b) { return b == 0; });
++        };
++        if (all_zero(otp_key) || all_zero(otp_iv) || all_zero(HW::ECC::GetRootPublicKey().xy)) {
++            LOG_ERROR(Loader, "Artic Setup: aes_keys.txt has no otpKey, otpIV or rootPublicXY");
++            client->LogOnServer(Network::ArticBaseCommon::LogOnServerType::LOG_ERROR,
++                                "aes_keys.txt on the PS5 lacks otpKey,\n"
++                                "    otpIV or rootPublicXY: Azahar\n"
++                                "    there has no keys of its own.\n    Aborting...");
++            return ResultStatus::ErrorArtic;
++        }
++
+         // If there is already a console linked, check it's the same device.
+         // Otherwise it could cause weird issues with account save data.
+         if (HW::UniqueData::IsFullConsoleLinked()) {
