@@ -1,7 +1,10 @@
 # After an update (PREVIEW_WHATSNEW=1 tools/preview-shell.sh tools/launcher-preview/shell-whatsnew.txt):
-# Make it yours with what the version brings, then the Library.
+# What's new, then Make it yours with the version's new options, then the Library.
 wait 90
-shot whatsnew                 # what it brings, and its new options
+shot whatsnew                 # what the version brings, a card each
+press cross                   # on to its new options
+wait 40
+shot whatsnew-options         # Make it yours: the new options
 press down down down down     # A and B, on every side
 wait 20
 shot whatsnew-buttons

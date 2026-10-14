@@ -54,7 +54,8 @@ namespace ps5shell
 
 	enum class ScreenId
 	{
-		Welcome, // Make it yours: a first start's look and feel, or what a new version brings
+		WhatsNew, // what a version brings, once: on the first start and after an update (whatsnew.cpp)
+		Welcome, // Make it yours: a first start's look and feel, or a new version's new options
 		Setup,
 		Library,
 		Hub,
@@ -260,6 +261,18 @@ namespace ps5shell
 		void WelcomeDraw(Canvas& canvas);
 		std::vector<Row> WelcomeRows();
 		void WelcomeDone();
+		// What's new (whatsnew.cpp): once a version, before anything else; then what was next
+		enum class NewsThen
+		{
+			Side,
+			Welcome,	 // a first start's Make it yours, then the Setup check
+			Setup,
+			NewOptions, // an update's Make it yours: its new options
+		};
+		void WhatsNewOpen(NewsThen then);
+		void WhatsNewUpdate(const ui::Press& press);
+		void WhatsNewDraw(Canvas& canvas);
+		void WhatsNewDone();
 		// the theme Settings names (ui.theme), made the kit's; the themes the list offers
 		void ApplyTheme();
 		std::vector<ui::Theme> m_themes;
@@ -449,6 +462,7 @@ namespace ps5shell
 		void PollMods();
 		// a game's home screen tile (app/forwarders.h)
 		void AddTile(Game& game);
+		void RemoveTile(Game& game);
 		void PollTiles();
 		// a home screen tile's game, started once its side has it (Status::autoLaunch)
 		void PollAutoLaunch();
@@ -739,6 +753,7 @@ namespace ps5shell
 		bool m_welcomeThenSetup = false; // the Setup check follows (a first start)
 		bool m_welcomeFromSettings = false; // opened from Settings > Launcher: back there when done
 		float m_welcomeScroll = 0;
+		NewsThen m_newsThen = NewsThen::Side; // what follows What's new
 
 		// Setup check
 		bool m_setupFirst = false; // as the app starts, before a side opens

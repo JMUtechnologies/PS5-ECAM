@@ -147,23 +147,31 @@ msgstr "Η απόδοση Vulkan δεν ξεκίνησε: {0}"
 msgid "Touchpad click + Options: the in-game menu (screens, picture, volume, controls, the library)"
 msgstr "Κλικ στην επιφάνεια αφής + OPTIONS: το μενού του παιχνιδιού (οθόνες, εικόνα, ένταση, χειρισμός, βιβλιοθήκη)"
 
-#: port/app/forwarders.cpp:141
-msgid "elfldr does not answer on port 9021. Home screen tiles need it, to be put in /data/homebrew and to start their games: load elfldr, then add the tile again."
-msgstr "Το elfldr δεν απαντά στη θύρα 9021. Τα εικονίδια της αρχικής οθόνης το χρειάζονται για να μπουν στο /data/homebrew και για να ξεκινούν τα παιχνίδια τους: φορτώστε το elfldr και προσθέστε ξανά το εικονίδιο."
+#: port/app/forwarders.cpp:149
+msgid "elfldr does not answer on port 9021. Home screen tiles need it, to be put in /data/homebrew and to start their games: load elfldr, then try again."
+msgstr "Το elfldr δεν απαντά στη θύρα 9021. Τα εικονίδια της αρχικής οθόνης το χρειάζονται για να μπουν στο /data/homebrew και για να ξεκινούν τα παιχνίδια τους: φορτώστε το elfldr και δοκιμάστε ξανά."
 
-#: port/app/forwarders.cpp:157
+#: port/app/forwarders.cpp:165
 msgid "It could not be put in /data/homebrew: {0}"
 msgstr "Δεν ήταν δυνατό να μπει στο /data/homebrew: {0}"
 
-#: port/app/forwarders.cpp:162
+#: port/app/forwarders.cpp:170
 msgid "elfldr took the tile helper, but the tile did not reach /data/homebrew."
 msgstr "Το elfldr πήρε τον βοηθό των εικονιδίων, αλλά το εικονίδιο δεν έφτασε στο /data/homebrew."
 
-#: port/app/forwarders.cpp:257
+#: port/app/forwarders.cpp:267
+msgid "It has no home screen tile."
+msgstr "Δεν έχει εικονίδιο στην αρχική οθόνη."
+
+#: port/app/forwarders.cpp:275
+msgid "{0} could not be removed"
+msgstr "Δεν ήταν δυνατή η αφαίρεση του {0}"
+
+#: port/app/forwarders.cpp:303
 msgid "The game has no picture for its tile"
 msgstr "Το παιχνίδι δεν έχει εικόνα για το εικονίδιό του"
 
-#: port/app/forwarders.cpp:266
+#: port/app/forwarders.cpp:312
 msgid "No free title ID for a tile"
 msgstr "Κανένα ελεύθερο ID τίτλου για εικονίδιο"
 
@@ -878,7 +886,7 @@ msgstr "Ανάγνωση πακέτων…"
 msgid "The community graphic packs have none for this game."
 msgstr "Τα πακέτα γραφικών της κοινότητας δεν έχουν κανένα για αυτό το παιχνίδι."
 
-#: port/app/ingame.cpp:240 port/app/ingame.cpp:326 port/frontend/shell/classic.cpp:321 port/frontend/shell/classic.cpp:517 port/frontend/shell/eden.cpp:480 port/frontend/shell/eden.cpp:1375 port/frontend/shell/hub.cpp:231 port/frontend/shell/pages.cpp:303 port/frontend/shell/shell.cpp:1591
+#: port/app/ingame.cpp:240 port/app/ingame.cpp:326 port/frontend/shell/classic.cpp:321 port/frontend/shell/classic.cpp:517 port/frontend/shell/eden.cpp:480 port/frontend/shell/eden.cpp:1375 port/frontend/shell/hub.cpp:231 port/frontend/shell/pages.cpp:303 port/frontend/shell/shell.cpp:1617
 #, menu
 msgid "Graphic packs"
 msgstr "Πακέτα γραφικών"
@@ -1054,17 +1062,17 @@ msgstr "Νεκρή ζώνη δεξιού μοχλού"
 msgid "How far the right stick moves before the game sees it. Raise it if the camera drifts."
 msgstr "Πόσο κινείται ο δεξιός μοχλός πριν το καταλάβει το παιχνίδι. Αυξήστε την αν η κάμερα κινείται μόνη της."
 
-#: port/app/ingame.cpp:302 port/app/ingame3ds.cpp:571 port/app/ingame3ds.cpp:581 port/frontend/shell/pages.cpp:450 port/frontend/shell/pages.cpp:615 port/frontend/shell/settings.cpp:576 port/frontend/shell/welcome.cpp:73
+#: port/app/ingame.cpp:302 port/app/ingame3ds.cpp:571 port/app/ingame3ds.cpp:581 port/frontend/shell/pages.cpp:450 port/frontend/shell/pages.cpp:615 port/frontend/shell/settings.cpp:576 port/frontend/shell/welcome.cpp:58
 #, menu
 msgid "A and B"
 msgstr "A και B"
 
-#: port/app/ingame.cpp:302 port/app/ingame3ds.cpp:562 port/frontend/shell/pages.cpp:617 port/frontend/shell/settings.cpp:576 port/frontend/shell/welcome.cpp:74
+#: port/app/ingame.cpp:302 port/app/ingame3ds.cpp:562 port/frontend/shell/pages.cpp:617 port/frontend/shell/settings.cpp:576 port/frontend/shell/welcome.cpp:59
 #, menu
 msgid "A on Circle"
 msgstr "A στον Κύκλο"
 
-#: port/app/ingame.cpp:302 port/app/ingame3ds.cpp:562 port/frontend/shell/pages.cpp:617 port/frontend/shell/settings.cpp:576 port/frontend/shell/welcome.cpp:74
+#: port/app/ingame.cpp:302 port/app/ingame3ds.cpp:562 port/frontend/shell/pages.cpp:617 port/frontend/shell/settings.cpp:576 port/frontend/shell/welcome.cpp:59
 #, menu
 msgid "A on Cross"
 msgstr "A στον Σταυρό"
@@ -1074,19 +1082,19 @@ msgstr "A στον Σταυρό"
 msgid "A on Circle as on the Wii U, or on Cross, with X and Y swapped to match. Every other button: Settings > Controls in the launcher."
 msgstr "Το A στον Κύκλο όπως στο Wii U ή στον Σταυρό, με τα X και Y ανάλογα εναλλαγμένα. Όλα τα άλλα κουμπιά: Ρυθμίσεις > Χειρισμός στο launcher."
 
-#: port/app/ingame.cpp:304 port/frontend/shell/pages.cpp:450 port/frontend/shell/pages.cpp:625 port/frontend/shell/welcome.cpp:102
+#: port/app/ingame.cpp:304 port/frontend/shell/pages.cpp:450 port/frontend/shell/pages.cpp:625 port/frontend/shell/welcome.cpp:87
 #, menu
 msgid "Touchpad click"
 msgstr "Κλικ στην επιφάνεια αφής"
 
 #. what a Wii U player's touchpad click does (as Settings > Controls > Player names them)
-#: port/app/ingame.cpp:305 port/frontend/shell/pages.cpp:52 port/frontend/shell/welcome.cpp:41
+#: port/app/ingame.cpp:305 port/frontend/shell/pages.cpp:52 port/frontend/shell/welcome.cpp:26
 #, menu
 msgid "Touches the screen"
 msgstr "Αγγίζει την οθόνη"
 
 #. what a Wii U player's touchpad click does (as Settings > Controls > Player names them)
-#: port/app/ingame.cpp:306 port/frontend/shell/pages.cpp:52 port/frontend/shell/welcome.cpp:41
+#: port/app/ingame.cpp:306 port/frontend/shell/pages.cpp:52 port/frontend/shell/welcome.cpp:26
 #, menu
 msgid "Presses a button"
 msgstr "Πατά ένα κουμπί"
@@ -1098,7 +1106,7 @@ msgstr "{0}: {1}"
 
 #. the languages the emulated 3DS can be set to
 #. what a Wii U player's touchpad click does (as Settings > Controls > Player names them)
-#: port/app/ingame.cpp:306 port/frontend/shell/pages.cpp:52 port/frontend/shell/settings.cpp:45 port/frontend/shell/settings.cpp:48 port/frontend/shell/welcome.cpp:41
+#: port/app/ingame.cpp:306 port/frontend/shell/pages.cpp:52 port/frontend/shell/settings.cpp:45 port/frontend/shell/settings.cpp:48 port/frontend/shell/welcome.cpp:26
 #, menu
 msgid "Automatic"
 msgstr "Αυτόματα"
@@ -1176,12 +1184,12 @@ msgstr "Δεν σαρώθηκε (σφάλμα {0})"
 msgid "Running"
 msgstr "Εκτελείται"
 
-#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:759 port/frontend/shell/eden.cpp:488 port/frontend/shell/eden.cpp:497 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1205 port/frontend/shell/shell.cpp:1209 port/frontend/shell/shell.cpp:1241 port/frontend/shell/shell.cpp:1257 port/frontend/shell/shell.cpp:1265 port/frontend/shell/shell.cpp:1273 port/frontend/shell/shell.cpp:1276 port/frontend/shell/shell.cpp:2137
+#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:759 port/frontend/shell/eden.cpp:488 port/frontend/shell/eden.cpp:497 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1228 port/frontend/shell/shell.cpp:1232 port/frontend/shell/shell.cpp:1266 port/frontend/shell/shell.cpp:1282 port/frontend/shell/shell.cpp:1290 port/frontend/shell/shell.cpp:1298 port/frontend/shell/shell.cpp:1301 port/frontend/shell/shell.cpp:2168
 #, menu
 msgid "Choose"
 msgstr "Επιλογή"
 
-#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:759 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1223 port/frontend/shell/shell.cpp:1266 port/frontend/shell/shell.cpp:1270 port/frontend/shell/shell.cpp:1273 port/frontend/shell/shell.cpp:1276 port/frontend/shell/shell.cpp:1287
+#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:759 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1248 port/frontend/shell/shell.cpp:1291 port/frontend/shell/shell.cpp:1295 port/frontend/shell/shell.cpp:1298 port/frontend/shell/shell.cpp:1301 port/frontend/shell/shell.cpp:1312
 #, menu
 msgid "Change"
 msgstr "Αλλαγή"
@@ -1191,7 +1199,7 @@ msgstr "Αλλαγή"
 msgid "Back to the game"
 msgstr "Πίσω στο παιχνίδι"
 
-#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:759 port/frontend/shell/eden.cpp:477 port/frontend/shell/eden.cpp:504 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:509 port/frontend/shell/installs.cpp:329 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1224 port/frontend/shell/shell.cpp:1233 port/frontend/shell/shell.cpp:1258 port/frontend/shell/shell.cpp:1265 port/frontend/shell/shell.cpp:1266 port/frontend/shell/shell.cpp:1270 port/frontend/shell/shell.cpp:1274 port/frontend/shell/shell.cpp:1276 port/frontend/shell/shell.cpp:1280 port/frontend/shell/shell.cpp:1284 port/frontend/shell/shell.cpp:1288
+#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:759 port/frontend/shell/eden.cpp:477 port/frontend/shell/eden.cpp:504 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:509 port/frontend/shell/installs.cpp:329 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1249 port/frontend/shell/shell.cpp:1258 port/frontend/shell/shell.cpp:1283 port/frontend/shell/shell.cpp:1290 port/frontend/shell/shell.cpp:1291 port/frontend/shell/shell.cpp:1295 port/frontend/shell/shell.cpp:1299 port/frontend/shell/shell.cpp:1301 port/frontend/shell/shell.cpp:1305 port/frontend/shell/shell.cpp:1309 port/frontend/shell/shell.cpp:1313
 #, menu
 msgid "Back"
 msgstr "Πίσω"
@@ -1539,7 +1547,7 @@ msgstr "Καπάκι"
 msgid "Closed"
 msgstr "Κλειστό"
 
-#: port/app/ingame3ds.cpp:567 port/frontend/shell/eden.cpp:477 port/frontend/shell/eden.cpp:490 port/frontend/shell/eden.cpp:499 port/frontend/shell/eden.cpp:504 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:1298 port/frontend/shell/shell.cpp:1218 port/frontend/shell/shell.cpp:1245 port/frontend/shell/shell.cpp:1254 port/frontend/shell/shell.cpp:1263 port/frontend/shell/shell.cpp:1269 port/frontend/shell/shell.cpp:1284
+#: port/app/ingame3ds.cpp:567 port/frontend/shell/eden.cpp:477 port/frontend/shell/eden.cpp:490 port/frontend/shell/eden.cpp:499 port/frontend/shell/eden.cpp:504 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:1298 port/frontend/shell/shell.cpp:1241 port/frontend/shell/shell.cpp:1270 port/frontend/shell/shell.cpp:1279 port/frontend/shell/shell.cpp:1288 port/frontend/shell/shell.cpp:1294 port/frontend/shell/shell.cpp:1309
 #, menu
 msgid "Open"
 msgstr "Άνοιγμα"
@@ -1645,7 +1653,7 @@ msgstr "Φόρτωση…"
 msgid "Paused"
 msgstr "Σε παύση"
 
-#: port/app/ingame3ds.cpp:810 port/frontend/shell/shell.cpp:2109 port/frontend/shell/shell.cpp:2138
+#: port/app/ingame3ds.cpp:810 port/frontend/shell/shell.cpp:2140 port/frontend/shell/shell.cpp:2169
 #, menu
 msgid "OK"
 msgstr "OK"
@@ -1662,31 +1670,31 @@ msgid "Some text"
 msgstr "Κείμενο"
 
 #. the 3DS keyboard's keys
-#: port/app/ingame3ds.cpp:857 port/frontend/shell/shell.cpp:2060
+#: port/app/ingame3ds.cpp:857 port/frontend/shell/shell.cpp:2091
 #, menu
 msgid "Shift: on"
 msgstr "Shift: ενεργό"
 
 #. the 3DS keyboard's keys
 #. the 3DS keyboard's hints: Cross types the focused key
-#: port/app/ingame3ds.cpp:857 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:2060
+#: port/app/ingame3ds.cpp:857 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1226 port/frontend/shell/shell.cpp:2091
 #, menu
 msgid "Shift"
 msgstr "Shift"
 
-#: port/app/ingame3ds.cpp:859 port/frontend/shell/shell.cpp:2060
+#: port/app/ingame3ds.cpp:859 port/frontend/shell/shell.cpp:2091
 #, menu
 msgid "Space"
 msgstr "Κενό"
 
 #. the 3DS keyboard's hints: Cross types the focused key
-#: port/app/ingame3ds.cpp:861 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:2060
+#: port/app/ingame3ds.cpp:861 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1226 port/frontend/shell/shell.cpp:2091
 #, menu
 msgid "Delete"
 msgstr "Διαγραφή"
 
 #. the 3DS keyboard's hints: Cross types the focused key
-#: port/app/ingame3ds.cpp:877 port/frontend/shell/shares.cpp:300 port/frontend/shell/shell.cpp:1203
+#: port/app/ingame3ds.cpp:877 port/frontend/shell/shares.cpp:300 port/frontend/shell/shell.cpp:1226
 #, menu
 msgid "Type"
 msgstr "Πληκτρολόγηση"
@@ -2613,7 +2621,7 @@ msgid "Update"
 msgstr "Ενημέρωση"
 
 #. an update found to install ({0}: its version, as 208)
-#: port/frontend/actions.cpp:347 port/frontend/actions.cpp:426 port/frontend/shell/eden.cpp:825 port/frontend/shell/eden.cpp:1349 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:785
+#: port/frontend/actions.cpp:347 port/frontend/actions.cpp:426 port/frontend/shell/eden.cpp:825 port/frontend/shell/eden.cpp:1349 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:793
 msgid "DLC"
 msgstr "DLC"
 
@@ -2851,14 +2859,14 @@ msgstr "Αρχική"
 
 #. Eden's rail: its sections
 #. the launcher's tabs
-#: port/frontend/shell/classic.cpp:47 port/frontend/shell/classic.cpp:318 port/frontend/shell/classic.cpp:402 port/frontend/shell/eden.cpp:91 port/frontend/shell/eden.cpp:971 port/frontend/shell/eden.cpp:983 port/frontend/shell/eden.cpp:1097 port/frontend/shell/experiments.cpp:69 port/frontend/shell/experiments.cpp:489 port/frontend/shell/library.cpp:274 port/frontend/shell/recent.cpp:99 port/frontend/shell/recent.cpp:334 port/frontend/shell/shell.cpp:1150
+#: port/frontend/shell/classic.cpp:47 port/frontend/shell/classic.cpp:318 port/frontend/shell/classic.cpp:402 port/frontend/shell/eden.cpp:91 port/frontend/shell/eden.cpp:971 port/frontend/shell/eden.cpp:983 port/frontend/shell/eden.cpp:1097 port/frontend/shell/experiments.cpp:69 port/frontend/shell/experiments.cpp:489 port/frontend/shell/library.cpp:274 port/frontend/shell/recent.cpp:99 port/frontend/shell/recent.cpp:334 port/frontend/shell/shell.cpp:1173
 msgctxt "tab"
 msgid "Library"
 msgstr "Βιβλιοθήκη"
 
 #. Eden's rail: its sections
 #. the launcher's tabs
-#: port/frontend/shell/classic.cpp:47 port/frontend/shell/classic.cpp:560 port/frontend/shell/eden.cpp:91 port/frontend/shell/eden.cpp:1581 port/frontend/shell/eden.cpp:1673 port/frontend/shell/experiments.cpp:69 port/frontend/shell/experiments.cpp:648 port/frontend/shell/shell.cpp:1150
+#: port/frontend/shell/classic.cpp:47 port/frontend/shell/classic.cpp:560 port/frontend/shell/eden.cpp:91 port/frontend/shell/eden.cpp:1581 port/frontend/shell/eden.cpp:1673 port/frontend/shell/experiments.cpp:69 port/frontend/shell/experiments.cpp:648 port/frontend/shell/shell.cpp:1173
 msgctxt "tab"
 msgid "Settings"
 msgstr "Ρυθμίσεις"
@@ -2876,7 +2884,7 @@ msgid_plural "{0} games"
 msgstr[0] "{0} παιχνίδι"
 msgstr[1] "{0} παιχνίδια"
 
-#: port/frontend/shell/classic.cpp:194 port/frontend/shell/shell.cpp:860
+#: port/frontend/shell/classic.cpp:194 port/frontend/shell/shell.cpp:868
 msgid "Cemu is still starting"
 msgstr "Το Cemu ξεκινά ακόμα"
 
@@ -2912,7 +2920,7 @@ msgstr "Έναρξη παιχνιδιού"
 msgid "Artic Base"
 msgstr "Artic Base"
 
-#: port/frontend/shell/classic.cpp:321 port/frontend/shell/classic.cpp:524 port/frontend/shell/classic.cpp:560 port/frontend/shell/classic.cpp:598 port/frontend/shell/eden.cpp:480 port/frontend/shell/eden.cpp:847 port/frontend/shell/eden.cpp:1299 port/frontend/shell/eden.cpp:1370 port/frontend/shell/eden.cpp:1393 port/frontend/shell/eden.cpp:1669 port/frontend/shell/experiments.cpp:443 port/frontend/shell/experiments.cpp:643 port/frontend/shell/experiments.cpp:1064 port/frontend/shell/experiments.cpp:1254 port/frontend/shell/hub.cpp:236 port/frontend/shell/shell.cpp:1586
+#: port/frontend/shell/classic.cpp:321 port/frontend/shell/classic.cpp:524 port/frontend/shell/classic.cpp:560 port/frontend/shell/classic.cpp:598 port/frontend/shell/eden.cpp:480 port/frontend/shell/eden.cpp:847 port/frontend/shell/eden.cpp:1299 port/frontend/shell/eden.cpp:1370 port/frontend/shell/eden.cpp:1393 port/frontend/shell/eden.cpp:1669 port/frontend/shell/experiments.cpp:443 port/frontend/shell/experiments.cpp:643 port/frontend/shell/experiments.cpp:1064 port/frontend/shell/experiments.cpp:1254 port/frontend/shell/hub.cpp:236 port/frontend/shell/shell.cpp:1612
 msgid "Game settings"
 msgstr "Ρυθμίσεις παιχνιδιού"
 
@@ -3016,7 +3024,7 @@ msgstr "Προτιμήσεις"
 msgid "On this console"
 msgstr "Σε αυτή την κονσόλα"
 
-#: port/frontend/shell/classic.cpp:600 port/frontend/shell/settings.cpp:938 port/frontend/shell/welcome.cpp:223
+#: port/frontend/shell/classic.cpp:600 port/frontend/shell/settings.cpp:938 port/frontend/shell/welcome.cpp:208
 msgid "Make it yours"
 msgstr "Κάντε το δικό σας"
 
@@ -3052,7 +3060,7 @@ msgstr "Φέρτε τα δικά σας αρχεία"
 msgid "Games"
 msgstr "Παιχνίδια"
 
-#: port/frontend/shell/classic.cpp:675 port/frontend/shell/settings.cpp:199 port/frontend/shell/settings.cpp:222 port/frontend/shell/shell.cpp:1588
+#: port/frontend/shell/classic.cpp:675 port/frontend/shell/settings.cpp:199 port/frontend/shell/settings.cpp:222 port/frontend/shell/shell.cpp:1614
 msgid "Saves"
 msgstr "Αποθηκεύσεις"
 
@@ -3084,15 +3092,15 @@ msgstr "Πώς τρέχει"
 msgid "Sections"
 msgstr "Ενότητες"
 
-#: port/frontend/shell/eden.cpp:477 port/frontend/shell/shell.cpp:1218
+#: port/frontend/shell/eden.cpp:477 port/frontend/shell/shell.cpp:1241
 msgid "Move"
 msgstr "Μετακίνηση"
 
-#: port/frontend/shell/eden.cpp:492 port/frontend/shell/eden.cpp:493 port/frontend/shell/eden.cpp:500 port/frontend/shell/eden.cpp:843 port/frontend/shell/eden.cpp:1298 port/frontend/shell/eden.cpp:1392 port/frontend/shell/experiments.cpp:440 port/frontend/shell/experiments.cpp:1062 port/frontend/shell/experiments.cpp:1253 port/frontend/shell/hub.cpp:225 port/frontend/shell/shell.cpp:1248 port/frontend/shell/shell.cpp:1249 port/frontend/shell/shell.cpp:1255 port/frontend/shell/shell.cpp:1581
+#: port/frontend/shell/eden.cpp:492 port/frontend/shell/eden.cpp:493 port/frontend/shell/eden.cpp:500 port/frontend/shell/eden.cpp:843 port/frontend/shell/eden.cpp:1298 port/frontend/shell/eden.cpp:1392 port/frontend/shell/experiments.cpp:440 port/frontend/shell/experiments.cpp:1062 port/frontend/shell/experiments.cpp:1253 port/frontend/shell/hub.cpp:225 port/frontend/shell/shell.cpp:1273 port/frontend/shell/shell.cpp:1274 port/frontend/shell/shell.cpp:1280 port/frontend/shell/shell.cpp:1607
 msgid "Play"
 msgstr "Παίξτε"
 
-#: port/frontend/shell/eden.cpp:492 port/frontend/shell/eden.cpp:493 port/frontend/shell/eden.cpp:500 port/frontend/shell/shell.cpp:1248 port/frontend/shell/shell.cpp:1249 port/frontend/shell/shell.cpp:1255 port/frontend/shell/shell.cpp:1257
+#: port/frontend/shell/eden.cpp:492 port/frontend/shell/eden.cpp:493 port/frontend/shell/eden.cpp:500 port/frontend/shell/shell.cpp:1273 port/frontend/shell/shell.cpp:1274 port/frontend/shell/shell.cpp:1280 port/frontend/shell/shell.cpp:1282
 msgid "Options"
 msgstr "Επιλογές"
 
@@ -3100,7 +3108,7 @@ msgstr "Επιλογές"
 msgid "Change emulator"
 msgstr "Αλλαγή εξομοιωτή"
 
-#: port/frontend/shell/eden.cpp:500 port/frontend/shell/eden.cpp:971 port/frontend/shell/library.cpp:274 port/frontend/shell/recent.cpp:99 port/frontend/shell/shell.cpp:1252
+#: port/frontend/shell/eden.cpp:500 port/frontend/shell/eden.cpp:971 port/frontend/shell/library.cpp:274 port/frontend/shell/recent.cpp:99 port/frontend/shell/shell.cpp:1277
 msgid "Sort"
 msgstr "Ταξινόμηση"
 
@@ -3108,11 +3116,11 @@ msgstr "Ταξινόμηση"
 msgid "Filter"
 msgstr "Φίλτρο"
 
-#: port/frontend/shell/eden.cpp:501 port/frontend/shell/eden.cpp:1125 port/frontend/shell/experiments.cpp:498 port/frontend/shell/library.cpp:507 port/frontend/shell/library.cpp:549 port/frontend/shell/recent.cpp:363 port/frontend/shell/shell.cpp:1252 port/frontend/shell/shell.cpp:2029
+#: port/frontend/shell/eden.cpp:501 port/frontend/shell/eden.cpp:1125 port/frontend/shell/experiments.cpp:498 port/frontend/shell/library.cpp:507 port/frontend/shell/library.cpp:549 port/frontend/shell/recent.cpp:363 port/frontend/shell/shell.cpp:1277 port/frontend/shell/shell.cpp:2060
 msgid "Search"
 msgstr "Αναζήτηση"
 
-#: port/frontend/shell/eden.cpp:504 port/frontend/shell/shell.cpp:1263 port/frontend/shell/shell.cpp:1269
+#: port/frontend/shell/eden.cpp:504 port/frontend/shell/shell.cpp:1288 port/frontend/shell/shell.cpp:1294
 msgid "Pages"
 msgstr "Σελίδες"
 
@@ -3149,7 +3157,7 @@ msgstr "Καλώς ήρθατε"
 msgid "Last played {0}"
 msgstr "Παίχτηκε τελευταία: {0}"
 
-#: port/frontend/shell/eden.cpp:834 port/frontend/shell/eden.cpp:1351 port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1595
+#: port/frontend/shell/eden.cpp:834 port/frontend/shell/eden.cpp:1351 port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1621
 msgid "Favourite"
 msgstr "Αγαπημένο"
 
@@ -3398,7 +3406,7 @@ msgstr "Διακοπή…"
 msgid "Stop"
 msgstr "Διακοπή"
 
-#: port/frontend/shell/installs.cpp:324 port/frontend/shell/pages.cpp:1160 port/frontend/shell/shell.cpp:1284
+#: port/frontend/shell/installs.cpp:324 port/frontend/shell/pages.cpp:1160 port/frontend/shell/shell.cpp:1309
 msgid "Install"
 msgstr "Εγκατάσταση"
 
@@ -3438,7 +3446,7 @@ msgstr "Όλα όσα βρέθηκαν είναι εγκατεστημένα."
 msgid "Game files"
 msgstr "Αρχεία παιχνιδιών"
 
-#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:718 port/frontend/shell/shell.cpp:1593
+#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:718 port/frontend/shell/shell.cpp:1619
 msgid "Updates and DLC"
 msgstr "Ενημερώσεις και DLC"
 
@@ -3527,7 +3535,7 @@ msgstr "Έλεγχος προετοιμασίας"
 msgid "Diagnostics"
 msgstr "Διαγνωστικά"
 
-#: port/frontend/shell/library.cpp:81 port/frontend/shell/shell.cpp:873
+#: port/frontend/shell/library.cpp:81 port/frontend/shell/shell.cpp:881
 msgid "Starting Cemu"
 msgstr "Εκκίνηση του Cemu"
 
@@ -3584,7 +3592,7 @@ msgstr "Αυτό το πακέτο δεν έχει περιγραφή."
 msgid "No presets"
 msgstr "Χωρίς προεπιλογές"
 
-#: port/frontend/shell/pages.cpp:359 port/frontend/shell/shell.cpp:1274
+#: port/frontend/shell/pages.cpp:359 port/frontend/shell/shell.cpp:1299
 msgid "Presets"
 msgstr "Προεπιλογές"
 
@@ -4003,7 +4011,7 @@ msgstr "Βρέθηκε στο /data/ps5cemu"
 msgid "Missing (only .wud/.wux need it)"
 msgstr "Λείπει (το χρειάζονται μόνο .wud/.wux)"
 
-#: port/frontend/shell/pages.cpp:1270 port/frontend/shell/shell.cpp:1928 port/frontend/shell/shell.cpp:1955
+#: port/frontend/shell/pages.cpp:1270 port/frontend/shell/shell.cpp:1959 port/frontend/shell/shell.cpp:1986
 msgid "In use"
 msgstr "Σε χρήση"
 
@@ -4111,7 +4119,7 @@ msgid_plural "{0} DLC"
 msgstr[0] "{0} DLC"
 msgstr[1] "{0} DLC"
 
-#: port/frontend/shell/recent.cpp:358 port/frontend/shell/shell.cpp:1248
+#: port/frontend/shell/recent.cpp:358 port/frontend/shell/shell.cpp:1273
 msgid "Display"
 msgstr "Εικόνα"
 
@@ -4444,7 +4452,7 @@ msgstr "Σταυρός για λήψη"
 msgid "{0}: Cross to install"
 msgstr "{0}: Σταυρός για εγκατάσταση"
 
-#: port/frontend/shell/settings.cpp:271 port/frontend/shell/shell.cpp:2088
+#: port/frontend/shell/settings.cpp:271 port/frontend/shell/shell.cpp:2119
 msgid "Downloading…"
 msgstr "Λήψη…"
 
@@ -4955,7 +4963,7 @@ msgstr "Ο φάκελος αυτής της πλευράς, ξανά."
 msgid "Looks through this side's folder again, as it does each time the side opens."
 msgstr "Ξαναψάχνει τον φάκελο αυτής της πλευράς, όπως κάθε φορά που ανοίγει η πλευρά."
 
-#: port/frontend/shell/settings.cpp:705 port/frontend/shell/shares.cpp:536
+#: port/frontend/shell/settings.cpp:705 port/frontend/shell/shares.cpp:536 port/frontend/shell/whatsnew.cpp:33
 msgid "Network shares"
 msgstr "Κοινόχρηστοι φάκελοι δικτύου"
 
@@ -5233,7 +5241,7 @@ msgid "Earn RetroAchievements in DS games with your account, as RetroArch does. 
 msgstr "Κερδίστε RetroAchievements σε παιχνίδια DS με τον λογαριασμό σας, όπως στο RetroArch. Ο Σταυρός συνδέεται με όνομα χρήστη και κωδικό· στο PS5 μένει μόνο το διακριτικό σύνδεσης, ποτέ ο κωδικός. Softcore: οι αποθηκευμένες καταστάσεις, οι κωδικοί και η ταχύτητα μένουν ως έχουν. Το RetroAchievements δεν έχει σετ για Wii U ή 3DS."
 
 #. the RetroAchievements account signed in: its name ({1}) and softcore points ({0})
-#: port/frontend/shell/settings.cpp:878 port/frontend/shell/settings.cpp:882
+#: port/frontend/shell/settings.cpp:878 port/frontend/shell/settings.cpp:882 port/frontend/shell/whatsnew.cpp:34
 msgid "RetroAchievements"
 msgstr "RetroAchievements"
 
@@ -5900,7 +5908,7 @@ msgstr "Ενεργό: τα εξώφυλλα έρχονται καθώς εμφα
 msgid "Checked again"
 msgstr "Ελέγχθηκε ξανά"
 
-#: port/frontend/shell/setup.cpp:396 port/frontend/shell/welcome.cpp:222
+#: port/frontend/shell/setup.cpp:396 port/frontend/shell/welcome.cpp:207
 msgid "Welcome to PS5CEMU-HAR"
 msgstr "Καλώς ήρθατε στο PS5CEMU-HAR"
 
@@ -6184,400 +6192,450 @@ msgstr "Ενεργοποιήστε την κοινή χρήση αρχείων �
 msgid "Nothing is ever written to it."
 msgstr "Τίποτα δεν γράφεται ποτέ σε αυτόν."
 
-#: port/frontend/shell/shell.cpp:207
+#: port/frontend/shell/shell.cpp:213
 msgid "Saved your place in the library"
 msgstr "Η θέση σας στη βιβλιοθήκη αποθηκεύτηκε"
 
-#: port/frontend/shell/shell.cpp:210
+#: port/frontend/shell/shell.cpp:216
 msgid "The game could not start"
 msgstr "Το παιχνίδι δεν μπόρεσε να ξεκινήσει"
 
-#: port/frontend/shell/shell.cpp:680
+#: port/frontend/shell/shell.cpp:688
 msgid "Cemu did not start: {0}"
 msgstr "Το Cemu δεν ξεκίνησε: {0}"
 
-#: port/frontend/shell/shell.cpp:794
+#: port/frontend/shell/shell.cpp:802
 msgid "{0} min played"
 msgid_plural "{0} min played"
 msgstr[0] "{0} λεπτό παιχνιδιού"
 msgstr[1] "{0} λεπτά παιχνιδιού"
 
-#: port/frontend/shell/shell.cpp:795
+#: port/frontend/shell/shell.cpp:803
 msgid "{0} h played"
 msgid_plural "{0} h played"
 msgstr[0] "{0} ώρα παιχνιδιού"
 msgstr[1] "{0} ώρες παιχνιδιού"
 
-#: port/frontend/shell/shell.cpp:810
+#: port/frontend/shell/shell.cpp:818
 msgid "today"
 msgstr "σήμερα"
 
-#: port/frontend/shell/shell.cpp:812
+#: port/frontend/shell/shell.cpp:820
 msgid "yesterday"
 msgstr "χθες"
 
-#: port/frontend/shell/shell.cpp:814
+#: port/frontend/shell/shell.cpp:822
 msgid "{0} day ago"
 msgid_plural "{0} days ago"
 msgstr[0] "πριν από {0} ημέρα"
 msgstr[1] "πριν από {0} ημέρες"
 
-#: port/frontend/shell/shell.cpp:816
+#: port/frontend/shell/shell.cpp:824
 msgid "{0} week ago"
 msgid_plural "{0} weeks ago"
 msgstr[0] "πριν από {0} εβδομάδα"
 msgstr[1] "πριν από {0} εβδομάδες"
 
-#: port/frontend/shell/shell.cpp:817
+#: port/frontend/shell/shell.cpp:825
 msgid "{0} month ago"
 msgid_plural "{0} months ago"
 msgstr[0] "πριν από {0} μήνα"
 msgstr[1] "πριν από {0} μήνες"
 
-#: port/frontend/shell/shell.cpp:873
+#: port/frontend/shell/shell.cpp:881
 msgid "Starting melonDS"
 msgstr "Εκκίνηση του melonDS"
 
-#: port/frontend/shell/shell.cpp:873
+#: port/frontend/shell/shell.cpp:881
 msgid "Starting Azahar"
 msgstr "Εκκίνηση του Azahar"
 
-#: port/frontend/shell/shell.cpp:908
+#: port/frontend/shell/shell.cpp:916
 msgid "Making {0}'s home screen tile…"
 msgstr "Δημιουργία εικονιδίου αρχικής οθόνης για το {0}…"
 
-#: port/frontend/shell/shell.cpp:920
+#: port/frontend/shell/shell.cpp:923
+msgid "Removing {0}'s home screen tile…"
+msgstr "Αφαίρεση του εικονιδίου του {0} από την αρχική οθόνη…"
+
+#: port/frontend/shell/shell.cpp:935
+msgid "The tile could not be removed"
+msgstr "Δεν ήταν δυνατή η αφαίρεση του εικονιδίου"
+
+#: port/frontend/shell/shell.cpp:935
 msgid "The tile could not be made"
 msgstr "Δεν ήταν δυνατή η δημιουργία του εικονιδίου"
 
+#: port/frontend/shell/shell.cpp:941
+msgid "The tile is removed"
+msgstr "Το εικονίδιο αφαιρέθηκε"
+
+#: port/frontend/shell/shell.cpp:942
+msgid "Its folder is gone from /data/homebrew. If its picture stays on the home screen, delete it there (Options, then Delete), or restart ShadowMount Plus."
+msgstr "Ο φάκελός του δεν υπάρχει πια στο /data/homebrew. Αν η εικόνα του μείνει στην αρχική οθόνη, διαγράψτε την από εκεί (OPTIONS, μετά Διαγραφή) ή επανεκκινήστε το ShadowMount Plus."
+
 #. {0} is the tile's folder, /data/homebrew/PPSA99xxx
-#: port/frontend/shell/shell.cpp:924
+#: port/frontend/shell/shell.cpp:947
 msgid "The tile is made again"
 msgstr "Το εικονίδιο δημιουργήθηκε ξανά"
 
 #. {0} is the tile's folder, /data/homebrew/PPSA99xxx
-#: port/frontend/shell/shell.cpp:924
+#: port/frontend/shell/shell.cpp:947
 msgid "The tile is made"
 msgstr "Το εικονίδιο δημιουργήθηκε"
 
-#: port/frontend/shell/shell.cpp:925
+#: port/frontend/shell/shell.cpp:948
 msgid "It is in {0}. ShadowMount Plus puts it on the PS5's home screen as it does any homebrew: if it does not show, restart ShadowMount Plus or the console. The tile starts the game in PS5CEMU-HAR, and closing the game closes the app."
 msgstr "Βρίσκεται στο {0}. Το ShadowMount Plus το βάζει στην αρχική οθόνη του PS5 όπως κάθε homebrew: αν δεν εμφανιστεί, επανεκκινήστε το ShadowMount Plus ή την κονσόλα. Το εικονίδιο ξεκινά το παιχνίδι στο PS5CEMU-HAR και το κλείσιμο του παιχνιδιού κλείνει την εφαρμογή."
 
-#: port/frontend/shell/shell.cpp:938
+#: port/frontend/shell/shell.cpp:961
 msgid "The tile's game could not start"
 msgstr "Δεν ήταν δυνατή η έναρξη του παιχνιδιού του εικονιδίου"
 
-#: port/frontend/shell/shell.cpp:966
+#: port/frontend/shell/shell.cpp:989
 msgid "It is not in the library: {0}"
 msgstr "Δεν είναι στη βιβλιοθήκη: {0}"
 
-#: port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:1263 port/frontend/shell/shell.cpp:2060
+#: port/frontend/shell/shell.cpp:1226 port/frontend/shell/shell.cpp:1288 port/frontend/shell/shell.cpp:2091
 msgid "Done"
 msgstr "Τέλος"
 
-#: port/frontend/shell/shell.cpp:1205 port/frontend/shell/shell.cpp:1279 port/frontend/shell/shell.cpp:1283
+#: port/frontend/shell/shell.cpp:1228 port/frontend/shell/shell.cpp:1304 port/frontend/shell/shell.cpp:1308
 msgid "Cancel"
 msgstr "Ακύρωση"
 
-#: port/frontend/shell/shell.cpp:1207 port/frontend/shell/shell.cpp:1209 port/frontend/shell/shell.cpp:1269
+#: port/frontend/shell/shell.cpp:1230 port/frontend/shell/shell.cpp:1232 port/frontend/shell/shell.cpp:1294
 msgid "Close"
 msgstr "Κλείσιμο"
 
-#: port/frontend/shell/shell.cpp:1218
+#: port/frontend/shell/shell.cpp:1241
 msgid "Switch"
 msgstr "Εναλλαγή"
 
-#: port/frontend/shell/shell.cpp:1223 port/frontend/shell/shell.cpp:1265 port/frontend/shell/shell.cpp:1266 port/frontend/shell/shell.cpp:1270 port/frontend/shell/shell.cpp:1276
+#: port/frontend/shell/shell.cpp:1246
+msgid "Continue"
+msgstr "Συνέχεια"
+
+#: port/frontend/shell/shell.cpp:1248 port/frontend/shell/shell.cpp:1290 port/frontend/shell/shell.cpp:1291 port/frontend/shell/shell.cpp:1295 port/frontend/shell/shell.cpp:1301
 msgid "More about it"
 msgstr "Περισσότερα"
 
-#: port/frontend/shell/shell.cpp:1224 port/frontend/shell/welcome.cpp:119
+#: port/frontend/shell/shell.cpp:1249 port/frontend/shell/welcome.cpp:104
 msgid "Continue to the Setup check"
 msgstr "Συνέχεια στον έλεγχο προετοιμασίας"
 
-#: port/frontend/shell/shell.cpp:1224 port/frontend/shell/shell.cpp:1233 port/frontend/shell/welcome.cpp:119
+#: port/frontend/shell/shell.cpp:1249 port/frontend/shell/shell.cpp:1258 port/frontend/shell/welcome.cpp:104
 msgid "Continue to the Library"
 msgstr "Συνέχεια στη βιβλιοθήκη"
 
-#: port/frontend/shell/shell.cpp:1229
+#: port/frontend/shell/shell.cpp:1254
 msgid "Change the language"
 msgstr "Αλλαγή γλώσσας"
 
-#: port/frontend/shell/shell.cpp:1232
+#: port/frontend/shell/shell.cpp:1257
 msgid "Check again"
 msgstr "Νέος έλεγχος"
 
-#: port/frontend/shell/shell.cpp:1249
+#: port/frontend/shell/shell.cpp:1274
 msgid "Recently played / Library"
 msgstr "Πρόσφατα / Βιβλιοθήκη"
 
-#: port/frontend/shell/shell.cpp:1252
+#: port/frontend/shell/shell.cpp:1277
 msgid "Filters"
 msgstr "Φίλτρα"
 
-#: port/frontend/shell/shell.cpp:1255
+#: port/frontend/shell/shell.cpp:1280
 msgid "Jump by letter"
 msgstr "Μετάβαση ανά γράμμα"
 
-#: port/frontend/shell/shell.cpp:1257
+#: port/frontend/shell/shell.cpp:1282
 msgid "Back to the buttons"
 msgstr "Πίσω στα κουμπιά"
 
-#: port/frontend/shell/shell.cpp:1258
+#: port/frontend/shell/shell.cpp:1283
 msgid "Scroll"
 msgstr "Κύλιση"
 
-#: port/frontend/shell/shell.cpp:1266 port/frontend/shell/widgets.cpp:313
+#: port/frontend/shell/shell.cpp:1291 port/frontend/shell/widgets.cpp:313
 msgid "Default"
 msgstr "Προεπιλογή"
 
-#: port/frontend/shell/shell.cpp:1273
+#: port/frontend/shell/shell.cpp:1298
 msgid "Back to the packs"
 msgstr "Πίσω στα πακέτα"
 
-#: port/frontend/shell/shell.cpp:1274
+#: port/frontend/shell/shell.cpp:1299
 msgid "On / off"
 msgstr "Ενεργό / ανενεργό"
 
-#: port/frontend/shell/shell.cpp:1280
+#: port/frontend/shell/shell.cpp:1305
 msgid "Assign"
 msgstr "Ανάθεση"
 
-#: port/frontend/shell/shell.cpp:1280
+#: port/frontend/shell/shell.cpp:1305
 msgid "Clear"
 msgstr "Καθαρισμός"
 
-#: port/frontend/shell/shell.cpp:1284
+#: port/frontend/shell/shell.cpp:1309
 msgid "Use this folder"
 msgstr "Χρήση αυτού του φακέλου"
 
-#: port/frontend/shell/shell.cpp:1287
+#: port/frontend/shell/shell.cpp:1312
 msgid "Number"
 msgstr "Αριθμός"
 
-#: port/frontend/shell/shell.cpp:1287
+#: port/frontend/shell/shell.cpp:1312
 msgid "Keep"
 msgstr "Διατήρηση"
 
-#: port/frontend/shell/shell.cpp:1288
+#: port/frontend/shell/shell.cpp:1313
 msgid "Edit"
 msgstr "Επεξεργασία"
 
-#: port/frontend/shell/shell.cpp:1288
+#: port/frontend/shell/shell.cpp:1313
 msgid "Connect"
 msgstr "Σύνδεση"
 
-#: port/frontend/shell/shell.cpp:1288
+#: port/frontend/shell/shell.cpp:1313
 msgid "Hold to set up"
 msgstr "Κράτημα για ρύθμιση"
 
-#: port/frontend/shell/shell.cpp:1583
+#: port/frontend/shell/shell.cpp:1609
 msgid "Game hub"
 msgstr "Σελίδα παιχνιδιού"
 
-#: port/frontend/shell/shell.cpp:1586
+#: port/frontend/shell/shell.cpp:1612
 msgid "Game settings: custom"
 msgstr "Ρυθμίσεις παιχνιδιού: προσαρμοσμένες"
 
-#: port/frontend/shell/shell.cpp:1592
+#: port/frontend/shell/shell.cpp:1618
 msgid "Add mods from USB"
 msgstr "Προσθήκη mod από USB"
 
-#: port/frontend/shell/shell.cpp:1595
+#: port/frontend/shell/shell.cpp:1621
 msgid "Not a favourite"
 msgstr "Αφαίρεση από τα αγαπημένα"
 
-#: port/frontend/shell/shell.cpp:1596
+#: port/frontend/shell/shell.cpp:1623
+msgid "Remove from home screen"
+msgstr "Αφαίρεση από την αρχική οθόνη"
+
+#: port/frontend/shell/shell.cpp:1625
 msgid "Add to home screen"
 msgstr "Προσθήκη στην αρχική οθόνη"
 
-#: port/frontend/shell/shell.cpp:1885
+#: port/frontend/shell/shell.cpp:1916
 msgid "Added to Favourites"
 msgstr "Προστέθηκε στα αγαπημένα"
 
-#: port/frontend/shell/shell.cpp:1885
+#: port/frontend/shell/shell.cpp:1916
 msgid "Taken out of Favourites"
 msgstr "Αφαιρέθηκε από τα αγαπημένα"
 
 #. the keyboard's other keys, for text typed as it is: R1 and L1 go to capitals and symbols
-#: port/frontend/shell/shell.cpp:2035
+#: port/frontend/shell/shell.cpp:2066
 msgid "abc"
 msgstr "abc"
 
 #. the keyboard's other keys, for text typed as it is: R1 and L1 go to capitals and symbols
-#: port/frontend/shell/shell.cpp:2035
+#: port/frontend/shell/shell.cpp:2066
 msgid "#+="
 msgstr "#+="
 
-#: port/frontend/shell/shell.cpp:2037
+#: port/frontend/shell/shell.cpp:2068
 msgid "L1 R1: {0}"
 msgstr "L1 R1: {0}"
 
-#: port/frontend/shell/shell.cpp:2082
+#: port/frontend/shell/shell.cpp:2113
 msgid "PS5CEMU-HAR {0} is out"
 msgstr "Κυκλοφόρησε το PS5CEMU-HAR {0}"
 
-#: port/frontend/shell/shell.cpp:2083
+#: port/frontend/shell/shell.cpp:2114
 msgid "This is {0}. Download and install it now? Your games, saves and settings stay as they are."
 msgstr "Αυτή είναι η {0}. Λήψη και εγκατάσταση τώρα; Τα παιχνίδια, οι αποθηκεύσεις και οι ρυθμίσεις σας μένουν όπως είναι."
 
-#: port/frontend/shell/shell.cpp:2084
+#: port/frontend/shell/shell.cpp:2115
 msgid "Update now"
 msgstr "Ενημέρωση τώρα"
 
-#: port/frontend/shell/shell.cpp:2084 port/frontend/shell/shell.cpp:2137
+#: port/frontend/shell/shell.cpp:2115 port/frontend/shell/shell.cpp:2168
 msgid "Later"
 msgstr "Αργότερα"
 
-#: port/frontend/shell/shell.cpp:2087 port/frontend/shell/shell.cpp:2092 port/frontend/shell/shell.cpp:2097
+#: port/frontend/shell/shell.cpp:2118 port/frontend/shell/shell.cpp:2123 port/frontend/shell/shell.cpp:2128
 msgid "Updating to {0}"
 msgstr "Ενημέρωση σε {0}"
 
-#: port/frontend/shell/shell.cpp:2088
+#: port/frontend/shell/shell.cpp:2119
 msgid "Downloading: {0} of {1} MB"
 msgstr "Λήψη: {0} από {1} MB"
 
-#: port/frontend/shell/shell.cpp:2093
+#: port/frontend/shell/shell.cpp:2124
 msgid "Checking the download"
 msgstr "Έλεγχος της λήψης"
 
-#: port/frontend/shell/shell.cpp:2098
+#: port/frontend/shell/shell.cpp:2129
 msgid "Installing"
 msgstr "Εγκατάσταση"
 
-#: port/frontend/shell/shell.cpp:2102
+#: port/frontend/shell/shell.cpp:2133
 msgid "{0} is installed"
 msgstr "Η {0} εγκαταστάθηκε"
 
-#: port/frontend/shell/shell.cpp:2103
+#: port/frontend/shell/shell.cpp:2134
 msgid "PS5CEMU-HAR starts again to finish the update."
 msgstr "Το PS5CEMU-HAR ξεκινά ξανά για να ολοκληρώσει την ενημέρωση."
 
-#: port/frontend/shell/shell.cpp:2104
+#: port/frontend/shell/shell.cpp:2135
 msgid "Restart now"
 msgstr "Επανεκκίνηση τώρα"
 
-#: port/frontend/shell/shell.cpp:2107
+#: port/frontend/shell/shell.cpp:2138
 msgid "The update did not finish"
 msgstr "Η ενημέρωση δεν ολοκληρώθηκε"
 
-#: port/frontend/shell/shell.cpp:2108
+#: port/frontend/shell/shell.cpp:2139
 msgid "PS5CEMU-HAR is still {0}."
 msgstr "Το PS5CEMU-HAR είναι ακόμα {0}."
 
-#: port/frontend/shell/shell.cpp:2111
+#: port/frontend/shell/shell.cpp:2142
 msgid "Checking for updates"
 msgstr "Έλεγχος για ενημερώσεις"
 
-#: port/frontend/shell/shell.cpp:2117
+#: port/frontend/shell/shell.cpp:2148
 msgid "PS5CEMU-HAR update"
 msgstr "Ενημέρωση PS5CEMU-HAR"
 
-#: port/frontend/shell/shell.cpp:2137
+#: port/frontend/shell/shell.cpp:2168
 msgid "Select"
 msgstr "Επιλογή"
 
-#: port/frontend/shell/shell.cpp:2138
+#: port/frontend/shell/shell.cpp:2169
 msgid "Restart"
 msgstr "Επανεκκίνηση"
 
-#: port/frontend/shell/welcome.cpp:27
-msgid "Nintendo DS games, on melonDS, as a third side."
-msgstr "Παιχνίδια Nintendo DS, στο melonDS, ως τρίτη πλευρά."
-
-#: port/frontend/shell/welcome.cpp:28
-msgid "Menus in your PS5's language, every one it offers: Arabic, Asian and European."
-msgstr "Μενού στη γλώσσα του PS5 σας, σε όποια προσφέρει: αραβικά, ασιατικές και ευρωπαϊκές γλώσσες."
-
-#: port/frontend/shell/welcome.cpp:29
-msgid "The remote touch screen: the second screen in a phone's browser, with touch."
-msgstr "Η απομακρυσμένη οθόνη αφής: η δεύτερη οθόνη στο πρόγραμμα περιήγησης ενός τηλεφώνου, με αφή."
-
-#: port/frontend/shell/welcome.cpp:30
-msgid "Rumble works again, and Skylanders Giants starts."
-msgstr "Η δόνηση λειτουργεί ξανά και το Skylanders Giants ξεκινά."
-
-#: port/frontend/shell/welcome.cpp:31
-msgid "Wii U accounts, and every side's saves backed up to a USB drive."
-msgstr "Λογαριασμοί Wii U και αντίγραφα ασφαλείας των αποθηκεύσεων όλων των πλευρών σε μονάδα USB."
-
-#: port/frontend/shell/welcome.cpp:32
-msgid "Updates and DLC found on your drives and installed with one press."
-msgstr "Ενημερώσεις και DLC που βρέθηκαν στις μονάδες σας και εγκαθίστανται με ένα πάτημα."
-
-#: port/frontend/shell/welcome.cpp:33
-msgid "AMD FSR 1 for a sharper Wii U picture at 4K."
-msgstr "AMD FSR 1 για πιο ευκρινή εικόνα Wii U σε 4K."
-
-#: port/frontend/shell/welcome.cpp:34
-msgid "Themes, your own too, and any mix of sides in the bar."
-msgstr "Θέματα, και δικά σας, και οποιοσδήποτε συνδυασμός πλευρών στη γραμμή."
-
-#: port/frontend/shell/welcome.cpp:35
-msgid "Buttons that swap, a turbo button, and the touchpad's click as any button."
-msgstr "Κουμπιά που εναλλάσσονται, κουμπί turbo και το κλικ στην επιφάνεια αφής ως οποιοδήποτε κουμπί."
-
-#: port/frontend/shell/welcome.cpp:36
-msgid "Settings for one game alone, and Settings over your library."
-msgstr "Ρυθμίσεις για ένα μόνο παιχνίδι και οι Ρυθμίσεις πάνω από τη βιβλιοθήκη σας."
-
-#: port/frontend/shell/welcome.cpp:37
-msgid "Your own music, box art that downloads again, and a quicker start."
-msgstr "Η δική σας μουσική, εξώφυλλα που κατεβαίνουν ξανά και πιο γρήγορη εκκίνηση."
-
-#: port/frontend/shell/welcome.cpp:78
+#: port/frontend/shell/welcome.cpp:63
 msgid "On every side: A on Circle, as Nintendo's consoles have it, or on Cross."
 msgstr "Σε κάθε πλευρά: το A στον Κύκλο, όπως στις κονσόλες της Nintendo, ή στον Σταυρό."
 
-#: port/frontend/shell/welcome.cpp:79
+#: port/frontend/shell/welcome.cpp:64
 msgid "A on Circle and B on Cross, where the Wii U, the 3DS and the DS have them, or A on Cross and B on Circle, as PlayStation games confirm. X and Y swap to match. Each side's Controls, and each Wii U player, can change it later."
 msgstr "Το A στον Κύκλο και το B στον Σταυρό, όπου τα έχουν το Wii U, το 3DS και το DS, ή το A στον Σταυρό και το B στον Κύκλο, όπως επιβεβαιώνουν τα παιχνίδια PlayStation. Τα X και Y εναλλάσσονται ανάλογα. Ο Χειρισμός κάθε πλευράς και κάθε παίκτης Wii U μπορούν να το αλλάξουν αργότερα."
 
-#: port/frontend/shell/welcome.cpp:106
+#: port/frontend/shell/welcome.cpp:91
 msgid "Wii U player 1's: a touch of the GamePad's screen, or a button."
 msgstr "Του παίκτη 1 Wii U: ένα άγγιγμα της οθόνης του GamePad ή ένα κουμπί."
 
-#: port/frontend/shell/welcome.cpp:107
+#: port/frontend/shell/welcome.cpp:92
 msgid "What a click of the touchpad is for Wii U player 1: a touch of the GamePad's screen, or the button set to Touchpad click under Buttons (- (Select) when nothing is). Automatic: a touch with the GamePad, a button with the other controllers. Each player's own: Settings > Controls on the Wii U side."
 msgstr "Τι κάνει ένα κλικ στην επιφάνεια αφής για τον παίκτη 1 Wii U: ένα άγγιγμα της οθόνης του GamePad ή το κουμπί που έχει οριστεί ως Κλικ στην επιφάνεια αφής στα Κουμπιά (το - (Select), αν δεν υπάρχει). Αυτόματα: άγγιγμα με το GamePad, κουμπί με τα άλλα χειριστήρια. Για κάθε παίκτη: Ρυθμίσεις > Χειρισμός στην πλευρά Wii U."
 
-#: port/frontend/shell/welcome.cpp:119
+#: port/frontend/shell/welcome.cpp:104
 msgid "Back to Settings"
 msgstr "Πίσω στις Ρυθμίσεις"
 
-#: port/frontend/shell/welcome.cpp:120
+#: port/frontend/shell/welcome.cpp:105
 msgid "Everything here is in Settings too."
 msgstr "Όλα εδώ υπάρχουν και στις Ρυθμίσεις."
 
-#: port/frontend/shell/welcome.cpp:121
+#: port/frontend/shell/welcome.cpp:106
 msgid "Continues. Nothing here has to be chosen now: every row of this page is also in Settings, on its own side."
 msgstr "Συνεχίζει. Τίποτα εδώ δεν χρειάζεται να επιλεγεί τώρα: κάθε γραμμή αυτής της σελίδας υπάρχει και στις Ρυθμίσεις, στη δική της πλευρά."
 
-#: port/frontend/shell/welcome.cpp:222
+#: port/frontend/shell/welcome.cpp:207 port/frontend/shell/whatsnew.cpp:74
 msgid "PS5CEMU-HAR {0}"
 msgstr "PS5CEMU-HAR {0}"
 
-#: port/frontend/shell/welcome.cpp:223
+#: port/frontend/shell/welcome.cpp:208
 msgid "New in this version"
 msgstr "Νέα σε αυτή την έκδοση"
 
-#: port/frontend/shell/welcome.cpp:225
+#: port/frontend/shell/welcome.cpp:210
 msgid "How the app looks and feels, chosen once. Settings has all of it too."
 msgstr "Πώς φαίνεται και πώς νιώθεται η εφαρμογή, επιλεγμένο μία φορά. Όλα υπάρχουν και στις Ρυθμίσεις."
 
-#: port/frontend/shell/welcome.cpp:226
+#: port/frontend/shell/welcome.cpp:211
 msgid "A few new options to set up once. Settings has all of them too."
 msgstr "Μερικές νέες επιλογές για να ρυθμιστούν μία φορά. Όλες υπάρχουν και στις Ρυθμίσεις."
 
-#. the heading over the list of what a new version brings
-#: port/frontend/shell/welcome.cpp:278
-msgid "What it brings"
-msgstr "Τι φέρνει"
-
-#: port/frontend/shell/welcome.cpp:285
+#: port/frontend/shell/welcome.cpp:252
 msgid "This row"
 msgstr "Αυτή η γραμμή"
+
+#. What's new: the 31 languages the app's menus are in
+#: port/frontend/shell/whatsnew.cpp:28
+msgid "31 languages"
+msgstr "31 γλώσσες"
+
+#. What's new: the 31 languages the app's menus are in
+#: port/frontend/shell/whatsnew.cpp:28
+msgid "Every language the PS5 has, in every menu, and your games' names in yours."
+msgstr "Κάθε γλώσσα του PS5, σε κάθε μενού, και τα ονόματα των παιχνιδιών σας στη δική σας."
+
+#: port/frontend/shell/whatsnew.cpp:29
+msgid "Nintendo DS"
+msgstr "Nintendo DS"
+
+#: port/frontend/shell/whatsnew.cpp:29
+msgid "DS games on melonDS, a third system beside the Wii U and the 3DS."
+msgstr "Παιχνίδια DS στο melonDS, ένα τρίτο σύστημα δίπλα στο Wii U και στο 3DS."
+
+#: port/frontend/shell/whatsnew.cpp:30
+msgid "Games on your home screen"
+msgstr "Τα παιχνίδια σας στην αρχική οθόνη"
+
+#: port/frontend/shell/whatsnew.cpp:30
+msgid "Add to home screen gives a game a tile of its own that starts it at once."
+msgstr "Η Προσθήκη στην αρχική οθόνη δίνει σε ένα παιχνίδι δικό του εικονίδιο που το ξεκινά αμέσως."
+
+#: port/frontend/shell/whatsnew.cpp:31
+msgid "Wii U mods"
+msgstr "Mod για Wii U"
+
+#: port/frontend/shell/whatsnew.cpp:31
+msgid "Mods from a USB drive, each on its game's Graphic packs page."
+msgstr "Mod από μονάδα USB, το καθένα στη σελίδα Πακέτα γραφικών του παιχνιδιού του."
+
+#: port/frontend/shell/whatsnew.cpp:32
+msgid "Eight themes"
+msgstr "Οκτώ θέματα"
+
+#: port/frontend/shell/whatsnew.cpp:32
+msgid "Classic brings back the first launcher; Eden, Phantom, Terminal and more."
+msgstr "Το Classic φέρνει πίσω τον πρώτο εκκινητή· Eden, Phantom, Terminal και άλλα."
+
+#: port/frontend/shell/whatsnew.cpp:33
+msgid "Play games from your PC or NAS, over SMB or NFS."
+msgstr "Παίξτε παιχνίδια από τον υπολογιστή ή το NAS σας, μέσω SMB ή NFS."
+
+#: port/frontend/shell/whatsnew.cpp:34
+msgid "Achievements in DS games: sign in from Settings > Online."
+msgstr "Επιτεύγματα σε παιχνίδια DS: συνδεθείτε από τις Ρυθμίσεις > Online."
+
+#: port/frontend/shell/whatsnew.cpp:35
+msgid "Faster Wii U games"
+msgstr "Γρηγορότερα παιχνίδια Wii U"
+
+#: port/frontend/shell/whatsnew.cpp:35
+msgid "Breath of the Wild near 60 fps at 1440p, and steadier at 4K."
+msgstr "Το Breath of the Wild κοντά στα 60 fps στα 1440p και πιο σταθερό στα 4K."
+
+#: port/frontend/shell/whatsnew.cpp:36
+msgid "Pokémon drawn right"
+msgstr "Pokémon σωστά σχεδιασμένα"
+
+#: port/frontend/shell/whatsnew.cpp:36
+msgid "X, Y, Omega Ruby, Alpha Sapphire, Sun, Moon and the Ultra games."
+msgstr "X, Y, Omega Ruby, Alpha Sapphire, Sun, Moon, Ultra Sun και Ultra Moon."
+
+#. the heading of the screen a new version opens on, once: what it brings
+#: port/frontend/shell/whatsnew.cpp:76
+msgid "What's new"
+msgstr "Τι νέο υπάρχει"
+
+#: port/frontend/shell/whatsnew.cpp:78
+msgid "The biggest update yet, at a glance. Its release notes on GitHub have everything."
+msgstr "Η μεγαλύτερη ενημέρωση ως τώρα, με μια ματιά. Οι σημειώσεις έκδοσης στο GitHub τα έχουν όλα."
 
 #: port/frontend/shell/widgets.cpp:313
 msgid "This game"

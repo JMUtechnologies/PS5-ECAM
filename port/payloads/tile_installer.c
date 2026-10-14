@@ -13,8 +13,10 @@
 //   - moves the folder in (a rename, both being on /data; a copy where they are not), gives it the
 //     modes all homebrew there has (0777: eboot.bin must be executable), and writes <title ID>.result
 //     beside the pending folder: "ok", or "error <errno> <what>".
-// Then it gives the same modes to every PS5CEMU-HAR tile already in /data/homebrew (those of the first
-// helper, which left eboot.bin 0666), and exits. It reads and writes nothing else.
+// Then, for each request in /data/ps5cemu/tiles/remove (a file named by a title ID), it takes that tile
+// away, only when /data/homebrew/<title ID> is itself such a tile, and answers in <title ID>.result
+// beside the request. Last, it gives the same modes to every PS5CEMU-HAR tile already in /data/homebrew
+// (those of the first helper, which left eboot.bin 0666), and exits. It reads and writes nothing else.
 
 #include <dirent.h>
 #include <errno.h>
@@ -25,6 +27,7 @@
 #include <unistd.h>
 
 #define PENDING "/data/ps5cemu/tiles/pending"
+#define REMOVE "/data/ps5cemu/tiles/remove"
 #define HOMEBREW "/data/homebrew"
 #define TARGET "PPSA99360"
 
@@ -180,10 +183,10 @@ static void open_tree(const char* path)
 	closedir(dir);
 }
 
-static void report(const char* id, int error, const char* what)
+static void report(const char* folder, const char* id, int error, const char* what)
 {
 	char path[512];
-	snprintf(path, sizeof(path), "%s/%s.result", PENDING, id);
+	snprintf(path, sizeof(path), "%s/%s.result", folder, id);
 	const int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0666);
 	if (fd < 0)
 		return;
@@ -202,48 +205,71 @@ static void install(const char* id)
 	snprintf(to, sizeof(to), "%s/%s", HOMEBREW, id);
 	if (!our_tile(from))
 	{
-		report(id, EINVAL, "not a PS5CEMU-HAR tile");
+		report(PENDING, id, EINVAL, "not a PS5CEMU-HAR tile");
 		return;
 	}
 	if (exists(to))
 	{
 		if (!our_tile(to))
 		{
-			report(id, EEXIST, "another app has that folder");
+			report(PENDING, id, EEXIST, "another app has that folder");
 			return;
 		}
 		if (remove_tree(to) != 0)
 		{
-			report(id, errno, "the tile from before could not be removed");
+			report(PENDING, id, errno, "the tile from before could not be removed");
 			return;
 		}
 	}
 	if (mkdir(HOMEBREW, 0777) != 0 && errno != EEXIST)
 	{
-		report(id, errno, "cannot make " HOMEBREW);
+		report(PENDING, id, errno, "cannot make " HOMEBREW);
 		return;
 	}
 	if (rename(from, to) == 0)
 	{
 		open_tree(to);
-		report(id, 0, NULL);
+		report(PENDING, id, 0, NULL);
 		return;
 	}
 	if (errno != EXDEV)
 	{
-		report(id, errno, "cannot move the tile into " HOMEBREW);
+		report(PENDING, id, errno, "cannot move the tile into " HOMEBREW);
 		return;
 	}
 	if (copy_tree(from, to) != 0)
 	{
 		const int error = errno;
 		remove_tree(to);
-		report(id, error ? error : EIO, "cannot copy the tile into " HOMEBREW);
+		report(PENDING, id, error ? error : EIO, "cannot copy the tile into " HOMEBREW);
 		return;
 	}
 	remove_tree(from);
 	open_tree(to);
-	report(id, 0, NULL);
+	report(PENDING, id, 0, NULL);
+}
+
+// A tile asked to be taken away: only one of PS5CEMU-HAR's, and one already gone is done too
+static void take_away(const char* id)
+{
+	char path[512];
+	snprintf(path, sizeof(path), "%s/%s", HOMEBREW, id);
+	if (!exists(path))
+	{
+		report(REMOVE, id, 0, NULL);
+		return;
+	}
+	if (!our_tile(path))
+	{
+		report(REMOVE, id, EPERM, "not a PS5CEMU-HAR tile");
+		return;
+	}
+	if (remove_tree(path) != 0)
+	{
+		report(REMOVE, id, errno ? errno : EIO, "the tile could not be removed");
+		return;
+	}
+	report(REMOVE, id, 0, NULL);
 }
 
 int main(void)
@@ -267,6 +293,18 @@ int main(void)
 	closedir(dir);
 	for (int i = 0; i < count; i++)
 		install(ids[i]);
+	dir = opendir(REMOVE);
+	if (dir)
+	{
+		char removals[64][16];
+		int asked = 0;
+		while ((entry = readdir(dir)) != NULL && asked < 64)
+			if (valid_id(entry->d_name))
+				snprintf(removals[asked++], sizeof(removals[0]), "%s", entry->d_name);
+		closedir(dir);
+		for (int i = 0; i < asked; i++)
+			take_away(removals[i]);
+	}
 	// and the tiles made before (4.0.0's first helper left their eboot.bin 0666, so they did not start):
 	// each PS5CEMU-HAR tile in /data/homebrew opened again, never another app's folder
 	dir = opendir(HOMEBREW);

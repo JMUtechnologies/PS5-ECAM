@@ -420,6 +420,9 @@ namespace ps5mods
 namespace ps5forwarders
 {
 	void Start(const Request&) {}
+	// PREVIEW_TILES=1: every game has a tile, so the game menu offers Remove from home screen
+	bool HasTile(const std::string&) { return std::getenv("PREVIEW_TILES") != nullptr; }
+	void StartRemove(const Request&) {}
 	Status GetStatus() { return {}; }
 	void Stop() {}
 }

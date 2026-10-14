@@ -7,7 +7,8 @@
 // the folder on the home screen as it does any homebrew; Forwarder Manager can edit it. Without a HEN
 // the app may not make folders in /data/homebrew (root's): the tile is then made in
 // /data/ps5cemu/tiles/pending and moved in by tile-installer.elf (port/payloads), which elfldr runs as
-// root, as the tiles' own launcher needs elfldr anyway.
+// root, as the tiles' own launcher needs elfldr anyway; a tile is taken away the same way, asked for in
+// /data/ps5cemu/tiles/remove.
 
 #pragma once
 
@@ -35,12 +36,17 @@ namespace ps5forwarders
 		std::string titleId;
 		std::string folder; // the tile's: /data/homebrew/<titleId>
 		bool replaced = false;
+		bool removed = false; // the request took the tile away (StartRemove)
 		std::string message;
 		uint32_t finished = 0; // the requests that ended, so the launcher answers each once
 	};
 
 	// Makes the game's tile, or makes it again, on a thread of its own
 	void Start(const Request& request);
+	// Whether the game (its path, as --rom has it) has a tile of PS5CEMU-HAR's in /data/homebrew
+	bool HasTile(const std::string& rom);
+	// Takes the game's tile away (its folder in /data/homebrew), on a thread of its own
+	void StartRemove(const Request& request);
 	Status GetStatus();
 	// Before a game: a tile being made is finished first
 	void Stop();

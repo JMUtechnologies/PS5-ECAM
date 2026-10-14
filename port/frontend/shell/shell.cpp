@@ -183,21 +183,27 @@ namespace ps5shell
 		m_side = ps5launcher::SideNamed(side);
 		if (!SideShown(m_side) && m_status.autoLaunch.empty())
 			m_side = FirstShownSide();
-		// a version this console has not run before: what it brings, once (Make it yours), unless this is
-		// the app's first start, which shows the look and feel to choose instead
+		// a version this console has not run before: What's new, once, before anything else, on a first
+		// start too (a home screen tile's game starts at once instead, and What's new waits for the next
+		// start); then a first start's look and feel to choose, or an update's new options
 		const bool firstStart = !m_settings.ui.setupDone;
-		const bool updated = !firstStart && !returning && m_settings.ui.lastVersion != PS5CEMU_VERSION;
-		if (m_settings.ui.lastVersion != PS5CEMU_VERSION)
+		const bool newVersion = m_settings.ui.lastVersion != PS5CEMU_VERSION;
+		const bool updated = !firstStart && !returning && newVersion;
+		const bool news = newVersion && !returning && m_status.autoLaunch.empty();
+		if (newVersion && m_status.autoLaunch.empty())
 		{
 			ps5log::Line("[ui] version {} (last run: {})", PS5CEMU_VERSION, m_settings.ui.lastVersion.empty() ? "3.5.0 or earlier" : m_settings.ui.lastVersion);
 			m_settings.ui.lastVersion = PS5CEMU_VERSION;
 			SaveSettings();
 		}
-		if (firstStart)
+		const NewsThen then = firstStart ? NewsThen::Welcome : SetupNeeded() ? NewsThen::Setup : updated ? NewsThen::NewOptions : NewsThen::Side;
+		if (news)
+			WhatsNewOpen(then);
+		else if (then == NewsThen::Welcome)
 			WelcomeOpen(true); // then the Setup check, then the side
-		else if (SetupNeeded())
+		else if (then == NewsThen::Setup)
 			SetupOpen(true); // then the side (FinishStart)
-		else if (updated)
+		else if (then == NewsThen::NewOptions)
 			WelcomeOpen(false); // then the side
 		else
 		{
@@ -382,6 +388,7 @@ namespace ps5shell
 				continue;
 			switch (m_screen)
 			{
+			case ScreenId::WhatsNew: WhatsNewUpdate(press); break;
 			case ScreenId::Welcome: WelcomeUpdate(press, actions); break;
 			case ScreenId::Setup: SetupUpdate(press); break;
 			case ScreenId::Library: LibraryUpdate(press); break;
@@ -423,6 +430,7 @@ namespace ps5shell
 		const bool rail = SectionLayout() && EdenSectionIndex() >= 0;
 		switch (m_screen)
 		{
+		case ScreenId::WhatsNew: WhatsNewDraw(canvas); break;
 		case ScreenId::Welcome: WelcomeDraw(canvas); break;
 		case ScreenId::Setup: SetupDraw(canvas); break;
 		case ScreenId::Library: LibraryDraw(canvas); break;
@@ -575,7 +583,7 @@ namespace ps5shell
 		if (SideShown(m_side))
 			return;
 		// the side open was hidden: the first one shown, opened where a side is (Settings stays Settings)
-		if (m_prepared && m_screen != ScreenId::Welcome && m_screen != ScreenId::Setup)
+		if (m_prepared && m_screen != ScreenId::Welcome && m_screen != ScreenId::Setup && m_screen != ScreenId::WhatsNew)
 			SwitchSide(FirstShownSide());
 		else
 			m_side = FirstShownSide();
@@ -908,6 +916,13 @@ namespace ps5shell
 		Toast(TrF("Making {0}'s home screen tile…", game.entry.game.name));
 	}
 
+	void Shell::RemoveTile(Game& game)
+	{
+		ps5forwarders::StartRemove({game.entry.game.name, game.entry.game.path.string(), {}});
+		m_feedback.Play(ui::Cue::Select);
+		Toast(TrF("Removing {0}'s home screen tile…", game.entry.game.name));
+	}
+
 	void Shell::PollTiles()
 	{
 		const ps5forwarders::Status status = ps5forwarders::GetStatus();
@@ -917,7 +932,15 @@ namespace ps5shell
 		if (status.state == ps5forwarders::Status::State::Failed)
 		{
 			m_feedback.Play(ui::Cue::Denied);
-			OpenHelp(Tr("The tile could not be made"), status.message);
+			OpenHelp(status.removed ? Tr("The tile could not be removed") : Tr("The tile could not be made"), status.message);
+			return;
+		}
+		if (status.removed)
+		{
+			m_feedback.Play(ui::Cue::Notify);
+			OpenHelp(Tr("The tile is removed"),
+				Tr("Its folder is gone from /data/homebrew. If its picture stays on the home screen, delete it there (Options, then "
+				   "Delete), or restart ShadowMount Plus."));
 			return;
 		}
 		// tr: {0} is the tile's folder, /data/homebrew/PPSA99xxx
@@ -1219,6 +1242,8 @@ namespace ps5shell
 				{Icon::Touchpad, other}};
 		switch (m_screen)
 		{
+		case ScreenId::WhatsNew:
+			return {{Icon::Cross, Tr("Continue")}};
 		case ScreenId::Welcome:
 			return {{Icon::LeftRight, Tr("Change")}, {Icon::Triangle, Tr("More about it")},
 				{Icon::Circle, m_welcomeThenSetup ? Tr("Continue to the Setup check") : m_welcomeFromSettings ? Tr("Back") : Tr("Continue to the Library")}};
@@ -1324,9 +1349,10 @@ namespace ps5shell
 	void Shell::DrawBackdrop(Canvas& canvas)
 	{
 		// the Setup check belongs to no side: the sides' colours, and the seam
-		if (m_screen == ScreenId::Setup || m_screen == ScreenId::Welcome)
+		if (m_screen == ScreenId::Setup || m_screen == ScreenId::Welcome || m_screen == ScreenId::WhatsNew)
 		{
-			DrawBrandBackdrop(canvas, 1140.0f);
+			// What's new's seam between its second and third columns of cards, never through one
+			DrawBrandBackdrop(canvas, m_screen == ScreenId::WhatsNew ? 1252.0f : 1140.0f);
 			return;
 		}
 		// the colours glide to the focused game's
@@ -1593,7 +1619,10 @@ namespace ps5shell
 			m_menu.items.push_back({"updates", Tr("Updates and DLC")});
 		}
 		m_menu.items.push_back({"favourite", g.entry.favourite ? Tr("Not a favourite") : Tr("Favourite")});
-		m_menu.items.push_back({"tile", Tr("Add to home screen")});
+		if (ps5forwarders::HasTile(g.entry.game.path.string()))
+			m_menu.items.push_back({"untile", Tr("Remove from home screen")});
+		else
+			m_menu.items.push_back({"tile", Tr("Add to home screen")});
 		m_feedback.Play(ui::Cue::Sheet);
 	}
 
@@ -1863,6 +1892,8 @@ namespace ps5shell
 					AddMods(g.entry.game.titleId, g.entry.game.name);
 				else if (id == "tile")
 					AddTile(g);
+				else if (id == "untile")
+					RemoveTile(g);
 				else if (id == "settings")
 				{
 					m_feedback.Play(ui::Cue::Select);
@@ -1993,7 +2024,7 @@ namespace ps5shell
 			canvas.Text(Style(kHeadingStyle), sheet.x + 36, sheet.y + 78, game.entry.game.name, kText, sheet.w - 72, 1);
 			static const std::map<std::string, Icon> kIcons = {{"play", Icon::Play}, {"hub", Icon::ChevronRight}, {"settings", Icon::Sparkle},
 				{"saves", Icon::Save}, {"packs", Icon::Gear}, {"mods", Icon::Usb}, {"updates", Icon::Download}, {"favourite", Icon::Star},
-				{"tile", Icon::Home}};
+				{"tile", Icon::Home}, {"untile", Icon::Home}};
 			for (int i = 0; i < count; i++)
 			{
 				const Box row{sheet.x + 20, sheet.y + 136 + i * rowH, sheet.w - 40, rowH - 6};

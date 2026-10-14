@@ -30,6 +30,7 @@
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <memory>
 #include <mutex>
 #include <thread>
 #include <vector>
@@ -58,6 +59,12 @@ namespace ps5forwarders
 		std::string Pending()
 		{
 			return std::string(ps5paths::kRoot) + "/tiles/pending";
+		}
+
+		// Where the tile helper is asked to take a tile away: a file named by its title ID
+		std::string Removals()
+		{
+			return std::string(ps5paths::kRoot) + "/tiles/remove";
 		}
 
 		// Whether the app may make folders in folder: without a HEN its sandbox may read /data/homebrew,
@@ -128,18 +135,19 @@ namespace ps5forwarders
 			return true;
 		}
 
-		// The tile made in Pending() moved into /data/homebrew by tile-installer.elf, which elfldr runs as
-		// root; empty when it is there, else why not
-		std::string Install(const std::string& titleId)
+		// tile-installer.elf, which elfldr runs as root, answering for the tile titleId in folder: one made
+		// in Pending() moved into /data/homebrew, or one asked for in Removals() taken away. Empty when it
+		// is done, else why not
+		std::string RunHelper(const std::string& folder, const std::string& titleId)
 		{
-			const std::string result = Pending() + "/" + titleId + ".result";
+			const std::string result = folder + "/" + titleId + ".result";
 			std::remove(result.c_str());
 			std::string error;
 			if (!SendToElfldr(ps5paths::AppDir() + "/tile-installer.elf", error))
 			{
 				ps5log::Line("[tiles] the tile helper could not be sent to elfldr: {}", error);
 				return ps5lang::Tr("elfldr does not answer on port 9021. Home screen tiles need it, to be put in /data/homebrew and to "
-								   "start their games: load elfldr, then add the tile again.");
+								   "start their games: load elfldr, then try again.");
 			}
 			for (int poll = 0; poll < kInstallPolls && !s_stop; poll++)
 			{
@@ -174,13 +182,14 @@ namespace ps5forwarders
 			{
 				if (!psfwd_valid_title_id(entry->d_name))
 					continue;
-				static psfwd_info info; // 5 KB: off the stack of a thread of the app's
-				std::memset(&info, 0, sizeof(info));
-				if (!psfwd_read((std::string(kRoot) + "/" + entry->d_name).c_str(), &info) || std::strcmp(info.target, ps5paths::kTitleId) != 0)
+				// 5 KB a read: off the stack of a thread of the app's, and its own for each caller (the menu
+				// asks whether a game has a tile while one is being made)
+				auto info = std::make_unique<psfwd_info>();
+				if (!psfwd_read((std::string(kRoot) + "/" + entry->d_name).c_str(), info.get()) || std::strcmp(info->target, ps5paths::kTitleId) != 0)
 					continue;
-				for (int i = 0; i + 1 < info.argc; i++)
-					if (std::strcmp(info.argv[i], "--rom") == 0 && rom == info.argv[i + 1])
-						found = info.title_id;
+				for (int i = 0; i + 1 < info->argc; i++)
+					if (std::strcmp(info->argv[i], "--rom") == 0 && rom == info->argv[i + 1])
+						found = info->title_id;
 				if (!found.empty())
 					break;
 			}
@@ -238,15 +247,52 @@ namespace ps5forwarders
 			return png;
 		}
 
-		void Finish(Status::State state, const std::string& titleId, bool replaced, const std::string& message)
+		void Finish(Status::State state, const std::string& titleId, bool replaced, const std::string& message, bool removed = false)
 		{
 			std::lock_guard lock(s_mutex);
 			s_status.state = state;
 			s_status.titleId = titleId;
 			s_status.folder = titleId.empty() ? std::string() : std::string(kRoot) + "/" + titleId;
 			s_status.replaced = replaced;
+			s_status.removed = removed;
 			s_status.message = message;
 			s_status.finished++;
+		}
+
+		void RunRemove(Request request)
+		{
+			const std::string titleId = Earlier(request.rom);
+			if (titleId.empty())
+			{
+				Finish(Status::State::Failed, {}, false, ps5lang::Tr("It has no home screen tile."), true);
+				return;
+			}
+			if (CanMakeFolders(kRoot))
+			{
+				if (!psfwd_remove(kRoot, titleId.c_str()))
+				{
+					ps5log::Line("[tiles] {}/{} not removed (errno {})", kRoot, titleId, errno);
+					Finish(Status::State::Failed, titleId, false, ps5lang::TrF("{0} could not be removed", std::string(kRoot) + "/" + titleId), true);
+					return;
+				}
+			}
+			else
+			{
+				// the tile helper takes it away, as root: asked for by a file named by the title ID
+				std::error_code ec;
+				std::filesystem::create_directories(Removals(), ec);
+				const std::string ask = Removals() + "/" + titleId;
+				std::ofstream(ask, std::ios::trunc) << request.rom << "\n";
+				const std::string why = RunHelper(Removals(), titleId);
+				std::remove(ask.c_str());
+				if (!why.empty())
+				{
+					Finish(Status::State::Failed, titleId, false, why, true);
+					return;
+				}
+			}
+			ps5log::Line("[tiles] {}/{} removed: {}", kRoot, titleId, request.name);
+			Finish(Status::State::Done, titleId, false, {}, true);
 		}
 
 		void Run(Request request)
@@ -296,7 +342,7 @@ namespace ps5forwarders
 			if (!direct)
 			{
 				ps5log::Line("[tiles] {} cannot be written here: the tile made in {}, for the tile helper to move", kRoot, root);
-				const std::string why = Install(titleId);
+				const std::string why = RunHelper(Pending(), titleId);
 				if (!why.empty())
 				{
 					std::error_code ec;
@@ -311,21 +357,39 @@ namespace ps5forwarders
 		}
 	}
 
+	namespace
+	{
+		void Begin(void (*run)(Request), const Request& request)
+		{
+			{
+				std::lock_guard lock(s_mutex);
+				if (s_status.state == Status::State::Making)
+					return;
+				const uint32_t finished = s_status.finished;
+				s_status = {};
+				s_status.finished = finished;
+				s_status.state = Status::State::Making;
+			}
+			if (s_thread.joinable())
+				s_thread.join();
+			s_stop = false;
+			s_thread = std::thread(run, request);
+		}
+	}
+
 	void Start(const Request& request)
 	{
-		{
-			std::lock_guard lock(s_mutex);
-			if (s_status.state == Status::State::Making)
-				return;
-			const uint32_t finished = s_status.finished;
-			s_status = {};
-			s_status.finished = finished;
-			s_status.state = Status::State::Making;
-		}
-		if (s_thread.joinable())
-			s_thread.join();
-		s_stop = false;
-		s_thread = std::thread(Run, request);
+		Begin(Run, request);
+	}
+
+	bool HasTile(const std::string& rom)
+	{
+		return !Earlier(rom).empty();
+	}
+
+	void StartRemove(const Request& request)
+	{
+		Begin(RunRemove, request);
 	}
 
 	Status GetStatus()

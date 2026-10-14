@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // PS5CEMU-HAR: Make it yours (docs/UI-REDESIGN.md, 6.10). On a first start, before the Setup check, the
 // few choices that decide how the app looks and feels: its language, which sides the bar offers, the
-// theme, where A is, the music, vibration and the games' pictures. After an update, once, what the new
-// version brings and the new options to set up, each a row as in Settings (the same rows: Settings
-// changes them later). Circle goes on either way: nothing here has to be answered.
+// theme, where A is, the music, vibration and the games' pictures. After an update, once, the new
+// options to set up, each a row as in Settings (the same rows: Settings changes them later); What's new
+// (whatsnew.cpp) has said what the version brings before it. Circle goes on either way: nothing here
+// has to be answered.
 
 #include "shell_internal.h"
 #include "../../app/updates.h"
@@ -19,23 +20,7 @@ namespace ps5shell
 	namespace
 	{
 		constexpr float kListTop = 290, kListWidth = 1000, kRowStep = 104, kRowHeight = 92;
-		constexpr float kAsideX = 1196, kAsideWidth = 628, kAsidePad = 36, kAsideNewsTop = 96;
-
-		// what this version brings, as its release notes say it, a line each (Make it yours, after an
-		// update): changed with each release that has something to say
-		constexpr const char* kWhatsNew[] = {
-			TrMark("Nintendo DS games, on melonDS, as a third side."),
-			TrMark("Menus in your PS5's language, every one it offers: Arabic, Asian and European."),
-			TrMark("The remote touch screen: the second screen in a phone's browser, with touch."),
-			TrMark("Rumble works again, and Skylanders Giants starts."),
-			TrMark("Wii U accounts, and every side's saves backed up to a USB drive."),
-			TrMark("Updates and DLC found on your drives and installed with one press."),
-			TrMark("AMD FSR 1 for a sharper Wii U picture at 4K."),
-			TrMark("Themes, your own too, and any mix of sides in the bar."),
-			TrMark("Buttons that swap, a turbo button, and the touchpad's click as any button."),
-			TrMark("Settings for one game alone, and Settings over your library."),
-			TrMark("Your own music, box art that downloads again, and a quicker start."),
-		};
+		constexpr float kAsideX = 1196, kAsideWidth = 628, kAsidePad = 36;
 
 		// tr: what a Wii U player's touchpad click does (as Settings > Controls > Player names them)
 		constexpr const char* kTouchpadClicks[] = {TrMark("Automatic"), TrMark("Touches the screen"), TrMark("Presses a button")};
@@ -245,25 +230,17 @@ namespace ps5shell
 		if (rows.empty())
 			return;
 
-		// beside the list: what the focused row is for; after an update, what the version brings above it
+		// beside the list: what the focused row is for, in as many whole lines as fit (the rest behind
+		// Triangle)
 		const Row& row = rows[m_welcomeRow];
 		const float inner = kAsideWidth - 2 * kAsidePad;
-		std::string news;
-		if (!m_welcomeFirst)
-			for (const char* line : kWhatsNew)
-				news += std::string("•  ") + Tr(line) + "\n";
-		const ui::TextBlock newsBlock = m_fonts.Layout(Style({20, ui::Weight::Regular, 1.45f}), news, inner, 24);
 		const ui::TextBlock heading = m_fonts.Layout(Style({30, ui::Weight::SemiBold, 1.2f}), row.label, inner, 2);
-		const float newsHeight = news.empty() ? 0.0f : 18 + 10 + newsBlock.height + 28 + 2 + 26;
-		// with what the version brings, the panel starts level with the page's title (nothing is beside
-		// it there), so the focused row's help still fits under the version's lines, in as many whole
-		// lines as are left (the rest behind Triangle)
-		const float top = news.empty() ? kListTop + 10 : kAsideNewsTop;
+		const float top = kListTop + 10;
 		const ui::TextStyle aboutStyle = Style({21, ui::Weight::Regular, 1.55f});
-		const float aboutRoom = kListBottom - top - (kAsidePad + newsHeight + 18 + 10 + heading.height + 14 + kAsidePad);
-		const int aboutLines = std::clamp((int)(aboutRoom / (aboutStyle.size * aboutStyle.lineHeight)), 1, m_welcomeFirst ? 12 : 6);
+		const float aboutRoom = kListBottom - top - (kAsidePad + 18 + 10 + heading.height + 14 + kAsidePad);
+		const int aboutLines = std::clamp((int)(aboutRoom / (aboutStyle.size * aboutStyle.lineHeight)), 1, 12);
 		const ui::TextBlock about = m_fonts.Layout(aboutStyle, row.help, inner, aboutLines);
-		const float height = std::min(kListBottom - top, kAsidePad + newsHeight + 18 + 10 + heading.height + 14 + about.height + kAsidePad);
+		const float height = std::min(kListBottom - top, kAsidePad + 18 + 10 + heading.height + 14 + about.height + kAsidePad);
 		const Box aside{kAsideX, top, kAsideWidth, height};
 		canvas.PushAlpha(Enter(2));
 		canvas.PushOffset((1 - Enter(2)) * 30, 0);
@@ -272,16 +249,6 @@ namespace ps5shell
 		canvas.PushClip(aside, kRadiusSheet);
 		float y = aside.y + kAsidePad;
 		const float ax = aside.x + kAsidePad;
-		if (!news.empty())
-		{
-			// tr: the heading over the list of what a new version brings
-			canvas.Text(Style(kOverlineStyle), ax, y, Tr("What it brings"), Secondary(), inner, 1);
-			y += 18 + 10;
-			canvas.Text(newsBlock, ax, y, kText);
-			y += newsBlock.height + 28;
-			canvas.Rect({ax, y, inner, 1.5f}, 0, kLine);
-			y += 2 + 26;
-		}
 		canvas.Text(Style(kOverlineStyle), ax, y, Tr("This row"), Secondary(), inner, 1);
 		y += 18 + 10;
 		canvas.Text(heading, ax, y, kText);
