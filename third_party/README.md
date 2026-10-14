@@ -11,4 +11,7 @@ both as Porpoise X carries them (premohq/Porpoise-X, `third_party/`, commit
 configuration (`ps5/config.h`), the list of files the build compiles (`sources.txt`) and its changes
 from upstream (`README.porpoise`). The app reads games on a network share with them
 (`port/app/netfs.cpp`). They call back into the app by the names Porpoise
-gave those hooks (`porpoise_netfs_*`), kept so the copies stay Porpoise's.
+gave those hooks (`porpoise_netfs_*`), kept so the copies stay Porpoise's. The build
+(`port/CMakeLists.txt`) renames libsmb2's ciphers and hashes (`AES128_ECB_encrypt`, `MD5Init`,
+`hmac` and the like) to `smb2_` names rather than editing the copy: Cemu has an
+`AES128_ECB_encrypt` of its own (#46).

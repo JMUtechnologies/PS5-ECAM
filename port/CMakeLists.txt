@@ -63,6 +63,19 @@ target_include_directories(smb2 BEFORE PRIVATE "${THIRD_PARTY}/libsmb2/ps5" "${T
 target_include_directories(smb2 PUBLIC "${THIRD_PARTY}/libsmb2/include")
 target_compile_definitions(smb2 PRIVATE HAVE_CONFIG_H getaddrinfo=porpoise_netfs_getaddrinfo freeaddrinfo=porpoise_netfs_freeaddrinfo
 	getlogin_r=porpoise_netfs_getlogin_r gethostname=porpoise_netfs_gethostname __isthreaded=porpoise_netfs_isthreaded SOL_TCP=IPPROTO_TCP)
+# libsmb2's ciphers, hashes and helpers outside its smb2_ names, renamed smb2_<name>: in a link with
+# Cemu, Azahar and melonDS, a name another library already defined takes libsmb2's calls without an
+# error. Cemu's AES128_ECB_encrypt is a function pointer (src/util/crypto/aes128.cpp), so signing a
+# session called into its data and crashed (#46).
+set(SMB2_OWN_NAMES
+	AES128_ECB_encrypt AES128_ECB_encrypt_reference AES128_ECB_decrypt_reference aes128ccm_encrypt aes128ccm_decrypt
+	MD4Init MD4Update MD4Final MD5Init MD5Update MD5Final MD5Transform
+	SHA256Reset SHA256Input SHA256FinalBits SHA256Result SHA384Reset SHA384Input SHA384FinalBits SHA384Result
+	SHA512Reset SHA512Input SHA512FinalBits SHA512Result
+	USHAReset USHAInput USHAFinalBits USHAResult USHABlockSize USHAHashSize USHAHashSizeBits
+	hmac hmacReset hmacInput hmacFinalBits hmacResult compound_file_id free_c_data)
+list(TRANSFORM SMB2_OWN_NAMES REPLACE "^(.+)$" "\\1=smb2_\\1" OUTPUT_VARIABLE SMB2_RENAMES)
+target_compile_definitions(smb2 PRIVATE ${SMB2_RENAMES})
 target_compile_options(smb2 PRIVATE -std=gnu11 -w)
 file(STRINGS "${THIRD_PARTY}/libnfs/sources.txt" NFS_SOURCES)
 list(TRANSFORM NFS_SOURCES PREPEND "${THIRD_PARTY}/libnfs/")
