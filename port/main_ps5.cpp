@@ -396,9 +396,10 @@ int main(int argc, char* argv[])
 	status.diagnostics = Diagnostics(ps5privilege::Current());
 	status.autoLaunch = tile.rom;
 	status.autoLaunchSide = tile.side;
-	// after the game: the library, or for a tile's game (--exit-after-game) the PS5's home screen
-	auto afterGame = [&](const char* side, const ps5emu::Game& game) {
-		if (tile.exitAfterGame && IsTileGame(tile, game))
+	// after the game: the library, or for a tile's game (--exit-after-game) the PS5's home screen, as
+	// the in-game menus say (SetExitAfterGame, below)
+	auto afterGame = [&](const char* side) {
+		if (ps5emu::ExitAfterGame())
 			ps5emu::ExitApp();
 		RememberSide(side);
 		ps5emu::RestartToLibrary();
@@ -493,6 +494,8 @@ int main(int argc, char* argv[])
 		}
 		const ps5emu::Game& game = choice->game;
 		const char* side = ps5launcher::SideName(choice->system);
+		// a tile's game that closes the app after it: its in-game menu says so instead of the library (#48)
+		ps5emu::SetExitAfterGame(tile.exitAfterGame && IsTileGame(tile, game));
 		// the side's settings, and the game's own over them
 		const ps5settings::Launcher forGame = ps5settings::ForGame(settings, side, game.titleId);
 		if (settings.games.count(ps5settings::GameKey(side, game.titleId)))
@@ -519,7 +522,7 @@ int main(int argc, char* argv[])
 			if (ps5melonds::LaunchGame(game, forGame.nds, error))
 			{
 				ps5melonds::RunGame();
-				afterGame("ds", game);
+				afterGame("ds");
 				return 0;
 			}
 			ps5log::Line("[main] {} did not start: {}", game.name, error);
@@ -545,7 +548,7 @@ int main(int argc, char* argv[])
 			if (ps5azahar::LaunchGame(game, forGame.n3ds, error))
 			{
 				ps5azahar::RunGame();
-				afterGame("3ds", game);
+				afterGame("3ds");
 				return 0;
 			}
 			ps5log::Line("[main] {} did not start: {}", game.name, error);
@@ -569,7 +572,7 @@ int main(int argc, char* argv[])
 		if (ps5emu::LaunchGame(game, error))
 		{
 			ps5emu::RunGame();
-			afterGame("wiiu", game);
+			afterGame("wiiu");
 			return 0;
 		}
 		ps5log::Line("[main] {} did not start: {}", game.name, error);

@@ -48,12 +48,14 @@
 #include "util/crypto/aes128.h"
 #include "util/highresolutiontimer/HighResolutionTimer.h"
 
+#include <algorithm>
 #include <atomic>
 #include <thread>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
 #include <thread>
+#include <vector>
 #include <x86intrin.h>
 
 extern "C" int32_t sceSystemServiceParamGetInt(int32_t paramId, int32_t* value);
@@ -83,6 +85,7 @@ namespace ps5emu
 	{
 		bool s_firstStart = false;
 		bool s_coreStarted = false; // Cemu's settings are loaded: this session is Cemu's
+		std::atomic<bool> s_exitAfterGame{false}; // SetExitAfterGame: read by the in-game menus' threads
 		// the draws Cemu records in a command buffer before it submits it (PS5Cemu_SubmitDraws)
 		constexpr uint32_t kCemuSubmitDraws = 300;
 		std::atomic<uint32_t> s_submitDraws{kCemuSubmitDraws};
@@ -838,18 +841,34 @@ namespace ps5emu
 		if (s_coreStarted)
 			GetConfigHandle().Save();
 		// the program the app was mounted from (ShadowMountPlus's record, which follows an install on
-		// a USB drive), else the usual install, else the one found running
+		// a USB drive), the usual install, the one found running and where the PS5 mounts the app: each
+		// tried until one takes, as a HEN may start the app from where the console refuses one (#48)
 		std::error_code ec;
-		const std::string source = ps5paths::MountSource();
-		const std::string eboot = !source.empty() ? source + "/eboot.bin" :
-			fs::exists(ps5paths::kMountedEboot, ec) ? ps5paths::kMountedEboot : ps5paths::Eboot();
-		ps5log::FlushAll(); // the log's lines in the file before the process is replaced
-		const int result = sceSystemServiceLoadExec(eboot.c_str(), nullptr);
-		// it does not come back when it works; allow for one that returns before ending the process
-		if (result == 0)
-			for (int i = 0; i < 100; i++)
-				sceKernelUsleep(100000);
-		ps5log::Line("[emu] LoadExec({}) returned {:#x}", eboot, (uint32_t)result);
+		std::vector<std::string> eboots;
+		auto consider = [&](const std::string& eboot) {
+			if (!eboot.empty() && fs::exists(eboot, ec) && std::find(eboots.begin(), eboots.end(), eboot) == eboots.end())
+				eboots.push_back(eboot);
+		};
+		if (const std::string source = ps5paths::MountSource(); !source.empty())
+			consider(source + "/eboot.bin");
+		consider(ps5paths::kMountedEboot);
+		consider(ps5paths::Eboot());
+		consider(std::string(ps5paths::kSystemMount) + "/eboot.bin");
+		if (eboots.empty())
+			eboots.push_back(ps5paths::Eboot()); // none found: the console may still see it
+		for (const std::string& eboot : eboots)
+		{
+			ps5log::FlushAll(); // the log's lines in the file before the process is replaced
+			const int result = sceSystemServiceLoadExec(eboot.c_str(), nullptr);
+			// it does not come back when it works; allow for one that returns before ending the process
+			if (result == 0)
+				for (int i = 0; i < 100; i++)
+					sceKernelUsleep(100000);
+			ps5log::Line("[emu] LoadExec({}) returned {:#x}", eboot, (uint32_t)result);
+		}
+		// none took: the app ends, which is said rather than it just closing
+		ps5notify::Send(ps5lang::Tr("PS5CEMU-HAR could not start itself again to show the library: start it again from the home screen."));
+		ps5log::FlushAll();
 	}
 
 	void ExitApp()
@@ -865,6 +884,16 @@ namespace ps5emu
 			for (int i = 0; i < 100; i++)
 				sceKernelUsleep(100000);
 		ps5log::Line("[emu] LoadExec(exit) returned {:#x}: the library instead", (uint32_t)result);
+	}
+
+	void SetExitAfterGame(bool exit)
+	{
+		s_exitAfterGame = exit;
+	}
+
+	bool ExitAfterGame()
+	{
+		return s_exitAfterGame;
 	}
 }
 

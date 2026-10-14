@@ -95,56 +95,60 @@ msgctxt "status"
 msgid "Won't start"
 msgstr "เริ่ม​ไม่ได้"
 
-#: port/app/emulator.cpp:381
+#: port/app/emulator.cpp:384
 msgid "the PS5 Vulkan driver did not start"
 msgstr "ไดรเวอร์ Vulkan ของ PS5 ไม่​เริ่ม​ทำงาน"
 
-#: port/app/emulator.cpp:430
+#: port/app/emulator.cpp:433
 msgid "PS5CEMU-HAR cannot write to {0}. Is the HEN loaded?"
 msgstr "PS5CEMU-HAR เขียน​ลง {0} ไม่ได้ โหลด HEN แล้ว​หรือยัง"
 
-#: port/app/emulator.cpp:452
+#: port/app/emulator.cpp:455
 msgid "PS5CEMU-HAR cannot create the MLC folder {0}"
 msgstr "PS5CEMU-HAR สร้าง​โฟลเดอร์ MLC {0} ไม่ได้"
 
 #. why a Wii U game did not start
-#: port/app/emulator.cpp:611
+#: port/app/emulator.cpp:614
 msgid "The game's base files were not found."
 msgstr "ไม่พบ​ไฟล์​ตัว​เกม​หลัก"
 
-#: port/app/emulator.cpp:617
+#: port/app/emulator.cpp:620
 msgid "The game could not be mounted. Check that its files are still in the game files folder."
 msgstr "เมานต์​เกม​ไม่ได้ ตรวจสอบ​ว่า​ไฟล์​ของ​เกม​ยัง​อยู่​ใน​โฟลเดอร์​ไฟล์​เกม"
 
-#: port/app/emulator.cpp:622 port/azahar/core.cpp:555
+#: port/app/emulator.cpp:625 port/azahar/core.cpp:555
 #, menu
 msgid "The game could not be started."
 msgstr "เริ่ม​เกม​ไม่ได้"
 
-#: port/app/emulator.cpp:631
+#: port/app/emulator.cpp:634
 msgid "This is not a Wii U game PS5CEMU-HAR can start."
 msgstr "นี่​ไม่ใช่​เกม Wii U ที่ PS5CEMU-HAR เริ่ม​ได้"
 
-#: port/app/emulator.cpp:633
+#: port/app/emulator.cpp:636
 msgid "Its disc key is missing from /data/ps5cemu/keys.txt."
 msgstr "ไม่มี​คีย์​แผ่น​ของ​เกม​นี้​ใน /data/ps5cemu/keys.txt"
 
-#: port/app/emulator.cpp:635
+#: port/app/emulator.cpp:638
 msgid "Its title.tik is missing."
 msgstr "ไม่มี​ไฟล์ title.tik ของ​เกม​นี้"
 
-#: port/app/emulator.cpp:640
+#: port/app/emulator.cpp:643
 msgid "The executable could not be started."
 msgstr "เรียกใช้​ไฟล์​โปรแกรม​ไม่ได้"
 
-#: port/app/emulator.cpp:653
+#: port/app/emulator.cpp:656
 msgid "The Vulkan renderer did not start: {0}"
 msgstr "ตัว​เรนเดอร์ Vulkan ไม่​เริ่ม​ทำงาน: {0}"
 
 #. the PS5's notification as a Wii U game starts
-#: port/app/emulator.cpp:711
+#: port/app/emulator.cpp:714
 msgid "Touchpad click + Options: the in-game menu (screens, picture, volume, controls, the library)"
 msgstr "กด​ทัชแพด + ปุ่ม​ตัวเลือก: เมนู​ใน​เกม (หน้าจอ ภาพ ระดับ​เสียง การ​ควบคุม คลัง​เกม)"
+
+#: port/app/emulator.cpp:870
+msgid "PS5CEMU-HAR could not start itself again to show the library: start it again from the home screen."
+msgstr "PS5CEMU-HAR เริ่ม​ใหม่​เพื่อ​แสดง​คลัง​เกม​ไม่​ได้ ให้​เปิด​อีก​ครั้ง​จาก​หน้า​จอ​หลัก"
 
 #: port/app/forwarders.cpp:149
 msgid "elfldr does not answer on port 9021. Home screen tiles need it, to be put in /data/homebrew and to start their games: load elfldr, then try again."
@@ -668,7 +672,7 @@ msgstr "Bilinear"
 
 #. how a game's picture is scaled: the methods' names
 #. texture filters: None, then the filters' own names
-#: port/app/ingame.cpp:169 port/app/ingame3ds.cpp:131 port/frontend/shell/settings.cpp:56 port/frontend/shell/settings.cpp:69
+#: port/app/ingame.cpp:169 port/app/ingame3ds.cpp:132 port/frontend/shell/settings.cpp:56 port/frontend/shell/settings.cpp:69
 #, menu
 msgid "Bicubic"
 msgstr "Bicubic"
@@ -691,12 +695,12 @@ msgstr "Nearest neighbour"
 msgid "AMD FSR 1"
 msgstr "AMD FSR 1"
 
-#: port/app/ingame.cpp:183 port/app/ingame.cpp:251 port/app/ingame.cpp:251 port/app/ingame3ds.cpp:463 port/app/remote_menu.h:28 port/frontend/shell/pages.cpp:597 port/frontend/shell/settings.cpp:383
+#: port/app/ingame.cpp:183 port/app/ingame.cpp:251 port/app/ingame.cpp:251 port/app/ingame3ds.cpp:464 port/app/remote_menu.h:28 port/frontend/shell/pages.cpp:597 port/frontend/shell/settings.cpp:383
 #, menu
 msgid "On"
 msgstr "เปิด"
 
-#: port/app/ingame.cpp:183 port/app/ingame.cpp:251 port/app/ingame.cpp:251 port/app/ingame.cpp:277 port/app/ingame3ds.cpp:463 port/app/remote_menu.h:28 port/frontend/shell/pages.cpp:597 port/frontend/shell/pages.cpp:605 port/frontend/shell/settings.cpp:70 port/frontend/shell/settings.cpp:383 port/ps5/display.h:43
+#: port/app/ingame.cpp:183 port/app/ingame.cpp:251 port/app/ingame.cpp:251 port/app/ingame.cpp:277 port/app/ingame3ds.cpp:464 port/app/remote_menu.h:28 port/frontend/shell/pages.cpp:597 port/frontend/shell/pages.cpp:605 port/frontend/shell/settings.cpp:70 port/frontend/shell/settings.cpp:383 port/ps5/display.h:43
 #, menu
 msgid "Off"
 msgstr "ปิด"
@@ -714,7 +718,7 @@ msgid "GamePad"
 msgstr "GamePad"
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
-#: port/app/ingame.cpp:186 port/app/ingame.cpp:325 port/app/ingame3ds.cpp:616 port/frontend/shell/settings.cpp:185
+#: port/app/ingame.cpp:186 port/app/ingame.cpp:329 port/app/ingame3ds.cpp:621 port/frontend/shell/settings.cpp:185
 #, menu
 msgid "Screens"
 msgstr "หน้าจอ"
@@ -735,7 +739,7 @@ msgid "The TV's and the GamePad's pictures, and how they fill the screen."
 msgstr "ภาพ​ของ​ทีวี​และ​ของ GamePad และ​วิธี​ที่​ภาพ​เต็ม​หน้าจอ"
 
 #. the 3DS's top and bottom screens
-#: port/app/ingame.cpp:188 port/app/ingame3ds.cpp:469
+#: port/app/ingame.cpp:188 port/app/ingame3ds.cpp:470
 #, menu
 msgid "Main screen"
 msgstr "จอ​หลัก"
@@ -775,7 +779,7 @@ msgstr "สัดส่วน​เดิม"
 msgid "Its own shape keeps the picture's proportions, with bars where they differ from the screen's; Stretched fills it."
 msgstr "สัดส่วน​เดิม​คง​สัดส่วน​ของ​ภาพ​ไว้ โดย​มี​แถบ​ดำ​ตรง​ส่วน​ที่​ไม่​ตรง​กับ​หน้าจอ ส่วน​ยืด​เต็ม​จอ​จะ​เต็ม​หน้าจอ"
 
-#: port/app/ingame.cpp:195 port/app/ingame3ds.cpp:475 port/app/ingame3ds.cpp:484 port/frontend/shell/settings.cpp:183
+#: port/app/ingame.cpp:195 port/app/ingame3ds.cpp:476 port/app/ingame3ds.cpp:485 port/frontend/shell/settings.cpp:183
 #, menu
 msgid "Graphics"
 msgstr "กราฟิก"
@@ -825,7 +829,7 @@ msgstr "จังหวะ​เฟรม"
 msgid "Holds the game to an even rate: 60 fps for 4K at 120 Hz, 30 for 8K at 60 Hz. Off shows each frame when it is done."
 msgstr "รักษา​อัตรา​เฟรม​ของ​เกม​ให้​สม่ำเสมอ: 60 fps สำหรับ 4K ที่ 120 Hz และ 30 สำหรับ 8K ที่ 60 Hz เมื่อ​ปิด​จะ​แสดง​แต่ละ​เฟรม​ทันที​ที่​เสร็จ"
 
-#: port/app/ingame.cpp:205 port/app/ingame3ds.cpp:479 port/app/ingame3ds.cpp:490 port/frontend/shell/settings.cpp:468
+#: port/app/ingame.cpp:205 port/app/ingame3ds.cpp:480 port/app/ingame3ds.cpp:491 port/frontend/shell/settings.cpp:468
 #, menu
 msgid "Performance overlay"
 msgstr "การ​แสดง​ประสิทธิภาพ"
@@ -885,13 +889,13 @@ msgstr "กำลัง​อ่าน​แพ็ก…"
 msgid "The community graphic packs have none for this game."
 msgstr "แพ็ก​กราฟิก​ชุมชน​ไม่มี​แพ็ก​สำหรับ​เกม​นี้"
 
-#: port/app/ingame.cpp:240 port/app/ingame.cpp:326 port/frontend/shell/classic.cpp:321 port/frontend/shell/classic.cpp:517 port/frontend/shell/eden.cpp:480 port/frontend/shell/eden.cpp:1375 port/frontend/shell/hub.cpp:231 port/frontend/shell/pages.cpp:305 port/frontend/shell/shell.cpp:1619
+#: port/app/ingame.cpp:240 port/app/ingame.cpp:330 port/frontend/shell/classic.cpp:321 port/frontend/shell/classic.cpp:517 port/frontend/shell/eden.cpp:480 port/frontend/shell/eden.cpp:1375 port/frontend/shell/hub.cpp:231 port/frontend/shell/pages.cpp:305 port/frontend/shell/shell.cpp:1619
 #, menu
 msgid "Graphic packs"
 msgstr "แพ็ก​กราฟิก"
 
 #. amiibo is Nintendo's name for its figures, as it writes it in the language
-#: port/app/ingame.cpp:240 port/app/ingame.cpp:284 port/app/ingame.cpp:326 port/app/ingame3ds.cpp:455 port/frontend/shell/classic.cpp:490
+#: port/app/ingame.cpp:240 port/app/ingame.cpp:284 port/app/ingame.cpp:330 port/app/ingame3ds.cpp:456 port/frontend/shell/classic.cpp:490
 #, menu
 msgid "None"
 msgstr "ไม่มี"
@@ -917,7 +921,7 @@ msgstr "เกม​จะ​เห็น​การ​เปลี่ยนแ
 msgid "Plugged in as a game starts, as in Cemu. Its figures are below while it is on."
 msgstr "เสียบ​เมื่อ​เกม​เริ่ม เหมือน​ใน Cemu ฟิกเกอร์​ของ​พอร์ทัล​อยู่​ด้านล่าง​ขณะ​เปิด"
 
-#: port/app/ingame.cpp:258 port/app/ingame3ds.cpp:590
+#: port/app/ingame.cpp:258 port/app/ingame3ds.cpp:595
 #, menu
 msgid "Empty"
 msgstr "ว่าง"
@@ -953,23 +957,23 @@ msgstr "อุปกรณ์ USB"
 msgid "Skylanders, Disney Infinity and LEGO Dimensions figures on Cemu's emulated portals, as amiibo are scanned."
 msgstr "ฟิกเกอร์ Skylanders, Disney Infinity และ LEGO Dimensions บน​พอร์ทัล​จำลอง​ของ Cemu ใช้​แบบ​เดียว​กับ​การ​สแกน amiibo"
 
-#: port/app/ingame.cpp:280 port/app/ingame3ds.cpp:508
+#: port/app/ingame.cpp:280 port/app/ingame3ds.cpp:509
 #, menu
 msgid "Volume"
 msgstr "ระดับ​เสียง"
 
-#: port/app/ingame.cpp:280 port/app/ingame3ds.cpp:508
+#: port/app/ingame.cpp:280 port/app/ingame3ds.cpp:509
 #, menu
 msgid "The game's sound. Left and Right change it by 10%."
 msgstr "เสียง​ของ​เกม ซ้าย​และ​ขวา​ปรับ​ครั้ง​ละ 10%"
 
 #. amiibo is Nintendo's name for its figures, as it writes it in the language
-#: port/app/ingame.cpp:284 port/app/ingame.cpp:326 port/app/ingame3ds.cpp:554 port/app/ingame3ds.cpp:555
+#: port/app/ingame.cpp:284 port/app/ingame.cpp:330 port/app/ingame3ds.cpp:555 port/app/ingame3ds.cpp:556
 #, menu
 msgid "Amiibo"
 msgstr "amiibo"
 
-#: port/app/ingame.cpp:286 port/app/ingame3ds.cpp:556
+#: port/app/ingame.cpp:286 port/app/ingame3ds.cpp:557
 #, menu
 msgid "Put amiibo dumps (.bin) in /data/ps5cemu/amiibo to scan them here."
 msgstr "ใส่​ไฟล์​ดัมพ์ amiibo (.bin) ใน /data/ps5cemu/amiibo เพื่อ​สแกน​ที่นี่"
@@ -980,7 +984,7 @@ msgid "Left and Right choose an amiibo dump; Cross touches it to the GamePad whe
 msgstr "ซ้าย​และ​ขวา​เลือก​ไฟล์​ดัมพ์ amiibo ปุ่มกากบาท​แตะ​กับ GamePad เมื่อ​เกม​ขอ"
 
 #. the DS's lid, closed or open
-#: port/app/ingame.cpp:288 port/app/ingame3ds.cpp:565 port/app/ingame3ds.cpp:576 port/frontend/shell/pages.cpp:812 port/frontend/shell/settings.cpp:187
+#: port/app/ingame.cpp:288 port/app/ingame3ds.cpp:566 port/app/ingame3ds.cpp:577 port/frontend/shell/pages.cpp:812 port/frontend/shell/settings.cpp:187
 #, menu
 msgid "Controls"
 msgstr "การ​ควบคุม"
@@ -1015,7 +1019,7 @@ msgstr "คอนโทรลเลอร์​จำลอง"
 msgid "What the game sees in this player's hands. Most games want the GamePad for player 1."
 msgstr "สิ่ง​ที่​เกม​เห็น​ใน​มือ​ผู้เล่น​นี้ เกม​ส่วนใหญ่​ต้องการ GamePad สำหรับ​ผู้เล่น 1"
 
-#: port/app/ingame.cpp:294 port/app/ingame3ds.cpp:577 port/frontend/shell/pages.cpp:451 port/frontend/shell/pages.cpp:597 port/frontend/shell/settings.cpp:599
+#: port/app/ingame.cpp:294 port/app/ingame3ds.cpp:578 port/frontend/shell/pages.cpp:451 port/frontend/shell/pages.cpp:597 port/frontend/shell/settings.cpp:599
 #, menu
 msgid "Motion controls"
 msgstr "ควบคุม​ด้วย​การ​เคลื่อนไหว"
@@ -1060,17 +1064,17 @@ msgstr "เดดโซน​สติ๊ก​ขวา"
 msgid "How far the right stick moves before the game sees it. Raise it if the camera drifts."
 msgstr "สติ๊ก​ขวา​ต้อง​ขยับ​ไกล​แค่ไหน​เกม​จึง​จะ​รับรู้ เพิ่ม​ค่า​หาก​กล้อง​เลื่อน​ไป​เอง"
 
-#: port/app/ingame.cpp:302 port/app/ingame3ds.cpp:571 port/app/ingame3ds.cpp:581 port/frontend/shell/pages.cpp:452 port/frontend/shell/pages.cpp:617 port/frontend/shell/settings.cpp:576 port/frontend/shell/welcome.cpp:58
+#: port/app/ingame.cpp:302 port/app/ingame3ds.cpp:572 port/app/ingame3ds.cpp:582 port/frontend/shell/pages.cpp:452 port/frontend/shell/pages.cpp:617 port/frontend/shell/settings.cpp:576 port/frontend/shell/welcome.cpp:58
 #, menu
 msgid "A and B"
 msgstr "A และ B"
 
-#: port/app/ingame.cpp:302 port/app/ingame3ds.cpp:562 port/frontend/shell/pages.cpp:619 port/frontend/shell/settings.cpp:576 port/frontend/shell/welcome.cpp:59
+#: port/app/ingame.cpp:302 port/app/ingame3ds.cpp:563 port/frontend/shell/pages.cpp:619 port/frontend/shell/settings.cpp:576 port/frontend/shell/welcome.cpp:59
 #, menu
 msgid "A on Circle"
 msgstr "A ที่​ปุ่มวงกลม"
 
-#: port/app/ingame.cpp:302 port/app/ingame3ds.cpp:562 port/frontend/shell/pages.cpp:619 port/frontend/shell/settings.cpp:576 port/frontend/shell/welcome.cpp:59
+#: port/app/ingame.cpp:302 port/app/ingame3ds.cpp:563 port/frontend/shell/pages.cpp:619 port/frontend/shell/settings.cpp:576 port/frontend/shell/welcome.cpp:59
 #, menu
 msgid "A on Cross"
 msgstr "A ที่​ปุ่มกากบาท"
@@ -1130,568 +1134,578 @@ msgstr "แตะ​หน้าจอ GamePad หรือ​กด​ปุ่
 msgid "The GamePad's screen"
 msgstr "หน้าจอ GamePad"
 
-#: port/app/ingame.cpp:312 port/app/ingame3ds.cpp:585
+#: port/app/ingame.cpp:314 port/app/ingame3ds.cpp:588
+#, menu
+msgid "Quit to the home screen"
+msgstr "ออก​ไป​ที่​หน้า​จอ​หลัก"
+
+#: port/app/ingame.cpp:315 port/app/ingame3ds.cpp:589
+#, menu
+msgid "Leaves the game and closes PS5CEMU-HAR, as its home screen tile asks. What you have not saved in the game is lost, so Cross is held."
+msgstr "ออก​จาก​เกม​และ​ปิด PS5CEMU-HAR ตาม​ที่​ไอคอน​ของ​เกม​บน​หน้า​จอ​หลัก​กำหนด สิ่ง​ที่​ยัง​ไม่ได้​บันทึก​ใน​เกม​จะ​หาย​ไป จึง​ต้อง​กด​ปุ่มกากบาท​ค้าง​ไว้"
+
+#: port/app/ingame.cpp:316 port/app/ingame3ds.cpp:590
 #, menu
 msgid "Quit to the library"
 msgstr "ออก​ไป​ที่​คลัง​เกม"
 
-#: port/app/ingame.cpp:313 port/app/ingame3ds.cpp:586
+#: port/app/ingame.cpp:317 port/app/ingame3ds.cpp:591
 #, menu
 msgid "Leaves the game for the library. What you have not saved in the game is lost, so Cross is held."
 msgstr "ออก​จาก​เกม​ไป​ที่​คลัง​เกม สิ่ง​ที่​ยัง​ไม่ได้​บันทึก​ใน​เกม​จะ​หาย​ไป จึง​ต้อง​กด​ปุ่มกากบาท​ค้าง​ไว้"
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
 #. the quick actions: big tiles at the top of the in-game menu, a word or two each
-#: port/app/ingame.cpp:325 port/app/ingame3ds.cpp:613
+#: port/app/ingame.cpp:329 port/app/ingame3ds.cpp:618
 #, menu
 msgid "Resume"
 msgstr "เล่น​ต่อ"
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
-#: port/app/ingame.cpp:325
+#: port/app/ingame.cpp:329
 #, menu
 msgid "GamePad main"
 msgstr "GamePad เป็น​หลัก"
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
-#: port/app/ingame.cpp:325
+#: port/app/ingame.cpp:329
 #, menu
 msgid "TV main"
 msgstr "ทีวี​เป็น​หลัก"
 
-#: port/app/ingame.cpp:326
+#: port/app/ingame.cpp:330
 #, menu
 msgid "Scan"
 msgstr "สแกน"
 
 #. {0} is an amiibo dump's file name
-#: port/app/ingame.cpp:386 port/azahar/core.cpp:268
+#: port/app/ingame.cpp:390 port/azahar/core.cpp:268
 #, menu
 msgid "Scanned {0}"
 msgstr "สแกน {0} แล้ว"
 
 #. {0} is an amiibo dump's file name
-#: port/app/ingame.cpp:386
+#: port/app/ingame.cpp:390
 #, menu
 msgid "Not scanned (error {0})"
 msgstr "สแกน​ไม่ได้ (ข้อผิดพลาด {0})"
 
 #. the in-game menu's badge: the game goes on behind the menu (Cemu cannot pause it)
-#: port/app/ingame.cpp:538
+#: port/app/ingame.cpp:542
 #, menu
 msgid "Running"
 msgstr "กำลัง​ทำงาน"
 
-#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:759 port/frontend/shell/eden.cpp:488 port/frontend/shell/eden.cpp:497 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1228 port/frontend/shell/shell.cpp:1232 port/frontend/shell/shell.cpp:1266 port/frontend/shell/shell.cpp:1282 port/frontend/shell/shell.cpp:1290 port/frontend/shell/shell.cpp:1298 port/frontend/shell/shell.cpp:1301 port/frontend/shell/shell.cpp:2170
+#: port/app/ingame.cpp:552 port/app/ingame3ds.cpp:764 port/frontend/shell/eden.cpp:488 port/frontend/shell/eden.cpp:497 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1228 port/frontend/shell/shell.cpp:1232 port/frontend/shell/shell.cpp:1266 port/frontend/shell/shell.cpp:1282 port/frontend/shell/shell.cpp:1290 port/frontend/shell/shell.cpp:1298 port/frontend/shell/shell.cpp:1301 port/frontend/shell/shell.cpp:2170
 #, menu
 msgid "Choose"
 msgstr "เลือก"
 
-#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:759 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1248 port/frontend/shell/shell.cpp:1291 port/frontend/shell/shell.cpp:1295 port/frontend/shell/shell.cpp:1298 port/frontend/shell/shell.cpp:1301 port/frontend/shell/shell.cpp:1312
+#: port/app/ingame.cpp:552 port/app/ingame3ds.cpp:764 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1248 port/frontend/shell/shell.cpp:1291 port/frontend/shell/shell.cpp:1295 port/frontend/shell/shell.cpp:1298 port/frontend/shell/shell.cpp:1301 port/frontend/shell/shell.cpp:1312
 #, menu
 msgid "Change"
 msgstr "เปลี่ยน"
 
-#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:759
+#: port/app/ingame.cpp:552 port/app/ingame3ds.cpp:764
 #, menu
 msgid "Back to the game"
 msgstr "กลับ​สู่​เกม"
 
-#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:759 port/frontend/shell/eden.cpp:477 port/frontend/shell/eden.cpp:504 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:509 port/frontend/shell/installs.cpp:329 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1249 port/frontend/shell/shell.cpp:1258 port/frontend/shell/shell.cpp:1283 port/frontend/shell/shell.cpp:1290 port/frontend/shell/shell.cpp:1291 port/frontend/shell/shell.cpp:1295 port/frontend/shell/shell.cpp:1299 port/frontend/shell/shell.cpp:1301 port/frontend/shell/shell.cpp:1305 port/frontend/shell/shell.cpp:1309 port/frontend/shell/shell.cpp:1314 port/frontend/shell/shell.cpp:1315
+#: port/app/ingame.cpp:552 port/app/ingame3ds.cpp:764 port/frontend/shell/eden.cpp:477 port/frontend/shell/eden.cpp:504 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:509 port/frontend/shell/installs.cpp:329 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1249 port/frontend/shell/shell.cpp:1258 port/frontend/shell/shell.cpp:1283 port/frontend/shell/shell.cpp:1290 port/frontend/shell/shell.cpp:1291 port/frontend/shell/shell.cpp:1295 port/frontend/shell/shell.cpp:1299 port/frontend/shell/shell.cpp:1301 port/frontend/shell/shell.cpp:1305 port/frontend/shell/shell.cpp:1309 port/frontend/shell/shell.cpp:1314 port/frontend/shell/shell.cpp:1315
 #, menu
 msgid "Back"
 msgstr "กลับ"
 
 #. the in-game menu's top: the Wii U account the game runs on ({0}: its name)
-#: port/app/ingame.cpp:592
+#: port/app/ingame.cpp:596
 #, menu
 msgid "{0}'s saves"
 msgstr "เซฟ​ของ {0}"
 
 #. the 3DS's screen layouts
-#: port/app/ingame3ds.cpp:129 port/frontend/shell/settings.cpp:54
+#: port/app/ingame3ds.cpp:130 port/frontend/shell/settings.cpp:54
 #, menu
 msgid "Top above bottom"
 msgstr "จอ​บน​เหนือ​จอ​ล่าง"
 
 #. the 3DS's screen layouts
-#: port/app/ingame3ds.cpp:129 port/frontend/shell/settings.cpp:54
+#: port/app/ingame3ds.cpp:130 port/frontend/shell/settings.cpp:54
 #, menu
 msgid "Top screen only"
 msgstr "จอ​บน​เท่านั้น"
 
 #. the 3DS's screen layouts
-#: port/app/ingame3ds.cpp:129 port/frontend/shell/settings.cpp:54
+#: port/app/ingame3ds.cpp:130 port/frontend/shell/settings.cpp:54
 #, menu
 msgid "Large top screen"
 msgstr "จอ​บน​ขนาด​ใหญ่"
 
 #. the 3DS's screen layouts
-#: port/app/ingame3ds.cpp:129 port/frontend/shell/settings.cpp:54
+#: port/app/ingame3ds.cpp:130 port/frontend/shell/settings.cpp:54
 #, menu
 msgid "Side by side"
 msgstr "เคียง​ข้าง​กัน"
 
 #. texture filters: None, then the filters' own names
-#: port/app/ingame3ds.cpp:131 port/frontend/shell/settings.cpp:56
+#: port/app/ingame3ds.cpp:132 port/frontend/shell/settings.cpp:56
 #, menu
 msgctxt "texture filter"
 msgid "None"
 msgstr "ไม่มี"
 
-#: port/app/ingame3ds.cpp:464
+#: port/app/ingame3ds.cpp:465
 #, menu
 msgid "Screens and border"
 msgstr "หน้าจอ​และ​กรอบ"
 
-#: port/app/ingame3ds.cpp:465
+#: port/app/ingame3ds.cpp:466
 #, menu
 msgid "The screens' layout, which one is the main one, and the border."
 msgstr "การ​จัด​วาง​หน้าจอ จอ​หลัก และ​กรอบ"
 
-#: port/app/ingame3ds.cpp:466
+#: port/app/ingame3ds.cpp:467
 #, menu
 msgid "Layout"
 msgstr "การ​จัด​วาง"
 
-#: port/app/ingame3ds.cpp:467
+#: port/app/ingame3ds.cpp:468
 #, menu
 msgid "How the two screens share the TV. In the game, touchpad click + R1 goes to the next."
 msgstr "วิธี​ที่​สอง​หน้าจอ​แบ่ง​ทีวี ใน​เกม กด​ทัชแพด + R1 เพื่อ​ไป​แบบ​ถัดไป"
 
 #. the 3DS's top and bottom screens
-#: port/app/ingame3ds.cpp:469
+#: port/app/ingame3ds.cpp:470
 #, menu
 msgid "Bottom"
 msgstr "ล่าง"
 
 #. the 3DS's top and bottom screens
-#: port/app/ingame3ds.cpp:469
+#: port/app/ingame3ds.cpp:470
 #, menu
 msgid "Top"
 msgstr "บน"
 
-#: port/app/ingame3ds.cpp:470
+#: port/app/ingame3ds.cpp:471
 #, menu
 msgid "Which screen takes the top screen's place. In the game, touchpad click + L1 swaps them."
 msgstr "หน้าจอ​ไหน​อยู่​ที่​ตำแหน่ง​จอ​บน ใน​เกม กด​ทัชแพด + L1 เพื่อ​สลับ"
 
-#: port/app/ingame3ds.cpp:471 port/frontend/shell/settings.cpp:533
+#: port/app/ingame3ds.cpp:472 port/frontend/shell/settings.cpp:533
 #, menu
 msgid "Border"
 msgstr "กรอบ"
 
-#: port/app/ingame3ds.cpp:472
+#: port/app/ingame3ds.cpp:473
 #, menu
 msgid "Artwork around the screens, never over them. Also in the launcher's Settings > Screens."
 msgstr "ภาพ​ตกแต่ง​รอบ​หน้าจอ ไม่​ทับ​หน้าจอ มี​ใน การ​ตั้งค่า > หน้าจอ ของ​ลอนเชอร์​ด้วย"
 
-#: port/app/ingame3ds.cpp:475
+#: port/app/ingame3ds.cpp:476
 #, menu
 msgid "The screen filter and the performance overlay."
 msgstr "ฟิลเตอร์​หน้าจอ​และ​การ​แสดง​ประสิทธิภาพ"
 
-#: port/app/ingame3ds.cpp:476 port/frontend/shell/settings.cpp:513
+#: port/app/ingame3ds.cpp:477 port/frontend/shell/settings.cpp:513
 #, menu
 msgid "Screen filter"
 msgstr "ฟิลเตอร์​หน้าจอ"
 
-#: port/app/ingame3ds.cpp:477
+#: port/app/ingame3ds.cpp:478
 #, menu
 msgid "How the DS's 256 x 192 screens are scaled to the TV. Sharp keeps every pixel square and even; Smooth blurs them together; Square pixels takes the nearest, uneven at most sizes."
 msgstr "วิธี​ขยาย​หน้าจอ 256 x 192 ของ DS ให้​เต็ม​ทีวี คมชัด​ทำให้​ทุก​พิกเซล​เป็น​สี่เหลี่ยม​เท่ากัน นุ่มนวล​ทำให้​พิกเซล​กลืน​กัน พิกเซล​สี่เหลี่ยม​ใช้​พิกเซล​ที่​ใกล้​ที่สุด ซึ่ง​ไม่​เท่ากัน​ใน​ขนาด​ส่วนใหญ่"
 
-#: port/app/ingame3ds.cpp:480 port/app/ingame3ds.cpp:491
+#: port/app/ingame3ds.cpp:481 port/app/ingame3ds.cpp:492
 #, menu
 msgid "The frame rate and the emulation's speed, in the top left corner."
 msgstr "อัตรา​เฟรม​และ​ความเร็ว​การ​จำลอง ที่​มุม​ซ้าย​บน"
 
-#: port/app/ingame3ds.cpp:485
+#: port/app/ingame3ds.cpp:486
 #, menu
 msgid "Internal resolution, texture filter and the performance overlay."
 msgstr "ความ​ละเอียด​ภายใน ฟิลเตอร์​พื้นผิว และ​การ​แสดง​ประสิทธิภาพ"
 
-#: port/app/ingame3ds.cpp:486 port/frontend/shell/settings.cpp:481
+#: port/app/ingame3ds.cpp:487 port/frontend/shell/settings.cpp:481
 #, menu
 msgid "Internal resolution"
 msgstr "ความ​ละเอียด​ภายใน"
 
-#: port/app/ingame3ds.cpp:487
+#: port/app/ingame3ds.cpp:488
 #, menu
 msgid "How large the 3D scenes are drawn before they are scaled to the TV. Higher is sharper and asks more of the GPU."
 msgstr "ขนาด​ที่​ใช้​วาด​ฉาก 3D ก่อน​ขยาย​ให้​เต็ม​ทีวี ยิ่ง​สูง​ยิ่ง​คมชัด​และ​ใช้ GPU มาก​ขึ้น"
 
-#: port/app/ingame3ds.cpp:488 port/frontend/shell/settings.cpp:486
+#: port/app/ingame3ds.cpp:489 port/frontend/shell/settings.cpp:486
 #, menu
 msgid "Texture filter"
 msgstr "ฟิลเตอร์​พื้นผิว"
 
-#: port/app/ingame3ds.cpp:489
+#: port/app/ingame3ds.cpp:490
 #, menu
 msgid "Smooths textures as they are scaled up. The costliest setting here: if a game stutters, try None first."
 msgstr "ทำให้​พื้นผิว​เรียบ​เมื่อ​ขยาย เป็น​การ​ตั้งค่า​ที่​หนัก​ที่สุด​ที่นี่: หาก​เกม​กระตุก ลอง​ไม่มี​ก่อน"
 
 #. no speed limit
-#: port/app/ingame3ds.cpp:495
+#: port/app/ingame3ds.cpp:496
 #, menu
 msgid "Speed limit"
 msgstr "จำกัด​ความเร็ว"
 
 #. no speed limit
-#: port/app/ingame3ds.cpp:495
+#: port/app/ingame3ds.cpp:496
 #, menu
 msgctxt "speed limit"
 msgid "None"
 msgstr "ไม่มี"
 
-#: port/app/ingame3ds.cpp:496
+#: port/app/ingame3ds.cpp:497
 #, menu
 msgid "Above 100% hurries through slow scenes; None runs as fast as the PS5 can. For this game only."
 msgstr "สูง​กว่า 100% เร่ง​ฉาก​ที่​ช้า ไม่มี​จะ​เล่น​เร็ว​เท่า​ที่ PS5 ทำได้ เฉพาะ​เกม​นี้"
 
-#: port/app/ingame3ds.cpp:497
+#: port/app/ingame3ds.cpp:498
 #, menu
 msgid "Unlimited"
 msgstr "ไม่​จำกัด"
 
-#: port/app/ingame3ds.cpp:499 port/app/ingame3ds.cpp:502
+#: port/app/ingame3ds.cpp:500 port/app/ingame3ds.cpp:503
 #, menu
 msgid "Speed"
 msgstr "ความเร็ว"
 
-#: port/app/ingame3ds.cpp:499
+#: port/app/ingame3ds.cpp:500
 #, menu
 msgid "How fast the game may run."
 msgstr "เกม​เล่น​ได้​เร็ว​แค่ไหน"
 
-#: port/app/ingame3ds.cpp:502
+#: port/app/ingame3ds.cpp:503
 #, menu
 msgid "The emulated CPU's clock, and how fast the game may run."
 msgstr "สัญญาณ​นาฬิกา​ของ CPU จำลอง และ​เกม​เล่น​ได้​เร็ว​แค่ไหน"
 
-#: port/app/ingame3ds.cpp:503 port/frontend/shell/settings.cpp:667
+#: port/app/ingame3ds.cpp:504 port/frontend/shell/settings.cpp:667
 #, menu
 msgid "CPU clock"
 msgstr "สัญญาณ​นาฬิกา CPU"
 
-#: port/app/ingame3ds.cpp:504
+#: port/app/ingame3ds.cpp:505
 #, menu
 msgid "Below 100% can bring a slow game to full speed; above it smooths games that dropped frames on the 3DS."
 msgstr "ต่ำ​กว่า 100% ช่วย​ให้​เกม​ที่​ช้า​เต็ม​ความเร็ว สูง​กว่า​นั้น​ช่วย​ให้​เกม​ที่​เฟรม​ตก​บน 3DS ลื่น​ขึ้น"
 
-#: port/app/ingame3ds.cpp:510
+#: port/app/ingame3ds.cpp:511
 #, menu
 msgid "Save states"
 msgstr "สถานะ​ที่​บันทึก"
 
-#: port/app/ingame3ds.cpp:510 port/app/ingame3ds.cpp:614 port/app/ingame3ds.cpp:615
+#: port/app/ingame3ds.cpp:511 port/app/ingame3ds.cpp:619 port/app/ingame3ds.cpp:620
 #, menu
 msgid "Slot {0}"
 msgstr "ช่อง {0}"
 
-#: port/app/ingame3ds.cpp:511
+#: port/app/ingame3ds.cpp:512
 #, menu
 msgid "Five slots for this game: save exactly where you are, and come back to it."
 msgstr "ห้า​ช่อง​สำหรับ​เกม​นี้: บันทึก​ตรง​จุด​ที่​เล่น​อยู่ แล้ว​กลับ​มา​ได้"
 
 #. a save state slot's number, then when it was saved (or empty)
-#: port/app/ingame3ds.cpp:513
+#: port/app/ingame3ds.cpp:514
 #, menu
 msgid "Slot"
 msgstr "ช่อง"
 
 #. a save state slot's number, then when it was saved (or empty)
-#: port/app/ingame3ds.cpp:513
+#: port/app/ingame3ds.cpp:514
 #, menu
 msgid "(empty)"
 msgstr "(ว่าง)"
 
-#: port/app/ingame3ds.cpp:514
+#: port/app/ingame3ds.cpp:515
 #, menu
 msgid "Which of this game's five slots to save to or load from."
 msgstr "ช่อง​ไหน​จาก​ห้า​ช่อง​ของ​เกม​นี้​ที่​จะ​บันทึก​หรือ​โหลด"
 
-#: port/app/ingame3ds.cpp:515
+#: port/app/ingame3ds.cpp:516
 #, menu
 msgid "Save to this slot"
 msgstr "บันทึก​ลง​ช่อง​นี้"
 
-#: port/app/ingame3ds.cpp:516
+#: port/app/ingame3ds.cpp:517
 #, menu
 msgid "Saves the game as it is now, replacing what the slot had. Newer app versions may not load it: keep saving in the game too."
 msgstr "บันทึก​เกม​ตาม​สภาพ​ตอนนี้ แทนที่​ข้อมูล​เดิม​ใน​ช่อง แอป​เวอร์ชัน​ใหม่​กว่า​อาจ​โหลด​ไม่ได้: บันทึก​ใน​เกม​ด้วย"
 
-#: port/app/ingame3ds.cpp:518
+#: port/app/ingame3ds.cpp:519
 #, menu
 msgid "Cheats"
 msgstr "สูตร​โกง"
 
-#: port/app/ingame3ds.cpp:519
+#: port/app/ingame3ds.cpp:520
 #, menu
 msgid "The game's cheats, from melonds/cheats/<game file>.mch (melonDS's format)."
 msgstr "สูตร​โกง​ของ​เกม จาก melonds/cheats/<ไฟล์เกม>.mch (รูปแบบ​ของ melonDS)"
 
-#: port/app/ingame3ds.cpp:520
+#: port/app/ingame3ds.cpp:521
 #, menu
 msgid "The game's cheats, from azahar/cheats/<title ID>.txt (Gateway format)."
 msgstr "สูตร​โกง​ของ​เกม จาก azahar/cheats/<title ID>.txt (รูปแบบ Gateway)"
 
-#: port/app/ingame3ds.cpp:523
+#: port/app/ingame3ds.cpp:524
 #, menu
 msgid "Cross, Left or Right turns it on or off, at once; it is kept for next time."
 msgstr "ปุ่มกากบาท ซ้าย หรือ​ขวา​เปิด​หรือ​ปิด​ทันที และ​จำ​ไว้​ครั้ง​หน้า"
 
-#: port/app/ingame3ds.cpp:525
+#: port/app/ingame3ds.cpp:526
 #, menu
 msgid "No cheats for this game"
 msgstr "ไม่มี​สูตร​โกง​สำหรับ​เกม​นี้"
 
-#: port/app/ingame3ds.cpp:526
+#: port/app/ingame3ds.cpp:527
 #, menu
 msgid "Put them in /data/ps5cemu/melonds/cheats/<game file>.mch (the game's file name, .mch for .nds), then start the game again."
 msgstr "ใส่​ไว้​ใน /data/ps5cemu/melonds/cheats/<ไฟล์เกม>.mch (ชื่อ​ไฟล์​ของ​เกม ใช้ .mch แทน .nds) แล้ว​เริ่ม​เกม​ใหม่"
 
-#: port/app/ingame3ds.cpp:528
+#: port/app/ingame3ds.cpp:529
 #, menu
 msgid "Put them in /data/ps5cemu/azahar/cheats/<title ID>.txt, then start the game again."
 msgstr "ใส่​ไว้​ใน /data/ps5cemu/azahar/cheats/<title ID>.txt แล้ว​เริ่ม​เกม​ใหม่"
 
 #. how many of the game's cheats are on: {0} of {1}
-#: port/app/ingame3ds.cpp:531 port/frontend/shell/eden.cpp:1480
+#: port/app/ingame3ds.cpp:532 port/frontend/shell/eden.cpp:1480
 #, menu
 msgid "{0} of {1} on"
 msgstr "เปิด {0} จาก {1}"
 
-#: port/app/ingame3ds.cpp:537
+#: port/app/ingame3ds.cpp:538
 #, menu
 msgid "Achievements"
 msgstr "ความสำเร็จ"
 
-#: port/app/ingame3ds.cpp:537 port/frontend/shell/classic.cpp:462 port/frontend/shell/installs.cpp:376 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:823 port/frontend/shell/pages.cpp:1200
+#: port/app/ingame3ds.cpp:538 port/frontend/shell/classic.cpp:462 port/frontend/shell/installs.cpp:376 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:823 port/frontend/shell/pages.cpp:1200
 #, menu
 msgid "{0} of {1}"
 msgstr "{0} จาก {1}"
 
-#: port/app/ingame3ds.cpp:538
+#: port/app/ingame3ds.cpp:539
 #, menu
 msgid "This game's RetroAchievements."
 msgstr "ความสำเร็จ RetroAchievements ของ​เกม​นี้"
 
-#: port/app/ingame3ds.cpp:544
+#: port/app/ingame3ds.cpp:545
 #, menu
 msgid "Earned"
 msgstr "ได้รับ​แล้ว"
 
-#: port/app/ingame3ds.cpp:544
+#: port/app/ingame3ds.cpp:545
 #, menu
 msgid "Earned {0}"
 msgstr "ได้รับ {0}"
 
-#: port/app/ingame3ds.cpp:544
+#: port/app/ingame3ds.cpp:545
 #, menu
 msgid "{0} point"
 msgid_plural "{0} points"
 msgstr[0] "{0} คะแนน"
 
-#: port/app/ingame3ds.cpp:548
+#: port/app/ingame3ds.cpp:549
 #, menu
 msgid "No achievements"
 msgstr "ไม่มี​ความสำเร็จ"
 
-#: port/app/ingame3ds.cpp:549
+#: port/app/ingame3ds.cpp:550
 #, menu
 msgid "RetroAchievements lists a game's achievements once it has a set for it."
 msgstr "RetroAchievements จะ​แสดง​ความสำเร็จ​ของ​เกม​เมื่อ​มี​ชุด​สำหรับ​เกม​นั้น"
 
-#: port/app/ingame3ds.cpp:554
+#: port/app/ingame3ds.cpp:555
 #, menu
 msgid "Hold an amiibo dump to the 3DS's reader when the game asks for one."
 msgstr "แตะ​ไฟล์​ดัมพ์ amiibo กับ​เครื่อง​อ่าน​ของ 3DS เมื่อ​เกม​ขอ"
 
-#: port/app/ingame3ds.cpp:557
+#: port/app/ingame3ds.cpp:558
 #, menu
 msgid "Left and Right choose an amiibo dump; Cross holds it to the reader."
 msgstr "ซ้าย​และ​ขวา​เลือก​ไฟล์​ดัมพ์ amiibo ปุ่มกากบาท​แตะ​กับ​เครื่อง​อ่าน"
 
-#: port/app/ingame3ds.cpp:558
+#: port/app/ingame3ds.cpp:559
 #, menu
 msgid "Take the amiibo away"
 msgstr "นำ amiibo ออก"
 
-#: port/app/ingame3ds.cpp:558
+#: port/app/ingame3ds.cpp:559
 #, menu
 msgid "Takes the amiibo off the reader, as lifting it off would."
 msgstr "นำ amiibo ออก​จาก​เครื่อง​อ่าน เหมือน​ยก​ออก"
 
 #. the DS's lid, closed or open
-#: port/app/ingame3ds.cpp:565
+#: port/app/ingame3ds.cpp:566
 #, menu
 msgid "Lid closed"
 msgstr "ฝา​ปิด​อยู่"
 
-#: port/app/ingame3ds.cpp:566
+#: port/app/ingame3ds.cpp:567
 #, menu
 msgid "The lid, the left stick's deadzone and where A and B are. Hold R3 to blow into the microphone."
 msgstr "ฝา​เครื่อง เดดโซน​สติ๊ก​ซ้าย และ​ตำแหน่ง A กับ B กด R3 ค้าง​ไว้​เพื่อ​เป่า​ไมโครโฟน"
 
-#: port/app/ingame3ds.cpp:567
+#: port/app/ingame3ds.cpp:568
 #, menu
 msgid "Lid"
 msgstr "ฝา​เครื่อง"
 
-#: port/app/ingame3ds.cpp:567
+#: port/app/ingame3ds.cpp:568
 #, menu
 msgid "Closed"
 msgstr "ปิด"
 
-#: port/app/ingame3ds.cpp:567 port/frontend/shell/eden.cpp:477 port/frontend/shell/eden.cpp:490 port/frontend/shell/eden.cpp:499 port/frontend/shell/eden.cpp:504 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:1298 port/frontend/shell/shell.cpp:1241 port/frontend/shell/shell.cpp:1270 port/frontend/shell/shell.cpp:1279 port/frontend/shell/shell.cpp:1288 port/frontend/shell/shell.cpp:1294 port/frontend/shell/shell.cpp:1309
+#: port/app/ingame3ds.cpp:568 port/frontend/shell/eden.cpp:477 port/frontend/shell/eden.cpp:490 port/frontend/shell/eden.cpp:499 port/frontend/shell/eden.cpp:504 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:1298 port/frontend/shell/shell.cpp:1241 port/frontend/shell/shell.cpp:1270 port/frontend/shell/shell.cpp:1279 port/frontend/shell/shell.cpp:1288 port/frontend/shell/shell.cpp:1294 port/frontend/shell/shell.cpp:1309
 #, menu
 msgid "Open"
 msgstr "เปิด"
 
-#: port/app/ingame3ds.cpp:568
+#: port/app/ingame3ds.cpp:569
 #, menu
 msgid "Closes the DS's lid, for games that ask you to; the DS sleeps until it is opened. Choose it again to open it."
 msgstr "ปิด​ฝา DS สำหรับ​เกม​ที่​ขอ​ให้​ปิด DS จะ​พัก​จน​กว่า​จะ​เปิด เลือก​อีก​ครั้ง​เพื่อ​เปิด"
 
-#: port/app/ingame3ds.cpp:569 port/app/ingame3ds.cpp:579 port/frontend/shell/settings.cpp:601
+#: port/app/ingame3ds.cpp:570 port/app/ingame3ds.cpp:580 port/frontend/shell/settings.cpp:601
 #, menu
 msgid "Stick deadzone"
 msgstr "เดดโซน​สติ๊ก"
 
-#: port/app/ingame3ds.cpp:570
+#: port/app/ingame3ds.cpp:571
 #, menu
 msgid "How far the left stick moves before it presses the D-pad. Raise it if something drifts when you let go."
 msgstr "สติ๊ก​ซ้าย​ต้อง​ขยับ​ไกล​แค่ไหน​จึง​จะ​กด​ปุ่ม​ทิศทาง เพิ่ม​ค่า​หาก​มี​อะไร​เลื่อน​เอง​เมื่อ​ปล่อย"
 
-#: port/app/ingame3ds.cpp:572
+#: port/app/ingame3ds.cpp:573
 #, menu
 msgid "A on Circle and B on Cross, where the DS has them, or the other way round, with X and Y swapped to match."
 msgstr "A ที่​ปุ่มวงกลม​และ B ที่​ปุ่มกากบาท ตาม​ตำแหน่ง​บน DS หรือ​กลับกัน โดย​สลับ X กับ Y ให้​ตรงกัน"
 
-#: port/app/ingame3ds.cpp:576
+#: port/app/ingame3ds.cpp:577
 #, menu
 msgid "Motion controls, the sticks' deadzone and where A and B are."
 msgstr "ควบคุม​ด้วย​การ​เคลื่อนไหว เดดโซน​สติ๊ก และ​ตำแหน่ง A กับ B"
 
-#: port/app/ingame3ds.cpp:578
+#: port/app/ingame3ds.cpp:579
 #, menu
 msgid "The DualSense's gyroscope and accelerometer as the 3DS's, for the games that aim or steer by tilting."
 msgstr "ไจโรสโคป​และ​มาตร​วัด​ความ​เร่ง​ของ DualSense แทน​ของ 3DS สำหรับ​เกม​ที่​เล็ง​หรือ​บังคับ​ด้วย​การ​เอียง"
 
-#: port/app/ingame3ds.cpp:580
+#: port/app/ingame3ds.cpp:581
 #, menu
 msgid "How far a stick moves before the game sees it. Raise it if something drifts when you let go."
 msgstr "สติ๊ก​ต้อง​ขยับ​ไกล​แค่ไหน​เกม​จึง​จะ​รับรู้ เพิ่ม​ค่า​หาก​มี​อะไร​เลื่อน​เอง​เมื่อ​ปล่อย"
 
-#: port/app/ingame3ds.cpp:582
+#: port/app/ingame3ds.cpp:583
 #, menu
 msgid "A on Circle and B on Cross, where the 3DS has them, or the other way round, with X and Y swapped to match."
 msgstr "A ที่​ปุ่มวงกลม​และ B ที่​ปุ่มกากบาท ตาม​ตำแหน่ง​บน 3DS หรือ​กลับกัน โดย​สลับ X กับ Y ให้​ตรงกัน"
 
-#: port/app/ingame3ds.cpp:590
+#: port/app/ingame3ds.cpp:595
 #, menu
 msgid "Load this slot"
 msgstr "โหลด​ช่อง​นี้"
 
-#: port/app/ingame3ds.cpp:591
+#: port/app/ingame3ds.cpp:596
 #, menu
 msgid "Goes back to the moment the slot was saved. What you did since is lost, so Cross is held."
 msgstr "กลับ​ไป​ยัง​ตอน​ที่​บันทึก​ช่อง​นี้ สิ่ง​ที่​ทำ​หลัง​จาก​นั้น​จะ​หาย​ไป จึง​ต้อง​กด​ปุ่มกากบาท​ค้าง​ไว้"
 
-#: port/app/ingame3ds.cpp:596 port/frontend/shell/settings.cpp:627
+#: port/app/ingame3ds.cpp:601 port/frontend/shell/settings.cpp:627
 #, menu
 msgid "The touch screen"
 msgstr "หน้าจอ​สัมผัส"
 
-#: port/app/ingame3ds.cpp:596 port/frontend/shell/settings.cpp:627
+#: port/app/ingame3ds.cpp:601 port/frontend/shell/settings.cpp:627
 #, menu
 msgid "The bottom screen"
 msgstr "จอ​ล่าง"
 
-#: port/app/ingame3ds.cpp:614
+#: port/app/ingame3ds.cpp:619
 #, menu
 msgid "Save state"
 msgstr "บันทึก​สถานะ"
 
-#: port/app/ingame3ds.cpp:615
+#: port/app/ingame3ds.cpp:620
 #, menu
 msgid "Load state"
 msgstr "โหลด​สถานะ"
 
-#: port/app/ingame3ds.cpp:615
+#: port/app/ingame3ds.cpp:620
 #, menu
 msgid "Slot {0} empty"
 msgstr "ช่อง {0} ว่าง"
 
-#: port/app/ingame3ds.cpp:622
+#: port/app/ingame3ds.cpp:627
 #, menu
 msgid "Slot {0}: {1}"
 msgstr "ช่อง {0}: {1}"
 
-#: port/app/ingame3ds.cpp:691
+#: port/app/ingame3ds.cpp:696
 #, menu
 msgid "Slot {0} is empty"
 msgstr "ช่อง {0} ว่าง​อยู่"
 
-#: port/app/ingame3ds.cpp:699
+#: port/app/ingame3ds.cpp:704
 #, menu
 msgid "Saving…"
 msgstr "กำลัง​บันทึก…"
 
-#: port/app/ingame3ds.cpp:699
+#: port/app/ingame3ds.cpp:704
 #, menu
 msgid "Loading…"
 msgstr "กำลัง​โหลด…"
 
 #. the in-game menu's badge: the game waits behind the menu
-#: port/app/ingame3ds.cpp:752
+#: port/app/ingame3ds.cpp:757
 #, menu
 msgid "Paused"
 msgstr "หยุด​ชั่วคราว"
 
-#: port/app/ingame3ds.cpp:810 port/frontend/shell/shell.cpp:2142 port/frontend/shell/shell.cpp:2171
+#: port/app/ingame3ds.cpp:815 port/frontend/shell/shell.cpp:2142 port/frontend/shell/shell.cpp:2171
 #, menu
 msgid "OK"
 msgstr "ตกลง"
 
 #. over the 3DS's keyboard: what the game asks to have typed
-#: port/app/ingame3ds.cpp:827
+#: port/app/ingame3ds.cpp:832
 #, menu
 msgid "The game asks for"
 msgstr "เกม​ขอ​ให้​พิมพ์"
 
-#: port/app/ingame3ds.cpp:828
+#: port/app/ingame3ds.cpp:833
 #, menu
 msgid "Some text"
 msgstr "ข้อความ"
 
 #. the 3DS keyboard's keys
-#: port/app/ingame3ds.cpp:857 port/frontend/shell/shell.cpp:2093
+#: port/app/ingame3ds.cpp:862 port/frontend/shell/shell.cpp:2093
 #, menu
 msgid "Shift: on"
 msgstr "Shift: เปิด"
 
 #. the 3DS keyboard's keys
 #. the 3DS keyboard's hints: Cross types the focused key
-#: port/app/ingame3ds.cpp:857 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1226 port/frontend/shell/shell.cpp:2093
+#: port/app/ingame3ds.cpp:862 port/app/ingame3ds.cpp:882 port/frontend/shell/shell.cpp:1226 port/frontend/shell/shell.cpp:2093
 #, menu
 msgid "Shift"
 msgstr "Shift"
 
-#: port/app/ingame3ds.cpp:859 port/frontend/shell/shell.cpp:2093
+#: port/app/ingame3ds.cpp:864 port/frontend/shell/shell.cpp:2093
 #, menu
 msgid "Space"
 msgstr "เว้น​วรรค"
 
 #. the 3DS keyboard's hints: Cross types the focused key
-#: port/app/ingame3ds.cpp:861 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1226 port/frontend/shell/shell.cpp:2093
+#: port/app/ingame3ds.cpp:866 port/app/ingame3ds.cpp:882 port/frontend/shell/shell.cpp:1226 port/frontend/shell/shell.cpp:2093
 #, menu
 msgid "Delete"
 msgstr "ลบ"
 
 #. the 3DS keyboard's hints: Cross types the focused key
-#: port/app/ingame3ds.cpp:877 port/frontend/shell/shares.cpp:300 port/frontend/shell/shell.cpp:1226
+#: port/app/ingame3ds.cpp:882 port/frontend/shell/shares.cpp:300 port/frontend/shell/shell.cpp:1226
 #, menu
 msgid "Type"
 msgstr "พิมพ์"
@@ -6631,27 +6645,27 @@ msgstr "ล็อก: {0}, {1}/log.txt"
 msgid "Boot log not written (/data is unreachable)"
 msgstr "ไม่ได้​เขียน​ล็อก​การ​เริ่ม​ระบบ (เข้าถึง /data ไม่ได้)"
 
-#: port/main_ps5.cpp:410
+#: port/main_ps5.cpp:411
 msgid "PS5CEMU-HAR cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5CEMU-HAR."
 msgstr "PS5CEMU-HAR เข้าถึง /data ไม่ได้ โหลด HEN ที่​มี PPSA99360 ใน​รายการ​เจลเบรก​แอป หรือ elfldr แล้ว​เริ่ม PS5CEMU-HAR ใหม่"
 
-#: port/main_ps5.cpp:439
+#: port/main_ps5.cpp:440
 msgid "This session: Azahar (3DS); Cemu's emulated Wii U is not started"
 msgstr "เซสชัน​นี้: Azahar (3DS) Wii U จำลอง​ของ Cemu ยัง​ไม่​เริ่ม"
 
-#: port/main_ps5.cpp:453
+#: port/main_ps5.cpp:454
 msgid "This session: Cemu (Wii U); Azahar's core is not started"
 msgstr "เซสชัน​นี้: Cemu (Wii U) แกน​ของ Azahar ยัง​ไม่​เริ่ม"
 
-#: port/main_ps5.cpp:461
+#: port/main_ps5.cpp:462
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "ไม่มี​หน่วย​ความ​จำ JIT: เกม Wii U ใช้​อินเทอร์พรีเตอร์ ช้า​กว่า​มาก PPSA99360 อยู่​ใน​รายการ​เจลเบรก​แอป​ของ HEN หรือไม่"
 
-#: port/main_ps5.cpp:489
+#: port/main_ps5.cpp:490
 msgid "The launcher could not start. The boot log in /data/ps5cemu/logs says why."
 msgstr "ลอนเชอร์​เริ่ม​ไม่ได้ ล็อก​การ​เริ่ม​ระบบ​ใน /data/ps5cemu/logs บอก​สาเหตุ"
 
-#: port/main_ps5.cpp:490
+#: port/main_ps5.cpp:491
 msgid "The launcher could not start: {0}. The boot log in /data/ps5cemu/logs has more."
 msgstr "ลอนเชอร์​เริ่ม​ไม่ได้: {0} ล็อก​การ​เริ่ม​ระบบ​ใน /data/ps5cemu/logs มี​รายละเอียด​เพิ่มเติม"
 

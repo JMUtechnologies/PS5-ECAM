@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "ingame3ds.h"
+#include "emulator.h"
 #include "lang.h"
 #include "menu_canvas.h"
 #include "remote_menu.h"
@@ -582,8 +583,12 @@ namespace ps5ingame3ds
 						Tr("A on Circle and B on Cross, where the 3DS has them, or the other way round, with X and Y swapped to match.")},
 				}});
 			}
-			Row library{"library", Tr("Quit to the library"), "", false,
-				Tr("Leaves the game for the library. What you have not saved in the game is lost, so Cross is held.")};
+			// a home screen tile's game closes the app instead, as the row says (#48)
+			Row library = ps5emu::ExitAfterGame() ?
+				Row{"library", Tr("Quit to the home screen"), "", false,
+					Tr("Leaves the game and closes PS5CEMU-HAR, as its home screen tile asks. What you have not saved in the game is lost, so Cross is held.")} :
+				Row{"library", Tr("Quit to the library"), "", false,
+					Tr("Leaves the game for the library. What you have not saved in the game is lost, so Cross is held.")};
 			library.apart = true;
 			library.hold = true;
 			// loading a state, as a row too: held, as the quick action is

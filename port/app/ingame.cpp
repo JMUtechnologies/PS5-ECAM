@@ -309,8 +309,12 @@ namespace
 		}});
 		// tr: the remote touch screen's row: which screen a phone or a tablet shows
 		rows.push_back(ps5menu::RemoteRow(Tr("The GamePad's screen")));
-		Row library{"library", Tr("Quit to the library"), "", false,
-			Tr("Leaves the game for the library. What you have not saved in the game is lost, so Cross is held.")};
+		// a home screen tile's game closes the app instead, as the row says (#48)
+		Row library = ps5emu::ExitAfterGame() ?
+			Row{"library", Tr("Quit to the home screen"), "", false,
+				Tr("Leaves the game and closes PS5CEMU-HAR, as its home screen tile asks. What you have not saved in the game is lost, so Cross is held.")} :
+			Row{"library", Tr("Quit to the library"), "", false,
+				Tr("Leaves the game for the library. What you have not saved in the game is lost, so Cross is held.")};
 		library.apart = true;
 		library.hold = true;
 		rows.push_back(library);
