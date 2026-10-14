@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: a game's hub (docs/UI-REDESIGN.md, 6.3): everything about one game. Its cover large,
+// PS5CEMU-HAR: a game's hub: everything about one game. Its cover large,
 // its system, IDs and title, chips for what is known for sure (status, version, DLC, format, play
 // time), Play, its graphic packs and the Game menu; GameTDB's description and facts; how it runs.
 // L1 and R1 go to the games either side of it, as the Library orders them.

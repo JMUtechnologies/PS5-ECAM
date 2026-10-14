@@ -57,7 +57,7 @@ namespace ps5lang
 			{"zh-Hant", "繁體中文", 10},
 		};
 
-		// the English the code is written in (its spelling the UK's: docs/UI-REDESIGN.md, Appendix B)
+		// the English the code is written in (its spelling the UK's: Appendix B)
 		constexpr const char* kSource = "en-GB";
 
 		// the table a regional variant builds on: what it does not say differently, it says as that

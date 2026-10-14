@@ -493,7 +493,7 @@ int main(int argc, char* argv[])
 		}
 		const ps5emu::Game& game = choice->game;
 		const char* side = ps5launcher::SideName(choice->system);
-		// the side's settings, and the game's own over them (docs/UI-REDESIGN.md, 6.5)
+		// the side's settings, and the game's own over them
 		const ps5settings::Launcher forGame = ps5settings::ForGame(settings, side, game.titleId);
 		if (settings.games.count(ps5settings::GameKey(side, game.titleId)))
 			ps5log::Line("[main] {} starts with settings of its own", game.name);

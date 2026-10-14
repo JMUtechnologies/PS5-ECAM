@@ -521,7 +521,7 @@ namespace ps5azahar
 				ps5log::Line("[azahar] speed limit {}", menu.speedLimit ? fmt::format("{}%", menu.speedLimit) : "none");
 			}
 
-			// into the game's own settings when it has some, else the side's (docs/UI-REDESIGN.md, 6.5)
+			// into the game's own settings when it has some, else the side's
 			ps5settings::Launcher before, after;
 			before.n3ds = s_launched;
 			after.n3ds = s_settings;

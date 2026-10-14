@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: Eden (docs/UI-REDESIGN.md, 6.17), the launcher of ProsperoEden v1.001.000 in the app's
+// PS5CEMU-HAR: Eden, the launcher of ProsperoEden v1.001.000 in the app's
 // own colours, with every one of its features. Its layout and motion follow ProsperoEden's
 // (blackbearreloaded/ProsperoEden, GPL-3.0-or-later, Copyright (C) 2026 BlackBearReloaded:
 // headless/prosperoeden/pe/ui shell.cpp, home.cpp, library.cpp, settings.cpp and launcher.cpp):

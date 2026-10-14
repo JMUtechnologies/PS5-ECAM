@@ -115,7 +115,7 @@ python3 -B "$boilerplate/tools/validate-elevation-helper.py" "$app/sandbox-eleva
 # made into /data/homebrew, where the app's sandbox cannot make folders (port/payloads)
 make -s -C "$PS5CEMU_ROOT/port/payloads" PS5_PAYLOAD_SDK="$PS5_PAYLOAD_SDK" OUTPUT="$app/tile-installer.elf"
 
-# The launcher (port/ui, docs/UI-REDESIGN.md): Lexend's four weights as one signed-distance atlas
+# The launcher (port/ui): Lexend's four weights as one signed-distance atlas
 # (tools/render-sdf-font.sh, committed), three as TrueType for the in-game menus' ImGui
 # (tools/render-menu-fonts.py, committed) and their licence, the menu's sounds and the music
 # (tools/render-sounds.py, committed), the two sides' tiles the bar shows (tools/render-icons.py), and

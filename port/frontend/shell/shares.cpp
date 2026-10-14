@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: Network shares (docs/UI-REDESIGN.md, 6.14), Settings > Game files' page for the SMB and NFS
+// PS5CEMU-HAR: Network shares, Settings > Game files' page for the SMB and NFS
 // shares app/netfs.cpp reads games from. The page lists them; Cross opens a share's sheet (or a new one's):
 // the computers on the PS5's network that share files, looked for as it opens, the type, the computer, the
 // shared folder (those the computer lists, Left and Right), a folder inside, the sign-in, then Test, Save

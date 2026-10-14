@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR's UI kit: what the UI answers with besides the picture (docs/UI-REDESIGN.md, 8.2 and
+// PS5CEMU-HAR's UI kit: what the UI answers with besides the picture (8.2 and
 // 8.3): the menu's sounds (frontend/sound.h), the DualSense's rumble, and its light bar in the side's
 // colour. Rumble is a light pulse for a refusal and a stronger one for a launch or a completed hold,
 // never for ordinary navigation, and none when the vibration setting is off (ps5pad).

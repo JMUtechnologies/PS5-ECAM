@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # PS5CEMU-HAR: the port's host code, added to Cemu's tree by its CEMU_PS5 option (src/CMakeLists.txt):
 # the console layer (ps5/), Cemu's start-up and graphic packs (app/), Azahar's side (azahar/) with its
-# DS games (melonds/), and the launcher (frontend/shell/), drawn on the GPU with the UI kit (ui/,
-# docs/UI-REDESIGN.md). Cemu's own platform classes (cemu/) are added to Cemu's targets by the patch.
+# DS games (melonds/), and the launcher (frontend/shell/), drawn on the GPU with the UI kit (ui/).
+# Cemu's own platform classes (cemu/) are added to Cemu's targets by the patch.
 
 # the release's version, from the Makefile's VERSION (the one place it is set: tools/package.sh
 # writes it into sce_sys/param.json too), read again when the Makefile changes
@@ -38,8 +38,8 @@ foreach(input "${SANDBOX_ELEVATION}/src/elevation.cpp" "${PS5CEMU_DEPS}/reshade/
 	endif()
 endforeach()
 
-# rcheevos (MIT), RetroAchievements' client, for DS games' achievements (app/achievements.cpp,
-# docs/UI-REDESIGN.md 6.16): its client, runtime and API, and the hashes a DS ROM needs (no discs, zips
+# rcheevos (MIT), RetroAchievements' client, for DS games' achievements (app/achievements.cpp):
+# its client, runtime and API, and the hashes a DS ROM needs (no discs, zips
 # or encrypted files)
 set(RCHEEVOS "${PS5CEMU_DEPS}/rcheevos")
 if(NOT EXISTS "${RCHEEVOS}/src/rc_client.c")
@@ -52,7 +52,7 @@ target_include_directories(rcheevos PUBLIC "${RCHEEVOS}/include")
 target_compile_definitions(rcheevos PUBLIC RC_CLIENT_SUPPORTS_HASH PRIVATE RC_DISABLE_LUA RC_HASH_NO_DISC RC_HASH_NO_ENCRYPTED RC_HASH_NO_ZIP)
 target_compile_options(rcheevos PRIVATE -w)
 
-# Network shares (app/netfs.cpp, docs/UI-REDESIGN.md 6.14): libsmb2 and libnfs (LGPL-2.1-or-later), as
+# Network shares (app/netfs.cpp): libsmb2 and libnfs (LGPL-2.1-or-later), as
 # third_party keeps them with their PS5 configurations. Their name lookups and the like are netfs.cpp's
 # (porpoise_netfs_*): the console's libc gives a title no resolver.
 set(THIRD_PARTY "${PS5CEMU_ROOT}/third_party")

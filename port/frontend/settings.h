@@ -3,7 +3,7 @@
 // settings.xml; the launcher writes the few it manages (game folder, volume, overlay, upscaling
 // filter) into both. Azahar's are here (n3ds), and given to it when a 3DS game starts; melonDS's
 // (nds) have the same shape, the DS side's own (its folder, screens, sound, controls) and the few
-// only a DS has (ds...). A game can have its own of some of them (games: docs/UI-REDESIGN.md, 6.5),
+// only a DS has (ds...). A game can have its own of some of them (games: 6.5),
 // which it starts with over its side's.
 
 #pragma once
@@ -75,7 +75,7 @@ namespace ps5settings
 	// A game's own settings: a setting's name in ps5cemu.json and its value (on and off as 1 and 0)
 	using GameValues = std::map<std::string, int>;
 
-	// The new launcher's own (docs/UI-REDESIGN.md, 9.8), under "ui"
+	// The new launcher's own, under "ui"
 	struct Ui
 	{
 		std::string lastSide;		 // "wiiu", "3ds" or "ds": the side last used, restored at every start
@@ -254,7 +254,7 @@ namespace ps5settings
 	Launcher Load();
 	bool Save(const Launcher& settings);
 
-	// -- games' own settings (docs/UI-REDESIGN.md, 6.5) -------------------------------------------
+	// -- games' own settings -------------------------------------------
 	// side: "wiiu", "3ds" or "ds", as ps5cemu.json names them
 
 	std::string GameKey(const std::string& side, uint64_t titleId);

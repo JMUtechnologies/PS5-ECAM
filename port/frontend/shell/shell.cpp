@@ -246,7 +246,7 @@ namespace ps5shell
 		ps5catalog::Save();
 		Frame();
 		// the in-game menus' font for what Lexend lacks: the console's, for this language's words and this
-		// game's name (docs/UI-REDESIGN.md, 7.7); none for a Latin language and title
+		// game's name; none for a Latin language and title
 		if (m_choice)
 		{
 			const ui::Fonts::FontFile font = m_fonts.FileFor(ps5lang::MenuCharacters() + ui::Decode(m_choice->game.name));
@@ -332,7 +332,7 @@ namespace ps5shell
 			sceSystemServiceHideSplashScreen();
 			m_splashHidden = true;
 		}
-		// the tour log's line (docs/UI-REDESIGN.md, 9.9), every 600 frames
+		// the tour log's line, every 600 frames
 		static double s_worst = 0, s_sum = 0;
 		static int s_count = 0;
 		if (m_frames > 1)

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // PS5CEMU-HAR: the in-game menus' look, the Wii U's (ingame.cpp) and the 3DS's (ingame3ds.cpp): the
-// launcher's (docs/UI-REDESIGN.md, 6.9 and 7), drawn with ImGui on the launcher's 1920x1080 layout
+// launcher's, drawn with ImGui on the launcher's 1920x1080 layout
 // scaled to the screen. Its colours are the launcher's tokens (port/ui/tokens.json), its type Lexend
 // (tools/render-menu-fonts.py's three weights), its focus the launcher's double ring. In a game there
 // is no glass: panels are ink at 92 %, with no blur (4.2, rule 11).
@@ -39,7 +39,7 @@ namespace ps5menu
 		return (colour & ~IM_COL32_A_MASK) | ((ImU32)(a + 0.5f) << IM_COL32_A_SHIFT);
 	}
 
-	// The characters the menus' fonts are made with (docs/UI-REDESIGN.md, 7.7): Latin-1 and the dashes,
+	// The characters the menus' fonts are made with: Latin-1 and the dashes,
 	// quotes, bullet, ellipsis and angle quotes, then only those the language's words and the game's
 	// name have besides, so a menu in English costs what it always did. Lexend has the Latin ones
 	// (tools/render-menu-fonts.py), the console's font the rest (MenuFont). Kept: ImGui's atlases read
@@ -133,7 +133,7 @@ namespace ps5menu
 	constexpr Palette kGold = Side(0xf4b63f, 0x2a1a02);
 	constexpr Palette kGreen = Side(0x7ed957, 0x0c2606); // the DS side's melon green
 
-	// The type styles the menus use (docs/UI-REDESIGN.md, 7.2), each a font made at its size
+	// The type styles the menus use, each a font made at its size
 	struct Fonts
 	{
 		ImFont* heading; // 32 SemiBold: the game's name, a sheet's title

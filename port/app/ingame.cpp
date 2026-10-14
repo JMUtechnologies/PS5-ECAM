@@ -556,7 +556,7 @@ namespace ps5ingame
 	{
 		// the menu's typeface, Lexend's three weights, for Cemu's ImGui to make at the menu's sizes, with
 		// the console's font for what Lexend lacks (a Russian menu, a Japanese title), cut to the characters
-		// the language's words and the game's name have (docs/UI-REDESIGN.md, 7.7)
+		// the language's words and the game's name have
 		const ImWchar* ranges = ps5menu::GlyphRanges(game.name);
 		int mergeFace = 0;
 		const auto& merge = ps5menu::MergeFont(mergeFace);

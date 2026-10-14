@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the languages (docs/UI-REDESIGN.md, 7.7). Every word the launcher and the in-game menus
+// PS5CEMU-HAR: the languages. Every word the launcher and the in-game menus
 // show is English in the code, and is looked up in the language's string table: assets/lang/<code>.po,
 // gettext's format, made from the code and checked by tools/lang.py. The table is read as the app
 // starts, in the PS5's own language unless Settings > Language names another, and again
@@ -119,7 +119,7 @@ namespace ps5lang
 	std::string ShortDateTime(int month, int day, int hour, int minute);
 
 	// The characters of what the in-game menus say, in the language in use (their fonts are made
-	// with these only: docs/UI-REDESIGN.md, 7.7)
+	// with these only: 7.7)
 	std::u32string MenuCharacters();
 
 	// The font the in-game menus take what Lexend lacks from (a CJK title's, a Russian menu's): one

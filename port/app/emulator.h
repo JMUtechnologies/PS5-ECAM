@@ -56,7 +56,7 @@ namespace ps5emu
 	// InitializeCore, then ApplyOptions, on a thread of their own, so the launcher draws (from its
 	// catalogue) while Cemu's settings, graphic packs and controllers load; nothing more once started.
 	// CoreStarted says when it has finished, with how, and joins the thread; FinishCoreStart waits
-	// for it (before a game: the launcher leaves no thread behind, UI-REDESIGN 4.2).
+	// for it (before a game: the launcher leaves no thread behind).
 	void StartCore(const Options& options);
 	bool CoreStarted(bool& ok, std::string& error);
 	void FinishCoreStart();
@@ -107,7 +107,7 @@ namespace ps5emu
 	// extracted on first use; empty when the game has none or it cannot be read.
 	std::string CoverPath(uint64_t titleId);
 	// Its boot screen (meta/bootTvTex.tga, the 1280 x 720 picture the Wii U shows while it loads), the
-	// same way in /data/ps5cemu/covers/boot: the launcher's backdrop for it (docs/UI-REDESIGN.md 7.4).
+	// same way in /data/ps5cemu/covers/boot: the launcher's backdrop for it.
 	// Mounts the title, so the launcher asks for one a frame at most.
 	std::string BootScreenPath(uint64_t titleId);
 
@@ -270,7 +270,7 @@ namespace ps5emu
 	// Stops an install and puts back what was there.
 	void CancelInstall();
 
-	// The Wii U's accounts (accounts.cpp; docs/UI-REDESIGN.md, 6.13): Cemu's, each with its own saves of
+	// The Wii U's accounts (accounts.cpp): Cemu's, each with its own saves of
 	// every game; the one games start on is Cemu's setting. Names are a Mii's, ten letters at most.
 	struct WiiuAccount
 	{
@@ -288,7 +288,7 @@ namespace ps5emu
 	// made the first time with their name; games start on it
 	uint32_t AccountForUser(const std::string& user, const std::string& userName, std::map<std::string, std::string>& byUser);
 
-	// Updates and DLC (and games) to install, found on the drives (docs/UI-REDESIGN.md, 6.12), on a
+	// Updates and DLC (and games) to install, found on the drives, on a
 	// thread of their own: each folder given looked through so many folders deep for titles, unpacked
 	// (code, content and meta: installable) or packed (title.tmd and .app: Cemu reads them as they are)
 	struct FindRoot

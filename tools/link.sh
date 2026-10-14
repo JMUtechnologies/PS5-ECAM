@@ -148,7 +148,7 @@ done
 # RADV's platform layer has the real thread-local destructor registration; a link check has none
 ((check)) && absent+=(--defsym=__cxa_thread_atexit_impl=0)
 
-# Network shares (docs/UI-REDESIGN.md 6.14): the C library's file calls go through
+# Network shares: the C library's file calls go through
 # port/ps5/netfs_files.cpp, which answers those on /net paths and passes every other on after one check
 netfs_wraps=()
 for name in open read pread lseek close fstat stat lstat realpath fopen fclose fflush fread fwrite \

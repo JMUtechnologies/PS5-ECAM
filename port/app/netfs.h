@@ -6,7 +6,7 @@
  * can be one, its library searches it like a folder, and Cemu, Azahar and
  * melonDS read the game from it through ps5/netfs_files.cpp, which answers
  * the C library's file calls for those paths only (every other file is the
- * C library's own, as before). docs/UI-REDESIGN.md 6.14.
+ * C library's own, as before).
  * Read-only: nothing is ever written to the share.
  *
  * The functions below take any path, local or /net/, so the launcher's code

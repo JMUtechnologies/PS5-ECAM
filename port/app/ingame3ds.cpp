@@ -340,7 +340,7 @@ namespace ps5ingame3ds
 
 			// Lexend's three weights at the menu's sizes, or the Wii U's system font if they are missing, with
 			// the console's font for what Lexend lacks (a Russian menu, a Japanese title), cut to the
-			// characters the language's words and the game's name have (docs/UI-REDESIGN.md, 7.7)
+			// characters the language's words and the game's name have
 			std::string title;
 			{
 				std::lock_guard lock(s_mutex);

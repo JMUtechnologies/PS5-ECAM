@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the Setup check (docs/UI-REDESIGN.md, 6.7). It answers "why doesn't it work?" in one place: storage, the recompilers, each side's games and keys,
+// PS5CEMU-HAR: the Setup check. It answers "why doesn't it work?" in one place: storage, the recompilers, each side's games and keys,
 // the 3DS's system files, the DS's BIOS and box art, each with its status, what it means and what to
 // do, and a QR code to the guide's page about it. It shows on the first start and whenever storage or
 // the recompilers fail at start, then the app opens on a side's Library; Settings > Diagnostics opens

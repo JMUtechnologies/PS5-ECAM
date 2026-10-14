@@ -86,7 +86,7 @@ namespace ps5melonds
 			return lines;
 		}
 
-		// The banner's title in the menus' language, as a DS set to it shows it (UI-REDESIGN 7.7), else
+		// The banner's title in the menus' language, as a DS set to it shows it, else
 		// in English (or the first language that has one): its last line the publisher, the lines
 		// before it the name (a subtitle after a colon). A banner has Japanese, English, French,
 		// German, Italian and Spanish; from its version 2 Chinese (the iQue's, simplified), from 3 Korean.

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// A PC test of port/ps5/netfs_files.cpp, the /net layer under the C library's file calls (docs/UI-REDESIGN.md
-// 6.14): linked with the same --wrap list as the app (tools/test-netfs.sh), over a stand-in for app/netfs.cpp
+// A PC test of port/ps5/netfs_files.cpp, the /net layer under the C library's file calls:
+// linked with the same --wrap list as the app (tools/test-netfs.sh), over a stand-in for app/netfs.cpp
 // that serves /net/test/... from a local folder. It checks what Cemu, Azahar and melonDS do with a game's
 // files: open, read, pread, seek, stat, a FILE's reads and seeks, lines, a directory's entries, C++ streams
 // and std::filesystem, and that every other path still reaches the C library. Prints "ok" at the end.

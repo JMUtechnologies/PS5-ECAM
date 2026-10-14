@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR's UI kit: text (docs/UI-REDESIGN.md, 7.2, 7.7 and 9.6). Lexend's four weights come baked
+// PS5CEMU-HAR's UI kit: text. Lexend's four weights come baked
 // into a signed-distance atlas (fonts/lexend.sdf, tools/render-sdf-font.sh: Latin, with what Romanian
 // and Vietnamese need), so nothing is rendered as the launcher starts; a character Lexend lacks (a
 // Japanese title's, a Russian menu's) is rendered on first use with FreeType from the fonts in the

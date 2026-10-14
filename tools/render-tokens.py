@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The UI kit's tokens (docs/UI-REDESIGN.md, section 7): port/ui/tokens.h from port/ui/tokens.json,
-which is the one place a colour, a size or a duration is set. Also checks that the mockups'
-tokens.css (docs/ui-redesign/mockups) names the same colours, and says where it does not.
+"""The UI kit's tokens: port/ui/tokens.h from port/ui/tokens.json,
+which is the one place a colour, a size or a duration is set.
 
     tools/render-tokens.py
 """
@@ -15,7 +14,6 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SOURCE = ROOT / "port/ui/tokens.json"
 OUT = ROOT / "port/ui/tokens.h"
-CSS = ROOT / "docs/ui-redesign/mockups/tokens.css"
 
 WEIGHTS = {400: "Regular", 500: "Medium", 600: "SemiBold", 700: "Bold"}
 
@@ -33,18 +31,6 @@ def rgba(value):
     return r | g << 8 | b << 16 | a << 24
 
 
-def css_colours(text):
-    colours = {}
-    for name, value in re.findall(r"--([a-z0-9-]+):\s*([^;]+);", text):
-        value = value.strip()
-        if value.startswith("#"):
-            colours[name] = rgba(value)
-        else:
-            m = re.match(r"rgba\(\s*(\d+),\s*(\d+),\s*(\d+),\s*([0-9.]+)\s*\)", value)
-            if m:
-                r, g, b = (int(m.group(i)) for i in range(1, 4))
-                colours[name] = r | g << 8 | b << 16 | round(float(m.group(4)) * 255) << 24
-    return colours
 
 
 def main():
@@ -52,7 +38,7 @@ def main():
     lines = [
         "// SPDX-License-Identifier: GPL-3.0-or-later",
         "// Written by tools/render-tokens.py from port/ui/tokens.json: the UI's colours, sizes, type and",
-        "// motion (docs/UI-REDESIGN.md, section 7). Colours are RGBA, R in the lowest byte; the launcher's theme",
+        "// motion. Colours are RGBA, R in the lowest byte; the launcher's theme",
         "// (ui/theme.h) sets the colours it draws with, which start as tokens.json's.",
         "",
         "#pragma once",
@@ -93,15 +79,6 @@ def main():
     OUT.write_text("\n".join(lines) + "\n")
     print(f"{OUT.relative_to(ROOT)}: {len(tokens['colour'])} colours, {len(tokens['type'])} type styles")
 
-    if CSS.exists():
-        css = css_colours(CSS.read_text())
-        differ = []
-        for name, value in tokens["colour"].items():
-            if name in css and abs((css[name] >> 24) - (rgba(value) >> 24)) > 1 or name in css and (css[name] & 0xffffff) != (rgba(value) & 0xffffff):
-                differ.append(name)
-        if differ:
-            print(f"tokens.css differs from tokens.json in: {', '.join(differ)}", file=sys.stderr)
-            return 1
     return 0
 
 

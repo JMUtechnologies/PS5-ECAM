@@ -10,5 +10,5 @@ both as Porpoise X carries them (premohq/Porpoise-X, `third_party/`, commit
 `2ed1ab5a06995aa198f7bccd4da0f90c3fc29d39`): the client libraries only, each with its PS5
 configuration (`ps5/config.h`), the list of files the build compiles (`sources.txt`) and its changes
 from upstream (`README.porpoise`). The app reads games on a network share with them
-(`port/app/netfs.cpp`, docs/UI-REDESIGN.md 6.14). They call back into the app by the names Porpoise
+(`port/app/netfs.cpp`). They call back into the app by the names Porpoise
 gave those hooks (`porpoise_netfs_*`), kept so the copies stay Porpoise's.

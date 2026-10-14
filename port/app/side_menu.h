@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // PS5CEMU-HAR: the in-game menus' sheet, the Wii U's (ingame.cpp) and the 3DS's (ingame3ds.cpp), as the
-// launcher's Quick Menu (docs/UI-REDESIGN.md, 6.9). One sheet down the left of the screen over the
+// launcher's Quick Menu. One sheet down the left of the screen over the
 // game, dimmed more on the left than on the right: the game's cover, name and badges at its top, a
 // row of quick actions, then the list. A row is a setting, an action, or a category that opens in
 // place to show its own rows (one open at a time), its current value beside it so most visits need

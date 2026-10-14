@@ -18,8 +18,6 @@ Writes:
   ui/icons/har-72.tga        72x72: the two side by side (the start screen)
   ui/icons/start-wiiu.tga    the GamePad alone, on nothing, for the start screen's left half
   ui/icons/start-3ds.tga     the 3DS alone, for its right half
-  readme/icon-wiiu.png       192x192, rounded, and icon-3ds.png and icon-ds.png: the three for the
-                             README, under its banner (docs/images)
 
 Shapes are signed distance functions, so every size is drawn sharp, and edges are anti-aliased over
 a pixel.
@@ -363,11 +361,6 @@ def main():
     write_tga(os.path.join(icons, "start-3ds.tga"), alone(440, 440, "3ds"))
     write_tga(os.path.join(icons, "melonds.tga"), single(336, "ds"))
     write_tga(os.path.join(icons, "melonds-72.tga"), single(72, "ds"))
-    # the README's, under its banner (committed as docs/images/icon-*.png)
-    readme = os.path.join(out, "readme")
-    os.makedirs(readme, exist_ok=True)
-    for device in ("wiiu", "3ds", "ds"):
-        write_png(os.path.join(readme, f"icon-{device}.png"), single(192, device))
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: a game's own tile on the PS5's home screen (docs/FIX-PLAN.md, section 0), in the open
+// PS5CEMU-HAR: a game's own tile on the PS5's home screen, in the open
 // PS5 Forwarder Format (github.com/heydemoura/ps5-forwarder-format, its psfwd library, GPL-3.0): a
 // folder in /data/homebrew holding the format's tile program, whose forwarder.json asks the format's
 // launcher to start PS5CEMU-HAR (PPSA99360) with "--rom <the game's path> --exit-after-game"

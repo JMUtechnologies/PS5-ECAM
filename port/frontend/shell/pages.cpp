@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the pages kept from the classic launcher, rebuilt (docs/UI-REDESIGN.md, 6.6), each a
+// PS5CEMU-HAR: the pages kept from the classic launcher, rebuilt, each a
 // list on the left and its detail on the right: a game's graphic packs (Cemu's folder tree, on and
 // off, presets as dropdowns, "choosing one turns it on"), a player's controls and buttons (the
 // mapping waits for a DualSense input), the folder browser for games and installs (drives first,

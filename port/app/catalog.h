@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: each side's game list as last seen, /data/ps5cemu/library.json (docs/UI-REDESIGN.md,
-// 5.5). The launcher draws a side from it at once while that side's scan runs, and the scan's list
+// PS5CEMU-HAR: each side's game list as last seen, /data/ps5cemu/library.json.
+// The launcher draws a side from it at once while that side's scan runs, and the scan's list
 // replaces it when it finishes, keeping what the catalogue knows of each game by title ID: when a scan
 // first found it (Recently added), whether it is a favourite, when it was last played and for how
 // long, and its two ambient colours. Deleting the file only costs one full scan of each side.

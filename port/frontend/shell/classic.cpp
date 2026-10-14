@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: Classic (docs/UI-REDESIGN.md, 6.20), the launcher of 2.0.0 B, the first the app had:
+// PS5CEMU-HAR: Classic, the launcher of 2.0.0 B, the first the app had:
 // ProsperoEden's layout of then in Cemu's blue and Azahar's gold (RmlUi at the time:
 // tools/render-layout.py, port/frontend/launcher.cpp and tools/launcher-preview at v2.0.0b, whose
 // preview drew the screens this follows). Drawn with the kit over the sections' shared navigation

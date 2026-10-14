@@ -3,7 +3,7 @@
 // the cursor moves and choices are made. Both are PS5CEMU-HAR's own, synthesised by
 // tools/render-sounds.py into assets/ui/sounds; the music is in the spirit of a Nintendo console's
 // shop and setup screens, written for the launcher. The player's own music plays in its place when
-// chosen: the MP3 and WAV files in /data/ps5cemu/music (docs/UI-REDESIGN.md, 8.2).
+// chosen: the MP3 and WAV files in /data/ps5cemu/music.
 
 #pragma once
 

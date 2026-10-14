@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: Settings (docs/UI-REDESIGN.md, 6.5): what the side you are on can change, found at a
+// PS5CEMU-HAR: Settings: what the side you are on can change, found at a
 // glance. One short list of pages with icons down the left, the side's own and the few every side
 // shares, and nothing of another side; the page's rows across the rest of the screen, each a control
 // (a toggle, a slider, pips, segments, swatches), the focused one with a line saying what it does, its
@@ -175,9 +175,9 @@ namespace ps5shell
 
 	std::vector<SettingsPage> Shell::SettingsPages() const
 	{
-		// the side's pages, as docs/UI-REDESIGN.md 6.5 lists them; the shared ones on every side
+		// the side's pages; the shared ones on every side
 		std::vector<SettingsPage> pages;
-		// the menus' language first, with a globe, which reads in any language (docs/UI-REDESIGN.md 7.7)
+		// the menus' language first, with a globe, which reads in any language
 		pages.push_back({"ui-language", Tr("Language"), Tr("The language of the menus: the PS5's own, unless you choose another."), Icon::Globe});
 		const char* every = IsWiiU() ? Tr("For every Wii U game.") : Is3ds() ? Tr("For every 3DS game.") : Tr("For every DS game.");
 		pages.push_back({"graphics", Tr("Graphics"), every, Icon::Monitor});

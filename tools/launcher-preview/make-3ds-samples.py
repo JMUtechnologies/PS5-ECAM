@@ -19,7 +19,7 @@ import sys
 
 
 # the Japanese names some samples have, as their Japanese releases are called, so the menus in
-# Japanese show a game's own name in their language (docs/UI-REDESIGN.md, 7.7)
+# Japanese show a game's own name in their language
 JAPANESE = {
     "Super Mario 3D Land": "スーパーマリオ 3Dランド",
     "Mario Kart 7": "マリオカート7",

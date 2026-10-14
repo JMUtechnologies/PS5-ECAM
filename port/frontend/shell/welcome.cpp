@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: Make it yours (docs/UI-REDESIGN.md, 6.10). On a first start, before the Setup check, the
+// PS5CEMU-HAR: Make it yours. On a first start, before the Setup check, the
 // few choices that decide how the app looks and feels: its language, which sides the bar offers, the
 // theme, where A is, the music, vibration and the games' pictures. After an update, once, the new
 // options to set up, each a row as in Settings (the same rows: Settings changes them later); What's new

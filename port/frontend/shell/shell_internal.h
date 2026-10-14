@@ -254,7 +254,7 @@ namespace ps5shell
 		bool BarUpdate(const ui::Press& press);
 		void FocusBar();
 
-		// Make it yours (docs/UI-REDESIGN.md, 6.10): first, a first start's look and feel, else what this
+		// Make it yours: first, a first start's look and feel, else what this
 		// version brings that the last did not have
 		void WelcomeOpen(bool first);
 		void WelcomeUpdate(const ui::Press& press, const ui::Actions& actions);
@@ -281,7 +281,7 @@ namespace ps5shell
 		void DrawEden(Canvas& canvas, float alpha);	   // Eden's (ProsperoEden 1.001's light), under the scrims
 		void DrawMotes(Canvas& canvas, float alpha);   // and its motes of light rising, over them
 
-		// -- Eden (eden.cpp, docs/UI-REDESIGN.md 6.17): ProsperoEden 1.001's launcher, in each side's colours.
+		// -- Eden (eden.cpp): ProsperoEden 1.001's launcher, in each side's colours.
 		// A rail of sections at the left (Home, Library, Settings, About; L1 and R1 between them, the sides
 		// under them), Home around the game to continue, the Library's covers beside the focused game's
 		// details, Settings as a board of tiles whose pages (and a game's settings) are pages of three parts,

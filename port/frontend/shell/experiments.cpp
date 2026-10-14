@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the experimental launchers (docs/UI-REDESIGN.md, 6.18 and 6.19), Phantom and Terminal.
+// PS5CEMU-HAR: the experimental launchers, Phantom and Terminal.
 // They share Eden's sections and navigation (eden.cpp: the rail with Home, Library, Settings and
 // About, L1 and R1 between them, the sides at its foot; Home's and the Library's focus) and draw every
 // part their own way:

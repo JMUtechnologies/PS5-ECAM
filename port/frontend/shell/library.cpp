@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the Library (docs/UI-REDESIGN.md, 6.2): where every side opens, every game on it,
+// PS5CEMU-HAR: the Library: where every side opens, every game on it,
 // found fast, the one played last in focus. Filters across the top with their counts, Sort (Square)
 // and Search (Triangle); the covers on a shelf of equal rows, the focused one lifted with its name and
 // facts under it; L2 and R2 jump to the previous or next letter (or year, or status); an index of the

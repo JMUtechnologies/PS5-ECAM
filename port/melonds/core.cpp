@@ -445,7 +445,7 @@ namespace ps5melonds
 			if (controls)
 				input::Configure(s_settings);
 
-			// into the game's own settings when it has some, else the side's (docs/UI-REDESIGN.md, 6.5)
+			// into the game's own settings when it has some, else the side's
 			ps5settings::Launcher before, after;
 			before.nds = s_launched;
 			after.nds = s_settings;

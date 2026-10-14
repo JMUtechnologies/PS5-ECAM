@@ -414,7 +414,7 @@ namespace ps5emu
 			candidate.note = ps5lang::Tr("Its meta folder does not describe a Wii U title (meta.xml).");
 			return candidate;
 		}
-		// its own name in the menus' language, its English one where it has none (UI-REDESIGN 7.7)
+		// its own name in the menus' language, its English one where it has none
 		ParsedMetaXml* meta = title.GetMetaInfo();
 		candidate.name = meta ? meta->GetLongName((CafeConsoleLanguage)ps5lang::NintendoLanguage()) : title.GetMetaTitleName();
 		candidate.titleId = title.GetAppTitleId();

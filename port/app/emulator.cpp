@@ -567,7 +567,7 @@ namespace ps5emu
 				continue; // updates and DLC are listed with their base
 			Game game;
 			game.titleId = titleId;
-			// the game's own name in the menus' language, its English one where it has none (UI-REDESIGN 7.7)
+			// the game's own name in the menus' language, its English one where it has none
 			ParsedMetaXml* meta = base.GetMetaInfo();
 			game.name = meta ? meta->GetLongName((CafeConsoleLanguage)ps5lang::NintendoLanguage()) : base.GetMetaTitleName();
 			if (game.name.empty())

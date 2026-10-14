@@ -112,8 +112,8 @@ namespace ps5azahar
 			return out;
 		}
 
-		// The SMDH's name and publisher in the menus' language, as a 3DS set to it shows them (UI-REDESIGN
-		// 7.7), else in English (or the first language that has them), and its large icon.
+		// The SMDH's name and publisher in the menus' language, as a 3DS set to it shows them,
+		// else in English (or the first language that has them), and its large icon.
 		bool ReadSmdh(const std::vector<uint8_t>& smdh, Title& title)
 		{
 			if (smdh.size() < kSmdhSize || std::memcmp(smdh.data(), "SMDH", 4) != 0)

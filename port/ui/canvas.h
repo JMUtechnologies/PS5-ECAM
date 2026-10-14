@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR's UI kit: drawing a frame (docs/UI-REDESIGN.md, 9.3). The canvas records shapes,
+// PS5CEMU-HAR's UI kit: drawing a frame. The canvas records shapes,
 // pictures and text into the frame's draw list in the 1920 x 1080 layout space, inside the clips,
 // opacities and offsets pushed; Gfx draws the list. Icons and the controller's glyphs are drawn as
 // shapes, so they tint and scale with no atlas.

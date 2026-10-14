@@ -38,7 +38,7 @@ OVERLAY, WAVE_OVERLAY = 0.7, 0.8  # dark, as the app's start screen has its two 
 BODY = '#f4f8fc'
 BLUE = {'top': '#163b62', 'bottom': '#071225', 'accent': '#5aa9ff', 'detail': '#6a7e93'}
 GOLD = {'top': '#6b4a0e', 'bottom': '#170f04', 'accent': '#f4b63f', 'detail': '#8f826c'}
-# melonDS's green (UI-REDESIGN 5.2: nds, #7ed957)
+# melonDS's green (nds, #7ed957)
 GREEN = {'top': '#1f5a18', 'bottom': '#071a05', 'accent': '#7ed957', 'detail': '#748c6c'}
 MELON_TOP, MELON_BOTTOM, MELON_OVERLAY = (126, 217, 87), (52, 128, 36), 0.8
 WAVE_TOP, WAVE_BOTTOM = (255, 204, 64), (236, 158, 22)

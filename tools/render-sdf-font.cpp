@@ -52,7 +52,7 @@ namespace
 
 	// The code points baked: printable ASCII, Latin-1, Latin Extended-A, what Lexend has of Latin
 	// Extended-B and Latin Extended Additional (Romanian's ș and ț, Vietnamese's letters: the languages
-	// the menus speak in Latin script, docs/UI-REDESIGN.md 7.7), the spaces and the typographic marks
+	// the menus speak in Latin script), the spaces and the typographic marks
 	// the app's text uses. A code point the font lacks is left out.
 	std::vector<uint32_t> CodePoints()
 	{

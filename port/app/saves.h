@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: every side's saves backed up to a USB drive, and restored from one (docs/UI-REDESIGN.md,
-// 6.13). A backup is a folder, PS5CEMU-HAR-saves/<date and time>/ on the drive, with:
+// PS5CEMU-HAR: every side's saves backed up to a USB drive, and restored from one.
+// A backup is a folder, PS5CEMU-HAR-saves/<date and time>/ on the drive, with:
 //
 //   wiiu/save/          mlc01/usr/save: every game's saves, every account's, and the accounts
 //   3ds/sdmc/           the 3DS's games' saves (title/.../data) and extra data (extdata), from
@@ -57,7 +57,7 @@ namespace ps5saves
 	Status Current();
 	void Finish(); // waits for the thread (before a game)
 
-	// -- one game's saves (docs/UI-REDESIGN.md, 6.15) ------------------------------------------------
+	// -- one game's saves ------------------------------------------------
 	// The game whose saves these are: its side (0 Wii U, 1 3DS, 2 DS, as the launcher numbers them), its
 	// title ID (the Wii U's and the 3DS's), and its file (the DS's saves and states are named by it)
 	struct GameRef

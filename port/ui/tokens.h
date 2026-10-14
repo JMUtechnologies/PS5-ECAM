@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Written by tools/render-tokens.py from port/ui/tokens.json: the UI's colours, sizes, type and
-// motion (docs/UI-REDESIGN.md, section 7). Colours are RGBA, R in the lowest byte; the launcher's theme
+// motion. Colours are RGBA, R in the lowest byte; the launcher's theme
 // (ui/theme.h) sets the colours it draws with, which start as tokens.json's.
 
 #pragma once

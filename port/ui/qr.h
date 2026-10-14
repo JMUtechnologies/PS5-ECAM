@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR's UI kit: QR codes (docs/UI-REDESIGN.md, 6.7 and 9.2), so a phone can open the part of
+// PS5CEMU-HAR's UI kit: QR codes, so a phone can open the part of
 // the guide a screen is about. Byte mode at error correction level M, the smallest of versions 1 to
 // 10 the text fits (213 bytes at most), with the mask the standard's penalty rules choose. The canvas
 // draws it as squares, a row's dark run as one: nothing to rasterise or keep.

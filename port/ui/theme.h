@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the launcher's themes (docs/UI-REDESIGN.md, 7.8). A theme sets the colours the kit draws
+// PS5CEMU-HAR: the launcher's themes. A theme sets the colours the kit draws
 // with (tokens.h's, by tokens.json's names), how round its corners are, and what moves behind the
 // menus. The built-in ones are below; more can be made as JSON files in /data/ps5cemu/themes, each
 // starting from a built-in one:

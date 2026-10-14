@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: Updates and DLC (docs/UI-REDESIGN.md, 6.12), the Wii U's. What the drives plugged in, the
+// PS5CEMU-HAR: Updates and DLC, the Wii U's. What the drives plugged in, the
 // PS5's /data and the games folder have to install is found by itself (ps5emu::StartFindingInstallables)
 // and listed by game, each with what is installed now; Cross installs one, Square every new one, one
 // after another, the page's head saying how far the whole has gone; Triangle the folder browser for

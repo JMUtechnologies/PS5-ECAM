@@ -37,7 +37,7 @@ for title in "BotW Update v208" "BotW DLC"; do
     echo '<menu/>' >"$games/Installs/$title/meta/meta.xml"
 done
 python3 -B tools/launcher-preview/make-3ds-samples.py "$games/3ds" "$games/ds"
-# a game's saves for its Saves page (docs/UI-REDESIGN.md 6.15): Breath of the Wild's, two accounts' and the
+# a game's saves for its Saves page: Breath of the Wild's, two accounts' and the
 # one they share
 for save in 80000001:4100000 80000002:3800000 common:12000; do
     folder=$out/data/mlc01/usr/save/00050000/101c9400/user/${save%%:*}
