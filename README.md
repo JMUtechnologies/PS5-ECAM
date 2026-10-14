@@ -275,6 +275,10 @@ idea and prototype, #38.)
   off from the menu.
 - **Custom textures (3DS).** Turn on **Settings > Graphics > Custom textures** (3DS) and put a pack in
   `/data/ps5cemu/azahar/load/textures/<title ID>/`.
+- **Mods (Wii U).** Cemu's mods (graphic packs that replace a game's files, and the ones shared as
+  `content` and `aoc` folders alone): put each in `ps5cemu/mods` on a USB drive, then **Options** on
+  the game, **Add mods from USB**, and turn it on in the game's **Graphic packs**. The
+  [mods guide](docs/MODS.md) has the folders, title IDs and what to do when a mod does not work.
 - **Mods (3DS).** LayeredFS mods go in `/data/ps5cemu/azahar/load/mods/<title ID>/`, with `romfs/` and
   `exefs/` inside.
 
@@ -407,8 +411,18 @@ every 10 seconds with the frame rate, and `[crash]` lines if an emulator crashes
 - **Buttons** (#37): a button given an input another one uses swaps with it, A and B are one choice,
   a turbo button, and the touchpad's click can be any Wii U button, `−` included. Cemu's shader
   notices can be hidden (**Settings > Graphics**).
-- **Pokémon X, Y, Omega Ruby and Alpha Sapphire** (#23): the 3DS's *Outline fix* is on by default
-  for them, and any game can have it in its game settings.
+- **Pokémon X, Y, Omega Ruby, Alpha Sapphire, Sun, Moon, Ultra Sun and Ultra Moon** (#23): drawn
+  right, without the black dots and lines on their models, the broken shadows and the wrong colours:
+  their vertices are computed on the CPU (*Hardware shaders* off, in **Settings > Graphics** and each
+  game's settings), and the shadows without the GPU feature that broke them.
+- **Wii U mods from a USB drive:** **Add mods from USB** in a game's Options, or **Settings > Game
+  files > Mods from USB** (see the [mods guide](docs/MODS.md)).
+- **A game on the PS5's home screen:** **Add to home screen** in a game's Options makes it a tile of
+  its own (the open PS5 Forwarder Format, so Forwarder Manager can edit it); ShadowMount Plus adds it
+  to the home screen, and the tile starts the game straight away and closes the app after it.
+- **Classic**, a theme that brings back the app's first launcher (2.0.0 B's): Continue playing,
+  Recently played, and the Library and Settings as lists beside what is focused, with everything the
+  app has gained since.
 - **Your own music** in the launcher (MP3 or WAV), and **box art** that downloads again when the
   network was slow to start, with *Download missing box art* in **Settings > Online**.
 - **A quicker start:** Cemu's library loads in the background while the launcher is already up.
