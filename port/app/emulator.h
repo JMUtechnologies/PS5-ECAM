@@ -99,6 +99,9 @@ namespace ps5emu
 	// process (MainWindow::EndEmulation says so), so leaving a game means a fresh process; PS5SX2
 	// goes back to its shelf the same way. Returns only if the restart did not take.
 	void RestartToLibrary();
+	// Closes PS5Cemu, back to the PS5's home screen (sceSystemServiceLoadExec("exit")), after the game
+	// of a home screen tile that asked for it (--exit-after-game). Returns only if the console refused.
+	void ExitApp();
 
 	// A game's icon (meta/iconTex.tga) as an uncompressed top-down TGA in /data/ps5cemu/covers,
 	// extracted on first use; empty when the game has none or it cannot be read.

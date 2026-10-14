@@ -31,7 +31,8 @@ set(PS5CEMU_DEPS "${PS5CEMU_ROOT}/.deps")
 # the boilerplate's sandbox elevation client (port/ps5/privilege.cpp)
 set(SANDBOX_ELEVATION "${PS5CEMU_DEPS}/ps5-native-app-boilerplate/examples/sandbox-elevation")
 
-foreach(input "${SANDBOX_ELEVATION}/src/elevation.cpp" "${PS5CEMU_DEPS}/reshade/deps/stb/stb_image.h" "${PS5CEMU_DEPS}/dr_libs/dr_mp3.h")
+foreach(input "${SANDBOX_ELEVATION}/src/elevation.cpp" "${PS5CEMU_DEPS}/reshade/deps/stb/stb_image.h" "${PS5CEMU_DEPS}/dr_libs/dr_mp3.h"
+		"${PS5CEMU_DEPS}/ps5-forwarder-format/src/psfwd.c")
 	if(NOT EXISTS "${input}")
 		message(FATAL_ERROR "${input} is missing: run make deps")
 	endif()
@@ -120,6 +121,11 @@ add_library(CemuPS5 STATIC
 	app/menu_canvas.h
 	app/pack_updates.cpp
 	app/pack_updates.h
+	app/mods.cpp
+	app/mods.h
+	app/forwarders.cpp
+	app/forwarders.h
+	"${PS5CEMU_DEPS}/ps5-forwarder-format/src/psfwd.c"
 	app/paths.h
 	app/side_menu.h
 	app/tga.h
@@ -221,6 +227,8 @@ add_library(CemuPS5 STATIC
 cemu_use_precompiled_header(CemuPS5)
 set_source_files_properties(
 	app/achievements.cpp
+	app/forwarders.cpp
+	"${PS5CEMU_DEPS}/ps5-forwarder-format/src/psfwd.c"
 	app/netfs.cpp
 	app/boxart.cpp
 	app/saves.cpp
@@ -290,6 +298,8 @@ target_include_directories(CemuPS5 PRIVATE
 	"${STB_INCLUDE_DIR}"
 	# the launcher's music from the player's MP3s (frontend/music.cpp)
 	"${PS5CEMU_DEPS}/dr_libs"
+	# the PS5 Forwarder Format's library: home screen tiles (app/forwarders.cpp)
+	"${PS5CEMU_DEPS}/ps5-forwarder-format/include"
 )
 # the version the launcher and the boot log show (the app's param.json has it as 02.000.004)
 target_compile_definitions(CemuPS5 PUBLIC PS5CEMU_VERSION="${PS5CEMU_VERSION}"

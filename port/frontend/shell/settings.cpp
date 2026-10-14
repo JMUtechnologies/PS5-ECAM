@@ -11,6 +11,7 @@
 #include "../sound.h"
 #include "../../app/achievements.h"
 #include "../../app/boxart.h"
+#include "../../app/mods.h"
 #include "../../app/pack_updates.h"
 #include "../../app/paths.h"
 #include "../../app/updates.h"
@@ -284,6 +285,86 @@ namespace ps5shell
 			m_packsReloaded = true;
 			ps5emu::ReloadGraphicPacks();
 		}
+	}
+
+	std::string Shell::ModsStatus() const
+	{
+		using State = ps5mods::Status::State;
+		const auto status = ps5mods::GetStatus();
+		switch (status.state)
+		{
+		case State::Copying:
+			// tr: {0} is a mod's name, {1} how much of all the mods is copied, as in 40%
+			return status.total ? TrF("Copying {0}: {1}", status.current, Percent((int)(status.copied * 100 / status.total))) :
+								  std::string(Tr("Looking for mods…"));
+		case State::Done: return status.mods ? TrP(status.mods, "{0} mod added", "{0} mods added") : std::string(Tr("No mods found"));
+		case State::Failed: return status.message;
+		case State::Idle: break;
+		}
+		return Tr("Cross to look on your drives");
+	}
+
+	void Shell::AddMods(uint64_t titleId, const std::string& name)
+	{
+		const std::vector<std::string> drives = ConnectedDrives();
+		if (ps5mods::Folders(drives).empty())
+		{
+			m_feedback.Play(ui::Cue::Denied);
+			OpenHelp(Tr("No mods on your drives"),
+				Tr("Copy each mod's folder into a ps5cemu/mods folder on a USB drive and plug it in. A mod is a Cemu graphic pack (a "
+				   "folder with a rules.txt), or a folder with content and aoc folders in it for the files it replaces. The guide on "
+				   "GitHub, docs/MODS.md, has more."));
+			return;
+		}
+		ps5mods::Start(drives, titleId, name);
+		m_modsToastAt = m_now;
+		m_feedback.Play(ui::Cue::Select);
+		Toast(Tr("Copying mods from your drives…"));
+	}
+
+	void Shell::PollMods()
+	{
+		const ps5mods::Status status = ps5mods::GetStatus();
+		if (status.state == ps5mods::Status::State::Copying)
+		{
+			// a large mod takes minutes: how far it is, now and then
+			if (m_now - m_modsToastAt > 8)
+			{
+				m_modsToastAt = m_now;
+				Toast(ModsStatus());
+			}
+			return;
+		}
+		if (status.finished == m_modsFinished)
+			return;
+		m_modsFinished = status.finished;
+		// the mods copied, failure or not, are Cemu's packs from now
+		if (status.mods > 0 && m_status.coreReady)
+			ps5emu::ReloadGraphicPacks();
+		const std::string skipped = status.skipped ?
+			"\n\n" + TrP(status.skipped, "{0} folder had no rules.txt and no game: put a mod like that in a folder named by its game's title ID, "
+										 "or add it from its game's menu.",
+				"{0} folders had no rules.txt and no game: put a mod like that in a folder named by its game's title ID, or add it from "
+				"its game's menu.") :
+			std::string();
+		if (status.state == ps5mods::Status::State::Failed)
+		{
+			m_feedback.Play(ui::Cue::Denied);
+			OpenHelp(Tr("The mods could not all be copied"),
+				status.message + (status.mods ? "\n\n" + TrP(status.mods, "{0} mod was added.", "{0} mods were added.") : std::string()) + skipped);
+			return;
+		}
+		if (status.mods == 0)
+		{
+			m_feedback.Play(ui::Cue::Denied);
+			OpenHelp(Tr("No mods found"), Tr("The ps5cemu/mods folders on your drives hold no folder with a rules.txt, nor with content, aoc "
+											 "or code folders.") + skipped);
+			return;
+		}
+		if (!skipped.empty())
+			OpenHelp(TrP(status.mods, "{0} mod added", "{0} mods added"), Tr("Turn them on in their games' Graphic packs.") + skipped);
+		else
+			Toast(TrP(status.mods, "{0} mod added: turn it on in its game's Graphic packs", "{0} mods added: turn them on in their games' Graphic packs"));
 	}
 
 	// -- the rows -------------------------------------------------------------------------------------
@@ -633,6 +714,11 @@ namespace ps5shell
 					   "(folders with code, content and meta), and lists them by game with what is installed now. Cross installs one, Square "
 					   "every new one; each goes into the Wii U's storage (mlc01), as Cemu's Install game title, update or DLC does. Triangle "
 					   "there chooses a folder anywhere else.")));
+				cemu(action(Kind::Action, "mods", Tr("Mods from USB"), ModsStatus(), Tr("Cemu mods from the ps5cemu/mods folder on your drives."),
+					Tr("Copies the mods in a USB drive's ps5cemu/mods folder into the app's graphic packs, where each shows on its game's "
+					   "Graphic packs page, off until you turn it on. A mod is a Cemu graphic pack (a folder with a rules.txt), or, for one "
+					   "shared without it, a folder with content and aoc folders, in a folder named by its game's title ID. A game's menu "
+					   "has Add mods from USB as well, which gives such mods that game. The guide on GitHub, docs/MODS.md, has more.")));
 			}
 			else if (Is3ds())
 				action(Kind::Link, "installcia", Tr("Install a CIA file"), "", Tr("A game, an update or DLC."),
@@ -1593,6 +1679,8 @@ namespace ps5shell
 		}
 		else if (id == "packs")
 			ps5packs::Start(); // GitHub's latest community packs, when newer
+		else if (id == "mods")
+			AddMods(0, {}); // a mod with no rules.txt needs a title ID folder from here
 		else if (id == "appupdate")
 		{
 			// installing shows over the screen (the update sheet); otherwise GitHub is asked again

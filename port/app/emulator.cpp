@@ -851,6 +851,21 @@ namespace ps5emu
 				sceKernelUsleep(100000);
 		ps5log::Line("[emu] LoadExec({}) returned {:#x}", eboot, (uint32_t)result);
 	}
+
+	void ExitApp()
+	{
+		ps5boxart::Stop();
+		ps5log::Line("[emu] the game is over: PS5Cemu closes (a home screen tile's --exit-after-game)");
+		if (s_coreStarted)
+			GetConfigHandle().Save();
+		ps5log::FlushAll();
+		// as Forwarder Manager closes itself: the system ends the process
+		const int result = sceSystemServiceLoadExec("exit", nullptr);
+		if (result == 0)
+			for (int i = 0; i < 100; i++)
+				sceKernelUsleep(100000);
+		ps5log::Line("[emu] LoadExec(exit) returned {:#x}: the library instead", (uint32_t)result);
+	}
 }
 
 // patches/cemu: Cemu's VulkanRenderer::SubmitCommandBuffer, for each command buffer it begins. Each

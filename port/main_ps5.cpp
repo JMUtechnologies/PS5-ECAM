@@ -11,7 +11,9 @@
 
 #include "app/achievements.h"
 #include "app/emulator.h"
+#include "app/forwarders.h"
 #include "app/lang.h"
+#include "app/mods.h"
 #include "app/netfs.h"
 #include "app/pack_updates.h"
 #include "app/paths.h"
@@ -36,8 +38,10 @@
 #include "ps5/window.h"
 #include "stream/stream.h"
 
+#include <cctype>
 #include <cstdio>
 #include <cstdlib>
+#include <filesystem>
 #include <string>
 #include <unistd.h>
 
@@ -160,6 +164,49 @@ namespace
 		// the new launcher opened VideoOut through the driver at 59.94 Hz: the game's rate asked for again
 		ps5display::ConfigureOutput(highFrameRate);
 	}
+
+	// A home screen tile's arguments (app/forwarders.h, the PS5 Forwarder Format's): --rom <path> names
+	// the game to start at once, a full path or a file's name in its side's library, and
+	// --exit-after-game closes the app after it instead of showing the library
+	struct TileGame
+	{
+		std::string rom;
+		bool exitAfterGame = false;
+		ps5launcher::System side = ps5launcher::System::WiiU;
+	};
+
+	TileGame ReadArguments(int argc, char* argv[])
+	{
+		TileGame tile;
+		for (int i = 0; i < argc; i++)
+		{
+			const std::string arg = argv[i] ? argv[i] : "";
+			if (arg == "--rom" && i + 1 < argc && argv[i + 1])
+				tile.rom = argv[++i];
+			else if (arg == "--exit-after-game")
+				tile.exitAfterGame = true;
+		}
+		// the side by the file's type: the DS's and the 3DS's are their own, the rest the Wii U's (.wua,
+		// .wud, .wux, .rpx, a folder)
+		std::string extension = std::filesystem::path(tile.rom).extension().string();
+		for (char& c : extension)
+			c = (char)std::tolower((unsigned char)c);
+		for (const char* ds : {".nds", ".srl", ".dsi"})
+			if (extension == ds)
+				tile.side = ps5launcher::System::Nds;
+		for (const char* n3ds : {".3ds", ".cci", ".cxi", ".cia", ".3dsx", ".app", ".elf", ".axf", ".z3ds", ".zcci", ".zcxi", ".z3dsx"})
+			if (extension == n3ds)
+				tile.side = ps5launcher::System::N3ds;
+		return tile;
+	}
+
+	// Whether the game chosen is the tile's (by its path, or its file's name)
+	bool IsTileGame(const TileGame& tile, const ps5emu::Game& game)
+	{
+		if (tile.rom.empty())
+			return false;
+		return tile.rom.find('/') == std::string::npos ? game.path.filename().string() == tile.rom : game.path.string() == tile.rom;
+	}
 }
 
 // What Cemu's src/main.cpp defines for the rest of Cemu.
@@ -198,6 +245,10 @@ int main(int argc, char* argv[])
 	ps5settings::Launcher settings = ps5settings::Load();
 	// the update notice, on a fresh start only (not each time a game hands back to the library)
 	const bool freshStart = settings.side.empty();
+	const TileGame tile = ReadArguments(argc, argv);
+	if (!tile.rom.empty())
+		ps5log::Line("[main] a home screen tile: --rom {}{} ({} side)", tile.rom, tile.exitAfterGame ? " --exit-after-game" : "",
+			ps5launcher::SideTitle(tile.side));
 	// still before any thread: the game folders and drives the HEN may have left out (#16)
 	if (privileges.filesystem)
 		ps5privilege::ReachFolders({settings.gamesFolder, settings.n3ds.gamesFolder, settings.nds.gamesFolder});
@@ -343,6 +394,15 @@ int main(int argc, char* argv[])
 
 	ps5launcher::Status status;
 	status.diagnostics = Diagnostics(ps5privilege::Current());
+	status.autoLaunch = tile.rom;
+	status.autoLaunchSide = tile.side;
+	// after the game: the library, or for a tile's game (--exit-after-game) the PS5's home screen
+	auto afterGame = [&](const char* side, const ps5emu::Game& game) {
+		if (tile.exitAfterGame && IsTileGame(tile, game))
+			ps5emu::ExitApp();
+		RememberSide(side);
+		ps5emu::RestartToLibrary();
+	};
 	std::string error;
 	if (!privileges.filesystem)
 	{
@@ -414,6 +474,8 @@ int main(int argc, char* argv[])
 		ps5emu::FinishCoreStart(); // a 3DS or DS game chosen while Cemu's library was still loading waits for it
 		ps5update::Stop(); // nothing of the launcher's runs beside a game
 		ps5packs::Stop();
+		ps5mods::Stop();
+		ps5forwarders::Stop();
 		if (outcome != ps5shell::Outcome::Chosen || !choice)
 		{
 			// the launcher could not draw, and there is nothing else to show: the boot log says why. Wait
@@ -455,8 +517,7 @@ int main(int argc, char* argv[])
 			if (ps5melonds::LaunchGame(game, forGame.nds, error))
 			{
 				ps5melonds::RunGame();
-				RememberSide("ds");
-				ps5emu::RestartToLibrary();
+				afterGame("ds", game);
 				return 0;
 			}
 			ps5log::Line("[main] {} did not start: {}", game.name, error);
@@ -482,8 +543,7 @@ int main(int argc, char* argv[])
 			if (ps5azahar::LaunchGame(game, forGame.n3ds, error))
 			{
 				ps5azahar::RunGame();
-				RememberSide("3ds");
-				ps5emu::RestartToLibrary();
+				afterGame("3ds", game);
 				return 0;
 			}
 			ps5log::Line("[main] {} did not start: {}", game.name, error);
@@ -507,8 +567,7 @@ int main(int argc, char* argv[])
 		if (ps5emu::LaunchGame(game, error))
 		{
 			ps5emu::RunGame();
-			RememberSide("wiiu");
-			ps5emu::RestartToLibrary();
+			afterGame("wiiu", game);
 			return 0;
 		}
 		ps5log::Line("[main] {} did not start: {}", game.name, error);

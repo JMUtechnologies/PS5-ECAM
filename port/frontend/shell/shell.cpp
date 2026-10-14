@@ -7,6 +7,8 @@
 #include "../actions.h"
 #include "../sound.h"
 #include "../../app/boxart.h"
+#include "../../app/forwarders.h"
+#include "../../app/mods.h"
 #include "../../app/pack_updates.h"
 #include "../../app/paths.h"
 #include "../../app/updates.h"
@@ -172,8 +174,14 @@ namespace ps5shell
 				launchError = *error;
 				error->clear();
 			}
+		// a home screen tile's game (--rom): its side, whichever was used last
+		if (!m_status.autoLaunch.empty())
+		{
+			side = SideName(m_status.autoLaunchSide);
+			ps5log::Line("[launcher] a home screen tile's game, on the {} side: {}", SideTitle(m_status.autoLaunchSide), m_status.autoLaunch);
+		}
 		m_side = ps5launcher::SideNamed(side);
-		if (!SideShown(m_side))
+		if (!SideShown(m_side) && m_status.autoLaunch.empty())
 			m_side = FirstShownSide();
 		// a version this console has not run before: what it brings, once (Make it yours), unless this is
 		// the app's first start, which shows the look and feel to choose instead
@@ -202,7 +210,7 @@ namespace ps5shell
 			OpenHelp(Tr("The game could not start"), launchError);
 		// Eden's opening: the PS5's launch picture handed over to the launcher, as the app starts (not
 		// after a game, nor over what a failed one says)
-		else if (SectionLayout() && !returning && m_screen == ScreenId::Home)
+		else if (SectionLayout() && !returning && m_screen == ScreenId::Home && m_status.autoLaunch.empty())
 			EdenStartOpening();
 		ps5log::Line("[ui] the new launcher is up in {:.0f} ms", (host.clock() - started) * 1000);
 
@@ -219,6 +227,8 @@ namespace ps5shell
 		// the background work stops behind the launch (4.2, rule 4), the screen kept drawn
 		ps5boxart::Stop();
 		ps5packs::Stop();
+		ps5mods::Stop();
+		ps5forwarders::Stop();
 		ps5emu::StopFindingInstallables();
 		ps5saves::Finish(); // a backup or restore running finishes first
 		for (int waited = 0; SystemScanning() && !m_failed; waited++)
@@ -273,6 +283,9 @@ namespace ps5shell
 			PollCore();
 		PollGames();
 		PollPacks();
+		PollMods();
+		PollTiles();
+		PollAutoLaunch();
 		if (m_installing)
 			PollInstall();
 		if (m_screen == ScreenId::Updates || m_updates.installing)
@@ -498,6 +511,7 @@ namespace ps5shell
 			}
 			m_side = side;
 			m_games.clear();
+			m_listed = false;
 			if (!first || m_frames > 0)
 			{
 				// what is happening shows while the side starts (Cemu takes a few seconds)
@@ -645,6 +659,7 @@ namespace ps5shell
 		m_boxArrivals = ps5boxart::Arrivals();
 		if (!m_scanning && CoreReady())
 		{
+			m_listed = true;
 			ps5log::Line("[launcher] {} games", m_games.size());
 			FetchBoxArt();
 			RememberCount();
@@ -880,6 +895,75 @@ namespace ps5shell
 		if (m_toasts.size() > 3)
 			m_toasts.erase(m_toasts.begin());
 		m_feedback.Play(ui::Cue::Notify);
+	}
+
+	void Shell::AddTile(Game& game)
+	{
+		// the box art, else the icon: made square for the tile
+		std::string cover = game.boxArt;
+		if (cover.empty() || !IsFile(cover))
+			cover = IconOf(game);
+		ps5forwarders::Start({game.entry.game.name, game.entry.game.path.string(), cover});
+		m_feedback.Play(ui::Cue::Select);
+		Toast(TrF("Making {0}'s home screen tile…", game.entry.game.name));
+	}
+
+	void Shell::PollTiles()
+	{
+		const ps5forwarders::Status status = ps5forwarders::GetStatus();
+		if (status.finished == m_tilesFinished)
+			return;
+		m_tilesFinished = status.finished;
+		if (status.state == ps5forwarders::Status::State::Failed)
+		{
+			m_feedback.Play(ui::Cue::Denied);
+			OpenHelp(Tr("The tile could not be made"), status.message);
+			return;
+		}
+		// tr: {0} is the tile's folder, /data/homebrew/PPSA99xxx
+		OpenHelp(status.replaced ? Tr("The tile is made again") : Tr("The tile is made"),
+			TrF("It is in {0}. ShadowMount Plus puts it on the PS5's home screen as it does any homebrew: if it does not show, "
+				"restart ShadowMount Plus or the console. The tile starts the game in PS5CEMU-HAR, and closing the game closes the app.",
+				status.folder));
+	}
+
+	void Shell::PollAutoLaunch()
+	{
+		if (m_status.autoLaunch.empty() || m_launch.active || m_done)
+			return;
+		const std::string rom = m_status.autoLaunch;
+		auto give = [&](const std::string& why) {
+			m_status.autoLaunch.clear();
+			ps5log::Line("[launcher] the tile's game did not start: {}", why);
+			OpenHelp(Tr("The tile's game could not start"), why);
+		};
+		if (m_side != m_status.autoLaunchSide)
+		{
+			m_status.autoLaunch.clear(); // another side chosen meanwhile
+			return;
+		}
+		if (!Notice().empty())
+		{
+			give(Notice());
+			return;
+		}
+		if (!CoreReady())
+			return; // Cemu still starting
+		// by its path, or by its file's name in this side's library (the format's --rom allows either)
+		const bool named = rom.find('/') == std::string::npos;
+		for (int i = 0; i < (int)m_games.size(); i++)
+		{
+			const std::filesystem::path& path = m_games[i].entry.game.path;
+			if (named ? path.filename().string() == rom : path.string() == rom)
+			{
+				m_status.autoLaunch.clear();
+				ps5log::Line("[launcher] starting the tile's game: {}", m_games[i].entry.game.name);
+				Launch(i);
+				return;
+			}
+		}
+		if (m_listed && !m_scanning && !SystemScanning())
+			give(TrF("It is not in the library: {0}", rom));
 	}
 
 	// -- screens and the bar ------------------------------------------------------------------------
@@ -1505,9 +1589,11 @@ namespace ps5shell
 		if (IsWiiU() && m_status.coreReady)
 		{
 			m_menu.items.push_back({"packs", Tr("Graphic packs")});
+			m_menu.items.push_back({"mods", Tr("Add mods from USB")});
 			m_menu.items.push_back({"updates", Tr("Updates and DLC")});
 		}
 		m_menu.items.push_back({"favourite", g.entry.favourite ? Tr("Not a favourite") : Tr("Favourite")});
+		m_menu.items.push_back({"tile", Tr("Add to home screen")});
 		m_menu.items.push_back({"where", Tr("Show where it is")});
 		m_feedback.Play(ui::Cue::Sheet);
 	}
@@ -1774,6 +1860,10 @@ namespace ps5shell
 				}
 				else if (id == "updates") // that game's alone (6.12)
 					UpdatesOpen(g.entry.game.titleId, m_screen);
+				else if (id == "mods")
+					AddMods(g.entry.game.titleId, g.entry.game.name);
+				else if (id == "tile")
+					AddTile(g);
 				else if (id == "settings")
 				{
 					m_feedback.Play(ui::Cue::Select);
@@ -1912,7 +2002,8 @@ namespace ps5shell
 			Badge(canvas, sheet.x + 36, sheet.y + 32, m_side);
 			canvas.Text(Style(kHeadingStyle), sheet.x + 36, sheet.y + 78, game.entry.game.name, kText, sheet.w - 72, 1);
 			static const std::map<std::string, Icon> kIcons = {{"play", Icon::Play}, {"hub", Icon::ChevronRight}, {"settings", Icon::Sparkle},
-				{"saves", Icon::Save}, {"packs", Icon::Gear}, {"updates", Icon::Download}, {"favourite", Icon::Star}, {"where", Icon::Folder}};
+				{"saves", Icon::Save}, {"packs", Icon::Gear}, {"mods", Icon::Usb}, {"updates", Icon::Download}, {"favourite", Icon::Star},
+				{"tile", Icon::Home}, {"where", Icon::Folder}};
 			for (int i = 0; i < count; i++)
 			{
 				const Box row{sheet.x + 20, sheet.y + 136 + i * rowH, sheet.w - 40, rowH - 6};

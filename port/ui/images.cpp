@@ -304,4 +304,81 @@ namespace ui
 		m_entries.clear();
 		m_done.clear();
 	}
+
+	namespace
+	{
+		// A picture grown (or shrunk a little) to width x height by bilinear samples, a few a pixel where
+		// it shrinks
+		std::vector<uint8_t> Resampled(const uint8_t* rgba, int width, int height, int toWidth, int toHeight)
+		{
+			std::vector<uint8_t> out((size_t)toWidth * toHeight * 4);
+			const int samples = std::clamp((int)std::ceil(std::max((float)width / toWidth, (float)height / toHeight)), 1, 4);
+			for (int y = 0; y < toHeight; y++)
+				for (int x = 0; x < toWidth; x++)
+				{
+					float sum[4] = {};
+					for (int sy = 0; sy < samples; sy++)
+						for (int sx = 0; sx < samples; sx++)
+						{
+							const float u = std::clamp(((x + (sx + 0.5f) / samples) * width / toWidth) - 0.5f, 0.0f, width - 1.0f);
+							const float v = std::clamp(((y + (sy + 0.5f) / samples) * height / toHeight) - 0.5f, 0.0f, height - 1.0f);
+							const int x0 = (int)u, y0 = (int)v, x1 = std::min(x0 + 1, width - 1), y1 = std::min(y0 + 1, height - 1);
+							const float fx = u - x0, fy = v - y0;
+							for (int c = 0; c < 4; c++)
+							{
+								const float top = rgba[((size_t)y0 * width + x0) * 4 + c] * (1 - fx) + rgba[((size_t)y0 * width + x1) * 4 + c] * fx;
+								const float bottom = rgba[((size_t)y1 * width + x0) * 4 + c] * (1 - fx) + rgba[((size_t)y1 * width + x1) * 4 + c] * fx;
+								sum[c] += top * (1 - fy) + bottom * fy;
+							}
+						}
+					for (int c = 0; c < 4; c++)
+						out[((size_t)y * toWidth + x) * 4 + c] = (uint8_t)std::clamp(sum[c] / (samples * samples) + 0.5f, 0.0f, 255.0f);
+				}
+			return out;
+		}
+	}
+
+	bool SquarePicture(const std::string& path, int size, std::vector<uint8_t>& rgba)
+	{
+		int width = 0, height = 0, channels = 0;
+		stbi_uc* pixels = stbi_load(path.c_str(), &width, &height, &channels, 4);
+		if (!pixels || width <= 0 || height <= 0 || size <= 0)
+		{
+			if (pixels)
+				stbi_image_free(pixels);
+			return false;
+		}
+		// behind: the picture's middle filling the square, softened and darker
+		const int side = std::min(width, height);
+		std::vector<uint8_t> middle((size_t)side * side * 4);
+		const int left = (width - side) / 2, top = (height - side) / 2;
+		for (int y = 0; y < side; y++)
+			std::copy_n(pixels + ((size_t)(top + y) * width + left) * 4, (size_t)side * 4, middle.begin() + (size_t)y * side * 4);
+		std::vector<uint8_t> small = Shrink(middle.data(), side, side, 24, 24);
+		Blur(small, 24, 24, 2);
+		rgba = Resampled(small.data(), 24, 24, size, size);
+		for (size_t i = 0; i < rgba.size(); i += 4)
+		{
+			for (int c = 0; c < 3; c++)
+				rgba[i + c] = (uint8_t)(rgba[i + c] * 0.45f);
+			rgba[i + 3] = 255;
+		}
+		// in front: the whole picture, as large as it fits
+		const float scale = std::min((float)size / width, (float)size / height);
+		const int toWidth = std::clamp((int)std::lround(width * scale), 1, size), toHeight = std::clamp((int)std::lround(height * scale), 1, size);
+		const std::vector<uint8_t> front = toWidth <= width / 2 ? Shrink(pixels, width, height, toWidth, toHeight) :
+																  Resampled(pixels, width, height, toWidth, toHeight);
+		stbi_image_free(pixels);
+		const int atX = (size - toWidth) / 2, atY = (size - toHeight) / 2;
+		for (int y = 0; y < toHeight; y++)
+			for (int x = 0; x < toWidth; x++)
+			{
+				const uint8_t* from = &front[((size_t)y * toWidth + x) * 4];
+				uint8_t* to = &rgba[((size_t)(atY + y) * size + atX + x) * 4];
+				const float alpha = from[3] / 255.0f;
+				for (int c = 0; c < 3; c++)
+					to[c] = (uint8_t)(from[c] * alpha + to[c] * (1 - alpha) + 0.5f);
+			}
+		return true;
+	}
 }

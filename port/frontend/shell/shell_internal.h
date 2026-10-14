@@ -427,6 +427,15 @@ namespace ps5shell
 		std::string PacksStatus() const;
 		static std::string AppUpdateStatus();
 		void PollPacks();
+		// Wii U mods from the USB drives (app/mods.h): titleId and name, the game they were added from
+		void AddMods(uint64_t titleId, const std::string& name);
+		std::string ModsStatus() const;
+		void PollMods();
+		// a game's home screen tile (app/forwarders.h)
+		void AddTile(Game& game);
+		void PollTiles();
+		// a home screen tile's game, started once its side has it (Status::autoLaunch)
+		void PollAutoLaunch();
 
 		void PacksOpen(int game, ScreenId from);
 		void PacksUpdate(const ui::Press& press);
@@ -536,6 +545,7 @@ namespace ps5shell
 
 		std::vector<Game> m_games;
 		bool m_scanning = false;
+		bool m_listed = false; // the side's scan has finished: m_games is all it found
 		uint32_t m_boxArrivals = 0;
 		bool m_iconLookedThisFrame = false;
 
@@ -620,6 +630,9 @@ namespace ps5shell
 		std::string m_diagnosticsDone[3];
 		std::string m_packsShown;
 		bool m_packsReloaded = false;
+		uint32_t m_modsFinished = 0;  // the mods' runs answered (ps5mods::Status::finished)
+		double m_modsToastAt = 0;	  // when a copy's progress was last said
+		uint32_t m_tilesFinished = 0; // the tiles' requests answered (ps5forwarders::Status::finished)
 		bool m_holdFired = false;
 		std::string m_message; // a row's outcome
 		std::map<std::string, int> m_holdChoice; // a held row with choices (Left and Right): the one chosen

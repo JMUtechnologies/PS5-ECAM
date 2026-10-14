@@ -46,6 +46,10 @@ namespace ps5launcher
 		std::string launchError3ds; // and the last 3DS game
 		std::string launchErrorDs;  // and the last DS game
 		std::vector<std::string> diagnostics; // the lines Settings > Diagnostics shows
+		// a home screen tile's game (--rom, app/forwarders.h): started as soon as its side can, on that
+		// side, by its path (or its file's name); empty: none
+		std::string autoLaunch;
+		System autoLaunchSide = System::WiiU;
 	};
 
 	struct Choice

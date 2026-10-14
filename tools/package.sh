@@ -128,6 +128,11 @@ cp -a "$deps/Cemu/bin/gameProfiles" "$app/assets/cemu/"
 # the certificate authorities curl checks GitHub against for the update notice (app/updates.cpp):
 # the console has no store of its own, so the build system's goes along
 cp /etc/ssl/certs/ca-certificates.crt "$app/assets/cacert.pem"
+# the PS5 Forwarder Format's tile program, which a game's home screen tile runs (app/forwarders.cpp):
+# its eboot.bin and libc.prx, byte for byte as the format ships them
+mkdir -p "$app/assets/forwarder/sce_module"
+cp "$deps/ps5-forwarder-format/template/eboot.bin" "$app/assets/forwarder/"
+cp "$deps/ps5-forwarder-format/template/sce_module/libc.prx" "$app/assets/forwarder/sce_module/"
 # GameTDB's game information for the details page and the in-game menus (tools/render-gametdb.py,
 # committed)
 mkdir -p "$app/assets/gametdb"

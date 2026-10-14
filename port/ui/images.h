@@ -83,4 +83,9 @@ namespace ui
 		bool m_stopping = false;
 		std::thread m_worker;
 	};
+
+	// A picture file made a size x size square, RGBA, for what is not drawn here (a home screen tile's
+	// icon, app/forwarders.cpp): the whole picture, as large as it fits, over a softened and darker copy
+	// of it that fills the square. False when the file cannot be read.
+	bool SquarePicture(const std::string& path, int size, std::vector<uint8_t>& rgba);
 }
