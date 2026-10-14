@@ -496,10 +496,16 @@ namespace ps5shell
 					Tr("On, a new shader is built while the game carries on, so it does not stutter, but some things may be missing for a moment. "
 					"Off, the game waits for each one: stutter, but nothing drawn wrong.")),
 				"asyncShaderCompilation");
+			own(toggle("hwshaders", Tr("Hardware shaders"), hand.hwShaders, Tr("Off: 3D drawn exactly, on the CPU. Off for Pokémon."),
+					Tr("On, the 3DS's vertex shaders run on the PS5's GPU, the fastest way. Off, they run on the CPU as Azahar's software "
+					   "shaders: slower, but a model and the outline drawn around it are computed alike, and its lighting is corrected per "
+					   "triangle. Off by default for Pokémon X, Y, Omega Ruby, Alpha Sapphire, Sun, Moon, Ultra Sun and Ultra Moon, whose "
+					   "outlines, lighting and shadows glitch otherwise. Applies to the next game.")),
+				"hwShaders");
 			own(toggle("outlinefix", Tr("Outline fix"), hand.invariantPosition, Tr("Fixes moving black dots on outlined 3D models."),
-					Tr("Computes every 3D position the same way twice, as Azahar does on Apple's GPUs, so the outlines games such as Pokémon X "
-					   "and Y draw around their models stop showing moving black dots (#23). On by default for Pokémon X, Y, Omega Ruby and "
-					   "Alpha Sapphire; for other games, turn it on in their game settings if they show the same. Applies to the next game.")),
+					Tr("Computes every 3D position the same way twice, as Azahar does on Apple's GPUs. For a game that shows moving black dots "
+					   "on its outlined models with hardware shaders on; the Pokémon games are drawn right with Hardware shaders off "
+					   "instead. Applies to the next game.")),
 				"invariantPosition");
 		}
 		else if (page == "graphics")
@@ -1302,6 +1308,8 @@ namespace ps5shell
 				hand.asyncShaders = on;
 			else if (id == "outlinefix")
 				hand.invariantPosition = on;
+			else if (id == "hwshaders")
+				hand.hwShaders = on;
 			else if (id == "motion")
 				hand.motion = on;
 			else if (id == "dsjit")

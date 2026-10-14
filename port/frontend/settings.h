@@ -40,9 +40,16 @@ namespace ps5settings
 		// which time every SVC; false: the steady clock, a call into the kernel each read
 		bool tscClock = true;
 		// every 3DS vertex position computed invariantly (Azahar patch 0010), as Azahar does on Apple
-		// GPUs, for Pokemon X's moving black stipples (#23): Settings > Graphics' Outline fix, which a
-		// game can have its own of; on by default for the games known to need it (InvariantByDefault)
+		// GPUs: Settings > Graphics' Outline fix, which a game can have its own of. Off by default
+		// everywhere: the Pokemon games it was made for (#23) draw right with hwShaders off instead
 		bool invariantPosition = false;
+		// Azahar's hardware shaders (use_hw_shader): the 3DS's vertex shaders on the GPU. Off, they run on
+		// the CPU (Azahar's shader JIT), where a model and the outline drawn around it are computed alike
+		// and the normals' quaternions are corrected per triangle: off by default for the Pokemon games
+		// (PokemonByDefault), whose outlines, lighting and shadows glitch on the console's GPU otherwise
+		// (it has no fragment shader barycentrics, and RADV and the outlines' invariance disagree,
+		// Citra #7376). Settings > Graphics, and a game's own
+		bool hwShaders = true;
 		// the DS's games (melonDS: port/melonds)
 		int dsFilter = 0;			  // how the DS's screens are scaled to the TV: sharp, smooth, square pixels (ps5melonds::screens::Filter)
 		bool dsJit = true;			  // melonDS's recompiler where the console gives executable memory; off: its interpreter, slower
@@ -257,10 +264,10 @@ namespace ps5settings
 	// The Wii U's are the Launcher's own, the 3DS's n3ds', the DS's nds'.
 	bool Value(const Launcher& settings, const std::string& side, const std::string& name, int& value);
 	void SetValue(Launcher& settings, const std::string& side, const std::string& name, int value);
-	// The settings a game starts with: its side's, with the game's own over them (and the outline fix on
-	// for the 3DS games known to need it, InvariantByDefault, unless the game says otherwise)
+	// The settings a game starts with: its side's, with the game's own over them (and hardware shaders
+	// off for the Pokemon games, PokemonByDefault, unless the game says otherwise)
 	Launcher ForGame(const Launcher& settings, const std::string& side, uint64_t titleId);
-	bool InvariantByDefault(uint64_t titleId);
+	bool PokemonByDefault(uint64_t titleId);
 	// After a game's menu changed settings: each one it changed (from before, what the game started
 	// with, to after) saved in ps5cemu.json, into the game's own settings when it has some and the
 	// setting is one a game can have, else into the side's; the rest of the side's as after has them.

@@ -76,6 +76,7 @@ namespace ps5settings
 			ReadInt(json, "cpuClock", n3ds.cpuClock, 25, 400);
 			ReadBool(json, "tscClock", n3ds.tscClock);
 			ReadBool(json, "invariantPosition", n3ds.invariantPosition);
+			ReadBool(json, "hwShaders", n3ds.hwShaders);
 			ReadString(json, "turbo", n3ds.turbo);
 			ReadInt(json, "region", n3ds.region, -1, 6);
 			ReadInt(json, "language", n3ds.language, -1, 11);
@@ -119,6 +120,8 @@ namespace ps5settings
 			writer.Bool(n3ds.tscClock);
 			writer.Key("invariantPosition");
 			writer.Bool(n3ds.invariantPosition);
+			writer.Key("hwShaders");
+			writer.Bool(n3ds.hwShaders);
 			writer.Key("turbo");
 			writer.String(n3ds.turbo.c_str());
 			writer.Key("region");
@@ -515,6 +518,7 @@ namespace ps5settings
 				{"dsJit", nullptr, nullptr, nullptr, &N3ds::dsJit},
 				{"dsOwnBios", nullptr, nullptr, nullptr, &N3ds::dsOwnBios},
 				{"invariantPosition", nullptr, nullptr, nullptr, &N3ds::invariantPosition},
+				{"hwShaders", nullptr, nullptr, nullptr, &N3ds::hwShaders},
 			};
 			return fields;
 		}
@@ -546,7 +550,7 @@ namespace ps5settings
 	const std::vector<std::string>& GameSettingNames(const std::string& side)
 	{
 		static const std::vector<std::string> wiiu = {"upscaleFilter", "highFrameRate", "framePacing", "overlay", "asyncShaders", "volume"};
-		static const std::vector<std::string> n3ds = {"resolution", "textureFilter", "customTextures", "asyncShaderCompilation", "invariantPosition", "layout", "border",
+		static const std::vector<std::string> n3ds = {"resolution", "textureFilter", "customTextures", "asyncShaderCompilation", "invariantPosition", "hwShaders", "layout", "border",
 			"volume", "region", "language", "cpuClock"};
 		static const std::vector<std::string> nds = {"dsFilter", "dsJit", "layout", "border", "volume", "language", "dsOwnBios"};
 		static const std::vector<std::string> none;
@@ -585,13 +589,16 @@ namespace ps5settings
 			Handheld(settings, side).*(field->handheldFlag) = value != 0;
 	}
 
-	bool InvariantByDefault(uint64_t titleId)
+	bool PokemonByDefault(uint64_t titleId)
 	{
-		// the games the moving black stipples were seen in (#23): Pokemon X and Y, Omega Ruby and Alpha
-		// Sapphire, released worldwide under one title ID each
+		// the Pokemon games whose outlined models show moving black dots on the console (#23), their
+		// lighting and shadows glitching too (the owner, 2026-10-13: X, Y and Ultra Sun), each released
+		// worldwide under one title ID
 		static constexpr uint64_t kTitles[] = {
 			0x0004000000055D00, 0x0004000000055E00, // X, Y
 			0x000400000011C400, 0x000400000011C500, // Omega Ruby, Alpha Sapphire
+			0x0004000000164800, 0x0004000000175E00, // Sun, Moon
+			0x00040000001B5000, 0x00040000001B5100, // Ultra Sun, Ultra Moon
 		};
 		return std::find(std::begin(kTitles), std::end(kTitles), titleId) != std::end(kTitles);
 	}
@@ -600,9 +607,11 @@ namespace ps5settings
 	{
 		Launcher game = settings;
 		const auto found = settings.games.find(GameKey(side, titleId));
-		// a game known to need the outline fix has it unless it says otherwise
-		if (side == "3ds" && InvariantByDefault(titleId) && (found == settings.games.end() || !found->second.count("invariantPosition")))
-			game.n3ds.invariantPosition = true;
+		// a Pokemon game draws its vertices on the CPU unless it says otherwise (hwShaders). The Outline fix
+		// (invariant positions) is no longer on for them by default: on RADV it is what Citra took out for
+		// Pokemon's sake (#7376), and the console showed it did not clear their glitches
+		if (side == "3ds" && PokemonByDefault(titleId) && (found == settings.games.end() || !found->second.count("hwShaders")))
+			game.n3ds.hwShaders = false;
 		if (found != settings.games.end())
 			for (const auto& [name, value] : found->second)
 				SetValue(game, side, name, value);

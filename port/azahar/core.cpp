@@ -371,7 +371,11 @@ namespace ps5azahar
 			auto& values = Settings::values;
 			values.graphics_api = Settings::GraphicsAPI::Vulkan;
 			values.physical_device = 0;
-			values.use_hw_shader = true;
+			// the 3DS's vertex shaders on the GPU, unless the game draws right only on the CPU (the Pokemon
+			// games: ps5settings::PokemonByDefault)
+			values.use_hw_shader = settings.hwShaders;
+			if (!settings.hwShaders)
+				ps5log::Line("[azahar] vertex shaders on the CPU (Hardware shaders off)");
 			values.use_disk_shader_cache = true;
 			// off by default, as desktop Azahar: on, a draw waits for no shader, and one whose shader is
 			// not built yet is skipped (Settings > Graphics)

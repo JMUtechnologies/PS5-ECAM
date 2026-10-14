@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Wed, 14 Oct 2026 00:29:27 +0000
+Subject: [PATCH] PS5: shadow maps without fragment shader interlock
+
+RADV offers VK_EXT_fragment_shader_interlock on the console through POPS, whose depth block is GC 10.1.3's while RADV programs it as GFX10.3's, and no test has run it there. The Pokemon games drew broken shadows. The shadow maps are updated through the imageAtomicCompSwap loop instead, as on GPUs without the extension, which gives the same result in any order.
+---
+ src/video_core/renderer_vulkan/vk_instance.cpp | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/src/video_core/renderer_vulkan/vk_instance.cpp b/src/video_core/renderer_vulkan/vk_instance.cpp
+index 733b41ba8..987034738 100644
+--- a/src/video_core/renderer_vulkan/vk_instance.cpp
++++ b/src/video_core/renderer_vulkan/vk_instance.cpp
+@@ -468,9 +468,20 @@ bool Instance::CreateDevice() {
+         add_extension(VK_EXT_INDEX_TYPE_UINT8_EXTENSION_NAME, is_moltenvk,
+                       "uint8 index conversion causes memory leaks in MoltenVK");
+     const bool has_robustness2 = add_extension(VK_EXT_ROBUSTNESS_2_EXTENSION_NAME);
++#ifdef __PROSPERO__
++    // PS5: the shadow maps' updates through imageAtomicCompSwap, as on GPUs without the extension.
++    // RADV offers interlock here through POPS, whose depth block is GC 10.1.3's on this GPU while
++    // RADV programs it as GFX10.3's (PS5_Vulkan's audit), and no test has run it: the Pokemon games
++    // drew broken shadows. The atomic loop gives the same result in any order.
++    const bool skip_fragment_shader_interlock = true;
++    const char* const interlock_reason = "the PS5's ordered pixel shading is untested";
++#else
++    const bool skip_fragment_shader_interlock = is_nvidia;
++    const char* const interlock_reason = "it is broken on Nvidia drivers";
++#endif
+     const bool has_fragment_shader_interlock =
+-        add_extension(VK_EXT_FRAGMENT_SHADER_INTERLOCK_EXTENSION_NAME, is_nvidia,
+-                      "it is broken on Nvidia drivers");
++        add_extension(VK_EXT_FRAGMENT_SHADER_INTERLOCK_EXTENSION_NAME,
++                      skip_fragment_shader_interlock, interlock_reason);
+     const bool has_pipeline_creation_cache_control =
+         add_extension(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME, is_nvidia,
+                       "it is broken on Nvidia drivers");
