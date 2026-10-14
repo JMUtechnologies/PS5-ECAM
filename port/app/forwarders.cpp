@@ -16,11 +16,20 @@
 #include "stb_image_write.h"
 #pragma clang diagnostic pop
 
+#include <arpa/inet.h>
 #include <dirent.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/time.h>
+#include <unistd.h>
 
+#include <atomic>
+#include <cerrno>
 #include <cstdio>
 #include <cstring>
+#include <filesystem>
+#include <fstream>
 #include <mutex>
 #include <thread>
 #include <vector>
@@ -31,15 +40,126 @@ namespace ps5forwarders
 	{
 		constexpr const char* kRoot = PSFWD_DEFAULT_ROOT; // /data/homebrew
 		constexpr int kIconSize = 512;					  // the format's icon0.png
+		constexpr int kElfldrPort = 9021;				  // the console's payload loader
+		constexpr int kInstallPolls = 100;				  // 10 s for the helper to move a tile in
 
 		std::mutex s_mutex;
 		Status s_status; // under s_mutex
 		std::thread s_thread;
+		std::atomic<bool> s_stop{false};
 
 		bool Exists(const std::string& path)
 		{
 			struct stat info{};
 			return stat(path.c_str(), &info) == 0;
+		}
+
+		// Where a tile is made when /data/homebrew is out of the app's reach (port/payloads)
+		std::string Pending()
+		{
+			return std::string(ps5paths::kRoot) + "/tiles/pending";
+		}
+
+		// Whether the app may make folders in folder: without a HEN its sandbox may read /data/homebrew,
+		// which is root's, but not make folders there
+		bool CanMakeFolders(const char* folder)
+		{
+			const std::string probe = fmt::format("{}/.ps5cemu-probe-{}", folder, getpid());
+			if (mkdir(probe.c_str(), 0777) != 0)
+				return false;
+			rmdir(probe.c_str());
+			return true;
+		}
+
+		// A payload sent to elfldr, which runs it as root once the connection is closed
+		bool SendToElfldr(const std::string& path, std::string& error)
+		{
+			std::vector<char> elf;
+			if (FILE* file = std::fopen(path.c_str(), "rb"))
+			{
+				char buffer[64 * 1024];
+				for (size_t read; (read = std::fread(buffer, 1, sizeof(buffer), file)) > 0;)
+					elf.insert(elf.end(), buffer, buffer + read);
+				std::fclose(file);
+			}
+			if (elf.empty())
+			{
+				error = fmt::format("{} is missing", path);
+				return false;
+			}
+			const int fd = socket(AF_INET, SOCK_STREAM, 0);
+			if (fd < 0)
+			{
+				error = fmt::format("no socket (errno {})", errno);
+				return false;
+			}
+			timeval timeout{5, 0};
+			setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+			setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+			sockaddr_in address{};
+			address.sin_family = AF_INET;
+			address.sin_port = htons(kElfldrPort);
+			address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+			if (connect(fd, reinterpret_cast<sockaddr*>(&address), sizeof(address)) != 0)
+			{
+				error = fmt::format("nothing answers on 127.0.0.1:{} (errno {})", kElfldrPort, errno);
+				close(fd);
+				return false;
+			}
+			size_t sent = 0;
+			while (sent < elf.size())
+			{
+				const ssize_t n = write(fd, elf.data() + sent, elf.size() - sent);
+				if (n <= 0)
+					break;
+				sent += (size_t)n;
+			}
+			shutdown(fd, SHUT_WR); // elfldr runs what it got once the sending side closes
+			char sink[256];
+			while (read(fd, sink, sizeof(sink)) > 0)
+			{
+			}
+			close(fd);
+			if (sent < elf.size())
+			{
+				error = fmt::format("elfldr took {} of {} bytes", sent, elf.size());
+				return false;
+			}
+			return true;
+		}
+
+		// The tile made in Pending() moved into /data/homebrew by tile-installer.elf, which elfldr runs as
+		// root; empty when it is there, else why not
+		std::string Install(const std::string& titleId)
+		{
+			const std::string result = Pending() + "/" + titleId + ".result";
+			std::remove(result.c_str());
+			std::string error;
+			if (!SendToElfldr(ps5paths::AppDir() + "/tile-installer.elf", error))
+			{
+				ps5log::Line("[tiles] the tile helper could not be sent to elfldr: {}", error);
+				return ps5lang::Tr("elfldr does not answer on port 9021. Home screen tiles need it, to be put in /data/homebrew and to "
+								   "start their games: load elfldr, then add the tile again.");
+			}
+			for (int poll = 0; poll < kInstallPolls && !s_stop; poll++)
+			{
+				std::ifstream file(result);
+				std::string line;
+				if (file && std::getline(file, line) && !line.empty())
+				{
+					file.close();
+					std::remove(result.c_str());
+					ps5log::Line("[tiles] the tile helper: {}", line);
+					if (line == "ok")
+						return {};
+					// "error <errno> <what>": what, in the helper's words
+					size_t what = line.find(' ', 6);
+					return ps5lang::TrF("It could not be put in /data/homebrew: {0}", what == std::string::npos ? line : line.substr(what + 1));
+				}
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			}
+			ps5log::Line("[tiles] the tile helper did not answer in {} s", kInstallPolls / 10);
+			return ps5lang::Tr("elfldr took the tile helper, but the tile did not reach /data/homebrew.");
 		}
 
 		// The tile made for this game before: a forwarder in /data/homebrew that starts PS5CEMU-HAR
@@ -157,11 +277,33 @@ namespace ps5forwarders
 			spec.icon0_png = {icon.data(), icon.size()};
 			char error[256] = {};
 			const std::string templateDir = ps5paths::Assets() + "/forwarder";
-			if (!psfwd_write(kRoot, templateDir.c_str(), &spec, error, sizeof(error)))
+			// made in /data/homebrew where the app may make folders there (a HEN's jailbreak); else in its
+			// own folder, then moved in by the tile helper, as root
+			const bool direct = CanMakeFolders(kRoot);
+			const std::string root = direct ? std::string(kRoot) : Pending();
+			if (!direct)
+			{
+				std::error_code ec;
+				std::filesystem::create_directories(root, ec);
+				std::filesystem::remove_all(root + "/" + titleId, ec);
+			}
+			if (!psfwd_write(root.c_str(), templateDir.c_str(), &spec, error, sizeof(error)))
 			{
 				ps5log::Line("[tiles] {}'s tile not made: {}", request.name, error);
 				Finish(Status::State::Failed, titleId, replaced, error);
 				return;
+			}
+			if (!direct)
+			{
+				ps5log::Line("[tiles] {} cannot be written here: the tile made in {}, for the tile helper to move", kRoot, root);
+				const std::string why = Install(titleId);
+				if (!why.empty())
+				{
+					std::error_code ec;
+					std::filesystem::remove_all(root + "/" + titleId, ec);
+					Finish(Status::State::Failed, titleId, replaced, why);
+					return;
+				}
 			}
 			ps5log::Line("[tiles] {}/{}: {} ({}; --rom {}, a {} KB picture)", kRoot, titleId, request.name, replaced ? "made again" : "new",
 				request.rom, icon.size() >> 10);
@@ -182,6 +324,7 @@ namespace ps5forwarders
 		}
 		if (s_thread.joinable())
 			s_thread.join();
+		s_stop = false;
 		s_thread = std::thread(Run, request);
 	}
 
@@ -193,6 +336,7 @@ namespace ps5forwarders
 
 	void Stop()
 	{
+		s_stop = true; // a wait for the tile helper ends
 		if (s_thread.joinable())
 			s_thread.join();
 	}

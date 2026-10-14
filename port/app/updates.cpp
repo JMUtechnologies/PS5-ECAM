@@ -56,6 +56,7 @@ namespace ps5update
 		bool s_dismissed = false; // under s_mutex
 		std::thread s_thread;
 		std::atomic<bool> s_stop{false};
+		std::atomic<bool> s_running{false}; // s_thread has not ended
 
 		void Set(Status::State state, const std::string& message = {})
 		{
@@ -499,6 +500,10 @@ namespace ps5update
 
 		void Run(bool install)
 		{
+			struct Running
+			{
+				~Running() { s_running = false; }
+			} running;
 			sceNetInit();
 			curl_global_init(CURL_GLOBAL_DEFAULT);
 			curl_slist* resolve = Resolve();
@@ -526,6 +531,7 @@ namespace ps5update
 			if (s_thread.joinable())
 				s_thread.join();
 			s_stop = false;
+			s_running = true;
 			s_thread = std::thread(Run, install);
 		}
 	}
@@ -609,7 +615,21 @@ namespace ps5update
 	void Stop()
 	{
 		s_stop = true;
-		if (s_thread.joinable())
+		if (!s_thread.joinable())
+			return;
+		// A game never waits on the check: the PS5's resolver can take half a minute to find GitHub on
+		// some networks (the check then finished 31 s into the app), with no way to cut it short, and a
+		// game chosen meanwhile sat on a black screen. Waited on briefly, a check still running is left
+		// to end by itself: it stops at its next step (s_stop), before any download or file write.
+		int waited = 0;
+		for (; s_running && waited < 25; waited++)
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		if (s_running)
+		{
+			ps5log::Line("[update] the check is still waiting on the network: left to end by itself");
+			s_thread.detach();
+		}
+		else
 			s_thread.join();
 	}
 }

@@ -146,11 +146,23 @@ msgstr "Vulkan渲染器未能启动：{0}"
 msgid "Touchpad click + Options: the in-game menu (screens, picture, volume, controls, the library)"
 msgstr "按下触摸板键+选项键：游戏内菜单（屏幕、画面、音量、操作、游戏库）"
 
-#: port/app/forwarders.cpp:137
+#: port/app/forwarders.cpp:141
+msgid "elfldr does not answer on port 9021. Home screen tiles need it, to be put in /data/homebrew and to start their games: load elfldr, then add the tile again."
+msgstr ""
+
+#: port/app/forwarders.cpp:157
+msgid "It could not be put in /data/homebrew: {0}"
+msgstr ""
+
+#: port/app/forwarders.cpp:162
+msgid "elfldr took the tile helper, but the tile did not reach /data/homebrew."
+msgstr ""
+
+#: port/app/forwarders.cpp:257
 msgid "The game has no picture for its tile"
 msgstr ""
 
-#: port/app/forwarders.cpp:146
+#: port/app/forwarders.cpp:266
 msgid "No free title ID for a tile"
 msgstr ""
 
@@ -1162,7 +1174,7 @@ msgstr "未能读取（错误{0}）"
 msgid "Running"
 msgstr "运行中"
 
-#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:759 port/frontend/shell/eden.cpp:488 port/frontend/shell/eden.cpp:497 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1205 port/frontend/shell/shell.cpp:1209 port/frontend/shell/shell.cpp:1241 port/frontend/shell/shell.cpp:1257 port/frontend/shell/shell.cpp:1265 port/frontend/shell/shell.cpp:1273 port/frontend/shell/shell.cpp:1276 port/frontend/shell/shell.cpp:2147
+#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:759 port/frontend/shell/eden.cpp:488 port/frontend/shell/eden.cpp:497 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1205 port/frontend/shell/shell.cpp:1209 port/frontend/shell/shell.cpp:1241 port/frontend/shell/shell.cpp:1257 port/frontend/shell/shell.cpp:1265 port/frontend/shell/shell.cpp:1273 port/frontend/shell/shell.cpp:1276 port/frontend/shell/shell.cpp:2137
 #, menu
 msgid "Choose"
 msgstr "选择"
@@ -1630,7 +1642,7 @@ msgstr "正在加载…"
 msgid "Paused"
 msgstr "已暂停"
 
-#: port/app/ingame3ds.cpp:810 port/frontend/shell/shell.cpp:2119 port/frontend/shell/shell.cpp:2148
+#: port/app/ingame3ds.cpp:810 port/frontend/shell/shell.cpp:2109 port/frontend/shell/shell.cpp:2138
 #, menu
 msgid "OK"
 msgstr "确定"
@@ -1647,25 +1659,25 @@ msgid "Some text"
 msgstr "文字"
 
 #. the 3DS keyboard's keys
-#: port/app/ingame3ds.cpp:857 port/frontend/shell/shell.cpp:2070
+#: port/app/ingame3ds.cpp:857 port/frontend/shell/shell.cpp:2060
 #, menu
 msgid "Shift: on"
 msgstr "Shift：开"
 
 #. the 3DS keyboard's keys
 #. the 3DS keyboard's hints: Cross types the focused key
-#: port/app/ingame3ds.cpp:857 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:2070
+#: port/app/ingame3ds.cpp:857 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:2060
 #, menu
 msgid "Shift"
 msgstr "Shift"
 
-#: port/app/ingame3ds.cpp:859 port/frontend/shell/shell.cpp:2070
+#: port/app/ingame3ds.cpp:859 port/frontend/shell/shell.cpp:2060
 #, menu
 msgid "Space"
 msgstr "空格"
 
 #. the 3DS keyboard's hints: Cross types the focused key
-#: port/app/ingame3ds.cpp:861 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:2070
+#: port/app/ingame3ds.cpp:861 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:2060
 #, menu
 msgid "Delete"
 msgstr "删除"
@@ -2037,7 +2049,7 @@ msgstr ""
 msgid "{0} could not be copied: is the PS5's storage full?"
 msgstr ""
 
-#: port/app/mods.cpp:229 port/app/pack_updates.cpp:285 port/app/updates.cpp:444
+#: port/app/mods.cpp:229 port/app/pack_updates.cpp:285 port/app/updates.cpp:445
 msgid "Stopped for a game"
 msgstr "因启动游戏而停止"
 
@@ -2049,15 +2061,15 @@ msgstr ""
 msgid "{0} could not be written"
 msgstr "无法写入{0}"
 
-#: port/app/pack_updates.cpp:151 port/app/updates.cpp:303
+#: port/app/pack_updates.cpp:151 port/app/updates.cpp:304
 msgid "the download is not a ZIP ({0})"
 msgstr "下载内容不是ZIP（{0}）"
 
-#: port/app/pack_updates.cpp:179 port/app/updates.cpp:329
+#: port/app/pack_updates.cpp:179 port/app/updates.cpp:330
 msgid "{0} could not be unpacked"
 msgstr "无法解压{0}"
 
-#: port/app/pack_updates.cpp:196 port/app/updates.cpp:349
+#: port/app/pack_updates.cpp:196 port/app/updates.cpp:350
 msgid "stopped for a game"
 msgstr "因启动游戏而停止"
 
@@ -2065,12 +2077,12 @@ msgstr "因启动游戏而停止"
 msgid "the download holds no packs"
 msgstr "下载内容中没有图形包"
 
-#: port/app/pack_updates.cpp:214 port/app/updates.cpp:508
+#: port/app/pack_updates.cpp:214 port/app/updates.cpp:513
 msgid "GitHub could not be found: is the PS5 online?"
 msgstr "找不到GitHub：PS5是否已联网？"
 
 #. why an update did not finish
-#: port/app/pack_updates.cpp:247 port/app/updates.cpp:369
+#: port/app/pack_updates.cpp:247 port/app/updates.cpp:370
 msgid "GitHub did not answer with a release"
 msgstr "GitHub未返回发布版本"
 
@@ -2132,47 +2144,47 @@ msgstr "按住"
 msgid "Hold Cross until the ring fills."
 msgstr "按住交叉键直到圆环填满。"
 
-#: port/app/updates.cpp:339
+#: port/app/updates.cpp:340
 msgid "{0} could not be written (is /data full?)"
 msgstr "无法写入{0}（/data是否已满？）"
 
-#: port/app/updates.cpp:354
+#: port/app/updates.cpp:355
 msgid "the download has no eboot.bin"
 msgstr "下载内容中没有eboot.bin"
 
-#: port/app/updates.cpp:376
+#: port/app/updates.cpp:377
 msgid "The latest release's version ({0}) is not one this can read"
 msgstr "无法读取最新发布版本的版本号（{0}）"
 
-#: port/app/updates.cpp:401
+#: port/app/updates.cpp:402
 msgid "The release's checksums could not be downloaded"
 msgstr "无法下载发布版本的校验和"
 
-#: port/app/updates.cpp:416
+#: port/app/updates.cpp:417
 msgid "The releases branch has no checksum for {0}"
 msgstr "releases分支中没有{0}的校验和"
 
-#: port/app/updates.cpp:430
+#: port/app/updates.cpp:431
 msgid "The download could not start"
 msgstr "无法开始下载"
 
-#: port/app/updates.cpp:444
+#: port/app/updates.cpp:445
 msgid "The download did not finish: is the PS5 online?"
 msgstr "下载未完成：PS5是否已联网？"
 
-#: port/app/updates.cpp:453
+#: port/app/updates.cpp:454
 msgid "The download is damaged (SHA-256 {0}, not {1})"
 msgstr "下载内容已损坏（SHA-256为{0}，而非{1}）"
 
-#: port/app/updates.cpp:463
+#: port/app/updates.cpp:464
 msgid "PS5CEMU-HAR runs from an image, whose files can't be replaced: install the new release by hand"
 msgstr "PS5CEMU-HAR从镜像运行，其文件无法替换：需手动安装新发布版本"
 
-#: port/app/updates.cpp:475
+#: port/app/updates.cpp:476
 msgid "It could not be unpacked: {0}"
 msgstr "无法解压：{0}"
 
-#: port/app/updates.cpp:490
+#: port/app/updates.cpp:491
 msgid "{0} could not be replaced ({1}): copy the release's PPSA99360 folder over by hand"
 msgstr "无法替换{0}（{1}）：需手动复制发布版本的PPSA99360文件夹进行覆盖"
 
@@ -3088,7 +3100,7 @@ msgstr "排序"
 msgid "Filter"
 msgstr "筛选"
 
-#: port/frontend/shell/eden.cpp:501 port/frontend/shell/eden.cpp:1125 port/frontend/shell/experiments.cpp:498 port/frontend/shell/library.cpp:507 port/frontend/shell/library.cpp:549 port/frontend/shell/recent.cpp:363 port/frontend/shell/shell.cpp:1252 port/frontend/shell/shell.cpp:2039
+#: port/frontend/shell/eden.cpp:501 port/frontend/shell/eden.cpp:1125 port/frontend/shell/experiments.cpp:498 port/frontend/shell/library.cpp:507 port/frontend/shell/library.cpp:549 port/frontend/shell/recent.cpp:363 port/frontend/shell/shell.cpp:1252 port/frontend/shell/shell.cpp:2029
 msgid "Search"
 msgstr "搜索"
 
@@ -3974,7 +3986,7 @@ msgstr "已在/data/ps5cemu中找到"
 msgid "Missing (only .wud/.wux need it)"
 msgstr "缺失（仅.wud/.wux需要）"
 
-#: port/frontend/shell/pages.cpp:1270 port/frontend/shell/shell.cpp:1938 port/frontend/shell/shell.cpp:1965
+#: port/frontend/shell/pages.cpp:1270 port/frontend/shell/shell.cpp:1928 port/frontend/shell/shell.cpp:1955
 msgid "In use"
 msgstr "使用中"
 
@@ -4414,7 +4426,7 @@ msgstr "按交叉键下载"
 msgid "{0}: Cross to install"
 msgstr "{0}：按交叉键安装"
 
-#: port/frontend/shell/settings.cpp:271 port/frontend/shell/shell.cpp:2098
+#: port/frontend/shell/settings.cpp:271 port/frontend/shell/shell.cpp:2088
 msgid "Downloading…"
 msgstr "正在下载…"
 
@@ -6219,7 +6231,7 @@ msgstr ""
 msgid "It is not in the library: {0}"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:1263 port/frontend/shell/shell.cpp:2070
+#: port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:1263 port/frontend/shell/shell.cpp:2060
 msgid "Done"
 msgstr "完成"
 
@@ -6339,105 +6351,93 @@ msgstr "取消收藏"
 msgid "Add to home screen"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1597
-msgid "Show where it is"
-msgstr "显示位置"
-
-#: port/frontend/shell/shell.cpp:1886
+#: port/frontend/shell/shell.cpp:1885
 msgid "Added to Favourites"
 msgstr "已加入收藏"
 
-#: port/frontend/shell/shell.cpp:1886
+#: port/frontend/shell/shell.cpp:1885
 msgid "Taken out of Favourites"
 msgstr "已取消收藏"
 
-#: port/frontend/shell/shell.cpp:1892
-msgid "The PS5's storage"
-msgstr "PS5存储空间"
-
-#: port/frontend/shell/shell.cpp:1896
-msgid "Title ID {0}"
-msgstr "Title ID {0}"
-
 #. the keyboard's other keys, for text typed as it is: R1 and L1 go to capitals and symbols
-#: port/frontend/shell/shell.cpp:2045
+#: port/frontend/shell/shell.cpp:2035
 msgid "abc"
 msgstr "abc"
 
 #. the keyboard's other keys, for text typed as it is: R1 and L1 go to capitals and symbols
-#: port/frontend/shell/shell.cpp:2045
+#: port/frontend/shell/shell.cpp:2035
 msgid "#+="
 msgstr "#+="
 
-#: port/frontend/shell/shell.cpp:2047
+#: port/frontend/shell/shell.cpp:2037
 msgid "L1 R1: {0}"
 msgstr "L1 R1：{0}"
 
-#: port/frontend/shell/shell.cpp:2092
+#: port/frontend/shell/shell.cpp:2082
 msgid "PS5CEMU-HAR {0} is out"
 msgstr "PS5CEMU-HAR {0}已发布"
 
-#: port/frontend/shell/shell.cpp:2093
+#: port/frontend/shell/shell.cpp:2083
 msgid "This is {0}. Download and install it now? Your games, saves and settings stay as they are."
 msgstr "这是{0}。立即下载并安装吗？游戏、存档和设置保持不变。"
 
-#: port/frontend/shell/shell.cpp:2094
+#: port/frontend/shell/shell.cpp:2084
 msgid "Update now"
 msgstr "立即更新"
 
-#: port/frontend/shell/shell.cpp:2094 port/frontend/shell/shell.cpp:2147
+#: port/frontend/shell/shell.cpp:2084 port/frontend/shell/shell.cpp:2137
 msgid "Later"
 msgstr "稍后"
 
-#: port/frontend/shell/shell.cpp:2097 port/frontend/shell/shell.cpp:2102 port/frontend/shell/shell.cpp:2107
+#: port/frontend/shell/shell.cpp:2087 port/frontend/shell/shell.cpp:2092 port/frontend/shell/shell.cpp:2097
 msgid "Updating to {0}"
 msgstr "正在更新到{0}"
 
-#: port/frontend/shell/shell.cpp:2098
+#: port/frontend/shell/shell.cpp:2088
 msgid "Downloading: {0} of {1} MB"
 msgstr "正在下载：{0}/{1} MB"
 
-#: port/frontend/shell/shell.cpp:2103
+#: port/frontend/shell/shell.cpp:2093
 msgid "Checking the download"
 msgstr "正在校验下载内容"
 
-#: port/frontend/shell/shell.cpp:2108
+#: port/frontend/shell/shell.cpp:2098
 msgid "Installing"
 msgstr "正在安装"
 
-#: port/frontend/shell/shell.cpp:2112
+#: port/frontend/shell/shell.cpp:2102
 msgid "{0} is installed"
 msgstr "已安装{0}"
 
-#: port/frontend/shell/shell.cpp:2113
+#: port/frontend/shell/shell.cpp:2103
 msgid "PS5CEMU-HAR starts again to finish the update."
 msgstr "PS5CEMU-HAR会重新启动以完成更新。"
 
-#: port/frontend/shell/shell.cpp:2114
+#: port/frontend/shell/shell.cpp:2104
 msgid "Restart now"
 msgstr "立即重启"
 
-#: port/frontend/shell/shell.cpp:2117
+#: port/frontend/shell/shell.cpp:2107
 msgid "The update did not finish"
 msgstr "更新未完成"
 
-#: port/frontend/shell/shell.cpp:2118
+#: port/frontend/shell/shell.cpp:2108
 msgid "PS5CEMU-HAR is still {0}."
 msgstr "PS5CEMU-HAR仍为{0}。"
 
-#: port/frontend/shell/shell.cpp:2121
+#: port/frontend/shell/shell.cpp:2111
 msgid "Checking for updates"
 msgstr "正在检查更新"
 
-#: port/frontend/shell/shell.cpp:2127
+#: port/frontend/shell/shell.cpp:2117
 msgid "PS5CEMU-HAR update"
 msgstr "PS5CEMU-HAR更新"
 
-#: port/frontend/shell/shell.cpp:2147
+#: port/frontend/shell/shell.cpp:2137
 msgid "Select"
 msgstr "确定"
 
-#: port/frontend/shell/shell.cpp:2148
+#: port/frontend/shell/shell.cpp:2138
 msgid "Restart"
 msgstr "重启"
 
@@ -6570,11 +6570,11 @@ msgstr "本次运行：Cemu（Wii U）；Azahar的核心未启动"
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "无JIT内存：Wii U游戏使用解释器运行，慢得多。PPSA99360是否在HEN的应用越狱列表中？"
 
-#: port/main_ps5.cpp:487
+#: port/main_ps5.cpp:489
 msgid "The launcher could not start. The boot log in /data/ps5cemu/logs says why."
 msgstr "启动器未能启动。/data/ps5cemu/logs中的启动日志说明了原因。"
 
-#: port/main_ps5.cpp:488
+#: port/main_ps5.cpp:490
 msgid "The launcher could not start: {0}. The boot log in /data/ps5cemu/logs has more."
 msgstr "启动器未能启动：{0}。/data/ps5cemu/logs中的启动日志有更多信息。"
 

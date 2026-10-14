@@ -1594,7 +1594,6 @@ namespace ps5shell
 		}
 		m_menu.items.push_back({"favourite", g.entry.favourite ? Tr("Not a favourite") : Tr("Favourite")});
 		m_menu.items.push_back({"tile", Tr("Add to home screen")});
-		m_menu.items.push_back({"where", Tr("Show where it is")});
 		m_feedback.Play(ui::Cue::Sheet);
 	}
 
@@ -1886,15 +1885,6 @@ namespace ps5shell
 					Toast(g.entry.favourite ? Tr("Added to Favourites") : Tr("Taken out of Favourites"));
 					LibraryRefresh();
 				}
-				else if (id == "where")
-				{
-					const std::string path = g.entry.game.path.string();
-					std::string drive = Tr("The PS5's storage");
-					for (const std::string& d : ConnectedDrives())
-						if (path.starts_with(d))
-							drive = DriveName(d);
-					OpenHelp(g.entry.game.name, path + "\n\n" + drive + "\n\n" + TrF("Title ID {0}", Hex(g.entry.game.titleId)) + "  ·  " + g.entry.game.format);
-				}
 			}
 			return true;
 		}
@@ -2003,7 +1993,7 @@ namespace ps5shell
 			canvas.Text(Style(kHeadingStyle), sheet.x + 36, sheet.y + 78, game.entry.game.name, kText, sheet.w - 72, 1);
 			static const std::map<std::string, Icon> kIcons = {{"play", Icon::Play}, {"hub", Icon::ChevronRight}, {"settings", Icon::Sparkle},
 				{"saves", Icon::Save}, {"packs", Icon::Gear}, {"mods", Icon::Usb}, {"updates", Icon::Download}, {"favourite", Icon::Star},
-				{"tile", Icon::Home}, {"where", Icon::Folder}};
+				{"tile", Icon::Home}};
 			for (int i = 0; i < count; i++)
 			{
 				const Box row{sheet.x + 20, sheet.y + 136 + i * rowH, sheet.w - 40, rowH - 6};

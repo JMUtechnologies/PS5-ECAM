@@ -9,6 +9,7 @@
 #     sce_sys/pic0.dds, pic1.dds      its home screen background (selected, starting)
 #     sce_module/libc.prx             the boilerplate's clean-room runtime
 #     sandbox-elevator.elf            the boilerplate's /data helper, built for PPSA99360
+#     tile-installer.elf              moves the home screen tiles the app made into /data/homebrew
 #     assets/ui/                      the launcher's font (fonts/lexend.sdf), the in-game menus'
 #                                     (fonts/Lexend-*.ttf), sounds and the two sides' tiles
 #     assets/compatibility.md         the compatibility list, for the game pages' status
@@ -109,6 +110,10 @@ sed "s/PPSA99790/$title/" "$boilerplate/examples/sandbox-elevation/payload/main.
 grep -q "\"$title\"" "$helper/payload/main.cpp" || { echo "the elevation helper's title ID moved" >&2; exit 1; }
 make -s -C "$helper/payload" PS5_PAYLOAD_SDK="$PS5_PAYLOAD_SDK" OUTPUT="$app/sandbox-elevator.elf"
 python3 -B "$boilerplate/tools/validate-elevation-helper.py" "$app/sandbox-elevator.elf" >/dev/null
+
+# The home screen tiles' helper (app/forwarders.h): elfldr runs it as root to move the tiles the app
+# made into /data/homebrew, where the app's sandbox cannot make folders (port/payloads)
+make -s -C "$PS5CEMU_ROOT/port/payloads" PS5_PAYLOAD_SDK="$PS5_PAYLOAD_SDK" OUTPUT="$app/tile-installer.elf"
 
 # The launcher (port/ui, docs/UI-REDESIGN.md): Lexend's four weights as one signed-distance atlas
 # (tools/render-sdf-font.sh, committed), three as TrueType for the in-game menus' ImGui

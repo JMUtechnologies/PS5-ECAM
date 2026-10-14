@@ -148,13 +148,25 @@ msgstr "Рендерер Vulkan не запустился: {0}"
 msgid "Touchpad click + Options: the in-game menu (screens, picture, volume, controls, the library)"
 msgstr "Нажатие сенсорной панели + OPTIONS: игровое меню (экраны, изображение, громкость, управление, библиотека)"
 
-#: port/app/forwarders.cpp:137
-msgid "The game has no picture for its tile"
+#: port/app/forwarders.cpp:141
+msgid "elfldr does not answer on port 9021. Home screen tiles need it, to be put in /data/homebrew and to start their games: load elfldr, then add the tile again."
 msgstr ""
 
-#: port/app/forwarders.cpp:146
-msgid "No free title ID for a tile"
+#: port/app/forwarders.cpp:157
+msgid "It could not be put in /data/homebrew: {0}"
 msgstr ""
+
+#: port/app/forwarders.cpp:162
+msgid "elfldr took the tile helper, but the tile did not reach /data/homebrew."
+msgstr ""
+
+#: port/app/forwarders.cpp:257
+msgid "The game has no picture for its tile"
+msgstr "У игры нет картинки для плитки"
+
+#: port/app/forwarders.cpp:266
+msgid "No free title ID for a tile"
+msgstr "Нет свободного ID для плитки"
 
 #: port/app/gameinfo.cpp:150
 msgctxt "genre"
@@ -1166,7 +1178,7 @@ msgstr "Не отсканирован (ошибка {0})"
 msgid "Running"
 msgstr "Работает"
 
-#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:759 port/frontend/shell/eden.cpp:488 port/frontend/shell/eden.cpp:497 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1205 port/frontend/shell/shell.cpp:1209 port/frontend/shell/shell.cpp:1241 port/frontend/shell/shell.cpp:1257 port/frontend/shell/shell.cpp:1265 port/frontend/shell/shell.cpp:1273 port/frontend/shell/shell.cpp:1276 port/frontend/shell/shell.cpp:2147
+#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:759 port/frontend/shell/eden.cpp:488 port/frontend/shell/eden.cpp:497 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1205 port/frontend/shell/shell.cpp:1209 port/frontend/shell/shell.cpp:1241 port/frontend/shell/shell.cpp:1257 port/frontend/shell/shell.cpp:1265 port/frontend/shell/shell.cpp:1273 port/frontend/shell/shell.cpp:1276 port/frontend/shell/shell.cpp:2137
 #, menu
 msgid "Choose"
 msgstr "Выбрать"
@@ -1636,7 +1648,7 @@ msgstr "Загрузка…"
 msgid "Paused"
 msgstr "Пауза"
 
-#: port/app/ingame3ds.cpp:810 port/frontend/shell/shell.cpp:2119 port/frontend/shell/shell.cpp:2148
+#: port/app/ingame3ds.cpp:810 port/frontend/shell/shell.cpp:2109 port/frontend/shell/shell.cpp:2138
 #, menu
 msgid "OK"
 msgstr "OK"
@@ -1653,25 +1665,25 @@ msgid "Some text"
 msgstr "Текст"
 
 #. the 3DS keyboard's keys
-#: port/app/ingame3ds.cpp:857 port/frontend/shell/shell.cpp:2070
+#: port/app/ingame3ds.cpp:857 port/frontend/shell/shell.cpp:2060
 #, menu
 msgid "Shift: on"
 msgstr "Shift: вкл."
 
 #. the 3DS keyboard's keys
 #. the 3DS keyboard's hints: Cross types the focused key
-#: port/app/ingame3ds.cpp:857 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:2070
+#: port/app/ingame3ds.cpp:857 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:2060
 #, menu
 msgid "Shift"
 msgstr "Shift"
 
-#: port/app/ingame3ds.cpp:859 port/frontend/shell/shell.cpp:2070
+#: port/app/ingame3ds.cpp:859 port/frontend/shell/shell.cpp:2060
 #, menu
 msgid "Space"
 msgstr "Пробел"
 
 #. the 3DS keyboard's hints: Cross types the focused key
-#: port/app/ingame3ds.cpp:861 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:2070
+#: port/app/ingame3ds.cpp:861 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:2060
 #, menu
 msgid "Delete"
 msgstr "Удалить"
@@ -2037,33 +2049,33 @@ msgstr "{1} {0}, {2}"
 
 #: port/app/mods.cpp:188
 msgid "{0} could not be made"
-msgstr ""
+msgstr "Не удалось создать {0}"
 
 #: port/app/mods.cpp:222
 msgid "{0} could not be copied: is the PS5's storage full?"
-msgstr ""
+msgstr "Не удалось скопировать {0}: память PS5 заполнена?"
 
-#: port/app/mods.cpp:229 port/app/pack_updates.cpp:285 port/app/updates.cpp:444
+#: port/app/mods.cpp:229 port/app/pack_updates.cpp:285 port/app/updates.cpp:445
 msgid "Stopped for a game"
 msgstr "Остановлено ради игры"
 
 #: port/app/mods.cpp:235
 msgid "{0} could not be read"
-msgstr ""
+msgstr "Не удалось прочитать {0}"
 
 #: port/app/mods.cpp:250 port/app/mods.cpp:258 port/app/pack_updates.cpp:188
 msgid "{0} could not be written"
 msgstr "не удалось записать {0}"
 
-#: port/app/pack_updates.cpp:151 port/app/updates.cpp:303
+#: port/app/pack_updates.cpp:151 port/app/updates.cpp:304
 msgid "the download is not a ZIP ({0})"
 msgstr "загрузка не является ZIP-архивом ({0})"
 
-#: port/app/pack_updates.cpp:179 port/app/updates.cpp:329
+#: port/app/pack_updates.cpp:179 port/app/updates.cpp:330
 msgid "{0} could not be unpacked"
 msgstr "не удалось распаковать {0}"
 
-#: port/app/pack_updates.cpp:196 port/app/updates.cpp:349
+#: port/app/pack_updates.cpp:196 port/app/updates.cpp:350
 msgid "stopped for a game"
 msgstr "остановлено ради игры"
 
@@ -2071,12 +2083,12 @@ msgstr "остановлено ради игры"
 msgid "the download holds no packs"
 msgstr "в загрузке нет пакетов"
 
-#: port/app/pack_updates.cpp:214 port/app/updates.cpp:508
+#: port/app/pack_updates.cpp:214 port/app/updates.cpp:513
 msgid "GitHub could not be found: is the PS5 online?"
 msgstr "GitHub не найден: PS5 подключена к сети?"
 
 #. why an update did not finish
-#: port/app/pack_updates.cpp:247 port/app/updates.cpp:369
+#: port/app/pack_updates.cpp:247 port/app/updates.cpp:370
 msgid "GitHub did not answer with a release"
 msgstr "GitHub не ответил релизом"
 
@@ -2138,47 +2150,47 @@ msgstr "Удерживать"
 msgid "Hold Cross until the ring fills."
 msgstr "Удерживайте Крестик, пока кольцо не заполнится."
 
-#: port/app/updates.cpp:339
+#: port/app/updates.cpp:340
 msgid "{0} could not be written (is /data full?)"
 msgstr "Не удалось записать {0} (/data заполнен?)"
 
-#: port/app/updates.cpp:354
+#: port/app/updates.cpp:355
 msgid "the download has no eboot.bin"
 msgstr "в загрузке нет eboot.bin"
 
-#: port/app/updates.cpp:376
+#: port/app/updates.cpp:377
 msgid "The latest release's version ({0}) is not one this can read"
 msgstr "Версию последнего релиза ({0}) не удаётся прочитать"
 
-#: port/app/updates.cpp:401
+#: port/app/updates.cpp:402
 msgid "The release's checksums could not be downloaded"
 msgstr "Не удалось загрузить контрольные суммы релиза"
 
-#: port/app/updates.cpp:416
+#: port/app/updates.cpp:417
 msgid "The releases branch has no checksum for {0}"
 msgstr "В ветке релизов нет контрольной суммы для {0}"
 
-#: port/app/updates.cpp:430
+#: port/app/updates.cpp:431
 msgid "The download could not start"
 msgstr "Не удалось начать загрузку"
 
-#: port/app/updates.cpp:444
+#: port/app/updates.cpp:445
 msgid "The download did not finish: is the PS5 online?"
 msgstr "Загрузка не завершилась: PS5 подключена к сети?"
 
-#: port/app/updates.cpp:453
+#: port/app/updates.cpp:454
 msgid "The download is damaged (SHA-256 {0}, not {1})"
 msgstr "Загрузка повреждена (SHA-256 {0} вместо {1})"
 
-#: port/app/updates.cpp:463
+#: port/app/updates.cpp:464
 msgid "PS5CEMU-HAR runs from an image, whose files can't be replaced: install the new release by hand"
 msgstr "PS5CEMU-HAR запущен из образа, файлы которого нельзя заменить: установите новый релиз вручную"
 
-#: port/app/updates.cpp:475
+#: port/app/updates.cpp:476
 msgid "It could not be unpacked: {0}"
 msgstr "Не удалось распаковать: {0}"
 
-#: port/app/updates.cpp:490
+#: port/app/updates.cpp:491
 msgid "{0} could not be replaced ({1}): copy the release's PPSA99360 folder over by hand"
 msgstr "Не удалось заменить {0} ({1}): скопируйте поверх вручную папку PPSA99360 из релиза"
 
@@ -2885,7 +2897,7 @@ msgstr "Ваше следующее приключение"
 
 #: port/frontend/shell/classic.cpp:303
 msgid "Last game played"
-msgstr ""
+msgstr "Последняя игра"
 
 #. a chip: the game's update, by its version ("Update v208")
 #. an update found to install ({0}: its version, as 208)
@@ -2900,7 +2912,7 @@ msgstr "Выберите игру в библиотеке."
 
 #: port/frontend/shell/classic.cpp:318
 msgid "Launch game"
-msgstr ""
+msgstr "Запустить игру"
 
 #: port/frontend/shell/classic.cpp:321 port/frontend/shell/classic.cpp:538 port/frontend/shell/pages.cpp:1439 port/frontend/shell/pages.cpp:1450 port/frontend/shell/settings.cpp:203 port/frontend/shell/settings.cpp:839 port/frontend/shell/setup.cpp:246
 msgid "Artic Base"
@@ -2912,7 +2924,7 @@ msgstr "Настройки игры"
 
 #: port/frontend/shell/classic.cpp:326
 msgid "{0}, the {1} emulator, on PlayStation 5"
-msgstr ""
+msgstr "{0}, эмулятор {1}, на PlayStation 5"
 
 #. the Library's orders (Square), as library.cpp names them
 #. the Library's orders (Square)
@@ -2930,11 +2942,11 @@ msgstr "Здесь появятся игры, в которые вы играе�
 
 #: port/frontend/shell/classic.cpp:379
 msgid "Your games"
-msgstr ""
+msgstr "Ваши игры"
 
 #: port/frontend/shell/classic.cpp:379
 msgid "Select a game to begin"
-msgstr ""
+msgstr "Выберите игру, чтобы начать"
 
 #: port/frontend/shell/classic.cpp:379 port/frontend/shell/eden.cpp:1150 port/frontend/shell/experiments.cpp:535 port/frontend/shell/experiments.cpp:1172 port/frontend/shell/library.cpp:567
 msgid "Nothing matches “{0}”"
@@ -2971,11 +2983,11 @@ msgstr "Издатель"
 
 #: port/frontend/shell/classic.cpp:494
 msgid "Format"
-msgstr ""
+msgstr "Формат"
 
 #: port/frontend/shell/classic.cpp:506
 msgid "Files"
-msgstr ""
+msgstr "Файлы"
 
 #: port/frontend/shell/classic.cpp:518 port/frontend/shell/eden.cpp:1375 port/frontend/shell/experiments.cpp:1049 port/frontend/shell/experiments.cpp:1242
 msgid "None on"
@@ -2983,7 +2995,7 @@ msgstr "Ни одного"
 
 #: port/frontend/shell/classic.cpp:519
 msgid "Choose this game's graphic packs."
-msgstr ""
+msgstr "Выберите графические пакеты этой игры."
 
 #: port/frontend/shell/classic.cpp:525 port/frontend/shell/eden.cpp:1370 port/frontend/shell/eden.cpp:1431 port/frontend/shell/experiments.cpp:1241
 msgid "{0} of its own"
@@ -2998,19 +3010,19 @@ msgstr "Как у стороны"
 
 #: port/frontend/shell/classic.cpp:526
 msgid "Choose this game's own settings."
-msgstr ""
+msgstr "Выберите собственные настройки этой игры."
 
 #: port/frontend/shell/classic.cpp:560
 msgid "Fine-tune your experience"
-msgstr ""
+msgstr "Настройте всё под себя"
 
 #: port/frontend/shell/classic.cpp:565
 msgid "Preferences"
-msgstr ""
+msgstr "Предпочтения"
 
 #: port/frontend/shell/classic.cpp:598
 msgid "On this console"
-msgstr ""
+msgstr "На этой консоли"
 
 #: port/frontend/shell/classic.cpp:600 port/frontend/shell/settings.cpp:938 port/frontend/shell/welcome.cpp:223
 msgid "Make it yours"
@@ -3018,35 +3030,35 @@ msgstr "Под себя"
 
 #: port/frontend/shell/classic.cpp:602
 msgid "Settings of its own, over its side's."
-msgstr ""
+msgstr "Собственные настройки поверх настроек её стороны."
 
 #: port/frontend/shell/classic.cpp:602
 msgid "Adjust the essentials without leaving your library behind."
-msgstr ""
+msgstr "Настройте главное, не покидая библиотеку."
 
 #: port/frontend/shell/classic.cpp:656
 msgid "Credits and setup"
-msgstr ""
+msgstr "Авторы и настройка"
 
 #: port/frontend/shell/classic.cpp:661
 msgid "Project credits"
-msgstr ""
+msgstr "Авторы проекта"
 
 #: port/frontend/shell/classic.cpp:662
 msgid "Powered by {0}"
-msgstr ""
+msgstr "На основе {0}"
 
 #: port/frontend/shell/classic.cpp:670
 msgid "Getting started"
-msgstr ""
+msgstr "С чего начать"
 
 #: port/frontend/shell/classic.cpp:671
 msgid "Supply your own files"
-msgstr ""
+msgstr "Используйте свои файлы"
 
 #: port/frontend/shell/classic.cpp:675
 msgid "Games"
-msgstr ""
+msgstr "Игры"
 
 #: port/frontend/shell/classic.cpp:675 port/frontend/shell/settings.cpp:199 port/frontend/shell/settings.cpp:222 port/frontend/shell/shell.cpp:1588
 msgid "Saves"
@@ -3054,7 +3066,7 @@ msgstr "Сохранения"
 
 #: port/frontend/shell/classic.cpp:677
 msgid "Keys"
-msgstr ""
+msgstr "Ключи"
 
 #. the Library's orders (Square), as library.cpp names them
 #. the Library's orders (Square)
@@ -3094,7 +3106,7 @@ msgstr "Параметры"
 
 #: port/frontend/shell/eden.cpp:492
 msgid "Change emulator"
-msgstr ""
+msgstr "Сменить эмулятор"
 
 #: port/frontend/shell/eden.cpp:500 port/frontend/shell/eden.cpp:971 port/frontend/shell/library.cpp:274 port/frontend/shell/recent.cpp:99 port/frontend/shell/shell.cpp:1252
 msgid "Sort"
@@ -3104,7 +3116,7 @@ msgstr "Сортировка"
 msgid "Filter"
 msgstr "Фильтр"
 
-#: port/frontend/shell/eden.cpp:501 port/frontend/shell/eden.cpp:1125 port/frontend/shell/experiments.cpp:498 port/frontend/shell/library.cpp:507 port/frontend/shell/library.cpp:549 port/frontend/shell/recent.cpp:363 port/frontend/shell/shell.cpp:1252 port/frontend/shell/shell.cpp:2039
+#: port/frontend/shell/eden.cpp:501 port/frontend/shell/eden.cpp:1125 port/frontend/shell/experiments.cpp:498 port/frontend/shell/library.cpp:507 port/frontend/shell/library.cpp:549 port/frontend/shell/recent.cpp:363 port/frontend/shell/shell.cpp:1252 port/frontend/shell/shell.cpp:2029
 msgid "Search"
 msgstr "Поиск"
 
@@ -4008,7 +4020,7 @@ msgstr "Найден в /data/ps5cemu"
 msgid "Missing (only .wud/.wux need it)"
 msgstr "Отсутствует (нужен только .wud/.wux)"
 
-#: port/frontend/shell/pages.cpp:1270 port/frontend/shell/shell.cpp:1938 port/frontend/shell/shell.cpp:1965
+#: port/frontend/shell/pages.cpp:1270 port/frontend/shell/shell.cpp:1928 port/frontend/shell/shell.cpp:1955
 msgid "In use"
 msgstr "Используется"
 
@@ -4450,7 +4462,7 @@ msgstr "Крестик — загрузить"
 msgid "{0}: Cross to install"
 msgstr "{0}: Крестик — установить"
 
-#: port/frontend/shell/settings.cpp:271 port/frontend/shell/shell.cpp:2098
+#: port/frontend/shell/settings.cpp:271 port/frontend/shell/shell.cpp:2088
 msgid "Downloading…"
 msgstr "Загрузка…"
 
@@ -4469,71 +4481,71 @@ msgstr "Крестик — проверить"
 #. {0} is a mod's name, {1} how much of all the mods is copied, as in 40%
 #: port/frontend/shell/settings.cpp:298
 msgid "Copying {0}: {1}"
-msgstr ""
+msgstr "Копирование {0}: {1}"
 
 #: port/frontend/shell/settings.cpp:299
 msgid "Looking for mods…"
-msgstr ""
+msgstr "Поиск модов…"
 
 #: port/frontend/shell/settings.cpp:300 port/frontend/shell/settings.cpp:365
 msgid "{0} mod added"
 msgid_plural "{0} mods added"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Добавлен {0} мод"
+msgstr[1] "Добавлено {0} мода"
+msgstr[2] "Добавлено {0} модов"
 
 #: port/frontend/shell/settings.cpp:300 port/frontend/shell/settings.cpp:360
 msgid "No mods found"
-msgstr ""
+msgstr "Моды не найдены"
 
 #: port/frontend/shell/settings.cpp:304
 msgid "Cross to look on your drives"
-msgstr ""
+msgstr "Крестик — искать на накопителях"
 
 #: port/frontend/shell/settings.cpp:313
 msgid "No mods on your drives"
-msgstr ""
+msgstr "На накопителях нет модов"
 
 #: port/frontend/shell/settings.cpp:314
 msgid "Copy each mod's folder into a ps5cemu/mods folder on a USB drive and plug it in. A mod is a Cemu graphic pack (a folder with a rules.txt), or a folder with content and aoc folders in it for the files it replaces. The guide on GitHub, docs/MODS.md, has more."
-msgstr ""
+msgstr "Скопируйте папку каждого мода в папку ps5cemu/mods на USB-накопителе и подключите его. Мод — это графический пакет Cemu (папка с файлом rules.txt) или папка с папками content и aoc для файлов, которые он заменяет. В руководстве на GitHub, docs/MODS.md, есть подробности."
 
 #: port/frontend/shell/settings.cpp:322
 msgid "Copying mods from your drives…"
-msgstr ""
+msgstr "Копирование модов с накопителей…"
 
 #: port/frontend/shell/settings.cpp:345
 msgid "{0} folder had no rules.txt and no game: put a mod like that in a folder named by its game's title ID, or add it from its game's menu."
 msgid_plural "{0} folders had no rules.txt and no game: put a mod like that in a folder named by its game's title ID, or add it from its game's menu."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "В {0} папке не было ни rules.txt, ни игры: положите такой мод в папку с ID его игры в названии или добавьте его из меню его игры."
+msgstr[1] "В {0} папках не было ни rules.txt, ни игры: положите такой мод в папку с ID его игры в названии или добавьте его из меню его игры."
+msgstr[2] "В {0} папках не было ни rules.txt, ни игры: положите такой мод в папку с ID его игры в названии или добавьте его из меню его игры."
 
 #: port/frontend/shell/settings.cpp:353
 msgid "The mods could not all be copied"
-msgstr ""
+msgstr "Не все моды удалось скопировать"
 
 #: port/frontend/shell/settings.cpp:354
 msgid "{0} mod was added."
 msgid_plural "{0} mods were added."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Добавлен {0} мод."
+msgstr[1] "Добавлено {0} мода."
+msgstr[2] "Добавлено {0} модов."
 
 #: port/frontend/shell/settings.cpp:360
 msgid "The ps5cemu/mods folders on your drives hold no folder with a rules.txt, nor with content, aoc or code folders."
-msgstr ""
+msgstr "В папках ps5cemu/mods на накопителях нет ни папки с rules.txt, ни папки с папками content, aoc или code."
 
 #: port/frontend/shell/settings.cpp:365
 msgid "Turn them on in their games' Graphic packs."
-msgstr ""
+msgstr "Включите их в графических пакетах их игр."
 
 #: port/frontend/shell/settings.cpp:367
 msgid "{0} mod added: turn it on in its game's Graphic packs"
 msgid_plural "{0} mods added: turn them on in their games' Graphic packs"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Добавлен {0} мод: включите его в графических пакетах его игры"
+msgstr[1] "Добавлено {0} мода: включите их в графических пакетах их игр"
+msgstr[2] "Добавлено {0} модов: включите их в графических пакетах их игр"
 
 #: port/frontend/shell/settings.cpp:433
 msgid "Cemu is still starting. One moment."
@@ -4633,15 +4645,15 @@ msgstr "Пакеты текстур в /data/ps5cemu/azahar/load/textures/<ID и
 
 #: port/frontend/shell/settings.cpp:499
 msgid "Hardware shaders"
-msgstr ""
+msgstr "Аппаратные шейдеры"
 
 #: port/frontend/shell/settings.cpp:499
 msgid "Off: 3D drawn exactly, on the CPU. Off for Pokémon."
-msgstr ""
+msgstr "Выкл.: точное 3D на процессоре. Выключены для Pokémon."
 
 #: port/frontend/shell/settings.cpp:500
 msgid "On, the 3DS's vertex shaders run on the PS5's GPU, the fastest way. Off, they run on the CPU as Azahar's software shaders: slower, but a model and the outline drawn around it are computed alike, and its lighting is corrected per triangle. Off by default for Pokémon X, Y, Omega Ruby, Alpha Sapphire, Sun, Moon, Ultra Sun and Ultra Moon, whose outlines, lighting and shadows glitch otherwise. Applies to the next game."
-msgstr ""
+msgstr "Если включено, вершинные шейдеры 3DS работают на GPU PS5 — это быстрее всего. Если выключено, они работают на процессоре как программные шейдеры Azahar: медленнее, но модель и контур вокруг неё рассчитываются одинаково, а освещение исправляется для каждого треугольника. По умолчанию выключено для Pokémon X, Y, Omega Ruby, Alpha Sapphire, Sun, Moon, Ultra Sun и Ultra Moon, у которых иначе ломаются контуры, освещение и тени. Применяется к следующей игре."
 
 #: port/frontend/shell/settings.cpp:505
 msgid "Outline fix"
@@ -4653,7 +4665,7 @@ msgstr "Убирает бегающие чёрные точки на 3D-моде
 
 #: port/frontend/shell/settings.cpp:506
 msgid "Computes every 3D position the same way twice, as Azahar does on Apple's GPUs. For a game that shows moving black dots on its outlined models with hardware shaders on; the Pokémon games are drawn right with Hardware shaders off instead. Applies to the next game."
-msgstr ""
+msgstr "Рассчитывает каждую 3D-позицию дважды одинаково, как Azahar делает на GPU Apple. Для игры, у которой с включёнными аппаратными шейдерами на моделях с контуром бегают чёрные точки; игры Pokémon отображаются правильно с выключенными аппаратными шейдерами. Применяется к следующей игре."
 
 #: port/frontend/shell/settings.cpp:513
 msgid "How the DS's screens are scaled."
@@ -5014,15 +5026,15 @@ msgstr "Ищет обновления, DLC и игры (папки с code, cont
 
 #: port/frontend/shell/settings.cpp:723
 msgid "Mods from USB"
-msgstr ""
+msgstr "Моды с USB"
 
 #: port/frontend/shell/settings.cpp:723
 msgid "Cemu mods from the ps5cemu/mods folder on your drives."
-msgstr ""
+msgstr "Моды Cemu из папки ps5cemu/mods на накопителях."
 
 #: port/frontend/shell/settings.cpp:724
 msgid "Copies the mods in a USB drive's ps5cemu/mods folder into the app's graphic packs, where each shows on its game's Graphic packs page, off until you turn it on. A mod is a Cemu graphic pack (a folder with a rules.txt), or, for one shared without it, a folder with content and aoc folders, in a folder named by its game's title ID. A game's menu has Add mods from USB as well, which gives such mods that game. The guide on GitHub, docs/MODS.md, has more."
-msgstr ""
+msgstr "Копирует моды из папки ps5cemu/mods на USB-накопителе в графические пакеты приложения, где каждый появляется на странице «Графические пакеты» своей игры, выключенным, пока вы его не включите. Мод — это графический пакет Cemu (папка с файлом rules.txt) или, если им поделились без него, папка с папками content и aoc внутри папки с ID его игры в названии. В меню игры тоже есть «Добавить моды с USB», которое назначает таким модам эту игру. В руководстве на GitHub, docs/MODS.md, есть подробности."
 
 #: port/frontend/shell/settings.cpp:730
 msgid "Install a CIA file"
@@ -6273,35 +6285,35 @@ msgstr "Запуск Azahar"
 
 #: port/frontend/shell/shell.cpp:908
 msgid "Making {0}'s home screen tile…"
-msgstr ""
+msgstr "Создание плитки {0} на главном экране…"
 
 #: port/frontend/shell/shell.cpp:920
 msgid "The tile could not be made"
-msgstr ""
+msgstr "Не удалось создать плитку"
 
 #. {0} is the tile's folder, /data/homebrew/PPSA99xxx
 #: port/frontend/shell/shell.cpp:924
 msgid "The tile is made again"
-msgstr ""
+msgstr "Плитка создана заново"
 
 #. {0} is the tile's folder, /data/homebrew/PPSA99xxx
 #: port/frontend/shell/shell.cpp:924
 msgid "The tile is made"
-msgstr ""
+msgstr "Плитка создана"
 
 #: port/frontend/shell/shell.cpp:925
 msgid "It is in {0}. ShadowMount Plus puts it on the PS5's home screen as it does any homebrew: if it does not show, restart ShadowMount Plus or the console. The tile starts the game in PS5CEMU-HAR, and closing the game closes the app."
-msgstr ""
+msgstr "Она лежит в {0}. ShadowMount Plus добавляет её на главный экран PS5, как любой homebrew: если она не появилась, перезапустите ShadowMount Plus или консоль. Плитка запускает игру в PS5CEMU-HAR, а закрытие игры закрывает приложение."
 
 #: port/frontend/shell/shell.cpp:938
 msgid "The tile's game could not start"
-msgstr ""
+msgstr "Не удалось запустить игру плитки"
 
 #: port/frontend/shell/shell.cpp:966
 msgid "It is not in the library: {0}"
-msgstr ""
+msgstr "Её нет в библиотеке: {0}"
 
-#: port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:1263 port/frontend/shell/shell.cpp:2070
+#: port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:1263 port/frontend/shell/shell.cpp:2060
 msgid "Done"
 msgstr "Готово"
 
@@ -6411,7 +6423,7 @@ msgstr "Настройки игры: свои"
 
 #: port/frontend/shell/shell.cpp:1592
 msgid "Add mods from USB"
-msgstr ""
+msgstr "Добавить моды с USB"
 
 #: port/frontend/shell/shell.cpp:1595
 msgid "Not a favourite"
@@ -6419,107 +6431,95 @@ msgstr "Убрать из избранного"
 
 #: port/frontend/shell/shell.cpp:1596
 msgid "Add to home screen"
-msgstr ""
+msgstr "Добавить на главный экран"
 
-#: port/frontend/shell/shell.cpp:1597
-msgid "Show where it is"
-msgstr "Показать, где лежит"
-
-#: port/frontend/shell/shell.cpp:1886
+#: port/frontend/shell/shell.cpp:1885
 msgid "Added to Favourites"
 msgstr "Добавлено в избранное"
 
-#: port/frontend/shell/shell.cpp:1886
+#: port/frontend/shell/shell.cpp:1885
 msgid "Taken out of Favourites"
 msgstr "Убрано из избранного"
 
-#: port/frontend/shell/shell.cpp:1892
-msgid "The PS5's storage"
-msgstr "Память PS5"
-
-#: port/frontend/shell/shell.cpp:1896
-msgid "Title ID {0}"
-msgstr "ID игры {0}"
-
 #. the keyboard's other keys, for text typed as it is: R1 and L1 go to capitals and symbols
-#: port/frontend/shell/shell.cpp:2045
+#: port/frontend/shell/shell.cpp:2035
 msgid "abc"
 msgstr "abc"
 
 #. the keyboard's other keys, for text typed as it is: R1 and L1 go to capitals and symbols
-#: port/frontend/shell/shell.cpp:2045
+#: port/frontend/shell/shell.cpp:2035
 msgid "#+="
 msgstr "#+="
 
-#: port/frontend/shell/shell.cpp:2047
+#: port/frontend/shell/shell.cpp:2037
 msgid "L1 R1: {0}"
 msgstr "L1 R1: {0}"
 
-#: port/frontend/shell/shell.cpp:2092
+#: port/frontend/shell/shell.cpp:2082
 msgid "PS5CEMU-HAR {0} is out"
 msgstr "Вышел PS5CEMU-HAR {0}"
 
-#: port/frontend/shell/shell.cpp:2093
+#: port/frontend/shell/shell.cpp:2083
 msgid "This is {0}. Download and install it now? Your games, saves and settings stay as they are."
 msgstr "Это {0}. Загрузить и установить сейчас? Ваши игры, сохранения и настройки останутся как есть."
 
-#: port/frontend/shell/shell.cpp:2094
+#: port/frontend/shell/shell.cpp:2084
 msgid "Update now"
 msgstr "Обновить сейчас"
 
-#: port/frontend/shell/shell.cpp:2094 port/frontend/shell/shell.cpp:2147
+#: port/frontend/shell/shell.cpp:2084 port/frontend/shell/shell.cpp:2137
 msgid "Later"
 msgstr "Позже"
 
-#: port/frontend/shell/shell.cpp:2097 port/frontend/shell/shell.cpp:2102 port/frontend/shell/shell.cpp:2107
+#: port/frontend/shell/shell.cpp:2087 port/frontend/shell/shell.cpp:2092 port/frontend/shell/shell.cpp:2097
 msgid "Updating to {0}"
 msgstr "Обновление до {0}"
 
-#: port/frontend/shell/shell.cpp:2098
+#: port/frontend/shell/shell.cpp:2088
 msgid "Downloading: {0} of {1} MB"
 msgstr "Загрузка: {0} из {1} МБ"
 
-#: port/frontend/shell/shell.cpp:2103
+#: port/frontend/shell/shell.cpp:2093
 msgid "Checking the download"
 msgstr "Проверка загрузки"
 
-#: port/frontend/shell/shell.cpp:2108
+#: port/frontend/shell/shell.cpp:2098
 msgid "Installing"
 msgstr "Установка"
 
-#: port/frontend/shell/shell.cpp:2112
+#: port/frontend/shell/shell.cpp:2102
 msgid "{0} is installed"
 msgstr "{0} установлена"
 
-#: port/frontend/shell/shell.cpp:2113
+#: port/frontend/shell/shell.cpp:2103
 msgid "PS5CEMU-HAR starts again to finish the update."
 msgstr "PS5CEMU-HAR перезапустится, чтобы завершить обновление."
 
-#: port/frontend/shell/shell.cpp:2114
+#: port/frontend/shell/shell.cpp:2104
 msgid "Restart now"
 msgstr "Перезапустить сейчас"
 
-#: port/frontend/shell/shell.cpp:2117
+#: port/frontend/shell/shell.cpp:2107
 msgid "The update did not finish"
 msgstr "Обновление не завершилось"
 
-#: port/frontend/shell/shell.cpp:2118
+#: port/frontend/shell/shell.cpp:2108
 msgid "PS5CEMU-HAR is still {0}."
 msgstr "PS5CEMU-HAR по-прежнему {0}."
 
-#: port/frontend/shell/shell.cpp:2121
+#: port/frontend/shell/shell.cpp:2111
 msgid "Checking for updates"
 msgstr "Поиск обновлений"
 
-#: port/frontend/shell/shell.cpp:2127
+#: port/frontend/shell/shell.cpp:2117
 msgid "PS5CEMU-HAR update"
 msgstr "Обновление PS5CEMU-HAR"
 
-#: port/frontend/shell/shell.cpp:2147
+#: port/frontend/shell/shell.cpp:2137
 msgid "Select"
 msgstr "Выбрать"
 
-#: port/frontend/shell/shell.cpp:2148
+#: port/frontend/shell/shell.cpp:2138
 msgid "Restart"
 msgstr "Перезапустить"
 
@@ -6652,11 +6652,11 @@ msgstr "Этот сеанс: Cemu (Wii U); ядро Azahar не запущено
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "Нет JIT-памяти: игры Wii U идут на интерпретаторе, гораздо медленнее. Есть ли PPSA99360 в списке app jailbreak вашего HEN?"
 
-#: port/main_ps5.cpp:487
+#: port/main_ps5.cpp:489
 msgid "The launcher could not start. The boot log in /data/ps5cemu/logs says why."
 msgstr "Лаунчер не смог запуститься. Причина — в журнале запуска в /data/ps5cemu/logs."
 
-#: port/main_ps5.cpp:488
+#: port/main_ps5.cpp:490
 msgid "The launcher could not start: {0}. The boot log in /data/ps5cemu/logs has more."
 msgstr "Не удалось запустить лаунчер: {0}. Подробности в журнале загрузки в /data/ps5cemu/logs."
 

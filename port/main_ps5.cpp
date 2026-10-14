@@ -471,11 +471,13 @@ int main(int argc, char* argv[])
 		ps5display::SetFramePacing(1); // and the 3DS's games every refresh
 		std::optional<ps5launcher::Choice> choice;
 		const ps5shell::Outcome outcome = ps5shell::Run(settings, status, prepare, choice);
+		const uint64_t stopping = sceKernelGetProcessTime();
 		ps5emu::FinishCoreStart(); // a 3DS or DS game chosen while Cemu's library was still loading waits for it
 		ps5update::Stop(); // nothing of the launcher's runs beside a game
 		ps5packs::Stop();
 		ps5mods::Stop();
 		ps5forwarders::Stop();
+		ps5log::Line("[main] the launcher's work stopped in {} ms", (sceKernelGetProcessTime() - stopping) / 1000);
 		if (outcome != ps5shell::Outcome::Chosen || !choice)
 		{
 			// the launcher could not draw, and there is nothing else to show: the boot log says why. Wait

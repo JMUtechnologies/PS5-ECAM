@@ -147,13 +147,25 @@ msgstr "Il renderer Vulkan non si è avviato: {0}"
 msgid "Touchpad click + Options: the in-game menu (screens, picture, volume, controls, the library)"
 msgstr "Clic sul touch pad + OPTIONS: il menu di gioco (schermi, immagine, volume, comandi, libreria)"
 
-#: port/app/forwarders.cpp:137
-msgid "The game has no picture for its tile"
+#: port/app/forwarders.cpp:141
+msgid "elfldr does not answer on port 9021. Home screen tiles need it, to be put in /data/homebrew and to start their games: load elfldr, then add the tile again."
 msgstr ""
 
-#: port/app/forwarders.cpp:146
-msgid "No free title ID for a tile"
+#: port/app/forwarders.cpp:157
+msgid "It could not be put in /data/homebrew: {0}"
 msgstr ""
+
+#: port/app/forwarders.cpp:162
+msgid "elfldr took the tile helper, but the tile did not reach /data/homebrew."
+msgstr ""
+
+#: port/app/forwarders.cpp:257
+msgid "The game has no picture for its tile"
+msgstr "Il gioco non ha un’immagine per il suo riquadro"
+
+#: port/app/forwarders.cpp:266
+msgid "No free title ID for a tile"
+msgstr "Nessun ID titolo libero per un riquadro"
 
 #: port/app/gameinfo.cpp:150
 msgctxt "genre"
@@ -1164,7 +1176,7 @@ msgstr "Non scansionato (errore {0})"
 msgid "Running"
 msgstr "In corso"
 
-#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:759 port/frontend/shell/eden.cpp:488 port/frontend/shell/eden.cpp:497 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1205 port/frontend/shell/shell.cpp:1209 port/frontend/shell/shell.cpp:1241 port/frontend/shell/shell.cpp:1257 port/frontend/shell/shell.cpp:1265 port/frontend/shell/shell.cpp:1273 port/frontend/shell/shell.cpp:1276 port/frontend/shell/shell.cpp:2147
+#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:759 port/frontend/shell/eden.cpp:488 port/frontend/shell/eden.cpp:497 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1205 port/frontend/shell/shell.cpp:1209 port/frontend/shell/shell.cpp:1241 port/frontend/shell/shell.cpp:1257 port/frontend/shell/shell.cpp:1265 port/frontend/shell/shell.cpp:1273 port/frontend/shell/shell.cpp:1276 port/frontend/shell/shell.cpp:2137
 #, menu
 msgid "Choose"
 msgstr "Scegli"
@@ -1633,7 +1645,7 @@ msgstr "Caricamento…"
 msgid "Paused"
 msgstr "In pausa"
 
-#: port/app/ingame3ds.cpp:810 port/frontend/shell/shell.cpp:2119 port/frontend/shell/shell.cpp:2148
+#: port/app/ingame3ds.cpp:810 port/frontend/shell/shell.cpp:2109 port/frontend/shell/shell.cpp:2138
 #, menu
 msgid "OK"
 msgstr "OK"
@@ -1650,25 +1662,25 @@ msgid "Some text"
 msgstr "Un testo"
 
 #. the 3DS keyboard's keys
-#: port/app/ingame3ds.cpp:857 port/frontend/shell/shell.cpp:2070
+#: port/app/ingame3ds.cpp:857 port/frontend/shell/shell.cpp:2060
 #, menu
 msgid "Shift: on"
 msgstr "Maiusc: attivo"
 
 #. the 3DS keyboard's keys
 #. the 3DS keyboard's hints: Cross types the focused key
-#: port/app/ingame3ds.cpp:857 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:2070
+#: port/app/ingame3ds.cpp:857 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:2060
 #, menu
 msgid "Shift"
 msgstr "Maiusc"
 
-#: port/app/ingame3ds.cpp:859 port/frontend/shell/shell.cpp:2070
+#: port/app/ingame3ds.cpp:859 port/frontend/shell/shell.cpp:2060
 #, menu
 msgid "Space"
 msgstr "Spazio"
 
 #. the 3DS keyboard's hints: Cross types the focused key
-#: port/app/ingame3ds.cpp:861 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:2070
+#: port/app/ingame3ds.cpp:861 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:2060
 #, menu
 msgid "Delete"
 msgstr "Cancella"
@@ -2034,33 +2046,33 @@ msgstr "{1} {0}, {2}"
 
 #: port/app/mods.cpp:188
 msgid "{0} could not be made"
-msgstr ""
+msgstr "Impossibile creare {0}"
 
 #: port/app/mods.cpp:222
 msgid "{0} could not be copied: is the PS5's storage full?"
-msgstr ""
+msgstr "Impossibile copiare {0}: la memoria della PS5 è piena?"
 
-#: port/app/mods.cpp:229 port/app/pack_updates.cpp:285 port/app/updates.cpp:444
+#: port/app/mods.cpp:229 port/app/pack_updates.cpp:285 port/app/updates.cpp:445
 msgid "Stopped for a game"
 msgstr "Interrotto per un gioco"
 
 #: port/app/mods.cpp:235
 msgid "{0} could not be read"
-msgstr ""
+msgstr "Impossibile leggere {0}"
 
 #: port/app/mods.cpp:250 port/app/mods.cpp:258 port/app/pack_updates.cpp:188
 msgid "{0} could not be written"
 msgstr "impossibile scrivere {0}"
 
-#: port/app/pack_updates.cpp:151 port/app/updates.cpp:303
+#: port/app/pack_updates.cpp:151 port/app/updates.cpp:304
 msgid "the download is not a ZIP ({0})"
 msgstr "il download non è uno ZIP ({0})"
 
-#: port/app/pack_updates.cpp:179 port/app/updates.cpp:329
+#: port/app/pack_updates.cpp:179 port/app/updates.cpp:330
 msgid "{0} could not be unpacked"
 msgstr "impossibile estrarre {0}"
 
-#: port/app/pack_updates.cpp:196 port/app/updates.cpp:349
+#: port/app/pack_updates.cpp:196 port/app/updates.cpp:350
 msgid "stopped for a game"
 msgstr "interrotto per un gioco"
 
@@ -2068,12 +2080,12 @@ msgstr "interrotto per un gioco"
 msgid "the download holds no packs"
 msgstr "il download non contiene pacchetti"
 
-#: port/app/pack_updates.cpp:214 port/app/updates.cpp:508
+#: port/app/pack_updates.cpp:214 port/app/updates.cpp:513
 msgid "GitHub could not be found: is the PS5 online?"
 msgstr "GitHub non trovato: la PS5 è online?"
 
 #. why an update did not finish
-#: port/app/pack_updates.cpp:247 port/app/updates.cpp:369
+#: port/app/pack_updates.cpp:247 port/app/updates.cpp:370
 msgid "GitHub did not answer with a release"
 msgstr "GitHub non ha risposto con una release"
 
@@ -2135,47 +2147,47 @@ msgstr "Tieni premuto"
 msgid "Hold Cross until the ring fills."
 msgstr "Tieni premuto Croce finché l’anello non si riempie."
 
-#: port/app/updates.cpp:339
+#: port/app/updates.cpp:340
 msgid "{0} could not be written (is /data full?)"
 msgstr "Impossibile scrivere {0} (/data è pieno?)"
 
-#: port/app/updates.cpp:354
+#: port/app/updates.cpp:355
 msgid "the download has no eboot.bin"
 msgstr "il download non contiene eboot.bin"
 
-#: port/app/updates.cpp:376
+#: port/app/updates.cpp:377
 msgid "The latest release's version ({0}) is not one this can read"
 msgstr "La versione dell’ultima release ({0}) non è leggibile"
 
-#: port/app/updates.cpp:401
+#: port/app/updates.cpp:402
 msgid "The release's checksums could not be downloaded"
 msgstr "Impossibile scaricare i checksum della release"
 
-#: port/app/updates.cpp:416
+#: port/app/updates.cpp:417
 msgid "The releases branch has no checksum for {0}"
 msgstr "Il ramo delle release non ha un checksum per {0}"
 
-#: port/app/updates.cpp:430
+#: port/app/updates.cpp:431
 msgid "The download could not start"
 msgstr "Impossibile avviare il download"
 
-#: port/app/updates.cpp:444
+#: port/app/updates.cpp:445
 msgid "The download did not finish: is the PS5 online?"
 msgstr "Il download non è terminato: la PS5 è online?"
 
-#: port/app/updates.cpp:453
+#: port/app/updates.cpp:454
 msgid "The download is damaged (SHA-256 {0}, not {1})"
 msgstr "Il download è danneggiato (SHA-256 {0} invece di {1})"
 
-#: port/app/updates.cpp:463
+#: port/app/updates.cpp:464
 msgid "PS5CEMU-HAR runs from an image, whose files can't be replaced: install the new release by hand"
 msgstr "PS5CEMU-HAR è in esecuzione da un’immagine i cui file non possono essere sostituiti: installa la nuova release a mano"
 
-#: port/app/updates.cpp:475
+#: port/app/updates.cpp:476
 msgid "It could not be unpacked: {0}"
 msgstr "Impossibile estrarlo: {0}"
 
-#: port/app/updates.cpp:490
+#: port/app/updates.cpp:491
 msgid "{0} could not be replaced ({1}): copy the release's PPSA99360 folder over by hand"
 msgstr "Impossibile sostituire {0} ({1}): copia sopra a mano la cartella PPSA99360 della release"
 
@@ -2879,7 +2891,7 @@ msgstr "La tua prossima avventura"
 
 #: port/frontend/shell/classic.cpp:303
 msgid "Last game played"
-msgstr ""
+msgstr "Ultimo gioco giocato"
 
 #. a chip: the game's update, by its version ("Update v208")
 #. an update found to install ({0}: its version, as 208)
@@ -2894,7 +2906,7 @@ msgstr "Scegli un gioco dalla tua libreria."
 
 #: port/frontend/shell/classic.cpp:318
 msgid "Launch game"
-msgstr ""
+msgstr "Avvia gioco"
 
 #: port/frontend/shell/classic.cpp:321 port/frontend/shell/classic.cpp:538 port/frontend/shell/pages.cpp:1439 port/frontend/shell/pages.cpp:1450 port/frontend/shell/settings.cpp:203 port/frontend/shell/settings.cpp:839 port/frontend/shell/setup.cpp:246
 msgid "Artic Base"
@@ -2906,7 +2918,7 @@ msgstr "Impostazioni del gioco"
 
 #: port/frontend/shell/classic.cpp:326
 msgid "{0}, the {1} emulator, on PlayStation 5"
-msgstr ""
+msgstr "{0}, l’emulatore di {1}, su PlayStation 5"
 
 #. the Library's orders (Square), as library.cpp names them
 #. the Library's orders (Square)
@@ -2924,11 +2936,11 @@ msgstr "Qui compaiono i giochi a cui giochi."
 
 #: port/frontend/shell/classic.cpp:379
 msgid "Your games"
-msgstr ""
+msgstr "I tuoi giochi"
 
 #: port/frontend/shell/classic.cpp:379
 msgid "Select a game to begin"
-msgstr ""
+msgstr "Scegli un gioco per iniziare"
 
 #: port/frontend/shell/classic.cpp:379 port/frontend/shell/eden.cpp:1150 port/frontend/shell/experiments.cpp:535 port/frontend/shell/experiments.cpp:1172 port/frontend/shell/library.cpp:567
 msgid "Nothing matches “{0}”"
@@ -2964,11 +2976,11 @@ msgstr "Editore"
 
 #: port/frontend/shell/classic.cpp:494
 msgid "Format"
-msgstr ""
+msgstr "Formato"
 
 #: port/frontend/shell/classic.cpp:506
 msgid "Files"
-msgstr ""
+msgstr "File"
 
 #: port/frontend/shell/classic.cpp:518 port/frontend/shell/eden.cpp:1375 port/frontend/shell/experiments.cpp:1049 port/frontend/shell/experiments.cpp:1242
 msgid "None on"
@@ -2976,7 +2988,7 @@ msgstr "Nessuno attivo"
 
 #: port/frontend/shell/classic.cpp:519
 msgid "Choose this game's graphic packs."
-msgstr ""
+msgstr "Scegli i pacchetti grafici di questo gioco."
 
 #: port/frontend/shell/classic.cpp:525 port/frontend/shell/eden.cpp:1370 port/frontend/shell/eden.cpp:1431 port/frontend/shell/experiments.cpp:1241
 msgid "{0} of its own"
@@ -2990,19 +3002,19 @@ msgstr "Quelle del suo lato"
 
 #: port/frontend/shell/classic.cpp:526
 msgid "Choose this game's own settings."
-msgstr ""
+msgstr "Scegli le impostazioni proprie di questo gioco."
 
 #: port/frontend/shell/classic.cpp:560
 msgid "Fine-tune your experience"
-msgstr ""
+msgstr "Personalizza la tua esperienza"
 
 #: port/frontend/shell/classic.cpp:565
 msgid "Preferences"
-msgstr ""
+msgstr "Preferenze"
 
 #: port/frontend/shell/classic.cpp:598
 msgid "On this console"
-msgstr ""
+msgstr "Su questa console"
 
 #: port/frontend/shell/classic.cpp:600 port/frontend/shell/settings.cpp:938 port/frontend/shell/welcome.cpp:223
 msgid "Make it yours"
@@ -3010,35 +3022,35 @@ msgstr "A modo tuo"
 
 #: port/frontend/shell/classic.cpp:602
 msgid "Settings of its own, over its side's."
-msgstr ""
+msgstr "Impostazioni proprie, sopra quelle del suo lato."
 
 #: port/frontend/shell/classic.cpp:602
 msgid "Adjust the essentials without leaving your library behind."
-msgstr ""
+msgstr "Regola l’essenziale senza lasciare la tua libreria."
 
 #: port/frontend/shell/classic.cpp:656
 msgid "Credits and setup"
-msgstr ""
+msgstr "Riconoscimenti e configurazione"
 
 #: port/frontend/shell/classic.cpp:661
 msgid "Project credits"
-msgstr ""
+msgstr "Riconoscimenti del progetto"
 
 #: port/frontend/shell/classic.cpp:662
 msgid "Powered by {0}"
-msgstr ""
+msgstr "Basato su {0}"
 
 #: port/frontend/shell/classic.cpp:670
 msgid "Getting started"
-msgstr ""
+msgstr "Per iniziare"
 
 #: port/frontend/shell/classic.cpp:671
 msgid "Supply your own files"
-msgstr ""
+msgstr "Usa i tuoi file"
 
 #: port/frontend/shell/classic.cpp:675
 msgid "Games"
-msgstr ""
+msgstr "Giochi"
 
 #: port/frontend/shell/classic.cpp:675 port/frontend/shell/settings.cpp:199 port/frontend/shell/settings.cpp:222 port/frontend/shell/shell.cpp:1588
 msgid "Saves"
@@ -3046,7 +3058,7 @@ msgstr "Salvataggi"
 
 #: port/frontend/shell/classic.cpp:677
 msgid "Keys"
-msgstr ""
+msgstr "Chiavi"
 
 #. the Library's orders (Square), as library.cpp names them
 #. the Library's orders (Square)
@@ -3086,7 +3098,7 @@ msgstr "Opzioni"
 
 #: port/frontend/shell/eden.cpp:492
 msgid "Change emulator"
-msgstr ""
+msgstr "Cambia emulatore"
 
 #: port/frontend/shell/eden.cpp:500 port/frontend/shell/eden.cpp:971 port/frontend/shell/library.cpp:274 port/frontend/shell/recent.cpp:99 port/frontend/shell/shell.cpp:1252
 msgid "Sort"
@@ -3096,7 +3108,7 @@ msgstr "Ordina"
 msgid "Filter"
 msgstr "Filtro"
 
-#: port/frontend/shell/eden.cpp:501 port/frontend/shell/eden.cpp:1125 port/frontend/shell/experiments.cpp:498 port/frontend/shell/library.cpp:507 port/frontend/shell/library.cpp:549 port/frontend/shell/recent.cpp:363 port/frontend/shell/shell.cpp:1252 port/frontend/shell/shell.cpp:2039
+#: port/frontend/shell/eden.cpp:501 port/frontend/shell/eden.cpp:1125 port/frontend/shell/experiments.cpp:498 port/frontend/shell/library.cpp:507 port/frontend/shell/library.cpp:549 port/frontend/shell/recent.cpp:363 port/frontend/shell/shell.cpp:1252 port/frontend/shell/shell.cpp:2029
 msgid "Search"
 msgstr "Cerca"
 
@@ -3991,7 +4003,7 @@ msgstr "Trovato in /data/ps5cemu"
 msgid "Missing (only .wud/.wux need it)"
 msgstr "Mancante (serve solo ai .wud/.wux)"
 
-#: port/frontend/shell/pages.cpp:1270 port/frontend/shell/shell.cpp:1938 port/frontend/shell/shell.cpp:1965
+#: port/frontend/shell/pages.cpp:1270 port/frontend/shell/shell.cpp:1928 port/frontend/shell/shell.cpp:1955
 msgid "In use"
 msgstr "In uso"
 
@@ -4432,7 +4444,7 @@ msgstr "Croce per scaricare"
 msgid "{0}: Cross to install"
 msgstr "{0}: Croce per installare"
 
-#: port/frontend/shell/settings.cpp:271 port/frontend/shell/shell.cpp:2098
+#: port/frontend/shell/settings.cpp:271 port/frontend/shell/shell.cpp:2088
 msgid "Downloading…"
 msgstr "Download in corso…"
 
@@ -4451,67 +4463,67 @@ msgstr "Croce per controllare"
 #. {0} is a mod's name, {1} how much of all the mods is copied, as in 40%
 #: port/frontend/shell/settings.cpp:298
 msgid "Copying {0}: {1}"
-msgstr ""
+msgstr "Copia di {0}: {1}"
 
 #: port/frontend/shell/settings.cpp:299
 msgid "Looking for mods…"
-msgstr ""
+msgstr "Ricerca delle mod…"
 
 #: port/frontend/shell/settings.cpp:300 port/frontend/shell/settings.cpp:365
 msgid "{0} mod added"
 msgid_plural "{0} mods added"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "{0} mod aggiunta"
+msgstr[1] "{0} mod aggiunte"
 
 #: port/frontend/shell/settings.cpp:300 port/frontend/shell/settings.cpp:360
 msgid "No mods found"
-msgstr ""
+msgstr "Nessuna mod trovata"
 
 #: port/frontend/shell/settings.cpp:304
 msgid "Cross to look on your drives"
-msgstr ""
+msgstr "Croce per cercare nelle tue unità"
 
 #: port/frontend/shell/settings.cpp:313
 msgid "No mods on your drives"
-msgstr ""
+msgstr "Nessuna mod nelle tue unità"
 
 #: port/frontend/shell/settings.cpp:314
 msgid "Copy each mod's folder into a ps5cemu/mods folder on a USB drive and plug it in. A mod is a Cemu graphic pack (a folder with a rules.txt), or a folder with content and aoc folders in it for the files it replaces. The guide on GitHub, docs/MODS.md, has more."
-msgstr ""
+msgstr "Copia la cartella di ogni mod in una cartella ps5cemu/mods su un’unità USB e collegala. Una mod è un pacchetto grafico di Cemu (una cartella con un rules.txt) o una cartella con le cartelle content e aoc per i file che sostituisce. La guida su GitHub, docs/MODS.md, spiega di più."
 
 #: port/frontend/shell/settings.cpp:322
 msgid "Copying mods from your drives…"
-msgstr ""
+msgstr "Copia delle mod dalle tue unità…"
 
 #: port/frontend/shell/settings.cpp:345
 msgid "{0} folder had no rules.txt and no game: put a mod like that in a folder named by its game's title ID, or add it from its game's menu."
 msgid_plural "{0} folders had no rules.txt and no game: put a mod like that in a folder named by its game's title ID, or add it from its game's menu."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "{0} cartella non aveva né rules.txt né un gioco: metti una mod così in una cartella con il nome dell’ID titolo del suo gioco, o aggiungila dal menu del suo gioco."
+msgstr[1] "{0} cartelle non avevano né rules.txt né un gioco: metti una mod così in una cartella con il nome dell’ID titolo del suo gioco, o aggiungila dal menu del suo gioco."
 
 #: port/frontend/shell/settings.cpp:353
 msgid "The mods could not all be copied"
-msgstr ""
+msgstr "Non è stato possibile copiare tutte le mod"
 
 #: port/frontend/shell/settings.cpp:354
 msgid "{0} mod was added."
 msgid_plural "{0} mods were added."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "È stata aggiunta {0} mod."
+msgstr[1] "Sono state aggiunte {0} mod."
 
 #: port/frontend/shell/settings.cpp:360
 msgid "The ps5cemu/mods folders on your drives hold no folder with a rules.txt, nor with content, aoc or code folders."
-msgstr ""
+msgstr "Le cartelle ps5cemu/mods delle tue unità non contengono alcuna cartella con un rules.txt, né con cartelle content, aoc o code."
 
 #: port/frontend/shell/settings.cpp:365
 msgid "Turn them on in their games' Graphic packs."
-msgstr ""
+msgstr "Attivale nei pacchetti grafici dei loro giochi."
 
 #: port/frontend/shell/settings.cpp:367
 msgid "{0} mod added: turn it on in its game's Graphic packs"
 msgid_plural "{0} mods added: turn them on in their games' Graphic packs"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "{0} mod aggiunta: attivala nei pacchetti grafici del suo gioco"
+msgstr[1] "{0} mod aggiunte: attivale nei pacchetti grafici dei loro giochi"
 
 #: port/frontend/shell/settings.cpp:433
 msgid "Cemu is still starting. One moment."
@@ -4611,15 +4623,15 @@ msgstr "Pacchetti di texture in /data/ps5cemu/azahar/load/textures/<ID titolo>, 
 
 #: port/frontend/shell/settings.cpp:499
 msgid "Hardware shaders"
-msgstr ""
+msgstr "Shader hardware"
 
 #: port/frontend/shell/settings.cpp:499
 msgid "Off: 3D drawn exactly, on the CPU. Off for Pokémon."
-msgstr ""
+msgstr "Disattivati: 3D esatto, sulla CPU. Disattivati per Pokémon."
 
 #: port/frontend/shell/settings.cpp:500
 msgid "On, the 3DS's vertex shaders run on the PS5's GPU, the fastest way. Off, they run on the CPU as Azahar's software shaders: slower, but a model and the outline drawn around it are computed alike, and its lighting is corrected per triangle. Off by default for Pokémon X, Y, Omega Ruby, Alpha Sapphire, Sun, Moon, Ultra Sun and Ultra Moon, whose outlines, lighting and shadows glitch otherwise. Applies to the next game."
-msgstr ""
+msgstr "Attivati, i vertex shader del 3DS girano sulla GPU della PS5, il modo più veloce. Disattivati, girano sulla CPU come shader software di Azahar: più lento, ma un modello e il contorno disegnato intorno sono calcolati allo stesso modo, e la sua illuminazione è corretta per ogni triangolo. Disattivati per impostazione predefinita per Pokémon X, Y, Rubino Omega, Zaffiro Alpha, Sole, Luna, Ultrasole e Ultraluna, i cui contorni, illuminazione e ombre altrimenti hanno difetti. Si applica al prossimo gioco."
 
 #: port/frontend/shell/settings.cpp:505
 msgid "Outline fix"
@@ -4631,7 +4643,7 @@ msgstr "Corregge i puntini neri in movimento sui modelli 3D con contorno."
 
 #: port/frontend/shell/settings.cpp:506
 msgid "Computes every 3D position the same way twice, as Azahar does on Apple's GPUs. For a game that shows moving black dots on its outlined models with hardware shaders on; the Pokémon games are drawn right with Hardware shaders off instead. Applies to the next game."
-msgstr ""
+msgstr "Calcola ogni posizione 3D due volte allo stesso modo, come fa Azahar sulle GPU di Apple. Per un gioco che mostra puntini neri in movimento sui modelli con contorno con gli shader hardware attivati; i giochi Pokémon si vedono correttamente con gli shader hardware disattivati. Si applica al prossimo gioco."
 
 #: port/frontend/shell/settings.cpp:513
 msgid "How the DS's screens are scaled."
@@ -4991,15 +5003,15 @@ msgstr "Cerca aggiornamenti, DLC e giochi (cartelle con code, content e meta) su
 
 #: port/frontend/shell/settings.cpp:723
 msgid "Mods from USB"
-msgstr ""
+msgstr "Mod da USB"
 
 #: port/frontend/shell/settings.cpp:723
 msgid "Cemu mods from the ps5cemu/mods folder on your drives."
-msgstr ""
+msgstr "Mod di Cemu dalla cartella ps5cemu/mods delle tue unità."
 
 #: port/frontend/shell/settings.cpp:724
 msgid "Copies the mods in a USB drive's ps5cemu/mods folder into the app's graphic packs, where each shows on its game's Graphic packs page, off until you turn it on. A mod is a Cemu graphic pack (a folder with a rules.txt), or, for one shared without it, a folder with content and aoc folders, in a folder named by its game's title ID. A game's menu has Add mods from USB as well, which gives such mods that game. The guide on GitHub, docs/MODS.md, has more."
-msgstr ""
+msgstr "Copia le mod della cartella ps5cemu/mods di un’unità USB nei pacchetti grafici dell’app, dove ognuna appare nella pagina Pacchetti grafici del suo gioco, disattivata finché non la attivi. Una mod è un pacchetto grafico di Cemu (una cartella con un rules.txt) o, se condivisa senza, una cartella con le cartelle content e aoc, dentro una cartella con il nome dell’ID titolo del suo gioco. Anche il menu di un gioco ha Aggiungi mod da USB, che assegna quel gioco a queste mod. La guida su GitHub, docs/MODS.md, spiega di più."
 
 #: port/frontend/shell/settings.cpp:730
 msgid "Install a CIA file"
@@ -6232,35 +6244,35 @@ msgstr "Avvio di Azahar"
 
 #: port/frontend/shell/shell.cpp:908
 msgid "Making {0}'s home screen tile…"
-msgstr ""
+msgstr "Creazione del riquadro di {0} per la schermata Home…"
 
 #: port/frontend/shell/shell.cpp:920
 msgid "The tile could not be made"
-msgstr ""
+msgstr "Impossibile creare il riquadro"
 
 #. {0} is the tile's folder, /data/homebrew/PPSA99xxx
 #: port/frontend/shell/shell.cpp:924
 msgid "The tile is made again"
-msgstr ""
+msgstr "Il riquadro è stato ricreato"
 
 #. {0} is the tile's folder, /data/homebrew/PPSA99xxx
 #: port/frontend/shell/shell.cpp:924
 msgid "The tile is made"
-msgstr ""
+msgstr "Il riquadro è stato creato"
 
 #: port/frontend/shell/shell.cpp:925
 msgid "It is in {0}. ShadowMount Plus puts it on the PS5's home screen as it does any homebrew: if it does not show, restart ShadowMount Plus or the console. The tile starts the game in PS5CEMU-HAR, and closing the game closes the app."
-msgstr ""
+msgstr "Si trova in {0}. ShadowMount Plus lo mette nella schermata Home della PS5 come qualsiasi homebrew: se non compare, riavvia ShadowMount Plus o la console. Il riquadro avvia il gioco in PS5CEMU-HAR, e chiudendo il gioco si chiude l’app."
 
 #: port/frontend/shell/shell.cpp:938
 msgid "The tile's game could not start"
-msgstr ""
+msgstr "Impossibile avviare il gioco del riquadro"
 
 #: port/frontend/shell/shell.cpp:966
 msgid "It is not in the library: {0}"
-msgstr ""
+msgstr "Non è nella libreria: {0}"
 
-#: port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:1263 port/frontend/shell/shell.cpp:2070
+#: port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:1263 port/frontend/shell/shell.cpp:2060
 msgid "Done"
 msgstr "Fatto"
 
@@ -6370,7 +6382,7 @@ msgstr "Impostazioni del gioco: personalizzate"
 
 #: port/frontend/shell/shell.cpp:1592
 msgid "Add mods from USB"
-msgstr ""
+msgstr "Aggiungi mod da USB"
 
 #: port/frontend/shell/shell.cpp:1595
 msgid "Not a favourite"
@@ -6378,107 +6390,95 @@ msgstr "Togli dai preferiti"
 
 #: port/frontend/shell/shell.cpp:1596
 msgid "Add to home screen"
-msgstr ""
+msgstr "Aggiungi alla schermata Home"
 
-#: port/frontend/shell/shell.cpp:1597
-msgid "Show where it is"
-msgstr "Mostra dove si trova"
-
-#: port/frontend/shell/shell.cpp:1886
+#: port/frontend/shell/shell.cpp:1885
 msgid "Added to Favourites"
 msgstr "Aggiunto ai preferiti"
 
-#: port/frontend/shell/shell.cpp:1886
+#: port/frontend/shell/shell.cpp:1885
 msgid "Taken out of Favourites"
 msgstr "Tolto dai preferiti"
 
-#: port/frontend/shell/shell.cpp:1892
-msgid "The PS5's storage"
-msgstr "La memoria della PS5"
-
-#: port/frontend/shell/shell.cpp:1896
-msgid "Title ID {0}"
-msgstr "ID titolo {0}"
-
 #. the keyboard's other keys, for text typed as it is: R1 and L1 go to capitals and symbols
-#: port/frontend/shell/shell.cpp:2045
+#: port/frontend/shell/shell.cpp:2035
 msgid "abc"
 msgstr "abc"
 
 #. the keyboard's other keys, for text typed as it is: R1 and L1 go to capitals and symbols
-#: port/frontend/shell/shell.cpp:2045
+#: port/frontend/shell/shell.cpp:2035
 msgid "#+="
 msgstr "#+="
 
-#: port/frontend/shell/shell.cpp:2047
+#: port/frontend/shell/shell.cpp:2037
 msgid "L1 R1: {0}"
 msgstr "L1 R1: {0}"
 
-#: port/frontend/shell/shell.cpp:2092
+#: port/frontend/shell/shell.cpp:2082
 msgid "PS5CEMU-HAR {0} is out"
 msgstr "È uscito PS5CEMU-HAR {0}"
 
-#: port/frontend/shell/shell.cpp:2093
+#: port/frontend/shell/shell.cpp:2083
 msgid "This is {0}. Download and install it now? Your games, saves and settings stay as they are."
 msgstr "Questa è la {0}. Scaricarla e installarla ora? I tuoi giochi, salvataggi e impostazioni restano come sono."
 
-#: port/frontend/shell/shell.cpp:2094
+#: port/frontend/shell/shell.cpp:2084
 msgid "Update now"
 msgstr "Aggiorna ora"
 
-#: port/frontend/shell/shell.cpp:2094 port/frontend/shell/shell.cpp:2147
+#: port/frontend/shell/shell.cpp:2084 port/frontend/shell/shell.cpp:2137
 msgid "Later"
 msgstr "Più tardi"
 
-#: port/frontend/shell/shell.cpp:2097 port/frontend/shell/shell.cpp:2102 port/frontend/shell/shell.cpp:2107
+#: port/frontend/shell/shell.cpp:2087 port/frontend/shell/shell.cpp:2092 port/frontend/shell/shell.cpp:2097
 msgid "Updating to {0}"
 msgstr "Aggiornamento a {0}"
 
-#: port/frontend/shell/shell.cpp:2098
+#: port/frontend/shell/shell.cpp:2088
 msgid "Downloading: {0} of {1} MB"
 msgstr "Download: {0} di {1} MB"
 
-#: port/frontend/shell/shell.cpp:2103
+#: port/frontend/shell/shell.cpp:2093
 msgid "Checking the download"
 msgstr "Verifica del download"
 
-#: port/frontend/shell/shell.cpp:2108
+#: port/frontend/shell/shell.cpp:2098
 msgid "Installing"
 msgstr "Installazione"
 
-#: port/frontend/shell/shell.cpp:2112
+#: port/frontend/shell/shell.cpp:2102
 msgid "{0} is installed"
 msgstr "{0} è installata"
 
-#: port/frontend/shell/shell.cpp:2113
+#: port/frontend/shell/shell.cpp:2103
 msgid "PS5CEMU-HAR starts again to finish the update."
 msgstr "PS5CEMU-HAR si riavvia per completare l’aggiornamento."
 
-#: port/frontend/shell/shell.cpp:2114
+#: port/frontend/shell/shell.cpp:2104
 msgid "Restart now"
 msgstr "Riavvia ora"
 
-#: port/frontend/shell/shell.cpp:2117
+#: port/frontend/shell/shell.cpp:2107
 msgid "The update did not finish"
 msgstr "L’aggiornamento non è terminato"
 
-#: port/frontend/shell/shell.cpp:2118
+#: port/frontend/shell/shell.cpp:2108
 msgid "PS5CEMU-HAR is still {0}."
 msgstr "PS5CEMU-HAR è ancora alla {0}."
 
-#: port/frontend/shell/shell.cpp:2121
+#: port/frontend/shell/shell.cpp:2111
 msgid "Checking for updates"
 msgstr "Ricerca di aggiornamenti"
 
-#: port/frontend/shell/shell.cpp:2127
+#: port/frontend/shell/shell.cpp:2117
 msgid "PS5CEMU-HAR update"
 msgstr "Aggiornamento di PS5CEMU-HAR"
 
-#: port/frontend/shell/shell.cpp:2147
+#: port/frontend/shell/shell.cpp:2137
 msgid "Select"
 msgstr "Seleziona"
 
-#: port/frontend/shell/shell.cpp:2148
+#: port/frontend/shell/shell.cpp:2138
 msgid "Restart"
 msgstr "Riavvia"
 
@@ -6611,11 +6611,11 @@ msgstr "Questa sessione: Cemu (Wii U); il core di Azahar non è avviato"
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "Niente memoria JIT: i giochi Wii U girano sull’interprete, molto più lento. PPSA99360 è nell’elenco di jailbreak delle app del tuo HEN?"
 
-#: port/main_ps5.cpp:487
+#: port/main_ps5.cpp:489
 msgid "The launcher could not start. The boot log in /data/ps5cemu/logs says why."
 msgstr "Il launcher non si è potuto avviare. Il log di avvio in /data/ps5cemu/logs spiega perché."
 
-#: port/main_ps5.cpp:488
+#: port/main_ps5.cpp:490
 msgid "The launcher could not start: {0}. The boot log in /data/ps5cemu/logs has more."
 msgstr "Il launcher non si è avviato: {0}. Il log di avvio in /data/ps5cemu/logs ha più dettagli."
 

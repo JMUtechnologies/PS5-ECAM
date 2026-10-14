@@ -146,11 +146,23 @@ msgstr "Vulkan 렌더러가 시작되지 않았습니다: {0}"
 msgid "Touchpad click + Options: the in-game menu (screens, picture, volume, controls, the library)"
 msgstr "터치패드 버튼 + 옵션 버튼: 게임 내 메뉴(화면, 영상, 볼륨, 조작, 라이브러리)"
 
-#: port/app/forwarders.cpp:137
+#: port/app/forwarders.cpp:141
+msgid "elfldr does not answer on port 9021. Home screen tiles need it, to be put in /data/homebrew and to start their games: load elfldr, then add the tile again."
+msgstr ""
+
+#: port/app/forwarders.cpp:157
+msgid "It could not be put in /data/homebrew: {0}"
+msgstr ""
+
+#: port/app/forwarders.cpp:162
+msgid "elfldr took the tile helper, but the tile did not reach /data/homebrew."
+msgstr ""
+
+#: port/app/forwarders.cpp:257
 msgid "The game has no picture for its tile"
 msgstr ""
 
-#: port/app/forwarders.cpp:146
+#: port/app/forwarders.cpp:266
 msgid "No free title ID for a tile"
 msgstr ""
 
@@ -1162,7 +1174,7 @@ msgstr "읽지 못함(오류 {0})"
 msgid "Running"
 msgstr "실행 중"
 
-#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:759 port/frontend/shell/eden.cpp:488 port/frontend/shell/eden.cpp:497 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1205 port/frontend/shell/shell.cpp:1209 port/frontend/shell/shell.cpp:1241 port/frontend/shell/shell.cpp:1257 port/frontend/shell/shell.cpp:1265 port/frontend/shell/shell.cpp:1273 port/frontend/shell/shell.cpp:1276 port/frontend/shell/shell.cpp:2147
+#: port/app/ingame.cpp:548 port/app/ingame3ds.cpp:759 port/frontend/shell/eden.cpp:488 port/frontend/shell/eden.cpp:497 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1205 port/frontend/shell/shell.cpp:1209 port/frontend/shell/shell.cpp:1241 port/frontend/shell/shell.cpp:1257 port/frontend/shell/shell.cpp:1265 port/frontend/shell/shell.cpp:1273 port/frontend/shell/shell.cpp:1276 port/frontend/shell/shell.cpp:2137
 #, menu
 msgid "Choose"
 msgstr "선택"
@@ -1630,7 +1642,7 @@ msgstr "불러오는 중…"
 msgid "Paused"
 msgstr "일시 정지"
 
-#: port/app/ingame3ds.cpp:810 port/frontend/shell/shell.cpp:2119 port/frontend/shell/shell.cpp:2148
+#: port/app/ingame3ds.cpp:810 port/frontend/shell/shell.cpp:2109 port/frontend/shell/shell.cpp:2138
 #, menu
 msgid "OK"
 msgstr "확인"
@@ -1647,25 +1659,25 @@ msgid "Some text"
 msgstr "텍스트"
 
 #. the 3DS keyboard's keys
-#: port/app/ingame3ds.cpp:857 port/frontend/shell/shell.cpp:2070
+#: port/app/ingame3ds.cpp:857 port/frontend/shell/shell.cpp:2060
 #, menu
 msgid "Shift: on"
 msgstr "Shift: 켬"
 
 #. the 3DS keyboard's keys
 #. the 3DS keyboard's hints: Cross types the focused key
-#: port/app/ingame3ds.cpp:857 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:2070
+#: port/app/ingame3ds.cpp:857 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:2060
 #, menu
 msgid "Shift"
 msgstr "Shift"
 
-#: port/app/ingame3ds.cpp:859 port/frontend/shell/shell.cpp:2070
+#: port/app/ingame3ds.cpp:859 port/frontend/shell/shell.cpp:2060
 #, menu
 msgid "Space"
 msgstr "스페이스"
 
 #. the 3DS keyboard's hints: Cross types the focused key
-#: port/app/ingame3ds.cpp:861 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:2070
+#: port/app/ingame3ds.cpp:861 port/app/ingame3ds.cpp:877 port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:2060
 #, menu
 msgid "Delete"
 msgstr "지우기"
@@ -2037,7 +2049,7 @@ msgstr ""
 msgid "{0} could not be copied: is the PS5's storage full?"
 msgstr ""
 
-#: port/app/mods.cpp:229 port/app/pack_updates.cpp:285 port/app/updates.cpp:444
+#: port/app/mods.cpp:229 port/app/pack_updates.cpp:285 port/app/updates.cpp:445
 msgid "Stopped for a game"
 msgstr "게임 때문에 중단했습니다"
 
@@ -2049,15 +2061,15 @@ msgstr ""
 msgid "{0} could not be written"
 msgstr "{0}에 쓰지 못했습니다"
 
-#: port/app/pack_updates.cpp:151 port/app/updates.cpp:303
+#: port/app/pack_updates.cpp:151 port/app/updates.cpp:304
 msgid "the download is not a ZIP ({0})"
 msgstr "다운로드한 파일이 ZIP 파일이 아닙니다({0})"
 
-#: port/app/pack_updates.cpp:179 port/app/updates.cpp:329
+#: port/app/pack_updates.cpp:179 port/app/updates.cpp:330
 msgid "{0} could not be unpacked"
 msgstr "{0}의 압축을 풀지 못했습니다"
 
-#: port/app/pack_updates.cpp:196 port/app/updates.cpp:349
+#: port/app/pack_updates.cpp:196 port/app/updates.cpp:350
 msgid "stopped for a game"
 msgstr "게임 때문에 중단했습니다"
 
@@ -2065,12 +2077,12 @@ msgstr "게임 때문에 중단했습니다"
 msgid "the download holds no packs"
 msgstr "다운로드한 파일에 팩이 없습니다"
 
-#: port/app/pack_updates.cpp:214 port/app/updates.cpp:508
+#: port/app/pack_updates.cpp:214 port/app/updates.cpp:513
 msgid "GitHub could not be found: is the PS5 online?"
 msgstr "GitHub를 찾을 수 없습니다. PS5가 온라인인지 확인하세요"
 
 #. why an update did not finish
-#: port/app/pack_updates.cpp:247 port/app/updates.cpp:369
+#: port/app/pack_updates.cpp:247 port/app/updates.cpp:370
 msgid "GitHub did not answer with a release"
 msgstr "GitHub에서 릴리스를 받지 못했습니다"
 
@@ -2132,47 +2144,47 @@ msgstr "길게 누르기"
 msgid "Hold Cross until the ring fills."
 msgstr "링이 다 찰 때까지 엑스 버튼을 길게 누르세요."
 
-#: port/app/updates.cpp:339
+#: port/app/updates.cpp:340
 msgid "{0} could not be written (is /data full?)"
 msgstr "{0}에 쓰지 못했습니다(/data가 가득 찼는지 확인하세요)"
 
-#: port/app/updates.cpp:354
+#: port/app/updates.cpp:355
 msgid "the download has no eboot.bin"
 msgstr "다운로드한 파일에 eboot.bin이 없습니다"
 
-#: port/app/updates.cpp:376
+#: port/app/updates.cpp:377
 msgid "The latest release's version ({0}) is not one this can read"
 msgstr "최신 릴리스의 버전({0})을 읽을 수 없습니다"
 
-#: port/app/updates.cpp:401
+#: port/app/updates.cpp:402
 msgid "The release's checksums could not be downloaded"
 msgstr "릴리스의 체크섬을 다운로드하지 못했습니다"
 
-#: port/app/updates.cpp:416
+#: port/app/updates.cpp:417
 msgid "The releases branch has no checksum for {0}"
 msgstr "releases 브랜치에 {0}의 체크섬이 없습니다"
 
-#: port/app/updates.cpp:430
+#: port/app/updates.cpp:431
 msgid "The download could not start"
 msgstr "다운로드를 시작하지 못했습니다"
 
-#: port/app/updates.cpp:444
+#: port/app/updates.cpp:445
 msgid "The download did not finish: is the PS5 online?"
 msgstr "다운로드가 끝나지 않았습니다. PS5가 온라인인지 확인하세요"
 
-#: port/app/updates.cpp:453
+#: port/app/updates.cpp:454
 msgid "The download is damaged (SHA-256 {0}, not {1})"
 msgstr "다운로드한 파일이 손상되었습니다(SHA-256: {0}, 올바른 값: {1})"
 
-#: port/app/updates.cpp:463
+#: port/app/updates.cpp:464
 msgid "PS5CEMU-HAR runs from an image, whose files can't be replaced: install the new release by hand"
 msgstr "PS5CEMU-HAR가 이미지에서 실행되어 파일을 바꿀 수 없습니다. 새 릴리스를 직접 설치하세요"
 
-#: port/app/updates.cpp:475
+#: port/app/updates.cpp:476
 msgid "It could not be unpacked: {0}"
 msgstr "압축을 풀지 못했습니다: {0}"
 
-#: port/app/updates.cpp:490
+#: port/app/updates.cpp:491
 msgid "{0} could not be replaced ({1}): copy the release's PPSA99360 folder over by hand"
 msgstr "{0} 파일을 바꾸지 못했습니다({1}). 릴리스의 PPSA99360 폴더를 직접 덮어 복사하세요"
 
@@ -3088,7 +3100,7 @@ msgstr "정렬"
 msgid "Filter"
 msgstr "필터"
 
-#: port/frontend/shell/eden.cpp:501 port/frontend/shell/eden.cpp:1125 port/frontend/shell/experiments.cpp:498 port/frontend/shell/library.cpp:507 port/frontend/shell/library.cpp:549 port/frontend/shell/recent.cpp:363 port/frontend/shell/shell.cpp:1252 port/frontend/shell/shell.cpp:2039
+#: port/frontend/shell/eden.cpp:501 port/frontend/shell/eden.cpp:1125 port/frontend/shell/experiments.cpp:498 port/frontend/shell/library.cpp:507 port/frontend/shell/library.cpp:549 port/frontend/shell/recent.cpp:363 port/frontend/shell/shell.cpp:1252 port/frontend/shell/shell.cpp:2029
 msgid "Search"
 msgstr "검색"
 
@@ -3974,7 +3986,7 @@ msgstr "/data/ps5cemu에 있음"
 msgid "Missing (only .wud/.wux need it)"
 msgstr "없음(.wud/.wux에만 필요)"
 
-#: port/frontend/shell/pages.cpp:1270 port/frontend/shell/shell.cpp:1938 port/frontend/shell/shell.cpp:1965
+#: port/frontend/shell/pages.cpp:1270 port/frontend/shell/shell.cpp:1928 port/frontend/shell/shell.cpp:1955
 msgid "In use"
 msgstr "사용 중"
 
@@ -4414,7 +4426,7 @@ msgstr "엑스 버튼으로 다운로드"
 msgid "{0}: Cross to install"
 msgstr "{0}: 엑스 버튼으로 설치"
 
-#: port/frontend/shell/settings.cpp:271 port/frontend/shell/shell.cpp:2098
+#: port/frontend/shell/settings.cpp:271 port/frontend/shell/shell.cpp:2088
 msgid "Downloading…"
 msgstr "다운로드 중…"
 
@@ -6219,7 +6231,7 @@ msgstr ""
 msgid "It is not in the library: {0}"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:1263 port/frontend/shell/shell.cpp:2070
+#: port/frontend/shell/shell.cpp:1203 port/frontend/shell/shell.cpp:1263 port/frontend/shell/shell.cpp:2060
 msgid "Done"
 msgstr "완료"
 
@@ -6339,105 +6351,93 @@ msgstr "즐겨찾기에서 삭제"
 msgid "Add to home screen"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1597
-msgid "Show where it is"
-msgstr "위치 보기"
-
-#: port/frontend/shell/shell.cpp:1886
+#: port/frontend/shell/shell.cpp:1885
 msgid "Added to Favourites"
 msgstr "즐겨찾기에 추가했습니다"
 
-#: port/frontend/shell/shell.cpp:1886
+#: port/frontend/shell/shell.cpp:1885
 msgid "Taken out of Favourites"
 msgstr "즐겨찾기에서 삭제했습니다"
 
-#: port/frontend/shell/shell.cpp:1892
-msgid "The PS5's storage"
-msgstr "PS5 저장 공간"
-
-#: port/frontend/shell/shell.cpp:1896
-msgid "Title ID {0}"
-msgstr "타이틀 ID {0}"
-
 #. the keyboard's other keys, for text typed as it is: R1 and L1 go to capitals and symbols
-#: port/frontend/shell/shell.cpp:2045
+#: port/frontend/shell/shell.cpp:2035
 msgid "abc"
 msgstr "abc"
 
 #. the keyboard's other keys, for text typed as it is: R1 and L1 go to capitals and symbols
-#: port/frontend/shell/shell.cpp:2045
+#: port/frontend/shell/shell.cpp:2035
 msgid "#+="
 msgstr "#+="
 
-#: port/frontend/shell/shell.cpp:2047
+#: port/frontend/shell/shell.cpp:2037
 msgid "L1 R1: {0}"
 msgstr "L1 R1: {0}"
 
-#: port/frontend/shell/shell.cpp:2092
+#: port/frontend/shell/shell.cpp:2082
 msgid "PS5CEMU-HAR {0} is out"
 msgstr "PS5CEMU-HAR {0} 출시"
 
-#: port/frontend/shell/shell.cpp:2093
+#: port/frontend/shell/shell.cpp:2083
 msgid "This is {0}. Download and install it now? Your games, saves and settings stay as they are."
 msgstr "{0} 버전입니다. 지금 다운로드해서 설치하시겠습니까? 게임, 세이브 데이터, 설정은 그대로입니다."
 
-#: port/frontend/shell/shell.cpp:2094
+#: port/frontend/shell/shell.cpp:2084
 msgid "Update now"
 msgstr "지금 업데이트"
 
-#: port/frontend/shell/shell.cpp:2094 port/frontend/shell/shell.cpp:2147
+#: port/frontend/shell/shell.cpp:2084 port/frontend/shell/shell.cpp:2137
 msgid "Later"
 msgstr "나중에"
 
-#: port/frontend/shell/shell.cpp:2097 port/frontend/shell/shell.cpp:2102 port/frontend/shell/shell.cpp:2107
+#: port/frontend/shell/shell.cpp:2087 port/frontend/shell/shell.cpp:2092 port/frontend/shell/shell.cpp:2097
 msgid "Updating to {0}"
 msgstr "{0} 버전으로 업데이트 중"
 
-#: port/frontend/shell/shell.cpp:2098
+#: port/frontend/shell/shell.cpp:2088
 msgid "Downloading: {0} of {1} MB"
 msgstr "다운로드 중: {0}/{1}MB"
 
-#: port/frontend/shell/shell.cpp:2103
+#: port/frontend/shell/shell.cpp:2093
 msgid "Checking the download"
 msgstr "다운로드 확인 중"
 
-#: port/frontend/shell/shell.cpp:2108
+#: port/frontend/shell/shell.cpp:2098
 msgid "Installing"
 msgstr "설치 중"
 
-#: port/frontend/shell/shell.cpp:2112
+#: port/frontend/shell/shell.cpp:2102
 msgid "{0} is installed"
 msgstr "{0} 버전 설치됨"
 
-#: port/frontend/shell/shell.cpp:2113
+#: port/frontend/shell/shell.cpp:2103
 msgid "PS5CEMU-HAR starts again to finish the update."
 msgstr "업데이트를 마치기 위해 PS5CEMU-HAR를 다시 시작합니다."
 
-#: port/frontend/shell/shell.cpp:2114
+#: port/frontend/shell/shell.cpp:2104
 msgid "Restart now"
 msgstr "지금 다시 시작"
 
-#: port/frontend/shell/shell.cpp:2117
+#: port/frontend/shell/shell.cpp:2107
 msgid "The update did not finish"
 msgstr "업데이트가 끝나지 않았습니다"
 
-#: port/frontend/shell/shell.cpp:2118
+#: port/frontend/shell/shell.cpp:2108
 msgid "PS5CEMU-HAR is still {0}."
 msgstr "PS5CEMU-HAR는 아직 {0} 버전입니다."
 
-#: port/frontend/shell/shell.cpp:2121
+#: port/frontend/shell/shell.cpp:2111
 msgid "Checking for updates"
 msgstr "업데이트 확인 중"
 
-#: port/frontend/shell/shell.cpp:2127
+#: port/frontend/shell/shell.cpp:2117
 msgid "PS5CEMU-HAR update"
 msgstr "PS5CEMU-HAR 업데이트"
 
-#: port/frontend/shell/shell.cpp:2147
+#: port/frontend/shell/shell.cpp:2137
 msgid "Select"
 msgstr "선택"
 
-#: port/frontend/shell/shell.cpp:2148
+#: port/frontend/shell/shell.cpp:2138
 msgid "Restart"
 msgstr "다시 시작"
 
@@ -6570,11 +6570,11 @@ msgstr "이번 세션: Cemu(Wii U). Azahar의 코어는 시작되지 않았습�
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "JIT 메모리가 없음: Wii U 게임이 훨씬 느린 인터프리터로 실행됩니다. HEN의 앱 탈옥 목록에 PPSA99360이 있는지 확인하세요."
 
-#: port/main_ps5.cpp:487
+#: port/main_ps5.cpp:489
 msgid "The launcher could not start. The boot log in /data/ps5cemu/logs says why."
 msgstr "런처를 시작하지 못했습니다. 이유는 /data/ps5cemu/logs의 부팅 로그에 있습니다."
 
-#: port/main_ps5.cpp:488
+#: port/main_ps5.cpp:490
 msgid "The launcher could not start: {0}. The boot log in /data/ps5cemu/logs has more."
 msgstr "런처를 시작하지 못했습니다: {0}. 자세한 내용은 /data/ps5cemu/logs의 부팅 로그에 있습니다."
 
