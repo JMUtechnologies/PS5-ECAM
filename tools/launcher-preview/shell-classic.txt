@@ -1,0 +1,42 @@
+# Classic (2.0.0 B's launcher, 6.20): its screens (tools/preview-shell.sh with PREVIEW_THEME=classic),
+# one PNG each in build/shell-preview, to hold against the 2.0.0 B preview's (tools/launcher-preview at
+# v2.0.0b). It starts on the Wii U side's Home.
+wait 90
+shot classic-home             # Continue playing, Recently played
+press right                   # the second button: Graphic packs
+wait 20
+shot classic-home-second
+press down                    # the recent games
+wait 20
+shot classic-home-recent
+press up up                   # Launch game, then the header
+wait 20
+shot classic-header
+press right                   # Library, in the header
+press cross
+wait 45
+shot classic-library          # Your games: the list beside the game's details
+press down down
+wait 25
+shot classic-library-down
+press r1                      # Settings
+wait 45
+shot classic-settings         # Preferences beside On this console
+press cross                   # the first page, as a dialog
+wait 30
+shot classic-settings-page
+press circle
+press r1                      # About
+wait 45
+shot classic-about
+press l1 l1 l1                # back to Home
+wait 40
+press circle                  # Change emulator: the sides in the header
+wait 20
+shot classic-sides
+press right cross             # the 3DS side
+wait 90
+shot classic-3ds-home
+press cross                   # Launch game
+wait 30
+shot classic-launch

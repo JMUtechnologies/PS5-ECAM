@@ -197,6 +197,33 @@ namespace ps5shell
 			return false;
 		const std::vector<System> sides = RailSides();
 		const int items = kSections + (int)sides.size();
+		if (ClassicLayout())
+		{
+			// Classic's header: the sections and the sides along the top
+			if (b == Button::Left || b == Button::Right)
+			{
+				const int next = m_railIndex + (b == Button::Right ? 1 : -1);
+				if (next < 0 || next >= (sides.size() > 1 ? items : kSections))
+					m_feedback.Play(ui::Cue::Edge, press.repeat);
+				else
+				{
+					m_railIndex = next;
+					m_feedback.Play(ui::Cue::Focus);
+				}
+				return true;
+			}
+			if (b == Button::Down || b == Button::Circle)
+			{
+				m_railFocus = false;
+				m_feedback.Play(ui::Cue::Back);
+				return true;
+			}
+			if (b == Button::Up)
+			{
+				m_feedback.Play(ui::Cue::Edge, press.repeat);
+				return true;
+			}
+		}
 		switch (b)
 		{
 		case Button::Up:
@@ -265,6 +292,8 @@ namespace ps5shell
 
 	void Shell::EdenDrawRail(Canvas& canvas)
 	{
+		if (ClassicLayout())
+			return ClassicDrawRail(canvas); // classic.cpp
 		if (PhantomLayout())
 			return PhantomDrawRail(canvas); // experiments.cpp
 		if (TerminalLayout())
@@ -401,6 +430,8 @@ namespace ps5shell
 
 	void Shell::EdenDrawHints(Canvas& canvas, const std::vector<Hint>& hints)
 	{
+		if (ClassicLayout())
+			return ClassicDrawHints(canvas, hints); // classic.cpp
 		if (PhantomLayout())
 			return PhantomDrawHints(canvas, hints); // experiments.cpp
 		if (TerminalLayout())
@@ -443,7 +474,10 @@ namespace ps5shell
 		// tr: the hint for L1 and R1 on Eden's screens: they go between its sections
 		const Hint sections{Icon::R1, Tr("Sections")};
 		if (m_railFocus)
-			return {{Icon::UpDown, Tr("Move")}, {Icon::Cross, Tr("Open")}, {Icon::Circle, Tr("Back")}, sections, {Icon::Touchpad, other}};
+			return {{ClassicLayout() ? Icon::LeftRight : Icon::UpDown, Tr("Move")}, {Icon::Cross, Tr("Open")}, {Icon::Circle, Tr("Back")}, sections,
+				{Icon::Touchpad, other}};
+		// Classic's Triangle: a Wii U game's graphic packs, as 2.0.0 B had it
+		const char* triangle = ClassicLayout() && IsWiiU() && m_status.coreReady ? Tr("Graphic packs") : Tr("Game settings");
 		std::string kicker, title, text;
 		std::vector<std::string> buttons;
 		switch (m_screen)
@@ -454,14 +488,16 @@ namespace ps5shell
 										 std::vector<Hint>{{Icon::Cross, Tr("Choose")}, sections, {Icon::Touchpad, other}};
 			if (m_homeFocus == kViewAll || EdenContinueGame() < 0)
 				return {{Icon::Cross, Tr("Open")}, sections, {Icon::Touchpad, other}};
-			return {{Icon::Cross, Tr("Play")}, {Icon::Triangle, Tr("Game settings")}, {Icon::Options, Tr("Options")}, sections, {Icon::Touchpad, other}};
+			if (ClassicLayout() && SidesShown() > 1)
+				return {{Icon::Cross, Tr("Play")}, {Icon::Triangle, triangle}, {Icon::Options, Tr("Options")}, sections, {Icon::Circle, Tr("Change emulator")}};
+			return {{Icon::Cross, Tr("Play")}, {Icon::Triangle, triangle}, {Icon::Options, Tr("Options")}, sections, {Icon::Touchpad, other}};
 		case ScreenId::Library:
 			if (LibraryState(kicker, title, text, buttons))
 				return buttons.empty() ? std::vector<Hint>{sections, {Icon::Touchpad, other}} :
 										 std::vector<Hint>{{Icon::Cross, Tr("Choose")}, sections, {Icon::Touchpad, other}};
 			if (m_libraryIndex < ArticTiles())
 				return {{Icon::Cross, Tr("Open")}, sections, {Icon::Touchpad, other}};
-			return {{Icon::Cross, Tr("Play")}, {Icon::Triangle, Tr("Game settings")}, {Icon::Options, Tr("Options")}, {Icon::Square, Tr("Sort")},
+			return {{Icon::Cross, Tr("Play")}, {Icon::Triangle, triangle}, {Icon::Options, Tr("Options")}, {Icon::Square, Tr("Sort")},
 				{Icon::L2, Tr("Filter")}, {Icon::R2, Tr("Search")}, sections};
 		case ScreenId::Settings:
 			if (EdenOnBoard() && !EdenLayout()) // the experiments' list of pages
@@ -477,6 +513,8 @@ namespace ps5shell
 
 	void Shell::EdenDrawScrims(Canvas& canvas)
 	{
+		if (ClassicLayout())
+			return ClassicBackdrop(canvas); // classic.cpp
 		if (PhantomLayout())
 			return PhantomBackdrop(canvas); // experiments.cpp
 		if (TerminalLayout())
@@ -622,6 +660,11 @@ namespace ps5shell
 		case Button::Up:
 			if (focus >= kFirstRecent)
 				focus = kPlay;
+			else if (ClassicLayout())
+			{
+				FocusBar(); // Classic's header
+				return;
+			}
 			else
 				m_feedback.Play(ui::Cue::Edge, press.repeat);
 			break;
@@ -661,7 +704,17 @@ namespace ps5shell
 			else if (focus == kGameSettings)
 			{
 				m_feedback.Play(ui::Cue::Select);
-				GameSettingsOpen(game);
+				// Classic's second button is the side's own: the game's graphic packs on the Wii U, Artic
+				// Base on the 3DS
+				if (ClassicLayout() && IsWiiU() && m_status.coreReady)
+					PacksOpen(game, ScreenId::Home);
+				else if (ClassicLayout() && Is3ds())
+				{
+					m_pageFrom = ScreenId::Home;
+					ArticOpen();
+				}
+				else
+					GameSettingsOpen(game);
 			}
 			else if (focused() >= 0)
 				Launch(focused());
@@ -670,7 +723,10 @@ namespace ps5shell
 			if (focused() >= 0)
 			{
 				m_feedback.Play(ui::Cue::Select);
-				GameSettingsOpen(focused());
+				if (ClassicLayout() && IsWiiU() && m_status.coreReady)
+					PacksOpen(focused(), ScreenId::Home); // as 2.0.0 B: Triangle, the graphic packs
+				else
+					GameSettingsOpen(focused());
 			}
 			else
 				m_feedback.Play(ui::Cue::Denied);
@@ -681,7 +737,17 @@ namespace ps5shell
 			else
 				m_feedback.Play(ui::Cue::Denied);
 			return;
-		case Button::Circle: FocusBar(); return;
+		case Button::Circle:
+			FocusBar();
+			if (ClassicLayout())
+			{
+				// 2.0.0 B's Circle: change emulator, the sides in Classic's header
+				const std::vector<System> sides = RailSides();
+				for (int k = 0; k < (int)sides.size(); k++)
+					if (sides[k] == m_side && sides.size() > 1)
+						m_railIndex = kSections + k;
+			}
+			return;
 		default: return;
 		}
 		if (focus != before)
@@ -690,6 +756,8 @@ namespace ps5shell
 
 	void Shell::EdenHomeDraw(Canvas& canvas)
 	{
+		if (ClassicLayout())
+			return ClassicHomeDraw(canvas); // classic.cpp
 		if (PhantomLayout())
 			return PhantomHomeDraw(canvas); // experiments.cpp
 		if (TerminalLayout())
@@ -936,7 +1004,10 @@ namespace ps5shell
 			if (game >= 0)
 			{
 				m_feedback.Play(ui::Cue::Select);
-				GameSettingsOpen(game);
+				if (ClassicLayout() && IsWiiU() && m_status.coreReady)
+					PacksOpen(game, ScreenId::Library); // as 2.0.0 B: Triangle, the graphic packs
+				else
+					GameSettingsOpen(game);
 			}
 			else
 				m_feedback.Play(ui::Cue::Denied);
@@ -992,7 +1063,9 @@ namespace ps5shell
 				move(at + 1);
 			break;
 		case Button::Up:
-			if (at < columns)
+			if (at < columns && ClassicLayout())
+				FocusBar(); // Classic's header
+			else if (at < columns)
 				m_feedback.Play(ui::Cue::Edge, press.repeat);
 			else
 				move(at - columns);
@@ -1013,6 +1086,8 @@ namespace ps5shell
 
 	void Shell::EdenLibraryDraw(Canvas& canvas)
 	{
+		if (ClassicLayout())
+			return ClassicLibraryDraw(canvas); // classic.cpp
 		if (PhantomLayout())
 			return PhantomLibraryDraw(canvas); // experiments.cpp
 		if (TerminalLayout())
@@ -1424,6 +1499,7 @@ namespace ps5shell
 				at = i;
 		m_page = pages[at].id;
 		const int before = at;
+		const int columns = ClassicLayout() ? 1 : kTileColumns; // Classic's pages are a list
 		switch (press.button)
 		{
 		case Button::Circle:
@@ -1431,21 +1507,26 @@ namespace ps5shell
 			EdenGo(0);
 			return;
 		case Button::Up:
-			if (at >= kTileColumns)
-				at -= kTileColumns;
+			if (at >= columns)
+				at -= columns;
+			else if (ClassicLayout())
+			{
+				FocusBar(); // Classic's header
+				return;
+			}
 			else
 				m_feedback.Play(ui::Cue::Edge, press.repeat);
 			break;
 		case Button::Down:
-			if (at + kTileColumns < count)
-				at += kTileColumns;
-			else if (at / kTileColumns < (count - 1) / kTileColumns)
+			if (at + columns < count)
+				at += columns;
+			else if (at / columns < (count - 1) / columns)
 				at = count - 1;
 			else
 				m_feedback.Play(ui::Cue::Edge, press.repeat);
 			break;
 		case Button::Left:
-			if (at % kTileColumns == 0)
+			if (at % columns == 0)
 			{
 				FocusBar();
 				return;
@@ -1453,7 +1534,7 @@ namespace ps5shell
 			at--;
 			break;
 		case Button::Right:
-			if (at % kTileColumns == kTileColumns - 1 || at + 1 >= count)
+			if (at % columns == columns - 1 || at + 1 >= count)
 				m_feedback.Play(ui::Cue::Edge, press.repeat);
 			else
 				at++;
@@ -1481,6 +1562,8 @@ namespace ps5shell
 
 	void Shell::EdenSettingsDraw(Canvas& canvas)
 	{
+		if (ClassicLayout())
+			return ClassicSettingsDraw(canvas); // classic.cpp
 		if (PhantomLayout())
 			return PhantomSettingsDraw(canvas); // experiments.cpp
 		if (TerminalLayout())
@@ -1693,6 +1776,12 @@ namespace ps5shell
 			EdenGo(0);
 			break;
 		case Button::Up:
+			if (ClassicLayout())
+			{
+				FocusBar(); // Classic's header
+				break;
+			}
+			[[fallthrough]];
 		case Button::Down:
 		case Button::Right: m_feedback.Play(ui::Cue::Edge, press.repeat); break;
 		default: break;
@@ -1701,6 +1790,8 @@ namespace ps5shell
 
 	void Shell::EdenAboutDraw(Canvas& canvas)
 	{
+		if (ClassicLayout())
+			return ClassicAboutDraw(canvas); // classic.cpp
 		if (PhantomLayout())
 			return PhantomAboutDraw(canvas); // experiments.cpp
 		if (TerminalLayout())
@@ -1740,6 +1831,8 @@ namespace ps5shell
 
 	void Shell::EdenDrawLaunch(Canvas& canvas)
 	{
+		if (ClassicLayout())
+			return ClassicDrawLaunch(canvas); // classic.cpp
 		if (PhantomLayout())
 			return PhantomDrawLaunch(canvas); // experiments.cpp
 		if (TerminalLayout())
@@ -1794,6 +1887,8 @@ namespace ps5shell
 
 	void Shell::EdenDrawOpening(Canvas& canvas)
 	{
+		if (ClassicLayout())
+			return ClassicDrawOpening(canvas); // classic.cpp
 		if (PhantomLayout())
 			return PhantomDrawOpening(canvas); // experiments.cpp
 		if (TerminalLayout())

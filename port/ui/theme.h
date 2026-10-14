@@ -46,6 +46,7 @@ namespace ui
 				// game to continue, covers beside the focused game's details, Settings as tiles (6.17)
 		Phantom,  // an experiment after a heist game's menus: slanted name plates, a list of games, bursts (6.18)
 		Terminal, // an experiment after a hacker's console: a file tree, a table of games, a log, scanlines (6.19)
+		Classic,  // 2.0.0 B's launcher: Continue playing and Recently played, lists beside a game's details (6.20)
 	};
 
 	struct Theme

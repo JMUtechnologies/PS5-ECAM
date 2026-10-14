@@ -279,7 +279,9 @@ namespace ps5shell
 		// Phantom and Terminal (experiments.cpp), which share its navigation and draw every part their own way
 		bool PhantomLayout() const { return ui::CurrentLayout() == ui::Layout::Phantom; }
 		bool TerminalLayout() const { return ui::CurrentLayout() == ui::Layout::Terminal; }
-		bool SectionLayout() const { return EdenLayout() || PhantomLayout() || TerminalLayout(); }
+		// Classic (classic.cpp, 6.20): 2.0.0 B's launcher over the same sections, its header's words for the rail
+		bool ClassicLayout() const { return ui::CurrentLayout() == ui::Layout::Classic; }
+		bool SectionLayout() const { return EdenLayout() || PhantomLayout() || TerminalLayout() || ClassicLayout(); }
 		int SectionColumns() const; // the Library's columns: Eden's grid, the experiments' one-column list
 
 		// -- Phantom (experiments.cpp, 6.18): after a heist game's menus. Black, white and the side's loud
@@ -314,6 +316,20 @@ namespace ps5shell
 		void TermDrawLaunch(Canvas& canvas);
 		void TermDrawOpening(Canvas& canvas);
 		void TermDrawCrt(Canvas& canvas); // scanlines, a rolling band, the tube's vignette: over everything
+		// -- Classic (classic.cpp, 6.20): the launcher of 2.0.0 B
+		void ClassicPanel(Canvas& canvas, const Box& box, float radius);
+		Box ClassicButton(Canvas& canvas, const Box& box, const std::string& label, bool focused, bool primary);
+		void ClassicTitle(Canvas& canvas, const std::string& title, const std::string& copy);
+		void ClassicStateDraw(Canvas& canvas, const Box& panel);
+		void ClassicBackdrop(Canvas& canvas);
+		void ClassicDrawRail(Canvas& canvas);
+		void ClassicDrawHints(Canvas& canvas, const std::vector<Hint>& hints);
+		void ClassicHomeDraw(Canvas& canvas);
+		void ClassicLibraryDraw(Canvas& canvas);
+		void ClassicSettingsDraw(Canvas& canvas);
+		void ClassicAboutDraw(Canvas& canvas);
+		void ClassicDrawLaunch(Canvas& canvas);
+		void ClassicDrawOpening(Canvas& canvas);
 		std::vector<std::string> m_termLog;
 		double m_termLogAt = 0;
 		int EdenSectionIndex() const;  // the rail's section the screen is (0 Home, 1 Library, 2 Settings, 3 About), else -1

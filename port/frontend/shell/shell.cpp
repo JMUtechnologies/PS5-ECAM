@@ -210,7 +210,7 @@ namespace ps5shell
 			OpenHelp(Tr("The game could not start"), launchError);
 		// Eden's opening: the PS5's launch picture handed over to the launcher, as the app starts (not
 		// after a game, nor over what a failed one says)
-		else if (SectionLayout() && !returning && m_screen == ScreenId::Home && m_status.autoLaunch.empty())
+		else if (SectionLayout() && !ClassicLayout() && !returning && m_screen == ScreenId::Home && m_status.autoLaunch.empty())
 			EdenStartOpening();
 		ps5log::Line("[ui] the new launcher is up in {:.0f} ms", (host.clock() - started) * 1000);
 

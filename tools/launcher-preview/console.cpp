@@ -9,6 +9,8 @@
 #include "app/compatibility.h"
 #include "app/netfs.h"
 #include "app/emulator.h"
+#include "app/forwarders.h"
+#include "app/mods.h"
 #include "app/gameinfo.h"
 #include "app/pack_updates.h"
 #include "app/updates.h"
@@ -400,6 +402,24 @@ namespace ps5packs
 	std::string InstalledVersion() { return "Github987"; }
 	bool Newer(const std::string&, const std::string&) { return false; }
 	void Start() {}
+	Status GetStatus() { return {}; }
+	void Stop() {}
+}
+
+// -- mods from USB drives and home screen tiles, in brief: none found, none made
+
+namespace ps5mods
+{
+	std::vector<std::string> Folders(const std::vector<std::string>&) { return {}; }
+	void Start(const std::vector<std::string>&, uint64_t, const std::string&) {}
+	Status GetStatus() { return {}; }
+	void Stop() {}
+	std::string Folder() { return {}; }
+}
+
+namespace ps5forwarders
+{
+	void Start(const Request&) {}
 	Status GetStatus() { return {}; }
 	void Stop() {}
 }

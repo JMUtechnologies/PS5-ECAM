@@ -92,12 +92,17 @@ namespace ui
 			standard.description = "Frosted glass over each side's colours: the default look.";
 			list.push_back(standard);
 
+			// Classic: the launcher 2.0.0 B had, the app's first (shell/classic.cpp): Continue playing and
+			// Recently played on Home, the Library and Settings as lists beside what is focused, over the
+			// Homebrew Launchers' grounds in each side's colour
 			Theme classic;
 			classic.id = "classic";
-			classic.name = "Classic (3.0)";
-			classic.description = "3.0.0's launcher: deep blue panels, flatter, a little squarer.";
-			classic.colours = Colours({{"ink-0", "#040a16"}, {"ink-1", "#07101f"}, {"ink-2", "#0c1a30"}, {"text", "#f3f7ff"}, {"text-2", "#a9bcd6"},
-				{"text-3", "#7f93ae"}, {"glass", "#ffffff10"}, {"glass-2", "#ffffff1a"}, {"glass-edge", "#ffffff1e"}, {"line", "#ffffff1e"}});
+			classic.name = "Classic";
+			classic.description = "The original launcher of 2.0: Continue playing, recent games, and lists beside each game's details.";
+			classic.layout = Layout::Classic;
+			classic.colours = Colours({{"ink-0", "#06101e"}, {"ink-1", "#081426"}, {"ink-2", "#0e1f38"}, {"text", "#f3f7ff"}, {"text-2", "#b8c8de"},
+				{"text-3", "#8a9db8"}, {"glass", "#ffffff10"}, {"glass-2", "#ffffff1a"}, {"glass-edge", "#ffffff1e"}, {"line", "#ffffff1e"},
+				{"wiiu", "#5aa2f0"}, {"n3ds", "#e3b14a"}, {"nds", "#62c454"}, {"focus", "#f3f7ff"}});
 			classic.corners = 0.6f;
 			list.push_back(classic);
 
