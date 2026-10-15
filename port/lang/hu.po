@@ -117,7 +117,7 @@ msgstr "A játék alapfájljai nem találhatók."
 msgid "The game could not be mounted. Check that its files are still in the game files folder."
 msgstr "A játékot nem sikerült csatolni. Ellenőrizd, hogy a fájljai még a játékok mappájában vannak-e."
 
-#: port/app/emulator.cpp:625 port/azahar/core.cpp:555
+#: port/app/emulator.cpp:625 port/azahar/core.cpp:556
 #, menu
 msgid "The game could not be started."
 msgstr "A játékot nem sikerült elindítani."
@@ -635,32 +635,32 @@ msgid "Wrestling"
 msgstr "Pankráció"
 
 #. the Wii U's controllers, by the names Nintendo gave them in the language
-#: port/app/ingame.cpp:139 port/frontend/actions.cpp:330
+#: port/app/ingame.cpp:139 port/frontend/actions.cpp:333
 #, menu
 msgid "Wii U GamePad"
 msgstr "Wii U GamePad"
 
-#: port/app/ingame.cpp:140 port/frontend/actions.cpp:331
+#: port/app/ingame.cpp:140 port/frontend/actions.cpp:334
 #, menu
 msgid "Wii U Pro Controller"
 msgstr "Wii U Pro Controller"
 
-#: port/app/ingame.cpp:141 port/frontend/actions.cpp:332
+#: port/app/ingame.cpp:141 port/frontend/actions.cpp:335
 #, menu
 msgid "Classic Controller"
 msgstr "Classic Controller"
 
-#: port/app/ingame.cpp:142 port/frontend/actions.cpp:333
+#: port/app/ingame.cpp:142 port/frontend/actions.cpp:336
 #, menu
 msgid "Wii Remote"
 msgstr "Wii Remote"
 
-#: port/app/ingame.cpp:143 port/frontend/actions.cpp:334
+#: port/app/ingame.cpp:143 port/frontend/actions.cpp:337
 #, menu
 msgid "Wii Remote + Nunchuk"
 msgstr "Wii Remote + Nunchuk"
 
-#: port/app/ingame.cpp:146 port/frontend/actions.cpp:337
+#: port/app/ingame.cpp:146 port/frontend/actions.cpp:340
 #, menu
 msgid "No controller"
 msgstr "Nincs kontroller"
@@ -1181,7 +1181,7 @@ msgid "Scan"
 msgstr "Beolvasás"
 
 #. {0} is an amiibo dump's file name
-#: port/app/ingame.cpp:390 port/azahar/core.cpp:268
+#: port/app/ingame.cpp:390 port/azahar/core.cpp:269
 #, menu
 msgid "Scanned {0}"
 msgstr "Beolvasva: {0}"
@@ -1789,7 +1789,7 @@ msgstr "A meta mappája nem ír le Wii U-címet (meta.xml)."
 msgid "This is where it is installed already."
 msgstr "Már ide van telepítve."
 
-#: port/app/install.cpp:451 port/azahar/core.cpp:882
+#: port/app/install.cpp:451 port/azahar/core.cpp:926
 #, menu
 msgid "An install is already running."
 msgstr "Már fut egy telepítés."
@@ -2359,222 +2359,234 @@ msgid "LEGO Dimensions Toypad"
 msgstr "LEGO Dimensions Toy Pad"
 
 #. why a 3DS game did not take what was typed on its keyboard
-#: port/azahar/core.cpp:176
+#: port/azahar/core.cpp:177
 #, menu
 msgid "Too many digits."
 msgstr "Túl sok számjegy."
 
-#: port/azahar/core.cpp:177
+#: port/azahar/core.cpp:178
 #, menu
 msgid "The @ sign is not allowed here."
 msgstr "A @ jel itt nem megengedett."
 
-#: port/azahar/core.cpp:178
+#: port/azahar/core.cpp:179
 #, menu
 msgid "The % sign is not allowed here."
 msgstr "A % jel itt nem megengedett."
 
-#: port/azahar/core.cpp:179
+#: port/azahar/core.cpp:180
 #, menu
 msgid "The \\ sign is not allowed here."
 msgstr "A \\ jel itt nem megengedett."
 
-#: port/azahar/core.cpp:180
+#: port/azahar/core.cpp:181
 #, menu
 msgid "That word is not allowed."
 msgstr "Ez a szó nem megengedett."
 
-#: port/azahar/core.cpp:181
+#: port/azahar/core.cpp:182
 #, menu
 msgid "The text must be exactly the length asked for."
 msgstr "A szövegnek pontosan a kért hosszúságúnak kell lennie."
 
-#: port/azahar/core.cpp:182
+#: port/azahar/core.cpp:183
 #, menu
 msgid "The text is too long."
 msgstr "A szöveg túl hosszú."
 
-#: port/azahar/core.cpp:183
+#: port/azahar/core.cpp:184
 #, menu
 msgid "The text cannot be only spaces."
 msgstr "A szöveg nem állhat csak szóközökből."
 
-#: port/azahar/core.cpp:184
+#: port/azahar/core.cpp:185
 #, menu
 msgid "The text cannot be empty."
 msgstr "A szöveg nem lehet üres."
 
-#: port/azahar/core.cpp:185
+#: port/azahar/core.cpp:186
 #, menu
 msgid "The game did not accept it."
 msgstr "A játék nem fogadta el."
 
 #. a save state's slot whose date is unknown
-#: port/azahar/core.cpp:213
+#: port/azahar/core.cpp:214
 #, menu
 msgid "saved"
 msgstr "mentve"
 
 #. in place of a save state's date: it was made by another version of the app
-#: port/azahar/core.cpp:218
+#: port/azahar/core.cpp:219
 #, menu
 msgid "another version's"
 msgstr "másik verzióé"
 
-#: port/azahar/core.cpp:258
+#: port/azahar/core.cpp:259
 #, menu
 msgid "No amiibo reader"
 msgstr "Nincs amiibo-olvasó"
 
 #. the amiibo was taken off the 3DS's reader
-#: port/azahar/core.cpp:263
+#: port/azahar/core.cpp:264
 #, menu
 msgid "Taken away"
 msgstr "Elvéve"
 
-#: port/azahar/core.cpp:269
+#: port/azahar/core.cpp:270
 #, menu
 msgid "Not an amiibo dump"
 msgstr "Ez nem amiibo-dump"
 
 #. a cheat ({0}) turned on or off
-#: port/azahar/core.cpp:281
+#: port/azahar/core.cpp:282
 #, menu
 msgid "{0}: on"
 msgstr "{0}: be"
 
 #. a cheat ({0}) turned on or off
-#: port/azahar/core.cpp:281
+#: port/azahar/core.cpp:282
 #, menu
 msgid "{0}: off"
 msgstr "{0}: ki"
 
 #. how a save state's save or load went
-#: port/azahar/core.cpp:317
+#: port/azahar/core.cpp:318
 #, menu
 msgid "Loaded slot {0}"
 msgstr "{0}. hely betöltve"
 
 #. how a save state's save or load went
-#: port/azahar/core.cpp:317
+#: port/azahar/core.cpp:318
 #, menu
 msgid "Saved slot {0}"
 msgstr "Mentve: {0}. hely"
 
-#: port/azahar/core.cpp:318
+#: port/azahar/core.cpp:319
 #, menu
 msgid "Made by another version"
 msgstr "Másik verzió készítette"
 
-#: port/azahar/core.cpp:319
+#: port/azahar/core.cpp:320
 #, menu
 msgid "It did not work"
 msgstr "Nem sikerült"
 
 #. why a 3DS game did not start
-#: port/azahar/core.cpp:538
+#: port/azahar/core.cpp:539
 #, menu
 msgid "This is not a 3DS game Azahar can start."
 msgstr "Ez nem olyan 3DS-játék, amelyet az Azahar el tud indítani."
 
-#: port/azahar/core.cpp:539
+#: port/azahar/core.cpp:540
 #, menu
 msgid "The game could not be loaded."
 msgstr "A játékot nem sikerült betölteni."
 
-#: port/azahar/core.cpp:543
+#: port/azahar/core.cpp:544
 #, menu
 msgid "The game is encrypted, and Azahar plays only decrypted games, with keys or without: decrypt it on your 3DS first (GodMode9)."
 msgstr "A játék titkosított, és az Azahar csak visszafejtett játékokat futtat, kulccsal vagy anélkül: előbb fejtsd vissza a 3DS-eden (GodMode9)."
 
-#: port/azahar/core.cpp:545
+#: port/azahar/core.cpp:546
 #, menu
 msgid "The game's format is not supported."
 msgstr "A játék formátuma nem támogatott."
 
-#: port/azahar/core.cpp:546
+#: port/azahar/core.cpp:547
 #, menu
 msgid "GBA Virtual Console games are not supported."
 msgstr "A GBA Virtual Console-játékok nem támogatottak."
 
-#: port/azahar/core.cpp:547
+#: port/azahar/core.cpp:548
 #, menu
 msgid "The game's system mode could not be found."
 msgstr "A játék rendszermódja nem található."
 
-#: port/azahar/core.cpp:548
+#: port/azahar/core.cpp:549
 #, menu
 msgid "The game needs 3DS system files Azahar does not have."
 msgstr "A játéknak olyan 3DS-rendszerfájlok kellenek, amelyek az Azaharnak nincsenek meg."
 
-#: port/azahar/core.cpp:550
+#: port/azahar/core.cpp:551
 #, menu
 msgid "The game's patches could not be applied."
 msgstr "A játék javításait nem sikerült alkalmazni."
 
-#: port/azahar/core.cpp:551
+#: port/azahar/core.cpp:552
 #, menu
 msgid "Azahar's renderer or CPU did not start."
 msgstr "Az Azahar megjelenítője vagy CPU-ja nem indult el."
 
-#: port/azahar/core.cpp:553
+#: port/azahar/core.cpp:554
 #, menu
 msgid "The Artic Base server did not answer: check the 3DS's address, that Artic Base runs on it, and that the 3DS and the PS5 are on the same network."
 msgstr "Az Artic Base kiszolgáló nem válaszolt: ellenőrizd a 3DS címét, hogy fut-e rajta az Artic Base, és hogy a 3DS és a PS5 ugyanazon a hálózaton van-e."
 
-#: port/azahar/core.cpp:598
+#: port/azahar/core.cpp:622
 #, menu
 msgid "The game is busy: try again"
 msgstr "A játék foglalt: próbáld újra"
 
-#: port/azahar/core.cpp:613
+#. the PS5's notification as an Artic Base game ends because the 3DS stopped answering
+#: port/azahar/core.cpp:641
+#, menu
+msgid "The 3DS stopped answering: the Artic Base game has stopped."
+msgstr "A 3DS nem válaszol többé: az Artic Base-játék leállt."
+
+#: port/azahar/core.cpp:643
 #, menu
 msgid "The 3DS game stopped: {0}"
 msgstr "A 3DS-játék leállt: {0}"
 
-#: port/azahar/core.cpp:662
+#: port/azahar/core.cpp:692
 #, menu
 msgid "A CIA file is installed, not played: install it from Settings > Game files, then start the game."
 msgstr "A CIA-fájlt telepíteni kell, nem játszani: telepítsd a Beállítások > Játékfájlok alatt, majd indítsd a játékot."
 
-#: port/azahar/core.cpp:686
+#: port/azahar/core.cpp:716
 #, menu
 msgid "Azahar did not start: {0}"
 msgstr "Az Azahar nem indult el: {0}"
 
-#: port/azahar/core.cpp:694
+#: port/azahar/core.cpp:725
 #, menu
 msgid "Artic Setup did not finish: the Artic Setup Tool on the 3DS says why. If it says nothing, check the 3DS's address, and that the 3DS and the PS5 are on the same network."
 msgstr "Az Artic Setup nem fejeződött be: a 3DS-en futó Artic Setup Tool megmutatja, miért. Ha semmit sem mutat, ellenőrizd a 3DS címét, és hogy a 3DS és a PS5 ugyanazon a hálózaton van-e."
 
+#. why an Artic Base game did not start, when the 3DS had answered; Y is the 3DS's button
+#: port/azahar/core.cpp:731
+#, menu
+msgid "The 3DS answered, then Artic Base stopped before the game started. On the 3DS, press Y in the Artic Base app to restart its server, then connect again. If it stops again, Settings > Diagnostics > Copy logs to USB copies Azahar's log, which says what failed."
+msgstr "A 3DS válaszolt, aztán az Artic Base leállt, mielőtt a játék elindult volna. A 3DS-en nyomd meg az Y gombot az Artic Base alkalmazásban, hogy újraindítsd a kiszolgálóját, majd csatlakozz újra. Ha ismét leáll, a Beállítások > Diagnosztika > Naplók másolása USB-re átmásolja az Azahar naplóját, amely megmutatja, mi hibázott."
+
 #. the PS5's notification as a 3DS game starts
-#: port/azahar/core.cpp:755
+#: port/azahar/core.cpp:799
 #, menu
 msgid "Touchpad click + Options: the in-game menu. A touchpad click alone: the bottom screen"
 msgstr "Érintőpanel-kattintás + OPTIONS: a játék menüje. Csak érintőpanel-kattintás: az alsó képernyő"
 
 #. why a CIA file could not be installed, after "It could not be installed:"
-#: port/azahar/core.cpp:951
+#: port/azahar/core.cpp:995
 #, menu
 msgid "it is encrypted, the CIA or the game inside it. Azahar installs only fully decrypted CIA files: decrypt it with GodMode9 on a 3DS, or play the game's decrypted .3ds or .cci file instead"
 msgstr "titkosított, maga a CIA vagy a benne lévő játék. Az Azahar csak teljesen visszafejtett CIA-fájlokat telepít: fejtsd vissza a GodMode9-cel egy 3DS-en, vagy játszd inkább a játék visszafejtett .3ds vagy .cci fájlját"
 
-#: port/azahar/core.cpp:954
+#: port/azahar/core.cpp:998
 #, menu
 msgid "it is not a CIA file, or it is damaged (check the file's size)"
 msgstr "ez nem CIA-fájl, vagy sérült (ellenőrizd a fájl méretét)"
 
-#: port/azahar/core.cpp:956
+#: port/azahar/core.cpp:1000
 #, menu
 msgid "the file could not be read"
 msgstr "a fájlt nem sikerült beolvasni"
 
-#: port/azahar/core.cpp:958
+#: port/azahar/core.cpp:1002
 #, menu
 msgid "Azahar stopped part-way through; /data/ps5cemu/azahar/log/azahar_log.txt says why"
 msgstr "Az Azahar félúton leállt; az okát a /data/ps5cemu/azahar/log/azahar_log.txt írja le"
 
-#: port/azahar/core.cpp:960
+#: port/azahar/core.cpp:1004
 #, menu
 msgid "it is not a CIA Azahar can install"
 msgstr "ez nem olyan CIA, amelyet az Azahar telepíteni tud"
@@ -2602,271 +2614,271 @@ msgid "{0} KB"
 msgstr "{0} KB"
 
 #. {1} is the USB drive's number
-#: port/frontend/actions.cpp:152
+#: port/frontend/actions.cpp:155
 msgid "{0} file to USB drive {1}"
 msgid_plural "{0} files to USB drive {1}"
 msgstr[0] "{0} fájl az USB-meghajtóra ({1})"
 msgstr[1] "{0} fájl az USB-meghajtóra ({1})"
 
-#: port/frontend/actions.cpp:155
+#: port/frontend/actions.cpp:158
 msgid "No USB drive found"
 msgstr "Nem található USB-meghajtó"
 
-#: port/frontend/actions.cpp:182
+#: port/frontend/actions.cpp:185
 msgid "{0} file deleted ({1} MB)"
 msgid_plural "{0} files deleted ({1} MB)"
 msgstr[0] "{0} fájl törölve ({1} MB)"
 msgstr[1] "{0} fájl törölve ({1} MB)"
 
-#: port/frontend/actions.cpp:182
+#: port/frontend/actions.cpp:185
 msgid "None to delete"
 msgstr "Nincs mit törölni"
 
-#: port/frontend/actions.cpp:189
+#: port/frontend/actions.cpp:192
 msgid "USB drive {0}"
 msgstr "{0} USB-meghajtó"
 
-#: port/frontend/actions.cpp:191
+#: port/frontend/actions.cpp:194
 msgid "Extended storage {0}"
 msgstr "{0} bővített tárhely"
 
 #. what an install is
-#: port/frontend/actions.cpp:345 port/frontend/actions.cpp:424
+#: port/frontend/actions.cpp:348 port/frontend/actions.cpp:427
 msgid "Game"
 msgstr "Játék"
 
-#: port/frontend/actions.cpp:346 port/frontend/actions.cpp:425
+#: port/frontend/actions.cpp:349 port/frontend/actions.cpp:428
 msgid "Update"
 msgstr "Frissítés"
 
 #. an update found to install ({0}: its version, as 208)
-#: port/frontend/actions.cpp:347 port/frontend/actions.cpp:426 port/frontend/shell/eden.cpp:825 port/frontend/shell/eden.cpp:1349 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:793
+#: port/frontend/actions.cpp:350 port/frontend/actions.cpp:429 port/frontend/shell/eden.cpp:825 port/frontend/shell/eden.cpp:1349 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:793
 msgid "DLC"
 msgstr "DLC"
 
-#: port/frontend/actions.cpp:348 port/frontend/actions.cpp:428
+#: port/frontend/actions.cpp:351 port/frontend/actions.cpp:431
 msgid "System title"
 msgstr "Rendszercím"
 
-#: port/frontend/actions.cpp:427
+#: port/frontend/actions.cpp:430
 msgid "Demo"
 msgstr "Demó"
 
-#: port/frontend/actions.cpp:428
+#: port/frontend/actions.cpp:431
 msgid "Title"
 msgstr "Cím"
 
-#: port/frontend/actions.cpp:436
+#: port/frontend/actions.cpp:439
 msgctxt "button"
 msgid "Cross"
 msgstr "Kereszt"
 
-#: port/frontend/actions.cpp:436
+#: port/frontend/actions.cpp:439
 msgctxt "button"
 msgid "Circle"
 msgstr "Kör"
 
-#: port/frontend/actions.cpp:436
+#: port/frontend/actions.cpp:439
 msgctxt "button"
 msgid "Square"
 msgstr "Négyzet"
 
-#: port/frontend/actions.cpp:437
+#: port/frontend/actions.cpp:440
 msgctxt "button"
 msgid "Triangle"
 msgstr "Háromszög"
 
-#: port/frontend/actions.cpp:437
+#: port/frontend/actions.cpp:440
 msgctxt "button"
 msgid "Create"
 msgstr "Create"
 
-#: port/frontend/actions.cpp:437
+#: port/frontend/actions.cpp:440
 msgctxt "button"
 msgid "Options"
 msgstr "OPTIONS"
 
-#: port/frontend/actions.cpp:437
+#: port/frontend/actions.cpp:440
 msgctxt "button"
 msgid "Touchpad"
 msgstr "Érintőpanel"
 
-#: port/frontend/actions.cpp:438
+#: port/frontend/actions.cpp:441
 msgctxt "button"
 msgid "D-pad up"
 msgstr "Iránygomb fel"
 
-#: port/frontend/actions.cpp:438
+#: port/frontend/actions.cpp:441
 msgctxt "button"
 msgid "D-pad down"
 msgstr "Iránygomb le"
 
-#: port/frontend/actions.cpp:438
+#: port/frontend/actions.cpp:441
 msgctxt "button"
 msgid "D-pad left"
 msgstr "Iránygomb balra"
 
-#: port/frontend/actions.cpp:438
+#: port/frontend/actions.cpp:441
 msgctxt "button"
 msgid "D-pad right"
 msgstr "Iránygomb jobbra"
 
-#: port/frontend/actions.cpp:439
+#: port/frontend/actions.cpp:442
 msgctxt "button"
 msgid "Left stick up"
 msgstr "Bal kar fel"
 
-#: port/frontend/actions.cpp:439
+#: port/frontend/actions.cpp:442
 msgctxt "button"
 msgid "Left stick down"
 msgstr "Bal kar le"
 
-#: port/frontend/actions.cpp:439
+#: port/frontend/actions.cpp:442
 msgctxt "button"
 msgid "Left stick left"
 msgstr "Bal kar balra"
 
-#: port/frontend/actions.cpp:440
+#: port/frontend/actions.cpp:443
 msgctxt "button"
 msgid "Left stick right"
 msgstr "Bal kar jobbra"
 
-#: port/frontend/actions.cpp:440
+#: port/frontend/actions.cpp:443
 msgctxt "button"
 msgid "Left stick click"
 msgstr "Bal kar lenyomása"
 
-#: port/frontend/actions.cpp:440
+#: port/frontend/actions.cpp:443
 msgctxt "button"
 msgid "Right stick up"
 msgstr "Jobb kar fel"
 
-#: port/frontend/actions.cpp:441
+#: port/frontend/actions.cpp:444
 msgctxt "button"
 msgid "Right stick down"
 msgstr "Jobb kar le"
 
-#: port/frontend/actions.cpp:441
+#: port/frontend/actions.cpp:444
 msgctxt "button"
 msgid "Right stick left"
 msgstr "Jobb kar balra"
 
-#: port/frontend/actions.cpp:441
+#: port/frontend/actions.cpp:444
 msgctxt "button"
 msgid "Right stick right"
 msgstr "Jobb kar jobbra"
 
-#: port/frontend/actions.cpp:442
+#: port/frontend/actions.cpp:445
 msgctxt "button"
 msgid "Right stick click"
 msgstr "Jobb kar lenyomása"
 
-#: port/frontend/actions.cpp:442
+#: port/frontend/actions.cpp:445
 msgctxt "button"
 msgid "Circle pad up"
 msgstr "Circle Pad fel"
 
-#: port/frontend/actions.cpp:442
+#: port/frontend/actions.cpp:445
 msgctxt "button"
 msgid "Circle pad down"
 msgstr "Circle Pad le"
 
-#: port/frontend/actions.cpp:443
+#: port/frontend/actions.cpp:446
 msgctxt "button"
 msgid "Circle pad left"
 msgstr "Circle Pad balra"
 
-#: port/frontend/actions.cpp:443
+#: port/frontend/actions.cpp:446
 msgctxt "button"
 msgid "Circle pad right"
 msgstr "Circle Pad jobbra"
 
-#: port/frontend/actions.cpp:443
+#: port/frontend/actions.cpp:446
 msgctxt "button"
 msgid "C-stick up"
 msgstr "C-kar fel"
 
-#: port/frontend/actions.cpp:444
+#: port/frontend/actions.cpp:447
 msgctxt "button"
 msgid "C-stick down"
 msgstr "C-kar le"
 
-#: port/frontend/actions.cpp:444
+#: port/frontend/actions.cpp:447
 msgctxt "button"
 msgid "C-stick left"
 msgstr "C-kar balra"
 
-#: port/frontend/actions.cpp:444
+#: port/frontend/actions.cpp:447
 msgctxt "button"
 msgid "C-stick right"
 msgstr "C-kar jobbra"
 
-#: port/frontend/actions.cpp:445
+#: port/frontend/actions.cpp:448
 msgctxt "button"
 msgid "Nunchuk stick up"
 msgstr "Nunchuk kar fel"
 
-#: port/frontend/actions.cpp:445
+#: port/frontend/actions.cpp:448
 msgctxt "button"
 msgid "Nunchuk stick down"
 msgstr "Nunchuk kar le"
 
-#: port/frontend/actions.cpp:445
+#: port/frontend/actions.cpp:448
 msgctxt "button"
 msgid "Nunchuk stick left"
 msgstr "Nunchuk kar balra"
 
-#: port/frontend/actions.cpp:446
+#: port/frontend/actions.cpp:449
 msgctxt "button"
 msgid "Nunchuk stick right"
 msgstr "Nunchuk kar jobbra"
 
-#: port/frontend/actions.cpp:446
+#: port/frontend/actions.cpp:449
 msgctxt "button"
 msgid "Nunchuk C"
 msgstr "Nunchuk C"
 
-#: port/frontend/actions.cpp:446
+#: port/frontend/actions.cpp:449
 msgctxt "button"
 msgid "Nunchuk Z"
 msgstr "Nunchuk Z"
 
-#: port/frontend/actions.cpp:446
+#: port/frontend/actions.cpp:449
 msgctxt "button"
 msgid "Home"
 msgstr "HOME"
 
-#: port/frontend/actions.cpp:447
+#: port/frontend/actions.cpp:450
 msgctxt "button"
 msgid "Start"
 msgstr "START"
 
-#: port/frontend/actions.cpp:447
+#: port/frontend/actions.cpp:450
 msgctxt "button"
 msgid "Select"
 msgstr "SELECT"
 
-#: port/frontend/actions.cpp:447
+#: port/frontend/actions.cpp:450
 msgctxt "button"
 msgid "+ (Start)"
 msgstr "+ (START)"
 
-#: port/frontend/actions.cpp:447
+#: port/frontend/actions.cpp:450
 msgctxt "button"
 msgid "- (Select)"
 msgstr "- (SELECT)"
 
-#: port/frontend/actions.cpp:448
+#: port/frontend/actions.cpp:451
 msgctxt "button"
 msgid "Blow into the mic"
 msgstr "Fújás a mikrofonba"
 
-#: port/frontend/actions.cpp:448
+#: port/frontend/actions.cpp:451
 msgctxt "button"
 msgid "Show the GamePad's screen"
 msgstr "A GamePad képernyőjének mutatása"
 
-#: port/frontend/actions.cpp:448
+#: port/frontend/actions.cpp:451
 msgctxt "button"
 msgid "None"
 msgstr "Nincs"

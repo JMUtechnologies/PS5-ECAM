@@ -1,0 +1,152 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Thu, 15 Oct 2026 01:30:00 +0000
+Subject: [PATCH] PS5: Artic Base's connections time out, and a closed one is
+ an error
+
+The Artic client makes its sockets non-blocking with fcntl's O_NONBLOCK,
+which the console accepts and ignores (the port's network shares found
+it so: libsmb2's socket.c). Its sockets stayed blocking, so none of its
+timeouts worked: a 3DS that took no connection, answered nothing or
+answered no STOP held the client for good, and with it the game's load
+or the app's teardown. They now also get the console's own SO_NBIO, as
+the network shares' do, and a connection is waited for with poll.
+
+They get SO_NOSIGPIPE too: a write to a 3DS that had closed the
+connection (the next ping, 7 s later, or the next request) raised
+SIGPIPE, which ends the app at once, with no crash report, back to the
+PS5's home screen.
+
+And recv() answering 0, a connection the server closed, read nothing
+and went round for ever, holding the request or ping that waited on it:
+it is now a failed read, as any other.
+
+The frontend can ask whether the last client had an answer from its
+server, to tell a 3DS that never answered from one that stopped
+part-way (#45).
+---
+ src/network/artic_base/artic_base_client.cpp | 37 ++++++++++++++++++++
+ src/network/artic_base/artic_base_client.h   | 14 ++++++++
+ 2 files changed, 51 insertions(+)
+
+diff --git a/src/network/artic_base/artic_base_client.cpp b/src/network/artic_base/artic_base_client.cpp
+index d678c63..c9bd535 100644
+--- a/src/network/artic_base/artic_base_client.cpp
++++ b/src/network/artic_base/artic_base_client.cpp
+@@ -48,6 +48,10 @@ namespace Network::ArticBase {
+ 
+ using namespace std::chrono_literals;
+ 
++#ifdef __PROSPERO__
++std::atomic<bool> Client::last_server_answered{false};
++#endif
++
+ bool Client::Request::AddParameterS8(s8 parameter) {
+     if (parameters.size() >= max_param_count) {
+         LOG_ERROR(Network, "Too many parameters added to method: {}", method_name);
+@@ -292,6 +296,9 @@ bool Client::Connect() {
+ 
+     auto version = SendSimpleRequest("VERSION");
+     if (version.has_value()) {
++#ifdef __PROSPERO__
++        last_server_answered = true;
++#endif
+         int version_value = str_to_int(*version);
+         if (version_value != SERVER_VERSION) {
+             shutdown(main_socket, SHUT_RDWR);
+@@ -538,6 +545,17 @@ bool Client::ConnectWithTimeout(SocketHolder sockFD, void* server_addr, size_t s
+ 
+     int res = ::connect(sockFD, (struct sockaddr*)server_addr, static_cast<int>(server_addr_len));
+     if (res == -1 && ((GET_ERRNO == ERRNO(EINPROGRESS) || GET_ERRNO == ERRNO(EWOULDBLOCK)))) {
++#ifdef __PROSPERO__
++        // waited for with poll, as the port's other connections are: select is untried on the
++        // console's sockets
++        struct pollfd pfd {};
++        pfd.fd = sockFD;
++        pfd.events = POLLOUT;
++        int so_error = 0;
++        socklen_t len = sizeof so_error;
++        return ::poll(&pfd, 1, timeout_seconds * 1000) == 1 &&
++               getsockopt(sockFD, SOL_SOCKET, SO_ERROR, &so_error, &len) == 0 && so_error == 0;
++#else
+         struct timeval tv;
+         fd_set fdset;
+         FD_ZERO(&fdset);
+@@ -566,6 +584,7 @@ bool Client::ConnectWithTimeout(SocketHolder sockFD, void* server_addr, size_t s
+             return false;
+         }
+ #endif // _WIN32
++#endif // __PROSPERO__
+ 
+     } else if (res == -1) {
+         return false;
+@@ -596,6 +615,18 @@ bool Client::SetNonBlock(SocketHolder sockFD, bool nonBlocking) {
+     if (ret == -1) {
+         return false;
+     }
++#ifdef __PROSPERO__
++    // The console takes O_NONBLOCK above and leaves the socket blocking (the port's network shares
++    // found it so): its own SO_NBIO is what makes one non-blocking. Without it nothing here timed
++    // out, and a connection, a request or a ping that got no answer waited for ever.
++    int nbio = blocking ? 0 : 1;
++    if (::setsockopt(sockFD, SOL_SOCKET, 0x1200 /* SO_NBIO */, &nbio, sizeof(nbio)) == -1) {
++        LOG_WARNING(Network, "SO_NBIO refused: {} (errno: {})", strerror(GET_ERRNO), GET_ERRNO);
++    }
++    // and a write to a server that has gone fails, instead of a SIGPIPE that ends the app
++    int one = 1;
++    ::setsockopt(sockFD, SOL_SOCKET, SO_NOSIGPIPE, &one, sizeof(one));
++#endif
+ #endif
+     return true;
+ }
+@@ -617,6 +648,12 @@ bool Client::Read(SocketHolder sockFD, void* buffer, size_t size,
+             read_bytes = 0;
+             break;
+         }
++        if (new_read == 0) {
++            // The server closed the connection: recv answers 0 from then on, which read nothing
++            // and went round for ever
++            read_bytes = 0;
++            break;
++        }
+         if (report_traffic_callback && new_read) {
+             report_traffic_callback(new_read);
+         }
+diff --git a/src/network/artic_base/artic_base_client.h b/src/network/artic_base/artic_base_client.h
+index e1fc512..9618f2d 100644
+--- a/src/network/artic_base/artic_base_client.h
++++ b/src/network/artic_base/artic_base_client.h
+@@ -117,12 +117,23 @@ public:
+ 
+     Client(const std::string& _address, u16 _port) : address(_address), port(_port) {
+         SocketManager::EnableSockets();
++#ifdef __PROSPERO__
++        last_server_answered = false;
++#endif
+     }
+     ~Client();
+ 
+     bool Connect();
+     bool connected = false;
+ 
++#ifdef __PROSPERO__
++    // PS5: whether the last client made has had an answer from its server (the server's version),
++    // for the frontend to tell a 3DS that never answered from one that stopped part-way
++    static bool LastServerAnswered() {
++        return last_server_answered;
++    }
++#endif
++
+     size_t GetServerRequestMaxSize() {
+         return max_server_work_ram;
+     }
+@@ -169,6 +180,9 @@ public:
+ 
+ private:
+     static constexpr const int SERVER_VERSION = 2;
++#ifdef __PROSPERO__
++    static std::atomic<bool> last_server_answered;
++#endif
+ 
+     std::string address;
+     u16 port;

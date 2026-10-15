@@ -58,6 +58,7 @@
 #include "core/loader/loader.h"
 #include "core/savestate.h"
 #include "core/system_titles.h"
+#include "network/artic_base/artic_base_client.h"
 #include "video_core/gpu.h"
 #include "video_core/rasterizer_interface.h"
 #include "video_core/renderer_base.h"
@@ -556,6 +557,29 @@ namespace ps5azahar
 			}
 		}
 
+		// An Artic Base load that failed, closed before the app starts over (main_ps5.cpp). Load shuts
+		// Azahar down itself only when it fails once the 3DS has started: before that, or when the
+		// connection fails at its very end, the loader is left with its connections to the 3DS open
+		// and its threads waiting on them. A restart while a cover was downloading ended the app
+		// instead of starting it over (RestartToLibrary), so these are closed first, the 3DS told
+		// (STOP): Azahar waits 10 s at most for its answer (patches/azahar 0026), this 15 for the whole.
+		void CloseAfterFailedLoad()
+		{
+			const auto started = std::chrono::steady_clock::now();
+			auto closed = std::make_shared<std::atomic_bool>(false);
+			std::thread([closed] {
+				Core::System::GetInstance().Shutdown();
+				*closed = true;
+			}).detach();
+			for (int waited = 0; waited < 150 && !*closed; waited++)
+				sceKernelUsleep(100000);
+			const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - started).count();
+			if (*closed)
+				ps5log::Line("[azahar] closed after the failed load in {} ms", ms);
+			else
+				ps5log::Line("[azahar] still closing after the failed load after {} ms: starting over regardless", ms);
+		}
+
 		// Azahar's renderer, twice a frame: the menu, in its frame
 		void DrawMenu(const Vulkan::FrontendOverlayTarget& target)
 		{
@@ -609,8 +633,14 @@ namespace ps5azahar
 				}
 				if (result != Core::System::ResultStatus::Success)
 				{
-					ps5log::Line("[azahar] the emulation stopped: {} ({})", (int)result, system.GetStatusDetails());
-					ps5notify::Send(ps5lang::TrF("The 3DS game stopped: {0}", system.GetStatusDetails()));
+					const std::string details = system.GetStatusDetails();
+					ps5log::Line("[azahar] the emulation stopped: {} ({})", (int)result, details);
+					// an Artic Base game whose 3DS stopped answering, which Azahar has no words for
+					if (result == Core::System::ResultStatus::ErrorArticDisconnected && details.empty())
+						// tr: the PS5's notification as an Artic Base game ends because the 3DS stopped answering
+						ps5notify::Send(ps5lang::Tr("The 3DS stopped answering: the Artic Base game has stopped."));
+					else
+						ps5notify::Send(ps5lang::TrF("The 3DS game stopped: {0}", details));
 					break;
 				}
 			}
@@ -688,15 +718,29 @@ namespace ps5azahar
 		}
 		if (status != Core::System::ResultStatus::Success)
 		{
+			const bool artic = status == Core::System::ResultStatus::ErrorArticDisconnected;
 			// an Artic Setup that stopped reads as a disconnection too, but its server answered: the
 			// Artic Setup Tool's screen says why (patches/azahar 0025, for keys aes_keys.txt lacks)
-			if (IsArticSetup(path) && status == Core::System::ResultStatus::ErrorArticDisconnected)
+			if (IsArticSetup(path) && artic)
 				error = ps5lang::Tr("Artic Setup did not finish: the Artic Setup Tool on the 3DS says why. If it says nothing, check the "
 									"3DS's address, and that the 3DS and the PS5 are on the same network.");
+			// any request of the load that failed reads so too: a 3DS that answered is told from one
+			// that never did (patches/azahar 0026)
+			else if (artic && Network::ArticBase::Client::LastServerAnswered())
+				// tr: why an Artic Base game did not start, when the 3DS had answered; Y is the 3DS's button
+				error = ps5lang::Tr("The 3DS answered, then Artic Base stopped before the game started. On the 3DS, press Y in the Artic Base "
+									"app to restart its server, then connect again. If it stops again, Settings > Diagnostics > Copy logs to "
+									"USB copies Azahar's log, which says what failed.");
 			else
 				error = LoadError(status);
 			const std::string details = system.GetStatusDetails();
 			ps5log::Line("[azahar] load failed: {} ({})", error, details);
+			// Azahar's own words when it has some: an Artic server or Setup Tool of another version
+			if (artic)
+				if (const size_t first = details.find_first_not_of(" \n"); first != std::string::npos)
+					error += "\n" + details.substr(first, details.find_last_not_of(" \n") + 1 - first);
+			if (IsArtic(path))
+				CloseAfterFailedLoad();
 			return false;
 		}
 

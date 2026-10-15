@@ -116,7 +116,7 @@ msgstr "未找到游戏的本体文件。"
 msgid "The game could not be mounted. Check that its files are still in the game files folder."
 msgstr "无法挂载游戏。检查其文件是否仍在游戏所在的文件夹中。"
 
-#: port/app/emulator.cpp:625 port/azahar/core.cpp:555
+#: port/app/emulator.cpp:625 port/azahar/core.cpp:556
 #, menu
 msgid "The game could not be started."
 msgstr "无法启动游戏。"
@@ -634,32 +634,32 @@ msgid "Wrestling"
 msgstr "摔角"
 
 #. the Wii U's controllers, by the names Nintendo gave them in the language
-#: port/app/ingame.cpp:139 port/frontend/actions.cpp:330
+#: port/app/ingame.cpp:139 port/frontend/actions.cpp:333
 #, menu
 msgid "Wii U GamePad"
 msgstr "Wii U GamePad"
 
-#: port/app/ingame.cpp:140 port/frontend/actions.cpp:331
+#: port/app/ingame.cpp:140 port/frontend/actions.cpp:334
 #, menu
 msgid "Wii U Pro Controller"
 msgstr "Wii U Pro手柄"
 
-#: port/app/ingame.cpp:141 port/frontend/actions.cpp:332
+#: port/app/ingame.cpp:141 port/frontend/actions.cpp:335
 #, menu
 msgid "Classic Controller"
 msgstr "经典手柄"
 
-#: port/app/ingame.cpp:142 port/frontend/actions.cpp:333
+#: port/app/ingame.cpp:142 port/frontend/actions.cpp:336
 #, menu
 msgid "Wii Remote"
 msgstr "Wii遥控器"
 
-#: port/app/ingame.cpp:143 port/frontend/actions.cpp:334
+#: port/app/ingame.cpp:143 port/frontend/actions.cpp:337
 #, menu
 msgid "Wii Remote + Nunchuk"
 msgstr "Wii遥控器+双节棍"
 
-#: port/app/ingame.cpp:146 port/frontend/actions.cpp:337
+#: port/app/ingame.cpp:146 port/frontend/actions.cpp:340
 #, menu
 msgid "No controller"
 msgstr "无手柄"
@@ -1179,7 +1179,7 @@ msgid "Scan"
 msgstr "读取"
 
 #. {0} is an amiibo dump's file name
-#: port/app/ingame.cpp:390 port/azahar/core.cpp:268
+#: port/app/ingame.cpp:390 port/azahar/core.cpp:269
 #, menu
 msgid "Scanned {0}"
 msgstr "已读取{0}"
@@ -1786,7 +1786,7 @@ msgstr "其meta文件夹未描述Wii U软件（meta.xml）。"
 msgid "This is where it is installed already."
 msgstr "已安装在此处。"
 
-#: port/app/install.cpp:451 port/azahar/core.cpp:882
+#: port/app/install.cpp:451 port/azahar/core.cpp:926
 #, menu
 msgid "An install is already running."
 msgstr "已有安装正在进行。"
@@ -2356,222 +2356,234 @@ msgid "LEGO Dimensions Toypad"
 msgstr "LEGO Dimensions Toypad"
 
 #. why a 3DS game did not take what was typed on its keyboard
-#: port/azahar/core.cpp:176
+#: port/azahar/core.cpp:177
 #, menu
 msgid "Too many digits."
 msgstr "位数过多。"
 
-#: port/azahar/core.cpp:177
+#: port/azahar/core.cpp:178
 #, menu
 msgid "The @ sign is not allowed here."
 msgstr "此处不能使用@符号。"
 
-#: port/azahar/core.cpp:178
+#: port/azahar/core.cpp:179
 #, menu
 msgid "The % sign is not allowed here."
 msgstr "此处不能使用%符号。"
 
-#: port/azahar/core.cpp:179
+#: port/azahar/core.cpp:180
 #, menu
 msgid "The \\ sign is not allowed here."
 msgstr "此处不能使用\\符号。"
 
-#: port/azahar/core.cpp:180
+#: port/azahar/core.cpp:181
 #, menu
 msgid "That word is not allowed."
 msgstr "不能使用该词语。"
 
-#: port/azahar/core.cpp:181
+#: port/azahar/core.cpp:182
 #, menu
 msgid "The text must be exactly the length asked for."
 msgstr "文字长度必须与要求完全一致。"
 
-#: port/azahar/core.cpp:182
+#: port/azahar/core.cpp:183
 #, menu
 msgid "The text is too long."
 msgstr "文字过长。"
 
-#: port/azahar/core.cpp:183
+#: port/azahar/core.cpp:184
 #, menu
 msgid "The text cannot be only spaces."
 msgstr "文字不能只有空格。"
 
-#: port/azahar/core.cpp:184
+#: port/azahar/core.cpp:185
 #, menu
 msgid "The text cannot be empty."
 msgstr "文字不能为空。"
 
-#: port/azahar/core.cpp:185
+#: port/azahar/core.cpp:186
 #, menu
 msgid "The game did not accept it."
 msgstr "游戏未接受此内容。"
 
 #. a save state's slot whose date is unknown
-#: port/azahar/core.cpp:213
+#: port/azahar/core.cpp:214
 #, menu
 msgid "saved"
 msgstr "已保存"
 
 #. in place of a save state's date: it was made by another version of the app
-#: port/azahar/core.cpp:218
+#: port/azahar/core.cpp:219
 #, menu
 msgid "another version's"
 msgstr "其他版本创建"
 
-#: port/azahar/core.cpp:258
+#: port/azahar/core.cpp:259
 #, menu
 msgid "No amiibo reader"
 msgstr "无amiibo读取器"
 
 #. the amiibo was taken off the 3DS's reader
-#: port/azahar/core.cpp:263
+#: port/azahar/core.cpp:264
 #, menu
 msgid "Taken away"
 msgstr "已移开"
 
-#: port/azahar/core.cpp:269
+#: port/azahar/core.cpp:270
 #, menu
 msgid "Not an amiibo dump"
 msgstr "不是amiibo转储文件"
 
 #. a cheat ({0}) turned on or off
-#: port/azahar/core.cpp:281
+#: port/azahar/core.cpp:282
 #, menu
 msgid "{0}: on"
 msgstr "{0}：开"
 
 #. a cheat ({0}) turned on or off
-#: port/azahar/core.cpp:281
+#: port/azahar/core.cpp:282
 #, menu
 msgid "{0}: off"
 msgstr "{0}：关"
 
 #. how a save state's save or load went
-#: port/azahar/core.cpp:317
+#: port/azahar/core.cpp:318
 #, menu
 msgid "Loaded slot {0}"
 msgstr "已加载栏位{0}"
 
 #. how a save state's save or load went
-#: port/azahar/core.cpp:317
+#: port/azahar/core.cpp:318
 #, menu
 msgid "Saved slot {0}"
 msgstr "已保存到栏位{0}"
 
-#: port/azahar/core.cpp:318
+#: port/azahar/core.cpp:319
 #, menu
 msgid "Made by another version"
 msgstr "由其他版本创建"
 
-#: port/azahar/core.cpp:319
+#: port/azahar/core.cpp:320
 #, menu
 msgid "It did not work"
 msgstr "未能成功"
 
 #. why a 3DS game did not start
-#: port/azahar/core.cpp:538
+#: port/azahar/core.cpp:539
 #, menu
 msgid "This is not a 3DS game Azahar can start."
 msgstr "这不是Azahar可以启动的3DS游戏。"
 
-#: port/azahar/core.cpp:539
+#: port/azahar/core.cpp:540
 #, menu
 msgid "The game could not be loaded."
 msgstr "无法加载游戏。"
 
-#: port/azahar/core.cpp:543
+#: port/azahar/core.cpp:544
 #, menu
 msgid "The game is encrypted, and Azahar plays only decrypted games, with keys or without: decrypt it on your 3DS first (GodMode9)."
 msgstr "游戏已加密，无论有无密钥，Azahar都只能游玩已解密的游戏：先在3DS上将其解密（GodMode9）。"
 
-#: port/azahar/core.cpp:545
+#: port/azahar/core.cpp:546
 #, menu
 msgid "The game's format is not supported."
 msgstr "不支持此游戏的格式。"
 
-#: port/azahar/core.cpp:546
+#: port/azahar/core.cpp:547
 #, menu
 msgid "GBA Virtual Console games are not supported."
 msgstr "不支持GBA Virtual Console游戏。"
 
-#: port/azahar/core.cpp:547
+#: port/azahar/core.cpp:548
 #, menu
 msgid "The game's system mode could not be found."
 msgstr "未找到游戏的系统模式。"
 
-#: port/azahar/core.cpp:548
+#: port/azahar/core.cpp:549
 #, menu
 msgid "The game needs 3DS system files Azahar does not have."
 msgstr "游戏需要Azahar所没有的3DS系统文件。"
 
-#: port/azahar/core.cpp:550
+#: port/azahar/core.cpp:551
 #, menu
 msgid "The game's patches could not be applied."
 msgstr "无法应用游戏的补丁。"
 
-#: port/azahar/core.cpp:551
+#: port/azahar/core.cpp:552
 #, menu
 msgid "Azahar's renderer or CPU did not start."
 msgstr "Azahar的渲染器或CPU未能启动。"
 
-#: port/azahar/core.cpp:553
+#: port/azahar/core.cpp:554
 #, menu
 msgid "The Artic Base server did not answer: check the 3DS's address, that Artic Base runs on it, and that the 3DS and the PS5 are on the same network."
 msgstr "Artic Base服务器未响应：检查3DS的地址、3DS上是否正在运行Artic Base，以及3DS和PS5是否在同一网络中。"
 
-#: port/azahar/core.cpp:598
+#: port/azahar/core.cpp:622
 #, menu
 msgid "The game is busy: try again"
 msgstr "游戏正忙：请重试"
 
-#: port/azahar/core.cpp:613
+#. the PS5's notification as an Artic Base game ends because the 3DS stopped answering
+#: port/azahar/core.cpp:641
+#, menu
+msgid "The 3DS stopped answering: the Artic Base game has stopped."
+msgstr "3DS已停止响应：Artic Base游戏已停止。"
+
+#: port/azahar/core.cpp:643
 #, menu
 msgid "The 3DS game stopped: {0}"
 msgstr "3DS游戏已停止：{0}"
 
-#: port/azahar/core.cpp:662
+#: port/azahar/core.cpp:692
 #, menu
 msgid "A CIA file is installed, not played: install it from Settings > Game files, then start the game."
 msgstr "CIA文件需要安装，不能直接游玩：在设置 > 游戏文件中安装，然后启动游戏。"
 
-#: port/azahar/core.cpp:686
+#: port/azahar/core.cpp:716
 #, menu
 msgid "Azahar did not start: {0}"
 msgstr "Azahar未能启动：{0}"
 
-#: port/azahar/core.cpp:694
+#: port/azahar/core.cpp:725
 #, menu
 msgid "Artic Setup did not finish: the Artic Setup Tool on the 3DS says why. If it says nothing, check the 3DS's address, and that the 3DS and the PS5 are on the same network."
 msgstr "Artic Setup未完成：3DS上的Artic Setup Tool会显示原因。如果没有显示，请检查3DS的地址，以及3DS和PS5是否在同一网络中。"
 
+#. why an Artic Base game did not start, when the 3DS had answered; Y is the 3DS's button
+#: port/azahar/core.cpp:731
+#, menu
+msgid "The 3DS answered, then Artic Base stopped before the game started. On the 3DS, press Y in the Artic Base app to restart its server, then connect again. If it stops again, Settings > Diagnostics > Copy logs to USB copies Azahar's log, which says what failed."
+msgstr "3DS已响应，但Artic Base在游戏开始前停止了。请在3DS上的Artic Base应用中按Y重启其服务器，然后重新连接。如果再次停止，设置 > 诊断 > 复制日志到USB会复制Azahar的日志，其中记录了失败的原因。"
+
 #. the PS5's notification as a 3DS game starts
-#: port/azahar/core.cpp:755
+#: port/azahar/core.cpp:799
 #, menu
 msgid "Touchpad click + Options: the in-game menu. A touchpad click alone: the bottom screen"
 msgstr "按下触摸板键+选项键：游戏内菜单。单独按下触摸板键：下屏"
 
 #. why a CIA file could not be installed, after "It could not be installed:"
-#: port/azahar/core.cpp:951
+#: port/azahar/core.cpp:995
 #, menu
 msgid "it is encrypted, the CIA or the game inside it. Azahar installs only fully decrypted CIA files: decrypt it with GodMode9 on a 3DS, or play the game's decrypted .3ds or .cci file instead"
 msgstr "该CIA或其中的游戏已加密。Azahar只能安装完全解密的CIA文件：在3DS上用GodMode9将其解密，或改为游玩该游戏已解密的.3ds或.cci文件"
 
-#: port/azahar/core.cpp:954
+#: port/azahar/core.cpp:998
 #, menu
 msgid "it is not a CIA file, or it is damaged (check the file's size)"
 msgstr "不是CIA文件，或文件已损坏（检查文件大小）"
 
-#: port/azahar/core.cpp:956
+#: port/azahar/core.cpp:1000
 #, menu
 msgid "the file could not be read"
 msgstr "无法读取该文件"
 
-#: port/azahar/core.cpp:958
+#: port/azahar/core.cpp:1002
 #, menu
 msgid "Azahar stopped part-way through; /data/ps5cemu/azahar/log/azahar_log.txt says why"
 msgstr "Azahar中途停止；原因见/data/ps5cemu/azahar/log/azahar_log.txt"
 
-#: port/azahar/core.cpp:960
+#: port/azahar/core.cpp:1004
 #, menu
 msgid "it is not a CIA Azahar can install"
 msgstr "不是Azahar可以安装的CIA"
@@ -2599,269 +2611,269 @@ msgid "{0} KB"
 msgstr "{0} KB"
 
 #. {1} is the USB drive's number
-#: port/frontend/actions.cpp:152
+#: port/frontend/actions.cpp:155
 msgid "{0} file to USB drive {1}"
 msgid_plural "{0} files to USB drive {1}"
 msgstr[0] "{0}个文件到USB存储设备{1}"
 
-#: port/frontend/actions.cpp:155
+#: port/frontend/actions.cpp:158
 msgid "No USB drive found"
 msgstr "未找到USB存储设备"
 
-#: port/frontend/actions.cpp:182
+#: port/frontend/actions.cpp:185
 msgid "{0} file deleted ({1} MB)"
 msgid_plural "{0} files deleted ({1} MB)"
 msgstr[0] "已删除{0}个文件（{1} MB）"
 
-#: port/frontend/actions.cpp:182
+#: port/frontend/actions.cpp:185
 msgid "None to delete"
 msgstr "没有可删除的文件"
 
-#: port/frontend/actions.cpp:189
+#: port/frontend/actions.cpp:192
 msgid "USB drive {0}"
 msgstr "USB存储设备{0}"
 
-#: port/frontend/actions.cpp:191
+#: port/frontend/actions.cpp:194
 msgid "Extended storage {0}"
 msgstr "扩展存储{0}"
 
 #. what an install is
-#: port/frontend/actions.cpp:345 port/frontend/actions.cpp:424
+#: port/frontend/actions.cpp:348 port/frontend/actions.cpp:427
 msgid "Game"
 msgstr "游戏"
 
-#: port/frontend/actions.cpp:346 port/frontend/actions.cpp:425
+#: port/frontend/actions.cpp:349 port/frontend/actions.cpp:428
 msgid "Update"
 msgstr "更新"
 
 #. an update found to install ({0}: its version, as 208)
-#: port/frontend/actions.cpp:347 port/frontend/actions.cpp:426 port/frontend/shell/eden.cpp:825 port/frontend/shell/eden.cpp:1349 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:793
+#: port/frontend/actions.cpp:350 port/frontend/actions.cpp:429 port/frontend/shell/eden.cpp:825 port/frontend/shell/eden.cpp:1349 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:793
 msgid "DLC"
 msgstr "DLC"
 
-#: port/frontend/actions.cpp:348 port/frontend/actions.cpp:428
+#: port/frontend/actions.cpp:351 port/frontend/actions.cpp:431
 msgid "System title"
 msgstr "系统软件"
 
-#: port/frontend/actions.cpp:427
+#: port/frontend/actions.cpp:430
 msgid "Demo"
 msgstr "体验版"
 
-#: port/frontend/actions.cpp:428
+#: port/frontend/actions.cpp:431
 msgid "Title"
 msgstr "软件"
 
-#: port/frontend/actions.cpp:436
+#: port/frontend/actions.cpp:439
 msgctxt "button"
 msgid "Cross"
 msgstr "交叉键"
 
-#: port/frontend/actions.cpp:436
+#: port/frontend/actions.cpp:439
 msgctxt "button"
 msgid "Circle"
 msgstr "圆圈键"
 
-#: port/frontend/actions.cpp:436
+#: port/frontend/actions.cpp:439
 msgctxt "button"
 msgid "Square"
 msgstr "正方键"
 
-#: port/frontend/actions.cpp:437
+#: port/frontend/actions.cpp:440
 msgctxt "button"
 msgid "Triangle"
 msgstr "三角键"
 
-#: port/frontend/actions.cpp:437
+#: port/frontend/actions.cpp:440
 msgctxt "button"
 msgid "Create"
 msgstr "创建键"
 
-#: port/frontend/actions.cpp:437
+#: port/frontend/actions.cpp:440
 msgctxt "button"
 msgid "Options"
 msgstr "选项键"
 
-#: port/frontend/actions.cpp:437
+#: port/frontend/actions.cpp:440
 msgctxt "button"
 msgid "Touchpad"
 msgstr "触摸板键"
 
-#: port/frontend/actions.cpp:438
+#: port/frontend/actions.cpp:441
 msgctxt "button"
 msgid "D-pad up"
 msgstr "十字键上"
 
-#: port/frontend/actions.cpp:438
+#: port/frontend/actions.cpp:441
 msgctxt "button"
 msgid "D-pad down"
 msgstr "十字键下"
 
-#: port/frontend/actions.cpp:438
+#: port/frontend/actions.cpp:441
 msgctxt "button"
 msgid "D-pad left"
 msgstr "十字键左"
 
-#: port/frontend/actions.cpp:438
+#: port/frontend/actions.cpp:441
 msgctxt "button"
 msgid "D-pad right"
 msgstr "十字键右"
 
-#: port/frontend/actions.cpp:439
+#: port/frontend/actions.cpp:442
 msgctxt "button"
 msgid "Left stick up"
 msgstr "左摇杆上"
 
-#: port/frontend/actions.cpp:439
+#: port/frontend/actions.cpp:442
 msgctxt "button"
 msgid "Left stick down"
 msgstr "左摇杆下"
 
-#: port/frontend/actions.cpp:439
+#: port/frontend/actions.cpp:442
 msgctxt "button"
 msgid "Left stick left"
 msgstr "左摇杆左"
 
-#: port/frontend/actions.cpp:440
+#: port/frontend/actions.cpp:443
 msgctxt "button"
 msgid "Left stick right"
 msgstr "左摇杆右"
 
-#: port/frontend/actions.cpp:440
+#: port/frontend/actions.cpp:443
 msgctxt "button"
 msgid "Left stick click"
 msgstr "按下左摇杆"
 
-#: port/frontend/actions.cpp:440
+#: port/frontend/actions.cpp:443
 msgctxt "button"
 msgid "Right stick up"
 msgstr "右摇杆上"
 
-#: port/frontend/actions.cpp:441
+#: port/frontend/actions.cpp:444
 msgctxt "button"
 msgid "Right stick down"
 msgstr "右摇杆下"
 
-#: port/frontend/actions.cpp:441
+#: port/frontend/actions.cpp:444
 msgctxt "button"
 msgid "Right stick left"
 msgstr "右摇杆左"
 
-#: port/frontend/actions.cpp:441
+#: port/frontend/actions.cpp:444
 msgctxt "button"
 msgid "Right stick right"
 msgstr "右摇杆右"
 
-#: port/frontend/actions.cpp:442
+#: port/frontend/actions.cpp:445
 msgctxt "button"
 msgid "Right stick click"
 msgstr "按下右摇杆"
 
-#: port/frontend/actions.cpp:442
+#: port/frontend/actions.cpp:445
 msgctxt "button"
 msgid "Circle pad up"
 msgstr "滑杆上"
 
-#: port/frontend/actions.cpp:442
+#: port/frontend/actions.cpp:445
 msgctxt "button"
 msgid "Circle pad down"
 msgstr "滑杆下"
 
-#: port/frontend/actions.cpp:443
+#: port/frontend/actions.cpp:446
 msgctxt "button"
 msgid "Circle pad left"
 msgstr "滑杆左"
 
-#: port/frontend/actions.cpp:443
+#: port/frontend/actions.cpp:446
 msgctxt "button"
 msgid "Circle pad right"
 msgstr "滑杆右"
 
-#: port/frontend/actions.cpp:443
+#: port/frontend/actions.cpp:446
 msgctxt "button"
 msgid "C-stick up"
 msgstr "C摇杆上"
 
-#: port/frontend/actions.cpp:444
+#: port/frontend/actions.cpp:447
 msgctxt "button"
 msgid "C-stick down"
 msgstr "C摇杆下"
 
-#: port/frontend/actions.cpp:444
+#: port/frontend/actions.cpp:447
 msgctxt "button"
 msgid "C-stick left"
 msgstr "C摇杆左"
 
-#: port/frontend/actions.cpp:444
+#: port/frontend/actions.cpp:447
 msgctxt "button"
 msgid "C-stick right"
 msgstr "C摇杆右"
 
-#: port/frontend/actions.cpp:445
+#: port/frontend/actions.cpp:448
 msgctxt "button"
 msgid "Nunchuk stick up"
 msgstr "双节棍摇杆上"
 
-#: port/frontend/actions.cpp:445
+#: port/frontend/actions.cpp:448
 msgctxt "button"
 msgid "Nunchuk stick down"
 msgstr "双节棍摇杆下"
 
-#: port/frontend/actions.cpp:445
+#: port/frontend/actions.cpp:448
 msgctxt "button"
 msgid "Nunchuk stick left"
 msgstr "双节棍摇杆左"
 
-#: port/frontend/actions.cpp:446
+#: port/frontend/actions.cpp:449
 msgctxt "button"
 msgid "Nunchuk stick right"
 msgstr "双节棍摇杆右"
 
-#: port/frontend/actions.cpp:446
+#: port/frontend/actions.cpp:449
 msgctxt "button"
 msgid "Nunchuk C"
 msgstr "双节棍C键"
 
-#: port/frontend/actions.cpp:446
+#: port/frontend/actions.cpp:449
 msgctxt "button"
 msgid "Nunchuk Z"
 msgstr "双节棍Z键"
 
-#: port/frontend/actions.cpp:446
+#: port/frontend/actions.cpp:449
 msgctxt "button"
 msgid "Home"
 msgstr "HOME键"
 
-#: port/frontend/actions.cpp:447
+#: port/frontend/actions.cpp:450
 msgctxt "button"
 msgid "Start"
 msgstr "START键"
 
-#: port/frontend/actions.cpp:447
+#: port/frontend/actions.cpp:450
 msgctxt "button"
 msgid "Select"
 msgstr "SELECT键"
 
-#: port/frontend/actions.cpp:447
+#: port/frontend/actions.cpp:450
 msgctxt "button"
 msgid "+ (Start)"
 msgstr "+键（START）"
 
-#: port/frontend/actions.cpp:447
+#: port/frontend/actions.cpp:450
 msgctxt "button"
 msgid "- (Select)"
 msgstr "-键（SELECT）"
 
-#: port/frontend/actions.cpp:448
+#: port/frontend/actions.cpp:451
 msgctxt "button"
 msgid "Blow into the mic"
 msgstr "向麦克风吹气"
 
-#: port/frontend/actions.cpp:448
+#: port/frontend/actions.cpp:451
 msgctxt "button"
 msgid "Show the GamePad's screen"
 msgstr "显示GamePad画面"
 
-#: port/frontend/actions.cpp:448
+#: port/frontend/actions.cpp:451
 msgctxt "button"
 msgid "None"
 msgstr "无"

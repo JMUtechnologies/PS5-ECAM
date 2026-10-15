@@ -117,7 +117,7 @@ msgstr "No se han encontrado los archivos base del juego."
 msgid "The game could not be mounted. Check that its files are still in the game files folder."
 msgstr "No se ha podido montar el juego. Comprueba que sus archivos siguen en la carpeta de juegos."
 
-#: port/app/emulator.cpp:625 port/azahar/core.cpp:555
+#: port/app/emulator.cpp:625 port/azahar/core.cpp:556
 #, menu
 msgid "The game could not be started."
 msgstr "No se ha podido iniciar el juego."
@@ -635,32 +635,32 @@ msgid "Wrestling"
 msgstr "Lucha libre"
 
 #. the Wii U's controllers, by the names Nintendo gave them in the language
-#: port/app/ingame.cpp:139 port/frontend/actions.cpp:330
+#: port/app/ingame.cpp:139 port/frontend/actions.cpp:333
 #, menu
 msgid "Wii U GamePad"
 msgstr "Wii U GamePad"
 
-#: port/app/ingame.cpp:140 port/frontend/actions.cpp:331
+#: port/app/ingame.cpp:140 port/frontend/actions.cpp:334
 #, menu
 msgid "Wii U Pro Controller"
 msgstr "Mando Pro de Wii U"
 
-#: port/app/ingame.cpp:141 port/frontend/actions.cpp:332
+#: port/app/ingame.cpp:141 port/frontend/actions.cpp:335
 #, menu
 msgid "Classic Controller"
 msgstr "Mando Clásico"
 
-#: port/app/ingame.cpp:142 port/frontend/actions.cpp:333
+#: port/app/ingame.cpp:142 port/frontend/actions.cpp:336
 #, menu
 msgid "Wii Remote"
 msgstr "Mando de Wii"
 
-#: port/app/ingame.cpp:143 port/frontend/actions.cpp:334
+#: port/app/ingame.cpp:143 port/frontend/actions.cpp:337
 #, menu
 msgid "Wii Remote + Nunchuk"
 msgstr "Mando de Wii + Nunchuk"
 
-#: port/app/ingame.cpp:146 port/frontend/actions.cpp:337
+#: port/app/ingame.cpp:146 port/frontend/actions.cpp:340
 #, menu
 msgid "No controller"
 msgstr "Sin mando"
@@ -1181,7 +1181,7 @@ msgid "Scan"
 msgstr "Escanear"
 
 #. {0} is an amiibo dump's file name
-#: port/app/ingame.cpp:390 port/azahar/core.cpp:268
+#: port/app/ingame.cpp:390 port/azahar/core.cpp:269
 #, menu
 msgid "Scanned {0}"
 msgstr "{0} escaneado"
@@ -1789,7 +1789,7 @@ msgstr "Su carpeta meta no describe un título de Wii U (meta.xml)."
 msgid "This is where it is installed already."
 msgstr "Ya está instalado aquí."
 
-#: port/app/install.cpp:451 port/azahar/core.cpp:882
+#: port/app/install.cpp:451 port/azahar/core.cpp:926
 #, menu
 msgid "An install is already running."
 msgstr "Ya hay una instalación en curso."
@@ -2359,222 +2359,234 @@ msgid "LEGO Dimensions Toypad"
 msgstr "Toy Pad de LEGO Dimensions"
 
 #. why a 3DS game did not take what was typed on its keyboard
-#: port/azahar/core.cpp:176
+#: port/azahar/core.cpp:177
 #, menu
 msgid "Too many digits."
 msgstr "Demasiadas cifras."
 
-#: port/azahar/core.cpp:177
+#: port/azahar/core.cpp:178
 #, menu
 msgid "The @ sign is not allowed here."
 msgstr "Aquí no se permite el signo @."
 
-#: port/azahar/core.cpp:178
+#: port/azahar/core.cpp:179
 #, menu
 msgid "The % sign is not allowed here."
 msgstr "Aquí no se permite el signo %."
 
-#: port/azahar/core.cpp:179
+#: port/azahar/core.cpp:180
 #, menu
 msgid "The \\ sign is not allowed here."
 msgstr "Aquí no se permite el signo \\."
 
-#: port/azahar/core.cpp:180
+#: port/azahar/core.cpp:181
 #, menu
 msgid "That word is not allowed."
 msgstr "Esa palabra no está permitida."
 
-#: port/azahar/core.cpp:181
+#: port/azahar/core.cpp:182
 #, menu
 msgid "The text must be exactly the length asked for."
 msgstr "El texto debe tener exactamente la longitud pedida."
 
-#: port/azahar/core.cpp:182
+#: port/azahar/core.cpp:183
 #, menu
 msgid "The text is too long."
 msgstr "El texto es demasiado largo."
 
-#: port/azahar/core.cpp:183
+#: port/azahar/core.cpp:184
 #, menu
 msgid "The text cannot be only spaces."
 msgstr "El texto no puede ser solo espacios."
 
-#: port/azahar/core.cpp:184
+#: port/azahar/core.cpp:185
 #, menu
 msgid "The text cannot be empty."
 msgstr "El texto no puede estar vacío."
 
-#: port/azahar/core.cpp:185
+#: port/azahar/core.cpp:186
 #, menu
 msgid "The game did not accept it."
 msgstr "El juego no lo ha aceptado."
 
 #. a save state's slot whose date is unknown
-#: port/azahar/core.cpp:213
+#: port/azahar/core.cpp:214
 #, menu
 msgid "saved"
 msgstr "guardado"
 
 #. in place of a save state's date: it was made by another version of the app
-#: port/azahar/core.cpp:218
+#: port/azahar/core.cpp:219
 #, menu
 msgid "another version's"
 msgstr "de otra versión"
 
-#: port/azahar/core.cpp:258
+#: port/azahar/core.cpp:259
 #, menu
 msgid "No amiibo reader"
 msgstr "Sin lector de amiibo"
 
 #. the amiibo was taken off the 3DS's reader
-#: port/azahar/core.cpp:263
+#: port/azahar/core.cpp:264
 #, menu
 msgid "Taken away"
 msgstr "Retirado"
 
-#: port/azahar/core.cpp:269
+#: port/azahar/core.cpp:270
 #, menu
 msgid "Not an amiibo dump"
 msgstr "No es un volcado de amiibo"
 
 #. a cheat ({0}) turned on or off
-#: port/azahar/core.cpp:281
+#: port/azahar/core.cpp:282
 #, menu
 msgid "{0}: on"
 msgstr "{0}: activado"
 
 #. a cheat ({0}) turned on or off
-#: port/azahar/core.cpp:281
+#: port/azahar/core.cpp:282
 #, menu
 msgid "{0}: off"
 msgstr "{0}: desactivado"
 
 #. how a save state's save or load went
-#: port/azahar/core.cpp:317
+#: port/azahar/core.cpp:318
 #, menu
 msgid "Loaded slot {0}"
 msgstr "Ranura {0} cargada"
 
 #. how a save state's save or load went
-#: port/azahar/core.cpp:317
+#: port/azahar/core.cpp:318
 #, menu
 msgid "Saved slot {0}"
 msgstr "Guardado en la ranura {0}"
 
-#: port/azahar/core.cpp:318
+#: port/azahar/core.cpp:319
 #, menu
 msgid "Made by another version"
 msgstr "Creado con otra versión"
 
-#: port/azahar/core.cpp:319
+#: port/azahar/core.cpp:320
 #, menu
 msgid "It did not work"
 msgstr "No ha funcionado"
 
 #. why a 3DS game did not start
-#: port/azahar/core.cpp:538
+#: port/azahar/core.cpp:539
 #, menu
 msgid "This is not a 3DS game Azahar can start."
 msgstr "No es un juego de 3DS que Azahar pueda iniciar."
 
-#: port/azahar/core.cpp:539
+#: port/azahar/core.cpp:540
 #, menu
 msgid "The game could not be loaded."
 msgstr "No se ha podido cargar el juego."
 
-#: port/azahar/core.cpp:543
+#: port/azahar/core.cpp:544
 #, menu
 msgid "The game is encrypted, and Azahar plays only decrypted games, with keys or without: decrypt it on your 3DS first (GodMode9)."
 msgstr "El juego está cifrado, y Azahar solo ejecuta juegos descifrados, con claves o sin ellas: descífralo antes en tu 3DS (GodMode9)."
 
-#: port/azahar/core.cpp:545
+#: port/azahar/core.cpp:546
 #, menu
 msgid "The game's format is not supported."
 msgstr "El formato del juego no es compatible."
 
-#: port/azahar/core.cpp:546
+#: port/azahar/core.cpp:547
 #, menu
 msgid "GBA Virtual Console games are not supported."
 msgstr "Los juegos de Consola Virtual de GBA no son compatibles."
 
-#: port/azahar/core.cpp:547
+#: port/azahar/core.cpp:548
 #, menu
 msgid "The game's system mode could not be found."
 msgstr "No se ha encontrado el modo de sistema del juego."
 
-#: port/azahar/core.cpp:548
+#: port/azahar/core.cpp:549
 #, menu
 msgid "The game needs 3DS system files Azahar does not have."
 msgstr "El juego necesita archivos de sistema de 3DS que Azahar no tiene."
 
-#: port/azahar/core.cpp:550
+#: port/azahar/core.cpp:551
 #, menu
 msgid "The game's patches could not be applied."
 msgstr "No se han podido aplicar los parches del juego."
 
-#: port/azahar/core.cpp:551
+#: port/azahar/core.cpp:552
 #, menu
 msgid "Azahar's renderer or CPU did not start."
 msgstr "El renderizador o la CPU de Azahar no se han iniciado."
 
-#: port/azahar/core.cpp:553
+#: port/azahar/core.cpp:554
 #, menu
 msgid "The Artic Base server did not answer: check the 3DS's address, that Artic Base runs on it, and that the 3DS and the PS5 are on the same network."
 msgstr "El servidor de Artic Base no ha respondido: comprueba la dirección de la 3DS, que Artic Base se esté ejecutando en ella y que la 3DS y la PS5 estén en la misma red."
 
-#: port/azahar/core.cpp:598
+#: port/azahar/core.cpp:622
 #, menu
 msgid "The game is busy: try again"
 msgstr "El juego está ocupado: inténtalo de nuevo"
 
-#: port/azahar/core.cpp:613
+#. the PS5's notification as an Artic Base game ends because the 3DS stopped answering
+#: port/azahar/core.cpp:641
+#, menu
+msgid "The 3DS stopped answering: the Artic Base game has stopped."
+msgstr "La 3DS ha dejado de responder: el juego de Artic Base se ha detenido."
+
+#: port/azahar/core.cpp:643
 #, menu
 msgid "The 3DS game stopped: {0}"
 msgstr "El juego de 3DS se ha detenido: {0}"
 
-#: port/azahar/core.cpp:662
+#: port/azahar/core.cpp:692
 #, menu
 msgid "A CIA file is installed, not played: install it from Settings > Game files, then start the game."
 msgstr "Los archivos CIA se instalan, no se juegan: instálalo desde Ajustes > Archivos de juego y después inicia el juego."
 
-#: port/azahar/core.cpp:686
+#: port/azahar/core.cpp:716
 #, menu
 msgid "Azahar did not start: {0}"
 msgstr "Azahar no se ha iniciado: {0}"
 
-#: port/azahar/core.cpp:694
+#: port/azahar/core.cpp:725
 #, menu
 msgid "Artic Setup did not finish: the Artic Setup Tool on the 3DS says why. If it says nothing, check the 3DS's address, and that the 3DS and the PS5 are on the same network."
 msgstr "Artic Setup no ha terminado: el Artic Setup Tool de la 3DS indica por qué. Si no indica nada, comprueba la dirección de la 3DS y que la 3DS y la PS5 estén en la misma red."
 
+#. why an Artic Base game did not start, when the 3DS had answered; Y is the 3DS's button
+#: port/azahar/core.cpp:731
+#, menu
+msgid "The 3DS answered, then Artic Base stopped before the game started. On the 3DS, press Y in the Artic Base app to restart its server, then connect again. If it stops again, Settings > Diagnostics > Copy logs to USB copies Azahar's log, which says what failed."
+msgstr "La 3DS respondió, pero luego Artic Base se detuvo antes de que empezara el juego. En la 3DS, pulsa Y en la aplicación Artic Base para reiniciar su servidor y vuelve a conectarte. Si se vuelve a detener, Ajustes > Diagnóstico > Copiar registros a USB copia el registro de Azahar, que indica qué falló."
+
 #. the PS5's notification as a 3DS game starts
-#: port/azahar/core.cpp:755
+#: port/azahar/core.cpp:799
 #, menu
 msgid "Touchpad click + Options: the in-game menu. A touchpad click alone: the bottom screen"
 msgstr "Clic en el panel táctil + OPTIONS: el menú del juego. Solo un clic en el panel táctil: la pantalla inferior"
 
 #. why a CIA file could not be installed, after "It could not be installed:"
-#: port/azahar/core.cpp:951
+#: port/azahar/core.cpp:995
 #, menu
 msgid "it is encrypted, the CIA or the game inside it. Azahar installs only fully decrypted CIA files: decrypt it with GodMode9 on a 3DS, or play the game's decrypted .3ds or .cci file instead"
 msgstr "está cifrado, el CIA o el juego que contiene. Azahar solo instala archivos CIA totalmente descifrados: descífralo con GodMode9 en una 3DS o juega en su lugar al archivo .3ds o .cci descifrado del juego"
 
-#: port/azahar/core.cpp:954
+#: port/azahar/core.cpp:998
 #, menu
 msgid "it is not a CIA file, or it is damaged (check the file's size)"
 msgstr "no es un archivo CIA o está dañado (comprueba el tamaño del archivo)"
 
-#: port/azahar/core.cpp:956
+#: port/azahar/core.cpp:1000
 #, menu
 msgid "the file could not be read"
 msgstr "no se ha podido leer el archivo"
 
-#: port/azahar/core.cpp:958
+#: port/azahar/core.cpp:1002
 #, menu
 msgid "Azahar stopped part-way through; /data/ps5cemu/azahar/log/azahar_log.txt says why"
 msgstr "Azahar se ha detenido a medias; /data/ps5cemu/azahar/log/azahar_log.txt dice por qué"
 
-#: port/azahar/core.cpp:960
+#: port/azahar/core.cpp:1004
 #, menu
 msgid "it is not a CIA Azahar can install"
 msgstr "no es un CIA que Azahar pueda instalar"
@@ -2602,271 +2614,271 @@ msgid "{0} KB"
 msgstr "{0} KB"
 
 #. {1} is the USB drive's number
-#: port/frontend/actions.cpp:152
+#: port/frontend/actions.cpp:155
 msgid "{0} file to USB drive {1}"
 msgid_plural "{0} files to USB drive {1}"
 msgstr[0] "{0} archivo a la unidad USB {1}"
 msgstr[1] "{0} archivos a la unidad USB {1}"
 
-#: port/frontend/actions.cpp:155
+#: port/frontend/actions.cpp:158
 msgid "No USB drive found"
 msgstr "No se ha encontrado ninguna unidad USB"
 
-#: port/frontend/actions.cpp:182
+#: port/frontend/actions.cpp:185
 msgid "{0} file deleted ({1} MB)"
 msgid_plural "{0} files deleted ({1} MB)"
 msgstr[0] "{0} archivo eliminado ({1} MB)"
 msgstr[1] "{0} archivos eliminados ({1} MB)"
 
-#: port/frontend/actions.cpp:182
+#: port/frontend/actions.cpp:185
 msgid "None to delete"
 msgstr "Nada que eliminar"
 
-#: port/frontend/actions.cpp:189
+#: port/frontend/actions.cpp:192
 msgid "USB drive {0}"
 msgstr "Unidad USB {0}"
 
-#: port/frontend/actions.cpp:191
+#: port/frontend/actions.cpp:194
 msgid "Extended storage {0}"
 msgstr "Almacenamiento ampliado {0}"
 
 #. what an install is
-#: port/frontend/actions.cpp:345 port/frontend/actions.cpp:424
+#: port/frontend/actions.cpp:348 port/frontend/actions.cpp:427
 msgid "Game"
 msgstr "Juego"
 
-#: port/frontend/actions.cpp:346 port/frontend/actions.cpp:425
+#: port/frontend/actions.cpp:349 port/frontend/actions.cpp:428
 msgid "Update"
 msgstr "Actualización"
 
 #. an update found to install ({0}: its version, as 208)
-#: port/frontend/actions.cpp:347 port/frontend/actions.cpp:426 port/frontend/shell/eden.cpp:825 port/frontend/shell/eden.cpp:1349 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:793
+#: port/frontend/actions.cpp:350 port/frontend/actions.cpp:429 port/frontend/shell/eden.cpp:825 port/frontend/shell/eden.cpp:1349 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:793
 msgid "DLC"
 msgstr "DLC"
 
-#: port/frontend/actions.cpp:348 port/frontend/actions.cpp:428
+#: port/frontend/actions.cpp:351 port/frontend/actions.cpp:431
 msgid "System title"
 msgstr "Título del sistema"
 
-#: port/frontend/actions.cpp:427
+#: port/frontend/actions.cpp:430
 msgid "Demo"
 msgstr "Demo"
 
-#: port/frontend/actions.cpp:428
+#: port/frontend/actions.cpp:431
 msgid "Title"
 msgstr "Título"
 
-#: port/frontend/actions.cpp:436
+#: port/frontend/actions.cpp:439
 msgctxt "button"
 msgid "Cross"
 msgstr "Cruz"
 
-#: port/frontend/actions.cpp:436
+#: port/frontend/actions.cpp:439
 msgctxt "button"
 msgid "Circle"
 msgstr "Círculo"
 
-#: port/frontend/actions.cpp:436
+#: port/frontend/actions.cpp:439
 msgctxt "button"
 msgid "Square"
 msgstr "Cuadrado"
 
-#: port/frontend/actions.cpp:437
+#: port/frontend/actions.cpp:440
 msgctxt "button"
 msgid "Triangle"
 msgstr "Triángulo"
 
-#: port/frontend/actions.cpp:437
+#: port/frontend/actions.cpp:440
 msgctxt "button"
 msgid "Create"
 msgstr "Create"
 
-#: port/frontend/actions.cpp:437
+#: port/frontend/actions.cpp:440
 msgctxt "button"
 msgid "Options"
 msgstr "OPTIONS"
 
-#: port/frontend/actions.cpp:437
+#: port/frontend/actions.cpp:440
 msgctxt "button"
 msgid "Touchpad"
 msgstr "Panel táctil"
 
-#: port/frontend/actions.cpp:438
+#: port/frontend/actions.cpp:441
 msgctxt "button"
 msgid "D-pad up"
 msgstr "Botón de dirección arriba"
 
-#: port/frontend/actions.cpp:438
+#: port/frontend/actions.cpp:441
 msgctxt "button"
 msgid "D-pad down"
 msgstr "Botón de dirección abajo"
 
-#: port/frontend/actions.cpp:438
+#: port/frontend/actions.cpp:441
 msgctxt "button"
 msgid "D-pad left"
 msgstr "Botón de dirección izquierda"
 
-#: port/frontend/actions.cpp:438
+#: port/frontend/actions.cpp:441
 msgctxt "button"
 msgid "D-pad right"
 msgstr "Botón de dirección derecha"
 
-#: port/frontend/actions.cpp:439
+#: port/frontend/actions.cpp:442
 msgctxt "button"
 msgid "Left stick up"
 msgstr "Joystick izquierdo arriba"
 
-#: port/frontend/actions.cpp:439
+#: port/frontend/actions.cpp:442
 msgctxt "button"
 msgid "Left stick down"
 msgstr "Joystick izquierdo abajo"
 
-#: port/frontend/actions.cpp:439
+#: port/frontend/actions.cpp:442
 msgctxt "button"
 msgid "Left stick left"
 msgstr "Joystick izquierdo izquierda"
 
-#: port/frontend/actions.cpp:440
+#: port/frontend/actions.cpp:443
 msgctxt "button"
 msgid "Left stick right"
 msgstr "Joystick izquierdo derecha"
 
-#: port/frontend/actions.cpp:440
+#: port/frontend/actions.cpp:443
 msgctxt "button"
 msgid "Left stick click"
 msgstr "Pulsar joystick izquierdo"
 
-#: port/frontend/actions.cpp:440
+#: port/frontend/actions.cpp:443
 msgctxt "button"
 msgid "Right stick up"
 msgstr "Joystick derecho arriba"
 
-#: port/frontend/actions.cpp:441
+#: port/frontend/actions.cpp:444
 msgctxt "button"
 msgid "Right stick down"
 msgstr "Joystick derecho abajo"
 
-#: port/frontend/actions.cpp:441
+#: port/frontend/actions.cpp:444
 msgctxt "button"
 msgid "Right stick left"
 msgstr "Joystick derecho izquierda"
 
-#: port/frontend/actions.cpp:441
+#: port/frontend/actions.cpp:444
 msgctxt "button"
 msgid "Right stick right"
 msgstr "Joystick derecho derecha"
 
-#: port/frontend/actions.cpp:442
+#: port/frontend/actions.cpp:445
 msgctxt "button"
 msgid "Right stick click"
 msgstr "Pulsar joystick derecho"
 
-#: port/frontend/actions.cpp:442
+#: port/frontend/actions.cpp:445
 msgctxt "button"
 msgid "Circle pad up"
 msgstr "Botón deslizante arriba"
 
-#: port/frontend/actions.cpp:442
+#: port/frontend/actions.cpp:445
 msgctxt "button"
 msgid "Circle pad down"
 msgstr "Botón deslizante abajo"
 
-#: port/frontend/actions.cpp:443
+#: port/frontend/actions.cpp:446
 msgctxt "button"
 msgid "Circle pad left"
 msgstr "Botón deslizante izquierda"
 
-#: port/frontend/actions.cpp:443
+#: port/frontend/actions.cpp:446
 msgctxt "button"
 msgid "Circle pad right"
 msgstr "Botón deslizante derecha"
 
-#: port/frontend/actions.cpp:443
+#: port/frontend/actions.cpp:446
 msgctxt "button"
 msgid "C-stick up"
 msgstr "Palanca C arriba"
 
-#: port/frontend/actions.cpp:444
+#: port/frontend/actions.cpp:447
 msgctxt "button"
 msgid "C-stick down"
 msgstr "Palanca C abajo"
 
-#: port/frontend/actions.cpp:444
+#: port/frontend/actions.cpp:447
 msgctxt "button"
 msgid "C-stick left"
 msgstr "Palanca C izquierda"
 
-#: port/frontend/actions.cpp:444
+#: port/frontend/actions.cpp:447
 msgctxt "button"
 msgid "C-stick right"
 msgstr "Palanca C derecha"
 
-#: port/frontend/actions.cpp:445
+#: port/frontend/actions.cpp:448
 msgctxt "button"
 msgid "Nunchuk stick up"
 msgstr "Palanca del Nunchuk arriba"
 
-#: port/frontend/actions.cpp:445
+#: port/frontend/actions.cpp:448
 msgctxt "button"
 msgid "Nunchuk stick down"
 msgstr "Palanca del Nunchuk abajo"
 
-#: port/frontend/actions.cpp:445
+#: port/frontend/actions.cpp:448
 msgctxt "button"
 msgid "Nunchuk stick left"
 msgstr "Palanca del Nunchuk izquierda"
 
-#: port/frontend/actions.cpp:446
+#: port/frontend/actions.cpp:449
 msgctxt "button"
 msgid "Nunchuk stick right"
 msgstr "Palanca del Nunchuk derecha"
 
-#: port/frontend/actions.cpp:446
+#: port/frontend/actions.cpp:449
 msgctxt "button"
 msgid "Nunchuk C"
 msgstr "Nunchuk C"
 
-#: port/frontend/actions.cpp:446
+#: port/frontend/actions.cpp:449
 msgctxt "button"
 msgid "Nunchuk Z"
 msgstr "Nunchuk Z"
 
-#: port/frontend/actions.cpp:446
+#: port/frontend/actions.cpp:449
 msgctxt "button"
 msgid "Home"
 msgstr "HOME"
 
-#: port/frontend/actions.cpp:447
+#: port/frontend/actions.cpp:450
 msgctxt "button"
 msgid "Start"
 msgstr "START"
 
-#: port/frontend/actions.cpp:447
+#: port/frontend/actions.cpp:450
 msgctxt "button"
 msgid "Select"
 msgstr "SELECT"
 
-#: port/frontend/actions.cpp:447
+#: port/frontend/actions.cpp:450
 msgctxt "button"
 msgid "+ (Start)"
 msgstr "+ (START)"
 
-#: port/frontend/actions.cpp:447
+#: port/frontend/actions.cpp:450
 msgctxt "button"
 msgid "- (Select)"
 msgstr "- (SELECT)"
 
-#: port/frontend/actions.cpp:448
+#: port/frontend/actions.cpp:451
 msgctxt "button"
 msgid "Blow into the mic"
 msgstr "Soplar en el micrófono"
 
-#: port/frontend/actions.cpp:448
+#: port/frontend/actions.cpp:451
 msgctxt "button"
 msgid "Show the GamePad's screen"
 msgstr "Mostrar la pantalla del GamePad"
 
-#: port/frontend/actions.cpp:448
+#: port/frontend/actions.cpp:451
 msgctxt "button"
 msgid "None"
 msgstr "Ninguno"
