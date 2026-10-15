@@ -57,6 +57,9 @@ check: deps azahar melonds ## Build and package everything with a stand-in for R
 package: build ## The app folder: build/app/PPSA99360
 	bash tools/package.sh
 
+# a release takes the emulators' patches only as they are: a checkout in .deps with commits not exported
+# or changes not committed stops it (ps5cemu_patches_apply in tools/env.sh)
+release: export PS5CEMU_RELEASE := 1
 release: package ## dist/PS5CEMU-HAR-vVERSION.zip (the PPSA99360 folder), SHA256SUMS, and the ELF with its symbols
 	@mkdir -p dist
 	rm -f dist/PS5CEMU-HAR-v$(VERSION).zip

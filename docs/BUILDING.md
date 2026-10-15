@@ -126,6 +126,15 @@ and `.deps/melonDS` (`tools/cemu-patches.sh apply`, `tools/azahar-patches.sh app
 `tools/melonds-patches.sh apply`). To change one, edit its checkout
 on that branch, commit there, then run its script with `export` to write the patches again.
 
+Each build holds the branch against the patches, one by one, by patch ID (the change, not its message).
+Patches added since the branch was made, as a pull brings them, are applied on it. Commits of its own,
+not exported yet, are built as they are, and the build says so. When the two differ otherwise, the
+build stops rather than leave patches out, and its message says what to do: if the patches are the
+newer, make the branch again at the pinned commit (`git -C .deps/Cemu checkout -q -B ps5 PIN`, with the
+message's checkout and commit), and the next build applies every patch on it; if the branch is the
+newer, `export` writes it. `make release` takes the patches only as they are: commits not exported, or
+changes not committed, in a checkout stop it.
+
 ## Artwork
 
 Everything the app and this repository show is drawn by a script, so it can be changed in one place
