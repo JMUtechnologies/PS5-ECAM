@@ -17,8 +17,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v4.0.0.zip"><b>Download 4.0.0</b></a> (ZIP, 52.5 MB) ·
-  <a href="https://github.com/premohq/PS5CEMU-HAR/releases/tag/v4.0.0">Release notes</a> ·
+  <a href="https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v4.0.1.zip"><b>Download 4.0.1</b></a> (ZIP, 52.5 MB) ·
+  <a href="https://github.com/premohq/PS5CEMU-HAR/releases/tag/v4.0.1">Release notes</a> ·
   <a href="#install">Install</a> ·
   <a href="docs/GUIDE.md">Guide</a> ·
   <a href="docs/COMPATIBILITY.md">Compatibility</a> ·
@@ -26,6 +26,22 @@
 </p>
 
 ---
+
+## What's new in 4.0.1
+
+Fixes for 4.0.0. The details are in the [release notes](https://github.com/premohq/PS5CEMU-HAR/releases/tag/v4.0.1).
+
+- **Network shares work again.** Connecting to an SMB share no longer crashes the app
+  ([#46](https://github.com/premohq/PS5CEMU-HAR/issues/46), [#49](https://github.com/premohq/PS5CEMU-HAR/issues/49)),
+  and a share's tab opens in the folder chooser ([#49](https://github.com/premohq/PS5CEMU-HAR/issues/49)).
+- **DS sound at the right speed:** no more crackling or too-fast music, and the speed shown is the DS's
+  ([#47](https://github.com/premohq/PS5CEMU-HAR/issues/47)).
+- **Back to the library after a game** on more setups: the app tries each place it can start from, and a
+  home screen tile's game says *Quit to the home screen* ([#48](https://github.com/premohq/PS5CEMU-HAR/issues/48)).
+- **Artic Base and Artic Setup** ([#45](https://github.com/premohq/PS5CEMU-HAR/issues/45)): connections time
+  out instead of hanging, a 3DS that closes the connection no longer closes the app, the app starts over
+  cleanly after a failed load, and the errors say what went wrong. Artic Setup says which keys
+  `aes_keys.txt` lacks before it starts, and *Copy logs to USB* includes Azahar's log of the session before.
 
 ## What's new in 4.0.0
 
@@ -72,7 +88,7 @@ The biggest update yet. The full list is in the [release notes](https://github.c
 
 1. **A PS5 that runs homebrew.** Any firmware up to 13.60, with etaHEN, OnionHEN, or an ELF loader on
    port 9021. See the [firmware and setup guide](docs/HEN-SETUP.md).
-2. **Copy the app.** Download the [latest ZIP](https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v4.0.0.zip),
+2. **Copy the app.** Download the [latest ZIP](https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v4.0.1.zip),
    extract it and copy the `PPSA99360` folder to `/data/homebrew/PPSA99360`.
 3. **Let your HEN in.** etaHEN: add `PPSA99360` to its app jailbreak list. OnionHEN: add `PPSA99360`
    at the end of `exact_title_ids` in `config.ini`, with no comma after it. Any other: have an ELF
