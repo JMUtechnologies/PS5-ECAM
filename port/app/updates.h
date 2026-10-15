@@ -49,6 +49,9 @@ namespace ps5update
 	void Restart();
 	// Before a game: the check or download is cut short and waited for.
 	void Stop();
+	// Before the app starts over or closes (LoadExec): a check Stop left waiting on the PS5's resolver,
+	// waited for up to maxMs, as a restart with a download running ended the app instead.
+	void WaitForCheck(int maxMs);
 
 	// The version as people read it: "2.0.0d" is "2.0.0 D".
 	inline std::string Readable(const std::string& version)

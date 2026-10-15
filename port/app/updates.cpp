@@ -96,6 +96,8 @@ namespace ps5update
 				return nullptr;
 			for (const char* host : kHosts)
 			{
+				if (s_stop)
+					break; // a game is starting: the next host is not asked for
 				uint32_t address = 0;
 				const int resolver = sceNetResolverCreate("ps5cemu-update", pool, 0);
 				const int result = resolver >= 0 ? sceNetResolverStartNtoa(resolver, host, &address, 0, 0, 0) : resolver;
@@ -631,5 +633,17 @@ namespace ps5update
 		}
 		else
 			s_thread.join();
+	}
+
+	void WaitForCheck(int maxMs)
+	{
+		s_stop = true;
+		int waited = 0;
+		for (; s_running && waited < maxMs; waited += 10)
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		if (s_running)
+			ps5log::Line("[update] the check still runs after {} ms: the app starts over regardless", waited);
+		else if (waited)
+			ps5log::Line("[update] waited {} ms for the check to end before the app starts over", waited);
 	}
 }

@@ -11,6 +11,7 @@
 #include "pack_updates.h"
 #include "lang.h"
 #include "paths.h"
+#include "updates.h"
 #include "usb_devices.h"
 #include "../frontend/settings.h"
 #include "../ps5/display.h"
@@ -833,8 +834,11 @@ namespace ps5emu
 	void RestartToLibrary()
 	{
 		// nothing of the launcher's still on the network or writing: a restart with a cover being
-		// fetched ended the app instead of starting it over (it waits for one a few seconds at most)
+		// fetched ended the app instead of starting it over (it waits for one a few seconds at most).
+		// An update check can still be waiting on the PS5's resolver when a game fails at once, as an
+		// Artic Base one can (#45): it is waited for too.
 		ps5boxart::Stop();
+		ps5update::WaitForCheck(10000);
 		ps5log::Line("[emu] back to the library: starting PS5Cemu over");
 		// Cemu's settings only where Cemu ran: a 3DS session never read them, and would write its
 		// defaults over them
@@ -874,6 +878,7 @@ namespace ps5emu
 	void ExitApp()
 	{
 		ps5boxart::Stop();
+		ps5update::WaitForCheck(10000);
 		ps5log::Line("[emu] the game is over: PS5Cemu closes (a home screen tile's --exit-after-game)");
 		if (s_coreStarted)
 			GetConfigHandle().Save();
