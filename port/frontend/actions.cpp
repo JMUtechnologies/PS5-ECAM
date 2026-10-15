@@ -3,6 +3,7 @@
 
 #include "actions.h"
 #include "../app/lang.h"
+#include "../app/netfs.h"
 #include "../app/paths.h"
 #include "../ps5/kernel.h"
 #include "../ps5/log.h"
@@ -221,6 +222,20 @@ namespace ps5actions
 	{
 		ok = false;
 		std::vector<std::string> names;
+		// a network share's, from the share layer (app/netfs.h): its open() takes a share's files only,
+		// and sceKernelGetdents knows nothing of /net, so a share's tab never opened (#49)
+		if (ps5netfs::is_net(path))
+		{
+			std::vector<ps5netfs::Entry> entries;
+			if (!ps5netfs::list(path, entries))
+				return names;
+			for (const ps5netfs::Entry& entry : entries)
+				if (entry.is_dir == folders)
+					names.push_back(entry.name);
+			ok = true;
+			std::sort(names.begin(), names.end(), [](const std::string& a, const std::string& b) { return Lower(a) < Lower(b); });
+			return names;
+		}
 		const int fd = open(path.c_str(), O_RDONLY | O_DIRECTORY);
 		if (fd < 0)
 			return names;

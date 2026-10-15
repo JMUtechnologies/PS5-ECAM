@@ -970,6 +970,21 @@ namespace ps5netfs
 	{
 		return {{"192.168.1.20", "DESKTOP-LENA", true, false}, {"192.168.1.31", "DISKSTATION", true, true}, {"192.168.1.44", "", false, true}};
 	}
+	// /net: the shares; a share: a folder for each side's games, empty
+	bool list(const std::string& dir, std::vector<Entry>& out)
+	{
+		out.clear();
+		if (dir == "/net")
+		{
+			for (const Share& share : s_shares)
+				out.push_back({share.name, true});
+			return true;
+		}
+		for (const Share& share : s_shares)
+			if (dir == root_of(share))
+				out = {{"Wii U", true}, {"3DS", true}, {"DS", true}};
+		return true;
+	}
 }
 
 // RetroAchievements (app/achievements.h), without a network: PREVIEW_CHEEVOS=1 starts signed in, and a
