@@ -5,6 +5,7 @@ The app folder for the PS5, zipped: extract it and copy `PPSA99360` to `/data/ho
 
 | Version | Download | Built from |
 |---|---|---|
+| 4.0.1 | [PS5CEMU-HAR-v4.0.1.zip](PS5CEMU-HAR-v4.0.1.zip) | [v4.0.1](https://github.com/premohq/PS5CEMU-HAR/releases/tag/v4.0.1) |
 | 4.0.0 | [PS5CEMU-HAR-v4.0.0.zip](PS5CEMU-HAR-v4.0.0.zip) | [v4.0.0](https://github.com/premohq/PS5CEMU-HAR/releases/tag/v4.0.0) |
 | 3.5.0 | [PS5CEMU-HAR-v3.5.0.zip](PS5CEMU-HAR-v3.5.0.zip) | [v3.5.0](https://github.com/premohq/PS5CEMU-HAR/releases/tag/v3.5.0) |
 | 3.0.0 | [PS5CEMU-HAR-v3.0.0.zip](PS5CEMU-HAR-v3.0.0.zip) | [v3.0.0](https://github.com/premohq/PS5CEMU-HAR/releases/tag/v3.0.0) |
