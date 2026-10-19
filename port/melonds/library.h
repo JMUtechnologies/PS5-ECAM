@@ -8,6 +8,11 @@
 // launcher shows (in /data/ps5cemu/covers/ds). A DS game has no title ID like a 3DS game's, so it is
 // given one from its header (kIdTag, its game code and its header's checksum), which stays the same
 // wherever the file is kept.
+//
+// A game may be in an archive (#50, archive.h): the archive's DS ROM is the game, its saves named by
+// the archive's name as a ROM's are by its own. What the library reads of it (its header and banner,
+// as far into the ROM as the banner) is kept in kRoot/archives.bin by the archive's size and time, so a
+// later scan reads nothing out of an archive that has not changed.
 
 #pragma once
 
@@ -42,6 +47,8 @@ namespace ps5melonds
 		std::vector<uint8_t> icon; // 32x32 BGRA, top-down; transparent where the DS's is
 	};
 	Title Inspect(const std::string& path);
+	// The same, of a ROM in memory (one read out of an archive: archive.h)
+	Title Inspect(const std::vector<uint8_t>& rom);
 
 	// The game for the DS side's library, its icon written for the launcher. False when the file is
 	// not a DS game.

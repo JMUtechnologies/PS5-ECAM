@@ -16,6 +16,7 @@
 #include "app/updates.h"
 #include "app/usb_devices.h"
 #include "azahar/library.h"
+#include "melonds/archive.h"
 #include "frontend/settings.h"
 #include "frontend/sound.h"
 #include "ps5/kernel.h"
@@ -1012,4 +1013,19 @@ namespace ps5cheevos
 	}
 	void SignOut() { s_account = {}; }
 	void SetNotices(bool on) { s_account.notices = on; }
+}
+
+// DS games in archives (melonds/archive.cpp, libarchive's): none in the preview, which reads ROMs only
+namespace ps5melonds::archive
+{
+	bool FindRom(const std::string&, Rom& rom)
+	{
+		rom = {};
+		return false;
+	}
+	bool Read(const std::string&, const std::string&, std::vector<uint8_t>& data, uint64_t)
+	{
+		data.clear();
+		return false;
+	}
 }

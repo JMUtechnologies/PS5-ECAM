@@ -14,6 +14,7 @@
 
 #include "melonds.h"
 #include "frontend.h"
+#include "archive.h"
 #include "library.h"
 #include "screens.h"
 #include "../app/achievements.h"
@@ -41,6 +42,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cctype>
 #include <chrono>
 #include <cstring>
 #include <ctime>
@@ -67,6 +69,8 @@ namespace ps5melonds
 		using melonDS::u32;
 
 		constexpr int kStateSlots = ps5ingame3ds::kStateSlots;
+		// a DS cartridge's most (4 Gbit), with room: an archive's ROM claimed larger is not one
+		constexpr uint64_t kLargestRom = 1ull << 30;
 
 		melonDS::NDS* s_nds = nullptr;
 		std::thread s_emulation;
@@ -753,10 +757,44 @@ namespace ps5melonds
 			fs::create_directories(Folder(name), ec);
 		const std::string path = game.path.string();
 		s_stem = game.path.stem().string();
+		// an archive's game is named by the archive, as a ROM by its own file: a .tar.gz's without its .tar
+		std::string inner = fs::path(s_stem).extension().string();
+		for (char& c : inner)
+			c = (char)std::tolower((unsigned char)c);
+		if (archive::IsArchive(path) && inner == ".tar")
+			s_stem = fs::path(s_stem).stem().string();
 		s_folder = game.path.parent_path().string();
 		ps5log::Line("[ds] launching {} ({}) from {}", game.name, game.gameId.empty() ? "no game code" : game.gameId, path);
 
-		const Title title = Inspect(path);
+		// a game in an archive (#50): its ROM read out of it into memory, once, before anything starts, as
+		// melonDS's own frontend loads one; nothing is written out
+		std::vector<u8> file;
+		Title title;
+		if (archive::IsArchive(path))
+		{
+			archive::Rom found;
+			if (!archive::FindRom(path, found) || found.member.empty())
+			{
+				error = "There is no DS game in this archive, or the archive could not be read.";
+				return false;
+			}
+			if (found.size > kLargestRom)
+			{
+				error = "The archive's DS game is larger than any DS game.";
+				return false;
+			}
+			const uint64_t started = sceKernelGetProcessTime();
+			if (!archive::Read(path, found.member, file))
+			{
+				error = "The DS game in this archive could not be read: is the archive whole?";
+				return false;
+			}
+			ps5log::Line("[ds] {} read from the archive: {} MiB in {} ms", found.member, file.size() >> 20,
+				(sceKernelGetProcessTime() - started) / 1000);
+			title = Inspect(file);
+		}
+		else
+			title = Inspect(path);
 		if (!title.readable)
 		{
 			error = "This is not a DS game melonDS can read.";
@@ -768,7 +806,8 @@ namespace ps5melonds
 					"this app does not set up yet.";
 			return false;
 		}
-		std::vector<u8> file = ReadFile(path);
+		if (file.empty())
+			file = ReadFile(path);
 		if (file.empty())
 		{
 			error = "The game's file could not be read.";

@@ -22,6 +22,7 @@
 #include "azahar/azahar.h"
 #include "azahar/library.h"
 #include "frontend/launcher.h"
+#include "melonds/archive.h"
 #include "melonds/library.h"
 #include "melonds/melonds.h"
 #include "frontend/settings.h"
@@ -196,6 +197,9 @@ namespace
 		for (const char* ds : {".nds", ".srl", ".dsi"})
 			if (extension == ds)
 				tile.side = ps5launcher::System::Nds;
+		// an archive's game is a DS game: only the DS side reads them (melonds/archive.h)
+		if (ps5melonds::archive::IsArchive(tile.rom))
+			tile.side = ps5launcher::System::Nds;
 		for (const char* n3ds : {".3ds", ".cci", ".cxi", ".cia", ".3dsx", ".app", ".elf", ".axf", ".z3ds", ".zcci", ".zcxi", ".z3dsx"})
 			if (extension == n3ds)
 				tile.side = ps5launcher::System::N3ds;

@@ -98,6 +98,10 @@ find_library(BZ2_LIBRARY bz2 REQUIRED)
 find_library(PSL_LIBRARY psl REQUIRED)
 # the box art GameTDB serves (app/boxart.cpp): JPEG, and PNG through libpng16 above
 find_library(TURBOJPEG_LIBRARY turbojpeg REQUIRED)
+# DS games in archives (melonds/archive.cpp), as melonDS's own frontend reads them: pacbrew's libarchive,
+# with its 7z's LZMA (zstd, bzip2 and zlib are the app's already)
+find_library(ARCHIVE_LIBRARY archive REQUIRED)
+find_library(LZMA_LIBRARY lzma REQUIRED)
 
 add_library(CemuPS5 STATIC
 	app/emulator.cpp
@@ -153,6 +157,8 @@ add_library(CemuPS5 STATIC
 	azahar/controls.h
 	azahar/library.cpp
 	azahar/library.h
+	melonds/archive.cpp
+	melonds/archive.h
 	melonds/library.cpp
 	melonds/library.h
 	melonds/melonds.h
@@ -260,6 +266,7 @@ set_source_files_properties(
 	azahar/controls.cpp
 	azahar/library.cpp
 	azahar/unavailable.cpp
+	melonds/archive.cpp
 	melonds/library.cpp
 	melonds/screens.cpp
 	melonds/unavailable.cpp
@@ -346,6 +353,8 @@ target_link_libraries(CemuPS5 PUBLIC
 	"${BZ2_LIBRARY}"
 	"${PSL_LIBRARY}"
 	"${TURBOJPEG_LIBRARY}"
+	"${ARCHIVE_LIBRARY}"
+	"${LZMA_LIBRARY}"
 	rcheevos # RetroAchievements (app/achievements.cpp)
 	smb2 # network shares (app/netfs.cpp)
 	nfs

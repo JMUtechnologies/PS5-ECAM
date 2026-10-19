@@ -5,6 +5,7 @@
 #include "../app/lang.h"
 #include "../app/netfs.h"
 #include "../app/paths.h"
+#include "../melonds/archive.h"
 #include "../ps5/kernel.h"
 #include "../ps5/log.h"
 
@@ -294,7 +295,8 @@ namespace ps5actions
 		for (const char* extension : {".nds", ".srl", ".dsi"})
 			if (lower.size() > std::strlen(extension) && lower.ends_with(extension))
 				return true;
-		return false;
+		// a DS game in an archive, as the DS side's library reads one (melonds/archive.h)
+		return ps5melonds::archive::IsArchive(name);
 	}
 
 	// The 3DS games right in a folder (Azahar's library looks in the folders in it too). -1: unreadable.

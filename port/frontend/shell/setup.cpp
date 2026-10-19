@@ -198,7 +198,7 @@ namespace ps5shell
 									 "in from Settings > Game files, or come with a .wua.",
 									 folder);
 			games.chips = n3ds ? std::vector<std::string>{".3ds", ".cci", ".cxi", ".3dsx", ".z3ds", ".cia"} :
-				nds			   ? std::vector<std::string>{".nds", ".srl"} :
+				nds			   ? std::vector<std::string>{".nds", ".srl", ".7z", ".zip"} :
 								 std::vector<std::string>{".wua", ".wud", ".wux", Tr("code · content · meta"), ".rpx"};
 			games.guide = std::string(kRepository) + (n3ds ? "#nintendo-3ds" : nds ? "#nintendo-ds-melonds" : "#wii-u");
 			games.guideTitle = Tr("the game files page");
