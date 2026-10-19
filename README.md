@@ -17,8 +17,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v4.0.1.zip"><b>Download 4.0.1</b></a> (ZIP, 52.5 MB) ·
-  <a href="https://github.com/premohq/PS5CEMU-HAR/releases/tag/v4.0.1">Release notes</a> ·
+  <a href="https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v4.0.2.zip"><b>Download 4.0.2</b></a> (ZIP, 52.5 MB) ·
+  <a href="https://github.com/premohq/PS5CEMU-HAR/releases/tag/v4.0.2">Release notes</a> ·
   <a href="#install">Install</a> ·
   <a href="docs/GUIDE.md">Guide</a> ·
   <a href="docs/COMPATIBILITY.md">Compatibility</a> ·
@@ -26,6 +26,28 @@
 </p>
 
 ---
+
+## What's new in 4.0.2
+
+Fixes for 4.0.1, and a few things you asked for. The details are in the [release notes](https://github.com/premohq/PS5CEMU-HAR/releases/tag/v4.0.2).
+
+- **3DS games save again, and installed games can be deleted** ([#55](https://github.com/premohq/PS5CEMU-HAR/issues/55), [#56](https://github.com/premohq/PS5CEMU-HAR/issues/56), [#58](https://github.com/premohq/PS5CEMU-HAR/issues/58)): every file and
+  folder the app makes is open to every user, so a game whose saves or shader cache could not be
+  written no longer starts to black screens, and an FTP client or a file manager can delete installed
+  CIAs. Files an older version made are opened as the app starts.
+- **Artic Setup needs no keys from you** ([#45](https://github.com/premohq/PS5CEMU-HAR/issues/45)): Azahar's own are built in, as in its official
+  builds. **Artic Base connects** on consoles where it failed the moment it started (thanks, dolphin78).
+- **Quit to the library** comes back to the library from Wii U and 3DS games, instead of closing the app
+  ([#60](https://github.com/premohq/PS5CEMU-HAR/issues/60)).
+- **An encrypted 3DS game** is refused in the launcher, which says why, instead of closing the app
+  ([#57](https://github.com/premohq/PS5CEMU-HAR/issues/57)).
+- **DS games in archives:** `.zip`, `.7z`, `.rar` and tar archives play without extracting them ([#50](https://github.com/premohq/PS5CEMU-HAR/issues/50)).
+- **New buttons** in **Settings > Controls**: *Touch at the cursor* (3DS and DS, for drawing), *Fast
+  forward* (3DS and DS) and *Rewind* (DS) ([#59](https://github.com/premohq/PS5CEMU-HAR/issues/59), [#54](https://github.com/premohq/PS5CEMU-HAR/issues/54)).
+- **Everything on the app's drive:** installed on a USB drive or the extended storage, the app can keep
+  its data there instead of in `/data` ([#52](https://github.com/premohq/PS5CEMU-HAR/issues/52), [how](docs/GUIDE.md#everything-on-the-apps-drive)).
+- **Keyboards** have each language's letters, such as Spanish *ñ* ([#51](https://github.com/premohq/PS5CEMU-HAR/issues/51)), and a Wii U or 3DS game
+  whose server hangs up no longer closes the app.
 
 ## What's new in 4.0.1
 
@@ -88,7 +110,7 @@ The biggest update yet. The full list is in the [release notes](https://github.c
 
 1. **A PS5 that runs homebrew.** Any firmware up to 13.60, with etaHEN, OnionHEN, or an ELF loader on
    port 9021. See the [firmware and setup guide](docs/HEN-SETUP.md).
-2. **Copy the app.** Download the [latest ZIP](https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v4.0.1.zip),
+2. **Copy the app.** Download the [latest ZIP](https://github.com/premohq/PS5CEMU-HAR/raw/releases/PS5CEMU-HAR-v4.0.2.zip),
    extract it and copy the `PPSA99360` folder to `/data/homebrew/PPSA99360`.
 3. **Let your HEN in.** etaHEN: add `PPSA99360` to its app jailbreak list. OnionHEN: add `PPSA99360`
    at the end of `exact_title_ids` in `config.ini`, with no comma after it. Any other: have an ELF
