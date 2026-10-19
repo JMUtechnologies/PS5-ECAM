@@ -913,14 +913,20 @@ namespace ps5azahar
 		};
 		// The app starts over after this, and the game's saves are on the SD card already (written as
 		// the game writes them): a shutdown that takes long (18 s was seen, the screen frozen) is cut
-		// short by starting over from here.
+		// short by starting over from here. Not before 15 s: the app started over while Azahar was
+		// still shutting down closed instead (#60), and the DS's game, stopped whole before the app
+		// starts over, comes back to the library.
 		static std::atomic_bool s_shutDown = false;
 		std::thread([] {
-			for (int waited = 0; waited < 50 && !s_shutDown; waited++)
+			for (int waited = 0; waited < 150 && !s_shutDown; waited++)
+			{
 				sceKernelUsleep(100000);
+				if (waited == 49 && !s_shutDown)
+					ps5log::Line("[azahar] still shutting down after 5 s");
+			}
 			if (s_shutDown)
 				return;
-			ps5log::Line("[azahar] shutting down takes over 5 s: starting over without waiting");
+			ps5log::Line("[azahar] shutting down takes over 15 s: starting over without waiting");
 			ps5settings::Launcher all = ps5settings::Load();
 			all.side = "3ds";
 			ps5settings::Save(all);

@@ -51,6 +51,9 @@
 
 #include <algorithm>
 #include <atomic>
+#include <chrono>
+#include <csignal>
+#include <mutex>
 #include <thread>
 #include <cstdlib>
 #include <ctime>
@@ -413,6 +416,41 @@ namespace ps5emu
 			ps5settings::SaveChanges("wiiu", s_gameTitle, before, after);
 			// what was saved is what the game now has: the next change is measured from it
 			s_gameSettings = std::make_unique<ps5settings::Launcher>(after);
+		}
+
+		// The game stopped before the app starts over, as desktop Cemu's End emulation stops it: its
+		// cores, then its GPU thread, which takes the renderer and VideoOut with it (LatteThread_Exit).
+		// The DS's and the 3DS's games are stopped before the app starts over, and only on the DS side
+		// did Quit to the library come back to the library: with the Wii U's still running, the app
+		// closed (#60). A stop that hangs is cut short after 5 s, as theirs is.
+		void StopGame()
+		{
+			const auto started = std::chrono::steady_clock::now();
+			static std::atomic_bool s_stopped = false;
+			std::thread([] {
+				for (int waited = 0; waited < 50 && !s_stopped; waited++)
+					sceKernelUsleep(100000);
+				if (s_stopped)
+					return;
+				ps5log::Line("[emu] stopping the game takes over 5 s: starting over without waiting");
+				ps5settings::Launcher all = ps5settings::Load();
+				all.side = "wiiu";
+				ps5settings::Save(all);
+				RestartToLibrary();
+			}).detach();
+			CafeSystem::ShutdownTitle();
+			s_stopped = true;
+			ps5log::Line("[emu] the game stopped in {} ms",
+				(long long)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - started).count());
+		}
+
+		// Before LoadExec, the signals the system ends a process with as they were: Cemu's handler
+		// (ExceptionHandler_Init) answers SIGTERM and SIGINT with an exit of the app's own, _Exit(0),
+		// which is not the system ending the process for the program that is to follow (#60)
+		void LeaveEndingToSystem()
+		{
+			for (const int sig : {SIGTERM, SIGINT, SIGHUP, SIGQUIT})
+				std::signal(sig, SIG_DFL);
 		}
 	}
 
@@ -826,6 +864,8 @@ namespace ps5emu
 			if (ps5ingame::TakeLibraryRequest())
 			{
 				SaveInGameSettings();
+				ps5log::Line("[emu] back to the library: stopping the game");
+				StopGame();
 				return;
 			}
 		}
@@ -833,6 +873,11 @@ namespace ps5emu
 
 	void RestartToLibrary()
 	{
+		// one at a time: a stop cut short starts over from a thread of its own (StopGame, and the
+		// 3DS's and the DS's), and main comes here too once the stop is done. A second caller goes on
+		// only when the first could not start the app over (#60)
+		static std::mutex s_restarting;
+		std::lock_guard lock(s_restarting);
 		// nothing of the launcher's still on the network or writing: a restart with a cover being
 		// fetched ended the app instead of starting it over (it waits for one a few seconds at most).
 		// An update check can still be waiting on the PS5's resolver when a game fails at once, as an
@@ -860,6 +905,7 @@ namespace ps5emu
 		consider(std::string(ps5paths::kSystemMount) + "/eboot.bin");
 		if (eboots.empty())
 			eboots.push_back(ps5paths::Eboot()); // none found: the console may still see it
+		LeaveEndingToSystem();
 		for (const std::string& eboot : eboots)
 		{
 			ps5log::FlushAll(); // the log's lines in the file before the process is replaced
@@ -883,6 +929,7 @@ namespace ps5emu
 		if (s_coreStarted)
 			GetConfigHandle().Save();
 		ps5log::FlushAll();
+		LeaveEndingToSystem();
 		// as Forwarder Manager closes itself: the system ends the process
 		const int result = sceSystemServiceLoadExec("exit", nullptr);
 		if (result == 0)
