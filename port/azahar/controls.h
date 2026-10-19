@@ -4,6 +4,10 @@
 // name in the launcher's settings (ps5settings::N3ds::buttons) where it is not the default: A on
 // Circle and B on Cross, where the 3DS has them, the circle pad on the left stick, the C-stick on
 // the right one. The touchpad is the touch screen.
+//
+// Three more are the app's own, on no input until one is given them: a touch of the screen where the
+// touchpad's cursor is, as a click of the touchpad (#59), held fast forward, and held rewind on the
+// DS (#54).
 
 #pragma once
 
@@ -23,9 +27,12 @@ namespace ps5azahar
 		Up, Down, Left, Right,
 		CircleUp, CircleDown, CircleLeft, CircleRight,
 		CStickUp, CStickDown, CStickLeft, CStickRight,
+		TouchAtCursor, FastForward,
+		Rewind, // the DS's only: the last, so the 3DS's list ends before it
 		Count,
 	};
 
+	// The 3DS side's: every Button before Rewind, by its index
 	std::vector<ps5emu::ButtonMapping> ListMappings(const ps5settings::N3ds& settings);
 	// The buttons a DS has, as the DS side maps them (port/melonds/input.cpp): the 3DS's of the same
 	// name, the circle pad's directions as a second D-pad

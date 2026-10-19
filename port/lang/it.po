@@ -1743,7 +1743,7 @@ msgstr "La sua cartella meta non descrive un titolo Wii U (meta.xml)."
 msgid "This is where it is installed already."
 msgstr "È già installato qui."
 
-#: port/app/install.cpp:451 port/azahar/core.cpp:926
+#: port/app/install.cpp:451 port/azahar/core.cpp:952
 #, menu
 msgid "An install is already running."
 msgstr "È già in corso un’installazione."
@@ -2548,50 +2548,50 @@ msgstr "Il gioco 3DS si è fermato: {0}"
 msgid "A CIA file is installed, not played: install it from Settings > Game files, then start the game."
 msgstr "Un file CIA si installa, non si gioca: installalo da Impostazioni > File di gioco, poi avvia il gioco."
 
-#: port/azahar/core.cpp:716
+#: port/azahar/core.cpp:742
 #, menu
 msgid "Azahar did not start: {0}"
 msgstr "Azahar non si è avviato: {0}"
 
-#: port/azahar/core.cpp:725
+#: port/azahar/core.cpp:751
 #, menu
 msgid "Artic Setup did not finish: the Artic Setup Tool on the 3DS says why. If it says nothing, check the 3DS's address, and that the 3DS and the PS5 are on the same network."
 msgstr "Artic Setup non è terminato: l’Artic Setup Tool sul 3DS indica il motivo. Se non indica nulla, controlla l’indirizzo del 3DS e che il 3DS e la PS5 siano sulla stessa rete."
 
 #. why an Artic Base game did not start, when the 3DS had answered; Y is the 3DS's button
-#: port/azahar/core.cpp:731
+#: port/azahar/core.cpp:757
 #, menu
 msgid "The 3DS answered, then Artic Base stopped before the game started. On the 3DS, press Y in the Artic Base app to restart its server, then connect again. If it stops again, Settings > Diagnostics > Copy logs to USB copies Azahar's log, which says what failed."
 msgstr "Il 3DS ha risposto, poi Artic Base si è fermato prima che il gioco partisse. Sul 3DS, premi Y nell’app Artic Base per riavviarne il server, poi connettiti di nuovo. Se si ferma ancora, Impostazioni > Diagnostica > Copia i log su USB copia il log di Azahar, che dice cosa non ha funzionato."
 
 #. the PS5's notification as a 3DS game starts
-#: port/azahar/core.cpp:799
+#: port/azahar/core.cpp:825
 #, menu
 msgid "Touchpad click + Options: the in-game menu. A touchpad click alone: the bottom screen"
 msgstr "Clic sul touch pad + OPTIONS: il menu di gioco. Un clic sul touch pad da solo: lo schermo inferiore"
 
 #. why a CIA file could not be installed, after "It could not be installed:"
-#: port/azahar/core.cpp:995
+#: port/azahar/core.cpp:1021
 #, menu
 msgid "it is encrypted, the CIA or the game inside it. Azahar installs only fully decrypted CIA files: decrypt it with GodMode9 on a 3DS, or play the game's decrypted .3ds or .cci file instead"
 msgstr "è criptato, il CIA o il gioco al suo interno. Azahar installa solo file CIA del tutto decriptati: decriptalo con GodMode9 su un 3DS, oppure gioca il file .3ds o .cci decriptato del gioco"
 
-#: port/azahar/core.cpp:998
+#: port/azahar/core.cpp:1024
 #, menu
 msgid "it is not a CIA file, or it is damaged (check the file's size)"
 msgstr "non è un file CIA, oppure è danneggiato (controlla le dimensioni del file)"
 
-#: port/azahar/core.cpp:1000
+#: port/azahar/core.cpp:1026
 #, menu
 msgid "the file could not be read"
 msgstr "impossibile leggere il file"
 
-#: port/azahar/core.cpp:1002
+#: port/azahar/core.cpp:1028
 #, menu
 msgid "Azahar stopped part-way through; /data/ps5cemu/azahar/log/azahar_log.txt says why"
 msgstr "Azahar si è fermato a metà; /data/ps5cemu/azahar/log/azahar_log.txt spiega perché"
 
-#: port/azahar/core.cpp:1004
+#: port/azahar/core.cpp:1030
 #, menu
 msgid "it is not a CIA Azahar can install"
 msgstr "non è un CIA che Azahar può installare"
@@ -2887,6 +2887,21 @@ msgstr "Mostra lo schermo del GamePad"
 msgctxt "button"
 msgid "None"
 msgstr "Nessuno"
+
+#: port/frontend/actions.cpp:469
+msgctxt "button"
+msgid "Touch at the cursor"
+msgstr "Tocca sul cursore"
+
+#: port/frontend/actions.cpp:469
+msgctxt "button"
+msgid "Fast forward"
+msgstr "Avanti veloce"
+
+#: port/frontend/actions.cpp:469
+msgctxt "button"
+msgid "Rewind"
+msgstr "Riavvolgi"
 
 #. Eden's rail: its sections
 #: port/frontend/shell/classic.cpp:47 port/frontend/shell/eden.cpp:91 port/frontend/shell/experiments.cpp:69
@@ -6677,39 +6692,39 @@ msgstr "L’aggiornamento più grande di sempre, a colpo d’occhio. Le note di 
 msgid "This game"
 msgstr "Questo gioco"
 
-#: port/main_ps5.cpp:129
+#: port/main_ps5.cpp:131
 msgid "Firmware {0}"
 msgstr "Firmware {0}"
 
-#: port/main_ps5.cpp:131
+#: port/main_ps5.cpp:133
 msgid "Logs: {0}, {1}/log.txt"
 msgstr "Log: {0}, {1}/log.txt"
 
-#: port/main_ps5.cpp:132
+#: port/main_ps5.cpp:134
 msgid "Boot log not written (/data is unreachable)"
 msgstr "Log di avvio non scritto (/data non è raggiungibile)"
 
-#: port/main_ps5.cpp:411
+#: port/main_ps5.cpp:422
 msgid "PS5CEMU-HAR cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5CEMU-HAR."
 msgstr "PS5CEMU-HAR non raggiunge /data. Carica un HEN con PPSA99360 nel suo elenco di jailbreak delle app, o elfldr, poi riavvia PS5CEMU-HAR."
 
-#: port/main_ps5.cpp:440
+#: port/main_ps5.cpp:451
 msgid "This session: Azahar (3DS); Cemu's emulated Wii U is not started"
 msgstr "Questa sessione: Azahar (3DS); la Wii U emulata di Cemu non è avviata"
 
-#: port/main_ps5.cpp:454
+#: port/main_ps5.cpp:465
 msgid "This session: Cemu (Wii U); Azahar's core is not started"
 msgstr "Questa sessione: Cemu (Wii U); il core di Azahar non è avviato"
 
-#: port/main_ps5.cpp:462
+#: port/main_ps5.cpp:473
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "Niente memoria JIT: i giochi Wii U girano sull’interprete, molto più lento. PPSA99360 è nell’elenco di jailbreak delle app del tuo HEN?"
 
-#: port/main_ps5.cpp:490
+#: port/main_ps5.cpp:506
 msgid "The launcher could not start. The boot log in /data/ps5cemu/logs says why."
 msgstr "Il launcher non si è potuto avviare. Il log di avvio in /data/ps5cemu/logs spiega perché."
 
-#: port/main_ps5.cpp:491
+#: port/main_ps5.cpp:507
 msgid "The launcher could not start: {0}. The boot log in /data/ps5cemu/logs has more."
 msgstr "Il launcher non si è avviato: {0}. Il log di avvio in /data/ps5cemu/logs ha più dettagli."
 

@@ -44,6 +44,7 @@
 #include <chrono>
 #include <cstring>
 #include <ctime>
+#include <deque>
 #include <filesystem>
 #include <fstream>
 #include <iterator>
@@ -102,6 +103,21 @@ namespace ps5melonds
 
 		// the emulation's: the game's cheats
 		std::unique_ptr<melonDS::ARCodeFile> s_cheats;
+
+		// The emulation's, for rewind (#54), while it has an input: a save state every kRewindEvery DS
+		// frames (half a second), the last kRewindStates kept in memory (15 s, about 6 MB each). Held, the
+		// newest is loaded every kRewindStep frames shown and taken off, one frame run for its picture,
+		// with no sound: the game runs back about four times as fast as it ran, and goes on from where
+		// it is let go
+		constexpr int kRewindEvery = 30;
+		constexpr size_t kRewindStates = 30;
+		constexpr int kRewindStep = 8;
+		std::deque<std::vector<u8>> s_rewind;
+		std::vector<u8> s_rewindScratch; // a state saved into, then copied at its length
+		int s_rewindDue = kRewindEvery;	 // DS frames until the next snapshot
+		int s_rewindWait = 0;			 // frames shown until the next step back
+		bool s_rewinding = false;
+		bool s_rewound = false; // a step back taken since rewind was held
 
 		// the game's save, as it last changed, for the game's loop to write
 		std::mutex s_saveMutex;
@@ -484,6 +500,7 @@ namespace ps5melonds
 					{
 						message = fmt::format("Loaded slot {}", slot);
 						ps5cheevos::Reset(); // the set's conditions start again from the state's memory
+						s_rewind.clear();	 // and a rewind, from here
 					}
 					else
 					{
@@ -521,6 +538,41 @@ namespace ps5melonds
 				nds.AREngine.Cheats = s_cheats->GetCodes();
 			}
 			ShowCheats();
+		}
+
+		// A snapshot for the rewind, the oldest's memory taken for it once they are all there
+		void RewindCapture(melonDS::NDS& nds)
+		{
+			if (s_rewindScratch.empty())
+				s_rewindScratch.resize(melonDS::Savestate::DEFAULT_SIZE);
+			melonDS::Savestate state(s_rewindScratch.data(), (u32)s_rewindScratch.size(), true);
+			if (state.Error || !nds.DoSavestate(&state) || state.Error)
+				return;
+			std::vector<u8> snapshot;
+			if (s_rewind.size() >= kRewindStates)
+			{
+				snapshot = std::move(s_rewind.front());
+				s_rewind.pop_front();
+			}
+			snapshot.assign(s_rewindScratch.data(), s_rewindScratch.data() + state.Length());
+			s_rewind.push_back(std::move(snapshot));
+		}
+
+		// One step back: the newest snapshot loaded and taken off; false with none left
+		bool RewindStep(melonDS::NDS& nds)
+		{
+			if (s_rewind.empty())
+				return false;
+			std::vector<u8>& snapshot = s_rewind.back();
+			melonDS::Savestate state(snapshot.data(), (u32)snapshot.size(), false);
+			const bool loaded = !state.Error && nds.DoSavestate(&state) && !state.Error;
+			s_rewind.pop_back();
+			if (!loaded)
+			{
+				ps5log::Line("[ds] a rewind snapshot did not load: the rewind stops there");
+				s_rewind.clear();
+			}
+			return loaded;
 		}
 
 		// The remote touch screen's picture (port/stream): the DS's touch screen, as melonDS drew it, in
@@ -564,35 +616,83 @@ namespace ps5melonds
 				frame.cursor = input::Cursor(frame.cursorX, frame.cursorY) && !held;
 				if (!held)
 				{
-					nds.SetKeyMask(input::KeyMask());
-					int x, y;
-					float remoteX, remoteY;
-					// the remote touch screen's touch (port/stream) before the touchpad's, whether or not
-					// the TV shows the touch screen
-					if (ps5stream::Touch(remoteX, remoteY))
-						nds.TouchScreen((melonDS::u16)std::clamp((int)(remoteX * 256.0f), 0, 255), (melonDS::u16)std::clamp((int)(remoteY * 192.0f), 0, 191));
-					else if (input::Touch(x, y))
-						nds.TouchScreen((melonDS::u16)x, (melonDS::u16)y);
+					// rewind, held (#54): no sound while it is; let go, the game goes on from there, the
+					// achievements' conditions with it
+					const bool rewind = input::Rewinding() && input::RewindBound();
+					if (rewind != s_rewinding)
+					{
+						s_rewinding = rewind;
+						s_rewindWait = 0;
+						sound::SetMuted(rewind);
+						if (!rewind)
+						{
+							nds.SPU.DrainOutput();
+							s_rewindDue = kRewindEvery;
+							if (s_rewound)
+								ps5cheevos::Reset();
+							s_rewound = false;
+						}
+					}
+					int speed = view.speedLimit;
+					if (rewind)
+					{
+						// a step back every kRewindStep frames shown, one frame run for its picture with the
+						// game's buttons let go; with no snapshot left, the picture holds
+						if (--s_rewindWait <= 0)
+						{
+							s_rewindWait = kRewindStep;
+							if (RewindStep(nds))
+							{
+								s_rewound = true;
+								nds.SetKeyMask(0xFFF);
+								nds.ReleaseScreen();
+								nds.RunFrame();
+							}
+						}
+					}
 					else
-						nds.ReleaseScreen();
-					// the DS frames this frame shows: one, more at a higher speed limit, as many as fit
-					// in 12 ms with none
-					int frames = 1;
-					if (view.speedLimit > 100)
 					{
-						owed += view.speedLimit / 100.0;
-						frames = std::max(1, (int)owed);
-						owed -= frames;
+						nds.SetKeyMask(input::KeyMask());
+						int x, y;
+						float remoteX, remoteY;
+						// the remote touch screen's touch (port/stream) before the touchpad's, whether or not
+						// the TV shows the touch screen
+						if (ps5stream::Touch(remoteX, remoteY))
+							nds.TouchScreen((melonDS::u16)std::clamp((int)(remoteX * 256.0f), 0, 255), (melonDS::u16)std::clamp((int)(remoteY * 192.0f), 0, 191));
+						else if (input::Touch(x, y))
+							nds.TouchScreen((melonDS::u16)x, (melonDS::u16)y);
+						else
+							nds.ReleaseScreen();
+						// fast forward, held (#54): no speed limit while it is
+						if (input::FastForward())
+							speed = 0;
+						// the DS frames this frame shows: one, more at a higher speed limit, as many as fit
+						// in 12 ms with none
+						int frames = 1;
+						if (speed > 100)
+						{
+							owed += speed / 100.0;
+							frames = std::max(1, (int)owed);
+							owed -= frames;
+						}
+						const uint64_t start = sceKernelGetProcessTime();
+						int ran = 0;
+						for (int i = 0; !s_stop && (i < frames || (speed == 0 && sceKernelGetProcessTime() - start < 12000)); i++)
+						{
+							nds.RunFrame();
+							s_framesEmulated++;
+							ran++;
+							if (s_cheevos)
+								ps5cheevos::DoFrame();
+						}
+						// a snapshot for the rewind every half a second of the game's, while it has an input
+						if (input::RewindBound() && (s_rewindDue -= ran) <= 0)
+						{
+							RewindCapture(nds);
+							s_rewindDue = kRewindEvery;
+						}
+						sound::Pace(nds, refresh, speed);
 					}
-					const uint64_t start = sceKernelGetProcessTime();
-					for (int i = 0; !s_stop && (i < frames || (view.speedLimit == 0 && sceKernelGetProcessTime() - start < 12000)); i++)
-					{
-						nds.RunFrame();
-						s_framesEmulated++;
-						if (s_cheevos)
-							ps5cheevos::DoFrame();
-					}
-					sound::Pace(nds, refresh, view.speedLimit);
 					frame.top = nds.GPU.Framebuffer[nds.GPU.FrontBuffer][0].get();
 					frame.bottom = nds.GPU.Framebuffer[nds.GPU.FrontBuffer][1].get();
 					if (ps5stream::WantFrame())
@@ -600,7 +700,7 @@ namespace ps5melonds
 					// VideoOut's flips pace the frames; should they not, a frame is not shown more than
 					// 2 ms before it is due
 					const uint64_t now = sceKernelGetProcessTime();
-					if (view.speedLimit == 100 && nextFrame > now + 2000)
+					if (speed == 100 && nextFrame > now + 2000)
 						sceKernelUsleep((uint32_t)(nextFrame - now - 1000));
 					nextFrame = std::max(nextFrame + period, sceKernelGetProcessTime());
 				}
@@ -614,6 +714,11 @@ namespace ps5melonds
 				}
 				s_framesShown++;
 			}
+			// the rewind's memory given back
+			s_rewind = {};
+			s_rewindScratch = {};
+			s_rewinding = s_rewound = false;
+			sound::SetMuted(false);
 			s_running = false;
 		}
 	}

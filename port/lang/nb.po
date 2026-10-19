@@ -1743,7 +1743,7 @@ msgstr "meta-mappen beskriver ikke en Wii U-tittel (meta.xml)."
 msgid "This is where it is installed already."
 msgstr "Den er allerede installert her."
 
-#: port/app/install.cpp:451 port/azahar/core.cpp:926
+#: port/app/install.cpp:451 port/azahar/core.cpp:952
 #, menu
 msgid "An install is already running."
 msgstr "En installasjon pågår allerede."
@@ -2548,50 +2548,50 @@ msgstr "3DS-spillet stoppet: {0}"
 msgid "A CIA file is installed, not played: install it from Settings > Game files, then start the game."
 msgstr "En CIA-fil installeres, den spilles ikke: installer den fra Innstillinger > Spillfiler, og start så spillet."
 
-#: port/azahar/core.cpp:716
+#: port/azahar/core.cpp:742
 #, menu
 msgid "Azahar did not start: {0}"
 msgstr "Azahar startet ikke: {0}"
 
-#: port/azahar/core.cpp:725
+#: port/azahar/core.cpp:751
 #, menu
 msgid "Artic Setup did not finish: the Artic Setup Tool on the 3DS says why. If it says nothing, check the 3DS's address, and that the 3DS and the PS5 are on the same network."
 msgstr "Artic Setup ble ikke fullført: Artic Setup Tool på 3DS-en sier hvorfor. Sier den ingenting, sjekk 3DS-ens adresse, og at 3DS-en og PS5-en er på samme nettverk."
 
 #. why an Artic Base game did not start, when the 3DS had answered; Y is the 3DS's button
-#: port/azahar/core.cpp:731
+#: port/azahar/core.cpp:757
 #, menu
 msgid "The 3DS answered, then Artic Base stopped before the game started. On the 3DS, press Y in the Artic Base app to restart its server, then connect again. If it stops again, Settings > Diagnostics > Copy logs to USB copies Azahar's log, which says what failed."
 msgstr "3DS-en svarte, men så stoppet Artic Base før spillet startet. Trykk Y i Artic Base-appen på 3DS-en for å starte serveren på nytt, og koble til igjen. Hvis den stopper igjen, kopierer Innstillinger > Diagnostikk > Kopier logger til USB Azahars logg, som forteller hva som feilet."
 
 #. the PS5's notification as a 3DS game starts
-#: port/azahar/core.cpp:799
+#: port/azahar/core.cpp:825
 #, menu
 msgid "Touchpad click + Options: the in-game menu. A touchpad click alone: the bottom screen"
 msgstr "Klikk på styreflaten + OPTIONS: spillmenyen. Bare et klikk på styreflaten: den nedre skjermen"
 
 #. why a CIA file could not be installed, after "It could not be installed:"
-#: port/azahar/core.cpp:995
+#: port/azahar/core.cpp:1021
 #, menu
 msgid "it is encrypted, the CIA or the game inside it. Azahar installs only fully decrypted CIA files: decrypt it with GodMode9 on a 3DS, or play the game's decrypted .3ds or .cci file instead"
 msgstr "den er kryptert, selve CIA-filen eller spillet i den. Azahar installerer bare helt dekrypterte CIA-filer: dekrypter den med GodMode9 på en 3DS, eller spill heller spillets dekrypterte .3ds- eller .cci-fil"
 
-#: port/azahar/core.cpp:998
+#: port/azahar/core.cpp:1024
 #, menu
 msgid "it is not a CIA file, or it is damaged (check the file's size)"
 msgstr "det er ikke en CIA-fil, eller den er skadet (sjekk filstørrelsen)"
 
-#: port/azahar/core.cpp:1000
+#: port/azahar/core.cpp:1026
 #, menu
 msgid "the file could not be read"
 msgstr "filen kunne ikke leses"
 
-#: port/azahar/core.cpp:1002
+#: port/azahar/core.cpp:1028
 #, menu
 msgid "Azahar stopped part-way through; /data/ps5cemu/azahar/log/azahar_log.txt says why"
 msgstr "Azahar stoppet halvveis; /data/ps5cemu/azahar/log/azahar_log.txt sier hvorfor"
 
-#: port/azahar/core.cpp:1004
+#: port/azahar/core.cpp:1030
 #, menu
 msgid "it is not a CIA Azahar can install"
 msgstr "det er ikke en CIA som Azahar kan installere"
@@ -2887,6 +2887,21 @@ msgstr "Vis GamePad-ens skjerm"
 msgctxt "button"
 msgid "None"
 msgstr "Ingen"
+
+#: port/frontend/actions.cpp:469
+msgctxt "button"
+msgid "Touch at the cursor"
+msgstr "Trykk ved markøren"
+
+#: port/frontend/actions.cpp:469
+msgctxt "button"
+msgid "Fast forward"
+msgstr "Spol fremover"
+
+#: port/frontend/actions.cpp:469
+msgctxt "button"
+msgid "Rewind"
+msgstr "Spol tilbake"
 
 #. Eden's rail: its sections
 #: port/frontend/shell/classic.cpp:47 port/frontend/shell/eden.cpp:91 port/frontend/shell/experiments.cpp:69
@@ -6677,39 +6692,39 @@ msgstr "Den største oppdateringen hittil, kort fortalt. Utgivelsesnotatene på 
 msgid "This game"
 msgstr "Dette spillet"
 
-#: port/main_ps5.cpp:129
+#: port/main_ps5.cpp:131
 msgid "Firmware {0}"
 msgstr "Fastvare {0}"
 
-#: port/main_ps5.cpp:131
+#: port/main_ps5.cpp:133
 msgid "Logs: {0}, {1}/log.txt"
 msgstr "Logger: {0}, {1}/log.txt"
 
-#: port/main_ps5.cpp:132
+#: port/main_ps5.cpp:134
 msgid "Boot log not written (/data is unreachable)"
 msgstr "Oppstartsloggen ble ikke skrevet (/data er ikke tilgjengelig)"
 
-#: port/main_ps5.cpp:411
+#: port/main_ps5.cpp:422
 msgid "PS5CEMU-HAR cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5CEMU-HAR."
 msgstr "PS5CEMU-HAR når ikke /data. Last inn en HEN med PPSA99360 i app-jailbreak-listen, eller elfldr, og start så PS5CEMU-HAR på nytt."
 
-#: port/main_ps5.cpp:440
+#: port/main_ps5.cpp:451
 msgid "This session: Azahar (3DS); Cemu's emulated Wii U is not started"
 msgstr "Denne økten: Azahar (3DS); Cemus emulerte Wii U er ikke startet"
 
-#: port/main_ps5.cpp:454
+#: port/main_ps5.cpp:465
 msgid "This session: Cemu (Wii U); Azahar's core is not started"
 msgstr "Denne økten: Cemu (Wii U); Azahars kjerne er ikke startet"
 
-#: port/main_ps5.cpp:462
+#: port/main_ps5.cpp:473
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "Ikke noe JIT-minne: Wii U-spill kjører på tolken, mye tregere. Er PPSA99360 i HEN-ens app-jailbreak-liste?"
 
-#: port/main_ps5.cpp:490
+#: port/main_ps5.cpp:506
 msgid "The launcher could not start. The boot log in /data/ps5cemu/logs says why."
 msgstr "Startprogrammet kunne ikke starte. Oppstartsloggen i /data/ps5cemu/logs sier hvorfor."
 
-#: port/main_ps5.cpp:491
+#: port/main_ps5.cpp:507
 msgid "The launcher could not start: {0}. The boot log in /data/ps5cemu/logs has more."
 msgstr "Startprogrammet kunne ikke starte: {0}. Oppstartsloggen i /data/ps5cemu/logs har mer."
 

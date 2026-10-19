@@ -54,6 +54,7 @@ namespace ps5melonds::sound
 		std::thread s_thread;
 		std::atomic<bool> s_quit{false};
 		std::atomic<int> s_volume{100};
+		std::atomic<bool> s_muted{false};
 		melonDS::NDS* s_nds = nullptr;
 		double s_fill = kTargetFill; // the emulation's: the buffer's fill, averaged
 		double s_skew = 1.0;
@@ -90,7 +91,13 @@ namespace ps5melonds::sound
 					grain[frame * 2 + 1] = last[1];
 				}
 				const int volume = s_volume;
-				if (volume < 100)
+				if (s_muted)
+				{
+					// what was made is read and dropped, and silence held
+					grain.fill(0);
+					last[0] = last[1] = 0;
+				}
+				else if (volume < 100)
 					for (melonDS::s16& sample : grain)
 						sample = (melonDS::s16)(sample * volume / 100);
 				if (sceAudioOutOutput(s_port, grain.data()) < 0)
@@ -137,6 +144,11 @@ namespace ps5melonds::sound
 	void SetVolume(int percent)
 	{
 		s_volume = std::clamp(percent, 0, 100);
+	}
+
+	void SetMuted(bool muted)
+	{
+		s_muted = muted;
 	}
 
 	void Pace(melonDS::NDS& nds, double refreshHz, int speed)

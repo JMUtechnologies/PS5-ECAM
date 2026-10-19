@@ -46,6 +46,11 @@ namespace ps5melonds
 		bool Blowing();
 		// The cursor over the bottom screen, from 0 to 1 across it; true while a finger is on the touchpad
 		bool Cursor(float& x, float& y);
+		// The app's own actions (port/azahar/controls.h), for the emulation: fast forward and rewind
+		// held, and whether rewind has an input at all (else no snapshots are kept for it)
+		bool FastForward();
+		bool Rewinding();
+		bool RewindBound();
 	}
 
 	namespace sound
@@ -54,6 +59,8 @@ namespace ps5melonds
 		void Start(melonDS::NDS& nds);
 		void Stop();
 		void SetVolume(int percent);
+		// Silence, the sound made meanwhile dropped (a rewind's steps)
+		void SetMuted(bool muted);
 		// Once a frame, from the emulation: melonDS's sound made at the rate the screens are shown, its
 		// buffer kept half full (speed: the emulation's, in percent of the DS's; 0 none)
 		void Pace(melonDS::NDS& nds, double refreshHz, int speed);

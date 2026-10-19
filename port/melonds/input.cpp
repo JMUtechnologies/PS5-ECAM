@@ -3,7 +3,8 @@
 // mapped as the DS side's controls say (port/azahar/controls.h's mapping, nds), and its D-pad takes the circle
 // pad's inputs too: the left stick, past the deadzone. The touch screen is the touchpad, as on the 3DS
 // side: a finger moves a cursor over the bottom screen, and clicking the touchpad touches it there. R3
-// held blows into the microphone, unless it is mapped to a button.
+// held blows into the microphone, unless it is mapped to a button. The app's own actions (controls.h)
+// are read here too: a touch where the cursor is (#59), fast forward and rewind (#54), held.
 
 #include "frontend.h"
 #include "../azahar/controls.h"
@@ -37,6 +38,7 @@ namespace ps5melonds::input
 		std::mutex s_mutex;
 		std::array<PadInput, 12> s_keys{};
 		std::array<PadInput, 4> s_circle{};
+		PadInput s_touchInput = PadInput::None, s_fastInput = PadInput::None, s_rewindInput = PadInput::None;
 		float s_threshold = 0.4f; // how far a stick goes before the D-pad does
 		bool s_micFree = true;	  // R3 is no button's
 
@@ -45,6 +47,7 @@ namespace ps5melonds::input
 		float s_cursorX = 0.5f, s_cursorY = 0.5f; // 0 to 1 over the bottom screen
 		bool s_cursorVisible = false;
 		std::atomic<bool> s_blowing{false};
+		std::atomic<bool> s_fastForward{false}, s_rewinding{false}, s_rewindBound{false};
 		// the game's loop's: what was held while the menu was open, kept from the game until let go
 		uint32_t s_heldOver = 0;
 		bool s_sticksHeldOver = false, s_touchHeldOver = false;
@@ -123,6 +126,11 @@ namespace ps5melonds::input
 			s_circle[direction] = ps5azahar::MappedInput(settings, kCircle[direction]);
 			s_micFree = s_micFree && s_circle[direction] != PadInput::R3;
 		}
+		s_touchInput = ps5azahar::MappedInput(settings, Button::TouchAtCursor);
+		s_fastInput = ps5azahar::MappedInput(settings, Button::FastForward);
+		s_rewindInput = ps5azahar::MappedInput(settings, Button::Rewind);
+		s_micFree = s_micFree && s_touchInput != PadInput::R3 && s_fastInput != PadInput::R3 && s_rewindInput != PadInput::R3;
+		s_rewindBound = s_rewindInput != PadInput::None;
 		// the deadzone (0 to 50%) as the stick's travel the D-pad waits for: 30% to 65%
 		s_threshold = 0.3f + std::clamp(settings.deadzone, 0, 50) / 100.0f * 0.7f;
 	}
@@ -131,7 +139,7 @@ namespace ps5melonds::input
 	{
 		ps5pad::Data data{};
 		Sample sample;
-		bool touch = false, fingerDown = false;
+		bool touch = false, fingerDown = false, fast = false, rewind = false;
 		float fingerX = 0, fingerY = 0;
 		if (ps5pad::Read(0, data) && !(data.buttons & ps5pad::kIntercepted))
 		{
@@ -165,6 +173,11 @@ namespace ps5melonds::input
 				s_touchHeldOver = s_touchHeldOver && touch;
 				if (s_touchHeldOver)
 					touch = false;
+				// the app's own actions, from what is left for the game: a touch where the cursor is, as
+				// the touchpad's click, fast forward and rewind
+				touch = touch || Amount(sample, s_touchInput) > 0.5f;
+				fast = Amount(sample, s_fastInput) > 0.5f;
+				rewind = Amount(sample, s_rewindInput) > 0.5f;
 			}
 			if (!blocked && data.touchCount > 0)
 			{
@@ -186,6 +199,23 @@ namespace ps5melonds::input
 		// the click touches only a bottom screen that is shown
 		s_touching = touch && bottomShown;
 		s_blowing = s_micFree && Has(sample, ps5pad::kR3);
+		s_fastForward = fast;
+		s_rewinding = rewind;
+	}
+
+	bool FastForward()
+	{
+		return s_fastForward;
+	}
+
+	bool Rewinding()
+	{
+		return s_rewinding;
+	}
+
+	bool RewindBound()
+	{
+		return s_rewindBound;
 	}
 
 	melonDS::u32 KeyMask()

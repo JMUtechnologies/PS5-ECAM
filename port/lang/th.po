@@ -1740,7 +1740,7 @@ msgstr "โฟลเดอร์ meta ไม่ได้​ระบุ​ไต
 msgid "This is where it is installed already."
 msgstr "ติดตั้ง​อยู่​ที่นี่​แล้ว"
 
-#: port/app/install.cpp:451 port/azahar/core.cpp:926
+#: port/app/install.cpp:451 port/azahar/core.cpp:952
 #, menu
 msgid "An install is already running."
 msgstr "มี​การ​ติดตั้ง​ทำงาน​อยู่​แล้ว"
@@ -2545,50 +2545,50 @@ msgstr "เกม 3DS หยุด​ทำงาน: {0}"
 msgid "A CIA file is installed, not played: install it from Settings > Game files, then start the game."
 msgstr "ไฟล์ CIA ต้อง​ติดตั้ง ไม่ใช่​เล่น​โดยตรง: ติดตั้ง​จาก การ​ตั้งค่า > ไฟล์​เกม แล้ว​เริ่ม​เกม"
 
-#: port/azahar/core.cpp:716
+#: port/azahar/core.cpp:742
 #, menu
 msgid "Azahar did not start: {0}"
 msgstr "Azahar ไม่​เริ่ม​ทำงาน: {0}"
 
-#: port/azahar/core.cpp:725
+#: port/azahar/core.cpp:751
 #, menu
 msgid "Artic Setup did not finish: the Artic Setup Tool on the 3DS says why. If it says nothing, check the 3DS's address, and that the 3DS and the PS5 are on the same network."
 msgstr "Artic Setup ไม่​เสร็จ: Artic Setup Tool บน 3DS จะ​บอก​สาเหตุ ถ้า​ไม่​มี​อะไร​แสดง ให้​ตรวจสอบ​ที่อยู่​ของ 3DS และ​ว่า 3DS กับ PS5 อยู่​ใน​เครือข่าย​เดียวกัน"
 
 #. why an Artic Base game did not start, when the 3DS had answered; Y is the 3DS's button
-#: port/azahar/core.cpp:731
+#: port/azahar/core.cpp:757
 #, menu
 msgid "The 3DS answered, then Artic Base stopped before the game started. On the 3DS, press Y in the Artic Base app to restart its server, then connect again. If it stops again, Settings > Diagnostics > Copy logs to USB copies Azahar's log, which says what failed."
 msgstr "3DS ตอบ​สนอง​แล้ว แต่ Artic Base หยุด​ก่อน​เกม​จะ​เริ่ม บน 3DS ให้​กด Y ใน​แอป Artic Base เพื่อ​รีสตาร์ท​เซิร์ฟเวอร์ แล้ว​เชื่อมต่อ​ใหม่ ถ้า​หยุด​อีก การ​ตั้งค่า > การ​วินิจฉัย > คัดลอก​ล็อก​ไป​ยัง USB จะ​คัดลอก​ล็อก​ของ Azahar ซึ่ง​บอก​ว่า​อะไร​ล้มเหลว"
 
 #. the PS5's notification as a 3DS game starts
-#: port/azahar/core.cpp:799
+#: port/azahar/core.cpp:825
 #, menu
 msgid "Touchpad click + Options: the in-game menu. A touchpad click alone: the bottom screen"
 msgstr "กด​ทัชแพด + ปุ่ม​ตัวเลือก: เมนู​ใน​เกม กด​ทัชแพด​อย่าง​เดียว: จอ​ล่าง"
 
 #. why a CIA file could not be installed, after "It could not be installed:"
-#: port/azahar/core.cpp:995
+#: port/azahar/core.cpp:1021
 #, menu
 msgid "it is encrypted, the CIA or the game inside it. Azahar installs only fully decrypted CIA files: decrypt it with GodMode9 on a 3DS, or play the game's decrypted .3ds or .cci file instead"
 msgstr "CIA หรือ​เกม​ข้างใน​ถูก​เข้ารหัส Azahar ติดตั้ง​ได้​เฉพาะ​ไฟล์ CIA ที่​ถอด​รหัส​ทั้งหมด​แล้ว: ถอด​รหัส​ด้วย GodMode9 บน 3DS หรือ​เล่น​ไฟล์ .3ds หรือ .cci ที่​ถอด​รหัส​แล้ว​แทน"
 
-#: port/azahar/core.cpp:998
+#: port/azahar/core.cpp:1024
 #, menu
 msgid "it is not a CIA file, or it is damaged (check the file's size)"
 msgstr "ไม่ใช่​ไฟล์ CIA หรือ​ไฟล์​เสียหาย (ตรวจสอบ​ขนาด​ไฟล์)"
 
-#: port/azahar/core.cpp:1000
+#: port/azahar/core.cpp:1026
 #, menu
 msgid "the file could not be read"
 msgstr "อ่าน​ไฟล์​ไม่ได้"
 
-#: port/azahar/core.cpp:1002
+#: port/azahar/core.cpp:1028
 #, menu
 msgid "Azahar stopped part-way through; /data/ps5cemu/azahar/log/azahar_log.txt says why"
 msgstr "Azahar หยุด​กลางคัน ดู​สาเหตุ​ได้​ที่ /data/ps5cemu/azahar/log/azahar_log.txt"
 
-#: port/azahar/core.cpp:1004
+#: port/azahar/core.cpp:1030
 #, menu
 msgid "it is not a CIA Azahar can install"
 msgstr "ไม่ใช่ CIA ที่ Azahar ติดตั้ง​ได้"
@@ -2882,6 +2882,21 @@ msgstr "แสดง​หน้าจอ GamePad"
 msgctxt "button"
 msgid "None"
 msgstr "ไม่มี"
+
+#: port/frontend/actions.cpp:469
+msgctxt "button"
+msgid "Touch at the cursor"
+msgstr "แตะที่ตำแหน่งเคอร์เซอร์"
+
+#: port/frontend/actions.cpp:469
+msgctxt "button"
+msgid "Fast forward"
+msgstr "เร่งความเร็ว"
+
+#: port/frontend/actions.cpp:469
+msgctxt "button"
+msgid "Rewind"
+msgstr "ย้อนกลับ"
 
 #. Eden's rail: its sections
 #: port/frontend/shell/classic.cpp:47 port/frontend/shell/eden.cpp:91 port/frontend/shell/experiments.cpp:69
@@ -6636,39 +6651,39 @@ msgstr "อัปเดต​ครั้ง​ใหญ่​ที่สุด
 msgid "This game"
 msgstr "เกม​นี้"
 
-#: port/main_ps5.cpp:129
+#: port/main_ps5.cpp:131
 msgid "Firmware {0}"
 msgstr "เฟิร์มแวร์ {0}"
 
-#: port/main_ps5.cpp:131
+#: port/main_ps5.cpp:133
 msgid "Logs: {0}, {1}/log.txt"
 msgstr "ล็อก: {0}, {1}/log.txt"
 
-#: port/main_ps5.cpp:132
+#: port/main_ps5.cpp:134
 msgid "Boot log not written (/data is unreachable)"
 msgstr "ไม่ได้​เขียน​ล็อก​การ​เริ่ม​ระบบ (เข้าถึง /data ไม่ได้)"
 
-#: port/main_ps5.cpp:411
+#: port/main_ps5.cpp:422
 msgid "PS5CEMU-HAR cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5CEMU-HAR."
 msgstr "PS5CEMU-HAR เข้าถึง /data ไม่ได้ โหลด HEN ที่​มี PPSA99360 ใน​รายการ​เจลเบรก​แอป หรือ elfldr แล้ว​เริ่ม PS5CEMU-HAR ใหม่"
 
-#: port/main_ps5.cpp:440
+#: port/main_ps5.cpp:451
 msgid "This session: Azahar (3DS); Cemu's emulated Wii U is not started"
 msgstr "เซสชัน​นี้: Azahar (3DS) Wii U จำลอง​ของ Cemu ยัง​ไม่​เริ่ม"
 
-#: port/main_ps5.cpp:454
+#: port/main_ps5.cpp:465
 msgid "This session: Cemu (Wii U); Azahar's core is not started"
 msgstr "เซสชัน​นี้: Cemu (Wii U) แกน​ของ Azahar ยัง​ไม่​เริ่ม"
 
-#: port/main_ps5.cpp:462
+#: port/main_ps5.cpp:473
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "ไม่มี​หน่วย​ความ​จำ JIT: เกม Wii U ใช้​อินเทอร์พรีเตอร์ ช้า​กว่า​มาก PPSA99360 อยู่​ใน​รายการ​เจลเบรก​แอป​ของ HEN หรือไม่"
 
-#: port/main_ps5.cpp:490
+#: port/main_ps5.cpp:506
 msgid "The launcher could not start. The boot log in /data/ps5cemu/logs says why."
 msgstr "ลอนเชอร์​เริ่ม​ไม่ได้ ล็อก​การ​เริ่ม​ระบบ​ใน /data/ps5cemu/logs บอก​สาเหตุ"
 
-#: port/main_ps5.cpp:491
+#: port/main_ps5.cpp:507
 msgid "The launcher could not start: {0}. The boot log in /data/ps5cemu/logs has more."
 msgstr "ลอนเชอร์​เริ่ม​ไม่ได้: {0} ล็อก​การ​เริ่ม​ระบบ​ใน /data/ps5cemu/logs มี​รายละเอียด​เพิ่มเติม"
 

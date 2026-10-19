@@ -38,6 +38,10 @@ namespace ps5azahar::input
 		// them), kept from the game until each is let go, and the same for the sticks and the click
 		uint32_t s_heldOver = 0;
 		bool s_sticksHeldOver = false, s_touchHeldOver = false;
+		// The game's loop's too: the inputs of the app's own actions (controls.h), and whether fast
+		// forward is on
+		PadInput s_touchInput = PadInput::None, s_fastInput = PadInput::None;
+		bool s_fastForward = false;
 
 		constexpr float kStickRest = 0.25f; // a stick nearer the middle than this is let go of
 
@@ -233,10 +237,17 @@ namespace ps5azahar::input
 		profile.touch_device = "engine:emu_window";
 		profile.use_touchpad = false;
 		profile.use_touch_from_button = false;
+		s_touchInput = MappedInput(settings, Button::TouchAtCursor);
+		s_fastInput = MappedInput(settings, Button::FastForward);
 	}
 
 	void Shutdown()
 	{
+		if (s_fastForward)
+		{
+			s_fastForward = false;
+			Settings::ResetTemporaryFrameLimit();
+		}
 		if (!s_registered)
 			return;
 		Input::UnregisterFactory<Input::ButtonDevice>("ps5");
@@ -249,7 +260,7 @@ namespace ps5azahar::input
 	{
 		ps5pad::Data data{};
 		Sample sample;
-		bool fingerDown = false, touch = false;
+		bool fingerDown = false, touch = false, fast = false;
 		float fingerX = 0, fingerY = 0;
 		if (ps5pad::Read(0, data) && !(data.buttons & ps5pad::kIntercepted))
 		{
@@ -289,6 +300,10 @@ namespace ps5azahar::input
 				s_touchHeldOver = s_touchHeldOver && touch;
 				if (s_touchHeldOver)
 					touch = false;
+				// the app's own actions (controls.h), from what is left for the game: a touch where the
+				// cursor is, as the touchpad's click (#59), and fast forward (#54)
+				touch = touch || Amount(sample, s_touchInput) > 0.5f;
+				fast = Amount(sample, s_fastInput) > 0.5f;
 			}
 			if (!blocked && data.touchCount > 0)
 			{
@@ -298,6 +313,15 @@ namespace ps5azahar::input
 				fingerX = std::clamp(data.touch[0].x / std::max(width, 1.0f), 0.0f, 1.0f);
 				fingerY = std::clamp(data.touch[0].y / std::max(height, 1.0f), 0.0f, 1.0f);
 			}
+		}
+
+		// fast forward, held: no speed limit while it is, as Azahar's own turbo makes it (a temporary
+		// limit, over the game's)
+		if (fast != s_fastForward)
+		{
+			s_fastForward = fast;
+			Settings::temporary_frame_limit = 0;
+			Settings::is_temporary_frame_limit = fast;
 		}
 
 		// the click touches only a bottom screen that is shown

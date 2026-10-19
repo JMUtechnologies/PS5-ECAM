@@ -41,6 +41,9 @@ namespace ps5azahar
 			{"cstick_down", "C-stick down", PadInput::RightStickDown},
 			{"cstick_left", "C-stick left", PadInput::RightStickLeft},
 			{"cstick_right", "C-stick right", PadInput::RightStickRight},
+			{"touch", "Touch at the cursor", PadInput::None},
+			{"fast_forward", "Fast forward", PadInput::None},
+			{"rewind", "Rewind", PadInput::None},
 		}};
 
 		constexpr const char* kInputNames[] = {"", "Cross", "Circle", "Square", "Triangle", "L1", "R1", "L2", "R2", "L3", "R3",
@@ -73,7 +76,7 @@ namespace ps5azahar
 	std::vector<ps5emu::ButtonMapping> ListMappings(const ps5settings::N3ds& settings)
 	{
 		std::vector<ps5emu::ButtonMapping> mappings;
-		for (size_t i = 0; i < kButtons.size(); i++)
+		for (size_t i = 0; i < (size_t)Button::Rewind; i++)
 			mappings.push_back({kButtons[i].label, InputName(MappedInput(settings, (Button)i))});
 		return mappings;
 	}
@@ -81,7 +84,8 @@ namespace ps5azahar
 	const std::vector<Button>& DsButtons()
 	{
 		static const std::vector<Button> buttons = {Button::A, Button::B, Button::X, Button::Y, Button::L, Button::R, Button::Start, Button::Select,
-			Button::Up, Button::Down, Button::Left, Button::Right, Button::CircleUp, Button::CircleDown, Button::CircleLeft, Button::CircleRight};
+			Button::Up, Button::Down, Button::Left, Button::Right, Button::CircleUp, Button::CircleDown, Button::CircleLeft, Button::CircleRight,
+			Button::TouchAtCursor, Button::FastForward, Button::Rewind};
 		return buttons;
 	}
 

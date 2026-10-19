@@ -1740,7 +1740,7 @@ msgstr "metaフォルダーにWii Uのタイトルの情報（meta.xml）があ�
 msgid "This is where it is installed already."
 msgstr "すでにここにインストールされています。"
 
-#: port/app/install.cpp:451 port/azahar/core.cpp:926
+#: port/app/install.cpp:451 port/azahar/core.cpp:952
 #, menu
 msgid "An install is already running."
 msgstr "すでにインストールを実行中です。"
@@ -2545,50 +2545,50 @@ msgstr "3DSのゲームが停止しました：{0}"
 msgid "A CIA file is installed, not played: install it from Settings > Game files, then start the game."
 msgstr "CIAファイルはプレイするものではなく、インストールするものです。「設定 > ゲームファイル」からインストールしてから、ゲームを起動してください。"
 
-#: port/azahar/core.cpp:716
+#: port/azahar/core.cpp:742
 #, menu
 msgid "Azahar did not start: {0}"
 msgstr "Azaharが起動しませんでした：{0}"
 
-#: port/azahar/core.cpp:725
+#: port/azahar/core.cpp:751
 #, menu
 msgid "Artic Setup did not finish: the Artic Setup Tool on the 3DS says why. If it says nothing, check the 3DS's address, and that the 3DS and the PS5 are on the same network."
 msgstr "Artic Setupが完了しませんでした。理由は3DSのArtic Setup Toolに表示されます。何も表示されない場合は、3DSのアドレスと、3DSとPS5が同じネットワークにあるかを確認してください。"
 
 #. why an Artic Base game did not start, when the 3DS had answered; Y is the 3DS's button
-#: port/azahar/core.cpp:731
+#: port/azahar/core.cpp:757
 #, menu
 msgid "The 3DS answered, then Artic Base stopped before the game started. On the 3DS, press Y in the Artic Base app to restart its server, then connect again. If it stops again, Settings > Diagnostics > Copy logs to USB copies Azahar's log, which says what failed."
 msgstr "3DSは応答しましたが、ゲームが始まる前にArtic Baseが停止しました。3DSのArtic BaseアプリでYを押してサーバーを再起動し、もう一度接続してください。再び停止する場合は、「設定 > 診断 > ログをUSBドライブにコピー」でAzaharのログをコピーできます。何が失敗したかが記録されています。"
 
 #. the PS5's notification as a 3DS game starts
-#: port/azahar/core.cpp:799
+#: port/azahar/core.cpp:825
 #, menu
 msgid "Touchpad click + Options: the in-game menu. A touchpad click alone: the bottom screen"
 msgstr "タッチパッドボタン＋オプションボタン：ゲーム内メニュー。タッチパッドボタンだけ：下画面"
 
 #. why a CIA file could not be installed, after "It could not be installed:"
-#: port/azahar/core.cpp:995
+#: port/azahar/core.cpp:1021
 #, menu
 msgid "it is encrypted, the CIA or the game inside it. Azahar installs only fully decrypted CIA files: decrypt it with GodMode9 on a 3DS, or play the game's decrypted .3ds or .cci file instead"
 msgstr "CIAかその中のゲームが暗号化されています。Azaharがインストールできるのは完全に復号したCIAファイルだけです。3DSのGodMode9で復号するか、ゲームの復号済み.3dsか.cciファイルをプレイしてください"
 
-#: port/azahar/core.cpp:998
+#: port/azahar/core.cpp:1024
 #, menu
 msgid "it is not a CIA file, or it is damaged (check the file's size)"
 msgstr "CIAファイルではないか、破損しています（ファイルのサイズを確認してください）"
 
-#: port/azahar/core.cpp:1000
+#: port/azahar/core.cpp:1026
 #, menu
 msgid "the file could not be read"
 msgstr "ファイルを読み込めませんでした"
 
-#: port/azahar/core.cpp:1002
+#: port/azahar/core.cpp:1028
 #, menu
 msgid "Azahar stopped part-way through; /data/ps5cemu/azahar/log/azahar_log.txt says why"
 msgstr "Azaharが途中で停止しました。理由は/data/ps5cemu/azahar/log/azahar_log.txtにあります"
 
-#: port/azahar/core.cpp:1004
+#: port/azahar/core.cpp:1030
 #, menu
 msgid "it is not a CIA Azahar can install"
 msgstr "AzaharがインストールできるCIAではありません"
@@ -2882,6 +2882,21 @@ msgstr "GamePadの画面を表示"
 msgctxt "button"
 msgid "None"
 msgstr "なし"
+
+#: port/frontend/actions.cpp:469
+msgctxt "button"
+msgid "Touch at the cursor"
+msgstr "カーソル位置をタッチ"
+
+#: port/frontend/actions.cpp:469
+msgctxt "button"
+msgid "Fast forward"
+msgstr "早送り"
+
+#: port/frontend/actions.cpp:469
+msgctxt "button"
+msgid "Rewind"
+msgstr "巻き戻し"
 
 #. Eden's rail: its sections
 #: port/frontend/shell/classic.cpp:47 port/frontend/shell/eden.cpp:91 port/frontend/shell/experiments.cpp:69
@@ -6636,39 +6651,39 @@ msgstr "過去最大のアップデートをひと目で。詳しくはGitHubの
 msgid "This game"
 msgstr "このゲーム"
 
-#: port/main_ps5.cpp:129
+#: port/main_ps5.cpp:131
 msgid "Firmware {0}"
 msgstr "システムソフトウェア{0}"
 
-#: port/main_ps5.cpp:131
+#: port/main_ps5.cpp:133
 msgid "Logs: {0}, {1}/log.txt"
 msgstr "ログ：{0}、{1}/log.txt"
 
-#: port/main_ps5.cpp:132
+#: port/main_ps5.cpp:134
 msgid "Boot log not written (/data is unreachable)"
 msgstr "起動ログを書き込めませんでした（/dataにアクセスできません）"
 
-#: port/main_ps5.cpp:411
+#: port/main_ps5.cpp:422
 msgid "PS5CEMU-HAR cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5CEMU-HAR."
 msgstr "PS5CEMU-HARは/dataにアクセスできません。アプリのジェイルブレイクリストにPPSA99360を入れたHENかelfldrを読み込んでから、PS5CEMU-HARを再起動してください。"
 
-#: port/main_ps5.cpp:440
+#: port/main_ps5.cpp:451
 msgid "This session: Azahar (3DS); Cemu's emulated Wii U is not started"
 msgstr "今回のセッション：Azahar（3DS）。CemuのエミュレートするWii Uは起動していません"
 
-#: port/main_ps5.cpp:454
+#: port/main_ps5.cpp:465
 msgid "This session: Cemu (Wii U); Azahar's core is not started"
 msgstr "今回のセッション：Cemu（Wii U）。Azaharのコアは起動していません"
 
-#: port/main_ps5.cpp:462
+#: port/main_ps5.cpp:473
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "JITメモリーがありません：Wii Uのゲームはずっと遅いインタープリターで動作します。PPSA99360はHENのアプリのジェイルブレイクリストに入っていますか？"
 
-#: port/main_ps5.cpp:490
+#: port/main_ps5.cpp:506
 msgid "The launcher could not start. The boot log in /data/ps5cemu/logs says why."
 msgstr "ランチャーを起動できませんでした。理由は/data/ps5cemu/logsの起動ログにあります。"
 
-#: port/main_ps5.cpp:491
+#: port/main_ps5.cpp:507
 msgid "The launcher could not start: {0}. The boot log in /data/ps5cemu/logs has more."
 msgstr "ランチャーを起動できませんでした：{0}。詳しくは/data/ps5cemu/logsの起動ログにあります。"
 

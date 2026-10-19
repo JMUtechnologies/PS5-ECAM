@@ -172,6 +172,15 @@ software you own, and don't download or share them.
 | Touchpad click + L1 | Swap the screens |
 | Touchpad click + R1 | Next screen layout |
 
+**Settings > Controls > Buttons** on the 3DS and DS sides can also give a DualSense button one of
+these, held (none has a button until you give it one):
+
+- **Touch at the cursor:** touches the touch screen where the touchpad's cursor is, as a click of
+  the touchpad does. Move your finger on the touchpad and hold the button to draw.
+- **Fast forward:** the game runs as fast as it can while held.
+- **Rewind** (DS): the game runs back, up to the last 15 seconds, while held, and goes on from
+  there when you let go. The 3DS has no rewind.
+
 The in-game menu opens on the left in the launcher's look: the game's cover and badges, four quick
 actions along the top, then the settings, each category showing its current value. Up and Down
 move (past the list's top onto the quick actions), Right or Cross opens a category, Left and Right

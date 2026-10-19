@@ -463,7 +463,10 @@ namespace ps5actions
 			TrMarkC("button", "Nunchuk stick up"), TrMarkC("button", "Nunchuk stick down"), TrMarkC("button", "Nunchuk stick left"),
 			TrMarkC("button", "Nunchuk stick right"), TrMarkC("button", "Nunchuk C"), TrMarkC("button", "Nunchuk Z"), TrMarkC("button", "Home"),
 			TrMarkC("button", "Start"), TrMarkC("button", "Select"), TrMarkC("button", "+ (Start)"), TrMarkC("button", "- (Select)"),
-			TrMarkC("button", "Blow into the mic"), TrMarkC("button", "Show the GamePad's screen"), TrMarkC("button", "None")};
+			TrMarkC("button", "Blow into the mic"), TrMarkC("button", "Show the GamePad's screen"), TrMarkC("button", "None"),
+			// tr: the 3DS's and the DS's actions a DualSense button can be given: a touch of the touch screen
+			// where the touchpad's cursor is, the game run fast while it is held, the game run back
+			TrMarkC("button", "Touch at the cursor"), TrMarkC("button", "Fast forward"), TrMarkC("button", "Rewind")};
 		(void)kNames;
 		return english.size() <= 3 ? english : TrC("button", english);
 	}

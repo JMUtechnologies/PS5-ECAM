@@ -1743,7 +1743,7 @@ msgstr "meta klasörü bir Wii U başlığını tanımlamıyor (meta.xml)."
 msgid "This is where it is installed already."
 msgstr "Zaten buraya kurulu."
 
-#: port/app/install.cpp:451 port/azahar/core.cpp:926
+#: port/app/install.cpp:451 port/azahar/core.cpp:952
 #, menu
 msgid "An install is already running."
 msgstr "Bir kurulum zaten sürüyor."
@@ -2548,50 +2548,50 @@ msgstr "3DS oyunu durdu: {0}"
 msgid "A CIA file is installed, not played: install it from Settings > Game files, then start the game."
 msgstr "CIA dosyası oynanmaz, kurulur: Ayarlar > Oyun dosyaları’ndan kurun, sonra oyunu başlatın."
 
-#: port/azahar/core.cpp:716
+#: port/azahar/core.cpp:742
 #, menu
 msgid "Azahar did not start: {0}"
 msgstr "Azahar başlamadı: {0}"
 
-#: port/azahar/core.cpp:725
+#: port/azahar/core.cpp:751
 #, menu
 msgid "Artic Setup did not finish: the Artic Setup Tool on the 3DS says why. If it says nothing, check the 3DS's address, and that the 3DS and the PS5 are on the same network."
 msgstr "Artic Setup tamamlanmadı: nedenini 3DS’teki Artic Setup Tool gösterir. Bir şey göstermiyorsa 3DS’in adresini ve 3DS ile PS5’in aynı ağda olduğunu kontrol edin."
 
 #. why an Artic Base game did not start, when the 3DS had answered; Y is the 3DS's button
-#: port/azahar/core.cpp:731
+#: port/azahar/core.cpp:757
 #, menu
 msgid "The 3DS answered, then Artic Base stopped before the game started. On the 3DS, press Y in the Artic Base app to restart its server, then connect again. If it stops again, Settings > Diagnostics > Copy logs to USB copies Azahar's log, which says what failed."
 msgstr "3DS yanıt verdi, ancak oyun başlamadan Artic Base durdu. 3DS’te Artic Base uygulamasında Y’ye basarak sunucusunu yeniden başlatın, sonra yeniden bağlanın. Yine durursa Ayarlar > Tanılama > Günlükleri USB’ye kopyala, Azahar’ın neyin başarısız olduğunu gösteren günlüğünü kopyalar."
 
 #. the PS5's notification as a 3DS game starts
-#: port/azahar/core.cpp:799
+#: port/azahar/core.cpp:825
 #, menu
 msgid "Touchpad click + Options: the in-game menu. A touchpad click alone: the bottom screen"
 msgstr "Dokunmatik yüzey tıklaması + OPTIONS: oyun içi menü. Yalnızca dokunmatik yüzey tıklaması: alt ekran"
 
 #. why a CIA file could not be installed, after "It could not be installed:"
-#: port/azahar/core.cpp:995
+#: port/azahar/core.cpp:1021
 #, menu
 msgid "it is encrypted, the CIA or the game inside it. Azahar installs only fully decrypted CIA files: decrypt it with GodMode9 on a 3DS, or play the game's decrypted .3ds or .cci file instead"
 msgstr "şifreli; CIA’nın kendisi ya da içindeki oyun. Azahar yalnızca şifresi tamamen çözülmüş CIA dosyalarını kurar: şifresini bir 3DS’te GodMode9 ile çözün ya da onun yerine oyunun şifresi çözülmüş .3ds veya .cci dosyasını oynayın"
 
-#: port/azahar/core.cpp:998
+#: port/azahar/core.cpp:1024
 #, menu
 msgid "it is not a CIA file, or it is damaged (check the file's size)"
 msgstr "bu bir CIA dosyası değil ya da bozuk (dosya boyutunu kontrol edin)"
 
-#: port/azahar/core.cpp:1000
+#: port/azahar/core.cpp:1026
 #, menu
 msgid "the file could not be read"
 msgstr "dosya okunamadı"
 
-#: port/azahar/core.cpp:1002
+#: port/azahar/core.cpp:1028
 #, menu
 msgid "Azahar stopped part-way through; /data/ps5cemu/azahar/log/azahar_log.txt says why"
 msgstr "Azahar yarıda durdu; nedeni /data/ps5cemu/azahar/log/azahar_log.txt dosyasında"
 
-#: port/azahar/core.cpp:1004
+#: port/azahar/core.cpp:1030
 #, menu
 msgid "it is not a CIA Azahar can install"
 msgstr "bu, Azahar’ın kurabileceği bir CIA değil"
@@ -2887,6 +2887,21 @@ msgstr "GamePad ekranını göster"
 msgctxt "button"
 msgid "None"
 msgstr "Yok"
+
+#: port/frontend/actions.cpp:469
+msgctxt "button"
+msgid "Touch at the cursor"
+msgstr "İmleç konumuna dokun"
+
+#: port/frontend/actions.cpp:469
+msgctxt "button"
+msgid "Fast forward"
+msgstr "Hızlı ileri sar"
+
+#: port/frontend/actions.cpp:469
+msgctxt "button"
+msgid "Rewind"
+msgstr "Geri sar"
 
 #. Eden's rail: its sections
 #: port/frontend/shell/classic.cpp:47 port/frontend/shell/eden.cpp:91 port/frontend/shell/experiments.cpp:69
@@ -6677,39 +6692,39 @@ msgstr "Şimdiye kadarki en büyük güncelleme, bir bakışta. GitHub’daki s�
 msgid "This game"
 msgstr "Bu oyun"
 
-#: port/main_ps5.cpp:129
+#: port/main_ps5.cpp:131
 msgid "Firmware {0}"
 msgstr "Bellenim {0}"
 
-#: port/main_ps5.cpp:131
+#: port/main_ps5.cpp:133
 msgid "Logs: {0}, {1}/log.txt"
 msgstr "Günlükler: {0}, {1}/log.txt"
 
-#: port/main_ps5.cpp:132
+#: port/main_ps5.cpp:134
 msgid "Boot log not written (/data is unreachable)"
 msgstr "Başlatma günlüğü yazılmadı (/data erişilemez)"
 
-#: port/main_ps5.cpp:411
+#: port/main_ps5.cpp:422
 msgid "PS5CEMU-HAR cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5CEMU-HAR."
 msgstr "PS5CEMU-HAR /data’ya erişemiyor. Uygulama jailbreak listesinde PPSA99360 olan bir HEN ya da elfldr yükleyin, sonra PS5CEMU-HAR’ı yeniden başlatın."
 
-#: port/main_ps5.cpp:440
+#: port/main_ps5.cpp:451
 msgid "This session: Azahar (3DS); Cemu's emulated Wii U is not started"
 msgstr "Bu oturum: Azahar (3DS); Cemu’nun emüle edilen Wii U’su başlatılmadı"
 
-#: port/main_ps5.cpp:454
+#: port/main_ps5.cpp:465
 msgid "This session: Cemu (Wii U); Azahar's core is not started"
 msgstr "Bu oturum: Cemu (Wii U); Azahar’ın çekirdeği başlatılmadı"
 
-#: port/main_ps5.cpp:462
+#: port/main_ps5.cpp:473
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "JIT bellek yok: Wii U oyunları yorumlayıcıda, çok daha yavaş çalışır. PPSA99360 HEN’inizin uygulama jailbreak listesinde mi?"
 
-#: port/main_ps5.cpp:490
+#: port/main_ps5.cpp:506
 msgid "The launcher could not start. The boot log in /data/ps5cemu/logs says why."
 msgstr "Başlatıcı başlayamadı. Nedeni /data/ps5cemu/logs içindeki başlatma günlüğünde."
 
-#: port/main_ps5.cpp:491
+#: port/main_ps5.cpp:507
 msgid "The launcher could not start: {0}. The boot log in /data/ps5cemu/logs has more."
 msgstr "Başlatıcı başlatılamadı: {0}. /data/ps5cemu/logs içindeki açılış günlüğünde daha fazlası var."
 

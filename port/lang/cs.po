@@ -1746,7 +1746,7 @@ msgstr "Jeho složka meta nepopisuje titul pro Wii U (meta.xml)."
 msgid "This is where it is installed already."
 msgstr "Tady už je nainstalovaný."
 
-#: port/app/install.cpp:451 port/azahar/core.cpp:926
+#: port/app/install.cpp:451 port/azahar/core.cpp:952
 #, menu
 msgid "An install is already running."
 msgstr "Instalace už probíhá."
@@ -2551,50 +2551,50 @@ msgstr "Hra pro 3DS se zastavila: {0}"
 msgid "A CIA file is installed, not played: install it from Settings > Game files, then start the game."
 msgstr "Soubor CIA se instaluje, nehraje: nainstalujte ho v Nastavení > Herní soubory a pak spusťte hru."
 
-#: port/azahar/core.cpp:716
+#: port/azahar/core.cpp:742
 #, menu
 msgid "Azahar did not start: {0}"
 msgstr "Azahar se nespustil: {0}"
 
-#: port/azahar/core.cpp:725
+#: port/azahar/core.cpp:751
 #, menu
 msgid "Artic Setup did not finish: the Artic Setup Tool on the 3DS says why. If it says nothing, check the 3DS's address, and that the 3DS and the PS5 are on the same network."
 msgstr "Artic Setup nebyl dokončen: Artic Setup Tool na 3DS ukazuje proč. Pokud neukazuje nic, zkontrolujte adresu 3DS a zda jsou 3DS a PS5 ve stejné síti."
 
 #. why an Artic Base game did not start, when the 3DS had answered; Y is the 3DS's button
-#: port/azahar/core.cpp:731
+#: port/azahar/core.cpp:757
 #, menu
 msgid "The 3DS answered, then Artic Base stopped before the game started. On the 3DS, press Y in the Artic Base app to restart its server, then connect again. If it stops again, Settings > Diagnostics > Copy logs to USB copies Azahar's log, which says what failed."
 msgstr "3DS odpověděla, ale pak se Artic Base zastavil dřív, než hra začala. Na 3DS stiskněte v aplikaci Artic Base tlačítko Y, aby se její server restartoval, a pak se připojte znovu. Pokud se zastaví znovu, Nastavení > Diagnostika > Kopírovat protokoly na USB zkopíruje protokol Azaharu, který uvádí, co selhalo."
 
 #. the PS5's notification as a 3DS game starts
-#: port/azahar/core.cpp:799
+#: port/azahar/core.cpp:825
 #, menu
 msgid "Touchpad click + Options: the in-game menu. A touchpad click alone: the bottom screen"
 msgstr "Kliknutí na dotykovou plochu + OPTIONS: herní nabídka. Jen kliknutí na dotykovou plochu: dolní obrazovka"
 
 #. why a CIA file could not be installed, after "It could not be installed:"
-#: port/azahar/core.cpp:995
+#: port/azahar/core.cpp:1021
 #, menu
 msgid "it is encrypted, the CIA or the game inside it. Azahar installs only fully decrypted CIA files: decrypt it with GodMode9 on a 3DS, or play the game's decrypted .3ds or .cci file instead"
 msgstr "je zašifrovaný, CIA nebo hra v něm. Azahar instaluje jen úplně dešifrované soubory CIA: dešifrujte ho pomocí GodMode9 na 3DS, nebo místo toho hrajte dešifrovaný soubor hry .3ds nebo .cci"
 
-#: port/azahar/core.cpp:998
+#: port/azahar/core.cpp:1024
 #, menu
 msgid "it is not a CIA file, or it is damaged (check the file's size)"
 msgstr "není to soubor CIA, nebo je poškozený (zkontrolujte velikost souboru)"
 
-#: port/azahar/core.cpp:1000
+#: port/azahar/core.cpp:1026
 #, menu
 msgid "the file could not be read"
 msgstr "soubor se nepodařilo přečíst"
 
-#: port/azahar/core.cpp:1002
+#: port/azahar/core.cpp:1028
 #, menu
 msgid "Azahar stopped part-way through; /data/ps5cemu/azahar/log/azahar_log.txt says why"
 msgstr "Azahar se zastavil v půlce; důvod je v /data/ps5cemu/azahar/log/azahar_log.txt"
 
-#: port/azahar/core.cpp:1004
+#: port/azahar/core.cpp:1030
 #, menu
 msgid "it is not a CIA Azahar can install"
 msgstr "není to CIA, který Azahar dokáže nainstalovat"
@@ -2892,6 +2892,21 @@ msgstr "Ukázat obrazovku GamePadu"
 msgctxt "button"
 msgid "None"
 msgstr "Žádné"
+
+#: port/frontend/actions.cpp:469
+msgctxt "button"
+msgid "Touch at the cursor"
+msgstr "Dotyk u kurzoru"
+
+#: port/frontend/actions.cpp:469
+msgctxt "button"
+msgid "Fast forward"
+msgstr "Rychle vpřed"
+
+#: port/frontend/actions.cpp:469
+msgctxt "button"
+msgid "Rewind"
+msgstr "Přetočit zpět"
 
 #. Eden's rail: its sections
 #: port/frontend/shell/classic.cpp:47 port/frontend/shell/eden.cpp:91 port/frontend/shell/experiments.cpp:69
@@ -6718,39 +6733,39 @@ msgstr "Největší aktualizace vůbec, v kostce. Poznámky k vydání na GitHub
 msgid "This game"
 msgstr "Tato hra"
 
-#: port/main_ps5.cpp:129
+#: port/main_ps5.cpp:131
 msgid "Firmware {0}"
 msgstr "Firmware {0}"
 
-#: port/main_ps5.cpp:131
+#: port/main_ps5.cpp:133
 msgid "Logs: {0}, {1}/log.txt"
 msgstr "Protokoly: {0}, {1}/log.txt"
 
-#: port/main_ps5.cpp:132
+#: port/main_ps5.cpp:134
 msgid "Boot log not written (/data is unreachable)"
 msgstr "Protokol spuštění nezapsán (/data není dostupný)"
 
-#: port/main_ps5.cpp:411
+#: port/main_ps5.cpp:422
 msgid "PS5CEMU-HAR cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5CEMU-HAR."
 msgstr "PS5CEMU-HAR nemá přístup k /data. Načtěte HEN s PPSA99360 v jeho seznamu app jailbreak, nebo elfldr, a pak PS5CEMU-HAR spusťte znovu."
 
-#: port/main_ps5.cpp:440
+#: port/main_ps5.cpp:451
 msgid "This session: Azahar (3DS); Cemu's emulated Wii U is not started"
 msgstr "Tato relace: Azahar (3DS); emulované Wii U v Cemu není spuštěné"
 
-#: port/main_ps5.cpp:454
+#: port/main_ps5.cpp:465
 msgid "This session: Cemu (Wii U); Azahar's core is not started"
 msgstr "Tato relace: Cemu (Wii U); jádro Azaharu není spuštěné"
 
-#: port/main_ps5.cpp:462
+#: port/main_ps5.cpp:473
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "Žádná paměť JIT: hry pro Wii U běží v interpretu, mnohem pomaleji. Je PPSA99360 v seznamu app jailbreak vašeho HEN?"
 
-#: port/main_ps5.cpp:490
+#: port/main_ps5.cpp:506
 msgid "The launcher could not start. The boot log in /data/ps5cemu/logs says why."
 msgstr "Spouštěč se nepodařilo spustit. Důvod je v protokolu spuštění v /data/ps5cemu/logs."
 
-#: port/main_ps5.cpp:491
+#: port/main_ps5.cpp:507
 msgid "The launcher could not start: {0}. The boot log in /data/ps5cemu/logs has more."
 msgstr "Spouštěč se nepodařilo spustit: {0}. Víc řekne spouštěcí protokol v /data/ps5cemu/logs."
 

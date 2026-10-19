@@ -1743,7 +1743,7 @@ msgstr "Dess meta-mapp beskriver ingen Wii U-titel (meta.xml)."
 msgid "This is where it is installed already."
 msgstr "Den är redan installerad här."
 
-#: port/app/install.cpp:451 port/azahar/core.cpp:926
+#: port/app/install.cpp:451 port/azahar/core.cpp:952
 #, menu
 msgid "An install is already running."
 msgstr "En installation pågår redan."
@@ -2548,50 +2548,50 @@ msgstr "3DS-spelet stannade: {0}"
 msgid "A CIA file is installed, not played: install it from Settings > Game files, then start the game."
 msgstr "En CIA-fil installeras, den spelas inte: installera den från Inställningar > Spelfiler och starta sedan spelet."
 
-#: port/azahar/core.cpp:716
+#: port/azahar/core.cpp:742
 #, menu
 msgid "Azahar did not start: {0}"
 msgstr "Azahar startade inte: {0}"
 
-#: port/azahar/core.cpp:725
+#: port/azahar/core.cpp:751
 #, menu
 msgid "Artic Setup did not finish: the Artic Setup Tool on the 3DS says why. If it says nothing, check the 3DS's address, and that the 3DS and the PS5 are on the same network."
 msgstr "Artic Setup slutfördes inte: Artic Setup Tool på 3DS:en säger varför. Säger den inget, kontrollera 3DS:ens adress och att 3DS:en och PS5:an är på samma nätverk."
 
 #. why an Artic Base game did not start, when the 3DS had answered; Y is the 3DS's button
-#: port/azahar/core.cpp:731
+#: port/azahar/core.cpp:757
 #, menu
 msgid "The 3DS answered, then Artic Base stopped before the game started. On the 3DS, press Y in the Artic Base app to restart its server, then connect again. If it stops again, Settings > Diagnostics > Copy logs to USB copies Azahar's log, which says what failed."
 msgstr "3DS:en svarade, men sedan stannade Artic Base innan spelet startade. Tryck på Y i Artic Base-appen på 3DS:en för att starta om dess server och anslut sedan igen. Om det stannar igen kopierar Inställningar > Diagnostik > Kopiera loggar till USB Azahars logg, som visar vad som misslyckades."
 
 #. the PS5's notification as a 3DS game starts
-#: port/azahar/core.cpp:799
+#: port/azahar/core.cpp:825
 #, menu
 msgid "Touchpad click + Options: the in-game menu. A touchpad click alone: the bottom screen"
 msgstr "Styrplattsklick + OPTIONS: spelmenyn. Bara ett styrplattsklick: den nedre skärmen"
 
 #. why a CIA file could not be installed, after "It could not be installed:"
-#: port/azahar/core.cpp:995
+#: port/azahar/core.cpp:1021
 #, menu
 msgid "it is encrypted, the CIA or the game inside it. Azahar installs only fully decrypted CIA files: decrypt it with GodMode9 on a 3DS, or play the game's decrypted .3ds or .cci file instead"
 msgstr "den är krypterad, själva CIA-filen eller spelet i den. Azahar installerar bara helt dekrypterade CIA-filer: dekryptera den med GodMode9 på en 3DS eller spela spelets dekrypterade .3ds- eller .cci-fil i stället"
 
-#: port/azahar/core.cpp:998
+#: port/azahar/core.cpp:1024
 #, menu
 msgid "it is not a CIA file, or it is damaged (check the file's size)"
 msgstr "det är ingen CIA-fil, eller så är den skadad (kontrollera filens storlek)"
 
-#: port/azahar/core.cpp:1000
+#: port/azahar/core.cpp:1026
 #, menu
 msgid "the file could not be read"
 msgstr "filen kunde inte läsas"
 
-#: port/azahar/core.cpp:1002
+#: port/azahar/core.cpp:1028
 #, menu
 msgid "Azahar stopped part-way through; /data/ps5cemu/azahar/log/azahar_log.txt says why"
 msgstr "Azahar stannade halvvägs; /data/ps5cemu/azahar/log/azahar_log.txt säger varför"
 
-#: port/azahar/core.cpp:1004
+#: port/azahar/core.cpp:1030
 #, menu
 msgid "it is not a CIA Azahar can install"
 msgstr "det är ingen CIA som Azahar kan installera"
@@ -2887,6 +2887,21 @@ msgstr "Visa GamePadens skärm"
 msgctxt "button"
 msgid "None"
 msgstr "Ingen"
+
+#: port/frontend/actions.cpp:469
+msgctxt "button"
+msgid "Touch at the cursor"
+msgstr "Tryck vid markören"
+
+#: port/frontend/actions.cpp:469
+msgctxt "button"
+msgid "Fast forward"
+msgstr "Snabbspola"
+
+#: port/frontend/actions.cpp:469
+msgctxt "button"
+msgid "Rewind"
+msgstr "Spola tillbaka"
 
 #. Eden's rail: its sections
 #: port/frontend/shell/classic.cpp:47 port/frontend/shell/eden.cpp:91 port/frontend/shell/experiments.cpp:69
@@ -6677,39 +6692,39 @@ msgstr "Den största uppdateringen hittills, i korthet. Versionsanteckningarna p
 msgid "This game"
 msgstr "Det här spelet"
 
-#: port/main_ps5.cpp:129
+#: port/main_ps5.cpp:131
 msgid "Firmware {0}"
 msgstr "Firmware {0}"
 
-#: port/main_ps5.cpp:131
+#: port/main_ps5.cpp:133
 msgid "Logs: {0}, {1}/log.txt"
 msgstr "Loggar: {0}, {1}/log.txt"
 
-#: port/main_ps5.cpp:132
+#: port/main_ps5.cpp:134
 msgid "Boot log not written (/data is unreachable)"
 msgstr "Startloggen skrevs inte (/data går inte att nå)"
 
-#: port/main_ps5.cpp:411
+#: port/main_ps5.cpp:422
 msgid "PS5CEMU-HAR cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5CEMU-HAR."
 msgstr "PS5CEMU-HAR når inte /data. Ladda en HEN med PPSA99360 i sin app-jailbreak-lista, eller elfldr, och starta sedan om PS5CEMU-HAR."
 
-#: port/main_ps5.cpp:440
+#: port/main_ps5.cpp:451
 msgid "This session: Azahar (3DS); Cemu's emulated Wii U is not started"
 msgstr "Den här sessionen: Azahar (3DS); Cemus emulerade Wii U har inte startats"
 
-#: port/main_ps5.cpp:454
+#: port/main_ps5.cpp:465
 msgid "This session: Cemu (Wii U); Azahar's core is not started"
 msgstr "Den här sessionen: Cemu (Wii U); Azahars kärna har inte startats"
 
-#: port/main_ps5.cpp:462
+#: port/main_ps5.cpp:473
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "Inget JIT-minne: Wii U-spel körs i tolken, mycket långsammare. Finns PPSA99360 i din HEN:s app-jailbreak-lista?"
 
-#: port/main_ps5.cpp:490
+#: port/main_ps5.cpp:506
 msgid "The launcher could not start. The boot log in /data/ps5cemu/logs says why."
 msgstr "Startprogrammet kunde inte starta. Startloggen i /data/ps5cemu/logs säger varför."
 
-#: port/main_ps5.cpp:491
+#: port/main_ps5.cpp:507
 msgid "The launcher could not start: {0}. The boot log in /data/ps5cemu/logs has more."
 msgstr "Startprogrammet kunde inte starta: {0}. Startloggen i /data/ps5cemu/logs har mer."
 
