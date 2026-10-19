@@ -11,6 +11,7 @@
 
 #include "app/achievements.h"
 #include "app/emulator.h"
+#include "app/file_modes.h"
 #include "app/forwarders.h"
 #include "app/lang.h"
 #include "app/mods.h"
@@ -43,6 +44,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <string>
+#include <sys/stat.h>
 #include <unistd.h>
 
 // Cemu's recompiler: the exact stfs conversion, or cvtsd2ss (Cemu patch 0024)
@@ -216,6 +218,10 @@ void requireConsole() {}
 
 int main(int argc, char* argv[])
 {
+	// before anything is written: every file and folder the app makes is anyone's to read and write
+	// (0666, 0777), whichever user it runs as, for the next session and the console's FTP service
+	// (app/file_modes.h, #55, #58)
+	umask(0);
 	ps5log::Line("[main] PS5CEMU-HAR {} starting (Cemu at {}, Azahar at {}, melonDS at {})", PS5CEMU_VERSION, PS5CEMU_CEMU_COMMIT,
 		PS5CEMU_AZAHAR_COMMIT, PS5CEMU_MELONDS_COMMIT);
 	// before any thread starts: the HEN jailbreaks the process as it is. The game folders are read
@@ -462,6 +468,10 @@ int main(int argc, char* argv[])
 			ps5notify::Send(ps5lang::Tr("No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"));
 	};
 
+	// what earlier builds, and sessions as another user, made in /data/ps5cemu, opened as the app's
+	// files now are (the umask above), until all of it is: at each start, as a game stops the walk
+	if (privileges.filesystem)
+		ps5filemodes::Start();
 	if (freshStart && privileges.filesystem)
 		ps5update::Start();
 	// how long the app took to get here, from the PS5 starting it: the launcher's first frame follows
@@ -478,6 +488,7 @@ int main(int argc, char* argv[])
 		ps5packs::Stop();
 		ps5mods::Stop();
 		ps5forwarders::Stop();
+		ps5filemodes::Stop();
 		ps5log::Line("[main] the launcher's work stopped in {} ms", (sceKernelGetProcessTime() - stopping) / 1000);
 		if (outcome != ps5shell::Outcome::Chosen || !choice)
 		{

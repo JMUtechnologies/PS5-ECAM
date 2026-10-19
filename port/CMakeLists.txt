@@ -142,6 +142,8 @@ add_library(CemuPS5 STATIC
 	app/forwarders.cpp
 	app/forwarders.h
 	"${PS5CEMU_DEPS}/ps5-forwarder-format/src/psfwd.c"
+	app/file_modes.cpp
+	app/file_modes.h
 	app/paths.h
 	app/side_menu.h
 	app/tga.h
@@ -248,6 +250,7 @@ set_source_files_properties(
 	app/keyboard.cpp
 	app/forwarders.cpp
 	"${PS5CEMU_DEPS}/ps5-forwarder-format/src/psfwd.c"
+	app/file_modes.cpp
 	app/netfs.cpp
 	app/boxart.cpp
 	app/saves.cpp

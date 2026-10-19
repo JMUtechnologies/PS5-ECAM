@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Mon, 19 Oct 2026 04:00:00 +0000
+Subject: [PATCH] PS5: folders anyone can write
+
+Azahar made its folders 0755: the 3DS's storage, each installed title's
+folders in sdmc, the shader cache's. The app runs as root when the HEN
+jailbreaks it and as its own user when it needs no HEN, and the
+console's FTP service runs as another user still, so what one of them
+made the others could not write: a game whose saves and shader cache
+could not be written started to a black screen (#55), and installed
+titles could not be deleted over FTP or from a file manager (#58).
+CreateDir makes them 0777 on the PS5, as the port's own folders are (its
+umask is 0, so the files Azahar writes are 0666).
+---
+ src/common/file_util.cpp | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/src/common/file_util.cpp b/src/common/file_util.cpp
+index 3168a26..efe7a48 100644
+--- a/src/common/file_util.cpp
++++ b/src/common/file_util.cpp
+@@ -328,7 +328,16 @@ bool CreateDir(const std::string& path) {
+     }
+ 
+ #else
+-    if (mkdir(path.c_str(), 0755) == 0)
++#ifdef __PROSPERO__
++    // Anyone's to write, as the port's own folders are (its umask is 0): the app runs as root with
++    // the HEN's jailbreak and as its own user without, and the console's FTP service as another,
++    // and a folder one of them made 0755 kept the others out: a game's saves and shader cache
++    // (#55), installed titles no file manager could delete (#58)
++    constexpr mode_t mode = 0777;
++#else
++    constexpr mode_t mode = 0755;
++#endif
++    if (mkdir(path.c_str(), mode) == 0)
+         return true;
+ 
+     int err = errno;
