@@ -92,3 +92,13 @@ describes the rest (presets, patches, shaders).
 3DS games take LayeredFS mods, as Azahar on a PC does: put a mod's `romfs/` and `exefs/` folders in
 `/data/ps5cemu/azahar/load/mods/<title ID>/`. Texture packs go in
 `/data/ps5cemu/azahar/load/textures/<title ID>/`, with **Settings > Graphics > Custom textures** on.
+With the data on the app's drive, these folders are in its `PS5CEMU-HAR-data` folder instead.
+
+- **Names as Azahar writes them.** The PS5 tells capitals from small letters: `load`, `mods`,
+  `romfs` and `exefs` in small letters, the title ID in 16 digits with capital letters (it starts
+  `00040000`). A folder named otherwise is not read, and the game starts without the mod.
+- **A mod for your game's region and version.** A mod's `exefs/` (`code.ips`, `code.bps`,
+  `code.bin`, `exheader.bin`) patches the game's code, which differs between regions and versions:
+  one made for another stops the game as it starts, and the app comes back to the library saying the
+  game stopped. Use the mod's build for your copy (and its update, installed from a CIA, when the mod
+  needs it). Without its `exefs/` folder, a mod's `romfs/` changes still apply.
