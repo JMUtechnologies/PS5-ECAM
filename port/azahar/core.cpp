@@ -697,6 +697,32 @@ namespace ps5azahar
 		s_settings = s_launched = settings;
 		ApplySettings(settings);
 
+		// What Load refuses at its first step (an encrypted game, a format or a GBA game Azahar does not
+		// play) asked first, with no window yet: once it has VideoOut, a load that fails starts the app
+		// over to say why (main_ps5.cpp), which closed the app on some setups (#57). The launcher says
+		// it at once instead. Not for Artic Base, whose loader connects to the 3DS
+		if (!IsArtic(path))
+		{
+			using Status = Core::System::ResultStatus;
+			const std::unique_ptr<Loader::AppLoader> loader = Loader::GetLoader(path);
+			const Loader::ResultStatus mode = loader ? loader->LoadKernelMemoryMode().second : Loader::ResultStatus::Error;
+			Status refused = Status::Success;
+			if (!loader)
+				refused = Status::ErrorGetLoader;
+			else if (mode == Loader::ResultStatus::ErrorEncrypted)
+				refused = Status::ErrorLoader_ErrorEncrypted;
+			else if (mode == Loader::ResultStatus::ErrorInvalidFormat)
+				refused = Status::ErrorLoader_ErrorInvalidFormat;
+			else if (mode == Loader::ResultStatus::ErrorGbaTitle)
+				refused = Status::ErrorLoader_ErrorGbaTitle;
+			if (refused != Status::Success)
+			{
+				error = LoadError(refused);
+				ps5log::Line("[azahar] {} refused before it started (loader {}): {}", path, (int)mode, error);
+				return false;
+			}
+		}
+
 		Core::System& system = Core::System::GetInstance();
 		Frontend::RegisterDefaultApplets(system);
 		s_keyboard = std::make_shared<Keyboard>();
