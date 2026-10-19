@@ -56,5 +56,8 @@ namespace ps5launcher
 	{
 		System system;
 		ps5emu::Game game;
+		// an archived game's unpacked copy, which its emulator starts (app/game_archives.h); empty: the
+		// game's own path
+		std::string launchPath;
 	};
 }
