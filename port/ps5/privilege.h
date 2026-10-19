@@ -40,6 +40,10 @@ namespace ps5privilege
 	// plugged in, is there but refused (a HEN that opened /data but not the drives), the bundled
 	// helper is asked for the whole filesystem. Current().summary says what came of it.
 	void ReachFolders(const std::vector<std::string>& folders);
+	// The same, for files and folders another user made in /data/ps5cemu that a walk could not open
+	// (app/file_modes.h): the helper makes the process root, as it does for a refused folder, and this
+	// session's walk opens them. When the process is not root already.
+	void ReachClosedFiles();
 }
 
 // For Cemu (ActiveSettings::GetCPUMode).

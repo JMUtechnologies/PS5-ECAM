@@ -42,18 +42,33 @@ namespace ps5filemodes
 			std::vector<std::string> examples;
 		};
 
+		// What the last walk wrote: whether this build's walk has been made, and how many entries it
+		// left as they were
+		struct Walked
+		{
+			bool made = false;
+			long left = 0;
+		};
+
+		Walked LastWalk()
+		{
+			Walked walked;
+			FILE* file = std::fopen(kWalked, "r");
+			if (!file)
+				return walked;
+			int version = 0;
+			const int read = std::fscanf(file, "%d %ld", &version, &walked.left);
+			std::fclose(file);
+			walked.made = read >= 1 && version >= kVersion;
+			return walked;
+		}
+
 		// Whether a walk is to be made: none yet (or one by an earlier build), or one as another user
 		// left entries that the app, root now, may change
 		bool WalkDue()
 		{
-			FILE* file = std::fopen(kWalked, "r");
-			if (!file)
-				return true;
-			int version = 0;
-			long left = 0;
-			const int read = std::fscanf(file, "%d %ld", &version, &left);
-			std::fclose(file);
-			return read < 1 || version < kVersion || (left > 0 && geteuid() == 0);
+			const Walked walked = LastWalk();
+			return !walked.made || (walked.left > 0 && geteuid() == 0);
 		}
 
 		// Folders rwx and files rw for every user, with whatever else they have (a tile's program keeps
@@ -167,10 +182,16 @@ namespace ps5filemodes
 			for (const std::string& example : walk.examples)
 				examples += (examples.empty() ? "" : "; ") + example;
 			ps5log::Line("[files] {}: {} opened to every user, {} another user's that the app may not change ({} looked at in {} ms): {}. "
-						 "The app opens them at a start as root (PPSA99360 in the HEN's app jailbreak list, with alwaysAskHen in "
-						 "ps5cemu.json), or a file manager's chmod 777 does",
+						 "The next start asks the elevation helper (elfldr) for root to open them; without elfldr, PPSA99360 in the "
+						 "HEN's app jailbreak list with alwaysAskHen in ps5cemu.json does, or a file manager's chmod 777",
 				ps5paths::kRoot, walk.opened, walk.refused, walk.seen, ms, examples);
 		}
+	}
+
+	bool ClosedLeft()
+	{
+		const Walked walked = LastWalk();
+		return walked.made && walked.left > 0;
 	}
 
 	void Start()

@@ -300,6 +300,22 @@ namespace ps5privilege
 		s_result.summary += reached ? fmt::format("; {} opened by the elevation helper", refused) :
 									  fmt::format("; {} unreadable (elevation helper: {})", refused, (int)status);
 	}
+
+	void ReachClosedFiles()
+	{
+		if (geteuid() == 0)
+			return;
+		// as ReachFolders: the helper where the app is, not AppDir()
+		const std::string helper = ps5paths::FindAppDir() + "/sandbox-elevator.elf";
+		const auto status = elevation::request(elevation::Capability::filesystem, helper.c_str());
+		const bool root = geteuid() == 0;
+		ps5log::Line("[privilege] files another user made in {}, which the app could not open; elevation helper ({}): {}, {}",
+			ps5paths::kRoot, helper, (int)status, root ? "the app is root for this session" : "the app is still not root");
+		if (ps5paths::RefindAppDir())
+			ps5log::Line("[privilege] app folder now {}", ps5paths::AppDir());
+		s_result.summary += root ? std::string("; root from the elevation helper, for files another user made in /data/ps5cemu") :
+								   fmt::format("; files another user made in /data/ps5cemu stay closed (elevation helper: {})", (int)status);
+	}
 }
 
 bool PS5_JitAvailable()

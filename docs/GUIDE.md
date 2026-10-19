@@ -293,9 +293,10 @@ Everything the app writes goes to `/data/ps5cemu`, except your game files:
 
 **FTP and file managers:** every file and folder the app makes is open to every user (folders 0777,
 files 0666), so an FTP client or a file manager can change or delete it, installed CIAs included.
-Files an older version made are opened the same way as the app starts. Those it may not change,
-because another user made them while the app runs without the HEN's app jailbreak, are listed under
-`[files]` in `boot.log`; setting `/data/ps5cemu` to 777 from a file manager opens them.
+Files an older version made are opened the same way as the app starts. Some may belong to another
+user, usually from a session the HEN or elfldr's helper made root. Those are listed under `[files]`
+in `boot.log`, and the next start asks elfldr's helper for root to open them. Without elfldr,
+setting `/data/ps5cemu` to 777 from a file manager opens them.
 
 **Backups:** **Settings > Accounts and saves > Back up to USB** copies every side's saves, save
 states and the Wii U's accounts (never the games) to `PS5CEMU-HAR-saves/<date and time>` on the

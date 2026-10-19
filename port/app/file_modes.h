@@ -11,11 +11,17 @@
 //    where the app may change it. A walk is made once; again only by a start as root, when one as
 //    another user left entries it could not change. The sides' game folders are the player's files,
 //    which the app only reads: left as they are.
+//  - Such entries are root's, mostly: a session the elevation helper or the HEN made root (a refused
+//    game folder, /data out of reach) made them 0755 and 0644, and a session that needed neither
+//    could not write them (#55, #56). A fresh start then asks the elevation helper for root
+//    (ps5privilege::ReachClosedFiles), so its walk opens them.
 
 #pragma once
 
 namespace ps5filemodes
 {
+	// Whether the last walk left files or folders another user made, which the app as root may open
+	bool ClosedLeft();
 	// On a thread of its own; nothing when no walk is due
 	void Start();
 	// Before a game: a walk part-way through stops, and the next start goes on with it

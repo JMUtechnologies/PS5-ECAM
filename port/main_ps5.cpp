@@ -258,6 +258,11 @@ int main(int argc, char* argv[])
 	// still before any thread: the game folders and drives the HEN may have left out (#16)
 	if (privileges.filesystem)
 		ps5privilege::ReachFolders({settings.gamesFolder, settings.n3ds.gamesFolder, settings.nds.gamesFolder});
+	// and the files another user made in /data/ps5cemu that a walk could not open (app/file_modes.h,
+	// #55, #56): root for this session, so its walk opens them. On a fresh start only: a game starts
+	// the app over
+	if (privileges.filesystem && freshStart && ps5filemodes::ClosedLeft())
+		ps5privilege::ReachClosedFiles();
 	// the experiment that gives the Wii U's emulated CPU cores and GPU thread cores of their own: once
 	// the elevation helper is done (its timing starts threads) and before any thread that should
 	// inherit the other CPUs
