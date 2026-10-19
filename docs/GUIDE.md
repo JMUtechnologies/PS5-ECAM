@@ -114,6 +114,7 @@ New in 4.0.0: a side of its own, in melonDS's green, to the right of the 3DS.
   button remappable (**Settings > Controls**), the touchpad as the touch screen, and R3 held to blow
   into the microphone.
 - Save states (five slots), melonDS's `.mch` cheats and the same in-game menu as the 3DS side's.
+- Games in `.zip`, `.7z`, `.rar` and tar archives play as they are, as in melonDS's own frontend.
 - No BIOS needed: melonDS's own replacements run most games. Your own DS's `bios7.bin`, `bios9.bin`
   and `firmware.bin` in `/data/ps5cemu/melonds/bios` are used when they are there
   (**Settings > System**).
@@ -152,6 +153,10 @@ Put games in `/data/ps5cemu/azahar/games`, or pick another folder in **Settings 
 Put games (`.nds`) in `/data/ps5cemu/melonds/games`, or pick another folder in **Settings > Game
 files** on the DS side. A save (`.sav`) beside a game is taken the first time it starts; from then on
 saves are in `/data/ps5cemu/melonds/saves`.
+
+A game can stay in its `.zip`, `.7z` or `.rar` archive, or a `.tar` (`.tar.gz`, `.tar.xz` and the
+like): its first `.nds` by name is the game, read into memory when it starts, and nothing is
+extracted. Its saves are named by the archive, as a game's are by its file.
 
 No games, keys, firmware or other copyrighted console data are included. Dump them from hardware and
 software you own, and don't download or share them.

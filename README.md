@@ -74,7 +74,7 @@ The biggest update yet. The full list is in the [release notes](https://github.c
 | | Wii U | Nintendo 3DS | Nintendo DS |
 |---|---|---|---|
 | **Emulator** | Cemu, x64 recompiler, Vulkan | Azahar, dynarmic recompiler, Vulkan | melonDS, ARM recompiler |
-| **Plays** | `.wua`, `.wud`, `.wux`, unpacked games | `.3ds`, `.cci`, `.cxi`, `.app`, `.3dsx`, `.elf`, compressed `.z*`, installed `.cia` | `.nds` |
+| **Plays** | `.wua`, `.wud`, `.wux`, unpacked games | `.3ds`, `.cci`, `.cxi`, `.app`, `.3dsx`, `.elf`, compressed `.z*`, installed `.cia` | `.nds`, also in `.zip`, `.7z` and `.rar` archives |
 | **Picture** | 4K output, 120 Hz, FSR 1, graphic packs | up to 10x resolution, texture filters, layouts, borders | sharp, smooth or square pixels, layouts, borders |
 | **Extras** | mods, accounts, amiibo, Skylanders portals, updates and DLC | save states, cheats, amiibo, mods, Artic Base | save states, cheats, RetroAchievements |
 
