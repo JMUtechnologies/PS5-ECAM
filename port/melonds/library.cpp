@@ -264,15 +264,14 @@ namespace ps5melonds
 		{
 			uint64_t archiveSize = 0;
 			int64_t archiveTime = 0;
-			std::string member; // empty: the archive holds no DS ROM
-			uint64_t romSize = 0;
+			archive::Rom rom; // its index -1: the archive holds no DS ROM
 			std::vector<uint8_t> header, banner;
 		};
 
 		Title InspectProbe(const Probe& probe)
 		{
 			const uint32_t bannerOffset = probe.header.size() == kHeaderSize ? U32(probe.header.data() + 0x68) : 0;
-			return InspectRom(probe.romSize, [&](uint64_t offset, uint8_t* out, size_t length) {
+			return InspectRom(probe.rom.size, [&](uint64_t offset, uint8_t* out, size_t length) {
 				const std::vector<uint8_t>& part = offset == 0 ? probe.header : probe.banner;
 				if ((offset != 0 && offset != bannerOffset) || length > part.size())
 					return false;
@@ -284,27 +283,24 @@ namespace ps5melonds
 		// The archive's ROM read as far as its banner: false when the archive cannot be read
 		bool ProbeArchive(const std::string& path, Probe& probe)
 		{
-			archive::Rom rom;
-			if (!archive::FindRom(path, rom))
+			if (!archive::FindRom(path, probe.rom))
 				return false;
-			probe.member = rom.member;
-			probe.romSize = rom.size;
-			if (rom.member.empty())
+			if (probe.rom.index < 0)
 				return true;
 			std::vector<uint8_t> data;
-			if (!archive::Read(path, rom.member, data, kHeaderSize))
+			if (!archive::Read(path, probe.rom, data, kHeaderSize))
 				return false;
 			probe.header = data;
 			const uint64_t bannerOffset = U32(probe.header.data() + 0x68);
 			const uint64_t bannerEnd = bannerOffset + kBannerSize;
-			if (bannerOffset >= kHeaderSize && bannerEnd <= rom.size && bannerEnd <= kArchiveBannerLimit &&
-				archive::Read(path, rom.member, data, bannerEnd))
+			if (bannerOffset >= kHeaderSize && bannerEnd <= probe.rom.size && bannerEnd <= kArchiveBannerLimit &&
+				archive::Read(path, probe.rom, data, bannerEnd))
 				probe.banner.assign(data.begin() + (ptrdiff_t)bannerOffset, data.end());
 			return true;
 		}
 
 		// kRoot/archives.bin: "PDSA", a version, then each archive's path and its Probe
-		constexpr uint32_t kProbesMagic = 0x41534450, kProbesVersion = 1;
+		constexpr uint32_t kProbesMagic = 0x41534450, kProbesVersion = 2;
 
 		struct Probes
 		{
@@ -376,8 +372,9 @@ namespace ps5melonds
 				Probe probe;
 				probe.archiveSize = cursor.Get<uint64_t>();
 				probe.archiveTime = cursor.Get<int64_t>();
-				probe.member = cursor.Bytes();
-				probe.romSize = cursor.Get<uint64_t>();
+				probe.rom.index = (int)cursor.Get<int32_t>();
+				probe.rom.member = cursor.Bytes();
+				probe.rom.size = cursor.Get<uint64_t>();
 				const std::string header = cursor.Bytes(), banner = cursor.Bytes();
 				probe.header.assign(header.begin(), header.end());
 				probe.banner.assign(banner.begin(), banner.end());
@@ -399,8 +396,9 @@ namespace ps5melonds
 				PutBytes(out, path.data(), path.size());
 				Put64(out, probe.archiveSize);
 				Put64(out, (uint64_t)probe.archiveTime);
-				PutBytes(out, probe.member.data(), probe.member.size());
-				Put64(out, probe.romSize);
+				Put32(out, (uint32_t)probe.rom.index);
+				PutBytes(out, probe.rom.member.data(), probe.rom.member.size());
+				Put64(out, probe.rom.size);
 				PutBytes(out, probe.header.data(), probe.header.size());
 				PutBytes(out, probe.banner.data(), probe.banner.size());
 			}
@@ -440,11 +438,16 @@ namespace ps5melonds
 					return false;
 				}
 				probes.changed = true;
-				ps5log::Line("[ds] {}: {} ({} ms)", path, probe.member.empty() ? "no DS game in it" : probe.member,
+				std::string found = probe.rom.member;
+				if (probe.rom.index < 0)
+					found = "no DS game in it";
+				else if (found.empty())
+					found = "a DS ROM whose name the PS5 cannot show";
+				ps5log::Line("[ds] {}: {} ({} ms)", path, found,
 					(long long)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - started).count());
 			}
 			probes.seen[path] = probe;
-			if (probe.member.empty())
+			if (probe.rom.index < 0)
 				return false;
 			const Title title = InspectProbe(probe);
 			if (!title.readable)

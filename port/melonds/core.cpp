@@ -773,7 +773,7 @@ namespace ps5melonds
 		if (archive::IsArchive(path))
 		{
 			archive::Rom found;
-			if (!archive::FindRom(path, found) || found.member.empty())
+			if (!archive::FindRom(path, found) || found.index < 0)
 			{
 				error = "There is no DS game in this archive, or the archive could not be read.";
 				return false;
@@ -784,13 +784,13 @@ namespace ps5melonds
 				return false;
 			}
 			const uint64_t started = sceKernelGetProcessTime();
-			if (!archive::Read(path, found.member, file))
+			if (!archive::Read(path, found, file))
 			{
 				error = "The DS game in this archive could not be read: is the archive whole?";
 				return false;
 			}
-			ps5log::Line("[ds] {} read from the archive: {} MiB in {} ms", found.member, file.size() >> 20,
-				(sceKernelGetProcessTime() - started) / 1000);
+			ps5log::Line("[ds] {} read from the archive: {} MiB in {} ms", found.member.empty() ? std::string("its DS ROM") : found.member,
+				file.size() >> 20, (sceKernelGetProcessTime() - started) / 1000);
 			title = Inspect(file);
 		}
 		else

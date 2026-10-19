@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // PS5CEMU-HAR: DS games in archives (archive.h). After melonDS's ArchiveUtil.cpp (GPL-3.0-or-later, the
 // melonDS team): every format and filter libarchive has, the regular files listed, one read out. Its
-// single archive_read_data is a loop here, as libarchive may answer a read in parts.
+// single archive_read_data is a loop here, as libarchive may answer a read in parts, and an entry is
+// found again by its place in the archive, as not every entry has a name here (FindRom).
 
 #include "archive.h"
 #include "library.h"
@@ -17,6 +18,8 @@ namespace ps5melonds::archive
 {
 	namespace
 	{
+		constexpr size_t kHeaderSize = 0x200; // a DS ROM's header
+
 		std::string Lower(std::string text)
 		{
 			for (char& c : text)
@@ -57,6 +60,43 @@ namespace ps5melonds::archive
 			result = archive_read_next_header(reader.handle, &entry);
 			return result == ARCHIVE_OK || result == ARCHIVE_WARN;
 		}
+
+		// An entry's name, in UTF-8 where libarchive has it so; null when libarchive dropped it
+		const char* NameOf(archive_entry* entry)
+		{
+			const char* name = archive_entry_pathname_utf8(entry);
+			return name ? name : archive_entry_pathname(entry);
+		}
+
+		// What a Mac's zip keeps beside each file, named as the file is: "__MACOSX/" and "._" entries
+		bool IsMacCopy(const std::string& name)
+		{
+			const size_t slash = name.rfind('/');
+			return name.rfind("__MACOSX/", 0) == 0 || name.compare(slash == std::string::npos ? 0 : slash + 1, 2, "._") == 0;
+		}
+
+		uint32_t U32(const uint8_t* p)
+		{
+			return p[0] | p[1] << 8 | p[2] << 16 | (uint32_t)p[3] << 24;
+		}
+
+		// Whether the entry being read starts as a DS ROM does: the checksum of the Nintendo logo every
+		// cartridge's header carries, and its ARM9 code within the entry, as the library checks a ROM
+		bool StartsAsRom(Reader& reader, uint64_t size)
+		{
+			uint8_t header[kHeaderSize];
+			size_t got = 0;
+			while (got < sizeof(header))
+			{
+				const la_ssize_t n = archive_read_data(reader.handle, header + got, sizeof(header) - got);
+				if (n <= 0)
+					return false;
+				got += (size_t)n;
+			}
+			const uint32_t arm9Offset = U32(header + 0x20);
+			return (header[0x15C] | header[0x15D] << 8) == 0xCF56 && header[0x12] <= 3 && arm9Offset >= kHeaderSize && arm9Offset < size &&
+				U32(header + 0x2C) != 0;
+		}
 	}
 
 	bool FindRom(const std::string& path, Rom& rom)
@@ -65,51 +105,50 @@ namespace ps5melonds::archive
 		Reader reader(path);
 		if (!reader.handle)
 			return false;
-		std::vector<Rom> roms;
+		std::vector<Rom> named;
+		Rom unnamed;
 		archive_entry* entry = nullptr;
 		int result;
-		while (Next(reader, entry, result))
+		for (int index = 0; Next(reader, entry, result); index++)
 		{
 			if (archive_entry_filetype(entry) != AE_IFREG)
 				continue;
-			const char* name = archive_entry_pathname_utf8(entry);
-			if (!name)
-				name = archive_entry_pathname(entry);
-			if (name && IsDsFile(name))
-				roms.push_back({name, (uint64_t)std::max<la_int64_t>(0, archive_entry_size(entry))});
-			archive_read_data_skip(reader.handle);
+			const uint64_t size = (uint64_t)std::max<la_int64_t>(0, archive_entry_size(entry));
+			const char* name = NameOf(entry);
+			if (name && IsDsFile(name) && !IsMacCopy(name) && size >= kHeaderSize)
+				named.push_back({index, name, size});
+			else if (!name && unnamed.index < 0 && StartsAsRom(reader, size))
+				unnamed = {index, "", size};
+			// (the rest of the entry is skipped by the next header's read)
 		}
 		if (result != ARCHIVE_EOF)
 			return false;
 		// the first by name, as melonDS lists them (case aside)
-		std::stable_sort(roms.begin(), roms.end(), [](const Rom& a, const Rom& b) { return Lower(a.member) < Lower(b.member); });
-		if (!roms.empty())
-			rom = roms.front();
+		std::stable_sort(named.begin(), named.end(), [](const Rom& a, const Rom& b) { return Lower(a.member) < Lower(b.member); });
+		rom = !named.empty() ? named.front() : unnamed;
 		return true;
 	}
 
-	bool Read(const std::string& path, const std::string& member, std::vector<uint8_t>& data, uint64_t limit)
+	bool Read(const std::string& path, const Rom& rom, std::vector<uint8_t>& data, uint64_t limit)
 	{
 		data.clear();
+		if (rom.index < 0 || rom.size == 0)
+			return false;
 		Reader reader(path);
 		if (!reader.handle)
 			return false;
 		archive_entry* entry = nullptr;
 		int result;
-		while (Next(reader, entry, result))
+		for (int index = 0; Next(reader, entry, result); index++)
 		{
-			const char* name = archive_entry_pathname_utf8(entry);
-			if (!name)
-				name = archive_entry_pathname(entry);
-			if (!name || member != name)
-			{
-				archive_read_data_skip(reader.handle);
+			if (index < rom.index)
 				continue;
-			}
-			const la_int64_t size = archive_entry_size(entry);
-			if (size <= 0)
+			// FindRom's entry, unless the archive has changed since
+			const char* name = NameOf(entry);
+			if (archive_entry_filetype(entry) != AE_IFREG || (uint64_t)std::max<la_int64_t>(0, archive_entry_size(entry)) != rom.size ||
+				rom.member != (name ? name : ""))
 				return false;
-			const uint64_t wanted = std::min<uint64_t>((uint64_t)size, limit);
+			const uint64_t wanted = std::min(rom.size, limit);
 			data.resize(wanted);
 			uint64_t read = 0;
 			while (read < wanted)

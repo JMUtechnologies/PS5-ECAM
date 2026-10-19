@@ -1023,7 +1023,7 @@ namespace ps5melonds::archive
 		rom = {};
 		return false;
 	}
-	bool Read(const std::string&, const std::string&, std::vector<uint8_t>& data, uint64_t)
+	bool Read(const std::string&, const Rom&, std::vector<uint8_t>& data, uint64_t)
 	{
 		data.clear();
 		return false;
