@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Mon, 19 Oct 2026 04:30:00 +0000
+Subject: [PATCH] PS5: a game's sockets fail with EPIPE, not a SIGPIPE that
+ ends the app
+
+A write to a socket whose peer has closed the connection raises SIGPIPE
+on the console, which ends the app at once, with no crash report, back
+to the PS5's home screen (0026 found it so for Artic Base). The sockets
+SOC makes for a 3DS game, and those its accept gives, now have
+SO_NOSIGPIPE, as the port's own sockets do: the game's write fails with
+EPIPE, as it would on a 3DS.
+---
+ src/core/hle/service/soc/soc_u.cpp | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/src/core/hle/service/soc/soc_u.cpp b/src/core/hle/service/soc/soc_u.cpp
+index f694b56..e810e4f 100644
+--- a/src/core/hle/service/soc/soc_u.cpp
++++ b/src/core/hle/service/soc/soc_u.cpp
+@@ -859,6 +859,12 @@ void SOC_U::Socket(Kernel::HLERequestContext& ctx) {
+         unsigned long bytes_returned = 0;
+         WSAIoctl(static_cast<SOCKET>(ret), _WSAIOW(IOC_VENDOR, 12), &new_behavior,
+                  sizeof(new_behavior), NULL, 0, &bytes_returned, NULL, NULL);
++#endif
++#ifdef __PROSPERO__
++        // PS5: a write to a peer that closed the connection fails with EPIPE, as on the 3DS,
++        // instead of a SIGPIPE that ends the app at once, with no crash report
++        int one = 1;
++        ::setsockopt(static_cast<int>(ret), SOL_SOCKET, SO_NOSIGPIPE, &one, sizeof(one));
+ #endif
+     }
+ 
+@@ -1007,6 +1013,12 @@ void SOC_U::Accept(Kernel::HLERequestContext& ctx) {
+         },
+         [this, async_data](Kernel::HLERequestContext& ctx) {
+             if (static_cast<s32>(async_data->ret) != SOCKET_ERROR_VALUE) {
++#ifdef __PROSPERO__
++                // as a socket the game makes (Socket): EPIPE, not a SIGPIPE that ends the app
++                int one = 1;
++                ::setsockopt(static_cast<int>(async_data->ret), SOL_SOCKET, SO_NOSIGPIPE, &one,
++                             sizeof(one));
++#endif
+                 u32 socketID = GetNextSocketID();
+                 created_sockets[socketID] = {
+                     .socket_fd = static_cast<decltype(SocketHolder::socket_fd)>(async_data->ret),

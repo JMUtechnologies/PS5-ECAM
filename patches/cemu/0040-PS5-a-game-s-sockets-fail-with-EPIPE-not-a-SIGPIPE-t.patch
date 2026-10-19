@@ -1,0 +1,75 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Mon, 19 Oct 2026 04:45:00 +0000
+Subject: [PATCH] PS5: a game's sockets fail with EPIPE, not a SIGPIPE that
+ ends the app
+
+A write to a socket whose peer has closed the connection raises SIGPIPE
+on the console, which ends the app at once, with no crash report, back
+to the PS5's home screen. The host sockets nsysnet makes for a Wii U
+game, and those its accept gives, now have SO_NOSIGPIPE, as the port's
+own sockets do: the game's write fails with EPIPE, as on a Wii U.
+
+An accepted socket's type and family are asked of it: away from
+Windows, nsysnet_createVirtualSocketFromExistingSocket asked vs->s,
+which is not set until after, so fd 0, with the sizes left unset (the
+address could be written past its 16 bytes).
+---
+ src/Cafe/OS/libs/nsysnet/nsysnet.cpp | 32 ++++++++++++++++++++++------
+ 1 file changed, 25 insertions(+), 7 deletions(-)
+
+diff --git a/src/Cafe/OS/libs/nsysnet/nsysnet.cpp b/src/Cafe/OS/libs/nsysnet/nsysnet.cpp
+index 8393d36..110488a 100644
+--- a/src/Cafe/OS/libs/nsysnet/nsysnet.cpp
++++ b/src/Cafe/OS/libs/nsysnet/nsysnet.cpp
+@@ -272,6 +272,15 @@ WUSOCKET nsysnet_createVirtualSocket(sint32 family, sint32 type, sint32 protocol
+ 		WSAIoctl(vs->s, SIO_UDP_CONNRESET, &bNewBehavior, sizeof bNewBehavior, NULL, 0, &dwBytesReturned, NULL, NULL);
+ 	}
+ 	#endif // BOOST_OS_WINDOWS
++#if defined(CEMU_PS5)
++	// PS5: a write to a peer that closed the connection fails with EPIPE, as on the Wii U, instead of
++	// a SIGPIPE that ends the app at once, with no crash report
++	if (vs->s != INVALID_SOCKET)
++	{
++		int one = 1;
++		setsockopt(vs->s, SOL_SOCKET, SO_NOSIGPIPE, &one, sizeof(one));
++	}
++#endif
+ 	return vs->handle;
+ }
+ 
+@@ -301,18 +310,27 @@ WUSOCKET nsysnet_createVirtualSocketFromExistingSocket(SOCKET existingSocket)
+ 	vs->type = protocolInfo.iSocketType;
+ 	vs->protocol = protocolInfo.iSocketType;
+ #else
++	// the accepted socket's type and family: asked of it, with the sizes given (vs->s is not set
++	// yet, and was asked instead, with sizes left unset)
+ 	{
+-		int type;
+-		socklen_t optlen;
+-		getsockopt(vs->s, SOL_SOCKET, SO_TYPE, &type, &optlen);
++		int type = 0;
++		socklen_t optlen = sizeof(type);
++		getsockopt(existingSocket, SOL_SOCKET, SO_TYPE, &type, &optlen);
+ 		vs->type = type;
+ 		vs->protocol = type;
+ 	}
+ 	{
+-		sockaddr saddr;
+-		socklen_t len;
+-		getsockname(vs->s, &saddr, &len);
+-		vs->family = saddr.sa_family;
++		sockaddr_storage saddr{};
++		socklen_t len = sizeof(saddr);
++		getsockname(existingSocket, (sockaddr*)&saddr, &len);
++		vs->family = saddr.ss_family;
++	}
++#endif
++#if defined(CEMU_PS5)
++	// as a socket the game makes (nsysnet_createVirtualSocket): EPIPE, not a SIGPIPE that ends the app
++	{
++		int one = 1;
++		setsockopt(existingSocket, SOL_SOCKET, SO_NOSIGPIPE, &one, sizeof(one));
+ 	}
+ #endif
+ 
