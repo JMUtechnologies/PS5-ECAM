@@ -1,0 +1,149 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ps5cemu <ps5cemu@localhost>
+Date: Mon, 19 Oct 2026 03:30:00 +0000
+Subject: [PATCH] PS5: Artic Base connects though fcntl refuses its sockets
+
+Every Artic Base connection failed in the millisecond it started, with
+"Cannot set non-blocking socket mode" (#45): on the PS5 that reported
+it, fcntl refuses the client's sockets with EACCES, and SetNonBlock gave
+up before it set the console's SO_NBIO, which is what makes a socket
+non-blocking there (0026). A refused fcntl is now a failure only when
+SO_NBIO is refused too, as the port's own sockets take it (netfs.cpp's
+make_nonblocking); elsewhere fcntl decides, as before.
+
+Both connections' addresses carry their sin_len, as the port's other
+connections give theirs, and a connection that fails says why: no
+answer in its 10 s, or the error the console gave.
+
+Found, fixed and tested on a PS5 by dolphin78 (#45).
+---
+ src/network/artic_base/artic_base_client.cpp | 74 ++++++++++++++++----
+ 1 file changed, 60 insertions(+), 14 deletions(-)
+
+diff --git a/src/network/artic_base/artic_base_client.cpp b/src/network/artic_base/artic_base_client.cpp
+index c9bd535..502fe45 100644
+--- a/src/network/artic_base/artic_base_client.cpp
++++ b/src/network/artic_base/artic_base_client.cpp
+@@ -282,6 +282,11 @@ bool Client::Connect() {
+     }
+ 
+     struct sockaddr_in servaddr = {0};
++#ifdef __PROSPERO__
++    // with its length, as the port's own connections give an address (netfs.cpp), the UDP
++    // stream's too (GetServerAddr)
++    servaddr.sin_len = sizeof(servaddr);
++#endif
+     servaddr.sin_family = AF_INET;
+     servaddr.sin_addr = server_ip;
+     servaddr.sin_port = htons(port);
+@@ -547,14 +552,31 @@ bool Client::ConnectWithTimeout(SocketHolder sockFD, void* server_addr, size_t s
+     if (res == -1 && ((GET_ERRNO == ERRNO(EINPROGRESS) || GET_ERRNO == ERRNO(EWOULDBLOCK)))) {
+ #ifdef __PROSPERO__
+         // waited for with poll, as the port's other connections are: select is untried on the
+-        // console's sockets
++        // console's sockets. A failure says why: a 3DS that refused it, or none that answered.
+         struct pollfd pfd {};
+         pfd.fd = sockFD;
+         pfd.events = POLLOUT;
++        const int polled = ::poll(&pfd, 1, timeout_seconds * 1000);
++        if (polled != 1) {
++            const int poll_errno = GET_ERRNO;
++            if (polled == 0) {
++                LOG_ERROR(Network, "No answer to the connection in {} s", timeout_seconds);
++            } else {
++                LOG_ERROR(Network, "Waiting for the connection failed: {} (errno: {})",
++                          strerror(poll_errno), poll_errno);
++            }
++            return false;
++        }
+         int so_error = 0;
+         socklen_t len = sizeof so_error;
+-        return ::poll(&pfd, 1, timeout_seconds * 1000) == 1 &&
+-               getsockopt(sockFD, SOL_SOCKET, SO_ERROR, &so_error, &len) == 0 && so_error == 0;
++        if (getsockopt(sockFD, SOL_SOCKET, SO_ERROR, &so_error, &len) != 0) {
++            so_error = GET_ERRNO;
++        }
++        if (so_error != 0) {
++            LOG_ERROR(Network, "Connection failed: {} (errno: {})", strerror(so_error), so_error);
++            return false;
++        }
++        return true;
+ #else
+         struct timeval tv;
+         fd_set fdset;
+@@ -587,6 +609,11 @@ bool Client::ConnectWithTimeout(SocketHolder sockFD, void* server_addr, size_t s
+ #endif // __PROSPERO__
+ 
+     } else if (res == -1) {
++#ifdef __PROSPERO__
++        const int connect_errno = GET_ERRNO;
++        LOG_ERROR(Network, "Connection failed: {} (errno: {})", strerror(connect_errno),
++                  connect_errno);
++#endif
+         return false;
+     }
+     return true;
+@@ -602,26 +629,42 @@ bool Client::SetNonBlock(SocketHolder sockFD, bool nonBlocking) {
+     }
+ #else
+     int flags = ::fcntl(sockFD, F_GETFL, 0);
+-    if (flags == -1) {
+-        return false;
+-    }
++    int ret = -1;
++    if (flags != -1) {
++        flags &= ~O_NONBLOCK;
++        if (!blocking) { // O_NONBLOCK
++            flags |= O_NONBLOCK;
++        }
+ 
+-    flags &= ~O_NONBLOCK;
+-    if (!blocking) { // O_NONBLOCK
+-        flags |= O_NONBLOCK;
++        ret = ::fcntl(sockFD, F_SETFL, flags);
+     }
+-
+-    const int ret = ::fcntl(sockFD, F_SETFL, flags);
++#ifndef __PROSPERO__
+     if (ret == -1) {
+         return false;
+     }
+-#ifdef __PROSPERO__
++#else
+     // The console takes O_NONBLOCK above and leaves the socket blocking (the port's network shares
+     // found it so): its own SO_NBIO is what makes one non-blocking. Without it nothing here timed
+-    // out, and a connection, a request or a ping that got no answer waited for ever.
++    // out, and a connection, a request or a ping that got no answer waited for ever. fcntl can
++    // also refuse the console's sockets outright (EACCES), which stopped every connection here
++    // before it was tried (#45): the port's own sockets let it (netfs.cpp), and only SO_NBIO
++    // refusing too is a failure.
++    const int fcntl_errno = ret == -1 ? GET_ERRNO : 0;
+     int nbio = blocking ? 0 : 1;
+     if (::setsockopt(sockFD, SOL_SOCKET, 0x1200 /* SO_NBIO */, &nbio, sizeof(nbio)) == -1) {
+-        LOG_WARNING(Network, "SO_NBIO refused: {} (errno: {})", strerror(GET_ERRNO), GET_ERRNO);
++        const int nbio_errno = GET_ERRNO;
++        LOG_WARNING(Network, "SO_NBIO refused: {} (errno: {})", strerror(nbio_errno), nbio_errno);
++        if (ret == -1) {
++            LOG_ERROR(Network, "fcntl refused the socket too: {} (errno: {})",
++                      strerror(fcntl_errno), fcntl_errno);
++            return false;
++        }
++    } else if (ret == -1) {
++        static std::atomic<bool> said{false};
++        if (!said.exchange(true)) {
++            LOG_INFO(Network, "fcntl refused the socket: {} (errno: {}); SO_NBIO makes it non-blocking",
++                     strerror(fcntl_errno), fcntl_errno);
++        }
+     }
+     // and a write to a server that has gone fails, instead of a SIGPIPE that ends the app
+     int one = 1;
+@@ -774,6 +817,9 @@ void Client::Handler::RunLoop() {
+     }
+ 
+     struct sockaddr_in servaddr = {0};
++#ifdef __PROSPERO__
++    servaddr.sin_len = sizeof(servaddr);
++#endif
+     servaddr.sin_family = AF_INET;
+     servaddr.sin_addr.s_addr = static_cast<decltype(servaddr.sin_addr.s_addr)>(addr);
+     servaddr.sin_port = htons(port);
