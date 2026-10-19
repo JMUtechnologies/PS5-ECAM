@@ -89,8 +89,15 @@ namespace ps5filemodes
 				walk.examples.push_back(fmt::format("{} ({:o}, user {}: {})", path, st.st_mode & 07777, st.st_uid, std::strerror(error)));
 		}
 
+		// Another user's, and the app not root; not an entry gone since it was listed (a log the launcher
+		// turned over)
+		bool AnotherUsers(int error)
+		{
+			return error == EPERM || error == EACCES;
+		}
+
 		// A mode change is a metadata write, near a millisecond on the console: made only where the mode
-		// is not already so. False when it was refused (another user's, and the app is not root)
+		// is not already so. False when it was refused
 		bool Open(Walk& walk, const std::string& path, const struct stat& st)
 		{
 			walk.seen++;
@@ -102,7 +109,10 @@ namespace ps5filemodes
 				walk.opened++;
 				return true;
 			}
-			Refused(walk, path, st, errno);
+			const int error = errno;
+			if (!AnotherUsers(error))
+				return true;
+			Refused(walk, path, st, error);
 			return false;
 		}
 
@@ -138,8 +148,9 @@ namespace ps5filemodes
 				if (!dir)
 				{
 					// what is in it is out of reach: counted once, with the folder
-					if (!folder.refused)
-						Refused(walk, folder.path, folder.st, errno);
+					const int error = errno;
+					if (!folder.refused && AnotherUsers(error))
+						Refused(walk, folder.path, folder.st, error);
 					continue;
 				}
 				while (const dirent* entry = readdir(dir))
