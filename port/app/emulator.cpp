@@ -7,12 +7,14 @@
 
 #include "emulator.h"
 #include "boxart.h"
+#include "game_archives.h"
 #include "ingame.h"
 #include "pack_updates.h"
 #include "lang.h"
 #include "paths.h"
 #include "updates.h"
 #include "usb_devices.h"
+#include "wiiu_archives.h"
 #include "../frontend/settings.h"
 #include "../ps5/display.h"
 #include "../ps5/kernel.h"
@@ -146,24 +148,6 @@ namespace ps5emu
 			struct ps5_heap_stats stats{};
 			ps5_heap_stats(&stats);
 			return stats.mapped_bytes >> 20;
-		}
-
-		// The ID on a game's box (GameTDB's) from its meta.xml: the product code's last part and the
-		// company code's last two digits (WUP-P-ALZE and 0001: ALZE01)
-		std::string BoxId(const std::string& productCode, const std::string& companyCode)
-		{
-			const size_t dash = productCode.rfind('-');
-			const std::string product = dash == std::string::npos ? productCode : productCode.substr(dash + 1);
-			if (product.size() != 4 || companyCode.size() < 2)
-				return {};
-			std::string id = product + companyCode.substr(companyCode.size() - 2);
-			for (char& c : id)
-			{
-				c = (char)std::toupper((unsigned char)c);
-				if (!std::isalnum((unsigned char)c))
-					return {};
-			}
-			return id;
 		}
 
 		bool CreateDirectories(const fs::path& path)
@@ -365,6 +349,7 @@ namespace ps5emu
 			if (!mlcPath.empty())
 				CafeTitleList::SetMLCPath(mlcPath);
 			CafeTitleList::Refresh();
+			archives::StartScan(GetConfig().game_paths); // the games in archives, which Cemu's scan does not read
 			CafeSaveList::Initialize();
 			if (!mlcPath.empty())
 			{
@@ -548,6 +533,7 @@ namespace ps5emu
 	{
 		if (s_coreThread.joinable())
 			s_coreThread.join();
+		archives::Stop(); // done already, unless a 3DS or DS game is chosen before it is
 	}
 
 	void ApplyOptions(const Options& options)
@@ -576,6 +562,7 @@ namespace ps5emu
 			CafeTitleList::ClearScanPaths();
 			CafeTitleList::AddScanPath(_utf8ToPath(options.gamesFolder));
 			CafeTitleList::Refresh();
+			archives::StartScan(config.game_paths);
 			ps5log::Line("[emu] games folder is now {}", options.gamesFolder);
 		}
 		GetConfigHandle().Save();
@@ -598,12 +585,13 @@ namespace ps5emu
 
 	bool Scanning()
 	{
-		return CafeTitleList::IsScanning();
+		return CafeTitleList::IsScanning() || archives::Scanning();
 	}
 
 	std::vector<Game> ListGames()
 	{
 		std::vector<Game> games;
+		const std::string unpacked = ps5archive::UnpackedRoot() + "/";
 		for (const TitleId titleId : CafeTitleList::GetAllTitleIds())
 		{
 			GameInfo2 info = CafeTitleList::GetGameInfo(titleId);
@@ -612,6 +600,10 @@ namespace ps5emu
 			TitleInfo& base = info.GetBase();
 			if (!base.IsValid() || base.GetAppTitleId() != titleId)
 				continue; // updates and DLC are listed with their base
+			// a copy unpacked from an archive, which Cemu's title cache keeps from when it started: the
+			// archive's game, below, stands for it
+			if (_pathToUtf8(base.GetPath()).rfind(unpacked, 0) == 0)
+				continue;
 			Game game;
 			game.titleId = titleId;
 			// the game's own name in the menus' language, its English one where it has none
@@ -635,6 +627,22 @@ namespace ps5emu
 			case TitleInfo::TitleDataFormat::WUHB: game.format = "WUHB"; break;
 			default: game.format = "FOLDER"; break;
 			}
+			games.push_back(std::move(game));
+		}
+		// the games in archives (wiiu_archives.h), but those listed already: a game in a file or folder of
+		// its own starts without unpacking
+		for (Game& game : archives::Games())
+		{
+			if (std::any_of(games.begin(), games.end(), [&](const Game& listed) { return listed.titleId == game.titleId; }))
+				continue;
+			// its update and DLC, when they are installed in the MLC
+			GameInfo2 info = CafeTitleList::GetGameInfo(game.titleId);
+			if (info.HasUpdate())
+			{
+				game.hasUpdate = true;
+				game.version = info.GetUpdate().GetAppTitleVersion();
+			}
+			game.dlcCount = (uint32_t)info.GetAOC().size();
 			games.push_back(std::move(game));
 		}
 		std::sort(games.begin(), games.end(), [](const Game& a, const Game& b) { return boost::ilexicographical_compare(a.name, b.name); });

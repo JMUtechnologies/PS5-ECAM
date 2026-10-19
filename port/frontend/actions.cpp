@@ -2,10 +2,10 @@
 // PS5CEMU-HAR: what the launchers do besides drawing (actions.h), moved unchanged from launcher.cpp.
 
 #include "actions.h"
+#include "../app/game_archives.h"
 #include "../app/lang.h"
 #include "../app/netfs.h"
 #include "../app/paths.h"
-#include "../melonds/archive.h"
 #include "../ps5/kernel.h"
 #include "../ps5/log.h"
 
@@ -286,7 +286,8 @@ namespace ps5actions
 		for (const char* extension : {".3ds", ".cci", ".cxi", ".cia", ".3dsx", ".app", ".elf", ".axf", ".z3ds", ".zcci", ".zcxi", ".z3dsx"})
 			if (lower.size() > std::strlen(extension) && lower.ends_with(extension))
 				return true;
-		return false;
+		// a game in an archive, as each side's library reads one (app/game_archives.h): by its name only
+		return ps5archive::IsArchive(name);
 	}
 
 	bool HasDsExtension(const std::string& name)
@@ -295,8 +296,7 @@ namespace ps5actions
 		for (const char* extension : {".nds", ".srl", ".dsi"})
 			if (lower.size() > std::strlen(extension) && lower.ends_with(extension))
 				return true;
-		// a DS game in an archive, as the DS side's library reads one (melonds/archive.h)
-		return ps5melonds::archive::IsArchive(name);
+		return ps5archive::IsArchive(name);
 	}
 
 	// The 3DS games right in a folder (Azahar's library looks in the folders in it too). -1: unreadable.
@@ -316,7 +316,8 @@ namespace ps5actions
 	}
 
 	// What Cemu would find in a folder: Wii U images and executables, and folders that hold an
-	// unpacked game (code, content, meta) or an installable one (title.tmd). -1: unreadable.
+	// unpacked game (code, content, meta) or an installable one (title.tmd); and archives, which may hold
+	// an unpacked game (app/wiiu_archives.h). -1: unreadable.
 	int CountGames(const std::string& folder)
 	{
 		bool ok = false;
@@ -324,12 +325,15 @@ namespace ps5actions
 		for (const auto& name : ListEntries(folder, false, ok))
 		{
 			const std::string lower = Lower(name);
-			for (const char* extension : {".wua", ".wud", ".wux", ".rpx", ".elf", ".wuhb"})
-				if (lower.size() > std::strlen(extension) && lower.ends_with(extension))
-				{
-					count++;
-					break;
-				}
+			if (ps5archive::IsArchive(name))
+				count++;
+			else
+				for (const char* extension : {".wua", ".wud", ".wux", ".rpx", ".elf", ".wuhb"})
+					if (lower.size() > std::strlen(extension) && lower.ends_with(extension))
+					{
+						count++;
+						break;
+					}
 		}
 		if (!ok)
 			return -1;

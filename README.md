@@ -41,7 +41,10 @@ Fixes for 4.0.1, and a few things you asked for. The details are in the [release
   ([#60](https://github.com/premohq/PS5CEMU-HAR/issues/60)).
 - **An encrypted 3DS game** is refused in the launcher, which says why, instead of closing the app
   ([#57](https://github.com/premohq/PS5CEMU-HAR/issues/57)).
-- **DS games in archives:** `.zip`, `.7z`, `.rar` and tar archives play without extracting them ([#50](https://github.com/premohq/PS5CEMU-HAR/issues/50)).
+- **Games in archives** ([#50](https://github.com/premohq/PS5CEMU-HAR/issues/50)): `.zip`, `.7z`, `.rar` and tar archives are in the library on
+  every side, by their games' own names and icons. DS games play without extracting them; a Wii U or
+  3DS game is unpacked once, the first time it starts, and the copy is kept for the next (**Settings >
+  Diagnostics > Unpacked games** clears them; [how](docs/GUIDE.md#games-in-archives)).
 - **New buttons** in **Settings > Controls**: *Touch at the cursor* (3DS and DS, for drawing), *Fast
   forward* (3DS and DS) and *Rewind* (DS) ([#59](https://github.com/premohq/PS5CEMU-HAR/issues/59), [#54](https://github.com/premohq/PS5CEMU-HAR/issues/54)).
 - **Everything on the app's drive:** installed on a USB drive or the extended storage, the app can keep
@@ -98,7 +101,7 @@ The biggest update yet. The full list is in the [release notes](https://github.c
 | | Wii U | Nintendo 3DS | Nintendo DS |
 |---|---|---|---|
 | **Emulator** | Cemu, x64 recompiler, Vulkan | Azahar, dynarmic recompiler, Vulkan | melonDS, ARM recompiler |
-| **Plays** | `.wua`, `.wud`, `.wux`, unpacked games | `.3ds`, `.cci`, `.cxi`, `.app`, `.3dsx`, `.elf`, compressed `.z*`, installed `.cia` | `.nds`, also in `.zip`, `.7z` and `.rar` archives |
+| **Plays** | `.wua`, `.wud`, `.wux`, unpacked games (also in `.zip`, `.7z` and `.rar` archives) | `.3ds`, `.cci`, `.cxi`, `.app`, `.3dsx`, `.elf`, compressed `.z*`, also in `.zip`, `.7z` and `.rar` archives; installed `.cia` | `.nds`, also in `.zip`, `.7z` and `.rar` archives |
 | **Picture** | 4K output, 120 Hz, FSR 1, graphic packs | up to 10x resolution, texture filters, layouts, borders | sharp, smooth or square pixels, layouts, borders |
 | **Extras** | mods, accounts, amiibo, Skylanders portals, updates and DLC | save states, cheats, amiibo, mods, Artic Base | save states, cheats, RetroAchievements |
 

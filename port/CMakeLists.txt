@@ -98,8 +98,9 @@ find_library(BZ2_LIBRARY bz2 REQUIRED)
 find_library(PSL_LIBRARY psl REQUIRED)
 # the box art GameTDB serves (app/boxart.cpp): JPEG, and PNG through libpng16 above
 find_library(TURBOJPEG_LIBRARY turbojpeg REQUIRED)
-# DS games in archives (melonds/archive.cpp), as melonDS's own frontend reads them: pacbrew's libarchive,
-# with its 7z's LZMA (zstd, bzip2 and zlib are the app's already)
+# games in archives (app/game_archives.cpp, melonds/archive.cpp), as melonDS's own frontend reads them:
+# pacbrew's libarchive, with its 7z's LZMA (zstd, bzip2 and zlib are the app's already); a .zip with
+# libzip, which Cemu links
 find_library(ARCHIVE_LIBRARY archive REQUIRED)
 find_library(LZMA_LIBRARY lzma REQUIRED)
 
@@ -138,6 +139,8 @@ add_library(CemuPS5 STATIC
 	app/updates.h
 	app/usb_devices.cpp
 	app/usb_devices.h
+	app/wiiu_archives.cpp
+	app/wiiu_archives.h
 	app/menu_canvas.h
 	app/pack_updates.cpp
 	app/pack_updates.h
@@ -148,6 +151,8 @@ add_library(CemuPS5 STATIC
 	"${PS5CEMU_DEPS}/ps5-forwarder-format/src/psfwd.c"
 	app/file_modes.cpp
 	app/file_modes.h
+	app/game_archives.cpp
+	app/game_archives.h
 	app/paths.h
 	app/side_menu.h
 	app/tga.h
@@ -257,6 +262,8 @@ set_source_files_properties(
 	app/forwarders.cpp
 	"${PS5CEMU_DEPS}/ps5-forwarder-format/src/psfwd.c"
 	app/file_modes.cpp
+	app/game_archives.cpp
+	app/wiiu_archives.cpp
 	app/netfs.cpp
 	app/boxart.cpp
 	app/saves.cpp

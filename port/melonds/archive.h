@@ -6,33 +6,18 @@
 
 #pragma once
 
-#include <cctype>
+#include "../app/game_archives.h"
+
 #include <cstdint>
-#include <cstring>
 #include <string>
 #include <vector>
 
 namespace ps5melonds::archive
 {
 	// Whether a file's name is one of the archives melonDS's frontend opens (its ArchiveExtensions,
-	// src/frontend/qt_sdl/Window.cpp, those libarchive reads here). By name only, so the launcher's
-	// counts need no libarchive
-	inline bool IsArchive(const std::string& path)
-	{
-		static constexpr const char* kExtensions[] = {".zip", ".7z", ".rar", ".tar", ".tar.gz", ".tgz", ".tar.xz", ".txz", ".tar.bz2",
-			".tbz2", ".tar.zst", ".tzst", ".tar.lzma", ".tlz"};
-		std::string lower = path;
-		for (char& c : lower)
-			c = (char)std::tolower((unsigned char)c);
-		for (const char* extension : kExtensions)
-		{
-			// (no ends_with: melonDS's own build, which has core.cpp, is C++17)
-			const size_t length = std::strlen(extension);
-			if (lower.size() > length && lower.compare(lower.size() - length, length, extension) == 0)
-				return true;
-		}
-		return false;
-	}
+	// src/frontend/qt_sdl/Window.cpp, those libarchive reads here), as every side reads them. By name
+	// only, so the launcher's counts need no libarchive
+	using ps5archive::IsArchive;
 
 	struct Rom
 	{

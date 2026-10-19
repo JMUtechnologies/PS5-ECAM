@@ -28,36 +28,58 @@
 #include <cstdint>
 #include <cstring>
 #include <functional>
+#include <map>
 #include <string>
 #include <vector>
 
 namespace ps5archive
 {
-	// Whether a file's name is one of the archives the sides open (melonDS's frontend's
-	// ArchiveExtensions, those libarchive reads here). By name only: the launcher's counts and the
-	// tiles' sides need no archive opened
-	inline bool IsArchive(const std::string& path)
+	// The archives the sides open: melonDS's frontend's ArchiveExtensions, those libarchive reads here
+	inline constexpr const char* kExtensions[] = {".zip", ".7z", ".rar", ".tar", ".tar.gz", ".tgz", ".tar.xz", ".txz", ".tar.bz2",
+		".tbz2", ".tar.zst", ".tzst", ".tar.lzma", ".tlz"};
+
+	// The extension a file's name has of those, the longest ("Game.tar.gz": ".tar.gz"), in small
+	// letters; empty when it is not an archive's
+	inline std::string ArchiveExtension(const std::string& path)
 	{
-		static constexpr const char* kExtensions[] = {".zip", ".7z", ".rar", ".tar", ".tar.gz", ".tgz", ".tar.xz", ".txz", ".tar.bz2",
-			".tbz2", ".tar.zst", ".tzst", ".tar.lzma", ".tlz"};
 		std::string lower = path;
 		for (char& c : lower)
 			c = (char)std::tolower((unsigned char)c);
+		std::string found;
 		for (const char* extension : kExtensions)
 		{
+			// (no ends_with: melonDS's own build, which has core.cpp, is C++17)
 			const size_t length = std::strlen(extension);
-			if (lower.size() > length && lower.compare(lower.size() - length, length, extension) == 0)
-				return true;
+			if (lower.size() > length && length > found.size() && lower.compare(lower.size() - length, length, extension) == 0)
+				found = extension;
 		}
-		return false;
+		return found;
+	}
+
+	// Whether a file's name is one of the archives the sides open. By name only: the launcher's counts
+	// and the tiles' sides need no archive opened
+	inline bool IsArchive(const std::string& path)
+	{
+		return !ArchiveExtension(path).empty();
 	}
 
 	// The archive's own name without its extensions ("Game.tar.gz": "Game"), as a game's name when
 	// what is in it has none
-	std::string Stem(const std::string& path);
+	inline std::string Stem(const std::string& path)
+	{
+		const size_t slash = path.find_last_of('/');
+		const std::string name = slash == std::string::npos ? path : path.substr(slash + 1);
+		return name.substr(0, name.size() - ArchiveExtension(name).size());
+	}
 
 	// The archive's kind, as the libraries' Format column shows it: ZIP, 7Z, RAR or TAR
-	std::string Kind(const std::string& path);
+	inline std::string Kind(const std::string& path)
+	{
+		const std::string extension = ArchiveExtension(path);
+		if (extension.empty())
+			return {};
+		return extension == ".zip" ? "ZIP" : extension == ".7z" ? "7Z" : extension == ".rar" ? "RAR" : "TAR";
+	}
 
 	// A regular file in an archive
 	struct Entry
@@ -74,6 +96,8 @@ namespace ps5archive
 		virtual ~Stream() = default;
 		// Up to bytes of the entry's next bytes into out; 0 at its end, -1 on an error
 		virtual int64_t Read(void* out, size_t bytes) = 0;
+		// Why the last Read failed, in English, as the library says it (for the boot log)
+		virtual std::string Error() const { return {}; }
 		// The entry's bytes from offset (at or after what was read so far) into out, all of them: false
 		// when the entry is shorter or unreadable, or offset is behind. The 3DS's and the Wii U's headers
 		// are read this way, at offsets that only increase
@@ -90,6 +114,35 @@ namespace ps5archive
 	// fails before its end, unless visit stopped it
 	bool Visit(const std::string& path, const std::function<bool(const Entry&, Stream&)>& visit, std::string* error = nullptr);
 
+	// What a side's scans read of each archive, kept in a file of its own by the archive's path, with
+	// the archive's size and time: a later scan reads nothing of an archive that has not changed. The
+	// fields are the side's (any bytes); a file from another version reads as none
+	class Probes
+	{
+	public:
+		explicit Probes(std::string file); // read at once
+		// The fields kept for the archive, when it has the size and time it had when they were read;
+		// else null
+		const std::vector<std::string>* Find(const std::string& path, uint64_t size, int64_t time) const;
+		// What this scan read of an archive (or found again with Find), kept
+		void Keep(const std::string& path, uint64_t size, int64_t time, std::vector<std::string> fields);
+		// The archives this scan kept, written when they differ from the file's
+		void Save() const;
+		// An archive's size and time as the file keeps them (stat's); false when it is not there
+		static bool Stamp(const std::string& path, uint64_t& size, int64_t& time);
+
+	private:
+		struct Record
+		{
+			uint64_t size = 0;
+			int64_t time = 0;
+			std::vector<std::string> fields;
+		};
+		std::string m_file;
+		std::map<std::string, Record> m_known, m_seen;
+		bool m_changed = false;
+	};
+
 	// How an unpacking goes, read by the launcher while it runs on a thread of its own; cancel stops it
 	// at its next block
 	struct Progress
@@ -100,7 +153,8 @@ namespace ps5archive
 
 	// What an unpacked copy is of: an archived ROM (folder false: the entry, found again by index and
 	// checked by name and size), or a Wii U title's folder (folder true: every entry whose name starts
-	// with member, the title's folder in the archive with its '/', or "" for one at the archive's top)
+	// with member, the title's folder in the archive with its '/', or "" for one at the archive's top;
+	// size: all of theirs)
 	struct Source
 	{
 		std::string archive; // the archive's path
@@ -126,7 +180,7 @@ namespace ps5archive
 	// leave out a copy that Cemu's title cache picked up when it started one
 	std::string UnpackedRoot();
 
-	// The unpacked copies' size, and removing them all (Settings > Diagnostics)
+	// The unpacked copies' size, and removing them all (Settings > Diagnostics): how many there were
 	uint64_t UnpackedBytes();
-	void ClearUnpacked();
+	int ClearUnpacked();
 }

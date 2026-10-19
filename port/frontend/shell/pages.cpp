@@ -1276,9 +1276,11 @@ namespace ps5shell
 			ready[0] = games > 0;
 			ready[2] = GamesFolder(m_filesSide) == m_browseFolder;
 			if (message.empty())
-				message = n3ds ? Tr("Games can be .3ds or .cci, .cxi, .cia or .3dsx, decrypted, here or in the folders in it. Triangle uses the folder shown.") :
+				message = n3ds ? Tr("Games can be .3ds or .cci, .cxi or .3dsx, decrypted, alone or in .zip, .7z or .rar archives, and .cia files, here "
+									"or in the folders in it. Triangle uses the folder shown.") :
 					nds		   ? Tr("Games are .nds files, alone or in .zip, .7z or .rar archives, here or in the folders in it. Triangle uses the folder shown.") :
-								 Tr("Games can be .wua, .wud, .wux, or folders with code, content and meta. Triangle uses the folder shown.");
+								 Tr("Games can be .wua, .wud, .wux, or folders with code, content and meta, alone or in .zip, .7z or .rar archives. "
+									"Triangle uses the folder shown.");
 		}
 		else
 		{

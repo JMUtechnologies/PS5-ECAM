@@ -10,9 +10,11 @@
 //     RestartToLibrary) on that emulator's side.
 
 #include "app/achievements.h"
+#include "app/catalog.h"
 #include "app/emulator.h"
 #include "app/file_modes.h"
 #include "app/forwarders.h"
+#include "app/game_archives.h"
 #include "app/lang.h"
 #include "app/mods.h"
 #include "app/netfs.h"
@@ -22,7 +24,6 @@
 #include "azahar/azahar.h"
 #include "azahar/library.h"
 #include "frontend/launcher.h"
-#include "melonds/archive.h"
 #include "melonds/library.h"
 #include "melonds/melonds.h"
 #include "frontend/settings.h"
@@ -178,7 +179,7 @@ namespace
 		ps5launcher::System side = ps5launcher::System::WiiU;
 	};
 
-	TileGame ReadArguments(int argc, char* argv[])
+	TileGame ReadArguments(int argc, char* argv[], const ps5settings::Launcher& settings)
 	{
 		TileGame tile;
 		for (int i = 0; i < argc; i++)
@@ -197,12 +198,36 @@ namespace
 		for (const char* ds : {".nds", ".srl", ".dsi"})
 			if (extension == ds)
 				tile.side = ps5launcher::System::Nds;
-		// an archive's game is a DS game: only the DS side reads them (melonds/archive.h)
-		if (ps5melonds::archive::IsArchive(tile.rom))
-			tile.side = ps5launcher::System::Nds;
 		for (const char* n3ds : {".3ds", ".cci", ".cxi", ".cia", ".3dsx", ".app", ".elf", ".axf", ".z3ds", ".zcci", ".zcxi", ".z3dsx"})
 			if (extension == n3ds)
 				tile.side = ps5launcher::System::N3ds;
+		// an archive's game is any side's (app/game_archives.h): the side whose library listed it last (the
+		// catalogue), else the side whose game files folder holds it (the deepest of those that do), else
+		// the DS side's, whose tiles were its only ones
+		if (ps5archive::IsArchive(tile.rom))
+		{
+			for (const ps5catalog::System side : {ps5catalog::System::WiiU, ps5catalog::System::N3ds, ps5catalog::System::Nds})
+				for (const ps5catalog::Entry& entry : ps5catalog::Games(side))
+					if (entry.game.path.string() == tile.rom)
+					{
+						tile.side = (ps5launcher::System)side;
+						return tile;
+					}
+			tile.side = ps5launcher::System::Nds;
+			size_t deepest = 0;
+			for (const auto& [side, setting] : {std::pair{ps5launcher::System::WiiU, &settings.gamesFolder},
+					 std::pair{ps5launcher::System::N3ds, &settings.n3ds.gamesFolder}, std::pair{ps5launcher::System::Nds, &settings.nds.gamesFolder}})
+			{
+				std::string folder = *setting;
+				while (folder.size() > 1 && folder.back() == '/')
+					folder.pop_back();
+				if (!folder.empty() && folder.size() > deepest && tile.rom.compare(0, folder.size() + 1, folder + "/") == 0)
+				{
+					tile.side = side;
+					deepest = folder.size();
+				}
+			}
+		}
 		return tile;
 	}
 
@@ -262,7 +287,7 @@ int main(int argc, char* argv[])
 	ps5settings::Launcher settings = ps5settings::Load();
 	// the update notice, on a fresh start only (not each time a game hands back to the library)
 	const bool freshStart = settings.side.empty();
-	const TileGame tile = ReadArguments(argc, argv);
+	const TileGame tile = ReadArguments(argc, argv, settings);
 	if (!tile.rom.empty())
 		ps5log::Line("[main] a home screen tile: --rom {}{} ({} side)", tile.rom, tile.exitAfterGame ? " --exit-after-game" : "",
 			ps5launcher::SideTitle(tile.side));
@@ -524,6 +549,14 @@ int main(int argc, char* argv[])
 				sceKernelUsleep(1000000);
 		}
 		const ps5emu::Game& game = choice->game;
+		// what the emulator starts: an archived game's unpacked copy (app/game_archives.h); the game's
+		// settings, saves and tile stay the archive's
+		ps5emu::Game launched = game;
+		if (!choice->launchPath.empty())
+		{
+			launched.path = choice->launchPath;
+			ps5log::Line("[main] {} starts from its copy unpacked from {}", game.name, game.path.string());
+		}
 		const char* side = ps5launcher::SideName(choice->system);
 		// a tile's game that closes the app after it: its in-game menu says so instead of the library (#48)
 		ps5emu::SetExitAfterGame(tile.exitAfterGame && IsTileGame(tile, game));
@@ -576,7 +609,7 @@ int main(int argc, char* argv[])
 			// on every CPU
 			SetHighFrameRate(false);
 			ps5threads::EndIsolation();
-			if (ps5azahar::LaunchGame(game, forGame.n3ds, error))
+			if (ps5azahar::LaunchGame(launched, forGame.n3ds, error))
 			{
 				ps5azahar::RunGame();
 				afterGame("3ds");
@@ -600,7 +633,7 @@ int main(int argc, char* argv[])
 		SetHighFrameRate(forGame.highFrameRate);
 		ps5display::SetFramePacing(forGame.framePacing);
 		ps5window::Initialize();
-		if (ps5emu::LaunchGame(game, error))
+		if (ps5emu::LaunchGame(launched, error))
 		{
 			ps5emu::RunGame();
 			afterGame("wiiu");

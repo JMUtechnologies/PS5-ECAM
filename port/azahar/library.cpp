@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "library.h"
 #include "azahar.h"
+#include "../app/game_archives.h"
 #include "../app/lang.h"
 #include "../app/paths.h"
 #include "../ps5/log.h"
@@ -8,12 +9,16 @@
 #include <algorithm>
 #include <atomic>
 #include <cctype>
+#include <chrono>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <functional>
 #include <mutex>
 #include <optional>
+#include <set>
 #include <thread>
 
 namespace fs = std::filesystem;
@@ -50,15 +55,20 @@ namespace ps5azahar
 				stream.read(static_cast<char*>(out), (std::streamsize)bytes);
 				return (size_t)stream.gcount() == bytes;
 			}
-
-			std::vector<uint8_t> Read(uint64_t offset, size_t bytes)
-			{
-				std::vector<uint8_t> data(bytes);
-				if (!Read(offset, data.data(), bytes))
-					data.clear();
-				return data;
-			}
 		};
+
+		// Where a file's bytes come from: offset, out, bytes; false when they are not there. A plain file's
+		// are read anywhere; an archive's entry's only at offsets that go up (app/game_archives.h), as the
+		// NCCHs and 3DSXs below are read
+		using Reader = std::function<bool(uint64_t offset, void* out, size_t bytes)>;
+
+		std::vector<uint8_t> ReadBytes(const Reader& read, uint64_t offset, size_t bytes)
+		{
+			std::vector<uint8_t> data(bytes);
+			if (!read(offset, data.data(), bytes))
+				data.clear();
+			return data;
+		}
 
 		uint32_t U32(const uint8_t* p) { return p[0] | p[1] << 8 | p[2] << 16 | (uint32_t)p[3] << 24; }
 		uint64_t U64(const uint8_t* p) { return U32(p) | (uint64_t)U32(p + 4) << 32; }
@@ -118,6 +128,7 @@ namespace ps5azahar
 		{
 			if (smdh.size() < kSmdhSize || std::memcmp(smdh.data(), "SMDH", 4) != 0)
 				return false;
+			title.smdh = smdh;
 			for (const int language : {ps5lang::NintendoLanguage(), 1, 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11})
 			{
 				const uint8_t* entry = smdh.data() + 0x8 + language * 0x200;
@@ -164,10 +175,10 @@ namespace ps5azahar
 
 		// An NCCH at offset: its title ID, its product code, and its SMDH from its ExeFS when it is
 		// not encrypted (the header never is).
-		bool ReadNcch(File& file, uint64_t offset, Title& title)
+		bool ReadNcch(const Reader& read, uint64_t offset, Title& title)
 		{
 			uint8_t header[0x200];
-			if (!file.Read(offset, header, sizeof(header)) || std::memcmp(header + 0x100, "NCCH", 4) != 0)
+			if (!read(offset, header, sizeof(header)) || std::memcmp(header + 0x100, "NCCH", 4) != 0)
 				return false;
 			title.titleId = U64(header + 0x118); // the program ID
 			title.boxId = BoxId(header + 0x150);
@@ -176,24 +187,25 @@ namespace ps5azahar
 				return true;
 			const uint64_t exefs = offset + U32(header + 0x1A0) * kMediaUnit;
 			uint8_t entries[0xA0];
-			if (U32(header + 0x1A0) == 0 || !file.Read(exefs, entries, sizeof(entries)))
+			if (U32(header + 0x1A0) == 0 || !read(exefs, entries, sizeof(entries)))
 				return true;
 			for (int i = 0; i < 10; i++)
 			{
 				const uint8_t* entry = entries + i * 16;
 				if (std::strncmp((const char*)entry, "icon", 8) == 0)
 				{
-					ReadSmdh(file.Read(exefs + 0x200 + U32(entry + 8), std::min<size_t>(U32(entry + 12), kSmdhSize)), title);
+					ReadSmdh(ReadBytes(read, exefs + 0x200 + U32(entry + 8), std::min<size_t>(U32(entry + 12), kSmdhSize)), title);
 					break;
 				}
 			}
 			return true;
 		}
 
-		bool ReadCia(File& file, Title& title)
+		// (its meta section, which has the icon, is read before what comes ahead of it: a plain file's only)
+		bool ReadCia(const Reader& read, Title& title)
 		{
 			uint8_t header[0x20];
-			if (!file.Read(0, header, sizeof(header)) || U32(header) != 0x2020)
+			if (!read(0, header, sizeof(header)) || U32(header) != 0x2020)
 				return false;
 			auto align = [](uint64_t value) { return (value + 63) & ~uint64_t(63); };
 			const uint64_t certs = align(U32(header));
@@ -202,27 +214,27 @@ namespace ps5azahar
 			const uint64_t content = tmd + align(U32(header + 0x10));
 			const uint64_t meta = content + align(U64(header + 0x18));
 			// the TMD after its RSA-2048 signature: the title ID and version, big-endian
-			const std::vector<uint8_t> tmdHeader = file.Read(tmd, 0x140 + 0xA0);
+			const std::vector<uint8_t> tmdHeader = ReadBytes(read, tmd, 0x140 + 0xA0);
 			if (tmdHeader.size() == 0x140 + 0xA0 && U32(tmdHeader.data()) == 0x04000100)
 			{
 				title.titleId = U64BE(tmdHeader.data() + 0x140 + 0x4C);
 				title.version = (uint16_t)(tmdHeader[0x140 + 0x9C] << 8 | tmdHeader[0x140 + 0x9D]);
 			}
 			if (U32(header + 0x14) >= 0x400 + kSmdhSize)
-				ReadSmdh(file.Read(meta + 0x400, kSmdhSize), title);
+				ReadSmdh(ReadBytes(read, meta + 0x400, kSmdhSize), title);
 			// Encrypted, the CIA's contents with its title key or the game with its own, and Azahar
 			// installs nothing (Service::AM::CheckCIAToInstall), whatever keys it has. The first: the
 			// TMD's content chunk records (after its header and the 64 content info records), whose
 			// type has bit 0 for a content encrypted with the title key
 			const uint16_t contents = tmdHeader.size() == 0x140 + 0xA0 ? (uint16_t)(tmdHeader[0x140 + 0x9E] << 8 | tmdHeader[0x140 + 0x9F]) : 0;
-			const std::vector<uint8_t> chunks = file.Read(tmd + 0x140 + 0xC4 + 0x900, std::min<size_t>(contents, 64) * 0x30);
+			const std::vector<uint8_t> chunks = ReadBytes(read, tmd + 0x140 + 0xC4 + 0x900, std::min<size_t>(contents, 64) * 0x30);
 			for (size_t at = 0; at + 0x30 <= chunks.size(); at += 0x30)
 				if (chunks[at + 7] & 0x1)
 					title.encrypted = true;
 			// the second: the first content's NCCH header, which also has the product code, when the
 			// title key does not hide it
 			uint8_t ncch[0x200];
-			if (file.Read(content, ncch, sizeof(ncch)) && std::memcmp(ncch + 0x100, "NCCH", 4) == 0)
+			if (read(content, ncch, sizeof(ncch)) && std::memcmp(ncch + 0x100, "NCCH", 4) == 0)
 			{
 				title.boxId = BoxId(ncch + 0x150);
 				if ((ncch[0x18F] & 0x4) == 0) // NoCrypto
@@ -231,15 +243,55 @@ namespace ps5azahar
 			return true;
 		}
 
-		bool Read3dsx(File& file, Title& title)
+		bool Read3dsx(const Reader& read, Title& title)
 		{
 			uint8_t header[0x2C];
-			if (!file.Read(0, header, sizeof(header)) || std::memcmp(header, "3DSX", 4) != 0)
+			if (!read(0, header, sizeof(header)) || std::memcmp(header, "3DSX", 4) != 0)
 				return false;
 			const uint16_t size = header[4] | header[5] << 8;
 			if (size >= 0x2C)
-				ReadSmdh(file.Read(U32(header + 0x20), std::min<size_t>(U32(header + 0x24), kSmdhSize)), title);
+				ReadSmdh(ReadBytes(read, U32(header + 0x20), std::min<size_t>(U32(header + 0x24), kSmdhSize)), title);
 			return true;
+		}
+
+		// What a file is, by its extension, read as read gives it (Inspect's)
+		Title InspectWith(const std::string& extension, const Reader& read)
+		{
+			Title title;
+			if (extension == ".3ds" || extension == ".cci")
+			{
+				uint8_t header[0x200];
+				title.format = "3DS";
+				if (read(0, header, sizeof(header)) && std::memcmp(header + 0x100, "NCSD", 4) == 0)
+					title.readable = ReadNcch(read, U32(header + 0x120) * kMediaUnit, title);
+			}
+			else if (extension == ".cxi" || extension == ".app")
+			{
+				title.format = extension == ".cxi" ? "CXI" : "APP";
+				title.readable = ReadNcch(read, 0, title);
+			}
+			else if (extension == ".cia")
+			{
+				title.format = "CIA";
+				title.readable = ReadCia(read, title);
+			}
+			else if (extension == ".3dsx")
+			{
+				title.format = "3DSX";
+				title.readable = Read3dsx(read, title);
+			}
+			else if (extension == ".elf" || extension == ".axf")
+			{
+				title.format = "ELF";
+				title.readable = true;
+			}
+			else
+			{
+				// Azahar's compressed dumps: listed, their contents read by Azahar when they start
+				title.format = extension == ".z3dsx" ? "Z3DSX" : "Z3DS";
+				title.readable = true;
+			}
+			return title;
 		}
 
 		uint64_t PathId(const std::string& path)
@@ -291,20 +343,162 @@ namespace ps5azahar
 			fs::rename(temporary, path, ec);
 		}
 
-		void Scan(const fs::path& folder, int depth, std::vector<ps5emu::Game>& games)
+		// -- games in archives (app/game_archives.h) -----------------------------------------------------
+
+		// What archives.bin keeps of an archive: whether it holds a 3DS game, the game's entry, and what
+		// was read of it, its SMDH as it is (its name in the menus' language is read from it at each scan)
+		enum ArchiveField
+		{
+			kHasGame, // "1", or "0": the archive holds no 3DS game
+			kIndex,	  // the entry's place in the archive, its name and its size
+			kMember,
+			kSize,
+			kEncrypted, // "1" or "0"
+			kTitleId,	// 16 hex digits
+			kVersion,
+			kBoxId,
+			kSmdh,
+			kArchiveFields,
+		};
+
+		struct ArchivedRom
+		{
+			ps5archive::Entry entry;
+			Title title;
+		};
+
+		// What an archive's 3DS game is: its first ROM by name, as the DS side finds its own (case aside,
+		// a Mac's copies left out, and CIA files: installed, not played, and their icon is at their end),
+		// else the first file libarchive gave no name that starts as an NCSD (.3ds), an NCCH (.cxi) or a
+		// 3DSX does. A ROM is read as far as its icon, and one that sorts after a ROM found already is not
+		// read. Empty when the archive cannot be read
+		std::vector<std::string> ProbeArchive(const std::string& path)
+		{
+			const auto started = std::chrono::steady_clock::now();
+			std::optional<ArchivedRom> named, unnamed;
+			std::string error;
+			const bool walked = ps5archive::Visit(path, [&](const ps5archive::Entry& entry, ps5archive::Stream& stream) {
+				std::string extension = Lower(fs::path(entry.name).extension().string());
+				if (entry.name.empty())
+				{
+					if (named || unnamed)
+						return true; // a ROM by its name is taken before one with none, and the first of those
+				}
+				else if (extension == ".cia" || !Known(extension) || (named && Lower(entry.name) >= Lower(named->entry.name)))
+					return true;
+				// its first bytes: what a nameless one is, and the first that Inspect reads
+				std::vector<uint8_t> head((size_t)std::min<uint64_t>(entry.size, 0x200));
+				if (!stream.ReadAt(0, head.data(), head.size()))
+					return true;
+				if (entry.name.empty())
+				{
+					if (head.size() >= 0x104 && std::memcmp(head.data() + 0x100, "NCSD", 4) == 0)
+						extension = ".3ds";
+					else if (head.size() >= 0x104 && std::memcmp(head.data() + 0x100, "NCCH", 4) == 0)
+						extension = ".cxi";
+					else if (head.size() >= 4 && std::memcmp(head.data(), "3DSX", 4) == 0)
+						extension = ".3dsx";
+					else
+						return true;
+				}
+				Title title = InspectWith(extension, [&](uint64_t offset, void* out, size_t bytes) {
+					uint8_t* to = static_cast<uint8_t*>(out);
+					if (offset < head.size())
+					{
+						const size_t kept = (size_t)std::min<uint64_t>(head.size() - offset, bytes);
+						std::memcpy(to, head.data() + offset, kept);
+						offset += kept;
+						to += kept;
+						bytes -= kept;
+					}
+					return bytes == 0 || stream.ReadAt(offset, to, bytes);
+				});
+				(entry.name.empty() ? unnamed : named) = ArchivedRom{entry, std::move(title)};
+				return true;
+			}, &error);
+			if (!walked)
+			{
+				ps5log::Line("[azahar] {} could not be read as an archive: {}", path, error);
+				return {};
+			}
+			std::vector<std::string> fields(kArchiveFields);
+			const std::optional<ArchivedRom>& found = named ? named : unnamed;
+			fields[kHasGame] = found ? "1" : "0";
+			if (found)
+			{
+				fields[kIndex] = std::to_string(found->entry.index);
+				fields[kMember] = found->entry.name;
+				fields[kSize] = std::to_string(found->entry.size);
+				fields[kEncrypted] = found->title.encrypted ? "1" : "0";
+				fields[kTitleId] = fmt::format("{:016x}", found->title.titleId);
+				fields[kVersion] = std::to_string(found->title.version);
+				fields[kBoxId] = found->title.boxId;
+				fields[kSmdh].assign(found->title.smdh.begin(), found->title.smdh.end());
+			}
+			ps5log::Line("[azahar] {}: {} ({} ms)", path,
+				!found ? std::string("no 3DS game in it") : !named ? std::string("a ROM whose name the PS5 cannot show") : found->entry.name,
+				(long long)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - started).count());
+			return fields;
+		}
+
+		// An archive's game for the library: from what an earlier scan read of it, when the archive has not
+		// changed since, else from the archive. False when it holds no 3DS game
+		bool ReadArchiveGame(const std::string& path, ps5archive::Probes& probes, ps5emu::Game& game)
+		{
+			uint64_t size = 0;
+			int64_t time = 0;
+			if (!ps5archive::Probes::Stamp(path, size, time))
+				return false;
+			const std::vector<std::string>* known = probes.Find(path, size, time);
+			const std::vector<std::string> fields = known && known->size() == kArchiveFields ? *known : ProbeArchive(path);
+			if (fields.size() != kArchiveFields)
+				return false; // unreadable: read again at the next scan
+			probes.Keep(path, size, time, fields);
+			if (fields[kHasGame] != "1")
+				return false;
+			Title title;
+			title.titleId = std::strtoull(fields[kTitleId].c_str(), nullptr, 16);
+			title.version = (uint16_t)std::strtoul(fields[kVersion].c_str(), nullptr, 10);
+			title.encrypted = fields[kEncrypted] == "1";
+			title.boxId = fields[kBoxId];
+			ReadSmdh(std::vector<uint8_t>(fields[kSmdh].begin(), fields[kSmdh].end()), title);
+			game.titleId = title.titleId ? title.titleId : PathId(path);
+			game.name = !title.name.empty() ? title.name : ps5archive::Stem(path);
+			game.path = path;
+			game.version = title.version;
+			game.format = title.encrypted ? "ENCRYPTED" : ps5archive::Kind(path);
+			game.publisher = title.publisher;
+			game.gameId = title.boxId;
+			game.archiveIndex = std::atoi(fields[kIndex].c_str());
+			game.archiveMember = fields[kMember];
+			game.archiveSize = std::strtoull(fields[kSize].c_str(), nullptr, 10);
+			if (!title.icon.empty())
+				WriteCover(game.titleId, title.icon);
+			return true;
+		}
+
+		void Scan(const fs::path& folder, int depth, std::vector<ps5emu::Game>& games, ps5archive::Probes& probes)
 		{
 			std::error_code ec;
 			for (const auto& entry : fs::directory_iterator(folder, ec))
 			{
 				if (entry.is_directory(ec))
 				{
-					if (depth < kScanDepth)
-						Scan(entry.path(), depth + 1, games);
+					// (the copies unpacked from archives are not games of their own)
+					if (depth < kScanDepth && entry.path() != ps5archive::UnpackedRoot())
+						Scan(entry.path(), depth + 1, games, probes);
 					continue;
 				}
 				const std::string path = entry.path().string();
 				if (!entry.is_regular_file(ec))
 					continue;
+				if (ps5archive::IsArchive(path))
+				{
+					ps5emu::Game game;
+					if (ReadArchiveGame(path, probes, game))
+						games.push_back(std::move(game));
+					continue;
+				}
 				if (!Known(Lower(entry.path().extension().string())))
 					continue;
 				Title title = Inspect(path);
@@ -416,45 +610,11 @@ namespace ps5azahar
 
 	Title Inspect(const std::string& path)
 	{
-		Title title;
-		std::string extension = Lower(fs::path(path).extension().string());
 		File file(path);
 		if (!file.stream)
-			return title;
-		if (extension == ".3ds" || extension == ".cci")
-		{
-			uint8_t header[0x200];
-			title.format = "3DS";
-			if (file.Read(0, header, sizeof(header)) && std::memcmp(header + 0x100, "NCSD", 4) == 0)
-				title.readable = ReadNcch(file, U32(header + 0x120) * kMediaUnit, title);
-		}
-		else if (extension == ".cxi" || extension == ".app")
-		{
-			title.format = extension == ".cxi" ? "CXI" : "APP";
-			title.readable = ReadNcch(file, 0, title);
-		}
-		else if (extension == ".cia")
-		{
-			title.format = "CIA";
-			title.readable = ReadCia(file, title);
-		}
-		else if (extension == ".3dsx")
-		{
-			title.format = "3DSX";
-			title.readable = Read3dsx(file, title);
-		}
-		else if (extension == ".elf" || extension == ".axf")
-		{
-			title.format = "ELF";
-			title.readable = true;
-		}
-		else
-		{
-			// Azahar's compressed dumps: listed, their contents read by Azahar when they start
-			title.format = Lower(extension) == ".z3dsx" ? "Z3DSX" : "Z3DS";
-			title.readable = true;
-		}
-		return title;
+			return {};
+		return InspectWith(Lower(fs::path(path).extension().string()),
+			[&file](uint64_t offset, void* out, size_t bytes) { return file.Read(offset, out, bytes); });
 	}
 
 	void StartScan(const std::string& folder)
@@ -468,7 +628,15 @@ namespace ps5azahar
 			fs::create_directories(fs::path(Root()) / sub, ec);
 		std::thread([folder] {
 			std::vector<ps5emu::Game> games;
-			Scan(folder, 0, games);
+			ps5archive::Probes probes(Root() + "/archives.bin");
+			Scan(folder, 0, games, probes);
+			probes.Save();
+			// a game in an archive and in a file of its own too: the file's, which starts without unpacking
+			std::set<uint64_t> files;
+			for (const ps5emu::Game& game : games)
+				if (!game.Archived())
+					files.insert(game.titleId);
+			std::erase_if(games, [&files](const ps5emu::Game& game) { return game.Archived() && files.count(game.titleId); });
 			ScanInstalled(games);
 			AddInstalledUpdates(games);
 			std::sort(games.begin(), games.end(), [](const ps5emu::Game& a, const ps5emu::Game& b) { return Lower(a.name) < Lower(b.name); });

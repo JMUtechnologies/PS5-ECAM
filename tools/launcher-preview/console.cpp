@@ -10,9 +10,11 @@
 #include "app/netfs.h"
 #include "app/emulator.h"
 #include "app/forwarders.h"
+#include "app/game_archives.h"
 #include "app/mods.h"
 #include "app/gameinfo.h"
 #include "app/pack_updates.h"
+#include "app/paths.h"
 #include "app/updates.h"
 #include "app/usb_devices.h"
 #include "azahar/library.h"
@@ -30,6 +32,7 @@
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -38,6 +41,7 @@
 #include <map>
 #include <sstream>
 #include <sys/syscall.h>
+#include <thread>
 #include <unistd.h>
 
 namespace preview
@@ -676,6 +680,12 @@ namespace ps5emu
 		add(0x0005000010143500, "The Legend of Zelda: The Wind Waker HD", 0, false, 0, "FOLDER", "BCZE01");
 		add(0x000500001014B800, "Xenoblade Chronicles X", 33, true, 1, "WUX", "AX5E01");
 		add(0x0005000010172600, "Pikmin 3", 0, false, 0, "NUS", "AC3E01");
+		// one in an archive (app/wiiu_archives.h): starting it shows the unpacking sheet
+		add(0x0005000010110900, "Yoshi's Woolly World", 0, false, 0, "ZIP", "AYCE01");
+		games.back().path = "/data/ps5cemu/games/Yoshi's Woolly World.zip";
+		games.back().archiveFolder = true;
+		games.back().archiveMember = "Yoshi's Woolly World [AYCE01]/";
+		games.back().archiveSize = 5216000000ull;
 		std::sort(games.begin(), games.end(), [](const Game& a, const Game& b) { return a.name < b.name; });
 		return games;
 	}
@@ -1027,5 +1037,49 @@ namespace ps5melonds::archive
 	{
 		data.clear();
 		return false;
+	}
+}
+
+// The 3DS's and the Wii U's games in archives (app/game_archives.cpp, libzip's and libarchive's): none read
+// in the preview; its one archived Wii U game (ListGames) unpacks to 42 % and stays there until Circle stops
+// it, for the sheet's shot; the unpacked games' size is a sample's, until Diagnostics clears it
+namespace ps5archive
+{
+	namespace
+	{
+		uint64_t s_unpackedBytes = 3400000000ull;
+	}
+	bool Stream::ReadAt(uint64_t, void*, size_t) { return false; }
+	bool Visit(const std::string&, const std::function<bool(const Entry&, Stream&)>&, std::string* error)
+	{
+		if (error)
+			*error = "no archives in the preview";
+		return false;
+	}
+	Probes::Probes(std::string file) : m_file(std::move(file)) {}
+	const std::vector<std::string>* Probes::Find(const std::string&, uint64_t, int64_t) const { return nullptr; }
+	void Probes::Keep(const std::string&, uint64_t, int64_t, std::vector<std::string>) {}
+	void Probes::Save() const {}
+	bool Probes::Stamp(const std::string&, uint64_t&, int64_t&) { return false; }
+	std::string Unpacked(const Source&) { return {}; }
+	bool Unpack(const Source& source, Progress* progress, std::string& path, std::string& error)
+	{
+		path.clear();
+		error.clear();
+		if (!progress)
+			return false;
+		progress->total = source.size;
+		progress->done = source.size * 42 / 100;
+		while (!progress->cancel)
+			std::this_thread::sleep_for(std::chrono::milliseconds(5));
+		return false;
+	}
+	std::string UnpackedRoot() { return ps5paths::Cache() + "/archives"; }
+	uint64_t UnpackedBytes() { return s_unpackedBytes; }
+	int ClearUnpacked()
+	{
+		const int copies = s_unpackedBytes ? 2 : 0;
+		s_unpackedBytes = 0;
+		return copies;
 	}
 }

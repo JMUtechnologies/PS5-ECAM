@@ -7,7 +7,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: port/app/accounts.cpp:68 port/frontend/shell/settings.cpp:1633
+#: port/app/accounts.cpp:68 port/frontend/shell/settings.cpp:1652
 msgid "The Wii U has twelve accounts at most."
 msgstr "На Wii U може бути щонайбільше дванадцять облікових записів."
 
@@ -97,59 +97,59 @@ msgctxt "status"
 msgid "Won't start"
 msgstr "Не запускається"
 
-#: port/app/emulator.cpp:393
+#: port/app/emulator.cpp:378
 msgid "the PS5 Vulkan driver did not start"
 msgstr "драйвер Vulkan на PS5 не запустився"
 
-#: port/app/emulator.cpp:477
+#: port/app/emulator.cpp:462
 msgid "PS5CEMU-HAR cannot write to {0}. Is the HEN loaded?"
 msgstr "PS5CEMU-HAR не може записувати в {0}. HEN завантажено?"
 
-#: port/app/emulator.cpp:499
+#: port/app/emulator.cpp:484
 msgid "PS5CEMU-HAR cannot create the MLC folder {0}"
 msgstr "PS5CEMU-HAR не може створити теку MLC {0}"
 
 #. why a Wii U game did not start
-#: port/app/emulator.cpp:658
+#: port/app/emulator.cpp:666
 msgid "The game's base files were not found."
 msgstr "Базові файли гри не знайдено."
 
-#: port/app/emulator.cpp:664
+#: port/app/emulator.cpp:672
 msgid "The game could not be mounted. Check that its files are still in the game files folder."
 msgstr "Не вдалося змонтувати гру. Перевірте, чи її файли досі в теці з іграми."
 
-#: port/app/emulator.cpp:669 port/azahar/core.cpp:560
+#: port/app/emulator.cpp:677 port/azahar/core.cpp:560
 #, menu
 msgid "The game could not be started."
 msgstr "Не вдалося запустити гру."
 
-#: port/app/emulator.cpp:678
+#: port/app/emulator.cpp:686
 msgid "This is not a Wii U game PS5CEMU-HAR can start."
 msgstr "Це не гра для Wii U, яку може запустити PS5CEMU-HAR."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/app/emulator.cpp:681
+#: port/app/emulator.cpp:689
 msgid "Its disc key is missing from {0}/keys.txt."
 msgstr "Ключа її диска немає в {0}/keys.txt."
 
-#: port/app/emulator.cpp:683
+#: port/app/emulator.cpp:691
 msgid "Its title.tik is missing."
 msgstr "Немає її файлу title.tik."
 
-#: port/app/emulator.cpp:688
+#: port/app/emulator.cpp:696
 msgid "The executable could not be started."
 msgstr "Не вдалося запустити виконуваний файл."
 
-#: port/app/emulator.cpp:701 port/melonds/core.cpp:886
+#: port/app/emulator.cpp:709 port/melonds/core.cpp:886
 msgid "The Vulkan renderer did not start: {0}"
 msgstr "Рендерер Vulkan не запустився: {0}"
 
 #. the PS5's notification as a Wii U game starts
-#: port/app/emulator.cpp:759
+#: port/app/emulator.cpp:767
 msgid "Touchpad click + Options: the in-game menu (screens, picture, volume, controls, the library)"
 msgstr "Натискання сенсорної панелі + OPTIONS: ігрове меню (екрани, зображення, гучність, керування, бібліотека)"
 
-#: port/app/emulator.cpp:926
+#: port/app/emulator.cpp:934
 msgid "PS5CEMU-HAR could not start itself again to show the library: start it again from the home screen."
 msgstr "PS5CEMU-HAR не вдалося перезапуститися, щоб показати бібліотеку: запустіть його знову з головного екрана."
 
@@ -180,6 +180,38 @@ msgstr "Гра не має зображення для плитки"
 #: port/app/forwarders.cpp:314
 msgid "No free title ID for a tile"
 msgstr "Немає вільного ID для плитки"
+
+#. a size in gigabytes, as in 2.4 GB
+#: port/app/game_archives.cpp:555 port/frontend/actions.cpp:66
+msgctxt "size"
+msgid "{0} GB"
+msgstr "{0} ГБ"
+
+#. a size in megabytes, as in 4.1 MB
+#: port/app/game_archives.cpp:556 port/frontend/actions.cpp:75
+msgctxt "size"
+msgid "{0} MB"
+msgstr "{0} МБ"
+
+#. why an archived game could not start; {0} is why, in English (the archive's library's words)
+#: port/app/game_archives.cpp:682 port/app/game_archives.cpp:799
+msgid "The archive could not be read: {0}"
+msgstr "Не вдалося прочитати архів: {0}"
+
+#. why an archived game could not start; {0} and {1} are sizes, as in 2.4 GB
+#: port/app/game_archives.cpp:713
+msgid "Unpacking the game needs {0} of free space, and {1} is free."
+msgstr "Для розпакування гри потрібно {0} вільного місця, а вільно {1}."
+
+#. why an archived game could not start; {0} is the folder the games unpacked from archives are kept in
+#: port/app/game_archives.cpp:725 port/app/game_archives.cpp:800
+msgid "The game could not be written to {0}."
+msgstr "Не вдалося записати гру в {0}."
+
+#. why an archived game could not start
+#: port/app/game_archives.cpp:803
+msgid "The archive has changed since the library read it: look for games again (Settings > Game files)."
+msgstr "Архів змінився відтоді, як бібліотека його прочитала: пошукайте ігри знову (Налаштування > Файли ігор)."
 
 #: port/app/gameinfo.cpp:150
 msgctxt "genre"
@@ -637,32 +669,32 @@ msgid "Wrestling"
 msgstr "Реслінг"
 
 #. the Wii U's controllers, by the names Nintendo gave them in the language
-#: port/app/ingame.cpp:145 port/frontend/actions.cpp:350
+#: port/app/ingame.cpp:145 port/frontend/actions.cpp:354
 #, menu
 msgid "Wii U GamePad"
 msgstr "Wii U GamePad"
 
-#: port/app/ingame.cpp:146 port/frontend/actions.cpp:351
+#: port/app/ingame.cpp:146 port/frontend/actions.cpp:355
 #, menu
 msgid "Wii U Pro Controller"
 msgstr "Wii U Pro Controller"
 
-#: port/app/ingame.cpp:147 port/frontend/actions.cpp:352
+#: port/app/ingame.cpp:147 port/frontend/actions.cpp:356
 #, menu
 msgid "Classic Controller"
 msgstr "Classic Controller"
 
-#: port/app/ingame.cpp:148 port/frontend/actions.cpp:353
+#: port/app/ingame.cpp:148 port/frontend/actions.cpp:357
 #, menu
 msgid "Wii Remote"
 msgstr "Пульт Wii Remote"
 
-#: port/app/ingame.cpp:149 port/frontend/actions.cpp:354
+#: port/app/ingame.cpp:149 port/frontend/actions.cpp:358
 #, menu
 msgid "Wii Remote + Nunchuk"
 msgstr "Wii Remote + Nunchuk"
 
-#: port/app/ingame.cpp:152 port/frontend/actions.cpp:357
+#: port/app/ingame.cpp:152 port/frontend/actions.cpp:361
 #, menu
 msgid "No controller"
 msgstr "Без контролера"
@@ -892,7 +924,7 @@ msgstr "Читання пакетів…"
 msgid "The community graphic packs have none for this game."
 msgstr "У графічних пакетах спільноти немає жодного для цієї гри."
 
-#: port/app/ingame.cpp:246 port/app/ingame.cpp:337 port/frontend/shell/classic.cpp:321 port/frontend/shell/classic.cpp:517 port/frontend/shell/eden.cpp:480 port/frontend/shell/eden.cpp:1375 port/frontend/shell/hub.cpp:231 port/frontend/shell/pages.cpp:303 port/frontend/shell/shell.cpp:1613
+#: port/app/ingame.cpp:246 port/app/ingame.cpp:337 port/frontend/shell/classic.cpp:321 port/frontend/shell/classic.cpp:517 port/frontend/shell/eden.cpp:480 port/frontend/shell/eden.cpp:1375 port/frontend/shell/hub.cpp:231 port/frontend/shell/pages.cpp:303 port/frontend/shell/shell.cpp:1690
 #, menu
 msgid "Graphic packs"
 msgstr "Графічні пакети"
@@ -1202,12 +1234,12 @@ msgstr "Не відскановано (помилка {0})"
 msgid "Running"
 msgstr "Працює"
 
-#: port/app/ingame.cpp:567 port/app/ingame3ds.cpp:769 port/frontend/shell/eden.cpp:488 port/frontend/shell/eden.cpp:497 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1224 port/frontend/shell/shell.cpp:1228 port/frontend/shell/shell.cpp:1262 port/frontend/shell/shell.cpp:1278 port/frontend/shell/shell.cpp:1286 port/frontend/shell/shell.cpp:1294 port/frontend/shell/shell.cpp:1297 port/frontend/shell/shell.cpp:2199
+#: port/app/ingame.cpp:567 port/app/ingame3ds.cpp:769 port/frontend/shell/eden.cpp:488 port/frontend/shell/eden.cpp:497 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1301 port/frontend/shell/shell.cpp:1305 port/frontend/shell/shell.cpp:1339 port/frontend/shell/shell.cpp:1355 port/frontend/shell/shell.cpp:1363 port/frontend/shell/shell.cpp:1371 port/frontend/shell/shell.cpp:1374 port/frontend/shell/shell.cpp:2286
 #, menu
 msgid "Choose"
 msgstr "Вибрати"
 
-#: port/app/ingame.cpp:567 port/app/ingame3ds.cpp:769 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1244 port/frontend/shell/shell.cpp:1287 port/frontend/shell/shell.cpp:1291 port/frontend/shell/shell.cpp:1294 port/frontend/shell/shell.cpp:1297 port/frontend/shell/shell.cpp:1308
+#: port/app/ingame.cpp:567 port/app/ingame3ds.cpp:769 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1321 port/frontend/shell/shell.cpp:1364 port/frontend/shell/shell.cpp:1368 port/frontend/shell/shell.cpp:1371 port/frontend/shell/shell.cpp:1374 port/frontend/shell/shell.cpp:1385
 #, menu
 msgid "Change"
 msgstr "Змінити"
@@ -1217,7 +1249,7 @@ msgstr "Змінити"
 msgid "Back to the game"
 msgstr "Повернутися до гри"
 
-#: port/app/ingame.cpp:567 port/app/ingame3ds.cpp:769 port/frontend/shell/eden.cpp:477 port/frontend/shell/eden.cpp:504 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:509 port/frontend/shell/installs.cpp:329 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1245 port/frontend/shell/shell.cpp:1254 port/frontend/shell/shell.cpp:1279 port/frontend/shell/shell.cpp:1286 port/frontend/shell/shell.cpp:1287 port/frontend/shell/shell.cpp:1291 port/frontend/shell/shell.cpp:1295 port/frontend/shell/shell.cpp:1297 port/frontend/shell/shell.cpp:1301 port/frontend/shell/shell.cpp:1305 port/frontend/shell/shell.cpp:1309
+#: port/app/ingame.cpp:567 port/app/ingame3ds.cpp:769 port/frontend/shell/eden.cpp:477 port/frontend/shell/eden.cpp:504 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:509 port/frontend/shell/installs.cpp:329 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1322 port/frontend/shell/shell.cpp:1331 port/frontend/shell/shell.cpp:1356 port/frontend/shell/shell.cpp:1363 port/frontend/shell/shell.cpp:1364 port/frontend/shell/shell.cpp:1368 port/frontend/shell/shell.cpp:1372 port/frontend/shell/shell.cpp:1374 port/frontend/shell/shell.cpp:1378 port/frontend/shell/shell.cpp:1382 port/frontend/shell/shell.cpp:1386
 #, menu
 msgid "Back"
 msgstr "Назад"
@@ -1484,7 +1516,7 @@ msgstr "Увімкнено: {0} з {1}"
 msgid "Achievements"
 msgstr "Досягнення"
 
-#: port/app/ingame3ds.cpp:542 port/frontend/shell/classic.cpp:462 port/frontend/shell/installs.cpp:376 port/frontend/shell/pages.cpp:323 port/frontend/shell/pages.cpp:821 port/frontend/shell/pages.cpp:1198
+#: port/app/ingame3ds.cpp:542 port/frontend/shell/classic.cpp:462 port/frontend/shell/installs.cpp:376 port/frontend/shell/pages.cpp:323 port/frontend/shell/pages.cpp:821 port/frontend/shell/pages.cpp:1198 port/frontend/shell/shell.cpp:2314
 #, menu
 msgid "{0} of {1}"
 msgstr "{0} з {1}"
@@ -1563,7 +1595,7 @@ msgstr "Кришка"
 msgid "Closed"
 msgstr "Закрито"
 
-#: port/app/ingame3ds.cpp:573 port/frontend/shell/eden.cpp:477 port/frontend/shell/eden.cpp:490 port/frontend/shell/eden.cpp:499 port/frontend/shell/eden.cpp:504 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:1298 port/frontend/shell/shell.cpp:1237 port/frontend/shell/shell.cpp:1266 port/frontend/shell/shell.cpp:1275 port/frontend/shell/shell.cpp:1284 port/frontend/shell/shell.cpp:1290 port/frontend/shell/shell.cpp:1305
+#: port/app/ingame3ds.cpp:573 port/frontend/shell/eden.cpp:477 port/frontend/shell/eden.cpp:490 port/frontend/shell/eden.cpp:499 port/frontend/shell/eden.cpp:504 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:1298 port/frontend/shell/shell.cpp:1314 port/frontend/shell/shell.cpp:1343 port/frontend/shell/shell.cpp:1352 port/frontend/shell/shell.cpp:1361 port/frontend/shell/shell.cpp:1367 port/frontend/shell/shell.cpp:1382
 #, menu
 msgid "Open"
 msgstr "Відкрити"
@@ -1721,36 +1753,36 @@ msgid "Shell"
 msgstr "Корпус"
 
 #. {0} and {1} are sizes (2.4 GB)
-#: port/app/install.cpp:145
+#: port/app/install.cpp:147
 msgid "There is not enough space: it needs {0}, and {1} is free."
 msgstr "Недостатньо місця: потрібно {0}, а вільно {1}."
 
-#: port/app/install.cpp:160
+#: port/app/install.cpp:162
 msgid "What is installed there now could not be moved aside: {0}"
 msgstr "Не вдалося відсунути те, що там зараз установлено: {0}"
 
-#: port/app/install.cpp:407
+#: port/app/install.cpp:409
 msgid "This one is not unpacked (title.tmd and .app files). Cemu reads it from the game files folder as it is: no install needed."
 msgstr "Цей не розпаковано (title.tmd і файли .app). Cemu читає його як є з теки з іграми: установлювати не потрібно."
 
-#: port/app/install.cpp:408
+#: port/app/install.cpp:410
 msgid "There is no title here: a game, update or DLC to install is a folder with code, content and meta."
 msgstr "Тут немає гри: гра, оновлення чи DLC для встановлення — це тека з code, content і meta."
 
-#: port/app/install.cpp:414
+#: port/app/install.cpp:416
 msgid "Its meta folder does not describe a Wii U title (meta.xml)."
 msgstr "Його тека meta не описує гру для Wii U (meta.xml)."
 
-#: port/app/install.cpp:435
+#: port/app/install.cpp:437
 msgid "This is where it is installed already."
 msgstr "Тут його вже встановлено."
 
-#: port/app/install.cpp:451 port/azahar/core.cpp:962
+#: port/app/install.cpp:453 port/azahar/core.cpp:962
 #, menu
 msgid "An install is already running."
 msgstr "Установлення вже триває."
 
-#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2171 port/frontend/shell/shell.cpp:2200
+#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2258 port/frontend/shell/shell.cpp:2287
 #, menu
 msgid "OK"
 msgstr "OK"
@@ -1766,37 +1798,37 @@ msgstr "Гра просить ввести"
 msgid "Some text"
 msgstr "Текст"
 
-#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2099
+#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2186
 #, menu
 msgid "L1 R1: {0}"
 msgstr "L1 R1: {0}"
 
 #. the in-game keyboard's keys
-#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2122
+#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2209
 #, menu
 msgid "Shift: on"
 msgstr "Shift: увімк."
 
 #. the in-game keyboard's keys
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1222 port/frontend/shell/shell.cpp:2122
+#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1299 port/frontend/shell/shell.cpp:2209
 #, menu
 msgid "Shift"
 msgstr "Shift"
 
-#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2122
+#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2209
 #, menu
 msgid "Space"
 msgstr "Пробіл"
 
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1222 port/frontend/shell/shell.cpp:2122
+#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1299 port/frontend/shell/shell.cpp:2209
 #, menu
 msgid "Delete"
 msgstr "Видалити"
 
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:173 port/frontend/shell/shares.cpp:300 port/frontend/shell/shell.cpp:1222
+#: port/app/keyboard_menu.h:173 port/frontend/shell/shares.cpp:300 port/frontend/shell/shell.cpp:1299
 #, menu
 msgid "Type"
 msgstr "Ввести"
@@ -2130,7 +2162,7 @@ msgstr "Не вдалося встановити: {0}"
 msgid "The new packs could not take the old ones' place"
 msgstr "Нові пакети не змогли замінити старі"
 
-#: port/app/remote_menu.h:29 port/frontend/shell/settings.cpp:189 port/frontend/shell/settings.cpp:633 port/frontend/shell/settings.cpp:2031
+#: port/app/remote_menu.h:29 port/frontend/shell/settings.cpp:189 port/frontend/shell/settings.cpp:633 port/frontend/shell/settings.cpp:2058
 #, menu
 msgid "Remote touch screen"
 msgstr "Віддалений сенсорний екран"
@@ -2146,7 +2178,7 @@ msgstr "{0} у браузері телефона чи планшета, з до�
 msgid "A phone or tablet on the PS5's network. Sound stays on the PS5."
 msgstr "Телефон або планшет у мережі PS5. Звук лишається на PS5."
 
-#: port/app/remote_menu.h:108 port/frontend/shell/settings.cpp:2039
+#: port/app/remote_menu.h:108 port/frontend/shell/settings.cpp:2066
 #, menu
 msgid "Turn it off and on again once that is fixed."
 msgstr "Вимкніть і знову ввімкніть його, коли це буде виправлено."
@@ -2495,7 +2527,7 @@ msgstr "Це не гра для 3DS, яку може запустити Azahar."
 msgid "The game could not be loaded."
 msgstr "Не вдалося завантажити гру."
 
-#: port/azahar/core.cpp:548
+#: port/azahar/core.cpp:548 port/frontend/shell/shell.cpp:880
 #, menu
 msgid "The game is encrypted, and Azahar plays only decrypted games, with keys or without: decrypt it on your 3DS first (GodMode9)."
 msgstr "Гру зашифровано, а Azahar запускає лише розшифровані ігри, з ключами чи без: спершу розшифруйте її на своїй 3DS (GodMode9)."
@@ -2609,18 +2641,6 @@ msgstr "це не CIA, який може встановити Azahar"
 msgid "The PS5 has no memory left for this Wii U game, so it has to stop. The boot log has the details."
 msgstr "У PS5 закінчилася пам’ять для цієї гри Wii U, тому її треба зупинити. Подробиці в журналі запуску."
 
-#. a size in gigabytes, as in 2.4 GB
-#: port/frontend/actions.cpp:66
-msgctxt "size"
-msgid "{0} GB"
-msgstr "{0} ГБ"
-
-#. a size in megabytes, as in 4.1 MB
-#: port/frontend/actions.cpp:75
-msgctxt "size"
-msgid "{0} MB"
-msgstr "{0} МБ"
-
 #. a size in kilobytes, as in 12 KB
 #: port/frontend/actions.cpp:77
 msgctxt "size"
@@ -2646,7 +2666,8 @@ msgstr[0] "Видалено {0} файл ({1} МБ)"
 msgstr[1] "Видалено {0} файли ({1} МБ)"
 msgstr[2] "Видалено {0} файлів ({1} МБ)"
 
-#: port/frontend/actions.cpp:187
+#. what clearing the unpacked games did; {1} is the room it made, as in 2.4 GB
+#: port/frontend/actions.cpp:187 port/frontend/shell/settings.cpp:984 port/frontend/shell/settings.cpp:1802
 msgid "None to delete"
 msgstr "Нічого видаляти"
 
@@ -2659,257 +2680,257 @@ msgid "Extended storage {0}"
 msgstr "Розширене сховище {0}"
 
 #. what an install is
-#: port/frontend/actions.cpp:365 port/frontend/actions.cpp:444
+#: port/frontend/actions.cpp:369 port/frontend/actions.cpp:448
 msgid "Game"
 msgstr "Гра"
 
-#: port/frontend/actions.cpp:366 port/frontend/actions.cpp:445
+#: port/frontend/actions.cpp:370 port/frontend/actions.cpp:449
 msgid "Update"
 msgstr "Оновлення"
 
 #. an update found to install ({0}: its version, as 208)
-#: port/frontend/actions.cpp:367 port/frontend/actions.cpp:446 port/frontend/shell/eden.cpp:825 port/frontend/shell/eden.cpp:1349 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:789
+#: port/frontend/actions.cpp:371 port/frontend/actions.cpp:450 port/frontend/shell/eden.cpp:825 port/frontend/shell/eden.cpp:1349 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:792
 msgid "DLC"
 msgstr "DLC"
 
-#: port/frontend/actions.cpp:368 port/frontend/actions.cpp:448
+#: port/frontend/actions.cpp:372 port/frontend/actions.cpp:452
 msgid "System title"
 msgstr "Системне ПЗ"
 
-#: port/frontend/actions.cpp:447
+#: port/frontend/actions.cpp:451
 msgid "Demo"
 msgstr "Демоверсія"
 
-#: port/frontend/actions.cpp:448
+#: port/frontend/actions.cpp:452
 msgid "Title"
 msgstr "Програма"
 
-#: port/frontend/actions.cpp:456
+#: port/frontend/actions.cpp:460
 msgctxt "button"
 msgid "Cross"
 msgstr "Хрестик"
 
-#: port/frontend/actions.cpp:456
+#: port/frontend/actions.cpp:460
 msgctxt "button"
 msgid "Circle"
 msgstr "Коло"
 
-#: port/frontend/actions.cpp:456
+#: port/frontend/actions.cpp:460
 msgctxt "button"
 msgid "Square"
 msgstr "Квадрат"
 
-#: port/frontend/actions.cpp:457
+#: port/frontend/actions.cpp:461
 msgctxt "button"
 msgid "Triangle"
 msgstr "Трикутник"
 
-#: port/frontend/actions.cpp:457
+#: port/frontend/actions.cpp:461
 msgctxt "button"
 msgid "Create"
 msgstr "Create"
 
-#: port/frontend/actions.cpp:457
+#: port/frontend/actions.cpp:461
 msgctxt "button"
 msgid "Options"
 msgstr "OPTIONS"
 
-#: port/frontend/actions.cpp:457
+#: port/frontend/actions.cpp:461
 msgctxt "button"
 msgid "Touchpad"
 msgstr "Сенсорна панель"
 
-#: port/frontend/actions.cpp:458
+#: port/frontend/actions.cpp:462
 msgctxt "button"
 msgid "D-pad up"
 msgstr "Хрестовина вгору"
 
-#: port/frontend/actions.cpp:458
+#: port/frontend/actions.cpp:462
 msgctxt "button"
 msgid "D-pad down"
 msgstr "Хрестовина вниз"
 
-#: port/frontend/actions.cpp:458
+#: port/frontend/actions.cpp:462
 msgctxt "button"
 msgid "D-pad left"
 msgstr "Хрестовина ліворуч"
 
-#: port/frontend/actions.cpp:458
+#: port/frontend/actions.cpp:462
 msgctxt "button"
 msgid "D-pad right"
 msgstr "Хрестовина праворуч"
 
-#: port/frontend/actions.cpp:459
+#: port/frontend/actions.cpp:463
 msgctxt "button"
 msgid "Left stick up"
 msgstr "Лівий стік угору"
 
-#: port/frontend/actions.cpp:459
+#: port/frontend/actions.cpp:463
 msgctxt "button"
 msgid "Left stick down"
 msgstr "Лівий стік униз"
 
-#: port/frontend/actions.cpp:459
+#: port/frontend/actions.cpp:463
 msgctxt "button"
 msgid "Left stick left"
 msgstr "Лівий стік ліворуч"
 
-#: port/frontend/actions.cpp:460
+#: port/frontend/actions.cpp:464
 msgctxt "button"
 msgid "Left stick right"
 msgstr "Лівий стік праворуч"
 
-#: port/frontend/actions.cpp:460
+#: port/frontend/actions.cpp:464
 msgctxt "button"
 msgid "Left stick click"
 msgstr "Натискання лівого стіка"
 
-#: port/frontend/actions.cpp:460
+#: port/frontend/actions.cpp:464
 msgctxt "button"
 msgid "Right stick up"
 msgstr "Правий стік угору"
 
-#: port/frontend/actions.cpp:461
+#: port/frontend/actions.cpp:465
 msgctxt "button"
 msgid "Right stick down"
 msgstr "Правий стік униз"
 
-#: port/frontend/actions.cpp:461
+#: port/frontend/actions.cpp:465
 msgctxt "button"
 msgid "Right stick left"
 msgstr "Правий стік ліворуч"
 
-#: port/frontend/actions.cpp:461
+#: port/frontend/actions.cpp:465
 msgctxt "button"
 msgid "Right stick right"
 msgstr "Правий стік праворуч"
 
-#: port/frontend/actions.cpp:462
+#: port/frontend/actions.cpp:466
 msgctxt "button"
 msgid "Right stick click"
 msgstr "Натискання правого стіка"
 
-#: port/frontend/actions.cpp:462
+#: port/frontend/actions.cpp:466
 msgctxt "button"
 msgid "Circle pad up"
 msgstr "Circle Pad угору"
 
-#: port/frontend/actions.cpp:462
+#: port/frontend/actions.cpp:466
 msgctxt "button"
 msgid "Circle pad down"
 msgstr "Circle Pad униз"
 
-#: port/frontend/actions.cpp:463
+#: port/frontend/actions.cpp:467
 msgctxt "button"
 msgid "Circle pad left"
 msgstr "Circle Pad ліворуч"
 
-#: port/frontend/actions.cpp:463
+#: port/frontend/actions.cpp:467
 msgctxt "button"
 msgid "Circle pad right"
 msgstr "Circle Pad праворуч"
 
-#: port/frontend/actions.cpp:463
+#: port/frontend/actions.cpp:467
 msgctxt "button"
 msgid "C-stick up"
 msgstr "C-стік угору"
 
-#: port/frontend/actions.cpp:464
+#: port/frontend/actions.cpp:468
 msgctxt "button"
 msgid "C-stick down"
 msgstr "C-стік униз"
 
-#: port/frontend/actions.cpp:464
+#: port/frontend/actions.cpp:468
 msgctxt "button"
 msgid "C-stick left"
 msgstr "C-стік ліворуч"
 
-#: port/frontend/actions.cpp:464
+#: port/frontend/actions.cpp:468
 msgctxt "button"
 msgid "C-stick right"
 msgstr "C-стік праворуч"
 
-#: port/frontend/actions.cpp:465
+#: port/frontend/actions.cpp:469
 msgctxt "button"
 msgid "Nunchuk stick up"
 msgstr "Стік Nunchuk угору"
 
-#: port/frontend/actions.cpp:465
+#: port/frontend/actions.cpp:469
 msgctxt "button"
 msgid "Nunchuk stick down"
 msgstr "Стік Nunchuk униз"
 
-#: port/frontend/actions.cpp:465
+#: port/frontend/actions.cpp:469
 msgctxt "button"
 msgid "Nunchuk stick left"
 msgstr "Стік Nunchuk ліворуч"
 
-#: port/frontend/actions.cpp:466
+#: port/frontend/actions.cpp:470
 msgctxt "button"
 msgid "Nunchuk stick right"
 msgstr "Стік Nunchuk праворуч"
 
-#: port/frontend/actions.cpp:466
+#: port/frontend/actions.cpp:470
 msgctxt "button"
 msgid "Nunchuk C"
 msgstr "Nunchuk C"
 
-#: port/frontend/actions.cpp:466
+#: port/frontend/actions.cpp:470
 msgctxt "button"
 msgid "Nunchuk Z"
 msgstr "Nunchuk Z"
 
-#: port/frontend/actions.cpp:466
+#: port/frontend/actions.cpp:470
 msgctxt "button"
 msgid "Home"
 msgstr "HOME"
 
-#: port/frontend/actions.cpp:467
+#: port/frontend/actions.cpp:471
 msgctxt "button"
 msgid "Start"
 msgstr "START"
 
-#: port/frontend/actions.cpp:467
+#: port/frontend/actions.cpp:471
 msgctxt "button"
 msgid "Select"
 msgstr "SELECT"
 
-#: port/frontend/actions.cpp:467
+#: port/frontend/actions.cpp:471
 msgctxt "button"
 msgid "+ (Start)"
 msgstr "+ (START)"
 
-#: port/frontend/actions.cpp:467
+#: port/frontend/actions.cpp:471
 msgctxt "button"
 msgid "- (Select)"
 msgstr "- (SELECT)"
 
-#: port/frontend/actions.cpp:468
+#: port/frontend/actions.cpp:472
 msgctxt "button"
 msgid "Blow into the mic"
 msgstr "Подути в мікрофон"
 
-#: port/frontend/actions.cpp:468
+#: port/frontend/actions.cpp:472
 msgctxt "button"
 msgid "Show the GamePad's screen"
 msgstr "Показати екран GamePad"
 
-#: port/frontend/actions.cpp:468
+#: port/frontend/actions.cpp:472
 msgctxt "button"
 msgid "None"
 msgstr "Немає"
 
-#: port/frontend/actions.cpp:471
+#: port/frontend/actions.cpp:475
 msgctxt "button"
 msgid "Touch at the cursor"
 msgstr "Дотик біля курсора"
 
-#: port/frontend/actions.cpp:471
+#: port/frontend/actions.cpp:475
 msgctxt "button"
 msgid "Fast forward"
 msgstr "Перемотування вперед"
 
-#: port/frontend/actions.cpp:471
+#: port/frontend/actions.cpp:475
 msgctxt "button"
 msgid "Rewind"
 msgstr "Перемотування назад"
@@ -2921,14 +2942,14 @@ msgstr "Головна"
 
 #. Eden's rail: its sections
 #. the launcher's tabs
-#: port/frontend/shell/classic.cpp:47 port/frontend/shell/classic.cpp:318 port/frontend/shell/classic.cpp:402 port/frontend/shell/eden.cpp:91 port/frontend/shell/eden.cpp:971 port/frontend/shell/eden.cpp:983 port/frontend/shell/eden.cpp:1097 port/frontend/shell/experiments.cpp:69 port/frontend/shell/experiments.cpp:489 port/frontend/shell/library.cpp:274 port/frontend/shell/recent.cpp:99 port/frontend/shell/recent.cpp:334 port/frontend/shell/shell.cpp:1169
+#: port/frontend/shell/classic.cpp:47 port/frontend/shell/classic.cpp:318 port/frontend/shell/classic.cpp:402 port/frontend/shell/eden.cpp:91 port/frontend/shell/eden.cpp:971 port/frontend/shell/eden.cpp:983 port/frontend/shell/eden.cpp:1097 port/frontend/shell/experiments.cpp:69 port/frontend/shell/experiments.cpp:489 port/frontend/shell/library.cpp:274 port/frontend/shell/recent.cpp:99 port/frontend/shell/recent.cpp:334 port/frontend/shell/shell.cpp:1246
 msgctxt "tab"
 msgid "Library"
 msgstr "Бібліотека"
 
 #. Eden's rail: its sections
 #. the launcher's tabs
-#: port/frontend/shell/classic.cpp:47 port/frontend/shell/classic.cpp:560 port/frontend/shell/eden.cpp:91 port/frontend/shell/eden.cpp:1581 port/frontend/shell/eden.cpp:1673 port/frontend/shell/experiments.cpp:69 port/frontend/shell/experiments.cpp:648 port/frontend/shell/shell.cpp:1169
+#: port/frontend/shell/classic.cpp:47 port/frontend/shell/classic.cpp:560 port/frontend/shell/eden.cpp:91 port/frontend/shell/eden.cpp:1581 port/frontend/shell/eden.cpp:1673 port/frontend/shell/experiments.cpp:69 port/frontend/shell/experiments.cpp:648 port/frontend/shell/shell.cpp:1246
 msgctxt "tab"
 msgid "Settings"
 msgstr "Налаштування"
@@ -2947,7 +2968,7 @@ msgstr[0] "{0} гра"
 msgstr[1] "{0} гри"
 msgstr[2] "{0} ігор"
 
-#: port/frontend/shell/classic.cpp:194 port/frontend/shell/shell.cpp:864
+#: port/frontend/shell/classic.cpp:194 port/frontend/shell/shell.cpp:867
 msgid "Cemu is still starting"
 msgstr "Cemu ще запускається"
 
@@ -2979,11 +3000,11 @@ msgstr "Виберіть гру в бібліотеці."
 msgid "Launch game"
 msgstr "Запустити гру"
 
-#: port/frontend/shell/classic.cpp:321 port/frontend/shell/classic.cpp:538 port/frontend/shell/pages.cpp:1446 port/frontend/shell/pages.cpp:1457 port/frontend/shell/settings.cpp:203 port/frontend/shell/settings.cpp:848 port/frontend/shell/setup.cpp:235
+#: port/frontend/shell/classic.cpp:321 port/frontend/shell/classic.cpp:538 port/frontend/shell/pages.cpp:1448 port/frontend/shell/pages.cpp:1459 port/frontend/shell/settings.cpp:203 port/frontend/shell/settings.cpp:848 port/frontend/shell/setup.cpp:235
 msgid "Artic Base"
 msgstr "Artic Base"
 
-#: port/frontend/shell/classic.cpp:321 port/frontend/shell/classic.cpp:524 port/frontend/shell/classic.cpp:560 port/frontend/shell/classic.cpp:598 port/frontend/shell/eden.cpp:480 port/frontend/shell/eden.cpp:847 port/frontend/shell/eden.cpp:1299 port/frontend/shell/eden.cpp:1370 port/frontend/shell/eden.cpp:1393 port/frontend/shell/eden.cpp:1669 port/frontend/shell/experiments.cpp:443 port/frontend/shell/experiments.cpp:643 port/frontend/shell/experiments.cpp:1064 port/frontend/shell/experiments.cpp:1254 port/frontend/shell/hub.cpp:236 port/frontend/shell/shell.cpp:1608
+#: port/frontend/shell/classic.cpp:321 port/frontend/shell/classic.cpp:524 port/frontend/shell/classic.cpp:560 port/frontend/shell/classic.cpp:598 port/frontend/shell/eden.cpp:480 port/frontend/shell/eden.cpp:847 port/frontend/shell/eden.cpp:1299 port/frontend/shell/eden.cpp:1370 port/frontend/shell/eden.cpp:1393 port/frontend/shell/eden.cpp:1669 port/frontend/shell/experiments.cpp:443 port/frontend/shell/experiments.cpp:643 port/frontend/shell/experiments.cpp:1064 port/frontend/shell/experiments.cpp:1254 port/frontend/shell/hub.cpp:236 port/frontend/shell/shell.cpp:1685
 msgid "Game settings"
 msgstr "Налаштування гри"
 
@@ -3026,12 +3047,12 @@ msgstr "Грати з вашої 3DS"
 msgid "Game details"
 msgstr "Про гру"
 
-#: port/frontend/shell/classic.cpp:488 port/frontend/shell/classic.cpp:493 port/frontend/shell/hub.cpp:277 port/frontend/shell/installs.cpp:509 port/frontend/shell/pages.cpp:1234 port/frontend/shell/pages.cpp:1289
+#: port/frontend/shell/classic.cpp:488 port/frontend/shell/classic.cpp:493 port/frontend/shell/hub.cpp:277 port/frontend/shell/installs.cpp:509 port/frontend/shell/pages.cpp:1234 port/frontend/shell/pages.cpp:1291
 msgid "Title ID"
 msgstr "ID гри"
 
 #. a title's version to install ({0}), and the one installed now ({1})
-#: port/frontend/shell/classic.cpp:489 port/frontend/shell/eden.cpp:1627 port/frontend/shell/eden.cpp:1812 port/frontend/shell/experiments.cpp:723 port/frontend/shell/experiments.cpp:1334 port/frontend/shell/installs.cpp:508 port/frontend/shell/pages.cpp:1235 port/frontend/shell/pages.cpp:1291 port/frontend/shell/settings.cpp:211
+#: port/frontend/shell/classic.cpp:489 port/frontend/shell/eden.cpp:1627 port/frontend/shell/eden.cpp:1812 port/frontend/shell/experiments.cpp:723 port/frontend/shell/experiments.cpp:1334 port/frontend/shell/installs.cpp:508 port/frontend/shell/pages.cpp:1235 port/frontend/shell/pages.cpp:1293 port/frontend/shell/settings.cpp:211
 msgid "Version"
 msgstr "Версія"
 
@@ -3125,7 +3146,7 @@ msgstr "Використовуйте власні файли"
 msgid "Games"
 msgstr "Ігри"
 
-#: port/frontend/shell/classic.cpp:675 port/frontend/shell/settings.cpp:199 port/frontend/shell/settings.cpp:222 port/frontend/shell/shell.cpp:1610
+#: port/frontend/shell/classic.cpp:675 port/frontend/shell/settings.cpp:199 port/frontend/shell/settings.cpp:222 port/frontend/shell/shell.cpp:1687
 msgid "Saves"
 msgstr "Збереження"
 
@@ -3157,15 +3178,15 @@ msgstr "Як іде"
 msgid "Sections"
 msgstr "Розділи"
 
-#: port/frontend/shell/eden.cpp:477 port/frontend/shell/shell.cpp:1237
+#: port/frontend/shell/eden.cpp:477 port/frontend/shell/shell.cpp:1314
 msgid "Move"
 msgstr "Переміщення"
 
-#: port/frontend/shell/eden.cpp:492 port/frontend/shell/eden.cpp:493 port/frontend/shell/eden.cpp:500 port/frontend/shell/eden.cpp:843 port/frontend/shell/eden.cpp:1298 port/frontend/shell/eden.cpp:1392 port/frontend/shell/experiments.cpp:440 port/frontend/shell/experiments.cpp:1062 port/frontend/shell/experiments.cpp:1253 port/frontend/shell/hub.cpp:225 port/frontend/shell/shell.cpp:1269 port/frontend/shell/shell.cpp:1270 port/frontend/shell/shell.cpp:1276 port/frontend/shell/shell.cpp:1603
+#: port/frontend/shell/eden.cpp:492 port/frontend/shell/eden.cpp:493 port/frontend/shell/eden.cpp:500 port/frontend/shell/eden.cpp:843 port/frontend/shell/eden.cpp:1298 port/frontend/shell/eden.cpp:1392 port/frontend/shell/experiments.cpp:440 port/frontend/shell/experiments.cpp:1062 port/frontend/shell/experiments.cpp:1253 port/frontend/shell/hub.cpp:225 port/frontend/shell/shell.cpp:1346 port/frontend/shell/shell.cpp:1347 port/frontend/shell/shell.cpp:1353 port/frontend/shell/shell.cpp:1680
 msgid "Play"
 msgstr "Грати"
 
-#: port/frontend/shell/eden.cpp:492 port/frontend/shell/eden.cpp:493 port/frontend/shell/eden.cpp:500 port/frontend/shell/shell.cpp:1269 port/frontend/shell/shell.cpp:1270 port/frontend/shell/shell.cpp:1276 port/frontend/shell/shell.cpp:1278
+#: port/frontend/shell/eden.cpp:492 port/frontend/shell/eden.cpp:493 port/frontend/shell/eden.cpp:500 port/frontend/shell/shell.cpp:1346 port/frontend/shell/shell.cpp:1347 port/frontend/shell/shell.cpp:1353 port/frontend/shell/shell.cpp:1355
 msgid "Options"
 msgstr "Параметри"
 
@@ -3173,7 +3194,7 @@ msgstr "Параметри"
 msgid "Change emulator"
 msgstr "Змінити емулятор"
 
-#: port/frontend/shell/eden.cpp:500 port/frontend/shell/eden.cpp:971 port/frontend/shell/library.cpp:274 port/frontend/shell/recent.cpp:99 port/frontend/shell/shell.cpp:1273
+#: port/frontend/shell/eden.cpp:500 port/frontend/shell/eden.cpp:971 port/frontend/shell/library.cpp:274 port/frontend/shell/recent.cpp:99 port/frontend/shell/shell.cpp:1350
 msgid "Sort"
 msgstr "Сортування"
 
@@ -3181,11 +3202,11 @@ msgstr "Сортування"
 msgid "Filter"
 msgstr "Фільтр"
 
-#: port/frontend/shell/eden.cpp:501 port/frontend/shell/eden.cpp:1125 port/frontend/shell/experiments.cpp:498 port/frontend/shell/library.cpp:507 port/frontend/shell/library.cpp:549 port/frontend/shell/recent.cpp:363 port/frontend/shell/shell.cpp:1273 port/frontend/shell/shell.cpp:2093
+#: port/frontend/shell/eden.cpp:501 port/frontend/shell/eden.cpp:1125 port/frontend/shell/experiments.cpp:498 port/frontend/shell/library.cpp:507 port/frontend/shell/library.cpp:549 port/frontend/shell/recent.cpp:363 port/frontend/shell/shell.cpp:1350 port/frontend/shell/shell.cpp:2180
 msgid "Search"
 msgstr "Пошук"
 
-#: port/frontend/shell/eden.cpp:504 port/frontend/shell/shell.cpp:1284 port/frontend/shell/shell.cpp:1290
+#: port/frontend/shell/eden.cpp:504 port/frontend/shell/shell.cpp:1361 port/frontend/shell/shell.cpp:1367
 msgid "Pages"
 msgstr "Розділи"
 
@@ -3224,7 +3245,7 @@ msgstr "Ласкаво просимо"
 msgid "Last played {0}"
 msgstr "Востаннє: {0}"
 
-#: port/frontend/shell/eden.cpp:834 port/frontend/shell/eden.cpp:1351 port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1617
+#: port/frontend/shell/eden.cpp:834 port/frontend/shell/eden.cpp:1351 port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1694
 msgid "Favourite"
 msgstr "Обране"
 
@@ -3364,7 +3385,7 @@ msgid "Everything is ready"
 msgstr "Усе готово"
 
 #. above Settings' pages: whose settings they are ({0}: Wii U, Nintendo 3DS or Nintendo DS)
-#: port/frontend/shell/eden.cpp:1581 port/frontend/shell/eden.cpp:1673 port/frontend/shell/experiments.cpp:649 port/frontend/shell/settings.cpp:2125
+#: port/frontend/shell/eden.cpp:1581 port/frontend/shell/eden.cpp:1673 port/frontend/shell/experiments.cpp:649 port/frontend/shell/settings.cpp:2152
 msgid "{0} settings"
 msgstr "Налаштування {0}"
 
@@ -3466,7 +3487,7 @@ msgstr "Зупинено. Те, що було встановлено раніш�
 msgid "Everything found is installed already"
 msgstr "Усе знайдене вже встановлено"
 
-#: port/frontend/shell/installs.cpp:318
+#: port/frontend/shell/installs.cpp:318 port/frontend/shell/shell.cpp:2314
 msgid "Stopping…"
 msgstr "Зупинка…"
 
@@ -3474,7 +3495,7 @@ msgstr "Зупинка…"
 msgid "Stop"
 msgstr "Зупинити"
 
-#: port/frontend/shell/installs.cpp:324 port/frontend/shell/pages.cpp:1160 port/frontend/shell/shell.cpp:1305
+#: port/frontend/shell/installs.cpp:324 port/frontend/shell/pages.cpp:1160 port/frontend/shell/shell.cpp:1382
 msgid "Install"
 msgstr "Установлення"
 
@@ -3515,7 +3536,7 @@ msgstr "Усе знайдене встановлено."
 msgid "Game files"
 msgstr "Файли ігор"
 
-#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:726 port/frontend/shell/shell.cpp:1615
+#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:726 port/frontend/shell/shell.cpp:1692
 msgid "Updates and DLC"
 msgstr "Оновлення та DLC"
 
@@ -3569,16 +3590,16 @@ msgstr "Очікування"
 msgid "Runs from where it is"
 msgstr "Працює звідти, де лежить"
 
-#: port/frontend/shell/installs.cpp:501 port/frontend/shell/pages.cpp:1305
+#: port/frontend/shell/installs.cpp:501 port/frontend/shell/pages.cpp:1307
 msgid "To install"
 msgstr "До встановлення"
 
 #. a title's version to install ({0}), and the one installed now ({1})
-#: port/frontend/shell/installs.cpp:508 port/frontend/shell/pages.cpp:1291
+#: port/frontend/shell/installs.cpp:508 port/frontend/shell/pages.cpp:1293
 msgid "v{0}, not installed yet"
 msgstr "v{0}, ще не встановлено"
 
-#: port/frontend/shell/installs.cpp:508 port/frontend/shell/pages.cpp:1292
+#: port/frontend/shell/installs.cpp:508 port/frontend/shell/pages.cpp:1294
 msgid "v{0}, v{1} installed now"
 msgstr "v{0}, зараз установлено v{1}"
 
@@ -3606,7 +3627,7 @@ msgstr "Перевірка налаштування"
 msgid "Diagnostics"
 msgstr "Діагностика"
 
-#: port/frontend/shell/library.cpp:81 port/frontend/shell/shell.cpp:877
+#: port/frontend/shell/library.cpp:81 port/frontend/shell/shell.cpp:904 port/frontend/shell/shell.cpp:2304
 msgid "Starting Cemu"
 msgstr "Запуск Cemu"
 
@@ -3624,16 +3645,16 @@ msgstr "Тут будуть ваші ігри"
 
 #. {0} is the games folder
 #: port/frontend/shell/library.cpp:98
-msgid "Put your 3DS games (.3ds, .cci, .cxi, .3dsx, decrypted) in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are searched too."
-msgstr "Покладіть ігри для 3DS (.3ds, .cci, .cxi, .3dsx, розшифровані) у {0} або виберіть будь-яку теку, яку бачить PS5, наприклад на USB-накопичувачі. Вкладені теки теж переглядаються."
+msgid "Put your 3DS games (.3ds, .cci, .cxi, .3dsx, decrypted, alone or in .zip, .7z or .rar archives) in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are searched too."
+msgstr "Покладіть ігри для 3DS (.3ds, .cci, .cxi, .3dsx, розшифровані, окремо або в архівах .zip, .7z чи .rar) у {0} або виберіть будь-яку теку, яку бачить PS5, наприклад на USB-накопичувачі. Вкладені теки теж переглядаються."
 
 #: port/frontend/shell/library.cpp:101
 msgid "Put your DS games (.nds, alone or in .zip, .7z or .rar archives) in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are searched too."
 msgstr "Покладіть ігри DS (.nds, окремо або в архівах .zip, .7z чи .rar) у {0} або виберіть будь-яку теку, яку може прочитати PS5, наприклад на USB-накопичувачі. Вкладені теки теж переглядаються."
 
 #: port/frontend/shell/library.cpp:104
-msgid "Put your Wii U games (.wua, .wud, .wux, or folders with code, content and meta) in {0}, or choose any folder the PS5 can read, such as one on a USB drive."
-msgstr "Покладіть ігри для Wii U (.wua, .wud, .wux або теки з code, content і meta) у {0} або виберіть будь-яку теку, яку бачить PS5, наприклад на USB-накопичувачі."
+msgid "Put your Wii U games (.wua, .wud, .wux, or folders with code, content and meta, alone or in .zip, .7z or .rar archives) in {0}, or choose any folder the PS5 can read, such as one on a USB drive."
+msgstr "Покладіть ігри для Wii U (.wua, .wud, .wux або теки з code, content і meta, окремо або в архівах .zip, .7z чи .rar) у {0} або виберіть будь-яку теку, яку бачить PS5, наприклад на USB-накопичувачі."
 
 #: port/frontend/shell/library.cpp:546
 msgid "Looking for new games…"
@@ -3663,7 +3684,7 @@ msgstr "У цього пакета немає опису."
 msgid "No presets"
 msgstr "Немає пресетів"
 
-#: port/frontend/shell/pages.cpp:359 port/frontend/shell/shell.cpp:1295
+#: port/frontend/shell/pages.cpp:359 port/frontend/shell/shell.cpp:1372
 msgid "Presets"
 msgstr "Пресети"
 
@@ -3672,7 +3693,7 @@ msgid "Presets · choosing one turns it on"
 msgstr "Пресети · вибір пресета вмикає пакет"
 
 #. what a held row says once it has done its work
-#: port/frontend/shell/pages.cpp:396 port/frontend/shell/settings.cpp:1789
+#: port/frontend/shell/pages.cpp:396 port/frontend/shell/settings.cpp:1816
 msgctxt "finished"
 msgid "Done"
 msgstr "Готово"
@@ -3826,7 +3847,7 @@ msgstr[2] "Призначено {0} кнопок"
 msgid "Which DualSense button presses each button."
 msgstr "Яка кнопка DualSense натискає кожну кнопку."
 
-#: port/frontend/shell/pages.cpp:632 port/frontend/shell/pages.cpp:1480 port/frontend/shell/pages.cpp:1484 port/frontend/shell/settings.cpp:626 port/frontend/shell/settings.cpp:782 port/frontend/shell/settings.cpp:834 port/frontend/shell/settings.cpp:869 port/frontend/shell/settings.cpp:966 port/frontend/shell/settings.cpp:969 port/frontend/shell/settings.cpp:1000 port/frontend/shell/settings.cpp:1062 port/frontend/shell/settings.cpp:1104 port/frontend/shell/shares.cpp:328
+#: port/frontend/shell/pages.cpp:632 port/frontend/shell/pages.cpp:1482 port/frontend/shell/pages.cpp:1486 port/frontend/shell/settings.cpp:626 port/frontend/shell/settings.cpp:782 port/frontend/shell/settings.cpp:834 port/frontend/shell/settings.cpp:869 port/frontend/shell/settings.cpp:966 port/frontend/shell/settings.cpp:969 port/frontend/shell/settings.cpp:983 port/frontend/shell/settings.cpp:1019 port/frontend/shell/settings.cpp:1081 port/frontend/shell/settings.cpp:1123 port/frontend/shell/shares.cpp:328
 msgid "Hold Cross"
 msgstr "Утримувати Хрестик"
 
@@ -4032,7 +4053,7 @@ msgstr "Батьківська тека"
 msgid "Drive"
 msgstr "Накопичувач"
 
-#: port/frontend/shell/pages.cpp:1233 port/frontend/shell/pages.cpp:1288
+#: port/frontend/shell/pages.cpp:1233 port/frontend/shell/pages.cpp:1290
 msgctxt "kind"
 msgid "Type"
 msgstr "Тип"
@@ -4083,52 +4104,52 @@ msgstr "Знайдено в {0}"
 msgid "Missing (only .wud/.wux need it)"
 msgstr "Немає (потрібен лише .wud/.wux)"
 
-#: port/frontend/shell/pages.cpp:1275 port/frontend/shell/shell.cpp:1982 port/frontend/shell/shell.cpp:2009
+#: port/frontend/shell/pages.cpp:1275 port/frontend/shell/shell.cpp:2069 port/frontend/shell/shell.cpp:2096
 msgid "In use"
 msgstr "Використовується"
 
 #: port/frontend/shell/pages.cpp:1279
-msgid "Games can be .3ds or .cci, .cxi, .cia or .3dsx, decrypted, here or in the folders in it. Triangle uses the folder shown."
-msgstr "Ігри можуть бути у форматах .3ds або .cci, .cxi, .cia чи .3dsx, розшифровані, тут або у вкладених теках. Трикутник вибирає показану теку."
+msgid "Games can be .3ds or .cci, .cxi or .3dsx, decrypted, alone or in .zip, .7z or .rar archives, and .cia files, here or in the folders in it. Triangle uses the folder shown."
+msgstr "Ігри можуть бути у форматах .3ds або .cci, .cxi чи .3dsx, розшифровані, окремо або в архівах .zip, .7z чи .rar, а також файли .cia, тут або у вкладених теках. Трикутник вибирає показану теку."
 
-#: port/frontend/shell/pages.cpp:1280
+#: port/frontend/shell/pages.cpp:1281
 msgid "Games are .nds files, alone or in .zip, .7z or .rar archives, here or in the folders in it. Triangle uses the folder shown."
 msgstr "Ігри — це файли .nds, окремо або в архівах .zip, .7z чи .rar, тут або у вкладених теках. Трикутник вибирає показану теку."
 
-#: port/frontend/shell/pages.cpp:1281
-msgid "Games can be .wua, .wud, .wux, or folders with code, content and meta. Triangle uses the folder shown."
-msgstr "Ігри можуть бути .wua, .wud, .wux або теками з code, content і meta. Трикутник вибирає показану теку."
+#: port/frontend/shell/pages.cpp:1282
+msgid "Games can be .wua, .wud, .wux, or folders with code, content and meta, alone or in .zip, .7z or .rar archives. Triangle uses the folder shown."
+msgstr "Ігри можуть бути .wua, .wud, .wux або теками з code, content і meta, окремо або в архівах .zip, .7z чи .rar. Трикутник вибирає показану теку."
 
-#: port/frontend/shell/pages.cpp:1288
+#: port/frontend/shell/pages.cpp:1290
 msgid "Nothing to install"
 msgstr "Нічого встановлювати"
 
-#: port/frontend/shell/pages.cpp:1296
+#: port/frontend/shell/pages.cpp:1298
 msgid "Triangle installs it into the Wii U's storage (mlc01). Updates and DLC in the game files folder work as they are, too."
 msgstr "Трикутник встановлює це в пам’ять Wii U (mlc01). Оновлення й DLC у теці з іграми працюють і так."
 
-#: port/frontend/shell/pages.cpp:1305
+#: port/frontend/shell/pages.cpp:1307
 msgid "This folder"
 msgstr "Ця тека"
 
 #. {0} is a 3DS's network address
-#: port/frontend/shell/pages.cpp:1361
+#: port/frontend/shell/pages.cpp:1363
 msgid "Connecting to {0}"
 msgstr "Під’єднання до {0}"
 
-#: port/frontend/shell/pages.cpp:1374
+#: port/frontend/shell/pages.cpp:1376
 msgid "Artic Setup Tool"
 msgstr "Artic Setup Tool"
 
-#: port/frontend/shell/pages.cpp:1457
+#: port/frontend/shell/pages.cpp:1459
 msgid "Play a game from your 3DS over your network, or set Azahar up from it"
 msgstr "Грайте в гру з вашої 3DS через мережу або налаштуйте Azahar з її допомогою"
 
-#: port/frontend/shell/pages.cpp:1473
+#: port/frontend/shell/pages.cpp:1475
 msgid "3DS address"
 msgstr "Адреса 3DS"
 
-#: port/frontend/shell/pages.cpp:1474
+#: port/frontend/shell/pages.cpp:1476
 msgid ""
 "The address Artic Base shows on the 3DS's screen when it is ready.\n"
 "Cross edits it: Left and Right choose a number, Up and Down change it by 1, L1 and R1 by 10, and Cross again keeps it.\n"
@@ -4138,11 +4159,11 @@ msgstr ""
 "Хрестик змінює її: ліворуч і праворуч вибирають число, угору й униз змінюють його на 1, L1 і R1 — на 10, а Хрестик ще раз зберігає.\n"
 "3DS і PS5 мають бути в одній мережі."
 
-#: port/frontend/shell/pages.cpp:1476
+#: port/frontend/shell/pages.cpp:1478
 msgid "Connect and play"
 msgstr "Під’єднатися й грати"
 
-#: port/frontend/shell/pages.cpp:1477
+#: port/frontend/shell/pages.cpp:1479
 msgid ""
 "On the 3DS, start the Artic Base app (homebrew, from Azahar's team) and choose a game in it: the cartridge or an installed one. Then connect from here: the game plays on the PS5 from the 3DS, and its saves stay on the 3DS.\n"
 "It is only as smooth as the network: a strong Wi-Fi signal for the 3DS and a wired PS5 help."
@@ -4150,11 +4171,11 @@ msgstr ""
 "Запустіть на 3DS застосунок Artic Base (homebrew від команди Azahar) і виберіть у ньому гру: картридж або встановлену. Потім під’єднайтеся звідси: гра йде на PS5 з 3DS, а її збереження лишаються на 3DS.\n"
 "Плавність залежить від мережі: допоможуть сильний сигнал Wi-Fi у 3DS і PS5 через кабель."
 
-#: port/frontend/shell/pages.cpp:1480
+#: port/frontend/shell/pages.cpp:1482
 msgid "Set up from an Old 3DS"
 msgstr "Налаштувати зі старої 3DS"
 
-#: port/frontend/shell/pages.cpp:1481
+#: port/frontend/shell/pages.cpp:1483
 msgid ""
 "With the Artic Setup Tool app running on an Old 3DS or 2DS: copies its system files and its own data (system settings, friend code, Mii and eShop data) into Azahar, so games that need the 3DS's system applets or files start, and the Home Menu can (Settings > System).\n"
 "That data is your console's: do not share Azahar's folder afterwards."
@@ -4162,11 +4183,11 @@ msgstr ""
 "Коли на Old 3DS або 2DS запущено застосунок Artic Setup Tool: копіює її системні файли й власні дані (системні налаштування, код друга, дані Mii та eShop) в Azahar, щоб запускалися ігри, яким потрібні системні аплети чи файли 3DS, а також меню HOME (Налаштування > Система).\n"
 "Ці дані належать вашій консолі: потім не діліться текою Azahar."
 
-#: port/frontend/shell/pages.cpp:1484
+#: port/frontend/shell/pages.cpp:1486
 msgid "Set up from a New 3DS"
 msgstr "Налаштувати з New 3DS"
 
-#: port/frontend/shell/pages.cpp:1484
+#: port/frontend/shell/pages.cpp:1486
 msgid "As above, from a New 3DS or New 2DS running the Artic Setup Tool app."
 msgstr "Те саме, з New 3DS або New 2DS із запущеним Artic Setup Tool."
 
@@ -4192,7 +4213,7 @@ msgstr[0] "{0} DLC"
 msgstr[1] "{0} DLC"
 msgstr[2] "{0} DLC"
 
-#: port/frontend/shell/recent.cpp:358 port/frontend/shell/shell.cpp:1269
+#: port/frontend/shell/recent.cpp:358 port/frontend/shell/shell.cpp:1346
 msgid "Display"
 msgstr "Зображення"
 
@@ -4363,7 +4384,7 @@ msgstr "Eden"
 msgid "ProsperoEden's launcher: a rail of sections, Home around your game, Settings as tiles."
 msgstr "Лаунчер ProsperoEden: панель розділів, головна навколо вашої гри, налаштування плитками."
 
-#: port/frontend/shell/settings.cpp:181 port/frontend/shell/settings.cpp:444 port/frontend/shell/settings.cpp:666 port/frontend/shell/settings.cpp:683 port/frontend/shell/settings.cpp:1184 port/frontend/shell/setup.cpp:472
+#: port/frontend/shell/settings.cpp:181 port/frontend/shell/settings.cpp:444 port/frontend/shell/settings.cpp:666 port/frontend/shell/settings.cpp:683 port/frontend/shell/settings.cpp:1203 port/frontend/shell/setup.cpp:472
 msgid "Language"
 msgstr "Мова"
 
@@ -4520,7 +4541,7 @@ msgstr "Хрестик — завантажити"
 msgid "{0}: Cross to install"
 msgstr "{0}: Хрестик — установити"
 
-#: port/frontend/shell/settings.cpp:271 port/frontend/shell/shell.cpp:2150
+#: port/frontend/shell/settings.cpp:271 port/frontend/shell/shell.cpp:2237
 msgid "Downloading…"
 msgstr "Завантаження…"
 
@@ -5023,12 +5044,12 @@ msgstr "Де лежать ваші ігри. Хрестик вибирає ін�
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
 #: port/frontend/shell/settings.cpp:701
-msgid "Your Wii U games: .wua, .wud, .wux, or folders with code, content and meta. Encrypted .wud and .wux need their keys in {0}/keys.txt."
-msgstr "Ваші ігри для Wii U: .wua, .wud, .wux або теки з code, content і meta. Зашифрованим .wud і .wux потрібні їхні ключі в {0}/keys.txt."
+msgid "Your Wii U games: .wua, .wud, .wux, or folders with code, content and meta, alone or in .zip, .7z or .rar archives. Encrypted .wud and .wux need their keys in {0}/keys.txt."
+msgstr "Ваші ігри для Wii U: .wua, .wud, .wux або теки з code, content і meta, окремо або в архівах .zip, .7z чи .rar. Зашифрованим .wud і .wux потрібні їхні ключі в {0}/keys.txt."
 
 #: port/frontend/shell/settings.cpp:703
-msgid "Your 3DS games: .3ds or .cci, .cxi, .3dsx and Azahar's compressed dumps, decrypted, here or in the folders in it. CIA files are installed (Install a CIA file). Encrypted dumps do not start, with keys or without: decrypt them on your 3DS first (GodMode9)."
-msgstr "Ваші ігри 3DS: .3ds або .cci, .cxi, .3dsx і стиснуті дампи Azahar, розшифровані, тут або в теках усередині. Файли CIA встановлюються (Встановити файл CIA). Зашифровані дампи не запускаються, з ключами чи без: спершу розшифруйте їх на своїй 3DS (GodMode9)."
+msgid "Your 3DS games: .3ds or .cci, .cxi, .3dsx and Azahar's compressed dumps, decrypted, alone or in .zip, .7z or .rar archives, here or in the folders in it. CIA files are installed (Install a CIA file). Encrypted dumps do not start, with keys or without: decrypt them on your 3DS first (GodMode9)."
+msgstr "Ваші ігри 3DS: .3ds або .cci, .cxi, .3dsx і стиснуті дампи Azahar, розшифровані, окремо або в архівах .zip, .7z чи .rar, тут або в теках усередині. Файли CIA встановлюються (Встановити файл CIA). Зашифровані дампи не запускаються, з ключами чи без: спершу розшифруйте їх на своїй 3DS (GodMode9)."
 
 #: port/frontend/shell/settings.cpp:706
 msgid "Your DS games: .nds files, alone or in .zip, .7z or .rar archives, here or in the folders in it."
@@ -5201,7 +5222,7 @@ msgid "The PS5 user who starts the app plays on a Wii U account of their own, ma
 msgstr "Користувач PS5, який запустив застосунок, грає на власному обліковому записі Wii U, створеному під час першого запуску з його іменем PS5, тож брати й сестри зберігають свої збереження, просто запускаючи застосунок від свого користувача PS5."
 
 #. a backup or restore of the saves, finished ({0}: how many files)
-#: port/frontend/shell/settings.cpp:811 port/frontend/shell/settings.cpp:1047
+#: port/frontend/shell/settings.cpp:811 port/frontend/shell/settings.cpp:1066
 msgid "Done: {0} file"
 msgid_plural "Done: {0} files"
 msgstr[0] "Готово: {0} файл"
@@ -5209,16 +5230,16 @@ msgstr[1] "Готово: {0} файли"
 msgstr[2] "Готово: {0} файлів"
 
 #. a backup of the saves, as it copies ({0}: a percentage)
-#: port/frontend/shell/settings.cpp:821 port/frontend/shell/settings.cpp:836 port/frontend/shell/settings.cpp:1086 port/frontend/shell/settings.cpp:1106
+#: port/frontend/shell/settings.cpp:821 port/frontend/shell/settings.cpp:836 port/frontend/shell/settings.cpp:1105 port/frontend/shell/settings.cpp:1125
 msgid "Copying: {0}"
 msgstr "Копіювання: {0}"
 
 #. the newest backup of the saves: when, and on which drive
-#: port/frontend/shell/settings.cpp:824 port/frontend/shell/settings.cpp:1088
+#: port/frontend/shell/settings.cpp:824 port/frontend/shell/settings.cpp:1107
 msgid "Last: {0} · {1}"
 msgstr "Остання: {0} · {1}"
 
-#: port/frontend/shell/settings.cpp:825 port/frontend/shell/settings.cpp:1083
+#: port/frontend/shell/settings.cpp:825 port/frontend/shell/settings.cpp:1102
 msgid "Back up to USB"
 msgstr "Резервна копія на USB"
 
@@ -5230,11 +5251,11 @@ msgstr "Збереження, збереження стану й обліков�
 msgid "Copies the Wii U's saves (every account's, with the accounts), the 3DS's saves, extra data and save states, and the DS's saves and save states to PS5CEMU-HAR-saves on the first USB drive plugged in, in a folder named by the date and time. Never the games, so a backup stays small."
 msgstr "Копіює збереження Wii U (усіх облікових записів, разом із записами), збереження, додаткові дані й збереження стану 3DS, а також збереження й збереження стану DS у PS5CEMU-HAR-saves на першому під’єднаному USB-накопичувачі, у теку з датою й часом у назві. Без ігор, тож копія лишається невеликою."
 
-#: port/frontend/shell/settings.cpp:834 port/frontend/shell/settings.cpp:1104
+#: port/frontend/shell/settings.cpp:834 port/frontend/shell/settings.cpp:1123
 msgid "No backups found"
 msgstr "Резервних копій немає"
 
-#: port/frontend/shell/settings.cpp:837 port/frontend/shell/settings.cpp:1103
+#: port/frontend/shell/settings.cpp:837 port/frontend/shell/settings.cpp:1122
 msgid "Restore from USB"
 msgstr "Відновити з USB"
 
@@ -5242,7 +5263,7 @@ msgstr "Відновити з USB"
 msgid "Back up first, or plug in the drive with your backups."
 msgstr "Спершу зробіть резервну копію або під’єднайте накопичувач із копіями."
 
-#: port/frontend/shell/settings.cpp:838 port/frontend/shell/settings.cpp:1107
+#: port/frontend/shell/settings.cpp:838 port/frontend/shell/settings.cpp:1126
 msgid "Left and Right choose which backup, the newest first."
 msgstr "Ліворуч і Праворуч вибирають копію, починаючи з найновішої."
 
@@ -5542,79 +5563,93 @@ msgstr "Видаляє кеш шейдерів Cemu. Ігри заново ст�
 msgid "Deletes Azahar's shader caches. Games build them again as they run: the first minutes stutter."
 msgstr "Видаляє кеш шейдерів Azahar. Ігри заново створюють його під час гри: перші хвилини будуть підгальмовування."
 
-#: port/frontend/shell/settings.cpp:999
+#. Settings > Diagnostics: the copies of games unpacked from their archives (.zip, .7z...), kept for their next start
+#: port/frontend/shell/settings.cpp:981
+msgid "Unpacked games"
+msgstr "Розпаковані ігри"
+
+#: port/frontend/shell/settings.cpp:985
+msgid "Games from archives, kept unpacked for their next start."
+msgstr "Ігри з архівів, зберігаються розпакованими до наступного запуску."
+
+#. {0} is the folder they are kept in
+#: port/frontend/shell/settings.cpp:987
+msgid "Deletes the copies of games unpacked from their archives, kept in {0}. Each is unpacked again the next time it starts; when room is needed, the copies used longest ago go by themselves."
+msgstr "Видаляє копії ігор, розпакованих з архівів, що зберігаються в {0}. Кожна гра буде розпакована знову під час наступного запуску; коли потрібне місце, копії, які найдовше не використовувалися, видаляються самі."
+
+#: port/frontend/shell/settings.cpp:1018
 msgid "Back to defaults"
 msgstr "Повернути типові"
 
-#: port/frontend/shell/settings.cpp:1001
+#: port/frontend/shell/settings.cpp:1020
 msgid "This game goes back to its side's settings."
 msgstr "Ця гра знову використовує налаштування своєї сторони."
 
-#: port/frontend/shell/settings.cpp:1002
+#: port/frontend/shell/settings.cpp:1021
 msgid "Clears this game's own settings, so it uses its side's settings again, like every other game."
 msgstr "Видаляє власні налаштування цієї гри, щоб вона знову використовувала налаштування своєї сторони, як будь-яка інша гра."
 
 #. a Wii U account by its number, when its name cannot be read
-#: port/frontend/shell/settings.cpp:1019
+#: port/frontend/shell/settings.cpp:1038
 msgid "Account {0}"
 msgstr "Обліковий запис {0}"
 
 #. a Wii U game's save that all its accounts share
-#: port/frontend/shell/settings.cpp:1021
+#: port/frontend/shell/settings.cpp:1040
 msgid "Every account's"
 msgstr "Усіх облікових записів"
 
-#: port/frontend/shell/settings.cpp:1022
+#: port/frontend/shell/settings.cpp:1041
 msgid "Save data"
 msgstr "Дані збереження"
 
 #. a 3DS game's extra data (its extdata), which some games keep beside their saves
-#: port/frontend/shell/settings.cpp:1024
+#: port/frontend/shell/settings.cpp:1043
 msgid "Extra data"
 msgstr "Додаткові дані"
 
-#: port/frontend/shell/settings.cpp:1025
+#: port/frontend/shell/settings.cpp:1044
 msgid "{0} save state"
 msgid_plural "{0} save states"
 msgstr[0] "{0} збереження стану"
 msgstr[1] "{0} збереження стану"
 msgstr[2] "{0} збережень стану"
 
-#: port/frontend/shell/settings.cpp:1063
+#: port/frontend/shell/settings.cpp:1082
 msgid "Held: moved to saves-before on the PS5, so it can still come back."
 msgstr "Утримання: переноситься в saves-before на PS5, тож його можна повернути."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1065
+#: port/frontend/shell/settings.cpp:1084
 msgid "Holding Cross moves these files to {0}/saves-before, in a folder named by the date and time, and the game starts without them next time. Nothing is deleted: copy them back from there (or restore a backup) to have them again."
 msgstr "Утримання Хрестика переносить ці файли в {0}/saves-before, у теку з датою й часом, і наступного разу гра запуститься без них. Нічого не видаляється: скопіюйте їх звідти назад (або відновіть резервну копію), щоб повернути."
 
-#: port/frontend/shell/settings.cpp:1075
+#: port/frontend/shell/settings.cpp:1094
 msgid "No saves yet"
 msgstr "Збережень поки немає"
 
-#: port/frontend/shell/settings.cpp:1076
+#: port/frontend/shell/settings.cpp:1095
 msgid "They appear here once the game has saved."
 msgstr "Вони з’являться тут, щойно гра збереже."
 
-#: port/frontend/shell/settings.cpp:1089
+#: port/frontend/shell/settings.cpp:1108
 msgid "This game's saves, to the first USB drive."
 msgstr "Збереження цієї гри на перший USB-накопичувач."
 
-#: port/frontend/shell/settings.cpp:1090
+#: port/frontend/shell/settings.cpp:1109
 msgid "Copies this game's saves (every account's, on the Wii U) and its save states to PS5CEMU-HAR-saves on the first USB drive plugged in, in a folder named by the date and time, the same way a backup of every side's saves is made."
 msgstr "Копіює збереження цієї гри (на Wii U — усіх облікових записів) і її збереження стану в PS5CEMU-HAR-saves на першому під’єднаному USB-накопичувачі, у теку з датою й часом, так само як резервну копію збережень усіх сторін."
 
-#: port/frontend/shell/settings.cpp:1107
+#: port/frontend/shell/settings.cpp:1126
 msgid "No backup on the drives plugged in has this game's saves."
 msgstr "Жодна резервна копія на під’єднаних накопичувачах не має збережень цієї гри."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1109
+#: port/frontend/shell/settings.cpp:1128
 msgid "Puts this game's saves from the chosen backup back where they came from, and nothing else. Its saves there now are moved first to {0}/saves-before, so nothing is lost."
 msgstr "Повертає збереження цієї гри з вибраної копії туди, звідки їх було взято, і нічого більше. Її поточні збереження спершу переносяться в {0}/saves-before, тож нічого не втрачається."
 
-#: port/frontend/shell/settings.cpp:1131
+#: port/frontend/shell/settings.cpp:1150
 msgid ""
 "Your own theme: a file such as sunset.json in {0}/themes, read as the app starts, then listed under Theme by its name:\n"
 "{{\"name\": \"Sunset\", \"base\": \"midnight\", \"colours\": {{\"wiiu\": \"#ff7a59\", \"ink-0\": \"#120806\"}}, \"corners\": 0.5, \"motif\": \"slashes\"}}\n"
@@ -5625,21 +5660,21 @@ msgstr ""
 "base: тема, від якої відштовхуватися (classic, midnight, phantom, terminal). colours: від ink-0 до ink-2 (тло), text, wiiu, n3ds і nds (кольори сторін), glass, line, good, warn, bad і focus, у вигляді #rrggbb. corners: від 0 (квадратні) до 1.5 (круглі). motif: side, none, slashes або grid."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1140
+#: port/frontend/shell/settings.cpp:1159
 msgid "Saves: {0}/melonds/saves (a .sav beside the game is taken the first time). Save states: melonds/states. Cheats: melonds/cheats/<game file>.mch, melonDS's format. DSi games, the DS's wireless and its GBA slot are not there."
 msgstr "Збереження: {0}/melonds/saves (файл .sav поруч із грою береться під час першого запуску). Збереження стану: melonds/states. Чити: melonds/cheats/<файл гри>.mch у форматі melonDS. Ігри DSi, бездротовий зв’язок DS і її слот GBA не підтримуються."
 
-#: port/frontend/shell/settings.cpp:1144
+#: port/frontend/shell/settings.cpp:1163
 msgid "On, a QR code here opens the game's second screen in a phone's browser. Nothing to install; the phone must be on the PS5's network."
 msgstr "Якщо ввімкнено, QR-код тут відкриває другий екран гри в браузері телефона. Нічого встановлювати не треба; телефон має бути в мережі PS5."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1148
+#: port/frontend/shell/settings.cpp:1167
 msgid "Figure dumps go in {0}/figures: skylanders, infinity and dimensions. Switch a portal on here, start the game, then put figures on it from the in-game menu (touchpad click + Options > USB devices)."
 msgstr "Дампи фігурок кладіть у {0}/figures: skylanders, infinity і dimensions. Увімкніть тут портал, запустіть гру, потім ставте на нього фігурки з ігрового меню (натискання сенсорної панелі + OPTIONS > USB-пристрої)."
 
 #. {0} is the app's version; {1} its data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1153
+#: port/frontend/shell/settings.cpp:1172
 msgid ""
 "Cemu, the Wii U emulator, by the Cemu team and its contributors; RADV on the PS5 by Mihawk-99 and mpereiraesaa; the community graphic packs' authors.\n"
 "Azahar, the 3DS emulator, by the Azahar team and the Citra contributors before them; Mihawk-99's PS5 port of it and dynarmic.\n"
@@ -5668,106 +5703,114 @@ msgstr ""
 "Версія {0}"
 
 #. the first choice in the language list: the PS5's own ({0}, in its own words)
-#: port/frontend/shell/settings.cpp:1169
+#: port/frontend/shell/settings.cpp:1188
 msgid "The PS5's language: {0}"
 msgstr "Мова PS5: {0}"
 
-#: port/frontend/shell/settings.cpp:1194
+#: port/frontend/shell/settings.cpp:1213
 msgid "Language: {0}"
 msgstr "Мова: {0}"
 
-#: port/frontend/shell/settings.cpp:1289
+#: port/frontend/shell/settings.cpp:1308
 msgid "One side at least stays on"
 msgstr "Принаймні одна сторона лишається ввімкненою"
 
 #. the Wii U account games start on now ({0}: its name)
-#: port/frontend/shell/settings.cpp:1408 port/frontend/shell/settings.cpp:1566 port/frontend/shell/settings.cpp:1641
+#: port/frontend/shell/settings.cpp:1427 port/frontend/shell/settings.cpp:1585 port/frontend/shell/settings.cpp:1660
 msgid "Games start on {0}'s saves"
 msgstr "Ігри запускаються зі збереженнями {0}"
 
-#: port/frontend/shell/settings.cpp:1491
+#: port/frontend/shell/settings.cpp:1510
 msgid "This game has no ID to save settings under"
 msgstr "У цієї гри немає ID, щоб зберегти налаштування"
 
-#: port/frontend/shell/settings.cpp:1589
+#: port/frontend/shell/settings.cpp:1608
 msgid "Backing up {0}'s saves…"
 msgstr "Резервне копіювання збережень {0}…"
 
-#: port/frontend/shell/settings.cpp:1636
+#: port/frontend/shell/settings.cpp:1655
 msgid "A name for the new account"
 msgstr "Ім’я нового облікового запису"
 
-#: port/frontend/shell/settings.cpp:1653
+#: port/frontend/shell/settings.cpp:1672
 msgid "A new name"
 msgstr "Нове ім’я"
 
-#: port/frontend/shell/settings.cpp:1655
+#: port/frontend/shell/settings.cpp:1674
 msgid "Renamed {0}"
 msgstr "Перейменовано: {0}"
 
-#: port/frontend/shell/settings.cpp:1664
+#: port/frontend/shell/settings.cpp:1683
 msgid "Backing up every side's saves…"
 msgstr "Резервне копіювання збережень усіх сторін…"
 
-#: port/frontend/shell/settings.cpp:1747
+#: port/frontend/shell/settings.cpp:1766
 msgid "Starting the 3DS"
 msgstr "Запуск 3DS"
 
-#: port/frontend/shell/settings.cpp:1756
+#: port/frontend/shell/settings.cpp:1775
 msgid "Your RetroAchievements user name"
 msgstr "Ваше ім’я користувача RetroAchievements"
 
-#: port/frontend/shell/settings.cpp:1759
+#: port/frontend/shell/settings.cpp:1778
 msgid "{0}'s RetroAchievements password"
 msgstr "Пароль RetroAchievements для {0}"
 
-#: port/frontend/shell/settings.cpp:1761
+#: port/frontend/shell/settings.cpp:1780
 msgid "Signing in to RetroAchievements…"
 msgstr "Вхід у RetroAchievements…"
 
+#. what clearing the unpacked games did; {1} is the room it made, as in 2.4 GB
+#: port/frontend/shell/settings.cpp:1802
+msgid "{0} game deleted ({1})"
+msgid_plural "{0} games deleted ({1})"
+msgstr[0] "Видалено {0} гру ({1})"
+msgstr[1] "Видалено {0} гри ({1})"
+msgstr[2] "Видалено {0} ігор ({1})"
+
 #. a held row's result: the covers are on their way
-#: port/frontend/shell/settings.cpp:1782
+#: port/frontend/shell/settings.cpp:1809
 msgid "Downloading in the background"
 msgstr "Завантаження у фоні"
 
-#: port/frontend/shell/settings.cpp:1803
+#: port/frontend/shell/settings.cpp:1830
 msgid "{0} is deleted; its saves stay"
 msgstr "{0} видалено; його збереження лишаються"
 
-#: port/frontend/shell/settings.cpp:1816
+#: port/frontend/shell/settings.cpp:1843
 msgid "Restoring the saves of {0}…"
 msgstr "Відновлення збережень із {0}…"
 
-#: port/frontend/shell/settings.cpp:1824
+#: port/frontend/shell/settings.cpp:1851
 msgid "Signed out of RetroAchievements"
 msgstr "Вихід із RetroAchievements виконано"
 
-#: port/frontend/shell/settings.cpp:1833
+#: port/frontend/shell/settings.cpp:1860
 msgid "Restoring {0}'s saves of {1}…"
 msgstr "Відновлення збережень {0} із {1}…"
 
 #. one of a game's saves moved out of the way ({0}: which, as its row names it)
-#: port/frontend/shell/settings.cpp:1847
+#: port/frontend/shell/settings.cpp:1874
 msgid "{0}: moved to saves-before"
 msgstr "{0}: перенесено в saves-before"
 
-#: port/frontend/shell/settings.cpp:1858
+#: port/frontend/shell/settings.cpp:1885
 msgid "Done: back to its side's settings"
 msgstr "Готово: знову налаштування своєї сторони"
 
-#: port/frontend/shell/settings.cpp:2031
+#: port/frontend/shell/settings.cpp:2058
 msgid "Scan it, or open"
 msgstr "Відскануйте або відкрийте"
 
-#: port/frontend/shell/settings.cpp:2037
+#: port/frontend/shell/settings.cpp:2064
 msgid "Same network as the PS5. Nothing to install: the browser is enough. Sound stays on the PS5. Any browser on the network can see it and touch."
 msgstr "Та сама мережа, що й у PS5. Нічого встановлювати не треба: досить браузера. Звук лишається на PS5. Будь-який браузер у мережі може бачити екран і торкатися його."
 
-#: port/frontend/shell/settings.cpp:2069
+#: port/frontend/shell/settings.cpp:2096
 msgid "Support PS5CEMU-HAR"
 msgstr "Підтримати PS5CEMU-HAR"
 
-#: port/frontend/shell/settings.cpp:2080
+#: port/frontend/shell/settings.cpp:2107
 msgid "PS5CEMU-HAR is free. If it brings your games back, you can support its work here."
 msgstr "PS5CEMU-HAR безкоштовний. Якщо він повернув вам ваші ігри, тут можна підтримати роботу над ним."
 
@@ -6280,318 +6323,323 @@ msgstr "Увімкніть спільний доступ до теки на ко
 msgid "Nothing is ever written to it."
 msgstr "На неї ніколи нічого не записується."
 
-#: port/frontend/shell/shell.cpp:208
+#: port/frontend/shell/shell.cpp:209
 msgid "Saved your place in the library"
 msgstr "Ваше місце в бібліотеці збережено"
 
-#: port/frontend/shell/shell.cpp:211
+#: port/frontend/shell/shell.cpp:212 port/frontend/shell/shell.cpp:880 port/frontend/shell/shell.cpp:945
 msgid "The game could not start"
 msgstr "Гру не вдалося запустити"
 
-#: port/frontend/shell/shell.cpp:684
+#: port/frontend/shell/shell.cpp:687
 msgid "Cemu did not start: {0}"
 msgstr "Cemu не запустився: {0}"
 
-#: port/frontend/shell/shell.cpp:798
+#: port/frontend/shell/shell.cpp:801
 msgid "{0} min played"
 msgid_plural "{0} min played"
 msgstr[0] "Зіграно {0} хв"
 msgstr[1] "Зіграно {0} хв"
 msgstr[2] "Зіграно {0} хв"
 
-#: port/frontend/shell/shell.cpp:799
+#: port/frontend/shell/shell.cpp:802
 msgid "{0} h played"
 msgid_plural "{0} h played"
 msgstr[0] "Зіграно {0} год"
 msgstr[1] "Зіграно {0} год"
 msgstr[2] "Зіграно {0} год"
 
-#: port/frontend/shell/shell.cpp:814
+#: port/frontend/shell/shell.cpp:817
 msgid "today"
 msgstr "сьогодні"
 
-#: port/frontend/shell/shell.cpp:816
+#: port/frontend/shell/shell.cpp:819
 msgid "yesterday"
 msgstr "учора"
 
-#: port/frontend/shell/shell.cpp:818
+#: port/frontend/shell/shell.cpp:821
 msgid "{0} day ago"
 msgid_plural "{0} days ago"
 msgstr[0] "{0} день тому"
 msgstr[1] "{0} дні тому"
 msgstr[2] "{0} днів тому"
 
-#: port/frontend/shell/shell.cpp:820
+#: port/frontend/shell/shell.cpp:823
 msgid "{0} week ago"
 msgid_plural "{0} weeks ago"
 msgstr[0] "{0} тиждень тому"
 msgstr[1] "{0} тижні тому"
 msgstr[2] "{0} тижнів тому"
 
-#: port/frontend/shell/shell.cpp:821
+#: port/frontend/shell/shell.cpp:824
 msgid "{0} month ago"
 msgid_plural "{0} months ago"
 msgstr[0] "{0} місяць тому"
 msgstr[1] "{0} місяці тому"
 msgstr[2] "{0} місяців тому"
 
-#: port/frontend/shell/shell.cpp:877
+#: port/frontend/shell/shell.cpp:904
 msgid "Starting melonDS"
 msgstr "Запуск melonDS"
 
-#: port/frontend/shell/shell.cpp:877
+#: port/frontend/shell/shell.cpp:904 port/frontend/shell/shell.cpp:2304
 msgid "Starting Azahar"
 msgstr "Запуск Azahar"
 
-#: port/frontend/shell/shell.cpp:912
+#: port/frontend/shell/shell.cpp:989
 msgid "Making {0}'s home screen tile…"
 msgstr "Створення плитки {0} на головному екрані…"
 
-#: port/frontend/shell/shell.cpp:919
+#: port/frontend/shell/shell.cpp:996
 msgid "Removing {0}'s home screen tile…"
 msgstr "Плитка {0} прибирається з головного екрана…"
 
-#: port/frontend/shell/shell.cpp:931
+#: port/frontend/shell/shell.cpp:1008
 msgid "The tile could not be removed"
 msgstr "Не вдалося видалити плитку"
 
-#: port/frontend/shell/shell.cpp:931
+#: port/frontend/shell/shell.cpp:1008
 msgid "The tile could not be made"
 msgstr "Не вдалося створити плитку"
 
-#: port/frontend/shell/shell.cpp:937
+#: port/frontend/shell/shell.cpp:1014
 msgid "The tile is removed"
 msgstr "Плитку видалено"
 
-#: port/frontend/shell/shell.cpp:938
+#: port/frontend/shell/shell.cpp:1015
 msgid "Its folder is gone from /data/homebrew. If its picture stays on the home screen, delete it there (Options, then Delete), or restart ShadowMount Plus."
 msgstr "Її теки більше немає в /data/homebrew. Якщо зображення лишилося на головному екрані, видаліть його там (OPTIONS, потім «Видалити») або перезапустіть ShadowMount Plus."
 
 #. {0} is the tile's folder, /data/homebrew/PPSA99xxx
-#: port/frontend/shell/shell.cpp:943
+#: port/frontend/shell/shell.cpp:1020
 msgid "The tile is made again"
 msgstr "Плитку створено заново"
 
 #. {0} is the tile's folder, /data/homebrew/PPSA99xxx
-#: port/frontend/shell/shell.cpp:943
+#: port/frontend/shell/shell.cpp:1020
 msgid "The tile is made"
 msgstr "Плитку створено"
 
-#: port/frontend/shell/shell.cpp:944
+#: port/frontend/shell/shell.cpp:1021
 msgid "It is in {0}. ShadowMount Plus puts it on the PS5's home screen as it does any homebrew: if it does not show, restart ShadowMount Plus or the console. The tile starts the game in PS5CEMU-HAR, and closing the game closes the app."
 msgstr "Вона лежить у {0}. ShadowMount Plus додає її на головний екран PS5, як будь-який homebrew: якщо вона не з’явилася, перезапустіть ShadowMount Plus або консоль. Плитка запускає гру в PS5CEMU-HAR, а закриття гри закриває застосунок."
 
-#: port/frontend/shell/shell.cpp:957
+#: port/frontend/shell/shell.cpp:1034
 msgid "The tile's game could not start"
 msgstr "Не вдалося запустити гру плитки"
 
-#: port/frontend/shell/shell.cpp:985
+#: port/frontend/shell/shell.cpp:1062
 msgid "It is not in the library: {0}"
 msgstr "Її немає в бібліотеці: {0}"
 
-#: port/frontend/shell/shell.cpp:1222 port/frontend/shell/shell.cpp:1284 port/frontend/shell/shell.cpp:2122
+#: port/frontend/shell/shell.cpp:1299 port/frontend/shell/shell.cpp:1361 port/frontend/shell/shell.cpp:2209
 msgid "Done"
 msgstr "Готово"
 
-#: port/frontend/shell/shell.cpp:1224 port/frontend/shell/shell.cpp:1300 port/frontend/shell/shell.cpp:1304
+#: port/frontend/shell/shell.cpp:1301 port/frontend/shell/shell.cpp:1377 port/frontend/shell/shell.cpp:1381 port/frontend/shell/shell.cpp:2318
 msgid "Cancel"
 msgstr "Скасувати"
 
-#: port/frontend/shell/shell.cpp:1226 port/frontend/shell/shell.cpp:1228 port/frontend/shell/shell.cpp:1290
+#: port/frontend/shell/shell.cpp:1303 port/frontend/shell/shell.cpp:1305 port/frontend/shell/shell.cpp:1367
 msgid "Close"
 msgstr "Закрити"
 
-#: port/frontend/shell/shell.cpp:1237
+#: port/frontend/shell/shell.cpp:1314
 msgid "Switch"
 msgstr "Змінити"
 
-#: port/frontend/shell/shell.cpp:1242
+#: port/frontend/shell/shell.cpp:1319
 msgid "Continue"
 msgstr "Продовжити"
 
-#: port/frontend/shell/shell.cpp:1244 port/frontend/shell/shell.cpp:1286 port/frontend/shell/shell.cpp:1287 port/frontend/shell/shell.cpp:1291 port/frontend/shell/shell.cpp:1297
+#: port/frontend/shell/shell.cpp:1321 port/frontend/shell/shell.cpp:1363 port/frontend/shell/shell.cpp:1364 port/frontend/shell/shell.cpp:1368 port/frontend/shell/shell.cpp:1374
 msgid "More about it"
 msgstr "Докладніше"
 
-#: port/frontend/shell/shell.cpp:1245 port/frontend/shell/welcome.cpp:104
+#: port/frontend/shell/shell.cpp:1322 port/frontend/shell/welcome.cpp:104
 msgid "Continue to the Setup check"
 msgstr "Перейти до перевірки налаштування"
 
-#: port/frontend/shell/shell.cpp:1245 port/frontend/shell/shell.cpp:1254 port/frontend/shell/welcome.cpp:104
+#: port/frontend/shell/shell.cpp:1322 port/frontend/shell/shell.cpp:1331 port/frontend/shell/welcome.cpp:104
 msgid "Continue to the Library"
 msgstr "Перейти до бібліотеки"
 
-#: port/frontend/shell/shell.cpp:1250
+#: port/frontend/shell/shell.cpp:1327
 msgid "Change the language"
 msgstr "Змінити мову"
 
-#: port/frontend/shell/shell.cpp:1253
+#: port/frontend/shell/shell.cpp:1330
 msgid "Check again"
 msgstr "Перевірити знову"
 
-#: port/frontend/shell/shell.cpp:1270
+#: port/frontend/shell/shell.cpp:1347
 msgid "Recently played / Library"
 msgstr "Нещодавні / Бібліотека"
 
-#: port/frontend/shell/shell.cpp:1273
+#: port/frontend/shell/shell.cpp:1350
 msgid "Filters"
 msgstr "Фільтри"
 
-#: port/frontend/shell/shell.cpp:1276
+#: port/frontend/shell/shell.cpp:1353
 msgid "Jump by letter"
 msgstr "Перехід за літерою"
 
-#: port/frontend/shell/shell.cpp:1278
+#: port/frontend/shell/shell.cpp:1355
 msgid "Back to the buttons"
 msgstr "Назад до кнопок"
 
-#: port/frontend/shell/shell.cpp:1279
+#: port/frontend/shell/shell.cpp:1356
 msgid "Scroll"
 msgstr "Прокручування"
 
-#: port/frontend/shell/shell.cpp:1287 port/frontend/shell/widgets.cpp:313
+#: port/frontend/shell/shell.cpp:1364 port/frontend/shell/widgets.cpp:313
 msgid "Default"
 msgstr "Типово"
 
-#: port/frontend/shell/shell.cpp:1294
+#: port/frontend/shell/shell.cpp:1371
 msgid "Back to the packs"
 msgstr "Назад до пакетів"
 
-#: port/frontend/shell/shell.cpp:1295
+#: port/frontend/shell/shell.cpp:1372
 msgid "On / off"
 msgstr "Увімк. / вимк."
 
-#: port/frontend/shell/shell.cpp:1301
+#: port/frontend/shell/shell.cpp:1378
 msgid "Assign"
 msgstr "Призначити"
 
-#: port/frontend/shell/shell.cpp:1301
+#: port/frontend/shell/shell.cpp:1378
 msgid "Clear"
 msgstr "Очистити"
 
-#: port/frontend/shell/shell.cpp:1305
+#: port/frontend/shell/shell.cpp:1382
 msgid "Use this folder"
 msgstr "Вибрати цю теку"
 
-#: port/frontend/shell/shell.cpp:1308
+#: port/frontend/shell/shell.cpp:1385
 msgid "Number"
 msgstr "Число"
 
-#: port/frontend/shell/shell.cpp:1308
+#: port/frontend/shell/shell.cpp:1385
 msgid "Keep"
 msgstr "Зберегти"
 
-#: port/frontend/shell/shell.cpp:1309
+#: port/frontend/shell/shell.cpp:1386
 msgid "Edit"
 msgstr "Змінити"
 
-#: port/frontend/shell/shell.cpp:1309
+#: port/frontend/shell/shell.cpp:1386
 msgid "Connect"
 msgstr "Під’єднатися"
 
-#: port/frontend/shell/shell.cpp:1309
+#: port/frontend/shell/shell.cpp:1386
 msgid "Hold to set up"
 msgstr "Утримувати для налаштування"
 
-#: port/frontend/shell/shell.cpp:1605
+#: port/frontend/shell/shell.cpp:1682
 msgid "Game hub"
 msgstr "Картка гри"
 
-#: port/frontend/shell/shell.cpp:1608
+#: port/frontend/shell/shell.cpp:1685
 msgid "Game settings: custom"
 msgstr "Налаштування гри: власні"
 
-#: port/frontend/shell/shell.cpp:1614
+#: port/frontend/shell/shell.cpp:1691
 msgid "Add mods from USB"
 msgstr "Додати моди з USB"
 
-#: port/frontend/shell/shell.cpp:1617
+#: port/frontend/shell/shell.cpp:1694
 msgid "Not a favourite"
 msgstr "Прибрати з обраного"
 
-#: port/frontend/shell/shell.cpp:1619
+#: port/frontend/shell/shell.cpp:1696
 msgid "Remove from home screen"
 msgstr "Прибрати з головного екрана"
 
-#: port/frontend/shell/shell.cpp:1621
+#: port/frontend/shell/shell.cpp:1698
 msgid "Add to home screen"
 msgstr "Додати на головний екран"
 
-#: port/frontend/shell/shell.cpp:1939
+#: port/frontend/shell/shell.cpp:2026
 msgid "Added to Favourites"
 msgstr "Додано до обраного"
 
-#: port/frontend/shell/shell.cpp:1939
+#: port/frontend/shell/shell.cpp:2026
 msgid "Taken out of Favourites"
 msgstr "Прибрано з обраного"
 
-#: port/frontend/shell/shell.cpp:2144
+#: port/frontend/shell/shell.cpp:2231
 msgid "PS5CEMU-HAR {0} is out"
 msgstr "Вийшов PS5CEMU-HAR {0}"
 
-#: port/frontend/shell/shell.cpp:2145
+#: port/frontend/shell/shell.cpp:2232
 msgid "This is {0}. Download and install it now? Your games, saves and settings stay as they are."
 msgstr "Це {0}. Завантажити й установити зараз? Ваші ігри, збереження й налаштування лишаться як є."
 
-#: port/frontend/shell/shell.cpp:2146
+#: port/frontend/shell/shell.cpp:2233
 msgid "Update now"
 msgstr "Оновити зараз"
 
-#: port/frontend/shell/shell.cpp:2146 port/frontend/shell/shell.cpp:2199
+#: port/frontend/shell/shell.cpp:2233 port/frontend/shell/shell.cpp:2286
 msgid "Later"
 msgstr "Пізніше"
 
-#: port/frontend/shell/shell.cpp:2149 port/frontend/shell/shell.cpp:2154 port/frontend/shell/shell.cpp:2159
+#: port/frontend/shell/shell.cpp:2236 port/frontend/shell/shell.cpp:2241 port/frontend/shell/shell.cpp:2246
 msgid "Updating to {0}"
 msgstr "Оновлення до {0}"
 
-#: port/frontend/shell/shell.cpp:2150
+#: port/frontend/shell/shell.cpp:2237
 msgid "Downloading: {0} of {1} MB"
 msgstr "Завантаження: {0} з {1} МБ"
 
-#: port/frontend/shell/shell.cpp:2155
+#: port/frontend/shell/shell.cpp:2242
 msgid "Checking the download"
 msgstr "Перевірка завантаження"
 
-#: port/frontend/shell/shell.cpp:2160
+#: port/frontend/shell/shell.cpp:2247
 msgid "Installing"
 msgstr "Установлення"
 
-#: port/frontend/shell/shell.cpp:2164
+#: port/frontend/shell/shell.cpp:2251
 msgid "{0} is installed"
 msgstr "{0} установлено"
 
-#: port/frontend/shell/shell.cpp:2165
+#: port/frontend/shell/shell.cpp:2252
 msgid "PS5CEMU-HAR starts again to finish the update."
 msgstr "PS5CEMU-HAR перезапуститься, щоб завершити оновлення."
 
-#: port/frontend/shell/shell.cpp:2166
+#: port/frontend/shell/shell.cpp:2253
 msgid "Restart now"
 msgstr "Перезапустити зараз"
 
-#: port/frontend/shell/shell.cpp:2169
+#: port/frontend/shell/shell.cpp:2256
 msgid "The update did not finish"
 msgstr "Оновлення не завершилося"
 
-#: port/frontend/shell/shell.cpp:2170
+#: port/frontend/shell/shell.cpp:2257
 msgid "PS5CEMU-HAR is still {0}."
 msgstr "PS5CEMU-HAR і далі {0}."
 
-#: port/frontend/shell/shell.cpp:2173
+#: port/frontend/shell/shell.cpp:2260
 msgid "Checking for updates"
 msgstr "Пошук оновлень"
 
-#: port/frontend/shell/shell.cpp:2179
+#: port/frontend/shell/shell.cpp:2266
 msgid "PS5CEMU-HAR update"
 msgstr "Оновлення PS5CEMU-HAR"
 
-#: port/frontend/shell/shell.cpp:2199
+#: port/frontend/shell/shell.cpp:2286
 msgid "Select"
 msgstr "Вибрати"
 
-#: port/frontend/shell/shell.cpp:2200
+#: port/frontend/shell/shell.cpp:2287
 msgid "Restart"
 msgstr "Перезапустити"
+
+#. under an archived game's name while it is unpacked, the first time it starts
+#: port/frontend/shell/shell.cpp:2307
+msgid "Unpacking the game from its archive. This is done once: the copy is kept for the next start."
+msgstr "Гра розпаковується з архіву. Це робиться один раз: копія зберігається для наступного запуску."
 
 #: port/frontend/shell/welcome.cpp:63
 msgid "On every side: A on Circle, as Nintendo's consoles have it, or on Cross."
@@ -6720,45 +6768,45 @@ msgstr "Найбільше оновлення, коротко. Усе інше �
 msgid "This game"
 msgstr "Ця гра"
 
-#: port/main_ps5.cpp:132
+#: port/main_ps5.cpp:133
 msgid "Firmware {0}"
 msgstr "Мікропрограма {0}"
 
-#: port/main_ps5.cpp:134
+#: port/main_ps5.cpp:135
 msgid "Logs: {0}, {1}/log.txt"
 msgstr "Журнали: {0}, {1}/log.txt"
 
-#: port/main_ps5.cpp:135
+#: port/main_ps5.cpp:136
 msgid "Boot log not written (/data is unreachable)"
 msgstr "Журнал запуску не записано (/data недоступний)"
 
-#: port/main_ps5.cpp:435
+#: port/main_ps5.cpp:460
 msgid "PS5CEMU-HAR cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5CEMU-HAR."
 msgstr "PS5CEMU-HAR не має доступу до /data. Завантажте HEN з PPSA99360 у його списку app jailbreak або elfldr, потім перезапустіть PS5CEMU-HAR."
 
-#: port/main_ps5.cpp:464
+#: port/main_ps5.cpp:489
 msgid "This session: Azahar (3DS); Cemu's emulated Wii U is not started"
 msgstr "Цей сеанс: Azahar (3DS); емульовану Wii U в Cemu не запущено"
 
-#: port/main_ps5.cpp:472
+#: port/main_ps5.cpp:497
 msgid "This session: melonDS (DS); Cemu's emulated Wii U is not started"
 msgstr "Цей сеанс: melonDS (DS); емульовану Wii U в Cemu не запущено"
 
-#: port/main_ps5.cpp:478
+#: port/main_ps5.cpp:503
 msgid "This session: Cemu (Wii U); Azahar's core is not started"
 msgstr "Цей сеанс: Cemu (Wii U); ядро Azahar не запущено"
 
-#: port/main_ps5.cpp:486
+#: port/main_ps5.cpp:511
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "Немає JIT-пам’яті: ігри Wii U йдуть на інтерпретаторі, значно повільніше. Чи є PPSA99360 у списку app jailbreak вашого HEN?"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/main_ps5.cpp:520
+#: port/main_ps5.cpp:545
 msgid "The launcher could not start. The boot log in {0}/logs says why."
 msgstr "Лаунчер не зміг запуститися. Причина — у журналі запуску в {0}/logs."
 
 #. {0} is why; {1} the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the app's drive
-#: port/main_ps5.cpp:522
+#: port/main_ps5.cpp:547
 msgid "The launcher could not start: {0}. The boot log in {1}/logs has more."
 msgstr "Не вдалося запустити лаунчер: {0}. Подробиці в журналі завантаження в {1}/logs."
 

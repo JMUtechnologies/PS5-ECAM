@@ -6,6 +6,10 @@
 // .app holds it; a CIA's meta section; a .3dsx's extended header. Encrypted dumps cannot be read
 // (Azahar needs decrypted ones too), and are listed by their file names. The icons (48x48 RGB565 in
 // 8x8 tiles) are written once as TGAs the launcher shows (in /data/ps5cemu/covers/3ds).
+//
+// A game may be in an archive (app/game_archives.h): its first ROM by name is the game, unpacked as
+// it starts. What the library reads of it (its header and SMDH) is kept in Root()/archives.bin by the
+// archive's size and time, so a later scan reads nothing out of an archive that has not changed.
 
 #pragma once
 
@@ -37,6 +41,7 @@ namespace ps5azahar
 		std::string format;		 // 3DS, CIA, CXI, APP, 3DSX, ELF, Z3DS...
 		std::string boxId;		 // the ID on its box (GameTDB's), from its product code: CTR-P-AREE is AREE
 		std::vector<uint8_t> icon; // 48x48 BGRA, top-down, when it has one
+		std::vector<uint8_t> smdh; // the SMDH the name and icon are read from, as it is in the file
 	};
 	Title Inspect(const std::string& path);
 }

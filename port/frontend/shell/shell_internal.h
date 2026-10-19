@@ -12,6 +12,7 @@
 #include "../../app/boxart.h"
 #include "../../app/catalog.h"
 #include "../../app/compatibility.h"
+#include "../../app/game_archives.h"
 #include "../../app/gameinfo.h"
 #include "../../app/lang.h"
 #include "../../app/netfs.h"
@@ -28,12 +29,14 @@
 #include <fmt/format.h>
 
 #include <array>
+#include <atomic>
 #include <ctime>
 #include <functional>
 #include <map>
 #include <memory>
 #include <optional>
 #include <string>
+#include <thread>
 #include <unordered_map>
 #include <vector>
 
@@ -216,8 +219,16 @@ namespace ps5shell
 		void SetLanguage(int index); // LanguageOptions' index: the menus in that language, at once
 		void FetchBoxArt();
 		void RememberCount();
+		// a game of the side's chosen: a 3DS or Wii U game in an archive unpacked first (StartUnpacking),
+		// unless its copy is kept from before
 		void Launch(int index);
+		void LaunchChosen(int index, const std::string& launchPath); // launchPath: its unpacked copy, or empty
 		void LaunchGame(const ps5emu::Game& game, const std::string& caption, const Box& from);
+		// a game in an archive unpacked on a thread of its own (app/game_archives.h), its sheet over the
+		// launcher, Circle stopping it; started once it is done
+		void StartUnpacking(int index);
+		void PollUnpacking();
+		void StopUnpacking(); // and joins its thread
 		void Toast(const std::string& text);
 
 		// -- shared drawing (widgets.cpp) ----------------------------------------------------------
@@ -658,6 +669,9 @@ namespace ps5shell
 		int m_settingRow = 0;
 		ui::Spring m_railScroll;
 		std::string m_diagnosticsDone[3];
+		std::string m_unpackedDone;	 // Diagnostics: what clearing the unpacked games did
+		uint64_t m_unpackedBytes = 0; // their size, looked at now and then
+		double m_unpackedAt = -100;
 		std::string m_packsShown;
 		bool m_packsReloaded = false;
 		uint32_t m_modsFinished = 0;  // the mods' runs answered (ps5mods::Status::finished)
@@ -822,6 +836,18 @@ namespace ps5shell
 			int choice = 0;
 			double at = 0;
 		} m_update;
+		struct Unpacking
+		{
+			bool open = false;
+			double at = 0;
+			uint64_t titleId = 0; // the game's (the list may be read again meanwhile)
+			std::string name;
+			std::thread thread;
+			ps5archive::Progress progress;
+			std::atomic<bool> finished{false};
+			bool ok = false; // the thread's, read once finished
+			std::string path, error;
+		} m_unpack;
 		struct ToastItem
 		{
 			std::string text;

@@ -698,11 +698,11 @@ namespace ps5shell
 			action(Kind::Link, "folder", Is3ds() ? Tr("3DS games") : IsDs() ? Tr("DS games") : Tr("Wii U games"), ShortPath(folder, 34),
 				Tr("Where your games are. Cross picks another."),
 				// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-				IsWiiU() ? TrF("Your Wii U games: .wua, .wud, .wux, or folders with code, content and meta. Encrypted .wud and .wux need their keys "
-							"in {0}/keys.txt.", ps5paths::Root()) :
-				Is3ds()	 ? Tr("Your 3DS games: .3ds or .cci, .cxi, .3dsx and Azahar's compressed dumps, decrypted, here or in the folders in it. "
-						   "CIA files are installed (Install a CIA file). Encrypted dumps do not start, with keys or without: decrypt them on "
-						   "your 3DS first (GodMode9).") :
+				IsWiiU() ? TrF("Your Wii U games: .wua, .wud, .wux, or folders with code, content and meta, alone or in .zip, .7z or .rar archives. "
+							"Encrypted .wud and .wux need their keys in {0}/keys.txt.", ps5paths::Root()) :
+				Is3ds()	 ? Tr("Your 3DS games: .3ds or .cci, .cxi, .3dsx and Azahar's compressed dumps, decrypted, alone or in .zip, .7z or .rar "
+						   "archives, here or in the folders in it. CIA files are installed (Install a CIA file). Encrypted dumps do not start, "
+						   "with keys or without: decrypt them on your 3DS first (GodMode9).") :
 						   Tr("Your DS games: .nds files, alone or in .zip, .7z or .rar archives, here or in the folders in it."));
 			action(Kind::Action, "rescan", Tr("Look for games now"), m_scanning ? Tr("Looking…") : "", Tr("This side's folder, again."),
 				Tr("Looks through this side's folder again, as it does each time the side opens."));
@@ -969,6 +969,25 @@ namespace ps5shell
 				action(Kind::Hold, "clearcaches", Tr("Clear shader caches"), m_diagnosticsDone[2].empty() ? Tr("Hold Cross") : m_diagnosticsDone[2],
 					Tr("For a game that crashes on a bad cache."),
 					Tr("Deletes Azahar's shader caches. Games build them again as they run: the first minutes stutter."));
+			// the 3DS's and the Wii U's games unpacked from archives (app/game_archives.h): one cache for both
+			if (!IsDs())
+			{
+				if (m_now - m_unpackedAt > 3)
+				{
+					m_unpackedBytes = ps5archive::UnpackedBytes();
+					m_unpackedAt = m_now;
+				}
+				// tr: Settings > Diagnostics: the copies of games unpacked from their archives (.zip, .7z...), kept for their next start
+				action(Kind::Hold, "clearunpacked", Tr("Unpacked games"),
+					!m_unpackedDone.empty() ? m_unpackedDone :
+					m_unpackedBytes			? SizeWords(m_unpackedBytes) + "  ·  " + Tr("Hold Cross") :
+											  std::string(Tr("None to delete")),
+					Tr("Games from archives, kept unpacked for their next start."),
+					// tr: {0} is the folder they are kept in
+					TrF("Deletes the copies of games unpacked from their archives, kept in {0}. Each is unpacked again the next time it "
+						"starts; when room is needed, the copies used longest ago go by themselves.",
+						ps5archive::UnpackedRoot()));
+			}
 		}
 		(void)side;
 		return rows;
@@ -1775,6 +1794,14 @@ namespace ps5shell
 		m_feedback.Play(ui::Cue::Hold);
 		if (id == "clearcaches")
 			m_diagnosticsDone[Is3ds() ? 2 : 1] = ClearShaderCaches(Is3ds());
+		else if (id == "clearunpacked")
+		{
+			const uint64_t bytes = ps5archive::UnpackedBytes();
+			const int copies = ps5archive::ClearUnpacked();
+			// tr: what clearing the unpacked games did; {1} is the room it made, as in 2.4 GB
+			m_unpackedDone = copies ? TrP(copies, "{0} game deleted ({1})", "{0} games deleted ({1})", SizeWords(bytes)) : std::string(Tr("None to delete"));
+			m_unpackedAt = -100;
+		}
 		else if (id == "boxartall")
 		{
 			ChangeSetting(Row{Row::Kind::Action, "boxartall"}, 0, true);

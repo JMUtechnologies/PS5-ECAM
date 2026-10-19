@@ -61,7 +61,8 @@ work stops before a game starts.
 - Cemu's x64 recompiler, at the PS5's 3840x2160 output, with a choice of upscaling filter (Bicubic
   by default), 120 Hz on displays that support it, and frame pacing (**Settings > Graphics**, or the
   in-game menu's Graphics) that holds a game to an even 60 fps at 120 Hz or 30 fps at 60 Hz.
-- Plays WUA, WUD/WUX and unpacked games from any folder the PS5 can read.
+- Plays WUA, WUD/WUX and unpacked games from any folder the PS5 can read, unpacked games in `.zip`,
+  `.7z`, `.rar` and tar archives too ([how](#games-in-archives)).
 - The Cemu community graphic packs, organized by folder like Cemu's Graphic Packs window, with a
   dropdown for each preset.
 - Player 1's DualSense is the GamePad and other signed-in players get Pro Controllers, up to four
@@ -94,6 +95,8 @@ work stops before a game starts.
   **Settings > Controls**. The touchpad is the bottom screen.
 - Save states, cheats and amiibo in the in-game menu, plus custom textures and mods.
 - System region, language and CPU clock in **Settings > System**, with the 3DS Home Menu.
+- Games in `.zip`, `.7z`, `.rar` and tar archives, unpacked once, the first time they start
+  ([how](#games-in-archives)).
 - Install CIA files (games, updates and DLC) from **Settings > Game files > Install a CIA file**.
 - **Artic Base:** play a game straight from your own 3DS over the network. Start Artic Base on the
   3DS, open **Settings > Artic Base** and enter the address the 3DS shows. The same page runs the Artic Setup Tool, which copies your 3DS's system files.
@@ -138,6 +141,13 @@ Put games in `/data/ps5cemu/games`, or pick another folder in **Settings > Game 
 
 Encrypted WUD and WUX dumps also need their disc keys in `/data/ps5cemu/keys.txt`.
 
+An unpacked game can also stay in a `.zip`, `.7z` or `.rar` archive, or a `.tar` (`.tar.gz`,
+`.tar.xz` and the like), one game to an archive: its first folder by name with `code`, `content` and
+`meta` in it is the game ([how it starts](#games-in-archives)). Updates and DLC are not read from
+archives: unpack them, then install them from **Settings > Game files > Updates and DLC**. In a `.7z`
+or `.rar`, give the game's folder a name without accents or symbols such as ™: the app may not read
+those names there. A `.zip` has no such limit.
+
 ### Nintendo 3DS
 
 Put games in `/data/ps5cemu/azahar/games`, or pick another folder in **Settings > Game files** on the 3DS side.
@@ -148,6 +158,9 @@ Put games in `/data/ps5cemu/azahar/games`, or pick another folder in **Settings 
   only installs fully decrypted CIAs, the game inside included.
 - Dumps must be decrypted too: Azahar plays no encrypted game, whatever keys it has. Decrypt them on
   your 3DS first (GodMode9).
+- A game can also stay in a `.zip`, `.7z` or `.rar` archive, or a `.tar` (`.tar.gz`, `.tar.xz` and
+  the like), one game to an archive: its first ROM by name is the game, CIA files aside (they are
+  installed, not played) ([how it starts](#games-in-archives)).
 
 ### Nintendo DS
 
@@ -158,6 +171,20 @@ saves are in `/data/ps5cemu/melonds/saves`.
 A game can stay in its `.zip`, `.7z` or `.rar` archive, or a `.tar` (`.tar.gz`, `.tar.xz` and the
 like): its first `.nds` by name is the game, read into memory when it starts, and nothing is
 extracted. Its saves are named by the archive, as a game's are by its file.
+
+### Games in archives
+
+The library lists an archive's game by its own name and icon, read where it is, and keeps what it
+read (`archives.bin`, on each side), so that looking for games again reads only the archives that
+changed.
+
+A DS game is read into memory as it starts. A Wii U or 3DS game is unpacked first, the first time it
+starts, into `/data/ps5cemu/cache/archives`, with its progress on screen (Circle cancels); the copy
+is kept for the next start and unpacked again only when the archive changes. Unpacking needs the
+game's size, and 256 MB more, free where the data folder is: to make room, the copies used longest
+ago are deleted by themselves. **Settings > Diagnostics > Unpacked games** shows how much the copies
+take, and holding Cross deletes them. Saves stay: they go by the game's title ID, as they do for a
+game outside an archive.
 
 No games, keys, firmware or other copyrighted console data are included. Dump them from hardware and
 software you own, and don't download or share them.
@@ -281,7 +308,9 @@ Everything the app writes goes to `/data/ps5cemu`, except your game files (or to
 ├── games/                          default Wii U game folder
 ├── keys.txt                        disc keys for encrypted Wii U dumps
 ├── graphicPacks/                   community graphic packs and your own
-├── cache/                          Cemu shader and pipeline caches
+├── cache/                          Cemu shader and pipeline caches, and archives/: the Wii U and
+│                                   3DS games unpacked from archives
+├── archives.bin                    what the library read of Wii U games in archives
 ├── amiibo/                         your amiibo dumps (.bin), for both emulators
 ├── figures/                        Skylanders, Disney Infinity and LEGO Dimensions dumps (Wii U)
 ├── azahar/
@@ -292,12 +321,14 @@ Everything the app writes goes to `/data/ps5cemu`, except your game files (or to
 │   ├── cheats/                     3DS cheats, <title ID>.txt
 │   ├── load/                       3DS custom textures (textures/) and mods (mods/)
 │   ├── shaders/                    Azahar shader cache
+│   ├── archives.bin                what the library read of 3DS games in archives
 │   └── log/azahar_log.txt          Azahar log
 ├── melonds/
 │   ├── games/                      default DS game folder
 │   ├── saves/                      DS saves, <game file>.sav
 │   ├── states/                     DS save states
 │   ├── cheats/                     DS cheats, <game file>.mch
+│   ├── archives.bin                what the library read of DS games in archives
 │   └── bios/                       your DS's bios7.bin, bios9.bin and firmware.bin, if you add them
 ├── covers/                         game icons and box art (boxart/)
 ├── music/                          your own launcher music (.mp3, .wav)

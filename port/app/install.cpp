@@ -9,6 +9,7 @@
 
 #include "emulator.h"
 #include "lang.h"
+#include "wiiu_archives.h"
 #include "../ps5/kernel.h"
 #include "../ps5/log.h"
 
@@ -17,6 +18,7 @@
 #include "Cafe/TitleList/TitleInfo.h"
 #include "Cafe/TitleList/TitleList.h"
 #include "config/ActiveSettings.h"
+#include "config/CemuConfig.h"
 
 #include <algorithm>
 #include <atomic>
@@ -486,5 +488,6 @@ namespace ps5emu
 	void Rescan()
 	{
 		CafeTitleList::Refresh();
+		archives::StartScan(GetConfig().game_paths);
 	}
 }

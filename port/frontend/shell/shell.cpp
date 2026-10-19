@@ -82,6 +82,7 @@ namespace ps5shell
 
 	Shell::~Shell()
 	{
+		StopUnpacking();
 		if (m_images)
 			m_images->Stop();
 		m_gfx.Stop();
@@ -290,6 +291,8 @@ namespace ps5shell
 		PollAutoLaunch();
 		if (m_installing)
 			PollInstall();
+		if (m_unpack.open)
+			PollUnpacking();
 		if (m_screen == ScreenId::Updates || m_updates.installing)
 			PollUpdates();
 		const bool prompting = ps5update::Prompting();
@@ -402,7 +405,7 @@ namespace ps5shell
 			}
 		}
 		// what is held to confirm goes on without presses
-		if (actions.presses.empty() && !m_picker.open && !m_help.open && !m_menu.open && !m_keyboard.open && !m_update.open)
+		if (actions.presses.empty() && !m_picker.open && !m_help.open && !m_menu.open && !m_keyboard.open && !m_update.open && !m_unpack.open)
 		{
 			const ui::Press none{Button::Count, false};
 			if (m_screen == ScreenId::Settings)
@@ -444,7 +447,7 @@ namespace ps5shell
 		}
 		if (rail)
 			EdenDrawRail(canvas);
-		const bool overlay = m_picker.open || m_help.open || m_menu.open || m_keyboard.open || m_update.open;
+		const bool overlay = m_picker.open || m_help.open || m_menu.open || m_keyboard.open || m_update.open || m_unpack.open;
 		if (overlay || m_openingOn)
 			m_ringAsked = false; // the overlay's own focus is drawn with it; the ring comes after Eden's opening
 		if (!m_launch.active)
@@ -864,6 +867,30 @@ namespace ps5shell
 			Toast(Notice().empty() ? Tr("Cemu is still starting") : Notice());
 			return;
 		}
+		const ps5emu::Game& game = m_games[index].entry.game;
+		if (!game.Archived())
+		{
+			LaunchChosen(index, {});
+			return;
+		}
+		// a 3DS dump the library found encrypted, as Azahar says it (azahar/core.cpp): not unpacked for nothing
+		if (game.format == "ENCRYPTED")
+		{
+			m_feedback.Play(ui::Cue::Denied);
+			OpenHelp(Tr("The game could not start"), Tr("The game is encrypted, and Azahar plays only decrypted games, with keys or without: decrypt it on your "
+														 "3DS first (GodMode9)."));
+			return;
+		}
+		// the copy unpacked from its archive before, else the archive unpacked now
+		const std::string copy = ps5archive::Unpacked({game.path.string(), game.archiveMember, game.archiveIndex, game.archiveSize, game.archiveFolder});
+		if (copy.empty())
+			StartUnpacking(index);
+		else
+			LaunchChosen(index, copy);
+	}
+
+	void Shell::LaunchChosen(int index, const std::string& launchPath)
+	{
 		Game& game = m_games[index];
 		ps5settings::AddRecent(LastGame(m_side), IsWiiU() ? m_settings.recent : Handheld(m_side).recent, game.entry.game.titleId);
 		SaveSettings();
@@ -876,6 +903,56 @@ namespace ps5shell
 			from = {760, 240, 400, 560};
 		LaunchGame(game.entry.game, IsDs() ? Tr("Starting melonDS") : Is3ds() ? Tr("Starting Azahar") : Tr("Starting Cemu"), from);
 		m_launch.game = index;
+		m_choice->launchPath = launchPath;
+	}
+
+	void Shell::StartUnpacking(int index)
+	{
+		const ps5emu::Game& game = m_games[index].entry.game;
+		StopUnpacking();
+		m_unpack.open = true;
+		m_unpack.at = m_now;
+		m_unpack.titleId = game.titleId;
+		m_unpack.name = game.name;
+		m_unpack.finished = false;
+		m_unpack.progress.done = 0;
+		m_unpack.progress.total = game.archiveSize;
+		m_unpack.progress.cancel = false;
+		const ps5archive::Source source{game.path.string(), game.archiveMember, game.archiveIndex, game.archiveSize, game.archiveFolder};
+		m_unpack.thread = std::thread([this, source] {
+			m_unpack.ok = ps5archive::Unpack(source, &m_unpack.progress, m_unpack.path, m_unpack.error);
+			m_unpack.finished = true;
+		});
+		m_feedback.Play(ui::Cue::Select);
+		ps5log::Line("[launcher] {} is in an archive: unpacked first", game.name);
+	}
+
+	void Shell::PollUnpacking()
+	{
+		if (!m_unpack.open || !m_unpack.finished)
+			return;
+		m_unpack.thread.join();
+		m_unpack.open = false;
+		if (m_unpack.ok)
+		{
+			// the game by its title: the list may have been read again meanwhile
+			if (const int index = FindGame(m_unpack.titleId); index >= 0)
+				LaunchChosen(index, m_unpack.path);
+		}
+		else if (!m_unpack.error.empty())
+		{
+			m_feedback.Play(ui::Cue::Denied);
+			OpenHelp(Tr("The game could not start"), m_unpack.error);
+		}
+	}
+
+	void Shell::StopUnpacking()
+	{
+		if (!m_unpack.thread.joinable())
+			return;
+		m_unpack.progress.cancel = true;
+		m_unpack.thread.join();
+		m_unpack.open = false;
 	}
 
 	void Shell::LaunchGame(const ps5emu::Game& game, const std::string& caption, const Box& from)
@@ -1215,8 +1292,8 @@ namespace ps5shell
 	{
 		// the touchpad's next side; none when one side is shown (its hint goes: DrawHints leaves out an empty one)
 		const std::string other = SidesShown() > 1 ? SystemName(NextShownSide(m_side)) : "";
-		if (m_update.open)
-			return {};
+		if (m_update.open || m_unpack.open)
+			return {}; // their sheets' own
 		// tr: the hints along the bottom: what a button does on this screen, a word or two
 		if (m_keyboard.open)
 			return {{Icon::Cross, Tr("Type")}, {Icon::Circle, Tr("Delete")}, {Icon::Triangle, Tr("Shift")}, {Icon::Options, Tr("Done")}};
@@ -1659,6 +1736,16 @@ namespace ps5shell
 	bool Shell::OverlayUpdate(const ui::Press& press)
 	{
 		const Button b = press.button;
+		if (m_unpack.open)
+		{
+			// Circle stops it, and what it unpacked goes
+			if (b == Button::Circle && !m_unpack.progress.cancel)
+			{
+				m_unpack.progress.cancel = true;
+				m_feedback.Play(ui::Cue::Back);
+			}
+			return true;
+		}
 		if (m_update.open)
 		{
 			const auto status = ps5update::GetStatus();
@@ -2198,6 +2285,37 @@ namespace ps5shell
 			if (!choices.empty())
 				DrawHints(canvas, choices.size() > 1 ? std::vector<Hint>{{Icon::LeftRight, Tr("Choose")}, {Icon::Cross, Tr("Select")}, {Icon::Circle, Tr("Later")}} :
 													   std::vector<Hint>{{Icon::Cross, status.state == State::Failed ? Tr("OK") : Tr("Restart")}});
+			canvas.PopOffset();
+			canvas.PopAlpha();
+		}
+
+		// a game in an archive being unpacked before it starts: how far it is, and Circle to stop it
+		if (m_unpack.open)
+		{
+			const float a = appear(m_unpack.at);
+			Scrim(canvas, 0.8f * a);
+			const uint64_t done = m_unpack.progress.done, total = m_unpack.progress.total;
+			const bool stopping = m_unpack.progress.cancel;
+			const float fraction = total ? std::clamp((float)done / (float)total, 0.0f, 1.0f) : 0.0f;
+			const Box sheet{960 - 520, 330, 1040, 360};
+			canvas.PushAlpha(a);
+			canvas.PushOffset(0, (1 - a) * 40);
+			DrawSheet(canvas, sheet, a);
+			canvas.Text(Style(kOverlineStyle), sheet.x + 48, sheet.y + 44, Is3ds() ? Tr("Starting Azahar") : Tr("Starting Cemu"), Secondary(), sheet.w - 96, 1);
+			canvas.Text(Style(kTitleStyle), sheet.x + 48, sheet.y + 72, m_unpack.name, kText, sheet.w - 96, 1);
+			// tr: under an archived game's name while it is unpacked, the first time it starts
+			canvas.Text(Style(kBodyStyle), sheet.x + 48, sheet.y + 140, Tr("Unpacking the game from its archive. This is done once: the copy is kept for the next start."),
+				Secondary(), sheet.w - 96, 2);
+			const Box bar{sheet.x + 48, sheet.y + 248, sheet.w - 96, 12};
+			canvas.Rect(bar, 6, Wash(0.14f));
+			canvas.Rect({bar.x, bar.y, bar.w * fraction, bar.h}, 6, Accent());
+			ui::TextStyle figures = Style(kBodyStyle);
+			figures.tabular = true;
+			canvas.Text(figures, bar.x, bar.y + 30, stopping ? std::string(Tr("Stopping…")) : TrF("{0} of {1}", SizeWords(done), SizeWords(total)),
+				Secondary(), bar.w - 160, 1);
+			canvas.Text(figures, bar.Right() - 150, bar.y + 30, ps5lang::Percent((long long)(fraction * 100)), kText, 150, 1, ui::Align::Right);
+			if (!stopping)
+				DrawHints(canvas, {{Icon::Circle, Tr("Cancel")}});
 			canvas.PopOffset();
 			canvas.PopAlpha();
 		}

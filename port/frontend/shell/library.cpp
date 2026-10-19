@@ -95,14 +95,14 @@ namespace ps5shell
 		kicker = Tr("Welcome");
 		title = Tr("Your games go here");
 		// tr: {0} is the games folder
-		text = Is3ds() ? TrF("Put your 3DS games (.3ds, .cci, .cxi, .3dsx, decrypted) in {0}, or choose any folder the PS5 can read, such as one "
-							 "on a USB drive. Folders inside it are searched too.",
+		text = Is3ds() ? TrF("Put your 3DS games (.3ds, .cci, .cxi, .3dsx, decrypted, alone or in .zip, .7z or .rar archives) in {0}, or "
+							 "choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are searched too.",
 							 folder) :
 			IsDs()	   ? TrF("Put your DS games (.nds, alone or in .zip, .7z or .rar archives) in {0}, or choose any folder the PS5 can read, "
 							 "such as one on a USB drive. Folders inside it are searched too.",
 							 folder) :
-						 TrF("Put your Wii U games (.wua, .wud, .wux, or folders with code, content and meta) in {0}, or choose any folder "
-							 "the PS5 can read, such as one on a USB drive.",
+						 TrF("Put your Wii U games (.wua, .wud, .wux, or folders with code, content and meta, alone or in .zip, .7z or .rar "
+							 "archives) in {0}, or choose any folder the PS5 can read, such as one on a USB drive.",
 							 folder);
 		buttons = {Tr("Choose a folder"), Tr("Setup check")};
 		if (Is3ds())

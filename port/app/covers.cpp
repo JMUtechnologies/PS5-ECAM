@@ -5,10 +5,12 @@
 // Wii U shows on the TV while a game loads) read as Cemu's game list does it
 // (wxGameList::AsyncWorkerThread), so this file keeps Cemu's MPL-2.0 licence. The launcher
 // (ui/images.cpp) reads only uncompressed 32-bit top-down TGAs, while these may be
-// run-length encoded or bottom-up, so each is rewritten once as a 32-bit top-down TGA.
+// run-length encoded or bottom-up, so each is rewritten once as a 32-bit top-down TGA. A game in an
+// archive, which Cemu cannot mount, has its own written as the archive is read (wiiu_archives.h).
 
 #include "emulator.h"
 #include "paths.h"
+#include "wiiu_archives.h"
 #include "../ps5/log.h"
 
 #include "Cafe/Filesystem/fsc.h"
@@ -145,22 +147,22 @@ namespace ps5emu
 			return data;
 		}
 
-		// covers/<subfolder>/<title ID>.tga from the title's meta/<name>, made once; empty when the
-		// title has none. Per process, a failed one is not retried.
-		std::string Converted(std::unordered_map<uint64_t, std::string>& known, uint64_t titleId, const fs::path& folder,
-			const char* name, size_t unpackedLimit, const char* what)
+		// CoverFile from the title's meta/<name>, made once; empty when the title has none. Per process, a
+		// failed one is not retried.
+		std::string Converted(std::unordered_map<uint64_t, std::string>& known, uint64_t titleId, bool bootScreen, const char* name,
+			size_t unpackedLimit, const char* what)
 		{
 			if (const auto it = known.find(titleId); it != known.end())
 				return it->second;
 			std::error_code ec;
-			const fs::path converted = folder / fmt::format("{:016x}.tga", titleId);
+			const fs::path converted = _utf8ToPath(CoverFile(titleId, bootScreen));
 			std::string result;
 			if (fs::exists(converted, ec))
 				result = _pathToUtf8(converted);
 			else if (const auto data = ReadMeta(titleId, name, unpackedLimit))
 			{
 				Image image;
-				fs::create_directories(folder, ec);
+				fs::create_directories(converted.parent_path(), ec);
 				if (DecodeTga(*data, image) && WriteTga(converted, image))
 					result = _pathToUtf8(converted);
 				else
@@ -171,17 +173,35 @@ namespace ps5emu
 		}
 	}
 
+	std::string CoverFile(uint64_t titleId, bool bootScreen)
+	{
+		return fmt::format("{}{}/{:016x}.tga", ps5paths::Covers(), bootScreen ? "/boot" : "", titleId);
+	}
+
+	bool WriteCover(uint64_t titleId, bool bootScreen, const std::vector<uint8_t>& tga)
+	{
+		const fs::path path = _utf8ToPath(CoverFile(titleId, bootScreen));
+		std::error_code ec;
+		if (fs::exists(path, ec))
+			return true;
+		Image image;
+		fs::create_directories(path.parent_path(), ec);
+		if (DecodeTga(tga, image) && WriteTga(path, image))
+			return true;
+		ps5log::Line("[covers] {:016x}: the {} in its archive could not be converted", titleId, bootScreen ? "boot screen" : "icon");
+		return false;
+	}
+
 	std::string CoverPath(uint64_t titleId)
 	{
 		static std::unordered_map<uint64_t, std::string> s_known;
-		return Converted(s_known, titleId, ps5paths::Covers(), "iconTex.tga", 70 * 1024, "icon");
+		return Converted(s_known, titleId, false, "iconTex.tga", 70 * 1024, "icon");
 	}
 
 	std::string BootScreenPath(uint64_t titleId)
 	{
 		static std::unordered_map<uint64_t, std::string> s_known;
 		// 1280 x 720, 24 or 32 bits: under 3.7 MB unpacked
-		return Converted(s_known, titleId, fs::path(ps5paths::Covers()) / "boot", "bootTvTex.tga", 4 * 1024 * 1024,
-			"boot screen");
+		return Converted(s_known, titleId, true, "bootTvTex.tga", 4 * 1024 * 1024, "boot screen");
 	}
 }
