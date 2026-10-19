@@ -98,8 +98,8 @@ namespace ps5shell
 		text = Is3ds() ? TrF("Put your 3DS games (.3ds, .cci, .cxi, .3dsx, decrypted) in {0}, or choose any folder the PS5 can read, such as one "
 							 "on a USB drive. Folders inside it are searched too.",
 							 folder) :
-			IsDs()	   ? TrF("Put your DS games (.nds) in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Folders "
-							 "inside it are searched too.",
+			IsDs()	   ? TrF("Put your DS games (.nds, alone or in .zip, .7z or .rar archives) in {0}, or choose any folder the PS5 can read, "
+							 "such as one on a USB drive. Folders inside it are searched too.",
 							 folder) :
 						 TrF("Put your Wii U games (.wua, .wud, .wux, or folders with code, content and meta) in {0}, or choose any folder "
 							 "the PS5 can read, such as one on a USB drive.",

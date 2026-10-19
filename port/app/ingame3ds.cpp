@@ -496,7 +496,8 @@ namespace ps5ingame3ds
 			// tr: no speed limit
 			Row speedLimit{"speed", Tr("Speed limit"), settings.speedLimit ? Percent(settings.speedLimit) : std::string(TrC("speed limit", "None")), true,
 				Tr("Above 100% hurries through slow scenes; None runs as fast as the PS5 can. For this game only.")};
-			const std::string speed = settings.speedLimit ? Percent(settings.speedLimit) : std::string(Tr("Unlimited"));
+			// the same word on the category as on its row
+			const std::string speed = settings.speedLimit ? Percent(settings.speedLimit) : std::string(TrC("speed limit", "None"));
 			if (ds)
 				rows.push_back({"pace", Tr("Speed"), speed, false, Tr("How fast the game may run."), {speedLimit}});
 			else

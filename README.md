@@ -48,6 +48,8 @@ Fixes for 4.0.1, and a few things you asked for. The details are in the [release
   its data there instead of in `/data` ([#52](https://github.com/premohq/PS5CEMU-HAR/issues/52), [how](docs/GUIDE.md#everything-on-the-apps-drive)).
 - **Keyboards** have each language's letters, such as Spanish *ñ* ([#51](https://github.com/premohq/PS5CEMU-HAR/issues/51)), and a Wii U or 3DS game
   whose server hangs up no longer closes the app.
+- **Every side alike:** the DS side's messages are in your language as the others' are, a DS game that
+  does not start says why in the same way, and the 3DS and DS performance overlay is in Settings too.
 
 ## What's new in 4.0.1
 

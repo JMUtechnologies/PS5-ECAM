@@ -21,6 +21,7 @@
 #include "../app/boxart.h"
 #include "../app/gameinfo.h"
 #include "../app/ingame3ds.h"
+#include "../app/lang.h"
 #include "../azahar/controls.h"
 #include "../ps5/display.h"
 #include "../ps5/kernel.h"
@@ -485,8 +486,9 @@ namespace ps5melonds
 				melonDS::Savestate state;
 				if (!state.Error)
 					nds.DoSavestate(&state);
-				message = !state.Error && WriteFile(path, (const u8*)state.Buffer(), state.Length()) ? fmt::format("Saved slot {}", slot) :
-																										   "It did not work";
+				// what came of it, in the 3DS side's words (azahar/core.cpp, ReportState)
+				message = !state.Error && WriteFile(path, (const u8*)state.Buffer(), state.Length()) ? ps5lang::TrF("Saved slot {0}", slot) :
+																										   std::string(ps5lang::Tr("It did not work"));
 			}
 			else
 			{
@@ -494,15 +496,15 @@ namespace ps5melonds
 				// what the game was, to go back to when the state cannot be read
 				auto backup = std::make_unique<melonDS::Savestate>(melonDS::Savestate::DEFAULT_SIZE);
 				if (data.empty())
-					message = "It did not work";
+					message = ps5lang::Tr("It did not work");
 				else if (backup->Error || !nds.DoSavestate(backup.get()) || backup->Error)
-					message = "It did not work";
+					message = ps5lang::Tr("It did not work");
 				else
 				{
 					melonDS::Savestate state(data.data(), (u32)data.size(), false);
 					if (!state.Error && nds.DoSavestate(&state) && !state.Error)
 					{
-						message = fmt::format("Loaded slot {}", slot);
+						message = ps5lang::TrF("Loaded slot {0}", slot);
 						ps5cheevos::Reset(); // the set's conditions start again from the state's memory
 						s_rewind.clear();	 // and a rewind, from here
 					}
@@ -510,7 +512,7 @@ namespace ps5melonds
 					{
 						backup->Rewind(false);
 						nds.DoSavestate(backup.get());
-						message = "Made by another version";
+						message = ps5lang::Tr("Made by another version");
 					}
 				}
 			}
@@ -713,7 +715,8 @@ namespace ps5melonds
 				if (!screens::Present(frame))
 				{
 					ps5log::Line("[ds] the screens stopped: the GPU's device was lost");
-					ps5notify::Send("The DS game's screens stopped (the GPU's device was lost).");
+					// tr: a notification as a DS game stops because the PS5's GPU stopped drawing its screens
+					ps5notify::Send(ps5lang::Tr("The DS game's screens stopped (the GPU's device was lost)."));
 					break;
 				}
 				s_framesShown++;
@@ -773,20 +776,17 @@ namespace ps5melonds
 		if (archive::IsArchive(path))
 		{
 			archive::Rom found;
-			if (!archive::FindRom(path, found) || found.index < 0)
+			// an archive's ROM claimed larger than any cartridge is not one either
+			if (!archive::FindRom(path, found) || found.index < 0 || found.size > kLargestRom)
 			{
-				error = "There is no DS game in this archive, or the archive could not be read.";
-				return false;
-			}
-			if (found.size > kLargestRom)
-			{
-				error = "The archive's DS game is larger than any DS game.";
+				// tr: why a DS game in a .zip, .7z or .rar archive did not start
+				error = ps5lang::Tr("There is no DS game in this archive, or the archive could not be read.");
 				return false;
 			}
 			const uint64_t started = sceKernelGetProcessTime();
 			if (!archive::Read(path, found, file))
 			{
-				error = "The DS game in this archive could not be read: is the archive whole?";
+				error = ps5lang::Tr("The DS game in this archive could not be read: is the archive whole?");
 				return false;
 			}
 			ps5log::Line("[ds] {} read from the archive: {} MiB in {} ms", found.member.empty() ? std::string("its DS ROM") : found.member,
@@ -797,20 +797,22 @@ namespace ps5melonds
 			title = Inspect(path);
 		if (!title.readable)
 		{
-			error = "This is not a DS game melonDS can read.";
+			// tr: why a DS game did not start
+			error = ps5lang::Tr("This is not a DS game melonDS can read.");
 			return false;
 		}
 		if (title.dsiOnly)
 		{
-			error = "This is a DSi game. melonDS plays DSi games only as a DSi, with a DSi's own BIOS and system memory, which "
-					"this app does not set up yet.";
+			// melonDS plays DSi games only as a DSi, with a DSi's own BIOS and system memory, which this
+			// app does not set up yet
+			error = ps5lang::Tr("DSi games are not supported yet.");
 			return false;
 		}
 		if (file.empty())
 			file = ReadFile(path);
 		if (file.empty())
 		{
-			error = "The game's file could not be read.";
+			error = ps5lang::Tr("The game could not be loaded.");
 			return false;
 		}
 		auto rom = std::make_unique<u8[]>(file.size());
@@ -833,7 +835,7 @@ namespace ps5melonds
 		auto cart = melonDS::NDSCart::ParseROM(std::move(rom), romLength, nullptr, std::move(cartArgs));
 		if (!cart)
 		{
-			error = "melonDS could not read the game's file: is it a whole DS game (.nds)?";
+			error = ps5lang::Tr("This is not a DS game melonDS can read.");
 			return false;
 		}
 
@@ -881,7 +883,7 @@ namespace ps5melonds
 		s_coreTouched = true;
 		if (!screens::Start(error))
 		{
-			error = "The DS's screens did not start: " + error;
+			error = ps5lang::TrF("The Vulkan renderer did not start: {0}", error);
 			delete s_nds;
 			s_nds = nullptr;
 			return false;
@@ -936,7 +938,8 @@ namespace ps5melonds
 
 	void RunGame()
 	{
-		ps5notify::Send("Touchpad + Options: the in-game menu. Touchpad click: the touch screen. R3: the microphone");
+		// tr: the PS5's notification as a DS game starts
+		ps5notify::Send(ps5lang::Tr("Touchpad click + Options: the in-game menu. A touchpad click alone: the touch screen. R3: the microphone"));
 		uint64_t polls = 0;
 		uint32_t lastEmulated = 0, lastShown = 0;
 		uint64_t lastSecond = sceKernelGetProcessTime();
@@ -1018,9 +1021,10 @@ namespace ps5melonds
 				using Reason = melonDS::Platform::StopReason;
 				ps5log::Line("[ds] melonDS stopped the DS ({})", reason);
 				if (reason == (int)Reason::GBAModeNotSupported)
-					ps5notify::Send("The game asked for the DS's GBA mode, which melonDS has not.");
+					// tr: notifications as melonDS stops a DS game
+					ps5notify::Send(ps5lang::Tr("The game asked for the DS's GBA mode, which melonDS does not have."));
 				else if (reason == (int)Reason::BadExceptionRegion)
-					ps5notify::Send("The DS game crashed.");
+					ps5notify::Send(ps5lang::Tr("The DS game crashed."));
 				s_stop = true;
 			}
 		}

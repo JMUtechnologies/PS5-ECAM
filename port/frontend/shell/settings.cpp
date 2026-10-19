@@ -66,7 +66,7 @@ namespace ps5shell
 			return 0;
 		}
 		// tr: how a game's picture is scaled: the methods' names
-		constexpr const char* kUpscaleFilters[] = {TrMark("Linear"), TrMark("Bicubic"), TrMark("Bicubic Hermite"), TrMark("Nearest neighbour"), TrMark("AMD FSR 1")};
+		constexpr const char* kUpscaleFilters[] = {TrMark("Bilinear"), TrMark("Bicubic"), TrMark("Bicubic Hermite"), TrMark("Nearest neighbour"), TrMark("AMD FSR 1")};
 		constexpr const char* kMusicNames[] = {TrMark("Setup theme"), TrMark("Off")};
 
 		// The launcher music's choices, as ps5cemu.json names them: its own piece, each of the player's
@@ -449,7 +449,7 @@ namespace ps5shell
 		else if (page == "graphics" && IsWiiU())
 		{
 			own(choice("upscaling", Tr("Upscaling to 4K"), Options(kUpscaleFilters), settings.upscaleFilter, Tr("How the picture is scaled to the TV."),
-					Tr("Bicubic is sharp, Bicubic Hermite a little softer, Linear softer still; Nearest neighbour keeps pixels square. AMD FSR 1 keeps "
+					Tr("Bicubic is sharp, Bicubic Hermite a little softer, Bilinear softer still; Nearest neighbour keeps pixels square. AMD FSR 1 keeps "
 					   "edges clean for a game drawn below 4K, for a little more work by the GPU than Bicubic.")),
 				"upscaleFilter");
 			own(toggle("highframerate", Tr("120 Hz output"), settings.highFrameRate, Tr("For displays that take 120 Hz."),
@@ -508,6 +508,8 @@ namespace ps5shell
 					   "on its outlined models with hardware shaders on; the Pokémon games are drawn right with Hardware shaders off "
 					   "instead. Applies to the next game.")),
 				"invariantPosition");
+			toggle("performance-hand", Tr("Performance overlay"), hand.performance, Tr("The frame rate and the emulation's speed, in the top left corner."),
+				Tr("The frame rate and the emulation's speed, in the top left corner."));
 		}
 		else if (page == "graphics")
 		{
@@ -519,11 +521,13 @@ namespace ps5shell
 				"dsFilter");
 			const bool executable = ps5privilege::Current().executable;
 			own(toggle("dsjit", Tr("Recompiler"), hand.dsJit,
-					executable ? "melonDS's JIT: much faster than its interpreter." : Tr("No executable memory: the slower interpreter runs."),
+					executable ? Tr("melonDS's JIT: much faster than its interpreter.") : Tr("No executable memory: the slower interpreter runs."),
 					Tr("Runs the DS's two CPUs on melonDS's recompiler, in the executable memory the PS5 gives (Diagnostics says whether it "
 					"does), much faster than its interpreter. Off: the interpreter, slower, for a game the recompiler gets wrong. Applies to "
 					"the next game.")),
 				"dsJit");
+			toggle("performance-hand", Tr("Performance overlay"), hand.performance, Tr("The frame rate and the emulation's speed, in the top left corner."),
+				Tr("The frame rate and the emulation's speed, in the top left corner."));
 		}
 		else if (page == "screens")
 		{
@@ -538,7 +542,7 @@ namespace ps5shell
 		}
 		else if (page == "audio")
 		{
-			own(slider("volume", IsWiiU() ? Tr("Wii U games' volume") : Is3ds() ? "3DS games' volume" : Tr("DS games' volume"),
+			own(slider("volume", IsWiiU() ? Tr("Wii U games' volume") : Is3ds() ? Tr("3DS games' volume") : Tr("DS games' volume"),
 					IsWiiU() ? settings.volume : hand.volume, 100, Tr("The games' sound."), Tr("The games' sound on this side. Left and Right change it by 10%.")),
 				"volume");
 			if (IsWiiU())
@@ -682,9 +686,9 @@ namespace ps5shell
 				"language");
 			const bool found = ps5melonds::OwnBiosFound();
 			own(toggle("dsownbios", Tr("Your DS's BIOS"), hand.dsOwnBios, found ? Tr("Found in melonds/bios.") : Tr("Not found: melonDS's built-in BIOS runs the games."),
-					fmt::format("bios7.bin, bios9.bin and firmware.bin, dumped from your own DS, in {}: melonDS runs on them when they are "
-								"there and this is on. Without them, its own replacements (FreeBIOS) run most games as well. Applies to the "
-								"next game.",
+					// tr: {0} is the folder for a DS's own BIOS and firmware dumps
+					TrF("bios7.bin, bios9.bin and firmware.bin, dumped from your own DS, in {0}: melonDS runs on them when they are there "
+						"and this is on. Without them, its own replacements (FreeBIOS) run most games as well. Applies to the next game.",
 						ps5melonds::Root() + "/bios")),
 				"dsOwnBios");
 		}
@@ -699,7 +703,7 @@ namespace ps5shell
 				Is3ds()	 ? Tr("Your 3DS games: .3ds or .cci, .cxi, .3dsx and Azahar's compressed dumps, decrypted, here or in the folders in it. "
 						   "CIA files are installed (Install a CIA file). Encrypted dumps do not start, with keys or without: decrypt them on "
 						   "your 3DS first (GodMode9).") :
-						   Tr("Your DS games: .nds files, here or in the folders in it."));
+						   Tr("Your DS games: .nds files, alone or in .zip, .7z or .rar archives, here or in the folders in it."));
 			action(Kind::Action, "rescan", Tr("Look for games now"), m_scanning ? Tr("Looking…") : "", Tr("This side's folder, again."),
 				Tr("Looks through this side's folder again, as it does each time the side opens."));
 			{
@@ -1327,6 +1331,8 @@ namespace ps5shell
 				hand.motion = on;
 			else if (id == "dsjit")
 				hand.dsJit = on;
+			else if (id == "performance-hand")
+				hand.performance = on;
 			else if (id == "dsownbios")
 				hand.dsOwnBios = on;
 			else

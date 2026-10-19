@@ -469,7 +469,7 @@ int main(int argc, char* argv[])
 		if (system == ps5launcher::System::Nds)
 		{
 			ps5log::Line("[main] the DS side: Cemu's emulated Wii U is not started");
-			status.diagnostics.push_back("This session: melonDS (DS); Cemu's emulated Wii U is not started");
+			status.diagnostics.push_back(ps5lang::Tr("This session: melonDS (DS); Cemu's emulated Wii U is not started"));
 			ps5melonds::StartScan(settings.nds.gamesFolder);
 			ps5emu::LogMemory();
 			return;
@@ -564,8 +564,8 @@ int main(int argc, char* argv[])
 				ps5emu::RestartToLibrary();
 				return 1;
 			}
-			status.noticeDs = "The game could not start: " + error;
-			settings.side = "ds";
+			status.launchErrorDs = error;
+			settings.side = "ds"; // the launcher shows why on melonDS's side, as the others do
 			continue;
 		}
 
