@@ -261,7 +261,7 @@ namespace ps5azahar
 
 		std::string CoverFile(uint64_t id)
 		{
-			return fmt::format("{}/3ds/{:016x}.tga", ps5paths::kCovers, id);
+			return fmt::format("{}/3ds/{:016x}.tga", ps5paths::Covers(), id);
 		}
 
 		void WriteCover(uint64_t id, const std::vector<uint8_t>& icon)
@@ -351,7 +351,7 @@ namespace ps5azahar
 		void AddInstalledUpdates(std::vector<ps5emu::Game>& games)
 		{
 			std::error_code ec;
-			const fs::path root = fs::path(kRoot) / "sdmc" / "Nintendo 3DS";
+			const fs::path root = fs::path(Root()) / "sdmc" / "Nintendo 3DS";
 			std::vector<fs::path> titleFolders; // <ID0>/<ID1>/title
 			for (const auto& id0 : fs::directory_iterator(root, ec))
 				for (const auto& id1 : fs::directory_iterator(id0.path(), ec))
@@ -380,7 +380,7 @@ namespace ps5azahar
 		void ScanInstalled(std::vector<ps5emu::Game>& games)
 		{
 			std::error_code ec;
-			const fs::path root = fs::path(kRoot) / "sdmc" / "Nintendo 3DS";
+			const fs::path root = fs::path(Root()) / "sdmc" / "Nintendo 3DS";
 			for (const auto& id0 : fs::directory_iterator(root, ec))
 				for (const auto& id1 : fs::directory_iterator(id0.path(), ec))
 					for (const char* kind : {"00040000", "00040002"})
@@ -465,7 +465,7 @@ namespace ps5azahar
 		// a game has run: the default games folder, and sysdata for aes_keys.txt
 		std::error_code ec;
 		for (const char* sub : {"games", "sysdata", "sdmc"})
-			fs::create_directories(fs::path(kRoot) / sub, ec);
+			fs::create_directories(fs::path(Root()) / sub, ec);
 		std::thread([folder] {
 			std::vector<ps5emu::Game> games;
 			Scan(folder, 0, games);

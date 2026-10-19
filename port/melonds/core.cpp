@@ -4,7 +4,7 @@
 //
 //  - a DS in DS mode, started straight into the game (direct boot) with melonDS's own BIOS and
 //    firmware (FreeBIOS and one it makes, with the PS5's user name and the launcher's language), or
-//    a DS's own dumps from kRoot/bios;
+//    a DS's own dumps from Root()/bios;
 //  - the CPUs on melonDS's JIT, its code in the console's executable direct memory (patches/melonds),
 //    or on its interpreter where there is none; the 3D on its software renderer, on a thread of its own;
 //  - the emulation, and the screens on VideoOut (screens.h), on a thread of their own: a DS frame for
@@ -161,7 +161,7 @@ namespace ps5melonds
 
 		std::string Folder(const char* name)
 		{
-			return std::string(kRoot) + "/" + name;
+			return Root() + "/" + name;
 		}
 
 		std::string SavePath()
@@ -207,7 +207,7 @@ namespace ps5melonds
 
 		// -- the console's parts -----------------------------------------------------------------
 
-		// A DS's own BIOS from kRoot/bios, when both are there at their sizes
+		// A DS's own BIOS from Root()/bios, when both are there at their sizes
 		template<size_t N>
 		std::unique_ptr<std::array<u8, N>> ReadBios(const char* name)
 		{
@@ -276,7 +276,7 @@ namespace ps5melonds
 			return firmware;
 		}
 
-		// The game's save: kRoot/saves, or the first time, a .sav beside the game (taken, not moved)
+		// The game's save: Root()/saves, or the first time, a .sav beside the game (taken, not moved)
 		std::vector<u8> ReadSave()
 		{
 			std::error_code ec;

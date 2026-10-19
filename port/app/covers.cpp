@@ -174,14 +174,14 @@ namespace ps5emu
 	std::string CoverPath(uint64_t titleId)
 	{
 		static std::unordered_map<uint64_t, std::string> s_known;
-		return Converted(s_known, titleId, ps5paths::kCovers, "iconTex.tga", 70 * 1024, "icon");
+		return Converted(s_known, titleId, ps5paths::Covers(), "iconTex.tga", 70 * 1024, "icon");
 	}
 
 	std::string BootScreenPath(uint64_t titleId)
 	{
 		static std::unordered_map<uint64_t, std::string> s_known;
 		// 1280 x 720, 24 or 32 bits: under 3.7 MB unpacked
-		return Converted(s_known, titleId, fs::path(ps5paths::kCovers) / "boot", "bootTvTex.tga", 4 * 1024 * 1024,
+		return Converted(s_known, titleId, fs::path(ps5paths::Covers()) / "boot", "bootTvTex.tga", 4 * 1024 * 1024,
 			"boot screen");
 	}
 }

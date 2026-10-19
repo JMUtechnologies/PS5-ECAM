@@ -98,6 +98,10 @@ The biggest update yet. The full list is in the [release notes](https://github.c
 
 Updating: the app offers new releases itself. Everything in `/data/ps5cemu` is kept.
 
+Installed on a USB drive or the extended storage? A `PS5CEMU-HAR-data` folder at the top of that drive
+keeps everything there instead of in `/data`: [the guide](docs/GUIDE.md#everything-on-the-apps-drive)
+says how.
+
 ## Your games
 
 | | Games folder | Also needs |

@@ -587,7 +587,7 @@ namespace ps5shell
 
 	void Shell::ApplyTheme()
 	{
-		const std::string folder = std::string(ps5paths::kRoot) + "/themes";
+		const std::string folder = ps5paths::Root() + "/themes";
 		std::error_code ec;
 		std::filesystem::create_directories(folder, ec); // where your own go, there to be found over FTP
 		m_themes = ui::AllThemes(folder);
@@ -832,7 +832,7 @@ namespace ps5shell
 	void Shell::SaveSettings()
 	{
 		if (!ps5settings::Save(m_settings))
-			ps5log::Line("[launcher] could not save {}", ps5paths::kLauncherSettings);
+			ps5log::Line("[launcher] could not save {}", ps5paths::LauncherSettings());
 	}
 
 	void Shell::FetchBoxArt()

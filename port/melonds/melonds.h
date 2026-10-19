@@ -5,7 +5,7 @@
 // (screens.h), the DualSense as the DS, the sound through AudioOut, and the handhelds' in-game menu
 // (ps5ingame3ds) over it. The launcher includes this header, so it names no melonDS type.
 //
-// Its data is under kRoot:
+// Its data is under Root():
 //   saves/<game file>.sav     the game's save, as melonDS keeps it (a .sav beside the game is taken
 //                             the first time)
 //   states/<game file>.ml1-5  save states, melonDS's own format
@@ -23,7 +23,7 @@
 
 namespace ps5melonds
 {
-	constexpr const char* kRoot = PS5CEMU_DATA "/melonds";
+	inline std::string Root() { return ps5paths::Root() + "/melonds"; }
 
 	// Whether this build has melonDS's core.
 	bool Available();
@@ -36,6 +36,6 @@ namespace ps5melonds
 	// Whether the last LaunchGame took VideoOut: after a failure from there on, only a fresh process
 	// can show the launcher again.
 	bool CoreTouched();
-	// Whether a DS's own BIOS and firmware are in kRoot/bios (the Setup check's)
+	// Whether a DS's own BIOS and firmware are in Root()/bios (the Setup check's)
 	bool OwnBiosFound();
 }

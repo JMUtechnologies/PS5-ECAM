@@ -170,7 +170,7 @@ namespace ps5usb
 	std::string Folder(Device device)
 	{
 		const char* name = device == Device::Skylanders ? "skylanders" : device == Device::Infinity ? "infinity" : "dimensions";
-		return std::string(PS5CEMU_DATA) + "/figures/" + name;
+		return ps5paths::Root() + "/figures/" + name;
 	}
 
 	bool Enabled(Device device)

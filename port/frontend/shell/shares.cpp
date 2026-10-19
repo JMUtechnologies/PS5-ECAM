@@ -56,7 +56,7 @@ namespace ps5shell
 
 		std::string SharesFile()
 		{
-			return std::string(ps5paths::kRoot) + "/network-shares.txt";
+			return ps5paths::Root() + "/network-shares.txt";
 		}
 
 		bool Nfs(const ps5netfs::Share& share)

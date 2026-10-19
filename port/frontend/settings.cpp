@@ -66,6 +66,7 @@ namespace ps5settings
 		void ReadN3ds(const rapidjson::Value& json, N3ds& n3ds)
 		{
 			ReadString(json, "gamesFolder", n3ds.gamesFolder);
+			n3ds.gamesFolder = ps5paths::Relocated(n3ds.gamesFolder); // saved before the data moved to a drive (#52)
 			ReadInt(json, "resolution", n3ds.resolution, 1, 10);
 			ReadInt(json, "layout", n3ds.layout, 0, 3);
 			ReadInt(json, "textureFilter", n3ds.textureFilter, 0, 5);
@@ -160,7 +161,7 @@ namespace ps5settings
 	Launcher Load()
 	{
 		Launcher settings;
-		std::ifstream file(ps5paths::kLauncherSettings);
+		std::ifstream file(ps5paths::LauncherSettings());
 		if (!file)
 			return settings;
 		std::stringstream text;
@@ -169,6 +170,7 @@ namespace ps5settings
 		if (json.Parse(text.str().c_str()).HasParseError() || !json.IsObject())
 			return settings;
 		ReadString(json, "gamesFolder", settings.gamesFolder);
+		settings.gamesFolder = ps5paths::Relocated(settings.gamesFolder); // saved before the data moved to a drive (#52)
 		ReadInt(json, "upscaleFilter", settings.upscaleFilter, 0, 4);
 		ReadBool(json, "highFrameRate", settings.highFrameRate);
 		ReadInt(json, "framePacing", settings.framePacing, 1, 3);
@@ -462,14 +464,14 @@ namespace ps5settings
 		writer.EndArray();
 		writer.EndObject();
 		writer.EndObject();
-		const std::string temporary = std::string(ps5paths::kLauncherSettings) + ".tmp";
+		const std::string temporary = ps5paths::LauncherSettings() + ".tmp";
 		{
 			std::ofstream file(temporary, std::ios::trunc);
 			if (!file)
 				return false;
 			file << buffer.GetString() << '\n';
 		}
-		return std::rename(temporary.c_str(), ps5paths::kLauncherSettings) == 0;
+		return std::rename(temporary.c_str(), ps5paths::LauncherSettings().c_str()) == 0;
 	}
 
 	// -- games' own settings ------------------------------------------------------------------------

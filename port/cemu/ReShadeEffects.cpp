@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "ReShadeEffects.h"
+#include "../app/paths.h"
 
 #include "effect_codegen.hpp"
 #include "effect_parser.hpp"
@@ -30,10 +31,6 @@
 #include <memory>
 #include <set>
 #include <sstream>
-
-#ifndef PS5CEMU_DATA
-#define PS5CEMU_DATA "/data/ps5cemu"
-#endif
 
 namespace ps5reshade
 {
@@ -576,7 +573,7 @@ namespace ps5reshade
 
 	fs::path Root()
 	{
-		return fs::path(PS5CEMU_DATA) / "reshade";
+		return fs::path(ps5paths::Root()) / "reshade";
 	}
 
 	fs::path PresetFor(const fs::path& root, uint64_t titleId)

@@ -38,7 +38,7 @@ namespace ps5privilege
 	const Result& Current();
 	// Once the settings are read, still before threads start: when a game folder, or a drive
 	// plugged in, is there but refused (a HEN that opened /data but not the drives), the bundled
-	// helper is asked for the whole filesystem. Current().summary says what came of it.
+	// helper is asked for the whole filesystem, once a process. Current().summary says what came of it.
 	void ReachFolders(const std::vector<std::string>& folders);
 	// The same, for files and folders another user made in /data/ps5cemu that a walk could not open
 	// (app/file_modes.h): the helper makes the process root, as it does for a refused folder, and this

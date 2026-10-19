@@ -669,12 +669,12 @@ namespace ps5shell
 			const float x = kRightPanel.x + 33, width = kRightPanel.w - 66;
 			canvas.Text(Style(Caps(20)), x, kRightPanel.y + 24, Tr("Getting started"), Secondary(), width, 1);
 			canvas.Text(Style({40, ui::Weight::Regular, 1.1f}), x, kRightPanel.y + 64, Tr("Supply your own files"), kText, width, 1);
-			const std::string saves = IsWiiU() ? std::string(ps5paths::kMlc) :
-				Is3ds()							   ? std::string(ps5paths::kRoot) + "/azahar/sdmc" :
-													 std::string(ps5paths::kRoot) + "/melonds/saves";
+			const std::string saves = IsWiiU() ? ps5paths::Mlc() :
+				Is3ds()							   ? ps5paths::Root() + "/azahar/sdmc" :
+													 ps5paths::Root() + "/melonds/saves";
 			std::vector<std::pair<std::string, std::string>> paths = {{Tr("Games"), GamesFolder(m_side)}, {Tr("Saves"), saves}};
 			if (IsWiiU())
-				paths.insert(paths.begin() + 1, {Tr("Keys"), std::string(ps5paths::kRoot) + "/keys.txt"});
+				paths.insert(paths.begin() + 1, {Tr("Keys"), ps5paths::Root() + "/keys.txt"});
 			// the paths in a column at the left, the support card beside them
 			const Box card{kRightPanel.Right() - 30 - 380, kRightPanel.y + 130, 380, 560};
 			const float column = card.x - 30 - x;

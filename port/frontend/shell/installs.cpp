@@ -83,7 +83,7 @@ namespace ps5shell
 			roots.push_back({drive, drive, 4});
 		if (!m_settings.gamesFolder.empty())
 			roots.push_back({m_settings.gamesFolder, driveOf(m_settings.gamesFolder), 4});
-		roots.push_back({ps5paths::kRoot, "/data", 3});
+		roots.push_back({ps5paths::Root(), driveOf(ps5paths::Root()), 3});
 		roots.push_back({"/data", "/data", 2});
 		ps5emu::StartFindingInstallables(roots);
 		m_updates.looking = true;

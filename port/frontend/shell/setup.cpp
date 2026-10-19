@@ -60,7 +60,7 @@ namespace ps5shell
 			for (const char* side : {"wiiu", "3ds", "ds"})
 			{
 				bool ok = false;
-				for (const std::string& name : ListEntries(std::string(ps5paths::kCovers) + "/boxart/" + side, false, ok))
+				for (const std::string& name : ListEntries(ps5paths::Covers() + "/boxart/" + side, false, ok))
 					covers += Lower(name).ends_with(".tga");
 			}
 			return covers;
@@ -120,13 +120,14 @@ namespace ps5shell
 		storage.guideTitle = Tr("the HEN setup guide");
 		if (privileges.filesystem)
 		{
-			const std::string free = FreeSpace(ps5paths::kRoot);
+			const std::string free = FreeSpace(ps5paths::Root().c_str());
 			storage.state = 0;
-			storage.detail = Join({Tr("/data is reachable"), free}, " · ");
+			// where the data is when it is on the app's drive (#52); in /data, that /data is open
+			storage.detail = Join({ps5paths::Root() == ps5paths::kDefaultRoot ? std::string(Tr("/data is reachable")) : ps5paths::Root(), free}, " · ");
 			storage.aboutTitle = Tr("Where everything is kept");
 			storage.about = TrF("Settings, saves, caches and logs live in {0}, which your HEN opens to PS5CEMU-HAR: its app jailbreak, or "
 								"elfldr with the helper that comes with the app.",
-				ps5paths::kRoot);
+				ps5paths::Root());
 		}
 		else
 		{
@@ -206,7 +207,7 @@ namespace ps5shell
 		}
 
 		// the keys encrypted dumps need
-		const bool discKeys = IsFile(std::string(ps5paths::kRoot) + "/keys.txt");
+		const bool discKeys = IsFile(ps5paths::Root() + "/keys.txt");
 		Check wiiuKeys{"wiiu-keys", Tr("Wii U disc keys")};
 		wiiuKeys.state = discKeys ? 0 : 1;
 		wiiuKeys.detail = discKeys ? Tr("keys.txt found") : Tr("keys.txt is missing: only encrypted .wud and .wux need it");
@@ -214,13 +215,13 @@ namespace ps5shell
 		wiiuKeys.aboutTitle = Tr("Keys for encrypted discs");
 		wiiuKeys.about = TrF("Encrypted .wud and .wux dumps need their disc keys in {0}/keys.txt, one a line. Decrypted dumps, .wua files and "
 							 "folders with code, content and meta need none.",
-			ps5paths::kRoot);
+			ps5paths::Root());
 		wiiuKeys.guide = std::string(kRepository) + "#wii-u";
 		wiiuKeys.guideTitle = Tr("the game files page");
 		if (SideShown(System::WiiU))
 			m_checks.push_back(wiiuKeys);
 
-		const bool aesKeys = IsFile(std::string(ps5azahar::kRoot) + "/sysdata/aes_keys.txt");
+		const bool aesKeys = IsFile(ps5azahar::Root() + "/sysdata/aes_keys.txt");
 		Check n3dsKeys{"3ds-keys", Tr("3DS keys")};
 		n3dsKeys.state = aesKeys ? 0 : 1;
 		n3dsKeys.detail = aesKeys ? Tr("aes_keys.txt found") : Tr("aes_keys.txt is missing: only encrypted dumps need it");
@@ -228,7 +229,7 @@ namespace ps5shell
 		n3dsKeys.aboutTitle = Tr("Keys for encrypted 3DS dumps");
 		n3dsKeys.about = TrF("Encrypted dumps need aes_keys.txt from your own console in {0}/sysdata. Decrypted dumps, homebrew and installed "
 							 "CIAs need none. No keys come with PS5CEMU-HAR.",
-			ps5azahar::kRoot);
+			ps5azahar::Root());
 		n3dsKeys.guide = std::string(kRepository) + "#nintendo-3ds";
 		n3dsKeys.guideTitle = Tr("the game files page");
 		if (SideShown(System::N3ds))
@@ -262,7 +263,7 @@ namespace ps5shell
 		nds.about = TrF("melonDS runs DS games on its own BIOS (FreeBIOS) and firmware, which most games are happy with. The few that "
 								"are not run on your own DS's: bios7.bin, bios9.bin and firmware.bin, dumped from it, in {0}/bios. No BIOS "
 								"comes with PS5CEMU-HAR.",
-			ps5melonds::kRoot);
+			ps5melonds::Root());
 		nds.guide = std::string(kRepository) + "#nintendo-ds-melonds";
 		nds.guideTitle = Tr("the DS page");
 		if (SideShown(System::Nds))

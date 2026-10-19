@@ -50,7 +50,7 @@ namespace ps5packs
 
 		fs::path PacksFolder()
 		{
-			return fs::path(ps5paths::kRoot) / "graphicPacks" / "downloadedGraphicPacks";
+			return fs::path(ps5paths::Root()) / "graphicPacks" / "downloadedGraphicPacks";
 		}
 
 		void Set(Status::State state, const std::string& message = {})
@@ -262,7 +262,7 @@ namespace ps5packs
 
 			ps5log::Line("[packs] downloading {} ({} installed) from {}", tag, installed.empty() ? "none" : installed, url);
 			Set(Status::State::Downloading);
-			const fs::path archive = fs::path(ps5paths::kCache) / "graphicPacks-download.zip";
+			const fs::path archive = fs::path(ps5paths::Cache()) / "graphicPacks-download.zip";
 			std::error_code ec;
 			fs::create_directories(archive.parent_path(), ec);
 			Download download;

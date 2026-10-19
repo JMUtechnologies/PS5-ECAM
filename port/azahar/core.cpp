@@ -2,7 +2,7 @@
 // PS5CEMU-HAR: Azahar's core on the PS5 (azahar.h), built in Azahar's tree against its libraries
 // (tools/build-azahar.sh) and linked into the app with Cemu.
 //
-//  - its data under kRoot: the 3DS's storage (sdmc, nand), sysdata (where aes_keys.txt goes, for
+//  - its data under Root(): the 3DS's storage (sdmc, nand), sysdata (where aes_keys.txt goes, for
 //    amiibo: Azahar plays no encrypted game), the shader cache, its log (log/azahar_log.txt);
 //  - the window is VideoOut, a VK_KHR_display surface (ps5/vulkan_display.h) for Azahar's own
 //    Vulkan renderer, whose instance takes RADV's vkGetInstanceProcAddr (the hooks below, which
@@ -222,7 +222,10 @@ namespace ps5azahar
 		}
 
 		// Amiibo dumps for both emulators' menus (the Wii U side reads the same folder)
-		constexpr const char* kAmiiboFolder = PS5CEMU_DATA "/amiibo";
+		std::string AmiiboFolder()
+		{
+			return ps5paths::Root() + "/amiibo";
+		}
 		std::vector<std::string> s_amiiboFiles;
 
 		// The menu's amiibo files and the game's cheats, as they are now
@@ -230,7 +233,7 @@ namespace ps5azahar
 		{
 			std::vector<std::string> amiibo;
 			std::error_code error;
-			for (const auto& entry : std::filesystem::directory_iterator(kAmiiboFolder, error))
+			for (const auto& entry : std::filesystem::directory_iterator(AmiiboFolder(), error))
 			{
 				std::string extension = entry.path().extension().string();
 				std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
@@ -266,7 +269,7 @@ namespace ps5azahar
 				else if (request.index >= 0 && request.index < (int)s_amiiboFiles.size())
 				{
 					const std::string& name = s_amiiboFiles[request.index];
-					message = nfc->LoadAmiibo(std::string(kAmiiboFolder) + "/" + name) ? ps5lang::TrF("Scanned {0}", name) :
+					message = nfc->LoadAmiibo(AmiiboFolder() + "/" + name) ? ps5lang::TrF("Scanned {0}", name) :
 																						   std::string(ps5lang::Tr("Not an amiibo dump"));
 				}
 			}
@@ -332,7 +335,7 @@ namespace ps5azahar
 		void SetUp()
 		{
 			std::call_once(s_setUp, [] {
-				FileUtil::SetUserPath(std::string(kRoot) + "/");
+				FileUtil::SetUserPath(Root() + "/");
 				Common::Log::Filter filter;
 				filter.ParseFilterString("*:Info");
 				Common::Log::Initialize();
@@ -1031,7 +1034,8 @@ namespace ps5azahar
 			case Result::ErrorFileNotFound:
 			case Result::ErrorFailedToOpenFile: s_install.message = ps5lang::Tr("the file could not be read"); break;
 			case Result::ErrorAborted:
-				s_install.message = ps5lang::Tr("Azahar stopped part-way through; /data/ps5cemu/azahar/log/azahar_log.txt says why");
+				// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+				s_install.message = ps5lang::TrF("Azahar stopped part-way through; {0}/azahar/log/azahar_log.txt says why", ps5paths::Root());
 				break;
 			default: s_install.message = ps5lang::Tr("it is not a CIA Azahar can install"); break;
 			}

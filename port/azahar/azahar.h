@@ -16,7 +16,7 @@
 namespace ps5azahar
 {
 	// Where Azahar keeps its data: its settings, the 3DS's storage (sdmc, nand), its caches.
-	constexpr const char* kRoot = PS5CEMU_DATA "/azahar";
+	inline std::string Root() { return ps5paths::Root() + "/azahar"; }
 
 	// The 3DS's screens on the TV (settings: layout)
 	enum class Layout

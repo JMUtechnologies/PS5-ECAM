@@ -55,16 +55,18 @@ namespace ps5forwarders
 			return stat(path.c_str(), &info) == 0;
 		}
 
-		// Where a tile is made when /data/homebrew is out of the app's reach (port/payloads)
+		// Where a tile is made when /data/homebrew is out of the app's reach (port/payloads). In
+		// /data/ps5cemu, where the helper looks, even with the app's data on its drive (#52): a tile
+		// goes into /data/homebrew either way
 		std::string Pending()
 		{
-			return std::string(ps5paths::kRoot) + "/tiles/pending";
+			return std::string(ps5paths::kDefaultRoot) + "/tiles/pending";
 		}
 
 		// Where the tile helper is asked to take a tile away: a file named by its title ID
 		std::string Removals()
 		{
-			return std::string(ps5paths::kRoot) + "/tiles/remove";
+			return std::string(ps5paths::kDefaultRoot) + "/tiles/remove";
 		}
 
 		// Whether the app may make folders in folder: without a HEN its sandbox may read /data/homebrew,

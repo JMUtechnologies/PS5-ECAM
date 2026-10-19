@@ -488,7 +488,8 @@ namespace ps5shell
 					"at the internal resolution: at high resolutions it is the costliest setting. If a game stutters, try None first.")),
 				"textureFilter");
 			own(toggle("customtextures", Tr("Custom textures"), hand.customTextures, Tr("Texture packs from azahar/load/textures."),
-					Tr("Texture packs in /data/ps5cemu/azahar/load/textures/<title ID>, as the desktop Azahar loads them.")),
+					// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+					TrF("Texture packs in {0}/azahar/load/textures/<title ID>, as the desktop Azahar loads them.", ps5paths::Root())),
 				"customTextures");
 			// off by default, as desktop Azahar: on, a draw whose shader is still building is skipped (Alpha
 			// Sapphire's first cutscene drew its Pokemon as their dark outlines alone)
@@ -681,9 +682,10 @@ namespace ps5shell
 				"language");
 			const bool found = ps5melonds::OwnBiosFound();
 			own(toggle("dsownbios", Tr("Your DS's BIOS"), hand.dsOwnBios, found ? Tr("Found in melonds/bios.") : Tr("Not found: melonDS's built-in BIOS runs the games."),
-					"bios7.bin, bios9.bin and firmware.bin, dumped from your own DS, in /data/ps5cemu/melonds/bios: melonDS runs on them when "
-					"they are there and this is on. Without them, its own replacements (FreeBIOS) run most games as well. Applies to the next "
-					"game."),
+					fmt::format("bios7.bin, bios9.bin and firmware.bin, dumped from your own DS, in {}: melonDS runs on them when they are "
+								"there and this is on. Without them, its own replacements (FreeBIOS) run most games as well. Applies to the "
+								"next game.",
+						ps5melonds::Root() + "/bios")),
 				"dsOwnBios");
 		}
 		else if (page == "files")
@@ -691,8 +693,9 @@ namespace ps5shell
 			const std::string& folder = GamesFolder(m_side);
 			action(Kind::Link, "folder", Is3ds() ? Tr("3DS games") : IsDs() ? Tr("DS games") : Tr("Wii U games"), ShortPath(folder, 34),
 				Tr("Where your games are. Cross picks another."),
-				IsWiiU() ? Tr("Your Wii U games: .wua, .wud, .wux, or folders with code, content and meta. Encrypted .wud and .wux need their keys "
-						   "in /data/ps5cemu/keys.txt.") :
+				// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+				IsWiiU() ? TrF("Your Wii U games: .wua, .wud, .wux, or folders with code, content and meta. Encrypted .wud and .wux need their keys "
+							"in {0}/keys.txt.", ps5paths::Root()) :
 				Is3ds()	 ? Tr("Your 3DS games: .3ds or .cci, .cxi, .3dsx and Azahar's compressed dumps, decrypted, here or in the folders in it. "
 						   "CIA files are installed (Install a CIA file). Encrypted dumps do not start, with keys or without: decrypt them on "
 						   "your 3DS first (GodMode9).") :
@@ -710,11 +713,12 @@ namespace ps5shell
 			}
 			if (IsWiiU())
 			{
-				const bool keys = IsFile(std::string(ps5paths::kRoot) + "/keys.txt");
+				const bool keys = IsFile(ps5paths::Root() + "/keys.txt");
 				action(Kind::Action, "keys", Tr("Wii U disc keys"), keys ? std::string(Tr("keys.txt found")) : std::string(),
 					keys ? Tr("Only encrypted .wud and .wux need them.") : Tr("keys.txt is missing: only encrypted .wud and .wux need it"),
-					Tr("Encrypted .wud and .wux dumps need their disc keys in /data/ps5cemu/keys.txt, one a line. Decrypted dumps, .wua and "
-					"folders need none."));
+					// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+					TrF("Encrypted .wud and .wux dumps need their disc keys in {0}/keys.txt, one a line. Decrypted dumps, .wua and "
+						"folders need none.", ps5paths::Root()));
 				cemu(action(Kind::Link, "install", Tr("Updates and DLC"), "", Tr("Found on your drives, each installed with one press."),
 					Tr("Looks on every USB drive and extended storage plugged in, in the games folder and in /data for updates, DLC and games "
 					   "(folders with code, content and meta), and lists them by game with what is installed now. Cross installs one, Square "
@@ -828,8 +832,9 @@ namespace ps5shell
 				restoreValue = TrF("Copying: {0}", Percent(saves.total ? (int)(saves.copied * 100 / saves.total) : 0));
 			Row* restore = action(Kind::Hold, "restore", Tr("Restore from USB"), restoreValue,
 				backups.empty() ? Tr("Back up first, or plug in the drive with your backups.") : Tr("Left and Right choose which backup, the newest first."),
-				Tr("Puts the chosen backup's saves back where they came from. The saves there now are moved first to "
-				   "/data/ps5cemu/saves-before, so nothing is lost; saves the backup does not have stay as they are."));
+				// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+				TrF("Puts the chosen backup's saves back where they came from. The saves there now are moved first to "
+					"{0}/saves-before, so nothing is lost; saves the backup does not have stay as they are.", ps5paths::Root()));
 			restore->options = backups;
 			restore->index = chosen;
 			if (backups.empty())
@@ -914,7 +919,7 @@ namespace ps5shell
 					TrF("How the launcher looks: its colours, its corners and what moves behind the menus. Phantom and Terminal are experiments "
 						"of their own. Make your own as a JSON file in {0}/themes, starting from any of these: the text under this page says "
 						"how. Only the launcher changes: the in-game menus and the games stay as they are.",
-						ps5paths::kRoot));
+						ps5paths::Root()));
 			}
 			// the sides the bar offers: any mix, at least one
 			toggle("side-wiiu", Tr("Wii U side"), SideShown(System::WiiU), Tr("Cemu's games, in the bar."),
@@ -1052,8 +1057,10 @@ namespace ps5shell
 				when = ps5lang::ShortDateTime(local.tm_mon + 1, local.tm_mday, local.tm_hour, local.tm_min);
 			row.value = SizeWords(save.bytes) + (when.empty() ? "" : " · " + when) + "  ·  " + Tr("Hold Cross");
 			row.description = Tr("Held: moved to saves-before on the PS5, so it can still come back.");
-			row.help = Tr("Holding Cross moves these files to /data/ps5cemu/saves-before, in a folder named by the date and time, and the game "
-						  "starts without them next time. Nothing is deleted: copy them back from there (or restore a backup) to have them again.");
+			// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+			row.help = TrF("Holding Cross moves these files to {0}/saves-before, in a folder named by the date and time, and the game "
+						   "starts without them next time. Nothing is deleted: copy them back from there (or restore a backup) to have them again.",
+				ps5paths::Root());
 			rows.push_back(std::move(row));
 		}
 		if (m_gameSaves.empty())
@@ -1094,8 +1101,9 @@ namespace ps5shell
 		if (running && status.restoring)
 			restore.value = TrF("Copying: {0}", Percent(status.total ? (int)(status.copied * 100 / status.total) : 0));
 		restore.description = backups.empty() ? Tr("No backup on the drives plugged in has this game's saves.") : Tr("Left and Right choose which backup, the newest first.");
-		restore.help = Tr("Puts this game's saves from the chosen backup back where they came from, and nothing else. Its saves there now are "
-						  "moved first to /data/ps5cemu/saves-before, so nothing is lost.");
+		// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+		restore.help = TrF("Puts this game's saves from the chosen backup back where they came from, and nothing else. Its saves there now are "
+						   "moved first to {0}/saves-before, so nothing is lost.", ps5paths::Root());
 		restore.options = backups;
 		restore.index = chosen;
 		if (backups.empty())
@@ -1122,25 +1130,30 @@ namespace ps5shell
 					   "base: a theme to start from (classic, midnight, phantom, terminal). colours: ink-0 to ink-2 (the background), text, "
 					   "wiiu, n3ds and nds (each side's), glass, line, good, warn, bad and focus, as #rrggbb. corners: 0 square to 1.5 round. "
 					   "motif: side, none, slashes or grid.",
-				ps5paths::kRoot);
+				ps5paths::Root());
 		if (page == "files" && IsDs())
-			return Tr("Saves: /data/ps5cemu/melonds/saves (a .sav beside the game is taken the first time). Save states: melonds/states. Cheats: "
-				   "melonds/cheats/<game file>.mch, melonDS's format. DSi games, the DS's wireless and its GBA slot are not there.");
+			// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+			return TrF("Saves: {0}/melonds/saves (a .sav beside the game is taken the first time). Save states: melonds/states. Cheats: "
+					   "melonds/cheats/<game file>.mch, melonDS's format. DSi games, the DS's wireless and its GBA slot are not there.",
+				ps5paths::Root());
 		if (page == "remote" && !m_settings.remoteScreen)
 			return Tr("On, a QR code here opens the game's second screen in a phone's browser. Nothing to install; the phone must be on the "
 				   "PS5's network.");
 		if (page == "usb")
-			return Tr("Figure dumps go in /data/ps5cemu/figures: skylanders, infinity and dimensions. Switch a portal on here, start the game, then "
-				   "put figures on it from the in-game menu (touchpad click + Options > USB devices).");
+			// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+			return TrF("Figure dumps go in {0}/figures: skylanders, infinity and dimensions. Switch a portal on here, start the game, then "
+					   "put figures on it from the in-game menu (touchpad click + Options > USB devices).",
+				ps5paths::Root());
 		if (page == "about")
+			// tr: {0} is the app's version; {1} its data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
 			return TrF("Cemu, the Wii U emulator, by the Cemu team and its contributors; RADV on the PS5 by Mihawk-99 and mpereiraesaa; the "
 				   "community graphic packs' authors.\nAzahar, the 3DS emulator, by the Azahar team and the Citra contributors before them; "
 				   "Mihawk-99's PS5 port of it and dynarmic.\nmelonDS, the DS emulator, by Arisotura and the melonDS team.\nBox art and game "
 				   "information: GameTDB. The font: Lexend.\nThe remote touch screen: dolphin78's idea and prototype.\nAn unofficial port, not affiliated with the Cemu, Azahar or melonDS teams, Nintendo "
-				   "or Sony.\n\nWii U games: /data/ps5cemu/games, storage and saves: /data/ps5cemu/mlc01, keys: /data/ps5cemu/keys.txt\n3DS "
-				   "games: /data/ps5cemu/azahar/games, storage: /data/ps5cemu/azahar/sdmc\nDS games: /data/ps5cemu/melonds/games, saves: "
-				   "/data/ps5cemu/melonds/saves\n\nVersion {0}",
-				ps5update::Readable(PS5CEMU_VERSION));
+				   "or Sony.\n\nWii U games: {1}/games, storage and saves: {1}/mlc01, keys: {1}/keys.txt\n3DS "
+				   "games: {1}/azahar/games, storage: {1}/azahar/sdmc\nDS games: {1}/melonds/games, saves: "
+				   "{1}/melonds/saves\n\nVersion {0}",
+				ps5update::Readable(PS5CEMU_VERSION), ps5paths::Root());
 		return {};
 	}
 

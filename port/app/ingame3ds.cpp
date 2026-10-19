@@ -525,9 +525,11 @@ namespace ps5ingame3ds
 					Tr("Cross, Left or Right turns it on or off, at once; it is kept for next time.")});
 			if (cheats.empty())
 				cheatRows.rows.push_back({"nocheats", Tr("No cheats for this game"), "", false,
-					ds ? Tr("Put them in /data/ps5cemu/melonds/cheats/<game file>.mch (the game's file name, .mch for .nds), then start "
-							"the game again.") :
-						 Tr("Put them in /data/ps5cemu/azahar/cheats/<title ID>.txt, then start the game again.")});
+					// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+					ds ? TrF("Put them in {0}/melonds/cheats/<game file>.mch (the game's file name, .mch for .nds), then start "
+							 "the game again.", ps5paths::Root()) :
+						 // tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+						 TrF("Put them in {0}/azahar/cheats/<title ID>.txt, then start the game again.", ps5paths::Root())});
 			else
 				// tr: how many of the game's cheats are on: {0} of {1}
 				cheatRows.value = TrF("{0} of {1} on", std::count_if(cheats.begin(), cheats.end(), [](const auto& c) { return c.second; }), cheats.size());
@@ -555,7 +557,8 @@ namespace ps5ingame3ds
 			{
 				rows.push_back({"amiibos", Tr("Amiibo"), amiibo, false, Tr("Hold an amiibo dump to the 3DS's reader when the game asks for one."), {
 					{"amiibo", Tr("Amiibo"), amiibo, true,
-						noAmiibo ? Tr("Put amiibo dumps (.bin) in /data/ps5cemu/amiibo to scan them here.") :
+						// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+						noAmiibo ? TrF("Put amiibo dumps (.bin) in {0}/amiibo to scan them here.", ps5paths::Root()) :
 								   Tr("Left and Right choose an amiibo dump; Cross holds it to the reader.")},
 					{"noamiibo", Tr("Take the amiibo away"), amiiboMessage, false, Tr("Takes the amiibo off the reader, as lifting it off would.")},
 				}});

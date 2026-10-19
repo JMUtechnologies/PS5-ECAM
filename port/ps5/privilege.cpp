@@ -37,6 +37,8 @@ namespace ps5privilege
 		// No HEN took the request since the console started (the console's start time, in seconds since
 		// 1970): the app's later starts in that session (each game hands back to a fresh start) need not
 		// wait the 5 s again, when they have what they need without one (executable memory and /data)
+		// read and written as the app starts, before the data folder is decided (a drive's, #52): in
+		// /data/ps5cemu, and only when that is there (fopen makes no folder)
 		constexpr char kNoHenPath[] = PS5CEMU_DATA "/no-hen-since-boot";
 		constexpr long kBootSlackS = 60;
 
@@ -284,6 +286,15 @@ namespace ps5privilege
 		const std::string refused = FirstRefused(folders);
 		if (refused.empty())
 			return;
+		// main asks twice, for the drives before the data folder is decided and for the settings' game
+		// folders after (#52): the helper once, which opens the whole filesystem or nothing
+		static bool s_asked = false;
+		if (s_asked)
+		{
+			ps5log::Line("[privilege] {} could not be read; the elevation helper was asked already", refused);
+			return;
+		}
+		s_asked = true;
 		// a HEN that opened /data but not the drives (games on USB on 13.x, #16): the bundled helper
 		// gives the whole filesystem, as when /data is out of reach. A jailbroken process has no
 		// /app0, so the helper is asked for where the app is (installed on a USB drive, say). Not
@@ -310,7 +321,7 @@ namespace ps5privilege
 		const auto status = elevation::request(elevation::Capability::filesystem, helper.c_str());
 		const bool root = geteuid() == 0;
 		ps5log::Line("[privilege] files another user made in {}, which the app could not open; elevation helper ({}): {}, {}",
-			ps5paths::kRoot, helper, (int)status, root ? "the app is root for this session" : "the app is still not root");
+			ps5paths::Root(), helper, (int)status, root ? "the app is root for this session" : "the app is still not root");
 		if (ps5paths::RefindAppDir())
 			ps5log::Line("[privilege] app folder now {}", ps5paths::AppDir());
 		s_result.summary += root ? std::string("; root from the elevation helper, for files another user made in /data/ps5cemu") :

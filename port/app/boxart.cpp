@@ -68,7 +68,7 @@ namespace ps5boxart
 
 		std::string Base(System system, const std::string& id)
 		{
-			return fmt::format("{}/boxart/{}/{}", ps5paths::kCovers, Folder(system), id);
+			return fmt::format("{}/boxart/{}/{}", ps5paths::Covers(), Folder(system), id);
 		}
 
 		bool Valid(const std::string& id)

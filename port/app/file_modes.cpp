@@ -23,15 +23,18 @@ namespace ps5filemodes
 {
 	namespace
 	{
-		// written when a walk has been through kRoot: its number, and how many entries it left as they
-		// were (another user's, the app not root). Later starts make no walk, but for one as root while
-		// some are left. A build that opens more raises the number, and the walk is made again once
-		constexpr const char* kWalked = PS5CEMU_DATA "/files-opened";
+		// written when a walk has been through the data folder: its number, and how many entries it left
+		// as they were (another user's, the app not root). Later starts make no walk, but for one as root
+		// while some are left. A build that opens more raises the number, and the walk is made again once
+		std::string WalkedPath()
+		{
+			return ps5paths::Root() + "/files-opened";
+		}
 		constexpr int kVersion = 1;
 		constexpr size_t kExamples = 3; // of those the app may not change, in the boot log
 		// the sides' own game folders hold the player's files, which the app only reads: an FTP client's
 		// upload keeps its owner's mode
-		constexpr const char* kPlayers[] = {PS5CEMU_DATA "/games", PS5CEMU_DATA "/azahar/games", PS5CEMU_DATA "/melonds/games"};
+		constexpr const char* kPlayers[] = {"/games", "/azahar/games", "/melonds/games"};
 
 		std::thread s_thread;
 		std::atomic<bool> s_stop{false};
@@ -53,7 +56,7 @@ namespace ps5filemodes
 		Walked LastWalk()
 		{
 			Walked walked;
-			FILE* file = std::fopen(kWalked, "r");
+			FILE* file = std::fopen(WalkedPath().c_str(), "r");
 			if (!file)
 				return walked;
 			int version = 0;
@@ -119,7 +122,7 @@ namespace ps5filemodes
 		bool PlayersFolder(const std::string& path)
 		{
 			for (const char* folder : kPlayers)
-				if (path == folder)
+				if (path == ps5paths::Root() + folder)
 					return true;
 			return false;
 		}
@@ -130,16 +133,16 @@ namespace ps5filemodes
 			const auto started = std::chrono::steady_clock::now();
 			Walk walk;
 			struct stat root{};
-			if (lstat(ps5paths::kRoot, &root) != 0 || !S_ISDIR(root.st_mode))
+			if (lstat(ps5paths::Root().c_str(), &root) != 0 || !S_ISDIR(root.st_mode))
 				return;
-			Open(walk, ps5paths::kRoot, root);
+			Open(walk, ps5paths::Root(), root);
 			struct Folder
 			{
 				std::string path;
 				struct stat st;
 				bool refused; // its own mode, already counted
 			};
-			std::vector<Folder> folders{{ps5paths::kRoot, root, false}};
+			std::vector<Folder> folders{{ps5paths::Root(), root, false}};
 			while (!folders.empty() && !s_stop)
 			{
 				const Folder folder = std::move(folders.back());
@@ -175,17 +178,17 @@ namespace ps5filemodes
 			if (s_stop)
 			{
 				ps5log::Line("[files] {}: {} opened to every user before a game stopped the walk ({} looked at in {} ms); the next start goes on",
-					ps5paths::kRoot, walk.opened, walk.seen, ms);
+					ps5paths::Root(), walk.opened, walk.seen, ms);
 				return;
 			}
-			if (FILE* file = std::fopen(kWalked, "w"))
+			if (FILE* file = std::fopen(WalkedPath().c_str(), "w"))
 			{
 				std::fprintf(file, "%d %zu\n", kVersion, walk.refused);
 				std::fclose(file);
 			}
 			if (walk.refused == 0)
 			{
-				ps5log::Line("[files] {}: every file and folder open to every user ({} opened, {} looked at in {} ms)", ps5paths::kRoot,
+				ps5log::Line("[files] {}: every file and folder open to every user ({} opened, {} looked at in {} ms)", ps5paths::Root(),
 					walk.opened, walk.seen, ms);
 				return;
 			}
@@ -195,7 +198,7 @@ namespace ps5filemodes
 			ps5log::Line("[files] {}: {} opened to every user, {} another user's that the app may not change ({} looked at in {} ms): {}. "
 						 "The next start asks the elevation helper (elfldr) for root to open them; without elfldr, PPSA99360 in the "
 						 "HEN's app jailbreak list with alwaysAskHen in ps5cemu.json does, or a file manager's chmod 777",
-				ps5paths::kRoot, walk.opened, walk.refused, walk.seen, ms, examples);
+				ps5paths::Root(), walk.opened, walk.refused, walk.seen, ms, examples);
 		}
 	}
 
@@ -207,7 +210,9 @@ namespace ps5filemodes
 
 	void Start()
 	{
-		if (s_thread.joinable() || !WalkDue())
+		// a data folder on a USB drive or the extended storage (#52): their exFAT has no owners or modes
+		// to open, every user writes it already
+		if (s_thread.joinable() || !ps5paths::DriveOf(ps5paths::Root()).empty() || !WalkDue())
 			return;
 		s_stop = false;
 		s_thread = std::thread(Run);

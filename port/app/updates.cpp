@@ -422,7 +422,7 @@ namespace ps5update
 
 			ps5log::Line("[update] downloading {}", zipName);
 			Set(Status::State::Downloading);
-			const fs::path archive = fs::path(ps5paths::kCache) / "app-update.zip";
+			const fs::path archive = fs::path(ps5paths::Cache()) / "app-update.zip";
 			std::error_code ec;
 			fs::create_directories(archive.parent_path(), ec);
 			Download download;

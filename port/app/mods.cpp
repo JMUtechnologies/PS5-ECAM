@@ -308,7 +308,7 @@ namespace ps5mods
 
 	std::string Folder()
 	{
-		return std::string(ps5paths::kRoot) + "/graphicPacks/mods";
+		return ps5paths::Root() + "/graphicPacks/mods";
 	}
 
 	std::vector<std::string> Folders(const std::vector<std::string>& drives)

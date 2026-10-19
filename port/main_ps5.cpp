@@ -99,13 +99,13 @@ namespace
 	}
 
 	// A diagnostic for SYSTEM_ILLEGAL_FUNCTION_CALL (0xA002030A), which ends the app with no signal for
-	// a crash handler: every import as the console resolved it. With /data/ps5cemu/got-range.txt
+	// a crash handler: every import as the console resolved it. With got-range.txt in the data folder
 	// ("SELF GOT_START GOT_END", this build's ELF addresses of this function and of .got, in hex), the
 	// .got as loaded goes to logs/got.bin, to be read against the ELF's relocations: an import the
 	// console does not give the app points where the others it lacks do. Nothing without the file.
 	void DumpImports()
 	{
-		FILE* range = std::fopen("/data/ps5cemu/got-range.txt", "rb");
+		FILE* range = std::fopen((ps5paths::Root() + "/got-range.txt").c_str(), "rb");
 		if (!range)
 			return;
 		char text[128] = {};
@@ -116,7 +116,7 @@ namespace
 		if (!self || end <= start || end - start > (1u << 20))
 			return;
 		const uintptr_t base = (uintptr_t)&DumpImports - (uintptr_t)self;
-		FILE* out = std::fopen("/data/ps5cemu/logs/got.bin", "wb");
+		FILE* out = std::fopen((ps5paths::Logs() + "/got.bin").c_str(), "wb");
 		if (!out)
 			return;
 		std::fwrite((const void*)(uintptr_t)(start + base), 1, (size_t)(end - start), out);
@@ -131,7 +131,7 @@ namespace
 				PS5CEMU_MELONDS_COMMIT),
 			ps5lang::TrF("Firmware {0}", Firmware()),
 			privileges.summary,
-			ps5log::Path()[0] ? ps5lang::TrF("Logs: {0}, {1}/log.txt", ps5log::Path(), ps5paths::kRoot) :
+			ps5log::Path()[0] ? ps5lang::TrF("Logs: {0}, {1}/log.txt", ps5log::Path(), ps5paths::Root()) :
 								ps5lang::Tr("Boot log not written (/data is unreachable)"),
 		};
 	}
@@ -235,7 +235,14 @@ int main(int argc, char* argv[])
 	const ps5privilege::Result privileges =
 		ps5privilege::Acquire({early.gamesFolder, early.n3ds.gamesFolder, early.nds.gamesFolder}, early.alwaysAskHen);
 	if (privileges.filesystem)
-		ps5log::Open(ps5paths::kLogs);
+	{
+		// the drives the HEN left out opened first (below for the game folders the settings name):
+		// the data folder may be on the one the app is installed on (app/paths.h, #52), and the boot
+		// log goes in it
+		ps5privilege::ReachFolders({early.gamesFolder, early.n3ds.gamesFolder, early.nds.gamesFolder});
+		ps5paths::DecideRoot();
+		ps5log::Open(ps5paths::Logs().c_str());
+	}
 	ps5log::Line("[main] firmware {}", Firmware());
 	ps5log::Line("[main] {}", privileges.summary);
 	if (privileges.filesystem)
@@ -280,6 +287,8 @@ int main(int argc, char* argv[])
 		const std::string source = ps5paths::MountSource(&image);
 		ps5log::Line("[main] app folder {}{}", ps5paths::AppDir(),
 			!source.empty() ? fmt::format(" (mounted from {})", source) : image ? " (mounted from an image)" : "");
+		ps5log::Line("[main] data folder {}{}", ps5paths::Root(),
+			ps5paths::Root() != ps5paths::kDefaultRoot ? " (on the drive the app is installed on)" : "");
 	}
 	// the menus' language, from the app's assets (so only once its folder is decided), before
 	// anything says a word: the PS5's, unless Settings names another
@@ -289,7 +298,7 @@ int main(int argc, char* argv[])
 	{
 		// the network shares (6.14), as /net/<name>: connected only when a file on one is first read
 		std::vector<ps5netfs::Share> shares;
-		if (ps5netfs::load(std::string(ps5paths::kRoot) + "/network-shares.txt", shares) && !shares.empty())
+		if (ps5netfs::load(ps5paths::Root() + "/network-shares.txt", shares) && !shares.empty())
 		{
 			ps5netfs::set_shares(shares);
 			ps5log::Line("[netfs] {} network share(s)", shares.size());
@@ -365,7 +374,7 @@ int main(int argc, char* argv[])
 	// before either emulator's Vulkan driver starts, which reads them once. RADV keeps its shader
 	// cache in /app0 unless told otherwise, and a jailbroken process has none: told here, so the 3DS's
 	// side has it too (it was set as Cemu started, which a 3DS game's process never does)
-	setenv("MESA_SHADER_CACHE_DIR", ps5paths::kRadvCache, 1);
+	setenv("MESA_SHADER_CACHE_DIR", ps5paths::RadvCache().c_str(), 1);
 	// The driver keeps the shaders it compiles for the next start, as on a PC (shaderDiskCache in
 	// ps5cemu.json, on by default). Mesa keeps no disk cache in a process whose effective user or
 	// group is not its real one, and the HEN makes only the effective ones root: the real ones are
@@ -378,7 +387,7 @@ int main(int argc, char* argv[])
 		ps5log::Line("[vulkan] RADV's shader cache: real user {} (euid {}){}, real group {} (egid {}){}", getuid(), geteuid(),
 			user ? " (refused)" : "", getgid(), getegid(), group ? " (refused)" : "");
 	}
-	ps5log::Line("[vulkan] RADV's shader cache in {}: {}", ps5paths::kRadvCache,
+	ps5log::Line("[vulkan] RADV's shader cache in {}: {}", ps5paths::RadvCache(),
 		!settings.shaderDiskCache ? "off (shaderDiskCache in ps5cemu.json)" :
 		geteuid() == getuid() && getegid() == getgid() ? "on" : "off (the console kept the real user)");
 	// before either emulator's Vulkan driver starts, which reads it once
@@ -507,8 +516,10 @@ int main(int argc, char* argv[])
 			// the splash goes, so the notification is seen, and it says why (as 3.0.0's did)
 			sceSystemServiceHideSplashScreen();
 			const std::string& why = ps5shell::LastFailure();
-			ps5notify::Send(why.empty() ? std::string(ps5lang::Tr("The launcher could not start. The boot log in /data/ps5cemu/logs says why.")) :
-										  ps5lang::TrF("The launcher could not start: {0}. The boot log in /data/ps5cemu/logs has more.", why));
+			// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+			ps5notify::Send(why.empty() ? ps5lang::TrF("The launcher could not start. The boot log in {0}/logs says why.", ps5paths::Root()) :
+										  // tr: {0} is why; {1} the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the app's drive
+										  ps5lang::TrF("The launcher could not start: {0}. The boot log in {1}/logs has more.", why, ps5paths::Root()));
 			for (;;)
 				sceKernelUsleep(1000000);
 		}

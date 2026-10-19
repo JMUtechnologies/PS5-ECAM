@@ -884,7 +884,7 @@ namespace ps5shell
 		else if (m_screen == ScreenId::Setup)
 			m_pageFrom = ScreenId::Setup;
 		const std::string& games = GamesFolder(m_filesSide);
-		std::string start = mode != 0 && !m_installFolder.empty() ? m_installFolder : games.empty() ? ps5paths::kGames : games;
+		std::string start = mode != 0 && !m_installFolder.empty() ? m_installFolder : games.empty() ? ps5paths::Games() : games;
 		while (!BrowseTo(start) && start != "/")
 			start = ParentPath(start);
 		m_filesMessage.clear();
@@ -1253,7 +1253,7 @@ namespace ps5shell
 			lines[0] = {Tr("Games here"), games < 0 ? std::string(Tr("Cannot be read")) : TrP(games, "{0} game", "{0} games")};
 			if (n3ds)
 			{
-				const bool keys = IsFile(std::string(ps5azahar::kRoot) + "/sysdata/aes_keys.txt");
+				const bool keys = IsFile(ps5azahar::Root() + "/sysdata/aes_keys.txt");
 				lines[1] = {"aes_keys.txt", keys ? Tr("Found") : Tr("Missing (only encrypted dumps need it)")};
 				ready[1] = keys;
 			}
@@ -1265,8 +1265,9 @@ namespace ps5shell
 			}
 			else
 			{
-				const bool keys = IsFile(std::string(ps5paths::kRoot) + "/keys.txt");
-				lines[1] = {"keys.txt", keys ? Tr("Found in /data/ps5cemu") : Tr("Missing (only .wud/.wux need it)")};
+				const bool keys = IsFile(ps5paths::Root() + "/keys.txt");
+				// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+				lines[1] = {"keys.txt", keys ? TrF("Found in {0}", ps5paths::Root()) : std::string(Tr("Missing (only .wud/.wux need it)"))};
 				ready[1] = keys;
 			}
 			lines[2] = {Tr("In use"), ShortPath(GamesFolder(m_filesSide), 40)};
@@ -1344,7 +1345,7 @@ namespace ps5shell
 				size_t digits; // the hex digits Azahar reads
 				bool found;
 			} keys[] = {{"AES", "otpKey", 32, false}, {"AES", "otpIV", 32, false}, {"ECC", "rootPublicXY", 120, false}};
-			std::ifstream file(std::string(ps5azahar::kRoot) + "/sysdata/aes_keys.txt", std::ios::binary);
+			std::ifstream file(ps5azahar::Root() + "/sysdata/aes_keys.txt", std::ios::binary);
 			std::string section, line;
 			while (std::getline(file, line))
 			{
@@ -1538,7 +1539,7 @@ namespace ps5shell
 				// tr: {0} is a folder, {1} the missing keys' names; otpKey, otpIV, rootPublicXY, :AES and :ECC are written as in the key file
 				const std::string keys = TrF("Azahar here has no keys of its own: the setup needs otpKey and otpIV (under :AES) and "
 											 "rootPublicXY (under :ECC) in aes_keys.txt from your own console, in {0}/sysdata.\nMissing: {1}.",
-					ps5azahar::kRoot, m_articMissingKeys);
+					ps5azahar::Root(), m_articMissingKeys);
 				items[i].help = keys + "\n" + items[i].help;
 			}
 		canvas.PushAlpha(Enter(1));

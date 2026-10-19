@@ -45,7 +45,7 @@ namespace ps5cheevos
 	{
 		std::string AccountFile()
 		{
-			return std::string(ps5paths::kRoot) + "/retroachievements.json";
+			return ps5paths::Root() + "/retroachievements.json";
 		}
 
 		std::mutex s_mutex;		// s_account, s_token

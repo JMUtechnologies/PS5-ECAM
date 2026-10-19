@@ -316,7 +316,7 @@ namespace ps5profile
 		s_codeLow = handler > kCodeReach ? handler - kCodeReach : 0;
 		s_codeHigh = handler + kCodeReach;
 
-		const std::string logs = ps5paths::kLogs;
+		const std::string logs = ps5paths::Logs();
 		std::rename((logs + "/profile.bin").c_str(), (logs + "/profile.prev.bin").c_str());
 		std::rename((logs + "/profile-threads.txt").c_str(), (logs + "/profile-threads.prev.txt").c_str());
 		FILE* samples = std::fopen((logs + "/profile.bin").c_str(), "wb");

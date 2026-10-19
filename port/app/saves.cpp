@@ -48,7 +48,7 @@ namespace ps5saves
 
 		std::vector<Set> Sets()
 		{
-			const std::string root = PS5CEMU_DATA;
+			const std::string root = ps5paths::Root();
 			return {
 				{"wiiu/save", root + "/mlc01/usr/save", nullptr},
 				{"3ds/sdmc", root + "/azahar/sdmc/Nintendo 3DS", SdmcSave},
@@ -221,13 +221,13 @@ namespace ps5saves
 			}
 			std::error_code ec;
 			// restoring: what is there now moves aside first, into saves-before, in the same shape
-			const fs::path aside = fs::path(PS5CEMU_DATA) / "saves-before" / Stamp();
+			const fs::path aside = fs::path(ps5paths::Root()) / "saves-before" / Stamp();
 			int moved = 0;
 			for (const File& file : files)
 			{
 				if (restoring && fs::exists(file.to, ec))
 				{
-					const fs::path kept = aside / file.to.lexically_relative(PS5CEMU_DATA);
+					const fs::path kept = aside / file.to.lexically_relative(ps5paths::Root());
 					fs::create_directories(kept.parent_path(), ec);
 					fs::rename(file.to, kept, ec);
 					if (ec)
@@ -322,7 +322,7 @@ namespace ps5saves
 	{
 		std::vector<GameSave> saves;
 		std::error_code ec;
-		const std::string root = PS5CEMU_DATA;
+		const std::string root = ps5paths::Root();
 		auto keep = [&](GameSave save) {
 			for (const std::string& path : save.paths)
 				Measure(path, save);
@@ -412,10 +412,10 @@ namespace ps5saves
 	std::string MoveAside(const GameSave& save, std::string& error)
 	{
 		std::error_code ec;
-		const fs::path aside = fs::path(PS5CEMU_DATA) / "saves-before" / Stamp();
+		const fs::path aside = fs::path(ps5paths::Root()) / "saves-before" / Stamp();
 		for (const std::string& path : save.paths)
 		{
-			const fs::path kept = aside / fs::path(path).lexically_relative(PS5CEMU_DATA);
+			const fs::path kept = aside / fs::path(path).lexically_relative(ps5paths::Root());
 			fs::create_directories(kept.parent_path(), ec);
 			fs::rename(path, kept, ec);
 			if (ec)

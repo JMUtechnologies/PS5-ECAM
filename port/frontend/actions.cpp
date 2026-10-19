@@ -130,13 +130,13 @@ namespace ps5actions
 		const std::time_t now = std::time(nullptr);
 		if (const std::tm* local = std::localtime(&now))
 			std::strftime(stamp, sizeof(stamp), "%Y-%m-%d-%H%M%S", local);
-		const std::string root = ps5paths::kRoot;
-		const std::string logs = ps5paths::kLogs;
+		const std::string root = ps5paths::Root();
+		const std::string logs = ps5paths::Logs();
 		// Azahar's log of the session before too: Azahar renames its log .old.txt as it starts, which the
 		// 3DS side's Settings and Setup check make it do (their Home Menu row), so after a 3DS game failed
 		// and the app started over, its log is that one by the time this runs (#45)
 		std::vector<std::string> files = {logs + "/boot.log", root + "/log.txt", root + "/azahar/log/azahar_log.txt",
-			root + "/azahar/log/azahar_log.old.txt", ps5paths::kLauncherSettings, root + "/settings.xml"};
+			root + "/azahar/log/azahar_log.old.txt", ps5paths::LauncherSettings(), root + "/settings.xml"};
 		// the sessions before, each with Cemu's log of it (port/ps5/log.cpp)
 		for (const char* age : {"prev", "2", "3", "4"})
 		{
@@ -166,7 +166,7 @@ namespace ps5actions
 	std::string ClearShaderCaches(bool n3ds)
 	{
 		namespace fs = std::filesystem;
-		const std::string folder = n3ds ? std::string(ps5paths::kRoot) + "/azahar/shaders" : std::string(ps5paths::kCache) + "/shaderCache";
+		const std::string folder = n3ds ? ps5paths::Root() + "/azahar/shaders" : ps5paths::Cache() + "/shaderCache";
 		std::error_code ec;
 		int files = 0;
 		uintmax_t bytes = 0;

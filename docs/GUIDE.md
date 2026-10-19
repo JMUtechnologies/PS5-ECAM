@@ -268,7 +268,8 @@ Without an internet connection, the libraries just show the game icons.
 
 ## Where files are stored
 
-Everything the app writes goes to `/data/ps5cemu`, except your game files:
+Everything the app writes goes to `/data/ps5cemu`, except your game files (or to the app's drive:
+[below](#everything-on-the-apps-drive)):
 
 ```text
 /data/ps5cemu/
@@ -311,6 +312,21 @@ Files an older version made are opened the same way as the app starts. Some may 
 user, usually from a session the HEN or elfldr's helper made root. Those are listed under `[files]`
 in `boot.log`, and the next start asks elfldr's helper for root to open them. Without elfldr,
 setting `/data/ps5cemu` to 777 from a file manager opens them.
+
+### Everything on the app's drive
+
+With the app installed on a USB drive or the extended storage (ShadowMountPlus mounting it from
+there), a `PS5CEMU-HAR-data` folder at the top of that drive takes the place of `/data/ps5cemu`, with
+the same files in it, and the app makes nothing in `/data`. A first start on a drive makes that folder
+itself when there is no `/data/ps5cemu` yet.
+
+To move an install that already keeps its data in `/data/ps5cemu`: with the app closed, copy
+everything in `/data/ps5cemu` into a new `PS5CEMU-HAR-data` folder at the top of the app's drive (FTP
+or a file manager), start the app, check your games and saves are there, then delete
+`/data/ps5cemu`. Game folders inside `/data/ps5cemu` follow the data to the drive. The Setup check's
+**Storage** shows the folder in use, as `boot.log`'s `[main] data folder` line does. An app installed
+in `/data`, or mounted from an image, keeps `/data/ps5cemu`. The drive's `ps5cemu/mods` folder is
+still where Wii U mods are added from.
 
 **Backups:** **Settings > Accounts and saves > Back up to USB** copies every side's saves, save
 states and the Wii U's accounts (never the games) to `PS5CEMU-HAR-saves/<date and time>` on the

@@ -304,7 +304,7 @@ namespace ps5sound
 
 	std::string MusicFolder()
 	{
-		return std::string(ps5paths::kRoot) + "/music";
+		return ps5paths::Root() + "/music";
 	}
 
 	std::vector<std::string> MusicFiles()

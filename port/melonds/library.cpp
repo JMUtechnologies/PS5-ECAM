@@ -152,7 +152,7 @@ namespace ps5melonds
 
 		std::string CoverFile(uint64_t id)
 		{
-			return fmt::format("{}/ds/{:016x}.tga", ps5paths::kCovers, id);
+			return fmt::format("{}/ds/{:016x}.tga", ps5paths::Covers(), id);
 		}
 
 		void WriteCover(uint64_t id, const std::vector<uint8_t>& icon)
@@ -258,7 +258,7 @@ namespace ps5melonds
 		// banner at the end), the archive's game is named by its file, with no icon
 		constexpr uint64_t kArchiveBannerLimit = 64ull << 20;
 
-		// What InspectRom reads of an archive's ROM, read once and kept in kRoot/archives.bin: the
+		// What InspectRom reads of an archive's ROM, read once and kept in Root()/archives.bin: the
 		// header, and the banner where the header puts it
 		struct Probe
 		{
@@ -299,7 +299,7 @@ namespace ps5melonds
 			return true;
 		}
 
-		// kRoot/archives.bin: "PDSA", a version, then each archive's path and its Probe
+		// Root()/archives.bin: "PDSA", a version, then each archive's path and its Probe
 		constexpr uint32_t kProbesMagic = 0x41534450, kProbesVersion = 2;
 
 		struct Probes
@@ -311,7 +311,7 @@ namespace ps5melonds
 
 		std::string ProbesPath()
 		{
-			return std::string(kRoot) + "/archives.bin";
+			return Root() + "/archives.bin";
 		}
 
 		void Put32(std::string& out, uint32_t value)
@@ -533,7 +533,7 @@ namespace ps5melonds
 		// the DS side's folders from the first start, so there is somewhere to put games and a BIOS
 		std::error_code ec;
 		for (const char* sub : {"games", "bios", "saves"})
-			fs::create_directories(fs::path(kRoot) / sub, ec);
+			fs::create_directories(fs::path(Root()) / sub, ec);
 		std::thread([folder] {
 			std::vector<ps5emu::Game> games;
 			Probes probes;
@@ -568,7 +568,7 @@ namespace ps5melonds
 	{
 		// the sizes melonDS takes: the ARM9's 4 KiB, the ARM7's 16 KiB
 		std::error_code ec;
-		const std::string folder = std::string(kRoot) + "/bios/";
+		const std::string folder = Root() + "/bios/";
 		return fs::file_size(folder + "bios9.bin", ec) == 0x1000 && !ec && fs::file_size(folder + "bios7.bin", ec) == 0x4000 && !ec;
 	}
 }

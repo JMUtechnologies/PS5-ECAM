@@ -11,7 +11,7 @@
 //
 // A game may be in an archive (#50, archive.h): the archive's DS ROM is the game, its saves named by
 // the archive's name as a ROM's are by its own. What the library reads of it (its header and banner,
-// as far into the ROM as the banner) is kept in kRoot/archives.bin by the archive's size and time, so a
+// as far into the ROM as the banner) is kept in Root()/archives.bin by the archive's size and time, so a
 // later scan reads nothing out of an archive that has not changed.
 
 #pragma once

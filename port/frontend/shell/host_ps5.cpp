@@ -32,9 +32,9 @@ namespace ps5shell
 			// RADV's shader cache where Cemu's renderer keeps it (app/emulator.cpp sets the same), there
 			// before the launcher's device reads where it is; a jailbroken process has no /app0 for it
 			std::error_code ec;
-			std::filesystem::create_directories(ps5paths::kRadvCache, ec);
-			setenv("MESA_SHADER_CACHE_DIR", ps5paths::kRadvCache, 0);
-			target.pipelineCache = std::string(ps5paths::kCache) + "/ui-pipelines.bin";
+			std::filesystem::create_directories(ps5paths::RadvCache(), ec);
+			setenv("MESA_SHADER_CACHE_DIR", ps5paths::RadvCache().c_str(), 0);
+			target.pipelineCache = ps5paths::Cache() + "/ui-pipelines.bin";
 			return target;
 		};
 		host.assets = ps5paths::Assets() + "/ui";

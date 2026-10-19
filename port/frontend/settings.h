@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the launcher's settings, /data/ps5cemu/ps5cemu.json. Cemu's own settings stay in its
-// settings.xml; the launcher writes the few it manages (game folder, volume, overlay, upscaling
-// filter) into both. Azahar's are here (n3ds), and given to it when a 3DS game starts; melonDS's
-// (nds) have the same shape, the DS side's own (its folder, screens, sound, controls) and the few
-// only a DS has (ds...). A game can have its own of some of them (games: 6.5),
+// PS5CEMU-HAR: the launcher's settings, ps5cemu.json in the data folder (app/paths.h). Cemu's own
+// settings stay in its settings.xml; the launcher writes the few it manages (game folder, volume,
+// overlay, upscaling filter) into both. Azahar's are here (n3ds), and given to it when a 3DS game
+// starts; melonDS's (nds) have the same shape, the DS side's own (its folder, screens, sound,
+// controls) and the few only a DS has (ds...). A game can have its own of some of them (games: 6.5),
 // which it starts with over its side's.
 
 #pragma once
+
+#include "../app/paths.h"
 
 #include <cstdint>
 #include <map>
@@ -19,7 +21,7 @@ namespace ps5settings
 	// buttons, language and the ds... ones)
 	struct N3ds
 	{
-		std::string gamesFolder = "/data/ps5cemu/azahar/games";
+		std::string gamesFolder = ps5paths::Root() + "/azahar/games";
 		int resolution = 6;			  // the internal resolution, times the 3DS's 400x240
 		int layout = 2;				  // the screens' layout (ps5azahar::Layout): the top one large
 		int textureFilter = 0;		  // none
@@ -67,7 +69,7 @@ namespace ps5settings
 	inline N3ds DsDefaults()
 	{
 		N3ds nds;
-		nds.gamesFolder = "/data/ps5cemu/melonds/games";
+		nds.gamesFolder = ps5paths::Root() + "/melonds/games";
 		nds.layout = 0;
 		return nds;
 	}
@@ -98,7 +100,7 @@ namespace ps5settings
 
 	struct Launcher
 	{
-		std::string gamesFolder = "/data/ps5cemu/games";
+		std::string gamesFolder = ps5paths::Games();
 		int upscaleFilter = 1;		  // how the game's picture is scaled to 4K: Cemu's upscale_filter
 		bool highFrameRate = false;	  // the 119.88 Hz mode where the display has it
 		// frame pacing (ps5/display.h): each frame shown for at least this many refreshes, 1 to 3;

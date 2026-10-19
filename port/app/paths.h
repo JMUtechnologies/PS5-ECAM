@@ -3,7 +3,9 @@
 //
 //   /data/homebrew/PPSA99360/        the app (eboot.bin, sce_sys, assets) as ShadowMountPlus mounts it
 //   /app0/                           the same, read-only, from inside the app's sandbox (AppDir)
-//   /data/ps5cemu/                   everything PS5Cemu writes; survives app updates
+//   /data/ps5cemu/                   everything PS5Cemu writes; survives app updates. On the USB drive
+//                                    or extended storage the app is installed on, its
+//                                    PS5CEMU-HAR-data folder instead (DecideRoot, #52)
 //     settings.xml, ps5cemu.json     Cemu's settings and the launcher's
 //     log.txt                        Cemu's log
 //     controllerProfiles/            Cemu's controller profiles
@@ -19,6 +21,7 @@
 #pragma once
 
 #include <cstdio>
+#include <cstring>
 #include <initializer_list>
 #include <string>
 #include <sys/stat.h>
@@ -36,19 +39,44 @@ namespace ps5paths
 	constexpr const char* kMountRecord = "/user/app/PPSA99360/mount.lnk";
 	constexpr const char* kImageMountRecord = "/user/app/PPSA99360/mount_img.lnk";
 
-// everything PS5CEMU-HAR writes: on the console /data/ps5cemu; the launcher's preview on a PC
-// (tools/preview-shell.sh) gives a folder of its own
+// where PS5CEMU-HAR writes everything, unless DecideRoot finds a folder of its own on the app's
+// drive: on the console /data/ps5cemu; the launcher's preview on a PC (tools/preview-shell.sh) gives
+// a folder of its own
 #ifndef PS5CEMU_DATA
 #define PS5CEMU_DATA "/data/ps5cemu"
 #endif
-	constexpr const char* kRoot = PS5CEMU_DATA;
-	constexpr const char* kMlc = PS5CEMU_DATA "/mlc01";
-	constexpr const char* kGames = PS5CEMU_DATA "/games";
-	constexpr const char* kCache = PS5CEMU_DATA "/cache";
-	constexpr const char* kRadvCache = PS5CEMU_DATA "/cache/radv";
-	constexpr const char* kLogs = PS5CEMU_DATA "/logs";
-	constexpr const char* kLauncherSettings = PS5CEMU_DATA "/ps5cemu.json";
-	constexpr const char* kCovers = PS5CEMU_DATA "/covers";
+	constexpr const char* kDefaultRoot = PS5CEMU_DATA;
+	// the data folder's name at the top of the app's drive (DecideRoot)
+	constexpr const char* kDriveRoot = "PS5CEMU-HAR-data";
+
+	namespace detail
+	{
+		inline std::string& RootSlot()
+		{
+			static std::string root = kDefaultRoot;
+			return root;
+		}
+	}
+
+	// The data folder: kDefaultRoot until main has decided it (DecideRoot), then the one decided
+	inline const std::string& Root() { return detail::RootSlot(); }
+	inline std::string Mlc() { return Root() + "/mlc01"; }
+	inline std::string Games() { return Root() + "/games"; }
+	inline std::string Cache() { return Root() + "/cache"; }
+	inline std::string RadvCache() { return Root() + "/cache/radv"; }
+	inline std::string Logs() { return Root() + "/logs"; }
+	inline std::string LauncherSettings() { return Root() + "/ps5cemu.json"; }
+	inline std::string Covers() { return Root() + "/covers"; }
+
+	// A path in kDefaultRoot, in Root() instead when the data is elsewhere: a folder setting saved
+	// while the data was in /data follows the data to the drive it was moved to (#52)
+	inline std::string Relocated(const std::string& path)
+	{
+		const size_t length = std::strlen(kDefaultRoot);
+		if (Root() == kDefaultRoot || path.compare(0, length, kDefaultRoot) != 0 || (path.size() > length && path[length] != '/'))
+			return path;
+		return Root() + path.substr(length);
+	}
 
 	// The folder ShadowMountPlus mounted the running app from, by its record (kMountRecord), when it
 	// holds the app; empty without one. image: whether the app was mounted from an image instead,
@@ -128,6 +156,47 @@ namespace ps5paths
 			return false;
 		directory = std::move(found);
 		return true;
+	}
+
+	// The USB drive or extended storage a path is on ("/mnt/usb0" for "/mnt/usb0/homebrew/PPSA99360");
+	// empty for any other place
+	inline std::string DriveOf(const std::string& path)
+	{
+		for (const char* prefix : {"/mnt/usb", "/mnt/ext"})
+		{
+			const size_t length = std::strlen(prefix);
+			size_t end = length;
+			while (end < path.size() && path[end] >= '0' && path[end] <= '9')
+				end++;
+			if (path.compare(0, length, prefix) == 0 && end > length && (end == path.size() || path[end] == '/'))
+				return path.substr(0, end);
+		}
+		return {};
+	}
+
+	// The data folder, decided once by main, when the process sees the console's drives (after the
+	// elevation helper): a PS5CEMU-HAR-data folder at the top of the drive the app is installed on
+	// (where ShadowMountPlus mounted it from, else the app's folder) holds everything, and nothing is
+	// made in /data (#52). A first start on a drive, with no /data/ps5cemu yet, makes that folder; an
+	// app that has kept its data in /data goes on doing so until the folder is made (the guide's
+	// "Everything on the app's drive" says how to move it). An app in /data, or mounted from an
+	// image, keeps kDefaultRoot. Not a drive's ps5cemu folder: that one holds Wii U mods (app/mods.h),
+	// and the app's backups and logs on a drive are PS5CEMU-HAR-saves and PS5CEMU-HAR-logs-... already.
+	inline const std::string& DecideRoot()
+	{
+		std::string& root = detail::RootSlot();
+		std::string drive = DriveOf(MountSource());
+		if (drive.empty())
+			drive = DriveOf(AppDir());
+		if (drive.empty())
+			return root;
+		const std::string folder = drive + "/" + kDriveRoot;
+		struct stat info{};
+		const bool there = stat(folder.c_str(), &info) == 0 && S_ISDIR(info.st_mode);
+		const bool inData = stat(kDefaultRoot, &info) == 0;
+		if (there || (!inData && mkdir(folder.c_str(), 0777) == 0))
+			root = folder;
+		return root;
 	}
 
 	inline std::string Eboot() { return AppDir() + "/eboot.bin"; }

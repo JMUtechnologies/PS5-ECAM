@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // PS5CEMU-HAR: what melonDS's core asks of its frontend (melonDS::Platform, Platform.h), on the PS5:
-// files through the C library (local files are melonDS's data folder's, kRoot), threads, semaphores
+// files through the C library (local files are melonDS's data folder's, Root()), threads, semaphores
 // and mutexes from the standard library, the clock, the game's save handed to the game's loop
 // (core.cpp), the microphone as noise while R3 is held (input.cpp), and its log in the boot log. The
 // DS's wireless (local play, the internet), its cameras, the DSi's AAC decoder and the Slot-2 add-ons
@@ -86,7 +86,7 @@ namespace melonDS::Platform
 	{
 		if (!filename.empty() && filename[0] == '/')
 			return filename;
-		return std::string(ps5melonds::kRoot) + "/" + filename;
+		return ps5melonds::Root() + "/" + filename;
 	}
 
 	FileHandle* OpenFile(const std::string& path, FileMode mode)

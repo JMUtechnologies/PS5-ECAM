@@ -7,7 +7,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: port/app/accounts.cpp:68 port/frontend/shell/settings.cpp:1614
+#: port/app/accounts.cpp:68 port/frontend/shell/settings.cpp:1627
 msgid "The Wii U has twelve accounts at most."
 msgstr "Wii U มี​บัญชี​ได้​สูงสุด 12 บัญชี"
 
@@ -95,58 +95,59 @@ msgctxt "status"
 msgid "Won't start"
 msgstr "เริ่ม​ไม่ได้"
 
-#: port/app/emulator.cpp:385
+#: port/app/emulator.cpp:393
 msgid "the PS5 Vulkan driver did not start"
 msgstr "ไดรเวอร์ Vulkan ของ PS5 ไม่​เริ่ม​ทำงาน"
 
-#: port/app/emulator.cpp:434
+#: port/app/emulator.cpp:477
 msgid "PS5CEMU-HAR cannot write to {0}. Is the HEN loaded?"
 msgstr "PS5CEMU-HAR เขียน​ลง {0} ไม่ได้ โหลด HEN แล้ว​หรือยัง"
 
-#: port/app/emulator.cpp:456
+#: port/app/emulator.cpp:499
 msgid "PS5CEMU-HAR cannot create the MLC folder {0}"
 msgstr "PS5CEMU-HAR สร้าง​โฟลเดอร์ MLC {0} ไม่ได้"
 
 #. why a Wii U game did not start
-#: port/app/emulator.cpp:615
+#: port/app/emulator.cpp:658
 msgid "The game's base files were not found."
 msgstr "ไม่พบ​ไฟล์​ตัว​เกม​หลัก"
 
-#: port/app/emulator.cpp:621
+#: port/app/emulator.cpp:664
 msgid "The game could not be mounted. Check that its files are still in the game files folder."
 msgstr "เมานต์​เกม​ไม่ได้ ตรวจสอบ​ว่า​ไฟล์​ของ​เกม​ยัง​อยู่​ใน​โฟลเดอร์​ไฟล์​เกม"
 
-#: port/app/emulator.cpp:626 port/azahar/core.cpp:556
+#: port/app/emulator.cpp:669 port/azahar/core.cpp:559
 #, menu
 msgid "The game could not be started."
 msgstr "เริ่ม​เกม​ไม่ได้"
 
-#: port/app/emulator.cpp:635
+#: port/app/emulator.cpp:678
 msgid "This is not a Wii U game PS5CEMU-HAR can start."
 msgstr "นี่​ไม่ใช่​เกม Wii U ที่ PS5CEMU-HAR เริ่ม​ได้"
 
-#: port/app/emulator.cpp:637
-msgid "Its disc key is missing from /data/ps5cemu/keys.txt."
-msgstr "ไม่มี​คีย์​แผ่น​ของ​เกม​นี้​ใน /data/ps5cemu/keys.txt"
+#. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+#: port/app/emulator.cpp:681
+msgid "Its disc key is missing from {0}/keys.txt."
+msgstr "ไม่มี​คีย์​แผ่น​ของ​เกม​นี้​ใน {0}/keys.txt"
 
-#: port/app/emulator.cpp:639
+#: port/app/emulator.cpp:683
 msgid "Its title.tik is missing."
 msgstr "ไม่มี​ไฟล์ title.tik ของ​เกม​นี้"
 
-#: port/app/emulator.cpp:644
+#: port/app/emulator.cpp:688
 msgid "The executable could not be started."
 msgstr "เรียกใช้​ไฟล์​โปรแกรม​ไม่ได้"
 
-#: port/app/emulator.cpp:657
+#: port/app/emulator.cpp:701
 msgid "The Vulkan renderer did not start: {0}"
 msgstr "ตัว​เรนเดอร์ Vulkan ไม่​เริ่ม​ทำงาน: {0}"
 
 #. the PS5's notification as a Wii U game starts
-#: port/app/emulator.cpp:715
+#: port/app/emulator.cpp:759
 msgid "Touchpad click + Options: the in-game menu (screens, picture, volume, controls, the library)"
 msgstr "กด​ทัชแพด + ปุ่ม​ตัวเลือก: เมนู​ใน​เกม (หน้าจอ ภาพ ระดับ​เสียง การ​ควบคุม คลัง​เกม)"
 
-#: port/app/emulator.cpp:874
+#: port/app/emulator.cpp:926
 msgid "PS5CEMU-HAR could not start itself again to show the library: start it again from the home screen."
 msgstr "PS5CEMU-HAR เริ่ม​ใหม่​เพื่อ​แสดง​คลัง​เกม​ไม่​ได้ ให้​เปิด​อีก​ครั้ง​จาก​หน้า​จอ​หลัก"
 
@@ -634,32 +635,32 @@ msgid "Wrestling"
 msgstr "มวย​ปล้ำ"
 
 #. the Wii U's controllers, by the names Nintendo gave them in the language
-#: port/app/ingame.cpp:145 port/frontend/actions.cpp:348
+#: port/app/ingame.cpp:145 port/frontend/actions.cpp:350
 #, menu
 msgid "Wii U GamePad"
 msgstr "Wii U GamePad"
 
-#: port/app/ingame.cpp:146 port/frontend/actions.cpp:349
+#: port/app/ingame.cpp:146 port/frontend/actions.cpp:351
 #, menu
 msgid "Wii U Pro Controller"
 msgstr "Wii U Pro Controller"
 
-#: port/app/ingame.cpp:147 port/frontend/actions.cpp:350
+#: port/app/ingame.cpp:147 port/frontend/actions.cpp:352
 #, menu
 msgid "Classic Controller"
 msgstr "Classic Controller"
 
-#: port/app/ingame.cpp:148 port/frontend/actions.cpp:351
+#: port/app/ingame.cpp:148 port/frontend/actions.cpp:353
 #, menu
 msgid "Wii Remote"
 msgstr "Wii Remote"
 
-#: port/app/ingame.cpp:149 port/frontend/actions.cpp:352
+#: port/app/ingame.cpp:149 port/frontend/actions.cpp:354
 #, menu
 msgid "Wii Remote + Nunchuk"
 msgstr "Wii Remote + Nunchuk"
 
-#: port/app/ingame.cpp:152 port/frontend/actions.cpp:355
+#: port/app/ingame.cpp:152 port/frontend/actions.cpp:357
 #, menu
 msgid "No controller"
 msgstr "ไม่มี​คอนโทรลเลอร์"
@@ -718,7 +719,7 @@ msgid "GamePad"
 msgstr "GamePad"
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
-#: port/app/ingame.cpp:192 port/app/ingame.cpp:335 port/app/ingame3ds.cpp:622 port/frontend/shell/settings.cpp:185
+#: port/app/ingame.cpp:192 port/app/ingame.cpp:336 port/app/ingame3ds.cpp:625 port/frontend/shell/settings.cpp:185
 #, menu
 msgid "Screens"
 msgstr "หน้าจอ"
@@ -809,7 +810,7 @@ msgstr "แบริเออร์​แม่นยำ"
 msgid "Off can raise the frame rate, but some games then flicker or show wrong shadows. It changes at once."
 msgstr "ปิด​แล้ว​อาจ​ได้​อัตรา​เฟรม​สูง​ขึ้น แต่​บาง​เกม​จะ​กะพริบ​หรือ​แสดง​เงา​ผิด มี​ผล​ทันที"
 
-#: port/app/ingame.cpp:207 port/frontend/shell/settings.cpp:474 port/frontend/shell/settings.cpp:495
+#: port/app/ingame.cpp:207 port/frontend/shell/settings.cpp:474 port/frontend/shell/settings.cpp:496
 #, menu
 msgid "Async shader compile"
 msgstr "คอมไพล์​เชดเดอร์​แบบ​อะซิงโครนัส"
@@ -889,13 +890,13 @@ msgstr "กำลัง​อ่าน​แพ็ก…"
 msgid "The community graphic packs have none for this game."
 msgstr "แพ็ก​กราฟิก​ชุมชน​ไม่มี​แพ็ก​สำหรับ​เกม​นี้"
 
-#: port/app/ingame.cpp:246 port/app/ingame.cpp:336 port/frontend/shell/classic.cpp:321 port/frontend/shell/classic.cpp:517 port/frontend/shell/eden.cpp:480 port/frontend/shell/eden.cpp:1375 port/frontend/shell/hub.cpp:231 port/frontend/shell/pages.cpp:305 port/frontend/shell/shell.cpp:1615
+#: port/app/ingame.cpp:246 port/app/ingame.cpp:337 port/frontend/shell/classic.cpp:321 port/frontend/shell/classic.cpp:517 port/frontend/shell/eden.cpp:480 port/frontend/shell/eden.cpp:1375 port/frontend/shell/hub.cpp:231 port/frontend/shell/pages.cpp:305 port/frontend/shell/shell.cpp:1615
 #, menu
 msgid "Graphic packs"
 msgstr "แพ็ก​กราฟิก"
 
 #. amiibo is Nintendo's name for its figures, as it writes it in the language
-#: port/app/ingame.cpp:246 port/app/ingame.cpp:290 port/app/ingame.cpp:336 port/app/ingame3ds.cpp:457 port/frontend/shell/classic.cpp:490
+#: port/app/ingame.cpp:246 port/app/ingame.cpp:290 port/app/ingame.cpp:337 port/app/ingame3ds.cpp:457 port/frontend/shell/classic.cpp:490
 #, menu
 msgid "None"
 msgstr "ไม่มี"
@@ -921,7 +922,7 @@ msgstr "เกม​จะ​เห็น​การ​เปลี่ยนแ
 msgid "Plugged in as a game starts, as in Cemu. Its figures are below while it is on."
 msgstr "เสียบ​เมื่อ​เกม​เริ่ม เหมือน​ใน Cemu ฟิกเกอร์​ของ​พอร์ทัล​อยู่​ด้านล่าง​ขณะ​เปิด"
 
-#: port/app/ingame.cpp:264 port/app/ingame3ds.cpp:596
+#: port/app/ingame.cpp:264 port/app/ingame3ds.cpp:599
 #, menu
 msgid "Empty"
 msgstr "ว่าง"
@@ -968,256 +969,257 @@ msgid "The game's sound. Left and Right change it by 10%."
 msgstr "เสียง​ของ​เกม ซ้าย​และ​ขวา​ปรับ​ครั้ง​ละ 10%"
 
 #. amiibo is Nintendo's name for its figures, as it writes it in the language
-#: port/app/ingame.cpp:290 port/app/ingame.cpp:336 port/app/ingame3ds.cpp:556 port/app/ingame3ds.cpp:557
+#: port/app/ingame.cpp:290 port/app/ingame.cpp:337 port/app/ingame3ds.cpp:558 port/app/ingame3ds.cpp:559
 #, menu
 msgid "Amiibo"
 msgstr "amiibo"
 
-#: port/app/ingame.cpp:292 port/app/ingame3ds.cpp:558
+#. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+#: port/app/ingame.cpp:293 port/app/ingame3ds.cpp:561
 #, menu
-msgid "Put amiibo dumps (.bin) in /data/ps5cemu/amiibo to scan them here."
-msgstr "ใส่​ไฟล์​ดัมพ์ amiibo (.bin) ใน /data/ps5cemu/amiibo เพื่อ​สแกน​ที่นี่"
+msgid "Put amiibo dumps (.bin) in {0}/amiibo to scan them here."
+msgstr "ใส่​ไฟล์​ดัมพ์ amiibo (.bin) ใน {0}/amiibo เพื่อ​สแกน​ที่นี่"
 
-#: port/app/ingame.cpp:293
+#: port/app/ingame.cpp:294
 #, menu
 msgid "Left and Right choose an amiibo dump; Cross touches it to the GamePad when the game asks for one."
 msgstr "ซ้าย​และ​ขวา​เลือก​ไฟล์​ดัมพ์ amiibo ปุ่มกากบาท​แตะ​กับ GamePad เมื่อ​เกม​ขอ"
 
 #. the DS's lid, closed or open
-#: port/app/ingame.cpp:294 port/app/ingame3ds.cpp:567 port/app/ingame3ds.cpp:578 port/frontend/shell/pages.cpp:812 port/frontend/shell/settings.cpp:187
+#: port/app/ingame.cpp:295 port/app/ingame3ds.cpp:570 port/app/ingame3ds.cpp:581 port/frontend/shell/pages.cpp:812 port/frontend/shell/settings.cpp:187
 #, menu
 msgid "Controls"
 msgstr "การ​ควบคุม"
 
-#: port/app/ingame.cpp:295
+#: port/app/ingame.cpp:296
 #, menu
 msgid "Each player's controller, motion, vibration, deadzones and A and B."
 msgstr "คอนโทรลเลอร์ การ​เคลื่อนไหว การ​สั่น เดดโซน และ A กับ B ของ​ผู้เล่น​แต่ละ​คน"
 
-#: port/app/ingame.cpp:296
+#: port/app/ingame.cpp:297
 #, menu
 msgid "Player"
 msgstr "ผู้เล่น"
 
-#: port/app/ingame.cpp:296
+#: port/app/ingame.cpp:297
 #, menu
 msgid "{0} (no DualSense)"
 msgstr "{0} (ไม่มี DualSense)"
 
-#: port/app/ingame.cpp:297
+#: port/app/ingame.cpp:298
 #, menu
 msgid "Whose controller the settings below are: Left and Right choose the player."
 msgstr "การ​ตั้งค่า​ด้านล่าง​เป็น​ของ​คอนโทรลเลอร์​ผู้เล่น​คน​ไหน: ซ้าย​และ​ขวา​เลือก​ผู้เล่น"
 
-#: port/app/ingame.cpp:298 port/frontend/shell/pages.cpp:451 port/frontend/shell/pages.cpp:489 port/frontend/shell/pages.cpp:596
+#: port/app/ingame.cpp:299 port/frontend/shell/pages.cpp:451 port/frontend/shell/pages.cpp:489 port/frontend/shell/pages.cpp:596
 #, menu
 msgid "Emulated controller"
 msgstr "คอนโทรลเลอร์​จำลอง"
 
-#: port/app/ingame.cpp:299
+#: port/app/ingame.cpp:300
 #, menu
 msgid "What the game sees in this player's hands. Most games want the GamePad for player 1."
 msgstr "สิ่ง​ที่​เกม​เห็น​ใน​มือ​ผู้เล่น​นี้ เกม​ส่วนใหญ่​ต้องการ GamePad สำหรับ​ผู้เล่น 1"
 
-#: port/app/ingame.cpp:300 port/app/ingame3ds.cpp:579 port/frontend/shell/pages.cpp:451 port/frontend/shell/pages.cpp:597 port/frontend/shell/settings.cpp:599
+#: port/app/ingame.cpp:301 port/app/ingame3ds.cpp:582 port/frontend/shell/pages.cpp:451 port/frontend/shell/pages.cpp:597 port/frontend/shell/settings.cpp:600
 #, menu
 msgid "Motion controls"
 msgstr "ควบคุม​ด้วย​การ​เคลื่อนไหว"
 
-#: port/app/ingame.cpp:300 port/frontend/shell/pages.cpp:597
+#: port/app/ingame.cpp:301 port/frontend/shell/pages.cpp:597
 #, menu
 msgid "None on this one"
 msgstr "ไม่มี​ใน​คอนโทรลเลอร์​นี้"
 
-#: port/app/ingame.cpp:301
+#: port/app/ingame.cpp:302
 #, menu
 msgid "The DualSense's gyroscope and accelerometer, for the games that aim or steer by tilting."
 msgstr "ไจโรสโคป​และ​มาตร​วัด​ความ​เร่ง​ของ DualSense สำหรับ​เกม​ที่​เล็ง​หรือ​บังคับ​ด้วย​การ​เอียง"
 
-#: port/app/ingame.cpp:302 port/frontend/shell/pages.cpp:451 port/frontend/shell/pages.cpp:605 port/frontend/shell/settings.cpp:563
+#: port/app/ingame.cpp:303 port/frontend/shell/pages.cpp:451 port/frontend/shell/pages.cpp:605 port/frontend/shell/settings.cpp:564
 #, menu
 msgid "Vibration"
 msgstr "การ​สั่น"
 
-#: port/app/ingame.cpp:303
+#: port/app/ingame.cpp:304
 #, menu
 msgid "How strongly the DualSense rumbles. Left and Right change it by 10%."
 msgstr "ความ​แรง​ของ​การ​สั่น​ของ DualSense ซ้าย​และ​ขวา​ปรับ​ครั้ง​ละ 10%"
 
-#: port/app/ingame.cpp:304 port/frontend/shell/pages.cpp:452 port/frontend/shell/pages.cpp:608
+#: port/app/ingame.cpp:305 port/frontend/shell/pages.cpp:452 port/frontend/shell/pages.cpp:608
 #, menu
 msgid "Left stick deadzone"
 msgstr "เดดโซน​สติ๊ก​ซ้าย"
 
-#: port/app/ingame.cpp:305
+#: port/app/ingame.cpp:306
 #, menu
 msgid "How far the left stick moves before the game sees it. Raise it if a character drifts."
 msgstr "สติ๊ก​ซ้าย​ต้อง​ขยับ​ไกล​แค่ไหน​เกม​จึง​จะ​รับรู้ เพิ่ม​ค่า​หาก​ตัวละคร​เลื่อน​ไป​เอง"
 
-#: port/app/ingame.cpp:306 port/frontend/shell/pages.cpp:452 port/frontend/shell/pages.cpp:611
+#: port/app/ingame.cpp:307 port/frontend/shell/pages.cpp:452 port/frontend/shell/pages.cpp:611
 #, menu
 msgid "Right stick deadzone"
 msgstr "เดดโซน​สติ๊ก​ขวา"
 
-#: port/app/ingame.cpp:307
+#: port/app/ingame.cpp:308
 #, menu
 msgid "How far the right stick moves before the game sees it. Raise it if the camera drifts."
 msgstr "สติ๊ก​ขวา​ต้อง​ขยับ​ไกล​แค่ไหน​เกม​จึง​จะ​รับรู้ เพิ่ม​ค่า​หาก​กล้อง​เลื่อน​ไป​เอง"
 
-#: port/app/ingame.cpp:308 port/app/ingame3ds.cpp:573 port/app/ingame3ds.cpp:583 port/frontend/shell/pages.cpp:452 port/frontend/shell/pages.cpp:617 port/frontend/shell/settings.cpp:576 port/frontend/shell/welcome.cpp:58
+#: port/app/ingame.cpp:309 port/app/ingame3ds.cpp:576 port/app/ingame3ds.cpp:586 port/frontend/shell/pages.cpp:452 port/frontend/shell/pages.cpp:617 port/frontend/shell/settings.cpp:577 port/frontend/shell/welcome.cpp:58
 #, menu
 msgid "A and B"
 msgstr "A และ B"
 
-#: port/app/ingame.cpp:308 port/app/ingame3ds.cpp:564 port/frontend/shell/pages.cpp:619 port/frontend/shell/settings.cpp:576 port/frontend/shell/welcome.cpp:59
+#: port/app/ingame.cpp:309 port/app/ingame3ds.cpp:567 port/frontend/shell/pages.cpp:619 port/frontend/shell/settings.cpp:577 port/frontend/shell/welcome.cpp:59
 #, menu
 msgid "A on Circle"
 msgstr "A ที่​ปุ่มวงกลม"
 
-#: port/app/ingame.cpp:308 port/app/ingame3ds.cpp:564 port/frontend/shell/pages.cpp:619 port/frontend/shell/settings.cpp:576 port/frontend/shell/welcome.cpp:59
+#: port/app/ingame.cpp:309 port/app/ingame3ds.cpp:567 port/frontend/shell/pages.cpp:619 port/frontend/shell/settings.cpp:577 port/frontend/shell/welcome.cpp:59
 #, menu
 msgid "A on Cross"
 msgstr "A ที่​ปุ่มกากบาท"
 
-#: port/app/ingame.cpp:309
+#: port/app/ingame.cpp:310
 #, menu
 msgid "A on Circle as on the Wii U, or on Cross, with X and Y swapped to match. Every other button: Settings > Controls in the launcher."
 msgstr "A ที่​ปุ่มวงกลม​เหมือน Wii U หรือ​ที่​ปุ่มกากบาท โดย​สลับ X กับ Y ให้​ตรงกัน ปุ่ม​อื่น​ทั้งหมด: การ​ตั้งค่า > การ​ควบคุม ใน​ลอนเชอร์"
 
-#: port/app/ingame.cpp:310 port/frontend/shell/pages.cpp:452 port/frontend/shell/pages.cpp:627 port/frontend/shell/welcome.cpp:87
+#: port/app/ingame.cpp:311 port/frontend/shell/pages.cpp:452 port/frontend/shell/pages.cpp:627 port/frontend/shell/welcome.cpp:87
 #, menu
 msgid "Touchpad click"
 msgstr "การ​กด​ทัชแพด"
 
 #. what a Wii U player's touchpad click does (as Settings > Controls > Player names them)
-#: port/app/ingame.cpp:311 port/frontend/shell/pages.cpp:54 port/frontend/shell/welcome.cpp:26
+#: port/app/ingame.cpp:312 port/frontend/shell/pages.cpp:54 port/frontend/shell/welcome.cpp:26
 #, menu
 msgid "Touches the screen"
 msgstr "แตะ​หน้าจอ"
 
 #. what a Wii U player's touchpad click does (as Settings > Controls > Player names them)
-#: port/app/ingame.cpp:312 port/frontend/shell/pages.cpp:54 port/frontend/shell/welcome.cpp:26
+#: port/app/ingame.cpp:313 port/frontend/shell/pages.cpp:54 port/frontend/shell/welcome.cpp:26
 #, menu
 msgid "Presses a button"
 msgstr "กด​ปุ่ม"
 
-#: port/app/ingame.cpp:312 port/frontend/shell/pages.cpp:628
+#: port/app/ingame.cpp:313 port/frontend/shell/pages.cpp:628
 #, menu
 msgid "{0}: {1}"
 msgstr "{0}: {1}"
 
 #. the languages the emulated 3DS can be set to
 #. what a Wii U player's touchpad click does (as Settings > Controls > Player names them)
-#: port/app/ingame.cpp:312 port/frontend/shell/pages.cpp:54 port/frontend/shell/settings.cpp:45 port/frontend/shell/settings.cpp:48 port/frontend/shell/welcome.cpp:26
+#: port/app/ingame.cpp:313 port/frontend/shell/pages.cpp:54 port/frontend/shell/settings.cpp:45 port/frontend/shell/settings.cpp:48 port/frontend/shell/welcome.cpp:26
 #, menu
 msgid "Automatic"
 msgstr "อัตโนมัติ"
 
-#: port/app/ingame.cpp:312 port/frontend/shell/pages.cpp:628
+#: port/app/ingame.cpp:313 port/frontend/shell/pages.cpp:628
 #, menu
 msgid "a button"
 msgstr "ปุ่ม"
 
-#: port/app/ingame.cpp:312 port/frontend/shell/pages.cpp:628
+#: port/app/ingame.cpp:313 port/frontend/shell/pages.cpp:628
 #, menu
 msgid "a touch"
 msgstr "การ​แตะ"
 
-#: port/app/ingame.cpp:314
+#: port/app/ingame.cpp:315
 #, menu
 msgid "Touches the GamePad's screen, or presses the button set to Touchpad click (- if none is set). The shortcuts still work."
 msgstr "แตะ​หน้าจอ GamePad หรือ​กด​ปุ่ม​ที่​ตั้ง​ไว้​ให้​การ​กด​ทัชแพด (- หาก​ไม่ได้​ตั้ง) ทาง​ลัด​ยัง​ใช้​ได้"
 
 #. the remote touch screen's row: which screen a phone or a tablet shows
-#: port/app/ingame.cpp:317 port/frontend/shell/settings.cpp:627
+#: port/app/ingame.cpp:318 port/frontend/shell/settings.cpp:628
 #, menu
 msgid "The GamePad's screen"
 msgstr "หน้าจอ GamePad"
 
-#: port/app/ingame.cpp:320 port/app/ingame3ds.cpp:589
+#: port/app/ingame.cpp:321 port/app/ingame3ds.cpp:592
 #, menu
 msgid "Quit to the home screen"
 msgstr "ออก​ไป​ที่​หน้า​จอ​หลัก"
 
-#: port/app/ingame.cpp:321 port/app/ingame3ds.cpp:590
+#: port/app/ingame.cpp:322 port/app/ingame3ds.cpp:593
 #, menu
 msgid "Leaves the game and closes PS5CEMU-HAR, as its home screen tile asks. What you have not saved in the game is lost, so Cross is held."
 msgstr "ออก​จาก​เกม​และ​ปิด PS5CEMU-HAR ตาม​ที่​ไอคอน​ของ​เกม​บน​หน้า​จอ​หลัก​กำหนด สิ่ง​ที่​ยัง​ไม่ได้​บันทึก​ใน​เกม​จะ​หาย​ไป จึง​ต้อง​กด​ปุ่มกากบาท​ค้าง​ไว้"
 
-#: port/app/ingame.cpp:322 port/app/ingame3ds.cpp:591
+#: port/app/ingame.cpp:323 port/app/ingame3ds.cpp:594
 #, menu
 msgid "Quit to the library"
 msgstr "ออก​ไป​ที่​คลัง​เกม"
 
-#: port/app/ingame.cpp:323 port/app/ingame3ds.cpp:592
+#: port/app/ingame.cpp:324 port/app/ingame3ds.cpp:595
 #, menu
 msgid "Leaves the game for the library. What you have not saved in the game is lost, so Cross is held."
 msgstr "ออก​จาก​เกม​ไป​ที่​คลัง​เกม สิ่ง​ที่​ยัง​ไม่ได้​บันทึก​ใน​เกม​จะ​หาย​ไป จึง​ต้อง​กด​ปุ่มกากบาท​ค้าง​ไว้"
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
 #. the quick actions: big tiles at the top of the in-game menu, a word or two each
-#: port/app/ingame.cpp:335 port/app/ingame3ds.cpp:619
+#: port/app/ingame.cpp:336 port/app/ingame3ds.cpp:622
 #, menu
 msgid "Resume"
 msgstr "เล่น​ต่อ"
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
-#: port/app/ingame.cpp:335
+#: port/app/ingame.cpp:336
 #, menu
 msgid "GamePad main"
 msgstr "GamePad เป็น​หลัก"
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
-#: port/app/ingame.cpp:335
+#: port/app/ingame.cpp:336
 #, menu
 msgid "TV main"
 msgstr "ทีวี​เป็น​หลัก"
 
-#: port/app/ingame.cpp:336
+#: port/app/ingame.cpp:337
 #, menu
 msgid "Scan"
 msgstr "สแกน"
 
 #. {0} is an amiibo dump's file name
-#: port/app/ingame.cpp:396 port/azahar/core.cpp:269
+#: port/app/ingame.cpp:397 port/azahar/core.cpp:272
 #, menu
 msgid "Scanned {0}"
 msgstr "สแกน {0} แล้ว"
 
 #. {0} is an amiibo dump's file name
-#: port/app/ingame.cpp:396
+#: port/app/ingame.cpp:397
 #, menu
 msgid "Not scanned (error {0})"
 msgstr "สแกน​ไม่ได้ (ข้อผิดพลาด {0})"
 
 #. the in-game menu's badge: the game goes on behind the menu (Cemu cannot pause it)
-#: port/app/ingame.cpp:556
+#: port/app/ingame.cpp:557
 #, menu
 msgid "Running"
 msgstr "กำลัง​ทำงาน"
 
-#: port/app/ingame.cpp:566 port/app/ingame3ds.cpp:765 port/frontend/shell/eden.cpp:488 port/frontend/shell/eden.cpp:497 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1224 port/frontend/shell/shell.cpp:1228 port/frontend/shell/shell.cpp:1262 port/frontend/shell/shell.cpp:1278 port/frontend/shell/shell.cpp:1286 port/frontend/shell/shell.cpp:1294 port/frontend/shell/shell.cpp:1297 port/frontend/shell/shell.cpp:2201
+#: port/app/ingame.cpp:567 port/app/ingame3ds.cpp:768 port/frontend/shell/eden.cpp:488 port/frontend/shell/eden.cpp:497 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1224 port/frontend/shell/shell.cpp:1228 port/frontend/shell/shell.cpp:1262 port/frontend/shell/shell.cpp:1278 port/frontend/shell/shell.cpp:1286 port/frontend/shell/shell.cpp:1294 port/frontend/shell/shell.cpp:1297 port/frontend/shell/shell.cpp:2201
 #, menu
 msgid "Choose"
 msgstr "เลือก"
 
-#: port/app/ingame.cpp:566 port/app/ingame3ds.cpp:765 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1244 port/frontend/shell/shell.cpp:1287 port/frontend/shell/shell.cpp:1291 port/frontend/shell/shell.cpp:1294 port/frontend/shell/shell.cpp:1297 port/frontend/shell/shell.cpp:1308
+#: port/app/ingame.cpp:567 port/app/ingame3ds.cpp:768 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1244 port/frontend/shell/shell.cpp:1287 port/frontend/shell/shell.cpp:1291 port/frontend/shell/shell.cpp:1294 port/frontend/shell/shell.cpp:1297 port/frontend/shell/shell.cpp:1308
 #, menu
 msgid "Change"
 msgstr "เปลี่ยน"
 
-#: port/app/ingame.cpp:566 port/app/ingame3ds.cpp:765
+#: port/app/ingame.cpp:567 port/app/ingame3ds.cpp:768
 #, menu
 msgid "Back to the game"
 msgstr "กลับ​สู่​เกม"
 
-#: port/app/ingame.cpp:566 port/app/ingame3ds.cpp:765 port/frontend/shell/eden.cpp:477 port/frontend/shell/eden.cpp:504 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:509 port/frontend/shell/installs.cpp:329 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1245 port/frontend/shell/shell.cpp:1254 port/frontend/shell/shell.cpp:1279 port/frontend/shell/shell.cpp:1286 port/frontend/shell/shell.cpp:1287 port/frontend/shell/shell.cpp:1291 port/frontend/shell/shell.cpp:1295 port/frontend/shell/shell.cpp:1297 port/frontend/shell/shell.cpp:1301 port/frontend/shell/shell.cpp:1305 port/frontend/shell/shell.cpp:1310 port/frontend/shell/shell.cpp:1311
+#: port/app/ingame.cpp:567 port/app/ingame3ds.cpp:768 port/frontend/shell/eden.cpp:477 port/frontend/shell/eden.cpp:504 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:509 port/frontend/shell/installs.cpp:329 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1245 port/frontend/shell/shell.cpp:1254 port/frontend/shell/shell.cpp:1279 port/frontend/shell/shell.cpp:1286 port/frontend/shell/shell.cpp:1287 port/frontend/shell/shell.cpp:1291 port/frontend/shell/shell.cpp:1295 port/frontend/shell/shell.cpp:1297 port/frontend/shell/shell.cpp:1301 port/frontend/shell/shell.cpp:1305 port/frontend/shell/shell.cpp:1310 port/frontend/shell/shell.cpp:1311
 #, menu
 msgid "Back"
 msgstr "กลับ"
 
 #. the in-game menu's top: the Wii U account the game runs on ({0}: its name)
-#: port/app/ingame.cpp:610
+#: port/app/ingame.cpp:611
 #, menu
 msgid "{0}'s saves"
 msgstr "เซฟ​ของ {0}"
@@ -1290,7 +1292,7 @@ msgstr "บน"
 msgid "Which screen takes the top screen's place. In the game, touchpad click + L1 swaps them."
 msgstr "หน้าจอ​ไหน​อยู่​ที่​ตำแหน่ง​จอ​บน ใน​เกม กด​ทัชแพด + L1 เพื่อ​สลับ"
 
-#: port/app/ingame3ds.cpp:473 port/frontend/shell/settings.cpp:533
+#: port/app/ingame3ds.cpp:473 port/frontend/shell/settings.cpp:534
 #, menu
 msgid "Border"
 msgstr "กรอบ"
@@ -1305,7 +1307,7 @@ msgstr "ภาพ​ตกแต่ง​รอบ​หน้าจอ ไม�
 msgid "The screen filter and the performance overlay."
 msgstr "ฟิลเตอร์​หน้าจอ​และ​การ​แสดง​ประสิทธิภาพ"
 
-#: port/app/ingame3ds.cpp:478 port/frontend/shell/settings.cpp:513
+#: port/app/ingame3ds.cpp:478 port/frontend/shell/settings.cpp:514
 #, menu
 msgid "Screen filter"
 msgstr "ฟิลเตอร์​หน้าจอ"
@@ -1383,7 +1385,7 @@ msgstr "เกม​เล่น​ได้​เร็ว​แค่ไหน
 msgid "The emulated CPU's clock, and how fast the game may run."
 msgstr "สัญญาณ​นาฬิกา​ของ CPU จำลอง และ​เกม​เล่น​ได้​เร็ว​แค่ไหน"
 
-#: port/app/ingame3ds.cpp:505 port/frontend/shell/settings.cpp:667
+#: port/app/ingame3ds.cpp:505 port/frontend/shell/settings.cpp:668
 #, menu
 msgid "CPU clock"
 msgstr "สัญญาณ​นาฬิกา CPU"
@@ -1398,7 +1400,7 @@ msgstr "ต่ำ​กว่า 100% ช่วย​ให้​เกม​ท
 msgid "Save states"
 msgstr "สถานะ​ที่​บันทึก"
 
-#: port/app/ingame3ds.cpp:512 port/app/ingame3ds.cpp:620 port/app/ingame3ds.cpp:621
+#: port/app/ingame3ds.cpp:512 port/app/ingame3ds.cpp:623 port/app/ingame3ds.cpp:624
 #, menu
 msgid "Slot {0}"
 msgstr "ช่อง {0}"
@@ -1460,206 +1462,208 @@ msgstr "ปุ่มกากบาท ซ้าย หรือ​ขวา​�
 msgid "No cheats for this game"
 msgstr "ไม่มี​สูตร​โกง​สำหรับ​เกม​นี้"
 
-#: port/app/ingame3ds.cpp:528
+#. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+#: port/app/ingame3ds.cpp:529
 #, menu
-msgid "Put them in /data/ps5cemu/melonds/cheats/<game file>.mch (the game's file name, .mch for .nds), then start the game again."
-msgstr "ใส่​ไว้​ใน /data/ps5cemu/melonds/cheats/<ไฟล์เกม>.mch (ชื่อ​ไฟล์​ของ​เกม ใช้ .mch แทน .nds) แล้ว​เริ่ม​เกม​ใหม่"
+msgid "Put them in {0}/melonds/cheats/<game file>.mch (the game's file name, .mch for .nds), then start the game again."
+msgstr "ใส่​ไว้​ใน {0}/melonds/cheats/<ไฟล์เกม>.mch (ชื่อ​ไฟล์​ของ​เกม ใช้ .mch แทน .nds) แล้ว​เริ่ม​เกม​ใหม่"
 
-#: port/app/ingame3ds.cpp:530
+#. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+#: port/app/ingame3ds.cpp:532
 #, menu
-msgid "Put them in /data/ps5cemu/azahar/cheats/<title ID>.txt, then start the game again."
-msgstr "ใส่​ไว้​ใน /data/ps5cemu/azahar/cheats/<title ID>.txt แล้ว​เริ่ม​เกม​ใหม่"
+msgid "Put them in {0}/azahar/cheats/<title ID>.txt, then start the game again."
+msgstr "ใส่​ไว้​ใน {0}/azahar/cheats/<title ID>.txt แล้ว​เริ่ม​เกม​ใหม่"
 
 #. how many of the game's cheats are on: {0} of {1}
-#: port/app/ingame3ds.cpp:533 port/frontend/shell/eden.cpp:1480
+#: port/app/ingame3ds.cpp:535 port/frontend/shell/eden.cpp:1480
 #, menu
 msgid "{0} of {1} on"
 msgstr "เปิด {0} จาก {1}"
 
-#: port/app/ingame3ds.cpp:539
+#: port/app/ingame3ds.cpp:541
 #, menu
 msgid "Achievements"
 msgstr "ความสำเร็จ"
 
-#: port/app/ingame3ds.cpp:539 port/frontend/shell/classic.cpp:462 port/frontend/shell/installs.cpp:376 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:823 port/frontend/shell/pages.cpp:1200
+#: port/app/ingame3ds.cpp:541 port/frontend/shell/classic.cpp:462 port/frontend/shell/installs.cpp:376 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:823 port/frontend/shell/pages.cpp:1200
 #, menu
 msgid "{0} of {1}"
 msgstr "{0} จาก {1}"
 
-#: port/app/ingame3ds.cpp:540
+#: port/app/ingame3ds.cpp:542
 #, menu
 msgid "This game's RetroAchievements."
 msgstr "ความสำเร็จ RetroAchievements ของ​เกม​นี้"
 
-#: port/app/ingame3ds.cpp:546
+#: port/app/ingame3ds.cpp:548
 #, menu
 msgid "Earned"
 msgstr "ได้รับ​แล้ว"
 
-#: port/app/ingame3ds.cpp:546
+#: port/app/ingame3ds.cpp:548
 #, menu
 msgid "Earned {0}"
 msgstr "ได้รับ {0}"
 
-#: port/app/ingame3ds.cpp:546
+#: port/app/ingame3ds.cpp:548
 #, menu
 msgid "{0} point"
 msgid_plural "{0} points"
 msgstr[0] "{0} คะแนน"
 
-#: port/app/ingame3ds.cpp:550
+#: port/app/ingame3ds.cpp:552
 #, menu
 msgid "No achievements"
 msgstr "ไม่มี​ความสำเร็จ"
 
-#: port/app/ingame3ds.cpp:551
+#: port/app/ingame3ds.cpp:553
 #, menu
 msgid "RetroAchievements lists a game's achievements once it has a set for it."
 msgstr "RetroAchievements จะ​แสดง​ความสำเร็จ​ของ​เกม​เมื่อ​มี​ชุด​สำหรับ​เกม​นั้น"
 
-#: port/app/ingame3ds.cpp:556
+#: port/app/ingame3ds.cpp:558
 #, menu
 msgid "Hold an amiibo dump to the 3DS's reader when the game asks for one."
 msgstr "แตะ​ไฟล์​ดัมพ์ amiibo กับ​เครื่อง​อ่าน​ของ 3DS เมื่อ​เกม​ขอ"
 
-#: port/app/ingame3ds.cpp:559
+#: port/app/ingame3ds.cpp:562
 #, menu
 msgid "Left and Right choose an amiibo dump; Cross holds it to the reader."
 msgstr "ซ้าย​และ​ขวา​เลือก​ไฟล์​ดัมพ์ amiibo ปุ่มกากบาท​แตะ​กับ​เครื่อง​อ่าน"
 
-#: port/app/ingame3ds.cpp:560
+#: port/app/ingame3ds.cpp:563
 #, menu
 msgid "Take the amiibo away"
 msgstr "นำ amiibo ออก"
 
-#: port/app/ingame3ds.cpp:560
+#: port/app/ingame3ds.cpp:563
 #, menu
 msgid "Takes the amiibo off the reader, as lifting it off would."
 msgstr "นำ amiibo ออก​จาก​เครื่อง​อ่าน เหมือน​ยก​ออก"
 
 #. the DS's lid, closed or open
-#: port/app/ingame3ds.cpp:567
+#: port/app/ingame3ds.cpp:570
 #, menu
 msgid "Lid closed"
 msgstr "ฝา​ปิด​อยู่"
 
-#: port/app/ingame3ds.cpp:568
+#: port/app/ingame3ds.cpp:571
 #, menu
 msgid "The lid, the left stick's deadzone and where A and B are. Hold R3 to blow into the microphone."
 msgstr "ฝา​เครื่อง เดดโซน​สติ๊ก​ซ้าย และ​ตำแหน่ง A กับ B กด R3 ค้าง​ไว้​เพื่อ​เป่า​ไมโครโฟน"
 
-#: port/app/ingame3ds.cpp:569
+#: port/app/ingame3ds.cpp:572
 #, menu
 msgid "Lid"
 msgstr "ฝา​เครื่อง"
 
-#: port/app/ingame3ds.cpp:569
+#: port/app/ingame3ds.cpp:572
 #, menu
 msgid "Closed"
 msgstr "ปิด"
 
-#: port/app/ingame3ds.cpp:569 port/frontend/shell/eden.cpp:477 port/frontend/shell/eden.cpp:490 port/frontend/shell/eden.cpp:499 port/frontend/shell/eden.cpp:504 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:1298 port/frontend/shell/shell.cpp:1237 port/frontend/shell/shell.cpp:1266 port/frontend/shell/shell.cpp:1275 port/frontend/shell/shell.cpp:1284 port/frontend/shell/shell.cpp:1290 port/frontend/shell/shell.cpp:1305
+#: port/app/ingame3ds.cpp:572 port/frontend/shell/eden.cpp:477 port/frontend/shell/eden.cpp:490 port/frontend/shell/eden.cpp:499 port/frontend/shell/eden.cpp:504 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:1298 port/frontend/shell/shell.cpp:1237 port/frontend/shell/shell.cpp:1266 port/frontend/shell/shell.cpp:1275 port/frontend/shell/shell.cpp:1284 port/frontend/shell/shell.cpp:1290 port/frontend/shell/shell.cpp:1305
 #, menu
 msgid "Open"
 msgstr "เปิด"
 
-#: port/app/ingame3ds.cpp:570
+#: port/app/ingame3ds.cpp:573
 #, menu
 msgid "Closes the DS's lid, for games that ask you to; the DS sleeps until it is opened. Choose it again to open it."
 msgstr "ปิด​ฝา DS สำหรับ​เกม​ที่​ขอ​ให้​ปิด DS จะ​พัก​จน​กว่า​จะ​เปิด เลือก​อีก​ครั้ง​เพื่อ​เปิด"
 
-#: port/app/ingame3ds.cpp:571 port/app/ingame3ds.cpp:581 port/frontend/shell/settings.cpp:601
+#: port/app/ingame3ds.cpp:574 port/app/ingame3ds.cpp:584 port/frontend/shell/settings.cpp:602
 #, menu
 msgid "Stick deadzone"
 msgstr "เดดโซน​สติ๊ก"
 
-#: port/app/ingame3ds.cpp:572
+#: port/app/ingame3ds.cpp:575
 #, menu
 msgid "How far the left stick moves before it presses the D-pad. Raise it if something drifts when you let go."
 msgstr "สติ๊ก​ซ้าย​ต้อง​ขยับ​ไกล​แค่ไหน​จึง​จะ​กด​ปุ่ม​ทิศทาง เพิ่ม​ค่า​หาก​มี​อะไร​เลื่อน​เอง​เมื่อ​ปล่อย"
 
-#: port/app/ingame3ds.cpp:574
+#: port/app/ingame3ds.cpp:577
 #, menu
 msgid "A on Circle and B on Cross, where the DS has them, or the other way round, with X and Y swapped to match."
 msgstr "A ที่​ปุ่มวงกลม​และ B ที่​ปุ่มกากบาท ตาม​ตำแหน่ง​บน DS หรือ​กลับกัน โดย​สลับ X กับ Y ให้​ตรงกัน"
 
-#: port/app/ingame3ds.cpp:578
+#: port/app/ingame3ds.cpp:581
 #, menu
 msgid "Motion controls, the sticks' deadzone and where A and B are."
 msgstr "ควบคุม​ด้วย​การ​เคลื่อนไหว เดดโซน​สติ๊ก และ​ตำแหน่ง A กับ B"
 
-#: port/app/ingame3ds.cpp:580
+#: port/app/ingame3ds.cpp:583
 #, menu
 msgid "The DualSense's gyroscope and accelerometer as the 3DS's, for the games that aim or steer by tilting."
 msgstr "ไจโรสโคป​และ​มาตร​วัด​ความ​เร่ง​ของ DualSense แทน​ของ 3DS สำหรับ​เกม​ที่​เล็ง​หรือ​บังคับ​ด้วย​การ​เอียง"
 
-#: port/app/ingame3ds.cpp:582
+#: port/app/ingame3ds.cpp:585
 #, menu
 msgid "How far a stick moves before the game sees it. Raise it if something drifts when you let go."
 msgstr "สติ๊ก​ต้อง​ขยับ​ไกล​แค่ไหน​เกม​จึง​จะ​รับรู้ เพิ่ม​ค่า​หาก​มี​อะไร​เลื่อน​เอง​เมื่อ​ปล่อย"
 
-#: port/app/ingame3ds.cpp:584
+#: port/app/ingame3ds.cpp:587
 #, menu
 msgid "A on Circle and B on Cross, where the 3DS has them, or the other way round, with X and Y swapped to match."
 msgstr "A ที่​ปุ่มวงกลม​และ B ที่​ปุ่มกากบาท ตาม​ตำแหน่ง​บน 3DS หรือ​กลับกัน โดย​สลับ X กับ Y ให้​ตรงกัน"
 
-#: port/app/ingame3ds.cpp:596
+#: port/app/ingame3ds.cpp:599
 #, menu
 msgid "Load this slot"
 msgstr "โหลด​ช่อง​นี้"
 
-#: port/app/ingame3ds.cpp:597
+#: port/app/ingame3ds.cpp:600
 #, menu
 msgid "Goes back to the moment the slot was saved. What you did since is lost, so Cross is held."
 msgstr "กลับ​ไป​ยัง​ตอน​ที่​บันทึก​ช่อง​นี้ สิ่ง​ที่​ทำ​หลัง​จาก​นั้น​จะ​หาย​ไป จึง​ต้อง​กด​ปุ่มกากบาท​ค้าง​ไว้"
 
-#: port/app/ingame3ds.cpp:602 port/frontend/shell/settings.cpp:627
+#: port/app/ingame3ds.cpp:605 port/frontend/shell/settings.cpp:628
 #, menu
 msgid "The touch screen"
 msgstr "หน้าจอ​สัมผัส"
 
-#: port/app/ingame3ds.cpp:602 port/frontend/shell/settings.cpp:627
+#: port/app/ingame3ds.cpp:605 port/frontend/shell/settings.cpp:628
 #, menu
 msgid "The bottom screen"
 msgstr "จอ​ล่าง"
 
-#: port/app/ingame3ds.cpp:620
+#: port/app/ingame3ds.cpp:623
 #, menu
 msgid "Save state"
 msgstr "บันทึก​สถานะ"
 
-#: port/app/ingame3ds.cpp:621
+#: port/app/ingame3ds.cpp:624
 #, menu
 msgid "Load state"
 msgstr "โหลด​สถานะ"
 
-#: port/app/ingame3ds.cpp:621
+#: port/app/ingame3ds.cpp:624
 #, menu
 msgid "Slot {0} empty"
 msgstr "ช่อง {0} ว่าง"
 
-#: port/app/ingame3ds.cpp:628
+#: port/app/ingame3ds.cpp:631
 #, menu
 msgid "Slot {0}: {1}"
 msgstr "ช่อง {0}: {1}"
 
-#: port/app/ingame3ds.cpp:697
+#: port/app/ingame3ds.cpp:700
 #, menu
 msgid "Slot {0} is empty"
 msgstr "ช่อง {0} ว่าง​อยู่"
 
-#: port/app/ingame3ds.cpp:705
+#: port/app/ingame3ds.cpp:708
 #, menu
 msgid "Saving…"
 msgstr "กำลัง​บันทึก…"
 
-#: port/app/ingame3ds.cpp:705
+#: port/app/ingame3ds.cpp:708
 #, menu
 msgid "Loading…"
 msgstr "กำลัง​โหลด…"
 
 #. the in-game menu's badge: the game waits behind the menu
-#: port/app/ingame3ds.cpp:758
+#: port/app/ingame3ds.cpp:761
 #, menu
 msgid "Paused"
 msgstr "หยุด​ชั่วคราว"
@@ -1740,7 +1744,7 @@ msgstr "โฟลเดอร์ meta ไม่ได้​ระบุ​ไต
 msgid "This is where it is installed already."
 msgstr "ติดตั้ง​อยู่​ที่นี่​แล้ว"
 
-#: port/app/install.cpp:451 port/azahar/core.cpp:952
+#: port/app/install.cpp:451 port/azahar/core.cpp:961
 #, menu
 msgid "An install is already running."
 msgstr "มี​การ​ติดตั้ง​ทำงาน​อยู่​แล้ว"
@@ -2125,7 +2129,7 @@ msgstr "ติดตั้ง​ไม่ได้: {0}"
 msgid "The new packs could not take the old ones' place"
 msgstr "แพ็ก​ใหม่​แทนที่​แพ็ก​เก่า​ไม่ได้"
 
-#: port/app/remote_menu.h:28 port/frontend/shell/settings.cpp:189 port/frontend/shell/settings.cpp:628 port/frontend/shell/settings.cpp:2012
+#: port/app/remote_menu.h:28 port/frontend/shell/settings.cpp:189 port/frontend/shell/settings.cpp:629 port/frontend/shell/settings.cpp:2025
 #, menu
 msgid "Remote touch screen"
 msgstr "หน้าจอ​สัมผัส​ระยะไกล"
@@ -2135,7 +2139,7 @@ msgstr "หน้าจอ​สัมผัส​ระยะไกล"
 msgid "A phone or tablet on the PS5's network. Sound stays on the PS5."
 msgstr "โทรศัพท์​หรือ​แท็บเล็ต​ใน​เครือข่าย​ของ PS5 เสียง​ยัง​ออก​ที่ PS5"
 
-#: port/app/remote_menu.h:106 port/frontend/shell/settings.cpp:2020
+#: port/app/remote_menu.h:106 port/frontend/shell/settings.cpp:2033
 #, menu
 msgid "Turn it off and on again once that is fixed."
 msgstr "ปิด​แล้ว​เปิด​ใหม่​เมื่อ​แก้ไข​แล้ว"
@@ -2423,172 +2427,173 @@ msgstr "บันทึก​แล้ว"
 msgid "another version's"
 msgstr "จาก​เวอร์ชัน​อื่น"
 
-#: port/azahar/core.cpp:259
+#: port/azahar/core.cpp:262
 #, menu
 msgid "No amiibo reader"
 msgstr "ไม่มี​เครื่อง​อ่าน amiibo"
 
 #. the amiibo was taken off the 3DS's reader
-#: port/azahar/core.cpp:264
+#: port/azahar/core.cpp:267
 #, menu
 msgid "Taken away"
 msgstr "นำ​ออก​แล้ว"
 
-#: port/azahar/core.cpp:270
+#: port/azahar/core.cpp:273
 #, menu
 msgid "Not an amiibo dump"
 msgstr "ไม่ใช่​ไฟล์​ดัมพ์ amiibo"
 
 #. a cheat ({0}) turned on or off
-#: port/azahar/core.cpp:282
+#: port/azahar/core.cpp:285
 #, menu
 msgid "{0}: on"
 msgstr "{0}: เปิด"
 
 #. a cheat ({0}) turned on or off
-#: port/azahar/core.cpp:282
+#: port/azahar/core.cpp:285
 #, menu
 msgid "{0}: off"
 msgstr "{0}: ปิด"
 
 #. how a save state's save or load went
-#: port/azahar/core.cpp:318
+#: port/azahar/core.cpp:321
 #, menu
 msgid "Loaded slot {0}"
 msgstr "โหลด​ช่อง {0} แล้ว"
 
 #. how a save state's save or load went
-#: port/azahar/core.cpp:318
+#: port/azahar/core.cpp:321
 #, menu
 msgid "Saved slot {0}"
 msgstr "บันทึก​ลง​ช่อง {0} แล้ว"
 
-#: port/azahar/core.cpp:319
+#: port/azahar/core.cpp:322
 #, menu
 msgid "Made by another version"
 msgstr "สร้าง​โดย​เวอร์ชัน​อื่น"
 
-#: port/azahar/core.cpp:320
+#: port/azahar/core.cpp:323
 #, menu
 msgid "It did not work"
 msgstr "ไม่​สำเร็จ"
 
 #. why a 3DS game did not start
-#: port/azahar/core.cpp:539
+#: port/azahar/core.cpp:542
 #, menu
 msgid "This is not a 3DS game Azahar can start."
 msgstr "นี่​ไม่ใช่​เกม 3DS ที่ Azahar เริ่ม​ได้"
 
-#: port/azahar/core.cpp:540
+#: port/azahar/core.cpp:543
 #, menu
 msgid "The game could not be loaded."
 msgstr "โหลด​เกม​ไม่ได้"
 
-#: port/azahar/core.cpp:544
+#: port/azahar/core.cpp:547
 #, menu
 msgid "The game is encrypted, and Azahar plays only decrypted games, with keys or without: decrypt it on your 3DS first (GodMode9)."
 msgstr "เกม​ถูก​เข้ารหัส และ Azahar เล่น​ได้​เฉพาะ​เกม​ที่​ถอด​รหัส​แล้ว ไม่​ว่า​จะ​มี​คีย์​หรือ​ไม่: ถอด​รหัส​บน 3DS ก่อน (GodMode9)"
 
-#: port/azahar/core.cpp:546
+#: port/azahar/core.cpp:549
 #, menu
 msgid "The game's format is not supported."
 msgstr "ไม่​รองรับ​รูปแบบ​ของ​เกม​นี้"
 
-#: port/azahar/core.cpp:547
+#: port/azahar/core.cpp:550
 #, menu
 msgid "GBA Virtual Console games are not supported."
 msgstr "ไม่​รองรับ​เกม GBA Virtual Console"
 
-#: port/azahar/core.cpp:548
+#: port/azahar/core.cpp:551
 #, menu
 msgid "The game's system mode could not be found."
 msgstr "ไม่พบ​โหมด​ระบบ​ของ​เกม"
 
-#: port/azahar/core.cpp:549
+#: port/azahar/core.cpp:552
 #, menu
 msgid "The game needs 3DS system files Azahar does not have."
 msgstr "เกม​ต้องการ​ไฟล์​ระบบ 3DS ที่ Azahar ไม่มี"
 
-#: port/azahar/core.cpp:551
+#: port/azahar/core.cpp:554
 #, menu
 msgid "The game's patches could not be applied."
 msgstr "ใช้​แพตช์​ของ​เกม​ไม่ได้"
 
-#: port/azahar/core.cpp:552
+#: port/azahar/core.cpp:555
 #, menu
 msgid "Azahar's renderer or CPU did not start."
 msgstr "ตัว​เรนเดอร์​หรือ CPU ของ Azahar ไม่​เริ่ม​ทำงาน"
 
-#: port/azahar/core.cpp:554
+#: port/azahar/core.cpp:557
 #, menu
 msgid "The Artic Base server did not answer: check the 3DS's address, that Artic Base runs on it, and that the 3DS and the PS5 are on the same network."
 msgstr "เซิร์ฟเวอร์ Artic Base ไม่​ตอบ​สนอง: ตรวจสอบ​ที่อยู่​ของ 3DS ว่า Artic Base ทำงาน​อยู่​บน​เครื่อง และ 3DS กับ PS5 อยู่​ใน​เครือข่าย​เดียวกัน"
 
-#: port/azahar/core.cpp:622
+#: port/azahar/core.cpp:625
 #, menu
 msgid "The game is busy: try again"
 msgstr "เกม​ไม่​ว่าง: โปรด​ลอง​อีก​ครั้ง"
 
 #. the PS5's notification as an Artic Base game ends because the 3DS stopped answering
-#: port/azahar/core.cpp:641
+#: port/azahar/core.cpp:644
 #, menu
 msgid "The 3DS stopped answering: the Artic Base game has stopped."
 msgstr "3DS หยุด​ตอบ​สนอง: เกม Artic Base หยุด​ทำงาน​แล้ว"
 
-#: port/azahar/core.cpp:643
+#: port/azahar/core.cpp:646
 #, menu
 msgid "The 3DS game stopped: {0}"
 msgstr "เกม 3DS หยุด​ทำงาน: {0}"
 
-#: port/azahar/core.cpp:692
+#: port/azahar/core.cpp:695
 #, menu
 msgid "A CIA file is installed, not played: install it from Settings > Game files, then start the game."
 msgstr "ไฟล์ CIA ต้อง​ติดตั้ง ไม่ใช่​เล่น​โดยตรง: ติดตั้ง​จาก การ​ตั้งค่า > ไฟล์​เกม แล้ว​เริ่ม​เกม"
 
-#: port/azahar/core.cpp:742
+#: port/azahar/core.cpp:745
 #, menu
 msgid "Azahar did not start: {0}"
 msgstr "Azahar ไม่​เริ่ม​ทำงาน: {0}"
 
-#: port/azahar/core.cpp:751
+#: port/azahar/core.cpp:754
 #, menu
 msgid "Artic Setup did not finish: the Artic Setup Tool on the 3DS says why. If it says nothing, check the 3DS's address, and that the 3DS and the PS5 are on the same network."
 msgstr "Artic Setup ไม่​เสร็จ: Artic Setup Tool บน 3DS จะ​บอก​สาเหตุ ถ้า​ไม่​มี​อะไร​แสดง ให้​ตรวจสอบ​ที่อยู่​ของ 3DS และ​ว่า 3DS กับ PS5 อยู่​ใน​เครือข่าย​เดียวกัน"
 
 #. why an Artic Base game did not start, when the 3DS had answered; Y is the 3DS's button
-#: port/azahar/core.cpp:757
+#: port/azahar/core.cpp:760
 #, menu
 msgid "The 3DS answered, then Artic Base stopped before the game started. On the 3DS, press Y in the Artic Base app to restart its server, then connect again. If it stops again, Settings > Diagnostics > Copy logs to USB copies Azahar's log, which says what failed."
 msgstr "3DS ตอบ​สนอง​แล้ว แต่ Artic Base หยุด​ก่อน​เกม​จะ​เริ่ม บน 3DS ให้​กด Y ใน​แอป Artic Base เพื่อ​รีสตาร์ท​เซิร์ฟเวอร์ แล้ว​เชื่อมต่อ​ใหม่ ถ้า​หยุด​อีก การ​ตั้งค่า > การ​วินิจฉัย > คัดลอก​ล็อก​ไป​ยัง USB จะ​คัดลอก​ล็อก​ของ Azahar ซึ่ง​บอก​ว่า​อะไร​ล้มเหลว"
 
 #. the PS5's notification as a 3DS game starts
-#: port/azahar/core.cpp:825
+#: port/azahar/core.cpp:828
 #, menu
 msgid "Touchpad click + Options: the in-game menu. A touchpad click alone: the bottom screen"
 msgstr "กด​ทัชแพด + ปุ่ม​ตัวเลือก: เมนู​ใน​เกม กด​ทัชแพด​อย่าง​เดียว: จอ​ล่าง"
 
 #. why a CIA file could not be installed, after "It could not be installed:"
-#: port/azahar/core.cpp:1021
+#: port/azahar/core.cpp:1030
 #, menu
 msgid "it is encrypted, the CIA or the game inside it. Azahar installs only fully decrypted CIA files: decrypt it with GodMode9 on a 3DS, or play the game's decrypted .3ds or .cci file instead"
 msgstr "CIA หรือ​เกม​ข้างใน​ถูก​เข้ารหัส Azahar ติดตั้ง​ได้​เฉพาะ​ไฟล์ CIA ที่​ถอด​รหัส​ทั้งหมด​แล้ว: ถอด​รหัส​ด้วย GodMode9 บน 3DS หรือ​เล่น​ไฟล์ .3ds หรือ .cci ที่​ถอด​รหัส​แล้ว​แทน"
 
-#: port/azahar/core.cpp:1024
+#: port/azahar/core.cpp:1033
 #, menu
 msgid "it is not a CIA file, or it is damaged (check the file's size)"
 msgstr "ไม่ใช่​ไฟล์ CIA หรือ​ไฟล์​เสียหาย (ตรวจสอบ​ขนาด​ไฟล์)"
 
-#: port/azahar/core.cpp:1026
+#: port/azahar/core.cpp:1035
 #, menu
 msgid "the file could not be read"
 msgstr "อ่าน​ไฟล์​ไม่ได้"
 
-#: port/azahar/core.cpp:1028
+#. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+#: port/azahar/core.cpp:1038
 #, menu
-msgid "Azahar stopped part-way through; /data/ps5cemu/azahar/log/azahar_log.txt says why"
-msgstr "Azahar หยุด​กลางคัน ดู​สาเหตุ​ได้​ที่ /data/ps5cemu/azahar/log/azahar_log.txt"
+msgid "Azahar stopped part-way through; {0}/azahar/log/azahar_log.txt says why"
+msgstr "Azahar หยุด​กลางคัน ดู​สาเหตุ​ได้​ที่ {0}/azahar/log/azahar_log.txt"
 
-#: port/azahar/core.cpp:1030
+#: port/azahar/core.cpp:1040
 #, menu
 msgid "it is not a CIA Azahar can install"
 msgstr "ไม่ใช่ CIA ที่ Azahar ติดตั้ง​ได้"
@@ -2598,302 +2603,302 @@ msgid "The PS5 has no memory left for this Wii U game, so it has to stop. The bo
 msgstr "PS5 ไม่มี​หน่วย​ความ​จำ​เหลือ​สำหรับ​เกม Wii U นี้ จึง​ต้อง​หยุด ดู​รายละเอียด​ได้​ใน​ล็อก​การ​เริ่ม​ระบบ"
 
 #. a size in gigabytes, as in 2.4 GB
-#: port/frontend/actions.cpp:65
+#: port/frontend/actions.cpp:66
 msgctxt "size"
 msgid "{0} GB"
 msgstr "{0} GB"
 
 #. a size in megabytes, as in 4.1 MB
-#: port/frontend/actions.cpp:74
+#: port/frontend/actions.cpp:75
 msgctxt "size"
 msgid "{0} MB"
 msgstr "{0} MB"
 
 #. a size in kilobytes, as in 12 KB
-#: port/frontend/actions.cpp:76
+#: port/frontend/actions.cpp:77
 msgctxt "size"
 msgid "{0} KB"
 msgstr "{0} KB"
 
 #. {1} is the USB drive's number
-#: port/frontend/actions.cpp:156
+#: port/frontend/actions.cpp:157
 msgid "{0} file to USB drive {1}"
 msgid_plural "{0} files to USB drive {1}"
 msgstr[0] "{0} ไฟล์​ไปยัง​ไดรฟ์ USB {1}"
 
-#: port/frontend/actions.cpp:159
+#: port/frontend/actions.cpp:160
 msgid "No USB drive found"
 msgstr "ไม่พบ​ไดรฟ์ USB"
 
-#: port/frontend/actions.cpp:186
+#: port/frontend/actions.cpp:187
 msgid "{0} file deleted ({1} MB)"
 msgid_plural "{0} files deleted ({1} MB)"
 msgstr[0] "ลบ {0} ไฟล์​แล้ว ({1} MB)"
 
-#: port/frontend/actions.cpp:186
+#: port/frontend/actions.cpp:187
 msgid "None to delete"
 msgstr "ไม่มี​อะไร​ให้​ลบ"
 
-#: port/frontend/actions.cpp:193
+#: port/frontend/actions.cpp:194
 msgid "USB drive {0}"
 msgstr "ไดรฟ์ USB {0}"
 
-#: port/frontend/actions.cpp:195
+#: port/frontend/actions.cpp:196
 msgid "Extended storage {0}"
 msgstr "พื้นที่​จัดเก็บ​เสริม {0}"
 
 #. what an install is
-#: port/frontend/actions.cpp:363 port/frontend/actions.cpp:442
+#: port/frontend/actions.cpp:365 port/frontend/actions.cpp:444
 msgid "Game"
 msgstr "เกม"
 
-#: port/frontend/actions.cpp:364 port/frontend/actions.cpp:443
+#: port/frontend/actions.cpp:366 port/frontend/actions.cpp:445
 msgid "Update"
 msgstr "อัปเดต"
 
 #. an update found to install ({0}: its version, as 208)
-#: port/frontend/actions.cpp:365 port/frontend/actions.cpp:444 port/frontend/shell/eden.cpp:825 port/frontend/shell/eden.cpp:1349 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:789
+#: port/frontend/actions.cpp:367 port/frontend/actions.cpp:446 port/frontend/shell/eden.cpp:825 port/frontend/shell/eden.cpp:1349 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:789
 msgid "DLC"
 msgstr "DLC"
 
-#: port/frontend/actions.cpp:366 port/frontend/actions.cpp:446
+#: port/frontend/actions.cpp:368 port/frontend/actions.cpp:448
 msgid "System title"
 msgstr "ไตเติล​ระบบ"
 
-#: port/frontend/actions.cpp:445
+#: port/frontend/actions.cpp:447
 msgid "Demo"
 msgstr "เดโม"
 
-#: port/frontend/actions.cpp:446
+#: port/frontend/actions.cpp:448
 msgid "Title"
 msgstr "ไตเติล"
 
-#: port/frontend/actions.cpp:454
+#: port/frontend/actions.cpp:456
 msgctxt "button"
 msgid "Cross"
 msgstr "กากบาท"
 
-#: port/frontend/actions.cpp:454
+#: port/frontend/actions.cpp:456
 msgctxt "button"
 msgid "Circle"
 msgstr "วงกลม"
 
-#: port/frontend/actions.cpp:454
+#: port/frontend/actions.cpp:456
 msgctxt "button"
 msgid "Square"
 msgstr "สี่เหลี่ยม"
 
-#: port/frontend/actions.cpp:455
+#: port/frontend/actions.cpp:457
 msgctxt "button"
 msgid "Triangle"
 msgstr "สามเหลี่ยม"
 
-#: port/frontend/actions.cpp:455
+#: port/frontend/actions.cpp:457
 msgctxt "button"
 msgid "Create"
 msgstr "ครีเอท"
 
-#: port/frontend/actions.cpp:455
+#: port/frontend/actions.cpp:457
 msgctxt "button"
 msgid "Options"
 msgstr "ตัวเลือก"
 
-#: port/frontend/actions.cpp:455
+#: port/frontend/actions.cpp:457
 msgctxt "button"
 msgid "Touchpad"
 msgstr "ทัชแพด"
 
-#: port/frontend/actions.cpp:456
+#: port/frontend/actions.cpp:458
 msgctxt "button"
 msgid "D-pad up"
 msgstr "ปุ่ม​ทิศทาง​ขึ้น"
 
-#: port/frontend/actions.cpp:456
+#: port/frontend/actions.cpp:458
 msgctxt "button"
 msgid "D-pad down"
 msgstr "ปุ่ม​ทิศทาง​ลง"
 
-#: port/frontend/actions.cpp:456
+#: port/frontend/actions.cpp:458
 msgctxt "button"
 msgid "D-pad left"
 msgstr "ปุ่ม​ทิศทาง​ซ้าย"
 
-#: port/frontend/actions.cpp:456
+#: port/frontend/actions.cpp:458
 msgctxt "button"
 msgid "D-pad right"
 msgstr "ปุ่ม​ทิศทาง​ขวา"
 
-#: port/frontend/actions.cpp:457
+#: port/frontend/actions.cpp:459
 msgctxt "button"
 msgid "Left stick up"
 msgstr "สติ๊ก​ซ้าย​ขึ้น"
 
-#: port/frontend/actions.cpp:457
+#: port/frontend/actions.cpp:459
 msgctxt "button"
 msgid "Left stick down"
 msgstr "สติ๊ก​ซ้าย​ลง"
 
-#: port/frontend/actions.cpp:457
+#: port/frontend/actions.cpp:459
 msgctxt "button"
 msgid "Left stick left"
 msgstr "สติ๊ก​ซ้าย​ไป​ซ้าย"
 
-#: port/frontend/actions.cpp:458
+#: port/frontend/actions.cpp:460
 msgctxt "button"
 msgid "Left stick right"
 msgstr "สติ๊ก​ซ้าย​ไป​ขวา"
 
-#: port/frontend/actions.cpp:458
+#: port/frontend/actions.cpp:460
 msgctxt "button"
 msgid "Left stick click"
 msgstr "กด​สติ๊ก​ซ้าย"
 
-#: port/frontend/actions.cpp:458
+#: port/frontend/actions.cpp:460
 msgctxt "button"
 msgid "Right stick up"
 msgstr "สติ๊ก​ขวา​ขึ้น"
 
-#: port/frontend/actions.cpp:459
+#: port/frontend/actions.cpp:461
 msgctxt "button"
 msgid "Right stick down"
 msgstr "สติ๊ก​ขวา​ลง"
 
-#: port/frontend/actions.cpp:459
+#: port/frontend/actions.cpp:461
 msgctxt "button"
 msgid "Right stick left"
 msgstr "สติ๊ก​ขวา​ไป​ซ้าย"
 
-#: port/frontend/actions.cpp:459
+#: port/frontend/actions.cpp:461
 msgctxt "button"
 msgid "Right stick right"
 msgstr "สติ๊ก​ขวา​ไป​ขวา"
 
-#: port/frontend/actions.cpp:460
+#: port/frontend/actions.cpp:462
 msgctxt "button"
 msgid "Right stick click"
 msgstr "กด​สติ๊ก​ขวา"
 
-#: port/frontend/actions.cpp:460
+#: port/frontend/actions.cpp:462
 msgctxt "button"
 msgid "Circle pad up"
 msgstr "Circle Pad ขึ้น"
 
-#: port/frontend/actions.cpp:460
+#: port/frontend/actions.cpp:462
 msgctxt "button"
 msgid "Circle pad down"
 msgstr "Circle Pad ลง"
 
-#: port/frontend/actions.cpp:461
+#: port/frontend/actions.cpp:463
 msgctxt "button"
 msgid "Circle pad left"
 msgstr "Circle Pad ซ้าย"
 
-#: port/frontend/actions.cpp:461
+#: port/frontend/actions.cpp:463
 msgctxt "button"
 msgid "Circle pad right"
 msgstr "Circle Pad ขวา"
 
-#: port/frontend/actions.cpp:461
+#: port/frontend/actions.cpp:463
 msgctxt "button"
 msgid "C-stick up"
 msgstr "C-Stick ขึ้น"
 
-#: port/frontend/actions.cpp:462
+#: port/frontend/actions.cpp:464
 msgctxt "button"
 msgid "C-stick down"
 msgstr "C-Stick ลง"
 
-#: port/frontend/actions.cpp:462
+#: port/frontend/actions.cpp:464
 msgctxt "button"
 msgid "C-stick left"
 msgstr "C-Stick ซ้าย"
 
-#: port/frontend/actions.cpp:462
+#: port/frontend/actions.cpp:464
 msgctxt "button"
 msgid "C-stick right"
 msgstr "C-Stick ขวา"
 
-#: port/frontend/actions.cpp:463
+#: port/frontend/actions.cpp:465
 msgctxt "button"
 msgid "Nunchuk stick up"
 msgstr "สติ๊ก Nunchuk ขึ้น"
 
-#: port/frontend/actions.cpp:463
+#: port/frontend/actions.cpp:465
 msgctxt "button"
 msgid "Nunchuk stick down"
 msgstr "สติ๊ก Nunchuk ลง"
 
-#: port/frontend/actions.cpp:463
+#: port/frontend/actions.cpp:465
 msgctxt "button"
 msgid "Nunchuk stick left"
 msgstr "สติ๊ก Nunchuk ซ้าย"
 
-#: port/frontend/actions.cpp:464
+#: port/frontend/actions.cpp:466
 msgctxt "button"
 msgid "Nunchuk stick right"
 msgstr "สติ๊ก Nunchuk ขวา"
 
-#: port/frontend/actions.cpp:464
+#: port/frontend/actions.cpp:466
 msgctxt "button"
 msgid "Nunchuk C"
 msgstr "Nunchuk C"
 
-#: port/frontend/actions.cpp:464
+#: port/frontend/actions.cpp:466
 msgctxt "button"
 msgid "Nunchuk Z"
 msgstr "Nunchuk Z"
 
-#: port/frontend/actions.cpp:464
+#: port/frontend/actions.cpp:466
 msgctxt "button"
 msgid "Home"
 msgstr "HOME"
 
-#: port/frontend/actions.cpp:465
+#: port/frontend/actions.cpp:467
 msgctxt "button"
 msgid "Start"
 msgstr "START"
 
-#: port/frontend/actions.cpp:465
+#: port/frontend/actions.cpp:467
 msgctxt "button"
 msgid "Select"
 msgstr "SELECT"
 
-#: port/frontend/actions.cpp:465
+#: port/frontend/actions.cpp:467
 msgctxt "button"
 msgid "+ (Start)"
 msgstr "+ (START)"
 
-#: port/frontend/actions.cpp:465
+#: port/frontend/actions.cpp:467
 msgctxt "button"
 msgid "- (Select)"
 msgstr "- (SELECT)"
 
-#: port/frontend/actions.cpp:466
+#: port/frontend/actions.cpp:468
 msgctxt "button"
 msgid "Blow into the mic"
 msgstr "เป่า​ไมโครโฟน"
 
-#: port/frontend/actions.cpp:466
+#: port/frontend/actions.cpp:468
 msgctxt "button"
 msgid "Show the GamePad's screen"
 msgstr "แสดง​หน้าจอ GamePad"
 
-#: port/frontend/actions.cpp:466
+#: port/frontend/actions.cpp:468
 msgctxt "button"
 msgid "None"
 msgstr "ไม่มี"
 
-#: port/frontend/actions.cpp:469
+#: port/frontend/actions.cpp:471
 msgctxt "button"
 msgid "Touch at the cursor"
 msgstr "แตะที่ตำแหน่งเคอร์เซอร์"
 
-#: port/frontend/actions.cpp:469
+#: port/frontend/actions.cpp:471
 msgctxt "button"
 msgid "Fast forward"
 msgstr "เร่งความเร็ว"
 
-#: port/frontend/actions.cpp:469
+#: port/frontend/actions.cpp:471
 msgctxt "button"
 msgid "Rewind"
 msgstr "ย้อนกลับ"
@@ -2961,7 +2966,7 @@ msgstr "เลือก​เกม​จาก​คลัง​เกม​ข
 msgid "Launch game"
 msgstr "เริ่ม​เกม"
 
-#: port/frontend/shell/classic.cpp:321 port/frontend/shell/classic.cpp:538 port/frontend/shell/pages.cpp:1491 port/frontend/shell/pages.cpp:1502 port/frontend/shell/settings.cpp:203 port/frontend/shell/settings.cpp:839 port/frontend/shell/setup.cpp:246
+#: port/frontend/shell/classic.cpp:321 port/frontend/shell/classic.cpp:538 port/frontend/shell/pages.cpp:1492 port/frontend/shell/pages.cpp:1503 port/frontend/shell/settings.cpp:203 port/frontend/shell/settings.cpp:844 port/frontend/shell/setup.cpp:247
 msgid "Artic Base"
 msgstr "Artic Base"
 
@@ -3008,12 +3013,12 @@ msgstr "เล่น​จาก 3DS"
 msgid "Game details"
 msgstr "รายละเอียด​เกม"
 
-#: port/frontend/shell/classic.cpp:488 port/frontend/shell/classic.cpp:493 port/frontend/shell/hub.cpp:277 port/frontend/shell/installs.cpp:509 port/frontend/shell/pages.cpp:1236 port/frontend/shell/pages.cpp:1286
+#: port/frontend/shell/classic.cpp:488 port/frontend/shell/classic.cpp:493 port/frontend/shell/hub.cpp:277 port/frontend/shell/installs.cpp:509 port/frontend/shell/pages.cpp:1236 port/frontend/shell/pages.cpp:1287
 msgid "Title ID"
 msgstr "Title ID"
 
 #. a title's version to install ({0}), and the one installed now ({1})
-#: port/frontend/shell/classic.cpp:489 port/frontend/shell/eden.cpp:1627 port/frontend/shell/eden.cpp:1812 port/frontend/shell/experiments.cpp:723 port/frontend/shell/experiments.cpp:1334 port/frontend/shell/installs.cpp:508 port/frontend/shell/pages.cpp:1237 port/frontend/shell/pages.cpp:1288 port/frontend/shell/settings.cpp:211
+#: port/frontend/shell/classic.cpp:489 port/frontend/shell/eden.cpp:1627 port/frontend/shell/eden.cpp:1812 port/frontend/shell/experiments.cpp:723 port/frontend/shell/experiments.cpp:1334 port/frontend/shell/installs.cpp:508 port/frontend/shell/pages.cpp:1237 port/frontend/shell/pages.cpp:1289 port/frontend/shell/settings.cpp:211
 msgid "Version"
 msgstr "เวอร์ชัน"
 
@@ -3067,7 +3072,7 @@ msgstr "การ​กำหนด​ลักษณะ"
 msgid "On this console"
 msgstr "บน​เครื่อง​นี้"
 
-#: port/frontend/shell/classic.cpp:600 port/frontend/shell/settings.cpp:938 port/frontend/shell/welcome.cpp:208
+#: port/frontend/shell/classic.cpp:600 port/frontend/shell/settings.cpp:943 port/frontend/shell/welcome.cpp:208
 msgid "Make it yours"
 msgstr "ปรับ​ให้​เป็น​แบบ​ของ​คุณ"
 
@@ -3336,7 +3341,7 @@ msgid "Everything is ready"
 msgstr "พร้อม​ทั้งหมด"
 
 #. above Settings' pages: whose settings they are ({0}: Wii U, Nintendo 3DS or Nintendo DS)
-#: port/frontend/shell/eden.cpp:1581 port/frontend/shell/eden.cpp:1673 port/frontend/shell/experiments.cpp:649 port/frontend/shell/settings.cpp:2106
+#: port/frontend/shell/eden.cpp:1581 port/frontend/shell/eden.cpp:1673 port/frontend/shell/experiments.cpp:649 port/frontend/shell/settings.cpp:2119
 msgid "{0} settings"
 msgstr "การ​ตั้งค่า {0}"
 
@@ -3455,7 +3460,7 @@ msgstr "ติดตั้ง"
 msgid "Install every new one ({0})"
 msgstr "ติดตั้ง​รายการ​ใหม่​ทั้งหมด ({0})"
 
-#: port/frontend/shell/installs.cpp:328 port/frontend/shell/library.cpp:107 port/frontend/shell/pages.cpp:1166 port/frontend/shell/setup.cpp:183
+#: port/frontend/shell/installs.cpp:328 port/frontend/shell/library.cpp:107 port/frontend/shell/pages.cpp:1166 port/frontend/shell/setup.cpp:184
 msgid "Choose a folder"
 msgstr "เลือก​โฟลเดอร์"
 
@@ -3485,7 +3490,7 @@ msgstr "ทุก​รายการ​ที่​พบ​ติดตั้
 msgid "Game files"
 msgstr "ไฟล์​เกม"
 
-#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:718 port/frontend/shell/shell.cpp:1617
+#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:722 port/frontend/shell/shell.cpp:1617
 msgid "Updates and DLC"
 msgstr "อัปเดต​และ DLC"
 
@@ -3535,16 +3540,16 @@ msgstr "กำลัง​รอ"
 msgid "Runs from where it is"
 msgstr "ทำงาน​จาก​ที่​ที่​อยู่"
 
-#: port/frontend/shell/installs.cpp:501 port/frontend/shell/pages.cpp:1302
+#: port/frontend/shell/installs.cpp:501 port/frontend/shell/pages.cpp:1303
 msgid "To install"
 msgstr "รอ​ติดตั้ง"
 
 #. a title's version to install ({0}), and the one installed now ({1})
-#: port/frontend/shell/installs.cpp:508 port/frontend/shell/pages.cpp:1288
+#: port/frontend/shell/installs.cpp:508 port/frontend/shell/pages.cpp:1289
 msgid "v{0}, not installed yet"
 msgstr "v{0} ยัง​ไม่ได้​ติดตั้ง"
 
-#: port/frontend/shell/installs.cpp:508 port/frontend/shell/pages.cpp:1289
+#: port/frontend/shell/installs.cpp:508 port/frontend/shell/pages.cpp:1290
 msgid "v{0}, v{1} installed now"
 msgstr "v{0} ตอนนี้​ติดตั้ง v{1} อยู่"
 
@@ -3560,11 +3565,11 @@ msgstr "Cemu เล่น​จาก​โฟลเดอร์​ไฟล์�
 msgid "It is installed into the Wii U's storage (mlc01). What is installed now is set aside until it finishes, and put back if you stop."
 msgstr "ติดตั้ง​ลง​พื้นที่​จัดเก็บ​ของ Wii U (mlc01) สิ่ง​ที่​ติดตั้ง​อยู่​จะ​ถูก​พัก​ไว้​จน​กว่า​จะ​เสร็จ และ​ใส่​คืน​หาก​หยุด"
 
-#: port/frontend/shell/library.cpp:71 port/frontend/shell/setup.cpp:341
+#: port/frontend/shell/library.cpp:71 port/frontend/shell/setup.cpp:342
 msgid "Setup"
 msgstr "เตรียม​ความ​พร้อม"
 
-#: port/frontend/shell/library.cpp:74 port/frontend/shell/library.cpp:107 port/frontend/shell/library.cpp:137 port/frontend/shell/settings.cpp:951
+#: port/frontend/shell/library.cpp:74 port/frontend/shell/library.cpp:107 port/frontend/shell/library.cpp:137 port/frontend/shell/settings.cpp:956
 msgid "Setup check"
 msgstr "ตรวจ​ความ​พร้อม"
 
@@ -3638,7 +3643,7 @@ msgid "Presets · choosing one turns it on"
 msgstr "พรีเซ็ต · การ​เลือก​จะ​เปิด​พรีเซ็ต​นั้น"
 
 #. what a held row says once it has done its work
-#: port/frontend/shell/pages.cpp:398 port/frontend/shell/settings.cpp:1770
+#: port/frontend/shell/pages.cpp:398 port/frontend/shell/settings.cpp:1783
 msgctxt "finished"
 msgid "Done"
 msgstr "เสร็จ​แล้ว"
@@ -3712,16 +3717,16 @@ msgid "The default buttons, vibration, motion and deadzones for this controller.
 msgstr "ปุ่ม การ​สั่น การ​เคลื่อนไหว และ​เดดโซน​ค่า​เริ่มต้น​ของ​คอนโทรลเลอร์​นี้ ต้อง​กด​ค้าง​เพื่อ​ยืนยัน"
 
 #. {0} is the player's number, {1} an emulated controller (Wii U GamePad)
-#: port/frontend/shell/pages.cpp:452 port/frontend/shell/pages.cpp:633 port/frontend/shell/pages.cpp:812 port/frontend/shell/pages.cpp:818 port/frontend/shell/settings.cpp:616
+#: port/frontend/shell/pages.cpp:452 port/frontend/shell/pages.cpp:633 port/frontend/shell/pages.cpp:812 port/frontend/shell/pages.cpp:818 port/frontend/shell/settings.cpp:617
 msgid "Buttons"
 msgstr "ปุ่ม"
 
-#: port/frontend/shell/pages.cpp:453 port/frontend/shell/pages.cpp:634 port/frontend/shell/settings.cpp:621
+#: port/frontend/shell/pages.cpp:453 port/frontend/shell/pages.cpp:634 port/frontend/shell/settings.cpp:622
 msgid "Reset to defaults"
 msgstr "คืน​ค่า​เริ่มต้น"
 
 #. {0} is an emulated controller (Wii U GamePad)
-#: port/frontend/shell/pages.cpp:489 port/frontend/shell/pages.cpp:592 port/frontend/shell/settings.cpp:587
+#: port/frontend/shell/pages.cpp:489 port/frontend/shell/pages.cpp:592 port/frontend/shell/settings.cpp:588
 msgid "Player {0}"
 msgstr "ผู้เล่น {0}"
 
@@ -3781,16 +3786,16 @@ msgstr "การ​กด​ทัชแพด​จะ​กด​ปุ่ม
 msgid "The click touches the GamePad's screen."
 msgstr "การ​กด​ทัชแพด​จะ​แตะ​หน้าจอ GamePad"
 
-#: port/frontend/shell/pages.cpp:633 port/frontend/shell/settings.cpp:616
+#: port/frontend/shell/pages.cpp:633 port/frontend/shell/settings.cpp:617
 msgid "{0} button set"
 msgid_plural "{0} buttons set"
 msgstr[0] "ตั้ง​ปุ่ม​แล้ว {0} ปุ่ม"
 
-#: port/frontend/shell/pages.cpp:633 port/frontend/shell/settings.cpp:616
+#: port/frontend/shell/pages.cpp:633 port/frontend/shell/settings.cpp:617
 msgid "Which DualSense button presses each button."
 msgstr "ปุ่ม DualSense ปุ่ม​ไหน​กด​ปุ่ม​แต่ละ​ปุ่ม"
 
-#: port/frontend/shell/pages.cpp:634 port/frontend/shell/pages.cpp:1525 port/frontend/shell/pages.cpp:1529 port/frontend/shell/settings.cpp:621 port/frontend/shell/settings.cpp:774 port/frontend/shell/settings.cpp:826 port/frontend/shell/settings.cpp:860 port/frontend/shell/settings.cpp:957 port/frontend/shell/settings.cpp:960 port/frontend/shell/settings.cpp:991 port/frontend/shell/settings.cpp:1053 port/frontend/shell/settings.cpp:1093 port/frontend/shell/shares.cpp:328
+#: port/frontend/shell/pages.cpp:634 port/frontend/shell/pages.cpp:1526 port/frontend/shell/pages.cpp:1530 port/frontend/shell/settings.cpp:622 port/frontend/shell/settings.cpp:778 port/frontend/shell/settings.cpp:830 port/frontend/shell/settings.cpp:865 port/frontend/shell/settings.cpp:962 port/frontend/shell/settings.cpp:965 port/frontend/shell/settings.cpp:996 port/frontend/shell/settings.cpp:1058 port/frontend/shell/settings.cpp:1100 port/frontend/shell/shares.cpp:328
 msgid "Hold Cross"
 msgstr "กด​ปุ่มกากบาท​ค้าง"
 
@@ -3936,15 +3941,15 @@ msgstr "ยกเลิก​แล้ว สิ่ง​ที่​คัด�
 msgid "Cancelled. What was installed before is as it was."
 msgstr "ยกเลิก​แล้ว สิ่ง​ที่​ติดตั้ง​ไว้​ก่อน​หน้า​ยัง​คง​เดิม"
 
-#: port/frontend/shell/pages.cpp:1163 port/frontend/shell/settings.cpp:692 port/frontend/shell/setup.cpp:181
+#: port/frontend/shell/pages.cpp:1163 port/frontend/shell/settings.cpp:694 port/frontend/shell/setup.cpp:182
 msgid "3DS games"
 msgstr "เกม 3DS"
 
-#: port/frontend/shell/pages.cpp:1164 port/frontend/shell/settings.cpp:692 port/frontend/shell/setup.cpp:181
+#: port/frontend/shell/pages.cpp:1164 port/frontend/shell/settings.cpp:694 port/frontend/shell/setup.cpp:182
 msgid "DS games"
 msgstr "เกม DS"
 
-#: port/frontend/shell/pages.cpp:1165 port/frontend/shell/settings.cpp:692 port/frontend/shell/setup.cpp:181
+#: port/frontend/shell/pages.cpp:1165 port/frontend/shell/settings.cpp:694 port/frontend/shell/setup.cpp:182
 msgid "Wii U games"
 msgstr "เกม Wii U"
 
@@ -3992,7 +3997,7 @@ msgstr "โฟลเดอร์​หลัก"
 msgid "Drive"
 msgstr "ไดรฟ์"
 
-#: port/frontend/shell/pages.cpp:1235 port/frontend/shell/pages.cpp:1285
+#: port/frontend/shell/pages.cpp:1235 port/frontend/shell/pages.cpp:1286
 msgctxt "kind"
 msgid "Type"
 msgstr "ชนิด"
@@ -4025,7 +4030,7 @@ msgstr "พบ​แล้ว"
 msgid "Missing (only encrypted dumps need it)"
 msgstr "ไม่มี (ต้อง​ใช้​เฉพาะ​ไฟล์​ดัมพ์​ที่​เข้ารหัส)"
 
-#: port/frontend/shell/pages.cpp:1263 port/frontend/shell/settings.cpp:683
+#: port/frontend/shell/pages.cpp:1263 port/frontend/shell/settings.cpp:684
 msgid "Your DS's BIOS"
 msgstr "BIOS ของ DS"
 
@@ -4037,60 +4042,62 @@ msgstr "พบ​ใน melonds/bios"
 msgid "Not there (melonDS's built-in BIOS runs most games)"
 msgstr "ไม่มี (BIOS ใน​ตัว​ของ melonDS เล่น​เกม​ส่วนใหญ่​ได้)"
 
-#: port/frontend/shell/pages.cpp:1269
-msgid "Found in /data/ps5cemu"
-msgstr "พบ​ใน /data/ps5cemu"
+#. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+#: port/frontend/shell/pages.cpp:1270
+msgid "Found in {0}"
+msgstr "พบ​ใน {0}"
 
-#: port/frontend/shell/pages.cpp:1269
+#. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+#: port/frontend/shell/pages.cpp:1270
 msgid "Missing (only .wud/.wux need it)"
 msgstr "ไม่มี (ต้อง​ใช้​เฉพาะ .wud/.wux)"
 
-#: port/frontend/shell/pages.cpp:1272 port/frontend/shell/shell.cpp:1984 port/frontend/shell/shell.cpp:2011
+#: port/frontend/shell/pages.cpp:1273 port/frontend/shell/shell.cpp:1984 port/frontend/shell/shell.cpp:2011
 msgid "In use"
 msgstr "ใช้​งาน​อยู่"
 
-#: port/frontend/shell/pages.cpp:1276
+#: port/frontend/shell/pages.cpp:1277
 msgid "Games can be .3ds or .cci, .cxi, .cia or .3dsx, decrypted, here or in the folders in it. Triangle uses the folder shown."
 msgstr "เกม​เป็น​ไฟล์ .3ds, .cci, .cxi, .cia หรือ .3dsx ที่​ถอด​รหัส​แล้ว อยู่​ที่นี่​หรือ​ใน​โฟลเดอร์​ข้างใน ปุ่มสามเหลี่ยม​ใช้​โฟลเดอร์​ที่​แสดง"
 
-#: port/frontend/shell/pages.cpp:1277
+#: port/frontend/shell/pages.cpp:1278
 msgid "Games are .nds files, here or in the folders in it. Triangle uses the folder shown."
 msgstr "เกม​เป็น​ไฟล์ .nds อยู่​ที่นี่​หรือ​ใน​โฟลเดอร์​ข้างใน ปุ่มสามเหลี่ยม​ใช้​โฟลเดอร์​ที่​แสดง"
 
-#: port/frontend/shell/pages.cpp:1278
+#: port/frontend/shell/pages.cpp:1279
 msgid "Games can be .wua, .wud, .wux, or folders with code, content and meta. Triangle uses the folder shown."
 msgstr "เกม​เป็น .wua, .wud, .wux หรือ​โฟลเดอร์​ที่​มี code, content และ meta ปุ่มสามเหลี่ยม​ใช้​โฟลเดอร์​ที่​แสดง"
 
-#: port/frontend/shell/pages.cpp:1285
+#: port/frontend/shell/pages.cpp:1286
 msgid "Nothing to install"
 msgstr "ไม่มี​อะไร​ให้​ติดตั้ง"
 
-#: port/frontend/shell/pages.cpp:1293
+#: port/frontend/shell/pages.cpp:1294
 msgid "Triangle installs it into the Wii U's storage (mlc01). Updates and DLC in the game files folder work as they are, too."
 msgstr "ปุ่มสามเหลี่ยม​ติดตั้ง​ลง​พื้นที่​จัดเก็บ​ของ Wii U (mlc01) อัปเดต​และ DLC ใน​โฟลเดอร์​ไฟล์​เกม​ก็​ใช้​ได้​ตาม​ที่​เป็น"
 
-#: port/frontend/shell/pages.cpp:1302
+#: port/frontend/shell/pages.cpp:1303
 msgid "This folder"
 msgstr "โฟลเดอร์​นี้"
 
 #. {0} is a 3DS's network address
-#: port/frontend/shell/pages.cpp:1407
+#: port/frontend/shell/pages.cpp:1408
 msgid "Connecting to {0}"
 msgstr "กำลัง​เชื่อมต่อ​กับ {0}"
 
-#: port/frontend/shell/pages.cpp:1419
+#: port/frontend/shell/pages.cpp:1420
 msgid "Artic Setup Tool"
 msgstr "Artic Setup Tool"
 
-#: port/frontend/shell/pages.cpp:1502
+#: port/frontend/shell/pages.cpp:1503
 msgid "Play a game from your 3DS over your network, or set Azahar up from it"
 msgstr "เล่น​เกม​จาก 3DS ผ่าน​เครือข่าย หรือ​นำเข้า​ข้อมูล​จาก 3DS มา​ยัง Azahar"
 
-#: port/frontend/shell/pages.cpp:1518
+#: port/frontend/shell/pages.cpp:1519
 msgid "3DS address"
 msgstr "ที่อยู่ 3DS"
 
-#: port/frontend/shell/pages.cpp:1519
+#: port/frontend/shell/pages.cpp:1520
 msgid ""
 "The address Artic Base shows on the 3DS's screen when it is ready.\n"
 "Cross edits it: Left and Right choose a number, Up and Down change it by 1, L1 and R1 by 10, and Cross again keeps it.\n"
@@ -4100,11 +4107,11 @@ msgstr ""
 "ปุ่มกากบาท​แก้ไข: ซ้าย​และ​ขวา​เลือก​หลัก ขึ้น​และ​ลง​ปรับ​ทีละ 1, L1 และ R1 ทีละ 10 และ​ปุ่มกากบาท​อีก​ครั้ง​เพื่อ​เก็บ\n"
 "3DS และ PS5 ต้อง​อยู่​ใน​เครือข่าย​เดียวกัน"
 
-#: port/frontend/shell/pages.cpp:1521
+#: port/frontend/shell/pages.cpp:1522
 msgid "Connect and play"
 msgstr "เชื่อมต่อ​และ​เล่น"
 
-#: port/frontend/shell/pages.cpp:1522
+#: port/frontend/shell/pages.cpp:1523
 msgid ""
 "On the 3DS, start the Artic Base app (homebrew, from Azahar's team) and choose a game in it: the cartridge or an installed one. Then connect from here: the game plays on the PS5 from the 3DS, and its saves stay on the 3DS.\n"
 "It is only as smooth as the network: a strong Wi-Fi signal for the 3DS and a wired PS5 help."
@@ -4112,11 +4119,11 @@ msgstr ""
 "บน 3DS เปิด​แอป Artic Base (โฮมบรูว์​จาก​ทีม Azahar) แล้ว​เลือก​เกม​ใน​แอป: ตลับ​เกม​หรือ​เกม​ที่​ติดตั้ง​ไว้ จากนั้น​เชื่อมต่อ​จาก​ที่นี่: เกม​จะ​เล่น​บน PS5 จาก 3DS และ​เซฟ​อยู่​บน 3DS\n"
 "ความ​ลื่น​ขึ้น​อยู่​กับ​เครือข่าย: สัญญาณ Wi-Fi ที่​แรง​สำหรับ 3DS และ PS5 ที่​ต่อ​สาย​ช่วย​ได้"
 
-#: port/frontend/shell/pages.cpp:1525
+#: port/frontend/shell/pages.cpp:1526
 msgid "Set up from an Old 3DS"
 msgstr "นำเข้า​จาก Old 3DS"
 
-#: port/frontend/shell/pages.cpp:1526
+#: port/frontend/shell/pages.cpp:1527
 msgid ""
 "With the Artic Setup Tool app running on an Old 3DS or 2DS: copies its system files and its own data (system settings, friend code, Mii and eShop data) into Azahar, so games that need the 3DS's system applets or files start, and the Home Menu can (Settings > System).\n"
 "That data is your console's: do not share Azahar's folder afterwards."
@@ -4124,21 +4131,21 @@ msgstr ""
 "เมื่อ​แอป Artic Setup Tool ทำงาน​บน Old 3DS หรือ 2DS: คัดลอก​ไฟล์​ระบบ​และ​ข้อมูล​ของ​เครื่อง (การ​ตั้งค่า​ระบบ รหัส​เพื่อน ข้อมูล Mii และ eShop) มา​ยัง Azahar เพื่อ​ให้​เกม​ที่​ต้อง​ใช้​แอปเพล็ต​หรือ​ไฟล์​ระบบ​ของ 3DS เริ่ม​ได้ รวมถึง HOME Menu (การ​ตั้งค่า > ระบบ)\n"
 "ข้อมูล​นั้น​เป็น​ของ​เครื่อง​คุณ: อย่า​แชร์​โฟลเดอร์​ของ Azahar หลัง​จาก​นั้น"
 
-#: port/frontend/shell/pages.cpp:1529
+#: port/frontend/shell/pages.cpp:1530
 msgid "Set up from a New 3DS"
 msgstr "นำเข้า​จาก New 3DS"
 
-#: port/frontend/shell/pages.cpp:1529
+#: port/frontend/shell/pages.cpp:1530
 msgid "As above, from a New 3DS or New 2DS running the Artic Setup Tool app."
 msgstr "เหมือน​ด้านบน จาก New 3DS หรือ New 2DS ที่​เปิด​แอป Artic Setup Tool"
 
 #. an Artic Setup row's value: it can't start without keys aes_keys.txt lacks
-#: port/frontend/shell/pages.cpp:1537
+#: port/frontend/shell/pages.cpp:1538
 msgid "Keys needed"
 msgstr "ต้อง​มี​คีย์"
 
 #. {0} is a folder, {1} the missing keys' names; otpKey, otpIV, rootPublicXY, :AES and :ECC are written as in the key file
-#: port/frontend/shell/pages.cpp:1539
+#: port/frontend/shell/pages.cpp:1540
 msgid ""
 "Azahar here has no keys of its own: the setup needs otpKey and otpIV (under :AES) and rootPublicXY (under :ECC) in aes_keys.txt from your own console, in {0}/sysdata.\n"
 "Missing: {1}."
@@ -4342,7 +4349,7 @@ msgstr "Eden"
 msgid "ProsperoEden's launcher: a rail of sections, Home around your game, Settings as tiles."
 msgstr "ตัว​เปิด​ของ ProsperoEden: แถบ​ส่วน​ต่าง ๆ หน้า​หลัก​ที่​มี​เกม​ของ​คุณ​เป็น​จุดเด่น การ​ตั้งค่า​แบบ​ไทล์"
 
-#: port/frontend/shell/settings.cpp:181 port/frontend/shell/settings.cpp:444 port/frontend/shell/settings.cpp:661 port/frontend/shell/settings.cpp:678 port/frontend/shell/settings.cpp:1167 port/frontend/shell/setup.cpp:483
+#: port/frontend/shell/settings.cpp:181 port/frontend/shell/settings.cpp:444 port/frontend/shell/settings.cpp:662 port/frontend/shell/settings.cpp:679 port/frontend/shell/settings.cpp:1180 port/frontend/shell/setup.cpp:484
 msgid "Language"
 msgstr "ภาษา"
 
@@ -4636,11 +4643,11 @@ msgstr "ข้อความ \"compiled shaders\" ของ Cemu บน​เ�
 msgid "The notes Cemu shows in a corner while a game builds its shaders and pipelines (\"Loaded 1200 shaders\"). Off hides them; the shaders are built either way. Also in the in-game menu."
 msgstr "ข้อความ​ที่ Cemu แสดง​ที่​มุม​จอ​ขณะ​เกม​สร้าง​เชดเดอร์​และ​ไปป์ไลน์ (\"Loaded 1200 shaders\") ปิด​เพื่อ​ซ่อน เชดเดอร์​ยัง​ถูก​สร้าง​ตาม​ปกติ มี​ใน​เมนู​ใน​เกม​ด้วย"
 
-#: port/frontend/shell/settings.cpp:474 port/frontend/shell/settings.cpp:495
+#: port/frontend/shell/settings.cpp:474 port/frontend/shell/settings.cpp:496
 msgid "No stutter while new shaders build."
 msgstr "ไม่​กระตุก​ขณะ​สร้าง​เชดเดอร์​ใหม่"
 
-#: port/frontend/shell/settings.cpp:475 port/frontend/shell/settings.cpp:496
+#: port/frontend/shell/settings.cpp:475 port/frontend/shell/settings.cpp:497
 msgid "On, a new shader is built while the game carries on, so it does not stutter, but some things may be missing for a moment. Off, the game waits for each one: stutter, but nothing drawn wrong."
 msgstr "เมื่อ​เปิด เชดเดอร์​ใหม่​จะ​สร้าง​ขณะ​ที่​เกม​ดำเนิน​ต่อ จึง​ไม่​กระตุก แต่​บาง​อย่าง​อาจ​หาย​ไป​ชั่วครู่ เมื่อ​ปิด เกม​จะ​รอ​แต่ละ​ตัว: กระตุก แต่​ไม่มี​อะไร​แสดง​ผิด"
 
@@ -4668,223 +4675,224 @@ msgstr "พื้นผิว​กำหนดเอง"
 msgid "Texture packs from azahar/load/textures."
 msgstr "แพ็ก​พื้นผิว​จาก azahar/load/textures"
 
-#: port/frontend/shell/settings.cpp:491
-msgid "Texture packs in /data/ps5cemu/azahar/load/textures/<title ID>, as the desktop Azahar loads them."
-msgstr "แพ็ก​พื้นผิว​ใน /data/ps5cemu/azahar/load/textures/<title ID> แบบ​เดียว​กับ​ที่ Azahar บน​คอมพิวเตอร์​โหลด"
+#. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+#: port/frontend/shell/settings.cpp:492
+msgid "Texture packs in {0}/azahar/load/textures/<title ID>, as the desktop Azahar loads them."
+msgstr "แพ็ก​พื้นผิว​ใน {0}/azahar/load/textures/<title ID> แบบ​เดียว​กับ​ที่ Azahar บน​คอมพิวเตอร์​โหลด"
 
-#: port/frontend/shell/settings.cpp:499
+#: port/frontend/shell/settings.cpp:500
 msgid "Hardware shaders"
 msgstr "เชดเดอร์​ฮาร์ดแวร์"
 
-#: port/frontend/shell/settings.cpp:499
+#: port/frontend/shell/settings.cpp:500
 msgid "Off: 3D drawn exactly, on the CPU. Off for Pokémon."
 msgstr "ปิด: วาด 3D อย่าง​แม่นยำ​บน CPU ปิด​สำหรับ Pokémon"
 
-#: port/frontend/shell/settings.cpp:500
+#: port/frontend/shell/settings.cpp:501
 msgid "On, the 3DS's vertex shaders run on the PS5's GPU, the fastest way. Off, they run on the CPU as Azahar's software shaders: slower, but a model and the outline drawn around it are computed alike, and its lighting is corrected per triangle. Off by default for Pokémon X, Y, Omega Ruby, Alpha Sapphire, Sun, Moon, Ultra Sun and Ultra Moon, whose outlines, lighting and shadows glitch otherwise. Applies to the next game."
 msgstr "เมื่อ​เปิด เวอร์เท็กซ์​เชดเดอร์​ของ 3DS จะ​ทำงาน​บน GPU ของ PS5 ซึ่ง​เร็ว​ที่สุด เมื่อ​ปิด จะ​ทำงาน​บน CPU เป็น​ซอฟต์แวร์​เชดเดอร์​ของ Azahar: ช้า​กว่า แต่​โมเดล​และ​เส้น​ขอบ​ที่​วาด​รอบ​โมเดล​จะ​คำนวณ​แบบ​เดียวกัน และ​แสง​จะ​ถูก​แก้ไข​ทีละ​สามเหลี่ยม ปิด​เป็น​ค่า​เริ่มต้น​สำหรับ Pokémon X, Y, Omega Ruby, Alpha Sapphire, Sun, Moon, Ultra Sun และ Ultra Moon ซึ่ง​เส้น​ขอบ แสง และ​เงา​จะ​ผิดเพี้ยน​หาก​ไม่​ปิด มีผล​กับ​เกม​ถัดไป"
 
-#: port/frontend/shell/settings.cpp:505
+#: port/frontend/shell/settings.cpp:506
 msgid "Outline fix"
 msgstr "แก้​เส้น​ขอบ"
 
-#: port/frontend/shell/settings.cpp:505
+#: port/frontend/shell/settings.cpp:506
 msgid "Fixes moving black dots on outlined 3D models."
 msgstr "แก้​จุด​ดำ​ที่​เคลื่อนที่​บน​โมเดล 3D ที่​มี​เส้น​ขอบ"
 
-#: port/frontend/shell/settings.cpp:506
+#: port/frontend/shell/settings.cpp:507
 msgid "Computes every 3D position the same way twice, as Azahar does on Apple's GPUs. For a game that shows moving black dots on its outlined models with hardware shaders on; the Pokémon games are drawn right with Hardware shaders off instead. Applies to the next game."
 msgstr "คำนวณ​ทุก​ตำแหน่ง 3D ด้วย​วิธี​เดียวกัน​ทั้ง​สอง​ครั้ง เหมือน​ที่ Azahar ทำ​บน GPU ของ Apple สำหรับ​เกม​ที่​มี​จุด​ดำ​เคลื่อนที่​บน​โมเดล​ที่​มี​เส้น​ขอบ​เมื่อ​เปิด​เชดเดอร์​ฮาร์ดแวร์ ส่วน​เกม Pokémon จะ​วาด​ถูกต้อง​เมื่อ​ปิด​เชดเดอร์​ฮาร์ดแวร์​แทน มีผล​กับ​เกม​ถัดไป"
 
-#: port/frontend/shell/settings.cpp:513
+#: port/frontend/shell/settings.cpp:514
 msgid "How the DS's screens are scaled."
 msgstr "วิธี​ขยาย​หน้าจอ​ของ DS"
 
-#: port/frontend/shell/settings.cpp:514
+#: port/frontend/shell/settings.cpp:515
 msgid "How the DS's 256 x 192 screens are scaled to the TV. Sharp keeps every pixel square and even at any size; Smooth blurs them together; Square pixels takes the nearest, uneven where the size is not a whole number. The in-game menu changes it too."
 msgstr "วิธี​ขยาย​หน้าจอ 256 x 192 ของ DS ให้​เต็ม​ทีวี คมชัด​ทำให้​ทุก​พิกเซล​เป็น​สี่เหลี่ยม​เท่ากัน​ใน​ทุก​ขนาด นุ่มนวล​ทำให้​พิกเซล​กลืน​กัน พิกเซล​สี่เหลี่ยม​ใช้​พิกเซล​ที่​ใกล้​ที่สุด ซึ่ง​ไม่​เท่ากัน​เมื่อ​ขนาด​ไม่ใช่​จำนวน​เต็ม​เท่า เมนู​ใน​เกม​ก็​เปลี่ยน​ได้"
 
-#: port/frontend/shell/settings.cpp:520
+#: port/frontend/shell/settings.cpp:521
 msgid "Recompiler"
 msgstr "รีคอมไพเลอร์"
 
-#: port/frontend/shell/settings.cpp:521
+#: port/frontend/shell/settings.cpp:522
 msgid "No executable memory: the slower interpreter runs."
 msgstr "ไม่มี​หน่วย​ความ​จำ​ที่​รัน​โค้ด​ได้: ใช้​อินเทอร์พรีเตอร์​ที่​ช้า​กว่า"
 
-#: port/frontend/shell/settings.cpp:522
+#: port/frontend/shell/settings.cpp:523
 msgid "Runs the DS's two CPUs on melonDS's recompiler, in the executable memory the PS5 gives (Diagnostics says whether it does), much faster than its interpreter. Off: the interpreter, slower, for a game the recompiler gets wrong. Applies to the next game."
 msgstr "รัน CPU สอง​ตัว​ของ DS ด้วย​รีคอมไพเลอร์​ของ melonDS ใน​หน่วย​ความ​จำ​ที่​รัน​โค้ด​ได้​ที่ PS5 ให้ (การ​วินิจฉัย​บอก​ว่า​ให้​หรือไม่) เร็ว​กว่า​อินเทอร์พรีเตอร์​มาก ปิด: ใช้​อินเทอร์พรีเตอร์​ซึ่ง​ช้า​กว่า สำหรับ​เกม​ที่​รีคอมไพเลอร์​ทำงาน​ผิด มีผล​กับ​เกม​ถัดไป"
 
-#: port/frontend/shell/settings.cpp:529
+#: port/frontend/shell/settings.cpp:530
 msgid "Screen layout"
 msgstr "การ​จัด​วาง​หน้าจอ"
 
-#: port/frontend/shell/settings.cpp:529
+#: port/frontend/shell/settings.cpp:530
 msgid "How the two screens share the TV."
 msgstr "วิธี​ที่​สอง​หน้าจอ​แบ่ง​ทีวี"
 
-#: port/frontend/shell/settings.cpp:530
+#: port/frontend/shell/settings.cpp:531
 msgid "One above the other, the top one alone, the top one large with the bottom one beside it, or the two side by side. In a game, touchpad click + R1 goes to the next."
 msgstr "จอ​หนึ่ง​อยู่​เหนือ​อีก​จอ จอ​บน​อย่าง​เดียว จอ​บน​ขนาด​ใหญ่​และ​จอ​ล่าง​อยู่​ข้าง หรือ​สอง​จอ​เคียง​ข้าง​กัน ใน​เกม กด​ทัชแพด + R1 เพื่อ​ไป​แบบ​ถัดไป"
 
-#: port/frontend/shell/settings.cpp:533
+#: port/frontend/shell/settings.cpp:534
 msgid "Artwork around the screens."
 msgstr "ภาพ​ตกแต่ง​รอบ​หน้าจอ"
 
-#: port/frontend/shell/settings.cpp:534
+#: port/frontend/shell/settings.cpp:535
 msgid "Artwork around the screens, never over them. It follows every layout, and the in-game menu changes it too."
 msgstr "ภาพ​ตกแต่ง​รอบ​หน้าจอ ไม่​ทับ​หน้าจอ ใช้​ได้​กับ​ทุก​การ​จัด​วาง และ​เมนู​ใน​เกม​ก็​เปลี่ยน​ได้"
 
-#: port/frontend/shell/settings.cpp:540
+#: port/frontend/shell/settings.cpp:541
 msgid "Wii U games' volume"
 msgstr "ระดับ​เสียง​เกม Wii U"
 
-#: port/frontend/shell/settings.cpp:540
+#: port/frontend/shell/settings.cpp:541
 msgid "DS games' volume"
 msgstr "ระดับ​เสียง​เกม DS"
 
-#: port/frontend/shell/settings.cpp:541
+#: port/frontend/shell/settings.cpp:542
 msgid "The games' sound."
 msgstr "เสียง​ของ​เกม"
 
-#: port/frontend/shell/settings.cpp:541
+#: port/frontend/shell/settings.cpp:542
 msgid "The games' sound on this side. Left and Right change it by 10%."
 msgstr "เสียง​ของ​เกม​ฝั่ง​นี้ ซ้าย​และ​ขวา​ปรับ​ครั้ง​ละ 10%"
 
-#: port/frontend/shell/settings.cpp:544
+#: port/frontend/shell/settings.cpp:545
 msgid "GamePad speaker"
 msgstr "ลำโพง GamePad"
 
-#: port/frontend/shell/settings.cpp:544
+#: port/frontend/shell/settings.cpp:545
 msgid "The Wii U GamePad's own sound, on the DualSense."
 msgstr "เสียง​ของ Wii U GamePad เอง บน DualSense"
 
-#: port/frontend/shell/settings.cpp:545
+#: port/frontend/shell/settings.cpp:546
 msgid "The sounds games play on the Wii U GamePad's speaker, from player 1's DualSense speaker. Many games send their whole sound there too, so it is off unless you want it. Applies to the next game."
 msgstr "เสียง​ที่​เกม​เล่น​บน​ลำโพง​ของ Wii U GamePad ออก​ทาง​ลำโพง DualSense ของ​ผู้เล่น 1 หลาย​เกม​ส่ง​เสียง​ทั้งหมด​ไป​ที่นั่น​ด้วย จึง​ปิด​ไว้​เว้นแต่​คุณ​ต้องการ มีผล​กับ​เกม​ถัดไป"
 
-#: port/frontend/shell/settings.cpp:552
+#: port/frontend/shell/settings.cpp:553
 msgid "Launcher music"
 msgstr "เพลง​ลอนเชอร์"
 
-#: port/frontend/shell/settings.cpp:552
+#: port/frontend/shell/settings.cpp:553
 msgid "Music that plays in the menus."
 msgstr "เพลง​ที่​เล่น​ใน​เมนู"
 
-#: port/frontend/shell/settings.cpp:553
+#: port/frontend/shell/settings.cpp:554
 msgid "The launcher's own music, one of yours, or none. To use your own, put MP3 or WAV files in {0}; they appear here. Every side plays the same."
 msgstr "เพลง​ของ​ลอนเชอร์ เพลง​ของ​คุณ หรือ​ไม่มี หาก​ต้องการ​ใช้​เพลง​ของ​คุณ ใส่​ไฟล์ MP3 หรือ WAV ใน {0} แล้ว​จะ​แสดง​ที่นี่ ทุก​ฝั่ง​เล่น​เพลง​เดียวกัน"
 
-#: port/frontend/shell/settings.cpp:556
+#: port/frontend/shell/settings.cpp:557
 msgid "Music volume"
 msgstr "ระดับ​เสียง​เพลง"
 
-#: port/frontend/shell/settings.cpp:556
+#: port/frontend/shell/settings.cpp:557
 msgid "How loud the menus' music is."
 msgstr "ความ​ดัง​ของ​เพลง​ใน​เมนู"
 
-#: port/frontend/shell/settings.cpp:557
+#: port/frontend/shell/settings.cpp:558
 msgid "How loud the launcher's music is. Left and Right change it by 10%."
 msgstr "ความ​ดัง​ของ​เพลง​ลอนเชอร์ ซ้าย​และ​ขวา​ปรับ​ครั้ง​ละ 10%"
 
-#: port/frontend/shell/settings.cpp:558
+#: port/frontend/shell/settings.cpp:559
 msgid "Menu sounds"
 msgstr "เสียง​เมนู"
 
-#: port/frontend/shell/settings.cpp:558
+#: port/frontend/shell/settings.cpp:559
 msgid "The sounds of moving and choosing."
 msgstr "เสียง​เมื่อ​เลื่อน​และ​เลือก"
 
-#: port/frontend/shell/settings.cpp:559
+#: port/frontend/shell/settings.cpp:560
 msgid "The launcher's sounds as you move, choose and go back."
 msgstr "เสียง​ของ​ลอนเชอร์​เมื่อ​คุณ​เลื่อน เลือก และ​ย้อน​กลับ"
 
-#: port/frontend/shell/settings.cpp:563
+#: port/frontend/shell/settings.cpp:564
 msgid "The DualSense's rumble, in games and in the launcher."
 msgstr "การ​สั่น​ของ DualSense ใน​เกม​และ​ใน​ลอนเชอร์"
 
-#: port/frontend/shell/settings.cpp:564
+#: port/frontend/shell/settings.cpp:565
 msgid "Off, the DualSense never rumbles, in games or in the launcher. The same on every side."
 msgstr "เมื่อ​ปิด DualSense จะ​ไม่​สั่น​เลย ทั้ง​ใน​เกม​และ​ลอนเชอร์ เหมือน​กัน​ทุก​ฝั่ง"
 
-#: port/frontend/shell/settings.cpp:568
+#: port/frontend/shell/settings.cpp:569
 msgid "Turbo button"
 msgstr "ปุ่ม​เทอร์โบ"
 
-#: port/frontend/shell/settings.cpp:568
+#: port/frontend/shell/settings.cpp:569
 msgid "Hold it and it presses again and again by itself."
 msgstr "กด​ค้าง​ไว้​แล้ว​ปุ่ม​จะ​กด​ซ้ำ​เอง"
 
-#: port/frontend/shell/settings.cpp:569
+#: port/frontend/shell/settings.cpp:570
 msgid "Choose a DualSense button: while you hold it in a game, it presses and lets go by itself about fifteen times a second, for games that make you mash. The button keeps whatever it is mapped to. None turns it off. Every player on this side has it."
 msgstr "เลือก​ปุ่ม DualSense: ขณะ​กด​ค้าง​ใน​เกม ปุ่ม​จะ​กด​และ​ปล่อย​เอง​ประมาณ​สิบห้า​ครั้ง​ต่อ​วินาที สำหรับ​เกม​ที่​ต้อง​กด​รัว ปุ่ม​ยัง​คง​การ​ตั้ง​ปุ่ม​เดิม ไม่มี​คือ​ปิด ผู้เล่น​ทุก​คน​ใน​ฝั่ง​นี้​ใช้​ได้"
 
-#: port/frontend/shell/settings.cpp:577
+#: port/frontend/shell/settings.cpp:578
 msgid "Where A is: on Circle, as on the console, or on Cross."
 msgstr "ตำแหน่ง​ของ A: ที่​ปุ่มวงกลม​เหมือน​บน​เครื่อง หรือ​ที่​ปุ่มกากบาท"
 
-#: port/frontend/shell/settings.cpp:578
+#: port/frontend/shell/settings.cpp:579
 msgid "A on Circle and B on Cross, where the console has them, or A on Cross and B on Circle, as PlayStation games confirm. X and Y swap to match. Also in the in-game menu."
 msgstr "A ที่​ปุ่มวงกลม​และ B ที่​ปุ่มกากบาท ตาม​ตำแหน่ง​บน​เครื่อง หรือ A ที่​ปุ่มกากบาท​และ B ที่​ปุ่มวงกลม เหมือน​เกม PlayStation ที่​ยืนยัน​ด้วย​ปุ่มกากบาท X กับ Y สลับ​ให้​ตรงกัน มี​ใน​เมนู​ใน​เกม​ด้วย"
 
-#: port/frontend/shell/settings.cpp:588
+#: port/frontend/shell/settings.cpp:589
 msgid "Cross: this player's controller, motion and buttons."
 msgstr "ปุ่มกากบาท: คอนโทรลเลอร์ การ​เคลื่อนไหว และ​ปุ่ม​ของ​ผู้เล่น​นี้"
 
-#: port/frontend/shell/settings.cpp:588
+#: port/frontend/shell/settings.cpp:589
 msgid "No DualSense for this player yet."
 msgstr "ผู้เล่น​นี้​ยัง​ไม่มี DualSense"
 
-#: port/frontend/shell/settings.cpp:589
+#: port/frontend/shell/settings.cpp:590
 msgid "What the game sees in this player's hands, and its motion, vibration, deadzones and buttons. Player 1 is the signed-in user who started the app; the other signed-in users' DualSenses are players 2 to 4."
 msgstr "สิ่ง​ที่​เกม​เห็น​ใน​มือ​ผู้เล่น​นี้ พร้อม​การ​เคลื่อนไหว การ​สั่น เดดโซน และ​ปุ่ม ผู้เล่น 1 คือ​ผู้ใช้​ที่​ลงชื่อ​เข้า​ใช้​และ​เปิด​แอป DualSense ของ​ผู้ใช้​อื่น​ที่​ลงชื่อ​เข้า​ใช้​คือ​ผู้เล่น 2 ถึง 4"
 
-#: port/frontend/shell/settings.cpp:599
+#: port/frontend/shell/settings.cpp:600
 msgid "The DualSense's motion as the 3DS's."
 msgstr "การ​เคลื่อนไหว​ของ DualSense แทน​ของ 3DS"
 
-#: port/frontend/shell/settings.cpp:600
+#: port/frontend/shell/settings.cpp:601
 msgid "The DualSense's gyroscope and accelerometer as the 3DS's own, for the games that aim or steer by tilting it."
 msgstr "ไจโรสโคป​และ​มาตร​วัด​ความ​เร่ง​ของ DualSense แทน​ของ 3DS เอง สำหรับ​เกม​ที่​เล็ง​หรือ​บังคับ​ด้วย​การ​เอียง​เครื่อง"
 
-#: port/frontend/shell/settings.cpp:601
+#: port/frontend/shell/settings.cpp:602
 msgid "How far a stick moves before it counts."
 msgstr "สติ๊ก​ต้อง​ขยับ​ไกล​แค่ไหน​จึง​จะ​นับ"
 
-#: port/frontend/shell/settings.cpp:602
+#: port/frontend/shell/settings.cpp:603
 msgid "How far a stick moves before the game sees it, for the circle pad and the C-stick. Raise it if something drifts when you let go of the stick; lower it for finer control."
 msgstr "สติ๊ก​ต้อง​ขยับ​ไกล​แค่ไหน​เกม​จึง​จะ​รับรู้ สำหรับ Circle Pad และ C-Stick เพิ่ม​ค่า​หาก​มี​อะไร​เลื่อน​เอง​เมื่อ​ปล่อย​สติ๊ก ลด​ค่า​เพื่อ​การ​ควบคุม​ที่​ละเอียด​ขึ้น"
 
-#: port/frontend/shell/settings.cpp:604
+#: port/frontend/shell/settings.cpp:605
 msgid "How far the left stick moves before it presses the DS's D-pad. Raise it if a direction is pressed when you let go of the stick."
 msgstr "สติ๊ก​ซ้าย​ต้อง​ขยับ​ไกล​แค่ไหน​จึง​จะ​กด​ปุ่ม​ทิศทาง​ของ DS เพิ่ม​ค่า​หาก​ยัง​มี​ทิศทาง​ถูก​กด​เมื่อ​ปล่อย​สติ๊ก"
 
-#: port/frontend/shell/settings.cpp:617
+#: port/frontend/shell/settings.cpp:618
 msgid "Which DualSense button presses each of the 3DS's buttons. A is on Circle and B on Cross by default, where the 3DS has them; the circle pad is the left stick, the C-stick the right one, and the touchpad the touch screen."
 msgstr "ปุ่ม DualSense ปุ่ม​ไหน​กด​ปุ่ม​แต่ละ​ปุ่ม​ของ 3DS ค่า​เริ่มต้น A อยู่​ที่​ปุ่มวงกลม​และ B ที่​ปุ่มกากบาท ตาม​ตำแหน่ง​บน 3DS Circle Pad คือ​สติ๊ก​ซ้าย C-Stick คือ​สติ๊ก​ขวา และ​ทัชแพด​คือ​หน้าจอ​สัมผัส"
 
-#: port/frontend/shell/settings.cpp:619
+#: port/frontend/shell/settings.cpp:620
 msgid "Which DualSense button presses each of the DS's buttons. A is on Circle and B on Cross by default, where the DS has them; the left stick is a second D-pad, the touchpad the touch screen, and holding R3 blows into the microphone."
 msgstr "ปุ่ม DualSense ปุ่ม​ไหน​กด​ปุ่ม​แต่ละ​ปุ่ม​ของ DS ค่า​เริ่มต้น A อยู่​ที่​ปุ่มวงกลม​และ B ที่​ปุ่มกากบาท ตาม​ตำแหน่ง​บน DS สติ๊ก​ซ้าย​เป็น​ปุ่ม​ทิศทาง​ชุด​ที่​สอง ทัชแพด​คือ​หน้าจอ​สัมผัส และ​กด R3 ค้าง​ไว้​เพื่อ​เป่า​ไมโครโฟน"
 
-#: port/frontend/shell/settings.cpp:622
+#: port/frontend/shell/settings.cpp:623
 msgid "Default buttons, motion and deadzone."
 msgstr "ปุ่ม การ​เคลื่อนไหว และ​เดดโซน​ค่า​เริ่มต้น"
 
-#: port/frontend/shell/settings.cpp:622
+#: port/frontend/shell/settings.cpp:623
 msgid "Default buttons and deadzone."
 msgstr "ปุ่ม​และ​เดดโซน​ค่า​เริ่มต้น"
 
-#: port/frontend/shell/settings.cpp:622
+#: port/frontend/shell/settings.cpp:623
 msgid "The default buttons, motion and deadzone."
 msgstr "ปุ่ม การ​เคลื่อนไหว และ​เดดโซน​ค่า​เริ่มต้น"
 
-#: port/frontend/shell/settings.cpp:628
+#: port/frontend/shell/settings.cpp:629
 msgid "{0} in a phone's or tablet's browser, with touch."
 msgstr "{0} ใน​เบราว์เซอร์​ของ​โทรศัพท์​หรือ​แท็บเล็ต พร้อม​ระบบ​สัมผัส"
 
-#: port/frontend/shell/settings.cpp:629
+#: port/frontend/shell/settings.cpp:630
 msgid ""
 "{0} in any browser on the PS5's network, a phone's, a tablet's or a computer's, with nothing to install, and its touches sent back to the game. Scan the code shown here, or open the address. The DualSense stays the buttons, and the sound stays on the PS5.\n"
 "While a browser shows it, the PS5 copies that screen up to 30 times a second, so a game can run a little slower; with no browser, it costs nothing. Any device on your network can open the page, so turn it off on a network you share.\n"
@@ -4894,667 +4902,672 @@ msgstr ""
 "ขณะ​ที่​เบราว์เซอร์​แสดง​อยู่ PS5 จะ​คัดลอก​หน้าจอ​นั้น​สูงสุด 30 ครั้ง​ต่อ​วินาที เกม​จึง​อาจ​ช้า​ลง​เล็กน้อย หาก​ไม่มี​เบราว์เซอร์​ก็​ไม่​เสีย​อะไร อุปกรณ์​ใดก็ได้​ใน​เครือข่าย​เปิด​หน้า​นี้​ได้ จึง​ควร​ปิด​เมื่อ​ใช้​เครือข่าย​ร่วม​กับ​ผู้อื่น\n"
 "สวิตช์​เดียว​สำหรับ​ทุก​ฝั่ง (หน้าจอ GamePad เป็น​ของ​ผู้เล่น 1) มี​ใน​เมนู​ของ​เกม​ด้วย (กด​ทัชแพด + ปุ่ม​ตัวเลือก) จาก​ไอเดีย​และ​ต้นแบบ​ของ dolphin78 (#38)"
 
-#: port/frontend/shell/settings.cpp:642
+#: port/frontend/shell/settings.cpp:643
 msgid "For the Skylanders games."
 msgstr "สำหรับ​เกม Skylanders"
 
-#: port/frontend/shell/settings.cpp:643
+#: port/frontend/shell/settings.cpp:644
 msgid "For Disney Infinity 3.0."
 msgstr "สำหรับ Disney Infinity 3.0"
 
-#: port/frontend/shell/settings.cpp:644
+#: port/frontend/shell/settings.cpp:645
 msgid "For LEGO Dimensions."
 msgstr "สำหรับ LEGO Dimensions"
 
-#: port/frontend/shell/settings.cpp:645
+#: port/frontend/shell/settings.cpp:646
 msgid "Cemu's emulated portal, plugged in as a game starts. In the game, the menu's USB devices category puts figures on it: dumps in {0}. A real portal plugged into the PS5 is not supported."
 msgstr "พอร์ทัล​จำลอง​ของ Cemu ที่​เสียบ​เมื่อ​เกม​เริ่ม ใน​เกม หมวด​อุปกรณ์ USB ของ​เมนู​ใช้​วาง​ฟิกเกอร์: ไฟล์​ดัมพ์​อยู่​ใน {0} ไม่​รองรับ​พอร์ทัล​จริง​ที่​เสียบ​กับ PS5"
 
-#: port/frontend/shell/settings.cpp:657
+#: port/frontend/shell/settings.cpp:658
 msgid "Region"
 msgstr "ภูมิภาค"
 
-#: port/frontend/shell/settings.cpp:657
+#: port/frontend/shell/settings.cpp:658
 msgid "The emulated 3DS's region."
 msgstr "ภูมิภาค​ของ 3DS จำลอง"
 
-#: port/frontend/shell/settings.cpp:658
+#: port/frontend/shell/settings.cpp:659
 msgid "Automatic takes each game's own region. A game made for another region may refuse to start or show other languages. Applies to the next game."
 msgstr "อัตโนมัติ​ใช้​ภูมิภาค​ของ​แต่ละ​เกม เกม​ที่​ทำ​สำหรับ​ภูมิภาค​อื่น​อาจ​ไม่​ยอม​เริ่ม​หรือ​แสดง​ภาษา​อื่น มีผล​กับ​เกม​ถัดไป"
 
-#: port/frontend/shell/settings.cpp:661
+#: port/frontend/shell/settings.cpp:662
 msgid "The emulated 3DS's language."
 msgstr "ภาษา​ของ 3DS จำลอง"
 
-#: port/frontend/shell/settings.cpp:662
+#: port/frontend/shell/settings.cpp:663
 msgid "The language games that follow the console's show their text in. Applies to the next game."
 msgstr "ภาษา​ที่​เกม​ซึ่ง​ใช้​ภาษา​ตาม​เครื่อง​ใช้​แสดง​ข้อความ มีผล​กับ​เกม​ถัดไป"
 
-#: port/frontend/shell/settings.cpp:667
+#: port/frontend/shell/settings.cpp:668
 msgid "The emulated 3DS's CPU speed."
 msgstr "ความเร็ว CPU ของ 3DS จำลอง"
 
-#: port/frontend/shell/settings.cpp:668
+#: port/frontend/shell/settings.cpp:669
 msgid "How fast the emulated CPU runs, against a 3DS's: higher can steady a game that slows down where a 3DS would not, and asks more of the PS5; lower can speed up one held back by its own pacing. 100% is a 3DS. Also in the in-game menu."
 msgstr "CPU จำลอง​ทำงาน​เร็ว​แค่ไหน​เทียบ​กับ 3DS: สูง​ขึ้น​ช่วย​ให้​เกม​ที่​ช้า​ลง​ใน​จุด​ที่ 3DS ไม่​ช้า​นิ่ง​ขึ้น และ​ใช้ PS5 มาก​ขึ้น ต่ำ​ลง​ช่วย​เร่ง​เกม​ที่​ถูก​จังหวะ​ของ​ตัวเอง​รั้ง​ไว้ 100% คือ 3DS มี​ใน​เมนู​ใน​เกม​ด้วย"
 
-#: port/frontend/shell/settings.cpp:671
+#: port/frontend/shell/settings.cpp:672
 msgid "Home Menu"
 msgstr "HOME Menu"
 
-#: port/frontend/shell/settings.cpp:671
+#: port/frontend/shell/settings.cpp:672
 msgid "Start"
 msgstr "เริ่ม"
 
-#: port/frontend/shell/settings.cpp:671
+#: port/frontend/shell/settings.cpp:672
 msgid "Run Artic Setup first"
 msgstr "รัน Artic Setup ก่อน"
 
-#: port/frontend/shell/settings.cpp:672
+#: port/frontend/shell/settings.cpp:673
 msgid "The 3DS Home Menu, from your console's files."
 msgstr "HOME Menu ของ 3DS จาก​ไฟล์​ของ​เครื่อง​คุณ"
 
-#: port/frontend/shell/settings.cpp:673
+#: port/frontend/shell/settings.cpp:674
 msgid "Starts the 3DS Home Menu, once Artic Base's setup has copied your own console's system files (Artic Base)."
 msgstr "เริ่ม HOME Menu ของ 3DS หลัง​จาก​การ​นำเข้า​ของ Artic Base คัดลอก​ไฟล์​ระบบ​จาก​เครื่อง​ของ​คุณ​แล้ว (Artic Base)"
 
-#: port/frontend/shell/settings.cpp:678
+#: port/frontend/shell/settings.cpp:679
 msgid "The emulated DS's language."
 msgstr "ภาษา​ของ DS จำลอง"
 
-#: port/frontend/shell/settings.cpp:679
+#: port/frontend/shell/settings.cpp:680
 msgid "The DS's own language, which many games follow. The DS has Japanese, English, French, German, Italian, Spanish and Chinese; any other language uses English. Applies to the next game."
 msgstr "ภาษา​ของ DS เอง ซึ่ง​หลาย​เกม​ใช้​ตาม DS มี​ภาษา​ญี่ปุ่น อังกฤษ ฝรั่งเศส เยอรมัน อิตาลี สเปน และ​จีน ภาษา​อื่น​ใช้​ภาษา​อังกฤษ มีผล​กับ​เกม​ถัดไป"
 
-#: port/frontend/shell/settings.cpp:683
+#: port/frontend/shell/settings.cpp:684
 msgid "Found in melonds/bios."
 msgstr "พบ​ใน melonds/bios"
 
-#: port/frontend/shell/settings.cpp:683
+#: port/frontend/shell/settings.cpp:684
 msgid "Not found: melonDS's built-in BIOS runs the games."
 msgstr "ไม่พบ: BIOS ใน​ตัว​ของ melonDS เล่น​เกม​แทน"
 
-#: port/frontend/shell/settings.cpp:693
+#: port/frontend/shell/settings.cpp:695
 msgid "Where your games are. Cross picks another."
 msgstr "ตำแหน่ง​เกม​ของ​คุณ ปุ่มกากบาท​เลือก​ที่​อื่น"
 
-#: port/frontend/shell/settings.cpp:694
-msgid "Your Wii U games: .wua, .wud, .wux, or folders with code, content and meta. Encrypted .wud and .wux need their keys in /data/ps5cemu/keys.txt."
-msgstr "เกม Wii U: .wua, .wud, .wux หรือ​โฟลเดอร์​ที่​มี code, content และ meta ไฟล์ .wud และ .wux ที่​เข้ารหัส​ต้อง​มี​คีย์​ใน /data/ps5cemu/keys.txt"
+#. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+#: port/frontend/shell/settings.cpp:697
+msgid "Your Wii U games: .wua, .wud, .wux, or folders with code, content and meta. Encrypted .wud and .wux need their keys in {0}/keys.txt."
+msgstr "เกม Wii U: .wua, .wud, .wux หรือ​โฟลเดอร์​ที่​มี code, content และ meta ไฟล์ .wud และ .wux ที่​เข้ารหัส​ต้อง​มี​คีย์​ใน {0}/keys.txt"
 
-#: port/frontend/shell/settings.cpp:696
+#: port/frontend/shell/settings.cpp:699
 msgid "Your 3DS games: .3ds or .cci, .cxi, .3dsx and Azahar's compressed dumps, decrypted, here or in the folders in it. CIA files are installed (Install a CIA file). Encrypted dumps do not start, with keys or without: decrypt them on your 3DS first (GodMode9)."
 msgstr "เกม 3DS: .3ds, .cci, .cxi, .3dsx และ​ไฟล์​ดัมพ์​บีบอัด​ของ Azahar ที่​ถอด​รหัส​แล้ว อยู่​ที่นี่​หรือ​ใน​โฟลเดอร์​ข้างใน ไฟล์ CIA ต้อง​ติดตั้ง (ติดตั้ง​ไฟล์ CIA) ไฟล์​ดัมพ์​ที่​เข้ารหัส​จะ​ไม่​เริ่ม ไม่​ว่า​จะ​มี​คีย์​หรือ​ไม่: ถอด​รหัส​บน 3DS ก่อน (GodMode9)"
 
-#: port/frontend/shell/settings.cpp:699
+#: port/frontend/shell/settings.cpp:702
 msgid "Your DS games: .nds files, here or in the folders in it."
 msgstr "เกม DS: ไฟล์ .nds อยู่​ที่นี่​หรือ​ใน​โฟลเดอร์​ข้างใน"
 
-#: port/frontend/shell/settings.cpp:700
+#: port/frontend/shell/settings.cpp:703
 msgid "Look for games now"
 msgstr "ค้นหา​เกม​ตอนนี้"
 
-#: port/frontend/shell/settings.cpp:700 port/frontend/shell/shares.cpp:292
+#: port/frontend/shell/settings.cpp:703 port/frontend/shell/shares.cpp:292
 msgid "Looking…"
 msgstr "กำลัง​ค้นหา…"
 
-#: port/frontend/shell/settings.cpp:700
+#: port/frontend/shell/settings.cpp:703
 msgid "This side's folder, again."
 msgstr "ค้นหา​ใน​โฟลเดอร์​ของ​ฝั่ง​นี้​อีก​ครั้ง"
 
-#: port/frontend/shell/settings.cpp:701
+#: port/frontend/shell/settings.cpp:704
 msgid "Looks through this side's folder again, as it does each time the side opens."
 msgstr "ค้นหา​ใน​โฟลเดอร์​ของ​ฝั่ง​นี้​อีก​ครั้ง เหมือน​ทุก​ครั้ง​ที่​เปิด​ฝั่ง​นี้"
 
-#: port/frontend/shell/settings.cpp:705 port/frontend/shell/shares.cpp:536 port/frontend/shell/whatsnew.cpp:33
+#: port/frontend/shell/settings.cpp:708 port/frontend/shell/shares.cpp:536 port/frontend/shell/whatsnew.cpp:33
 msgid "Network shares"
 msgstr "การ​แชร์​ผ่าน​เครือข่าย"
 
-#: port/frontend/shell/settings.cpp:705
+#: port/frontend/shell/settings.cpp:708
 msgid "{0} share"
 msgid_plural "{0} shares"
 msgstr[0] "การ​แชร์ {0} รายการ"
 
-#: port/frontend/shell/settings.cpp:706
+#: port/frontend/shell/settings.cpp:709
 msgid "Games on a computer or a NAS, over SMB or NFS."
 msgstr "เกม​บน​คอมพิวเตอร์​หรือ NAS ผ่าน SMB หรือ NFS"
 
-#: port/frontend/shell/settings.cpp:707
+#: port/frontend/shell/settings.cpp:710
 msgid "A folder shared by a Windows, macOS or Linux computer or a NAS, read where it is: add it here, then choose a games folder on it with the folder browser, where each share is a tab. Nothing is ever written to it; saves and installs stay on the PS5. A cable does better than Wi-Fi for Wii U games."
 msgstr "โฟลเดอร์​ที่​แชร์​จาก​คอมพิวเตอร์ Windows, macOS หรือ Linux หรือ NAS อ่าน​จาก​ที่​เดิม: เพิ่ม​ที่นี่ แล้ว​เลือก​โฟลเดอร์​เกม​บน​นั้น​ด้วย​หน้า​เลือก​โฟลเดอร์ ซึ่ง​แต่ละ​การ​แชร์​เป็น​แท็บ ไม่มี​การ​เขียน​อะไร​ลง​ไป เซฟ​และ​สิ่ง​ที่​ติดตั้ง​อยู่​บน PS5 สำหรับ​เกม Wii U สาย LAN ดี​กว่า Wi-Fi"
 
-#: port/frontend/shell/settings.cpp:714 port/frontend/shell/setup.cpp:210
+#: port/frontend/shell/settings.cpp:717 port/frontend/shell/setup.cpp:211
 msgid "Wii U disc keys"
 msgstr "คีย์​แผ่น Wii U"
 
-#: port/frontend/shell/settings.cpp:714 port/frontend/shell/setup.cpp:212
+#: port/frontend/shell/settings.cpp:717 port/frontend/shell/setup.cpp:213
 msgid "keys.txt found"
 msgstr "พบ keys.txt"
 
-#: port/frontend/shell/settings.cpp:715
+#: port/frontend/shell/settings.cpp:718
 msgid "Only encrypted .wud and .wux need them."
 msgstr "ต้อง​ใช้​เฉพาะ .wud และ .wux ที่​เข้ารหัส"
 
-#: port/frontend/shell/settings.cpp:715 port/frontend/shell/setup.cpp:212
+#: port/frontend/shell/settings.cpp:718 port/frontend/shell/setup.cpp:213
 msgid "keys.txt is missing: only encrypted .wud and .wux need it"
 msgstr "ไม่มี keys.txt: ต้อง​ใช้​เฉพาะ .wud และ .wux ที่​เข้ารหัส"
 
-#: port/frontend/shell/settings.cpp:716
-msgid "Encrypted .wud and .wux dumps need their disc keys in /data/ps5cemu/keys.txt, one a line. Decrypted dumps, .wua and folders need none."
-msgstr "ไฟล์​ดัมพ์ .wud และ .wux ที่​เข้ารหัส​ต้อง​มี​คีย์​แผ่น​ใน /data/ps5cemu/keys.txt บรรทัด​ละ​หนึ่ง​คีย์ ไฟล์​ดัมพ์​ที่​ถอด​รหัส​แล้ว .wua และ​โฟลเดอร์​ไม่​ต้อง​ใช้"
+#. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+#: port/frontend/shell/settings.cpp:720
+msgid "Encrypted .wud and .wux dumps need their disc keys in {0}/keys.txt, one a line. Decrypted dumps, .wua and folders need none."
+msgstr "ไฟล์​ดัมพ์ .wud และ .wux ที่​เข้ารหัส​ต้อง​มี​คีย์​แผ่น​ใน {0}/keys.txt บรรทัด​ละ​หนึ่ง​คีย์ ไฟล์​ดัมพ์​ที่​ถอด​รหัส​แล้ว .wua และ​โฟลเดอร์​ไม่​ต้อง​ใช้"
 
-#: port/frontend/shell/settings.cpp:718
+#: port/frontend/shell/settings.cpp:722
 msgid "Found on your drives, each installed with one press."
 msgstr "พบ​ใน​ไดรฟ์ ติดตั้ง​ได้​ด้วย​การ​กด​ครั้ง​เดียว"
 
-#: port/frontend/shell/settings.cpp:719
+#: port/frontend/shell/settings.cpp:723
 msgid "Looks on every USB drive and extended storage plugged in, in the games folder and in /data for updates, DLC and games (folders with code, content and meta), and lists them by game with what is installed now. Cross installs one, Square every new one; each goes into the Wii U's storage (mlc01), as Cemu's Install game title, update or DLC does. Triangle there chooses a folder anywhere else."
 msgstr "ค้นหา​อัปเดต DLC และ​เกม (โฟลเดอร์​ที่​มี code, content และ meta) ใน​ไดรฟ์ USB และ​พื้นที่​จัดเก็บ​เสริม​ทุก​ตัว​ที่​เสียบ​อยู่ ใน​โฟลเดอร์​เกม และ​ใน /data แล้ว​แสดง​ตาม​เกม​พร้อม​สิ่ง​ที่​ติดตั้ง​อยู่ ปุ่มกากบาท​ติดตั้ง​หนึ่ง​รายการ ปุ่มสี่เหลี่ยม​ติดตั้ง​รายการ​ใหม่​ทั้งหมด แต่ละ​รายการ​ติดตั้ง​ลง​พื้นที่​จัดเก็บ​ของ Wii U (mlc01) เหมือน Install game title, update or DLC ของ Cemu ปุ่มสามเหลี่ยม​ที่นั่น​เลือก​โฟลเดอร์​ที่​อื่น"
 
-#: port/frontend/shell/settings.cpp:723
+#: port/frontend/shell/settings.cpp:727
 msgid "Mods from USB"
 msgstr "ม็อด​จาก USB"
 
-#: port/frontend/shell/settings.cpp:723
+#: port/frontend/shell/settings.cpp:727
 msgid "Cemu mods from the ps5cemu/mods folder on your drives."
 msgstr "ม็อด Cemu จาก​โฟลเดอร์ ps5cemu/mods บน​ไดรฟ์​ของ​คุณ"
 
-#: port/frontend/shell/settings.cpp:724
+#: port/frontend/shell/settings.cpp:728
 msgid "Copies the mods in a USB drive's ps5cemu/mods folder into the app's graphic packs, where each shows on its game's Graphic packs page, off until you turn it on. A mod is a Cemu graphic pack (a folder with a rules.txt), or, for one shared without it, a folder with content and aoc folders, in a folder named by its game's title ID. A game's menu has Add mods from USB as well, which gives such mods that game. The guide on GitHub, docs/MODS.md, has more."
 msgstr "คัดลอก​ม็อด​ใน​โฟลเดอร์ ps5cemu/mods ของ​ไดรฟ์ USB ไป​ยัง​แพ็ก​กราฟิก​ของ​แอป ซึ่ง​แต่ละ​ม็อด​จะ​แสดง​ใน​หน้า​แพ็ก​กราฟิก​ของ​เกม​นั้น และ​ปิด​อยู่​จน​กว่า​คุณ​จะ​เปิด ม็อด​คือ​แพ็ก​กราฟิก​ของ Cemu (โฟลเดอร์​ที่​มี rules.txt) หรือ​หาก​แชร์​มา​โดย​ไม่มี​ไฟล์​นั้น คือ​โฟลเดอร์​ที่​มี​โฟลเดอร์ content และ aoc อยู่​ใน​โฟลเดอร์​ที่​ตั้ง​ชื่อ​ตาม Title ID ของ​เกม เมนู​ของ​เกม​ก็​มี​เพิ่ม​ม็อด​จาก USB ด้วย ซึ่ง​จะ​กำหนด​ม็อด​เหล่านั้น​ให้​กับ​เกม​นั้น คู่มือ​บน GitHub คือ docs/MODS.md มี​ข้อมูล​เพิ่มเติม"
 
-#: port/frontend/shell/settings.cpp:730
+#: port/frontend/shell/settings.cpp:734
 msgid "Install a CIA file"
 msgstr "ติดตั้ง​ไฟล์ CIA"
 
-#: port/frontend/shell/settings.cpp:730
+#: port/frontend/shell/settings.cpp:734
 msgid "A game, an update or DLC."
 msgstr "เกม อัปเดต หรือ DLC"
 
-#: port/frontend/shell/settings.cpp:731
+#: port/frontend/shell/settings.cpp:735
 msgid "Installs a CIA into the 3DS's storage, as Azahar's Install CIA does: an update or DLC goes with its game, and a game joins the library. Circle cancels while it runs."
 msgstr "ติดตั้ง CIA ลง​พื้นที่​จัดเก็บ​ของ 3DS เหมือน Install CIA ของ Azahar: อัปเดต​หรือ DLC จะ​ไป​กับ​เกม​ของ​มัน และ​เกม​จะ​เข้า​คลัง​เกม ปุ่มวงกลม​ยกเลิก​ขณะ​ทำงาน"
 
-#: port/frontend/shell/settings.cpp:754
+#: port/frontend/shell/settings.cpp:758
 msgid "Account games start on"
 msgstr "บัญชี​ที่​ใช้​เริ่ม​เกม"
 
-#: port/frontend/shell/settings.cpp:755
+#: port/frontend/shell/settings.cpp:759
 msgid "Chosen by your PS5 user: One account for each PS5 user is on."
 msgstr "เลือก​ตาม​ผู้ใช้ PS5: เปิด หนึ่ง​บัญชี​ต่อ​ผู้ใช้ PS5 อยู่"
 
-#: port/frontend/shell/settings.cpp:756
+#: port/frontend/shell/settings.cpp:760
 msgid "The next game starts on these saves. A game already running keeps its own."
 msgstr "เกม​ถัดไป​จะ​เริ่ม​ด้วย​เซฟ​เหล่านี้ เกม​ที่​กำลัง​เล่น​อยู่​ใช้​บัญชี​เดิม"
 
-#: port/frontend/shell/settings.cpp:757
+#: port/frontend/shell/settings.cpp:761
 msgid "Each Wii U account has its own saves of every game, as on a Wii U. The next game you start uses the one shown here; a game already running keeps the one it started with."
 msgstr "บัญชี Wii U แต่ละ​บัญชี​มี​เซฟ​ของ​ทุก​เกม​แยก​กัน เหมือน​บน Wii U เกม​ถัดไป​ที่​คุณ​เริ่ม​จะ​ใช้​บัญชี​ที่​แสดง​ที่นี่ เกม​ที่​กำลัง​เล่น​อยู่​ใช้​บัญชี​ที่​เริ่ม​ไว้"
 
 #. how many Wii U accounts there are, of the twelve a Wii U has at most
-#: port/frontend/shell/settings.cpp:762
+#: port/frontend/shell/settings.cpp:766
 msgid "New account"
 msgstr "บัญชี​ใหม่"
 
 #. how many Wii U accounts there are, of the twelve a Wii U has at most
-#: port/frontend/shell/settings.cpp:762
+#: port/frontend/shell/settings.cpp:766
 msgid "{0} of 12"
 msgstr "{0} จาก 12"
 
-#: port/frontend/shell/settings.cpp:763
+#: port/frontend/shell/settings.cpp:767
 msgid "A new account starts with no saves."
 msgstr "บัญชี​ใหม่​เริ่ม​โดย​ไม่มี​เซฟ"
 
-#: port/frontend/shell/settings.cpp:763
+#: port/frontend/shell/settings.cpp:767
 msgid "Name it with the keyboard, ten letters at most. Games start on it from then on."
 msgstr "ตั้ง​ชื่อ​ด้วย​แป้นพิมพ์ ไม่​เกิน​สิบ​ตัว​อักษร จากนั้น​เกม​จะ​เริ่ม​ด้วย​บัญชี​นี้"
 
-#: port/frontend/shell/settings.cpp:764
+#: port/frontend/shell/settings.cpp:768
 msgid "Rename {0}"
 msgstr "เปลี่ยน​ชื่อ {0}"
 
-#: port/frontend/shell/settings.cpp:764
+#: port/frontend/shell/settings.cpp:768
 msgid "The account games start on."
 msgstr "บัญชี​ที่​ใช้​เริ่ม​เกม"
 
-#: port/frontend/shell/settings.cpp:765
+#: port/frontend/shell/settings.cpp:769
 msgid "The name games show for this account, ten letters at most. Its saves stay as they are."
 msgstr "ชื่อ​ที่​เกม​แสดง​สำหรับ​บัญชี​นี้ ไม่​เกิน​สิบ​ตัว​อักษร เซฟ​คง​เดิม"
 
-#: port/frontend/shell/settings.cpp:773
+#: port/frontend/shell/settings.cpp:777
 msgid "Delete an account"
 msgstr "ลบ​บัญชี"
 
-#: port/frontend/shell/settings.cpp:774
+#: port/frontend/shell/settings.cpp:778
 msgid "Only one"
 msgstr "มี​เพียง​บัญชี​เดียว"
 
-#: port/frontend/shell/settings.cpp:775
+#: port/frontend/shell/settings.cpp:779
 msgid "There is only one account, and games start on it."
 msgstr "มี​เพียง​บัญชี​เดียว และ​เกม​เริ่ม​ด้วย​บัญชี​นี้"
 
-#: port/frontend/shell/settings.cpp:775
+#: port/frontend/shell/settings.cpp:779
 msgid "Left and Right choose which. Its saves stay in the Wii U's storage."
 msgstr "ซ้าย​และ​ขวา​เลือก​บัญชี เซฟ​ของ​บัญชี​ยัง​อยู่​ใน​พื้นที่​จัดเก็บ​ของ Wii U"
 
-#: port/frontend/shell/settings.cpp:776
+#: port/frontend/shell/settings.cpp:780
 msgid "The account is removed; its saves stay in the Wii U's storage (and in any backup), so nothing is lost. The account games start on cannot be deleted: choose another first."
 msgstr "บัญชี​จะ​ถูก​ลบ เซฟ​ยัง​อยู่​ใน​พื้นที่​จัดเก็บ​ของ Wii U (และ​ใน​ข้อมูล​สำรอง​ใดๆ) จึง​ไม่มี​อะไร​หาย ลบ​บัญชี​ที่​ใช้​เริ่ม​เกม​ไม่ได้: เลือก​บัญชี​อื่น​ก่อน"
 
-#: port/frontend/shell/settings.cpp:782
+#: port/frontend/shell/settings.cpp:786
 msgid "One account for each PS5 user"
 msgstr "หนึ่ง​บัญชี​ต่อ​ผู้ใช้ PS5"
 
-#: port/frontend/shell/settings.cpp:783
+#: port/frontend/shell/settings.cpp:787
 msgid "Whoever starts PS5CEMU-HAR plays on their own saves."
 msgstr "ใคร​เริ่ม PS5CEMU-HAR ก็​เล่น​ด้วย​เซฟ​ของ​ตัวเอง"
 
-#: port/frontend/shell/settings.cpp:784
+#: port/frontend/shell/settings.cpp:788
 msgid "The PS5 user who starts the app plays on a Wii U account of their own, made the first time with their PS5 name, so brothers and sisters each keep their own saves just by starting the app from their own PS5 user."
 msgstr "ผู้ใช้ PS5 ที่​เปิด​แอป​จะ​เล่น​ด้วย​บัญชี Wii U ของ​ตัวเอง ซึ่ง​สร้าง​ครั้ง​แรก​ด้วย​ชื่อ PS5 ของ​เขา พี่น้อง​จึง​แยก​เซฟ​กัน​ได้​เพียง​เปิด​แอป​จาก​ผู้ใช้ PS5 ของ​ตัวเอง"
 
 #. a backup or restore of the saves, finished ({0}: how many files)
-#: port/frontend/shell/settings.cpp:803 port/frontend/shell/settings.cpp:1038
+#: port/frontend/shell/settings.cpp:807 port/frontend/shell/settings.cpp:1043
 msgid "Done: {0} file"
 msgid_plural "Done: {0} files"
 msgstr[0] "เสร็จ​แล้ว: {0} ไฟล์"
 
 #. a backup of the saves, as it copies ({0}: a percentage)
-#: port/frontend/shell/settings.cpp:813 port/frontend/shell/settings.cpp:828 port/frontend/shell/settings.cpp:1075 port/frontend/shell/settings.cpp:1095
+#: port/frontend/shell/settings.cpp:817 port/frontend/shell/settings.cpp:832 port/frontend/shell/settings.cpp:1082 port/frontend/shell/settings.cpp:1102
 msgid "Copying: {0}"
 msgstr "กำลัง​คัดลอก: {0}"
 
 #. the newest backup of the saves: when, and on which drive
-#: port/frontend/shell/settings.cpp:816 port/frontend/shell/settings.cpp:1077
+#: port/frontend/shell/settings.cpp:820 port/frontend/shell/settings.cpp:1084
 msgid "Last: {0} · {1}"
 msgstr "ล่าสุด: {0} · {1}"
 
-#: port/frontend/shell/settings.cpp:817 port/frontend/shell/settings.cpp:1072
+#: port/frontend/shell/settings.cpp:821 port/frontend/shell/settings.cpp:1079
 msgid "Back up to USB"
 msgstr "สำรอง​ข้อมูล​ไป​ยัง USB"
 
-#: port/frontend/shell/settings.cpp:817
+#: port/frontend/shell/settings.cpp:821
 msgid "Every side's saves, save states and Wii U accounts."
 msgstr "เซฟ สถานะ​ที่​บันทึก และ​บัญชี Wii U ของ​ทุก​ฝั่ง"
 
-#: port/frontend/shell/settings.cpp:818
+#: port/frontend/shell/settings.cpp:822
 msgid "Copies the Wii U's saves (every account's, with the accounts), the 3DS's saves, extra data and save states, and the DS's saves and save states to PS5CEMU-HAR-saves on the first USB drive plugged in, in a folder named by the date and time. Never the games, so a backup stays small."
 msgstr "คัดลอก​เซฟ Wii U (ของ​ทุก​บัญชี พร้อม​บัญชี) เซฟ ข้อมูล​เสริม และ​สถานะ​ที่​บันทึก​ของ 3DS และ​เซฟ​กับ​สถานะ​ที่​บันทึก​ของ DS ไป​ยัง PS5CEMU-HAR-saves ใน​ไดรฟ์ USB ตัว​แรก​ที่​เสียบ ใน​โฟลเดอร์​ที่​ตั้ง​ชื่อ​ตาม​วัน​และ​เวลา ไม่​คัดลอก​เกม ข้อมูล​สำรอง​จึง​มี​ขนาด​เล็ก"
 
-#: port/frontend/shell/settings.cpp:826 port/frontend/shell/settings.cpp:1093
+#: port/frontend/shell/settings.cpp:830 port/frontend/shell/settings.cpp:1100
 msgid "No backups found"
 msgstr "ไม่พบ​ข้อมูล​สำรอง"
 
-#: port/frontend/shell/settings.cpp:829 port/frontend/shell/settings.cpp:1092
+#: port/frontend/shell/settings.cpp:833 port/frontend/shell/settings.cpp:1099
 msgid "Restore from USB"
 msgstr "กู้คืน​จาก USB"
 
-#: port/frontend/shell/settings.cpp:830
+#: port/frontend/shell/settings.cpp:834
 msgid "Back up first, or plug in the drive with your backups."
 msgstr "สำรอง​ข้อมูล​ก่อน หรือ​เสียบ​ไดรฟ์​ที่​มี​ข้อมูล​สำรอง"
 
-#: port/frontend/shell/settings.cpp:830 port/frontend/shell/settings.cpp:1096
+#: port/frontend/shell/settings.cpp:834 port/frontend/shell/settings.cpp:1103
 msgid "Left and Right choose which backup, the newest first."
 msgstr "ซ้าย​และ​ขวา​เลือก​ข้อมูล​สำรอง ล่าสุด​อยู่​ก่อน"
 
-#: port/frontend/shell/settings.cpp:831
-msgid "Puts the chosen backup's saves back where they came from. The saves there now are moved first to /data/ps5cemu/saves-before, so nothing is lost; saves the backup does not have stay as they are."
-msgstr "นำ​เซฟ​จาก​ข้อมูล​สำรอง​ที่​เลือก​กลับ​ไป​ที่​เดิม เซฟ​ที่​มี​อยู่​ตอนนี้​จะ​ถูก​ย้าย​ไป /data/ps5cemu/saves-before ก่อน จึง​ไม่มี​อะไร​หาย เซฟ​ที่​ข้อมูล​สำรอง​ไม่มี​จะ​คง​เดิม"
+#. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+#: port/frontend/shell/settings.cpp:836
+msgid "Puts the chosen backup's saves back where they came from. The saves there now are moved first to {0}/saves-before, so nothing is lost; saves the backup does not have stay as they are."
+msgstr "นำ​เซฟ​จาก​ข้อมูล​สำรอง​ที่​เลือก​กลับ​ไป​ที่​เดิม เซฟ​ที่​มี​อยู่​ตอนนี้​จะ​ถูก​ย้าย​ไป {0}/saves-before ก่อน จึง​ไม่มี​อะไร​หาย เซฟ​ที่​ข้อมูล​สำรอง​ไม่มี​จะ​คง​เดิม"
 
-#: port/frontend/shell/settings.cpp:839
+#: port/frontend/shell/settings.cpp:844
 msgid "Play a game from your 3DS, and set up from it."
 msgstr "เล่น​เกม​จาก 3DS และ​นำเข้า​ข้อมูล​จาก​เครื่อง"
 
-#: port/frontend/shell/settings.cpp:840
+#: port/frontend/shell/settings.cpp:845
 msgid "Artic Base plays a game from a 3DS on your network, its saves staying on the 3DS; Artic Setup copies a 3DS's system files into Azahar, for the Home Menu and the games that need them."
 msgstr "Artic Base เล่น​เกม​จาก 3DS ใน​เครือข่าย โดย​เซฟ​อยู่​บน 3DS ส่วน Artic Setup คัดลอก​ไฟล์​ระบบ​ของ 3DS มา​ยัง Azahar สำหรับ HOME Menu และ​เกม​ที่​ต้อง​ใช้"
 
-#: port/frontend/shell/settings.cpp:844
+#: port/frontend/shell/settings.cpp:849
 msgid "Box art from GameTDB"
 msgstr "ภาพ​ปก​จาก GameTDB"
 
-#: port/frontend/shell/settings.cpp:844
+#: port/frontend/shell/settings.cpp:849
 msgid "Covers for the library, downloaded once."
 msgstr "ภาพ​ปก​สำหรับ​คลัง​เกม ดาวน์โหลด​ครั้ง​เดียว"
 
-#: port/frontend/shell/settings.cpp:845
+#: port/frontend/shell/settings.cpp:850
 msgid "The first time a game shows up, its cover is downloaded from GameTDB (art.gametdb.com) by the ID on its box. Off: nothing more is downloaded."
 msgstr "ครั้ง​แรก​ที่​เกม​ปรากฏ ภาพ​ปก​จะ​ดาวน์โหลด​จาก GameTDB (art.gametdb.com) ตาม ID บน​กล่อง ปิด: ไม่​ดาวน์โหลด​อะไร​เพิ่ม"
 
-#: port/frontend/shell/settings.cpp:853
+#: port/frontend/shell/settings.cpp:858
 msgid "Downloading: {0} left"
 msgid_plural "Downloading: {0} left"
 msgstr[0] "กำลัง​ดาวน์โหลด: เหลือ {0}"
 
-#: port/frontend/shell/settings.cpp:854
+#: port/frontend/shell/settings.cpp:859
 msgid "GameTDB did not answer: is the PS5 online?"
 msgstr "GameTDB ไม่​ตอบ​สนอง: PS5 เชื่อมต่อ​อินเทอร์เน็ต​อยู่​หรือไม่"
 
-#: port/frontend/shell/settings.cpp:855
+#: port/frontend/shell/settings.cpp:860
 msgid "{0} game without box art"
 msgid_plural "{0} games without box art"
 msgstr[0] "{0} เกม​ไม่มี​ภาพ​ปก"
 
-#: port/frontend/shell/settings.cpp:856
+#: port/frontend/shell/settings.cpp:861
 msgid "Every game has box art"
 msgstr "ทุก​เกม​มี​ภาพ​ปก"
 
-#: port/frontend/shell/settings.cpp:857
+#: port/frontend/shell/settings.cpp:862
 msgid "Download missing box art"
 msgstr "ดาวน์โหลด​ภาพ​ปก​ที่​ขาด"
 
-#: port/frontend/shell/settings.cpp:857
+#: port/frontend/shell/settings.cpp:862
 msgid "Tries again for every game without a cover."
 msgstr "ลอง​อีก​ครั้ง​สำหรับ​ทุก​เกม​ที่​ไม่มี​ภาพ​ปก"
 
-#: port/frontend/shell/settings.cpp:858
+#: port/frontend/shell/settings.cpp:863
 msgid "Asks GameTDB again for the cover of every game on this side that has none, including games it had no cover for before. Covers are downloaded in the background while you use the launcher."
 msgstr "ขอ​ภาพ​ปก​จาก GameTDB อีก​ครั้ง​สำหรับ​ทุก​เกม​ใน​ฝั่ง​นี้​ที่​ไม่มี​ภาพ​ปก รวมถึง​เกม​ที่​ก่อน​หน้า​นี้​ไม่มี ภาพ​ปก​จะ​ดาวน์โหลด​เบื้องหลัง​ขณะ​ที่​คุณ​ใช้​ลอนเชอร์"
 
-#: port/frontend/shell/settings.cpp:860
+#: port/frontend/shell/settings.cpp:865
 msgid "Download all box art again"
 msgstr "ดาวน์โหลด​ภาพ​ปก​ทั้งหมด​ใหม่"
 
-#: port/frontend/shell/settings.cpp:861
+#: port/frontend/shell/settings.cpp:866
 msgid "Replaces every cover on this side with a fresh download."
 msgstr "แทนที่​ภาพ​ปก​ทุก​ภาพ​ใน​ฝั่ง​นี้​ด้วย​การ​ดาวน์โหลด​ใหม่"
 
-#: port/frontend/shell/settings.cpp:862
+#: port/frontend/shell/settings.cpp:867
 msgid "Downloads the cover of every game on this side again, replacing the ones you have. Useful when a cover is wrong or looks broken."
 msgstr "ดาวน์โหลด​ภาพ​ปก​ของ​ทุก​เกม​ใน​ฝั่ง​นี้​ใหม่ แทนที่​ภาพ​ที่​มี​อยู่ มี​ประโยชน์​เมื่อ​ภาพ​ปก​ผิด​หรือ​ดู​เสีย"
 
-#: port/frontend/shell/settings.cpp:866
+#: port/frontend/shell/settings.cpp:871
 msgid "Community graphic packs"
 msgstr "แพ็ก​กราฟิก​ชุมชน"
 
-#: port/frontend/shell/settings.cpp:866
+#: port/frontend/shell/settings.cpp:871
 msgid "Cross checks GitHub for newer ones."
 msgstr "ปุ่มกากบาท​ตรวจสอบ​รุ่น​ใหม่​กว่า​บน GitHub"
 
-#: port/frontend/shell/settings.cpp:867
+#: port/frontend/shell/settings.cpp:872
 msgid "Cemu's community graphic packs, from GitHub's latest release when it is newer than the ones installed. The packs bundled with the app stay as the fallback."
 msgstr "แพ็ก​กราฟิก​ชุมชน​ของ Cemu จาก​รุ่น​ล่าสุด​บน GitHub เมื่อ​ใหม่​กว่า​ที่​ติดตั้ง​ไว้ แพ็ก​ที่​มา​กับ​แอป​ยัง​เป็น​ตัว​สำรอง"
 
-#: port/frontend/shell/settings.cpp:873
+#: port/frontend/shell/settings.cpp:878
 msgid "Earn RetroAchievements in DS games with your account, as RetroArch does. Cross signs in with your user name and password; only the sign-in's token is kept on the PS5, never the password. Softcore: save states, cheats and speed stay as they are. RetroAchievements has no sets for the Wii U or the 3DS."
 msgstr "รับ​ความสำเร็จ RetroAchievements ใน​เกม DS ด้วย​บัญชี​ของ​คุณ เหมือน RetroArch ปุ่มกากบาท​ลงชื่อ​เข้า​ใช้​ด้วย​ชื่อ​ผู้ใช้​และ​รหัสผ่าน PS5 เก็บ​ไว้​เพียง​โทเค็น​ของ​การ​ลงชื่อ​เข้า​ใช้ ไม่​เก็บ​รหัสผ่าน Softcore: สถานะ​ที่​บันทึก สูตร​โกง และ​ความเร็ว​ใช้​ได้​ตาม​เดิม RetroAchievements ไม่มี​ชุด​สำหรับ Wii U หรือ 3DS"
 
 #. the RetroAchievements account signed in: its name ({1}) and softcore points ({0})
-#: port/frontend/shell/settings.cpp:878 port/frontend/shell/settings.cpp:882 port/frontend/shell/whatsnew.cpp:34
+#: port/frontend/shell/settings.cpp:883 port/frontend/shell/settings.cpp:887 port/frontend/shell/whatsnew.cpp:34
 msgid "RetroAchievements"
 msgstr "RetroAchievements"
 
-#: port/frontend/shell/settings.cpp:879
+#: port/frontend/shell/settings.cpp:884
 msgid "{1} · {0} point"
 msgid_plural "{1} · {0} points"
 msgstr[0] "{1} · {0} คะแนน"
 
-#: port/frontend/shell/settings.cpp:879
+#: port/frontend/shell/settings.cpp:884
 msgid "Hold Cross to sign out"
 msgstr "กด​ปุ่มกากบาท​ค้าง​เพื่อ​ออกจาก​ระบบ"
 
-#: port/frontend/shell/settings.cpp:880
+#: port/frontend/shell/settings.cpp:885
 msgid "Signed in: DS games with a set earn achievements."
 msgstr "ลงชื่อ​เข้า​ใช้​แล้ว: เกม DS ที่​มี​ชุด​จะ​ได้รับ​ความสำเร็จ"
 
-#: port/frontend/shell/settings.cpp:883
+#: port/frontend/shell/settings.cpp:888
 msgid "Signing in…"
 msgstr "กำลัง​ลงชื่อ​เข้า​ใช้…"
 
-#: port/frontend/shell/settings.cpp:883
+#: port/frontend/shell/settings.cpp:888
 msgid "Cross to sign in"
 msgstr "ปุ่มกากบาท​เพื่อ​ลงชื่อ​เข้า​ใช้"
 
-#: port/frontend/shell/settings.cpp:884
+#: port/frontend/shell/settings.cpp:889
 msgid "Achievements in DS games, with your RetroAchievements account."
 msgstr "ความสำเร็จ​ใน​เกม DS ด้วย​บัญชี RetroAchievements ของ​คุณ"
 
-#: port/frontend/shell/settings.cpp:885
+#: port/frontend/shell/settings.cpp:890
 msgid "Unlock notices"
 msgstr "การ​แจ้งเตือน​ความสำเร็จ"
 
-#: port/frontend/shell/settings.cpp:885
+#: port/frontend/shell/settings.cpp:890
 msgid "Each unlock as the PS5's notification."
 msgstr "แจ้ง​แต่ละ​ความสำเร็จ​เป็น​การ​แจ้งเตือน​ของ PS5"
 
-#: port/frontend/shell/settings.cpp:886
+#: port/frontend/shell/settings.cpp:891
 msgid "An achievement earned, and the count as a game starts, shown as the PS5's own notifications. Off: they are only in the in-game menu's Achievements."
 msgstr "ความสำเร็จ​ที่​ได้รับ และ​จำนวน​เมื่อ​เริ่ม​เกม จะ​แสดง​เป็น​การ​แจ้งเตือน​ของ PS5 เอง ปิด: จะ​มี​เฉพาะ​ใน ความสำเร็จ ของ​เมนู​ใน​เกม"
 
-#: port/frontend/shell/settings.cpp:891
+#: port/frontend/shell/settings.cpp:896
 msgid "PS5CEMU-HAR updates"
 msgstr "อัปเดต PS5CEMU-HAR"
 
-#: port/frontend/shell/settings.cpp:891
+#: port/frontend/shell/settings.cpp:896
 msgid "Cross checks GitHub for a newer version."
 msgstr "ปุ่มกากบาท​ตรวจสอบ​เวอร์ชัน​ใหม่​กว่า​บน GitHub"
 
-#: port/frontend/shell/settings.cpp:892
+#: port/frontend/shell/settings.cpp:897
 msgid "PS5CEMU-HAR asks GitHub for its latest release each time it starts. Cross asks again, or installs the newer version it found: the release's files are downloaded, checked and put in place of these, and the app starts again. Your games, saves and settings stay as they are."
 msgstr "PS5CEMU-HAR ถาม GitHub หา​รุ่น​ล่าสุด​ทุก​ครั้ง​ที่​เริ่ม ปุ่มกากบาท​ถาม​อีก​ครั้ง หรือ​ติดตั้ง​เวอร์ชัน​ใหม่​ที่​พบ: ไฟล์​ของ​รุ่น​ใหม่​จะ​ถูก​ดาวน์โหลด ตรวจสอบ และ​ใส่​แทน​ไฟล์​เดิม แล้ว​แอป​จะ​เริ่ม​ใหม่ เกม เซฟ และ​การ​ตั้งค่า​คง​เดิม"
 
 #. a theme that is still being tried out: "Phantom (experimental)"
-#: port/frontend/shell/settings.cpp:907
+#: port/frontend/shell/settings.cpp:912
 msgid "{0} (experimental)"
 msgstr "{0} (ทดลอง)"
 
-#: port/frontend/shell/settings.cpp:912
+#: port/frontend/shell/settings.cpp:917
 msgid "Theme"
 msgstr "ธีม"
 
-#: port/frontend/shell/settings.cpp:914
+#: port/frontend/shell/settings.cpp:919
 msgid "How the launcher looks: its colours, its corners and what moves behind the menus. Phantom and Terminal are experiments of their own. Make your own as a JSON file in {0}/themes, starting from any of these: the text under this page says how. Only the launcher changes: the in-game menus and the games stay as they are."
 msgstr "รูปลักษณ์​ของ​ลอนเชอร์: สี มุม และ​สิ่ง​ที่​เคลื่อนไหว​หลัง​เมนู แฟนทอม​และ​เทอร์มินัล​เป็น​การ​ทดลอง​เฉพาะ สร้าง​ธีม​ของ​คุณ​เอง​เป็น​ไฟล์ JSON ใน {0}/themes โดย​เริ่ม​จาก​ธีม​ใดก็ได้​ที่นี่: ข้อความ​ใต้​หน้า​นี้​บอก​วิธี เปลี่ยน​เฉพาะ​ลอนเชอร์: เมนู​ใน​เกม​และ​ตัว​เกม​คง​เดิม"
 
-#: port/frontend/shell/settings.cpp:920
+#: port/frontend/shell/settings.cpp:925
 msgid "Wii U side"
 msgstr "ฝั่ง Wii U"
 
-#: port/frontend/shell/settings.cpp:920
+#: port/frontend/shell/settings.cpp:925
 msgid "Cemu's games, in the bar."
 msgstr "เกม​ของ Cemu ใน​แถบ"
 
-#: port/frontend/shell/settings.cpp:921
+#: port/frontend/shell/settings.cpp:926
 msgid "Whether the bar shows the Wii U side (Cemu). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
 msgstr "แถบ​แสดง​ฝั่ง Wii U (Cemu) หรือไม่ เมื่อ​ซ่อน เกม​และ​การ​ตั้งค่า​จะ​ยัง​อยู่ และ​กลับ​มา​เมื่อ​เปิด​อีก​ครั้ง ต้อง​เปิด​อย่าง​น้อย​หนึ่ง​ฝั่ง"
 
-#: port/frontend/shell/settings.cpp:923
+#: port/frontend/shell/settings.cpp:928
 msgid "3DS side"
 msgstr "ฝั่ง 3DS"
 
-#: port/frontend/shell/settings.cpp:923
+#: port/frontend/shell/settings.cpp:928
 msgid "Azahar's games, in the bar."
 msgstr "เกม​ของ Azahar ใน​แถบ"
 
-#: port/frontend/shell/settings.cpp:924
+#: port/frontend/shell/settings.cpp:929
 msgid "Whether the bar shows the 3DS side (Azahar). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
 msgstr "แถบ​แสดง​ฝั่ง 3DS (Azahar) หรือไม่ เมื่อ​ซ่อน เกม​และ​การ​ตั้งค่า​จะ​ยัง​อยู่ และ​กลับ​มา​เมื่อ​เปิด​อีก​ครั้ง ต้อง​เปิด​อย่าง​น้อย​หนึ่ง​ฝั่ง"
 
-#: port/frontend/shell/settings.cpp:926
+#: port/frontend/shell/settings.cpp:931
 msgid "DS side"
 msgstr "ฝั่ง DS"
 
-#: port/frontend/shell/settings.cpp:926
+#: port/frontend/shell/settings.cpp:931
 msgid "melonDS's games, in the bar."
 msgstr "เกม​ของ melonDS ใน​แถบ"
 
-#: port/frontend/shell/settings.cpp:927
+#: port/frontend/shell/settings.cpp:932
 msgid "Whether the bar shows the DS side (melonDS). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
 msgstr "แถบ​แสดง​ฝั่ง DS (melonDS) หรือไม่ เมื่อ​ซ่อน เกม​และ​การ​ตั้งค่า​จะ​ยัง​อยู่ และ​กลับ​มา​เมื่อ​เปิด​อีก​ครั้ง ต้อง​เปิด​อย่าง​น้อย​หนึ่ง​ฝั่ง"
 
-#: port/frontend/shell/settings.cpp:929
+#: port/frontend/shell/settings.cpp:934
 msgid "Game pictures behind menus"
 msgstr "ภาพ​เกม​หลัง​เมนู"
 
-#: port/frontend/shell/settings.cpp:929
+#: port/frontend/shell/settings.cpp:934
 msgid "The focused game's cover, softened, behind the screens."
 msgstr "ภาพ​ปก​ของ​เกม​ที่​เลือก​อยู่ แบบ​นุ่ม​ลง หลัง​หน้าจอ"
 
-#: port/frontend/shell/settings.cpp:930
+#: port/frontend/shell/settings.cpp:935
 msgid "The focused game's picture fills the screen behind the menus, softened and dimmed, so moving the focus changes the whole screen. Off: the game's colours only."
 msgstr "ภาพ​ของ​เกม​ที่​เลือก​อยู่​เต็ม​หน้าจอ​หลัง​เมนู แบบ​นุ่ม​และ​มืด​ลง การ​เลื่อน​จึง​เปลี่ยน​ทั้ง​หน้าจอ ปิด: เฉพาะ​สี​ของ​เกม"
 
-#: port/frontend/shell/settings.cpp:932
+#: port/frontend/shell/settings.cpp:937
 msgid "Larger text"
 msgstr "ข้อความ​ใหญ่​ขึ้น"
 
-#: port/frontend/shell/settings.cpp:932
+#: port/frontend/shell/settings.cpp:937
 msgid "Every size of text a step up."
 msgstr "ข้อความ​ทุก​ขนาด​ใหญ่​ขึ้น​หนึ่ง​ขั้น"
 
-#: port/frontend/shell/settings.cpp:933
+#: port/frontend/shell/settings.cpp:938
 msgid "Every style of text a step larger: captions from 20 to 23, reading text from 26 to 30."
 msgstr "ข้อความ​ทุก​แบบ​ใหญ่​ขึ้น​หนึ่ง​ขั้น: คำ​บรรยาย​จาก 20 เป็น 23 ข้อความ​อ่าน​จาก 26 เป็น 30"
 
-#: port/frontend/shell/settings.cpp:934
+#: port/frontend/shell/settings.cpp:939
 msgid "High contrast"
 msgstr "คอนทราสต์​สูง"
 
-#: port/frontend/shell/settings.cpp:934
+#: port/frontend/shell/settings.cpp:939
 msgid "Opaque panels, full-strength text, a thicker ring."
 msgstr "แผง​ทึบ ข้อความ​เข้ม​เต็มที่ กรอบ​โฟกัส​หนา​ขึ้น"
 
-#: port/frontend/shell/settings.cpp:935
+#: port/frontend/shell/settings.cpp:940
 msgid "Opaque panels instead of glass, all text at full strength, a thicker focus ring and no grain or pictures behind the menus."
 msgstr "แผง​ทึบ​แทน​กระจก ข้อความ​ทั้งหมด​เข้ม​เต็มที่ กรอบ​โฟกัส​หนา​ขึ้น และ​ไม่มี​เกรน​หรือ​ภาพ​หลัง​เมนู"
 
-#: port/frontend/shell/settings.cpp:936
+#: port/frontend/shell/settings.cpp:941
 msgid "Reduce motion"
 msgstr "ลด​การ​เคลื่อนไหว"
 
-#: port/frontend/shell/settings.cpp:936
+#: port/frontend/shell/settings.cpp:941
 msgid "Fades in place of movement."
 msgstr "ใช้​การ​จาง​แทน​การ​เคลื่อนที่"
 
-#: port/frontend/shell/settings.cpp:937
+#: port/frontend/shell/settings.cpp:942
 msgid "Springs become short fades; nothing drifts, breathes or rises behind the menus."
 msgstr "การ​เด้ง​กลาย​เป็น​การ​จาง​สั้นๆ ไม่มี​อะไร​ลอย หายใจ หรือ​ลอย​ขึ้น​หลัง​เมนู"
 
-#: port/frontend/shell/settings.cpp:938
+#: port/frontend/shell/settings.cpp:943
 msgid "The first-start choices again: sides, theme, buttons."
 msgstr "ตัวเลือก​ของ​การ​เริ่ม​ครั้ง​แรก​อีก​ครั้ง: ฝั่ง ธีม ปุ่ม"
 
-#: port/frontend/shell/settings.cpp:939
+#: port/frontend/shell/settings.cpp:944
 msgid "The page the first start opens on: the language, the sides, the theme, A and B, the music, vibration and the games' pictures, on one page."
 msgstr "หน้า​ที่​เปิด​ใน​การ​เริ่ม​ครั้ง​แรก: ภาษา ฝั่ง ธีม A และ B เพลง การ​สั่น และ​ภาพ​เกม ใน​หน้า​เดียว"
 
-#: port/frontend/shell/settings.cpp:945
+#: port/frontend/shell/settings.cpp:950
 msgid "Hold to confirm"
 msgstr "กด​ค้าง​เพื่อ​ยืนยัน"
 
-#: port/frontend/shell/settings.cpp:946
+#: port/frontend/shell/settings.cpp:951
 msgid "How long Cross is held for what cannot be undone."
 msgstr "ต้อง​กด​ปุ่มกากบาท​ค้าง​นาน​แค่ไหน​สำหรับ​สิ่ง​ที่​ย้อน​กลับ​ไม่ได้"
 
-#: port/frontend/shell/settings.cpp:947
+#: port/frontend/shell/settings.cpp:952
 msgid "Clearing caches, Artic Setup and resetting controls are held to confirm, never pressed twice. This is how long."
 msgstr "การ​ล้าง​แคช Artic Setup และ​การ​รีเซ็ต​การ​ควบคุม​ต้อง​กด​ค้าง​เพื่อ​ยืนยัน ไม่ใช่​กด​สอง​ครั้ง ค่า​นี้​คือ​ระยะเวลา"
 
-#: port/frontend/shell/settings.cpp:951
+#: port/frontend/shell/settings.cpp:956
 msgid "Storage, recompilers, games, keys and box art, checked."
 msgstr "ตรวจสอบ​พื้นที่​จัดเก็บ รีคอมไพเลอร์ เกม คีย์ และ​ภาพ​ปก"
 
-#: port/frontend/shell/settings.cpp:952
+#: port/frontend/shell/settings.cpp:957
 msgid "Each check has a status, what it means and what to do. It is also shown on the first start and whenever a check fails as the app starts."
 msgstr "แต่ละ​รายการ​มี​สถานะ ความ​หมาย และ​สิ่ง​ที่​ต้อง​ทำ แสดง​ใน​การ​เริ่ม​ครั้ง​แรก​และ​ทุก​ครั้ง​ที่​มี​รายการ​ไม่​ผ่าน​ขณะ​แอป​เริ่ม"
 
-#: port/frontend/shell/settings.cpp:954
+#: port/frontend/shell/settings.cpp:959
 msgid "Copy logs to USB"
 msgstr "คัดลอก​ล็อก​ไป​ยัง USB"
 
-#: port/frontend/shell/settings.cpp:954
+#: port/frontend/shell/settings.cpp:959
 msgid "The logs a report needs, onto a USB drive."
 msgstr "ล็อก​ที่​รายงาน​ต้อง​ใช้ ไป​ยัง​ไดรฟ์ USB"
 
-#: port/frontend/shell/settings.cpp:955
+#: port/frontend/shell/settings.cpp:960
 msgid "Copies the last five sessions' logs and the settings into a dated folder on a USB drive, to attach to a report."
 msgstr "คัดลอก​ล็อก​ของ​ห้า​เซสชัน​ล่าสุด​และ​การ​ตั้งค่า​ไป​ยัง​โฟลเดอร์​ที่​ตั้ง​ชื่อ​ตาม​วันที่​ใน​ไดรฟ์ USB เพื่อ​แนบ​กับ​รายงาน"
 
-#: port/frontend/shell/settings.cpp:957 port/frontend/shell/settings.cpp:960
+#: port/frontend/shell/settings.cpp:962 port/frontend/shell/settings.cpp:965
 msgid "Clear shader caches"
 msgstr "ล้าง​แคช​เชดเดอร์"
 
-#: port/frontend/shell/settings.cpp:958 port/frontend/shell/settings.cpp:961
+#: port/frontend/shell/settings.cpp:963 port/frontend/shell/settings.cpp:966
 msgid "For a game that crashes on a bad cache."
 msgstr "สำหรับ​เกม​ที่​แครช​เพราะ​แคช​เสีย"
 
-#: port/frontend/shell/settings.cpp:958
+#: port/frontend/shell/settings.cpp:963
 msgid "Deletes Cemu's shader caches. Games build them again as they run: the first minutes stutter."
 msgstr "ลบ​แคช​เชดเดอร์​ของ Cemu เกม​จะ​สร้าง​ใหม่​ขณะ​เล่น: ช่วง​สอง​สาม​นาที​แรก​จะ​กระตุก"
 
-#: port/frontend/shell/settings.cpp:962
+#: port/frontend/shell/settings.cpp:967
 msgid "Deletes Azahar's shader caches. Games build them again as they run: the first minutes stutter."
 msgstr "ลบ​แคช​เชดเดอร์​ของ Azahar เกม​จะ​สร้าง​ใหม่​ขณะ​เล่น: ช่วง​สอง​สาม​นาที​แรก​จะ​กระตุก"
 
-#: port/frontend/shell/settings.cpp:990
+#: port/frontend/shell/settings.cpp:995
 msgid "Back to defaults"
 msgstr "กลับ​เป็น​ค่า​เริ่มต้น"
 
-#: port/frontend/shell/settings.cpp:992
+#: port/frontend/shell/settings.cpp:997
 msgid "This game goes back to its side's settings."
 msgstr "เกม​นี้​กลับ​ไป​ใช้​การ​ตั้งค่า​ของ​ฝั่ง"
 
-#: port/frontend/shell/settings.cpp:993
+#: port/frontend/shell/settings.cpp:998
 msgid "Clears this game's own settings, so it uses its side's settings again, like every other game."
 msgstr "ล้าง​การ​ตั้งค่า​เฉพาะ​ของ​เกม​นี้ เพื่อ​ให้​ใช้​การ​ตั้งค่า​ของ​ฝั่ง​อีก​ครั้ง เหมือน​เกม​อื่น"
 
 #. a Wii U account by its number, when its name cannot be read
-#: port/frontend/shell/settings.cpp:1010
+#: port/frontend/shell/settings.cpp:1015
 msgid "Account {0}"
 msgstr "บัญชี {0}"
 
 #. a Wii U game's save that all its accounts share
-#: port/frontend/shell/settings.cpp:1012
+#: port/frontend/shell/settings.cpp:1017
 msgid "Every account's"
 msgstr "ใช้​ร่วม​กัน​ทุก​บัญชี"
 
-#: port/frontend/shell/settings.cpp:1013
+#: port/frontend/shell/settings.cpp:1018
 msgid "Save data"
 msgstr "ข้อมูล​เซฟ"
 
 #. a 3DS game's extra data (its extdata), which some games keep beside their saves
-#: port/frontend/shell/settings.cpp:1015
+#: port/frontend/shell/settings.cpp:1020
 msgid "Extra data"
 msgstr "ข้อมูล​เสริม"
 
-#: port/frontend/shell/settings.cpp:1016
+#: port/frontend/shell/settings.cpp:1021
 msgid "{0} save state"
 msgid_plural "{0} save states"
 msgstr[0] "สถานะ​ที่​บันทึก {0} รายการ"
 
-#: port/frontend/shell/settings.cpp:1054
+#: port/frontend/shell/settings.cpp:1059
 msgid "Held: moved to saves-before on the PS5, so it can still come back."
 msgstr "กด​ค้าง: ย้าย​ไป saves-before บน PS5 จึง​ยัง​นำ​กลับ​มา​ได้"
 
-#: port/frontend/shell/settings.cpp:1055
-msgid "Holding Cross moves these files to /data/ps5cemu/saves-before, in a folder named by the date and time, and the game starts without them next time. Nothing is deleted: copy them back from there (or restore a backup) to have them again."
-msgstr "การ​กด​ปุ่มกากบาท​ค้าง​จะ​ย้าย​ไฟล์​เหล่านี้​ไป​ยัง /data/ps5cemu/saves-before ใน​โฟลเดอร์​ที่​ตั้ง​ชื่อ​ตาม​วัน​และ​เวลา และ​ครั้ง​ต่อ​ไป​เกม​จะ​เริ่ม​โดย​ไม่มี​ไฟล์​เหล่านี้ ไม่มี​อะไร​ถูก​ลบ: คัดลอก​กลับ​มา​จาก​ที่นั่น (หรือ​กู้คืน​ข้อมูล​สำรอง) เพื่อ​ใช้​อีก​ครั้ง"
+#. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+#: port/frontend/shell/settings.cpp:1061
+msgid "Holding Cross moves these files to {0}/saves-before, in a folder named by the date and time, and the game starts without them next time. Nothing is deleted: copy them back from there (or restore a backup) to have them again."
+msgstr "การ​กด​ปุ่มกากบาท​ค้าง​จะ​ย้าย​ไฟล์​เหล่านี้​ไป​ยัง {0}/saves-before ใน​โฟลเดอร์​ที่​ตั้ง​ชื่อ​ตาม​วัน​และ​เวลา และ​ครั้ง​ต่อ​ไป​เกม​จะ​เริ่ม​โดย​ไม่มี​ไฟล์​เหล่านี้ ไม่มี​อะไร​ถูก​ลบ: คัดลอก​กลับ​มา​จาก​ที่นั่น (หรือ​กู้คืน​ข้อมูล​สำรอง) เพื่อ​ใช้​อีก​ครั้ง"
 
-#: port/frontend/shell/settings.cpp:1064
+#: port/frontend/shell/settings.cpp:1071
 msgid "No saves yet"
 msgstr "ยัง​ไม่มี​เซฟ"
 
-#: port/frontend/shell/settings.cpp:1065
+#: port/frontend/shell/settings.cpp:1072
 msgid "They appear here once the game has saved."
 msgstr "จะ​แสดง​ที่นี่​เมื่อ​เกม​บันทึก​แล้ว"
 
-#: port/frontend/shell/settings.cpp:1078
+#: port/frontend/shell/settings.cpp:1085
 msgid "This game's saves, to the first USB drive."
 msgstr "เซฟ​ของ​เกม​นี้ ไป​ยัง​ไดรฟ์ USB ตัว​แรก"
 
-#: port/frontend/shell/settings.cpp:1079
+#: port/frontend/shell/settings.cpp:1086
 msgid "Copies this game's saves (every account's, on the Wii U) and its save states to PS5CEMU-HAR-saves on the first USB drive plugged in, in a folder named by the date and time, the same way a backup of every side's saves is made."
 msgstr "คัดลอก​เซฟ​ของ​เกม​นี้ (ของ​ทุก​บัญชี​บน Wii U) และ​สถานะ​ที่​บันทึก​ของ​เกม ไป​ยัง PS5CEMU-HAR-saves ใน​ไดรฟ์ USB ตัว​แรก​ที่​เสียบ ใน​โฟลเดอร์​ที่​ตั้ง​ชื่อ​ตาม​วัน​และ​เวลา เช่น​เดียว​กับ​การ​สำรอง​เซฟ​ของ​ทุก​ฝั่ง"
 
-#: port/frontend/shell/settings.cpp:1096
+#: port/frontend/shell/settings.cpp:1103
 msgid "No backup on the drives plugged in has this game's saves."
 msgstr "ไม่มี​ข้อมูล​สำรอง​ใน​ไดรฟ์​ที่​เสียบ​อยู่​ที่​มี​เซฟ​ของ​เกม​นี้"
 
-#: port/frontend/shell/settings.cpp:1097
-msgid "Puts this game's saves from the chosen backup back where they came from, and nothing else. Its saves there now are moved first to /data/ps5cemu/saves-before, so nothing is lost."
-msgstr "นำ​เซฟ​ของ​เกม​นี้​จาก​ข้อมูล​สำรอง​ที่​เลือก​กลับ​ไป​ที่​เดิม และ​ไม่​แตะ​อย่าง​อื่น เซฟ​ที่​มี​อยู่​ตอนนี้​จะ​ถูก​ย้าย​ไป /data/ps5cemu/saves-before ก่อน จึง​ไม่มี​อะไร​หาย"
+#. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+#: port/frontend/shell/settings.cpp:1105
+msgid "Puts this game's saves from the chosen backup back where they came from, and nothing else. Its saves there now are moved first to {0}/saves-before, so nothing is lost."
+msgstr "นำ​เซฟ​ของ​เกม​นี้​จาก​ข้อมูล​สำรอง​ที่​เลือก​กลับ​ไป​ที่​เดิม และ​ไม่​แตะ​อย่าง​อื่น เซฟ​ที่​มี​อยู่​ตอนนี้​จะ​ถูก​ย้าย​ไป {0}/saves-before ก่อน จึง​ไม่มี​อะไร​หาย"
 
-#: port/frontend/shell/settings.cpp:1119
+#: port/frontend/shell/settings.cpp:1127
 msgid ""
 "Your own theme: a file such as sunset.json in {0}/themes, read as the app starts, then listed under Theme by its name:\n"
 "{{\"name\": \"Sunset\", \"base\": \"midnight\", \"colours\": {{\"wiiu\": \"#ff7a59\", \"ink-0\": \"#120806\"}}, \"corners\": 0.5, \"motif\": \"slashes\"}}\n"
@@ -5564,19 +5577,22 @@ msgstr ""
 "{{\"name\": \"Sunset\", \"base\": \"midnight\", \"colours\": {{\"wiiu\": \"#ff7a59\", \"ink-0\": \"#120806\"}}, \"corners\": 0.5, \"motif\": \"slashes\"}}\n"
 "base: ธีม​ที่​ใช้​เริ่ม (classic, midnight, phantom, terminal) colours: ink-0 ถึง ink-2 (พื้นหลัง) text, wiiu, n3ds และ nds (สี​ของ​แต่ละ​ฝั่ง) glass, line, good, warn, bad และ focus เป็น #rrggbb corners: 0 เหลี่ยม​ถึง 1.5 มน motif: side, none, slashes หรือ grid"
 
-#: port/frontend/shell/settings.cpp:1127
-msgid "Saves: /data/ps5cemu/melonds/saves (a .sav beside the game is taken the first time). Save states: melonds/states. Cheats: melonds/cheats/<game file>.mch, melonDS's format. DSi games, the DS's wireless and its GBA slot are not there."
-msgstr "เซฟ: /data/ps5cemu/melonds/saves (ไฟล์ .sav ข้าง​เกม​จะ​ถูก​นำ​มา​ใช้​ครั้ง​แรก) สถานะ​ที่​บันทึก: melonds/states สูตร​โกง: melonds/cheats/<ไฟล์เกม>.mch รูปแบบ​ของ melonDS ไม่มี​เกม DSi การ​เชื่อมต่อ​ไร้สาย​ของ DS และ​ช่อง GBA"
+#. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+#: port/frontend/shell/settings.cpp:1136
+msgid "Saves: {0}/melonds/saves (a .sav beside the game is taken the first time). Save states: melonds/states. Cheats: melonds/cheats/<game file>.mch, melonDS's format. DSi games, the DS's wireless and its GBA slot are not there."
+msgstr "เซฟ: {0}/melonds/saves (ไฟล์ .sav ข้าง​เกม​จะ​ถูก​นำ​มา​ใช้​ครั้ง​แรก) สถานะ​ที่​บันทึก: melonds/states สูตร​โกง: melonds/cheats/<ไฟล์เกม>.mch รูปแบบ​ของ melonDS ไม่มี​เกม DSi การ​เชื่อมต่อ​ไร้สาย​ของ DS และ​ช่อง GBA"
 
-#: port/frontend/shell/settings.cpp:1130
+#: port/frontend/shell/settings.cpp:1140
 msgid "On, a QR code here opens the game's second screen in a phone's browser. Nothing to install; the phone must be on the PS5's network."
 msgstr "เมื่อ​เปิด QR โค้ด​ที่นี่​จะ​เปิด​หน้าจอ​ที่​สอง​ของ​เกม​ใน​เบราว์เซอร์​ของ​โทรศัพท์ ไม่​ต้อง​ติดตั้ง​อะไร โทรศัพท์​ต้อง​อยู่​ใน​เครือข่าย​ของ PS5"
 
-#: port/frontend/shell/settings.cpp:1133
-msgid "Figure dumps go in /data/ps5cemu/figures: skylanders, infinity and dimensions. Switch a portal on here, start the game, then put figures on it from the in-game menu (touchpad click + Options > USB devices)."
-msgstr "ไฟล์​ดัมพ์​ฟิกเกอร์​อยู่​ใน /data/ps5cemu/figures: skylanders, infinity และ dimensions เปิด​พอร์ทัล​ที่นี่ เริ่ม​เกม แล้ว​วาง​ฟิกเกอร์​จาก​เมนู​ใน​เกม (กด​ทัชแพด + ปุ่ม​ตัวเลือก > อุปกรณ์ USB)"
+#. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+#: port/frontend/shell/settings.cpp:1144
+msgid "Figure dumps go in {0}/figures: skylanders, infinity and dimensions. Switch a portal on here, start the game, then put figures on it from the in-game menu (touchpad click + Options > USB devices)."
+msgstr "ไฟล์​ดัมพ์​ฟิกเกอร์​อยู่​ใน {0}/figures: skylanders, infinity และ dimensions เปิด​พอร์ทัล​ที่นี่ เริ่ม​เกม แล้ว​วาง​ฟิกเกอร์​จาก​เมนู​ใน​เกม (กด​ทัชแพด + ปุ่ม​ตัวเลือก > อุปกรณ์ USB)"
 
-#: port/frontend/shell/settings.cpp:1136
+#. {0} is the app's version; {1} its data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+#: port/frontend/shell/settings.cpp:1149
 msgid ""
 "Cemu, the Wii U emulator, by the Cemu team and its contributors; RADV on the PS5 by Mihawk-99 and mpereiraesaa; the community graphic packs' authors.\n"
 "Azahar, the 3DS emulator, by the Azahar team and the Citra contributors before them; Mihawk-99's PS5 port of it and dynarmic.\n"
@@ -5585,9 +5601,9 @@ msgid ""
 "The remote touch screen: dolphin78's idea and prototype.\n"
 "An unofficial port, not affiliated with the Cemu, Azahar or melonDS teams, Nintendo or Sony.\n"
 "\n"
-"Wii U games: /data/ps5cemu/games, storage and saves: /data/ps5cemu/mlc01, keys: /data/ps5cemu/keys.txt\n"
-"3DS games: /data/ps5cemu/azahar/games, storage: /data/ps5cemu/azahar/sdmc\n"
-"DS games: /data/ps5cemu/melonds/games, saves: /data/ps5cemu/melonds/saves\n"
+"Wii U games: {1}/games, storage and saves: {1}/mlc01, keys: {1}/keys.txt\n"
+"3DS games: {1}/azahar/games, storage: {1}/azahar/sdmc\n"
+"DS games: {1}/melonds/games, saves: {1}/melonds/saves\n"
 "\n"
 "Version {0}"
 msgstr ""
@@ -5598,113 +5614,113 @@ msgstr ""
 "หน้าจอ​สัมผัส​ระยะไกล: ไอเดีย​และ​ต้นแบบ​ของ dolphin78\n"
 "พอร์ต​ไม่​เป็น​ทางการ ไม่​เกี่ยวข้อง​กับ​ทีม Cemu, Azahar หรือ melonDS, Nintendo หรือ Sony\n"
 "\n"
-"เกม Wii U: /data/ps5cemu/games พื้นที่​จัดเก็บ​และ​เซฟ: /data/ps5cemu/mlc01 คีย์: /data/ps5cemu/keys.txt\n"
-"เกม 3DS: /data/ps5cemu/azahar/games พื้นที่​จัดเก็บ: /data/ps5cemu/azahar/sdmc\n"
-"เกม DS: /data/ps5cemu/melonds/games เซฟ: /data/ps5cemu/melonds/saves\n"
+"เกม Wii U: {1}/games พื้นที่​จัดเก็บ​และ​เซฟ: {1}/mlc01 คีย์: {1}/keys.txt\n"
+"เกม 3DS: {1}/azahar/games พื้นที่​จัดเก็บ: {1}/azahar/sdmc\n"
+"เกม DS: {1}/melonds/games เซฟ: {1}/melonds/saves\n"
 "\n"
 "เวอร์ชัน {0}"
 
 #. the first choice in the language list: the PS5's own ({0}, in its own words)
-#: port/frontend/shell/settings.cpp:1152
+#: port/frontend/shell/settings.cpp:1165
 msgid "The PS5's language: {0}"
 msgstr "ภาษา​ของ PS5: {0}"
 
-#: port/frontend/shell/settings.cpp:1177
+#: port/frontend/shell/settings.cpp:1190
 msgid "Language: {0}"
 msgstr "ภาษา: {0}"
 
-#: port/frontend/shell/settings.cpp:1272
+#: port/frontend/shell/settings.cpp:1285
 msgid "One side at least stays on"
 msgstr "ต้อง​เปิด​อย่าง​น้อย​หนึ่ง​ฝั่ง"
 
 #. the Wii U account games start on now ({0}: its name)
-#: port/frontend/shell/settings.cpp:1389 port/frontend/shell/settings.cpp:1547 port/frontend/shell/settings.cpp:1622
+#: port/frontend/shell/settings.cpp:1402 port/frontend/shell/settings.cpp:1560 port/frontend/shell/settings.cpp:1635
 msgid "Games start on {0}'s saves"
 msgstr "เกม​เริ่ม​ด้วย​เซฟ​ของ {0}"
 
-#: port/frontend/shell/settings.cpp:1472
+#: port/frontend/shell/settings.cpp:1485
 msgid "This game has no ID to save settings under"
 msgstr "เกม​นี้​ไม่มี ID สำหรับ​บันทึก​การ​ตั้งค่า"
 
-#: port/frontend/shell/settings.cpp:1570
+#: port/frontend/shell/settings.cpp:1583
 msgid "Backing up {0}'s saves…"
 msgstr "กำลัง​สำรอง​เซฟ​ของ {0}…"
 
-#: port/frontend/shell/settings.cpp:1617
+#: port/frontend/shell/settings.cpp:1630
 msgid "A name for the new account"
 msgstr "ชื่อ​ของ​บัญชี​ใหม่"
 
-#: port/frontend/shell/settings.cpp:1634
+#: port/frontend/shell/settings.cpp:1647
 msgid "A new name"
 msgstr "ชื่อ​ใหม่"
 
-#: port/frontend/shell/settings.cpp:1636
+#: port/frontend/shell/settings.cpp:1649
 msgid "Renamed {0}"
 msgstr "เปลี่ยน​ชื่อ {0} แล้ว"
 
-#: port/frontend/shell/settings.cpp:1645
+#: port/frontend/shell/settings.cpp:1658
 msgid "Backing up every side's saves…"
 msgstr "กำลัง​สำรอง​เซฟ​ของ​ทุก​ฝั่ง…"
 
-#: port/frontend/shell/settings.cpp:1728
+#: port/frontend/shell/settings.cpp:1741
 msgid "Starting the 3DS"
 msgstr "กำลัง​เริ่ม 3DS"
 
-#: port/frontend/shell/settings.cpp:1737
+#: port/frontend/shell/settings.cpp:1750
 msgid "Your RetroAchievements user name"
 msgstr "ชื่อ​ผู้ใช้ RetroAchievements ของ​คุณ"
 
-#: port/frontend/shell/settings.cpp:1740
+#: port/frontend/shell/settings.cpp:1753
 msgid "{0}'s RetroAchievements password"
 msgstr "รหัสผ่าน RetroAchievements ของ {0}"
 
-#: port/frontend/shell/settings.cpp:1742
+#: port/frontend/shell/settings.cpp:1755
 msgid "Signing in to RetroAchievements…"
 msgstr "กำลัง​ลงชื่อ​เข้า​ใช้ RetroAchievements…"
 
 #. a held row's result: the covers are on their way
-#: port/frontend/shell/settings.cpp:1763
+#: port/frontend/shell/settings.cpp:1776
 msgid "Downloading in the background"
 msgstr "กำลัง​ดาวน์โหลด​เบื้องหลัง"
 
-#: port/frontend/shell/settings.cpp:1784
+#: port/frontend/shell/settings.cpp:1797
 msgid "{0} is deleted; its saves stay"
 msgstr "ลบ {0} แล้ว เซฟ​ยัง​อยู่"
 
-#: port/frontend/shell/settings.cpp:1797
+#: port/frontend/shell/settings.cpp:1810
 msgid "Restoring the saves of {0}…"
 msgstr "กำลัง​กู้คืน​เซฟ​ของ {0}…"
 
-#: port/frontend/shell/settings.cpp:1805
+#: port/frontend/shell/settings.cpp:1818
 msgid "Signed out of RetroAchievements"
 msgstr "ออกจาก​ระบบ RetroAchievements แล้ว"
 
-#: port/frontend/shell/settings.cpp:1814
+#: port/frontend/shell/settings.cpp:1827
 msgid "Restoring {0}'s saves of {1}…"
 msgstr "กำลัง​กู้คืน​เซฟ​ของ {0} จาก​ข้อมูล​สำรอง {1}…"
 
 #. one of a game's saves moved out of the way ({0}: which, as its row names it)
-#: port/frontend/shell/settings.cpp:1828
+#: port/frontend/shell/settings.cpp:1841
 msgid "{0}: moved to saves-before"
 msgstr "{0}: ย้าย​ไป saves-before แล้ว"
 
-#: port/frontend/shell/settings.cpp:1839
+#: port/frontend/shell/settings.cpp:1852
 msgid "Done: back to its side's settings"
 msgstr "เสร็จ​แล้ว: กลับ​ไป​ใช้​การ​ตั้งค่า​ของ​ฝั่ง"
 
-#: port/frontend/shell/settings.cpp:2012
+#: port/frontend/shell/settings.cpp:2025
 msgid "Scan it, or open"
 msgstr "สแกน หรือ​เปิด"
 
-#: port/frontend/shell/settings.cpp:2018
+#: port/frontend/shell/settings.cpp:2031
 msgid "Same network as the PS5. Nothing to install: the browser is enough. Sound stays on the PS5. Any browser on the network can see it and touch."
 msgstr "เครือข่าย​เดียว​กับ PS5 ไม่​ต้อง​ติดตั้ง​อะไร: ใช้​เบราว์เซอร์​ก็​พอ เสียง​ยัง​ออก​ที่ PS5 เบราว์เซอร์​ใดก็ได้​ใน​เครือข่าย​ดู​และ​แตะ​ได้"
 
-#: port/frontend/shell/settings.cpp:2050
+#: port/frontend/shell/settings.cpp:2063
 msgid "Support PS5CEMU-HAR"
 msgstr "สนับสนุน PS5CEMU-HAR"
 
-#: port/frontend/shell/settings.cpp:2061
+#: port/frontend/shell/settings.cpp:2074
 msgid "PS5CEMU-HAR is free. If it brings your games back, you can support its work here."
 msgstr "PS5CEMU-HAR ใช้​ได้​ฟรี หาก​ช่วย​ให้​คุณ​ได้​เล่น​เกม​ของ​คุณ​อีก​ครั้ง คุณ​สามารถ​สนับสนุน​งาน​นี้​ได้​ที่นี่"
 
@@ -5718,284 +5734,284 @@ msgid "Storage"
 msgstr "พื้นที่​จัดเก็บ"
 
 #. what the QR code opens: "Scan it for the HEN setup guide"
-#: port/frontend/shell/setup.cpp:120 port/frontend/shell/setup.cpp:145
+#: port/frontend/shell/setup.cpp:120 port/frontend/shell/setup.cpp:146
 msgid "the HEN setup guide"
 msgstr "คู่มือ​ติดตั้ง HEN"
 
-#: port/frontend/shell/setup.cpp:125
+#: port/frontend/shell/setup.cpp:126
 msgid "/data is reachable"
 msgstr "เข้าถึง /data ได้"
 
-#: port/frontend/shell/setup.cpp:126
+#: port/frontend/shell/setup.cpp:127
 msgid "Where everything is kept"
 msgstr "ที่​เก็บ​ทุก​อย่าง"
 
-#: port/frontend/shell/setup.cpp:127
+#: port/frontend/shell/setup.cpp:128
 msgid "Settings, saves, caches and logs live in {0}, which your HEN opens to PS5CEMU-HAR: its app jailbreak, or elfldr with the helper that comes with the app."
 msgstr "การ​ตั้งค่า เซฟ แคช และ​ล็อก​อยู่​ใน {0} ซึ่ง HEN เปิด​ให้ PS5CEMU-HAR: ด้วย​การ​เจลเบรก​แอป​ของ HEN หรือ elfldr กับ​ตัว​ช่วย​ที่​มา​กับ​แอป"
 
-#: port/frontend/shell/setup.cpp:134
+#: port/frontend/shell/setup.cpp:135
 msgid "/data is out of reach: nothing can be kept"
 msgstr "เข้าถึง /data ไม่ได้: เก็บ​อะไร​ไม่ได้"
 
-#: port/frontend/shell/setup.cpp:135
+#: port/frontend/shell/setup.cpp:136
 msgid "Let PS5CEMU-HAR out of its sandbox"
 msgstr "ให้ PS5CEMU-HAR ออก​จาก​แซนด์บ็อกซ์"
 
-#: port/frontend/shell/setup.cpp:136
+#: port/frontend/shell/setup.cpp:137
 msgid "Add PPSA99360 to your HEN's app jailbreak list (etaHEN: its app jailbreak list; OnionHEN: the end of exact_title_ids in config.ini, with no comma after it), or have elfldr listening on port 9021. Then start PS5CEMU-HAR again."
 msgstr "เพิ่ม PPSA99360 ใน​รายการ​เจลเบรก​แอป​ของ HEN (etaHEN: รายการ​เจลเบรก​แอป​ของ​มัน OnionHEN: ท้าย exact_title_ids ใน config.ini โดย​ไม่มี​จุลภาค​ต่อท้าย) หรือ​ให้ elfldr รอ​ฟัง​ที่​พอร์ต 9021 แล้ว​เริ่ม PS5CEMU-HAR ใหม่"
 
-#: port/frontend/shell/setup.cpp:143
+#: port/frontend/shell/setup.cpp:144
 msgid "Recompilers"
 msgstr "รีคอมไพเลอร์"
 
-#: port/frontend/shell/setup.cpp:146
+#: port/frontend/shell/setup.cpp:147
 msgid "What runs the games' code"
 msgstr "สิ่ง​ที่​รัน​โค้ด​ของ​เกม"
 
-#: port/frontend/shell/setup.cpp:150
+#: port/frontend/shell/setup.cpp:151
 msgid "JIT memory from your HEN: games run at full speed"
 msgstr "หน่วย​ความ​จำ JIT จาก HEN: เกม​ทำงาน​เต็ม​ความเร็ว"
 
-#: port/frontend/shell/setup.cpp:151
+#: port/frontend/shell/setup.cpp:152
 msgid "Executable memory: games run at full speed, no HEN grant needed"
 msgstr "หน่วย​ความ​จำ​ที่​รัน​โค้ด​ได้: เกม​ทำงาน​เต็ม​ความเร็ว ไม่​ต้อง​ให้ HEN อนุญาต"
 
-#: port/frontend/shell/setup.cpp:152
+#: port/frontend/shell/setup.cpp:153
 msgid "Cemu's and Azahar's recompilers turn the games' code into the PS5's as they run. They need memory they can write code into and run it from: your HEN's JIT memory, or executable memory PS5CEMU-HAR makes itself."
 msgstr "รีคอมไพเลอร์​ของ Cemu และ Azahar แปลง​โค้ด​ของ​เกม​เป็น​โค้ด​ของ PS5 ขณะ​ทำงาน ซึ่ง​ต้อง​ใช้​หน่วย​ความ​จำ​ที่​เขียน​โค้ด​ลง​ไป​และ​รัน​ได้: หน่วย​ความ​จำ JIT ของ HEN หรือ​หน่วย​ความ​จำ​ที่​รัน​โค้ด​ได้​ที่ PS5CEMU-HAR สร้าง​เอง"
 
-#: port/frontend/shell/setup.cpp:158
+#: port/frontend/shell/setup.cpp:159
 msgid "No JIT or executable memory: Wii U games run on the much slower interpreter"
 msgstr "ไม่มี​หน่วย​ความ​จำ JIT หรือ​ที่​รัน​โค้ด​ได้: เกม Wii U ใช้​อินเทอร์พรีเตอร์​ที่​ช้า​กว่า​มาก"
 
-#: port/frontend/shell/setup.cpp:159
+#: port/frontend/shell/setup.cpp:160
 msgid "Neither your HEN's JIT memory nor executable memory could be made, so Wii U games fall back to Cemu's interpreter. Add PPSA99360 to your HEN's app jailbreak list, then start PS5CEMU-HAR again; Settings > Diagnostics says what it got."
 msgstr "ไม่ได้​หน่วย​ความ​จำ JIT ของ HEN และ​สร้าง​หน่วย​ความ​จำ​ที่​รัน​โค้ด​ได้​ไม่ได้ เกม Wii U จึง​ใช้​อินเทอร์พรีเตอร์​ของ Cemu เพิ่ม PPSA99360 ใน​รายการ​เจลเบรก​แอป​ของ HEN แล้ว​เริ่ม PS5CEMU-HAR ใหม่ การ​ตั้งค่า > การ​วินิจฉัย บอก​ว่า​ได้​อะไร"
 
 #. {1} is a folder
-#: port/frontend/shell/setup.cpp:187
+#: port/frontend/shell/setup.cpp:188
 msgid "{0} game in {1}"
 msgid_plural "{0} games in {1}"
 msgstr[0] "{0} เกม​ใน {1}"
 
-#: port/frontend/shell/setup.cpp:188
+#: port/frontend/shell/setup.cpp:189
 msgid "None in {0} yet"
 msgstr "ยัง​ไม่มี​เกม​ใน {0}"
 
-#: port/frontend/shell/setup.cpp:189
+#: port/frontend/shell/setup.cpp:190
 msgid "{0} cannot be read"
 msgstr "อ่าน {0} ไม่ได้"
 
-#: port/frontend/shell/setup.cpp:190
+#: port/frontend/shell/setup.cpp:191
 msgid "Where your 3DS games go"
 msgstr "ที่​ใส่​เกม 3DS"
 
-#: port/frontend/shell/setup.cpp:190
+#: port/frontend/shell/setup.cpp:191
 msgid "Where your DS games go"
 msgstr "ที่​ใส่​เกม DS"
 
-#: port/frontend/shell/setup.cpp:190
+#: port/frontend/shell/setup.cpp:191
 msgid "Where your Wii U games go"
 msgstr "ที่​ใส่​เกม Wii U"
 
-#: port/frontend/shell/setup.cpp:191
+#: port/frontend/shell/setup.cpp:192
 msgid "Put them in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are searched too. CIA files are installed, from Settings > Game files on the 3DS side."
 msgstr "ใส่​ไว้​ใน {0} หรือ​เลือก​โฟลเดอร์​ใดก็ได้​ที่ PS5 อ่าน​ได้ เช่น​โฟลเดอร์​ใน​ไดรฟ์ USB ระบบ​จะ​ค้นหา​ใน​โฟลเดอร์​ย่อย​ด้วย ไฟล์ CIA ต้อง​ติดตั้ง จาก การ​ตั้งค่า > ไฟล์​เกม ใน​ฝั่ง 3DS"
 
-#: port/frontend/shell/setup.cpp:194
+#: port/frontend/shell/setup.cpp:195
 msgid "Put them in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are searched too."
 msgstr "ใส่​ไว้​ใน {0} หรือ​เลือก​โฟลเดอร์​ใดก็ได้​ที่ PS5 อ่าน​ได้ เช่น​โฟลเดอร์​ใน​ไดรฟ์ USB ระบบ​จะ​ค้นหา​ใน​โฟลเดอร์​ย่อย​ด้วย"
 
-#: port/frontend/shell/setup.cpp:197
+#: port/frontend/shell/setup.cpp:198
 msgid "Put them in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Updates and DLC go in from Settings > Game files, or come with a .wua."
 msgstr "ใส่​ไว้​ใน {0} หรือ​เลือก​โฟลเดอร์​ใดก็ได้​ที่ PS5 อ่าน​ได้ เช่น​โฟลเดอร์​ใน​ไดรฟ์ USB อัปเดต​และ DLC ติดตั้ง​จาก การ​ตั้งค่า > ไฟล์​เกม หรือ​มา​กับ .wua"
 
-#: port/frontend/shell/setup.cpp:202
+#: port/frontend/shell/setup.cpp:203
 msgid "code · content · meta"
 msgstr "code · content · meta"
 
-#: port/frontend/shell/setup.cpp:204 port/frontend/shell/setup.cpp:219 port/frontend/shell/setup.cpp:233
+#: port/frontend/shell/setup.cpp:205 port/frontend/shell/setup.cpp:220 port/frontend/shell/setup.cpp:234
 msgid "the game files page"
 msgstr "หน้า​ไฟล์​เกม"
 
-#: port/frontend/shell/setup.cpp:213 port/frontend/shell/setup.cpp:227 port/frontend/shell/setup.cpp:260
+#: port/frontend/shell/setup.cpp:214 port/frontend/shell/setup.cpp:228 port/frontend/shell/setup.cpp:261
 msgid "How to"
 msgstr "วิธี​ทำ"
 
-#: port/frontend/shell/setup.cpp:214
+#: port/frontend/shell/setup.cpp:215
 msgid "Keys for encrypted discs"
 msgstr "คีย์​สำหรับ​แผ่น​ที่​เข้ารหัส"
 
-#: port/frontend/shell/setup.cpp:215
+#: port/frontend/shell/setup.cpp:216
 msgid "Encrypted .wud and .wux dumps need their disc keys in {0}/keys.txt, one a line. Decrypted dumps, .wua files and folders with code, content and meta need none."
 msgstr "ไฟล์​ดัมพ์ .wud และ .wux ที่​เข้ารหัส​ต้อง​มี​คีย์​แผ่น​ใน {0}/keys.txt บรรทัด​ละ​หนึ่ง​คีย์ ไฟล์​ดัมพ์​ที่​ถอด​รหัส​แล้ว ไฟล์ .wua และ​โฟลเดอร์​ที่​มี code, content และ meta ไม่​ต้อง​ใช้"
 
-#: port/frontend/shell/setup.cpp:224
+#: port/frontend/shell/setup.cpp:225
 msgid "3DS keys"
 msgstr "คีย์ 3DS"
 
-#: port/frontend/shell/setup.cpp:226
+#: port/frontend/shell/setup.cpp:227
 msgid "aes_keys.txt found"
 msgstr "พบ aes_keys.txt"
 
-#: port/frontend/shell/setup.cpp:226
+#: port/frontend/shell/setup.cpp:227
 msgid "aes_keys.txt is missing: only encrypted dumps need it"
 msgstr "ไม่มี aes_keys.txt: ต้อง​ใช้​เฉพาะ​ไฟล์​ดัมพ์​ที่​เข้ารหัส"
 
-#: port/frontend/shell/setup.cpp:228
+#: port/frontend/shell/setup.cpp:229
 msgid "Keys for encrypted 3DS dumps"
 msgstr "คีย์​สำหรับ​ไฟล์​ดัมพ์ 3DS ที่​เข้ารหัส"
 
-#: port/frontend/shell/setup.cpp:229
+#: port/frontend/shell/setup.cpp:230
 msgid "Encrypted dumps need aes_keys.txt from your own console in {0}/sysdata. Decrypted dumps, homebrew and installed CIAs need none. No keys come with PS5CEMU-HAR."
 msgstr "ไฟล์​ดัมพ์​ที่​เข้ารหัส​ต้อง​มี aes_keys.txt จาก​เครื่อง​ของ​คุณ​เอง​ใน {0}/sysdata ไฟล์​ดัมพ์​ที่​ถอด​รหัส​แล้ว โฮมบรูว์ และ CIA ที่​ติดตั้ง​แล้ว​ไม่​ต้อง​ใช้ PS5CEMU-HAR ไม่ได้​ให้​คีย์​มา"
 
-#: port/frontend/shell/setup.cpp:243
+#: port/frontend/shell/setup.cpp:244
 msgid "3DS system files"
 msgstr "ไฟล์​ระบบ 3DS"
 
-#: port/frontend/shell/setup.cpp:245
+#: port/frontend/shell/setup.cpp:246
 msgid "Artic Setup has run: the Home Menu can start"
 msgstr "รัน Artic Setup แล้ว: HOME Menu เริ่ม​ได้"
 
-#: port/frontend/shell/setup.cpp:245
+#: port/frontend/shell/setup.cpp:246
 msgid "Artic Setup copies them from your 3DS, for the Home Menu"
 msgstr "Artic Setup คัดลอก​จาก 3DS ของ​คุณ สำหรับ HOME Menu"
 
-#: port/frontend/shell/setup.cpp:247
+#: port/frontend/shell/setup.cpp:248
 msgid "Your 3DS's own files"
 msgstr "ไฟล์​จาก 3DS ของ​คุณ​เอง"
 
-#: port/frontend/shell/setup.cpp:248
+#: port/frontend/shell/setup.cpp:249
 msgid "The 3DS Home Menu, and the few games that need the console's system files, run once Artic Setup has copied them from your own 3DS over the network: start the Artic Setup Tool on the 3DS, then Artic Base here."
 msgstr "HOME Menu ของ 3DS และ​เกม​ไม่​กี่​เกม​ที่​ต้อง​ใช้​ไฟล์​ระบบ​ของ​เครื่อง​จะ​ทำงาน​ได้​เมื่อ Artic Setup คัดลอก​ไฟล์​เหล่านั้น​จาก 3DS ของ​คุณ​ผ่าน​เครือข่าย: เปิด Artic Setup Tool บน 3DS แล้ว​ใช้ Artic Base ที่นี่"
 
-#: port/frontend/shell/setup.cpp:251
+#: port/frontend/shell/setup.cpp:252
 msgid "the 3DS page"
 msgstr "หน้า 3DS"
 
-#: port/frontend/shell/setup.cpp:259
+#: port/frontend/shell/setup.cpp:260
 msgid "Your DS's BIOS found: DS games run on it"
 msgstr "พบ BIOS ของ DS: เกม DS ทำงาน​ด้วย BIOS นี้"
 
-#: port/frontend/shell/setup.cpp:259
+#: port/frontend/shell/setup.cpp:260
 msgid "melonDS's built-in BIOS runs DS games; your DS's is optional"
 msgstr "BIOS ใน​ตัว​ของ melonDS เล่น​เกม DS ได้ BIOS ของ DS ไม่​จำเป็น"
 
-#: port/frontend/shell/setup.cpp:261
+#: port/frontend/shell/setup.cpp:262
 msgid "Your DS's own BIOS and firmware"
 msgstr "BIOS และ​เฟิร์มแวร์​ของ DS ของ​คุณ​เอง"
 
-#: port/frontend/shell/setup.cpp:262
+#: port/frontend/shell/setup.cpp:263
 msgid "melonDS runs DS games on its own BIOS (FreeBIOS) and firmware, which most games are happy with. The few that are not run on your own DS's: bios7.bin, bios9.bin and firmware.bin, dumped from it, in {0}/bios. No BIOS comes with PS5CEMU-HAR."
 msgstr "melonDS เล่น​เกม DS ด้วย BIOS (FreeBIOS) และ​เฟิร์มแวร์​ของ​ตัวเอง ซึ่ง​เกม​ส่วนใหญ่​ใช้​ได้ เกม​ไม่​กี่​เกม​ที่​ใช้​ไม่ได้​ต้อง​ใช้ bios7.bin, bios9.bin และ firmware.bin ที่​ดัมพ์​จาก DS ของ​คุณ ใส่​ไว้​ใน {0}/bios PS5CEMU-HAR ไม่ได้​ให้ BIOS มา"
 
-#: port/frontend/shell/setup.cpp:267
+#: port/frontend/shell/setup.cpp:268
 msgid "the DS page"
 msgstr "หน้า DS"
 
-#: port/frontend/shell/setup.cpp:272
+#: port/frontend/shell/setup.cpp:273
 msgid "Box art"
 msgstr "ภาพ​ปก"
 
-#: port/frontend/shell/setup.cpp:274
+#: port/frontend/shell/setup.cpp:275
 msgid "what PS5CEMU-HAR fetches online"
 msgstr "สิ่ง​ที่ PS5CEMU-HAR ดึง​จาก​ออนไลน์"
 
-#: port/frontend/shell/setup.cpp:275
+#: port/frontend/shell/setup.cpp:276
 msgid "Covers from GameTDB"
 msgstr "ภาพ​ปก​จาก GameTDB"
 
-#: port/frontend/shell/setup.cpp:276
+#: port/frontend/shell/setup.cpp:277
 msgid "The first time a game shows up, its cover comes from GameTDB (art.gametdb.com), by the ID on its box. Without a connection the games' own icons are shown, and the next start tries again."
 msgstr "ครั้ง​แรก​ที่​เกม​ปรากฏ ภาพ​ปก​จะ​มา​จาก GameTDB (art.gametdb.com) ตาม ID บน​กล่อง เมื่อ​ไม่มี​การ​เชื่อมต่อ​จะ​แสดง​ไอคอน​ของ​เกม และ​จะ​ลอง​ใหม่​ใน​การ​เริ่ม​ครั้ง​ถัดไป"
 
-#: port/frontend/shell/setup.cpp:282
+#: port/frontend/shell/setup.cpp:283
 msgid "Off: the games' icons are shown instead"
 msgstr "ปิด: แสดง​ไอคอน​ของ​เกม​แทน"
 
-#: port/frontend/shell/setup.cpp:283
+#: port/frontend/shell/setup.cpp:284
 msgid "Turn on"
 msgstr "เปิด"
 
-#: port/frontend/shell/setup.cpp:288
+#: port/frontend/shell/setup.cpp:289
 msgid "GameTDB did not answer: the games' icons are shown instead"
 msgstr "GameTDB ไม่​ตอบ​สนอง: แสดง​ไอคอน​ของ​เกม​แทน"
 
-#: port/frontend/shell/setup.cpp:293
+#: port/frontend/shell/setup.cpp:294
 msgid "GameTDB is reachable · {0} cover"
 msgid_plural "GameTDB is reachable · {0} covers"
 msgstr[0] "เข้าถึง GameTDB ได้ · ภาพ​ปก {0} ภาพ"
 
-#: port/frontend/shell/setup.cpp:294
+#: port/frontend/shell/setup.cpp:295
 msgid "On · {0} cover"
 msgid_plural "On · {0} covers"
 msgstr[0] "เปิด · ภาพ​ปก {0} ภาพ"
 
-#: port/frontend/shell/setup.cpp:295
+#: port/frontend/shell/setup.cpp:296
 msgid "On: covers come as your games show up"
 msgstr "เปิด: ภาพ​ปก​มา​เมื่อ​เกม​ปรากฏ"
 
-#: port/frontend/shell/setup.cpp:372
+#: port/frontend/shell/setup.cpp:373
 msgid "Checked again"
 msgstr "ตรวจสอบ​อีก​ครั้ง​แล้ว"
 
-#: port/frontend/shell/setup.cpp:396 port/frontend/shell/welcome.cpp:207
+#: port/frontend/shell/setup.cpp:397 port/frontend/shell/welcome.cpp:207
 msgid "Welcome to PS5CEMU-HAR"
 msgstr "ยินดี​ต้อนรับ​สู่ PS5CEMU-HAR"
 
-#: port/frontend/shell/setup.cpp:396
+#: port/frontend/shell/setup.cpp:397
 msgid "Help"
 msgstr "ความ​ช่วยเหลือ"
 
-#: port/frontend/shell/setup.cpp:397
+#: port/frontend/shell/setup.cpp:398
 msgid "Let’s check your setup"
 msgstr "มา​ตรวจ​ความ​พร้อม​กัน"
 
 #. the Setup check's progress: how many checks are ready, and how many need a look
-#: port/frontend/shell/setup.cpp:403
+#: port/frontend/shell/setup.cpp:404
 msgid "The {0} check is ready."
 msgid_plural "All {0} checks are ready."
 msgstr[0] "ทั้ง {0} รายการ​พร้อม​แล้ว"
 
-#: port/frontend/shell/setup.cpp:404
+#: port/frontend/shell/setup.cpp:405
 msgid "The {0} check needs a look."
 msgid_plural "All {0} checks need a look."
 msgstr[0] "ทั้ง {0} รายการ​ต้อง​ตรวจสอบ"
 
-#: port/frontend/shell/setup.cpp:405
+#: port/frontend/shell/setup.cpp:406
 msgid "{0} of {1} is ready."
 msgid_plural "{0} of {1} are ready."
 msgstr[0] "พร้อม {0} จาก {1} รายการ"
 
-#: port/frontend/shell/setup.cpp:406
+#: port/frontend/shell/setup.cpp:407
 msgid "{0} needs a look."
 msgid_plural "{0} need a look."
 msgstr[0] "{0} รายการ​ต้อง​ตรวจสอบ"
 
-#: port/frontend/shell/setup.cpp:412
+#: port/frontend/shell/setup.cpp:413
 msgid "{0} · as the PS5"
 msgstr "{0} · ตาม PS5"
 
-#: port/frontend/shell/setup.cpp:465 port/frontend/shell/setup.cpp:469
+#: port/frontend/shell/setup.cpp:466 port/frontend/shell/setup.cpp:470
 msgid "· optional"
 msgstr "· ไม่​บังคับ"
 
-#: port/frontend/shell/setup.cpp:484
+#: port/frontend/shell/setup.cpp:485
 msgid "The menus' language"
 msgstr "ภาษา​ของ​เมนู"
 
-#: port/frontend/shell/setup.cpp:485
+#: port/frontend/shell/setup.cpp:486
 msgid "PS5CEMU-HAR speaks the language your PS5 is set to. Cross chooses another; Settings > Language changes it at any time."
 msgstr "PS5CEMU-HAR ใช้​ภาษา​ที่ PS5 ตั้ง​ไว้ ปุ่มกากบาท​เลือก​ภาษา​อื่น การ​ตั้งค่า > ภาษา เปลี่ยน​ได้​ทุก​เมื่อ"
 
-#: port/frontend/shell/setup.cpp:553
+#: port/frontend/shell/setup.cpp:554
 msgid "The guide, on your phone"
 msgstr "คู่มือ​บน​โทรศัพท์"
 
-#: port/frontend/shell/setup.cpp:556
+#: port/frontend/shell/setup.cpp:557
 msgid "Scan it for {0}: {1}"
 msgstr "สแกน​เพื่อ​ดู {0}: {1}"
 
@@ -6651,41 +6667,43 @@ msgstr "อัปเดต​ครั้ง​ใหญ่​ที่สุด
 msgid "This game"
 msgstr "เกม​นี้"
 
-#: port/main_ps5.cpp:131
+#: port/main_ps5.cpp:132
 msgid "Firmware {0}"
 msgstr "เฟิร์มแวร์ {0}"
 
-#: port/main_ps5.cpp:133
+#: port/main_ps5.cpp:134
 msgid "Logs: {0}, {1}/log.txt"
 msgstr "ล็อก: {0}, {1}/log.txt"
 
-#: port/main_ps5.cpp:134
+#: port/main_ps5.cpp:135
 msgid "Boot log not written (/data is unreachable)"
 msgstr "ไม่ได้​เขียน​ล็อก​การ​เริ่ม​ระบบ (เข้าถึง /data ไม่ได้)"
 
-#: port/main_ps5.cpp:422
+#: port/main_ps5.cpp:435
 msgid "PS5CEMU-HAR cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5CEMU-HAR."
 msgstr "PS5CEMU-HAR เข้าถึง /data ไม่ได้ โหลด HEN ที่​มี PPSA99360 ใน​รายการ​เจลเบรก​แอป หรือ elfldr แล้ว​เริ่ม PS5CEMU-HAR ใหม่"
 
-#: port/main_ps5.cpp:451
+#: port/main_ps5.cpp:464
 msgid "This session: Azahar (3DS); Cemu's emulated Wii U is not started"
 msgstr "เซสชัน​นี้: Azahar (3DS) Wii U จำลอง​ของ Cemu ยัง​ไม่​เริ่ม"
 
-#: port/main_ps5.cpp:465
+#: port/main_ps5.cpp:478
 msgid "This session: Cemu (Wii U); Azahar's core is not started"
 msgstr "เซสชัน​นี้: Cemu (Wii U) แกน​ของ Azahar ยัง​ไม่​เริ่ม"
 
-#: port/main_ps5.cpp:473
+#: port/main_ps5.cpp:486
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "ไม่มี​หน่วย​ความ​จำ JIT: เกม Wii U ใช้​อินเทอร์พรีเตอร์ ช้า​กว่า​มาก PPSA99360 อยู่​ใน​รายการ​เจลเบรก​แอป​ของ HEN หรือไม่"
 
-#: port/main_ps5.cpp:506
-msgid "The launcher could not start. The boot log in /data/ps5cemu/logs says why."
-msgstr "ลอนเชอร์​เริ่ม​ไม่ได้ ล็อก​การ​เริ่ม​ระบบ​ใน /data/ps5cemu/logs บอก​สาเหตุ"
+#. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+#: port/main_ps5.cpp:520
+msgid "The launcher could not start. The boot log in {0}/logs says why."
+msgstr "ลอนเชอร์​เริ่ม​ไม่ได้ ล็อก​การ​เริ่ม​ระบบ​ใน {0}/logs บอก​สาเหตุ"
 
-#: port/main_ps5.cpp:507
-msgid "The launcher could not start: {0}. The boot log in /data/ps5cemu/logs has more."
-msgstr "ลอนเชอร์​เริ่ม​ไม่ได้: {0} ล็อก​การ​เริ่ม​ระบบ​ใน /data/ps5cemu/logs มี​รายละเอียด​เพิ่มเติม"
+#. {0} is why; {1} the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the app's drive
+#: port/main_ps5.cpp:522
+msgid "The launcher could not start: {0}. The boot log in {1}/logs has more."
+msgstr "ลอนเชอร์​เริ่ม​ไม่ได้: {0} ล็อก​การ​เริ่ม​ระบบ​ใน {1}/logs มี​รายละเอียด​เพิ่มเติม"
 
 #. a frame rate: frame pacing holds the game to it
 #: port/ps5/display.h:45

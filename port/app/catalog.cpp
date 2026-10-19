@@ -23,7 +23,7 @@ namespace ps5catalog
 
 		std::string Path()
 		{
-			return std::string(ps5paths::kRoot) + "/library.json";
+			return ps5paths::Root() + "/library.json";
 		}
 
 		std::string Hex(uint64_t value)

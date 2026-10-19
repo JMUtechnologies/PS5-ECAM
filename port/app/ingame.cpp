@@ -88,7 +88,7 @@ namespace
 	{
 		s_amiibo.clear();
 		std::error_code error;
-		for (const auto& entry : std::filesystem::directory_iterator(PS5CEMU_DATA "/amiibo", error))
+		for (const auto& entry : std::filesystem::directory_iterator(ps5paths::Root() + "/amiibo", error))
 		{
 			std::string extension = entry.path().extension().string();
 			std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
@@ -289,7 +289,8 @@ namespace
 		// tr: amiibo is Nintendo's name for its figures, as it writes it in the language
 		rows.push_back({"amiibo", Tr("Amiibo"), !s_amiiboMessage.empty() ? s_amiiboMessage : s_amiibo.empty() ? std::string(Tr("None")) : s_amiibo[s_amiiboIndex],
 			true,
-			s_amiibo.empty() ? Tr("Put amiibo dumps (.bin) in /data/ps5cemu/amiibo to scan them here.") :
+			// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+			s_amiibo.empty() ? TrF("Put amiibo dumps (.bin) in {0}/amiibo to scan them here.", ps5paths::Root()) :
 							   Tr("Left and Right choose an amiibo dump; Cross touches it to the GamePad when the game asks for one.")});
 		rows.push_back({"controls", Tr("Controls"), TypeName(ps5emu::GetPlayerControls(0).type), false,
 			Tr("Each player's controller, motion, vibration, deadzones and A and B."), {
@@ -391,7 +392,7 @@ namespace
 			{
 				const std::string& name = s_amiibo[s_amiiboIndex];
 				uint32 nfcError = 0;
-				const bool scanned = nfc::TouchTagFromFile(fs::path(PS5CEMU_DATA "/amiibo") / name, &nfcError);
+				const bool scanned = nfc::TouchTagFromFile(fs::path(ps5paths::Root()) / "amiibo" / name, &nfcError);
 				// tr: {0} is an amiibo dump's file name
 				s_amiiboMessage = scanned ? TrF("Scanned {0}", name) : TrF("Not scanned (error {0})", fmt::format("{:#x}", nfcError));
 				ps5log::Line("[ingame] amiibo {}: {}", name, s_amiiboMessage);
