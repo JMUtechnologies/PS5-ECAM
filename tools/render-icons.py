@@ -4,17 +4,21 @@
 
     render-icons.py OUTPUT_DIR
 
-The three emulators each have a device and a background: Cemu a Wii U GamePad on the Wii U Homebrew
-Launcher's blue with its bubbles (tools/render-background.py), Azahar a 3DS on the 3DS Homebrew
-Launcher's waves made yellow (as the launcher draws them), under the README banner's dark
-overlay (a lighter one on the yellow), and melonDS a DS Lite on melon green with rising pixels.
-Writes:
+PS5-ECAM's logo is four flat rounded squares, as a window's four panes, one for each side in its
+colour (the Wii U's blue, the 3DS's gold, the DS's green, the Switch's red, each a little darker at
+the bottom), each with its console in white, the screens cut out of it (FLAT, GLYPHS). The launcher's
+bar has the four as its mark and as the sides' squares; tools/render-presentation.py draws the same
+for the home screen's tile and background and the README's banner, with the name.
 
-  sce_sys/icon0.png          512x512, opaque: the two side by side (the console's tile is now
-                             tools/render-presentation.py's, with the app's name)
-  ui/icons/ps5cemu.tga       336x336, and ps5cemu-72.tga: the GamePad on the bubbles (Cemu's side)
-  ui/icons/azahar.tga        336x336, and azahar-72.tga: the 3DS on the waves (Azahar's side)
-  ui/icons/melonds.tga       336x336, and melonds-72.tga: the DS on the pixels (melonDS's side)
+The emulators' devices drawn in full (Cemu a Wii U GamePad on the Wii U Homebrew Launcher's blue
+with its bubbles, tools/render-background.py; Azahar a 3DS on the 3DS Homebrew Launcher's waves;
+melonDS a DS Lite on melon green with rising pixels; Eden a Switch on its red) are 4.0's art, kept
+for the trailers and the start pictures. Writes:
+
+  ui/icons/ps5cemu.tga       336x336, and ps5cemu-72.tga: the Wii U's square (Cemu's side)
+  ui/icons/azahar.tga        336x336, and azahar-72.tga: the 3DS's square (Azahar's side)
+  ui/icons/melonds.tga       336x336, and melonds-72.tga: the DS's square (melonDS's side)
+  ui/icons/eden.tga          336x336, and eden-72.tga: the Switch's square (Eden's side)
   ui/icons/har-72.tga        72x72: the two side by side (the start screen)
   ui/icons/start-wiiu.tga    the GamePad alone, on nothing, for the start screen's left half
   ui/icons/start-3ds.tga     the 3DS alone, for its right half
@@ -37,6 +41,10 @@ BLUE = {"top": (0x1e, 0x4f, 0x7a), "bottom": (0x0b, 0x1e, 0x33), "accent": (0x9f
 GOLD = {"top": (0x7c, 0x56, 0x10), "bottom": (0x33, 0x22, 0x06), "accent": (0xff, 0xd2, 0x5a), "detail": (0x8f, 0x82, 0x6c)}
 # and green for the DS, melonDS's
 GREEN = {"top": (0x24, 0x6b, 0x1c), "bottom": (0x0b, 0x2a, 0x08), "accent": (0xb4, 0xf0, 0x8c), "detail": (0x74, 0x8c, 0x6c)}
+# and red for the Switch, Eden's: its body dark grey, its Joy-Cons neon blue and neon red
+RED = {"top": (0x7a, 0x14, 0x1c), "bottom": (0x2a, 0x05, 0x09), "accent": (0xff, 0x9a, 0xa0), "detail": (0x5c, 0x60, 0x68)}
+SWITCH_BODY = (0x32, 0x35, 0x3b)
+NEON_BLUE, NEON_RED = (0x00, 0xb8, 0xf5), (0xff, 0x3c, 0x28)
 OVERLAY = 0.35  # as the banner's
 WAVE_OVERLAY = 0.22  # lighter on the yellow, which darkens to brown
 
@@ -134,6 +142,42 @@ def pixels(width, height, region):
                 a = alpha * min(max(0.5 - d / sx, 0.0), 1.0)
                 for c in range(3):
                     pixel[c] += (255 - pixel[c]) * a
+            row.append(pixel)
+        rows.append(row)
+    return darken(rows, WAVE_OVERLAY)
+
+
+# the Switch side's background: its red, lighter at the top, with its controllers' pairs of rounded bars
+# rising (the launcher's motif)
+SWITCH_TOP, SWITCH_BOTTOM = (240, 40, 56), (170, 8, 22)
+BARS = [  # x, y (0 to 1 of a 1080 square), width, alpha
+    (0.12, 0.16, 0.030, 0.28), (0.78, 0.12, 0.036, 0.24), (0.90, 0.40, 0.026, 0.26), (0.10, 0.58, 0.032, 0.22),
+    (0.86, 0.80, 0.034, 0.24), (0.24, 0.88, 0.028, 0.26), (0.52, 0.06, 0.024, 0.20), (0.62, 0.92, 0.026, 0.22),
+]
+
+
+def bars(width, height, region):
+    """Rows of RGB: region (x, y, w, h) of the Switch side's 1080x1080 square, its rising bars."""
+    rx, ry, rw, rh = region
+    sx, sy = rw / width, rh / height
+    rows = []
+    for y in range(height):
+        fy = ry + (y + 0.5) * sy
+        t = fy / 1080.0
+        base = [SWITCH_TOP[i] + (SWITCH_BOTTOM[i] - SWITCH_TOP[i]) * t for i in range(3)]
+        row = []
+        for x in range(width):
+            fx = rx + (x + 0.5) * sx
+            pixel = list(base)
+            for bx, by, size, alpha in BARS:
+                w = size * 1080 / 2
+                h = w * 2.3
+                gap = w * 0.35
+                for cx in (bx * 1080 - gap / 2 - w, bx * 1080 + gap / 2 + w):
+                    d = rounded_box(fx, fy, cx, by * 1080, w, h, w * 0.96)
+                    a = alpha * min(max(0.5 - d / sx, 0.0), 1.0)
+                    for c in range(3):
+                        pixel[c] += (255 - pixel[c]) * a
             row.append(pixel)
         rows.append(row)
     return darken(rows, WAVE_OVERLAY)
@@ -267,7 +311,38 @@ def nds(u, v, pixel, colour, palette=GREEN):
     return colour, silhouette
 
 
-DEVICES = {"wiiu": gamepad, "3ds": n3ds, "ds": nds}
+def switch(u, v, pixel, colour, palette=RED):
+    """A Nintendo Switch, its Joy-Cons on, over colour at (u, v) in its unit square; returns (colour,
+    silhouette). The left Joy-Con neon blue, the right one neon red, the screen between them."""
+    accent, detail = palette["accent"], palette["detail"]
+    cy, half_h = 0.5, 0.19
+    tablet = rounded_box(u, v, 0.5, cy, 0.30, half_h, 0.02)
+    # each Joy-Con a bar rounded on its outer side: a rounded box cut at the tablet's edge
+    left = max(rounded_box(u, v, 0.165, cy, 0.075, half_h, 0.07), u - 0.205)
+    right = max(rounded_box(u, v, 0.835, cy, 0.075, half_h, 0.07), 0.795 - u)
+    whole = min(tablet, left, right)
+    colour = mix(colour, (0, 0, 0), 0.35 * coverage(whole - 0.02, pixel * 6) * (1 - coverage(whole, pixel)))
+    silhouette = coverage(whole, pixel)
+    colour = mix(colour, NEON_BLUE, coverage(left, pixel))
+    colour = mix(colour, NEON_RED, coverage(right, pixel))
+    colour = mix(colour, SWITCH_BODY, coverage(tablet, pixel))
+    # the screen (16:9), with an accent edge and a play triangle
+    colour = mix(colour, accent, coverage(rounded_box(u, v, 0.5, cy, 0.265, 0.155, 0.012), pixel))
+    screen = rounded_box(u, v, 0.5, cy, 0.252, 0.142, 0.008)
+    colour = mix(colour, mix(palette["top"], palette["bottom"], (v - 0.358) / 0.284), coverage(screen, pixel))
+    colour = mix(colour, accent, coverage(play(u, v, 0.51, cy, 0.09), pixel))
+    # the left stick above its four buttons, the right one below its four
+    dark = (0x1c, 0x1e, 0x22)
+    for sx, sy in ((0.16, 0.41), (0.84, 0.59)):
+        colour = mix(colour, dark, coverage(circle(u, v, sx, sy, 0.034), pixel))
+        colour = mix(colour, mix(dark, (0x60, 0x64, 0x6c), 0.6), coverage(circle(u, v, sx, sy, 0.022), pixel))
+    for bx, by in ((0.16, 0.585), (0.84, 0.415)):
+        for dx, dy in ((0, -0.03), (0.03, 0), (0, 0.03), (-0.03, 0)):
+            colour = mix(colour, dark, coverage(circle(u, v, bx + dx, by + dy, 0.0125), pixel))
+    return colour, silhouette
+
+
+DEVICES = {"wiiu": gamepad, "3ds": n3ds, "ds": nds, "switch": switch}
 
 
 def compose(width, height, parts, rounded=False):
@@ -304,6 +379,8 @@ def single(size, device, rounded=True):
         background = bubbles(size, size, (280, 0, 720, 720))
     elif device == "ds":
         background = pixels(size, size, (0, 0, 1080, 1080))
+    elif device == "switch":
+        background = bars(size, size, (0, 0, 1080, 1080))
     else:
         background = waves(size, size, (420, 0, 1080, 1080))
     return compose(size, size, [(0, size, background, device, size * 0.98, (size / 2, size / 2))], rounded)
@@ -321,6 +398,65 @@ def split(size, rounded):
 
 def alone(width, height, device):
     return compose(width, height, [(0, width, None, device, width * 1.0, (width / 2, height / 2))])
+
+
+# The logo's squares: each side's colours, top and bottom, and its console in white as shapes in the
+# square's unit: ("box", x0, y0, x1, y1, corner) and ("dot", cx, cy, r), white, or with "cut" after them
+# the square's own colour (a screen, a stick), drawn in that order
+INK = (0x0a, 0x0f, 0x1b)
+WHITE = (0xf5, 0xf7, 0xfb)
+FLAT = {
+    "wiiu": ((0x5a, 0xa9, 0xff), (0x2f, 0x7f, 0xe8)),
+    "3ds": ((0xf4, 0xb6, 0x3f), (0xd9, 0x96, 0x1b)),
+    "ds": ((0x7e, 0xd9, 0x57), (0x4c, 0xaf, 0x38)),
+    "switch": ((0xf2, 0x43, 0x4f), (0xc8, 0x1f, 0x2c)),
+}
+CORNER = 0.16  # the square's corners, of its side
+GLYPHS = {
+    # the Wii U GamePad: its screen, its two sticks, the d-pad and a button
+    "wiiu": [("box", 0.12, 0.33, 0.88, 0.67, 0.10), ("box", 0.31, 0.39, 0.69, 0.61, 0.025, "cut"),
+             ("dot", 0.205, 0.43, 0.032, "cut"), ("dot", 0.795, 0.43, 0.032, "cut"),
+             ("box", 0.18, 0.555, 0.23, 0.585, 0.006, "cut"), ("box", 0.19, 0.545, 0.22, 0.595, 0.006, "cut"),
+             ("dot", 0.795, 0.57, 0.022, "cut")],
+    # the 3DS: a wide top screen, a smaller touch screen, the circle pad
+    "3ds": [("box", 0.19, 0.15, 0.81, 0.48, 0.05), ("box", 0.27, 0.21, 0.73, 0.43, 0.02, "cut"),
+            ("box", 0.19, 0.52, 0.81, 0.85, 0.05), ("box", 0.36, 0.57, 0.64, 0.77, 0.02, "cut"),
+            ("dot", 0.27, 0.62, 0.028, "cut")],
+    # the DS Lite: two screens of a size
+    "ds": [("box", 0.22, 0.15, 0.78, 0.48, 0.05), ("box", 0.35, 0.21, 0.65, 0.43, 0.02, "cut"),
+           ("box", 0.22, 0.52, 0.78, 0.85, 0.05), ("box", 0.35, 0.57, 0.65, 0.79, 0.02, "cut")],
+    # the Switch: its tablet between its Joy-Cons, a stick on each
+    "switch": [("box", 0.08, 0.32, 0.30, 0.68, 0.075), ("box", 0.70, 0.32, 0.92, 0.68, 0.075),
+               ("box", 0.22, 0.32, 0.78, 0.68, 0.02), ("box", 0.215, 0.32, 0.232, 0.68, 0.0, "cut"),
+               ("box", 0.768, 0.32, 0.785, 0.68, 0.0, "cut"), ("box", 0.28, 0.375, 0.72, 0.625, 0.015, "cut"),
+               ("dot", 0.155, 0.42, 0.03, "cut"), ("dot", 0.845, 0.58, 0.03, "cut")],
+}
+
+
+def flat(size, side):
+    """Rows of RGBA: a side's square of the logo, size pixels, its corners rounded, transparent outside."""
+    top, bottom = FLAT[side]
+    pixel = 1.0 / size
+    rows = []
+    for y in range(size):
+        v = (y + 0.5) / size
+        ground = mix(top, bottom, v)
+        row = []
+        for x in range(size):
+            u = (x + 0.5) / size
+            colour = ground
+            for shape in GLYPHS[side]:
+                if shape[0] == "box":
+                    _, x0, y0, x1, y1, r = shape[:6]
+                    d = rounded_box(u, v, (x0 + x1) / 2, (y0 + y1) / 2, (x1 - x0) / 2, (y1 - y0) / 2, r)
+                else:
+                    _, cx, cy, r = shape[:4]
+                    d = circle(u, v, cx, cy, r)
+                colour = mix(colour, ground if shape[-1] == "cut" else WHITE, coverage(d, pixel))
+            alpha = coverage(rounded_box(u, v, 0.5, 0.5, 0.5, 0.5, CORNER), pixel)
+            row.append(tuple(int(round(max(0, min(255, c)))) for c in colour) + (int(round(alpha * 255)),))
+        rows.append(row)
+    return rows
 
 
 def write_png(path, rows):
@@ -349,18 +485,10 @@ def main():
         sys.exit(__doc__)
     out = sys.argv[1]
     icons = os.path.join(out, "ui", "icons")
-    os.makedirs(os.path.join(out, "sce_sys"), exist_ok=True)
     os.makedirs(icons, exist_ok=True)
-    write_png(os.path.join(out, "sce_sys", "icon0.png"), split(512, rounded=False))
-    write_tga(os.path.join(icons, "har-72.tga"), split(72, rounded=True))
-    write_tga(os.path.join(icons, "ps5cemu.tga"), single(336, "wiiu"))
-    write_tga(os.path.join(icons, "ps5cemu-72.tga"), single(72, "wiiu"))
-    write_tga(os.path.join(icons, "azahar.tga"), single(336, "3ds"))
-    write_tga(os.path.join(icons, "azahar-72.tga"), single(72, "3ds"))
-    write_tga(os.path.join(icons, "start-wiiu.tga"), alone(440, 440, "wiiu"))
-    write_tga(os.path.join(icons, "start-3ds.tga"), alone(440, 440, "3ds"))
-    write_tga(os.path.join(icons, "melonds.tga"), single(336, "ds"))
-    write_tga(os.path.join(icons, "melonds-72.tga"), single(72, "ds"))
+    for name, side in (("ps5cemu", "wiiu"), ("azahar", "3ds"), ("melonds", "ds"), ("eden", "switch")):
+        write_tga(os.path.join(icons, name + ".tga"), flat(336, side))
+        write_tga(os.path.join(icons, name + "-72.tga"), flat(72, side))
 
 
 if __name__ == "__main__":
