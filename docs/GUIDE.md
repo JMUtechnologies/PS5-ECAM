@@ -1,4 +1,4 @@
-# PS5CEMU-HAR guide
+# PS5-ECAM guide
 
 Everything the [README](../README.md) leaves out: the launcher, each system, where games and files go,
 the controls and in-game menus, the remote touch screen, saves, mods and what to do when something goes
@@ -88,7 +88,7 @@ work stops before a game starts.
   ScaleForce, xBRZ, MMPX), and shaders compiled in the background so games don't stutter.
 - Screen layouts: a large top screen with the bottom one beside it, the top screen only, side by
   side, or stacked; either screen can take the main spot.
-- **Borders:** Midnight, Waves, Aurora, Shell or PS5CEMU-HAR artwork around the screens in every layout, from
+- **Borders:** Midnight, Waves, Aurora, Shell or PS5-ECAM artwork around the screens in every layout, from
   **Settings > Screens** or the in-game menu.
 - DualSense: A on Circle and B on Cross like a real 3DS (or swapped), circle pad and C-stick on the
   sticks, ZL/ZR on L2/R2, motion from the gyro and accelerometer, and every button remappable in
@@ -122,6 +122,31 @@ New in 4.0.0: a side of its own, in melonDS's green, to the right of the 3DS.
   and `firmware.bin` in `/data/ps5cemu/melonds/bios` are used when they are there
   (**Settings > System**).
 - Not there: DSi games, the DS's wireless and its GBA slot.
+
+## Nintendo Switch (Eden)
+
+New in 5.0.0: a side of its own, in the Switch's red, to the right of the DS.
+
+- [Eden](https://github.com/eden-emu/mirror), the Switch emulator, in ProsperoEden's PS5 port
+  ([premohq/ProsperoEdenX](https://github.com/premohq/ProsperoEdenX), with this repository's
+  `patches/eden`). It is a program of its own in the app's `eden/` folder: Play starts it with the
+  game, and when the game ends it starts PS5-ECAM again, on the Switch side. A game's home screen
+  tile closes the app instead, as on the other sides.
+- **Settings** on the Switch side: the internal resolution (0.5x to 4x of the game's own 720p
+  handheld or 1080p docked), upscaling to 4K (FSR 1 among them), ASTC textures (compressed, or full
+  quality for a game whose textures look blocky), the performance overlay, the volume, and docked or
+  handheld (**System**). A game can have its own of each (**Game settings**), as on the other sides.
+- **ProsperoEden's own launcher** is one press away: **Settings > Game files > Open ProsperoEden**,
+  or a game's menu (Options) > **Mods, cheats and updates**. It has everything Eden can do besides:
+  its library and game files, updates and DLC, mods and cheats, each game's own settings and
+  controls, profiles, rooms and downloads, frame generation and more. Circle on its home screen
+  comes back to PS5-ECAM.
+- **Buttons and controllers** (which DualSense button presses each of the Switch's, Pro Controller,
+  Joy-Cons or handheld) are set in ProsperoEden's **Settings > Controls**.
+- Your Switch's **keys** and **firmware** are needed, dumped from your own console: see
+  [Game files](#nintendo-switch).
+- Saves are Eden's, in `/data/ps5cemu/eden/user/nand/user/save`: the app's backups to USB do not
+  hold them yet.
 
 ## Game files
 
@@ -171,6 +196,34 @@ saves are in `/data/ps5cemu/melonds/saves`.
 A game can stay in its `.zip`, `.7z` or `.rar` archive, or a `.tar` (`.tar.gz`, `.tar.xz` and the
 like): its first `.nds` by name is the game, read into memory when it starts, and nothing is
 extracted. Its saves are named by the archive, as a game's are by its file.
+
+### Nintendo Switch
+
+Put games in `/data/ps5cemu/eden/roms`, or pick another folder in **Settings > Game files** on the
+Switch side (not a network share: Eden cannot read those).
+
+```text
+/data/ps5cemu/eden/
+├── keys/
+│   ├── prod.keys                   your Switch's keys: Eden reads no game without them
+│   └── title.keys
+├── firmware/                       your Switch's firmware (its .nca files): many games need it
+└── roms/
+    ├── Game [0100000000010000].nsp # a game, alone
+    └── Another Game/               # or a game in a folder of its own,
+        ├── Another Game.xci        #   with its update and DLC beside it
+        └── Another Game [Update].nsp
+```
+
+- `.nsp` and `.xci` play directly. An update or DLC in a game's folder goes with that game; ones in
+  `/data/ps5cemu/eden/updates` are found too.
+- The library names a game by its file until Eden has read it once (it reads each game as it
+  starts, and ProsperoEden's own library reads them all): then it has the game's own name and
+  icon. A picture beside a game with its name (`Game.png` or `Game.jpg`) is its box art.
+- A title ID in brackets in the file's name, as dumps have it, keeps the game's settings and its
+  place in Recently played whatever the file is called.
+- A standalone ProsperoEden's files in `/data/prosperoeden` are used while `/data/ps5cemu/eden` has
+  no keys.
 
 ### Games in archives
 
@@ -266,7 +319,7 @@ idea and prototype, #38.)
   put the next figure on a slot, and **Empty** takes it off. The game saves its progress into the dump,
   as it would on the toy. A real portal plugged into the PS5 isn't supported.
 - **Save states (3DS).** Five slots per game; loading is held (hold Cross until the ring fills).
-  States made by earlier PS5CEMU-HAR builds load too. Keep saving in the game as well.
+  States made by earlier PS5-ECAM builds load too. Keep saving in the game as well.
 - **Cheats (3DS).** Put a game's cheats in `/data/ps5cemu/azahar/cheats/<title ID>.txt` (16 hex
   digits, shown in the in-game menu), in the Gateway format desktop Azahar uses, and turn them on and
   off from the menu.
@@ -287,10 +340,10 @@ idea and prototype, #38.)
   GameTDB doesn't have is asked for again after two weeks. **Settings > Online** turns the downloads
   off, and has *Download missing box art* and *Download all box art again*.
 - **Updates:** when the app starts fresh, it asks GitHub for the latest release. When a newer
-  PS5CEMU-HAR is out, it asks whether to install it: **Update now** downloads the release, checks it
+  PS5-ECAM is out, it asks whether to install it: **Update now** downloads the release, checks it
   against the release's SHA-256, puts its files in place of the old ones and starts the app again.
   Your games, saves and settings in `/data/ps5cemu` stay as they are. **Settings > Online >
-  PS5CEMU-HAR updates** checks again.
+  PS5-ECAM updates** checks again.
 
 Without an internet connection, the libraries just show the game icons.
 
@@ -330,6 +383,15 @@ Everything the app writes goes to `/data/ps5cemu`, except your game files (or to
 │   ├── cheats/                     DS cheats, <game file>.mch
 │   ├── archives.bin                what the library read of DS games in archives
 │   └── bios/                       your DS's bios7.bin, bios9.bin and firmware.bin, if you add them
+├── eden/                           the Switch side's, always in /data (Eden's program keeps it there)
+│   ├── keys/                       your Switch's prod.keys and title.keys
+│   ├── firmware/                   your Switch's firmware
+│   ├── roms/                       default Switch game folder
+│   ├── updates/, mods/             updates and DLC, mods and cheats
+│   ├── user/                       Eden's storage: saves in user/nand/user/save
+│   ├── covers/                     games' icons and names, once Eden has read them
+│   ├── config/prosperoeden.json    ProsperoEden's own settings
+│   └── logs/                       Eden's logs (Copy logs to USB takes them)
 ├── covers/                         game icons and box art (boxart/)
 ├── music/                          your own launcher music (.mp3, .wav)
 ├── themes/                         your own launcher themes (.json)
@@ -376,13 +438,13 @@ first USB drive plugged in. **Restore from USB** puts a backup back, moving the 
 ## Reporting problems
 
 Check the [compatibility list](COMPATIBILITY.md) first, then
-[open an issue with the bug report form](https://github.com/premohq/PS5CEMU-HAR/issues/new/choose).
+[open an issue with the bug report form](https://github.com/premohq/PS5-ECAM/issues/new/choose).
 It asks for your firmware, HEN, app version and logs, which almost every problem needs.
 
 **Settings > Diagnostics** has what a report needs:
 
 - The app version, the firmware, and what the HEN gave the app.
-- **Copy logs to USB:** puts the logs and settings in a dated `PS5CEMU-HAR-logs-...` folder on a USB
+- **Copy logs to USB:** puts the logs and settings in a dated `PS5-ECAM-logs-...` folder on a USB
   drive. The app keeps the last five sessions' logs, so copy them soon after a problem and attach
   them to your report.
 - **Clear shader caches** (hold Cross): for a game that crashes on a bad or shared cache.
@@ -396,7 +458,7 @@ every 10 seconds with the frame rate, and `[crash]` lines if an emulator crashes
 - Going back to the library restarts the app, and a Wii U game keeps running behind the in-game
   menu.
 - Batman: Arkham Origins needs its 60 FPS graphic pack turned off; with it on, it glitches and
-  crashes once gameplay loads ([#15](https://github.com/premohq/PS5CEMU-HAR/issues/15)).
+  crashes once gameplay loads ([#15](https://github.com/premohq/PS5-ECAM/issues/15)).
 - 3DS camera, microphone, local wireless and online play aren't supported.
 - 3DS texture filters are expensive at high internal resolutions; if a game stutters, try Texture
   filter: None first.

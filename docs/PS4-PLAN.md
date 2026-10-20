@@ -1,6 +1,6 @@
 # A PS4 and PS4 Pro edition: the plan
 
-A plan, written 19 October 2026, answering [#27](https://github.com/premohq/PS5CEMU-HAR/issues/27).
+A plan, written 19 October 2026, answering [#27](https://github.com/premohq/PS5-ECAM/issues/27).
 What is built so far, and how, is in [ps4/README.md](../ps4/README.md): a proof of concept, with no
 promise of support. Nobody working on it has a PS4 to test with.
 

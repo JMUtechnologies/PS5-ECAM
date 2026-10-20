@@ -1,6 +1,6 @@
 # Mods for Wii U games
 
-PS5CEMU-HAR runs Cemu's mods. A Cemu mod is a **graphic pack**: a folder with a `rules.txt` that
+PS5-ECAM runs Cemu's mods. A Cemu mod is a **graphic pack**: a folder with a `rules.txt` that
 says which game it is for, and the files it brings:
 
 - `content/`: files that take the place of the game's own (models, textures, text, levels);
@@ -29,7 +29,7 @@ plugins) don't: look for the Cemu version of a mod.
                    └── content/...
    ```
 
-3. Plug the drive into the PS5 and start PS5CEMU-HAR on the Wii U side.
+3. Plug the drive into the PS5 and start PS5-ECAM on the Wii U side.
 4. Either:
    - press **Options** on the game and choose **Add mods from USB**: a mod without a `rules.txt`
      and outside a title ID folder is given that game; or

@@ -1,7 +1,7 @@
-# Building PS5CEMU-HAR
+# Building PS5-ECAM
 
 `make release` builds everything from source on Linux and writes the app to `build/app/PPSA99360`
-and `dist/PS5CEMU-HAR-vVERSION.zip`. Ubuntu 24.04 is what it is built on; WSL works.
+and `dist/PS5-ECAM-vVERSION.zip`. Ubuntu 24.04 is what it is built on; WSL works.
 
 ## Requirements
 
@@ -24,7 +24,7 @@ sudo apt install rsync flex glslang-tools llvm-18-dev libclang-18-dev libclc-18-
 make radv      # RADV, the Vulkan driver, with the driver patches RADV_PATCHES names (0006-0009 by default)
 make azahar    # Azahar's core and its PS5 frontend (build/azahar)
 make melonds   # melonDS's core and its PS5 frontend (build/melonds)
-make release   # the app (build/app/PPSA99360), dist/PS5CEMU-HAR-vVERSION.zip with its SHA256SUMS,
+make release   # the app (build/app/PPSA99360), dist/PS5-ECAM-vVERSION.zip with its SHA256SUMS,
                # and dist/ps5cemu-vVERSION.elf, the eboot's ELF with its symbols
 make check     # the same build with a stand-in for RADV: checks everything else, not an app
 ```
@@ -148,8 +148,8 @@ and drawn again:
 | `tools/render-background.py` | The Wii U Homebrew Launcher's background as a still picture, which the icons, the home screen background and the banner draw on. The launcher draws it moving (`port/frontend/shell/shell.cpp`) |
 | `tools/render-icons.py` | The launcher's icons: the GamePad on the bubbles, the 3DS on the waves, the DS on melon green with its pixels, and the Wii U and 3DS side by side. Run by `package.sh` |
 | `tools/render-shaders.sh` | The UI kit's and the DS screens' SPIR-V (`port/ui/shaders.h`, `port/melonds/shaders.h`, committed), with a glslangValidator |
-| `tools/render-presentation.py` | The PS5 home screen's art: the background (`sce_sys/pic0.dds`, installed as `pic0.dds` and `pic1.dds`, a 3840x2160 BC7 DDS it encodes itself) and the tile (`sce_sys/icon0.png`), both the README banner's design. Needs Pillow, numpy and the banner's fonts: the name's is Typodermic's Zrnic, whose licence allows fixed artwork but not sharing the font, so it is not in this repository and `--title-font` names your own copy. Its output is committed, so the build does not |
-| `tools/render-banner.py` | This repository's banner, `docs/banner.svg`; with `--title-font`, the name in Zrnic as outlines (fontTools), never the font itself |
+| `tools/render-presentation.py` | PS5-ECAM's art: the logo (four squares, one for each side, from `render-icons.py`) with its name, as the PS5 home screen's background (`sce_sys/pic0.dds`, installed as `pic0.dds` and `pic1.dds`, a 3840x2160 BC7 DDS it encodes itself), its tile (`sce_sys/icon0.png`), with `--banner` the README's `docs/banner.png` and with `--opening` the Eden theme's `port/frontend/ui/opening.jpg`. Needs Pillow, numpy and the fonts: the name's is Typodermic's Zrnic, whose licence allows fixed artwork but not sharing the font, so it is not in this repository and `--title-font` names your own copy. Its output is committed, so the build does not |
+| `tools/render-banner.py` | 4.0's banner (three bands, `docs/banner.svg` when it is run), kept for the trailers; the README's is `render-presentation.py --banner`'s |
 
 All but `render-presentation.py` and `render-menu-fonts.py` need only Python's standard library.
 
