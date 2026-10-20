@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# PS5CEMU-HAR build. `make help` lists the targets. Missing dependencies are fetched at their pinned
+# PS5-ECAM build. `make help` lists the targets. Missing dependencies are fetched at their pinned
 # revisions (tools/deps.json); nothing that already exists is changed. The build runs on Linux with
 # clang-18, lld-18 and the LLVM 18 tools, cmake, ninja, git, python3 and make.
 
@@ -17,7 +17,7 @@ export JOBS
 .PHONY: help deps deps-status radv azahar melonds eden build check package release clean distclean
 
 help: ## List the targets
-	@echo 'PS5CEMU-HAR build - make [target] [VARIABLE=value]'
+	@echo 'PS5-ECAM build - make [target] [VARIABLE=value]'
 	@echo
 	@awk 'BEGIN { FS = ":.*## " } /^[a-z][a-z-]*:.*## / { printf "  %-12s %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 	@echo
@@ -50,7 +50,7 @@ melonds: deps ## Build melonDS's core (the DS side's) and its PS5 frontend: buil
 eden: deps ## Build ProsperoEdenX, the Switch side's program (Eden), with patches/eden: build/eden
 	bash tools/build-eden.sh
 
-build: deps azahar melonds $(if $(RADV_ARCHIVE),,radv) ## Build PS5CEMU-HAR (Cemu, Azahar and melonDS) and link it with RADV: build/cemu/ps5cemu.elf
+build: deps azahar melonds $(if $(RADV_ARCHIVE),,radv) ## Build PS5-ECAM (Cemu, Azahar and melonDS) and link it with RADV: build/cemu/ps5cemu.elf
 	bash tools/build-cemu.sh
 
 check: deps azahar melonds ## Build and package everything with a stand-in for RADV, to check the build (not an app)
@@ -63,11 +63,11 @@ package: build eden ## The app folder: build/app/PPSA99360 (with eden/, the Swit
 # a release takes the emulators' patches only as they are: a checkout in .deps with commits not exported
 # or changes not committed stops it (ps5cemu_patches_apply in tools/env.sh)
 release: export PS5CEMU_RELEASE := 1
-release: package ## dist/PS5CEMU-HAR-vVERSION.zip (the PPSA99360 folder), SHA256SUMS, and the ELF with its symbols
+release: package ## dist/PS5-ECAM-vVERSION.zip (the PPSA99360 folder), SHA256SUMS, and the ELF with its symbols
 	@mkdir -p dist
-	rm -f dist/PS5CEMU-HAR-v$(VERSION).zip
-	cd build/app && python3 -m zipfile -c ../../dist/PS5CEMU-HAR-v$(VERSION).zip PPSA99360
-	cd dist && sha256sum PS5CEMU-HAR-v$(VERSION).zip > SHA256SUMS
+	rm -f dist/PS5-ECAM-v$(VERSION).zip
+	cd build/app && python3 -m zipfile -c ../../dist/PS5-ECAM-v$(VERSION).zip PPSA99360
+	cd dist && sha256sum PS5-ECAM-v$(VERSION).zip > SHA256SUMS
 	@# the unstripped ELF of the eboot, kept to look up this release's crash reports
 	@# (tools/symbolize-crash.py dist/ps5cemu-vVERSION.elf boot.log)
 	cp build/cemu/ps5cemu.elf dist/ps5cemu-v$(VERSION).elf

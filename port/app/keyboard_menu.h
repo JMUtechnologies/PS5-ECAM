@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the in-game keyboards, the 3DS's (ingame3ds.cpp) and the Wii U's (ingame.cpp, which
+// PS5-ECAM: the in-game keyboards, the 3DS's (ingame3ds.cpp) and the Wii U's (ingame.cpp, which
 // Cemu's swkbd.cpp hands its keyboard to, patches/cemu). Over the game, on the launcher's 1920x1080
 // as the menus are: what the game asks for, the text, the menus' language's keys (app/keyboard.h,
 // whose pages L1 and R1 go through), then the game's own buttons, the last of which confirms.

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# PS5CEMU-HAR's payloads, built with the payload SDK (tools/package.sh):
+# PS5-ECAM's payloads, built with the payload SDK (tools/package.sh):
 #   tile-installer.elf   moves the home screen tiles the app made into /data/homebrew (tile_installer.c)
 
 ifdef PS5_PAYLOAD_SDK

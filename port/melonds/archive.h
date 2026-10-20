@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: DS games in archives (#50): .zip, .7z, .rar and tar files, plain or compressed, read with
+// PS5-ECAM: DS games in archives (#50): .zip, .7z, .rar and tar files, plain or compressed, read with
 // libarchive as melonDS's own frontend reads them (src/frontend/qt_sdl/ArchiveUtil.cpp, without Qt). The
 // game is the archive's first DS ROM by name (FindRom), read into memory at once, as melonDS loads any
 // ROM; nothing is written out.

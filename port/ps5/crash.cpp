@@ -35,7 +35,7 @@ namespace
 		const auto* machine = reinterpret_cast<const uint64_t*>(&static_cast<const ucontext_t*>(context)->uc_mcontext);
 		const uintptr_t self = reinterpret_cast<uintptr_t>(&Handler);
 		const uintptr_t fault = reinterpret_cast<uintptr_t>(info->si_addr);
-		Line("signal {} at {:#x} (PS5CEMU-HAR's own handler: Cemu does not run in this session)", sig, fault);
+		Line("signal {} at {:#x} (PS5-ECAM's own handler: Cemu does not run in this session)", sig, fault);
 		Line("PS5: rip {:#x}, rsp {:#x}, handler at {:#x}", machine[kRip], machine[kRsp], self);
 		{
 			char words[32 * 17];

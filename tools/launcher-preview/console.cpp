@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the launchers' previews on a PC (console.h): the script, the PNGs, and the console and
+// PS5-ECAM: the launchers' previews on a PC (console.h): the script, the PNGs, and the console and
 // the emulators in brief.
 
 #include "console.h"

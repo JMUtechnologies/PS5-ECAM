@@ -1,4 +1,4 @@
-/* PS5CEMU-HAR - games on a network share: SMB with libsmb2, NFS with libnfs (netfs.h).
+/* PS5-ECAM - games on a network share: SMB with libsmb2, NFS with libnfs (netfs.h).
  * From Porpoise X (premohq/Porpoise-X, src/porpoise_netfs.cpp), as it is but for its libretro VFS,
  * which this app has no use for (its emulators reach /net paths through ps5/netfs_files.cpp), and
  * its log, which is the boot log's [netfs] lines here.
@@ -1070,7 +1070,7 @@ bool save(const std::string &file, const std::vector<Share> &list)
     std::FILE *f = std::fopen(tmp.c_str(), "w");
     if (!f)
         return false;
-    std::fputs("# PS5CEMU-HAR's network shares: name, computer, share (or NFS export), folder, username, password, "
+    std::fputs("# PS5-ECAM's network shares: name, computer, share (or NFS export), folder, username, password, "
                "nfs for an NFS share\n",
                f);
     for (const Share &s : list)
@@ -1346,7 +1346,7 @@ Problem enumerate(const Share &server, std::vector<std::string> &out, std::strin
         out.push_back(name);
     }
     smb2_free_data(session->ctx, reply);
-    note(server_of(server) + " shares " + std::to_string(out.size()) + " folders PS5CEMU-HAR can use");
+    note(server_of(server) + " shares " + std::to_string(out.size()) + " folders PS5-ECAM can use");
     std::sort(out.begin(), out.end());
     return Problem::None;
 }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: how a game runs in the app, as players have reported it: the compatibility list
+// PS5-ECAM: how a game runs in the app, as players have reported it: the compatibility list
 // (docs/COMPATIBILITY.md, bundled as assets/compatibility.md), read for the launcher's game pages.
 // A game is found by its name, compared without case, spaces or punctuation ("Batman™: Arkham
 // Origins" is "Batman: Arkham Origins").

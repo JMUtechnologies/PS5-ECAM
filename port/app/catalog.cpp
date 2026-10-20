@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: each side's game list as last seen (catalog.h).
+// PS5-ECAM: each side's game list as last seen (catalog.h).
 
 #include "catalog.h"
 #include "paths.h"

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the app's own crash report, for a session Cemu does not run in (the start screen,
+// PS5-ECAM: the app's own crash report, for a session Cemu does not run in (the start screen,
 // and Azahar's side). It writes [crash] lines to the boot log as Cemu's does (patches/cemu): the
 // signal, where it struck, the machine context and the code addresses on the crashed thread's
 // stack, which give the functions with the ELF's symbols (address - load address). When Cemu

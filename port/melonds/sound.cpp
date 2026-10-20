@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the DS's sound on the PS5's AudioOut (frontend.h). As Azahar's sink (port/azahar/sink.cpp)
+// PS5-ECAM: the DS's sound on the PS5's AudioOut (frontend.h). As Azahar's sink (port/azahar/sink.cpp)
 // and Cemu's PS5AudioAPI: a thread feeds AudioOut 256-frame stereo grains at 48 kHz, and
 // sceAudioOutOutput, blocking until the previous grain plays, paces it.
 //

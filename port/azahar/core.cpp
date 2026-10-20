@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: Azahar's core on the PS5 (azahar.h), built in Azahar's tree against its libraries
+// PS5-ECAM: Azahar's core on the PS5 (azahar.h), built in Azahar's tree against its libraries
 // (tools/build-azahar.sh) and linked into the app with Cemu.
 //
 //  - its data under Root(): the 3DS's storage (sdmc, nand), sysdata (where an aes_keys.txt takes the

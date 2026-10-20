@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: Settings: what the side you are on can change, found at a
+// PS5-ECAM: Settings: what the side you are on can change, found at a
 // glance. One short list of pages with icons down the left, the side's own and the few every side
 // shares, and nothing of another side; the page's rows across the rest of the screen, each a control
 // (a toggle, a slider, pips, segments, swatches), the focused one with a line saying what it does, its
@@ -42,7 +42,7 @@ namespace ps5shell
 	{
 		// tr: the 3DS borders' names (artwork around the screens)
 		constexpr const char* kBorderThemes[] = {TrMarkC("border", "None"), TrMarkC("border", "Midnight"), TrMarkC("border", "Waves"),
-			TrMarkC("border", "Aurora"), TrMarkC("border", "Shell"), "PS5CEMU-HAR"};
+			TrMarkC("border", "Aurora"), TrMarkC("border", "Shell"), "PS5-ECAM"};
 		constexpr const char* kRegions[] = {TrMark("Automatic"), TrMark("Japan"), TrMark("USA"), TrMark("Europe"), TrMark("Australia"),
 			TrMark("China"), TrMark("Korea"), TrMark("Taiwan")};
 		// tr: the languages the emulated 3DS can be set to
@@ -220,10 +220,10 @@ namespace ps5shell
 				Icon::Save});
 		if (Is3ds())
 			pages.push_back({"artic", Tr("Artic Base"), Tr("Play from your 3DS, over your network."), Icon::Artic});
-		pages.push_back({"online", Tr("Online"), IsWiiU() ? Tr("Box art, graphic packs and PS5CEMU-HAR's updates.") :
-										   IsDs()	 ? Tr("Box art, RetroAchievements and PS5CEMU-HAR's updates.") :
-										   IsSwitch() ? Tr("PS5CEMU-HAR's updates.") :
-													   Tr("Box art and PS5CEMU-HAR's updates."),
+		pages.push_back({"online", Tr("Online"), IsWiiU() ? Tr("Box art, graphic packs and PS5-ECAM's updates.") :
+										   IsDs()	 ? Tr("Box art, RetroAchievements and PS5-ECAM's updates.") :
+										   IsSwitch() ? Tr("PS5-ECAM's updates.") :
+													   Tr("Box art and PS5-ECAM's updates."),
 			Icon::Globe});
 		pages.push_back({"launcher", Tr("Launcher"), Tr("Theme, sides, language and text."), Icon::Sparkle});
 		pages.push_back({"diagnostics", Tr("Diagnostics"), Tr("The Setup check, logs, caches and this session's details."), Icon::Pulse});
@@ -463,7 +463,7 @@ namespace ps5shell
 			// Cross, Left or Right opens the list
 			int index = 0;
 			choice("ui-language", Tr("Language"), LanguageOptions(index), index, Tr("The menus' language, and the games' names where they have one in it."),
-				Tr("PS5CEMU-HAR speaks the PS5's own language unless you choose another here; the first start's Setup check has the same "
+				Tr("PS5-ECAM speaks the PS5's own language unless you choose another here; the first start's Setup check has the same "
 				   "choice. A game's name follows it where the game has one in that language, as on a console set to it; otherwise it is "
 				   "the English one. Descriptions come from GameTDB in English, and graphic packs from their authors, as they wrote them."));
 		}
@@ -779,12 +779,12 @@ namespace ps5shell
 				action(Kind::Action, "nxkeys", Tr("Switch keys"), keys ? std::string(Tr("prod.keys found")) : std::string(Tr("Missing")),
 					keys ? Tr("Eden can read your games.") : Tr("prod.keys is missing: Eden cannot read Switch games without it"),
 					TrF("Eden reads Switch games with your own console's keys: prod.keys (and title.keys), dumped from your Switch, in "
-						"{0}/keys. No keys come with PS5CEMU-HAR.",
+						"{0}/keys. No keys come with PS5-ECAM.",
 						files));
 				action(Kind::Action, "nxfirmware", Tr("Switch firmware"), firmware ? std::string(Tr("Found")) : std::string(Tr("Missing")),
 					firmware ? Tr("Games that need the system's files start.") : Tr("No firmware yet: many games need it to start"),
 					TrF("Many Switch games need the console's own system files: its firmware's .nca files, dumped from your Switch, "
-						"in {0}/firmware. No firmware comes with PS5CEMU-HAR.",
+						"in {0}/firmware. No firmware comes with PS5-ECAM.",
 						files));
 				action(Kind::Link, "eden", Tr("Open ProsperoEden"), "", Tr("Updates and DLC, mods, cheats, profiles and more."),
 					Tr("ProsperoEden's own launcher, which Eden comes with: its library and game files, updates and DLC, mods and cheats, each "
@@ -873,7 +873,7 @@ namespace ps5shell
 				if (others.empty())
 					remove->dimmed = true;
 				cemu(toggle("accountperuser", Tr("One account for each PS5 user"), settings.accountPerUser,
-					Tr("Whoever starts PS5CEMU-HAR plays on their own saves."),
+					Tr("Whoever starts PS5-ECAM plays on their own saves."),
 					Tr("The PS5 user who starts the app plays on a Wii U account of their own, made the first time with their PS5 name, so "
 					   "brothers and sisters each keep their own saves just by starting the app from their own PS5 user.")));
 			}
@@ -985,8 +985,8 @@ namespace ps5shell
 				if (!account.signedIn)
 					notices->dimmed = true;
 			}
-			action(Kind::Action, "appupdate", Tr("PS5CEMU-HAR updates"), AppUpdateStatus(), Tr("Cross checks GitHub for a newer version."),
-				Tr("PS5CEMU-HAR asks GitHub for its latest release each time it starts. Cross asks again, or installs the newer version it found: "
+			action(Kind::Action, "appupdate", Tr("PS5-ECAM updates"), AppUpdateStatus(), Tr("Cross checks GitHub for a newer version."),
+				Tr("PS5-ECAM asks GitHub for its latest release each time it starts. Cross asks again, or installs the newer version it found: "
 				   "the release's files are downloaded, checked and put in place of these, and the app starts again. Your games, saves and "
 				   "settings stay as they are."));
 		}
@@ -1242,7 +1242,7 @@ namespace ps5shell
 					   "{{\"name\": \"Sunset\", \"base\": \"midnight\", \"colours\": {{\"wiiu\": \"#ff7a59\", \"ink-0\": \"#120806\"}}, "
 					   "\"corners\": 0.5, \"motif\": \"slashes\"}}\n"
 					   "base: a theme to start from (classic, midnight, phantom, terminal). colours: ink-0 to ink-2 (the background), text, "
-					   "wiiu, n3ds and nds (each side's), glass, line, good, warn, bad and focus, as #rrggbb. corners: 0 square to 1.5 round. "
+					   "wiiu, n3ds, nds and nx (each side's), glass, line, good, warn, bad and focus, as #rrggbb. corners: 0 square to 1.5 round. "
 					   "motif: side, none, slashes or grid.",
 				ps5paths::Root());
 		if (page == "files" && IsSwitch())
@@ -1264,15 +1264,17 @@ namespace ps5shell
 					   "put figures on it from the in-game menu (touchpad click + Options > USB devices).",
 				ps5paths::Root());
 		if (page == "about")
-			// tr: {0} is the app's version; {1} its data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+			// tr: {0} is the app's version; {1} its data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on; {2} Eden's game files folder, /data/ps5cemu/eden
 			return TrF("Cemu, the Wii U emulator, by the Cemu team and its contributors; RADV on the PS5 by Mihawk-99 and mpereiraesaa; the "
 				   "community graphic packs' authors.\nAzahar, the 3DS emulator, by the Azahar team and the Citra contributors before them; "
-				   "Mihawk-99's PS5 port of it and dynarmic.\nmelonDS, the DS emulator, by Arisotura and the melonDS team.\nBox art and game "
-				   "information: GameTDB. The font: Lexend.\nThe remote touch screen: dolphin78's idea and prototype.\nAn unofficial port, not affiliated with the Cemu, Azahar or melonDS teams, Nintendo "
-				   "or Sony.\n\nWii U games: {1}/games, storage and saves: {1}/mlc01, keys: {1}/keys.txt\n3DS "
-				   "games: {1}/azahar/games, storage: {1}/azahar/sdmc\nDS games: {1}/melonds/games, saves: "
-				   "{1}/melonds/saves\n\nVersion {0}",
-				ps5update::Readable(PS5CEMU_VERSION), ps5paths::Root());
+				   "Mihawk-99's PS5 port of it and dynarmic.\nmelonDS, the DS emulator, by Arisotura and the melonDS team.\nEden, the Switch "
+				   "emulator, by the Eden team; ProsperoEden, its PS5 port and launcher, by Sword, BlackBearReloaded, bawsdeep, Rockiu0 and its "
+				   "contributors.\nBox art and game information: GameTDB. The font: Lexend. The remote touch screen: dolphin78's idea and "
+				   "prototype.\nAn unofficial port, not affiliated with the Cemu, Azahar, melonDS or Eden teams, Nintendo or Sony.\n\nWii U "
+				   "games: {1}/games, storage and saves: {1}/mlc01, keys: {1}/keys.txt\n3DS games: {1}/azahar/games, storage: "
+				   "{1}/azahar/sdmc\nDS games: {1}/melonds/games, saves: {1}/melonds/saves\nSwitch games: {2}/roms, keys: {2}/keys, firmware: "
+				   "{2}/firmware\n\nVersion {0}",
+				ps5update::Readable(PS5CEMU_VERSION), ps5paths::Root(), ps5eden::GameFilesFolder());
 		return {};
 	}
 
@@ -2203,7 +2205,7 @@ namespace ps5shell
 		canvas.Ring(card, kRadiusCard, 1.5f, kGlassEdge);
 		const float pad = 32, qr = std::min(card.w - 2 * pad, 260.0f);
 		float y = card.y + pad;
-		canvas.Text(Style(kOverlineStyle), card.x + pad, y, Tr("Support PS5CEMU-HAR"), Accent(), card.w - 2 * pad, 1);
+		canvas.Text(Style(kOverlineStyle), card.x + pad, y, Tr("Support PS5-ECAM"), Accent(), card.w - 2 * pad, 1);
 		y += 40;
 		auto code = m_qrCodes.find(kSupport);
 		if (code == m_qrCodes.end())
@@ -2214,7 +2216,7 @@ namespace ps5shell
 			ui::Align::Centre);
 		y += address.height + 14;
 		canvas.Text(Style({20, ui::Weight::Regular, 1.45f}), card.x + pad, y,
-			Tr("PS5CEMU-HAR is free. If it brings your games back, you can support its work here."), Secondary(), card.w - 2 * pad, 4,
+			Tr("PS5-ECAM is free. If it brings your games back, you can support its work here."), Secondary(), card.w - 2 * pad, 4,
 			ui::Align::Centre);
 	}
 

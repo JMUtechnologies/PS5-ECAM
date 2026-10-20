@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the DualSense as the DS (frontend.h). The DS's buttons are the 3DS's of the same name,
+// PS5-ECAM: the DualSense as the DS (frontend.h). The DS's buttons are the 3DS's of the same name,
 // mapped as the DS side's controls say (port/azahar/controls.h's mapping, nds), and its D-pad takes the circle
 // pad's inputs too: the left stick, past the deadzone. The touch screen is the touchpad, as on the 3DS
 // side: a finger moves a cursor over the bottom screen, and clicking the touchpad touches it there. R3

@@ -75,7 +75,7 @@ if ((${#patches[@]} == 0)); then
     rm -rf "$install"
     mkdir -p "$install/lib"
     ln -s "$recipe/lib/libvulkan_radeon.ps5.a" "$install/lib/libvulkan_radeon.ps5.a"
-    echo "RADV for PS5CEMU-HAR: the recipe's release build ($recipe), no patches" >"$install/PROVENANCE.txt"
+    echo "RADV for PS5-ECAM: the recipe's release build ($recipe), no patches" >"$install/PROVENANCE.txt"
     echo "==> [radv] no patches/mesa (RADV_PATCHES is empty): $recipe as it is"
     echo "==> [radv] $install/lib/libvulkan_radeon.ps5.a"
     exit 0
@@ -160,7 +160,7 @@ rm -rf "$install"
 mkdir -p "$install/lib"
 cp "$build/src/amd/vulkan/libvulkan_radeon.a" "$install/lib/libvulkan_radeon.ps5.a"
 {
-    echo "RADV for PS5CEMU-HAR, built by tools/build-radv.sh"
+    echo "RADV for PS5-ECAM, built by tools/build-radv.sh"
     echo "revision: $mesa_revision"
     printf 'patch: %s\n' $names
     echo "tree: $tree"

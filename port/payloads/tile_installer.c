@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: puts the home screen tiles the app made into /data/homebrew (app/forwarders.h).
+// PS5-ECAM: puts the home screen tiles the app made into /data/homebrew (app/forwarders.h).
 //
 // /data/homebrew is root's: without a HEN the app's sandbox can read it but not make folders in it.
 // So the app writes each tile, whole, in /data/ps5cemu/tiles/pending/<title ID> (psfwd_write) and
 // sends this payload to elfldr, the console's payload loader on 127.0.0.1:9021, which runs it as
 // root. For each pending tile it:
 //   - takes only a PS5 Forwarder Format folder (eboot.bin, sce_sys/param.json, forwarder.json) whose
-//     forwarder.json starts PS5CEMU-HAR (PPSA99360), under a title ID of PPSA and five digits that is
-//     not PS5CEMU-HAR's own;
+//     forwarder.json starts PS5-ECAM (PPSA99360), under a title ID of PPSA and five digits that is
+//     not PS5-ECAM's own;
 //   - replaces /data/homebrew/<title ID> only when that folder is itself such a tile (the same game's
 //     tile made again), never another app's folder;
 //   - moves the folder in (a rename, both being on /data; a copy where they are not), gives it the
@@ -15,7 +15,7 @@
 //     beside the pending folder: "ok", or "error <errno> <what>".
 // Then, for each request in /data/ps5cemu/tiles/remove (a file named by a title ID), it takes that tile
 // away, only when /data/homebrew/<title ID> is itself such a tile, and answers in <title ID>.result
-// beside the request. Last, it gives the same modes to every PS5CEMU-HAR tile already in /data/homebrew
+// beside the request. Last, it gives the same modes to every PS5-ECAM tile already in /data/homebrew
 // (those of the first helper, which left eboot.bin 0666), and exits. It reads and writes nothing else.
 
 #include <dirent.h>
@@ -47,7 +47,7 @@ static int exists(const char* path)
 	return lstat(path, &st) == 0;
 }
 
-// A forwarder.json of the format's that starts PS5CEMU-HAR, and the tile program beside it
+// A forwarder.json of the format's that starts PS5-ECAM, and the tile program beside it
 static int our_tile(const char* dir)
 {
 	char path[512];
@@ -205,7 +205,7 @@ static void install(const char* id)
 	snprintf(to, sizeof(to), "%s/%s", HOMEBREW, id);
 	if (!our_tile(from))
 	{
-		report(PENDING, id, EINVAL, "not a PS5CEMU-HAR tile");
+		report(PENDING, id, EINVAL, "not a PS5-ECAM tile");
 		return;
 	}
 	if (exists(to))
@@ -249,7 +249,7 @@ static void install(const char* id)
 	report(PENDING, id, 0, NULL);
 }
 
-// A tile asked to be taken away: only one of PS5CEMU-HAR's, and one already gone is done too
+// A tile asked to be taken away: only one of PS5-ECAM's, and one already gone is done too
 static void take_away(const char* id)
 {
 	char path[512];
@@ -261,7 +261,7 @@ static void take_away(const char* id)
 	}
 	if (!our_tile(path))
 	{
-		report(REMOVE, id, EPERM, "not a PS5CEMU-HAR tile");
+		report(REMOVE, id, EPERM, "not a PS5-ECAM tile");
 		return;
 	}
 	if (remove_tree(path) != 0)
@@ -306,7 +306,7 @@ int main(void)
 			take_away(removals[i]);
 	}
 	// and the tiles made before (4.0.0's first helper left their eboot.bin 0666, so they did not start):
-	// each PS5CEMU-HAR tile in /data/homebrew opened again, never another app's folder
+	// each PS5-ECAM tile in /data/homebrew opened again, never another app's folder
 	dir = opendir(HOMEBREW);
 	if (dir)
 	{

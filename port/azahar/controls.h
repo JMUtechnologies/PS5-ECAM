@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the 3DS's controls on the DualSense, for the launcher and for Azahar's input. Each
+// PS5-ECAM: the 3DS's controls on the DualSense, for the launcher and for Azahar's input. Each
 // 3DS button (its circle pad and C-stick in four directions each) has a DualSense input, stored by
 // name in the launcher's settings (ps5settings::N3ds::buttons) where it is not the default: A on
 // Circle and B on Cross, where the 3DS has them, the circle pad on the left stick, the C-stick on

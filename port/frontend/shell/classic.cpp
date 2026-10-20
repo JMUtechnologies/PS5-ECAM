@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: Classic, the launcher of 2.0.0 B, the first the app had:
+// PS5-ECAM: Classic, the launcher of 2.0.0 B, the first the app had:
 // ProsperoEden's layout of then in Cemu's blue and Azahar's gold (RmlUi at the time:
 // tools/render-layout.py, port/frontend/launcher.cpp and tools/launcher-preview at v2.0.0b, whose
 // preview drew the screens this follows). Drawn with the kit over the sections' shared navigation
 // (eden.cpp), as Phantom and Terminal are, with everything the app has gained since:
 //
-// - the header: the side's tile, PS5 CEMU (AZAHAR, MELONDS) and WII U / PS5CEMU-HAR / its version,
+// - the header: the side's tile, PS5 CEMU (AZAHAR, MELONDS) and WII U / PS5-ECAM / its version,
 //   the sections as words at the right and the sides' tiles after them (Up reaches them, Left and
 //   Right go along, Down comes back), the clock; a hairline under it on Home, and one over the hints;
 // - Home: Continue playing, the last game in a panel with its cover, Launch game and the side's own
@@ -130,7 +130,7 @@ namespace ps5shell
 			SideTile(canvas, m_side, {kL, 72, 72, 72}, 14, 0xffffffff);
 			const std::string name = std::string("PS5 ") + Upper(EmulatorName(m_side));
 			canvas.Text(Style({40, ui::Weight::Medium, 1.0f, 6.0f}), 216, 74, name, kText, 640, 1);
-			const std::string line = Upper(SystemName(m_side)) + " / PS5CEMU-HAR / v" + ps5update::Readable(PS5CEMU_VERSION);
+			const std::string line = Upper(SystemName(m_side)) + " / PS5-ECAM / v" + ps5update::Readable(PS5CEMU_VERSION);
 			canvas.Text(Style({20, ui::Weight::Medium, 1.0f, 4.0f}), 217, 124, line, Secondary(), 700, 1);
 			canvas.Rect({kL, 159, kR - kL, 1.5f}, 0, Wash(0.14f));
 		}
@@ -654,7 +654,7 @@ namespace ps5shell
 	void Shell::ClassicAboutDraw(Canvas& canvas)
 	{
 		WantBackdrop(nullptr);
-		ClassicTitle(canvas, std::string(TrC("app", "About")) + " PS5CEMU-HAR", Tr("Credits and setup"));
+		ClassicTitle(canvas, std::string(TrC("app", "About")) + " PS5-ECAM", Tr("Credits and setup"));
 		EdenArrive(canvas, 1, 12);
 		ClassicPanel(canvas, kLeftPanel, 22);
 		{

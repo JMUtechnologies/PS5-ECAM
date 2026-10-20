@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the on-screen keyboards' keys (keyboard.h).
+// PS5-ECAM: the on-screen keyboards' keys (keyboard.h).
 
 #include "keyboard.h"
 

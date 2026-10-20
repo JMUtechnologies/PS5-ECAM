@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the Vulkan driver's clock (driver_clock.h).
+// PS5-ECAM: the Vulkan driver's clock (driver_clock.h).
 
 #include "driver_clock.h"
 #include "kernel.h"

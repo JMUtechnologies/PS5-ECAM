@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR's UI kit: pictures (images.h).
+// PS5-ECAM's UI kit: pictures (images.h).
 
 #include "images.h"
 #include "canvas.h"

@@ -4,7 +4,7 @@
 # (Eden, the Switch emulator, for the PS5; GPL-3.0-or-later), from .deps/ProsperoEdenX with
 # patches/eden, by its own build (its Makefile's package: its pinned inputs, RADV, FFmpeg, Eden). The
 # app carries it as eden/ (tools/package.sh): the Switch side starts eden/eboot.bin with LoadExec, and
-# it starts PS5CEMU-HAR's eboot.bin again when its game ends or its own launcher is left (patches/eden).
+# it starts PS5-ECAM's eboot.bin again when its game ends or its own launcher is left (patches/eden).
 # Every ProsperoEden feature is in it, its own launcher with them (mods, cheats, updates and DLC, save
 # sync, rooms, downloads, per-game settings): the Switch side opens it for what it has no page of its
 # own for.
@@ -48,7 +48,7 @@ export RADV_BUILD_JOBS=${RADV_BUILD_JOBS:-4}
 make -C "$eden" package JOBS="${EDEN_JOBS:-5}"
 
 # The program and the files it reads from its own folder (storage_paths.h: AppDir() is the app's
-# eden/). Left out: its sce_sys and sce_module (the app's are PS5CEMU-HAR's), its self-updater (the
+# eden/). Left out: its sce_sys and sce_module (the app's are PS5-ECAM's), its self-updater (the
 # app updates eden/ with everything else, and the check is off in patches/eden) and the test
 # program it carries.
 package=$eden/build/release/PPSA99008

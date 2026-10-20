@@ -172,7 +172,7 @@ namespace ps5forwarders
 			return ps5lang::Tr("elfldr took the tile helper, but the tile did not reach /data/homebrew.");
 		}
 
-		// The tile made for this game before: a forwarder in /data/homebrew that starts PS5CEMU-HAR
+		// The tile made for this game before: a forwarder in /data/homebrew that starts PS5-ECAM
 		// with the same --rom
 		std::string Earlier(const std::string& rom)
 		{
@@ -199,7 +199,7 @@ namespace ps5forwarders
 			return found;
 		}
 
-		// A free ID from the format's range that no app on the console has: PS5CEMU-HAR's own is in
+		// A free ID from the format's range that no app on the console has: PS5-ECAM's own is in
 		// that range, and an app installed on a drive has no folder in /data/homebrew
 		std::string NewTitleId()
 		{
@@ -321,7 +321,7 @@ namespace ps5forwarders
 			spec.target = ps5paths::kTitleId;
 			spec.argc = 3;
 			spec.argv = argv;
-			spec.creator = "PS5CEMU-HAR " PS5CEMU_VERSION;
+			spec.creator = "PS5-ECAM " PS5CEMU_VERSION;
 			spec.icon0_png = {icon.data(), icon.size()};
 			char error[256] = {};
 			const std::string templateDir = ps5paths::Assets() + "/forwarder";

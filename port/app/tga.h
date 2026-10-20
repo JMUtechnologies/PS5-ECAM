@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the app's own TGAs (the box art and game icons the launcher shows: uncompressed,
+// PS5-ECAM: the app's own TGAs (the box art and game icons the launcher shows: uncompressed,
 // 24 or 32 bits, either way up) as RGBA, scaled down to a size, for the in-game menus to show.
 
 #pragma once

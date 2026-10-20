@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: what melonDS's PS5 frontend shares between its files (built in melonDS's tree:
+// PS5-ECAM: what melonDS's PS5 frontend shares between its files (built in melonDS's tree:
 // CMakeLists.txt): the game's loop and the emulation (core.cpp), melonDS's platform (platform.cpp), the
 // DualSense as the DS (input.cpp) and AudioOut (sound.cpp).
 

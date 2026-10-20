@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-// PS5CEMU-HAR: Cemu's emulated USB devices (usb_devices.h). Figures are put on and taken off as
+// PS5-ECAM: Cemu's emulated USB devices (usb_devices.h). Figures are put on and taken off as
 // Cemu's Emulated USB Devices window does it (EmulatedUSBDeviceFrame), so this file keeps Cemu's
 // MPL-2.0 licence.
 

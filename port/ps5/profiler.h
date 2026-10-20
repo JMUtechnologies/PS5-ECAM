@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: a sampling profiler for performance work, off unless "profile": true in ps5cemu.json.
+// PS5-ECAM: a sampling profiler for performance work, off unless "profile": true in ps5cemu.json.
 // Every few milliseconds of the app's CPU time (setitimer's ITIMER_PROF) the thread that used it is
 // interrupted, and where it was is kept: its instruction pointer and the first code addresses on its
 // stack (the calls it is in, roughly: the code has no frame pointers). A thread of the profiler's

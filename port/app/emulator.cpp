@@ -459,7 +459,7 @@ namespace ps5emu
 			ps5paths::CemuData(), failedWriteAccess);
 		if (!failedWriteAccess.empty())
 		{
-			error = ps5lang::TrF("PS5CEMU-HAR cannot write to {0}. Is the HEN loaded?", _pathToUtf8(*failedWriteAccess.begin()));
+			error = ps5lang::TrF("PS5-ECAM cannot write to {0}. Is the HEN loaded?", _pathToUtf8(*failedWriteAccess.begin()));
 			return false;
 		}
 		cemuLog_createLogFile(false); // log.txt in /data/ps5cemu, as on the desktop
@@ -481,7 +481,7 @@ namespace ps5emu
 		}
 		if (!CreateDefaultMlcFiles(ActiveSettings::GetMlcPath()))
 		{
-			error = ps5lang::TrF("PS5CEMU-HAR cannot create the MLC folder {0}", _pathToUtf8(ActiveSettings::GetMlcPath()));
+			error = ps5lang::TrF("PS5-ECAM cannot create the MLC folder {0}", _pathToUtf8(ActiveSettings::GetMlcPath()));
 			return false;
 		}
 		InstallBundledGraphicPacks();
@@ -683,7 +683,7 @@ namespace ps5emu
 			const CafeTitleFileType fileType = DetermineCafeSystemFileType(game.path);
 			if (fileType != CafeTitleFileType::RPX && fileType != CafeTitleFileType::ELF)
 			{
-				error = ps5lang::Tr("This is not a Wii U game PS5CEMU-HAR can start.");
+				error = ps5lang::Tr("This is not a Wii U game PS5-ECAM can start.");
 				if (launchTitle.GetInvalidReason() == TitleInfo::InvalidReason::NO_DISC_KEY)
 					// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
 					error += std::string(" ") + ps5lang::TrF("Its disc key is missing from {0}/keys.txt.", ps5paths::Root());
@@ -949,7 +949,7 @@ namespace ps5emu
 		ps5log::Line("[emu] back to the library: starting PS5Cemu over");
 		LoadExecApp("eboot.bin", {}, false);
 		// none took: the app ends, which is said rather than it just closing
-		ps5notify::Send(ps5lang::Tr("PS5CEMU-HAR could not start itself again to show the library: start it again from the home screen."));
+		ps5notify::Send(ps5lang::Tr("PS5-ECAM could not start itself again to show the library: start it again from the home screen."));
 		ps5log::FlushAll();
 	}
 

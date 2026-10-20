@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: RetroAchievements in DS games, with rcheevos' rc_client
+// PS5-ECAM: RetroAchievements in DS games, with rcheevos' rc_client
 // (.deps/rcheevos): RetroAchievements has sets for the DS, none for the Wii U or the 3DS. Softcore
 // only: save states, cheats and the speed settings stay as they are.
 //

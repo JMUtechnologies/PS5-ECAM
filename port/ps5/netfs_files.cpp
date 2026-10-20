@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: /net paths for the C library's file calls. The app is linked
+// PS5-ECAM: /net paths for the C library's file calls. The app is linked
 // with -Wl,--wrap for the calls below (tools/link.sh), so Cemu's title scan and its .wua, .wud and
 // folder reads, Azahar's files, melonDS's ROM and the launcher's folder browser reach a network share
 // by its /net/<name>/... path with no change to them: a call on such a path, or on a descriptor, a

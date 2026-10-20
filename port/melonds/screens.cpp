@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the DS's two screens on the TV (screens.h). Set up as the UI kit and Cemu's renderer
+// PS5-ECAM: the DS's two screens on the TV (screens.h). Set up as the UI kit and Cemu's renderer
 // are on the console, where both are known to draw: B8G8R8A8_UNORM and FIFO, a render pass that
 // clears, host-visible buffers flushed after writing, device-local optimal-tiled images filled by a
 // copy from a staging buffer. Each step of the first frame is logged, so a game that shows nothing
@@ -697,8 +697,8 @@ namespace ps5melonds::screens
 		if (!vk.CreateInstance)
 			return Fail(error, "the driver has no vkCreateInstance");
 		VkApplicationInfo app{VK_STRUCTURE_TYPE_APPLICATION_INFO};
-		app.pApplicationName = "PS5CEMU-HAR";
-		app.pEngineName = "PS5CEMU-HAR DS";
+		app.pApplicationName = "PS5-ECAM";
+		app.pEngineName = "PS5-ECAM DS";
 		app.apiVersion = VK_API_VERSION_1_1;
 		VkInstanceCreateInfo instanceInfo{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};
 		instanceInfo.pApplicationInfo = &app;

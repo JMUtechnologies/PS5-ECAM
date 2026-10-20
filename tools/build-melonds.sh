@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Configures and builds melonDS's core for the PS5 (build/melonds): the Nintendo DS emulator the 3DS
 # side starts DS games with, from .deps/melonDS with patches/melonds, with the toolchain Cemu's build
-# uses (tools/ps5.cmake), and PS5CEMU-HAR's frontend for it (port/melonds: the DS's platform, the
+# uses (tools/ps5.cmake), and PS5-ECAM's frontend for it (port/melonds: the DS's platform, the
 # DualSense, AudioOut). melonDS's own frontend (Qt and SDL) is not built, nor its OpenGL renderers:
 # the DS's 3D is its software renderer, on a thread of its own. build/melonds/melonds_ps5_libraries.txt
 # then lists the archives the app links (tools/build-cemu.sh).

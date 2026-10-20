@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: Meyer Oscar's Library, the Library of the Meyer Oscar and
+// PS5-ECAM: Meyer Oscar's Library, the Library of the Meyer Oscar and
 // Meyer Oscar Light themes on every side. Recently played: the side's games by when they were last
 // played, a row of their box art under Today, This week and Earlier, the focused one's name, play time,
 // when it was played and its update under the row. Then the Library: every game on the side as a grid

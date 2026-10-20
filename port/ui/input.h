@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR's UI kit: the DualSense as actions. Any connected
+// PS5-ECAM's UI kit: the DualSense as actions. Any connected
 // controller drives the UI; the left stick moves as the D-pad does; the directions, the shoulders
 // and the triggers repeat while held (400 ms, then every 90 ms, as the classic launcher's); every
 // button's hold is timed, for what is held to confirm. Nothing counts as pressed until it has been

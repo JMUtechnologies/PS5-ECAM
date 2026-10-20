@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: games in archives (.zip, .7z, .rar and tar files, plain or compressed) on every side.
+// PS5-ECAM: games in archives (.zip, .7z, .rar and tar files, plain or compressed) on every side.
 //
 // The DS side reads a game out of its archive into memory (melonds/archive.h); the 3DS's and the Wii
 // U's are too large for that, so an archived 3DS ROM, or a Wii U title folder (code, content, meta),

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: every side's saves to a USB drive and back (saves.h).
+// PS5-ECAM: every side's saves to a USB drive and back (saves.h).
 
 #include "saves.h"
 #include "lang.h"
@@ -26,6 +26,8 @@ namespace ps5saves
 {
 	namespace
 	{
+		// the backups' folder on a USB drive: the app's name before 5.0.0, kept, so the backups made
+		// before are found and new ones go beside them
 		constexpr const char* kFolder = "PS5CEMU-HAR-saves";
 
 		// What a backup holds: its folder in the backup, where it comes from, and which of the files

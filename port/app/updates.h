@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: updating the app from inside it. When the app starts fresh (not coming back from a
+// PS5-ECAM: updating the app from inside it. When the app starts fresh (not coming back from a
 // game), one background request asks GitHub for the latest release; when it is newer than this build,
 // the launcher asks whether to install it. Installing downloads the release's ZIP from the
 // repository's releases branch, checks it against the SHA256SUMS beside it, unpacks it next to the

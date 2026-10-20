@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the entry point (Cemu's src/main.cpp on the desktop).
+// PS5-ECAM: the entry point (Cemu's src/main.cpp on the desktop).
 //
 //  1. out of the sandbox: /data, and JIT memory for the recompilers (ps5/privilege.h);
 //  2. the boot log, the DualSense and Cemu's core (settings, MLC, graphic packs, the game scan);
 //  3. the launcher until a game is chosen (frontend/shell.h), on the side last used;
 //  4. the game, on Cemu's or Azahar's Vulkan renderer, or melonDS's screens on VideoOut, with its side's
 //     settings and the game's own over them (frontend/settings.h, ForGame), until the in-game menu
-//     (touchpad + Options) asks for the library, which starts PS5CEMU-HAR over (app/emulator.h,
+//     (touchpad + Options) asks for the library, which starts PS5-ECAM over (app/emulator.h,
 //     RestartToLibrary) on that emulator's side. A Switch game runs in Eden's own program instead
-//     (eden/eboot.bin, port/eden), which starts PS5CEMU-HAR again on the Switch side when it ends.
+//     (eden/eboot.bin, port/eden), which starts PS5-ECAM again on the Switch side when it ends.
 
 #include "app/achievements.h"
 #include "app/catalog.h"
@@ -131,7 +131,7 @@ namespace
 	std::vector<std::string> Diagnostics(const ps5privilege::Result& privileges)
 	{
 		return {
-			fmt::format("PS5CEMU-HAR {}: Cemu at {}, Azahar at {}, melonDS at {}, Eden at {}", PS5CEMU_VERSION, PS5CEMU_CEMU_COMMIT,
+			fmt::format("PS5-ECAM {}: Cemu at {}, Azahar at {}, melonDS at {}, Eden at {}", PS5CEMU_VERSION, PS5CEMU_CEMU_COMMIT,
 				PS5CEMU_AZAHAR_COMMIT, PS5CEMU_MELONDS_COMMIT, PS5CEMU_EDEN_COMMIT),
 			ps5lang::TrF("Firmware {0}", Firmware()),
 			privileges.summary,
@@ -257,7 +257,7 @@ int main(int argc, char* argv[])
 	// (0666, 0777), whichever user it runs as, for the next session and the console's FTP service
 	// (app/file_modes.h, #55, #58)
 	umask(0);
-	ps5log::Line("[main] PS5CEMU-HAR {} starting (Cemu at {}, Azahar at {}, melonDS at {}, Eden at {})", PS5CEMU_VERSION, PS5CEMU_CEMU_COMMIT,
+	ps5log::Line("[main] PS5-ECAM {} starting (Cemu at {}, Azahar at {}, melonDS at {}, Eden at {})", PS5CEMU_VERSION, PS5CEMU_CEMU_COMMIT,
 		PS5CEMU_AZAHAR_COMMIT, PS5CEMU_MELONDS_COMMIT, PS5CEMU_EDEN_COMMIT);
 	// before any thread starts: the HEN jailbreaks the process as it is. The game folders are read
 	// first, so a HEN is asked only when something the app needs is out of reach without one
@@ -463,7 +463,7 @@ int main(int argc, char* argv[])
 	if (!privileges.filesystem)
 	{
 		status.notice = status.notice3ds = status.noticeDs = status.noticeSwitch =
-			ps5lang::Tr("PS5CEMU-HAR cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5CEMU-HAR.");
+			ps5lang::Tr("PS5-ECAM cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5-ECAM.");
 		ps5log::Line("[main] {}", status.notice);
 		ps5notify::Send(status.notice);
 	}

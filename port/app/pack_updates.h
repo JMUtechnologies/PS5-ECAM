@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the Cemu community graphic packs brought up to date, as Cemu's "Download latest
+// PS5-ECAM: the Cemu community graphic packs brought up to date, as Cemu's "Download latest
 // community graphic packs" does (gui/wxgui/DownloadGraphicPacksWindow.cpp): GitHub's latest release
 // of cemu-project/cemu_graphic_packs, when it is newer than the packs in graphicPacks/
 // downloadedGraphicPacks (version.txt), downloaded and unpacked in their place. The app's bundled

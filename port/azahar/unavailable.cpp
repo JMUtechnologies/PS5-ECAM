@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: azahar.h for a build without Azahar's core. The launcher's 3DS side works (its
+// PS5-ECAM: azahar.h for a build without Azahar's core. The launcher's 3DS side works (its
 // library, settings and controls), and a game says why it cannot start.
 
 #include "azahar.h"

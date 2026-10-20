@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR's UI kit: pictures. Covers, icons and backdrops are
+// PS5-ECAM's UI kit: pictures. Covers, icons and backdrops are
 // decoded on a worker thread (TGA, PNG and JPEG, with stb_image), handed to the GPU a few a frame,
 // and let go of, least recently drawn first, past a limit. Each picture also gets two ambient
 // colours (its most frequent saturated one and a dark companion, from a 32 x 32 copy), for the

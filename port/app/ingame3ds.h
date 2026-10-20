@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the in-game menu over a 3DS game, a panel down the left as the Wii U's (ingame.h,
+// PS5-ECAM: the in-game menu over a 3DS game, a panel down the left as the Wii U's (ingame.h,
 // side_menu.h) in Azahar's gold (menu_canvas.h), with the game's box art at its top. It is drawn with Cemu's ImGui and its Vulkan backend into Azahar's frames,
 // through the hook patches/azahar adds to Azahar's renderer; the game's loop (port/azahar/core.cpp)
 // applies what it changes. Both sides include this header, so it names no Cemu or Azahar type.
@@ -122,7 +122,7 @@ namespace ps5ingame3ds
 	// top row first; empty for none), and where the screens are on a width x height picture.
 	// tr: the 3DS borders' names (artwork around the screens)
 	constexpr const char* kBorderNames[] = {ps5lang::TrMarkC("border", "None"), ps5lang::TrMarkC("border", "Midnight"),
-		ps5lang::TrMarkC("border", "Waves"), ps5lang::TrMarkC("border", "Aurora"), ps5lang::TrMarkC("border", "Shell"), "PS5CEMU-HAR"};
+		ps5lang::TrMarkC("border", "Waves"), ps5lang::TrMarkC("border", "Aurora"), ps5lang::TrMarkC("border", "Shell"), "PS5-ECAM"};
 	constexpr int kBorderCount = (int)std::size(kBorderNames);
 	struct ScreenRect
 	{

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the remote touch screen in the in-game menus (#38, from
+// PS5-ECAM: the remote touch screen in the in-game menus (#38, from
 // dolphin78's idea and prototype), the Wii U's (ingame.cpp) and the 3DS's and DS's (ingame3ds.cpp).
 // A row, On or Off, the same setting as the launcher's page; while it is on and focused, a card beside
 // the sheet with the code to scan, the address and whether a browser shows it. The card is drawn only

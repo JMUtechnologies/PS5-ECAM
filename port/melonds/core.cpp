@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: melonDS's core on the PS5 (melonds.h), built in melonDS's tree against its core
+// PS5-ECAM: melonDS's core on the PS5 (melonds.h), built in melonDS's tree against its core
 // (tools/build-melonds.sh) and linked into the app with Cemu and Azahar.
 //
 //  - a DS in DS mode, started straight into the game (direct boot) with melonDS's own BIOS and

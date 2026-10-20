@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the experimental launchers, Phantom and Terminal.
+// PS5-ECAM: the experimental launchers, Phantom and Terminal.
 // They share Eden's sections and navigation (eden.cpp: the rail with Home, Library, Settings and
 // About, L1 and R1 between them, the sides at its foot; Home's and the Library's focus) and draw every
 // part their own way:
@@ -325,7 +325,7 @@ namespace ps5shell
 		// the top: the app, its version, the side; the clock at the right
 		EdenArrive(canvas, 0, -16);
 		float tx = kLeft;
-		tx += PhantomTag(canvas, tx, kTop + 8, "PS5CEMU-HAR", 0xffffffff, 0xff000000, 22) + 10;
+		tx += PhantomTag(canvas, tx, kTop + 8, "PS5-ECAM", 0xffffffff, 0xff000000, 22) + 10;
 		tx += PhantomTag(canvas, tx, kTop + 8, ps5update::Readable(PS5CEMU_VERSION), 0xff000000, 0xffffffff, 22) + 10;
 		PhantomTag(canvas, tx, kTop + 8, SideTitle(m_side), accent, 0xff000000, 22);
 		{
@@ -717,7 +717,7 @@ namespace ps5shell
 		EdenLeave(canvas);
 		EdenArrive(canvas, 1, 24);
 		const ui::TextStyle hero = Style({96, ui::Weight::Bold, 1.0f, 2.0f, true});
-		const ui::TextBlock name = m_fonts.Layout(hero, "PS5CEMU-HAR", 1200, 1);
+		const ui::TextBlock name = m_fonts.Layout(hero, "PS5-ECAM", 1200, 1);
 		PhantomPlate(canvas, {kLeft - 16 + 9, 150 + 9, name.width + 50, name.height + 16}, 30, accent);
 		PhantomPlate(canvas, {kLeft - 16, 150, name.width + 50, name.height + 16}, 30, 0xffffffff);
 		canvas.Text(name, kLeft + 16, 158, 0xff000000);
@@ -830,7 +830,7 @@ namespace ps5shell
 		// one line along the top: the app, the side as a node and its emulator, the games, the clock
 		const ui::TextStyle style = Style({20, ui::Weight::Medium, 1.0f, 0.5f, false, true});
 		const std::string node = Lower(SideTitle(m_side));
-		const std::string left = fmt::format("PS5CEMU-HAR {}   |   node {}@{}   |   {}", ps5update::Readable(PS5CEMU_VERSION), node, Lower(EmulatorName(m_side)),
+		const std::string left = fmt::format("PS5-ECAM {}   |   node {}@{}   |   {}", ps5update::Readable(PS5CEMU_VERSION), node, Lower(EmulatorName(m_side)),
 			TrP((int)m_games.size(), "{0} game", "{0} games"));
 		canvas.Text(style, kLeft, 18, left, Accent(), 1300, 1);
 		std::string pads;
@@ -880,7 +880,7 @@ namespace ps5shell
 		canvas.Rect({0, 0, width, 1080}, 0, ui::SetAlpha(kInk0, 0.97f + 0.03f * open));
 		canvas.Rect({width - 1.5f, 0, 1.5f, 1080}, 0, ui::SetAlpha(accent, 0.5f));
 		const ui::TextStyle mono = Style({22, ui::Weight::SemiBold, 1.0f, 0.5f, false, true});
-		canvas.Text(Style({20, ui::Weight::Bold, 1.0f, 0.5f, false, true}), 24, 40, open > 0.5f ? "~/ PS5CEMU-HAR" : "~/", accent, width - 40, 1);
+		canvas.Text(Style({20, ui::Weight::Bold, 1.0f, 0.5f, false, true}), 24, 40, open > 0.5f ? "~/ PS5-ECAM" : "~/", accent, width - 40, 1);
 		// the tree's trunk
 		const float trunk = (kRail - kRailTile) * 0.5f - 10;
 		canvas.Rect({trunk, RailTileTop(0) + kRailTile * 0.5f, 1.5f, kRailPitch * (kSections - 1)}, 0, ui::SetAlpha(accent, 0.4f));
@@ -1330,7 +1330,7 @@ namespace ps5shell
 		EdenArrive(canvas, 1, 12);
 		const Box panel{kLeft, 90, kWidth - 500, 880};
 		TermPanel(canvas, panel, "cat ~/about");
-		canvas.Text(Style({48, ui::Weight::Bold, 1.1f}), panel.x + 36, panel.y + 40, "PS5CEMU-HAR", Accent(), panel.w - 72, 1);
+		canvas.Text(Style({48, ui::Weight::Bold, 1.1f}), panel.x + 36, panel.y + 40, "PS5-ECAM", Accent(), panel.w - 72, 1);
 		canvas.Text(Style({22, ui::Weight::Medium, 1.0f, 0.5f, false, true}), panel.x + 36, panel.y + 104,
 			std::string(Tr("Version")) + " " + ps5update::Readable(PS5CEMU_VERSION) + "  |  wii u, 3ds, ds, switch", kText, panel.w - 72, 1);
 		canvas.Text(Style({20, ui::Weight::Regular, 1.5f, 0.2f, false, true}), panel.x + 36, panel.y + 160, PanelText("about"), ui::SetAlpha(kText, 0.8f),
@@ -1384,7 +1384,7 @@ namespace ps5shell
 		const float fade = still ? 1 - t / length : 1 - ui::ease::CubicOut((t - 1.0f) / 0.35f);
 		canvas.PushAlpha(std::clamp(fade, 0.0f, 1.0f));
 		canvas.Rect({0, 0, 1920, 1080}, 0, kInk0);
-		std::vector<std::string> lines = {fmt::format("PS5CEMU-HAR {} (tty0)", ps5update::Readable(PS5CEMU_VERSION)), "", "mount /data ................ ok"};
+		std::vector<std::string> lines = {fmt::format("PS5-ECAM {} (tty0)", ps5update::Readable(PS5CEMU_VERSION)), "", "mount /data ................ ok"};
 		for (System side : RailSides())
 			lines.push_back(fmt::format("node {:<6} {:<8} ........... ready", Lower(SideTitle(side)), Lower(EmulatorName(side))));
 		lines.push_back(fmt::format("library .................... {} games", m_games.size()));

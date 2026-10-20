@@ -290,7 +290,7 @@ namespace ps5emu
 		bool Skipped(const std::string& name)
 		{
 			static const char* const kSkipped[] = {"mlc01", "covers", "logs", "shaderCache", "cache", "graphicPacks", "azahar", "melonds",
-				"controllerProfiles", "gameProfiles", "themes", "figures", "amiibo", "saves-before", "PS5CEMU-HAR-saves", "PS5CEMU-HAR-logs",
+				"controllerProfiles", "gameProfiles", "themes", "figures", "amiibo", "saves-before", "PS5CEMU-HAR-saves", "PS5-ECAM-logs", "PS5CEMU-HAR-logs",
 				"System Volume Information", "$RECYCLE.BIN", "homebrew", "etaHEN"};
 			if (name.empty() || name[0] == '.')
 				return true;

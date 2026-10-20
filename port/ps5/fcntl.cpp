@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: fcntl for a title. The app is linked with -Wl,--wrap=fcntl (tools/link.sh), so every
+// PS5-ECAM: fcntl for a title. The app is linked with -Wl,--wrap=fcntl (tools/link.sh), so every
 // call comes here first and goes on to the C library's own (__real_fcntl).
 //
 // The console answers F_SETFD on a socket with EINVAL. curl 8.18 (pacbrew's libcurl.a) marks each

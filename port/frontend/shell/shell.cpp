@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the new launcher (shell.h): its loop, the sides and their games, the bar along the top,
+// PS5-ECAM: the new launcher (shell.h): its loop, the sides and their games, the bar along the top,
 // the hints, the backdrop, the overlays and the launch. The screens are in their own files
 // (shell_internal.h).
 
@@ -1056,7 +1056,7 @@ namespace ps5shell
 		// tr: {0} is the tile's folder, /data/homebrew/PPSA99xxx
 		OpenHelp(status.replaced ? Tr("The tile is made again") : Tr("The tile is made"),
 			TrF("It is in {0}. ShadowMount Plus puts it on the PS5's home screen as it does any homebrew: if it does not show, "
-				"restart ShadowMount Plus or the console. The tile starts the game in PS5CEMU-HAR, and closing the game closes the app.",
+				"restart ShadowMount Plus or the console. The tile starts the game in PS5-ECAM, and closing the game closes the app.",
 				status.folder));
 	}
 
@@ -2296,7 +2296,7 @@ namespace ps5shell
 			switch (status.state)
 			{
 			case State::Available:
-				title = TrF("PS5CEMU-HAR {0} is out", next);
+				title = TrF("PS5-ECAM {0} is out", next);
 				text = TrF("This is {0}. Download and install it now? Your games, saves and settings stay as they are.", mine);
 				choices = {Tr("Update now"), Tr("Later")};
 				break;
@@ -2317,12 +2317,12 @@ namespace ps5shell
 				break;
 			case State::Ready:
 				title = TrF("{0} is installed", next);
-				text = Tr("PS5CEMU-HAR starts again to finish the update.");
+				text = Tr("PS5-ECAM starts again to finish the update.");
 				choices = {Tr("Restart now")};
 				break;
 			case State::Failed:
 				title = Tr("The update did not finish");
-				text = status.message + "\n" + TrF("PS5CEMU-HAR is still {0}.", mine);
+				text = status.message + "\n" + TrF("PS5-ECAM is still {0}.", mine);
 				choices = {Tr("OK")};
 				break;
 			default: title = Tr("Checking for updates"); break;
@@ -2331,7 +2331,7 @@ namespace ps5shell
 			canvas.PushAlpha(a);
 			canvas.PushOffset(0, (1 - a) * 40);
 			DrawSheet(canvas, sheet, a);
-			canvas.Text(Style(kOverlineStyle), sheet.x + 48, sheet.y + 44, Tr("PS5CEMU-HAR update"), Secondary(), sheet.w - 96, 1);
+			canvas.Text(Style(kOverlineStyle), sheet.x + 48, sheet.y + 44, Tr("PS5-ECAM update"), Secondary(), sheet.w - 96, 1);
 			canvas.Text(Style(kTitleStyle), sheet.x + 48, sheet.y + 72, title, kText, sheet.w - 96, 1);
 			ui::TextStyle body = Style(kBodyStyle);
 			body.tabular = true;

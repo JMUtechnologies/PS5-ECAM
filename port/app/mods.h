@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: Wii U mods from a USB drive (docs/MODS.md). A Cemu mod is a graphic pack: a rules.txt
+// PS5-ECAM: Wii U mods from a USB drive (docs/MODS.md). A Cemu mod is a graphic pack: a rules.txt
 // beside the folders whose files take the game's place (content/, aoc/, code/) and its patches and
 // shaders, which Cemu finds anywhere in graphicPacks/ (GraphicPack2::LoadAll). The mods in a drive's
 // ps5cemu/mods folder are copied into graphicPacks/mods. A mod shared without a rules.txt (its

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the remote touch screen's page (port/stream/browser.h), its touches and pictures, run in
+// PS5-ECAM: the remote touch screen's page (port/stream/browser.h), its touches and pictures, run in
 // node without a browser. From dolphin78's prototype (#38).
 const assert = require('node:assert/strict');
 const fs = require('node:fs');

@@ -4,7 +4,7 @@
 
     render-sounds.py OUTPUT_DIR
 
-writes OUTPUT_DIR/music-setup.wav, a loop of PS5CEMU-HAR's own music in the spirit of a Nintendo
+writes OUTPUT_DIR/music-setup.wav, a loop of PS5-ECAM's own music in the spirit of a Nintendo
 console's setup screen (light, swinging jazz), written for the launcher and taken from no game; and
 move.wav, select.wav, back.wav, denied.wav and launch.wav, the menu's sounds. The music is IMA ADPCM
 in stereo at 48 kHz (a quarter of 16-bit PCM's size), and the menu sounds 16-bit PCM in mono at 48

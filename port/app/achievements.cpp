@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: RetroAchievements for DS games (achievements.h).
+// PS5-ECAM: RetroAchievements for DS games (achievements.h).
 
 #include "achievements.h"
 #include "lang.h"
@@ -117,7 +117,7 @@ namespace ps5cheevos
 			if (resolve)
 				curl_easy_setopt(curl, CURLOPT_RESOLVE, resolve);
 			// RetroAchievements asks clients to name themselves and rcheevos' version (tools/deps.json's pin)
-			static const std::string agent = "PS5CEMU-HAR/" PS5CEMU_VERSION " rcheevos/12.5";
+			static const std::string agent = "PS5-ECAM/" PS5CEMU_VERSION " rcheevos/12.5";
 			curl_easy_setopt(curl, CURLOPT_USERAGENT, agent.c_str());
 			curl_easy_setopt(curl, CURLOPT_CAINFO, ca.c_str());
 			curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10L);

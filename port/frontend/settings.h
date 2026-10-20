@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the launcher's settings, ps5cemu.json in the data folder (app/paths.h). Cemu's own
+// PS5-ECAM: the launcher's settings, ps5cemu.json in the data folder (app/paths.h). Cemu's own
 // settings stay in its settings.xml; the launcher writes the few it manages (game folder, volume,
 // overlay, upscaling filter) into both. Azahar's are here (n3ds), and given to it when a 3DS game
 // starts; melonDS's (nds) have the same shape, the DS side's own (its folder, screens, sound,
@@ -187,7 +187,7 @@ namespace ps5settings
 		// false: every start compiles them again (as before 3.5.1)
 		bool shaderDiskCache = true;
 		// only in ps5cemu.json: Cemu's exact stfs conversion (Cemu patch 0024), as upstream Cemu now
-		// stores on a PC; off, as every Cemu before it and every PS5CEMU-HAR release so far stored (with
+		// stores on a PC; off, as every Cemu before it and every PS5-ECAM release so far stored (with
 		// cvtsd2ss). Which costs more on the console has not been measured yet
 		bool accurateSingleStores = false;
 		// only in ps5cemu.json: Cemu's millisecond clock, which its GPU thread takes at every draw call,

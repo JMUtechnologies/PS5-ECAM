@@ -1,5 +1,5 @@
 #version 450
-// PS5CEMU-HAR's UI kit (port/ui/gfx.cpp): one quad per instance, in the 1920 x 1080 layout space; the
+// PS5-ECAM's UI kit (port/ui/gfx.cpp): one quad per instance, in the 1920 x 1080 layout space; the
 // viewport scales it to the output. Its corners come from the vertex index (two triangles), so the
 // kit binds no vertex buffer, only the instances.
 

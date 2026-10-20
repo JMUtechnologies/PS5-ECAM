@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: Azahar's sound on the PS5's AudioOut (AudioCore::CreatePS5Sink, which the PS5's
+// PS5-ECAM: Azahar's sound on the PS5's AudioOut (AudioCore::CreatePS5Sink, which the PS5's
 // entry in Azahar's sink list names). As Cemu's PS5AudioAPI: a thread feeds AudioOut 256-frame
 // stereo grains at 48 kHz, and sceAudioOutOutput, blocking until the previous grain plays, paces
 // it.

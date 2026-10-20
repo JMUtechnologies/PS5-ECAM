@@ -4,7 +4,7 @@
 
     render-banner.py [--title-font FONT | --title-from SVG] OUTPUT_SVG
 
-writes docs/banner.svg (1280x320): PS5CEMU-HAR's three sides, in the order of the launcher's switch,
+writes docs/banner.svg (1280x320): PS5-ECAM's three sides, in the order of the launcher's switch,
 in three equal bands with each console in the middle of its own and the name across the three under
 them. On the left Cemu's: the Wii U GamePad (tools/render-icons.py's shapes) on the Wii U Homebrew
 Launcher's background as the launcher draws it (tools/render-background.py: its gradient and the
@@ -195,9 +195,9 @@ def main():
     # the name is drawn 88 pixels high at baseline 176, then scaled and moved under the consoles, so
     # --title-from finds it as it was made
     place = f'transform="translate({HALF} {BASELINE}) scale({TITLE_SCALE}) translate({-HALF} -176)"'
-    title = f'<text x="{HALF}" y="176" font-size="88" font-weight="800" letter-spacing="-1" fill="{BODY}" {place}>PS5CEMU-HAR</text>'
+    title = f'<text x="{HALF}" y="176" font-size="88" font-weight="800" letter-spacing="-1" fill="{BODY}" {place}>PS5-ECAM</text>'
     if len(args) >= 2 and args[0] == '--title-font':
-        title = f'<path d="{outlined(args[1], "PS5CEMU-HAR", HALF, 176, 88, 1)}" {place} fill="{BODY}"/>'
+        title = f'<path d="{outlined(args[1], "PS5-ECAM", HALF, 176, 88, 1)}" {place} fill="{BODY}"/>'
         args = args[2:]
     elif len(args) >= 2 and args[0] == '--title-from':
         title = f'<path d="{title_from(args[1])}" {place} fill="{BODY}"/>'
@@ -223,7 +223,7 @@ def main():
                nds(Device(CENTRES[2] - T / 2, ROW - 0.495 * T, GREEN, 'screen-green'))]
     glows = [f'<ellipse cx="{cx}" cy="{ROW}" rx="150" ry="80" fill="{palette["accent"]}" fill-opacity="{opacity}" filter="url(#glow)"/>'
              for cx, palette, opacity in zip(CENTRES, (BLUE, GOLD, GREEN), (0.34, 0.32, 0.28))]
-    svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" aria-label="PS5CEMU-HAR: Cemu, Azahar and melonDS, the Wii U, Nintendo 3DS and DS emulators, on PlayStation 5 homebrew">
+    svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" aria-label="PS5-ECAM: Cemu, Azahar and melonDS, the Wii U, Nintendo 3DS and DS emulators, on PlayStation 5 homebrew">
   <defs>
     <clipPath id="tile"><rect width="{W}" height="{H}" rx="32"/></clipPath>
     <clipPath id="left"><rect width="{left}" height="{H}"/></clipPath>

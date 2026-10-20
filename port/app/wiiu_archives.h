@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: Wii U games in archives (game_archives.h) for the Wii U side's library, which Cemu's own
+// PS5-ECAM: Wii U games in archives (game_archives.h) for the Wii U side's library, which Cemu's own
 // scan does not read: a title's folder (code, content and meta) in a .zip, .7z, .rar or tar archive in
 // the game files folder, read on a thread of its own beside Cemu's scan. The game is the archive's first
 // base title by its folder's name, named by its meta.xml and identified by its code/app.xml as Cemu

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the remote touch screen's server (stream.h), from dolphin78's prototype (#38).
+// PS5-ECAM: the remote touch screen's server (stream.h), from dolphin78's prototype (#38).
 #include "stream.h"
 #include "browser.h"
 #include "jpeg.h"

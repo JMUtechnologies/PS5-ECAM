@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-// PS5CEMU-HAR: the Wii U's accounts for the launcher (emulator.h), as Cemu's
+// PS5-ECAM: the Wii U's accounts for the launcher (emulator.h), as Cemu's
 // Account settings make, rename and delete them (src/gui/wxgui/GeneralSettings2.cpp, OnAccountCreate
 // and OnAccountDelete), so this file keeps Cemu's MPL-2.0 licence. Each account has its own saves of
 // every game (mlc01/usr/save/<title>/user/<persistent ID>); the one a game starts on is Cemu's own

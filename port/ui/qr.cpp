@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR's UI kit: QR codes (qr.h), as ISO/IEC 18004 lays them out: the data in byte mode with
+// PS5-ECAM's UI kit: QR codes (qr.h), as ISO/IEC 18004 lays them out: the data in byte mode with
 // its Reed-Solomon codewords in blocks, interleaved, placed in two-column zigzags around the finder,
 // timing and alignment patterns, masked, then the format (and from version 7 the version) bits.
 

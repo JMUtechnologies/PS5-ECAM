@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: what the launchers do besides drawing (actions.h), moved unchanged from launcher.cpp.
+// PS5-ECAM: what the launchers do besides drawing (actions.h), moved unchanged from launcher.cpp.
 
 #include "actions.h"
 #include "../app/game_archives.h"
@@ -145,7 +145,7 @@ namespace ps5actions
 		}
 		for (int drive = 0; drive < 8; drive++)
 		{
-			const std::string folder = fmt::format("/mnt/usb{}/PS5CEMU-HAR-logs-{}", drive, stamp);
+			const std::string folder = fmt::format("/mnt/usb{}/PS5-ECAM-logs-{}", drive, stamp);
 			if (!IsFolder(fmt::format("/mnt/usb{}", drive)) || mkdir(folder.c_str(), 0777) != 0)
 				continue;
 			int copied = 0;

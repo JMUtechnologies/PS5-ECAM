@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: Eden, the launcher of ProsperoEden v1.001.000 in the app's
+// PS5-ECAM: Eden, the launcher of ProsperoEden v1.001.000 in the app's
 // own colours, with every one of its features. Its layout and motion follow ProsperoEden's
 // (blackbearreloaded/ProsperoEden, GPL-3.0-or-later, Copyright (C) 2026 BlackBearReloaded:
 // headless/prosperoeden/pe/ui shell.cpp, home.cpp, library.cpp, settings.cpp and launcher.cpp):
@@ -333,7 +333,7 @@ namespace ps5shell
 		if (open > 0.01f)
 		{
 			canvas.PushAlpha(open);
-			canvas.Text(Style({22, ui::Weight::SemiBold, 1.0f, 4.0f}), 112, 60, "PS5CEMU-HAR", kText, kRailWide - 112 - 24, 1);
+			canvas.Text(Style({22, ui::Weight::SemiBold, 1.0f, 4.0f}), 112, 60, "PS5-ECAM", kText, kRailWide - 112 - 24, 1);
 			canvas.PopAlpha();
 		}
 
@@ -768,7 +768,7 @@ namespace ps5shell
 		// the top bar: the app, its version, the side
 		EdenArrive(canvas, 0, -16);
 		{
-			const ui::TextBlock name = m_fonts.Layout(Style({24, ui::Weight::SemiBold, 1.0f, 6.0f}), "PS5CEMU-HAR");
+			const ui::TextBlock name = m_fonts.Layout(Style({24, ui::Weight::SemiBold, 1.0f, 6.0f}), "PS5-ECAM");
 			const float top = kTop + 32 - name.height * 0.5f;
 			canvas.Text(name, kLeft, top, kText);
 			float x = kLeft + name.width + 24;
@@ -1810,7 +1810,7 @@ namespace ps5shell
 		SideTile(canvas, System::N3ds, {kLeft + 78, 158, 70, 70}, 16, 0xf2ffffff);
 		SideTile(canvas, System::Nds, {kLeft, 236, 70, 70}, 16, 0xf2ffffff);
 		SideTile(canvas, System::Switch, {kLeft + 78, 236, 70, 70}, 16, 0xf2ffffff);
-		canvas.Text(Style({56, ui::Weight::Bold, 1.0f}), kLeft + 176, 168, "PS5CEMU-HAR", kText, 900, 1);
+		canvas.Text(Style({56, ui::Weight::Bold, 1.0f}), kLeft + 176, 168, "PS5-ECAM", kText, 900, 1);
 		canvas.Text(Style({24, ui::Weight::Medium, 1.0f}), kLeft + 176, 240,
 			std::string(Tr("Version")) + " " + ps5update::Readable(PS5CEMU_VERSION) + "  ·  Wii U, 3DS, DS, Switch", Secondary(), 900, 1);
 		EdenLeave(canvas);

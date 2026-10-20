@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Draw PS5CEMU-HAR's icons, with nothing but the standard library.
+"""Draw PS5-ECAM's icons, with nothing but the standard library.
 
     render-icons.py OUTPUT_DIR
 

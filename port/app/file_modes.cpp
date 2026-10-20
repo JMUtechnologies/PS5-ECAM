@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: /data/ps5cemu open to every user (file_modes.h).
+// PS5-ECAM: /data/ps5cemu open to every user (file_modes.h).
 
 #include "file_modes.h"
 #include "paths.h"

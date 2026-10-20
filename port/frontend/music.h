@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the launcher's music as the sound thread plays it (frontend/sound.cpp): its own piece,
+// PS5-ECAM: the launcher's music as the sound thread plays it (frontend/sound.cpp): its own piece,
 // or the player's MP3 and WAV files from /data/ps5cemu/music. A file is
 // read as it plays, a few thousand frames at a time, and resampled to 48 kHz; nothing of it is held
 // whole. Nothing here touches the PS5, so a host test plays the same code (tools/tests/test-music.sh).

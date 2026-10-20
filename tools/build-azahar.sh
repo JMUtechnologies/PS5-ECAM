@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Configures and builds Azahar's core for the PS5 (build/azahar): its emulation libraries, from
 # Mihawk's PS5_Azahar (.deps/PS5_Azahar, with PS5_Dynarmic, whose code cache is the console's
-# executable memory), with the toolchain Cemu's build uses (tools/ps5.cmake), and PS5CEMU-HAR's
+# executable memory), with the toolchain Cemu's build uses (tools/ps5.cmake), and PS5-ECAM's
 # frontend for it (port/azahar: the window, the DualSense, AudioOut). Azahar's own frontends (Qt,
 # libretro) are not built. build/azahar/azahar_ps5_libraries.txt then lists the archives the app
 # links (tools/build-cemu.sh).

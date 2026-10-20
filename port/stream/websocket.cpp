@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the remote touch screen's WebSockets (websocket.h), from dolphin78's prototype (#38).
+// PS5-ECAM: the remote touch screen's WebSockets (websocket.h), from dolphin78's prototype (#38).
 #include "websocket.h"
 #include <openssl/evp.h>
 #include <sys/socket.h>

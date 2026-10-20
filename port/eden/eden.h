@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the Switch side's games start in Eden's own program, eden/eboot.bin in the app's
+// PS5-ECAM: the Switch side's games start in Eden's own program, eden/eboot.bin in the app's
 // folder (library.h), which takes this process's place (sceSystemServiceLoadExec). It starts the game
 // at once (--rom), with the Switch side's settings and the game's own over them (--set key=value), and
 // starts this app's eboot.bin again when the game ends (--return), which opens on the Switch side

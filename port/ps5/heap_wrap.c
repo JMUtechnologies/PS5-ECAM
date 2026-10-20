@@ -1,5 +1,5 @@
 /*
- * PS5CEMU-HAR: libc's allocator wrapped onto the platform layer's title heap (ps5platform/heap.h),
+ * PS5-ECAM: libc's allocator wrapped onto the platform layer's title heap (ps5platform/heap.h),
  * as the SDK fork's src/heap_wrap.c (Mihawk) wraps it, with a per-thread cache of small blocks in
  * front of it. tools/link.sh links this object ahead of the platform library, which then leaves
  * its own heap_wrap.o out: every symbol that object defines is defined here.

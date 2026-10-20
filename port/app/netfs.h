@@ -1,4 +1,4 @@
-/* PS5CEMU-HAR - games on a network share: SMB (a Windows, macOS or Linux shared
+/* PS5-ECAM - games on a network share: SMB (a Windows, macOS or Linux shared
  * folder, or a NAS), read with libsmb2, or NFS (a NAS or a Linux machine),
  * read with libnfs. From Porpoise X (premohq/Porpoise-X, src/porpoise_netfs.hpp).
  *

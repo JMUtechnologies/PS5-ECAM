@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: DS games in archives (archive.h). After melonDS's ArchiveUtil.cpp (GPL-3.0-or-later, the
+// PS5-ECAM: DS games in archives (archive.h). After melonDS's ArchiveUtil.cpp (GPL-3.0-or-later, the
 // melonDS team): every format and filter libarchive has, the regular files listed, one read out. Its
 // single archive_read_data is a loop here, as libarchive may answer a read in parts, and an entry is
 // found again by its place in the archive, as not every entry has a name here (FindRom).

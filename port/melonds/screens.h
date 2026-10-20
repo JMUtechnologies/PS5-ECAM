@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the DS's two screens on the TV, for melonDS's frontend (core.cpp). melonDS draws them in
+// PS5-ECAM: the DS's two screens on the TV, for melonDS's frontend (core.cpp). melonDS draws them in
 // software, 256 x 192 each; this shows them on VideoOut through a Vulkan device of its own on the
 // driver the app links, at 3840 x 2160 and FIFO, which paces the game to the display's refresh, the
 // way Cemu's and Azahar's renderers present.

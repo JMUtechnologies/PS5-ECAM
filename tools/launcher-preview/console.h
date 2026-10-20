@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: what the launcher's preview on a PC (tools/preview-shell.sh) needs of the console: the
+// PS5-ECAM: what the launcher's preview on a PC (tools/preview-shell.sh) needs of the console: the
 // script of DualSense presses and shots, the
 // frame the shots save as PNGs, and in console.cpp the console and the emulators in brief, with
 // sample Wii U games, graphic packs and controllers, and a DualSense the script presses.

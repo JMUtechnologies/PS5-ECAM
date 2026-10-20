@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR's UI kit: what the UI answers with besides the picture (feedback.h).
+// PS5-ECAM's UI kit: what the UI answers with besides the picture (feedback.h).
 
 #include "feedback.h"
 #include "../frontend/sound.h"

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR's UI kit: the DualSense as actions (input.h).
+// PS5-ECAM's UI kit: the DualSense as actions (input.h).
 
 #include "input.h"
 #include "../ps5/pad.h"

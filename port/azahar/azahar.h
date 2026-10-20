@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: Azahar's core on the PS5, as Cemu's is (app/emulator.h): a 3DS game on Azahar's
+// PS5-ECAM: Azahar's core on the PS5, as Cemu's is (app/emulator.h): a 3DS game on Azahar's
 // Vulkan renderer on VideoOut, the DualSense as the 3DS (controls.h), the sound through AudioOut,
 // and installing CIA files into its storage. The launcher includes this header, so it names no
 // Azahar type.

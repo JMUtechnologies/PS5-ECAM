@@ -109,7 +109,7 @@ def main():
             with open(os.path.join(source, f"{name}.zip"), "rb") as file:
                 data = file.read()
         else:
-            request = urllib.request.Request(URL.format(name), headers={"User-Agent": "PS5CEMU-HAR"})
+            request = urllib.request.Request(URL.format(name), headers={"User-Agent": "PS5-ECAM"})
             with urllib.request.urlopen(request, timeout=120) as response:
                 data = response.read()
         with zipfile.ZipFile(io.BytesIO(data)) as archive:

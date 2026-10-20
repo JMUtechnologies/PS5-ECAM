@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: Make it yours. On a first start, before the Setup check, the
+// PS5-ECAM: Make it yours. On a first start, before the Setup check, the
 // few choices that decide how the app looks and feels: its language, which sides the bar offers, the
 // theme, where A is, the music, vibration and the games' pictures. After an update, once, the new
 // options to set up, each a row as in Settings (the same rows: Settings changes them later); What's new
@@ -204,7 +204,7 @@ namespace ps5shell
 		// what this is
 		canvas.PushAlpha(Enter(0));
 		canvas.Text(Style(kOverlineStyle), kSafeX, 92,
-			m_welcomeFirst ? std::string(Tr("Welcome to PS5CEMU-HAR")) : TrF("PS5CEMU-HAR {0}", ps5update::Readable(PS5CEMU_VERSION)), Secondary(), 1100, 1);
+			m_welcomeFirst ? std::string(Tr("Welcome to PS5-ECAM")) : TrF("PS5-ECAM {0}", ps5update::Readable(PS5CEMU_VERSION)), Secondary(), 1100, 1);
 		canvas.Text(Style({56, ui::Weight::Bold, 1.1f, -0.8f}), kSafeX, 122, m_welcomeFirst ? Tr("Make it yours") : Tr("New in this version"), kText, 1100, 1);
 		canvas.Text(Style({24, ui::Weight::Regular, 1.3f}), kSafeX, 206,
 			m_welcomeFirst ? Tr("How the app looks and feels, chosen once. Settings has all of it too.") :

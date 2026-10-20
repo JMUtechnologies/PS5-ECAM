@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the DualSense as the 3DS, for Azahar's core: an input engine named "ps5" whose
+// PS5-ECAM: the DualSense as the 3DS, for Azahar's core: an input engine named "ps5" whose
 // buttons, sticks and motion read the latest sample the game's loop took (Update), mapped as the
 // launcher's 3DS controls say (controls.h). The touch screen is the touchpad: a finger moves a
 // cursor over the bottom screen, and clicking the touchpad touches it there.

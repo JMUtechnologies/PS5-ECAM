@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the new launcher, drawn on the GPU with the UI kit (port/ui):
+// PS5-ECAM: the new launcher, drawn on the GPU with the UI kit (port/ui):
 // the Wii U, 3DS and DS sides of one shell, switched in one press, each with its Library and its own
 // Settings, a game's hub, Game menu and game settings, and the pages for graphic packs, a player's
 // controls and buttons, the folder browser and installs, Artic Base and Diagnostics, the Setup check,

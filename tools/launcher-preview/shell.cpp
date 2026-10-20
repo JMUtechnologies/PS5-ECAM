@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the new launcher on a PC (tools/preview-shell.sh), to see its screens without a console.
+// PS5-ECAM: the new launcher on a PC (tools/preview-shell.sh), to see its screens without a console.
 //
 // The launcher's own code (port/frontend/shell, the UI kit in port/ui, the catalogue, the settings,
 // GameTDB's facts and the compatibility list; port/azahar's library and controls) runs as it does on
@@ -134,13 +134,13 @@ int main(int argc, char* argv[])
 	ps5lang::SetFolder("port/lang");
 	ps5lang::Load(settings.ui.language);
 	ps5launcher::Status status;
-	status.diagnostics = {"PS5CEMU-HAR preview: Cemu at 32e6628, Azahar at 4aef900", "Jailbroken by the HEN: /data reachable, executable memory",
+	status.diagnostics = {"PS5-ECAM preview: Cemu at 32e6628, Azahar at 4aef900", "Jailbroken by the HEN: /data reachable, executable memory",
 		"Boot log: /data/ps5cemu/logs/boot.log", "Cemu's log: /data/ps5cemu/log.txt"};
 	if (std::getenv("PREVIEW_NO_DATA"))
 		status.notice = status.notice3ds = status.noticeDs = status.noticeSwitch =
-			"PS5CEMU-HAR cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5CEMU-HAR.";
+			"PS5-ECAM cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5-ECAM.";
 	else if (std::getenv("PREVIEW_LAUNCH_ERROR"))
-		status.launchError = ps5lang::Tr("This is not a Wii U game PS5CEMU-HAR can start.") + std::string(" ") +
+		status.launchError = ps5lang::Tr("This is not a Wii U game PS5-ECAM can start.") + std::string(" ") +
 			ps5lang::Tr("Its disc key is missing from /data/ps5cemu/keys.txt.");
 
 	// as main_ps5.cpp's: a side opens when the launcher opens it (the preview's Cemu starts at once)

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the sampling profiler (profiler.h).
+// PS5-ECAM: the sampling profiler (profiler.h).
 
 #include "profiler.h"
 #include "log.h"

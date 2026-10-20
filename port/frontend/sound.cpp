@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the launcher's sound (sound.h). As Cemu's PS5AudioAPI and Azahar's sink play theirs:
+// PS5-ECAM: the launcher's sound (sound.h). As Cemu's PS5AudioAPI and Azahar's sink play theirs:
 // a thread feeds AudioOut 256-frame stereo grains at 48 kHz, and sceAudioOutOutput, blocking until
 // the previous grain plays, paces it. The thread mixes the music and the menu's sounds into each
 // grain, and reads the files itself, so the launcher never waits on them.

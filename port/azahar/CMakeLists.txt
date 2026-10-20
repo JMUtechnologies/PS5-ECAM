@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# PS5CEMU-HAR: Azahar's PS5 frontend (core.cpp, input.cpp, sink.cpp), built in Azahar's tree
+# PS5-ECAM: Azahar's PS5 frontend (core.cpp, input.cpp, sink.cpp), built in Azahar's tree
 # (tools/build-azahar.sh names this directory AZAHAR_EXTERNAL_FRONTEND) against its libraries.
 # The rest of port/azahar (the launcher's 3DS library and controls, azahar.h) is built with the app
 # (port/CMakeLists.txt), which links what this builds: azahar_ps5_libraries.txt lists the archives.

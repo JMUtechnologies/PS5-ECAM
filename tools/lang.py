@@ -266,7 +266,7 @@ def quote(text):
 def header(code):
     rule = PLURALS[LANGUAGES[code]] if code in LANGUAGES else PLURALS["two"]
     return (
-        "Project-Id-Version: PS5CEMU-HAR\n"
+        "Project-Id-Version: PS5-ECAM\n"
         f"Language: {code}\n"
         "MIME-Version: 1.0\n"
         "Content-Type: text/plain; charset=UTF-8\n"

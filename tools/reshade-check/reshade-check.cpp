@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR's ReShade on a PC (tools/reshade-check.sh builds and runs it): the effects a preset
+// PS5-ECAM's ReShade on a PC (tools/reshade-check.sh builds and runs it): the effects a preset
 // turns on, compiled as the app compiles them (port/cemu/ReShadeEffects.cpp), each entry point's
 // SPIR-V checked with spirv-val when it is installed, and with --run drawn as the app draws them
 // (port/cemu/ReShadeRuntime.cpp) on the PC's Vulkan driver, under Khronos' validation layer when

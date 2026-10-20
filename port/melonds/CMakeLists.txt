@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# PS5CEMU-HAR: melonDS's PS5 frontend (core.cpp, platform.cpp, input.cpp, sound.cpp), built in
+# PS5-ECAM: melonDS's PS5 frontend (core.cpp, platform.cpp, input.cpp, sound.cpp), built in
 # melonDS's tree (tools/build-melonds.sh names this directory MELONDS_EXTERNAL_FRONTEND) against its
 # core. The rest of port/melonds (the launcher's DS games, the screens on VideoOut, melonds.h) is
 # built with the app (port/CMakeLists.txt), which links what this builds: melonds_ps5_libraries.txt

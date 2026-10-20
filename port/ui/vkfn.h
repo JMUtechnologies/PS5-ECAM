@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR's UI kit: the Vulkan functions it calls, loaded through the driver's
+// PS5-ECAM's UI kit: the Vulkan functions it calls, loaded through the driver's
 // vkGetInstanceProcAddr (on the console RADV is linked into the app, with no loader: vulkan_display.h;
 // the PC preview passes the loader's). One table per process; the kit has one device at a time.
 

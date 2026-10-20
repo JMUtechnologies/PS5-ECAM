@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: games in archives (game_archives.h): an archive's files walked with libzip (a .zip) or
+// PS5-ECAM: games in archives (game_archives.h): an archive's files walked with libzip (a .zip) or
 // libarchive (the rest), what the libraries' scans read of each kept by the archive's size and time,
 // and the 3DS's and the Wii U's games unpacked into the data folder's cache/archives.
 

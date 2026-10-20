@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the languages (lang.h). A table is a gettext .po file, read whole: each entry's
+// PS5-ECAM: the languages (lang.h). A table is a gettext .po file, read whole: each entry's
 // English (msgid, with its msgctxt when it has one) and its translation, or its plural forms in the
 // order the language's rule numbers them. Entries flagged fuzzy are left out; entries flagged menu
 // (tools/lang.py flags what the in-game menus say) give the in-game fonts their characters.

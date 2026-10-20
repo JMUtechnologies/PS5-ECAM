@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the new launcher's parts (shell_internal.h): buttons, chips, badges, covers, a
+// PS5-ECAM: the new launcher's parts (shell_internal.h): buttons, chips, badges, covers, a
 // setting's row and its controls, sheets, and the focus ring that glides between them
 //.
 

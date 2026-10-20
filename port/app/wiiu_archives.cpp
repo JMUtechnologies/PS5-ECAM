@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: Wii U games in archives (wiiu_archives.h). Read with pugixml, as Cemu reads a title's
+// PS5-ECAM: Wii U games in archives (wiiu_archives.h). Read with pugixml, as Cemu reads a title's
 // XML files, so the scan needs nothing of Cemu's but the folders it looks in.
 
 #include "wiiu_archives.h"

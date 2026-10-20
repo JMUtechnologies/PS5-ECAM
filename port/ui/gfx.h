@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR's UI kit: drawing on the GPU. A Vulkan device of the
+// PS5-ECAM's UI kit: drawing on the GPU. A Vulkan device of the
 // kit's own on the driver the app links, presenting to VideoOut's display surface at 3840 x 2160, or
 // rendering into an image read back each frame (the PC preview). Everything is one instanced pipeline:
 // each instance is a quad whose fragment shader draws a shape as a signed distance (shaders/ui.frag),

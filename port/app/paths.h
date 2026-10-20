@@ -39,14 +39,15 @@ namespace ps5paths
 	constexpr const char* kMountRecord = "/user/app/PPSA99360/mount.lnk";
 	constexpr const char* kImageMountRecord = "/user/app/PPSA99360/mount_img.lnk";
 
-// where PS5CEMU-HAR writes everything, unless DecideRoot finds a folder of its own on the app's
+// where PS5-ECAM writes everything, unless DecideRoot finds a folder of its own on the app's
 // drive: on the console /data/ps5cemu; the launcher's preview on a PC (tools/preview-shell.sh) gives
 // a folder of its own
 #ifndef PS5CEMU_DATA
 #define PS5CEMU_DATA "/data/ps5cemu"
 #endif
 	constexpr const char* kDefaultRoot = PS5CEMU_DATA;
-	// the data folder's name at the top of the app's drive (DecideRoot)
+	// the data folder's name at the top of the app's drive (DecideRoot): the app's name before 5.0.0,
+	// kept, as /data/ps5cemu is, so the data people have there stays theirs
 	constexpr const char* kDriveRoot = "PS5CEMU-HAR-data";
 
 	namespace detail
@@ -181,7 +182,7 @@ namespace ps5paths
 	// app that has kept its data in /data goes on doing so until the folder is made (the guide's
 	// "Everything on the app's drive" says how to move it). An app in /data, or mounted from an
 	// image, keeps kDefaultRoot. Not a drive's ps5cemu folder: that one holds Wii U mods (app/mods.h),
-	// and the app's backups and logs on a drive are PS5CEMU-HAR-saves and PS5CEMU-HAR-logs-... already.
+	// and the app's backups and logs on a drive are PS5CEMU-HAR-saves and PS5-ECAM-logs-... already.
 	inline const std::string& DecideRoot()
 	{
 		std::string& root = detail::RootSlot();

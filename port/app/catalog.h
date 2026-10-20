@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: each side's game list as last seen, /data/ps5cemu/library.json.
+// PS5-ECAM: each side's game list as last seen, /data/ps5cemu/library.json.
 // The launcher draws a side from it at once while that side's scan runs, and the scan's list
 // replaces it when it finishes, keeping what the catalogue knows of each game by title ID: when a scan
 // first found it (Recently added), whether it is a favourite, when it was last played and for how

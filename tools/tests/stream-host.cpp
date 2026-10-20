@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: a host harness for the remote touch screen's server (port/stream), driven by
+// PS5-ECAM: a host harness for the remote touch screen's server (port/stream), driven by
 // test-stream.py. The JPEGs are stand-ins (a frame header with the picture's size), so it needs no
 // TurboJPEG; the log goes to stderr.
 #include "stream.h"

@@ -95,7 +95,7 @@ namespace ps5packs
 				curl_easy_setopt(curl, CURLOPT_RESOLVE, resolve);
 			if (headers)
 				curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-			curl_easy_setopt(curl, CURLOPT_USERAGENT, "PS5CEMU-HAR/" PS5CEMU_VERSION);
+			curl_easy_setopt(curl, CURLOPT_USERAGENT, "PS5-ECAM/" PS5CEMU_VERSION);
 			curl_easy_setopt(curl, CURLOPT_CAINFO, ca.c_str());
 			curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 			curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 5L);

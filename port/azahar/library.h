@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the 3DS games in Azahar's game files folder, for the launcher.
+// PS5-ECAM: the 3DS games in Azahar's game files folder, for the launcher.
 //
 // Each game's name, publisher, title ID and icon come from its SMDH, which is read where each kind
 // of file keeps it: an NCCH's ExeFS ("icon"), as a .3ds/.cci (an NCSD's first partition), .cxi or

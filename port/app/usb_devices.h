@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-// PS5CEMU-HAR: Cemu's emulated USB devices, the toys-to-life portals: the Skylanders Portal of Power,
+// PS5-ECAM: Cemu's emulated USB devices, the toys-to-life portals: the Skylanders Portal of Power,
 // the Disney Infinity Base and the LEGO Dimensions Toypad, as Cemu's Emulated USB Devices window has
 // them. A device switched on is plugged in when a game starts (Cemu's settings.xml keeps the switch);
 // figures, dumps in /data/ps5cemu/figures/<skylanders|infinity|dimensions>, are put on and taken off

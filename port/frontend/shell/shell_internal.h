@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the new launcher's insides (shell.h). One Shell holds the state of every screen; each
+// PS5-ECAM: the new launcher's insides (shell.h). One Shell holds the state of every screen; each
 // screen's file (library.cpp, hub.cpp, settings.cpp, pages.cpp, setup.cpp) has its
 // Update, which takes the frame's buttons, and its Draw, which records the frame; shell.cpp has the
 // loop, the bar, the hints, the backdrop and the overlays (the dropdown, a setting's help, the Game

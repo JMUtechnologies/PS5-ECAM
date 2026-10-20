@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the launcher's sound: its music, looping under every screen, and its menu's sounds as
-// the cursor moves and choices are made. Both are PS5CEMU-HAR's own, synthesised by
+// PS5-ECAM: the launcher's sound: its music, looping under every screen, and its menu's sounds as
+// the cursor moves and choices are made. Both are PS5-ECAM's own, synthesised by
 // tools/render-sounds.py into assets/ui/sounds; the music is in the spirit of a Nintendo console's
 // shop and setup screens, written for the launcher. The player's own music plays in its place when
 // chosen: the MP3 and WAV files in /data/ps5cemu/music.

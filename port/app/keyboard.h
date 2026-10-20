@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the on-screen keyboards' keys, in the menus' language. The launcher's keyboard
+// PS5-ECAM: the on-screen keyboards' keys, in the menus' language. The launcher's keyboard
 // (frontend/shell) and the in-game ones (app/keyboard_menu.h: the 3DS's, and the Wii U's, which
 // Cemu's swkbd.cpp hands over, patches/cemu) show the same pages, which L1 and R1 go through: the
 // Latin letters and digits, the language's own letters (its accented ones, or its alphabet), the

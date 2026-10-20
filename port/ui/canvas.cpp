@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR's UI kit: drawing a frame (canvas.h).
+// PS5-ECAM's UI kit: drawing a frame (canvas.h).
 
 #include "canvas.h"
 #include "theme.h"

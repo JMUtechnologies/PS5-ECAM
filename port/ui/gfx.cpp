@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR's UI kit: drawing on the GPU (gfx.h).
+// PS5-ECAM's UI kit: drawing on the GPU (gfx.h).
 
 #include "gfx.h"
 #include "shaders.h"
@@ -195,8 +195,8 @@ namespace ui
 		if (!vk::LoadGlobal(gipa))
 			return Fail(error, "no vkCreateInstance");
 		VkApplicationInfo app{VK_STRUCTURE_TYPE_APPLICATION_INFO};
-		app.pApplicationName = "PS5CEMU-HAR";
-		app.pEngineName = "PS5CEMU-HAR UI";
+		app.pApplicationName = "PS5-ECAM";
+		app.pEngineName = "PS5-ECAM UI";
 		app.apiVersion = VK_API_VERSION_1_1;
 		VkInstanceCreateInfo instanceInfo{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};
 		instanceInfo.pApplicationInfo = &app;

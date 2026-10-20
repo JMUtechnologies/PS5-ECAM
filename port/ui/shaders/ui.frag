@@ -1,5 +1,5 @@
 #version 450
-// PS5CEMU-HAR's UI kit: each quad's shape as a signed distance, so corners and edges are smooth at any
+// PS5-ECAM's UI kit: each quad's shape as a signed distance, so corners and edges are smooth at any
 // scale. Kinds: 0 a filled rounded box, 1 a ring inside the box's edge, 2 a soft shadow or glow
 // around it (with the ring width set, outside the box only: a glow drawn over what it lights), 3 an
 // image in it, 4 a glyph (a signed-distance atlas), 5 grain, 6 a line with round

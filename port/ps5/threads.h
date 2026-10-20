@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: where the emulator's threads run. By default the system places every thread, as in
+// PS5-ECAM: where the emulator's threads run. By default the system places every thread, as in
 // 1.0: pinning made Breath of the Wild slower on a console (a pinned thread cannot be moved away
 // from a busy core), so it is only an experiment, turned on with "pinCpuThreads": true in
 // ps5cemu.json. Then the Wii U's three emulated CPU cores (Cemu's OSSched[core=0..2], named by

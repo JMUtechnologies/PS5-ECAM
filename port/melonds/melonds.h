@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: melonDS's core on the PS5, as Azahar's is (port/azahar/azahar.h): a DS game from the
+// PS5-ECAM: melonDS's core on the PS5, as Azahar's is (port/azahar/azahar.h): a DS game from the
 // DS side, with the DS side's settings (nds: its screens, border, sound, controls and the ds... ones)
 // and the game's own over them, on melonDS's software renderer, its two screens shown on VideoOut
 // (screens.h), the DualSense as the DS, the sound through AudioOut, and the handhelds' in-game menu

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: every side's saves backed up to a USB drive, and restored from one.
+// PS5-ECAM: every side's saves backed up to a USB drive, and restored from one.
 // A backup is a folder, PS5CEMU-HAR-saves/<date and time>/ on the drive, with:
 //
 //   wiiu/save/          mlc01/usr/save: every game's saves, every account's, and the accounts

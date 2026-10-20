@@ -1,5 +1,5 @@
 #version 450
-// PS5CEMU-HAR: a DS screen scaled to the TV, as the screen filter asks (port/melonds/screens.cpp),
+// PS5-ECAM: a DS screen scaled to the TV, as the screen filter asks (port/melonds/screens.cpp),
 // through a bilinear sampler:
 //  0 sharp: each of the DS's pixels a solid square, its edges blended over one pixel of the TV, so
 //    the squares are even at any scale (11.25x, 5.625x...)

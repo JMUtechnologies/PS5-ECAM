@@ -133,7 +133,7 @@ namespace ps5boxart
 			curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 			curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 4L);
 			curl_easy_setopt(curl, CURLOPT_CAINFO, ca.c_str());
-			curl_easy_setopt(curl, CURLOPT_USERAGENT, "PS5CEMU-HAR/" PS5CEMU_VERSION);
+			curl_easy_setopt(curl, CURLOPT_USERAGENT, "PS5-ECAM/" PS5CEMU_VERSION);
 			const CURLcode result = curl_easy_perform(curl);
 			if (result != CURLE_OK)
 			{

@@ -201,7 +201,7 @@ namespace ps5ingame3ds
 			{0.50f, IM_COL32(255, 210, 90, 60), false},	 // Waves
 			{0.55f, IM_COL32(255, 255, 255, 30), false}, // Aurora
 			{0.35f, IM_COL32(255, 255, 255, 22), true},	 // Shell
-			{0.55f, IM_COL32(255, 255, 255, 30), false}, // PS5CEMU-HAR
+			{0.55f, IM_COL32(255, 255, 255, 30), false}, // PS5-ECAM
 		};
 
 		// The border's picture where no screen is (the space round them cut into the cells of a grid
@@ -591,7 +591,7 @@ namespace ps5ingame3ds
 			// a home screen tile's game closes the app instead, as the row says (#48)
 			Row library = ps5emu::ExitAfterGame() ?
 				Row{"library", Tr("Quit to the home screen"), "", false,
-					Tr("Leaves the game and closes PS5CEMU-HAR, as its home screen tile asks. What you have not saved in the game is lost, so Cross is held.")} :
+					Tr("Leaves the game and closes PS5-ECAM, as its home screen tile asks. What you have not saved in the game is lost, so Cross is held.")} :
 				Row{"library", Tr("Quit to the library"), "", false,
 					Tr("Leaves the game for the library. What you have not saved in the game is lost, so Cross is held.")};
 			library.apart = true;
@@ -804,7 +804,7 @@ namespace ps5ingame3ds
 			ask.maxLength = maxLength > 0 ? maxLength : -1;
 			ask.counted = maxLength > 0;
 			const int button =
-				s_sheet.Draw("PS5CEMU-HAR##Keyboard3ds", scale, {g.head, g.body, g.row, g.small, g.chip}, Colours(), ask, s_pressed, s_buttons);
+				s_sheet.Draw("PS5-ECAM##Keyboard3ds", scale, {g.head, g.body, g.row, g.small, g.chip}, Colours(), ask, s_pressed, s_buttons);
 			if (button >= 0)
 				FinishKeyboard(button);
 		}

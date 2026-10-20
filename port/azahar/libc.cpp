@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: what Azahar's core calls that the PS5's libc does not export to a title, built as
+// PS5-ECAM: what Azahar's core calls that the PS5's libc does not export to a title, built as
 // FreeBSD's libc builds it.
 
 #include <sys/ioctl.h>

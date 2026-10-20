@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR's UI kit: motion. Springs, solved exactly so any frame time
+// PS5-ECAM's UI kit: motion. Springs, solved exactly so any frame time
 // is stable, and easings for what has a set duration. Everything advances by the measured frame
 // time, clamped to 50 ms by the caller, so a hitch costs one late frame and no jump.
 

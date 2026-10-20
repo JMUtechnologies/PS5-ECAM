@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# PS5CEMU-HAR: the port's host code, added to Cemu's tree by its CEMU_PS5 option (src/CMakeLists.txt):
+# PS5-ECAM: the port's host code, added to Cemu's tree by its CEMU_PS5 option (src/CMakeLists.txt):
 # the console layer (ps5/), Cemu's start-up and graphic packs (app/), Azahar's side (azahar/) with its
 # DS games (melonds/), and the launcher (frontend/shell/), drawn on the GPU with the UI kit (ui/).
 # Cemu's own platform classes (cemu/) are added to Cemu's targets by the patch.
@@ -384,10 +384,10 @@ if(PS5CEMU_AZAHAR_LIBRARIES AND EXISTS "${PS5CEMU_AZAHAR_LIBRARIES}")
 	file(STRINGS "${PS5CEMU_AZAHAR_LIBRARIES}" AZAHAR_ARCHIVES)
 	target_link_libraries(CemuPS5 PUBLIC ${AZAHAR_ARCHIVES})
 	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${PS5CEMU_AZAHAR_LIBRARIES}")
-	message(STATUS "PS5CEMU-HAR: Azahar's core from ${PS5CEMU_AZAHAR_LIBRARIES}")
+	message(STATUS "PS5-ECAM: Azahar's core from ${PS5CEMU_AZAHAR_LIBRARIES}")
 else()
 	target_sources(CemuPS5 PRIVATE azahar/unavailable.cpp)
-	message(STATUS "PS5CEMU-HAR: no Azahar build; 3DS games will not start")
+	message(STATUS "PS5-ECAM: no Azahar build; 3DS games will not start")
 endif()
 
 # melonDS's core and its PS5 frontend, for the 3DS side's DS games (tools/build-melonds.sh builds them
@@ -398,8 +398,8 @@ if(PS5CEMU_MELONDS_LIBRARIES AND EXISTS "${PS5CEMU_MELONDS_LIBRARIES}")
 	file(STRINGS "${PS5CEMU_MELONDS_LIBRARIES}" MELONDS_ARCHIVES)
 	target_link_libraries(CemuPS5 PUBLIC ${MELONDS_ARCHIVES})
 	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${PS5CEMU_MELONDS_LIBRARIES}")
-	message(STATUS "PS5CEMU-HAR: melonDS's core from ${PS5CEMU_MELONDS_LIBRARIES}")
+	message(STATUS "PS5-ECAM: melonDS's core from ${PS5CEMU_MELONDS_LIBRARIES}")
 else()
 	target_sources(CemuPS5 PRIVATE melonds/unavailable.cpp)
-	message(STATUS "PS5CEMU-HAR: no melonDS build; DS games will not start")
+	message(STATUS "PS5-ECAM: no melonDS build; DS games will not start")
 endif()

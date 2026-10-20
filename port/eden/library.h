@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the Switch side's games, which Eden plays in a program of its own (eden/eboot.bin in
+// PS5-ECAM: the Switch side's games, which Eden plays in a program of its own (eden/eboot.bin in
 // the app's folder: ProsperoEdenX, premohq's fork of Sword's ProsperoEden, built by
 // tools/build-eden.sh), for the launcher.
 //

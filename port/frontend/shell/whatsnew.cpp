@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: What's new, once a version, before anything else: on the app's first start and after an
+// PS5-ECAM: What's new, once a version, before anything else: on the app's first start and after an
 // update, what the version brings, a card each, as its release notes' highlights say it. Cross or
 // Circle goes on to what was next: a first start's Make it yours and Setup check, the Setup check, an
 // update's new options, or the side.
@@ -71,7 +71,7 @@ namespace ps5shell
 	{
 		// what this is
 		canvas.PushAlpha(Enter(0));
-		canvas.Text(Style(kOverlineStyle), kSafeX, 92, TrF("PS5CEMU-HAR {0}", ps5update::Readable(PS5CEMU_VERSION)), Secondary(), 1100, 1);
+		canvas.Text(Style(kOverlineStyle), kSafeX, 92, TrF("PS5-ECAM {0}", ps5update::Readable(PS5CEMU_VERSION)), Secondary(), 1100, 1);
 		// tr: the heading of the screen a new version opens on, once: what it brings
 		canvas.Text(Style({56, ui::Weight::Bold, 1.1f, -0.8f}), kSafeX, 122, Tr("What's new"), kText, 1100, 1);
 		canvas.Text(Style({24, ui::Weight::Regular, 1.3f}), kSafeX, 206,

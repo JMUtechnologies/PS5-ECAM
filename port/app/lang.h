@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the languages. Every word the launcher and the in-game menus
+// PS5-ECAM: the languages. Every word the launcher and the in-game menus
 // show is English in the code, and is looked up in the language's string table: assets/lang/<code>.po,
 // gettext's format, made from the code and checked by tools/lang.py. The table is read as the app
 // starts, in the PS5's own language unless Settings > Language names another, and again

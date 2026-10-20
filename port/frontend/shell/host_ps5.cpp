@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the new launcher on the console (shell.h's Host). It draws through the RADV the app
+// PS5-ECAM: the new launcher on the console (shell.h's Host). It draws through the RADV the app
 // links, on VideoOut's display surface (ps5vk, the one Cemu's renderer presents to) at 3840 x 2160,
 // from the app's assets/ui, with the console's own fonts for the scripts Lexend lacks, and keeps its
 // pipeline cache with the app's other caches. Gfx::Stop gives VideoOut back before a game: the

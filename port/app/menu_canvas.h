@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the in-game menus' look, the Wii U's (ingame.cpp) and the 3DS's (ingame3ds.cpp): the
+// PS5-ECAM: the in-game menus' look, the Wii U's (ingame.cpp) and the 3DS's (ingame3ds.cpp): the
 // launcher's, drawn with ImGui on the launcher's 1920x1080 layout
 // scaled to the screen. Its colours are the launcher's tokens (port/ui/tokens.json), its type Lexend
 // (tools/render-menu-fonts.py's three weights), its focus the launcher's double ring. In a game there

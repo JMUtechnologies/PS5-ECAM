@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the Setup check. It answers "why doesn't it work?" in one place: storage, the recompilers, each side's games and keys,
+// PS5-ECAM: the Setup check. It answers "why doesn't it work?" in one place: storage, the recompilers, each side's games and keys,
 // the 3DS's system files, the DS's BIOS and box art, each with its status, what it means and what to
 // do, and a QR code to the guide's page about it. It shows on the first start and whenever storage or
 // the recompilers fail at start, then the app opens on a side's Library; Settings > Diagnostics opens
@@ -27,8 +27,8 @@ namespace ps5shell
 	{
 		constexpr float kListTop = 290, kListWidth = 1000, kRowHeight = 82, kRowGap = 8;
 		constexpr float kAsideX = 1196, kAsideWidth = 628, kAsidePad = 36;
-		constexpr const char* kSite = "github.com/premohq/PS5CEMU-HAR";
-		constexpr const char* kRepository = "https://github.com/premohq/PS5CEMU-HAR";
+		constexpr const char* kSite = "github.com/premohq/PS5-ECAM";
+		constexpr const char* kRepository = "https://github.com/premohq/PS5-ECAM";
 
 		std::string FreeSpace(const char* path)
 		{
@@ -126,7 +126,7 @@ namespace ps5shell
 			// where the data is when it is on the app's drive (#52); in /data, that /data is open
 			storage.detail = Join({ps5paths::Root() == ps5paths::kDefaultRoot ? std::string(Tr("/data is reachable")) : ps5paths::Root(), free}, " · ");
 			storage.aboutTitle = Tr("Where everything is kept");
-			storage.about = TrF("Settings, saves, caches and logs live in {0}, which your HEN opens to PS5CEMU-HAR: its app jailbreak, or "
+			storage.about = TrF("Settings, saves, caches and logs live in {0}, which your HEN opens to PS5-ECAM: its app jailbreak, or "
 								"elfldr with the helper that comes with the app.",
 				ps5paths::Root());
 		}
@@ -134,10 +134,10 @@ namespace ps5shell
 		{
 			storage.state = 1;
 			storage.detail = Tr("/data is out of reach: nothing can be kept");
-			storage.aboutTitle = Tr("Let PS5CEMU-HAR out of its sandbox");
+			storage.aboutTitle = Tr("Let PS5-ECAM out of its sandbox");
 			storage.about = Tr("Add PPSA99360 to your HEN's app jailbreak list (etaHEN: its app jailbreak list; OnionHEN: the end of "
 							   "exact_title_ids in config.ini, with no comma after it), or have elfldr listening on port 9021. Then start "
-							   "PS5CEMU-HAR again.");
+							   "PS5-ECAM again.");
 		}
 		m_checks.push_back(storage);
 
@@ -152,14 +152,14 @@ namespace ps5shell
 			recompilers.detail = privileges.jit ? Tr("JIT memory from your HEN: games run at full speed") :
 												  Tr("Executable memory: games run at full speed, no HEN grant needed");
 			recompilers.about = Tr("Cemu's and Azahar's recompilers turn the games' code into the PS5's as they run. They need memory they "
-								   "can write code into and run it from: your HEN's JIT memory, or executable memory PS5CEMU-HAR makes itself.");
+								   "can write code into and run it from: your HEN's JIT memory, or executable memory PS5-ECAM makes itself.");
 		}
 		else
 		{
 			recompilers.state = 1;
 			recompilers.detail = Tr("No JIT or executable memory: Wii U games run on the much slower interpreter");
 			recompilers.about = Tr("Neither your HEN's JIT memory nor executable memory could be made, so Wii U games fall back to Cemu's "
-								   "interpreter. Add PPSA99360 to your HEN's app jailbreak list, then start PS5CEMU-HAR again; Settings > "
+								   "interpreter. Add PPSA99360 to your HEN's app jailbreak list, then start PS5-ECAM again; Settings > "
 								   "Diagnostics says what it got.");
 		}
 		m_checks.push_back(recompilers);
@@ -258,7 +258,7 @@ namespace ps5shell
 		nds.aboutTitle = Tr("Your DS's own BIOS and firmware");
 		nds.about = TrF("melonDS runs DS games on its own BIOS (FreeBIOS) and firmware, which most games are happy with. The few that "
 								"are not run on your own DS's: bios7.bin, bios9.bin and firmware.bin, dumped from it, in {0}/bios. No BIOS "
-								"comes with PS5CEMU-HAR.",
+								"comes with PS5-ECAM.",
 			ps5melonds::Root());
 		nds.guide = std::string(kRepository) + "#nintendo-ds-melonds";
 		nds.guideTitle = Tr("the DS page");
@@ -275,7 +275,7 @@ namespace ps5shell
 		switchKeys.action = nxKeys ? "" : Tr("How to");
 		switchKeys.aboutTitle = Tr("Your Switch's keys");
 		switchKeys.about = TrF("Eden reads Switch games with your own console's keys: prod.keys (and title.keys), dumped from your Switch, in "
-							   "{0}/keys. No keys come with PS5CEMU-HAR.",
+							   "{0}/keys. No keys come with PS5-ECAM.",
 			edenFiles);
 		switchKeys.guide = std::string(kRepository) + "#nintendo-switch-eden";
 		switchKeys.guideTitle = Tr("the Switch page");
@@ -286,7 +286,7 @@ namespace ps5shell
 		switchFirmware.action = nxFirmware ? "" : Tr("How to");
 		switchFirmware.aboutTitle = Tr("Your Switch's firmware");
 		switchFirmware.about = TrF("Many Switch games need the console's own system files: its firmware's .nca files, dumped from your Switch, "
-								   "in {0}/firmware. No firmware comes with PS5CEMU-HAR.",
+								   "in {0}/firmware. No firmware comes with PS5-ECAM.",
 			edenFiles);
 		switchFirmware.guide = switchKeys.guide;
 		switchFirmware.guideTitle = switchKeys.guideTitle;
@@ -299,7 +299,7 @@ namespace ps5shell
 		// covers
 		Check boxArt{"boxart", Tr("Box art")};
 		boxArt.guide = std::string(kRepository) + "#online";
-		boxArt.guideTitle = Tr("what PS5CEMU-HAR fetches online");
+		boxArt.guideTitle = Tr("what PS5-ECAM fetches online");
 		boxArt.aboutTitle = Tr("Covers from GameTDB");
 		boxArt.about = Tr("The first time a game shows up, its cover comes from GameTDB (art.gametdb.com), by the ID on its box. Without a "
 						  "connection the games' own icons are shown, and the next start tries again.");
@@ -421,7 +421,7 @@ namespace ps5shell
 
 		// what this is, and how far along
 		canvas.PushAlpha(Enter(0));
-		canvas.Text(Style(kOverlineStyle), kSafeX, 92, m_setupFirst ? Tr("Welcome to PS5CEMU-HAR") : Tr("Help"), Secondary(), 1100, 1);
+		canvas.Text(Style(kOverlineStyle), kSafeX, 92, m_setupFirst ? Tr("Welcome to PS5-ECAM") : Tr("Help"), Secondary(), 1100, 1);
 		canvas.Text(Style({56, ui::Weight::Bold, 1.1f, -0.8f}), kSafeX, 122, Tr("Let’s check your setup"), kText, 1100, 1);
 		const int ready = (int)std::count_if(m_checks.begin(), m_checks.end(), [](const Check& check) { return check.state != 1; });
 		float x = kSafeX;
@@ -510,7 +510,7 @@ namespace ps5shell
 		// language's has none)
 		Check language{"language", Tr("Language")};
 		language.aboutTitle = Tr("The menus' language");
-		language.about = Tr("PS5CEMU-HAR speaks the language your PS5 is set to. Cross chooses another; Settings > Language "
+		language.about = Tr("PS5-ECAM speaks the language your PS5 is set to. Cross chooses another; Settings > Language "
 							"changes it at any time.");
 		const Check& check = m_setupOnLanguage ? language : m_checks[m_setupRow];
 		const float inner = kAsideWidth - 2 * kAsidePad;

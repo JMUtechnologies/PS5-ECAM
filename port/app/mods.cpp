@@ -171,7 +171,7 @@ namespace ps5mods
 							   "titleIds = {:016X}\n"
 							   "name = {}\n"
 							   "path = \"{}/Mods/{}\"\n"
-							   "description = Added from a USB drive by PS5CEMU-HAR: its files take the game's place.\n"
+							   "description = Added from a USB drive by PS5-ECAM: its files take the game's place.\n"
 							   "version = 6\n",
 				mod.titleId, name, game, name);
 		}

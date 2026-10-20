@@ -44,10 +44,13 @@ namespace ps5update
 {
 	namespace
 	{
-		constexpr const char* kLatest = "https://api.github.com/repos/premohq/PS5CEMU-HAR/releases/latest";
-		// the releases branch: each release's ZIP (PS5CEMU-HAR-<tag>.zip, the PPSA99360 folder) and
+		// the repository by its name, then by its name before 5.0.0 (GitHub sends a renamed repository's
+		// old address on to the new one): the first that answers is asked for the rest
+		constexpr const char* kRepositories[] = {"premohq/PS5-ECAM", "premohq/PS5CEMU-HAR"};
+		std::string s_repository = kRepositories[0]; // under s_mutex: the one that answered
+		// the releases branch: each release's ZIP (PS5-ECAM-<tag>.zip, the PPSA99360 folder) and
 		// SHA256SUMS for all of them
-		constexpr const char* kFiles = "https://raw.githubusercontent.com/premohq/PS5CEMU-HAR/releases/";
+		std::string Files(const std::string& repository) { return "https://raw.githubusercontent.com/" + repository + "/releases/"; }
 		constexpr const char* kHosts[] = {"api.github.com", "raw.githubusercontent.com"};
 		constexpr uint64_t kMaxDownload = 512ull << 20;
 
@@ -132,7 +135,7 @@ namespace ps5update
 			curl_easy_setopt(curl, CURLOPT_URL, url);
 			if (resolve)
 				curl_easy_setopt(curl, CURLOPT_RESOLVE, resolve);
-			curl_easy_setopt(curl, CURLOPT_USERAGENT, "PS5CEMU-HAR/" PS5CEMU_VERSION);
+			curl_easy_setopt(curl, CURLOPT_USERAGENT, "PS5-ECAM/" PS5CEMU_VERSION);
 			curl_easy_setopt(curl, CURLOPT_CAINFO, ca.c_str());
 			curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 			curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 5L);
@@ -365,8 +368,21 @@ namespace ps5update
 			Set(Status::State::Checking);
 			std::string body;
 			rapidjson::Document json;
-			if (!Fetch(resolve, kLatest, body, 10, "Accept: application/vnd.github+json") || json.Parse(body.c_str()).HasParseError() ||
-				!json.IsObject() || !json.HasMember("tag_name") || !json["tag_name"].IsString())
+			bool answered = false;
+			for (const char* repository : kRepositories)
+			{
+				body.clear();
+				if (Fetch(resolve, std::string("https://api.github.com/repos/") + repository + "/releases/latest", body, 10,
+						"Accept: application/vnd.github+json") &&
+					!json.Parse(body.c_str()).HasParseError() && json.IsObject() && json.HasMember("tag_name") && json["tag_name"].IsString())
+				{
+					std::lock_guard lock(s_mutex);
+					s_repository = repository;
+					answered = true;
+					break;
+				}
+			}
+			if (!answered)
 			{
 				// tr: why an update did not finish
 				Fail(ps5lang::Tr("GitHub did not answer with a release"));
@@ -396,10 +412,18 @@ namespace ps5update
 		void RunInstall(curl_slist* resolve)
 		{
 			const std::string latest = GetStatus().latest;
-			const std::string zipName = fmt::format("PS5CEMU-HAR-{}.zip", latest);
+			std::string repository;
+			{
+				std::lock_guard lock(s_mutex);
+				repository = s_repository;
+			}
+			const std::string releases = Files(repository);
+			// the release's ZIP by the app's name, else by its name before 5.0.0
+			std::string zipName = fmt::format("PS5-ECAM-{}.zip", latest);
+			const std::string oldName = fmt::format("PS5CEMU-HAR-{}.zip", latest);
 			// the release's checksum, from the sums beside it
 			std::string sums, expected;
-			if (!Fetch(resolve, std::string(kFiles) + "SHA256SUMS", sums, 20))
+			if (!Fetch(resolve, releases + "SHA256SUMS", sums, 20))
 			{
 				Fail(ps5lang::Tr("The release's checksums could not be downloaded"));
 				return;
@@ -415,6 +439,20 @@ namespace ps5update
 				start = end + 1;
 			}
 			if (expected.size() != 64)
+				for (size_t start = 0; start < sums.size();)
+				{
+					size_t end = sums.find('\n', start);
+					if (end == std::string::npos)
+						end = sums.size();
+					const std::string line = sums.substr(start, end - start);
+					if (line.size() > 66 && line.find(oldName) != std::string::npos)
+					{
+						expected = line.substr(0, 64);
+						zipName = oldName;
+					}
+					start = end + 1;
+				}
+			if (expected.size() != 64)
 			{
 				Fail(ps5lang::TrF("The releases branch has no checksum for {0}", zipName));
 				return;
@@ -427,7 +465,7 @@ namespace ps5update
 			fs::create_directories(archive.parent_path(), ec);
 			Download download;
 			download.file.open(archive, std::ios::binary | std::ios::trunc);
-			CURL* curl = Session(resolve, (std::string(kFiles) + zipName).c_str());
+			CURL* curl = Session(resolve, (releases + zipName).c_str());
 			if (!curl)
 			{
 				Fail(ps5lang::Tr("The download could not start"));
@@ -463,7 +501,7 @@ namespace ps5update
 			if (app.empty())
 			{
 				fs::remove(archive, ec);
-				Fail(ps5lang::Tr("PS5CEMU-HAR runs from an image, whose files can't be replaced: install the new release by hand"));
+				Fail(ps5lang::Tr("PS5-ECAM runs from an image, whose files can't be replaced: install the new release by hand"));
 				return;
 			}
 			ps5log::Line("[update] installing in {}", app.string());

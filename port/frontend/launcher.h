@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: what the launcher (shell.h) and main_ps5.cpp share: the four sides, what the launcher
+// PS5-ECAM: what the launcher (shell.h) and main_ps5.cpp share: the four sides, what the launcher
 // shows of their state, and the game it returns.
 
 #pragma once

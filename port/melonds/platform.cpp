@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: what melonDS's core asks of its frontend (melonDS::Platform, Platform.h), on the PS5:
+// PS5-ECAM: what melonDS's core asks of its frontend (melonDS::Platform, Platform.h), on the PS5:
 // files through the C library (local files are melonDS's data folder's, Root()), threads, semaphores
 // and mutexes from the standard library, the clock, the game's save handed to the game's loop
 // (core.cpp), the microphone as noise while R3 is held (input.cpp), and its log in the boot log. The

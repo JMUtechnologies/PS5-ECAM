@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: what the launcher (shell/) does besides drawing: the folder
+// PS5-ECAM: what the launcher (shell/) does besides drawing: the folder
 // browser's listing (with sceKernelGetdents, as ProsperoEden's does) and the drives, what a folder
 // holds for each side, copying the logs to USB, clearing the shader caches, the Artic Base address, a
 // mapping's DualSense input, and the words it shows.

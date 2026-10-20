@@ -1,5 +1,5 @@
 #version 450
-// PS5CEMU-HAR: a DS screen, or a bar of the touch cursor, as one quad on VideoOut's picture
+// PS5-ECAM: a DS screen, or a bar of the touch cursor, as one quad on VideoOut's picture
 // (port/melonds/screens.cpp). Its corners come from the vertex index (two triangles): no vertex buffer.
 
 layout(push_constant) uniform Constants

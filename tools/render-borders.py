@@ -78,7 +78,7 @@ def shell():
 
 
 def har():
-    """PS5CEMU-HAR's own: its two sides as its start screen and banner have them, the Wii U Homebrew
+    """PS5-ECAM's own: its two sides as its start screen and banner have them, the Wii U Homebrew
     Launcher's blue and its bubbles on the left (tools/render-background.py's), the 3DS Homebrew
     Launcher's gold waves on the right, the two blending in the middle; dark, so it sits back."""
     spec = importlib.util.spec_from_file_location("render_background", os.path.join(os.path.dirname(os.path.abspath(__file__)), "render-background.py"))

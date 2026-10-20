@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: the Vulkan driver's clock. RADV (and the Mesa runtime around it) reads the time
+// PS5-ECAM: the Vulkan driver's clock. RADV (and the Mesa runtime around it) reads the time
 // through Mesa's os_time_get_nano, which is clock_gettime: a system call, about 890 ns in this
 // app (the boot log's [clock] line; 20 us in PS5_Vulkan's measurement elsewhere), where a PC
 // answers in tens of nanoseconds without entering the kernel. The driver reads it around every

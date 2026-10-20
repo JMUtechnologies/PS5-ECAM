@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5CEMU-HAR: /data/ps5cemu open to every user. The app runs as root when the HEN jailbreaks it and
+// PS5-ECAM: /data/ps5cemu open to every user. The app runs as root when the HEN jailbreaks it and
 // as its own user when it needs no HEN (ps5/privilege.h), and the console's FTP service and the file
 // managers run as other users still. A folder one of them made 0755, or a file 0644, was out of the
 // others' reach: a game whose saves and shader cache could not be written started to a black screen
