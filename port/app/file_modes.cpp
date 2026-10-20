@@ -34,7 +34,8 @@ namespace ps5filemodes
 		constexpr size_t kExamples = 3; // of those the app may not change, in the boot log
 		// the sides' own game folders hold the player's files, which the app only reads: an FTP client's
 		// upload keeps its owner's mode
-		constexpr const char* kPlayers[] = {"/games", "/azahar/games", "/melonds/games"};
+		constexpr const char* kPlayers[] = {"/games", "/azahar/games", "/melonds/games", "/eden/roms", "/eden/keys", "/eden/firmware", "/eden/updates",
+			"/eden/mods"};
 
 		std::thread s_thread;
 		std::atomic<bool> s_stop{false};

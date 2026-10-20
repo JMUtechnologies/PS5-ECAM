@@ -885,7 +885,7 @@ namespace ps5emu
 		}
 	}
 
-	void RestartToLibrary()
+	void LoadExecApp(const std::string& program, const std::vector<std::string>& args, bool withReturn)
 	{
 		// one at a time: a stop cut short starts over from a thread of its own (StopGame, and the
 		// 3DS's and the DS's), and main comes here too once the stop is done. A second caller goes on
@@ -898,38 +898,56 @@ namespace ps5emu
 		// Artic Base one can (#45): it is waited for too.
 		ps5boxart::Stop();
 		ps5update::WaitForCheck(10000);
-		ps5log::Line("[emu] back to the library: starting PS5Cemu over");
 		// Cemu's settings only where Cemu ran: a 3DS session never read them, and would write its
 		// defaults over them
 		if (s_coreStarted)
 			GetConfigHandle().Save();
-		// the program the app was mounted from (ShadowMountPlus's record, which follows an install on
+		// the folder the app was mounted from (ShadowMountPlus's record, which follows an install on
 		// a USB drive), the usual install, the one found running and where the PS5 mounts the app: each
 		// tried until one takes, as a HEN may start the app from where the console refuses one (#48)
 		std::error_code ec;
-		std::vector<std::string> eboots;
-		auto consider = [&](const std::string& eboot) {
-			if (!eboot.empty() && fs::exists(eboot, ec) && std::find(eboots.begin(), eboots.end(), eboot) == eboots.end())
-				eboots.push_back(eboot);
+		std::vector<std::string> folders;
+		auto consider = [&](const std::string& folder) {
+			if (!folder.empty() && fs::exists(folder + "/" + program, ec) && std::find(folders.begin(), folders.end(), folder) == folders.end())
+				folders.push_back(folder);
 		};
-		if (const std::string source = ps5paths::MountSource(); !source.empty())
-			consider(source + "/eboot.bin");
-		consider(ps5paths::kMountedEboot);
-		consider(ps5paths::Eboot());
-		consider(std::string(ps5paths::kSystemMount) + "/eboot.bin");
-		if (eboots.empty())
-			eboots.push_back(ps5paths::Eboot()); // none found: the console may still see it
+		consider(ps5paths::MountSource());
+		consider(ps5paths::kInstallDir);
+		consider(ps5paths::AppDir());
+		consider(ps5paths::kSystemMount);
+		if (folders.empty())
+			folders.push_back(ps5paths::AppDir()); // none found: the console may still see it
 		LeaveEndingToSystem();
-		for (const std::string& eboot : eboots)
+		for (const std::string& folder : folders)
 		{
+			const std::string path = folder + "/" + program;
+			std::vector<std::string> all = args;
+			if (withReturn)
+			{
+				// the program started comes back to this one, in the same folder
+				all.push_back("--return");
+				all.push_back(folder + "/eboot.bin");
+			}
+			std::vector<char*> argv;
+			for (std::string& arg : all)
+				argv.push_back(arg.data());
+			argv.push_back(nullptr);
+			ps5log::Line("[emu] LoadExec({}){}", path, all.empty() ? "" : fmt::format(" with {} arguments", all.size()));
 			ps5log::FlushAll(); // the log's lines in the file before the process is replaced
-			const int result = sceSystemServiceLoadExec(eboot.c_str(), nullptr);
+			const int result = sceSystemServiceLoadExec(path.c_str(), all.empty() ? nullptr : argv.data());
 			// it does not come back when it works; allow for one that returns before ending the process
 			if (result == 0)
 				for (int i = 0; i < 100; i++)
 					sceKernelUsleep(100000);
-			ps5log::Line("[emu] LoadExec({}) returned {:#x}", eboot, (uint32_t)result);
+			ps5log::Line("[emu] LoadExec({}) returned {:#x}", path, (uint32_t)result);
 		}
+		ps5log::FlushAll();
+	}
+
+	void RestartToLibrary()
+	{
+		ps5log::Line("[emu] back to the library: starting PS5Cemu over");
+		LoadExecApp("eboot.bin", {}, false);
 		// none took: the app ends, which is said rather than it just closing
 		ps5notify::Send(ps5lang::Tr("PS5CEMU-HAR could not start itself again to show the library: start it again from the home screen."));
 		ps5log::FlushAll();

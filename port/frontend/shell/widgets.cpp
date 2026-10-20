@@ -224,8 +224,8 @@ namespace ps5shell
 			canvas.LinearGradient(drawn, kRadiusCover, top | 0xff000000, bottom | 0xff000000, drawn.x, drawn.y, drawn.x, drawn.Bottom());
 			canvas.PushClip(drawn, kRadiusCover);
 			const float band = drawn.h * 0.09f;
-			// the case's band: the Wii U's blue, the 3DS's white with red letters, the DS's grey
-			canvas.Rect({drawn.x, drawn.y, drawn.w, band}, 0, Is3ds() ? 0xfff4f4f4 : IsDs() ? 0xffe9e7e6 : 0xffe08923);
+			// the case's band: the Wii U's blue, the 3DS's white with red letters, the DS's grey, the Switch's red
+			canvas.Rect({drawn.x, drawn.y, drawn.w, band}, 0, Is3ds() ? 0xfff4f4f4 : IsDs() ? 0xffe9e7e6 : IsSwitch() ? 0xff1200e6 : 0xffe08923);
 			const ui::TextStyle bandStyle{std::max(9.0f, band * 0.5f), ui::Weight::Bold, 1.0f, 1.0f, true};
 			const ui::TextBlock bandText = m_fonts.Layout(bandStyle, SystemName(m_side));
 			canvas.Text(bandText, drawn.x + drawn.w * 0.08f, drawn.y + (band - bandText.height) * 0.5f,

@@ -10,6 +10,7 @@
 #include "../../app/paths.h"
 #include "../../app/updates.h"
 #include "../../azahar/azahar.h"
+#include "../../eden/library.h"
 #include "../../melonds/melonds.h"
 #include "../../ps5/privilege.h"
 
@@ -164,22 +165,22 @@ namespace ps5shell
 		m_checks.push_back(recompilers);
 
 		// each side's games: as its last scan found them, else as its folder holds them
-		for (System side : {System::WiiU, System::N3ds, System::Nds})
+		for (System side : {System::WiiU, System::N3ds, System::Nds, System::Switch})
 		{
 			if (!SideShown(side))
 				continue; // a side the bar does not offer (Settings > Launcher) has nothing to check
-			const bool n3ds = side == System::N3ds, nds = side == System::Nds;
+			const bool n3ds = side == System::N3ds, nds = side == System::Nds, nx = side == System::Switch;
 			const std::string& folder = GamesFolder(side);
 			const int catalogued = (int)ps5catalog::Games((ps5catalog::System)SideIndex(side)).size();
 			int count = std::max(catalogued, side == System::WiiU ? m_settings.gameCount : Handheld(side).gameCount);
 			bool readable = true;
 			if (count <= 0)
 			{
-				count = n3ds ? Count3dsGames(folder) : nds ? CountDsGames(folder) : CountGames(folder);
+				count = n3ds ? Count3dsGames(folder) : nds ? CountDsGames(folder) : nx ? ps5eden::CountGames(folder) : CountGames(folder);
 				readable = count >= 0;
 			}
 			// the side's own words, so each keeps its translation
-			const char* gamesTitle = n3ds ? Tr("3DS games") : nds ? Tr("DS games") : Tr("Wii U games");
+			const char* gamesTitle = n3ds ? Tr("3DS games") : nds ? Tr("DS games") : nx ? Tr("Switch games") : Tr("Wii U games");
 			Check games{std::string(ps5launcher::SideName(side)) + "-games", gamesTitle};
 			games.action = Tr("Choose a folder");
 			games.state = count > 0 ? 0 : 1;
@@ -188,20 +189,27 @@ namespace ps5shell
 			games.detail = count > 0 ? TrP(count, "{0} game in {1}", "{0} games in {1}", where) :
 				readable		   ? TrF("None in {0} yet", where) :
 									 TrF("{0} cannot be read", where);
-			games.aboutTitle = n3ds ? Tr("Where your 3DS games go") : nds ? Tr("Where your DS games go") : Tr("Where your Wii U games go");
+			games.aboutTitle = n3ds ? Tr("Where your 3DS games go") :
+				nds					? Tr("Where your DS games go") :
+				nx					? Tr("Where your Switch games go") :
+									  Tr("Where your Wii U games go");
 			games.about = n3ds ? TrF("Put them in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are "
 									 "searched too. CIA files are installed, from Settings > Game files on the 3DS side.",
 									 folder) :
 				nds			   ? TrF("Put them in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are "
 									 "searched too.",
 									 folder) :
+				nx			   ? TrF("Put them in {0}: .nsp and .xci files, alone or each in a folder of its own with its update and DLC. "
+									 "Eden needs your Switch's keys and firmware too.",
+									 ps5eden::ScanFolder(folder)) :
 								 TrF("Put them in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Updates and DLC go "
 									 "in from Settings > Game files, or come with a .wua.",
 									 folder);
 			games.chips = n3ds ? std::vector<std::string>{".3ds", ".cci", ".cxi", ".3dsx", ".z3ds", ".cia", ".7z", ".zip"} :
 				nds			   ? std::vector<std::string>{".nds", ".srl", ".7z", ".zip"} :
+				nx			   ? std::vector<std::string>{".nsp", ".xci"} :
 								 std::vector<std::string>{".wua", ".wud", ".wux", Tr("code · content · meta"), ".rpx", ".7z", ".zip"};
-			games.guide = std::string(kRepository) + (n3ds ? "#nintendo-3ds" : nds ? "#nintendo-ds-melonds" : "#wii-u");
+			games.guide = std::string(kRepository) + (n3ds ? "#nintendo-3ds" : nds ? "#nintendo-ds-melonds" : nx ? "#nintendo-switch-eden" : "#wii-u");
 			games.guideTitle = Tr("the game files page");
 			m_checks.push_back(games);
 		}
@@ -256,6 +264,37 @@ namespace ps5shell
 		nds.guideTitle = Tr("the DS page");
 		if (SideShown(System::Nds))
 			m_checks.push_back(nds);
+
+		// the Switch's keys and firmware, which Eden needs and none of which come with the app: dumped from
+		// the player's own Switch
+		const std::string edenFiles = ps5eden::GameFilesFolder();
+		const bool nxKeys = ps5eden::KeysFound(), nxFirmware = ps5eden::FirmwareFound();
+		Check switchKeys{"switch-keys", Tr("Switch keys")};
+		switchKeys.state = nxKeys ? 0 : 1;
+		switchKeys.detail = nxKeys ? Tr("prod.keys found: Eden can read your games") : Tr("prod.keys is missing: Eden cannot read Switch games without it");
+		switchKeys.action = nxKeys ? "" : Tr("How to");
+		switchKeys.aboutTitle = Tr("Your Switch's keys");
+		switchKeys.about = TrF("Eden reads Switch games with your own console's keys: prod.keys (and title.keys), dumped from your Switch, in "
+							   "{0}/keys. No keys come with PS5CEMU-HAR.",
+			edenFiles);
+		switchKeys.guide = std::string(kRepository) + "#nintendo-switch-eden";
+		switchKeys.guideTitle = Tr("the Switch page");
+		Check switchFirmware{"switch-firmware", Tr("Switch firmware")};
+		switchFirmware.state = nxFirmware ? 0 : 1;
+		switchFirmware.detail = nxFirmware ? Tr("Firmware found: games that need the system's files start") :
+											 Tr("No firmware yet: many games need it to start");
+		switchFirmware.action = nxFirmware ? "" : Tr("How to");
+		switchFirmware.aboutTitle = Tr("Your Switch's firmware");
+		switchFirmware.about = TrF("Many Switch games need the console's own system files: its firmware's .nca files, dumped from your Switch, "
+								   "in {0}/firmware. No firmware comes with PS5CEMU-HAR.",
+			edenFiles);
+		switchFirmware.guide = switchKeys.guide;
+		switchFirmware.guideTitle = switchKeys.guideTitle;
+		if (SideShown(System::Switch))
+		{
+			m_checks.push_back(switchKeys);
+			m_checks.push_back(switchFirmware);
+		}
 
 		// covers
 		Check boxArt{"boxart", Tr("Box art")};
@@ -337,7 +376,7 @@ namespace ps5shell
 			}
 			const Check& check = m_checks[m_setupRow];
 			m_feedback.Play(ui::Cue::Select);
-			if (check.id == "wiiu-games" || check.id == "3ds-games" || check.id == "ds-games")
+			if (check.id == "wiiu-games" || check.id == "3ds-games" || check.id == "ds-games" || check.id == "switch-games")
 			{
 				m_filesSide = ps5launcher::SideNamed(check.id.substr(0, check.id.find('-')));
 				FilesOpen(0); // back here when it is done

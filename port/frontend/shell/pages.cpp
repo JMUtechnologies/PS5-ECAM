@@ -12,6 +12,7 @@
 #include "../../azahar/azahar.h"
 #include "../../azahar/controls.h"
 #include "../../azahar/library.h"
+#include "../../eden/library.h"
 #include "../../melonds/library.h"
 #include "../../melonds/melonds.h"
 #include "../../ps5/kernel.h"
@@ -1069,6 +1070,11 @@ namespace ps5shell
 				ps5melonds::StartScan(m_browseFolder);
 				m_scanning = true;
 			}
+			else if (here && m_filesSide == System::Switch)
+			{
+				ps5eden::StartScan(m_browseFolder);
+				m_scanning = true;
+			}
 			else if (here && m_status.coreReady)
 			{
 				ApplyCemuOptions();
@@ -1137,6 +1143,8 @@ namespace ps5shell
 					ps5azahar::StartScan(m_settings.n3ds.gamesFolder);
 				else if (IsDs())
 					ps5melonds::StartScan(m_settings.nds.gamesFolder);
+				else if (IsSwitch())
+					ps5eden::StartScan(m_settings.nx.gamesFolder);
 				else
 					ps5emu::Rescan();
 				m_scanning = true;
@@ -1155,17 +1163,19 @@ namespace ps5shell
 	void Shell::FilesDraw(Canvas& canvas)
 	{
 		const bool install = m_filesMode == 1, cia = m_filesMode == 2;
-		const bool n3ds = m_filesSide == System::N3ds, nds = m_filesSide == System::Nds;
+		const bool n3ds = m_filesSide == System::N3ds, nds = m_filesSide == System::Nds, nx = m_filesSide == System::Switch;
 		DrawPageHeader(canvas,
 			install || cia ? std::string(SystemName(m_filesSide)) + " · " + Tr("Install") :
 			n3ds		   ? Tr("3DS games") :
 			nds			   ? Tr("DS games") :
+			nx			   ? Tr("Switch games") :
 							 Tr("Wii U games"),
 			cia ? Tr("Install CIA files") : install ? Tr("Install updates and DLC") : Tr("Choose a folder"),
 			cia		? std::string(Tr("Choose a CIA file: a game, an update or DLC")) :
 			install ? std::string(Tr("Choose a folder with an update, DLC or game (code, content and meta)")) :
 			n3ds	? std::string(Tr("Choose the folder that holds your 3DS games")) :
 			nds		? std::string(Tr("Choose the folder that holds your DS games")) :
+			nx		? std::string(Tr("Choose the folder that holds your Switch games")) :
 					  std::string(Tr("Choose the folder that holds your Wii U games")));
 		const int count = (int)m_browseEntries.size();
 		canvas.PushAlpha(Enter(1));
@@ -1244,7 +1254,8 @@ namespace ps5shell
 			auto it = m_folderCounts.find(m_browseFolder);
 			if (it == m_folderCounts.end())
 			{
-				const int games = n3ds ? Count3dsGames(m_browseFolder) : nds ? CountDsGames(m_browseFolder) : CountGames(m_browseFolder);
+				const int games = n3ds ? Count3dsGames(m_browseFolder) : nds ? CountDsGames(m_browseFolder) : nx ? ps5eden::CountGames(m_browseFolder) :
+																												 CountGames(m_browseFolder);
 				it = m_folderCounts.emplace(m_browseFolder, games < 0 ? "-1" : std::to_string(games)).first;
 			}
 			const int games = std::atoi(it->second.c_str());
@@ -1258,6 +1269,12 @@ namespace ps5shell
 					lines[1] = {"aes_keys.txt", Tr("Found")};
 					ready[1] = true;
 				}
+			}
+			else if (nx)
+			{
+				const bool keys = ps5eden::KeysFound();
+				lines[1] = {"prod.keys", keys ? std::string(Tr("Found")) : std::string(Tr("Missing: Eden cannot read Switch games without it"))};
+				ready[1] = keys;
 			}
 			else if (nds)
 			{
@@ -1279,6 +1296,8 @@ namespace ps5shell
 				message = n3ds ? Tr("Games can be .3ds or .cci, .cxi or .3dsx, decrypted, alone or in .zip, .7z or .rar archives, and .cia files, here "
 									"or in the folders in it. Triangle uses the folder shown.") :
 					nds		   ? Tr("Games are .nds files, alone or in .zip, .7z or .rar archives, here or in the folders in it. Triangle uses the folder shown.") :
+				nx		   ? Tr("Games are .nsp and .xci files, here or each in a folder of its own with its update and DLC. Network shares are out "
+								"of Eden's reach. Triangle uses the folder shown.") :
 								 Tr("Games can be .wua, .wud, .wux, or folders with code, content and meta, alone or in .zip, .7z or .rar archives. "
 									"Triangle uses the folder shown.");
 		}

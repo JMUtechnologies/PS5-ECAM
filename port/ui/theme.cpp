@@ -30,7 +30,8 @@ namespace ui
 			{"text-2", &kText2, kText2Default}, {"text-3", &kText3, kText3Default}, {"wiiu", &kWiiu, kWiiuDefault},
 			{"wiiu-strong", &kWiiuStrong, kWiiuStrongDefault}, {"wiiu-ink", &kWiiuInk, kWiiuInkDefault}, {"n3ds", &kN3ds, kN3dsDefault},
 			{"n3ds-strong", &kN3dsStrong, kN3dsStrongDefault}, {"n3ds-ink", &kN3dsInk, kN3dsInkDefault}, {"nds", &kNds, kNdsDefault},
-			{"nds-strong", &kNdsStrong, kNdsStrongDefault}, {"nds-ink", &kNdsInk, kNdsInkDefault}, {"good", &kGood, kGoodDefault},
+			{"nds-strong", &kNdsStrong, kNdsStrongDefault}, {"nds-ink", &kNdsInk, kNdsInkDefault}, {"nx", &kNx, kNxDefault},
+			{"nx-strong", &kNxStrong, kNxStrongDefault}, {"nx-ink", &kNxInk, kNxInkDefault}, {"good", &kGood, kGoodDefault},
 			{"warn", &kWarn, kWarnDefault}, {"bad", &kBad, kBadDefault}, {"focus", &kFocus, kFocusDefault},
 		};
 
@@ -102,7 +103,7 @@ namespace ui
 			classic.layout = Layout::Classic;
 			classic.colours = Colours({{"ink-0", "#06101e"}, {"ink-1", "#081426"}, {"ink-2", "#0e1f38"}, {"text", "#f3f7ff"}, {"text-2", "#b8c8de"},
 				{"text-3", "#8a9db8"}, {"glass", "#ffffff10"}, {"glass-2", "#ffffff1a"}, {"glass-edge", "#ffffff1e"}, {"line", "#ffffff1e"},
-				{"wiiu", "#5aa2f0"}, {"n3ds", "#e3b14a"}, {"nds", "#62c454"}, {"focus", "#f3f7ff"}});
+				{"wiiu", "#5aa2f0"}, {"n3ds", "#e3b14a"}, {"nds", "#62c454"}, {"nx", "#e84a55"}, {"focus", "#f3f7ff"}});
 			classic.corners = 0.6f;
 			list.push_back(classic);
 
@@ -111,7 +112,7 @@ namespace ui
 			midnight.name = "Midnight";
 			midnight.description = "True black behind everything and nothing moving: for OLED screens.";
 			midnight.colours = Colours({{"ink-0", "#000000"}, {"ink-1", "#05060a"}, {"ink-2", "#0b0d14"}, {"glass", "#ffffff0a"},
-				{"glass-2", "#ffffff12"}, {"glass-edge", "#ffffff16"}, {"wiiu", "#4d9cff"}, {"n3ds", "#f0ad2e"}, {"nds", "#6fcf4a"}});
+				{"glass-2", "#ffffff12"}, {"glass-edge", "#ffffff16"}, {"wiiu", "#4d9cff"}, {"n3ds", "#f0ad2e"}, {"nds", "#6fcf4a"}, {"nx", "#ff4b55"}});
 			midnight.motif = Motif::None;
 			list.push_back(midnight);
 
@@ -144,7 +145,8 @@ namespace ui
 			phantom.colours = Colours({{"ink-0", "#0a0708"}, {"ink-1", "#140c0e"}, {"ink-2", "#22141a"}, {"glass", "#ffffff12"},
 				{"glass-2", "#ffffff1c"}, {"glass-edge", "#ffffff38"}, {"line", "#ffffff22"}, {"text", "#ffffff"}, {"text-2", "#ffffffc8"},
 				{"text-3", "#ffffff80"}, {"wiiu", "#ff2a46"}, {"wiiu-strong", "#d0102c"}, {"wiiu-ink", "#2a0408"}, {"n3ds", "#ffe14d"},
-				{"n3ds-strong", "#e0b800"}, {"n3ds-ink", "#2a2302"}, {"nds", "#3fc8ff"}, {"nds-strong", "#1a9fe0"}, {"nds-ink", "#031c2a"}});
+				{"n3ds-strong", "#e0b800"}, {"n3ds-ink", "#2a2302"}, {"nds", "#3fc8ff"}, {"nds-strong", "#1a9fe0"}, {"nds-ink", "#031c2a"},
+				{"nx", "#ff7a1a"}, {"nx-strong", "#e05a00"}, {"nx-ink", "#2a1202"}});
 			phantom.corners = 0.12f;
 			phantom.motif = Motif::Slashes;
 			list.push_back(phantom);
@@ -159,6 +161,7 @@ namespace ui
 				{"glass-2", "#39ffd61a"}, {"glass-edge", "#39ffd640"}, {"line", "#39ffd626"}, {"text", "#d6fff4"}, {"text-2", "#d6fff4b0"},
 				{"text-3", "#d6fff470"}, {"wiiu", "#39ffd6"}, {"wiiu-strong", "#12c9a6"}, {"wiiu-ink", "#032a22"}, {"n3ds", "#ffb238"},
 				{"n3ds-strong", "#d98a10"}, {"n3ds-ink", "#2a1a02"}, {"nds", "#8cff5a"}, {"nds-strong", "#5ad42e"}, {"nds-ink", "#0e2a04"},
+				{"nx", "#ff5a7a"}, {"nx-strong", "#d93a5a"}, {"nx-ink", "#2a0410"},
 				{"bad", "#ff5a5a"}, {"focus", "#d6fff4"}});
 			terminal.corners = 0.0f;
 			terminal.motif = Motif::Grid;
@@ -179,7 +182,7 @@ namespace ui
 			oscarLight.light = true;
 			oscarLight.colours = Colours({{"ink-0", "#eef2f7"}, {"ink-1", "#ffffff"}, {"ink-2", "#e3e8f0"}, {"glass", "#ffffffb8"},
 				{"glass-2", "#ffffffeb"}, {"glass-edge", "#0c16281a"}, {"line", "#0c16281a"}, {"scrim", "#0c1628a6"}, {"text", "#0d1526"},
-				{"text-2", "#0d1526a8"}, {"text-3", "#0d152675"}, {"wiiu", "#1f73d6"}, {"n3ds", "#c4870f"}, {"nds", "#3f9e2a"},
+				{"text-2", "#0d1526a8"}, {"text-3", "#0d152675"}, {"wiiu", "#1f73d6"}, {"n3ds", "#c4870f"}, {"nds", "#3f9e2a"}, {"nx", "#d4202e"},
 				{"good", "#13a578"}, {"warn", "#c47a00"}, {"bad", "#d23c3c"}, {"focus", "#0d1526"}});
 			list.push_back(oscarLight);
 			return list;
@@ -280,7 +283,7 @@ namespace ui
 			*slot.token = own != theme.colours.end() ? own->second : slot.standard;
 		}
 		// a side's colour set alone: its stronger and inkier shades follow it
-		for (const char* side : {"wiiu", "n3ds", "nds"})
+		for (const char* side : {"wiiu", "n3ds", "nds", "nx"})
 		{
 			const auto accent = theme.colours.find(side);
 			if (accent == theme.colours.end())

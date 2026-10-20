@@ -7,7 +7,8 @@
 //  4. the game, on Cemu's or Azahar's Vulkan renderer, or melonDS's screens on VideoOut, with its side's
 //     settings and the game's own over them (frontend/settings.h, ForGame), until the in-game menu
 //     (touchpad + Options) asks for the library, which starts PS5CEMU-HAR over (app/emulator.h,
-//     RestartToLibrary) on that emulator's side.
+//     RestartToLibrary) on that emulator's side. A Switch game runs in Eden's own program instead
+//     (eden/eboot.bin, port/eden), which starts PS5CEMU-HAR again on the Switch side when it ends.
 
 #include "app/achievements.h"
 #include "app/catalog.h"
@@ -23,6 +24,8 @@
 #include "app/updates.h"
 #include "azahar/azahar.h"
 #include "azahar/library.h"
+#include "eden/eden.h"
+#include "eden/library.h"
 #include "frontend/launcher.h"
 #include "melonds/library.h"
 #include "melonds/melonds.h"
@@ -128,8 +131,8 @@ namespace
 	std::vector<std::string> Diagnostics(const ps5privilege::Result& privileges)
 	{
 		return {
-			fmt::format("PS5CEMU-HAR {}: Cemu at {}, Azahar at {}, melonDS at {}", PS5CEMU_VERSION, PS5CEMU_CEMU_COMMIT, PS5CEMU_AZAHAR_COMMIT,
-				PS5CEMU_MELONDS_COMMIT),
+			fmt::format("PS5CEMU-HAR {}: Cemu at {}, Azahar at {}, melonDS at {}, Eden at {}", PS5CEMU_VERSION, PS5CEMU_CEMU_COMMIT,
+				PS5CEMU_AZAHAR_COMMIT, PS5CEMU_MELONDS_COMMIT, PS5CEMU_EDEN_COMMIT),
 			ps5lang::TrF("Firmware {0}", Firmware()),
 			privileges.summary,
 			ps5log::Path()[0] ? ps5lang::TrF("Logs: {0}, {1}/log.txt", ps5log::Path(), ps5paths::Root()) :
@@ -190,8 +193,8 @@ namespace
 			else if (arg == "--exit-after-game")
 				tile.exitAfterGame = true;
 		}
-		// the side by the file's type: the DS's and the 3DS's are their own, the rest the Wii U's (.wua,
-		// .wud, .wux, .rpx, a folder)
+		// the side by the file's type: the DS's, the 3DS's and the Switch's are their own, the rest the Wii
+		// U's (.wua, .wud, .wux, .rpx, a folder)
 		std::string extension = std::filesystem::path(tile.rom).extension().string();
 		for (char& c : extension)
 			c = (char)std::tolower((unsigned char)c);
@@ -201,6 +204,9 @@ namespace
 		for (const char* n3ds : {".3ds", ".cci", ".cxi", ".cia", ".3dsx", ".app", ".elf", ".axf", ".z3ds", ".zcci", ".zcxi", ".z3dsx"})
 			if (extension == n3ds)
 				tile.side = ps5launcher::System::N3ds;
+		for (const char* nx : {".nsp", ".xci"})
+			if (extension == nx)
+				tile.side = ps5launcher::System::Switch;
 		// an archive's game is any side's (app/game_archives.h): the side whose library listed it last (the
 		// catalogue), else the side whose game files folder holds it (the deepest of those that do), else
 		// the DS side's, whose tiles were its only ones
@@ -251,8 +257,8 @@ int main(int argc, char* argv[])
 	// (0666, 0777), whichever user it runs as, for the next session and the console's FTP service
 	// (app/file_modes.h, #55, #58)
 	umask(0);
-	ps5log::Line("[main] PS5CEMU-HAR {} starting (Cemu at {}, Azahar at {}, melonDS at {})", PS5CEMU_VERSION, PS5CEMU_CEMU_COMMIT,
-		PS5CEMU_AZAHAR_COMMIT, PS5CEMU_MELONDS_COMMIT);
+	ps5log::Line("[main] PS5CEMU-HAR {} starting (Cemu at {}, Azahar at {}, melonDS at {}, Eden at {})", PS5CEMU_VERSION, PS5CEMU_CEMU_COMMIT,
+		PS5CEMU_AZAHAR_COMMIT, PS5CEMU_MELONDS_COMMIT, PS5CEMU_EDEN_COMMIT);
 	// before any thread starts: the HEN jailbreaks the process as it is. The game folders are read
 	// first, so a HEN is asked only when something the app needs is out of reach without one
 	// (ps5cemu.json as it is: the defaults when /data is not open yet)
@@ -456,7 +462,7 @@ int main(int argc, char* argv[])
 	std::string error;
 	if (!privileges.filesystem)
 	{
-		status.notice = status.notice3ds = status.noticeDs =
+		status.notice = status.notice3ds = status.noticeDs = status.noticeSwitch =
 			ps5lang::Tr("PS5CEMU-HAR cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5CEMU-HAR.");
 		ps5log::Line("[main] {}", status.notice);
 		ps5notify::Send(status.notice);
@@ -464,7 +470,10 @@ int main(int argc, char* argv[])
 	else if (!settings.launchError.empty())
 	{
 		// the last game failed after its renderer started, and the process was started over to show it
-		(settings.side == "3ds" ? status.launchError3ds : settings.side == "ds" ? status.launchErrorDs : status.launchError) = settings.launchError;
+		(settings.side == "3ds"		 ? status.launchError3ds :
+				settings.side == "ds"	 ? status.launchErrorDs :
+				settings.side == "switch" ? status.launchErrorSwitch :
+										   status.launchError) = settings.launchError;
 		settings.launchError.clear();
 		ps5settings::Save(settings);
 	}
@@ -489,6 +498,16 @@ int main(int argc, char* argv[])
 			status.diagnostics.push_back(ps5lang::Tr("This session: Azahar (3DS); Cemu's emulated Wii U is not started"));
 			ps5azahar::StartScan(settings.n3ds.gamesFolder);
 			ps5emu::LogMemory(); // the 3DS side's start, against Cemu's
+			return;
+		}
+		if (system == ps5launcher::System::Switch)
+		{
+			// Eden runs in a program of its own (eden/eboot.bin): this side only lists its games
+			ps5log::Line("[main] the Switch side: Cemu's emulated Wii U is not started (Eden runs in eden/eboot.bin)");
+			status.diagnostics.push_back(ps5lang::Tr("This session: Eden (Switch), in a program of its own; Cemu's emulated Wii U is not started"));
+			if (privileges.filesystem && !ps5eden::Available())
+				status.noticeSwitch = ps5lang::Tr("This build has no Switch emulator: eden/eboot.bin is not in the app's folder.");
+			ps5eden::StartScan(settings.nx.gamesFolder);
 			return;
 		}
 		if (system == ps5launcher::System::Nds)
@@ -576,6 +595,23 @@ int main(int argc, char* argv[])
 			ps5pad::SetTurbo(ps5pad::ButtonNamed(turbo));
 			if (!turbo.empty())
 				ps5log::Line("[main] turbo button: {}", turbo);
+		}
+
+		if (choice->system == ps5launcher::System::Switch)
+		{
+			// Eden's own program in place of this one: it starts the game at once, with this side's settings
+			// and the game's own, and starts this app again on the Switch side when the game ends (or
+			// closes it, for a tile's game). The side is saved first, so a crash in it comes back here too.
+			// A choice with no game is ProsperoEden's own launcher (Shell::OpenEden).
+			RememberSide("switch");
+			if (game.path.empty())
+				ps5eden::OpenLauncher(error);
+			else
+				ps5eden::LaunchGame(game, forGame, ps5emu::ExitAfterGame(), error);
+			ps5log::Line("[main] {} did not start: {}", game.name, error);
+			status.launchErrorSwitch = error;
+			settings.side = "switch"; // Shell::Run clears it, and says why on the Switch side
+			continue;
 		}
 
 		if (choice->system == ps5launcher::System::Nds)

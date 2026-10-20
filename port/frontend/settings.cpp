@@ -63,10 +63,13 @@ namespace ps5settings
 			writer.EndArray();
 		}
 
-		void ReadN3ds(const rapidjson::Value& json, N3ds& n3ds)
+		// relocate: a folder in the data folder follows it to a drive (the Switch's does not: Eden's
+		// program keeps its data in /data/ps5cemu/eden wherever ours is)
+		void ReadN3ds(const rapidjson::Value& json, N3ds& n3ds, bool relocate = true)
 		{
 			ReadString(json, "gamesFolder", n3ds.gamesFolder);
-			n3ds.gamesFolder = ps5paths::Relocated(n3ds.gamesFolder); // saved before the data moved to a drive (#52)
+			if (relocate)
+				n3ds.gamesFolder = ps5paths::Relocated(n3ds.gamesFolder); // saved before the data moved to a drive (#52)
 			ReadInt(json, "resolution", n3ds.resolution, 1, 10);
 			ReadInt(json, "layout", n3ds.layout, 0, 3);
 			ReadInt(json, "textureFilter", n3ds.textureFilter, 0, 5);
@@ -87,6 +90,10 @@ namespace ps5settings
 			ReadInt(json, "dsFilter", n3ds.dsFilter, 0, 2);
 			ReadBool(json, "dsJit", n3ds.dsJit);
 			ReadBool(json, "dsOwnBios", n3ds.dsOwnBios);
+			ReadInt(json, "nxResolution", n3ds.nxResolution, 0, 6);
+			ReadInt(json, "nxFilter", n3ds.nxFilter, 0, 3);
+			ReadInt(json, "nxAstc", n3ds.nxAstc, 0, 1);
+			ReadBool(json, "nxDocked", n3ds.nxDocked);
 			ReadString(json, "articAddress", n3ds.articAddress);
 			ReadInt(json, "gameCount", n3ds.gameCount, -1, 1000000);
 			if (json.HasMember("buttons") && json["buttons"].IsObject())
@@ -141,6 +148,14 @@ namespace ps5settings
 			writer.Bool(n3ds.dsJit);
 			writer.Key("dsOwnBios");
 			writer.Bool(n3ds.dsOwnBios);
+			writer.Key("nxResolution");
+			writer.Int(n3ds.nxResolution);
+			writer.Key("nxFilter");
+			writer.Int(n3ds.nxFilter);
+			writer.Key("nxAstc");
+			writer.Int(n3ds.nxAstc);
+			writer.Key("nxDocked");
+			writer.Bool(n3ds.nxDocked);
 			writer.Key("articAddress");
 			writer.String(n3ds.articAddress.c_str());
 			writer.Key("gameCount");
@@ -221,6 +236,8 @@ namespace ps5settings
 			ReadN3ds(json["n3ds"], settings.n3ds);
 		if (json.HasMember("nds") && json["nds"].IsObject())
 			ReadN3ds(json["nds"], settings.nds);
+		if (json.HasMember("switch") && json["switch"].IsObject())
+			ReadN3ds(json["switch"], settings.nx, false);
 		if (json.HasMember("games") && json["games"].IsObject())
 			for (const auto& game : json["games"].GetObject())
 			{
@@ -268,7 +285,12 @@ namespace ps5settings
 			ReadInt(ui, "holdMs", out.holdMs, 400, 1500);
 			ReadBool(ui, "gamePictures", out.gamePictures);
 			ReadBool(ui, "setupDone", out.setupDone);
-			ReadInt(ui, "sides", out.sides, 1, 7);
+			ReadInt(ui, "sides", out.sides, 1, 15);
+			// sides chosen before the Switch had one (4.0.1 and earlier): it is shown once, as a new side
+			bool switchOffered = false;
+			ReadBool(ui, "switchOffered", switchOffered);
+			if (!switchOffered)
+				out.sides |= 8;
 			ReadString(ui, "lastVersion", out.lastVersion);
 			ReadString(ui, "theme", out.theme);
 			// each side's filter and sort (3.5.0 kept two of each under names of their own; its sort, A to
@@ -279,9 +301,9 @@ namespace ps5settings
 			if (out.libraryFilter[1] == 3)
 				out.libraryFilter[1] = 0; // the 4.0.0 beta's DS games, which have a side of their own now
 			// filters: the Wii U's four (Graphic packs on), the handhelds' three; sorts: four on every side
-			auto readSides = [&](const char* key, int (&values)[3], int wiiuMost, int handheldMost) {
+			auto readSides = [&](const char* key, int (&values)[4], int wiiuMost, int handheldMost) {
 				if (ui.HasMember(key) && ui[key].IsArray())
-					for (rapidjson::SizeType i = 0; i < ui[key].Size() && i < 3; i++)
+					for (rapidjson::SizeType i = 0; i < ui[key].Size() && i < 4; i++)
 						if (ui[key][i].IsInt())
 							values[i] = std::clamp(ui[key][i].GetInt(), 0, i == 0 ? wiiuMost : handheldMost);
 			};
@@ -387,6 +409,8 @@ namespace ps5settings
 		WriteN3ds(writer, settings.n3ds);
 		writer.Key("nds");
 		WriteN3ds(writer, settings.nds);
+		writer.Key("switch");
+		WriteN3ds(writer, settings.nx);
 		writer.Key("games");
 		writer.StartObject();
 		for (const auto& [key, values] : settings.games)
@@ -443,6 +467,8 @@ namespace ps5settings
 		writer.Bool(settings.ui.setupDone);
 		writer.Key("sides");
 		writer.Int(settings.ui.sides);
+		writer.Key("switchOffered");
+		writer.Bool(settings.ui.switchOffered);
 		writer.Key("lastVersion");
 		writer.String(settings.ui.lastVersion.c_str());
 		writer.Key("theme");
@@ -479,7 +505,7 @@ namespace ps5settings
 	namespace
 	{
 		// A setting a number stands for, and its range: on a side's struct (Launcher for the Wii U,
-		// N3ds for the 3DS and the DS)
+		// N3ds for the 3DS, the DS and the Switch)
 		struct Field
 		{
 			const char* name;
@@ -521,6 +547,10 @@ namespace ps5settings
 				{"dsOwnBios", nullptr, nullptr, nullptr, &N3ds::dsOwnBios},
 				{"invariantPosition", nullptr, nullptr, nullptr, &N3ds::invariantPosition},
 				{"hwShaders", nullptr, nullptr, nullptr, &N3ds::hwShaders},
+				{"nxResolution", nullptr, nullptr, &N3ds::nxResolution, nullptr, 0, 6},
+				{"nxFilter", nullptr, nullptr, &N3ds::nxFilter, nullptr, 0, 3},
+				{"nxAstc", nullptr, nullptr, &N3ds::nxAstc, nullptr, 0, 1},
+				{"nxDocked", nullptr, nullptr, nullptr, &N3ds::nxDocked},
 			};
 			return fields;
 		}
@@ -535,12 +565,12 @@ namespace ps5settings
 
 		const N3ds& Handheld(const Launcher& settings, const std::string& side)
 		{
-			return side == "ds" ? settings.nds : settings.n3ds;
+			return side == "ds" ? settings.nds : side == "switch" ? settings.nx : settings.n3ds;
 		}
 
 		N3ds& Handheld(Launcher& settings, const std::string& side)
 		{
-			return side == "ds" ? settings.nds : settings.n3ds;
+			return side == "ds" ? settings.nds : side == "switch" ? settings.nx : settings.n3ds;
 		}
 	}
 
@@ -555,8 +585,9 @@ namespace ps5settings
 		static const std::vector<std::string> n3ds = {"resolution", "textureFilter", "customTextures", "asyncShaderCompilation", "invariantPosition", "hwShaders", "layout", "border",
 			"volume", "region", "language", "cpuClock"};
 		static const std::vector<std::string> nds = {"dsFilter", "dsJit", "layout", "border", "volume", "language", "dsOwnBios"};
+		static const std::vector<std::string> nx = {"nxResolution", "nxFilter", "nxAstc", "nxDocked", "volume"};
 		static const std::vector<std::string> none;
-		return side == "wiiu" ? wiiu : side == "3ds" ? n3ds : side == "ds" ? nds : none;
+		return side == "wiiu" ? wiiu : side == "3ds" ? n3ds : side == "ds" ? nds : side == "switch" ? nx : none;
 	}
 
 	bool Value(const Launcher& settings, const std::string& side, const std::string& name, int& value)

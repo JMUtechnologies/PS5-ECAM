@@ -19,7 +19,7 @@ string(JSON PS5CEMU_DEPS_COUNT LENGTH "${PS5CEMU_DEPS_JSON}" items)
 math(EXPR PS5CEMU_DEPS_LAST "${PS5CEMU_DEPS_COUNT} - 1")
 foreach(index RANGE ${PS5CEMU_DEPS_LAST})
 	string(JSON name GET "${PS5CEMU_DEPS_JSON}" items ${index} name)
-	if(name STREQUAL "cemu" OR name STREQUAL "azahar" OR name STREQUAL "melonds")
+	if(name STREQUAL "cemu" OR name STREQUAL "azahar" OR name STREQUAL "melonds" OR name STREQUAL "prosperoedenx")
 		string(JSON commit GET "${PS5CEMU_DEPS_JSON}" items ${index} commit)
 		string(SUBSTRING "${commit}" 0 7 commit)
 		string(TOUPPER "${name}" name)
@@ -162,6 +162,10 @@ add_library(CemuPS5 STATIC
 	azahar/controls.h
 	azahar/library.cpp
 	azahar/library.h
+	eden/eden.h
+	eden/launch.cpp
+	eden/library.cpp
+	eden/library.h
 	melonds/archive.cpp
 	melonds/archive.h
 	melonds/library.cpp
@@ -273,6 +277,8 @@ set_source_files_properties(
 	azahar/controls.cpp
 	azahar/library.cpp
 	azahar/unavailable.cpp
+	eden/launch.cpp
+	eden/library.cpp
 	melonds/archive.cpp
 	melonds/library.cpp
 	melonds/screens.cpp
@@ -342,7 +348,7 @@ target_include_directories(CemuPS5 PRIVATE
 # the version the launcher and the boot log show (the app's param.json has it as 02.000.004)
 target_compile_definitions(CemuPS5 PUBLIC PS5CEMU_VERSION="${PS5CEMU_VERSION}"
 	PS5CEMU_CEMU_COMMIT="${PS5CEMU_CEMU_COMMIT}" PS5CEMU_AZAHAR_COMMIT="${PS5CEMU_AZAHAR_COMMIT}"
-	PS5CEMU_MELONDS_COMMIT="${PS5CEMU_MELONDS_COMMIT}")
+	PS5CEMU_MELONDS_COMMIT="${PS5CEMU_MELONDS_COMMIT}" PS5CEMU_EDEN_COMMIT="${PS5CEMU_PROSPEROEDENX_COMMIT}")
 
 target_link_libraries(CemuPS5 PUBLIC
 	CemuAudio

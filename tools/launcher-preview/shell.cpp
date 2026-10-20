@@ -40,6 +40,7 @@
 #include "app/updates.h"
 #include "azahar/library.h"
 #include "melonds/library.h"
+#include "eden/library.h"
 #include "frontend/shell.h"
 #include "stream/stream.h"
 
@@ -112,13 +113,19 @@ int main(int argc, char* argv[])
 		settings.gameCount = 11;
 		settings.n3ds.gameCount = 6;
 		settings.nds.gameCount = 4;
+		settings.nx.lastGame = 0x0100000000010000;
+		settings.nx.recent = {0x0100000000010000, 0x0100152000022000};
+		settings.nx.gameCount = 5;
 	}
 	if (std::getenv("PREVIEW_REMOTE"))
 		settings.remoteScreen = true;
 	if (const char* theme = std::getenv("PREVIEW_THEME"))
 		settings.ui.theme = theme;
+	// the side it opens on: wiiu, 3ds, ds or switch
+	if (const char* side = std::getenv("PREVIEW_SIDE"))
+		settings.ui.lastSide = side;
 	if (const char* sides = std::getenv("PREVIEW_SIDES"))
-		settings.ui.sides = std::clamp(std::atoi(sides), 1, 7);
+		settings.ui.sides = std::clamp(std::atoi(sides), 1, 15);
 	ps5stream::Configure(settings.remoteScreen); // as main does
 	// the menus' language: PREVIEW_LANGUAGE's code (qps: tools/lang.py pseudo's), else the PS5's, which
 	// PREVIEW_SYSTEM_LANGUAGE gives as the console's number (console.cpp)
@@ -130,7 +137,7 @@ int main(int argc, char* argv[])
 	status.diagnostics = {"PS5CEMU-HAR preview: Cemu at 32e6628, Azahar at 4aef900", "Jailbroken by the HEN: /data reachable, executable memory",
 		"Boot log: /data/ps5cemu/logs/boot.log", "Cemu's log: /data/ps5cemu/log.txt"};
 	if (std::getenv("PREVIEW_NO_DATA"))
-		status.notice = status.notice3ds = status.noticeDs =
+		status.notice = status.notice3ds = status.noticeDs = status.noticeSwitch =
 			"PS5CEMU-HAR cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5CEMU-HAR.";
 	else if (std::getenv("PREVIEW_LAUNCH_ERROR"))
 		status.launchError = ps5lang::Tr("This is not a Wii U game PS5CEMU-HAR can start.") + std::string(" ") +
@@ -143,6 +150,8 @@ int main(int argc, char* argv[])
 			ps5azahar::StartScan(settings.n3ds.gamesFolder);
 		else if (system == ps5launcher::System::Nds)
 			ps5melonds::StartScan(settings.nds.gamesFolder);
+		else if (system == ps5launcher::System::Switch)
+			ps5eden::StartScan(settings.nx.gamesFolder);
 		else
 			status.coreReady = true;
 	}, choice);

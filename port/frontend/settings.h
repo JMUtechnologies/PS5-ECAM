@@ -3,8 +3,9 @@
 // settings stay in its settings.xml; the launcher writes the few it manages (game folder, volume,
 // overlay, upscaling filter) into both. Azahar's are here (n3ds), and given to it when a 3DS game
 // starts; melonDS's (nds) have the same shape, the DS side's own (its folder, screens, sound,
-// controls) and the few only a DS has (ds...). A game can have its own of some of them (games: 6.5),
-// which it starts with over its side's.
+// controls) and the few only a DS has (ds...); so have Eden's (nx, the Switch side's: its folder,
+// volume, overlay and the few only a Switch has, nx...), given to eden/eboot.bin as it starts a game.
+// A game can have its own of some of them (games: 6.5), which it starts with over its side's.
 
 #pragma once
 
@@ -56,6 +57,11 @@ namespace ps5settings
 		int dsFilter = 0;			  // how the DS's screens are scaled to the TV: sharp, smooth, square pixels (ps5melonds::screens::Filter)
 		bool dsJit = true;			  // melonDS's recompiler where the console gives executable memory; off: its interpreter, slower
 		bool dsOwnBios = true;		  // the DS's own BIOS and firmware when they are in melonds/bios; off (or missing): melonDS's FreeBIOS
+		// the Switch's games (Eden: port/eden), handed to its program as a game starts
+		int nxResolution = 2;		  // Eden's internal resolution: 0.5x, 0.75x, 1x (the game's own), 1.5x, 2x, 3x, 4x
+		int nxFilter = 0;			  // how its picture is scaled to the TV: bilinear, AMD FSR 1, bicubic, nearest
+		int nxAstc = 0;				  // ASTC textures, which the PS5's GPU cannot read: kept compressed (as BC3), or at full quality
+		bool nxDocked = true;		  // the emulated Switch in its dock (the TV's picture), else handheld
 		std::string articAddress;	  // the last Artic Base server's IPv4 address, a 3DS on the network
 		int gameCount = -1;			  // the library's games when last looked for (the start screen's); -1: never
 		std::map<std::string, std::string> buttons; // 3DS button: DualSense input, where not the default
@@ -74,13 +80,22 @@ namespace ps5settings
 		return nds;
 	}
 
+	// The Switch side's: Eden's games folder, which is fixed in its program (/data/ps5cemu/eden/roms,
+	// ps5eden::GamesFolder), and its volume, as Eden has them
+	inline N3ds SwitchDefaults()
+	{
+		N3ds nx;
+		nx.gamesFolder = std::string(ps5paths::kDefaultRoot) + "/eden/roms";
+		return nx;
+	}
+
 	// A game's own settings: a setting's name in ps5cemu.json and its value (on and off as 1 and 0)
 	using GameValues = std::map<std::string, int>;
 
 	// The new launcher's own, under "ui"
 	struct Ui
 	{
-		std::string lastSide;		 // "wiiu", "3ds" or "ds": the side last used, restored at every start
+		std::string lastSide;		 // "wiiu", "3ds", "ds" or "switch": the side last used, restored at every start
 		std::string language;		 // the menus' language (ps5lang's code, "de"); empty: the PS5's
 		bool largerText = false;
 		bool highContrast = false;
@@ -88,14 +103,15 @@ namespace ps5settings
 		int holdMs = 800;			 // hold to confirm, 400 to 1500
 		bool gamePictures = true;	 // the focused game's picture behind the menus
 		bool setupDone = false;		 // the Setup check was shown once
-		// the sides the bar offers, Wii U 1, 3DS 2, DS 4 (Settings > Launcher > Sides, and the first start's
-		// Make it yours); at least one
-		int sides = 7;
+		// the sides the bar offers, Wii U 1, 3DS 2, DS 4, Switch 8 (Settings > Launcher > Sides, and the
+		// first start's Make it yours); at least one
+		int sides = 15;
+		bool switchOffered = true;	 // the Switch side was offered: those whose sides predate it (4.0.2) see it once
 		std::string lastVersion;	 // the version that ran last: a newer one says what it brings, once (Make it yours)
 		std::string theme;			 // the launcher's look (ui/theme.h): a built-in theme's id, or user:<file> in themes/; empty: the default
-		int libraryFilter[3] = {0, 0, 0}; // per side (Wii U, 3DS, DS): All, Recently added, Favourites, Graphic packs on (Wii U)
-		int librarySort[3] = {0, 0, 0};   // Recently played (the default: the Library is where a side opens), A to Z, Release year, How it runs
-		int libraryDisplay[3] = {0, 0, 0}; // Meyer Oscar's library, per side: 0 a grid of covers, 1 a list
+		int libraryFilter[4] = {0, 0, 0, 0}; // per side (Wii U, 3DS, DS, Switch): All, Recently added, Favourites, Graphic packs on (Wii U)
+		int librarySort[4] = {0, 0, 0, 0};   // Recently played (the default: the Library is where a side opens), A to Z, Release year, How it runs
+		int libraryDisplay[4] = {0, 0, 0, 0}; // Meyer Oscar's library, per side: 0 a grid of covers, 1 a list
 	};
 
 	struct Launcher
@@ -237,6 +253,7 @@ namespace ps5settings
 		std::vector<uint64_t> recent; // newest first, at most four
 		N3ds n3ds;
 		N3ds nds = DsDefaults();
+		N3ds nx = SwitchDefaults();
 		// games' own settings, by GameKey: "3ds:0004000000055d00" -> {"resolution": 3}
 		std::map<std::string, GameValues> games;
 		// The launcher's own sound, on both sides (frontend/sound.h): its music ("setup" or "off") and the music's volume in percent, and the menu's sounds.
@@ -244,7 +261,7 @@ namespace ps5settings
 		int musicVolume = 50;
 		bool boxArt = true;			  // box art from GameTDB (Settings > Online)
 		bool menuSounds = true;
-		// The side the launcher opens on after a game, the one last played ("wiiu", "3ds" or "ds");
+		// The side the launcher opens on after a game, the one last played ("wiiu", "3ds", "ds" or "switch");
 		// empty: a fresh start.
 		std::string side;
 		// Why the last game did not start, when that needed a fresh process to show (the launcher
@@ -257,13 +274,13 @@ namespace ps5settings
 	bool Save(const Launcher& settings);
 
 	// -- games' own settings -------------------------------------------
-	// side: "wiiu", "3ds" or "ds", as ps5cemu.json names them
+	// side: "wiiu", "3ds", "ds" or "switch", as ps5cemu.json names them
 
 	std::string GameKey(const std::string& side, uint64_t titleId);
 	// The settings a game on a side can have its own of, by their names in ps5cemu.json
 	const std::vector<std::string>& GameSettingNames(const std::string& side);
 	// A side's setting as a number (on and off as 1 and 0), and set from one (clamped as Load clamps).
-	// The Wii U's are the Launcher's own, the 3DS's n3ds', the DS's nds'.
+	// The Wii U's are the Launcher's own, the 3DS's n3ds', the DS's nds', the Switch's nx'.
 	bool Value(const Launcher& settings, const std::string& side, const std::string& name, int& value);
 	void SetValue(Launcher& settings, const std::string& side, const std::string& name, int value);
 	// The settings a game starts with: its side's, with the game's own over them (and hardware shaders

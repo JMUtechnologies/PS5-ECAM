@@ -89,7 +89,7 @@ namespace ps5gameinfo
 
 	bool Find(ps5boxart::System system, const std::string& id, Info& info)
 	{
-		if (id.empty())
+		if (id.empty() || system == ps5boxart::System::Switch) // GameTDB's databases have no Switch games
 			return false;
 		std::lock_guard lock(s_mutex);
 		Database& database = s_databases[system];

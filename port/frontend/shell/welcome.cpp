@@ -69,7 +69,7 @@ namespace ps5shell
 		if (m_welcomeFirst)
 		{
 			pick("ui-language", {"ui-language"});
-			pick("launcher", {"side-wiiu", "side-3ds", "side-ds", "theme"});
+			pick("launcher", {"side-wiiu", "side-3ds", "side-ds", "side-switch", "theme"});
 			faceButtons();
 			pick("audio", {"music"});
 			pick("controls", {"rumble"});
@@ -77,7 +77,7 @@ namespace ps5shell
 		}
 		else
 		{
-			pick("launcher", {"theme", "side-wiiu", "side-3ds", "side-ds"});
+			pick("launcher", {"theme", "side-wiiu", "side-3ds", "side-ds", "side-switch"});
 			faceButtons();
 			if (SideShown(System::WiiU))
 			{

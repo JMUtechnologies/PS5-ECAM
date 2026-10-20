@@ -19,6 +19,7 @@
 #include "../../azahar/azahar.h"
 #include "../../azahar/controls.h"
 #include "../../azahar/library.h"
+#include "../../eden/library.h"
 #include "../../melonds/library.h"
 #include "../../melonds/melonds.h"
 #include "../../ps5/privilege.h"
@@ -107,6 +108,10 @@ namespace ps5shell
 		constexpr int kClocks[] = {25, 50, 75, 100, 125, 150, 200, 300, 400}; // the 3DS's CPU clock, as its in-game menu has them
 		// tr: how the DS's screens are scaled to the TV: the filters' names
 		constexpr const char* kDsFilters[] = {TrMark("Sharp"), TrMark("Smooth"), TrMark("Square pixels")};
+		// the Switch's internal resolutions (Eden's), times the game's own 720p handheld or 1080p docked
+		constexpr const char* kNxResolutions[] = {"0.5x", "0.75x", "1x", "1.5x", "2x", "3x", "4x"};
+		// Eden's upscaling filters, in its order (bilinear, AMD FSR, bicubic, nearest), by kUpscaleFilters' names
+		constexpr int kNxFilters[] = {0, 4, 1, 3};
 
 		// the DualSense buttons a turbo can be on, by the names the settings keep them by (ps5pad::ButtonNamed)
 		constexpr const char* kTurboInputs[] = {"Cross", "Circle", "Square", "Triangle", "L1", "R1", "L2", "R2", "L3", "R3", "Create"};
@@ -179,30 +184,45 @@ namespace ps5shell
 		std::vector<SettingsPage> pages;
 		// the menus' language first, with a globe, which reads in any language
 		pages.push_back({"ui-language", Tr("Language"), Tr("The language of the menus: the PS5's own, unless you choose another."), Icon::Globe});
-		const char* every = IsWiiU() ? Tr("For every Wii U game.") : Is3ds() ? Tr("For every 3DS game.") : Tr("For every DS game.");
+		const char* every = IsWiiU() ? Tr("For every Wii U game.") :
+			Is3ds()					 ? Tr("For every 3DS game.") :
+			IsSwitch()				 ? Tr("For every Switch game.") :
+									   Tr("For every DS game.");
 		pages.push_back({"graphics", Tr("Graphics"), every, Icon::Monitor});
-		if (!IsWiiU())
+		if (Is3ds() || IsDs())
 			pages.push_back({"screens", Tr("Screens"), every, Icon::Screens});
 		pages.push_back({"audio", Tr("Audio"), Tr("The games' sound, and the launcher's."), Icon::Speaker});
-		pages.push_back({"controls", Tr("Controls"), IsWiiU() ? Tr("What each player's DualSense is to the Wii U.") : Is3ds() ? Tr("The DualSense as the 3DS.") : Tr("The DualSense as the DS."),
+		pages.push_back({"controls", Tr("Controls"), IsWiiU() ? Tr("What each player's DualSense is to the Wii U.") :
+				Is3ds()										  ? Tr("The DualSense as the 3DS.") :
+				IsSwitch()									  ? Tr("Vibration, and ProsperoEden's own controls.") :
+																Tr("The DualSense as the DS."),
 			Icon::Pad});
-		pages.push_back({"remote", Tr("Remote touch screen"), Tr("For every side. From dolphin78's idea and prototype."), Icon::Phone});
+		// the remote touch screen is this program's: a Switch game runs in Eden's
+		if (!IsSwitch())
+			pages.push_back({"remote", Tr("Remote touch screen"), Tr("For every side. From dolphin78's idea and prototype."), Icon::Phone});
 		if (IsWiiU())
 			pages.push_back({"usb", Tr("USB devices"), Tr("Cemu's emulated portals."), Icon::Usb});
 		if (!IsWiiU())
-			pages.push_back({"system", Tr("System"), Is3ds() ? Tr("The emulated 3DS's region, language and speed.") : Tr("The emulated DS's language and BIOS."), Icon::Chip});
+			pages.push_back({"system", Tr("System"), Is3ds() ? Tr("The emulated 3DS's region, language and speed.") :
+														   IsSwitch() ? Tr("The emulated Switch: docked or handheld.") :
+																		Tr("The emulated DS's language and BIOS."),
+				Icon::Chip});
 		pages.push_back({"files", Tr("Game files"), IsWiiU() ? Tr("Where your Wii U games are, and installs into the Wii U's storage.") :
 										Is3ds()		 ? Tr("Where your 3DS games are, and installs into the 3DS's storage.") :
+										IsSwitch()	 ? Tr("Where your Switch games are, with its keys and firmware.") :
 													   Tr("Where your DS games are, and where their saves go."),
 			Icon::Folder});
-		// the Wii U's accounts and every side's saves (6.13); a handheld has one player, so its page is saves alone
-		pages.push_back({"saves", IsWiiU() ? Tr("Accounts and saves") : Tr("Saves"),
-			IsWiiU() ? Tr("Each account has its own saves for every game. Backups hold every side's saves.") : Tr("Backups hold every side's saves."),
-			Icon::Save});
+		// the Wii U's accounts and every side's saves (6.13); a handheld has one player, so its page is saves alone.
+		// A Switch game's saves are Eden's, in its own folder
+		if (!IsSwitch())
+			pages.push_back({"saves", IsWiiU() ? Tr("Accounts and saves") : Tr("Saves"),
+				IsWiiU() ? Tr("Each account has its own saves for every game. Backups hold every side's saves.") : Tr("Backups hold every side's saves."),
+				Icon::Save});
 		if (Is3ds())
 			pages.push_back({"artic", Tr("Artic Base"), Tr("Play from your 3DS, over your network."), Icon::Artic});
 		pages.push_back({"online", Tr("Online"), IsWiiU() ? Tr("Box art, graphic packs and PS5CEMU-HAR's updates.") :
 										   IsDs()	 ? Tr("Box art, RetroAchievements and PS5CEMU-HAR's updates.") :
+										   IsSwitch() ? Tr("PS5CEMU-HAR's updates.") :
 													   Tr("Box art and PS5CEMU-HAR's updates."),
 			Icon::Globe});
 		pages.push_back({"launcher", Tr("Launcher"), Tr("Theme, sides, language and text."), Icon::Sparkle});
@@ -218,8 +238,9 @@ namespace ps5shell
 		for (const SettingsPage& page : pages)
 			if (page.id == "graphics" || page.id == "screens" || page.id == "audio" || page.id == "system")
 				game.push_back({page.id, page.title, TrF("For {0} only. Its other settings follow its side's.", m_gameName), page.icon});
-		// its saves alone (6.15), whatever settings it has of its own
-		game.push_back({"gamesaves", Tr("Saves"), TrF("{0}'s saves only. Settings has every side's.", m_gameName), Icon::Save});
+		// its saves alone (6.15), whatever settings it has of its own (a Switch game's are Eden's)
+		if (!IsSwitch())
+			game.push_back({"gamesaves", Tr("Saves"), TrF("{0}'s saves only. Settings has every side's.", m_gameName), Icon::Save});
 		return game;
 	}
 
@@ -372,7 +393,7 @@ namespace ps5shell
 	std::vector<Row> Shell::SideRows(const std::string& page, const ps5settings::Launcher& settings)
 	{
 		using Kind = Row::Kind;
-		const ps5settings::N3ds& hand = m_side == System::Nds ? settings.nds : settings.n3ds;
+		const ps5settings::N3ds& hand = m_side == System::Nds ? settings.nds : m_side == System::Switch ? settings.nx : settings.n3ds;
 		std::vector<Row> rows;
 		auto toggle = [&](const char* id, const std::string& label, bool on, const std::string& description, const std::string& help) {
 			Row row;
@@ -511,6 +532,30 @@ namespace ps5shell
 			toggle("performance-hand", Tr("Performance overlay"), hand.performance, Tr("The frame rate and the emulation's speed, in the top left corner."),
 				Tr("The frame rate and the emulation's speed, in the top left corner."));
 		}
+		else if (page == "graphics" && IsSwitch())
+		{
+			own(choice("nx-resolution", Tr("Internal resolution"), Options(kNxResolutions), hand.nxResolution, Tr("Higher is sharper and asks more of the GPU."),
+					Tr("How large Eden draws a game before it is scaled to the TV, against the game's own picture: 1x is 1080p docked and 720p "
+					   "handheld. Higher is sharper and asks more of the GPU; 3x and 4x need the graphics memory for it. Applies to the next game."),
+					Kind::Stepper),
+				"nxResolution");
+			std::vector<std::string> filters;
+			for (int filter : kNxFilters)
+				filters.push_back(Tr(kUpscaleFilters[filter]));
+			own(choice("nx-filter", Tr("Upscaling to 4K"), filters, hand.nxFilter, Tr("How the picture is scaled to the TV."),
+					Tr("Bilinear is soft, Bicubic sharper; Nearest neighbour keeps pixels square. AMD FSR 1 keeps edges clean for a game drawn "
+					   "below 4K, for a little more work by the GPU.")),
+				"nxFilter");
+			own(choice("nx-astc", Tr("ASTC textures"), {Tr("Compressed"), Tr("Full quality")}, hand.nxAstc,
+					Tr("Compressed saves graphics memory; full quality looks best."),
+					Tr("Many Switch games keep their textures in ASTC, which the PS5's GPU cannot read: Eden converts them. Compressed keeps them "
+					   "small, as BC3; full quality keeps them as they are, at four times the graphics memory, for a game whose textures look "
+					   "blocky. Applies to the next game."),
+					Kind::Segmented),
+				"nxAstc");
+			toggle("performance-hand", Tr("Performance overlay"), hand.performance, Tr("The frame rate and the emulation's speed, in the top left corner."),
+				Tr("The frame rate and the emulation's speed, in the top left corner."));
+		}
 		else if (page == "graphics")
 		{
 			own(choice("dsfilter", Tr("Screen filter"), Options(kDsFilters), hand.dsFilter, Tr("How the DS's screens are scaled."),
@@ -542,7 +587,7 @@ namespace ps5shell
 		}
 		else if (page == "audio")
 		{
-			own(slider("volume", IsWiiU() ? Tr("Wii U games' volume") : Is3ds() ? Tr("3DS games' volume") : Tr("DS games' volume"),
+			own(slider("volume", IsWiiU() ? Tr("Wii U games' volume") : Is3ds() ? Tr("3DS games' volume") : IsSwitch() ? Tr("Switch games' volume") : Tr("DS games' volume"),
 					IsWiiU() ? settings.volume : hand.volume, 100, Tr("The games' sound."), Tr("The games' sound on this side. Left and Right change it by 10%.")),
 				"volume");
 			if (IsWiiU())
@@ -567,6 +612,13 @@ namespace ps5shell
 		{
 			toggle("rumble", Tr("Vibration"), settings.rumble, Tr("The DualSense's rumble, in games and in the launcher."),
 				Tr("Off, the DualSense never rumbles, in games or in the launcher. The same on every side."));
+			// a Switch game's buttons are Eden's: its own launcher sets them
+			if (IsSwitch())
+				action(Kind::Link, "eden-controls", Tr("Buttons and controllers"), "ProsperoEden", Tr("Set in ProsperoEden's own Settings > Controls."),
+					Tr("Eden plays Switch games in a program of its own, ProsperoEden's: which DualSense button presses each of the Switch's, the "
+					   "controller a game sees (Pro Controller, Joy-Cons or handheld) and each game's own are in its Settings > Controls. Cross "
+					   "opens it; leaving it comes back here."));
+			else
 			{
 				int index = 0;
 				auto options = TurboOptions(IsWiiU() ? settings.turbo : hand.turbo, index);
@@ -575,7 +627,7 @@ namespace ps5shell
 					   "for games that make you mash. The button keeps whatever it is mapped to. None turns it off. Every player on this side "
 					   "has it."));
 			}
-			if (!IsWiiU())
+			if (Is3ds() || IsDs())
 			{
 				const bool aOnCircle = ps5azahar::MappedInput(hand, ps5azahar::Button::A) == ps5emu::PadInput::Circle;
 				choice("abbuttons", Tr("A and B"), {Tr("A on Circle"), Tr("A on Cross")}, aOnCircle ? 0 : 1,
@@ -598,7 +650,7 @@ namespace ps5shell
 					cemu(row);
 				}
 			}
-			else
+			else if (!IsSwitch())
 			{
 				if (Is3ds())
 					toggle("motion", Tr("Motion controls"), hand.motion, Tr("The DualSense's motion as the 3DS's."),
@@ -678,6 +730,16 @@ namespace ps5shell
 				Tr("Starts the 3DS Home Menu, once Artic Base's setup has copied your own console's system files (Artic Base)."));
 			row->dimmed = !homeMenu;
 		}
+		else if (page == "system" && IsSwitch())
+		{
+			// tr: the emulated Switch's console mode: in its dock, or handheld
+			own(choice("nx-docked", Tr("Console mode"), {TrC("switch mode", "Docked"), TrC("switch mode", "Handheld")}, hand.nxDocked ? 0 : 1,
+					Tr("Docked: the TV's picture. Handheld: the console's own screen's."),
+					Tr("Docked, games draw for a TV, at their sharpest (1080p for most); handheld, for the console's own screen (720p), which "
+					   "asks less of the GPU. A few games look or play differently in each. Applies to the next game."),
+					Kind::Segmented),
+				"nxDocked");
+		}
 		else if (page == "system")
 		{
 			own(choice("language", Tr("Language"), Options(kLanguages), hand.language + 1, Tr("The emulated DS's language."),
@@ -695,7 +757,8 @@ namespace ps5shell
 		else if (page == "files")
 		{
 			const std::string& folder = GamesFolder(m_side);
-			action(Kind::Link, "folder", Is3ds() ? Tr("3DS games") : IsDs() ? Tr("DS games") : Tr("Wii U games"), ShortPath(folder, 34),
+			action(Kind::Link, "folder", Is3ds() ? Tr("3DS games") : IsDs() ? Tr("DS games") : IsSwitch() ? Tr("Switch games") : Tr("Wii U games"),
+				ShortPath(IsSwitch() ? ps5eden::ScanFolder(folder) : folder, 34),
 				Tr("Where your games are. Cross picks another."),
 				// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
 				IsWiiU() ? TrF("Your Wii U games: .wua, .wud, .wux, or folders with code, content and meta, alone or in .zip, .7z or .rar archives. "
@@ -703,9 +766,31 @@ namespace ps5shell
 				Is3ds()	 ? Tr("Your 3DS games: .3ds or .cci, .cxi, .3dsx and Azahar's compressed dumps, decrypted, alone or in .zip, .7z or .rar "
 						   "archives, here or in the folders in it. CIA files are installed (Install a CIA file). Encrypted dumps do not start, "
 						   "with keys or without: decrypt them on your 3DS first (GodMode9).") :
+				IsSwitch() ? Tr("Your Switch games: .nsp and .xci files, alone or each in a folder of its own with its update and DLC. Eden's own "
+							   "folder is the default: ProsperoEden's library lists the same games.") :
 						   Tr("Your DS games: .nds files, alone or in .zip, .7z or .rar archives, here or in the folders in it."));
 			action(Kind::Action, "rescan", Tr("Look for games now"), m_scanning ? Tr("Looking…") : "", Tr("This side's folder, again."),
 				Tr("Looks through this side's folder again, as it does each time the side opens."));
+			if (IsSwitch())
+			{
+				// Eden's own files: the keys and firmware it needs, and its launcher for the rest
+				const std::string files = ps5eden::GameFilesFolder();
+				const bool keys = ps5eden::KeysFound(), firmware = ps5eden::FirmwareFound();
+				action(Kind::Action, "nxkeys", Tr("Switch keys"), keys ? std::string(Tr("prod.keys found")) : std::string(Tr("Missing")),
+					keys ? Tr("Eden can read your games.") : Tr("prod.keys is missing: Eden cannot read Switch games without it"),
+					TrF("Eden reads Switch games with your own console's keys: prod.keys (and title.keys), dumped from your Switch, in "
+						"{0}/keys. No keys come with PS5CEMU-HAR.",
+						files));
+				action(Kind::Action, "nxfirmware", Tr("Switch firmware"), firmware ? std::string(Tr("Found")) : std::string(Tr("Missing")),
+					firmware ? Tr("Games that need the system's files start.") : Tr("No firmware yet: many games need it to start"),
+					TrF("Many Switch games need the console's own system files: its firmware's .nca files, dumped from your Switch, "
+						"in {0}/firmware. No firmware comes with PS5CEMU-HAR.",
+						files));
+				action(Kind::Link, "eden", Tr("Open ProsperoEden"), "", Tr("Updates and DLC, mods, cheats, profiles and more."),
+					Tr("ProsperoEden's own launcher, which Eden comes with: its library and game files, updates and DLC, mods and cheats, each "
+					   "game's own settings, profiles, rooms and downloads. Leaving it comes back here."));
+			}
+			else
 			{
 				// network shares (6.14): a folder on one can be this side's
 				const size_t shares = ps5netfs::shares().size();
@@ -850,10 +935,13 @@ namespace ps5shell
 				"into Azahar, for the Home Menu and the games that need them."));
 		else if (page == "online")
 		{
-			toggle("boxart", Tr("Box art from GameTDB"), settings.boxArt, Tr("Covers for the library, downloaded once."),
-				Tr("The first time a game shows up, its cover is downloaded from GameTDB (art.gametdb.com) by the ID on its box. Off: nothing "
-				"more is downloaded."));
+			// GameTDB has no Switch games: their covers are Eden's
+			if (!IsSwitch())
+				toggle("boxart", Tr("Box art from GameTDB"), settings.boxArt, Tr("Covers for the library, downloaded once."),
+					Tr("The first time a game shows up, its cover is downloaded from GameTDB (art.gametdb.com) by the ID on its box. Off: nothing "
+					"more is downloaded."));
 			// downloading the covers now: the missing ones, or every one again
+			if (!IsSwitch())
 			{
 				int missing = 0;
 				for (const Game& game : m_games)
@@ -935,6 +1023,9 @@ namespace ps5shell
 			toggle("side-ds", Tr("DS side"), SideShown(System::Nds), Tr("melonDS's games, in the bar."),
 				Tr("Whether the bar shows the DS side (melonDS). Hidden, its games and settings are kept and come back when it is turned on "
 				   "again. At least one side stays on."));
+			toggle("side-switch", Tr("Switch side"), SideShown(System::Switch), Tr("Eden's games, in the bar."),
+				Tr("Whether the bar shows the Switch side (Eden). Hidden, its games and settings are kept and come back when it is turned on "
+				   "again. At least one side stays on."));
 			toggle("pictures", Tr("Game pictures behind menus"), settings.ui.gamePictures, Tr("The focused game's cover, softened, behind the screens."),
 				Tr("The focused game's picture fills the screen behind the menus, softened and dimmed, so moving the focus changes the whole "
 				"screen. Off: the game's colours only."));
@@ -970,7 +1061,7 @@ namespace ps5shell
 					Tr("For a game that crashes on a bad cache."),
 					Tr("Deletes Azahar's shader caches. Games build them again as they run: the first minutes stutter."));
 			// the 3DS's and the Wii U's games unpacked from archives (app/game_archives.h): one cache for both
-			if (!IsDs())
+			if (IsWiiU() || Is3ds())
 			{
 				if (m_now - m_unpackedAt > 3)
 				{
@@ -1154,6 +1245,11 @@ namespace ps5shell
 					   "wiiu, n3ds and nds (each side's), glass, line, good, warn, bad and focus, as #rrggbb. corners: 0 square to 1.5 round. "
 					   "motif: side, none, slashes or grid.",
 				ps5paths::Root());
+		if (page == "files" && IsSwitch())
+			// tr: {0} is Eden's data folder; {1} its game files folder (the same one unless ProsperoEden chose another)
+			return TrF("Saves: {0}/user/nand/user/save. Updates and DLC: beside a game, in its own folder, or in {1}/updates. Mods and "
+					   "cheats: {1}/mods. Covers and names: {0}/covers, once Eden has read a game. ProsperoEden's own launcher has the rest.",
+				ps5eden::DataFolder(), ps5eden::GameFilesFolder());
 		if (page == "files" && IsDs())
 			// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
 			return TrF("Saves: {0}/melonds/saves (a .sav beside the game is taken the first time). Save states: melonds/states. Cheats: "
@@ -1217,7 +1313,7 @@ namespace ps5shell
 
 	void Shell::SetRowIndex(ps5settings::Launcher& settings, const std::string& id, int index)
 	{
-		ps5settings::N3ds& hand = m_side == System::Nds ? settings.nds : settings.n3ds;
+		ps5settings::N3ds& hand = m_side == System::Nds ? settings.nds : m_side == System::Switch ? settings.nx : settings.n3ds;
 		if (id == "music")
 		{
 			const std::vector<std::string> values = MusicValues(nullptr);
@@ -1245,6 +1341,14 @@ namespace ps5shell
 			hand.cpuClock = kClocks[std::clamp(index, 0, (int)std::size(kClocks) - 1)];
 		else if (id == "dsfilter")
 			hand.dsFilter = std::clamp(index, 0, 2);
+		else if (id == "nx-resolution")
+			hand.nxResolution = std::clamp(index, 0, 6);
+		else if (id == "nx-filter")
+			hand.nxFilter = std::clamp(index, 0, 3);
+		else if (id == "nx-astc")
+			hand.nxAstc = std::clamp(index, 0, 1);
+		else if (id == "nx-docked")
+			hand.nxDocked = index == 0;
 		else if (id == "theme")
 			settings.ui.theme = index >= 0 && index < (int)m_themes.size() ? m_themes[index].id : "";
 		else if (id == "abeverywhere")
@@ -1286,7 +1390,7 @@ namespace ps5shell
 
 	bool Shell::ApplyRow(ps5settings::Launcher& settings, const Row& row, int step, bool cross)
 	{
-		ps5settings::N3ds& hand = m_side == System::Nds ? settings.nds : settings.n3ds;
+		ps5settings::N3ds& hand = m_side == System::Nds ? settings.nds : m_side == System::Switch ? settings.nx : settings.n3ds;
 		const std::string& id = row.id;
 		switch (row.kind)
 		{
@@ -1298,9 +1402,9 @@ namespace ps5shell
 				return false;
 			}
 			const bool on = !row.on;
-			if (id == "side-wiiu" || id == "side-3ds" || id == "side-ds")
+			if (id == "side-wiiu" || id == "side-3ds" || id == "side-ds" || id == "side-switch")
 			{
-				const int bit = id == "side-wiiu" ? 1 : id == "side-3ds" ? 2 : 4;
+				const int bit = id == "side-wiiu" ? 1 : id == "side-3ds" ? 2 : id == "side-ds" ? 4 : 8;
 				const int sides = on ? settings.ui.sides | bit : settings.ui.sides & ~bit;
 				if (sides == 0)
 				{
@@ -1438,7 +1542,7 @@ namespace ps5shell
 			m_feedback.SetLight(Accent());
 			LibraryRefresh(); // Meyer Oscar's Library has no filters, the others' have
 		}
-		if (id == "side-wiiu" || id == "side-3ds" || id == "side-ds")
+		if (id == "side-wiiu" || id == "side-3ds" || id == "side-ds" || id == "side-switch")
 			SidesChanged();
 		if (id == "accountperuser" && m_settings.accountPerUser)
 			UseOwnAccount();
@@ -1702,6 +1806,8 @@ namespace ps5shell
 				ps5azahar::StartScan(hand.gamesFolder);
 			else if (IsDs())
 				ps5melonds::StartScan(hand.gamesFolder);
+			else if (IsSwitch())
+				ps5eden::StartScan(hand.gamesFolder);
 			else if (m_status.coreReady)
 				ps5emu::Rescan();
 			m_scanning = CoreReady();
@@ -1740,6 +1846,10 @@ namespace ps5shell
 		}
 		else if (id == "player")
 			PlayerOpen(row.index);
+		else if (id == "eden" || id == "eden-controls")
+			OpenEden();
+		else if (id == "nxkeys" || id == "nxfirmware")
+			OpenHelp(row.label, row.help);
 		else if (id == "install")
 			UpdatesOpen(0, ScreenId::Settings); // Updates and DLC: what the drives have (6.12)
 		else if (id == "installcia")
@@ -1974,7 +2084,7 @@ namespace ps5shell
 				else
 				{
 					ShowTab(ScreenId::Library);
-					m_barFocus = 3;
+					m_barFocus = kSides;
 				}
 				break;
 			case Button::Left:

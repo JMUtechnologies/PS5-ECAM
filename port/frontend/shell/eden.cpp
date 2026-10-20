@@ -61,9 +61,9 @@ namespace ps5shell
 		constexpr Box kExplain{1424, 160, 400, 792};
 		// the opening: the launch picture held, then handed over to the launcher
 		constexpr float kReveal = 0.55f, kHandover = 0.8f;
-		// where the PS5's launch picture (sce_sys/pic0.dds, tools/render-presentation.py) has its consoles:
-		// the GamePad, the 3DS, the DS
-		constexpr float kConsoles[3][2] = {{320, 315}, {960, 315}, {1600, 315}};
+		// where the PS5's launch picture (sce_sys/pic0.dds, tools/render-presentation.py, which prints them) has the logo's squares:
+		// the GamePad, the 3DS, the DS, the Switch
+		constexpr float kConsoles[ps5launcher::kSideCount][2] = {{398, 346}, {570, 346}, {398, 518}, {570, 518}};
 
 		// tr: the Library's orders (Square), as library.cpp names them
 		constexpr const char* kSortNames[] = {TrMark("Recently played"), TrMark("A to Z"), TrMark("Release year"), TrMark("How it runs")};
@@ -138,7 +138,7 @@ namespace ps5shell
 	std::vector<System> Shell::RailSides() const
 	{
 		std::vector<System> sides;
-		for (System side : {System::WiiU, System::N3ds, System::Nds})
+		for (System side : {System::WiiU, System::N3ds, System::Nds, System::Switch})
 			if (SideShown(side))
 				sides.push_back(side);
 		return sides;
@@ -281,8 +281,8 @@ namespace ps5shell
 	{
 		// each side's square with its console's glyph in it (tools/render-icons.py), plain colour until
 		// the picture has loaded
-		static const std::string kTiles[3] = {ps5paths::Assets() + "/ui/icons/ps5cemu-72.tga", ps5paths::Assets() + "/ui/icons/azahar-72.tga",
-			ps5paths::Assets() + "/ui/icons/melonds-72.tga"};
+		static const std::string kTiles[kSides] = {ps5paths::Assets() + "/ui/icons/ps5cemu-72.tga", ps5paths::Assets() + "/ui/icons/azahar-72.tga",
+			ps5paths::Assets() + "/ui/icons/melonds-72.tga", ps5paths::Assets() + "/ui/icons/eden-72.tga"};
 		const ui::Picture& picture = m_images->Get(kTiles[SideIndex(side)]);
 		if (picture.texture)
 			canvas.Image(picture.texture, box, radius, tint);
@@ -324,10 +324,12 @@ namespace ps5shell
 			canvas.LinearGradient({0, 0, width, 1080}, 0, ui::SetAlpha(kInk1, 0.9f + 0.1f * open), ui::SetAlpha(kInk0, 0.94f + 0.06f * open), 0, 0, 0, 1080);
 		canvas.Rect({width - 1.5f, 0, 1.5f, 1080}, 0, ui::WithAlpha(kGlassEdge, 0.7f + 0.3f * open));
 
-		// the mark: the three sides' squares, as the bar has them (the opening brings them here)
-		SideTile(canvas, System::WiiU, {28, 38, 36, 36}, 9, 0xffffffff);
-		SideTile(canvas, System::N3ds, {54, 47, 36, 36}, 9, 0xebffffff);
-		SideTile(canvas, System::Nds, {39, 68, 36, 36}, 9, 0xebffffff);
+		// the mark: the four sides' squares as a window's panes, as the bar has them (the opening brings
+		// them here)
+		SideTile(canvas, System::WiiU, {30, 38, 30, 30}, 8, 0xffffffff);
+		SideTile(canvas, System::N3ds, {64, 38, 30, 30}, 8, 0xebffffff);
+		SideTile(canvas, System::Nds, {30, 72, 30, 30}, 8, 0xebffffff);
+		SideTile(canvas, System::Switch, {64, 72, 30, 30}, 8, 0xebffffff);
 		if (open > 0.01f)
 		{
 			canvas.PushAlpha(open);
@@ -557,7 +559,7 @@ namespace ps5shell
 
 	int Shell::EdenContinueGame() const
 	{
-		const uint64_t last = m_side == System::N3ds ? m_settings.n3ds.lastGame : m_side == System::Nds ? m_settings.nds.lastGame : m_settings.lastGame;
+		const uint64_t last = m_side == System::WiiU ? m_settings.lastGame : Handheld(m_side).lastGame;
 		int game = last ? FindGame(last) : -1;
 		if (game < 0 && !m_recent.empty() && m_recent[0] < (int)m_games.size())
 			game = m_recent[0];
@@ -572,7 +574,7 @@ namespace ps5shell
 				std::find(games.begin(), games.end(), game) == games.end())
 				games.push_back(game);
 		};
-		const auto& recent = m_side == System::N3ds ? m_settings.n3ds.recent : m_side == System::Nds ? m_settings.nds.recent : m_settings.recent;
+		const auto& recent = m_side == System::WiiU ? m_settings.recent : Handheld(m_side).recent;
 		for (uint64_t titleId : recent)
 			add(FindGame(titleId));
 		for (int game : m_recent)
@@ -1804,12 +1806,13 @@ namespace ps5shell
 
 		// the mark, the name, the version
 		EdenArrive(canvas, 1, 24);
-		SideTile(canvas, System::WiiU, {kLeft, 160, 78, 78}, 20, 0xffffffff);
-		SideTile(canvas, System::N3ds, {kLeft + 56, 178, 78, 78}, 20, 0xf2ffffff);
-		SideTile(canvas, System::Nds, {kLeft + 24, 222, 78, 78}, 20, 0xf2ffffff);
+		SideTile(canvas, System::WiiU, {kLeft, 158, 70, 70}, 16, 0xffffffff);
+		SideTile(canvas, System::N3ds, {kLeft + 78, 158, 70, 70}, 16, 0xf2ffffff);
+		SideTile(canvas, System::Nds, {kLeft, 236, 70, 70}, 16, 0xf2ffffff);
+		SideTile(canvas, System::Switch, {kLeft + 78, 236, 70, 70}, 16, 0xf2ffffff);
 		canvas.Text(Style({56, ui::Weight::Bold, 1.0f}), kLeft + 176, 168, "PS5CEMU-HAR", kText, 900, 1);
 		canvas.Text(Style({24, ui::Weight::Medium, 1.0f}), kLeft + 176, 240,
-			std::string(Tr("Version")) + " " + ps5update::Readable(PS5CEMU_VERSION) + "  ·  Wii U, 3DS, DS", Secondary(), 900, 1);
+			std::string(Tr("Version")) + " " + ps5update::Readable(PS5CEMU_VERSION) + "  ·  Wii U, 3DS, DS, Switch", Secondary(), 900, 1);
 		EdenLeave(canvas);
 
 		// who made what, in a panel

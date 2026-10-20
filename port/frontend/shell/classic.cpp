@@ -23,6 +23,7 @@
 #include "../../app/emulator.h"
 #include "../../app/paths.h"
 #include "../../app/updates.h"
+#include "../../eden/library.h"
 
 #include <algorithm>
 #include <cmath>
@@ -490,7 +491,7 @@ namespace ps5shell
 					{"DLC", entry.dlcCount ? TrP((long long)entry.dlcCount, "{0} installed", "{0} installed") : std::string(Tr("None"))}};
 			}
 			else
-				facts = {{Tr("Title ID"), IsDs() ? entry.gameId : Hex(entry.titleId)}, {Tr("Publisher"), entry.publisher.empty() ? "-" : entry.publisher},
+				facts = {{Tr("Title ID"), ShownId(entry).empty() ? std::string("-") : ShownId(entry)}, {Tr("Publisher"), entry.publisher.empty() ? "-" : entry.publisher},
 					{Tr("Format"), entry.format}};
 			const float fx = 1336, fw = kRightPanel.Right() - 22 - fx;
 			float y = 392;
@@ -670,11 +671,15 @@ namespace ps5shell
 			canvas.Text(Style(Caps(20)), x, kRightPanel.y + 24, Tr("Getting started"), Secondary(), width, 1);
 			canvas.Text(Style({40, ui::Weight::Regular, 1.1f}), x, kRightPanel.y + 64, Tr("Supply your own files"), kText, width, 1);
 			const std::string saves = IsWiiU() ? ps5paths::Mlc() :
-				Is3ds()							   ? ps5paths::Root() + "/azahar/sdmc" :
-													 ps5paths::Root() + "/melonds/saves";
-			std::vector<std::pair<std::string, std::string>> paths = {{Tr("Games"), GamesFolder(m_side)}, {Tr("Saves"), saves}};
+				Is3ds()     ? ps5paths::Root() + "/azahar/sdmc" :
+				IsSwitch()  ? ps5eden::DataFolder() + "/user/nand/user/save" :
+				              ps5paths::Root() + "/melonds/saves";
+			std::vector<std::pair<std::string, std::string>> paths = {
+				{Tr("Games"), IsSwitch() ? ps5eden::ScanFolder(GamesFolder(m_side)) : GamesFolder(m_side)}, {Tr("Saves"), saves}};
 			if (IsWiiU())
 				paths.insert(paths.begin() + 1, {Tr("Keys"), ps5paths::Root() + "/keys.txt"});
+			if (IsSwitch())
+				paths.insert(paths.begin() + 1, {Tr("Keys"), ps5eden::GameFilesFolder() + "/keys"});
 			// the paths in a column at the left, the support card beside them
 			const Box card{kRightPanel.Right() - 30 - 380, kRightPanel.y + 130, 380, 560};
 			const float column = card.x - 30 - x;

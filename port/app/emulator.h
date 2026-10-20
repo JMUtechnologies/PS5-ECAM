@@ -109,6 +109,11 @@ namespace ps5emu
 	// goes back to its shelf the same way. Each place the app can be started from is tried in turn;
 	// returns only if none took, once a notification has said so.
 	void RestartToLibrary();
+	// One of the app's own programs in place of this process (sceSystemServiceLoadExec): program is its
+	// path in the app's folder ("eboot.bin", or the Switch side's "eden/eboot.bin"), args its arguments;
+	// withReturn adds "--return <that folder>/eboot.bin", the way back to this program. Each place the
+	// app can be started from is tried in turn, as for RestartToLibrary; returns only if none took.
+	void LoadExecApp(const std::string& program, const std::vector<std::string>& args, bool withReturn);
 	// Closes PS5Cemu, back to the PS5's home screen (sceSystemServiceLoadExec("exit")), after the game
 	// of a home screen tile that asked for it (--exit-after-game). Returns only if the console refused.
 	void ExitApp();

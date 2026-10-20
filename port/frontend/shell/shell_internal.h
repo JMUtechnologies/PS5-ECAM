@@ -9,6 +9,7 @@
 #pragma once
 
 #include "../shell.h"
+#include "../actions.h"
 #include "../../app/boxart.h"
 #include "../../app/catalog.h"
 #include "../../app/compatibility.h"
@@ -149,6 +150,8 @@ namespace ps5shell
 		void DrawBubbles(Canvas& canvas, float alpha); // the Wii U side's motif, rising
 		void DrawWaves(Canvas& canvas, float alpha);   // the 3DS side's, rolling
 		void DrawPixels(Canvas& canvas, float alpha);  // the DS side's, rounded pixels rising
+		void DrawJoyCons(Canvas& canvas, float alpha); // the Switch side's, rounded bars drifting in pairs
+		void DrawSideMotif(Canvas& canvas, float alpha); // the side's own of the four
 		void DrawBar(Canvas& canvas, bool tabs);
 		void DrawHints(Canvas& canvas, const std::vector<Hint>& hints);
 		void DrawOverlays(Canvas& canvas);
@@ -160,40 +163,72 @@ namespace ps5shell
 		bool IsWiiU() const { return m_side == System::WiiU; }
 		bool Is3ds() const { return m_side == System::N3ds; }
 		bool IsDs() const { return m_side == System::Nds; }
-		static int SideIndex(System side) { return (int)side; } // 0 Wii U, 1 3DS, 2 DS: the bar's order
+		bool IsSwitch() const { return m_side == System::Switch; }
+		static constexpr int kSides = ps5launcher::kSideCount;
+		static int SideIndex(System side) { return (int)side; } // 0 Wii U, 1 3DS, 2 DS, 3 Switch: the bar's order
 		int SideIndex() const { return SideIndex(m_side); }
-		static System NextSide(System side) { return (System)((SideIndex(side) + 1) % 3); }
+		static System NextSide(System side) { return (System)((SideIndex(side) + 1) % kSides); }
 		// the sides the bar offers (Settings > Launcher, ui.sides): at least one
 		bool SideShown(System side) const { return m_settings.ui.sides & (1 << SideIndex(side)); }
-		int SidesShown() const { return (m_settings.ui.sides & 1) + (m_settings.ui.sides >> 1 & 1) + (m_settings.ui.sides >> 2 & 1); }
+		int SidesShown() const
+		{
+			int shown = 0;
+			for (int i = 0; i < kSides; i++)
+				shown += m_settings.ui.sides >> i & 1;
+			return shown;
+		}
 		System NextShownSide(System side) const;
 		System FirstShownSide() const;
 		void SidesChanged(); // a side hidden while open: the first one shown instead
 		static const char* SideTitle(System side) { return ps5launcher::SideTitle(side); }
-		static const char* SystemName(System side) { return side == System::N3ds ? "Nintendo 3DS" : side == System::Nds ? "Nintendo DS" : "Wii U"; }
-		static const char* EmulatorName(System side) { return side == System::N3ds ? "Azahar" : side == System::Nds ? "melonDS" : "Cemu"; }
+		static const char* SystemName(System side)
+		{
+			return side == System::N3ds ? "Nintendo 3DS" : side == System::Nds ? "Nintendo DS" : side == System::Switch ? "Nintendo Switch" : "Wii U";
+		}
+		static const char* EmulatorName(System side)
+		{
+			return side == System::N3ds ? "Azahar" : side == System::Nds ? "melonDS" : side == System::Switch ? "Eden" : "Cemu";
+		}
 		ps5catalog::System CatalogSide() const { return (ps5catalog::System)SideIndex(); }
 		static ps5boxart::System BoxSide(System side)
 		{
-			return side == System::N3ds ? ps5boxart::System::N3ds : side == System::Nds ? ps5boxart::System::Nds : ps5boxart::System::WiiU;
+			return side == System::N3ds ? ps5boxart::System::N3ds : side == System::Nds ? ps5boxart::System::Nds :
+				side == System::Switch	? ps5boxart::System::Switch :
+										  ps5boxart::System::WiiU;
 		}
 		ps5boxart::System BoxOf(const ps5emu::Game&) const { return BoxSide(m_side); }
 		bool CoreReady() const { return !IsWiiU() || m_status.coreReady; }
-		const std::string& Notice() const { return Is3ds() ? m_status.notice3ds : IsDs() ? m_status.noticeDs : m_status.notice; }
+		// what a game's ID shows as: its title ID, a DS game's game code (the ID it is given stays out of
+		// sight), a Switch game's title ID when its file's name has one (not the one made from its path,
+		// ps5eden::kIdTag), else nothing
+		std::string ShownId(const ps5emu::Game& game) const
+		{
+			if (IsDs())
+				return game.gameId;
+			if (IsSwitch() && (game.titleId >> 56) == 0x5A)
+				return {};
+			return ps5actions::Hex(game.titleId);
+		}
+		const std::string& Notice() const
+		{
+			return Is3ds() ? m_status.notice3ds : IsDs() ? m_status.noticeDs : IsSwitch() ? m_status.noticeSwitch : m_status.notice;
+		}
 		bool SystemScanning() const;
 		uint32_t Accent() const { return AccentOf(m_side); }
-		static uint32_t AccentOf(System side) { return side == System::N3ds ? ui::tokens::kN3ds : side == System::Nds ? ui::tokens::kNds : ui::tokens::kWiiu; }
-		std::string& GamesFolder(System side)
+		static uint32_t AccentOf(System side)
 		{
-			return side == System::N3ds ? m_settings.n3ds.gamesFolder : side == System::Nds ? m_settings.nds.gamesFolder : m_settings.gamesFolder;
+			return side == System::N3ds ? ui::tokens::kN3ds : side == System::Nds ? ui::tokens::kNds : side == System::Switch ? ui::tokens::kNx : ui::tokens::kWiiu;
 		}
-		const std::string& GamesFolder(System side) const
+		std::string& GamesFolder(System side) { return side == System::WiiU ? m_settings.gamesFolder : Handheld(side).gamesFolder; }
+		const std::string& GamesFolder(System side) const { return side == System::WiiU ? m_settings.gamesFolder : Handheld(side).gamesFolder; }
+		// a handheld side's settings (the 3DS's, the DS's or the Switch's: the same shape)
+		ps5settings::N3ds& Handheld(System side) { return side == System::Nds ? m_settings.nds : side == System::Switch ? m_settings.nx : m_settings.n3ds; }
+		const ps5settings::N3ds& Handheld(System side) const
 		{
-			return side == System::N3ds ? m_settings.n3ds.gamesFolder : side == System::Nds ? m_settings.nds.gamesFolder : m_settings.gamesFolder;
+			return side == System::Nds ? m_settings.nds : side == System::Switch ? m_settings.nx : m_settings.n3ds;
 		}
-		// a handheld side's settings (the 3DS's or the DS's: the same shape)
-		ps5settings::N3ds& Handheld(System side) { return side == System::Nds ? m_settings.nds : m_settings.n3ds; }
-		uint64_t& LastGame(System side) { return side == System::N3ds ? m_settings.n3ds.lastGame : side == System::Nds ? m_settings.nds.lastGame : m_settings.lastGame; }
+		uint64_t& LastGame(System side) { return side == System::WiiU ? m_settings.lastGame : Handheld(side).lastGame; }
+		std::vector<uint64_t>& RecentOf(System side) { return side == System::WiiU ? m_settings.recent : Handheld(side).recent; }
 		void OpenSide(System side, bool first);
 		void SwitchSide(System side);
 		void LoadGames();
@@ -230,6 +265,9 @@ namespace ps5shell
 		void PollUnpacking();
 		void StopUnpacking(); // and joins its thread
 		void Toast(const std::string& text);
+		// the Switch side: Eden's own launcher (its mods, cheats, updates and DLC, profiles, rooms), which
+		// comes back here when it is left
+		void OpenEden();
 
 		// -- shared drawing (widgets.cpp) ----------------------------------------------------------
 		ui::TextStyle Style(ui::TextStyle style) const; // larger text, when asked for
@@ -593,7 +631,7 @@ namespace ps5shell
 		ScreenId m_screen = ScreenId::Library;
 		ScreenId m_tab = ScreenId::Library;
 		bool m_onBar = false;
-		int m_barFocus = 1; // 0 the side switch, 1 Library, 2 Settings
+		int m_barFocus = kSides; // the sides (0 to kSides - 1), then the Library and Settings tabs
 		double m_screenAt = -10;  // when the screen was entered (its parts arrive)
 		bool m_done = false;	  // a game is chosen and the launch shown
 		std::optional<ps5launcher::Choice> m_choice;
@@ -620,7 +658,7 @@ namespace ps5shell
 			float x, y, radius, speed, drift, alpha;
 		};
 		std::vector<Bubble> m_bubbles;
-		float m_wavePhase[3] = {};
+		float m_wavePhase[3] = {}; // the 3DS's three waves
 		ui::Tween m_sideMix; // switching sides: the backdrop cross-fades
 
 		// what the backdrop is asked to show (the focused game's picture and colours)
@@ -653,7 +691,7 @@ namespace ps5shell
 		ui::Spring m_recentScroll;
 
 		// each side keeps its focus across a switch (5.3): its Library game, by title
-		uint64_t m_sideFocus[3] = {};
+		uint64_t m_sideFocus[kSides] = {};
 
 		// the hub
 		int m_hubGame = -1;
@@ -668,7 +706,7 @@ namespace ps5shell
 		bool m_onRows = false;
 		int m_settingRow = 0;
 		ui::Spring m_railScroll;
-		std::string m_diagnosticsDone[3];
+		std::string m_diagnosticsDone[3]; // Diagnostics' rows: the logs, Cemu's caches, Azahar's
 		std::string m_unpackedDone;	 // Diagnostics: what clearing the unpacked games did
 		uint64_t m_unpackedBytes = 0; // their size, looked at now and then
 		double m_unpackedAt = -100;
@@ -686,7 +724,7 @@ namespace ps5shell
 		int m_savesFinished = 0;			   // the saves' runs seen ending (ps5saves::Status::finished)
 		void UseOwnAccount();				   // One account for each PS5 user: the user who started the app's
 		float m_holdProgress = 0; // a Hold row's, 0 to 1
-		bool m_rescan[3] = {};	   // a side's folder changed while another side was open
+		bool m_rescan[kSides] = {}; // a side's folder changed while another side was open
 		// game settings: the game's title ID (0: the side's settings), its name, what the side's
 		// settings look like with its own over them, and where Circle goes back to
 		uint64_t m_gameTitle = 0;

@@ -19,6 +19,7 @@ namespace ps5catalog
 		WiiU,
 		N3ds,
 		Nds,
+		Switch,
 	};
 
 	struct Entry

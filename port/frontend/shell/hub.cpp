@@ -192,7 +192,7 @@ namespace ps5shell
 		canvas.PushOffset(0, (1 - Enter(2)) * 24);
 		float kx = x + Badge(canvas, x, 150, m_side) + 18;
 		// a DS game has no title ID of its own (the one it is given stays out of sight)
-		const std::string kicker = Join({g.gameId, game.known ? game.info.region : "", IsDs() ? "" : Hex(g.titleId)}, " · ");
+		const std::string kicker = Join({g.gameId, game.known ? game.info.region : "", IsDs() ? "" : ShownId(g)}, " · ");
 		canvas.Text(Style({18, ui::Weight::SemiBold, 1.9f, 3.5f, true}), kx, 150, kicker, Secondary(), 1920 - kSafeX - kx, 1);
 		ui::TextStyle display = Style(kDisplayStyle);
 		display.size = m_fonts.Fit(display, g.name, 1228, 2, display.size - 16, 8);
@@ -273,8 +273,10 @@ namespace ps5shell
 				{Tr("Players"), game.info.players > 0 ? std::to_string(game.info.players) : ""}};
 			std::erase_if(facts, [](const auto& fact) { return fact.second.empty(); });
 		}
-		if (facts.empty() && !IsDs())
-			facts.push_back({Tr("Title ID"), Hex(g.titleId)});
+		if (facts.empty() && !IsDs() && !ShownId(g).empty())
+			facts.push_back({Tr("Title ID"), ShownId(g)});
+		if (IsSwitch())
+			facts.push_back({Tr("Format"), g.format});
 		for (int i = 0; i < (int)facts.size() && i < 4; i++)
 		{
 			const float fy = aboutTop - 32 + (i / 2) * 82;

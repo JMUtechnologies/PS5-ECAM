@@ -152,6 +152,12 @@ namespace ps5actions
 			for (const std::string& file : files)
 				if (IsFile(file) && CopyFile(file, folder + file.substr(file.find_last_of('/'))))
 					copied++;
+			// the Switch side's: Eden's program keeps logs of its own, and its crash reports, in its folder
+			bool listed = false;
+			const std::string edenLogs = std::string(ps5paths::kDefaultRoot) + "/eden/logs";
+			for (const std::string& name : ListEntries(edenLogs, false, listed))
+				if (CopyFile(edenLogs + "/" + name, folder + "/eden-" + name))
+					copied++;
 			ps5log::Line("[launcher] {} log files copied to {}", copied, folder);
 			// tr: {1} is the USB drive's number
 			return TrP(copied, "{0} file to USB drive {1}", "{0} files to USB drive {1}", drive + 1);

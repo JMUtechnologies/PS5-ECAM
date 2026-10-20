@@ -31,6 +31,9 @@ namespace ui::tokens
 	inline constexpr uint32_t kNdsDefault = 0xff57d97e; // #7ed957
 	inline constexpr uint32_t kNdsStrongDefault = 0xff38af4c; // #4caf38
 	inline constexpr uint32_t kNdsInkDefault = 0xff06260c; // #0c2606
+	inline constexpr uint32_t kNxDefault = 0xff4f43f2; // #f2434f
+	inline constexpr uint32_t kNxStrongDefault = 0xff2c1fc8; // #c81f2c
+	inline constexpr uint32_t kNxInkDefault = 0xff07052a; // #2a0507
 	inline constexpr uint32_t kGoodDefault = 0xffa3d63d; // #3dd6a3
 	inline constexpr uint32_t kWarnDefault = 0xff47b5ff; // #ffb547
 	inline constexpr uint32_t kBadDefault = 0xff7272ff; // #ff7272
@@ -56,6 +59,9 @@ namespace ui::tokens
 	inline uint32_t kNds = kNdsDefault;
 	inline uint32_t kNdsStrong = kNdsStrongDefault;
 	inline uint32_t kNdsInk = kNdsInkDefault;
+	inline uint32_t kNx = kNxDefault;
+	inline uint32_t kNxStrong = kNxStrongDefault;
+	inline uint32_t kNxInk = kNxInkDefault;
 	inline uint32_t kGood = kGoodDefault;
 	inline uint32_t kWarn = kWarnDefault;
 	inline uint32_t kBad = kBadDefault;

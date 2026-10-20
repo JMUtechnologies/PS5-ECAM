@@ -24,16 +24,16 @@ namespace ps5shell
 
 		// the release notes' highlights: changed with each release that has something to say
 		const News kNews[] = {
-			// tr: What's new: the 31 languages the app's menus are in
-			{Icon::Globe, TrMark("31 languages"), TrMark("Every language the PS5 has, in every menu, and your games' names in yours.")},
+			// tr: What's new: the Switch side, Eden in ProsperoEden's PS5 port
+			{Icon::Play, TrMark("Nintendo Switch"), TrMark("Switch games on Eden, a fourth system, with ProsperoEden's launcher for mods, cheats and updates.")},
+			// tr: What's new: the app's new name, PS5-ECAM (left as it is)
+			{Icon::Sparkle, TrMark("A new name: PS5-ECAM"), TrMark("Four consoles in one app, and a new icon to match.")},
+			{Icon::Drive, TrMark("Games in archives"), TrMark("Wii U, 3DS and DS games in .zip, .7z and .rar files, unpacked as they start.")},
 			{Icon::Screens, TrMark("Nintendo DS"), TrMark("DS games on melonDS, a third system beside the Wii U and the 3DS.")},
 			{Icon::Home, TrMark("Games on your home screen"), TrMark("Add to home screen gives a game a tile of its own that starts it at once.")},
-			{Icon::Usb, TrMark("Wii U mods"), TrMark("Mods from a USB drive, each on its game's Graphic packs page.")},
-			{Icon::Sparkle, TrMark("Eight themes"), TrMark("Classic brings back the first launcher; Eden, Phantom, Terminal and more.")},
 			{Icon::Drive, TrMark("Network shares"), TrMark("Play games from your PC or NAS, over SMB or NFS.")},
 			{Icon::Star, TrMark("RetroAchievements"), TrMark("Achievements in DS games: sign in from Settings > Online.")},
 			{Icon::Pulse, TrMark("Faster Wii U games"), TrMark("Breath of the Wild near 60 fps at 1440p, and steadier at 4K.")},
-			{Icon::Check, TrMark("Pokémon drawn right"), TrMark("X, Y, Omega Ruby, Alpha Sapphire, Sun, Moon and the Ultra games.")},
 		};
 
 		constexpr int kColumns = 3;
@@ -78,8 +78,8 @@ namespace ps5shell
 			Tr("The biggest update yet, at a glance. Its release notes on GitHub have everything."), Secondary(), 1920 - 2 * kSafeX, 2);
 		canvas.PopAlpha();
 
-		// the cards, each in one of the three systems' colours in turn
-		static constexpr System kColours[] = {System::WiiU, System::N3ds, System::Nds};
+		// the cards, each in one of the four systems' colours in turn
+		static constexpr System kColours[] = {System::Switch, System::WiiU, System::N3ds, System::Nds};
 		const float width = (1920 - 2 * kSafeX - (kColumns - 1) * kGap) / kColumns;
 		const float textWidth = width - kPad - kIcon - 22 - kPad;
 		const int count = (int)std::size(kNews);
@@ -97,7 +97,7 @@ namespace ps5shell
 			const int lines = std::clamp((int)((kCardHeight - 2 * kPad + 4 - title.height - 8) / (textStyle.size * textStyle.lineHeight)), 1, 4);
 			const ui::TextBlock text = m_fonts.Layout(textStyle, Tr(kNews[i].text), textWidth, lines);
 			const float top = card.y + std::max(kPad, (kCardHeight - (title.height + 8 + text.height)) * 0.5f);
-			const uint32_t colour = AccentOf(kColours[i % 3]);
+			const uint32_t colour = AccentOf(kColours[i % std::size(kColours)]);
 			const Box icon{card.x + kPad, top, kIcon, kIcon};
 			canvas.Rect(icon, kIcon / 2, ui::SetAlpha(colour, 0.18f));
 			canvas.Draw(kNews[i].icon, icon.Inset(13), colour);

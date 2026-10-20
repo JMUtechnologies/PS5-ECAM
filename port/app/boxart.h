@@ -21,6 +21,7 @@ namespace ps5boxart
 		WiiU,
 		N3ds,
 		Nds, // a DS game, on the 3DS side
+		Switch, // GameTDB has no Switch covers: a Switch game's are Eden's (port/eden)
 	};
 
 	// The largest a cover is kept: the launcher's cover area at 4K

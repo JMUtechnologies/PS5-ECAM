@@ -10,6 +10,7 @@
 #include "shell_internal.h"
 #include "../actions.h"
 #include "../../app/emulator.h"
+#include "../../eden/library.h"
 
 #include <algorithm>
 #include <cmath>
@@ -101,12 +102,18 @@ namespace ps5shell
 			IsDs()	   ? TrF("Put your DS games (.nds, alone or in .zip, .7z or .rar archives) in {0}, or choose any folder the PS5 can read, "
 							 "such as one on a USB drive. Folders inside it are searched too.",
 							 folder) :
+			// tr: {1} is Eden's game files folder, which has keys/ and firmware/ in it
+			IsSwitch() ? TrF("Put your Switch games (.nsp or .xci, alone or each in a folder of its own with its update and DLC) in {0}. "
+							 "Eden needs your Switch's keys in {1}/keys and its firmware in {1}/firmware too.",
+							 ps5eden::ScanFolder(folder), ps5eden::GameFilesFolder()) :
 						 TrF("Put your Wii U games (.wua, .wud, .wux, or folders with code, content and meta, alone or in .zip, .7z or .rar "
 							 "archives) in {0}, or choose any folder the PS5 can read, such as one on a USB drive.",
 							 folder);
 		buttons = {Tr("Choose a folder"), Tr("Setup check")};
 		if (Is3ds())
 			buttons.insert(buttons.begin() + 1, Tr("Play from your 3DS")); // Artic Base needs no games here
+		if (IsSwitch())
+			buttons.insert(buttons.begin() + 1, Tr("Open ProsperoEden")); // its own launcher, with its downloads
 		return true;
 	}
 
@@ -141,6 +148,8 @@ namespace ps5shell
 				m_pageFrom = ScreenId::Library;
 				ArticOpen();
 			}
+			else if (chosen == Tr("Open ProsperoEden"))
+				OpenEden();
 			else if (chosen == Tr("Diagnostics"))
 			{
 				ShowTab(ScreenId::Settings);

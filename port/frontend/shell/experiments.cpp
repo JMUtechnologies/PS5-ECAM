@@ -196,9 +196,10 @@ namespace ps5shell
 		// a black band, its right edge cut at a slant, a stripe of the side's colour along it
 		PhantomPlate(canvas, {0, 0, width, 1080}, -60, ui::SetAlpha(0xff000000, 0.95f + 0.05f * open));
 		PhantomPlate(canvas, {width - 4, 0, 10, 1080}, -60, accent);
-		SideTile(canvas, System::WiiU, {28, 38, 36, 36}, 4, 0xffffffff);
-		SideTile(canvas, System::N3ds, {54, 47, 36, 36}, 4, 0xebffffff);
-		SideTile(canvas, System::Nds, {39, 68, 36, 36}, 4, 0xebffffff);
+		SideTile(canvas, System::WiiU, {30, 38, 30, 30}, 4, 0xffffffff);
+		SideTile(canvas, System::N3ds, {64, 38, 30, 30}, 4, 0xebffffff);
+		SideTile(canvas, System::Nds, {30, 72, 30, 30}, 4, 0xebffffff);
+		SideTile(canvas, System::Switch, {64, 72, 30, 30}, 4, 0xebffffff);
 
 		for (int i = 0; i < kSections; i++)
 		{
@@ -1040,7 +1041,7 @@ namespace ps5shell
 			if (IsWiiU() && m_status.coreReady && g->packsOn < 0)
 				g->packsOn = ps5emu::EnabledGraphicPackCount(entry.titleId);
 			const std::vector<std::pair<std::string, std::string>> facts = {
-				{"id", IsDs() ? entry.gameId : Hex(entry.titleId)},
+				{"id", ShownId(entry)},
 				{"status", g->report ? std::string(TrC("status", g->report->status)) : std::string(Tr("Not on the list yet"))},
 				{"version", IsWiiU() ? (entry.hasUpdate ? TrF("Update v{0}", entry.version) : fmt::format("v{}", entry.version)) : entry.format},
 				{"played", Played(*g).empty() ? std::string(Tr("Not played yet")) : Played(*g)},
@@ -1331,7 +1332,7 @@ namespace ps5shell
 		TermPanel(canvas, panel, "cat ~/about");
 		canvas.Text(Style({48, ui::Weight::Bold, 1.1f}), panel.x + 36, panel.y + 40, "PS5CEMU-HAR", Accent(), panel.w - 72, 1);
 		canvas.Text(Style({22, ui::Weight::Medium, 1.0f, 0.5f, false, true}), panel.x + 36, panel.y + 104,
-			std::string(Tr("Version")) + " " + ps5update::Readable(PS5CEMU_VERSION) + "  |  wii u, 3ds, ds", kText, panel.w - 72, 1);
+			std::string(Tr("Version")) + " " + ps5update::Readable(PS5CEMU_VERSION) + "  |  wii u, 3ds, ds, switch", kText, panel.w - 72, 1);
 		canvas.Text(Style({20, ui::Weight::Regular, 1.5f, 0.2f, false, true}), panel.x + 36, panel.y + 160, PanelText("about"), ui::SetAlpha(kText, 0.8f),
 			panel.w - 72, 22);
 		EdenLeave(canvas);
