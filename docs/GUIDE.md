@@ -127,11 +127,11 @@ New in 4.0.0: a side of its own, in melonDS's green, to the right of the 3DS.
 
 New in 5.0.0: a side of its own, in the Switch's red, to the right of the DS.
 
-- [Eden](https://github.com/eden-emu/mirror), the Switch emulator, in ProsperoEden's PS5 port
-  ([premohq/ProsperoEdenX](https://github.com/premohq/ProsperoEdenX), with this repository's
-  `patches/eden`). It is a program of its own in the app's `eden/` folder: Play starts it with the
-  game, and when the game ends it starts PS5-ECAM again, on the Switch side. A game's home screen
-  tile closes the app instead, as on the other sides.
+- [Eden](https://github.com/eden-emu/mirror), the Switch emulator, in Sword's PS5 port,
+  [ProsperoEden](https://github.com/Swordpdf/ProsperoEden) (with this repository's `patches/eden`). It
+  is a program of its own in the app's `eden/` folder: Play starts it with the game, and when the
+  game ends it starts PS5-ECAM again, on the Switch side. A game's home screen tile closes the app
+  instead, as on the other sides.
 - **Settings** on the Switch side: the internal resolution (0.5x to 4x of the game's own 720p
   handheld or 1080p docked), upscaling to 4K (FSR 1 among them), ASTC textures (compressed, or full
   quality for a game whose textures look blocky), the performance overlay, the volume, and docked or

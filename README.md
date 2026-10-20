@@ -34,7 +34,7 @@
 A fourth system, a new name, and everything 4.0.2 was going to bring. The details are in the [release notes](https://github.com/premohq/PS5-ECAM/releases/tag/v5.0.0).
 
 - **Nintendo Switch:** Switch games on [Eden](https://github.com/eden-emu/mirror), through
-  [ProsperoEden](https://github.com/premohq/ProsperoEdenX)'s PS5 port, as a fourth side beside the Wii U,
+  [ProsperoEden](https://github.com/Swordpdf/ProsperoEden)'s PS5 port, as a fourth side beside the Wii U,
   3DS and DS, on every theme. Resolution, upscaling, ASTC textures, docked or handheld, and each game's
   own settings are in the launcher; ProsperoEden's own launcher, one press away, has mods, cheats,
   updates and DLC, profiles and more. Bring your own keys and firmware ([how](docs/GUIDE.md#nintendo-switch-eden)).
@@ -160,10 +160,9 @@ Big thanks to the people who sent code and fixes to PS5-ECAM itself:
 - [melonDS](https://github.com/melonDS-emu/melonDS) by Arisotura and the melonDS team (GPL-3.0),
   with its FreeBIOS replacements
 - [Eden](https://github.com/eden-emu/mirror), the Switch emulator, by the Eden team (GPL-3.0-or-later),
-  and **ProsperoEden**, its PS5 port and launcher, by **Sword** ([Swordpdf](https://github.com/Swordpdf)),
-  **BlackBearReloaded**, **bawsdeep**, **Rockiu0** and its contributors (GPL-3.0-or-later; the Switch
-  side runs [premohq/ProsperoEdenX](https://github.com/premohq/ProsperoEdenX), its fork, with
-  `patches/eden`)
+  and [ProsperoEden](https://github.com/Swordpdf/ProsperoEden), its PS5 port and launcher, by **Sword**
+  ([Swordpdf](https://github.com/Swordpdf)), **BlackBearReloaded**, **bawsdeep**, **Rockiu0** and its
+  contributors (GPL-3.0-or-later; the Switch side runs it with `patches/eden`)
 - **Mihawk** for RADV on PS5 ([PS5_Mesa](https://github.com/mihawk-99/PS5_Mesa),
   [PS5_Vulkan](https://github.com/mihawk-99/PS5_Vulkan), the payload SDK fork and its platform layer)
   and the PS5 ports of Azahar and dynarmic ([PS5_Azahar](https://github.com/mihawk-99/PS5_Azahar)),
