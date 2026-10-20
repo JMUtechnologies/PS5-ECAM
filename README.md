@@ -4,6 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/premohq/PS5CEMU-HAR/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/premohq/PS5CEMU-HAR?label=release&color=3b8cff"></a>
+  <a href="https://discord.gg/grrqkv4xWw"><img alt="Discord: join the server" src="https://img.shields.io/badge/discord-join%20the%20server-5865F2?logo=discord&logoColor=white"></a>
   <img alt="Platform: PS5 homebrew" src="https://img.shields.io/badge/platform-PS5%20homebrew-1f5fd6">
   <img alt="Emulation: Cemu, Azahar and melonDS" src="https://img.shields.io/badge/emulation-Cemu%20%C2%B7%20Azahar%20%C2%B7%20melonDS-5cd3ff">
   <img alt="Languages: 31" src="https://img.shields.io/badge/languages-31-62c454">
@@ -26,6 +27,19 @@
 </p>
 
 ---
+
+## Join the Discord
+
+<a href="https://discord.gg/grrqkv4xWw"><img alt="Join the PS5CEMU-HAR Discord server" src="https://img.shields.io/badge/Discord-Join%20the%20server-5865F2?style=for-the-badge&logo=discord&logoColor=white"></a>
+
+The server at [discord.gg/grrqkv4xWw](https://discord.gg/grrqkv4xWw) is the quickest way to get help and to hear about new versions:
+
+- **Help with your setup:** ask in the support forum, one post per problem, tagged Wii U, 3DS or DS.
+- **What runs, and how well:** tested-games has a post per game with its speed, its glitches and the settings that work.
+- **New versions first:** every release is posted in announcements the moment it's published.
+- **The developer and other players:** suggest features, share your setup and hear what's coming.
+
+Bugs still go in [GitHub issues](https://github.com/premohq/PS5CEMU-HAR/issues/new/choose), with the log from *Copy logs to USB*.
 
 ## What's new in 4.0.2
 
