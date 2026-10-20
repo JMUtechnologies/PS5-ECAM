@@ -28,19 +28,6 @@
 
 ---
 
-## Join the Discord
-
-<a href="https://discord.gg/grrqkv4xWw"><img alt="Join the PS5CEMU-HAR Discord server" src="https://img.shields.io/badge/Discord-Join%20the%20server-5865F2?style=for-the-badge&logo=discord&logoColor=white"></a>
-
-The server at [discord.gg/grrqkv4xWw](https://discord.gg/grrqkv4xWw) is the quickest way to get help and to hear about new versions:
-
-- **Help with your setup:** ask in the support forum, one post per problem, tagged Wii U, 3DS or DS.
-- **What runs, and how well:** tested-games has a post per game with its speed, its glitches and the settings that work.
-- **New versions first:** every release is posted in announcements the moment it's published.
-- **The developer and other players:** suggest features, share your setup and hear what's coming.
-
-Bugs still go in [GitHub issues](https://github.com/premohq/PS5CEMU-HAR/issues/new/choose), with the log from *Copy logs to USB*.
-
 ## What's new in 4.0.2
 
 Fixes for 4.0.1, and a few things you asked for. The details are in the [release notes](https://github.com/premohq/PS5CEMU-HAR/releases/tag/v4.0.2).
@@ -68,47 +55,7 @@ Fixes for 4.0.1, and a few things you asked for. The details are in the [release
 - **Every side alike:** the DS side's messages are in your language as the others' are, a DS game that
   does not start says why in the same way, and the 3DS and DS performance overlay is in Settings too.
 
-## What's new in 4.0.1
-
-Fixes for 4.0.0. The details are in the [release notes](https://github.com/premohq/PS5CEMU-HAR/releases/tag/v4.0.1).
-
-- **Network shares work again.** Connecting to an SMB share no longer crashes the app
-  ([#46](https://github.com/premohq/PS5CEMU-HAR/issues/46), [#49](https://github.com/premohq/PS5CEMU-HAR/issues/49)),
-  and a share's tab opens in the folder chooser ([#49](https://github.com/premohq/PS5CEMU-HAR/issues/49)).
-- **DS sound at the right speed:** no more crackling or too-fast music, and the speed shown is the DS's
-  ([#47](https://github.com/premohq/PS5CEMU-HAR/issues/47)).
-- **Back to the library after a game** on more setups: the app tries each place it can start from, and a
-  home screen tile's game says *Quit to the home screen* ([#48](https://github.com/premohq/PS5CEMU-HAR/issues/48)).
-- **Artic Base and Artic Setup** ([#45](https://github.com/premohq/PS5CEMU-HAR/issues/45)): connections time
-  out instead of hanging, a 3DS that closes the connection no longer closes the app, the app starts over
-  cleanly after a failed load, and the errors say what went wrong. Artic Setup says which keys
-  `aes_keys.txt` lacks before it starts, and *Copy logs to USB* includes Azahar's log of the session before.
-
-## What's new in 4.0.0
-
-The biggest update yet. The full list is in the [release notes](https://github.com/premohq/PS5CEMU-HAR/releases/tag/v4.0.0).
-
-- **31 languages: every one the PS5 has.** The launcher, Settings and the in-game menus are translated
-  into 30 new languages, with your games' names in your language too:
-  English (UK and US), German, French (France and Canada), Spanish (Spain and Latin America), Italian,
-  Dutch, Portuguese (Portugal and Brazil), Russian, Ukrainian, Polish, Czech, Hungarian, Romanian,
-  Greek, Turkish, Finnish, Swedish, Danish, Norwegian, Indonesian, Japanese, Korean, Chinese
-  (Simplified and Traditional), Thai, Vietnamese and Arabic.
-- **Nintendo DS games** on melonDS, a third system beside the Wii U and the 3DS.
-- **Your games on the PS5 home screen:** *Add to home screen* gives any game a tile that starts it
-  straight away, and *Remove from home screen* takes it off again.
-- **Wii U mods** from a USB drive, with a [step-by-step guide](docs/MODS.md).
-- **Eight themes:** Link Jack, Classic (the original 2.0 launcher, back), Eden, Meyer Oscar and Meyer
-  Oscar Light, Midnight, Phantom and Terminal, or your own.
-- **Play from your PC or NAS** over the network (SMB or NFS).
-- **RetroAchievements** for DS games.
-- **Faster Wii U games:** Breath of the Wild is back near 60 fps at 1440p, and holds 60 more often at
-  4K.
-- **Pokémon X, Y, Omega Ruby, Alpha Sapphire, Sun, Moon, Ultra Sun and Ultra Moon** drawn right.
-- **And more:** your phone's browser as the GamePad's or a handheld's touch screen, Wii U accounts
-  and save backups to USB, updates and DLC found on your drives and installed with one press, AMD FSR
-  1, settings for each game, buttons that swap, a turbo button, rumble that works, Skylanders Giants,
-  your own launcher music, and a quicker start.
+Changes in earlier versions are in their [release notes](https://github.com/premohq/PS5CEMU-HAR/releases).
 
 ## Features
 
@@ -179,6 +126,19 @@ Every shortcut, the in-game menu and the rest are in the [guide](docs/GUIDE.md).
 `make release` on Ubuntu 24.04 (WSL works) downloads every dependency at its pinned version, builds
 the three emulators and the launcher, and writes the app to `build/app/PPSA99360` and a ZIP to
 `dist/`. See [docs/BUILDING.md](docs/BUILDING.md).
+
+## Join the Discord
+
+<a href="https://discord.gg/grrqkv4xWw"><img alt="Join the PS5CEMU-HAR Discord server" src="https://img.shields.io/badge/Discord-Join%20the%20server-5865F2?style=for-the-badge&logo=discord&logoColor=white"></a>
+
+The server at [discord.gg/grrqkv4xWw](https://discord.gg/grrqkv4xWw) is the quickest way to get help and to hear about new versions:
+
+- **Help with your setup:** ask in the support forum, one post per problem, tagged Wii U, 3DS or DS.
+- **What runs, and how well:** tested-games has a post per game with its speed, its glitches and the settings that work.
+- **New versions first:** every release is posted in announcements the moment it's published.
+- **The developer and other players:** suggest features, share your setup and hear what's coming.
+
+Bugs still go in [GitHub issues](https://github.com/premohq/PS5CEMU-HAR/issues/new/choose), with the log from *Copy logs to USB*.
 
 ## Credits
 
