@@ -17,6 +17,9 @@
 #     assets/graphicPacks/            the community graphic packs (installed on first start)
 #     assets/gametdb/                 GameTDB's game information (descriptions, publishers, dates)
 #     assets/lang/                    the menus' translations, one string table a language (<code>.po)
+#     eden/                           the Switch side's program, ProsperoEdenX (tools/build-eden.sh): its
+#                                     eboot.bin, which the launcher starts with LoadExec, its launcher's
+#                                     ui/, its frame generation's network, its licence and notices
 #
 #   tools/package.sh          the app; the ELF must be linked with RADV (tools/link.sh)
 #   tools/package.sh --check  the same steps for a link check's ELF, into build/app-check: not an app
@@ -162,6 +165,17 @@ with zipfile.ZipFile(archive) as packs:
 with open(os.path.join(target, "version.txt"), "w") as version:
     version.write("Github987")
 PY
+
+# The Switch side's program (tools/build-eden.sh): ProsperoEdenX's eboot.bin and the files it reads
+# from its own folder, with the boilerplate's libc.prx beside it as in the app's own sce_module
+if [[ -f $PS5CEMU_BUILD/eden/app/eboot.bin ]]; then
+    cp -a "$PS5CEMU_BUILD/eden/app" "$app/eden"
+    mkdir -p "$app/eden/sce_module"
+    cp "$boilerplate/runtime/libc.prx" "$app/eden/sce_module/libc.prx"
+elif ((!check)); then
+    echo "build/eden is missing (make eden): the Switch side cannot start games" >&2
+    [[ ${PS5CEMU_RELEASE:-0} == 1 ]] && exit 2
+fi
 
 if ((check)); then
     echo "LINK CHECK ONLY: built without RADV, this folder cannot run on a console." >"$app/NOT-AN-APP.txt"

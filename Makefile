@@ -14,7 +14,7 @@ APP := build/app/PPSA99360
 JOBS ?= $(shell nproc)
 export JOBS
 
-.PHONY: help deps deps-status radv azahar melonds build check package release clean distclean
+.PHONY: help deps deps-status radv azahar melonds eden build check package release clean distclean
 
 help: ## List the targets
 	@echo 'PS5CEMU-HAR build - make [target] [VARIABLE=value]'
@@ -47,6 +47,9 @@ azahar: deps ## Build Azahar's core (the 3DS side) and its PS5 frontend: build/a
 melonds: deps ## Build melonDS's core (the DS side's) and its PS5 frontend: build/melonds
 	bash tools/build-melonds.sh
 
+eden: deps ## Build ProsperoEdenX, the Switch side's program (Eden), with patches/eden: build/eden
+	bash tools/build-eden.sh
+
 build: deps azahar melonds $(if $(RADV_ARCHIVE),,radv) ## Build PS5CEMU-HAR (Cemu, Azahar and melonDS) and link it with RADV: build/cemu/ps5cemu.elf
 	bash tools/build-cemu.sh
 
@@ -54,7 +57,7 @@ check: deps azahar melonds ## Build and package everything with a stand-in for R
 	PS5CEMU_LINK_CHECK=1 bash tools/build-cemu.sh
 	bash tools/package.sh --check
 
-package: build ## The app folder: build/app/PPSA99360
+package: build eden ## The app folder: build/app/PPSA99360 (with eden/, the Switch side's program)
 	bash tools/package.sh
 
 # a release takes the emulators' patches only as they are: a checkout in .deps with commits not exported
@@ -68,6 +71,8 @@ release: package ## dist/PS5CEMU-HAR-vVERSION.zip (the PPSA99360 folder), SHA256
 	@# the unstripped ELF of the eboot, kept to look up this release's crash reports
 	@# (tools/symbolize-crash.py dist/ps5cemu-vVERSION.elf boot.log)
 	cp build/cemu/ps5cemu.elf dist/ps5cemu-v$(VERSION).elf
+	@# and the Switch side's program's (ProsperoEdenX's tools/symbolize-crash.py)
+	if [[ -f build/eden/eden.elf ]]; then cp build/eden/eden.elf dist/eden-v$(VERSION).elf; fi
 	@cat dist/SHA256SUMS
 
 clean: ## Remove build outputs (build/, dist/); dependencies stay
