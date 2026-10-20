@@ -19,7 +19,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/premohq/PS5-ECAM/releases/latest"><b>Download the latest release</b></a> ·
+  <a href="https://github.com/premohq/PS5-ECAM/raw/releases/PS5-ECAM-v5.0.0.zip"><b>Download 5.0.0</b></a> (ZIP, 81.5 MB) ·
+  <a href="https://github.com/premohq/PS5-ECAM/releases/tag/v5.0.0">Release notes</a> ·
   <a href="#install">Install</a> ·
   <a href="docs/GUIDE.md">Guide</a> ·
   <a href="docs/COMPATIBILITY.md">Compatibility</a> ·
@@ -43,8 +44,9 @@ A fourth system, a new name, and everything 4.0.2 was going to bring. The detail
   file and folder the app makes is open to every user.
 - **Games in archives** ([#50](https://github.com/premohq/PS5-ECAM/issues/50)): `.zip`, `.7z`, `.rar` and tar archives are in the library on
   the Wii U, 3DS and DS sides; DS games play from them, and a Wii U or 3DS game is unpacked once, the
-  first time it starts ([how](docs/GUIDE.md#games-in-archives)).
-- **Artic Setup needs no keys from you** and **Artic Base connects** where it failed at once ([#45](https://github.com/premohq/PS5-ECAM/issues/45));
+  first time it starts ([how](docs/GUIDE.md#games-in-archives)), building on Mafiacoding's ZIP support.
+- **Artic Setup needs no keys from you** ([#45](https://github.com/premohq/PS5-ECAM/issues/45)), and Artic Base has dolphin78's fix for connections that
+  failed at once (it doesn't work for everyone yet, so #45 stays open);
   **Quit to the library** returns to the library ([#60](https://github.com/premohq/PS5-ECAM/issues/60)); an encrypted 3DS game is refused with a
   reason ([#57](https://github.com/premohq/PS5-ECAM/issues/57)).
 - **New buttons** for the 3DS and DS: *Touch at the cursor*, *Fast forward* and *Rewind* (DS) ([#59](https://github.com/premohq/PS5-ECAM/issues/59), [#54](https://github.com/premohq/PS5-ECAM/issues/54));
@@ -71,7 +73,7 @@ Changes in earlier versions are in their [release notes](https://github.com/prem
 
 1. **A PS5 that runs homebrew.** Any firmware up to 13.60, with etaHEN, OnionHEN, or an ELF loader on
    port 9021. See the [firmware and setup guide](docs/HEN-SETUP.md).
-2. **Copy the app.** Download the [latest release](https://github.com/premohq/PS5-ECAM/releases/latest)'s ZIP,
+2. **Copy the app.** Download the [5.0.0 ZIP](https://github.com/premohq/PS5-ECAM/raw/releases/PS5-ECAM-v5.0.0.zip) ([release notes](https://github.com/premohq/PS5-ECAM/releases/tag/v5.0.0)),
    extract it and copy the `PPSA99360` folder to `/data/homebrew/PPSA99360`.
 3. **Let your HEN in.** etaHEN: add `PPSA99360` to its app jailbreak list. OnionHEN: add `PPSA99360`
    at the end of `exact_title_ids` in `config.ini`, with no comma after it. Any other: have an ELF
@@ -140,6 +142,18 @@ Bugs still go in [GitHub issues](https://github.com/premohq/PS5-ECAM/issues/new/
 
 ## Credits
 
+### Contributors
+
+Big thanks to the people who sent code and fixes to PS5-ECAM itself:
+
+- **[Mafiacoding](https://github.com/Mafiacoding)** for archived games: the ZIP support for the Wii U,
+  3DS and DS sides that 5.0.0's archives build on ([#53](https://github.com/premohq/PS5-ECAM/pull/53), [#50](https://github.com/premohq/PS5-ECAM/issues/50))
+- **[dolphin78](https://github.com/dolphin78)** for the remote touch screen's idea and prototype
+  ([#38](https://github.com/premohq/PS5-ECAM/issues/38)) and the Artic Base connection fix ([#45](https://github.com/premohq/PS5-ECAM/issues/45))
+- **[3lmerx503](https://github.com/3lmerx503)** for finding and testing the rumble fix ([#41](https://github.com/premohq/PS5-ECAM/issues/41))
+
+### Built on
+
 - [Cemu](https://github.com/cemu-project/Cemu) by the Cemu team and contributors (MPL-2.0)
 - [Azahar](https://github.com/azahar-emu/azahar) by the Azahar team and the Citra contributors
   before them (GPL-2.0-or-later), with dynarmic by MerryMage and contributors
@@ -165,8 +179,6 @@ Bugs still go in [GitHub issues](https://github.com/premohq/PS5-ECAM/issues/new/
 - [libsmb2](https://github.com/sahlberg/libsmb2) and [libnfs](https://github.com/sahlberg/libnfs) by
   Ronnie Sahlberg for the network shares, and [rcheevos](https://github.com/RetroAchievements/rcheevos)
   by RetroAchievements
-- **dolphin78** for the remote touch screen's idea and prototype (#38), and **3lmerx503** for the
-  rumble fix (#41)
 - **Swordpdf** for the etaHEN jailbreak request from PS5SX2
 - **Dimok** for the Wii U Homebrew Launcher's background, and the authors of the 3DS Homebrew
   Launcher, which inspired the 3DS side's
