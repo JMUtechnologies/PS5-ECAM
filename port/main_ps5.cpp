@@ -253,10 +253,10 @@ void requireConsole() {}
 
 int main(int argc, char* argv[])
 {
-	// before anything is written: every file and folder the app makes is anyone's to read and write
-	// (0666, 0777), whichever user it runs as, for the next session and the console's FTP service
-	// (app/file_modes.h, #55, #58)
-	umask(0);
+	// No umask(0) here: on the PS5 it is a raw system call in the app's own code (the SDK has no import
+	// for it), which the console answers by ending the app before anything is shown (CE-108255-1). What
+	// the app makes is opened to every user by the files' walk at each start instead (app/file_modes.h,
+	// #55, #58).
 	ps5log::Line("[main] PS5-ECAM {} starting (Cemu at {}, Azahar at {}, melonDS at {}, Eden at {})", PS5CEMU_VERSION, PS5CEMU_CEMU_COMMIT,
 		PS5CEMU_AZAHAR_COMMIT, PS5CEMU_MELONDS_COMMIT, PS5CEMU_EDEN_COMMIT);
 	// before any thread starts: the HEN jailbreaks the process as it is. The game folders are read
@@ -530,8 +530,8 @@ int main(int argc, char* argv[])
 			ps5notify::Send(ps5lang::Tr("No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"));
 	};
 
-	// what earlier builds, and sessions as another user, made in /data/ps5cemu, opened as the app's
-	// files now are (the umask above), until all of it is: at each start, as a game stops the walk
+	// what this app made since the last start, and earlier builds and sessions as another user, opened
+	// to every user in /data/ps5cemu: at each start, as a game stops the walk
 	if (privileges.filesystem)
 		ps5filemodes::Start();
 	if (freshStart && privileges.filesystem)

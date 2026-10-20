@@ -5,12 +5,12 @@
 // others' reach: a game whose saves and shader cache could not be written started to a black screen
 // (#55), and installed games could not be deleted over FTP (#58). Folders are 0777 and files 0666,
 // as the homebrew a file manager puts in /data/homebrew has them, and as RADV keeps its cache:
-//  - main sets the process's umask to 0 first, so what the app, Cemu, Azahar and melonDS make from then
-//    on is so (Azahar's folders too: patches/azahar 0028);
-//  - Start gives the same to what was made before (by an earlier build, or a session as another user),
-//    where the app may change it. A walk is made once; again only by a start as root, when one as
-//    another user left entries it could not change. The sides' game folders are the player's files,
-//    which the app only reads: left as they are.
+//  - Start gives every file and folder there those modes, where the app may change them, at each
+//    start: what the app, Cemu, Azahar and melonDS made since (the process's umask cannot be set: on
+//    the PS5 umask is a raw system call in the app's own code, which ends it), and what an earlier
+//    build or a session as another user made. Only entries whose mode differs are changed. Azahar's
+//    folders are made so already (patches/azahar 0028). The sides' game folders are the player's
+//    files, which the app only reads: left as they are.
 //  - Such entries are root's, mostly: a session the elevation helper or the HEN made root (a refused
 //    game folder, /data out of reach) made them 0755 and 0644, and a session that needed neither
 //    could not write them (#55, #56). A fresh start then asks the elevation helper for root

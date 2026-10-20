@@ -67,12 +67,11 @@ namespace ps5filemodes
 			return walked;
 		}
 
-		// Whether a walk is to be made: none yet (or one by an earlier build), or one as another user
-		// left entries that the app, root now, may change
+		// Whether a walk is to be made: at every start, for what was made since the last (the app cannot
+		// set its umask to 0 on the console: file_modes.h)
 		bool WalkDue()
 		{
-			const Walked walked = LastWalk();
-			return !walked.made || (walked.left > 0 && geteuid() == 0);
+			return true;
 		}
 
 		// Folders rwx and files rw for every user, with whatever else they have (a tile's program keeps
