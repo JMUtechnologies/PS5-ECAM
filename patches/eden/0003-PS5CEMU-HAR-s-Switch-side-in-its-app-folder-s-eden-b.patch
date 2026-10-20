@@ -1,0 +1,342 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Tue, 20 Oct 2026 07:32:02 +0000
+Subject: [PATCH] PS5CEMU-HAR's Switch side: in its app folder's eden/, back to
+ it after a game
+
+PS5CEMU-HAR (PPSA99360) carries this program as eden/eboot.bin and starts it with LoadExec.
+- Its folder is the app's eden/ (/app0/eden, /system_ex/app/PPSA99360/eden,
+  /data/homebrew/PPSA99360/eden), its sandbox PPSA99360's, its data /data/ps5cemu/eden. The game
+  files folder is /data/ps5cemu/eden by default; while that has no keys, a standalone ProsperoEden's
+  /data/prosperoeden is used as it is when it has them.
+- Where main returns (its launcher left, or a game PS5CEMU-HAR started with --rom has ended), it
+  LoadExecs PS5CEMU-HAR's eboot (--return <eboot>, then /app0, the system's mount and
+  /data/homebrew) instead of closing; a home screen tile's --exit-after-game still closes it.
+  Circle on the home screen leaves the launcher. After a crash it starts itself again
+  (/app0/eden/eboot.bin), whose launcher shows the crash notice.
+- A game started with --rom gets its cover and its own name in covers/, as the library keeps them,
+  for PS5CEMU-HAR's Switch side to show.
+- The Lapy helper is built for PPSA99360.
+---
+ headless/assets_dir.h                |  1 +
+ headless/boot_trace.h                |  2 +-
+ headless/check_package.py            |  2 +-
+ headless/forwarded_launch.h          |  5 +++
+ headless/main.cpp                    | 47 ++++++++++++++++++++++++++--
+ headless/prosperoeden/pe/ui/home.cpp | 17 +++++++---
+ headless/storage_paths.h             | 23 +++++++++-----
+ src/lifecycle.c                      | 28 ++++++++++++++++-
+ tools/build-lapy-helper.py           |  2 +-
+ 9 files changed, 109 insertions(+), 18 deletions(-)
+
+diff --git a/headless/assets_dir.h b/headless/assets_dir.h
+index 423cf01..599d277 100644
+--- a/headless/assets_dir.h
++++ b/headless/assets_dir.h
+@@ -20,6 +20,7 @@ inline std::string ResolveAssetsDir() {
+     if (std::string saved = LoadSavedAssetsDir(); !saved.empty()) return saved;
+     const std::string keys = "/keys/prod.keys";
+     if (!FileExists(kDefaultAssetsDir + keys) && FileExists(legacy + keys)) return legacy;
++    if (!FileExists(kDefaultAssetsDir + keys) && FileExists(kStandaloneDataDir + keys)) return kStandaloneDataDir;
+     return kDefaultAssetsDir;
+ }
+ 
+diff --git a/headless/boot_trace.h b/headless/boot_trace.h
+index 2656f84..5726f7c 100644
+--- a/headless/boot_trace.h
++++ b/headless/boot_trace.h
+@@ -121,7 +121,7 @@ inline void Ready(const std::string& logs_folder, bool filesystem_access) {
+     (void)std::rename(path.c_str(), (logs_folder + "/boot-trace.prev.txt").c_str());
+     // The last run's sandbox trace (that run may have died before it had filesystem access), copied
+     // where it can be fetched; with filesystem access the sandbox is seen under /mnt/sandbox.
+-    if (int previous = open("/mnt/sandbox/PPSA99008_000/download0/boot-trace.prev.txt", O_RDONLY); previous >= 0) {
++    if (int previous = open("/mnt/sandbox/PPSA99360_000/download0/boot-trace.prev.txt", O_RDONLY); previous >= 0) {
+         const int copy = open((logs_folder + "/boot-trace.sandbox-prev.txt").c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+         char buffer[4096];
+         for (ssize_t got; (got = read(previous, buffer, sizeof(buffer))) > 0;) detail::WriteAll(copy, buffer, static_cast<size_t>(got));
+diff --git a/headless/check_package.py b/headless/check_package.py
+index 5a6aa2b..7a38d52 100644
+--- a/headless/check_package.py
++++ b/headless/check_package.py
+@@ -58,7 +58,7 @@ def check():
+     assert param['pubtools']['loudnessSnd0'] == '-28.00'
+     lapy = json.loads((APP / 'lapy-manifest.json').read_text())
+     assert lapy['schema'] == 'lapy-owned-build/1'
+-    assert lapy['target_title'] == 'PPSA99008' and lapy['mode'] == 'elf-helper'
++    assert lapy['target_title'] == 'PPSA99360' and lapy['mode'] == 'elf-helper'
+     assert lapy['max_requests'] == 1 and not lapy['service']
+     assert lapy['features'] == ['root_layout_probe_retry']
+     assert lapy['protocol_sha256'] == LAPY_PROTOCOL_SHA256
+diff --git a/headless/forwarded_launch.h b/headless/forwarded_launch.h
+index bce0587..289f045 100644
+--- a/headless/forwarded_launch.h
++++ b/headless/forwarded_launch.h
+@@ -8,6 +8,7 @@ namespace Eden {
+ struct ForwardedArgs {
+     std::string rom;
+     bool exit_after_game = false;
++    std::string return_to;  // --return <eboot>: PS5CEMU-HAR's, which started this program
+ };
+ 
+ inline ForwardedArgs ParseForwardedArgs(int argc, char** argv) {
+@@ -24,6 +25,10 @@ inline ForwardedArgs ParseForwardedArgs(int argc, char** argv) {
+             if (i + 1 < argc && argv[i + 1] != nullptr) result.rom = argv[++i];
+         } else if (arg.starts_with(rom_prefix)) {
+             result.rom = std::string{arg.substr(rom_prefix.size())};
++        } else if (arg == "--return") {
++            if (i + 1 < argc && argv[i + 1] != nullptr) result.return_to = argv[++i];
++        } else if (arg.starts_with("--return=")) {
++            result.return_to = std::string{arg.substr(9)};
+         }
+     }
+     return result;
+diff --git a/headless/main.cpp b/headless/main.cpp
+index 5b654e2..1708a61 100644
+--- a/headless/main.cpp
++++ b/headless/main.cpp
+@@ -8,6 +8,9 @@
+ #include <exception>
+ #include "assets_dir.h"
+ #include "forwarded_launch.h"
++// src/lifecycle.c: PS5CEMU-HAR's eboot when main returns
++extern "C" void eden_set_host_eboot(const char* eboot);
++extern "C" void eden_stay_closed(void);
+ #include "gpu_failure.h"
+ #include "guest_fault.h"
+ #include "jit_list.h"
+@@ -184,8 +187,36 @@ public:
+     std::printf("EDEN_JIT_TABLE check pages=%zu mismatches=%zu\n", pages, mismatches);
+ }
+ 
++// A game PS5CEMU-HAR started (--rom): its cover and its own name where the library keeps them
++// (covers/, by the file's path in roms/, eden_services.cpp), for PS5CEMU-HAR's Switch side to show;
++// the library writes the same when it lists the game. Each is read from the game once.
++static void KeepForwardedCover(const std::string& rom) {
++    const std::string roms = Eden::AssetsPath("roms/");
++    const std::string file = rom.rfind(roms, 0) == 0 ? rom.substr(roms.size()) : std::filesystem::path(rom).filename().string();
++    const std::string cover = Eden::CoverFile(file);
++    char name[16]{};
++    std::snprintf(name, sizeof(name), "/%08x.name", Eden::HashPath(file));
++    const std::string name_path = Eden::CoversDir() + name;
++    if (Eden::FileExists(cover) && Eden::FileExists(name_path)) return;
++    (void)mkdir(Eden::CoversDir().c_str(), 0777);
++    char title[513]{};
++    const int found = eden_extract_game_metadata(rom.c_str(), Eden::AssetsPath("keys").c_str(), cover.c_str(), title,
++                                                 sizeof(title));
++    if ((found & EDEN_METADATA_TITLE) && title[0]) {
++        const std::string staged = name_path + ".new";
++        if (std::FILE* out = std::fopen(staged.c_str(), "wb")) {
++            const std::size_t length = std::strlen(title);
++            const bool written = std::fwrite(title, 1, length, out) == length;
++            const bool kept = std::fclose(out) == 0 && written && std::rename(staged.c_str(), name_path.c_str()) == 0;
++            if (!kept) (void)std::remove(staged.c_str());
++        }
++    }
++    Eden::BootTrace::Line("the game's cover: %s, its name: %s", (found & EDEN_METADATA_COVER) ? "kept" : "none",
++                          (found & EDEN_METADATA_TITLE) ? "kept" : "none");
++}
++
+ static void MigrateSandboxData() {
+-    const std::filesystem::path sandbox{"/mnt/sandbox/PPSA99008_000/download0"};
++    const std::filesystem::path sandbox{std::string{Eden::kSandboxDir} + "/download0"};
+     const std::pair<std::filesystem::path, std::string> moves[] = {
+         {sandbox / "eden-headless-g7/user", Eden::UserDir()},
+         {sandbox / "prosperoeden/covers", Eden::CoversDir()},
+@@ -354,7 +385,7 @@ int main(int argc, char** argv) {
+         Eden::Crash::Install(Eden::LogsDir(), Eden::kAppVersion, last_crash.restarted);
+         Eden::BootTrace::Ready(Eden::LogsDir(), Eden::FilesystemAccess());
+         Eden::BootTrace::Line("logs and crash handler ready (%s)", Eden::LogsDir().c_str());
+-        for (const char* folder : {"/app0", Eden::kMountedAppDir, Eden::kInstallDir, "/mnt/sandbox/PPSA99008_000/app0"})
++        for (const char* folder : {"/app0/eden", Eden::kMountedAppDir, Eden::kInstallDir, "/mnt/sandbox/PPSA99360_000/app0/eden"})
+             Eden::BootTrace::Line("app folder candidate %s: eboot %s, font %s", folder,
+                                   Eden::FileExists(std::string{folder} + "/eboot.bin") ? "yes" : "no",
+                                   Eden::FileExists(std::string{folder} + "/ui/fonts/montserrat-medium.pefont") ? "yes" : "no");
+@@ -491,6 +522,12 @@ int main(int argc, char** argv) {
+         // The previous run crashed: the launcher says where its report is.
+         if (!last_crash.report.empty()) launch_error = std::string{Eden::Crash::kNotice} + last_crash.report;
+         const Eden::ForwardedArgs forwarded = Eden::ParseForwardedArgs(argc, argv);
++        // PS5CEMU-HAR's eboot, for when main returns (src/lifecycle.c)
++        static const std::string host_eboot = forwarded.return_to;
++        eden_set_host_eboot(host_eboot.c_str());
++        Eden::BootTrace::Line("started by PS5CEMU-HAR: rom %s, return %s, exit after the game %d",
++                              forwarded.rom.empty() ? "none" : "given", host_eboot.empty() ? "default" : host_eboot.c_str(),
++                              forwarded.exit_after_game ? 1 : 0);
+         std::string forwarded_game;
+         bool forwarded_session = false;
+         if (!forwarded.rom.empty() && last_crash.report.empty()) {
+@@ -576,8 +613,14 @@ int main(int argc, char** argv) {
+             forwarded_session = true;
+             selected_game = std::exchange(forwarded_game, {});
+             Eden::BootTrace::Line("starting the forwarded game");
++            KeepForwardedCover(selected_game);
+         } else if (forwarded_session && forwarded.exit_after_game && launch_error.empty()) {
+             Eden::Report("exit", "Forwarded game ended");
++            eden_stay_closed();
++            return 0;
++        } else if (forwarded_session && launch_error.empty()) {
++            // PS5CEMU-HAR started this game: back to its launcher, on the Switch side
++            Eden::Report("exit", "Game ended: back to PS5CEMU-HAR");
+             return 0;
+         } else {
+         guest_fault_retries = 0;
+diff --git a/headless/prosperoeden/pe/ui/home.cpp b/headless/prosperoeden/pe/ui/home.cpp
+index 32186c9..41412df 100644
+--- a/headless/prosperoeden/pe/ui/home.cpp
++++ b/headless/prosperoeden/pe/ui/home.cpp
+@@ -78,6 +78,13 @@ void Launcher::open_game_settings_from_home(const std::string &file)
+ 
+ void Launcher::press_home(Key key)
+ {
++    // PS5CEMU-HAR: Circle on the home screen goes back to its launcher (no game: main returns)
++    if (key == Key::circle && selected_game_.empty())
++    {
++        cue(Cue::back);
++        done_ = true;
++        return;
++    }
+     const bool ready = home_.setup_ready;
+     const bool minimal = th().minimal_home;
+     const int count = static_cast<int>(games_.size());
+@@ -686,15 +693,17 @@ void Launcher::draw_home(Canvas &c)
+             static constexpr Hint kGridHints[] = {{Pad::cross, TR("Play")},
+                                                   {Pad::triangle, TR("Game settings")},
+                                                   {Pad::square, TR("Mods")},
+-                                                  {Pad::l1, TR("Sections"), Pad::r1}};
+-            draw_footer(c, kGridHints, 4, home_.system_status);
++                                                  {Pad::l1, TR("Sections"), Pad::r1},
++                                                  {Pad::circle, TR("Back")}};
++            draw_footer(c, kGridHints, 5, home_.system_status);
+         }
+         else
+         {
+             static constexpr Hint kHints[] = {{Pad::cross, TR("Select")},
+                                               {Pad::triangle, TR("Game settings")},
+-                                              {Pad::l1, TR("Sections"), Pad::r1}};
+-            draw_footer(c, kHints, 3, home_.system_status);
++                                              {Pad::l1, TR("Sections"), Pad::r1},
++                                              {Pad::circle, TR("Back")}};
++            draw_footer(c, kHints, 4, home_.system_status);
+         }
+         end_part();
+     }
+diff --git a/headless/storage_paths.h b/headless/storage_paths.h
+index 67fb986..08f51c8 100644
+--- a/headless/storage_paths.h
++++ b/headless/storage_paths.h
+@@ -1,8 +1,9 @@
+ // SPDX-License-Identifier: GPL-3.0-or-later
+ // Where ProsperoEden keeps things. With filesystem access (elevation/elevation.hpp, requested
+ // first thing in main) the app uses real console paths:
+-//   app folder     the install location, normally /data/homebrew/PPSA99008
+-//   data           /data/prosperoeden: config/ (prosperoeden.json), logs/, covers/, user/,
++//   app folder     the eden/ folder of PS5CEMU-HAR's app (PPSA99360), normally
++//                  /data/homebrew/PPSA99360/eden: PS5CEMU-HAR starts it with LoadExec
++//   data           /data/ps5cemu/eden: config/ (prosperoeden.json), logs/, covers/, user/,
+ //                  wallpapers/ (docs/WALLPAPERS.md)
+ // Without it (no resident service or local elfldr, or the request failed) the app has no data:
+ // it reads the app folder as /app0, keeps only its logs in /download0, and the launcher says
+@@ -16,9 +17,15 @@
+ #include <sys/stat.h>
+ 
+ namespace Eden {
+-inline constexpr const char* kDataDir = "/data/prosperoeden";
+-inline constexpr const char* kDefaultAssetsDir = "/data/prosperoeden";
+-inline constexpr const char* kInstallDir = "/data/homebrew/PPSA99008";
++// PS5CEMU-HAR (PPSA99360) runs this program from its app folder's eden/ (its Switch side).
++inline constexpr const char* kHostTitle = "PPSA99360";
++inline constexpr const char* kDataDir = "/data/ps5cemu/eden";
++inline constexpr const char* kDefaultAssetsDir = "/data/ps5cemu/eden";
++// A standalone ProsperoEden's data: its keys, firmware and games are used where they are
++// while /data/ps5cemu/eden has no keys (assets_dir.h).
++inline constexpr const char* kStandaloneDataDir = "/data/prosperoeden";
++inline constexpr const char* kInstallDir = "/data/homebrew/PPSA99360/eden";
++inline constexpr const char* kSandboxDir = "/mnt/sandbox/PPSA99360_000";
+ 
+ // Filesystem access requested at startup: -1 not requested, 0 granted, otherwise the
+ // elevation::Status that refused it.
+@@ -39,7 +46,7 @@ inline bool DirectoryExists(const std::string& path) {
+ 
+ // Where the PS5 mounts the app it runs, whatever the source: a folder anywhere ShadowMountPlus
+ // scans (/data, ext or USB drives, its manual list) or an image.
+-inline constexpr const char* kMountedAppDir = "/system_ex/app/PPSA99008";
++inline constexpr const char* kMountedAppDir = "/system_ex/app/PPSA99360/eden";
+ 
+ // The app's own files (eboot, ui/, development markers): /app0 while it is still mounted (some
+ // kinds of filesystem access keep it), else the PS5's mount of the running app, else the usual
+@@ -47,8 +54,8 @@ inline constexpr const char* kMountedAppDir = "/system_ex/app/PPSA99008";
+ // /data/homebrew may hold nothing or an older copy.
+ inline const std::string& AppDir() {
+     static const std::string directory = [] {
+-        if (!FilesystemAccess()) return std::string{"/app0"};
+-        for (const char* candidate : {"/app0", kMountedAppDir, kInstallDir, "/mnt/sandbox/PPSA99008_000/app0"})
++        if (!FilesystemAccess()) return std::string{"/app0/eden"};
++        for (const char* candidate : {"/app0/eden", kMountedAppDir, kInstallDir, "/mnt/sandbox/PPSA99360_000/app0/eden"})
+             if (FileExists(std::string{candidate} + "/eboot.bin")) return std::string{candidate};
+         return std::string{kInstallDir};
+     }();
+diff --git a/src/lifecycle.c b/src/lifecycle.c
+index 3002c52..228c3c1 100644
+--- a/src/lifecycle.c
++++ b/src/lifecycle.c
+@@ -5,6 +5,30 @@
+ extern int sceKernelUsleep(uint32_t microseconds);
+ extern int sceKernelDebugOutText(int channel, const char *text);
+ extern int sceSystemServiceLoadExec(const char *path, const char **args);
++// PS5CEMU-HAR (PPSA99360) runs this program from its app folder's eden/ as its Switch side.
++// When main returns (its launcher was left, or a game PS5CEMU-HAR started has ended), the app
++// goes back to PS5CEMU-HAR's own eboot, which opens on its Switch side; only a home screen
++// tile's --exit-after-game closes it (eden_stay_closed). Each eboot is tried until one takes.
++static int return_to_host = 1;
++static const char *host_eboot = NULL;
++void eden_set_host_eboot(const char *eboot) { host_eboot = eboot; }
++void eden_stay_closed(void) { return_to_host = 0; }
++static void return_to_host_app(void) {
++    char marker[160];
++    const char *eboots[] = {host_eboot, "/app0/eboot.bin", "/system_ex/app/PPSA99360/eboot.bin",
++                            "/data/homebrew/PPSA99360/eboot.bin"};
++    for (unsigned i = 0; i < sizeof(eboots) / sizeof(eboots[0]); i++) {
++        if (!eboots[i] || !eboots[i][0]) continue;
++        snprintf(marker, sizeof(marker), "EDEN_PS5CEMU_RETURN %s\n", eboots[i]);
++        sceKernelDebugOutText(0, marker);
++        const int refused = sceSystemServiceLoadExec(eboots[i], NULL);
++        // it does not come back when it works; allow for one that returns before the process ends
++        if (refused == 0)
++            for (int wait = 0; wait < 100; wait++) sceKernelUsleep(100000);
++        snprintf(marker, sizeof(marker), "EDEN_PS5CEMU_RETURN_REFUSED %s rc=%x\n", eboots[i], (unsigned)refused);
++        sceKernelDebugOutText(0, marker);
++    }
++}
+ // main returned: ask the system to end this title. The C library's exit() and _Exit() are not a
+ // way out for a native title: the kernel answers them with signal 12, so the app "crashes", the
+ // system writes a crash report and force-kills it (every development run ended that way, and three
+@@ -14,6 +38,7 @@ __attribute__((noreturn)) void catchReturnFromMain(int status) {
+     fflush(NULL);
+     snprintf(marker, sizeof(marker), "EDEN_PPSA99121_MAIN_RETURN status=%d\n", status);
+     sceKernelDebugOutText(0, marker);
++    if (return_to_host) return_to_host_app();
+     const int refused = sceSystemServiceLoadExec("exit", NULL);
+     snprintf(marker, sizeof(marker), "EDEN_PPSA99121_EXIT_REFUSED rc=%x\n", (unsigned)refused);
+     sceKernelDebugOutText(0, marker);
+@@ -26,7 +51,8 @@ __attribute__((noreturn)) void catchReturnFromMain(int status) {
+ int eden_restart_app(void) {
+     char marker[96];
+     sceKernelDebugOutText(0, "EDEN_PPSA99121_RESTART\n");
+-    const int refused = sceSystemServiceLoadExec("/app0/eboot.bin", NULL);
++    int refused = sceSystemServiceLoadExec("/app0/eden/eboot.bin", NULL);
++    if (refused != 0) refused = sceSystemServiceLoadExec("/app0/eboot.bin", NULL);
+     snprintf(marker, sizeof(marker), "EDEN_PPSA99121_RESTART_REFUSED rc=%x\n", (unsigned)refused);
+     sceKernelDebugOutText(0, marker);
+     return refused;
+diff --git a/tools/build-lapy-helper.py b/tools/build-lapy-helper.py
+index ec01783..ead4c7f 100644
+--- a/tools/build-lapy-helper.py
++++ b/tools/build-lapy-helper.py
+@@ -11,7 +11,7 @@ import subprocess
+ 
+ 
+ ROOT = Path(__file__).resolve().parents[1]
+-TITLE = "PPSA99008"
++TITLE = "PPSA99360"
+ LAPY = ROOT / ".deps/PS5-Lapy-JB-Daemon-57fcc19"
+ PS5LOG = ROOT / ".deps/lapy-ps5log-1ae1f918"
+ SDK = ROOT / ".deps/lapy-ps5-payload-sdk-v0.42"
