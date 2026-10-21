@@ -473,6 +473,11 @@ namespace ps5ingame3ds
 				{"border", Tr("Border"), BorderName(settings.border), true,
 					Tr("Artwork around the screens, never over them. Also in the launcher's Settings > Screens.")},
 			}});
+			// the DS turned with its screens, for the games played holding it on its side
+			if (ds)
+				rows.back().rows.insert(rows.back().rows.begin() + 2,
+					{"rotation", Tr("Screen rotation"), Tr(kRotations[std::clamp(settings.rotation, 0, kRotationCount - 1)]), true,
+						Tr("For the games played with the DS held on its side, like a book (Hotel Dusk): both screens turn together.")});
 			if (ds)
 				rows.push_back({"graphics", Tr("Graphics"), Tr(filter), false, Tr("The screen filter and the performance overlay."), {
 					{"dsfilter", Tr("Screen filter"), Tr(filter), true,
@@ -666,6 +671,8 @@ namespace ps5ingame3ds
 			}
 			else if (id == "dsfilter")
 				next.screenFilter = (std::clamp(settings.screenFilter, 0, kScreenFilterCount - 1) + change + kScreenFilterCount) % kScreenFilterCount;
+			else if (id == "rotation")
+				next.rotation = (std::clamp(settings.rotation, 0, kRotationCount - 1) + change + kRotationCount) % kRotationCount;
 			else if (id == "lid")
 				next.lidClosed = !settings.lidClosed;
 			else if (id == "cpu")

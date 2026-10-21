@@ -44,8 +44,12 @@ namespace ps5melonds
 		melonDS::u32 KeyMask();
 		bool Touch(int& x, int& y);
 		bool Blowing();
-		// The cursor over the bottom screen, from 0 to 1 across it; true while a finger is on the touchpad
+		// The cursor over the bottom screen as the TV shows it, from 0 to 1 across it; true while a finger
+		// is on the touchpad
 		bool Cursor(float& x, float& y);
+		// The screens turned that many quarter turns clockwise (screens::Place): the touchpad moves the
+		// cursor over the bottom screen as the TV shows it, and Touch gives the DS's own coordinates
+		void SetRotation(int rotation);
 		// The app's own actions (port/azahar/controls.h), for the emulation: fast forward and rewind
 		// held, and whether rewind has an input at all (else no snapshots are kept for it)
 		bool FastForward();

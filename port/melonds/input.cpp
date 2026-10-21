@@ -7,6 +7,7 @@
 // are read here too: a touch where the cursor is (#59), fast forward and rewind (#54), held.
 
 #include "frontend.h"
+#include "screens.h"
 #include "../azahar/controls.h"
 #include "../ps5/pad.h"
 
@@ -44,8 +45,9 @@ namespace ps5melonds::input
 
 		melonDS::u32 s_mask = 0xFFF; // under s_mutex, with the five below
 		bool s_touching = false;
-		float s_cursorX = 0.5f, s_cursorY = 0.5f; // 0 to 1 over the bottom screen
+		float s_cursorX = 0.5f, s_cursorY = 0.5f; // 0 to 1 over the bottom screen, as the TV shows it
 		bool s_cursorVisible = false;
+		std::atomic<int> s_rotation{0}; // SetRotation
 		std::atomic<bool> s_blowing{false};
 		std::atomic<bool> s_fastForward{false}, s_rewinding{false}, s_rewindBound{false};
 		// the game's loop's: what was held while the menu was open, kept from the game until let go
@@ -227,9 +229,17 @@ namespace ps5melonds::input
 	bool Touch(int& x, int& y)
 	{
 		std::lock_guard lock(s_mutex);
-		x = std::clamp((int)(s_cursorX * 256.0f), 0, 255);
-		y = std::clamp((int)(s_cursorY * 192.0f), 0, 191);
+		// the cursor's place on the screen as the DS has it, the screens turned back
+		float dsX, dsY;
+		screens::Unturn(s_rotation, s_cursorX, s_cursorY, dsX, dsY);
+		x = std::clamp((int)(dsX * 256.0f), 0, 255);
+		y = std::clamp((int)(dsY * 192.0f), 0, 191);
 		return s_touching;
+	}
+
+	void SetRotation(int rotation)
+	{
+		s_rotation = screens::QuarterTurns(rotation);
 	}
 
 	bool Blowing()

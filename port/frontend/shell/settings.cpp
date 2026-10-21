@@ -108,6 +108,9 @@ namespace ps5shell
 		constexpr int kClocks[] = {25, 50, 75, 100, 125, 150, 200, 300, 400}; // the 3DS's CPU clock, as its in-game menu has them
 		// tr: how the DS's screens are scaled to the TV: the filters' names
 		constexpr const char* kDsFilters[] = {TrMark("Sharp"), TrMark("Smooth"), TrMark("Square pixels")};
+		// tr: the DS's two screens turned together, a quarter turn at a time, for the games held on their side:
+		// upright, a quarter turn clockwise, upside down, a quarter turn counterclockwise
+		constexpr const char* kDsRotations[] = {TrMark("Upright"), TrMark("90° right"), TrMark("Upside down"), TrMark("90° left")};
 		// the Switch's internal resolutions (Eden's), times the game's own 720p handheld or 1080p docked
 		constexpr const char* kNxResolutions[] = {"0.5x", "0.75x", "1x", "1.5x", "2x", "3x", "4x"};
 		// Eden's upscaling filters, in its order (bilinear, AMD FSR, bicubic, nearest), by kUpscaleFilters' names
@@ -580,6 +583,13 @@ namespace ps5shell
 					Tr("One above the other, the top one alone, the top one large with the bottom one beside it, or the two side by side. In a "
 					"game, touchpad click + R1 goes to the next.")),
 				"layout");
+			if (IsDs())
+				own(choice("dsrotation", Tr("Screen rotation"), Options(kDsRotations), hand.dsRotation,
+						Tr("For the games held on their side, like a book."),
+						Tr("Turns the DS's two screens together, a quarter turn at a time, for the games played with the DS held on its side, "
+						   "like a book (Hotel Dusk). The touchpad moves the cursor over the bottom screen as the TV shows it. The in-game menu "
+						   "changes it too.")),
+					"dsRotation");
 			own(choice("border", Tr("Border"), Options(kBorderThemes), hand.border, Tr("Artwork around the screens."),
 					Tr("Artwork around the screens, never over them. It follows every layout, and the in-game menu changes it too."),
 					Kind::Swatches),
@@ -1343,6 +1353,8 @@ namespace ps5shell
 			hand.cpuClock = kClocks[std::clamp(index, 0, (int)std::size(kClocks) - 1)];
 		else if (id == "dsfilter")
 			hand.dsFilter = std::clamp(index, 0, 2);
+		else if (id == "dsrotation")
+			hand.dsRotation = std::clamp(index, 0, 3);
 		else if (id == "nx-resolution")
 			hand.nxResolution = std::clamp(index, 0, 6);
 		else if (id == "nx-filter")

@@ -92,6 +92,7 @@ namespace ps5melonds
 		{
 			int layout = 2;
 			bool swapped = false;
+			int rotation = 0; // the DS turned this many quarter turns clockwise (screens::Place)
 			int filter = 0;
 			int speedLimit = 100; // percent of the DS's; 0: none
 			bool lidClosed = false;
@@ -395,6 +396,7 @@ namespace ps5melonds
 			menu.aOnCircle = ps5azahar::MappedInput(s_settings, ps5azahar::Button::A) == ps5emu::PadInput::Circle;
 			menu.border = s_settings.border;
 			menu.screenFilter = s_settings.dsFilter;
+			menu.rotation = s_settings.dsRotation;
 			menu.lidClosed = view.lidClosed;
 			return menu;
 		}
@@ -414,7 +416,7 @@ namespace ps5melonds
 			}
 			const float width = (float)screens::Width(), height = (float)screens::Height();
 			screens::Rect top, bottom;
-			screens::Place(view.layout, view.swapped, width, height, top, bottom);
+			screens::Place(view.layout, view.swapped, view.rotation, width, height, top, bottom);
 			std::vector<ps5ingame3ds::ScreenRect> shown;
 			for (const screens::Rect& r : {top, bottom})
 				if (r.Shown())
@@ -436,6 +438,8 @@ namespace ps5melonds
 			s_settings.performance = menu.performance;
 			s_settings.deadzone = menu.deadzone;
 			s_settings.dsFilter = menu.screenFilter;
+			s_settings.dsRotation = screens::QuarterTurns(menu.rotation);
+			input::SetRotation(s_settings.dsRotation);
 			if (menu.border != s_settings.border)
 			{
 				s_settings.border = menu.border;
@@ -453,6 +457,7 @@ namespace ps5melonds
 				std::lock_guard lock(s_viewMutex);
 				s_view.layout = menu.layout;
 				s_view.swapped = menu.swapScreens;
+				s_view.rotation = s_settings.dsRotation;
 				s_view.filter = menu.screenFilter;
 				s_view.lidClosed = menu.lidClosed;
 				if (menu.speedLimit != s_view.speedLimit)
@@ -616,7 +621,9 @@ namespace ps5melonds
 				if (nds.IsLidClosed() != view.lidClosed)
 					nds.SetLidClosed(view.lidClosed);
 				screens::Frame frame;
-				screens::Place(view.layout, view.swapped, (float)screens::Width(), (float)screens::Height(), frame.topRect, frame.bottomRect);
+				screens::Place(view.layout, view.swapped, view.rotation, (float)screens::Width(), (float)screens::Height(), frame.topRect,
+					frame.bottomRect);
+				frame.rotation = view.rotation;
 				frame.filter = view.filter;
 				const bool held = ps5ingame3ds::MenuOpen() || !nds.IsRunning();
 				frame.cursor = input::Cursor(frame.cursorX, frame.cursorY) && !held;
@@ -896,8 +903,10 @@ namespace ps5melonds
 			std::lock_guard lock(s_viewMutex);
 			s_view = {};
 			s_view.layout = settings.layout;
+			s_view.rotation = screens::QuarterTurns(settings.dsRotation);
 			s_view.filter = settings.dsFilter;
 		}
+		input::SetRotation(settings.dsRotation);
 		s_stopReason = -1;
 		s_stateRequest = 0;
 		{

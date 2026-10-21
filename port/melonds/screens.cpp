@@ -166,13 +166,14 @@ namespace ps5melonds::screens
 			Buffer staging; // the two screens' pixels
 		};
 
-		// What the shaders take (shaders/screens.vert): the quad, the screen's size, the filter
+		// What the shaders take (shaders/screens.vert): the quad, the screen's size, the filter, the
+		// screen's picture's quarter turns clockwise
 		struct Constants
 		{
 			float rect[4];
 			float size[2];
 			float mode;
-			float padding;
+			float rotation;
 		};
 		static_assert(sizeof(Constants) == 32);
 
@@ -578,8 +579,8 @@ namespace ps5melonds::screens
 			return true;
 		}
 
-		// A quad on the picture, in clip space
-		void Draw(VkCommandBuffer commands, const Rect& rect, float mode)
+		// A quad on the picture, in clip space, its screen's picture turned rotation quarter turns
+		void Draw(VkCommandBuffer commands, const Rect& rect, float mode, int rotation = 0)
 		{
 			Constants constants{};
 			constants.rect[0] = rect.left / s.width * 2.0f - 1.0f;
@@ -589,6 +590,7 @@ namespace ps5melonds::screens
 			constants.size[0] = kScreenWidth;
 			constants.size[1] = kScreenHeight;
 			constants.mode = mode;
+			constants.rotation = (float)QuarterTurns(rotation);
 			vk.CmdPushConstants(commands, s.layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(constants), &constants);
 			vk.CmdDraw(commands, 6, 1, 0, 0);
 		}
@@ -642,8 +644,36 @@ namespace ps5melonds::screens
 		}
 	}
 
-	void Place(int layout, bool swapped, float width, float height, Rect& top, Rect& bottom)
+	void Place(int layout, bool swapped, int rotation, float width, float height, Rect& top, Rect& bottom)
 	{
+		const int turns = QuarterTurns(rotation);
+		if (turns != 0)
+		{
+			// laid out upright on the picture turned back (its sides swapped for a quarter turn), then
+			// each corner turned clockwise onto the picture
+			const bool sideways = turns % 2 == 1;
+			const float uprightWidth = sideways ? height : width, uprightHeight = sideways ? width : height;
+			Place(layout, swapped, 0, uprightWidth, uprightHeight, top, bottom);
+			auto turn = [&](Rect& rect) {
+				if (!rect.Shown())
+					return;
+				auto point = [&](float x, float y, float& turnedX, float& turnedY) {
+					switch (turns)
+					{
+					case 1: turnedX = uprightHeight - y, turnedY = x; break;
+					case 2: turnedX = uprightWidth - x, turnedY = uprightHeight - y; break;
+					default: turnedX = y, turnedY = uprightWidth - x; break;
+					}
+				};
+				float x0, y0, x1, y1;
+				point(rect.left, rect.top, x0, y0);
+				point(rect.right, rect.bottom, x1, y1);
+				rect = Rect{std::min(x0, x1), std::min(y0, y1), std::max(x0, x1), std::max(y0, y1)};
+			};
+			turn(top);
+			turn(bottom);
+			return;
+		}
 		top = bottom = {};
 		Rect* first = swapped ? &bottom : &top;	 // the main screen: the top one, or the bottom one swapped
 		Rect* second = swapped ? &top : &bottom;
@@ -834,7 +864,7 @@ namespace ps5melonds::screens
 			if (rects[i]->Shown() && s.screens[i].filled)
 			{
 				vk.CmdBindDescriptorSets(commands, VK_PIPELINE_BIND_POINT_GRAPHICS, s.layout, 0, 1, &s.screens[i].set, 0, nullptr);
-				Draw(commands, *rects[i], mode);
+				Draw(commands, *rects[i], mode, frame.rotation);
 			}
 		const Rect& bottom = frame.bottomRect;
 		if (frame.cursor && bottom.Shown() && s.screens[1].filled)

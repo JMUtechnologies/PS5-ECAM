@@ -55,6 +55,7 @@ namespace ps5settings
 		bool hwShaders = true;
 		// the DS's games (melonDS: port/melonds)
 		int dsFilter = 0;			  // how the DS's screens are scaled to the TV: sharp, smooth, square pixels (ps5melonds::screens::Filter)
+		int dsRotation = 0;			  // the DS turned this many quarter turns clockwise, for the games held on their side (Hotel Dusk)
 		bool dsJit = true;			  // melonDS's recompiler where the console gives executable memory; off: its interpreter, slower
 		bool dsOwnBios = true;		  // the DS's own BIOS and firmware when they are in melonds/bios; off (or missing): melonDS's FreeBIOS
 		// the Switch's games (Eden: port/eden), handed to its program as a game starts

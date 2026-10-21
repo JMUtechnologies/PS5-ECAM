@@ -31,7 +31,27 @@ namespace ps5melonds::screens
 
 	// Where the layout (ps5azahar::Layout: stacked, the top screen only, a large top screen, side by side)
 	// puts the screens on a width x height picture; swapped: the bottom screen takes the top one's place.
-	void Place(int layout, bool swapped, float width, float height, Rect& top, Rect& bottom);
+	// rotation: the DS turned that many quarter turns clockwise, both screens and the layout with them,
+	// for the games held on their side (Hotel Dusk, Brain Age): laid out upright on the picture turned
+	// back, then turned onto it.
+	void Place(int layout, bool swapped, int rotation, float width, float height, Rect& top, Rect& bottom);
+	// The quarter turns, 0 to 3, of any number of them
+	inline int QuarterTurns(int rotation)
+	{
+		return ((rotation % 4) + 4) % 4;
+	}
+	// A point on a screen as the TV shows it (0 to 1 across its rectangle there) as the DS has it (0 to
+	// 1 across its 256 x 192), for a screen turned rotation quarter turns clockwise
+	inline void Unturn(int rotation, float x, float y, float& dsX, float& dsY)
+	{
+		switch (QuarterTurns(rotation))
+		{
+		case 1: dsX = y, dsY = 1.0f - x; break;
+		case 2: dsX = 1.0f - x, dsY = 1.0f - y; break;
+		case 3: dsX = 1.0f - y, dsY = x; break;
+		default: dsX = x, dsY = y; break;
+		}
+	}
 
 	enum Filter
 	{
@@ -49,9 +69,10 @@ namespace ps5melonds::screens
 		const uint32_t* top = nullptr;
 		const uint32_t* bottom = nullptr;
 		Rect topRect, bottomRect;
+		int rotation = 0; // as Place had it: each screen's picture turned that many quarter turns
 		int filter = kSharp;
 		bool cursor = false;	   // the touch cursor, over the bottom screen
-		float cursorX = 0, cursorY = 0; // 0 to 1 across it
+		float cursorX = 0, cursorY = 0; // 0 to 1 across it, as the TV shows it
 	};
 
 	// The device and the swapchain on VideoOut. False, with the reason, when they cannot be made (what
