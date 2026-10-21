@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Wed, 21 Oct 2026 20:40:11 +0000
+Subject: [PATCH] PS5: every range of a recompiled function registered, so a
+ swapped RPL's code drops it (#65)
+
+The boundary tracker follows unconditional branches into other code, but only the function's first
+range was registered, so invalidating another of its ranges left jump table entries on stale code.
+Wii Party U loads each minigame's RPL where the last one was, and its Game Information screen then
+ran an old "jump to free" and crashed (signal 11 at 0x1000000018), on either recompiler.
+
+Found, traced and tested on desktop Cemu by xrd365 (#65, cemu-project/Cemu#2084).
+---
+ .../Espresso/Recompiler/PPCRecompilerImlGen.cpp | 17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
+
+diff --git a/src/Cafe/HW/Espresso/Recompiler/PPCRecompilerImlGen.cpp b/src/Cafe/HW/Espresso/Recompiler/PPCRecompilerImlGen.cpp
+index d9cb6e6..02893ab 100644
+--- a/src/Cafe/HW/Espresso/Recompiler/PPCRecompilerImlGen.cpp
++++ b/src/Cafe/HW/Espresso/Recompiler/PPCRecompilerImlGen.cpp
+@@ -3283,12 +3283,17 @@ bool PPCRecompiler_generateIntermediateCode(ppcImlGenContext_t& ppcImlGenContext
+ 	if (!PPCRecompiler_GenerateIML(ppcImlGenContext, boundaryTracker, entryAddresses))
+ 		return false;
+ 
+-	// set range
+-	// todo - support non-continuous functions for the range tracking?
+-	ppcRecRange_t recRange;
+-	recRange.ppcAddress = ppcRecFunc->ppcAddress;
+-	recRange.ppcSize = ppcRecFunc->ppcSize;
+-	ppcRecFunc->list_ranges.push_back(recRange);
++	// set ranges
++	// the boundary tracker follows unconditional branches into other code, so a function can span several non-continuous ranges.
++	// All of them are registered: otherwise invalidating a secondary range (an RPL unloaded and another loaded at its address)
++	// leaves its jump table entries pointing at stale code (Wii Party U's minigames, cemu-project/Cemu#2084)
++	for (auto& trackedRange : boundaryTracker.GetRanges())
++	{
++		ppcRecRange_t recRange;
++		recRange.ppcAddress = trackedRange.startAddress;
++		recRange.ppcSize = trackedRange.length;
++		ppcRecFunc->list_ranges.push_back(recRange);
++	}
+ 
+ 	
+ 	return true;
