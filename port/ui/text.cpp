@@ -516,6 +516,12 @@ namespace ui
 			std::string path;
 			int index = 0;
 			std::string cjk; // CjkOf
+			// a CJK font by what it has (a Han, kana or Hangul letter), whatever its name says: the PS5's
+			// DFHEI5-SONY.ttf and YoonGothicProSIE are, and their Cyrillic and Greek are wide (#69)
+			bool hasCjk = false;
+			// 0 upright regular, 1 upright light or medium, 2 upright bold, 3 italic: a fallback glyph is
+			// rendered once, regular, and made bolder for the other weights
+			int style = 0;
 		};
 		FT_Library library = nullptr;
 		std::vector<Face> faces;
@@ -532,14 +538,15 @@ namespace ui
 
 		// the menus' language's fonts first for CJK characters (a Han character drawn as that language
 		// writes it), the fonts that are not CJK ones first for the rest (a Russian menu in a Latin and
-		// Cyrillic font, not in a Japanese one's Cyrillic)
+		// Cyrillic font, not in a Japanese or Chinese one's Cyrillic, #69), their regular upright styles
+		// before the others (SST-Roman before SST-Bold, which comes first by name)
 		void Order(const std::string& language)
 		{
 			cjkOrder.clear();
 			otherOrder.clear();
 			auto rank = [&](const Face& face) {
 				if (face.cjk.empty())
-					return 3;
+					return face.hasCjk ? 2 : 3;
 				if (face.cjk == language)
 					return 0;
 				if (face.cjk == "cjk")
@@ -550,11 +557,12 @@ namespace ui
 				for (size_t i = 0; i < faces.size(); i++)
 					if (rank(faces[i]) == r)
 						cjkOrder.push_back(i);
-			for (size_t i = 0; i < faces.size(); i++)
-				if (faces[i].cjk.empty())
-					otherOrder.push_back(i);
+			for (int style = 0; style <= 3; style++)
+				for (size_t i = 0; i < faces.size(); i++)
+					if (faces[i].cjk.empty() && !faces[i].hasCjk && faces[i].style == style)
+						otherOrder.push_back(i);
 			for (size_t i : cjkOrder)
-				if (!faces[i].cjk.empty())
+				if (!faces[i].cjk.empty() || faces[i].hasCjk)
 					otherOrder.push_back(i);
 		}
 
@@ -758,7 +766,12 @@ namespace ui
 					FT_Set_Pixel_Sizes(face, 0, m_size);
 					const std::string name = file.substr(file.find_last_of('/') + 1);
 					const std::string family = face->family_name ? face->family_name : "";
-					fallback.faces.push_back({face, file, index, CjkOf(Lower(name + " " + family))});
+					const std::string style = Lower(face->style_name ? face->style_name : "");
+					const bool hasCjk = FT_Get_Char_Index(face, 0x4e00) != 0 || FT_Get_Char_Index(face, 0x3042) != 0 || FT_Get_Char_Index(face, 0xac00) != 0;
+					const int styleRank = (face->style_flags & FT_STYLE_FLAG_ITALIC) || style.find("italic") != std::string::npos ? 3 :
+						(face->style_flags & FT_STYLE_FLAG_BOLD) || style.find("bold") != std::string::npos || style.find("heavy") != std::string::npos ? 2 :
+						style.find("light") != std::string::npos || style.find("medium") != std::string::npos || style.find("thin") != std::string::npos ? 1 : 0;
+					fallback.faces.push_back({face, file, index, CjkOf(Lower(name + " " + family)), hasCjk, styleRank});
 					names += (names.empty() ? "" : ", ") + name + (count > 1 ? "#" + std::to_string(index) : "") +
 						(fallback.faces.back().cjk.empty() ? "" : " (" + fallback.faces.back().cjk + ")");
 				}
