@@ -717,6 +717,14 @@ namespace ps5shell
 	{
 		if (m_scanning && !SystemScanning())
 			LoadGames();
+		// a Switch game's cover read from its file after the list was shown: its game looks again
+		if (IsSwitch() && ps5eden::CoverArrivals() != m_switchCoverArrivals)
+		{
+			m_switchCoverArrivals = ps5eden::CoverArrivals();
+			for (Game& game : m_games)
+				if (game.icon.empty())
+					game.iconLooked = false;
+		}
 		if (ps5boxart::Arrivals() != m_boxArrivals)
 		{
 			m_boxArrivals = ps5boxart::Arrivals();

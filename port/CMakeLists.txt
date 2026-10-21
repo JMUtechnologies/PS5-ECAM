@@ -166,6 +166,8 @@ add_library(CemuPS5 STATIC
 	eden/launch.cpp
 	eden/library.cpp
 	eden/library.h
+	eden/nx_files.cpp
+	eden/nx_files.h
 	melonds/archive.cpp
 	melonds/archive.h
 	melonds/library.cpp
@@ -279,6 +281,7 @@ set_source_files_properties(
 	azahar/unavailable.cpp
 	eden/launch.cpp
 	eden/library.cpp
+	eden/nx_files.cpp
 	melonds/archive.cpp
 	melonds/library.cpp
 	melonds/screens.cpp

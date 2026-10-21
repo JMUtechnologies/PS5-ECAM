@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "library.h"
+#include "nx_files.h"
 #include "../app/paths.h"
 #include "../ps5/log.h"
 
 #include <rapidjson/document.h>
+#include <sys/stat.h>
 
 #include <algorithm>
 #include <atomic>
@@ -12,7 +14,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
+#include <fstream>
+#include <map>
 #include <mutex>
+#include <set>
 #include <thread>
 
 namespace fs = std::filesystem;
@@ -24,6 +29,8 @@ namespace ps5eden
 		std::atomic<bool> s_scanning{false};
 		std::mutex s_mutex;
 		std::vector<ps5emu::Game> s_games; // under s_mutex
+		std::atomic<uint32_t> s_coverArrivals{0};
+		std::mutex s_covers; // one pass over the games' icons at a time
 
 		// a standalone ProsperoEden's data, whose game files Eden takes while ours has no keys
 		constexpr const char* kStandaloneData = "/data/prosperoeden";
@@ -124,12 +131,87 @@ namespace ps5eden
 			return title;
 		}
 
-		void Add(const fs::path& path, std::vector<ps5emu::Game>& games)
+		// What an earlier scan read of a file, so each is read once (until it changes): the lines of
+		// cache/switch-games.txt, "<size> <time> <title ID> <kind> <path>"
+		struct Known
+		{
+			uint64_t size = 0;
+			int64_t time = 0;
+			uint64_t titleId = 0;
+			nx::Kind kind = nx::Kind::Unknown;
+		};
+
+		std::string KnownFile()
+		{
+			return ps5paths::Cache() + "/switch-games.txt";
+		}
+
+		std::map<std::string, Known> LoadKnown()
+		{
+			std::map<std::string, Known> known;
+			std::ifstream in(KnownFile());
+			for (std::string line; std::getline(in, line);)
+			{
+				Known file;
+				unsigned long long size = 0, id = 0;
+				long long time = 0;
+				int kind = 0, read = 0;
+				if (std::sscanf(line.c_str(), "%llu %lld %llx %d %n", &size, &time, &id, &kind, &read) == 4 && read > 0 &&
+					(size_t)read < line.size() && kind > 0 && kind <= (int)nx::Kind::Dlc)
+					known[line.substr(read)] = {size, time, id, (nx::Kind)kind};
+			}
+			return known;
+		}
+
+		void SaveKnown(const std::map<std::string, Known>& known)
+		{
+			std::error_code ec;
+			fs::create_directories(ps5paths::Cache(), ec);
+			const std::string staged = KnownFile() + ".new";
+			{
+				std::ofstream out(staged, std::ios::trunc);
+				for (const auto& [path, file] : known)
+					out << file.size << ' ' << file.time << ' ' << fmt::format("{:016x}", file.titleId) << ' ' << (int)file.kind << ' ' << path << '\n';
+				if (!out)
+					return;
+			}
+			std::rename(staged.c_str(), KnownFile().c_str());
+		}
+
+		bool Stamp(const fs::path& path, uint64_t& size, int64_t& time)
+		{
+			struct stat info{};
+			if (stat(path.c_str(), &info) != 0 || !S_ISREG(info.st_mode))
+				return false;
+			size = (uint64_t)info.st_size;
+			time = (int64_t)info.st_mtim.tv_sec * 1000000000 + info.st_mtim.tv_nsec;
+			return true;
+		}
+
+		// The game's own name where Eden keeps it (covers/<key>.name), unless it has one there already
+		void KeepName(const fs::path& path, const std::string& name)
+		{
+			if (name.empty() || !SavedTitle(path).empty())
+				return;
+			std::error_code ec;
+			fs::create_directories(DataFolder() + "/covers", ec);
+			const std::string file = CoverFile(path, "name"), staged = file + ".new";
+			{
+				std::ofstream out(staged, std::ios::binary | std::ios::trunc);
+				out << name;
+				if (!out)
+					return;
+			}
+			std::rename(staged.c_str(), file.c_str());
+		}
+
+		void Add(const fs::path& path, std::vector<ps5emu::Game>& games, uint64_t readId = 0)
 		{
 			ps5emu::Game game;
 			const uint64_t tagged = TaggedId(path.filename().string());
-			// the same game keeps one ID wherever it is listed: its settings, recent games and cover
-			game.titleId = tagged ? tagged : kIdTag | HashPath(CoverKey(path));
+			// the same game keeps one ID wherever it is listed: its settings, recent games and cover. Its
+			// own, read from the file with the keys, else the one in its name, else one made from its path
+			game.titleId = readId ? readId : tagged ? tagged : kIdTag | HashPath(CoverKey(path));
 			const std::string saved = SavedTitle(path);
 			game.name = !saved.empty() ? saved : CleanTitle(path);
 			game.path = path;
@@ -140,9 +222,9 @@ namespace ps5eden
 			games.push_back(std::move(game));
 		}
 
-		// The games in a folder: its .nsp and .xci files, and those in its folders (one level down, as
-		// Eden's library looks: a folder per game, with its update and DLC beside it)
-		void Scan(const std::string& folder, std::vector<ps5emu::Game>& games)
+		// The Switch files in a folder: its .nsp and .xci files, and those in its folders (one level
+		// down, as Eden's library looks: a folder per game, with its update and DLC beside it)
+		void Collect(const std::string& folder, std::vector<fs::path>& files)
 		{
 			std::error_code ec;
 			for (const auto& entry : fs::directory_iterator(folder, ec))
@@ -154,15 +236,100 @@ namespace ps5eden
 				{
 					std::error_code inner;
 					for (const auto& file : fs::directory_iterator(entry.path(), inner))
-					{
-						const std::string inside = file.path().filename().string();
-						if (file.is_regular_file(inner) && IsSwitchFile(inside) && !AddOn(inside))
-							Add(file.path(), games);
-					}
+						if (file.is_regular_file(inner) && IsSwitchFile(file.path().filename().string()))
+							files.push_back(file.path());
 				}
-				else if (entry.is_regular_file(ec) && IsSwitchFile(name) && !AddOn(name))
-					Add(entry.path(), games);
+				else if (entry.is_regular_file(ec) && IsSwitchFile(name))
+					files.push_back(entry.path());
 			}
+		}
+
+		// The games in a folder, by their names alone (a game named like an update is taken for one)
+		void Scan(const std::string& folder, std::vector<ps5emu::Game>& games)
+		{
+			std::vector<fs::path> files;
+			Collect(folder, files);
+			for (const fs::path& file : files)
+				if (!AddOn(file.filename().string()))
+					Add(file, games);
+		}
+
+		// The games in a folder as their files say with the keys: an update or DLC left out whatever its
+		// name, a game listed whatever its name, its own title ID (the same game in an NSP and an XCI listed
+		// once) and name. Without keys, or for a file they do not open, its name says. covers: the games
+		// whose icons are to be read after (no cover yet).
+		void ScanWithKeys(const std::string& folder, std::vector<ps5emu::Game>& games, std::vector<fs::path>& covers)
+		{
+			std::vector<fs::path> files;
+			Collect(folder, files);
+			nx::Keys keys;
+			const bool keyed = nx::LoadKeys(GameFilesFolder() + "/keys", keys);
+			std::map<std::string, Known> known = LoadKnown();
+			size_t read = 0, failed = 0, addOns = 0;
+			for (const fs::path& path : files)
+			{
+				Known file;
+				const bool stamped = Stamp(path, file.size, file.time);
+				if (const auto earlier = known.find(path.string());
+					stamped && earlier != known.end() && earlier->second.size == file.size && earlier->second.time == file.time)
+					file = earlier->second;
+				else if (keyed && stamped)
+				{
+					nx::Info info;
+					std::string why;
+					if (nx::Read(path.string(), keys, false, info, why))
+					{
+						file.titleId = info.titleId;
+						file.kind = info.kind;
+						known[path.string()] = file;
+						KeepName(path, info.name);
+						read++;
+					}
+					else
+						failed++;
+					if (!why.empty())
+						ps5log::Line("[switch] {}: {}", path.filename().string(), why);
+				}
+				const bool addOn = file.kind != nx::Kind::Unknown ? file.kind != nx::Kind::Game : AddOn(path.filename().string());
+				if (addOn)
+				{
+					addOns++;
+					continue;
+				}
+				Add(path, games, file.kind == nx::Kind::Game ? file.titleId : 0);
+				if (keyed && CoverPath(games.back()).empty())
+					covers.push_back(path);
+			}
+			if (read)
+				SaveKnown(known);
+			ps5log::Line("[switch] {} files: {} read with the keys now{}, {} updates and DLC left out{}", files.size(), read,
+				failed ? fmt::format(", {} that could not be", failed) : std::string(), addOns, keyed ? "" : " (no keys: by their names)");
+		}
+
+		// The icons of the games that have no cover yet, from their files, as covers Eden keeps
+		void ReadCovers(const std::vector<fs::path>& paths)
+		{
+			std::unique_lock lock(s_covers, std::try_to_lock);
+			if (!lock.owns_lock() || paths.empty())
+				return;
+			nx::Keys keys;
+			if (!nx::LoadKeys(GameFilesFolder() + "/keys", keys))
+				return;
+			std::error_code ec;
+			fs::create_directories(DataFolder() + "/covers", ec);
+			size_t made = 0;
+			for (const fs::path& path : paths)
+			{
+				nx::Info info;
+				std::string why;
+				const std::string cover = CoverFile(path, "tga");
+				if (Exists(cover) || !nx::Read(path.string(), keys, true, info, why) || info.icon.empty() || !nx::WriteIconTga(info.icon, cover))
+					continue;
+				KeepName(path, info.name);
+				made++;
+				s_coverArrivals++;
+			}
+			ps5log::Line("[switch] {} covers read from {} games' files", made, paths.size());
 		}
 	}
 
@@ -239,17 +406,20 @@ namespace ps5eden
 		const std::string scanned = ScanFolder(folder);
 		std::thread([scanned] {
 			std::vector<ps5emu::Game> games;
-			Scan(scanned, games);
-			std::sort(games.begin(), games.end(), [](const ps5emu::Game& a, const ps5emu::Game& b) { return Lower(a.name) < Lower(b.name); });
+			std::vector<fs::path> covers;
+			ScanWithKeys(scanned, games, covers);
 			// the same game twice (an NSP and an XCI, a copy in a folder): listed once
-			games.erase(std::unique(games.begin(), games.end(), [](const ps5emu::Game& a, const ps5emu::Game& b) { return a.titleId == b.titleId; }),
-				games.end());
+			std::set<uint64_t> listed;
+			std::erase_if(games, [&](const ps5emu::Game& game) { return !listed.insert(game.titleId).second; });
+			std::sort(games.begin(), games.end(), [](const ps5emu::Game& a, const ps5emu::Game& b) { return Lower(a.name) < Lower(b.name); });
 			ps5log::Line("[switch] {} Switch games in {}", games.size(), scanned);
 			{
 				std::lock_guard lock(s_mutex);
 				s_games = std::move(games);
 			}
 			s_scanning = false;
+			// then their pictures, which the launcher shows as each arrives (CoverArrivals)
+			ReadCovers(covers);
 		}).detach();
 	}
 
@@ -279,6 +449,11 @@ namespace ps5eden
 	{
 		const std::string cover = CoverFile(game.path, "tga");
 		return Exists(cover) ? cover : std::string();
+	}
+
+	uint32_t CoverArrivals()
+	{
+		return s_coverArrivals;
 	}
 
 	std::string BoxArt(const ps5emu::Game& game)

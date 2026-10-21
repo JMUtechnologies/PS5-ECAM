@@ -626,6 +626,7 @@ namespace ps5shell
 		bool m_scanning = false;
 		bool m_listed = false; // the side's scan has finished: m_games is all it found
 		uint32_t m_boxArrivals = 0;
+		uint32_t m_switchCoverArrivals = 0; // ps5eden::CoverArrivals, last looked at
 		bool m_iconLookedThisFrame = false;
 
 		ScreenId m_screen = ScreenId::Library;

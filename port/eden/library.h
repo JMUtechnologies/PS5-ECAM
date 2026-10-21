@@ -9,10 +9,12 @@
 // another (prosperoeden.json's game_files, or a standalone ProsperoEden's /data/prosperoeden while
 // ours has no keys): GameFilesFolder finds it as Eden does.
 //
-// The launcher cannot read a Switch game itself (that takes Eden and the keys): a game is named by
-// its file, and its title ID is the one in its name ("Game [0100ABCD12345000].nsp"), else one made
-// from its path (kIdTag). Once Eden has read it (its own library lists it, or it started it), its
-// cover and own name are in covers/, keyed by the file's path in roms/, and the launcher shows them.
+// With the player's keys the launcher reads each file as Eden does (nx_files.h): its title ID, whether
+// it is a game, an update or DLC, its own name and its icon, which it keeps where Eden keeps its own
+// (covers/, keyed by the file's path in roms/), so both show them. What it read of each file is kept in
+// cache/switch-games.txt until the file changes. Without keys, or for a file they do not open, a game
+// is named by its file, and its title ID is the one in its name ("Game [0100ABCD12345000].nsp"), else
+// one made from its path (kIdTag).
 
 #pragma once
 
@@ -53,8 +55,12 @@ namespace ps5eden
 	// The games in a folder, as the scan finds them: -1 when it cannot be read
 	int CountGames(const std::string& folder);
 
-	// A game's cover as Eden keeps it (a TGA in its covers/), once it has read the game; else empty
+	// A game's cover as Eden keeps it (a TGA in its covers/), once it or the launcher has read the
+	// game's icon; else empty
 	std::string CoverPath(const ps5emu::Game& game);
+	// How many covers the launcher has read from games' files since the start: the Switch side looks
+	// for its games' covers again when it changes (a scan reads them after listing the games)
+	uint32_t CoverArrivals();
 	// A picture of the game's own beside it (<its name>.png or .jpg, or cover.png or .jpg in its
 	// folder), the box art the launcher shows; else empty
 	std::string BoxArt(const ps5emu::Game& game);
