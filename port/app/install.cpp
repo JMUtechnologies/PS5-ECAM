@@ -51,6 +51,45 @@ namespace ps5emu
 			s_status.copied += bytes;
 		}
 
+		// Where folders go to be deleted: inside the MLC, so a move there is a rename on the same drive
+		fs::path TrashFolder()
+		{
+			return ActiveSettings::GetMlcPath("install-trash");
+		}
+
+		// Deletes what is in the trash, on a thread of its own (one at a time; what arrives meanwhile goes
+		// with the next)
+		void EmptyTrash()
+		{
+			static std::atomic<bool> s_emptying{false};
+			if (s_emptying.exchange(true))
+				return;
+			std::thread([] {
+				std::error_code ec;
+				const uint64_t started = sceKernelGetProcessTime();
+				const auto removed = fs::remove_all(TrashFolder(), ec);
+				if (removed != 0 && removed != (std::uintmax_t)-1)
+					ps5log::Line("[install] {} old files deleted in {} ms", removed, (sceKernelGetProcessTime() - started) / 1000);
+				s_emptying = false;
+			}).detach();
+		}
+
+		// A folder out of the way at once, deleted after: an update's or a DLC's thousands of files take
+		// minutes to delete on /data, which an install spent at 0% (an earlier install's copy kept aside)
+		// and a cancel spent "cancelling" (its partial copy), neither of which could be stopped (Discord)
+		void DropLater(const fs::path& folder)
+		{
+			std::error_code ec;
+			if (!fs::exists(folder, ec))
+				return;
+			static std::atomic<uint32_t> s_dropped{0};
+			fs::create_directories(TrashFolder(), ec);
+			fs::rename(folder, TrashFolder() / fmt::format("{}-{}", sceKernelGetProcessTime(), s_dropped++), ec);
+			if (ec)
+				fs::remove_all(folder, ec); // another drive: as before
+			EmptyTrash();
+		}
+
 		std::string Gigabytes(uint64_t bytes)
 		{
 			return fmt::format("{:.1f} GB", bytes / 1e9);
@@ -116,12 +155,16 @@ namespace ps5emu
 			std::vector<fs::path> folders;
 			std::vector<FileToCopy> files;
 			uint64_t total = 0;
+			// what an earlier install left to delete goes now, beside this one
+			EmptyTrash();
+			const uint64_t reading = sceKernelGetProcessTime();
 			for (const char* part : kParts)
 			{
 				if (!fs::is_directory(source / part, ec))
 					continue;
 				folders.push_back(part);
-				for (auto it = fs::recursive_directory_iterator(source / part, ec); !ec && it != fs::recursive_directory_iterator(); it.increment(ec))
+				for (auto it = fs::recursive_directory_iterator(source / part, ec); !ec && it != fs::recursive_directory_iterator() && !s_cancel;
+					 it.increment(ec))
 				{
 					const fs::path relative = it->path().lexically_relative(source);
 					if (it->is_directory(ec))
@@ -134,6 +177,15 @@ namespace ps5emu
 					}
 				}
 			}
+			// a cancel while the folder was read: nothing has changed yet
+			if (s_cancel)
+			{
+				ps5log::Line("[install] {}: cancelled while its folder was read", title);
+				SetStatus(InstallStatus::State::Cancelled);
+				return;
+			}
+			ps5log::Line("[install] {}: {} files and {} folders read in {} ms", title, files.size(), folders.size(),
+				(sceKernelGetProcessTime() - reading) / 1000);
 			// the large ones first, so the last to finish is a small one and the copiers end together
 			std::stable_sort(files.begin(), files.end(), [](const FileToCopy& a, const FileToCopy& b) { return a.size > b.size; });
 			{
@@ -155,7 +207,7 @@ namespace ps5emu
 			{
 				backup = target;
 				backup.replace_extension(".backup");
-				fs::remove_all(backup, ec);
+				DropLater(backup); // an earlier install's, left by a stop the app did not live through
 				fs::rename(target, backup, ec);
 				if (ec)
 				{
@@ -167,7 +219,11 @@ namespace ps5emu
 			const uint64_t started = sceKernelGetProcessTime();
 			std::string failure;
 			for (const fs::path& folder : folders)
+			{
+				if (s_cancel)
+					break;
 				fs::create_directories(target / folder, ec);
+			}
 			std::atomic<size_t> next{0};
 			std::mutex failureMutex;
 			auto copier = [&] {
@@ -193,7 +249,8 @@ namespace ps5emu
 
 			if (cancelled || !failure.empty())
 			{
-				fs::remove_all(target, ec);
+				// the partial copy out of the way at once, and what was there back in its place
+				DropLater(target);
 				if (!backup.empty())
 					fs::rename(backup, target, ec);
 				ps5log::Line("[install] {}: {}", title, cancelled ? "cancelled" : failure);
@@ -201,7 +258,7 @@ namespace ps5emu
 				return;
 			}
 			if (!backup.empty())
-				fs::remove_all(backup, ec);
+				DropLater(backup);
 			const uint64_t ms = std::max<uint64_t>(1, (sceKernelGetProcessTime() - started) / 1000);
 			ps5log::Line("[install] {} installed in {}: {} files, {} MB in {:.1f} s ({} MB/s)", title, _pathToUtf8(target), files.size(), total / 1000000,
 				ms / 1000.0, total / 1000 / ms);
