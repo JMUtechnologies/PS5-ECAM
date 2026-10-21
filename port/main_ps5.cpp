@@ -477,6 +477,10 @@ int main(int argc, char* argv[])
 		settings.launchError.clear();
 		ps5settings::Save(settings);
 	}
+	// whether the last way back to the library is what started the app: one that took it to the home
+	// screen instead is left out from now on (#68)
+	if (privileges.filesystem)
+		ps5emu::TakeRestartRecord();
 	// the Switch side's last game, when Eden never took what it was started with (port/eden/eden.h):
 	// why, said once on the Switch side, and Eden's trace in the boot log when it got that far
 	if (privileges.filesystem)

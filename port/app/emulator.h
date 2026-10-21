@@ -109,6 +109,10 @@ namespace ps5emu
 	// goes back to its shelf the same way. Each place the app can be started from is tried in turn;
 	// returns only if none took, once a notification has said so.
 	void RestartToLibrary();
+	// At the app's start: whether the last restart (RestartToLibrary) is what started it. One that
+	// ended the app without starting it again (the app started from the home screen a while after,
+	// #68) is said in the boot log, and its eboot is left out of later restarts.
+	void TakeRestartRecord();
 	// One of the app's own programs in place of this process (sceSystemServiceLoadExec): program is its
 	// path in the app's folder ("eboot.bin", or the Switch side's "eden/eboot.bin"), args its arguments;
 	// withReturn adds "--return <that folder>/eboot.bin", the way back to this program. Each place the

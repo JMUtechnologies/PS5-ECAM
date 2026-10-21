@@ -467,6 +467,57 @@ namespace ps5emu
 			}
 			return true;
 		}
+
+		// The app's own restarts (RestartToLibrary): the eboot each was asked of, and when, for the next
+		// start to read (TakeRestartRecord); and the eboots a restart once ended the app with, without
+		// starting it again (the console went to its home screen, #68), which later restarts leave out
+		constexpr long long kRestartSeconds = 30; // a restart that took starts the app well within this
+		std::string RestartRecordFile()
+		{
+			return ps5paths::Root() + "/restart.txt";
+		}
+		std::string RefusedRestartsFile()
+		{
+			return ps5paths::Root() + "/restart-refused.txt";
+		}
+		std::vector<std::string> RefusedRestarts()
+		{
+			std::vector<std::string> refused;
+			std::ifstream in(RefusedRestartsFile());
+			for (std::string line; std::getline(in, line);)
+				if (!line.empty())
+					refused.push_back(line);
+			return refused;
+		}
+	}
+
+	void TakeRestartRecord()
+	{
+		std::string eboot;
+		long long when = 0;
+		{
+			std::ifstream in(RestartRecordFile());
+			if (!in)
+				return;
+			std::getline(in, eboot);
+			in >> when;
+		}
+		std::remove(RestartRecordFile().c_str());
+		if (eboot.empty() || when <= 0)
+			return;
+		const long long after = (long long)std::time(nullptr) - when;
+		if (after >= 0 && after <= kRestartSeconds)
+		{
+			ps5log::Line("[main] started again by the app's own restart ({}, {} s ago)", eboot, after);
+			return;
+		}
+		// started from the home screen, a while after: that restart ended the app without starting it
+		std::vector<std::string> refused = RefusedRestarts();
+		if (std::find(refused.begin(), refused.end(), eboot) == refused.end())
+			std::ofstream(RefusedRestartsFile(), std::ios::app) << eboot << '\n';
+		ps5log::Line("[main] the app's last restart, {} s ago, did not start it again: LoadExec({}) took the app to the home screen. "
+					 "Later restarts leave it out ({})",
+			after, eboot, RefusedRestartsFile());
 	}
 
 	void SetGameSettings(uint64_t titleId, const ps5settings::Launcher& settings)
@@ -927,15 +978,20 @@ namespace ps5emu
 		// defaults over them
 		if (s_coreStarted)
 			GetConfigHandle().Save();
-		// the folder the app was mounted from (ShadowMountPlus's record, which follows an install on
-		// a USB drive), the usual install, the one found running and where the PS5 mounts the app: each
-		// tried until one takes, as a HEN may start the app from where the console refuses one (#48)
+		// the app's own package as the console mounted it for this process, when this process sees it:
+		// /app0, the form the SDK gives and ProsperoEden starts itself again by, and always the version
+		// running. A copy elsewhere can be another version, or one the console ends this process for
+		// without starting it (#68). Then the folder the app was mounted from (ShadowMountPlus's record,
+		// which follows an install on a USB drive), the usual install, the one found running and where the
+		// PS5 mounts the app: each tried until one takes, as a HEN may start the app from where the console
+		// refuses one (#48)
 		std::error_code ec;
 		std::vector<std::string> folders;
 		auto consider = [&](const std::string& folder) {
 			if (!folder.empty() && fs::exists(folder + "/" + program, ec) && std::find(folders.begin(), folders.end(), folder) == folders.end())
 				folders.push_back(folder);
 		};
+		consider("/app0");
 		consider(ps5paths::MountSource());
 		consider(ps5paths::kInstallDir);
 		consider(ps5paths::AppDir());
@@ -950,10 +1006,30 @@ namespace ps5emu
 			std::erase(folders, std::string("/app0"));
 			folders.insert(folders.begin(), "/app0");
 		}
+		// the app's own restart: an eboot that once ended the app without starting it again is left out,
+		// while another is there to try (TakeRestartRecord)
+		const bool restart = program == "eboot.bin";
+		if (restart)
+		{
+			const std::vector<std::string> refused = RefusedRestarts();
+			std::vector<std::string> kept;
+			for (const std::string& folder : folders)
+				if (std::find(refused.begin(), refused.end(), folder + "/" + program) == refused.end())
+					kept.push_back(folder);
+			if (!kept.empty() && kept.size() != folders.size())
+			{
+				ps5log::Line("[emu] {} left out: a restart from there once took the app to the home screen ({})", folders.size() - kept.size(),
+					RefusedRestartsFile());
+				folders = std::move(kept);
+			}
+		}
 		LeaveEndingToSystem();
 		for (const std::string& folder : folders)
 		{
 			const std::string path = folder + "/" + program;
+			// which eboot this restart asked for, and when: the next start says whether it took
+			if (restart)
+				std::ofstream(RestartRecordFile(), std::ios::trunc) << path << '\n' << (long long)std::time(nullptr) << '\n';
 			std::vector<std::string> all = args;
 			if (withReturn)
 			{
@@ -977,9 +1053,11 @@ namespace ps5emu
 					sceKernelUsleep(100000);
 			ps5log::Line("[emu] LoadExec({}) returned {:#x}", path, (uint32_t)result);
 		}
-		// none took: no program is coming to read them
+		// none took: no program is coming to read them, and no restart to judge
 		if (!argsFile.empty())
 			std::remove(argsFile.c_str());
+		if (restart)
+			std::remove(RestartRecordFile().c_str());
 		ps5log::FlushAll();
 	}
 
