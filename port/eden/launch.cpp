@@ -2,9 +2,14 @@
 #include "eden.h"
 #include "library.h"
 #include "../app/lang.h"
+#include "../app/paths.h"
 #include "../ps5/log.h"
 
 #include <algorithm>
+#include <cstdio>
+#include <deque>
+#include <fstream>
+#include <sys/stat.h>
 
 namespace ps5eden
 {
@@ -15,11 +20,29 @@ namespace ps5eden
 		constexpr const char* kResolutions[] = {"0.5x", "0.75x", "1x", "1.5x", "2x", "3x", "4x"};
 		constexpr const char* kFilters[] = {"bilinear", "fsr", "bicubic", "nearest"};
 		constexpr const char* kAstc[] = {"compressed", "full"};
+		// the lines of Eden's trace a boot log takes, the last ones
+		constexpr size_t kTraceLines = 60;
 
 		void Set(std::vector<std::string>& args, const std::string& setting)
 		{
 			args.push_back("--set");
 			args.push_back(setting);
+		}
+
+		// Eden's trace (its boot_trace.h, "[ProsperoEden diag] +123ms ..." lines), its last lines into
+		// the boot log
+		void LogTrace(const std::string& trace)
+		{
+			std::ifstream in(trace);
+			std::deque<std::string> lines;
+			for (std::string line; std::getline(in, line);)
+			{
+				lines.push_back(std::move(line));
+				if (lines.size() > kTraceLines)
+					lines.pop_front();
+			}
+			for (const std::string& line : lines)
+				ps5log::Line("[switch] eden: {}", line);
 		}
 	}
 
@@ -47,7 +70,7 @@ namespace ps5eden
 			return;
 		}
 		ps5log::Line("[switch] starting {} in Eden ({})", game.name, game.path.string());
-		ps5emu::LoadExecApp(kProgram, GameArguments(game, forGame, exitAfterGame), true);
+		ps5emu::LoadExecApp(kProgram, GameArguments(game, forGame, exitAfterGame), true, RequestFile());
 		error = ps5lang::Tr("The console did not start Eden. The boot log says what it answered.");
 	}
 
@@ -59,7 +82,36 @@ namespace ps5eden
 			return;
 		}
 		ps5log::Line("[switch] opening Eden's own launcher");
-		ps5emu::LoadExecApp(kProgram, {}, true);
+		ps5emu::LoadExecApp(kProgram, {}, true, RequestFile());
 		error = ps5lang::Tr("The console did not start Eden. The boot log says what it answered.");
+	}
+
+	std::string RequestFile()
+	{
+		return DataFolder() + "/launch-request.txt";
+	}
+
+	std::string TakeStaleRequest()
+	{
+		const std::string request = RequestFile();
+		struct stat asked{};
+		if (stat(request.c_str(), &asked) != 0)
+			return {};
+		std::remove(request.c_str());
+		// Eden starts its trace in the app's sandbox before it asks for /data, so a trace newer than the
+		// request is that launch's: Eden ran, but could not read what it was started with
+		const std::string trace = ps5paths::SandboxDownload() + "/boot-trace.txt";
+		struct stat traced{};
+		if (stat(trace.c_str(), &traced) == 0 && traced.st_mtime >= asked.st_mtime)
+		{
+			ps5log::Line("[switch] Eden started but did not take its launch request ({}): it reads it from /data. Its trace, {}:", request,
+				trace);
+			LogTrace(trace);
+			return {};
+		}
+		ps5log::Line("[switch] Eden never took its launch request ({}), and has no trace since: the console did not run "
+					 "eden/eboot.bin and started this app again instead (boot.prev.log has the LoadExec it was asked for)",
+			request);
+		return ps5lang::Tr("The console did not start Eden. The boot log says what it answered.");
 	}
 }

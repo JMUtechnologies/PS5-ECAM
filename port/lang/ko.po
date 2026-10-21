@@ -95,59 +95,59 @@ msgctxt "status"
 msgid "Won't start"
 msgstr "실행 안 됨"
 
-#: port/app/emulator.cpp:378
+#: port/app/emulator.cpp:381
 msgid "the PS5 Vulkan driver did not start"
 msgstr "PS5 Vulkan 드라이버가 시작되지 않았습니다"
 
-#: port/app/emulator.cpp:462
+#: port/app/emulator.cpp:487
 msgid "PS5-ECAM cannot write to {0}. Is the HEN loaded?"
 msgstr "PS5-ECAM에서 {0}에 쓸 수 없습니다. HEN이 로드되었는지 확인하세요."
 
-#: port/app/emulator.cpp:484
+#: port/app/emulator.cpp:509
 msgid "PS5-ECAM cannot create the MLC folder {0}"
 msgstr "PS5-ECAM에서 MLC 폴더를 만들 수 없습니다: {0}"
 
 #. why a Wii U game did not start
-#: port/app/emulator.cpp:666
+#: port/app/emulator.cpp:691
 msgid "The game's base files were not found."
 msgstr "게임의 기본 파일을 찾지 못했습니다."
 
-#: port/app/emulator.cpp:672
+#: port/app/emulator.cpp:697
 msgid "The game could not be mounted. Check that its files are still in the game files folder."
 msgstr "게임을 마운트하지 못했습니다. 게임 폴더에 게임 파일이 그대로 있는지 확인하세요."
 
-#: port/app/emulator.cpp:677 port/azahar/core.cpp:560
+#: port/app/emulator.cpp:702 port/azahar/core.cpp:560
 #, menu
 msgid "The game could not be started."
 msgstr "게임을 실행하지 못했습니다."
 
-#: port/app/emulator.cpp:686
+#: port/app/emulator.cpp:711
 msgid "This is not a Wii U game PS5-ECAM can start."
 msgstr "PS5-ECAM에서 실행할 수 있는 Wii U 게임이 아닙니다."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/app/emulator.cpp:689
+#: port/app/emulator.cpp:714
 msgid "Its disc key is missing from {0}/keys.txt."
 msgstr "{0}/keys.txt에 디스크 키가 없습니다."
 
-#: port/app/emulator.cpp:691
+#: port/app/emulator.cpp:716
 msgid "Its title.tik is missing."
 msgstr "title.tik이 없습니다."
 
-#: port/app/emulator.cpp:696
+#: port/app/emulator.cpp:721
 msgid "The executable could not be started."
 msgstr "실행 파일을 시작하지 못했습니다."
 
-#: port/app/emulator.cpp:709 port/melonds/core.cpp:886
+#: port/app/emulator.cpp:734 port/melonds/core.cpp:886
 msgid "The Vulkan renderer did not start: {0}"
 msgstr "Vulkan 렌더러가 시작되지 않았습니다: {0}"
 
 #. the PS5's notification as a Wii U game starts
-#: port/app/emulator.cpp:767
+#: port/app/emulator.cpp:792
 msgid "Touchpad click + Options: the in-game menu (screens, picture, volume, controls, the library)"
 msgstr "터치패드 버튼 + 옵션 버튼: 게임 내 메뉴(화면, 영상, 볼륨, 조작, 라이브러리)"
 
-#: port/app/emulator.cpp:952
+#: port/app/emulator.cpp:991
 msgid "PS5-ECAM could not start itself again to show the library: start it again from the home screen."
 msgstr "라이브러리를 보여 주려고 PS5-ECAM를 다시 시작하지 못했습니다. 홈 화면에서 다시 실행하세요."
 
@@ -667,32 +667,32 @@ msgid "Wrestling"
 msgstr "레슬링"
 
 #. the Wii U's controllers, by the names Nintendo gave them in the language
-#: port/app/ingame.cpp:145 port/frontend/actions.cpp:360
+#: port/app/ingame.cpp:145 port/frontend/actions.cpp:369
 #, menu
 msgid "Wii U GamePad"
 msgstr "Wii U GamePad"
 
-#: port/app/ingame.cpp:146 port/frontend/actions.cpp:361
+#: port/app/ingame.cpp:146 port/frontend/actions.cpp:370
 #, menu
 msgid "Wii U Pro Controller"
 msgstr "Wii U PRO 컨트롤러"
 
-#: port/app/ingame.cpp:147 port/frontend/actions.cpp:362
+#: port/app/ingame.cpp:147 port/frontend/actions.cpp:371
 #, menu
 msgid "Classic Controller"
 msgstr "클래식 컨트롤러"
 
-#: port/app/ingame.cpp:148 port/frontend/actions.cpp:363
+#: port/app/ingame.cpp:148 port/frontend/actions.cpp:372
 #, menu
 msgid "Wii Remote"
 msgstr "Wii 리모컨"
 
-#: port/app/ingame.cpp:149 port/frontend/actions.cpp:364
+#: port/app/ingame.cpp:149 port/frontend/actions.cpp:373
 #, menu
 msgid "Wii Remote + Nunchuk"
 msgstr "Wii 리모컨 + 눈차크"
 
-#: port/app/ingame.cpp:152 port/frontend/actions.cpp:367
+#: port/app/ingame.cpp:152 port/frontend/actions.cpp:376
 #, menu
 msgid "No controller"
 msgstr "컨트롤러 없음"
@@ -2635,11 +2635,11 @@ msgstr "Azahar에서 설치할 수 있는 CIA가 아닙니다"
 msgid "The PS5 has no memory left for this Wii U game, so it has to stop. The boot log has the details."
 msgstr "PS5에 이 Wii U 게임에 쓸 메모리가 남지 않아 게임을 끝내야 합니다. 자세한 내용은 부팅 로그에 있습니다."
 
-#: port/eden/launch.cpp:46 port/eden/launch.cpp:58 port/frontend/shell/shell.cpp:1002 port/main_ps5.cpp:509
+#: port/eden/launch.cpp:69 port/eden/launch.cpp:81 port/frontend/shell/shell.cpp:1002 port/main_ps5.cpp:514
 msgid "This build has no Switch emulator: eden/eboot.bin is not in the app's folder."
 msgstr "이 빌드에는 Switch 에뮬레이터가 없습니다: 앱 폴더에 eden/eboot.bin이 없습니다."
 
-#: port/eden/launch.cpp:51 port/eden/launch.cpp:63
+#: port/eden/launch.cpp:74 port/eden/launch.cpp:86 port/eden/launch.cpp:115
 msgid "The console did not start Eden. The boot log says what it answered."
 msgstr "본체가 Eden을 시작하지 않았습니다. 부팅 로그에 본체의 응답이 있습니다."
 
@@ -2650,285 +2650,285 @@ msgid "{0} KB"
 msgstr "{0}KB"
 
 #. {1} is the USB drive's number
-#: port/frontend/actions.cpp:163
+#: port/frontend/actions.cpp:172
 msgid "{0} file to USB drive {1}"
 msgid_plural "{0} files to USB drive {1}"
 msgstr[0] "파일 {0}개를 USB 드라이브 {1}에"
 
-#: port/frontend/actions.cpp:166
+#: port/frontend/actions.cpp:175
 msgid "No USB drive found"
 msgstr "USB 드라이브 없음"
 
-#: port/frontend/actions.cpp:193
+#: port/frontend/actions.cpp:202
 msgid "{0} file deleted ({1} MB)"
 msgid_plural "{0} files deleted ({1} MB)"
 msgstr[0] "파일 {0}개 삭제({1}MB)"
 
 #. what clearing the unpacked games did; {1} is the room it made, as in 2.4 GB
-#: port/frontend/actions.cpp:193 port/frontend/shell/settings.cpp:1075 port/frontend/shell/settings.cpp:1914
+#: port/frontend/actions.cpp:202 port/frontend/shell/settings.cpp:1075 port/frontend/shell/settings.cpp:1914
 msgid "None to delete"
 msgstr "삭제할 것 없음"
 
-#: port/frontend/actions.cpp:200
+#: port/frontend/actions.cpp:209
 msgid "USB drive {0}"
 msgstr "USB 드라이브 {0}"
 
-#: port/frontend/actions.cpp:202
+#: port/frontend/actions.cpp:211
 msgid "Extended storage {0}"
 msgstr "확장 저장 공간 {0}"
 
 #. what an install is
-#: port/frontend/actions.cpp:375 port/frontend/actions.cpp:454
+#: port/frontend/actions.cpp:384 port/frontend/actions.cpp:463
 msgid "Game"
 msgstr "게임"
 
-#: port/frontend/actions.cpp:376 port/frontend/actions.cpp:455
+#: port/frontend/actions.cpp:385 port/frontend/actions.cpp:464
 msgid "Update"
 msgstr "업데이트"
 
 #. an update found to install ({0}: its version, as 208)
-#: port/frontend/actions.cpp:377 port/frontend/actions.cpp:456 port/frontend/shell/eden.cpp:827 port/frontend/shell/eden.cpp:1351 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:800
+#: port/frontend/actions.cpp:386 port/frontend/actions.cpp:465 port/frontend/shell/eden.cpp:827 port/frontend/shell/eden.cpp:1351 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:800
 msgid "DLC"
 msgstr "DLC"
 
-#: port/frontend/actions.cpp:378 port/frontend/actions.cpp:458
+#: port/frontend/actions.cpp:387 port/frontend/actions.cpp:467
 msgid "System title"
 msgstr "시스템 타이틀"
 
-#: port/frontend/actions.cpp:457
+#: port/frontend/actions.cpp:466
 msgid "Demo"
 msgstr "체험판"
 
-#: port/frontend/actions.cpp:458
+#: port/frontend/actions.cpp:467
 msgid "Title"
 msgstr "타이틀"
 
-#: port/frontend/actions.cpp:466
+#: port/frontend/actions.cpp:475
 msgctxt "button"
 msgid "Cross"
 msgstr "엑스"
 
-#: port/frontend/actions.cpp:466
+#: port/frontend/actions.cpp:475
 msgctxt "button"
 msgid "Circle"
 msgstr "원"
 
-#: port/frontend/actions.cpp:466
+#: port/frontend/actions.cpp:475
 msgctxt "button"
 msgid "Square"
 msgstr "네모"
 
-#: port/frontend/actions.cpp:467
+#: port/frontend/actions.cpp:476
 msgctxt "button"
 msgid "Triangle"
 msgstr "세모"
 
-#: port/frontend/actions.cpp:467
+#: port/frontend/actions.cpp:476
 msgctxt "button"
 msgid "Create"
 msgstr "만들기"
 
-#: port/frontend/actions.cpp:467
+#: port/frontend/actions.cpp:476
 msgctxt "button"
 msgid "Options"
 msgstr "옵션"
 
-#: port/frontend/actions.cpp:467
+#: port/frontend/actions.cpp:476
 msgctxt "button"
 msgid "Touchpad"
 msgstr "터치패드"
 
-#: port/frontend/actions.cpp:468
+#: port/frontend/actions.cpp:477
 msgctxt "button"
 msgid "D-pad up"
 msgstr "십자 버튼 위"
 
-#: port/frontend/actions.cpp:468
+#: port/frontend/actions.cpp:477
 msgctxt "button"
 msgid "D-pad down"
 msgstr "십자 버튼 아래"
 
-#: port/frontend/actions.cpp:468
+#: port/frontend/actions.cpp:477
 msgctxt "button"
 msgid "D-pad left"
 msgstr "십자 버튼 왼쪽"
 
-#: port/frontend/actions.cpp:468
+#: port/frontend/actions.cpp:477
 msgctxt "button"
 msgid "D-pad right"
 msgstr "십자 버튼 오른쪽"
 
-#: port/frontend/actions.cpp:469
+#: port/frontend/actions.cpp:478
 msgctxt "button"
 msgid "Left stick up"
 msgstr "왼쪽 스틱 위"
 
-#: port/frontend/actions.cpp:469
+#: port/frontend/actions.cpp:478
 msgctxt "button"
 msgid "Left stick down"
 msgstr "왼쪽 스틱 아래"
 
-#: port/frontend/actions.cpp:469
+#: port/frontend/actions.cpp:478
 msgctxt "button"
 msgid "Left stick left"
 msgstr "왼쪽 스틱 왼쪽"
 
-#: port/frontend/actions.cpp:470
+#: port/frontend/actions.cpp:479
 msgctxt "button"
 msgid "Left stick right"
 msgstr "왼쪽 스틱 오른쪽"
 
-#: port/frontend/actions.cpp:470
+#: port/frontend/actions.cpp:479
 msgctxt "button"
 msgid "Left stick click"
 msgstr "왼쪽 스틱 누르기"
 
-#: port/frontend/actions.cpp:470
+#: port/frontend/actions.cpp:479
 msgctxt "button"
 msgid "Right stick up"
 msgstr "오른쪽 스틱 위"
 
-#: port/frontend/actions.cpp:471
+#: port/frontend/actions.cpp:480
 msgctxt "button"
 msgid "Right stick down"
 msgstr "오른쪽 스틱 아래"
 
-#: port/frontend/actions.cpp:471
+#: port/frontend/actions.cpp:480
 msgctxt "button"
 msgid "Right stick left"
 msgstr "오른쪽 스틱 왼쪽"
 
-#: port/frontend/actions.cpp:471
+#: port/frontend/actions.cpp:480
 msgctxt "button"
 msgid "Right stick right"
 msgstr "오른쪽 스틱 오른쪽"
 
-#: port/frontend/actions.cpp:472
+#: port/frontend/actions.cpp:481
 msgctxt "button"
 msgid "Right stick click"
 msgstr "오른쪽 스틱 누르기"
 
-#: port/frontend/actions.cpp:472
+#: port/frontend/actions.cpp:481
 msgctxt "button"
 msgid "Circle pad up"
 msgstr "슬라이드 패드 위"
 
-#: port/frontend/actions.cpp:472
+#: port/frontend/actions.cpp:481
 msgctxt "button"
 msgid "Circle pad down"
 msgstr "슬라이드 패드 아래"
 
-#: port/frontend/actions.cpp:473
+#: port/frontend/actions.cpp:482
 msgctxt "button"
 msgid "Circle pad left"
 msgstr "슬라이드 패드 왼쪽"
 
-#: port/frontend/actions.cpp:473
+#: port/frontend/actions.cpp:482
 msgctxt "button"
 msgid "Circle pad right"
 msgstr "슬라이드 패드 오른쪽"
 
-#: port/frontend/actions.cpp:473
+#: port/frontend/actions.cpp:482
 msgctxt "button"
 msgid "C-stick up"
 msgstr "C스틱 위"
 
-#: port/frontend/actions.cpp:474
+#: port/frontend/actions.cpp:483
 msgctxt "button"
 msgid "C-stick down"
 msgstr "C스틱 아래"
 
-#: port/frontend/actions.cpp:474
+#: port/frontend/actions.cpp:483
 msgctxt "button"
 msgid "C-stick left"
 msgstr "C스틱 왼쪽"
 
-#: port/frontend/actions.cpp:474
+#: port/frontend/actions.cpp:483
 msgctxt "button"
 msgid "C-stick right"
 msgstr "C스틱 오른쪽"
 
-#: port/frontend/actions.cpp:475
+#: port/frontend/actions.cpp:484
 msgctxt "button"
 msgid "Nunchuk stick up"
 msgstr "눈차크 스틱 위"
 
-#: port/frontend/actions.cpp:475
+#: port/frontend/actions.cpp:484
 msgctxt "button"
 msgid "Nunchuk stick down"
 msgstr "눈차크 스틱 아래"
 
-#: port/frontend/actions.cpp:475
+#: port/frontend/actions.cpp:484
 msgctxt "button"
 msgid "Nunchuk stick left"
 msgstr "눈차크 스틱 왼쪽"
 
-#: port/frontend/actions.cpp:476
+#: port/frontend/actions.cpp:485
 msgctxt "button"
 msgid "Nunchuk stick right"
 msgstr "눈차크 스틱 오른쪽"
 
-#: port/frontend/actions.cpp:476
+#: port/frontend/actions.cpp:485
 msgctxt "button"
 msgid "Nunchuk C"
 msgstr "눈차크 C"
 
-#: port/frontend/actions.cpp:476
+#: port/frontend/actions.cpp:485
 msgctxt "button"
 msgid "Nunchuk Z"
 msgstr "눈차크 Z"
 
-#: port/frontend/actions.cpp:476
+#: port/frontend/actions.cpp:485
 msgctxt "button"
 msgid "Home"
 msgstr "HOME"
 
-#: port/frontend/actions.cpp:477
+#: port/frontend/actions.cpp:486
 msgctxt "button"
 msgid "Start"
 msgstr "START"
 
-#: port/frontend/actions.cpp:477
+#: port/frontend/actions.cpp:486
 msgctxt "button"
 msgid "Select"
 msgstr "SELECT"
 
-#: port/frontend/actions.cpp:477
+#: port/frontend/actions.cpp:486
 msgctxt "button"
 msgid "+ (Start)"
 msgstr "+ (START)"
 
-#: port/frontend/actions.cpp:477
+#: port/frontend/actions.cpp:486
 msgctxt "button"
 msgid "- (Select)"
 msgstr "- (SELECT)"
 
-#: port/frontend/actions.cpp:478
+#: port/frontend/actions.cpp:487
 msgctxt "button"
 msgid "Blow into the mic"
 msgstr "마이크에 바람 불기"
 
-#: port/frontend/actions.cpp:478
+#: port/frontend/actions.cpp:487
 msgctxt "button"
 msgid "Show the GamePad's screen"
 msgstr "GamePad 화면 보기"
 
-#: port/frontend/actions.cpp:478
+#: port/frontend/actions.cpp:487
 msgctxt "button"
 msgid "None"
 msgstr "없음"
 
-#: port/frontend/actions.cpp:481
+#: port/frontend/actions.cpp:490
 msgctxt "button"
 msgid "Touch at the cursor"
 msgstr "커서 위치 터치"
 
-#: port/frontend/actions.cpp:481
+#: port/frontend/actions.cpp:490
 msgctxt "button"
 msgid "Fast forward"
 msgstr "빨리 감기"
 
-#: port/frontend/actions.cpp:481
+#: port/frontend/actions.cpp:490
 msgctxt "button"
 msgid "Rewind"
 msgstr "되감기"
@@ -6935,33 +6935,33 @@ msgstr "부팅 로그를 쓰지 못함(/data에 접근할 수 없음)"
 msgid "PS5-ECAM cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5-ECAM."
 msgstr "PS5-ECAM가 /data에 접근할 수 없습니다. 앱 탈옥 목록에 PPSA99360이 있는 HEN이나 elfldr를 로드한 다음 PS5-ECAM를 다시 시작하세요."
 
-#: port/main_ps5.cpp:498
+#: port/main_ps5.cpp:503
 msgid "This session: Azahar (3DS); Cemu's emulated Wii U is not started"
 msgstr "이번 세션: Azahar(3DS). Cemu의 에뮬레이트된 Wii U는 시작되지 않았습니다"
 
-#: port/main_ps5.cpp:507
+#: port/main_ps5.cpp:512
 msgid "This session: Eden (Switch), in a program of its own; Cemu's emulated Wii U is not started"
 msgstr "이번 세션: Eden(Switch), 별도의 프로그램에서. Cemu의 에뮬레이트된 Wii U는 시작되지 않았습니다"
 
-#: port/main_ps5.cpp:516
+#: port/main_ps5.cpp:521
 msgid "This session: melonDS (DS); Cemu's emulated Wii U is not started"
 msgstr "이번 세션: melonDS(DS). Cemu의 에뮬레이트된 Wii U는 시작되지 않았습니다"
 
-#: port/main_ps5.cpp:522
+#: port/main_ps5.cpp:527
 msgid "This session: Cemu (Wii U); Azahar's core is not started"
 msgstr "이번 세션: Cemu(Wii U). Azahar의 코어는 시작되지 않았습니다"
 
-#: port/main_ps5.cpp:530
+#: port/main_ps5.cpp:535
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "JIT 메모리가 없음: Wii U 게임이 훨씬 느린 인터프리터로 실행됩니다. HEN의 앱 탈옥 목록에 PPSA99360이 있는지 확인하세요."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/main_ps5.cpp:564
+#: port/main_ps5.cpp:569
 msgid "The launcher could not start. The boot log in {0}/logs says why."
 msgstr "런처를 시작하지 못했습니다. 이유는 {0}/logs의 부팅 로그에 있습니다."
 
 #. {0} is why; {1} the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the app's drive
-#: port/main_ps5.cpp:566
+#: port/main_ps5.cpp:571
 msgid "The launcher could not start: {0}. The boot log in {1}/logs has more."
 msgstr "런처를 시작하지 못했습니다: {0}. 자세한 내용은 {1}/logs의 부팅 로그에 있습니다."
 

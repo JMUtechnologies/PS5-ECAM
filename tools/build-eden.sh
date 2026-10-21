@@ -50,14 +50,17 @@ make -C "$eden" package JOBS="${EDEN_JOBS:-5}"
 # The program and the files it reads from its own folder (storage_paths.h: AppDir() is the app's
 # eden/). Left out: its sce_sys and sce_module (the app's are PS5-ECAM's), its self-updater (the
 # app updates eden/ with everything else, and the check is off in patches/eden) and the test
-# program it carries.
+# program it carries. Its Lapy helper (lapy.elf and its manifest, built for PPSA99360 by
+# patches/eden) stays: where no HEN answers Eden's requests, it reaches /data through it and the
+# console's elfldr, as ProsperoEden does (5.0.0 left it out, and Eden had no /data under etaHEN, #67).
 package=$eden/build/release/PPSA99008
 [[ -f $package/eboot.bin ]] || { echo "$package/eboot.bin is missing" >&2; exit 2; }
+[[ -f $package/lapy.elf ]] || { echo "$package/lapy.elf is missing: Eden could not reach /data" >&2; exit 2; }
 rm -rf "$out/app"
 mkdir -p "$out/app"
 (cd "$package" && find . -mindepth 1 -maxdepth 1 \
     ! -name sce_sys ! -name sce_module ! -name self-updater.elf ! -name core-homebrew.nro \
-    ! -name 'lapy*' -exec cp -a {} "$out/app/" \;)
+    -exec cp -a {} "$out/app/" \;)
 cp "$eden/LICENSE" "$out/app/LICENSE.ProsperoEden.txt"
 cp "$eden/THIRD_PARTY_NOTICES.md" "$out/app/THIRD_PARTY_NOTICES.md"
 # the unstripped program, for its crash reports (ProsperoEdenX's tools/symbolize-crash.py)

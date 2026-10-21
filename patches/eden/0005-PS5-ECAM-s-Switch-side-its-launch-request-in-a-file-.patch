@@ -1,0 +1,308 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Wed, 21 Oct 2026 15:05:11 +0000
+Subject: [PATCH] PS5-ECAM's Switch side: its launch request in a file,
+ etaHEN's jailbreak, the Lapy helper in eden/
+
+PS5-ECAM 5.0.0's Switch games never started (its #67): it gave this program the game only as
+LoadExec's arguments, which the console does not carry (MihawkOS saw argc 1 on every restart), and
+under etaHEN this program had no /data.
+- The arguments PS5-ECAM starts this program with are in /data/ps5cemu/eden/launch-request.txt too,
+  one a line: taken once with filesystem access (forwarded_launch.h, TakeLaunchRequest), else the
+  program's own arguments, as before. The boot trace says which.
+- etaHEN's app jailbreak is asked first (/download0/etahen_jailbreak, the request PS5-ECAM makes for
+  its own process, PPSA99360 being the title players list); when no HEN takes it within 2 s it is
+  withdrawn and Lapy is asked as before (test_elevation.cpp).
+- The Lapy helper is looked for in this program's folder, /app0/eden/lapy.elf, where PS5-ECAM
+  packages it, then at /app0/lapy.elf.
+---
+ headless/elevation/elevation.cpp      | 60 +++++++++++++++++++++++
+ headless/elevation/test_elevation.cpp | 68 ++++++++++++++++++++++++++-
+ headless/forwarded_launch.h           | 19 ++++++++
+ headless/main.cpp                     | 23 +++++++--
+ 4 files changed, 165 insertions(+), 5 deletions(-)
+
+diff --git a/headless/elevation/elevation.cpp b/headless/elevation/elevation.cpp
+index 6742ceb..312c229 100644
+--- a/headless/elevation/elevation.cpp
++++ b/headless/elevation/elevation.cpp
+@@ -17,6 +17,11 @@ namespace
+ {
+ constexpr char request_path[] = "/download0/elevate_proc";
+ constexpr char result_path[] = "/download0/lapy_owned_result";
++// etaHEN's app jailbreak request (try_etahen): the HEN takes it within etahen_take_polls, and has
++// etahen_finish_polls after that to finish, the 3 s PS5-ECAM gives it
++constexpr char etahen_request_path[] = "/download0/etahen_jailbreak";
++constexpr unsigned etahen_take_polls = 40;
++constexpr unsigned etahen_finish_polls = 60;
+ constexpr unsigned resident_polls = 30;
+ constexpr unsigned cancellation_grace_polls = 20;
+ constexpr useconds_t poll_interval_us = 50000;
+@@ -171,6 +176,56 @@ void report_result(int descriptor, bool data_ok, int open_error) noexcept
+         (void)write_all(descriptor, result.data(), static_cast<std::size_t>(length));
+ }
+ 
++// etaHEN's app jailbreak, for the title IDs in its app jailbreak list (OnionHEN reads the same file):
++// PS5-ECAM, whose Switch side this program is, asks for its own process this way (its
++// port/ps5/privilege.cpp), and players list its title, PPSA99360, for it. Asked before Lapy, as
++// etaHEN does not answer Lapy's request: under etaHEN alone this program had no /data (PS5-ECAM's
++// #67). The HEN removes the request before it is done with the process. ok, or apply_failed when
++// /data opened but did not prove itself; unavailable when no HEN took it (it is withdrawn) or the
++// jailbreak gave no /data in time.
++elevation::Status try_etahen(pid_t pid) noexcept
++{
++    using elevation::Status;
++    std::array<char, 80> temporary{};
++    std::array<char, 64> body{};
++    const int body_length =
++        std::snprintf(body.data(), body.size(), "{\"PID\":%ld}\n", static_cast<long>(pid));
++    const int path_length = std::snprintf(temporary.data(), temporary.size(),
++                                          "/download0/.etahen_jailbreak.%ld", static_cast<long>(pid));
++    if (body_length <= 0 || static_cast<std::size_t>(body_length) >= body.size() ||
++        path_length <= 0 || static_cast<std::size_t>(path_length) >= temporary.size())
++        return Status::unavailable;
++    (void)unlink(temporary.data());
++    File output{open(temporary.data(), O_WRONLY | O_CREAT | O_EXCL, 0666)};
++    if (output.get() < 0 ||
++        !write_all(output.get(), body.data(), static_cast<std::size_t>(body_length)))
++    {
++        (void)unlink(temporary.data());
++        return Status::unavailable;
++    }
++    (void)fchmod(output.get(), 0666);
++    const int descriptor = output.release();
++    if (close(descriptor) != 0 || rename(temporary.data(), etahen_request_path) != 0)
++    {
++        (void)unlink(temporary.data());
++        return Status::unavailable;
++    }
++    for (unsigned poll = 0; access(etahen_request_path, F_OK) == 0; ++poll)
++    {
++        if (poll >= etahen_take_polls)
++        {
++            (void)unlink(etahen_request_path);
++            return Status::unavailable;
++        }
++        (void)usleep(poll_interval_us);
++    }
++    int open_error = 0;
++    bool proof_failed = false;
++    if (wait_for_data(pid, etahen_finish_polls, open_error, proof_failed))
++        return Status::ok;
++    return proof_failed ? Status::apply_failed : Status::unavailable;
++}
++
+ struct ResidentResult
+ {
+     elevation::Status status;
+@@ -375,6 +430,11 @@ static elevation::Status request_access(elevation::Capability capability, const
+     if (open_error == 0)
+         return Status::apply_failed;
+ 
++    if (const Status etahen = try_etahen(pid); etahen != Status::unavailable)
++    {
++        selected_path = "etahen";
++        return etahen;
++    }
+     const ResidentResult resident = try_resident(pid);
+     if (!resident.allow_helper)
+     {
+diff --git a/headless/elevation/test_elevation.cpp b/headless/elevation/test_elevation.cpp
+index c722548..0971751 100644
+--- a/headless/elevation/test_elevation.cpp
++++ b/headless/elevation/test_elevation.cpp
+@@ -33,6 +33,13 @@ struct State
+     unsigned socket_calls{};
+     unsigned closes{};
+     bool helper_read{};
++    // etaHEN's request (try_etahen): whether the HEN takes it, after how many looks, and whether it
++    // was withdrawn
++    bool etahen_takes{};
++    unsigned etahen_take_after{};
++    unsigned etahen_looks{};
++    bool etahen_withdrawn{};
++    std::string etahen_request;
+     std::string request;
+     std::string result;
+     std::string data;
+@@ -111,6 +118,8 @@ extern "C"
+             }
+             return 11;
+         }
++        if (test::starts_with(path, "/download0/.etahen_jailbreak."))
++            return 15;
+         if (test::starts_with(path, "/data/.lapy_probe_"))
+         {
+             ++test::state.data_open_calls;
+@@ -147,6 +156,8 @@ extern "C"
+             test::state.request.append(bytes);
+         else if (descriptor == 12)
+             test::state.data.append(bytes);
++        else if (descriptor == 15)
++            test::state.etahen_request.append(bytes);
+         else
+         {
+             errno = EBADF;
+@@ -192,7 +203,20 @@ extern "C"
+ 
+     int fchmod(int descriptor, mode_t mode) noexcept
+     {
+-        return descriptor == 10 && mode == 0644 ? 0 : -1;
++        return (descriptor == 10 && mode == 0644) || (descriptor == 15 && mode == 0666) ? 0 : -1;
++    }
++
++    // etaHEN's request is there until the HEN takes it; anything else is the host's
++    int access(const char *path, int mode) noexcept
++    {
++        if (std::strcmp(path, "/download0/etahen_jailbreak") != 0)
++            return faccessat(AT_FDCWD, path, mode, 0);
++        if (test::state.etahen_takes && test::state.etahen_looks++ >= test::state.etahen_take_after)
++        {
++            errno = ENOENT;
++            return -1;
++        }
++        return 0;
+     }
+ 
+     int rename(const char *, const char *) noexcept
+@@ -207,6 +231,8 @@ extern "C"
+             errno = ENOENT;
+             return -1;
+         }
++        if (std::strcmp(path, "/download0/etahen_jailbreak") == 0)
++            test::state.etahen_withdrawn = true;
+         return 0;
+     }
+ 
+@@ -347,6 +373,46 @@ int main()
+     test::state.result_open_fails = true;
+     assert(elevation::request(Capability::filesystem, nullptr) == Status::invalid_request);
+ 
++    // etaHEN takes its request (PS5-ECAM's #67): /data with nothing else asked
++    for (const unsigned after : {0u, 10u}) {
++        test::reset();
++        test::state.data_open_failures = 1;
++        test::state.etahen_takes = true;
++        test::state.etahen_take_after = after;
++        assert(elevation::request(Capability::filesystem) == Status::ok);
++        assert(std::strcmp(elevation::path(), "etahen") == 0);
++        assert(test::state.etahen_request == "{\"PID\":4242}\n");
++        assert(!test::state.etahen_withdrawn);
++        assert(test::state.request.empty() && test::state.prepare_calls == 0 && test::state.socket_calls == 0);
++    }
++
++    // no HEN takes it: withdrawn, and Lapy is asked as before
++    test::reset();
++    test::state.data_open_failures = 1;
++    assert(elevation::request(Capability::filesystem) == Status::ok);
++    assert(std::strcmp(elevation::path(), "resident") == 0);
++    assert(test::state.etahen_request == "{\"PID\":4242}\n" && test::state.etahen_withdrawn);
++    assert(test::state.request == "{\"PID\":4242}\n");
++
++    // taken, but no /data in time: Lapy's ways after it, here its helper
++    test::reset();
++    test::state.data_open_failures = 1000;
++    test::state.etahen_takes = true;
++    test::state.result_open_fails = true;
++    test::helper_replies();
++    assert(elevation::request(Capability::filesystem) == Status::timeout);
++    assert(std::strcmp(elevation::path(), "helper") == 0);
++    assert(test::state.socket_calls == 1);
++
++    // taken, and /data opens but does not prove itself
++    test::reset();
++    test::state.data_open_failures = 1;
++    test::state.corrupt_read = true;
++    test::state.etahen_takes = true;
++    assert(elevation::request(Capability::filesystem) == Status::apply_failed);
++    assert(std::strcmp(elevation::path(), "etahen") == 0);
++    assert(test::state.socket_calls == 0 && test::state.request.empty());
++
+     elevation::wire::Message request{};
+     request.pid = 4242;
+     const std::array<std::uint8_t, 24> golden{'E', 'L', 'V', '1', 1, 0, 24, 0, 1, 0, 0, 0,
+diff --git a/headless/forwarded_launch.h b/headless/forwarded_launch.h
+index 9c468d6..a94ecc0 100644
+--- a/headless/forwarded_launch.h
++++ b/headless/forwarded_launch.h
+@@ -1,5 +1,7 @@
+ // SPDX-License-Identifier: GPL-3.0-or-later
+ #pragma once
++#include <cstdio>
++#include <fstream>
+ #include <string>
+ #include <string_view>
+ #include <utility>
+@@ -43,6 +45,23 @@ inline ForwardedArgs ParseForwardedArgs(int argc, char** argv) {
+     return result;
+ }
+ 
++// PS5-ECAM's Switch side puts the arguments it starts this program with in a file too, one a line
++// (launch-request.txt in the data folder): on the console LoadExec does not carry them (MihawkOS saw
++// argc 1 on every restart, and PS5-ECAM 5.0.0's Switch games never started, its #67). Taken once, as
++// the program starts with filesystem access: the file is gone after; empty when there is none.
++inline std::vector<std::string> TakeLaunchRequest(const std::string& file) {
++    std::vector<std::string> args;
++    std::ifstream in(file);
++    if (!in) return args;
++    for (std::string line; std::getline(in, line);) {
++        if (!line.empty() && line.back() == '\r') line.pop_back();
++        args.push_back(std::move(line));
++    }
++    in.close();
++    (void)std::remove(file.c_str());
++    return args;
++}
++
+ inline std::string ResolveForwardedRom(std::string_view rom, std::string_view roms_dir) {
+     while (!rom.empty() && (rom.back() == ' ' || rom.back() == '\r' || rom.back() == '\n')) rom.remove_suffix(1);
+     if (rom.empty()) return {};
+diff --git a/headless/main.cpp b/headless/main.cpp
+index 0a9b08c..67475bb 100644
+--- a/headless/main.cpp
++++ b/headless/main.cpp
+@@ -326,9 +326,13 @@ int main(int argc, char** argv) {
+         // The PS5 keyboard's module, for a game's text entry: asked for before anything else
+         // changes what the app may load (system_keyboard.h).
+         Eden::BootTrace::Line("PS5 keyboard module: %#x", static_cast<unsigned>(Eden::PrepareSystemKeyboard()));
+-        Eden::BootTrace::Line("requesting filesystem access");
++        // The packaged Lapy helper is in this program's folder, PS5-ECAM's eden/ (its
++        // tools/build-eden.sh), and /app0 is the app's: else where a ProsperoEden of its own has it.
++        const char* const lapy_helper = access("/app0/eden/lapy.elf", R_OK) == 0 ? "/app0/eden/lapy.elf" : "/app0/lapy.elf";
++        Eden::BootTrace::Line("requesting filesystem access (Lapy helper %s)", lapy_helper);
+         // Filesystem access beyond the sandbox, first: every path below depends on it
+-        // (assets_dir.h). A resident upstream Lapy service gets the first opportunity; otherwise
++        // (assets_dir.h). etaHEN's app jailbreak is asked first, as PS5-ECAM asks for its own
++        // process; then a resident upstream Lapy service gets the opportunity; otherwise
+         // the packaged exact-title upstream helper is sent to the local elfldr. ProsperoEden
+         // contains no locally implemented kernel mutation code. If neither path works, the app
+         // keeps its sandbox paths.
+@@ -337,7 +341,7 @@ int main(int argc, char** argv) {
+         if (access("/app0/no-filesystem-access.txt", F_OK) == 0) Eden::FilesystemAccessStatus() = 99;
+         else
+ #endif
+-        Eden::FilesystemAccessStatus() = static_cast<int>(elevation::request(elevation::Capability::filesystem));
++        Eden::FilesystemAccessStatus() = static_cast<int>(elevation::request(elevation::Capability::filesystem, lapy_helper));
+         Eden::BootTrace::Line("filesystem access returned status=%d, uid %d/%d gid %d/%d", Eden::FilesystemAccessStatus(),
+                               static_cast<int>(getuid()), static_cast<int>(geteuid()), static_cast<int>(getgid()),
+                               static_cast<int>(getegid()));
+@@ -521,7 +525,18 @@ int main(int argc, char** argv) {
+         std::string launch_error;
+         // The previous run crashed: the launcher says where its report is.
+         if (!last_crash.report.empty()) launch_error = std::string{Eden::Crash::kNotice} + last_crash.report;
+-        const Eden::ForwardedArgs forwarded = Eden::ParseForwardedArgs(argc, argv);
++        // PS5-ECAM's launch request: the arguments it started this program with, which LoadExec does
++        // not carry on the console (forwarded_launch.h). In the data folder, so read with filesystem
++        // access only; the program's own arguments without one.
++        std::vector<std::string> request;
++        if (Eden::FilesystemAccess()) request = Eden::TakeLaunchRequest(std::string{Eden::kDataDir} + "/launch-request.txt");
++        std::vector<char*> request_argv;
++        for (std::string& arg : request) request_argv.push_back(arg.data());
++        const std::string request_note = !request.empty() ? std::to_string(request.size()) + " arguments" :
++            Eden::FilesystemAccess() ? "none" : "not readable without filesystem access";
++        Eden::BootTrace::Line("PS5-ECAM's launch request: %s; the program's own arguments: %d", request_note.c_str(), argc);
++        const Eden::ForwardedArgs forwarded = request.empty() ? Eden::ParseForwardedArgs(argc, argv) :
++            Eden::ParseForwardedArgs(static_cast<int>(request_argv.size()), request_argv.data());
+         // the settings PS5CEMU-HAR's Switch side starts its game with, over this program's own
+         for (const auto& [key, value] : forwarded.settings)
+             if (!forwarded.rom.empty() && !Eden::SetSessionSetting(key, value))

@@ -19,7 +19,8 @@
 #     assets/lang/                    the menus' translations, one string table a language (<code>.po)
 #     eden/                           the Switch side's program, ProsperoEdenX (tools/build-eden.sh): its
 #                                     eboot.bin, which the launcher starts with LoadExec, its launcher's
-#                                     ui/, its frame generation's network, its licence and notices
+#                                     ui/, its frame generation's network, its Lapy helper (lapy.elf, its
+#                                     way to /data where no HEN answers), its licence and notices
 #
 #   tools/package.sh          the app; the ELF must be linked with RADV (tools/link.sh)
 #   tools/package.sh --check  the same steps for a link check's ELF, into build/app-check: not an app

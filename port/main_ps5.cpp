@@ -477,6 +477,11 @@ int main(int argc, char* argv[])
 		settings.launchError.clear();
 		ps5settings::Save(settings);
 	}
+	// the Switch side's last game, when Eden never took what it was started with (port/eden/eden.h):
+	// why, said once on the Switch side, and Eden's trace in the boot log when it got that far
+	if (privileges.filesystem)
+		if (std::string why = ps5eden::TakeStaleRequest(); !why.empty())
+			status.launchErrorSwitch = why;
 
 	// One emulator per session: none starts until a side opens (the side last used, or the chooser's).
 	// Cemu's core (its guest memory, system threads, crash handler, graphic packs and game scan) runs

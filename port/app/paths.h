@@ -159,6 +159,17 @@ namespace ps5paths
 		return true;
 	}
 
+	// The app's own download0, which its sandbox mounts as /download0 and a process the HEN or the
+	// elevation helper has taken out of it sees at /mnt/sandbox/PPSA99360_000/download0: the Switch
+	// side's program keeps its trace there until it reaches /data (patches/eden)
+	inline std::string SandboxDownload()
+	{
+		struct stat info{};
+		if (stat("/download0", &info) == 0 && S_ISDIR(info.st_mode))
+			return "/download0";
+		return std::string("/mnt/sandbox/") + kTitleId + "_000/download0";
+	}
+
 	// The USB drive or extended storage a path is on ("/mnt/usb0" for "/mnt/usb0/homebrew/PPSA99360");
 	// empty for any other place
 	inline std::string DriveOf(const std::string& path)

@@ -57,11 +57,14 @@
 #include <csignal>
 #include <mutex>
 #include <thread>
+#include <cstdio>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
 #include <thread>
 #include <vector>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <x86intrin.h>
 
 extern "C" int32_t sceSystemServiceParamGetInt(int32_t paramId, int32_t* value);
@@ -441,6 +444,28 @@ namespace ps5emu
 		{
 			for (const int sig : {SIGTERM, SIGINT, SIGHUP, SIGQUIT})
 				std::signal(sig, SIG_DFL);
+		}
+
+		// LoadExecApp's arguments in a file, one a line, for the program it starts: written whole or not
+		// at all (a staged file renamed over), and open to every user, as the program may run as another
+		bool WriteArguments(const std::string& file, const std::vector<std::string>& args)
+		{
+			const std::string staged = file + ".new";
+			FILE* out = std::fopen(staged.c_str(), "wb");
+			if (!out)
+				return false;
+			bool written = true;
+			for (const std::string& arg : args)
+				written = written && std::fputs(arg.c_str(), out) >= 0 && std::fputc('\n', out) != EOF;
+			written = written && std::fflush(out) == 0 && fsync(fileno(out)) == 0;
+			fchmod(fileno(out), 0666);
+			written = std::fclose(out) == 0 && written;
+			if (!written || std::rename(staged.c_str(), file.c_str()) != 0)
+			{
+				std::remove(staged.c_str());
+				return false;
+			}
+			return true;
 		}
 	}
 
@@ -885,7 +910,7 @@ namespace ps5emu
 		}
 	}
 
-	void LoadExecApp(const std::string& program, const std::vector<std::string>& args, bool withReturn)
+	void LoadExecApp(const std::string& program, const std::vector<std::string>& args, bool withReturn, const std::string& argsFile)
 	{
 		// one at a time: a stop cut short starts over from a thread of its own (StopGame, and the
 		// 3DS's and the DS's), and main comes here too once the stop is done. A second caller goes on
@@ -917,6 +942,14 @@ namespace ps5emu
 		consider(ps5paths::kSystemMount);
 		if (folders.empty())
 			folders.push_back(ps5paths::AppDir()); // none found: the console may still see it
+		// another of the app's programs (the Switch side's) by the form the SDK gives a program in the
+		// app's package first: /app0, which the console resolves for the app wherever this process's
+		// root is, and by which Eden starts itself again (patches/eden)
+		if (program != "eboot.bin")
+		{
+			std::erase(folders, std::string("/app0"));
+			folders.insert(folders.begin(), "/app0");
+		}
 		LeaveEndingToSystem();
 		for (const std::string& folder : folders)
 		{
@@ -932,7 +965,10 @@ namespace ps5emu
 			for (std::string& arg : all)
 				argv.push_back(arg.data());
 			argv.push_back(nullptr);
-			ps5log::Line("[emu] LoadExec({}){}", path, all.empty() ? "" : fmt::format(" with {} arguments", all.size()));
+			// and in argsFile, as this attempt has them, for the program to read there
+			const bool filed = argsFile.empty() || WriteArguments(argsFile, all);
+			ps5log::Line("[emu] LoadExec({}){}{}", path, all.empty() ? "" : fmt::format(" with {} arguments", all.size()),
+				argsFile.empty() ? "" : filed ? fmt::format(", also in {}", argsFile) : fmt::format(" ({} could not be written)", argsFile));
 			ps5log::FlushAll(); // the log's lines in the file before the process is replaced
 			const int result = sceSystemServiceLoadExec(path.c_str(), all.empty() ? nullptr : argv.data());
 			// it does not come back when it works; allow for one that returns before ending the process
@@ -941,6 +977,9 @@ namespace ps5emu
 					sceKernelUsleep(100000);
 			ps5log::Line("[emu] LoadExec({}) returned {:#x}", path, (uint32_t)result);
 		}
+		// none took: no program is coming to read them
+		if (!argsFile.empty())
+			std::remove(argsFile.c_str());
 		ps5log::FlushAll();
 	}
 

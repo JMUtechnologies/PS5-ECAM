@@ -96,59 +96,59 @@ msgctxt "status"
 msgid "Won't start"
 msgstr "Starter ikke"
 
-#: port/app/emulator.cpp:378
+#: port/app/emulator.cpp:381
 msgid "the PS5 Vulkan driver did not start"
 msgstr "PS5-ens Vulkan-driver startet ikke"
 
-#: port/app/emulator.cpp:462
+#: port/app/emulator.cpp:487
 msgid "PS5-ECAM cannot write to {0}. Is the HEN loaded?"
 msgstr "PS5-ECAM kan ikke skrive til {0}. Er HEN lastet inn?"
 
-#: port/app/emulator.cpp:484
+#: port/app/emulator.cpp:509
 msgid "PS5-ECAM cannot create the MLC folder {0}"
 msgstr "PS5-ECAM kan ikke opprette MLC-mappen {0}"
 
 #. why a Wii U game did not start
-#: port/app/emulator.cpp:666
+#: port/app/emulator.cpp:691
 msgid "The game's base files were not found."
 msgstr "Spillets basisfiler ble ikke funnet."
 
-#: port/app/emulator.cpp:672
+#: port/app/emulator.cpp:697
 msgid "The game could not be mounted. Check that its files are still in the game files folder."
 msgstr "Spillet kunne ikke monteres. Sjekk at filene fortsatt ligger i spillmappen."
 
-#: port/app/emulator.cpp:677 port/azahar/core.cpp:560
+#: port/app/emulator.cpp:702 port/azahar/core.cpp:560
 #, menu
 msgid "The game could not be started."
 msgstr "Spillet kunne ikke startes."
 
-#: port/app/emulator.cpp:686
+#: port/app/emulator.cpp:711
 msgid "This is not a Wii U game PS5-ECAM can start."
 msgstr "Dette er ikke et Wii U-spill som PS5-ECAM kan starte."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/app/emulator.cpp:689
+#: port/app/emulator.cpp:714
 msgid "Its disc key is missing from {0}/keys.txt."
 msgstr "Platenøkkelen mangler i {0}/keys.txt."
 
-#: port/app/emulator.cpp:691
+#: port/app/emulator.cpp:716
 msgid "Its title.tik is missing."
 msgstr "title.tik-filen mangler."
 
-#: port/app/emulator.cpp:696
+#: port/app/emulator.cpp:721
 msgid "The executable could not be started."
 msgstr "Den kjørbare filen kunne ikke startes."
 
-#: port/app/emulator.cpp:709 port/melonds/core.cpp:886
+#: port/app/emulator.cpp:734 port/melonds/core.cpp:886
 msgid "The Vulkan renderer did not start: {0}"
 msgstr "Vulkan-rendereren startet ikke: {0}"
 
 #. the PS5's notification as a Wii U game starts
-#: port/app/emulator.cpp:767
+#: port/app/emulator.cpp:792
 msgid "Touchpad click + Options: the in-game menu (screens, picture, volume, controls, the library)"
 msgstr "Klikk på styreflaten + OPTIONS: spillmenyen (skjermer, bilde, volum, kontroller, biblioteket)"
 
-#: port/app/emulator.cpp:952
+#: port/app/emulator.cpp:991
 msgid "PS5-ECAM could not start itself again to show the library: start it again from the home screen."
 msgstr "PS5-ECAM kunne ikke starte seg selv på nytt for å vise biblioteket: start det igjen fra startskjermen."
 
@@ -668,32 +668,32 @@ msgid "Wrestling"
 msgstr "Bryting"
 
 #. the Wii U's controllers, by the names Nintendo gave them in the language
-#: port/app/ingame.cpp:145 port/frontend/actions.cpp:360
+#: port/app/ingame.cpp:145 port/frontend/actions.cpp:369
 #, menu
 msgid "Wii U GamePad"
 msgstr "Wii U GamePad"
 
-#: port/app/ingame.cpp:146 port/frontend/actions.cpp:361
+#: port/app/ingame.cpp:146 port/frontend/actions.cpp:370
 #, menu
 msgid "Wii U Pro Controller"
 msgstr "Wii U Pro Controller"
 
-#: port/app/ingame.cpp:147 port/frontend/actions.cpp:362
+#: port/app/ingame.cpp:147 port/frontend/actions.cpp:371
 #, menu
 msgid "Classic Controller"
 msgstr "Classic Controller"
 
-#: port/app/ingame.cpp:148 port/frontend/actions.cpp:363
+#: port/app/ingame.cpp:148 port/frontend/actions.cpp:372
 #, menu
 msgid "Wii Remote"
 msgstr "Wii-fjernkontroll"
 
-#: port/app/ingame.cpp:149 port/frontend/actions.cpp:364
+#: port/app/ingame.cpp:149 port/frontend/actions.cpp:373
 #, menu
 msgid "Wii Remote + Nunchuk"
 msgstr "Wii-fjernkontroll + Nunchuk"
 
-#: port/app/ingame.cpp:152 port/frontend/actions.cpp:367
+#: port/app/ingame.cpp:152 port/frontend/actions.cpp:376
 #, menu
 msgid "No controller"
 msgstr "Ingen kontroller"
@@ -2638,11 +2638,11 @@ msgstr "det er ikke en CIA som Azahar kan installere"
 msgid "The PS5 has no memory left for this Wii U game, so it has to stop. The boot log has the details."
 msgstr "PS5-en har ikke mer minne til dette Wii U-spillet, så det må stoppe. Oppstartsloggen har detaljene."
 
-#: port/eden/launch.cpp:46 port/eden/launch.cpp:58 port/frontend/shell/shell.cpp:1002 port/main_ps5.cpp:509
+#: port/eden/launch.cpp:69 port/eden/launch.cpp:81 port/frontend/shell/shell.cpp:1002 port/main_ps5.cpp:514
 msgid "This build has no Switch emulator: eden/eboot.bin is not in the app's folder."
 msgstr "Denne versjonen har ingen Switch-emulator: eden/eboot.bin ligger ikke i appens mappe."
 
-#: port/eden/launch.cpp:51 port/eden/launch.cpp:63
+#: port/eden/launch.cpp:74 port/eden/launch.cpp:86 port/eden/launch.cpp:115
 msgid "The console did not start Eden. The boot log says what it answered."
 msgstr "Konsollen startet ikke Eden. Oppstartsloggen sier hva den svarte."
 
@@ -2653,287 +2653,287 @@ msgid "{0} KB"
 msgstr "{0} KB"
 
 #. {1} is the USB drive's number
-#: port/frontend/actions.cpp:163
+#: port/frontend/actions.cpp:172
 msgid "{0} file to USB drive {1}"
 msgid_plural "{0} files to USB drive {1}"
 msgstr[0] "{0} fil til USB-stasjon {1}"
 msgstr[1] "{0} filer til USB-stasjon {1}"
 
-#: port/frontend/actions.cpp:166
+#: port/frontend/actions.cpp:175
 msgid "No USB drive found"
 msgstr "Fant ingen USB-stasjon"
 
-#: port/frontend/actions.cpp:193
+#: port/frontend/actions.cpp:202
 msgid "{0} file deleted ({1} MB)"
 msgid_plural "{0} files deleted ({1} MB)"
 msgstr[0] "{0} fil slettet ({1} MB)"
 msgstr[1] "{0} filer slettet ({1} MB)"
 
 #. what clearing the unpacked games did; {1} is the room it made, as in 2.4 GB
-#: port/frontend/actions.cpp:193 port/frontend/shell/settings.cpp:1075 port/frontend/shell/settings.cpp:1914
+#: port/frontend/actions.cpp:202 port/frontend/shell/settings.cpp:1075 port/frontend/shell/settings.cpp:1914
 msgid "None to delete"
 msgstr "Ingenting å slette"
 
-#: port/frontend/actions.cpp:200
+#: port/frontend/actions.cpp:209
 msgid "USB drive {0}"
 msgstr "USB-stasjon {0}"
 
-#: port/frontend/actions.cpp:202
+#: port/frontend/actions.cpp:211
 msgid "Extended storage {0}"
 msgstr "Utvidet lagring {0}"
 
 #. what an install is
-#: port/frontend/actions.cpp:375 port/frontend/actions.cpp:454
+#: port/frontend/actions.cpp:384 port/frontend/actions.cpp:463
 msgid "Game"
 msgstr "Spill"
 
-#: port/frontend/actions.cpp:376 port/frontend/actions.cpp:455
+#: port/frontend/actions.cpp:385 port/frontend/actions.cpp:464
 msgid "Update"
 msgstr "Oppdatering"
 
 #. an update found to install ({0}: its version, as 208)
-#: port/frontend/actions.cpp:377 port/frontend/actions.cpp:456 port/frontend/shell/eden.cpp:827 port/frontend/shell/eden.cpp:1351 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:800
+#: port/frontend/actions.cpp:386 port/frontend/actions.cpp:465 port/frontend/shell/eden.cpp:827 port/frontend/shell/eden.cpp:1351 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:800
 msgid "DLC"
 msgstr "DLC"
 
-#: port/frontend/actions.cpp:378 port/frontend/actions.cpp:458
+#: port/frontend/actions.cpp:387 port/frontend/actions.cpp:467
 msgid "System title"
 msgstr "Systemtittel"
 
-#: port/frontend/actions.cpp:457
+#: port/frontend/actions.cpp:466
 msgid "Demo"
 msgstr "Demo"
 
-#: port/frontend/actions.cpp:458
+#: port/frontend/actions.cpp:467
 msgid "Title"
 msgstr "Tittel"
 
-#: port/frontend/actions.cpp:466
+#: port/frontend/actions.cpp:475
 msgctxt "button"
 msgid "Cross"
 msgstr "Kryss"
 
-#: port/frontend/actions.cpp:466
+#: port/frontend/actions.cpp:475
 msgctxt "button"
 msgid "Circle"
 msgstr "Sirkel"
 
-#: port/frontend/actions.cpp:466
+#: port/frontend/actions.cpp:475
 msgctxt "button"
 msgid "Square"
 msgstr "Firkant"
 
-#: port/frontend/actions.cpp:467
+#: port/frontend/actions.cpp:476
 msgctxt "button"
 msgid "Triangle"
 msgstr "Trekant"
 
-#: port/frontend/actions.cpp:467
+#: port/frontend/actions.cpp:476
 msgctxt "button"
 msgid "Create"
 msgstr "Create"
 
-#: port/frontend/actions.cpp:467
+#: port/frontend/actions.cpp:476
 msgctxt "button"
 msgid "Options"
 msgstr "OPTIONS"
 
-#: port/frontend/actions.cpp:467
+#: port/frontend/actions.cpp:476
 msgctxt "button"
 msgid "Touchpad"
 msgstr "Styreflate"
 
-#: port/frontend/actions.cpp:468
+#: port/frontend/actions.cpp:477
 msgctxt "button"
 msgid "D-pad up"
 msgstr "Retningsknapp opp"
 
-#: port/frontend/actions.cpp:468
+#: port/frontend/actions.cpp:477
 msgctxt "button"
 msgid "D-pad down"
 msgstr "Retningsknapp ned"
 
-#: port/frontend/actions.cpp:468
+#: port/frontend/actions.cpp:477
 msgctxt "button"
 msgid "D-pad left"
 msgstr "Retningsknapp venstre"
 
-#: port/frontend/actions.cpp:468
+#: port/frontend/actions.cpp:477
 msgctxt "button"
 msgid "D-pad right"
 msgstr "Retningsknapp høyre"
 
-#: port/frontend/actions.cpp:469
+#: port/frontend/actions.cpp:478
 msgctxt "button"
 msgid "Left stick up"
 msgstr "Venstre spak opp"
 
-#: port/frontend/actions.cpp:469
+#: port/frontend/actions.cpp:478
 msgctxt "button"
 msgid "Left stick down"
 msgstr "Venstre spak ned"
 
-#: port/frontend/actions.cpp:469
+#: port/frontend/actions.cpp:478
 msgctxt "button"
 msgid "Left stick left"
 msgstr "Venstre spak venstre"
 
-#: port/frontend/actions.cpp:470
+#: port/frontend/actions.cpp:479
 msgctxt "button"
 msgid "Left stick right"
 msgstr "Venstre spak høyre"
 
-#: port/frontend/actions.cpp:470
+#: port/frontend/actions.cpp:479
 msgctxt "button"
 msgid "Left stick click"
 msgstr "Trykk på venstre spak"
 
-#: port/frontend/actions.cpp:470
+#: port/frontend/actions.cpp:479
 msgctxt "button"
 msgid "Right stick up"
 msgstr "Høyre spak opp"
 
-#: port/frontend/actions.cpp:471
+#: port/frontend/actions.cpp:480
 msgctxt "button"
 msgid "Right stick down"
 msgstr "Høyre spak ned"
 
-#: port/frontend/actions.cpp:471
+#: port/frontend/actions.cpp:480
 msgctxt "button"
 msgid "Right stick left"
 msgstr "Høyre spak venstre"
 
-#: port/frontend/actions.cpp:471
+#: port/frontend/actions.cpp:480
 msgctxt "button"
 msgid "Right stick right"
 msgstr "Høyre spak høyre"
 
-#: port/frontend/actions.cpp:472
+#: port/frontend/actions.cpp:481
 msgctxt "button"
 msgid "Right stick click"
 msgstr "Trykk på høyre spak"
 
-#: port/frontend/actions.cpp:472
+#: port/frontend/actions.cpp:481
 msgctxt "button"
 msgid "Circle pad up"
 msgstr "Circle Pad opp"
 
-#: port/frontend/actions.cpp:472
+#: port/frontend/actions.cpp:481
 msgctxt "button"
 msgid "Circle pad down"
 msgstr "Circle Pad ned"
 
-#: port/frontend/actions.cpp:473
+#: port/frontend/actions.cpp:482
 msgctxt "button"
 msgid "Circle pad left"
 msgstr "Circle Pad venstre"
 
-#: port/frontend/actions.cpp:473
+#: port/frontend/actions.cpp:482
 msgctxt "button"
 msgid "Circle pad right"
 msgstr "Circle Pad høyre"
 
-#: port/frontend/actions.cpp:473
+#: port/frontend/actions.cpp:482
 msgctxt "button"
 msgid "C-stick up"
 msgstr "C-spak opp"
 
-#: port/frontend/actions.cpp:474
+#: port/frontend/actions.cpp:483
 msgctxt "button"
 msgid "C-stick down"
 msgstr "C-spak ned"
 
-#: port/frontend/actions.cpp:474
+#: port/frontend/actions.cpp:483
 msgctxt "button"
 msgid "C-stick left"
 msgstr "C-spak venstre"
 
-#: port/frontend/actions.cpp:474
+#: port/frontend/actions.cpp:483
 msgctxt "button"
 msgid "C-stick right"
 msgstr "C-spak høyre"
 
-#: port/frontend/actions.cpp:475
+#: port/frontend/actions.cpp:484
 msgctxt "button"
 msgid "Nunchuk stick up"
 msgstr "Nunchuk-spak opp"
 
-#: port/frontend/actions.cpp:475
+#: port/frontend/actions.cpp:484
 msgctxt "button"
 msgid "Nunchuk stick down"
 msgstr "Nunchuk-spak ned"
 
-#: port/frontend/actions.cpp:475
+#: port/frontend/actions.cpp:484
 msgctxt "button"
 msgid "Nunchuk stick left"
 msgstr "Nunchuk-spak venstre"
 
-#: port/frontend/actions.cpp:476
+#: port/frontend/actions.cpp:485
 msgctxt "button"
 msgid "Nunchuk stick right"
 msgstr "Nunchuk-spak høyre"
 
-#: port/frontend/actions.cpp:476
+#: port/frontend/actions.cpp:485
 msgctxt "button"
 msgid "Nunchuk C"
 msgstr "Nunchuk C"
 
-#: port/frontend/actions.cpp:476
+#: port/frontend/actions.cpp:485
 msgctxt "button"
 msgid "Nunchuk Z"
 msgstr "Nunchuk Z"
 
-#: port/frontend/actions.cpp:476
+#: port/frontend/actions.cpp:485
 msgctxt "button"
 msgid "Home"
 msgstr "HOME"
 
-#: port/frontend/actions.cpp:477
+#: port/frontend/actions.cpp:486
 msgctxt "button"
 msgid "Start"
 msgstr "START"
 
-#: port/frontend/actions.cpp:477
+#: port/frontend/actions.cpp:486
 msgctxt "button"
 msgid "Select"
 msgstr "SELECT"
 
-#: port/frontend/actions.cpp:477
+#: port/frontend/actions.cpp:486
 msgctxt "button"
 msgid "+ (Start)"
 msgstr "+ (START)"
 
-#: port/frontend/actions.cpp:477
+#: port/frontend/actions.cpp:486
 msgctxt "button"
 msgid "- (Select)"
 msgstr "- (SELECT)"
 
-#: port/frontend/actions.cpp:478
+#: port/frontend/actions.cpp:487
 msgctxt "button"
 msgid "Blow into the mic"
 msgstr "Blås i mikrofonen"
 
-#: port/frontend/actions.cpp:478
+#: port/frontend/actions.cpp:487
 msgctxt "button"
 msgid "Show the GamePad's screen"
 msgstr "Vis GamePad-ens skjerm"
 
-#: port/frontend/actions.cpp:478
+#: port/frontend/actions.cpp:487
 msgctxt "button"
 msgid "None"
 msgstr "Ingen"
 
-#: port/frontend/actions.cpp:481
+#: port/frontend/actions.cpp:490
 msgctxt "button"
 msgid "Touch at the cursor"
 msgstr "Trykk ved markøren"
 
-#: port/frontend/actions.cpp:481
+#: port/frontend/actions.cpp:490
 msgctxt "button"
 msgid "Fast forward"
 msgstr "Spol fremover"
 
-#: port/frontend/actions.cpp:481
+#: port/frontend/actions.cpp:490
 msgctxt "button"
 msgid "Rewind"
 msgstr "Spol tilbake"
@@ -6977,33 +6977,33 @@ msgstr "Oppstartsloggen ble ikke skrevet (/data er ikke tilgjengelig)"
 msgid "PS5-ECAM cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5-ECAM."
 msgstr "PS5-ECAM når ikke /data. Last inn en HEN med PPSA99360 i app-jailbreak-listen, eller elfldr, og start så PS5-ECAM på nytt."
 
-#: port/main_ps5.cpp:498
+#: port/main_ps5.cpp:503
 msgid "This session: Azahar (3DS); Cemu's emulated Wii U is not started"
 msgstr "Denne økten: Azahar (3DS); Cemus emulerte Wii U er ikke startet"
 
-#: port/main_ps5.cpp:507
+#: port/main_ps5.cpp:512
 msgid "This session: Eden (Switch), in a program of its own; Cemu's emulated Wii U is not started"
 msgstr "Denne økten: Eden (Switch), i et eget program; Cemus emulerte Wii U er ikke startet"
 
-#: port/main_ps5.cpp:516
+#: port/main_ps5.cpp:521
 msgid "This session: melonDS (DS); Cemu's emulated Wii U is not started"
 msgstr "Denne økten: melonDS (DS); Cemus emulerte Wii U er ikke startet"
 
-#: port/main_ps5.cpp:522
+#: port/main_ps5.cpp:527
 msgid "This session: Cemu (Wii U); Azahar's core is not started"
 msgstr "Denne økten: Cemu (Wii U); Azahars kjerne er ikke startet"
 
-#: port/main_ps5.cpp:530
+#: port/main_ps5.cpp:535
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "Ikke noe JIT-minne: Wii U-spill kjører på tolken, mye tregere. Er PPSA99360 i HEN-ens app-jailbreak-liste?"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/main_ps5.cpp:564
+#: port/main_ps5.cpp:569
 msgid "The launcher could not start. The boot log in {0}/logs says why."
 msgstr "Startprogrammet kunne ikke starte. Oppstartsloggen i {0}/logs sier hvorfor."
 
 #. {0} is why; {1} the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the app's drive
-#: port/main_ps5.cpp:566
+#: port/main_ps5.cpp:571
 msgid "The launcher could not start: {0}. The boot log in {1}/logs has more."
 msgstr "Startprogrammet kunne ikke starte: {0}. Oppstartsloggen i {1}/logs har mer."
 

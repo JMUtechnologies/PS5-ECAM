@@ -113,7 +113,10 @@ namespace ps5emu
 	// path in the app's folder ("eboot.bin", or the Switch side's "eden/eboot.bin"), args its arguments;
 	// withReturn adds "--return <that folder>/eboot.bin", the way back to this program. Each place the
 	// app can be started from is tried in turn, as for RestartToLibrary; returns only if none took.
-	void LoadExecApp(const std::string& program, const std::vector<std::string>& args, bool withReturn);
+	// argsFile, when given, has the arguments too, one a line, for a program that reads them there: on
+	// the console LoadExec does not carry them (MihawkOS saw argc 1 on every restart). It is taken
+	// away again when none took.
+	void LoadExecApp(const std::string& program, const std::vector<std::string>& args, bool withReturn, const std::string& argsFile = {});
 	// Closes PS5Cemu, back to the PS5's home screen (sceSystemServiceLoadExec("exit")), after the game
 	// of a home screen tile that asked for it (--exit-after-game). Returns only if the console refused.
 	void ExitApp();

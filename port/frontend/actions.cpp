@@ -158,6 +158,15 @@ namespace ps5actions
 			for (const std::string& name : ListEntries(edenLogs, false, listed))
 				if (CopyFile(edenLogs + "/" + name, folder + "/eden-" + name))
 					copied++;
+			// and what it keeps in the app's sandbox until it reaches /data, all it has when it never does:
+			// its trace from its first line (the session before too) and its logs
+			const std::string sandbox = ps5paths::SandboxDownload();
+			std::vector<std::string> sandboxFiles = {sandbox + "/boot-trace.txt", sandbox + "/boot-trace.prev.txt"};
+			for (const std::string& name : ListEntries(sandbox + "/eden-headless-g7", false, listed))
+				sandboxFiles.push_back(sandbox + "/eden-headless-g7/" + name);
+			for (const std::string& file : sandboxFiles)
+				if (IsFile(file) && CopyFile(file, folder + "/eden-sandbox-" + file.substr(file.find_last_of('/') + 1)))
+					copied++;
 			ps5log::Line("[launcher] {} log files copied to {}", copied, folder);
 			// tr: {1} is the USB drive's number
 			return TrP(copied, "{0} file to USB drive {1}", "{0} files to USB drive {1}", drive + 1);

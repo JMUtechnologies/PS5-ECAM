@@ -6,6 +6,11 @@
 // (ps5cemu.json's side, saved before); a home screen tile's game closes the app instead
 // (--exit-after-game). Eden's own launcher, with all it has besides (mods, cheats, updates and DLC,
 // profiles, rooms, its per-game settings), starts the same way without a game.
+//
+// On the console LoadExec does not carry a program's arguments (MihawkOS saw argc 1 on every
+// restart, and 5.0.0's Switch games never started, #67): they go in RequestFile too, which Eden takes
+// as it starts (patches/eden), once it has /data. A request still there when this app starts again
+// was never taken.
 
 #pragma once
 
@@ -25,4 +30,12 @@ namespace ps5eden
 	void LaunchGame(const ps5emu::Game& game, const ps5settings::Launcher& forGame, bool exitAfterGame, std::string& error);
 	// Eden's own launcher, the same way
 	void OpenLauncher(std::string& error);
+
+	// Where the arguments Eden is started with also go, one a line: Eden's data folder's
+	// launch-request.txt
+	std::string RequestFile();
+	// At the app's start: a request Eden never took, said in the boot log (with Eden's trace from the
+	// app's sandbox, when it started without /data) and taken away. Why the Switch side's last game did
+	// not start when the console started this app again instead of Eden; empty otherwise
+	std::string TakeStaleRequest();
 }
