@@ -385,6 +385,13 @@ namespace ps5shell
 			ps5log::Line("[ui] the GPU stopped drawing the launcher");
 			m_failed = true;
 		}
+		// the update's restart, once the sheet has said it is starting again: LoadExec holds this thread
+		// while it tries each place the app starts from, and comes back only when none took
+		if (m_update.restartAt >= 0 && m_now - m_update.restartAt > 0.15)
+		{
+			m_update.restartAt = -1;
+			ps5update::Restart();
+		}
 		if (m_frames == 1)
 			ps5log::Line("[ui] first frame: {} instances, {} draws", m_list.instances.size(), m_list.runs.size());
 		// the PS5's splash goes once the launcher is drawn; with Eden's opening, once its picture (the
@@ -1898,20 +1905,27 @@ namespace ps5shell
 		{
 			const auto status = ps5update::GetStatus();
 			using State = ps5update::Status::State;
-			const int choices = status.state == State::Available ? 3 : status.state == State::Ready || status.state == State::Failed ? 1 : 0;
+			// Ready: Restart now, and Later too once the PS5 would not start the app again (its message)
+			const int choices = m_update.restartAt >= 0 ? 0 :
+				status.state == State::Available		? 3 :
+				status.state == State::Ready			? (status.message.empty() ? 1 : 2) :
+				status.state == State::Failed			? 1 :
+														  0;
 			if ((b == Button::Left || b == Button::Right) && choices > 1)
 			{
 				m_update.choice = (m_update.choice + (b == Button::Right ? 1 : choices - 1)) % choices;
 				m_feedback.Play(ui::Cue::Focus);
 			}
-			else if (b == Button::Circle)
+			else if (b == Button::Circle && m_update.restartAt < 0)
 			{
-				ps5update::Dismiss();
+				// a download stops (the release is offered again later); anything else is put off
+				if (!ps5update::Cancel())
+					ps5update::Dismiss();
 				m_feedback.Play(ui::Cue::Back);
 			}
 			else if (b == Button::Cross && choices > 0)
 			{
-				// Available: Update now, Later, Skip this version; Ready: Restart now; Failed: OK
+				// Available: Update now, Later, Skip this version; Ready: Restart now (Later); Failed: OK
 				if (status.state == State::Available && m_update.choice == 0)
 					ps5update::Install();
 				else if (status.state == State::Available && m_update.choice == 2)
@@ -1921,8 +1935,8 @@ namespace ps5shell
 					ps5log::Line("[update] {} skipped: not offered at start", m_settings.ui.skipVersion);
 					ps5update::Dismiss();
 				}
-				else if (status.state == State::Ready)
-					ps5update::Restart();
+				else if (status.state == State::Ready && m_update.choice == 0)
+					m_update.restartAt = m_now; // once a frame has said so (Frame)
 				else
 					ps5update::Dismiss();
 				m_update.choice = 0;
@@ -2406,8 +2420,18 @@ namespace ps5shell
 				break;
 			case State::Ready:
 				title = TrF("{0} is installed", next);
-				text = Tr("PS5-ECAM starts again to finish the update.");
-				choices = {Tr("Restart now")};
+				if (m_update.restartAt >= 0)
+					text = Tr("Starting PS5-ECAM again…");
+				else if (!status.message.empty())
+				{
+					text = status.message; // the PS5 did not start it again
+					choices = {Tr("Restart now"), Tr("Later")};
+				}
+				else
+				{
+					text = Tr("PS5-ECAM starts again to finish the update.");
+					choices = {Tr("Restart now")};
+				}
 				break;
 			case State::Failed:
 				title = Tr("The update did not finish");
@@ -2442,6 +2466,8 @@ namespace ps5shell
 			if (!choices.empty())
 				DrawHints(canvas, choices.size() > 1 ? std::vector<Hint>{{Icon::LeftRight, Tr("Choose")}, {Icon::Cross, Tr("Select")}, {Icon::Circle, Tr("Later")}} :
 													   std::vector<Hint>{{Icon::Cross, status.state == State::Failed ? Tr("OK") : Tr("Restart")}});
+			else if (status.state == State::Downloading || status.state == State::Verifying)
+				DrawHints(canvas, {{Icon::Circle, Tr("Cancel")}}); // (a download that stalls fails by itself too)
 			canvas.PopOffset();
 			canvas.PopAlpha();
 		}

@@ -515,7 +515,24 @@ namespace ps5update
 		s_update.installing = false;
 	}
 	void Restart() {}
+	bool Cancel()
+	{
+		GetStatus();
+		if (s_update.state != Status::State::Downloading && s_update.state != Status::State::Verifying)
+			return false;
+		s_update = {};
+		s_update.state = Status::State::Available;
+		s_update.latest = "v3.0.1";
+		s_updateDismissed = true;
+		return true;
+	}
 	void Stop() {}
+	std::string PreviousVersion() { return {}; }
+	bool GoBack(std::string& error)
+	{
+		error = "No earlier version is kept here.";
+		return false;
+	}
 }
 
 // -- Cemu, in brief: sample games, packs and controllers ------------------------------------------
@@ -837,6 +854,7 @@ namespace ps5emu
 	static uint32_t s_currentAccount = 0x80000001;
 	std::vector<WiiuAccount> ListAccounts() { return s_accounts; }
 	void ReloadAccounts() {}
+	void RestartToLibrary() {} // (a restore of the settings starts the app over: the preview goes on)
 	uint32_t CurrentAccount() { return s_currentAccount; }
 	void SetCurrentAccount(uint32_t id) { s_currentAccount = id; }
 	uint32_t CreateAccount(const std::string& name, std::string& error)

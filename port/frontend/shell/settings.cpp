@@ -2136,7 +2136,7 @@ namespace ps5shell
 			if (state == ps5update::Status::State::Available)
 				ps5update::Install();
 			else if (state == ps5update::Status::State::Ready)
-				ps5update::Restart();
+				m_update.restartAt = m_now; // as the update sheet's Restart now (Frame)
 			else
 				ps5update::Check();
 		}
@@ -2312,6 +2312,7 @@ namespace ps5shell
 				m_settings.ui.skipVersion = ps5update::Readable(PS5CEMU_VERSION);
 				SaveSettings();
 				ps5update::Restart();
+				error = ps5update::GetStatus().message; // back only when the PS5 did not start it again
 			}
 			m_message = error;
 		}

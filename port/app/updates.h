@@ -34,7 +34,9 @@ namespace ps5update
 		bool installing = false; // Install() was asked for (the launcher shows how it goes)
 	};
 
-	// Starts the check (once per process; it gives up quietly without a network).
+	// Starts the check (once per process; it gives up quietly without a network). After an update whose
+	// restart started the old release again, says so instead (Failed, shown by the sheet), and asks
+	// nothing: the release would be offered again at every start.
 	void Start();
 	// Asks GitHub again (Settings).
 	void Check();
@@ -45,8 +47,13 @@ namespace ps5update
 	// install under way or finished); Dismiss is "later": not asked again in this process.
 	bool Prompting();
 	void Dismiss();
-	// Starts the app again, as the version just installed. Returns only if that did not take.
+	// Starts the app again, as the version just installed, as the library's own restart does
+	// (ps5emu::LoadExecApp). Returns only if that did not take: the status's message then says to close
+	// the app and start it from the home screen, and the sheet can be put away (Dismiss).
 	void Restart();
+	// Stops a download (Downloading or Verifying), what it wrote removed: the release is offered
+	// again, and the sheet closes. False once the files are being put in place, or with no download.
+	bool Cancel();
 	// Before a game: the check or download is cut short and waited for.
 	void Stop();
 

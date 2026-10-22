@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "updates.h"
 #include "boxart.h"
+#include "emulator.h"
 #include "pack_updates.h"
 #include "lang.h"
 #include "paths.h"
@@ -56,15 +57,19 @@ namespace ps5update
 		constexpr uint64_t kMaxDownload = 512ull << 20;
 
 		std::mutex s_mutex;
-		Status s_status;		  // under s_mutex
-		bool s_dismissed = false; // under s_mutex
+		Status s_status;			  // under s_mutex
+		bool s_dismissed = false;	  // under s_mutex
+		bool s_restartFailed = false; // under s_mutex: Restart came back, so the installed one can wait
 		std::thread s_thread;
 		std::atomic<bool> s_stop{false};
-		std::atomic<bool> s_running{false}; // s_thread has not ended
+		std::atomic<bool> s_cancelled{false}; // Cancel: what the thread finds after is not shown
+		std::atomic<bool> s_running{false};	  // s_thread has not ended
 
 		void Set(Status::State state, const std::string& message = {})
 		{
 			std::lock_guard lock(s_mutex);
+			if (s_cancelled)
+				return; // the sheet is closed, the release offered again
 			s_status.state = state;
 			if (!message.empty() || state == Status::State::Failed)
 				s_status.message = message;
@@ -119,6 +124,7 @@ namespace ps5update
 
 		int Progress(void*, curl_off_t total, curl_off_t received, curl_off_t, curl_off_t)
 		{
+			if (!s_cancelled)
 			{
 				std::lock_guard lock(s_mutex);
 				s_status.total = total > 0 ? (uint64_t)total : s_status.total;
@@ -142,6 +148,9 @@ namespace ps5update
 			curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 			curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 5L);
 			curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10L);
+			// a transfer that stalls (under 1 KB/s for 30 s) fails, where it hung the update sheet for good (#72)
+			curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1024L);
+			curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 30L);
 			curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
 			curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
 			curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, Progress);
@@ -293,6 +302,47 @@ namespace ps5update
 		fs::path PreviousFolder()
 		{
 			return fs::path(ps5paths::Root()) / "previous-version";
+		}
+
+		// The release an update installed and where, for the next start to see whether it is that one
+		// (TookInstalled): a restart that starts the old one again would otherwise offer it again, and
+		// again (#72)
+		fs::path InstalledRecord()
+		{
+			return fs::path(ps5paths::Root()) / "update-installed.txt";
+		}
+
+		// At a fresh start: false when an update installed a release newer than this one, which then
+		// says so (the sheet shows why, and the release is not offered again this session)
+		bool TookInstalled()
+		{
+			std::string version, folder;
+			{
+				std::ifstream in(InstalledRecord());
+				if (!in)
+					return true;
+				std::getline(in, version);
+				std::getline(in, folder);
+			}
+			std::error_code ec;
+			fs::remove(InstalledRecord(), ec);
+			Version installed, mine;
+			if (!Parse(version, installed) || !Parse(PS5CEMU_VERSION, mine) || installed <= mine)
+			{
+				ps5log::Line("[update] {} is the release the last update installed", Readable(PS5CEMU_VERSION));
+				return true;
+			}
+			ps5log::Line("[update] the last update installed {} in {}, but this is {} from {}: the PS5 started the old one", Readable(version),
+				folder, Readable(PS5CEMU_VERSION), ps5paths::AppDir());
+			std::lock_guard lock(s_mutex);
+			s_status.state = Status::State::Failed;
+			s_status.latest = version;
+			s_status.installing = true; // the sheet shows it
+			// tr: at a start after an update: {0} the release installed, {1} the folder, {2} this release
+			s_status.message = ps5lang::TrF("{0} was installed in {1}, but the PS5 started {2} again. Close PS5-ECAM and start it from the "
+											"home screen; if it is still {2}, copy the release's PPSA99360 folder over by hand.",
+				Readable(version), folder, Readable(PS5CEMU_VERSION));
+			return false;
 		}
 
 		// A file kept as it is, in the same shape under to: a second name for it where the drive has
@@ -573,6 +623,7 @@ namespace ps5update
 			}
 			fs::remove_all(staging, ec);
 			fs::remove(archive, ec);
+			std::ofstream(InstalledRecord(), std::ios::trunc) << latest << '\n' << app.string() << '\n';
 			ps5log::Line("[update] {} installed in {} ({} files, {} MB)", Readable(latest), app.string(), files.size(), download.written >> 20);
 			Set(Status::State::Ready);
 		}
@@ -610,6 +661,7 @@ namespace ps5update
 			if (s_thread.joinable())
 				s_thread.join();
 			s_stop = false;
+			s_cancelled = false;
 			s_running = true;
 			s_thread = std::thread(Run, install);
 		}
@@ -621,6 +673,11 @@ namespace ps5update
 			std::lock_guard lock(s_mutex);
 			if (s_status.state != Status::State::Idle)
 				return;
+		}
+		if (!TookInstalled())
+			return;
+		{
+			std::lock_guard lock(s_mutex);
 			s_status.state = Status::State::Checking;
 		}
 		Launch(false);
@@ -630,7 +687,8 @@ namespace ps5update
 	{
 		{
 			std::lock_guard lock(s_mutex);
-			if (Busy(s_status.state) || s_status.state == Status::State::Ready)
+			// (a cancelled download's thread still ending: asked again once it has)
+			if (Busy(s_status.state) || s_status.state == Status::State::Ready || s_running)
 				return;
 			s_status = {};
 			s_status.state = Status::State::Checking;
@@ -643,7 +701,7 @@ namespace ps5update
 	{
 		{
 			std::lock_guard lock(s_mutex);
-			if (s_status.state != Status::State::Available)
+			if (s_status.state != Status::State::Available || s_running)
 				return;
 			s_status.state = Status::State::Downloading;
 			s_status.installing = true;
@@ -699,7 +757,25 @@ namespace ps5update
 			}
 		}
 		fs::remove_all(previous, ec);
+		fs::remove(InstalledRecord(), ec); // the release gone back from is not looked for at the next start
 		ps5log::Line("[update] back to {} ({} files): starting it", version, files.size());
+		return true;
+	}
+
+	bool Cancel()
+	{
+		std::lock_guard lock(s_mutex);
+		// not once its files are being put in place (Installing), nor after
+		if (s_status.state != Status::State::Downloading && s_status.state != Status::State::Verifying)
+			return false;
+		s_cancelled = true;
+		s_stop = true; // the download stops at its next progress call, the unpacking at its next file
+		ps5log::Line("[update] the download of {} cancelled", Readable(s_status.latest));
+		s_status.state = Status::State::Available;
+		s_status.installing = false;
+		s_status.received = s_status.total = 0;
+		s_status.message.clear();
+		s_dismissed = true;
 		return true;
 	}
 
@@ -714,26 +790,25 @@ namespace ps5update
 	void Dismiss()
 	{
 		std::lock_guard lock(s_mutex);
-		if (Busy(s_status.state) || s_status.state == Status::State::Ready)
-			return; // an install under way, or done, is not put off
+		if (Busy(s_status.state) || (s_status.state == Status::State::Ready && !s_restartFailed))
+			return; // an install under way, or done, is not put off (unless the PS5 would not start it)
 		s_dismissed = true;
 		s_status.installing = false;
 	}
 
 	void Restart()
 	{
-		// nothing else on the network or writing, as RestartToLibrary does
-		ps5boxart::Stop();
+		// nothing else on the network or writing (LoadExecApp stops the rest)
 		ps5packs::Stop();
-		// the program just installed: where ShadowMountPlus mounted the app from, as AppFolder()
-		const std::string eboot = (AppFolder().empty() ? fs::path(ps5paths::kInstallDir) : AppFolder()).string() + "/eboot.bin";
-		ps5log::FlushAll(); // the log's lines in the file before the process is replaced
-		const int result = sceSystemServiceLoadExec(eboot.c_str(), nullptr);
-		// it does not come back when it works; allow for one that returns before ending the process
-		if (result == 0)
-			for (int i = 0; i < 100; i++)
-				sceKernelUsleep(100000);
-		ps5log::Line("[update] LoadExec({}) returned {:#x}", eboot, (uint32_t)result);
+		// as the library's own restart: /app0 first, then each folder the app can start from, those that
+		// once took it to the home screen left out (#48, #68). The single folder this used to ask did that
+		// on some setups, and its "Restart now" did nothing again at each press (#72)
+		ps5log::Line("[update] starting PS5-ECAM again for the release installed");
+		ps5emu::LoadExecApp("eboot.bin", {}, false);
+		std::lock_guard lock(s_mutex);
+		s_restartFailed = true;
+		// tr: an update is installed, but the app could not start itself again to run it
+		s_status.message = ps5lang::Tr("The PS5 did not start PS5-ECAM again. Close it and start it from the home screen to finish the update.");
 	}
 
 	void Stop()
