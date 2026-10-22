@@ -25,6 +25,7 @@ Each idea done is marked **Done** where it is listed below, with its commit.
 | [G4](#g4) | [`4f0a5af`](https://github.com/premohq/PS5-ECAM/commit/4f0a5af) | **Undo the last load** in the in-game menu's Save states (3DS and DS) |
 | [T1](#t1) | [`0f30424`](https://github.com/premohq/PS5-ECAM/commit/0f30424) | The 3DS's cameras see the newest picture in `azahar/camera` (or sent from a phone), for QR codes |
 | [L7](#l7) | [`6d374e0`](https://github.com/premohq/PS5-ECAM/commit/6d374e0) | The launcher dims after five minutes with no button pressed; the waking press does nothing else |
+| [S7](#s7) | [`0891a28`](https://github.com/premohq/PS5-ECAM/commit/0891a28) | Backups hold the settings too (each game's own, Cemu's, controller profiles, themes); a restore starts the app again to use them |
 
 Being worked on separately (not here): the Switch side's in-game menu, its settings and button
 remapping ([N1](#n1)), its rooms ([I2](#i2)), ReShade on the Wii U side ([I1](#i1)), and the box art
@@ -81,7 +82,7 @@ on a PC: `tools/tests` (archives, keyboard, music, netfs, stream), `tools/reshad
 **Back up to USB** (`port/app/saves.cpp`) takes the Wii U's, 3DS's and DS's saves, but not Eden's
 (`eden/user/nand/user/save`). The guide says it does not "yet".
 
-<a id="s7"></a>**S7. Settings in the backups too** (S)
+<a id="s7"></a>**S7. Settings in the backups too** (S) · **Done:** [`0891a28`](https://github.com/premohq/PS5-ECAM/commit/0891a28)
 Add `ps5cemu.json` (each game's own settings), Cemu's `controllerProfiles/` and `themes/` to a backup, so
 a reinstall or a second PS5 starts where you were. They are small.
 
