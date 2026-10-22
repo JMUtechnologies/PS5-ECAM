@@ -77,7 +77,8 @@ python3 -B "$PS5CEMU_ROOT/tools/render-icons.py" "$work/icons"
 cp "$PS5CEMU_ROOT/sce_sys/icon0.png" "$app/sce_sys/" # tools/render-presentation.py's, committed
 # param.json with the Makefile's VERSION, the one place the release's version is set: 2.1.3d is
 # contentVersion 02.001.304 (the patch number in hundreds, then the letter: none 0, a 1, b 2...) and
-# masterVersion 02.01
+# masterVersion 02.01. The repository's sce_sys/param.json is brought to the same numbers: the
+# Prospero Store reads that copy, at a release's tag, to tell a console its installed copy is older
 version=$(sed -n 's/^VERSION := *\([^ ]*\).*/\1/p' "$PS5CEMU_ROOT/Makefile")
 python3 - "$PS5CEMU_ROOT/sce_sys/param.json" "$app/sce_sys/param.json" "$version" <<'PY'
 import json, re, sys
@@ -90,12 +91,16 @@ letter = ord(match[4]) - ord("a") + 1 if match[4] else 0
 if major > 99 or minor > 99 or patch > 9:
     sys.exit(f"{version} does not fit param.json's version numbers")
 param = json.load(open(source))
-param["contentVersion"] = f"{major:02d}.{minor:03d}.{patch * 100 + letter:03d}"
-param["masterVersion"] = f"{major:02d}.{minor:02d}"
-with open(target, "w", newline="\n") as out:
-    json.dump(param, out, indent=2)
-    out.write("\n")
+numbers = {"contentVersion": f"{major:02d}.{minor:03d}.{patch * 100 + letter:03d}", "masterVersion": f"{major:02d}.{minor:02d}"}
+stale = any(param.get(key) != value for key, value in numbers.items())
+param.update(numbers)
+for path in [target, source] if stale else [target]:
+    with open(path, "w", newline="\n") as out:
+        json.dump(param, out, indent=2)
+        out.write("\n")
 print(f"==> [package] version {version}: contentVersion {param['contentVersion']}, masterVersion {param['masterVersion']}")
+if stale:
+    print("==> [package] sce_sys/param.json now has them too: commit it before the release's tag")
 PY
 # the home screen's background while PS5Cemu is selected and while it starts: one picture
 # (tools/render-presentation.py renders sce_sys/pic0.dds), in the form the boilerplate checks
