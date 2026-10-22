@@ -21,6 +21,7 @@ Each idea done is marked **Done** where it is listed below, with its commit.
 | [G1](#g1) | [`6f8dcd8`](https://github.com/premohq/PS5-ECAM/commit/6f8dcd8) | Touchpad click + Square saves a state, + Triangle held loads it (3DS and DS) |
 | [P1](#p1) | [`86fff8a`](https://github.com/premohq/PS5-ECAM/commit/86fff8a) | **Add files to the PS5** on the remote touch screen's page: games, Switch keys and firmware, amiibo and music from a phone's browser |
 | [S2](#s2) | [`b482092`](https://github.com/premohq/PS5-ECAM/commit/b482092) | The start after a crash says so once, with the crash's first line and Copy logs to USB |
+| [G9](#g9) | [`8777160`](https://github.com/premohq/PS5-ECAM/commit/8777160) | **Fast forward, on and off** in Controls > Buttons (3DS and DS) |
 
 Being worked on separately (not here): the Switch side's in-game menu, its settings and button
 remapping ([N1](#n1)), its rooms ([I2](#i2)), ReShade on the Wii U side ([I1](#i1)), and the box art
@@ -193,7 +194,7 @@ A/B. Dolphin and Cemu on a PC both have per-game controller profiles.
 A quick action or a hotkey that saves a PNG to `/data/ps5cemu/screenshots/<game>/`, a gallery on the
 game's page, and one picked as the game's background.
 
-<a id="g9"></a>**G9. Fast forward as a toggle** (S)
+<a id="g9"></a>**G9. Fast forward as a toggle** (S) · **Done:** [`8777160`](https://github.com/premohq/PS5-ECAM/commit/8777160)
 Today it works only while held. An option to press once for on and again for off, as RetroArch offers.
 
 ## The Switch side
