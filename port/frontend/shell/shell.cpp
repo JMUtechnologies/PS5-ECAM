@@ -27,6 +27,7 @@
 #include <cmath>
 #include <cstring>
 #include <filesystem>
+#include <utility>
 
 namespace ps5shell
 {
@@ -951,8 +952,9 @@ namespace ps5shell
 		SaveSettings();
 	}
 
-	void Shell::Launch(int index)
+	void Shell::Launch(int index, bool resume)
 	{
+		m_resumeNext = resume;
 		if (index < 0 || index >= (int)m_games.size())
 			return;
 		if (!CoreReady() || !Notice().empty())
@@ -1013,6 +1015,7 @@ namespace ps5shell
 			from);
 		m_launch.game = index;
 		m_choice->launchPath = launchPath;
+		m_choice->resume = std::exchange(m_resumeNext, false);
 	}
 
 	void Shell::StartUnpacking(int index)
@@ -1813,6 +1816,14 @@ namespace ps5shell
 		m_menu.at = m_now;
 		const Game& g = m_games[game];
 		m_menu.items = {{"play", Tr("Play")}};
+		// a 3DS or DS game quit to the library left a state to go on from (ps5saves::ResumeState)
+		if (Is3ds() || IsDs())
+		{
+			const std::string state = ps5saves::ResumeState({Is3ds() ? 1 : 2, g.entry.game.titleId, g.entry.game.path.string()});
+			std::error_code ec;
+			if (!state.empty() && std::filesystem::exists(state, ec))
+				m_menu.items.push_back({"resume", Tr("Resume where you left off")});
+		}
 		if (m_screen != ScreenId::Hub)
 			m_menu.items.push_back({"hub", Tr("Game hub")});
 		// a game with settings of its own says so
@@ -2128,6 +2139,8 @@ namespace ps5shell
 				Game& g = m_games[game];
 				if (id == "play")
 					Launch(game);
+				else if (id == "resume")
+					Launch(game, true);
 				else if (id == "hub")
 				{
 					m_feedback.Play(ui::Cue::Select);
@@ -2276,7 +2289,7 @@ namespace ps5shell
 			canvas.Text(Style(kHeadingStyle), sheet.x + 36, sheet.y + 78, game.entry.game.name, kText, sheet.w - 72, 1);
 			static const std::map<std::string, Icon> kIcons = {{"play", Icon::Play}, {"hub", Icon::ChevronRight}, {"settings", Icon::Sparkle},
 				{"saves", Icon::Save}, {"packs", Icon::Gear}, {"mods", Icon::Usb}, {"updates", Icon::Download}, {"favourite", Icon::Star},
-				{"tile", Icon::Home}, {"untile", Icon::Home}};
+				{"tile", Icon::Home}, {"untile", Icon::Home}, {"resume", Icon::Play}};
 			for (int i = 0; i < count; i++)
 			{
 				const Box row{sheet.x + 20, sheet.y + 136 + i * rowH, sheet.w - 40, rowH - 6};

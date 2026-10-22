@@ -18,6 +18,7 @@
 #include "library.h"
 #include "screens.h"
 #include "../app/achievements.h"
+#include "../app/saves.h"
 #include "../app/boxart.h"
 #include "../app/gameinfo.h"
 #include "../app/ingame3ds.h"
@@ -55,6 +56,7 @@
 #include <mutex>
 #include <thread>
 #include <sys/stat.h>
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -108,6 +110,10 @@ namespace ps5melonds
 		std::atomic<int> s_stateRequest{0};
 		// the emulation's: the game as it was just before the last load, for Undo the last load
 		std::unique_ptr<melonDS::Savestate> s_undo;
+		// Resume where you left off: the state saved as the game is quit, in a slot the menu does not show
+		constexpr int kResumeSlot = ps5saves::kResumeSlot;
+		bool s_resume = false;				   // the game goes on from it as it starts (SetResume)
+		std::atomic<bool> s_quitAfterState{false}; // quit once the state saved for it is made
 		std::mutex s_cheatMutex;
 		std::vector<int> s_cheatToggles;
 
@@ -530,11 +536,14 @@ namespace ps5melonds
 					melonDS::Savestate state(data.data(), (u32)data.size(), false);
 					if (!state.Error && nds.DoSavestate(&state) && !state.Error)
 					{
-						message = ps5lang::TrF("Loaded slot {0}", slot);
+						message = slot == kResumeSlot ? std::string(ps5lang::Tr("Back where you left off")) : ps5lang::TrF("Loaded slot {0}", slot);
 						ps5cheevos::Reset(); // the set's conditions start again from the state's memory
 						s_rewind.clear();	 // and a rewind, from here
-						s_undo = std::move(backup); // what the load replaced, for Undo the last load
-						ps5ingame3ds::SetUndoAvailable(true);
+						if (slot != kResumeSlot)
+						{
+							s_undo = std::move(backup); // what the load replaced, for Undo the last load
+							ps5ingame3ds::SetUndoAvailable(true);
+						}
 					}
 					else
 					{
@@ -546,6 +555,13 @@ namespace ps5melonds
 			}
 			ps5log::Line("[ds] {}: {}", request == kUndoRequest ? std::string("undo the last load") :
 				fmt::format("{} slot {}", load ? "load from" : "save to", slot), message);
+			if (request == kResumeSlot)
+			{
+				// the quit's own, said by nothing: now the quit
+				if (s_quitAfterState)
+					s_stop = true;
+				return;
+			}
 			ps5ingame3ds::SetStateMessage(message);
 			if (!ps5ingame3ds::MenuOpen())
 				ps5notify::Send(message); // a shortcut's: the menu is not there to say it
@@ -973,12 +989,23 @@ namespace ps5melonds
 		return true;
 	}
 
+	void SetResume(bool resume)
+	{
+		s_resume = resume;
+	}
+
 	void RunGame()
 	{
 		// tr: the PS5's notification as a DS game starts
 		ps5notify::Send(ps5lang::Tr("Touchpad click + Options: the in-game menu. A touchpad click alone: the touch screen. R3: the microphone"));
 		ps5pad::SetStateShortcuts(true);
-		uint64_t polls = 0;
+		s_quitAfterState = false;
+		if (std::exchange(s_resume, false))
+		{
+			ps5log::Line("[ds] resuming where it was left");
+			s_stateRequest = -kResumeSlot;
+		}
+		uint64_t polls = 0, quitAskedAt = 0; // quitAskedAt: when the quit asked for its state (sceKernelGetProcessTime)
 		uint32_t lastEmulated = 0, lastShown = 0;
 		uint64_t lastSecond = sceKernelGetProcessTime();
 		ps5emu::LogMemory();
@@ -1060,10 +1087,24 @@ namespace ps5melonds
 				s_stateRequest = load ? -slot : slot;
 			else if (ps5ingame3ds::TakeUndoRequest())
 				s_stateRequest = kUndoRequest;
+			// a state for the quit that does not come (the emulation stuck): the quit without it
+			if (quitAskedAt && sceKernelGetProcessTime() - quitAskedAt > 8000000 && !s_stop)
+			{
+				ps5log::Line("[ds] no state for the quit after 8 s: quitting without it");
+				s_stop = true;
+			}
 			if (ps5ingame3ds::TakeLibraryRequest())
 			{
+				// a state to go on from first (Resume where you left off), made between two frames, then the quit
 				ps5log::Line("[ds] back to the library");
-				s_stop = true;
+				if (!s_quitAfterState)
+				{
+					s_quitAfterState = true;
+					quitAskedAt = sceKernelGetProcessTime();
+					s_stateRequest = kResumeSlot;
+				}
+				else
+					s_stop = true;
 			}
 			if (const int reason = s_stopReason.exchange(-1); reason >= 0)
 			{

@@ -33,6 +33,9 @@ namespace ps5melonds
 	bool LaunchGame(const ps5emu::Game& game, const ps5settings::N3ds& settings, std::string& error);
 	// Runs while the game does. Returns when the player asks for the library.
 	void RunGame();
+	// Before LaunchGame: whether the game goes on from the state its last quit saved (Resume where you
+	// left off, ps5saves::ResumeState). Either way, quitting to the library saves one
+	void SetResume(bool resume);
 	// Whether the last LaunchGame took VideoOut: after a failure from there on, only a fresh process
 	// can show the launcher again.
 	bool CoreTouched();

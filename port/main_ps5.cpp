@@ -666,6 +666,7 @@ int main(int argc, char* argv[])
 			// melonDS, its screens on VideoOut at 59.94 Hz, as Azahar's below; its threads on every CPU
 			SetHighFrameRate(false);
 			ps5threads::EndIsolation();
+			ps5melonds::SetResume(choice->resume);
 			if (ps5melonds::LaunchGame(game, forGame.nds, error))
 			{
 				ps5melonds::RunGame();
@@ -692,6 +693,7 @@ int main(int argc, char* argv[])
 			// on every CPU
 			SetHighFrameRate(false);
 			ps5threads::EndIsolation();
+			ps5azahar::SetResume(choice->resume);
 			if (ps5azahar::LaunchGame(launched, forGame.n3ds, error))
 			{
 				ps5azahar::RunGame();

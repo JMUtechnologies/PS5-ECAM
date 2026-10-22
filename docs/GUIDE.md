@@ -374,6 +374,9 @@ WUD or WUX files, or an unpacked game in an archive; a 3DS CIA sent this way is 
   moment, loads it, without opening the menu (on the DS too); a PS5 notification says how it went.
   After a load, **Undo the last load** (held) puts the game back as it was just before it, for a
   wrong slot loaded by mistake.
+- **Resume where you left off (3DS and DS).** **Quit to the library** saves a state of its own first
+  (a moment longer), and the game's Options menu then has **Resume where you left off**, which starts
+  the game and goes on from there. **Play** starts it as before. Not for Artic Base games.
   States made by earlier PS5-ECAM builds load too. Keep saving in the game as well.
 - **Cheats (3DS).** Put a game's cheats in `/data/ps5cemu/azahar/cheats/<title ID>.txt` (16 hex
   digits, shown in the in-game menu), in the Gateway format desktop Azahar uses, and turn them on and

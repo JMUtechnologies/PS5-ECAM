@@ -101,4 +101,11 @@ namespace ps5saves
 	std::vector<Backup> FindGameBackups(const GameRef& game);
 	// This game's saves alone from a backup, what is there now moved aside first
 	bool StartGameRestore(const Backup& backup, const GameRef& game, std::string& error);
+
+	// Resume where you left off: the state a 3DS or DS game saves as it is quit to the library, in a
+	// slot the menus do not show (kResumeSlot: Azahar's azahar/states/<title ID>.11.cst, melonDS's
+	// melonds/states/<game file>.ml11), loaded as the game starts when the launcher asks for it
+	constexpr int kResumeSlot = 11;
+	// Its file for a game (side 1 the 3DS, 2 the DS, as GameRef has them), or empty for another side
+	std::string ResumeState(const GameRef& game);
 }

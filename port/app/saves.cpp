@@ -366,6 +366,21 @@ namespace ps5saves
 		}
 	}
 
+	std::string ResumeState(const GameRef& game)
+	{
+		if (game.side == 1)
+			return fmt::format("{}/azahar/states/{:016X}.{:02d}.cst", ps5paths::Root(), game.titleId, kResumeSlot);
+		if (game.side != 2)
+			return {};
+		// named by the game's file, an archive's by the archive (a .tar.gz's without its .tar), as melonDS's are
+		std::string stem = DsStem(game);
+		std::string inner = fs::path(stem).extension().string();
+		std::transform(inner.begin(), inner.end(), inner.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+		if (inner == ".tar")
+			stem = fs::path(stem).stem().string();
+		return fmt::format("{}/melonds/states/{}.ml{}", ps5paths::Root(), stem, kResumeSlot);
+	}
+
 	std::vector<GameSave> FindGameSaves(const GameRef& game)
 	{
 		std::vector<GameSave> saves;
