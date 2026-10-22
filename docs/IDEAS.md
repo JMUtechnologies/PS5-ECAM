@@ -24,6 +24,7 @@ Each idea done is marked **Done** where it is listed below, with its commit.
 | [G9](#g9) | [`8777160`](https://github.com/premohq/PS5-ECAM/commit/8777160) | **Fast forward, on and off** in Controls > Buttons (3DS and DS) |
 | [G4](#g4) | [`4f0a5af`](https://github.com/premohq/PS5-ECAM/commit/4f0a5af) | **Undo the last load** in the in-game menu's Save states (3DS and DS) |
 | [T1](#t1) | [`0f30424`](https://github.com/premohq/PS5-ECAM/commit/0f30424) | The 3DS's cameras see the newest picture in `azahar/camera` (or sent from a phone), for QR codes |
+| [L7](#l7) | [`6d374e0`](https://github.com/premohq/PS5-ECAM/commit/6d374e0) | The launcher dims after five minutes with no button pressed; the waking press does nothing else |
 
 Being worked on separately (not here): the Switch side's in-game menu, its settings and button
 remapping ([N1](#n1)), its rooms ([I2](#i2)), ReShade on the Wii U side ([I1](#i1)), and the box art
@@ -134,7 +135,7 @@ The game menu has no delete. An installed 3DS CIA (and its update and DLC), or a
 `mlc01`, can only be removed by FTP today (#58 was about that). Hold Cross to delete, with the saves kept
 unless asked.
 
-<a id="l7"></a>**L7. A screensaver for OLED TVs** (S)
+<a id="l7"></a>**L7. A screensaver for OLED TVs** (S) · **Done:** [`6d374e0`](https://github.com/premohq/PS5-ECAM/commit/6d374e0), as a dim (no slideshow yet)
 Nothing happens when the launcher sits idle. After a few minutes, dim it or show covers slowly. Midnight
 is made for OLED screens, but a still launcher burns in all the same. ES-DE has dim, slideshow and video
 screensavers.
