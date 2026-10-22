@@ -16,6 +16,7 @@ Each idea done is marked **Done** where it is listed below, with its commit.
 | Idea | Commit | What it changed |
 |---|---|---|
 | [S1](#s1) | [`1b497d3`](https://github.com/premohq/PS5-ECAM/commit/1b497d3) | An unreadable `ps5cemu.json` is kept as `ps5cemu.json.broken`, and the launcher says so once |
+| [S6](#s6) | [`6536915`](https://github.com/premohq/PS5-ECAM/commit/6536915) | **Back up to USB** takes the Switch's saves and Eden's user profiles, and restores them |
 
 Being worked on separately (not here): the Switch side's in-game menu, its settings and button
 remapping ([N1](#n1)), its rooms ([I2](#i2)), ReShade on the Wii U side ([I1](#i1)), and the box art
@@ -68,7 +69,7 @@ defaults and delete the paths that lost.
 on a PC: `tools/tests` (archives, keyboard, music, netfs, stream), `tools/reshade-check.sh`,
 `tools/lang.py check` and the launcher preview's screenshots. The PS5 build itself can stay manual.
 
-<a id="s6"></a>**S6. Switch saves in the USB backups** (S)
+<a id="s6"></a>**S6. Switch saves in the USB backups** (S) · **Done:** [`6536915`](https://github.com/premohq/PS5-ECAM/commit/6536915)
 **Back up to USB** (`port/app/saves.cpp`) takes the Wii U's, 3DS's and DS's saves, but not Eden's
 (`eden/user/nand/user/save`). The guide says it does not "yet".
 
