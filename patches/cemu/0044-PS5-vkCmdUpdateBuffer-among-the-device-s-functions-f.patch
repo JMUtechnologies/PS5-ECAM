@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Thu, 22 Oct 2026 07:22:01 +0000
+Subject: [PATCH] PS5: vkCmdUpdateBuffer among the device's functions, for
+ ReShade's uniforms
+
+---
+ src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h
+index c76d755..99a7e79 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h
+@@ -190,6 +190,8 @@ VKFUNC_DEVICE(vkCmdBlitImage);
+ VKFUNC_DEVICE(vkCmdDispatch);
+ VKFUNC_DEVICE(vkCreateComputePipelines);
+ VKFUNC_DEVICE(vkCmdPushConstants);
++// PS5: ReShade's uniforms, written each frame (port/cemu/ReShadeRuntime.cpp)
++VKFUNC_DEVICE(vkCmdUpdateBuffer);
+ VKFUNC_DEVICE(vkCmdSetBlendConstants);
+ VKFUNC_DEVICE(vkCmdSetDepthBias);
+ 

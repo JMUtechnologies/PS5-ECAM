@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Thu, 22 Oct 2026 07:22:01 +0000
+Subject: [PATCH] PS5: alloca from <stdlib.h>, where there is no <malloc.h>
+
+---
+ source/effect_symbol_table.cpp | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/source/effect_symbol_table.cpp b/source/effect_symbol_table.cpp
+index 2299f1d..9e70a30 100644
+--- a/source/effect_symbol_table.cpp
++++ b/source/effect_symbol_table.cpp
+@@ -5,7 +5,14 @@
+ 
+ #include "effect_symbol_table.hpp"
+ #include <cassert>
++#if defined(_WIN32) || defined(__linux__)
+ #include <malloc.h> // alloca
++#else
++#include <stdlib.h> // alloca, where there is no <malloc.h> (the PS5)
++#ifndef alloca
++#define alloca __builtin_alloca
++#endif
++#endif
+ #include <algorithm> // std::upper_bound, std::sort
+ #include <functional> // std::greater
+ 
