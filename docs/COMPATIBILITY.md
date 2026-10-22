@@ -24,7 +24,6 @@ recompiler), so the status assumes the app got JIT memory (see the README's
 | Fast Racing Neo | | Issues | About half the textures are missing during races | [#13](https://github.com/premohq/PS5-ECAM/issues/13) | |
 | Skylanders Giants | | Crashes | Crashes before it boots on 3.5.0 and earlier: every game started with Pro Controllers for players 2 to 4, and Giants only takes the GamePad at boot. 4.0.0 gives players 2 to 4 a controller only while their DualSense is signed in; not yet confirmed on a console | [#29](https://github.com/premohq/PS5-ECAM/issues/29) | 3.5.0 |
 | The Legend of Zelda: The Wind Waker HD | EUR, v0 | Crashes | Crashes after making its save, before the title menu, with every setting at default and no graphic packs | [#32](https://github.com/premohq/PS5-ECAM/issues/32) | 3.5.0 |
-| Super Smash Bros. for Wii U | | Issues | Crashes with its 1440p graphic pack on | | 3.5.0 |
 | Batman: Arkham Origins | USA, v16 | Issues | Plays with its **60 FPS graphic pack turned off**; with it on, it glitches and crashes once gameplay loads. Up to 2.0.0 C it crashed there either way (Cemu ran out of Vulkan descriptors) | [#15](https://github.com/premohq/PS5-ECAM/issues/15) | after 2.0.0 C |
 
 ## Nintendo 3DS (Azahar)
