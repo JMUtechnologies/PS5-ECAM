@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "ingame.h"
+#include "amiibo_list.h"
 #include "boxart.h"
 #include "emulator.h"
 #include "gameinfo.h"
@@ -75,10 +76,10 @@ namespace
 	bool s_keyboardStarted = false;
 	std::u16string s_keyboardText;
 	std::string s_gameName;
-	// amiibo dumps in /data/ps5cemu/amiibo, looked for as the menu opens; the one chosen, and what
-	// came of the last scan
-	std::vector<std::string> s_amiibo;
-	int s_amiiboIndex = 0;
+	// amiibo dumps in /data/ps5cemu/amiibo and its folders, a series each (amiibo_list.h), looked for as
+	// the menu opens; the series and the figure chosen, and what came of the last scan
+	std::vector<ps5amiibo::Series> s_amiibo;
+	int s_amiiboSeries = 0, s_amiiboIndex = 0;
 	std::string s_amiiboMessage;
 	// a portal's slot: the figure Left and Right moved to, not put on yet (Cross puts it on), by device
 	// and slot; empty: Empty
@@ -86,17 +87,9 @@ namespace
 
 	void FindAmiibo()
 	{
-		s_amiibo.clear();
-		std::error_code error;
-		for (const auto& entry : std::filesystem::directory_iterator(ps5paths::Root() + "/amiibo", error))
-		{
-			std::string extension = entry.path().extension().string();
-			std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
-			if (entry.is_regular_file(error) && extension == ".bin")
-				s_amiibo.push_back(entry.path().filename().string());
-		}
-		std::sort(s_amiibo.begin(), s_amiibo.end());
-		s_amiiboIndex = s_amiibo.empty() ? 0 : std::clamp(s_amiiboIndex, 0, (int)s_amiibo.size() - 1);
+		s_amiibo = ps5amiibo::Find(ps5paths::Root() + "/amiibo");
+		s_amiiboSeries = s_amiibo.empty() ? 0 : std::clamp(s_amiiboSeries, 0, (int)s_amiibo.size() - 1);
+		s_amiiboIndex = s_amiibo.empty() ? 0 : std::clamp(s_amiiboIndex, 0, (int)s_amiibo[s_amiiboSeries].files.size() - 1);
 	}
 	// The menu: its panel's place in the list, which category is open (the render thread's), and a
 	// new opening, asked for by ToggleMenu on the game's loop
@@ -290,12 +283,23 @@ namespace
 		Row volume{"volume", Tr("Volume"), Percent(config.tv_volume), true, Tr("The game's sound. Left and Right change it by 10%.")};
 		volume.slider = config.tv_volume / 100.0f;
 		rows.push_back(volume);
+		const std::string figure = !s_amiiboMessage.empty() ? s_amiiboMessage :
+			s_amiibo.empty() ? std::string(Tr("None")) : ps5amiibo::FigureName(s_amiibo[s_amiiboSeries].files[s_amiiboIndex]);
 		// tr: amiibo is Nintendo's name for its figures, as it writes it in the language
-		rows.push_back({"amiibo", Tr("Amiibo"), !s_amiiboMessage.empty() ? s_amiiboMessage : s_amiibo.empty() ? std::string(Tr("None")) : s_amiibo[s_amiiboIndex],
-			true,
+		Row amiibo{"amiibo", Tr("Amiibo"), figure, true,
 			// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
 			s_amiibo.empty() ? TrF("Put amiibo dumps (.bin) in {0}/amiibo to scan them here.", ps5paths::Root()) :
-							   Tr("Left and Right choose an amiibo dump; Cross touches it to the GamePad when the game asks for one.")});
+							   Tr("Left and Right choose an amiibo dump; Cross touches it to the GamePad when the game asks for one.")};
+		if (s_amiibo.size() > 1)
+			// dumps in folders, a series each: the series, then the figures in it
+			rows.push_back({"amiibo-page", Tr("Amiibo"), figure, false, amiibo.help, {
+				// tr: a folder of amiibo dumps, as they are shared: Kirby, Metroid...
+				{"amiibo-series", Tr("Amiibo series"), ps5amiibo::SeriesName(s_amiibo[s_amiiboSeries]), true,
+					TrF("Left and Right choose a series: a folder of dumps in {0}/amiibo.", ps5paths::Root())},
+				amiibo,
+			}});
+		else
+			rows.push_back(amiibo);
 		rows.push_back({"controls", Tr("Controls"), TypeName(ps5emu::GetPlayerControls(0).type), false,
 			Tr("Each player's controller, motion, vibration, deadzones and A and B."), {
 			{"player", Tr("Player"), controls.connected ? std::to_string(player + 1) : TrF("{0} (no DualSense)", player + 1), true,
@@ -399,19 +403,27 @@ namespace
 			config.async_compile = !config.async_compile;
 			ps5log::Line("[ingame] async shader compile: {}", config.async_compile ? "on" : "off");
 		}
+		else if (id == "amiibo-series" && !s_amiibo.empty())
+		{
+			s_amiiboMessage.clear();
+			s_amiiboSeries = ps5amiibo::Step(s_amiiboSeries, chosen ? 1 : change, (int)s_amiibo.size());
+			s_amiiboIndex = 0;
+		}
 		else if (id == "amiibo" && !s_amiibo.empty())
 		{
 			s_amiiboMessage.clear();
+			const std::vector<std::string>& files = s_amiibo[s_amiiboSeries].files;
 			if (!chosen)
-				s_amiiboIndex = (s_amiiboIndex + change + (int)s_amiibo.size()) % (int)s_amiibo.size();
+				s_amiiboIndex = ps5amiibo::Step(s_amiiboIndex, change, (int)files.size());
 			else
 			{
-				const std::string& name = s_amiibo[s_amiiboIndex];
+				const std::string& file = files[s_amiiboIndex];
+				const std::string name = ps5amiibo::FigureName(file);
 				uint32 nfcError = 0;
-				const bool scanned = nfc::TouchTagFromFile(fs::path(ps5paths::Root()) / "amiibo" / name, &nfcError);
+				const bool scanned = nfc::TouchTagFromFile(fs::path(ps5paths::Root()) / "amiibo" / file, &nfcError);
 				// tr: {0} is an amiibo dump's file name
 				s_amiiboMessage = scanned ? TrF("Scanned {0}", name) : TrF("Not scanned (error {0})", fmt::format("{:#x}", nfcError));
-				ps5log::Line("[ingame] amiibo {}: {}", name, s_amiiboMessage);
+				ps5log::Line("[ingame] amiibo {}: {}", file, s_amiiboMessage);
 			}
 		}
 		else if (id == "volume")

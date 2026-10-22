@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "ingame.h"
+#include "../app/amiibo_list.h"
 #include "../app/lang.h"
 #include "../app/menu_canvas.h"
 #include "../app/side_menu.h"
@@ -44,8 +45,8 @@ namespace ps5ingamenx
 
 		// the amiibo dumps in the data folder's amiibo/, listed as the menu opens (the renderer's thread),
 		// the one asked for (under s_mutex) and what came of the last one
-		std::vector<std::string> s_amiibo;
-		int s_amiiboIndex = 0;
+		std::vector<ps5amiibo::Series> s_amiibo; // its folders a series each (app/amiibo_list.h)
+		int s_amiiboSeries = 0, s_amiiboIndex = 0;
 		std::string s_amiiboRequest;
 		bool s_amiiboAsked = false;
 		std::string s_amiiboName;
@@ -532,14 +533,15 @@ namespace ps5ingamenx
 		{
 			if (s_amiibo.empty())
 				return Tr("None");
-			const std::string& name = s_amiibo[std::clamp(s_amiiboIndex, 0, (int)s_amiibo.size() - 1)];
+			const std::string& file = s_amiibo[s_amiiboSeries].files[s_amiiboIndex];
+			const std::string name = ps5amiibo::FigureName(file);
 			std::string answered;
 			{
 				std::lock_guard lock(s_mutex);
 				answered = s_amiiboName;
 			}
 			// what came of the last one, while it is the one shown
-			if (answered == name)
+			if (answered == file)
 				switch ((AmiiboAnswer)s_amiiboAnswer.load())
 				{
 				// tr: {0} is an amiibo dump's file name
@@ -599,11 +601,21 @@ namespace ps5ingamenx
 					Tr("How far a stick moves before the game sees it. Raise it if a character or the camera drifts.")},
 			}});
 			// tr: amiibo is Nintendo's name for its figures, as it writes it in the language
-			rows.push_back({"amiibo", Tr("Amiibo"), AmiiboValue(), true,
+			Row amiibo{"amiibo", Tr("Amiibo"), AmiiboValue(), true,
 				// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
 				s_amiibo.empty() ? TrF("Put amiibo dumps (.bin) in {0}/amiibo to scan them here.", s_root) :
 								   Tr("Left and Right choose an amiibo dump; Cross touches it to the controller when the game asks for one, "
-									  "and again takes it away.")});
+									  "and again takes it away.")};
+			if (s_amiibo.size() > 1)
+				// dumps in folders, a series each: the series, then the figures in it
+				rows.push_back({"amiibo-page", Tr("Amiibo"), amiibo.value, false, amiibo.help, {
+					// tr: a folder of amiibo dumps, as they are shared: Kirby, Metroid...
+					{"amiibo-series", Tr("Amiibo series"), ps5amiibo::SeriesName(s_amiibo[s_amiiboSeries]), true,
+						TrF("Left and Right choose a series: a folder of dumps in {0}/amiibo.", s_root)},
+					amiibo,
+				}});
+			else
+				rows.push_back(amiibo);
 			// the room joined for the game (the launcher's Multiplayer page), and who is in it
 			Room room;
 			{
@@ -647,17 +659,9 @@ namespace ps5ingamenx
 
 		void FindAmiibo()
 		{
-			s_amiibo.clear();
-			std::error_code error;
-			for (const auto& entry : std::filesystem::directory_iterator(s_root + "/amiibo", error))
-			{
-				std::string extension = entry.path().extension().string();
-				std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
-				if (entry.is_regular_file(error) && extension == ".bin")
-					s_amiibo.push_back(entry.path().filename().string());
-			}
-			std::sort(s_amiibo.begin(), s_amiibo.end());
-			s_amiiboIndex = s_amiibo.empty() ? 0 : std::clamp(s_amiiboIndex, 0, (int)s_amiibo.size() - 1);
+			s_amiibo = ps5amiibo::Find(s_root + "/amiibo");
+			s_amiiboSeries = s_amiibo.empty() ? 0 : std::clamp(s_amiiboSeries, 0, (int)s_amiibo.size() - 1);
+			s_amiiboIndex = s_amiibo.empty() ? 0 : std::clamp(s_amiiboIndex, 0, (int)s_amiibo[s_amiiboSeries].files.size() - 1);
 		}
 
 		// a step through count choices: Left and Right, or Cross onwards
@@ -681,17 +685,27 @@ namespace ps5ingamenx
 				CloseMenu();
 				return;
 			}
+			if (id == "amiibo-series")
+			{
+				if (!s_amiibo.empty())
+				{
+					s_amiiboSeries = ps5amiibo::Step(s_amiiboSeries, action.change ? action.change : 1, (int)s_amiibo.size());
+					s_amiiboIndex = 0;
+				}
+				return;
+			}
 			if (id == "amiibo")
 			{
 				if (s_amiibo.empty())
 					return;
+				const std::vector<std::string>& files = s_amiibo[s_amiiboSeries].files;
 				if (!action.chosen)
 				{
-					s_amiiboIndex = (s_amiiboIndex + action.change + (int)s_amiibo.size()) % (int)s_amiibo.size();
+					s_amiiboIndex = ps5amiibo::Step(s_amiiboIndex, action.change, (int)files.size());
 					return;
 				}
 				// the one shown, touched; touched again (it is still on the controller), taken away
-				const std::string& name = s_amiibo[s_amiiboIndex];
+				const std::string& name = files[s_amiiboIndex];
 				std::lock_guard lock(s_mutex);
 				const bool there = s_amiiboName == name && (AmiiboAnswer)s_amiiboAnswer.load() == AmiiboAnswer::Touched;
 				s_amiiboRequest = there ? std::string() : s_root + "/amiibo/" + name;
