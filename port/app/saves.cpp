@@ -4,6 +4,7 @@
 #include "saves.h"
 #include "lang.h"
 #include "paths.h"
+#include "../eden/library.h"
 #include "../ps5/log.h"
 
 #include <fmt/format.h>
@@ -58,7 +59,25 @@ namespace ps5saves
 				{"3ds/states", root + "/azahar/states", nullptr},
 				{"ds/saves", root + "/melonds/saves", nullptr},
 				{"ds/states", root + "/melonds/states", nullptr},
+				// Eden's, in /data/ps5cemu/eden whatever the data folder (its program keeps them there):
+				// the games' saves, and the system save with its user profiles, whose IDs name the saves'
+				// folders
+				{"switch/save", ps5eden::DataFolder() + "/user/nand/user/save", nullptr},
+				{"switch/profiles", ps5eden::DataFolder() + "/user/nand/system/save/8000000000000010", nullptr},
 			};
+		}
+
+		// Where a file a restore replaces is kept: saves-before/<stamp> in the data folder, in its shape
+		// there; Eden's, in /data/ps5cemu's whatever the data folder, as a rename does not cross drives
+		fs::path KeptPath(const std::string& stamp, const fs::path& file)
+		{
+			for (const std::string& root : {ps5paths::Root(), std::string(ps5paths::kDefaultRoot)})
+			{
+				const fs::path relative = file.lexically_relative(root);
+				if (!relative.empty() && *relative.begin() != "..")
+					return fs::path(root) / "saves-before" / stamp / relative;
+			}
+			return fs::path(ps5paths::Root()) / "saves-before" / stamp / file.filename();
 		}
 
 		struct File
@@ -223,13 +242,14 @@ namespace ps5saves
 			}
 			std::error_code ec;
 			// restoring: what is there now moves aside first, into saves-before, in the same shape
-			const fs::path aside = fs::path(ps5paths::Root()) / "saves-before" / Stamp();
+			const std::string stamp = Stamp();
+			const fs::path aside = fs::path(ps5paths::Root()) / "saves-before" / stamp;
 			int moved = 0;
 			for (const File& file : files)
 			{
 				if (restoring && fs::exists(file.to, ec))
 				{
-					const fs::path kept = aside / file.to.lexically_relative(ps5paths::Root());
+					const fs::path kept = KeptPath(stamp, file.to);
 					fs::create_directories(kept.parent_path(), ec);
 					fs::rename(file.to, kept, ec);
 					if (ec)

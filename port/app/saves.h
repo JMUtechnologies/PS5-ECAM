@@ -8,10 +8,13 @@
 //   3ds/nand/           azahar/nand/data: the system's saves
 //   3ds/states/         Azahar's save states
 //   ds/saves/, ds/states/  melonDS's saves and save states
+//   switch/save/        Eden's games' saves (eden/user/nand/user/save, in /data/ps5cemu whatever the
+//                       data folder), and switch/profiles/ its user profiles (system save 8000000000000010)
 //   backup.json         when, by which version, how many files and bytes
 //
 // Restoring puts each of a backup's files back where it came from; a file there now is first moved
-// to /data/ps5cemu/saves-before/<date and time>/, in the same shape, so restoring loses nothing. Saves
+// to /data/ps5cemu/saves-before/<date and time>/ (the data folder's), in the same shape, so restoring
+// loses nothing. Saves
 // the backup does not have stay as they are. Both run on a thread of their own, one at a time.
 
 #pragma once

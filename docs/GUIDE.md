@@ -161,8 +161,8 @@ New in 5.0.0: a side of its own, in the Switch's red, to the right of the DS.
 - Eden reaches `/data` as PS5-ECAM does: through etaHEN with `PPSA99360` in its app jailbreak list
   (or OnionHEN's `exact_title_ids`), else through its own helper and the console's ELF loader on port
   9021. Without it Eden reads no keys or games, and its launcher says so.
-- Saves are Eden's, in `/data/ps5cemu/eden/user/nand/user/save`: the app's backups to USB do not
-  hold them yet.
+- Saves are Eden's, in `/data/ps5cemu/eden/user/nand/user/save`. **Back up to USB** takes them, with
+  Eden's user profiles, as it does every side's saves.
 
 ## Game files
 
@@ -440,8 +440,8 @@ in `/data`, or mounted from an image, keeps `/data/ps5cemu`. The drive's `ps5cem
 still where Wii U mods are added from.
 
 **Backups:** **Settings > Accounts and saves > Back up to USB** copies every side's saves, save
-states and the Wii U's accounts (never the games) to `PS5CEMU-HAR-saves/<date and time>` on the
-first USB drive plugged in. **Restore from USB** puts a backup back, moving the saves there now to
+states, the Wii U's accounts and the Switch's user profiles (never the games) to
+`PS5CEMU-HAR-saves/<date and time>` on the first USB drive plugged in. **Restore from USB** puts a backup back, moving the saves there now to
 `/data/ps5cemu/saves-before` first.
 
 **Wii U saves from Cemu on PC:** with the game closed, copy

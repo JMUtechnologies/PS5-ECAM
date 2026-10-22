@@ -932,9 +932,9 @@ namespace ps5shell
 				// tr: the newest backup of the saves: when, and on which drive
 				backupValue = TrF("Last: {0} · {1}", m_backups.front().when, DriveName(m_backups.front().drive));
 			action(Kind::Action, "backup", Tr("Back up to USB"), backupValue, Tr("Every side's saves, save states and Wii U accounts."),
-				Tr("Copies the Wii U's saves (every account's, with the accounts), the 3DS's saves, extra data and save states, and the DS's "
-				   "saves and save states to PS5CEMU-HAR-saves on the first USB drive plugged in, in a folder named by the date and time. Never "
-				   "the games, so a backup stays small."));
+				Tr("Copies the Wii U's saves (every account's, with the accounts), the 3DS's saves, extra data and save states, the DS's saves "
+				   "and save states, and the Switch's saves with its user profiles to PS5CEMU-HAR-saves on the first USB drive plugged in, in a "
+				   "folder named by the date and time. Never the games, so a backup stays small."));
 			std::vector<std::string> backups;
 			for (const auto& backup : m_backups)
 				backups.push_back(backup.when + " · " + DriveName(backup.drive));
