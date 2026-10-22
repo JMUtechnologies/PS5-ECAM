@@ -149,13 +149,13 @@ New in 5.0.0: a side of its own, in the Switch's red, to the right of the DS.
   in **System** docked or handheld and the **speed limit** (100% to 300%, or none: a game held to 30
   fps can reach 60 where the PS5 has the time to spare). A game can have its own of each (**Game
   settings**), as on the other sides.
-- **ProsperoEden's own launcher** is one press away: **Settings > Game files > Open ProsperoEden**,
-  or a game's menu (Options) > **Mods, cheats and updates**. It has everything Eden can do besides:
-  its library and game files, updates and DLC, mods and cheats, each game's own settings and
-  controls, profiles, rooms and downloads, frame generation and more. Circle on its home screen
-  comes back to PS5-ECAM.
-- **Buttons and controllers** (which DualSense button presses each of the Switch's, Pro Controller,
-  Joy-Cons or handheld) are set in ProsperoEden's **Settings > Controls**.
+- **The loading screen and the in-game menu are PS5-ECAM's**: a Switch game starts with the app's
+  loading screen (its cover, its name, what is loading), and **touchpad click + Options** opens the
+  same in-game menu as on the other sides: the upscaling filter, frame generation (when the game
+  started with it on), the speed limit, the volume, and Quit to the library. The game runs on behind
+  the menu with its controller still, as a Wii U game does. ProsperoEden's own launcher is not opened
+  from the app.
+- **Covers**: GameTDB's box art, or each game's own icon (**Settings > Online > Switch covers**).
 - Your Switch's **keys** and **firmware** are needed, dumped from your own console: see
   [Game files](#nintendo-switch).
 - Eden reaches `/data` as PS5-ECAM does: through etaHEN with `PPSA99360` in its app jailbreak list

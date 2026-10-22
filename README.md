@@ -61,7 +61,7 @@ Changes in earlier versions are in their [release notes](https://github.com/prem
 | **Emulator** | Cemu, x64 recompiler, Vulkan | Azahar, dynarmic recompiler, Vulkan | melonDS, ARM recompiler | Eden (ProsperoEden), dynarmic, Vulkan |
 | **Plays** | `.wua`, `.wud`, `.wux`, unpacked games (also in `.zip`, `.7z` and `.rar` archives) | `.3ds`, `.cci`, `.cxi`, `.app`, `.3dsx`, `.elf`, compressed `.z*`, also in `.zip`, `.7z` and `.rar` archives; installed `.cia` | `.nds`, also in `.zip`, `.7z` and `.rar` archives | `.nsp`, `.xci`, each alone or in a folder with its update and DLC |
 | **Picture** | 4K output, 120 Hz, FSR 1, graphic packs | up to 10x resolution, texture filters, layouts, borders | sharp, smooth or square pixels, layouts, borders | up to 4x resolution, FSR 1, docked or handheld, frame generation |
-| **Extras** | mods, accounts, amiibo, Skylanders portals, updates and DLC | save states, cheats, amiibo, mods, Artic Base | save states, cheats, RetroAchievements | mods, cheats, updates and DLC, profiles (in ProsperoEden) |
+| **Extras** | mods, accounts, amiibo, Skylanders portals, updates and DLC | save states, cheats, amiibo, mods, Artic Base | save states, cheats, RetroAchievements | mods, cheats, updates and DLC (from their folders) |
 
 - **One launcher for all four:** box art and game info from GameTDB, search, sorting and favourites,
   a page for each game, settings for each game, and an in-game menu on every system.
@@ -110,7 +110,6 @@ files** on each system. No games, keys or firmware are included. Use dumps of ga
 | **Options** | A game's menu: game settings, saves, graphic packs, mods, home screen tile |
 | **Touchpad click + Options** | The in-game menu |
 | **Touchpad** | The touch screen (GamePad, 3DS and DS) |
-| **Circle** on ProsperoEden's home screen | Back to PS5-ECAM, on the Switch side |
 
 Every shortcut, the in-game menu and the rest are in the [guide](docs/GUIDE.md).
 
