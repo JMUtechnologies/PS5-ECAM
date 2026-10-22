@@ -22,6 +22,7 @@ Each idea done is marked **Done** where it is listed below, with its commit.
 | [P1](#p1) | [`86fff8a`](https://github.com/premohq/PS5-ECAM/commit/86fff8a) | **Add files to the PS5** on the remote touch screen's page: games, Switch keys and firmware, amiibo and music from a phone's browser |
 | [S2](#s2) | [`b482092`](https://github.com/premohq/PS5-ECAM/commit/b482092) | The start after a crash says so once, with the crash's first line and Copy logs to USB |
 | [G9](#g9) | [`8777160`](https://github.com/premohq/PS5-ECAM/commit/8777160) | **Fast forward, on and off** in Controls > Buttons (3DS and DS) |
+| [G4](#g4) | [`4f0a5af`](https://github.com/premohq/PS5-ECAM/commit/4f0a5af) | **Undo the last load** in the in-game menu's Save states (3DS and DS) |
 
 Being worked on separately (not here): the Switch side's in-game menu, its settings and button
 remapping ([N1](#n1)), its rooms ([I2](#i2)), ReShade on the Wii U side ([I1](#i1)), and the box art
@@ -173,7 +174,7 @@ RetroArch, Delta and DuckStation show them. The frame can be read as the remote 
 On **Quit to the library**, a 3DS or DS game makes an automatic save state, and its page offers
 **Resume** beside **Play**. RetroArch's auto save state and Delta's resume work this way.
 
-<a id="g4"></a>**G4. Undo the last load** (S)
+<a id="g4"></a>**G4. Undo the last load** (S) · **Done:** [`4f0a5af`](https://github.com/premohq/PS5-ECAM/commit/4f0a5af)
 Keep the state from just before a load, so loading the wrong slot is not the end of an hour. RetroArch
 and DuckStation have "Undo load state".
 
