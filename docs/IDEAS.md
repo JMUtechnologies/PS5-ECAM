@@ -20,6 +20,7 @@ Each idea done is marked **Done** where it is listed below, with its commit.
 | [S5](#s5) | [`a7c6115`](https://github.com/premohq/PS5-ECAM/commit/a7c6115) | GitHub Actions runs the string table check and the PC tests at every push and pull request |
 | [G1](#g1) | [`6f8dcd8`](https://github.com/premohq/PS5-ECAM/commit/6f8dcd8) | Touchpad click + Square saves a state, + Triangle held loads it (3DS and DS) |
 | [P1](#p1) | [`86fff8a`](https://github.com/premohq/PS5-ECAM/commit/86fff8a) | **Add files to the PS5** on the remote touch screen's page: games, Switch keys and firmware, amiibo and music from a phone's browser |
+| [S2](#s2) | [`b482092`](https://github.com/premohq/PS5-ECAM/commit/b482092) | The start after a crash says so once, with the crash's first line and Copy logs to USB |
 
 Being worked on separately (not here): the Switch side's in-game menu, its settings and button
 remapping ([N1](#n1)), its rooms ([I2](#i2)), ReShade on the Wii U side ([I1](#i1)), and the box art
@@ -48,7 +49,7 @@ and the next `Save` writes over it. Many settings are "only in ps5cemu.json", so
 hand, and one missing comma then loses every game's own settings, the accounts by PS5 user, the theme
 and the rest. Move it to `ps5cemu.json.broken`, start on the defaults, and say so once.
 
-<a id="s2"></a>**S2. Say so when the last session crashed** (S to M)
+<a id="s2"></a>**S2. Say so when the last session crashed** (S to M) · **Done:** [`b482092`](https://github.com/premohq/PS5-ECAM/commit/b482092), without the QR code for now
 `ps5/crash.cpp` writes `[crash]` lines to the boot log, but the next start says nothing. When
 `boot.prev.log` ends in a crash, offer **Copy logs to USB** and a QR code (`ui/qr.cpp` makes them already)
 for a GitHub issue filled in with the version, firmware, HEN, game and the crash's first lines. Dolphin
