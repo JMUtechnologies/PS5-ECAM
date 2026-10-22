@@ -1,0 +1,155 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Wed, 21 Oct 2026 21:35:27 +0000
+Subject: [PATCH] PS5: frame generation at each present, the frame between
+ drawn by MihawkGen (#66)
+
+VulkanRenderer::SwapBuffer asks the port's frame generation (port/cemu/FrameGenPS5) whether to make
+the frame between the last frame and this one; when it does, that frame is blitted into this
+swapchain image and presented, and this frame is copied into the next image and presented after it,
+without a second wait for the previous frame (it would be for this one, which the GPU has just been
+given). The swapchain's images can be copied from, Cemu loads vkCmdDispatch and
+vkCreateComputePipelines, and CemuCafe compiles the glue and Mihawk-99's PS5_MihawkGen on Cemu's
+Vulkan entry points.
+---
+ src/Cafe/CMakeLists.txt                       | 11 +++++
+ .../Latte/Renderer/Vulkan/SwapchainInfoVk.cpp |  4 ++
+ src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h |  3 ++
+ .../Latte/Renderer/Vulkan/VulkanRenderer.cpp  | 49 ++++++++++++++++---
+ 4 files changed, 59 insertions(+), 8 deletions(-)
+
+diff --git a/src/Cafe/CMakeLists.txt b/src/Cafe/CMakeLists.txt
+index 32d3025..c00c207 100644
+--- a/src/Cafe/CMakeLists.txt
++++ b/src/Cafe/CMakeLists.txt
+@@ -554,8 +554,19 @@ if(CEMU_PS5)
+ 		"${CEMU_PS5_PORT_DIR}/cemu/MsAbiBridge.cpp"
+ 		"${CEMU_PS5_PORT_DIR}/cemu/MsAbiBridge.h"
+ 		"${CEMU_PS5_PORT_DIR}/cemu/VulkanPS5.cpp"
++		"${CEMU_PS5_PORT_DIR}/cemu/FrameGenPS5.cpp"
++		"${CEMU_PS5_PORT_DIR}/cemu/FrameGenPS5.h"
+ 	)
+ 	target_include_directories(CemuCafe PUBLIC "${CEMU_PS5_PORT_DIR}/cemu")
++	# frame generation (#66): Mihawk-99's PS5_MihawkGen, its compute shaders compiled into it, calling
++	# Vulkan through Cemu's entry points (VulkanAPI.h, read before its own headers)
++	set(PS5_MIHAWKGEN "${CEMU_PS5_PORT_DIR}/../.deps/PS5_MihawkGen/framegen")
++	set(PS5_MIHAWKGEN_SOURCES "${PS5_MIHAWKGEN}/src/fg_common.cpp" "${PS5_MIHAWKGEN}/src/fg_neural.cpp"
++		"${PS5_MIHAWKGEN}/src/fg_splat.cpp" "${PS5_MIHAWKGEN}/src/fg_vulkan.cpp")
++	target_sources(CemuCafe PRIVATE ${PS5_MIHAWKGEN_SOURCES})
++	target_include_directories(CemuCafe PRIVATE "${PS5_MIHAWKGEN}/include" "${PS5_MIHAWKGEN}/src")
++	set_source_files_properties(${PS5_MIHAWKGEN_SOURCES} PROPERTIES SKIP_PRECOMPILE_HEADERS ON
++		COMPILE_OPTIONS "-include;${CMAKE_CURRENT_SOURCE_DIR}/HW/Latte/Renderer/Vulkan/VulkanAPI.h;-Wno-everything")
+ endif()
+ 
+ if(APPLE)
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/SwapchainInfoVk.cpp b/src/Cafe/HW/Latte/Renderer/Vulkan/SwapchainInfoVk.cpp
+index b27aae0..513d8a7 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/SwapchainInfoVk.cpp
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/SwapchainInfoVk.cpp
+@@ -42,6 +42,10 @@ void SwapchainInfoVk::Create()
+ 	VkSwapchainCreateInfoKHR create_info = CreateSwapchainCreateInfo(m_surface, details, m_surfaceFormat, image_count, m_actualExtent);
+ 	create_info.oldSwapchain = nullptr;
+ 	create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
++#if defined(CEMU_PS5)
++	// PS5: frame generation copies each frame out of its swapchain image (port/cemu/FrameGenPS5.h)
++	create_info.imageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
++#endif
+ 
+ 	VkResult result = vkCreateSwapchainKHR(m_logicalDevice, &create_info, nullptr, &m_swapchain);
+ 	if (result != VK_SUCCESS)
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h
+index eacce34..c76d755 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h
+@@ -186,6 +186,9 @@ VKFUNC_DEVICE(vkCmdClearDepthStencilImage);
+ VKFUNC_DEVICE(vkCmdCopyBuffer);
+ VKFUNC_DEVICE(vkCmdCopyImage);
+ VKFUNC_DEVICE(vkCmdBlitImage);
++// PS5: MihawkGen's compute passes (port/cemu/FrameGenPS5.cpp)
++VKFUNC_DEVICE(vkCmdDispatch);
++VKFUNC_DEVICE(vkCreateComputePipelines);
+ VKFUNC_DEVICE(vkCmdPushConstants);
+ VKFUNC_DEVICE(vkCmdSetBlendConstants);
+ VKFUNC_DEVICE(vkCmdSetDepthBias);
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+index b9a5160..d28269a 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+@@ -2336,6 +2336,7 @@ std::atomic<uint64> g_ps5GpuWaitTicks[6]{};
+ static bool s_ps5WaitingForPreviousFrame = false;
+ // the port's: frames the GPU may still be drawing when the next is presented (1: Cemu's own)
+ uint32 PS5Cemu_FramesInFlight();
++#include "FrameGenPS5.h"
+ #define PS5_WAIT_BEGIN() const uint64 ps5WaitStart = __rdtsc()
+ #define PS5_WAIT_END(kind) g_ps5GpuWaitTicks[kind].fetch_add(__rdtsc() - ps5WaitStart, std::memory_order_relaxed)
+ #else
+@@ -3223,6 +3224,9 @@ void VulkanRenderer::SwapBuffer(bool mainWindow)
+ 		ClearColorImageRaw(chainInfo.m_swapchainImages[chainInfo.swapchainImageIndex], 0, 0, clearColor, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+ 	}
+ 
++	// the acquired image presented, once the commands that wrote it are submitted; after the previous
++	// frame is done, unless that was waited for already (frame generation's second picture)
++	auto presentAcquired = [&](bool waitPrevious) {
+ 	const size_t currentFrameCmdBufferID = GetCurrentCommandBufferId();
+ 
+ 	VkSemaphore presentSemaphore = chainInfo.m_presentSemaphores[chainInfo.swapchainImageIndex];
+@@ -3234,15 +3238,20 @@ void VulkanRenderer::SwapBuffer(bool mainWindow)
+ #if defined(CEMU_PS5)
+ 	// PS5: or, when the port asks for two frames in flight (framesInFlight), for the one before it:
+ 	// at 4K the GPU thread waited here while the GPU, still on the previous frame's last passes, had
+-	// nothing of this one yet; one frame later on screen, the two overlap
++	// nothing of this one yet; one frame later on screen, the two overlap. Frame generation's second
++	// picture is this frame's own: waiting here would be for this frame, which the GPU has just been
++	// given, and the next frame could not start until it was done.
+ 	static uint64 s_ps5CmdBufIdTwoFramesAgo = 0;
+-	s_ps5WaitingForPreviousFrame = true;
+-	if (PS5Cemu_FramesInFlight() >= 2)
+-		WaitCommandBufferFinished(s_ps5CmdBufIdTwoFramesAgo);
+-	else
+-		WaitCommandBufferFinished(m_commandBufferIDOfPrevFrame);
+-	s_ps5WaitingForPreviousFrame = false;
+-	s_ps5CmdBufIdTwoFramesAgo = m_commandBufferIDOfPrevFrame;
++	if (waitPrevious)
++	{
++		s_ps5WaitingForPreviousFrame = true;
++		if (PS5Cemu_FramesInFlight() >= 2)
++			WaitCommandBufferFinished(s_ps5CmdBufIdTwoFramesAgo);
++		else
++			WaitCommandBufferFinished(m_commandBufferIDOfPrevFrame);
++		s_ps5WaitingForPreviousFrame = false;
++		s_ps5CmdBufIdTwoFramesAgo = m_commandBufferIDOfPrevFrame;
++	}
+ #else
+ 	WaitCommandBufferFinished(m_commandBufferIDOfPrevFrame);
+ #endif
+@@ -3310,6 +3319,30 @@ void VulkanRenderer::SwapBuffer(bool mainWindow)
+ 	chainInfo.hasDefinedSwapchainImage = false;
+ 
+ 	chainInfo.swapchainImageIndex = -1;
++	};
++
++#if defined(CEMU_PS5)
++	// PS5: frame generation (port/cemu/FrameGenPS5.h, #66): the picture between the last frame and this
++	// one is presented first, from this image; this one then goes into the next image
++	if (mainWindow && ps5framegen::Wanted())
++	{
++		draw_endRenderPass();
++		const ps5framegen::Swap swap{m_logicalDevice, m_physicalDevice, getCurrentCommandBuffer(),
++			chainInfo.m_swapchainImages[chainInfo.swapchainImageIndex], chainInfo.m_surfaceFormat.format, chainInfo.getExtent()};
++		if (ps5framegen::RecordGenerated(swap))
++		{
++			presentAcquired(true);
++			if (!AcquireNextSwapchainImage(mainWindow))
++				return;
++			draw_endRenderPass();
++			ps5framegen::RecordReal(getCurrentCommandBuffer(), chainInfo.m_swapchainImages[chainInfo.swapchainImageIndex]);
++			chainInfo.hasDefinedSwapchainImage = true;
++			presentAcquired(false);
++			return;
++		}
++	}
++#endif
++	presentAcquired(true);
+ }
+ 
+ void VulkanRenderer::Flush(bool waitIdle)

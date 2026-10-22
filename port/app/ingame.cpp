@@ -208,6 +208,8 @@ namespace
 				Tr("On, new shaders build while the game carries on: no stutter, but things may be missing for a moment.")},
 			{"pacing", Tr("Frame pacing"), ps5display::FramePacingName(ps5display::FramePacing(), ps5display::OutputRefresh() > 100000), true,
 				Tr("Holds the game to an even rate: 60 fps for 4K at 120 Hz, 30 for 8K at 60 Hz. Off shows each frame when it is done.")},
+			{"framegen", Tr("Frame generation"), ps5emu::FrameGeneration() ? on : off, true,
+				Tr("A picture made between each two frames of a game at 30 fps, so it is shown at 60. It changes at once.")},
 			{"overlay", Tr("Performance overlay"), overlay ? on : off, true,
 				Tr("Frames per second, CPU and memory use in the top left corner, as Cemu shows them.")},
 			{"notices", Tr("Shader notices"), config.notification.shader_compiling ? on : off, true,
@@ -377,6 +379,12 @@ namespace
 		else if (id == "pacing")
 			// VideoOut takes it from the next flip on
 			ps5display::SetFramePacing((ps5display::FramePacing() - 1 + (change < 0 ? 2 : 1)) % 3 + 1);
+		else if (id == "framegen")
+		{
+			// read at the next present (port/cemu/FrameGenPS5.cpp)
+			ps5emu::SetFrameGeneration(!ps5emu::FrameGeneration());
+			ps5log::Line("[ingame] frame generation: {}", ps5emu::FrameGeneration() ? "on" : "off");
+		}
 		else if (id == "async")
 		{
 			// read as each new pipeline is made; Cemu's compile threads run either way

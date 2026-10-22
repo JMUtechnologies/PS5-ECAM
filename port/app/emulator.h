@@ -84,6 +84,9 @@ namespace ps5emu
 	// (ps5cemu.json's framesInFlight, an experiment): 1, Cemu's own, waits at each swap for the
 	// previous frame; 2 for the one before it, a frame later on screen.
 	void SetFramesInFlight(int frames);
+	// Frame generation (port/cemu/FrameGenPS5.h): the game's setting, read at each present
+	void SetFrameGeneration(bool on);
+	bool FrameGeneration();
 
 	// Whether Cemu is still looking for games (the library fills in when it is done).
 	bool Scanning();

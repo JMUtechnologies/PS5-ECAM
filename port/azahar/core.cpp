@@ -389,6 +389,10 @@ namespace ps5azahar
 			Core::g_ps5TscClock = settings.tscClock;
 			values.async_presentation = true;
 			values.use_vsync = true;
+			// frame generation (port/cemu/FrameGenPS5.h): the side's setting, or the game's own
+			ps5emu::SetFrameGeneration(settings.frameGeneration);
+			if (settings.frameGeneration)
+				ps5log::Line("[framegen] on for this game: frames are made while it takes two refreshes a frame or more");
 			values.use_skip_duplicate_frames = false; // every frame drawn, so the menu is too
 			values.frame_limit = 100;
 			values.resolution_factor = (u32)std::clamp(settings.resolution, 1, 10);
@@ -442,6 +446,7 @@ namespace ps5azahar
 			menu.deadzone = settings.deadzone;
 			menu.aOnCircle = MappedInput(settings, Button::A) == ps5emu::PadInput::Circle;
 			menu.border = settings.border;
+			menu.frameGeneration = settings.frameGeneration;
 			return menu;
 		}
 
@@ -485,6 +490,9 @@ namespace ps5azahar
 			s_settings.cpuClock = menu.cpuClock;
 			s_settings.motion = menu.motion;
 			s_settings.deadzone = menu.deadzone;
+			// read at the renderer's next picture (port/cemu/FrameGenPS5.h)
+			s_settings.frameGeneration = menu.frameGeneration;
+			ps5emu::SetFrameGeneration(menu.frameGeneration);
 			if (menu.border != s_settings.border)
 			{
 				s_settings.border = menu.border;

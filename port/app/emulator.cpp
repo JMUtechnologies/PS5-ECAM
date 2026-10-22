@@ -100,6 +100,8 @@ namespace ps5emu
 		std::atomic<uint32_t> s_submitDraws{kCemuSubmitDraws};
 		// the frames the GPU may still be drawing as the next is presented (PS5Cemu_FramesInFlight)
 		std::atomic<uint32_t> s_framesInFlight{1};
+		// frame generation's setting (PS5Cemu_FrameGeneration)
+		std::atomic<uint32_t> s_frameGeneration{0};
 
 		// What a call to each clock (and a yield) costs on this console, in nanoseconds, measured as a
 		// game starts: Cemu's GPU thread takes its millisecond clock at every draw call and its timer on
@@ -406,6 +408,7 @@ namespace ps5emu
 			for (int player = 0; player < 4; player++)
 				after.touchpadClick[player] = TouchpadClick(player);
 			after.framePacing = ps5display::FramePacing();
+			after.frameGeneration = FrameGeneration();
 			ps5settings::SaveChanges("wiiu", s_gameTitle, before, after);
 			// what was saved is what the game now has: the next change is measured from it
 			s_gameSettings = std::make_unique<ps5settings::Launcher>(after);
@@ -657,6 +660,16 @@ namespace ps5emu
 		s_framesInFlight = frames >= 2 ? 2u : 1u;
 		if (frames >= 2)
 			ps5log::Line("[vulkan] the GPU may still draw the previous two frames as the next is presented (framesInFlight in ps5cemu.json; Cemu's own is 1)");
+	}
+
+	void SetFrameGeneration(bool on)
+	{
+		s_frameGeneration = on ? 1u : 0u;
+	}
+
+	bool FrameGeneration()
+	{
+		return s_frameGeneration.load(std::memory_order_relaxed) != 0;
 	}
 
 	bool Scanning()
@@ -1111,4 +1124,27 @@ uint32 PS5Cemu_SubmitDraws()
 uint32 PS5Cemu_FramesInFlight()
 {
 	return ps5emu::s_framesInFlight.load(std::memory_order_relaxed);
+}
+
+// port/cemu/FrameGenPS5.cpp, at each present: the setting, the TV's refresh in millihertz, VideoOut's
+// flips while it presents two pictures a frame, and the network it reads (the app's eden/ has the one
+// Eden's own frame generation reads)
+uint32 PS5Cemu_FrameGeneration()
+{
+	return ps5emu::s_frameGeneration.load(std::memory_order_relaxed);
+}
+
+uint32 PS5Cemu_RefreshMilliHz()
+{
+	return ps5display::OutputRefresh();
+}
+
+void PS5Cemu_FrameGenActive(bool active, uint32 refreshes)
+{
+	ps5display::SetFrameGenerationActive(active, (int)refreshes);
+}
+
+std::string PS5Cemu_FrameGenNetwork()
+{
+	return ps5paths::AppDir() + "/eden/mihawkgen/network.fgw";
 }

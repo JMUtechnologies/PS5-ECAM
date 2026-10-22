@@ -40,6 +40,7 @@ namespace ps5ingame3ds
 		int deadzone = 15;		  // percent
 		bool aOnCircle = true;	  // A on Circle and B on Cross, where the 3DS has them
 		int border = 0;			  // kBorderNames
+		bool frameGeneration = false; // the picture between each two frames of a game at 30 fps (port/cemu/FrameGenPS5.h)
 		// the DS's (Console::Nds)
 		int screenFilter = 0;	  // how its screens are scaled to the TV: kScreenFilters
 		int rotation = 0;		  // the DS turned this many quarter turns clockwise: kRotations

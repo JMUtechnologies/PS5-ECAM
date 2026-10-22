@@ -56,6 +56,9 @@ namespace ps5settings
 		// the DS's games (melonDS: port/melonds)
 		int dsFilter = 0;			  // how the DS's screens are scaled to the TV: sharp, smooth, square pixels (ps5melonds::screens::Filter)
 		int dsRotation = 0;			  // the DS turned this many quarter turns clockwise, for the games held on their side (Hotel Dusk)
+		// the 3DS's: MihawkGen's picture between each two frames of a game at 30 fps (port/cemu/FrameGenPS5.h,
+		// #66), off until measured on the console
+		bool frameGeneration = false;
 		bool dsJit = true;			  // melonDS's recompiler where the console gives executable memory; off: its interpreter, slower
 		bool dsOwnBios = true;		  // the DS's own BIOS and firmware when they are in melonds/bios; off (or missing): melonDS's FreeBIOS
 		// the Switch's games (Eden: port/eden), handed to its program as a game starts
@@ -123,6 +126,9 @@ namespace ps5settings
 		// frame pacing (ps5/display.h): each frame shown for at least this many refreshes, 1 to 3;
 		// 2 is an even 60 fps at 119.88 Hz and an even 30 at 59.94 Hz (Settings > Graphics, in-game Graphics)
 		int framePacing = 1;
+		// MihawkGen's picture between each two frames of a game at two refreshes a frame or more
+		// (port/cemu/FrameGenPS5.h, #66): off until measured on the console
+		bool frameGeneration = false;
 		bool overlay = false;		  // Cemu's performance overlay from the start
 		bool asyncShaders = true;	  // Cemu's async_compile (Settings > Graphics, and the in-game menu's Graphics)
 		bool shaderNotices = true;	  // Cemu's "compiled shaders/pipelines" notices over a game (its notification.shader_compiling, #37)

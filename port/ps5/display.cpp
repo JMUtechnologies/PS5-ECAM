@@ -18,6 +18,8 @@ namespace
 	std::atomic<bool> s_highFrameRate{false};
 	std::atomic<int> s_framePacing{1};
 	std::atomic<uint32_t> s_outputRefresh{0};
+	std::atomic<bool> s_frameGeneration{false}; // SetFrameGenerationActive
+	std::atomic<int> s_frameGenerationRefreshes{1}; // each of its pictures', while it runs
 }
 
 namespace ps5display
@@ -62,7 +64,8 @@ namespace ps5display
 				ps5log::Line("[vulkan] frame pacing: this driver has none (PS5_Mesa 7b59ef2 or later has it)");
 			return false;
 		}
-		const int result = wsi_videoout_set_flip_rate(refreshes - 1);
+		// (while frame generation presents two pictures a frame, each shows for half the frame)
+		const int result = wsi_videoout_set_flip_rate((s_frameGeneration ? s_frameGenerationRefreshes.load() : refreshes) - 1);
 		if (changed || result != 0)
 			ps5log::Line("[vulkan] frame pacing: each frame shown for at least {} refresh{}{}", refreshes, refreshes == 1 ? "" : "es",
 				result == 0 ? "" : fmt::format(" (VideoOut refused it: {:#010x})", (unsigned)result));
@@ -72,5 +75,19 @@ namespace ps5display
 	int FramePacing()
 	{
 		return s_framePacing;
+	}
+
+	void SetFrameGenerationActive(bool active, int refreshes)
+	{
+		refreshes = std::clamp(refreshes, 1, 3);
+		// what VideoOut holds each picture for, before and now
+		const int before = s_frameGeneration.exchange(active) ? s_frameGenerationRefreshes.load() : s_framePacing.load();
+		s_frameGenerationRefreshes = refreshes;
+		const int now = active ? refreshes : s_framePacing.load();
+		if (now == before || !wsi_videoout_set_flip_rate)
+			return;
+		const int result = wsi_videoout_set_flip_rate(now - 1);
+		if (result != 0)
+			ps5log::Line("[vulkan] frame generation: VideoOut refused its flip rate: {:#010x}", (unsigned)result);
 	}
 }

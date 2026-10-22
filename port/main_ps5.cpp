@@ -677,6 +677,9 @@ int main(int argc, char* argv[])
 		ps5emu::SetGameSettings(game.titleId, forGame);
 		SetHighFrameRate(forGame.highFrameRate);
 		ps5display::SetFramePacing(forGame.framePacing);
+		ps5emu::SetFrameGeneration(forGame.frameGeneration);
+		if (forGame.frameGeneration)
+			ps5log::Line("[framegen] on for this game: frames are made while it takes two refreshes a frame or more");
 		ps5window::Initialize();
 		if (ps5emu::LaunchGame(launched, error))
 		{

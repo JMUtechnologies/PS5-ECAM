@@ -494,6 +494,8 @@ namespace ps5ingame3ds
 						Tr("How large the 3D scenes are drawn before they are scaled to the TV. Higher is sharper and asks more of the GPU.")},
 					{"filter", Tr("Texture filter"), FilterName(settings.textureFilter), true,
 						Tr("Smooths textures as they are scaled up. The costliest setting here: if a game stutters, try None first.")},
+					{"framegen", Tr("Frame generation"), settings.frameGeneration ? on : off, true,
+						Tr("A picture made between each two frames of a game at 30 fps, so it is shown at 60. It changes at once.")},
 					{"performance", Tr("Performance overlay"), settings.performance ? on : off, true,
 						Tr("The frame rate and the emulation's speed, in the top left corner.")},
 				}});
@@ -673,6 +675,8 @@ namespace ps5ingame3ds
 				next.screenFilter = (std::clamp(settings.screenFilter, 0, kScreenFilterCount - 1) + change + kScreenFilterCount) % kScreenFilterCount;
 			else if (id == "rotation")
 				next.rotation = (std::clamp(settings.rotation, 0, kRotationCount - 1) + change + kRotationCount) % kRotationCount;
+			else if (id == "framegen")
+				next.frameGeneration = !settings.frameGeneration;
 			else if (id == "lid")
 				next.lidClosed = !settings.lidClosed;
 			else if (id == "cpu")

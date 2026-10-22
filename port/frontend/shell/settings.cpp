@@ -489,6 +489,11 @@ namespace ps5shell
 					"drops under 60; 30 fps at 60 Hz suits one at 8K. Also in the in-game menu."),
 					Kind::Segmented),
 				"framePacing");
+			own(toggle("framegeneration", Tr("Frame generation"), settings.frameGeneration, Tr("A game held to 30 fps shown at 60."),
+					Tr("MihawkGen makes a picture between each two frames of a game that takes two refreshes a frame or more, so a game at 30 fps "
+					   "is shown at 60, or at 60 with 120 Hz output. A game that runs faster is shown as it is. It costs the GPU about 2 ms a "
+					   "picture at 4K, and adds a little delay. Also in the in-game menu.")),
+				"frameGeneration");
 			own(toggle("overlay", Tr("Performance overlay"), settings.overlay, Tr("Frame rate, CPU and memory in a corner."),
 					Tr("Frames per second, CPU and memory use in the top left corner, as Cemu shows them. Also in the in-game menu.")),
 				"overlay");
@@ -521,6 +526,11 @@ namespace ps5shell
 					Tr("On, a new shader is built while the game carries on, so it does not stutter, but some things may be missing for a moment. "
 					"Off, the game waits for each one: stutter, but nothing drawn wrong.")),
 				"asyncShaderCompilation");
+			own(toggle("framegeneration-3ds", Tr("Frame generation"), hand.frameGeneration, Tr("A game held to 30 fps shown at 60."),
+					Tr("MihawkGen makes a picture between each two frames of a game that takes two refreshes a frame or more, so a game at 30 fps "
+					   "is shown at 60, or at 60 with 120 Hz output. A game that runs faster is shown as it is. It costs the GPU about 2 ms a "
+					   "picture at 4K, and adds a little delay. Also in the in-game menu.")),
+				"frameGeneration");
 			own(toggle("hwshaders", Tr("Hardware shaders"), hand.hwShaders, Tr("Off: 3D drawn exactly, on the CPU. Off for Pokémon."),
 					Tr("On, the 3DS's vertex shaders run on the PS5's GPU, the fastest way. Off, they run on the CPU as Azahar's software "
 					   "shaders: slower, but a model and the outline drawn around it are computed alike, and its lighting is corrected per "
@@ -1450,6 +1460,10 @@ namespace ps5shell
 				settings.ui.reduceMotion = on;
 			else if (id == "highframerate")
 				settings.highFrameRate = on;
+			else if (id == "framegeneration")
+				settings.frameGeneration = on;
+			else if (id == "framegeneration-3ds")
+				hand.frameGeneration = on;
 			else if (id == "overlay")
 				settings.overlay = on;
 			else if (id == "async")

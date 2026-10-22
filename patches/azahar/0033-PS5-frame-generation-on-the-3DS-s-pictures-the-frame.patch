@@ -1,0 +1,97 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Wed, 21 Oct 2026 21:44:39 +0000
+Subject: [PATCH] PS5: frame generation on the 3DS's pictures, the frame
+ between drawn by MihawkGen (#66)
+
+RendererVulkan::RenderToWindow hands each picture it draws for the TV to the port's frame generation
+(port/cemu/FrameGenPS5.h, AzaharPS5_FrameGen) with whether it is a new frame of the game. On a new
+frame of a game at 30 fps it replaces the picture with the one between the frame before and it; the
+repeat the 3DS draws next shows the frame itself. The frames' images can be written to, and keep
+their format.
+---
+ .../renderer_vulkan/renderer_vulkan.cpp       | 20 +++++++++++++++++++
+ .../renderer_vulkan/vk_present_window.cpp     | 10 +++++++++-
+ .../renderer_vulkan/vk_present_window.h       |  3 +++
+ 3 files changed, 32 insertions(+), 1 deletion(-)
+
+diff --git a/src/video_core/renderer_vulkan/renderer_vulkan.cpp b/src/video_core/renderer_vulkan/renderer_vulkan.cpp
+index ade438ad7..e7a18c38e 100644
+--- a/src/video_core/renderer_vulkan/renderer_vulkan.cpp
++++ b/src/video_core/renderer_vulkan/renderer_vulkan.cpp
+@@ -39,6 +39,9 @@ MICROPROFILE_DEFINE(Vulkan_RenderFrame, "Vulkan", "Render Frame", MP_RGB(128, 12
+ // The remote touch screen (PS5CEMU-HAR's port/stream): whether a browser wants the bottom screen now,
+ // and the picture, as RGB rows
+ bool AzaharPS5_StreamWantFrame();
++// PS5-ECAM's frame generation (port/cemu/FrameGenPS5.h)
++void AzaharPS5_FrameGen(VkInstance instance, VkDevice device, VkPhysicalDevice physical, VkCommandBuffer commands,
++                        VkImage image, VkFormat format, uint32_t width, uint32_t height, bool unique);
+ void AzaharPS5_StreamFrame(const u8* rgb, int width, int height);
+ #endif
+ 
+@@ -304,6 +307,23 @@ void RendererVulkan::RenderToWindow(PresentWindow& window, const Layout::Framebu
+         clear_color.float32[3] = 1.0f;
+ 
+         DrawScreens(frame, layout, flipped);
++#ifdef __PROSPERO__
++        // PS5: frame generation (port/cemu/FrameGenPS5.h, #66): on a new frame of a game at 30 fps,
++        // the picture between the frame before and it is shown in its place, and the repeat after it
++        // shows the frame itself
++        if (&window == &main_present_window) {
++            renderpass_cache.EndRendering();
++            const bool unique = Core::PerfStats::game_frames_updated;
++            scheduler.Record([this, image = frame->image, format = frame->format, width = frame->width,
++                              height = frame->height, unique](vk::CommandBuffer cmdbuf) {
++                AzaharPS5_FrameGen(static_cast<VkInstance>(instance.GetInstance()),
++                                   static_cast<VkDevice>(instance.GetDevice()),
++                                   static_cast<VkPhysicalDevice>(instance.GetPhysicalDevice()),
++                                   static_cast<VkCommandBuffer>(cmdbuf), static_cast<VkImage>(image),
++                                   static_cast<VkFormat>(format), width, height, unique);
++            });
++        }
++#endif
+         scheduler.Flush(frame->render_ready);
+         window.Present(frame);
+         if ((secondaryWindowEnabled && isSecondaryWindow) || (!secondaryWindowEnabled)) {
+diff --git a/src/video_core/renderer_vulkan/vk_present_window.cpp b/src/video_core/renderer_vulkan/vk_present_window.cpp
+index 91ceba7d6..14349dd0d 100644
+--- a/src/video_core/renderer_vulkan/vk_present_window.cpp
++++ b/src/video_core/renderer_vulkan/vk_present_window.cpp
+@@ -186,6 +186,9 @@ void PresentWindow::RecreateFrame(Frame* frame, u32 width, u32 height) {
+     }
+ 
+     const vk::Format format = swapchain.GetSurfaceFormat().format;
++#ifdef __PROSPERO__
++    frame->format = format;
++#endif
+     const vk::ImageCreateInfo image_info = {
+         .imageType = vk::ImageType::e2D,
+         .format = format,
+@@ -193,7 +196,12 @@ void PresentWindow::RecreateFrame(Frame* frame, u32 width, u32 height) {
+         .mipLevels = 1,
+         .arrayLayers = 1,
+         .samples = vk::SampleCountFlagBits::e1,
+-        .usage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc,
++        .usage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc
++#ifdef __PROSPERO__
++                 // PS5: frame generation writes the picture between two frames into it
++                 | vk::ImageUsageFlagBits::eTransferDst
++#endif
++        ,
+     };
+ 
+     const VmaAllocationCreateInfo alloc_info = {
+diff --git a/src/video_core/renderer_vulkan/vk_present_window.h b/src/video_core/renderer_vulkan/vk_present_window.h
+index 3773d377b..6a03db945 100644
+--- a/src/video_core/renderer_vulkan/vk_present_window.h
++++ b/src/video_core/renderer_vulkan/vk_present_window.h
+@@ -32,6 +32,9 @@ struct Frame {
+     vk::Semaphore render_ready;
+     vk::Fence present_done;
+     vk::CommandBuffer cmdbuf;
++#ifdef __PROSPERO__
++    vk::Format format; // PS5: the image's (frame generation's copy of it)
++#endif
+ };
+ 
+ class PresentWindow final {

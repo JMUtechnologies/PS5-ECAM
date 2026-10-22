@@ -78,6 +78,11 @@ work stops before a game starts.
   saves, or one for each PS5 user, so everyone who signs in to the PS5 plays on their own saves.
 - **AMD FSR 1** as the fifth *Upscaling to 4K* filter, in Settings, a game's settings and the in-game
   menu: a sharper picture for a game drawn below 4K.
+- **Frame generation** (**Settings > Graphics**, a game's settings or the in-game menu; off by
+  default): while a game takes two refreshes a frame or more,
+  [MihawkGen](https://github.com/mihawk-99/PS5_MihawkGen), the frame generation Eden uses, makes a
+  picture between each two frames, so a game at 30 fps is shown at 60 (at 60 on a 120 Hz TV). A
+  faster game is shown as it is. It costs the GPU about 2 ms a picture at 4K and adds a little delay.
 - Amiibo, from the in-game menu (see [Amiibo, save states, cheats and mods](#amiibo-save-states-cheats-and-mods)).
 - Text entry with Cemu's on-screen keyboard.
 
@@ -86,6 +91,8 @@ work stops before a game starts.
 - Based on Mihawk's PS5 build of Azahar, with dynarmic's ARM recompiler. A New 3DS is emulated.
 - 1x to 10x internal resolution (6x, 2400x1440, by default), texture filters (Anime4K, Bicubic,
   ScaleForce, xBRZ, MMPX), and shaders compiled in the background so games don't stutter.
+- **Frame generation**, as on the Wii U side (**Settings > Graphics**, a game's settings or the
+  in-game menu; off by default): a 3DS game at 30 fps is shown at 60.
 - Screen layouts: a large top screen with the bottom one beside it, the top screen only, side by
   side, or stacked; either screen can take the main spot.
 - **Borders:** Midnight, Waves, Aurora, Shell or PS5-ECAM artwork around the screens in every layout, from
@@ -113,6 +120,9 @@ New in 4.0.0: a side of its own, in melonDS's green, to the right of the 3DS.
   interpreter otherwise) and its software renderer on a thread of its own.
 - The two screens at 4K, with a **Sharp**, **Smooth** or **Square pixels** filter, in the same layouts
   and borders as the 3DS side's, set apart from them (**Settings > Screens**).
+- **Screen rotation** (**Settings > Screens** or the in-game menu's Screens and border): upright, 90°
+  right, upside down or 90° left, for Hotel Dusk and the other games held on their side, for the side
+  or one game. The touchpad follows the bottom screen as the TV shows it.
 - DualSense: A on Circle and B on Cross like a real DS, the left stick as a second D-pad, every
   button remappable (**Settings > Controls**), the touchpad as the touch screen, and R3 held to blow
   into the microphone.

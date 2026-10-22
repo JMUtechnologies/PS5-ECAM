@@ -35,6 +35,10 @@ namespace ps5display
 	// refuses it.
 	bool SetFramePacing(int refreshes);
 	int FramePacing(); // as last set, 1 before
+	// Frame generation presenting two pictures a frame (port/cemu/FrameGenPS5.h): while it does,
+	// VideoOut shows each for at least refreshes refreshes, half the game's frame (2 for a game at
+	// 30 fps on a TV at 120 Hz, else 1), and frame pacing's rate comes back as it stops
+	void SetFrameGenerationActive(bool active, int refreshes = 1);
 	// What frame pacing holds a game to, for the menus: "Off", or "30 fps" and the like at 120 Hz
 	// output (highFrameRate) or at 60 Hz.
 	inline std::string FramePacingName(int refreshes, bool highFrameRate)
