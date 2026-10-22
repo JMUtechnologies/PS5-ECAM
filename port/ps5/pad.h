@@ -94,13 +94,18 @@ namespace ps5pad
 	//   Options: the in-game menu (app/ingame.h)
 	//   L1: the TV or the GamePad as the main screen
 	//   R1: the other screen in a corner, or not
-	// While the touchpad is clicked, Options, L1 and R1 are the shortcuts', not the game's.
+	//   Square: a save state to the in-game menu's slot, and Triangle held a moment: a load from it,
+	//   on the sides that have save states (SetStateShortcuts)
+	// While the touchpad is clicked, Options, L1 and R1 are the shortcuts', not the game's, and Square
+	// and Triangle where they are shortcuts.
 	enum class Shortcut
 	{
 		None,
 		Menu,
 		SwapScreens,
 		CornerScreen,
+		SaveState,
+		LoadState,
 	};
 	struct Filtered
 	{
@@ -128,4 +133,7 @@ namespace ps5pad
 	uint32_t ApplyTurbo(uint32_t buttons);
 	// The next shortcut pressed since the last call (or None).
 	Shortcut TakeShortcut();
+	// Whether touchpad click + Square and + Triangle are the save state shortcuts: on while a 3DS or
+	// DS game runs, off otherwise (the Wii U's games keep the buttons)
+	void SetStateShortcuts(bool on);
 }

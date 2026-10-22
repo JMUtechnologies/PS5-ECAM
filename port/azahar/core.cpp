@@ -30,6 +30,8 @@
 #include "../ps5/pad.h"
 #include "../ps5/privilege.h"
 #include "../ps5/vulkan_display.h"
+#include "camera.h"
+#include "../app/saves.h"
 
 #include "audio_core/sink_details.h"
 #include "common/file_util.h"
@@ -202,8 +204,19 @@ namespace ps5azahar
 		std::string s_name;
 		uint64_t s_titleId = 0;
 		bool s_coreTouched = false; // LaunchGame got as far as starting Azahar's core
-		// a save state the menu asked for, for the emulation thread: a save to slot n (n), a load (-n)
+		// a save state the menu asked for, for the emulation thread: a save to slot n (n), a load (-n),
+		// or the last load undone (kUndoRequest). Before each load the game as it is goes to kUndoSlot,
+		// a slot of Azahar's the menu does not show, for Undo the last load
+		constexpr int kUndoRequest = -1000;
+		constexpr u32 kUndoSlot = 10;
 		std::atomic<int> s_stateRequest{0};
+		// the emulation thread's: the load waiting has its undo saved (s_undoSaved), and it was (s_undoKept)
+		bool s_undoSaved = false, s_undoKept = false;
+		// Resume where you left off: the state saved as the game is quit, in a slot the menu does not show
+		constexpr int kResumeSlot = ps5saves::kResumeSlot;
+		bool s_resume = false;				   // the game goes on from it as it starts (SetResume)
+		std::atomic<bool> s_quitAfterState{false}; // quit once the state saved for it is made
+		bool s_artic = false;					   // the game is Artic Base's, the 3DS's own: no state to resume from
 		std::atomic<uint64_t> s_stateAskedAt{0}; // sceKernelGetProcessTime
 
 		// The menu's save state slots: when each was saved, as Azahar lists them
@@ -323,12 +336,22 @@ namespace ps5azahar
 			const bool load = request < 0;
 			const int slot = std::abs(request);
 			// tr: how a save state's save or load went
-			const std::string message = result == Status::Success ? (load ? ps5lang::TrF("Loaded slot {0}", slot) : ps5lang::TrF("Saved slot {0}", slot)) :
+			std::string message = result == Status::Success ? (load ? ps5lang::TrF("Loaded slot {0}", slot) : ps5lang::TrF("Saved slot {0}", slot)) :
 				result == Status::ErrorSavestateBuildMismatch ? std::string(ps5lang::Tr("Made by another version")) :
 																std::string(ps5lang::Tr("It did not work"));
-			ps5log::Line("[azahar] {} slot {}: {}{}", load ? "load from" : "save to", slot, message,
+			if (request == kUndoRequest && result == Status::Success)
+				message = ps5lang::Tr("Back to before the load");
+			// tr: a 3DS or DS game gone on from where it was quit (Resume where you left off)
+			if (request == -kResumeSlot && result == Status::Success)
+				message = ps5lang::Tr("Back where you left off");
+			ps5log::Line("[azahar] {}: {}{}", request == kUndoRequest ? std::string("undo the last load") :
+				fmt::format("{} slot {}", load ? "load from" : "save to", slot), message,
 				result == Status::Success ? std::string() : fmt::format(" ({})", system.GetStatusDetails()));
+			if (request == kResumeSlot)
+				return; // the quit's own, said by nothing
 			ps5ingame3ds::SetStateMessage(message);
+			if (!ps5ingame3ds::MenuOpen())
+				ps5notify::Send(message); // a shortcut's or the resume's: the menu is not there to say it
 			ShowStateSlots();
 			// a load makes the 3DS's input services over: the DualSense goes back to them
 			if (load && result == Status::Success)
@@ -442,7 +465,13 @@ namespace ps5azahar
 			values.enable_audio_stretching = true;
 			values.volume = std::clamp(settings.volume, 0, 100) / 100.0f;
 			values.input_type = AudioCore::InputType::Null;
-			values.camera_name.fill("blank"); // the 3DS cameras see nothing: the PS5 has none to lend
+			// the 3DS's cameras see a picture from azahar/camera, the newest (camera.h): the PS5 has no camera to lend
+			RegisterPictureCamera();
+			values.camera_name.fill(kPictureCamera);
+			// the 3DS's 3D for red and cyan glasses: both eyes' pictures, the slider all the way up
+			values.render_3d = settings.anaglyph ? Settings::StereoRenderOption::Anaglyph : Settings::StereoRenderOption::Off;
+			values.factor_3d = settings.anaglyph ? 100u : 0u;
+			values.camera_config.fill(ps5paths::Root() + "/azahar/camera");
 			input::Configure(settings);
 		}
 
@@ -643,22 +672,49 @@ namespace ps5azahar
 					sceKernelUsleep(16000);
 					continue;
 				}
-				bool stateNow = false;
+				bool stateNow = false, undoNow = false;
 				if (request && !system.Kernel().AreAsyncOperationsPending())
 				{
-					s_stateRequest = 0;
-					system.SendSignal(request > 0 ? Core::System::Signal::Save : Core::System::Signal::Load, (u32)std::abs(request));
-					stateNow = true;
+					if (request < 0 && request != kUndoRequest && request != -kResumeSlot && !s_undoSaved)
+					{
+						// the game as it is first, for Undo the last load; the load at the next turn
+						system.SendSignal(Core::System::Signal::Save, kUndoSlot);
+						undoNow = true;
+					}
+					else
+					{
+						s_stateRequest = 0;
+						s_undoSaved = false;
+						system.SendSignal(request > 0 ? Core::System::Signal::Save : Core::System::Signal::Load,
+							request == kUndoRequest ? kUndoSlot : (u32)std::abs(request));
+						stateNow = true;
+					}
 				}
 				else if (request && sceKernelGetProcessTime() - s_stateAskedAt > 5000000)
 				{
 					s_stateRequest = 0;
+					s_undoSaved = false;
+					if (s_quitAfterState)
+						s_stop = true; // the quit goes ahead without its state
 					ps5log::Line("[azahar] save state: the game stayed busy for 5 s");
 					ps5ingame3ds::SetStateMessage(ps5lang::Tr("The game is busy: try again"));
 				}
 				const auto result = system.RunLoop();
+				if (undoNow)
+				{
+					// a failed save leaves the load as it was, without its undo
+					s_undoSaved = true;
+					s_undoKept = result == Core::System::ResultStatus::Success;
+				}
 				if (stateNow)
+				{
 					ReportState(request, result, system);
+					if (request == kResumeSlot && s_quitAfterState)
+						s_stop = true; // the state to resume from made: now the quit
+					// a load done: undone from the slot kept before it; an undo done: nothing more to undo
+					if (request < 0 && result == Core::System::ResultStatus::Success)
+						ps5ingame3ds::SetUndoAvailable(request != kUndoRequest && request != -kResumeSlot && s_undoKept);
+				}
 				if (result == Core::System::ResultStatus::ErrorSavestate || result == Core::System::ResultStatus::ErrorSavestateBuildMismatch)
 					continue; // the game carries on as it was
 				if (result == Core::System::ResultStatus::ShutdownRequested)
@@ -730,6 +786,7 @@ namespace ps5azahar
 			ps5log::Line("[azahar] the CIA's game is installed: {}", path);
 		}
 		s_settings = s_launched = settings;
+		s_artic = IsArtic(path);
 		ApplySettings(settings);
 
 		// What Load refuses at its first step (an encrypted game, a format or a GBA game Azahar does not
@@ -805,6 +862,9 @@ namespace ps5azahar
 			return false;
 		}
 
+		// the layout and the presenting pipeline as the settings have them (the 3D mode among them)
+		s_window->UpdateLayout();
+		system.GPU().Renderer().Settings().shader_update_requested = true;
 		u64 programId = 0;
 		system.GetAppLoader().ReadProgramId(programId);
 		// the 3DS's language, set before the game first runs and asks for it (Load may have set one
@@ -844,6 +904,7 @@ namespace ps5azahar
 		}
 		ShowInMenu();
 		ShowStateSlots();
+		ps5ingame3ds::SetUndoAvailable(false); // kUndoSlot is a load of this session's to undo, or nothing
 		ShowExtras();
 		ps5ingame3ds::LoadBorder(settings.border);
 		PublishScreens();
@@ -854,12 +915,26 @@ namespace ps5azahar
 		return true;
 	}
 
+	void SetResume(bool resume)
+	{
+		s_resume = resume;
+	}
+
 	void RunGame()
 	{
 		// tr: the PS5's notification as a 3DS game starts
 		ps5notify::Send(ps5lang::Tr("Touchpad click + Options: the in-game menu. A touchpad click alone: the bottom screen"));
+		ps5pad::SetStateShortcuts(true);
+		s_quitAfterState = false;
+		if (std::exchange(s_resume, false))
+		{
+			// the state its last quit saved, loaded as soon as the game's first steps let it
+			ps5log::Line("[azahar] resuming where it was left");
+			s_stateAskedAt = sceKernelGetProcessTime();
+			s_stateRequest = -kResumeSlot;
+		}
 		Core::System& system = Core::System::GetInstance();
-		uint64_t polls = 0;
+		uint64_t polls = 0, quitAskedAt = 0; // quitAskedAt: when the quit asked for its state (sceKernelGetProcessTime)
 		ps5emu::LogMemory();
 		while (s_running && !s_stop)
 		{
@@ -889,7 +964,8 @@ namespace ps5azahar
 						stats.emulation_speed * 100.0, breakdown.empty() ? "no frames" : breakdown, s_settings.cpuClock,
 						s_settings.resolution, s_settings.textureFilter);
 			}
-			switch (ps5pad::TakeShortcut())
+			const ps5pad::Shortcut shortcut = ps5pad::TakeShortcut();
+			switch (shortcut)
 			{
 			case ps5pad::Shortcut::Menu:
 				ps5ingame3ds::ToggleMenu();
@@ -906,6 +982,15 @@ namespace ps5azahar
 				menu.layout = (menu.layout + 1) % 4;
 				ApplyMenu(menu);
 				ShowInMenu();
+				break;
+			}
+			case ps5pad::Shortcut::SaveState:
+			case ps5pad::Shortcut::LoadState:
+			{
+				// touchpad click + Square, or + Triangle held: the menu's slot, as its rows ask
+				std::string why;
+				if (!ps5ingame3ds::AskState(shortcut == ps5pad::Shortcut::LoadState, why))
+					ps5notify::Send(why);
 				break;
 			}
 			case ps5pad::Shortcut::None:
@@ -935,10 +1020,31 @@ namespace ps5azahar
 				s_stateAskedAt = sceKernelGetProcessTime();
 				s_stateRequest = load ? -slot : slot;
 			}
+			else if (ps5ingame3ds::TakeUndoRequest())
+			{
+				s_stateAskedAt = sceKernelGetProcessTime();
+				s_stateRequest = kUndoRequest;
+			}
+			// a state for the quit that does not come (the emulation stuck): the quit without it
+			if (quitAskedAt && sceKernelGetProcessTime() - quitAskedAt > 8000000 && !s_stop)
+			{
+				ps5log::Line("[azahar] no state for the quit after 8 s: quitting without it");
+				s_stop = true;
+			}
 			if (ps5ingame3ds::TakeLibraryRequest())
 			{
+				// a state to go on from first (Resume where you left off), then the quit; not for Artic Base,
+				// whose game is the 3DS's
 				ps5log::Line("[azahar] back to the library");
-				s_stop = true;
+				if (!s_artic && !s_quitAfterState)
+				{
+					s_quitAfterState = true;
+					quitAskedAt = sceKernelGetProcessTime();
+					s_stateAskedAt = sceKernelGetProcessTime();
+					s_stateRequest = kResumeSlot;
+				}
+				else
+					s_stop = true;
 			}
 		}
 		s_stop = true;
@@ -975,6 +1081,7 @@ namespace ps5azahar
 		system.Shutdown();
 		ps5log::Line("[azahar] shut down in {} ms", elapsed());
 		input::Shutdown();
+		ps5pad::SetStateShortcuts(false);
 		s_shutDown = true;
 	}
 

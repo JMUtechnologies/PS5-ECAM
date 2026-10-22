@@ -18,6 +18,7 @@
 #include "library.h"
 #include "screens.h"
 #include "../app/achievements.h"
+#include "../app/saves.h"
 #include "../app/boxart.h"
 #include "../app/gameinfo.h"
 #include "../app/ingame3ds.h"
@@ -55,6 +56,7 @@
 #include <mutex>
 #include <thread>
 #include <sys/stat.h>
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -102,8 +104,16 @@ namespace ps5melonds
 		std::atomic<bool> s_bottomShown{true};
 
 		// the game's loop's requests, for the emulation to make between two frames: a save state saved
-		// to slot n (n) or loaded from it (-n), cheats turned on or off (by their index)
+		// to slot n (n) or loaded from it (-n), or the last load undone (kUndoRequest), cheats turned on or
+		// off (by their index)
+		constexpr int kUndoRequest = -1000;
 		std::atomic<int> s_stateRequest{0};
+		// the emulation's: the game as it was just before the last load, for Undo the last load
+		std::unique_ptr<melonDS::Savestate> s_undo;
+		// Resume where you left off: the state saved as the game is quit, in a slot the menu does not show
+		constexpr int kResumeSlot = ps5saves::kResumeSlot;
+		bool s_resume = false;				   // the game goes on from it as it starts (SetResume)
+		std::atomic<bool> s_quitAfterState{false}; // quit once the state saved for it is made
 		std::mutex s_cheatMutex;
 		std::vector<int> s_cheatToggles;
 
@@ -489,7 +499,24 @@ namespace ps5melonds
 			const int slot = std::abs(request);
 			const std::string path = StatePath(slot);
 			std::string message;
-			if (!load)
+			if (request == kUndoRequest)
+			{
+				// back to the game as the last load found it
+				if (s_undo)
+					s_undo->Rewind(false);
+				if (s_undo && nds.DoSavestate(s_undo.get()) && !s_undo->Error)
+				{
+					// tr: how undoing the last load went
+					message = ps5lang::Tr("Back to before the load");
+					ps5cheevos::Reset();
+					s_rewind.clear();
+				}
+				else
+					message = ps5lang::Tr("It did not work");
+				s_undo.reset();
+				ps5ingame3ds::SetUndoAvailable(false);
+			}
+			else if (!load)
 			{
 				melonDS::Savestate state;
 				if (!state.Error)
@@ -512,9 +539,14 @@ namespace ps5melonds
 					melonDS::Savestate state(data.data(), (u32)data.size(), false);
 					if (!state.Error && nds.DoSavestate(&state) && !state.Error)
 					{
-						message = ps5lang::TrF("Loaded slot {0}", slot);
+						message = slot == kResumeSlot ? std::string(ps5lang::Tr("Back where you left off")) : ps5lang::TrF("Loaded slot {0}", slot);
 						ps5cheevos::Reset(); // the set's conditions start again from the state's memory
 						s_rewind.clear();	 // and a rewind, from here
+						if (slot != kResumeSlot)
+						{
+							s_undo = std::move(backup); // what the load replaced, for Undo the last load
+							ps5ingame3ds::SetUndoAvailable(true);
+						}
 					}
 					else
 					{
@@ -524,8 +556,18 @@ namespace ps5melonds
 					}
 				}
 			}
-			ps5log::Line("[ds] {} slot {}: {}", load ? "load from" : "save to", slot, message);
+			ps5log::Line("[ds] {}: {}", request == kUndoRequest ? std::string("undo the last load") :
+				fmt::format("{} slot {}", load ? "load from" : "save to", slot), message);
+			if (request == kResumeSlot)
+			{
+				// the quit's own, said by nothing: now the quit
+				if (s_quitAfterState)
+					s_stop = true;
+				return;
+			}
 			ps5ingame3ds::SetStateMessage(message);
+			if (!ps5ingame3ds::MenuOpen())
+				ps5notify::Send(message); // a shortcut's: the menu is not there to say it
 			ShowStateSlots();
 		}
 
@@ -915,6 +957,8 @@ namespace ps5melonds
 		input::SetHiddenTouch(settings.hiddenTouch);
 		s_stopReason = -1;
 		s_stateRequest = 0;
+		s_undo.reset();
+		ps5ingame3ds::SetUndoAvailable(false);
 		{
 			// the menu's top: GameTDB's publisher and year, and the box art (or the game's icon)
 			ps5gameinfo::Info info;
@@ -951,11 +995,23 @@ namespace ps5melonds
 		return true;
 	}
 
+	void SetResume(bool resume)
+	{
+		s_resume = resume;
+	}
+
 	void RunGame()
 	{
 		// tr: the PS5's notification as a DS game starts
 		ps5notify::Send(ps5lang::Tr("Touchpad click + Options: the in-game menu. A touchpad click alone: the touch screen. R3: the microphone"));
-		uint64_t polls = 0;
+		ps5pad::SetStateShortcuts(true);
+		s_quitAfterState = false;
+		if (std::exchange(s_resume, false))
+		{
+			ps5log::Line("[ds] resuming where it was left");
+			s_stateRequest = -kResumeSlot;
+		}
+		uint64_t polls = 0, quitAskedAt = 0; // quitAskedAt: when the quit asked for its state (sceKernelGetProcessTime)
 		uint32_t lastEmulated = 0, lastShown = 0;
 		uint64_t lastSecond = sceKernelGetProcessTime();
 		ps5emu::LogMemory();
@@ -987,7 +1043,8 @@ namespace ps5melonds
 			// RetroAchievements in the menu: what is earned, read again about once a second while it is open
 			if (s_cheevos && polls % 250 == 1 && ps5ingame3ds::MenuOpen())
 				ShowAchievements();
-			switch (ps5pad::TakeShortcut())
+			const ps5pad::Shortcut shortcut = ps5pad::TakeShortcut();
+			switch (shortcut)
 			{
 			case ps5pad::Shortcut::Menu:
 				ps5ingame3ds::ToggleMenu();
@@ -1009,6 +1066,15 @@ namespace ps5melonds
 				ShowInMenu();
 				break;
 			}
+			case ps5pad::Shortcut::SaveState:
+			case ps5pad::Shortcut::LoadState:
+			{
+				// touchpad click + Square, or + Triangle held: the menu's slot, as its rows ask
+				std::string why;
+				if (!ps5ingame3ds::AskState(shortcut == ps5pad::Shortcut::LoadState, why))
+					ps5notify::Send(why);
+				break;
+			}
 			case ps5pad::Shortcut::None:
 				break;
 			}
@@ -1025,10 +1091,26 @@ namespace ps5melonds
 			int slot = 0;
 			if (ps5ingame3ds::TakeStateRequest(load, slot))
 				s_stateRequest = load ? -slot : slot;
+			else if (ps5ingame3ds::TakeUndoRequest())
+				s_stateRequest = kUndoRequest;
+			// a state for the quit that does not come (the emulation stuck): the quit without it
+			if (quitAskedAt && sceKernelGetProcessTime() - quitAskedAt > 8000000 && !s_stop)
+			{
+				ps5log::Line("[ds] no state for the quit after 8 s: quitting without it");
+				s_stop = true;
+			}
 			if (ps5ingame3ds::TakeLibraryRequest())
 			{
+				// a state to go on from first (Resume where you left off), made between two frames, then the quit
 				ps5log::Line("[ds] back to the library");
-				s_stop = true;
+				if (!s_quitAfterState)
+				{
+					s_quitAfterState = true;
+					quitAskedAt = sceKernelGetProcessTime();
+					s_stateRequest = kResumeSlot;
+				}
+				else
+					s_stop = true;
 			}
 			if (const int reason = s_stopReason.exchange(-1); reason >= 0)
 			{
@@ -1075,6 +1157,7 @@ namespace ps5melonds
 		s_nds = nullptr;
 		s_cheats.reset();
 		ps5log::Line("[ds] shut down in {} ms", elapsed());
+		ps5pad::SetStateShortcuts(false);
 		s_shutDown = true;
 	}
 }

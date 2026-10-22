@@ -28,7 +28,8 @@ namespace ps5azahar
 		CircleUp, CircleDown, CircleLeft, CircleRight,
 		CStickUp, CStickDown, CStickLeft, CStickRight,
 		TouchAtCursor, FastForward,
-		Rewind, // the DS's only: the last, so the 3DS's list ends before it
+		FastToggle, // fast forward turned on by a press and off by the next
+		Rewind,		// the DS's only: the last, so the 3DS's list ends before it
 		Count,
 	};
 

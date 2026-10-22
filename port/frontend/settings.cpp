@@ -9,13 +9,18 @@
 #include <algorithm>
 #include <cstdio>
 #include <fstream>
+#include <mutex>
 #include <sstream>
+#include <utility>
 
 namespace ps5settings
 {
 	namespace
 	{
 		using Writer = rapidjson::PrettyWriter<rapidjson::StringBuffer>;
+
+		std::mutex s_brokenMutex; // Load runs on the remote touch screen's threads too (its upload folders)
+		std::string s_broken;	  // where Load moved a ps5cemu.json it could not read (TakeBrokenFile)
 
 		std::string Hex(uint64_t value)
 		{
@@ -81,6 +86,7 @@ namespace ps5settings
 			ReadBool(json, "tscClock", n3ds.tscClock);
 			ReadBool(json, "invariantPosition", n3ds.invariantPosition);
 			ReadBool(json, "hwShaders", n3ds.hwShaders);
+			ReadBool(json, "anaglyph", n3ds.anaglyph);
 			ReadString(json, "turbo", n3ds.turbo);
 			ReadInt(json, "region", n3ds.region, -1, 6);
 			ReadInt(json, "language", n3ds.language, -1, 11);
@@ -157,6 +163,8 @@ namespace ps5settings
 			writer.Bool(n3ds.invariantPosition);
 			writer.Key("hwShaders");
 			writer.Bool(n3ds.hwShaders);
+			writer.Key("anaglyph");
+			writer.Bool(n3ds.anaglyph);
 			writer.Key("turbo");
 			writer.String(n3ds.turbo.c_str());
 			writer.Key("region");
@@ -264,7 +272,15 @@ namespace ps5settings
 		text << file.rdbuf();
 		rapidjson::Document json;
 		if (json.Parse(text.str().c_str()).HasParseError() || !json.IsObject())
+		{
+			// kept beside it, not written over by the next Save
+			file.close();
+			const std::string broken = ps5paths::LauncherSettings() + ".broken";
+			std::lock_guard lock(s_brokenMutex);
+			if (std::rename(ps5paths::LauncherSettings().c_str(), broken.c_str()) == 0)
+				s_broken = broken;
 			return settings;
+		}
 		ReadString(json, "gamesFolder", settings.gamesFolder);
 		settings.gamesFolder = ps5paths::Relocated(settings.gamesFolder); // saved before the data moved to a drive (#52)
 		ReadInt(json, "upscaleFilter", settings.upscaleFilter, 0, 4);
@@ -375,6 +391,7 @@ namespace ps5settings
 			if (!switchOffered)
 				out.sides |= 8;
 			ReadString(ui, "lastVersion", out.lastVersion);
+			ReadString(ui, "skipVersion", out.skipVersion);
 			ReadString(ui, "theme", out.theme);
 			// each side's filter and sort (3.5.0 kept two of each under names of their own; its sort, A to
 			// Z by default, is not taken: the Library opens on the games played last now that it is
@@ -558,6 +575,8 @@ namespace ps5settings
 		writer.Bool(settings.ui.switchOffered);
 		writer.Key("lastVersion");
 		writer.String(settings.ui.lastVersion.c_str());
+		writer.Key("skipVersion");
+		writer.String(settings.ui.skipVersion.c_str());
 		writer.Key("theme");
 		writer.String(settings.ui.theme.c_str());
 		writer.Key("libraryFilter");
@@ -585,6 +604,12 @@ namespace ps5settings
 			file << buffer.GetString() << '\n';
 		}
 		return std::rename(temporary.c_str(), ps5paths::LauncherSettings().c_str()) == 0;
+	}
+
+	std::string TakeBrokenFile()
+	{
+		std::lock_guard lock(s_brokenMutex);
+		return std::exchange(s_broken, {});
 	}
 
 	// -- games' own settings ------------------------------------------------------------------------
@@ -639,6 +664,7 @@ namespace ps5settings
 				{"dsOwnBios", nullptr, nullptr, nullptr, &N3ds::dsOwnBios},
 				{"invariantPosition", nullptr, nullptr, nullptr, &N3ds::invariantPosition},
 				{"hwShaders", nullptr, nullptr, nullptr, &N3ds::hwShaders},
+				{"anaglyph", nullptr, nullptr, nullptr, &N3ds::anaglyph},
 				{"nxResolution", nullptr, nullptr, &N3ds::nxResolution, nullptr, 0, 6},
 				{"nxFilter", nullptr, nullptr, &N3ds::nxFilter, nullptr, 0, 3},
 				{"nxAstc", nullptr, nullptr, &N3ds::nxAstc, nullptr, 0, 1},
@@ -693,7 +719,7 @@ namespace ps5settings
 		static const std::vector<std::string> wiiu = {"upscaleFilter", "highFrameRate", "framePacing", "frameGeneration", "reshade", "overlay", "asyncShaders",
 			"volume"};
 		static const std::vector<std::string> n3ds = {"resolution", "textureFilter", "customTextures", "asyncShaderCompilation", "invariantPosition", "hwShaders", "layout", "border",
-			"volume", "region", "language", "cpuClock", "frameGeneration", "dsRotation", "hiddenTouch"};
+			"volume", "region", "language", "cpuClock", "frameGeneration", "dsRotation", "hiddenTouch", "anaglyph"};
 		static const std::vector<std::string> nds = {"dsFilter", "dsRotation", "hiddenTouch", "dsJit", "layout", "border", "volume", "language", "dsOwnBios"};
 		static const std::vector<std::string> nx = {"nxResolution", "nxFilter", "nxAstc", "nxFrameGeneration", "nxDocked", "nxSpeedLimit", "volume",
 			"nxAntiAliasing", "nxSharpening", "nxController", "nxOutput", "nxHighRefresh", "nxLanguage", "nxMemory", "nxAsyncShaders", "nxFastGpu",

@@ -8,10 +8,15 @@
 //   3ds/nand/           azahar/nand/data: the system's saves
 //   3ds/states/         Azahar's save states
 //   ds/saves/, ds/states/  melonDS's saves and save states
+//   switch/save/        Eden's games' saves (eden/user/nand/user/save, in /data/ps5cemu whatever the
+//                       data folder), and switch/profiles/ its user profiles (system save 8000000000000010)
+//   settings/           ps5cemu.json (the launcher's, each game's own), Cemu's settings.xml, its
+//                       controllerProfiles/ and themes/: a whole backup's, never a game's
 //   backup.json         when, by which version, how many files and bytes
 //
 // Restoring puts each of a backup's files back where it came from; a file there now is first moved
-// to /data/ps5cemu/saves-before/<date and time>/, in the same shape, so restoring loses nothing. Saves
+// to /data/ps5cemu/saves-before/<date and time>/ (the data folder's), in the same shape, so restoring
+// loses nothing. Saves
 // the backup does not have stay as they are. Both run on a thread of their own, one at a time.
 
 #pragma once
@@ -49,6 +54,8 @@ namespace ps5saves
 		std::string where;	 // the backup's folder
 		std::string message; // why it failed
 		int finished = 0;	 // how many runs have ended, so a caller sees each end once
+		// a restore put the settings back: the launcher holds the old ones, so the app starts again
+		bool settingsRestored = false;
 	};
 
 	// To the first USB drive that takes a folder; false, with why, when none does or one is running
@@ -94,4 +101,11 @@ namespace ps5saves
 	std::vector<Backup> FindGameBackups(const GameRef& game);
 	// This game's saves alone from a backup, what is there now moved aside first
 	bool StartGameRestore(const Backup& backup, const GameRef& game, std::string& error);
+
+	// Resume where you left off: the state a 3DS or DS game saves as it is quit to the library, in a
+	// slot the menus do not show (kResumeSlot: Azahar's azahar/states/<title ID>.11.cst, melonDS's
+	// melonds/states/<game file>.ml11), loaded as the game starts when the launcher asks for it
+	constexpr int kResumeSlot = 11;
+	// Its file for a game (side 1 the 3DS, 2 the DS, as GameRef has them), or empty for another side
+	std::string ResumeState(const GameRef& game);
 }

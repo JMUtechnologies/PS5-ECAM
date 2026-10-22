@@ -40,6 +40,8 @@ namespace ps5melonds::input
 		std::array<PadInput, 12> s_keys{};
 		std::array<PadInput, 4> s_circle{};
 		PadInput s_touchInput = PadInput::None, s_fastInput = PadInput::None, s_rewindInput = PadInput::None;
+		PadInput s_fastToggleInput = PadInput::None;
+		bool s_fastLatched = false, s_fastTogglePressed = false; // Fast forward, on and off: on, and its button down
 		float s_threshold = 0.4f; // how far a stick goes before the D-pad does
 		bool s_micFree = true;	  // R3 is no button's
 
@@ -132,7 +134,10 @@ namespace ps5melonds::input
 		s_touchInput = ps5azahar::MappedInput(settings, Button::TouchAtCursor);
 		s_fastInput = ps5azahar::MappedInput(settings, Button::FastForward);
 		s_rewindInput = ps5azahar::MappedInput(settings, Button::Rewind);
-		s_micFree = s_micFree && s_touchInput != PadInput::R3 && s_fastInput != PadInput::R3 && s_rewindInput != PadInput::R3;
+		s_fastToggleInput = ps5azahar::MappedInput(settings, Button::FastToggle);
+		s_fastLatched = false;
+		s_micFree = s_micFree && s_touchInput != PadInput::R3 && s_fastInput != PadInput::R3 && s_rewindInput != PadInput::R3 &&
+			s_fastToggleInput != PadInput::R3;
 		s_rewindBound = s_rewindInput != PadInput::None;
 		// the deadzone (0 to 50%) as the stick's travel the D-pad waits for: 30% to 65%
 		s_threshold = 0.3f + std::clamp(settings.deadzone, 0, 50) / 100.0f * 0.7f;
@@ -179,7 +184,12 @@ namespace ps5melonds::input
 				// the app's own actions, from what is left for the game: a touch where the cursor is, as
 				// the touchpad's click, fast forward and rewind
 				touch = touch || Amount(sample, s_touchInput) > 0.5f;
-				fast = Amount(sample, s_fastInput) > 0.5f;
+				// and fast forward on from one press of its toggle to the next
+				const bool toggle = Amount(sample, s_fastToggleInput) > 0.5f;
+				if (toggle && !s_fastTogglePressed)
+					s_fastLatched = !s_fastLatched;
+				s_fastTogglePressed = toggle;
+				fast = Amount(sample, s_fastInput) > 0.5f || s_fastLatched;
 				rewind = Amount(sample, s_rewindInput) > 0.5f;
 			}
 			if (!blocked && data.touchCount > 0)

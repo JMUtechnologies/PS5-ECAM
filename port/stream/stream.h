@@ -12,7 +12,9 @@
 #pragma once
 
 #include <cstdint>
+#include <functional>
 #include <string>
+#include <vector>
 
 namespace ps5stream
 {
@@ -46,4 +48,17 @@ namespace ps5stream
 	// The browser's touch, from 0 to 1 across the picture; false when it touches nothing. A quick tap
 	// is not lost between two reads; a browser that stops sending lets go after a second.
 	bool Touch(float& x, float& y);
+
+	// Files sent from a browser: the same server's /files page (files.h) puts a game, keys or music
+	// straight into the app's folders, from a phone or a computer on the network. Only into the
+	// folders listed here (asked for at each request, so a folder chosen in Settings counts at once),
+	// and never over a file that is there; written as a hidden .part file, renamed once whole.
+	struct Folder
+	{
+		std::string id;	   // in the upload's address: "3ds"
+		std::string label; // on the page: "3DS games"
+		std::string hint;  // under it: what goes there
+		std::string path;  // where it goes
+	};
+	void SetUploadFolders(std::function<std::vector<Folder>()> list);
 }

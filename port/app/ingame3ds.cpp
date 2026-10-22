@@ -25,6 +25,7 @@
 #include <fstream>
 #include <iterator>
 #include <mutex>
+#include <utility>
 
 // Cemu's overlay font, compressed into Cemu (resource/CafeDefaultFont.cpp)
 uint8* extractCafeDefaultFont(sint32* size);
@@ -61,9 +62,11 @@ namespace ps5ingame3ds
 		std::atomic<bool> s_open{false};
 		std::atomic<uint64_t> s_openedAt{0}; // sceKernelGetProcessTime
 		std::atomic<bool> s_libraryRequested{false};
-		std::vector<std::string> s_stateTimes; // under s_mutex, with the two below
+		std::vector<std::string> s_stateTimes; // under s_mutex, with the four below
 		std::string s_stateMessage;
 		int s_stateRequest = 0; // a save to slot n (n), a load from it (-n)
+		bool s_undoAvailable = false; // the game as it was before the last load is kept (SetUndoAvailable)
+		bool s_undoRequest = false;
 		std::vector<std::string> s_amiibo; // under s_mutex, with the four below
 		std::vector<std::pair<std::string, bool>> s_cheats;
 		bool s_cheevosShown = false; // RetroAchievements, under s_mutex with the two below
@@ -440,7 +443,7 @@ namespace ps5ingame3ds
 			using Row = ps5menu::Row;
 			std::string time, stateMessage, amiibo, amiiboMessage;
 			std::vector<std::pair<std::string, bool>> cheats;
-			bool noAmiibo;
+			bool noAmiibo, undo;
 			bool cheevosShown;
 			std::string cheevosSummary;
 			std::vector<Achievement> cheevos;
@@ -452,6 +455,7 @@ namespace ps5ingame3ds
 				if (s_stateSlot <= (int)s_stateTimes.size())
 					time = s_stateTimes[s_stateSlot - 1];
 				stateMessage = s_stateMessage;
+				undo = s_undoAvailable;
 				s_amiiboIndex = s_amiibo.empty() ? 0 : std::clamp(s_amiiboIndex, 0, (int)s_amiibo.size() - 1);
 				noAmiibo = s_amiibo.empty();
 				amiibo = noAmiibo ? Tr("None") : s_amiibo[s_amiiboIndex];
@@ -526,7 +530,8 @@ namespace ps5ingame3ds
 				Tr("Five slots for this game: save exactly where you are, and come back to it."), {
 				// tr: a save state slot's number, then when it was saved (or empty)
 				{"slot", Tr("Slot"), fmt::format("{}  {}", s_stateSlot, time.empty() ? Tr("(empty)") : time), true,
-					Tr("Which of this game's five slots to save to or load from.")},
+					Tr("Which of this game's five slots to save to or load from. In the game, touchpad click + Square saves to it, and "
+					   "touchpad click + Triangle held loads it.")},
 				{"save", Tr("Save to this slot"), stateMessage, false,
 					Tr("Saves the game as it is now, replacing what the slot had. Newer app versions may not load it: keep saving in the game too.")},
 			}});
@@ -612,9 +617,18 @@ namespace ps5ingame3ds
 			Row load{"load", Tr("Load this slot"), time.empty() ? Tr("Empty") : "", false,
 				Tr("Goes back to the moment the slot was saved. What you did since is lost, so Cross is held.")};
 			load.hold = !time.empty();
+			// and the game as it was just before the last load, while there is one: held too
+			Row back{"undo", Tr("Undo the last load"), "", false,
+				Tr("Goes back to the moment before the last load, as if it had not been made. What you did since the load is lost, so "
+				   "Cross is held.")};
+			back.hold = true;
 			for (Row& row : rows)
 				if (row.id == "states")
+				{
 					row.rows.push_back(load);
+					if (undo)
+						row.rows.push_back(back);
+				}
 			rows.push_back(ps5menu::RemoteRow(ds ? Tr("The touch screen") : Tr("The bottom screen")));
 			rows.push_back(library);
 			return rows;
@@ -725,6 +739,12 @@ namespace ps5ingame3ds
 					s_stateRequest = id == "save" ? s_stateSlot : -s_stateSlot;
 					s_stateAction = id;
 					s_stateMessage = id == "save" ? Tr("Saving…") : Tr("Loading…");
+				}
+				else if (id == "undo" && s_undoAvailable)
+				{
+					s_undoRequest = true;
+					s_stateAction = "load";
+					s_stateMessage = Tr("Loading…");
 				}
 				else if (id == "amiibo" && !chosen && !s_amiibo.empty())
 					s_amiiboIndex = (s_amiiboIndex + change + (int)s_amiibo.size()) % (int)s_amiibo.size();
@@ -998,6 +1018,32 @@ namespace ps5ingame3ds
 			return false;
 		request = s_extrasRequest;
 		s_extrasRequest = {};
+		return true;
+	}
+
+	void SetUndoAvailable(bool available)
+	{
+		std::lock_guard lock(s_mutex);
+		s_undoAvailable = available;
+	}
+
+	bool TakeUndoRequest()
+	{
+		std::lock_guard lock(s_mutex);
+		return std::exchange(s_undoRequest, false);
+	}
+
+	bool AskState(bool load, std::string& why)
+	{
+		std::lock_guard lock(s_mutex);
+		if (load && (s_stateSlot > (int)s_stateTimes.size() || s_stateTimes[s_stateSlot - 1].empty()))
+		{
+			why = TrF("Slot {0} is empty", s_stateSlot);
+			return false;
+		}
+		s_stateRequest = load ? -s_stateSlot : s_stateSlot;
+		s_stateAction = load ? "load" : "save";
+		s_stateMessage = load ? Tr("Loading…") : Tr("Saving…");
 		return true;
 	}
 

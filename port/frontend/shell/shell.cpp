@@ -27,6 +27,7 @@
 #include <cmath>
 #include <cstring>
 #include <filesystem>
+#include <utility>
 
 namespace ps5shell
 {
@@ -213,6 +214,26 @@ namespace ps5shell
 		}
 		if (!launchError.empty())
 			OpenHelp(Tr("The game could not start"), launchError);
+		// a ps5cemu.json that could not be read, kept aside (ps5settings::TakeBrokenFile): said once
+		else if (const std::string broken = ps5settings::TakeBrokenFile(); !broken.empty())
+		{
+			ps5log::Line("[settings] ps5cemu.json could not be read: kept as {}, the defaults used", broken);
+			OpenHelp(Tr("Your settings could not be read"),
+				// tr: {0} is where the unreadable settings file is kept: /data/ps5cemu/ps5cemu.json.broken
+				TrF("The launcher's settings file, ps5cemu.json, has a mistake in it, so every setting is back to its default. The file as "
+					"it was is kept as {0}: mend it on a computer and put it back as ps5cemu.json, or leave it.",
+					broken));
+		}
+		// the session before this one ended in a crash (main_ps5.cpp): said once, with where its log is
+		else if (!m_status.lastCrash.empty())
+		{
+			OpenHelp(Tr("PS5-ECAM closed after a crash"),
+				// tr: {0} is the crash report's first line in the log, as it is: "signal 11 at 0x7f3a..."
+				TrF("The last time, PS5-ECAM stopped with a crash: {0}. Its log is kept: Settings > Diagnostics > Copy logs to USB puts it "
+					"on a drive, with the sessions before it, to attach to a report on GitHub.",
+					m_status.lastCrash));
+			m_status.lastCrash.clear();
+		}
 		// Eden's opening: the PS5's launch picture handed over to the launcher, as the app starts (not
 		// after a game, nor over what a failed one says)
 		else if (SectionLayout() && !ClassicLayout() && !returning && m_screen == ScreenId::Home && m_status.autoLaunch.empty())
@@ -294,6 +315,21 @@ namespace ps5shell
 			ps5pad::Rescan(); // controllers joining or leaving, about every two seconds
 
 		ui::Actions actions = m_input.Poll(m_now);
+		// the screensaver, for OLED screens: the launcher dims after kIdleSeconds with no button pressed,
+		// and the press that wakes it does nothing else
+		constexpr double kIdleSeconds = 300;
+		if (m_lastInput < 0)
+			m_lastInput = m_now;
+		if (!actions.presses.empty() || actions.held)
+		{
+			const bool asleep = m_now - m_lastInput > kIdleSeconds;
+			m_lastInput = m_now;
+			if (asleep)
+			{
+				actions = {};
+				m_input.Reset();
+			}
+		}
 		if (m_capture.active)
 		{
 			PollCapture();
@@ -316,7 +352,10 @@ namespace ps5shell
 			PollUnpacking();
 		if (m_screen == ScreenId::Updates || m_updates.installing)
 			PollUpdates();
-		const bool prompting = ps5update::Prompting();
+		// a release skipped (Skip this version, or gone back from) is not offered at start
+		const auto update = ps5update::GetStatus();
+		const bool prompting = ps5update::Prompting() && !(update.state == ps5update::Status::State::Available && !update.installing &&
+														  ps5update::Readable(update.latest) == m_settings.ui.skipVersion);
 		if (prompting != m_update.open)
 		{
 			m_update.open = prompting;
@@ -329,6 +368,9 @@ namespace ps5shell
 		m_list.Clear();
 		Canvas canvas(m_list, m_fonts);
 		Draw(canvas);
+		// the screensaver's dimming, over everything: in over three seconds, gone at a press
+		if (const double idle = m_now - m_lastInput - kIdleSeconds; idle > 0 && !m_launch.active)
+			canvas.Rect({0, 0, 1920, 1080}, 0, ui::SetAlpha(0xff000000, 0.85f * (float)std::min(idle / 3.0, 1.0)));
 		// the glyphs this frame rendered, uploaded with it; the atlas made again when they made it grow
 		if (m_fonts.AtlasHeight() != m_atlasHeight)
 		{
@@ -911,8 +953,9 @@ namespace ps5shell
 		SaveSettings();
 	}
 
-	void Shell::Launch(int index)
+	void Shell::Launch(int index, bool resume)
 	{
+		m_resumeNext = resume;
 		if (index < 0 || index >= (int)m_games.size())
 			return;
 		if (!CoreReady() || !Notice().empty())
@@ -973,6 +1016,7 @@ namespace ps5shell
 			from);
 		m_launch.game = index;
 		m_choice->launchPath = launchPath;
+		m_choice->resume = std::exchange(m_resumeNext, false);
 	}
 
 	void Shell::StartUnpacking(int index)
@@ -1774,6 +1818,14 @@ namespace ps5shell
 		m_menu.at = m_now;
 		const Game& g = m_games[game];
 		m_menu.items = {{"play", Tr("Play")}};
+		// a 3DS or DS game quit to the library left a state to go on from (ps5saves::ResumeState)
+		if (Is3ds() || IsDs())
+		{
+			const std::string state = ps5saves::ResumeState({Is3ds() ? 1 : 2, g.entry.game.titleId, g.entry.game.path.string()});
+			std::error_code ec;
+			if (!state.empty() && std::filesystem::exists(state, ec))
+				m_menu.items.push_back({"resume", Tr("Resume where you left off")});
+		}
 		if (m_screen != ScreenId::Hub)
 			m_menu.items.push_back({"hub", Tr("Game hub")});
 		// a game with settings of its own says so
@@ -1846,10 +1898,10 @@ namespace ps5shell
 		{
 			const auto status = ps5update::GetStatus();
 			using State = ps5update::Status::State;
-			const int choices = status.state == State::Available ? 2 : status.state == State::Ready || status.state == State::Failed ? 1 : 0;
+			const int choices = status.state == State::Available ? 3 : status.state == State::Ready || status.state == State::Failed ? 1 : 0;
 			if ((b == Button::Left || b == Button::Right) && choices > 1)
 			{
-				m_update.choice = 1 - m_update.choice;
+				m_update.choice = (m_update.choice + (b == Button::Right ? 1 : choices - 1)) % choices;
 				m_feedback.Play(ui::Cue::Focus);
 			}
 			else if (b == Button::Circle)
@@ -1859,9 +1911,16 @@ namespace ps5shell
 			}
 			else if (b == Button::Cross && choices > 0)
 			{
-				// Available: Update now, Later; Ready: Restart now; Failed: OK
+				// Available: Update now, Later, Skip this version; Ready: Restart now; Failed: OK
 				if (status.state == State::Available && m_update.choice == 0)
 					ps5update::Install();
+				else if (status.state == State::Available && m_update.choice == 2)
+				{
+					m_settings.ui.skipVersion = ps5update::Readable(status.latest);
+					SaveSettings();
+					ps5log::Line("[update] {} skipped: not offered at start", m_settings.ui.skipVersion);
+					ps5update::Dismiss();
+				}
 				else if (status.state == State::Ready)
 					ps5update::Restart();
 				else
@@ -2082,6 +2141,8 @@ namespace ps5shell
 				Game& g = m_games[game];
 				if (id == "play")
 					Launch(game);
+				else if (id == "resume")
+					Launch(game, true);
 				else if (id == "hub")
 				{
 					m_feedback.Play(ui::Cue::Select);
@@ -2230,7 +2291,7 @@ namespace ps5shell
 			canvas.Text(Style(kHeadingStyle), sheet.x + 36, sheet.y + 78, game.entry.game.name, kText, sheet.w - 72, 1);
 			static const std::map<std::string, Icon> kIcons = {{"play", Icon::Play}, {"hub", Icon::ChevronRight}, {"settings", Icon::Sparkle},
 				{"saves", Icon::Save}, {"packs", Icon::Gear}, {"mods", Icon::Usb}, {"updates", Icon::Download}, {"favourite", Icon::Star},
-				{"tile", Icon::Home}, {"untile", Icon::Home}};
+				{"tile", Icon::Home}, {"untile", Icon::Home}, {"resume", Icon::Play}};
 			for (int i = 0; i < count; i++)
 			{
 				const Box row{sheet.x + 20, sheet.y + 136 + i * rowH, sheet.w - 40, rowH - 6};
@@ -2326,7 +2387,7 @@ namespace ps5shell
 			case State::Available:
 				title = TrF("PS5-ECAM {0} is out", next);
 				text = TrF("This is {0}. Download and install it now? Your games, saves and settings stay as they are.", mine);
-				choices = {Tr("Update now"), Tr("Later")};
+				choices = {Tr("Update now"), Tr("Later"), Tr("Skip this version")};
 				break;
 			case State::Downloading:
 				title = TrF("Updating to {0}", next);

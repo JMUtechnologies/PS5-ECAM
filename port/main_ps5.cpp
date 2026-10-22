@@ -48,6 +48,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -90,6 +91,18 @@ extern "C" int32_t sceKernelGetSystemSwVersion(SceKernelSwVersion* version);
 
 namespace
 {
+	// The session before this one's first crash report (ps5/crash.h, Cemu's handler: boot.prev.log's
+	// first "[crash] " line, without it), or empty when it ended without one
+	std::string LastCrash()
+	{
+		std::ifstream log(ps5paths::Logs() + "/boot.prev.log");
+		std::string line;
+		while (std::getline(log, line))
+			if (line.rfind("[crash] ", 0) == 0)
+				return line.substr(8, 160);
+		return {};
+	}
+
 	// The console's firmware, as its settings show it ("11.60"), for the boot log and Diagnostics:
 	// most reports hinge on it
 	std::string Firmware()
@@ -444,11 +457,38 @@ int main(int argc, char* argv[])
 	ps5pad::Init();
 	ps5pad::SetVibrationEnabled(settings.rumble);
 	ps5window::Initialize();
-	// the remote touch screen, when it is on: the app's, so it runs from here through the game
+	// the remote touch screen, when it is on: the app's, so it runs from here through the game. Its
+	// files page sends to each side's games folder as the settings have it at the time, Eden's keys
+	// and firmware, amiibo and the launcher's music; never to a network share (nothing is written there)
+	ps5stream::SetUploadFolders([] {
+		const ps5settings::Launcher now = ps5settings::Load();
+		const std::string eden = ps5eden::GameFilesFolder();
+		std::vector<ps5stream::Folder> folders = {
+			{"wiiu", "Wii U games", "WUA, WUD and WUX files, or an unpacked game in a .zip, .7z or .rar.", now.gamesFolder},
+			{"3ds", "3DS games",
+				"Decrypted .3ds, .cci, .cxi and .3dsx files, alone or in an archive. A CIA sent here is installed from Settings > Game "
+				"files > Install a CIA file.",
+				now.n3ds.gamesFolder},
+			{"ds", "DS games", ".nds files, alone or in a .zip, .7z or .rar.", now.nds.gamesFolder},
+			{"switch", "Switch games", ".nsp and .xci files: a game, its update or its DLC.", ps5eden::ScanFolder(now.nx.gamesFolder)},
+			{"switch-keys", "Switch keys", "prod.keys and title.keys, dumped from your own Switch.", eden + "/keys"},
+			{"switch-firmware", "Switch firmware", "The firmware's .nca files, dumped from your own Switch.", eden + "/firmware"},
+			{"amiibo", "Amiibo", "Your amiibo dumps (.bin), for the Wii U and the 3DS.", ps5paths::Root() + "/amiibo"},
+			{"3ds-camera", "3DS camera",
+				"A picture (PNG or JPEG) the 3DS's cameras see, the newest sent: a QR code for a game to scan.",
+				ps5paths::Root() + "/azahar/camera"},
+			{"music", "Launcher music", "MP3 and WAV files, for Settings > Audio > Launcher music.", ps5paths::Root() + "/music"},
+		};
+		std::erase_if(folders, [](const ps5stream::Folder& folder) { return folder.path.empty() || ps5netfs::is_net(folder.path); });
+		return folders;
+	});
 	ps5stream::Configure(settings.remoteScreen);
 
 	ps5launcher::Status status;
 	status.diagnostics = Diagnostics(ps5privilege::Current());
+	status.lastCrash = LastCrash();
+	if (!status.lastCrash.empty())
+		ps5log::Line("[main] the last session ended in a crash: {}", status.lastCrash);
 	status.autoLaunch = tile.rom;
 	status.autoLaunchSide = tile.side;
 	// after the game: the library, or for a tile's game (--exit-after-game) the PS5's home screen, as
@@ -644,6 +684,7 @@ int main(int argc, char* argv[])
 			// melonDS, its screens on VideoOut at 59.94 Hz, as Azahar's below; its threads on every CPU
 			SetHighFrameRate(false);
 			ps5threads::EndIsolation();
+			ps5melonds::SetResume(choice->resume);
 			if (ps5melonds::LaunchGame(game, forGame.nds, error))
 			{
 				ps5melonds::RunGame();
@@ -670,6 +711,7 @@ int main(int argc, char* argv[])
 			// on every CPU
 			SetHighFrameRate(false);
 			ps5threads::EndIsolation();
+			ps5azahar::SetResume(choice->resume);
 			if (ps5azahar::LaunchGame(launched, forGame.n3ds, error))
 			{
 				ps5azahar::RunGame();

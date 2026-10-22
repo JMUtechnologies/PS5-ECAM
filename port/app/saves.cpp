@@ -4,6 +4,7 @@
 #include "saves.h"
 #include "lang.h"
 #include "paths.h"
+#include "../eden/library.h"
 #include "../ps5/log.h"
 
 #include <fmt/format.h>
@@ -58,7 +59,36 @@ namespace ps5saves
 				{"3ds/states", root + "/azahar/states", nullptr},
 				{"ds/saves", root + "/melonds/saves", nullptr},
 				{"ds/states", root + "/melonds/states", nullptr},
+				// Eden's, in /data/ps5cemu/eden whatever the data folder (its program keeps them there):
+				// the games' saves, and the system save with its user profiles, whose IDs name the saves'
+				// folders
+				{"switch/save", ps5eden::DataFolder() + "/user/nand/user/save", nullptr},
+				{"switch/profiles", ps5eden::DataFolder() + "/user/nand/system/save/8000000000000010", nullptr},
+				// the settings, so a reinstall or another PS5 starts where this one was: the launcher's (every
+				// side's, each game's own), Cemu's, its controller profiles and the themes. A file is a set too
+				{"settings/ps5cemu.json", root + "/ps5cemu.json", nullptr},
+				{"settings/settings.xml", root + "/settings.xml", nullptr},
+				{"settings/controllerProfiles", root + "/controllerProfiles", nullptr},
+				{"settings/themes", root + "/themes", nullptr},
 			};
+		}
+
+		bool IsSettings(const std::string& set)
+		{
+			return set.rfind("settings/", 0) == 0;
+		}
+
+		// Where a file a restore replaces is kept: saves-before/<stamp> in the data folder, in its shape
+		// there; Eden's, in /data/ps5cemu's whatever the data folder, as a rename does not cross drives
+		fs::path KeptPath(const std::string& stamp, const fs::path& file)
+		{
+			for (const std::string& root : {ps5paths::Root(), std::string(ps5paths::kDefaultRoot)})
+			{
+				const fs::path relative = file.lexically_relative(root);
+				if (!relative.empty() && *relative.begin() != "..")
+					return fs::path(root) / "saves-before" / stamp / relative;
+			}
+			return fs::path(ps5paths::Root()) / "saves-before" / stamp / file.filename();
 		}
 
 		struct File
@@ -193,6 +223,13 @@ namespace ps5saves
 			{
 				const fs::path from = restoring ? backup / set.name : fs::path(set.source);
 				const fs::path to = restoring ? fs::path(set.source) : backup / set.name;
+				if (game && IsSettings(set.name))
+					continue; // a game's backup is its saves alone
+				if (fs::is_regular_file(from, ec))
+				{
+					files.push_back({from, to, fs::file_size(from, ec)});
+					continue;
+				}
 				if (!fs::is_directory(from, ec))
 					continue;
 				for (auto it = fs::recursive_directory_iterator(from, ec); !ec && it != fs::recursive_directory_iterator(); it.increment(ec))
@@ -214,8 +251,12 @@ namespace ps5saves
 		{
 			std::vector<File> files = List(backup, restoring, game ? &*game : nullptr);
 			uint64_t total = 0;
+			bool settings = false;
 			for (const File& file : files)
+			{
 				total += file.size;
+				settings = settings || (restoring && IsSettings(file.from.lexically_relative(backup).generic_string()));
+			}
 			{
 				std::lock_guard lock(s_mutex);
 				s_status.total = total;
@@ -223,13 +264,14 @@ namespace ps5saves
 			}
 			std::error_code ec;
 			// restoring: what is there now moves aside first, into saves-before, in the same shape
-			const fs::path aside = fs::path(ps5paths::Root()) / "saves-before" / Stamp();
+			const std::string stamp = Stamp();
+			const fs::path aside = fs::path(ps5paths::Root()) / "saves-before" / stamp;
 			int moved = 0;
 			for (const File& file : files)
 			{
 				if (restoring && fs::exists(file.to, ec))
 				{
-					const fs::path kept = aside / file.to.lexically_relative(ps5paths::Root());
+					const fs::path kept = KeptPath(stamp, file.to);
 					fs::create_directories(kept.parent_path(), ec);
 					fs::rename(file.to, kept, ec);
 					if (ec)
@@ -254,6 +296,10 @@ namespace ps5saves
 			}
 			ps5log::Line("[saves] {} {} files, {} KB {} {}{}", restoring ? "restored" : "backed up", files.size(), total / 1000, restoring ? "from" : "to",
 				backup.string(), restoring && moved ? fmt::format(" ({} kept aside in {})", moved, aside.string()) : std::string());
+			{
+				std::lock_guard lock(s_mutex);
+				s_status.settingsRestored = restoring && settings;
+			}
 			SetState(Status::State::Done);
 		}
 
@@ -318,6 +364,21 @@ namespace ps5saves
 			else
 				add(fs::directory_entry(path, ec));
 		}
+	}
+
+	std::string ResumeState(const GameRef& game)
+	{
+		if (game.side == 1)
+			return fmt::format("{}/azahar/states/{:016X}.{:02d}.cst", ps5paths::Root(), game.titleId, kResumeSlot);
+		if (game.side != 2)
+			return {};
+		// named by the game's file, an archive's by the archive (a .tar.gz's without its .tar), as melonDS's are
+		std::string stem = DsStem(game);
+		std::string inner = fs::path(stem).extension().string();
+		std::transform(inner.begin(), inner.end(), inner.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+		if (inner == ".tar")
+			stem = fs::path(stem).stem().string();
+		return fmt::format("{}/melonds/states/{}.ml{}", ps5paths::Root(), stem, kResumeSlot);
 	}
 
 	std::vector<GameSave> FindGameSaves(const GameRef& game)

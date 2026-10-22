@@ -579,6 +579,11 @@ namespace ps5shell
 					   "on its outlined models with hardware shaders on; the Pokémon games are drawn right with Hardware shaders off "
 					   "instead. Applies to the next game.")),
 				"invariantPosition");
+			own(toggle("anaglyph", Tr("3D for red and cyan glasses"), hand.anaglyph, Tr("The 3DS's 3D, in red and cyan."),
+					Tr("The 3DS's 3D screen as both eyes' pictures in one, red for the left and cyan for the right, to see in 3D with red and "
+					   "cyan glasses, as Azahar's anaglyph mode makes it, the 3D slider all the way up. Colours change with it. Applies to "
+					   "the next game.")),
+				"anaglyph");
 			toggle("performance-hand", Tr("Performance overlay"), hand.performance, Tr("The frame rate and the emulation's speed, in the top left corner."),
 				Tr("The frame rate and the emulation's speed, in the top left corner."));
 		}
@@ -1061,6 +1066,13 @@ namespace ps5shell
 					m_savesMessage = TrP(saves.files, "Done: {0} file", "Done: {0} files");
 					if (saves.restoring && m_status.coreReady)
 						ps5emu::ReloadAccounts();
+					// the settings came back too: the launcher holds the old ones, so the app starts again on
+					// the restored ones, before anything saves the old over them
+					if (saves.restoring && saves.settingsRestored)
+					{
+						ps5log::Line("[saves] the settings were restored: starting over to use them");
+						ps5emu::RestartToLibrary();
+					}
 				}
 				else
 					m_savesMessage = saves.message;
@@ -1073,9 +1085,10 @@ namespace ps5shell
 				// tr: the newest backup of the saves: when, and on which drive
 				backupValue = TrF("Last: {0} · {1}", m_backups.front().when, DriveName(m_backups.front().drive));
 			action(Kind::Action, "backup", Tr("Back up to USB"), backupValue, Tr("Every side's saves, save states and Wii U accounts."),
-				Tr("Copies the Wii U's saves (every account's, with the accounts), the 3DS's saves, extra data and save states, and the DS's "
-				   "saves and save states to PS5CEMU-HAR-saves on the first USB drive plugged in, in a folder named by the date and time. Never "
-				   "the games, so a backup stays small."));
+				Tr("Copies the Wii U's saves (every account's, with the accounts), the 3DS's saves, extra data and save states, the DS's saves "
+				   "and save states, and the Switch's saves with its user profiles to PS5CEMU-HAR-saves on the first USB drive plugged in, in a "
+				   "folder named by the date and time. Never the games, so a backup stays small. The settings go with them: the launcher's, each "
+				   "game's own and the controllers'."));
 			std::vector<std::string> backups;
 			for (const auto& backup : m_backups)
 				backups.push_back(backup.when + " · " + DriveName(backup.drive));
@@ -1088,7 +1101,9 @@ namespace ps5shell
 				backups.empty() ? Tr("Back up first, or plug in the drive with your backups.") : Tr("Left and Right choose which backup, the newest first."),
 				// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
 				TrF("Puts the chosen backup's saves back where they came from. The saves there now are moved first to "
-					"{0}/saves-before, so nothing is lost; saves the backup does not have stay as they are.", ps5paths::Root()));
+					"{0}/saves-before, so nothing is lost; saves the backup does not have stay as they are. Its settings come back too, and "
+					"PS5-ECAM starts again to use them.",
+					ps5paths::Root()));
 			restore->options = backups;
 			restore->index = chosen;
 			if (backups.empty())
@@ -1203,6 +1218,14 @@ namespace ps5shell
 				Tr("PS5-ECAM asks GitHub for its latest release each time it starts. Cross asks again, or installs the newer version it found: "
 				   "the release's files are downloaded, checked and put in place of these, and the app starts again. Your games, saves and "
 				   "settings stay as they are."));
+			// the release the last update replaced, kept until the next (ps5update::PreviousVersion)
+			if (const std::string previous = ps5update::PreviousVersion(); !previous.empty())
+				// tr: {0} is the version the last update replaced, as in 5.0.0
+				action(Kind::Hold, "goback", TrF("Go back to {0}", ps5update::Readable(previous)), m_message.empty() ? Tr("Hold Cross") : m_message,
+					Tr("The version before the last update, kept as it was."),
+					Tr("The last update kept the version it replaced. Holding Cross puts its files back in place of these, and PS5-ECAM starts "
+					   "again as that version. Your games, saves and settings stay as they are. The newer version is not offered at start "
+					   "again; this page still finds it."));
 		}
 		else if (page == "launcher")
 		{
@@ -1689,6 +1712,8 @@ namespace ps5shell
 				hand.invariantPosition = on;
 			else if (id == "hwshaders")
 				hand.hwShaders = on;
+			else if (id == "anaglyph")
+				hand.anaglyph = on;
 			else if (id == "motion")
 				hand.motion = on;
 			else if (id == "dsjit")
@@ -2277,6 +2302,18 @@ namespace ps5shell
 			ChangeSetting(Row{Row::Kind::Action, "boxartall"}, 0, true);
 			// tr: a held row's result: the covers are on their way
 			m_message = Tr("Downloading in the background");
+		}
+		else if (id == "goback")
+		{
+			// the release the last update replaced back in place, and not offered again at start
+			std::string error;
+			if (ps5update::GoBack(error))
+			{
+				m_settings.ui.skipVersion = ps5update::Readable(PS5CEMU_VERSION);
+				SaveSettings();
+				ps5update::Restart();
+			}
+			m_message = error;
 		}
 		else if (id == "resetcontrols")
 		{

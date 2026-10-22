@@ -49,6 +49,8 @@ work stops before a game starts.
   also hides any side you don't use.
 - **What's new:** on the first start and after an update, the app opens once on what the version
   brings.
+- **Screensaver:** after five minutes with no button pressed, the launcher dims, so a still menu does
+  not mark an OLED TV. Any button wakes it, and does nothing else.
 - **Home screen tiles:** **Add to home screen** in a game's Options menu makes the game a tile of its
   own on the PS5's home screen (the open PS5 Forwarder Format, in `/data/homebrew`), with its box art.
   ShadowMount Plus shows it; starting it opens the game straight away and closes the app after it.
@@ -93,6 +95,9 @@ work stops before a game starts.
   ScaleForce, xBRZ, MMPX), and shaders compiled in the background so games don't stutter.
 - **Frame generation**, as on the Wii U side (**Settings > Graphics**, a game's settings or the
   in-game menu; off by default): a 3DS game at 30 fps is shown at 60.
+- **3D for red and cyan glasses** (**Settings > Graphics** or a game's settings; off by default): the
+  3DS's 3D, both eyes' pictures in one as Azahar's anaglyph mode makes them, for cheap red and cyan
+  glasses, with the 3D slider all the way up.
 - Screen layouts: a large top screen with the bottom one beside it, the top screen only, side by
   side, or stacked; either screen can take the main spot.
 - **Borders:** Midnight, Waves, Aurora, Shell or PS5-ECAM artwork around the screens in every layout, from
@@ -118,6 +123,11 @@ work stops before a game starts.
   `aes_keys.txt` in `/data/ps5cemu/azahar/sysdata` takes the place of all of them, so leave it out
   unless it is complete; when it lacks what the setup needs, the 3DS's screen says so.
 - An on-screen keyboard for games that ask for text.
+- **The cameras see a picture:** put a PNG or JPEG in `/data/ps5cemu/azahar/camera`, or send one
+  from a phone with the remote touch screen's **Add files to the PS5** (**3DS camera**), and both of
+  the 3DS's cameras see the newest, fitted on white: a QR code for Pokémon's QR Scanner, a Mii or an
+  Animal Crossing design to scan. It is read again each time the game turns a camera on. With no
+  picture there, they see black.
 
 ## Nintendo DS (melonDS)
 
@@ -183,8 +193,8 @@ New in 5.0.0: a side of its own, in the Switch's red, to the right of the DS.
 - Eden reaches `/data` as PS5-ECAM does: through etaHEN with `PPSA99360` in its app jailbreak list
   (or OnionHEN's `exact_title_ids`), else through its own helper and the console's ELF loader on port
   9021. Without it Eden reads no keys or games, and its launcher says so.
-- Saves are Eden's, in `/data/ps5cemu/eden/user/nand/user/save`: the app's backups to USB do not
-  hold them yet.
+- Saves are Eden's, in `/data/ps5cemu/eden/user/nand/user/save`. **Back up to USB** takes them, with
+  Eden's user profiles, as it does every side's saves.
 
 ## Game files
 
@@ -290,12 +300,14 @@ software you own, and don't download or share them.
 | Touchpad click + L1 | Switch the main screen between TV and GamePad |
 | Touchpad click + R1 | Show or hide the second screen in the corner |
 
-| In a 3DS game | Action |
+| In a 3DS or DS game | Action |
 |---|---|
 | Touchpad | Bottom screen cursor: click to tap, hold the click to drag |
 | Touchpad click + Options | Open the in-game menu |
 | Touchpad click + L1 | Swap the screens |
 | Touchpad click + R1 | Next screen layout |
+| Touchpad click + Square | Save state, to the slot chosen in the in-game menu (slot 1 at first) |
+| Touchpad click + Triangle, held | Load state, from that slot |
 
 **Settings > Controls > Buttons** on the 3DS and DS sides can also give a DualSense button one of
 these, held (none has a button until you give it one):
@@ -303,6 +315,8 @@ these, held (none has a button until you give it one):
 - **Touch at the cursor:** touches the touch screen where the touchpad's cursor is, as a click of
   the touchpad does. Move your finger on the touchpad and hold the button to draw.
 - **Fast forward:** the game runs as fast as it can while held.
+- **Fast forward, on and off:** a press runs the game as fast as it can, and the next press puts it
+  back to its speed.
 - **Rewind** (DS): the game runs back, up to the last 15 seconds, while held, and goes on from
   there when you let go. The 3DS has no rewind.
 
@@ -338,11 +352,31 @@ idea and prototype, #38.)
 
 - **What it costs:** nothing while no browser shows it. While one does, the PS5 copies that screen up
   to 30 times a second (on the Wii U and the 3DS from the GPU), so a game can run a little slower.
-- **Privacy:** any device on your network can open the page and touch. The traffic is plain HTTP on
-  your local network. Turn it off on a network you share.
+- **Privacy:** any device on your network can open the page and touch, and send files to the
+  folders below. The traffic is plain HTTP on your local network. Turn it off on a network you share.
 - **If the phone can't reach it:** guest Wi-Fi often keeps devices apart (client isolation); use the
   main network. The page shows "Waiting for video" until a game is running. A phone that goes to
   sleep or leaves the page lets go of its touch within a second, and reconnects when you come back.
+
+### Adding files from a phone or computer
+
+The same page has **Add files to the PS5** (or go to `http://<the PS5's address>:8080/files`): choose
+where they go, choose the files, and **Send**. No FTP client and no USB drive. Each file shows its
+progress, and goes straight into the app's folder for it:
+
+| Where to | Goes to |
+|---|---|
+| Wii U, 3DS, DS and Switch games | each side's games folder, as **Settings > Game files** has it (not a network share) |
+| Switch keys, Switch firmware | Eden's `keys/` and `firmware/` |
+| Amiibo | `/data/ps5cemu/amiibo` |
+| 3DS camera | `/data/ps5cemu/azahar/camera`: the picture the 3DS's cameras see |
+| Launcher music | `/data/ps5cemu/music` |
+
+A file of the same name that is there already is never replaced, and a file cut short (the phone
+slept, the page was left) is removed, so send it again. A new game shows in the library the next time
+its side opens, or at once with **Settings > Game files > Look for games now**. Wii U games go as WUA,
+WUD or WUX files, or an unpacked game in an archive; a 3DS CIA sent this way is installed from
+**Install a CIA file** as usual.
 
 ## Amiibo, save states, cheats and mods
 
@@ -358,6 +392,13 @@ idea and prototype, #38.)
   put the next figure on a slot, and **Empty** takes it off. The game saves its progress into the dump,
   as it would on the toy. A real portal plugged into the PS5 isn't supported.
 - **Save states (3DS).** Five slots per game; loading is held (hold Cross until the ring fills).
+  Touchpad click + Square saves to the slot chosen in the menu, and touchpad click + Triangle, held a
+  moment, loads it, without opening the menu (on the DS too); a PS5 notification says how it went.
+  After a load, **Undo the last load** (held) puts the game back as it was just before it, for a
+  wrong slot loaded by mistake.
+- **Resume where you left off (3DS and DS).** **Quit to the library** saves a state of its own first
+  (a moment longer), and the game's Options menu then has **Resume where you left off**, which starts
+  the game and goes on from there. **Play** starts it as before. Not for Artic Base games.
   States made by earlier PS5-ECAM builds load too. Keep saving in the game as well.
 - **Cheats (3DS).** Put a game's cheats in `/data/ps5cemu/azahar/cheats/<title ID>.txt` (16 hex
   digits, shown in the in-game menu), in the Gateway format desktop Azahar uses, and turn them on and
@@ -382,7 +423,11 @@ idea and prototype, #38.)
   PS5-ECAM is out, it asks whether to install it: **Update now** downloads the release, checks it
   against the release's SHA-256, puts its files in place of the old ones and starts the app again.
   Your games, saves and settings in `/data/ps5cemu` stay as they are. **Settings > Online >
-  PS5-ECAM updates** checks again.
+  PS5-ECAM updates** checks again. **Skip this version** stops the start from asking about that
+  release (Settings > Online still finds it).
+- **Going back:** an update keeps the version it replaces in `/data/ps5cemu/previous-version`, until
+  the next update. **Settings > Online > Go back to** (held) puts it back and starts it, and the newer
+  release is not offered at start again.
 
 Without an internet connection, the libraries just show the game icons.
 
@@ -462,9 +507,12 @@ in `/data`, or mounted from an image, keeps `/data/ps5cemu`. The drive's `ps5cem
 still where Wii U mods are added from.
 
 **Backups:** **Settings > Accounts and saves > Back up to USB** copies every side's saves, save
-states and the Wii U's accounts (never the games) to `PS5CEMU-HAR-saves/<date and time>` on the
-first USB drive plugged in. **Restore from USB** puts a backup back, moving the saves there now to
-`/data/ps5cemu/saves-before` first.
+states, the Wii U's accounts and the Switch's user profiles (never the games) to
+`PS5CEMU-HAR-saves/<date and time>` on the first USB drive plugged in, with the settings:
+`ps5cemu.json` (every side's and each game's own), Cemu's `settings.xml`, the controller profiles and
+your themes. **Restore from USB** puts a backup back, moving what is there now to
+`/data/ps5cemu/saves-before` first; when the backup has settings, PS5-ECAM then starts again to use
+them. A game's own backup (its **Saves** page) holds its saves alone.
 
 **Wii U saves from Cemu on PC:** with the game closed, copy
 `mlc01/usr/save/00050000/<title ID>/user/<account>` from your PC to
@@ -489,6 +537,9 @@ It asks for your firmware, HEN, app version and logs, which almost every problem
 - **Clear shader caches** (hold Cross): for a game that crashes on a bad or shared cache.
   Games build them again as they run.
 
+When a session ends in a crash, the next start says so once, with the crash report's first line,
+so its log can be copied before it is pushed out by the next few starts.
+
 The boot log also gets a `[memory]` line once a minute, a `[perf]` (Wii U) or `[perf3ds]` (3DS) line
 every 10 seconds with the frame rate, and `[crash]` lines if an emulator crashes.
 
@@ -498,7 +549,8 @@ every 10 seconds with the frame rate, and `[crash]` lines if an emulator crashes
   menu.
 - Batman: Arkham Origins needs its 60 FPS graphic pack turned off; with it on, it glitches and
   crashes once gameplay loads ([#15](https://github.com/premohq/PS5-ECAM/issues/15)).
-- 3DS camera, microphone, local wireless and online play aren't supported.
+- The 3DS's microphone, local wireless and online play aren't supported, and its cameras see a
+  picture, not the room ([3DS camera](#nintendo-3ds-azahar)).
 - 3DS texture filters are expensive at high internal resolutions; if a game stutters, try Texture
   filter: None first.
 - The first start with a large Wii U shader cache takes a few minutes while Cemu builds the

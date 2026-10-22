@@ -3,6 +3,7 @@
 """Fetch the pinned inputs listed in tools/deps.json.
 
     deps.py fetch     fetch whatever is missing (nothing that exists is changed)
+    deps.py fetch NAME...   only those items (deps.json's names), as CI fetches what the PC tests need
     deps.py status    show each item, where it lives and whether it matches its pin
     deps.py clean     remove what fetch created under .deps/
 
@@ -153,7 +154,11 @@ def main():
     command = sys.argv[1] if len(sys.argv) > 1 else "fetch"
     items = load_items()
     if command == "fetch":
-        fetch(items)
+        names = sys.argv[2:]
+        unknown = set(names) - {item["name"] for item in items}
+        if unknown:
+            sys.exit(f"no such item: {', '.join(sorted(unknown))}")
+        fetch([item for item in items if not names or item["name"] in names])
     elif command == "status":
         status(items)
     elif command == "clean":

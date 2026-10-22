@@ -43,6 +43,7 @@ namespace ps5azahar
 			{"cstick_right", "C-stick right", PadInput::RightStickRight},
 			{"touch", "Touch at the cursor", PadInput::None},
 			{"fast_forward", "Fast forward", PadInput::None},
+			{"fast_toggle", "Fast forward, on and off", PadInput::None},
 			{"rewind", "Rewind", PadInput::None},
 		}};
 
@@ -85,7 +86,7 @@ namespace ps5azahar
 	{
 		static const std::vector<Button> buttons = {Button::A, Button::B, Button::X, Button::Y, Button::L, Button::R, Button::Start, Button::Select,
 			Button::Up, Button::Down, Button::Left, Button::Right, Button::CircleUp, Button::CircleDown, Button::CircleLeft, Button::CircleRight,
-			Button::TouchAtCursor, Button::FastForward, Button::Rewind};
+			Button::TouchAtCursor, Button::FastForward, Button::FastToggle, Button::Rewind};
 		return buttons;
 	}
 

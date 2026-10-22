@@ -972,6 +972,8 @@ namespace ps5emu
 				ps5ingame::ToggleCornerScreen();
 				ps5log::Line("[ingame] the other screen in a corner: toggled");
 				break;
+			case ps5pad::Shortcut::SaveState: // the 3DS's and the DS's only
+			case ps5pad::Shortcut::LoadState:
 			case ps5pad::Shortcut::None:
 				break;
 			}

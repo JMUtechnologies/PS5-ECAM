@@ -51,6 +51,9 @@ namespace ps5launcher
 		std::string launchErrorDs;  // and the last DS game
 		std::string launchErrorSwitch; // and the last Switch game
 		std::vector<std::string> diagnostics; // the lines Settings > Diagnostics shows
+		// the session before this one ended in a crash: its first [crash] line (boot.prev.log), said once
+		// as the launcher starts; empty: it did not
+		std::string lastCrash;
 		// a home screen tile's game (--rom, app/forwarders.h): started as soon as its side can, on that
 		// side, by its path (or its file's name); empty: none
 		std::string autoLaunch;
@@ -64,5 +67,8 @@ namespace ps5launcher
 		// an archived game's unpacked copy, which its emulator starts (app/game_archives.h); empty: the
 		// game's own path
 		std::string launchPath;
+		// Resume where you left off: the 3DS or DS game's state from its last quit loaded as it starts
+		// (ps5saves::ResumeState)
+		bool resume = false;
 	};
 }

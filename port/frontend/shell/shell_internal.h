@@ -268,8 +268,9 @@ namespace ps5shell
 		void RememberCount();
 		// a game of the side's chosen: a 3DS or Wii U game in an archive unpacked first (StartUnpacking),
 		// unless its copy is kept from before
-		void Launch(int index);
+		void Launch(int index, bool resume = false); // resume: Resume where you left off (Choice::resume)
 		void LaunchChosen(int index, const std::string& launchPath); // launchPath: its unpacked copy, or empty
+		bool m_resumeNext = false; // the launch on its way resumes (an archive unpacking first keeps it)
 		void LaunchGame(const ps5emu::Game& game, const std::string& caption, const Box& from);
 		// a game in an archive unpacked on a thread of its own (app/game_archives.h), its sheet over the
 		// launcher, Circle stopping it; started once it is done
@@ -628,6 +629,7 @@ namespace ps5shell
 		ui::Feedback m_feedback;
 		ui::DrawList m_list;
 		double m_start = 0, m_now = 0, m_lastFrame = 0;
+		double m_lastInput = -1; // the last press or held button, for the screensaver's dimming (-1: none yet)
 		float m_dt = 0;
 		uint64_t m_frames = 0;
 		bool m_failed = false;	 // the device was lost

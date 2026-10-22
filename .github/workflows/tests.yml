@@ -1,0 +1,61 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# What can be checked on a PC, at every push and pull request: the string tables, and the tests in
+# tools/tests (docs/BUILDING.md, Tests on a PC). Only what they need is fetched (tools/deps.py fetch
+# NAME...); the PS5 build itself is not run here.
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pc:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends clang-18 pkg-config libarchive-dev libzip-dev libssl-dev libfmt-dev p7zip-full ffmpeg
+
+      - name: Downloads kept between runs
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ps5cemu-deps
+          key: deps-${{ hashFiles('tools/deps.json') }}
+
+      - name: What the tests need
+        run: python3 -B tools/deps.py fetch pacbrew pugixml dr_mp3
+
+      - name: String tables
+        run: python3 -B tools/lang.py check
+
+      - name: Keyboards
+        run: bash tools/tests/test-keyboard.sh
+
+      - name: Network shares
+        run: bash tools/tests/test-netfs.sh
+
+      - name: Games in archives
+        run: bash tools/tests/test-archives.sh
+
+      - name: Launcher music
+        run: bash tools/tests/test-music.sh
+
+      - name: Backups
+        run: |
+          sudo mkdir -p /mnt/usb0
+          sudo chmod 777 /mnt/usb0
+          bash tools/tests/test-saves.sh
+
+      - name: Remote touch screen
+        run: |
+          mkdir -p build/tests
+          ln -sfn "$PWD"/.deps/pacbrew-*/opt/ps5-payload-sdk/target/user/homebrew/include/fmt build/tests/fmt
+          c++ -std=c++20 -pthread -DFMT_HEADER_ONLY -Ibuild/tests -Iport/stream tools/tests/stream-host.cpp \
+              port/stream/stream.cpp port/stream/websocket.cpp -lcrypto -o build/tests/stream-host
+          python3 -B tools/tests/test-stream.py build/tests/stream-host
+          python3 -B tools/tests/test-upload.py build/tests/stream-host
+          node tools/tests/test-stream-browser.js

@@ -5,6 +5,8 @@
 # (port/CMakeLists.txt), which links what this builds: azahar_ps5_libraries.txt lists the archives.
 
 add_library(azahar_ps5 STATIC
+    camera.cpp
+    camera.h
     core.cpp
     input.cpp
     input.h

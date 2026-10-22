@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // PS5-ECAM: a host harness for the remote touch screen's server (port/stream), driven by
 // test-stream.py. The JPEGs are stand-ins (a frame header with the picture's size), so it needs no
-// TurboJPEG; the log goes to stderr.
+// TurboJPEG; the log goes to stderr. With STREAM_UPLOADS set, the files page sends to that folder
+// (id "games") and to a folder that cannot be made (id "nowhere"), for test-upload.py.
 #include "stream.h"
 #include "jpeg.h"
 
 #include <atomic>
+#include <cstdlib>
 #include <chrono>
 #include <iostream>
 #include <string>
@@ -40,6 +42,13 @@ int main()
 {
 	const int width = 854, height = 480;
 	std::vector<uint8_t> rgb((size_t)width * height * 3, 128);
+	if (const char* uploads = std::getenv("STREAM_UPLOADS"))
+	{
+		const std::string folder = uploads;
+		ps5stream::SetUploadFolders([folder] {
+			return std::vector<ps5stream::Folder>{{"games", "Games", "Any file.", folder}, {"nowhere", "Nowhere", "", "/proc/none"}};
+		});
+	}
 	ps5stream::Configure(true);
 	std::cout << ps5stream::Current().address << std::endl;
 	std::atomic<bool> alive{true};

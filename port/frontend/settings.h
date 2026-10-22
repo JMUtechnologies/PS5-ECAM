@@ -53,6 +53,9 @@ namespace ps5settings
 		// (it has no fragment shader barycentrics, and RADV and the outlines' invariance disagree,
 		// Citra #7376). Settings > Graphics, and a game's own
 		bool hwShaders = true;
+		// the 3DS's 3D, as red and cyan for anaglyph glasses (Azahar's render_3d, the 3D slider all the way
+		// up): Settings > Graphics, and a game's own. Off, the 3DS's 3D screen shows one eye, as before
+		bool anaglyph = false;
 		// the DS's games (melonDS: port/melonds)
 		int dsFilter = 0;			  // how the DS's screens are scaled to the TV: sharp, smooth, square pixels (ps5melonds::screens::Filter)
 		// the touchpad touches the bottom screen while only the top one is shown (the top screen alone):
@@ -139,6 +142,9 @@ namespace ps5settings
 		int sides = 15;
 		bool switchOffered = true;	 // the Switch side was offered: those whose sides predate it (4.0.2) see it once
 		std::string lastVersion;	 // the version that ran last: a newer one says what it brings, once (Make it yours)
+		// a release the start does not offer (the update's Skip this version, or one gone back from), as
+		// ps5update::Readable writes it; Settings > Online still finds it
+		std::string skipVersion;
 		std::string theme;			 // the launcher's look (ui/theme.h): a built-in theme's id, or user:<file> in themes/; empty: the default
 		int libraryFilter[4] = {0, 0, 0, 0}; // per side (Wii U, 3DS, DS, Switch): All, Recently added, Favourites, Graphic packs on (Wii U)
 		int librarySort[4] = {0, 0, 0, 0};   // Recently played (the default: the Library is where a side opens), A to Z, Release year, How it runs
@@ -309,6 +315,9 @@ namespace ps5settings
 
 	Launcher Load();
 	bool Save(const Launcher& settings);
+	// A ps5cemu.json Load could not read is moved to ps5cemu.json.broken, and the defaults used, so the
+	// next Save does not write over it (a hand edit's slip costs nothing): where it went, once, then empty
+	std::string TakeBrokenFile();
 
 	// -- games' own settings -------------------------------------------
 	// side: "wiiu", "3ds", "ds" or "switch", as ps5cemu.json names them

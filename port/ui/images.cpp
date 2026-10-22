@@ -188,6 +188,21 @@ namespace ui
 		}
 	}
 
+	bool DecodeFile(const std::string& path, std::vector<uint8_t>& rgba, int& width, int& height)
+	{
+		int channels = 0;
+		stbi_uc* pixels = stbi_load(path.c_str(), &width, &height, &channels, 4);
+		if (!pixels || width <= 0 || height <= 0)
+		{
+			if (pixels)
+				stbi_image_free(pixels);
+			return false;
+		}
+		rgba.assign(pixels, pixels + (size_t)width * height * 4);
+		stbi_image_free(pixels);
+		return true;
+	}
+
 	Images::Done Images::Decode(const Job& job)
 	{
 		Done done;

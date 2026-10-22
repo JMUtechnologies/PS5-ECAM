@@ -232,6 +232,7 @@ add_library(CemuPS5 STATIC
 	ps5/window.h
 	ps5/window_system.cpp
 	stream/browser.h
+	stream/files.h
 	stream/jpeg.cpp
 	stream/jpeg.h
 	stream/stream.cpp
