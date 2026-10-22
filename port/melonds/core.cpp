@@ -102,8 +102,12 @@ namespace ps5melonds
 		std::atomic<bool> s_bottomShown{true};
 
 		// the game's loop's requests, for the emulation to make between two frames: a save state saved
-		// to slot n (n) or loaded from it (-n), cheats turned on or off (by their index)
+		// to slot n (n) or loaded from it (-n), or the last load undone (kUndoRequest), cheats turned on or
+		// off (by their index)
+		constexpr int kUndoRequest = -1000;
 		std::atomic<int> s_stateRequest{0};
+		// the emulation's: the game as it was just before the last load, for Undo the last load
+		std::unique_ptr<melonDS::Savestate> s_undo;
 		std::mutex s_cheatMutex;
 		std::vector<int> s_cheatToggles;
 
@@ -486,7 +490,24 @@ namespace ps5melonds
 			const int slot = std::abs(request);
 			const std::string path = StatePath(slot);
 			std::string message;
-			if (!load)
+			if (request == kUndoRequest)
+			{
+				// back to the game as the last load found it
+				if (s_undo)
+					s_undo->Rewind(false);
+				if (s_undo && nds.DoSavestate(s_undo.get()) && !s_undo->Error)
+				{
+					// tr: how undoing the last load went
+					message = ps5lang::Tr("Back to before the load");
+					ps5cheevos::Reset();
+					s_rewind.clear();
+				}
+				else
+					message = ps5lang::Tr("It did not work");
+				s_undo.reset();
+				ps5ingame3ds::SetUndoAvailable(false);
+			}
+			else if (!load)
 			{
 				melonDS::Savestate state;
 				if (!state.Error)
@@ -512,6 +533,8 @@ namespace ps5melonds
 						message = ps5lang::TrF("Loaded slot {0}", slot);
 						ps5cheevos::Reset(); // the set's conditions start again from the state's memory
 						s_rewind.clear();	 // and a rewind, from here
+						s_undo = std::move(backup); // what the load replaced, for Undo the last load
+						ps5ingame3ds::SetUndoAvailable(true);
 					}
 					else
 					{
@@ -521,7 +544,8 @@ namespace ps5melonds
 					}
 				}
 			}
-			ps5log::Line("[ds] {} slot {}: {}", load ? "load from" : "save to", slot, message);
+			ps5log::Line("[ds] {}: {}", request == kUndoRequest ? std::string("undo the last load") :
+				fmt::format("{} slot {}", load ? "load from" : "save to", slot), message);
 			ps5ingame3ds::SetStateMessage(message);
 			if (!ps5ingame3ds::MenuOpen())
 				ps5notify::Send(message); // a shortcut's: the menu is not there to say it
@@ -911,6 +935,8 @@ namespace ps5melonds
 		input::SetRotation(settings.dsRotation);
 		s_stopReason = -1;
 		s_stateRequest = 0;
+		s_undo.reset();
+		ps5ingame3ds::SetUndoAvailable(false);
 		{
 			// the menu's top: GameTDB's publisher and year, and the box art (or the game's icon)
 			ps5gameinfo::Info info;
@@ -1032,6 +1058,8 @@ namespace ps5melonds
 			int slot = 0;
 			if (ps5ingame3ds::TakeStateRequest(load, slot))
 				s_stateRequest = load ? -slot : slot;
+			else if (ps5ingame3ds::TakeUndoRequest())
+				s_stateRequest = kUndoRequest;
 			if (ps5ingame3ds::TakeLibraryRequest())
 			{
 				ps5log::Line("[ds] back to the library");

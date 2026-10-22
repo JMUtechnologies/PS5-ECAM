@@ -117,7 +117,7 @@ msgstr "Die Basisdateien des Spiels wurden nicht gefunden."
 msgid "The game could not be mounted. Check that its files are still in the game files folder."
 msgstr "Das Spiel konnte nicht eingebunden werden. Prüfe, ob seine Dateien noch im Spieleordner liegen."
 
-#: port/app/emulator.cpp:766 port/azahar/core.cpp:570
+#: port/app/emulator.cpp:766 port/azahar/core.cpp:579
 #, menu
 msgid "The game could not be started."
 msgstr "Das Spiel konnte nicht gestartet werden."
@@ -139,7 +139,7 @@ msgstr "Seine title.tik fehlt."
 msgid "The executable could not be started."
 msgstr "Die ausführbare Datei konnte nicht gestartet werden."
 
-#: port/app/emulator.cpp:798 port/melonds/core.cpp:895
+#: port/app/emulator.cpp:798 port/melonds/core.cpp:919
 msgid "The Vulkan renderer did not start: {0}"
 msgstr "Der Vulkan-Renderer ist nicht gestartet: {0}"
 
@@ -708,7 +708,7 @@ msgstr "Bilinear"
 #. how a game's picture is scaled: the methods' names
 #. texture filters: None, then the filters' own names
 #. the Switch side's upscaling filters, as the launcher names them (Eden's order: bilinear, FSR 1, bicubic, nearest)
-#: port/app/ingame.cpp:175 port/app/ingame3ds.cpp:133 port/eden/ingame.cpp:52 port/frontend/shell/settings.cpp:57 port/frontend/shell/settings.cpp:70
+#: port/app/ingame.cpp:175 port/app/ingame3ds.cpp:136 port/eden/ingame.cpp:52 port/frontend/shell/settings.cpp:57 port/frontend/shell/settings.cpp:70
 #, menu
 msgid "Bicubic"
 msgstr "Bikubisch"
@@ -733,12 +733,12 @@ msgstr "Nächster Nachbar"
 msgid "AMD FSR 1"
 msgstr "AMD FSR 1"
 
-#: port/app/ingame.cpp:189 port/app/ingame.cpp:259 port/app/ingame.cpp:259 port/app/ingame3ds.cpp:465 port/app/remote_menu.h:29 port/eden/ingame.cpp:480 port/frontend/shell/pages.cpp:596 port/frontend/shell/settings.cpp:406
+#: port/app/ingame.cpp:189 port/app/ingame.cpp:259 port/app/ingame.cpp:259 port/app/ingame3ds.cpp:469 port/app/remote_menu.h:29 port/eden/ingame.cpp:480 port/frontend/shell/pages.cpp:596 port/frontend/shell/settings.cpp:406
 #, menu
 msgid "On"
 msgstr "An"
 
-#: port/app/ingame.cpp:189 port/app/ingame.cpp:259 port/app/ingame.cpp:259 port/app/ingame.cpp:285 port/app/ingame3ds.cpp:465 port/app/remote_menu.h:29 port/eden/ingame.cpp:480 port/frontend/shell/pages.cpp:596 port/frontend/shell/pages.cpp:604 port/frontend/shell/settings.cpp:71 port/frontend/shell/settings.cpp:406 port/ps5/display.h:47
+#: port/app/ingame.cpp:189 port/app/ingame.cpp:259 port/app/ingame.cpp:259 port/app/ingame.cpp:285 port/app/ingame3ds.cpp:469 port/app/remote_menu.h:29 port/eden/ingame.cpp:480 port/frontend/shell/pages.cpp:596 port/frontend/shell/pages.cpp:604 port/frontend/shell/settings.cpp:71 port/frontend/shell/settings.cpp:406 port/ps5/display.h:47
 #, menu
 msgid "Off"
 msgstr "Aus"
@@ -756,7 +756,7 @@ msgid "GamePad"
 msgstr "GamePad"
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
-#: port/app/ingame.cpp:192 port/app/ingame.cpp:338 port/app/ingame3ds.cpp:634 port/frontend/shell/settings.cpp:196
+#: port/app/ingame.cpp:192 port/app/ingame.cpp:338 port/app/ingame3ds.cpp:647 port/frontend/shell/settings.cpp:196
 #, menu
 msgid "Screens"
 msgstr "Bildschirme"
@@ -777,7 +777,7 @@ msgid "The TV's and the GamePad's pictures, and how they fill the screen."
 msgstr "Die Bilder von TV und GamePad und wie sie den Bildschirm füllen."
 
 #. the 3DS's top and bottom screens
-#: port/app/ingame.cpp:194 port/app/ingame3ds.cpp:471
+#: port/app/ingame.cpp:194 port/app/ingame3ds.cpp:475
 #, menu
 msgid "Main screen"
 msgstr "Hauptbildschirm"
@@ -817,7 +817,7 @@ msgstr "Originalformat"
 msgid "Its own shape keeps the picture's proportions, with bars where they differ from the screen's; Stretched fills it."
 msgstr "Originalformat behält die Proportionen des Bildes, mit Balken, wo sie von denen des Bildschirms abweichen; Gestreckt füllt ihn ganz."
 
-#: port/app/ingame.cpp:201 port/app/ingame3ds.cpp:482 port/app/ingame3ds.cpp:491 port/eden/ingame.cpp:482 port/frontend/shell/settings.cpp:194
+#: port/app/ingame.cpp:201 port/app/ingame3ds.cpp:486 port/app/ingame3ds.cpp:495 port/eden/ingame.cpp:482 port/frontend/shell/settings.cpp:194
 #, menu
 msgid "Graphics"
 msgstr "Grafik"
@@ -867,17 +867,17 @@ msgstr "Frame-Pacing"
 msgid "Holds the game to an even rate: 60 fps for 4K at 120 Hz, 30 for 8K at 60 Hz. Off shows each frame when it is done."
 msgstr "Hält das Spiel auf einer gleichmäßigen Rate: 60 fps für 4K bei 120 Hz, 30 für 8K bei 60 Hz. Aus zeigt jedes Bild, sobald es fertig ist."
 
-#: port/app/ingame.cpp:211 port/app/ingame3ds.cpp:497 port/eden/ingame.cpp:486 port/frontend/shell/settings.cpp:491 port/frontend/shell/settings.cpp:528 port/frontend/shell/settings.cpp:569
+#: port/app/ingame.cpp:211 port/app/ingame3ds.cpp:501 port/eden/ingame.cpp:486 port/frontend/shell/settings.cpp:491 port/frontend/shell/settings.cpp:528 port/frontend/shell/settings.cpp:569
 #, menu
 msgid "Frame generation"
 msgstr "Bildgenerierung"
 
-#: port/app/ingame.cpp:212 port/app/ingame3ds.cpp:498 port/eden/ingame.cpp:487
+#: port/app/ingame.cpp:212 port/app/ingame3ds.cpp:502 port/eden/ingame.cpp:487
 #, menu
 msgid "A picture made between each two frames of a game at 30 fps, so it is shown at 60. It changes at once."
 msgstr "Ein Bild zwischen je zwei Bildern eines Spiels mit 30 fps, sodass es mit 60 gezeigt wird. Es ändert sich sofort."
 
-#: port/app/ingame.cpp:213 port/app/ingame3ds.cpp:486 port/app/ingame3ds.cpp:499 port/frontend/shell/settings.cpp:496 port/frontend/shell/settings.cpp:544 port/frontend/shell/settings.cpp:573 port/frontend/shell/settings.cpp:591
+#: port/app/ingame.cpp:213 port/app/ingame3ds.cpp:490 port/app/ingame3ds.cpp:503 port/frontend/shell/settings.cpp:496 port/frontend/shell/settings.cpp:544 port/frontend/shell/settings.cpp:573 port/frontend/shell/settings.cpp:591
 #, menu
 msgid "Performance overlay"
 msgstr "Leistungsanzeige"
@@ -943,7 +943,7 @@ msgid "Graphic packs"
 msgstr "Grafikpakete"
 
 #. amiibo is Nintendo's name for its figures, as it writes it in the language
-#: port/app/ingame.cpp:248 port/app/ingame.cpp:292 port/app/ingame.cpp:339 port/app/ingame3ds.cpp:457 port/frontend/shell/classic.cpp:491
+#: port/app/ingame.cpp:248 port/app/ingame.cpp:292 port/app/ingame.cpp:339 port/app/ingame3ds.cpp:461 port/frontend/shell/classic.cpp:491
 #, menu
 msgid "None"
 msgstr "Keine"
@@ -970,7 +970,7 @@ msgstr "Das Spiel sieht die Änderung beim nächsten Start: Das Portal wird beim
 msgid "Plugged in as a game starts, as in Cemu. Its figures are below while it is on."
 msgstr "Wird beim Spielstart angeschlossen, wie in Cemu. Seine Figuren stehen darunter, solange es an ist."
 
-#: port/app/ingame.cpp:266 port/app/ingame3ds.cpp:608
+#: port/app/ingame.cpp:266 port/app/ingame3ds.cpp:612
 #, menu
 msgid "Empty"
 msgstr "Leer"
@@ -1006,24 +1006,24 @@ msgstr "USB-Geräte"
 msgid "Skylanders, Disney Infinity and LEGO Dimensions figures on Cemu's emulated portals, as amiibo are scanned."
 msgstr "Skylanders-, Disney-Infinity- und LEGO-Dimensions-Figuren auf Cemus emulierten Portalen, so wie amiibo gescannt werden."
 
-#: port/app/ingame.cpp:288 port/app/ingame3ds.cpp:518 port/eden/ingame.cpp:493
+#: port/app/ingame.cpp:288 port/app/ingame3ds.cpp:522 port/eden/ingame.cpp:493
 #, menu
 msgid "Volume"
 msgstr "Lautstärke"
 
-#: port/app/ingame.cpp:288 port/app/ingame3ds.cpp:518 port/eden/ingame.cpp:493
+#: port/app/ingame.cpp:288 port/app/ingame3ds.cpp:522 port/eden/ingame.cpp:493
 #, menu
 msgid "The game's sound. Left and Right change it by 10%."
 msgstr "Der Ton des Spiels. Links und Rechts ändern ihn um 10 %."
 
 #. amiibo is Nintendo's name for its figures, as it writes it in the language
-#: port/app/ingame.cpp:292 port/app/ingame.cpp:339 port/app/ingame3ds.cpp:567 port/app/ingame3ds.cpp:568
+#: port/app/ingame.cpp:292 port/app/ingame.cpp:339 port/app/ingame3ds.cpp:571 port/app/ingame3ds.cpp:572
 #, menu
 msgid "Amiibo"
 msgstr "amiibo"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/app/ingame.cpp:295 port/app/ingame3ds.cpp:570
+#: port/app/ingame.cpp:295 port/app/ingame3ds.cpp:574
 #, menu
 msgid "Put amiibo dumps (.bin) in {0}/amiibo to scan them here."
 msgstr "Lege amiibo-Dumps (.bin) in {0}/amiibo ab, um sie hier zu scannen."
@@ -1034,7 +1034,7 @@ msgid "Left and Right choose an amiibo dump; Cross touches it to the GamePad whe
 msgstr "Links und Rechts wählen einen amiibo-Dump; Kreuz hält ihn ans GamePad, wenn das Spiel danach fragt."
 
 #. the DS's lid, closed or open
-#: port/app/ingame.cpp:297 port/app/ingame3ds.cpp:579 port/app/ingame3ds.cpp:590 port/frontend/shell/pages.cpp:811 port/frontend/shell/settings.cpp:198
+#: port/app/ingame.cpp:297 port/app/ingame3ds.cpp:583 port/app/ingame3ds.cpp:594 port/frontend/shell/pages.cpp:811 port/frontend/shell/settings.cpp:198
 #, menu
 msgid "Controls"
 msgstr "Steuerung"
@@ -1069,7 +1069,7 @@ msgstr "Emulierter Controller"
 msgid "What the game sees in this player's hands. Most games want the GamePad for player 1."
 msgstr "Was das Spiel in den Händen dieses Spielers sieht. Die meisten Spiele wollen das GamePad für Spieler 1."
 
-#: port/app/ingame.cpp:303 port/app/ingame3ds.cpp:591 port/frontend/shell/pages.cpp:450 port/frontend/shell/pages.cpp:596 port/frontend/shell/settings.cpp:675
+#: port/app/ingame.cpp:303 port/app/ingame3ds.cpp:595 port/frontend/shell/pages.cpp:450 port/frontend/shell/pages.cpp:596 port/frontend/shell/settings.cpp:675
 #, menu
 msgid "Motion controls"
 msgstr "Bewegungssteuerung"
@@ -1114,17 +1114,17 @@ msgstr "Totzone rechter Stick"
 msgid "How far the right stick moves before the game sees it. Raise it if the camera drifts."
 msgstr "Wie weit sich der rechte Stick bewegen muss, bevor das Spiel es merkt. Erhöhe sie, wenn die Kamera von selbst wandert."
 
-#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:585 port/app/ingame3ds.cpp:595 port/frontend/shell/pages.cpp:451 port/frontend/shell/pages.cpp:616 port/frontend/shell/settings.cpp:652 port/frontend/shell/welcome.cpp:58
+#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:589 port/app/ingame3ds.cpp:599 port/frontend/shell/pages.cpp:451 port/frontend/shell/pages.cpp:616 port/frontend/shell/settings.cpp:652 port/frontend/shell/welcome.cpp:58
 #, menu
 msgid "A and B"
 msgstr "A und B"
 
-#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:576 port/frontend/shell/pages.cpp:618 port/frontend/shell/settings.cpp:652 port/frontend/shell/welcome.cpp:59
+#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:580 port/frontend/shell/pages.cpp:618 port/frontend/shell/settings.cpp:652 port/frontend/shell/welcome.cpp:59
 #, menu
 msgid "A on Circle"
 msgstr "A auf Kreis"
 
-#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:576 port/frontend/shell/pages.cpp:618 port/frontend/shell/settings.cpp:652 port/frontend/shell/welcome.cpp:59
+#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:580 port/frontend/shell/pages.cpp:618 port/frontend/shell/settings.cpp:652 port/frontend/shell/welcome.cpp:59
 #, menu
 msgid "A on Cross"
 msgstr "A auf Kreuz"
@@ -1184,29 +1184,29 @@ msgstr "Berührt den GamePad-Bildschirm oder drückt die als Touchpad-Klick fest
 msgid "The GamePad's screen"
 msgstr "Der GamePad-Bildschirm"
 
-#: port/app/ingame.cpp:323 port/app/ingame3ds.cpp:601 port/eden/ingame.cpp:498
+#: port/app/ingame.cpp:323 port/app/ingame3ds.cpp:605 port/eden/ingame.cpp:498
 #, menu
 msgid "Quit to the home screen"
 msgstr "Zum Startbildschirm"
 
-#: port/app/ingame.cpp:324 port/app/ingame3ds.cpp:602 port/eden/ingame.cpp:499
+#: port/app/ingame.cpp:324 port/app/ingame3ds.cpp:606 port/eden/ingame.cpp:499
 #, menu
 msgid "Leaves the game and closes PS5-ECAM, as its home screen tile asks. What you have not saved in the game is lost, so Cross is held."
 msgstr "Verlässt das Spiel und schließt PS5-ECAM, wie es seine Kachel auf dem Startbildschirm vorsieht. Was du im Spiel nicht gespeichert hast, geht verloren, daher wird Kreuz gehalten."
 
-#: port/app/ingame.cpp:325 port/app/ingame3ds.cpp:603 port/eden/ingame.cpp:500
+#: port/app/ingame.cpp:325 port/app/ingame3ds.cpp:607 port/eden/ingame.cpp:500
 #, menu
 msgid "Quit to the library"
 msgstr "Zur Bibliothek"
 
-#: port/app/ingame.cpp:326 port/app/ingame3ds.cpp:604 port/eden/ingame.cpp:501
+#: port/app/ingame.cpp:326 port/app/ingame3ds.cpp:608 port/eden/ingame.cpp:501
 #, menu
 msgid "Leaves the game for the library. What you have not saved in the game is lost, so Cross is held."
 msgstr "Verlässt das Spiel und geht zur Bibliothek. Was du im Spiel nicht gespeichert hast, geht verloren, daher wird Kreuz gehalten."
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
 #. the quick actions: big tiles at the top of the in-game menu, a word or two each
-#: port/app/ingame.cpp:338 port/app/ingame3ds.cpp:631 port/eden/ingame.cpp:511
+#: port/app/ingame.cpp:338 port/app/ingame3ds.cpp:644 port/eden/ingame.cpp:511
 #, menu
 msgid "Resume"
 msgstr "Fortsetzen"
@@ -1229,7 +1229,7 @@ msgid "Scan"
 msgstr "Scannen"
 
 #. {0} is an amiibo dump's file name
-#: port/app/ingame.cpp:405 port/azahar/core.cpp:273
+#: port/app/ingame.cpp:405 port/azahar/core.cpp:279
 #, menu
 msgid "Scanned {0}"
 msgstr "{0} gescannt"
@@ -1246,22 +1246,22 @@ msgstr "Nicht gescannt (Fehler {0})"
 msgid "Running"
 msgstr "Läuft"
 
-#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:781 port/eden/ingame.cpp:583 port/frontend/shell/eden.cpp:490 port/frontend/shell/eden.cpp:499 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1391 port/frontend/shell/shell.cpp:1395 port/frontend/shell/shell.cpp:1429 port/frontend/shell/shell.cpp:1445 port/frontend/shell/shell.cpp:1453 port/frontend/shell/shell.cpp:1461 port/frontend/shell/shell.cpp:1464 port/frontend/shell/shell.cpp:2400
+#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:800 port/eden/ingame.cpp:583 port/frontend/shell/eden.cpp:490 port/frontend/shell/eden.cpp:499 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1391 port/frontend/shell/shell.cpp:1395 port/frontend/shell/shell.cpp:1429 port/frontend/shell/shell.cpp:1445 port/frontend/shell/shell.cpp:1453 port/frontend/shell/shell.cpp:1461 port/frontend/shell/shell.cpp:1464 port/frontend/shell/shell.cpp:2400
 #, menu
 msgid "Choose"
 msgstr "Wählen"
 
-#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:781 port/eden/ingame.cpp:583 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1411 port/frontend/shell/shell.cpp:1454 port/frontend/shell/shell.cpp:1458 port/frontend/shell/shell.cpp:1461 port/frontend/shell/shell.cpp:1464 port/frontend/shell/shell.cpp:1475
+#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:800 port/eden/ingame.cpp:583 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1411 port/frontend/shell/shell.cpp:1454 port/frontend/shell/shell.cpp:1458 port/frontend/shell/shell.cpp:1461 port/frontend/shell/shell.cpp:1464 port/frontend/shell/shell.cpp:1475
 #, menu
 msgid "Change"
 msgstr "Ändern"
 
-#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:781 port/eden/ingame.cpp:583
+#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:800 port/eden/ingame.cpp:583
 #, menu
 msgid "Back to the game"
 msgstr "Zurück zum Spiel"
 
-#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:781 port/eden/ingame.cpp:583 port/frontend/shell/eden.cpp:479 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:508 port/frontend/shell/eden.cpp:511 port/frontend/shell/installs.cpp:329 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1412 port/frontend/shell/shell.cpp:1421 port/frontend/shell/shell.cpp:1446 port/frontend/shell/shell.cpp:1453 port/frontend/shell/shell.cpp:1454 port/frontend/shell/shell.cpp:1458 port/frontend/shell/shell.cpp:1462 port/frontend/shell/shell.cpp:1464 port/frontend/shell/shell.cpp:1468 port/frontend/shell/shell.cpp:1472 port/frontend/shell/shell.cpp:1476
+#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:800 port/eden/ingame.cpp:583 port/frontend/shell/eden.cpp:479 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:508 port/frontend/shell/eden.cpp:511 port/frontend/shell/installs.cpp:329 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1412 port/frontend/shell/shell.cpp:1421 port/frontend/shell/shell.cpp:1446 port/frontend/shell/shell.cpp:1453 port/frontend/shell/shell.cpp:1454 port/frontend/shell/shell.cpp:1458 port/frontend/shell/shell.cpp:1462 port/frontend/shell/shell.cpp:1464 port/frontend/shell/shell.cpp:1468 port/frontend/shell/shell.cpp:1472 port/frontend/shell/shell.cpp:1476
 #, menu
 msgid "Back"
 msgstr "Zurück"
@@ -1273,451 +1273,461 @@ msgid "{0}'s saves"
 msgstr "Spielstände von {0}"
 
 #. the 3DS's screen layouts
-#: port/app/ingame3ds.cpp:131 port/frontend/shell/settings.cpp:55
+#: port/app/ingame3ds.cpp:134 port/frontend/shell/settings.cpp:55
 #, menu
 msgid "Top above bottom"
 msgstr "Übereinander"
 
 #. the 3DS's screen layouts
-#: port/app/ingame3ds.cpp:131 port/frontend/shell/settings.cpp:55
+#: port/app/ingame3ds.cpp:134 port/frontend/shell/settings.cpp:55
 #, menu
 msgid "Top screen only"
 msgstr "Nur oberer Bildschirm"
 
 #. the 3DS's screen layouts
-#: port/app/ingame3ds.cpp:131 port/frontend/shell/settings.cpp:55
+#: port/app/ingame3ds.cpp:134 port/frontend/shell/settings.cpp:55
 #, menu
 msgid "Large top screen"
 msgstr "Großer oberer Bildschirm"
 
 #. the 3DS's screen layouts
-#: port/app/ingame3ds.cpp:131 port/frontend/shell/settings.cpp:55
+#: port/app/ingame3ds.cpp:134 port/frontend/shell/settings.cpp:55
 #, menu
 msgid "Side by side"
 msgstr "Nebeneinander"
 
 #. texture filters: None, then the filters' own names
-#: port/app/ingame3ds.cpp:133 port/frontend/shell/settings.cpp:57
+#: port/app/ingame3ds.cpp:136 port/frontend/shell/settings.cpp:57
 #, menu
 msgctxt "texture filter"
 msgid "None"
 msgstr "Keiner"
 
-#: port/app/ingame3ds.cpp:466
+#: port/app/ingame3ds.cpp:470
 #, menu
 msgid "Screens and border"
 msgstr "Bildschirme und Rahmen"
 
-#: port/app/ingame3ds.cpp:467
+#: port/app/ingame3ds.cpp:471
 #, menu
 msgid "The screens' layout, which one is the main one, and the border."
 msgstr "Die Anordnung der Bildschirme, welcher der Hauptbildschirm ist, und der Rahmen."
 
-#: port/app/ingame3ds.cpp:468
+#: port/app/ingame3ds.cpp:472
 #, menu
 msgid "Layout"
 msgstr "Anordnung"
 
-#: port/app/ingame3ds.cpp:469
+#: port/app/ingame3ds.cpp:473
 #, menu
 msgid "How the two screens share the TV. In the game, touchpad click + R1 goes to the next."
 msgstr "Wie sich die beiden Bildschirme den Fernseher teilen. Im Spiel schaltet Touchpad-Klick + R1 weiter."
 
 #. the 3DS's top and bottom screens
-#: port/app/ingame3ds.cpp:471
+#: port/app/ingame3ds.cpp:475
 #, menu
 msgid "Bottom"
 msgstr "Unten"
 
 #. the 3DS's top and bottom screens
-#: port/app/ingame3ds.cpp:471
+#: port/app/ingame3ds.cpp:475
 #, menu
 msgid "Top"
 msgstr "Oben"
 
-#: port/app/ingame3ds.cpp:472
+#: port/app/ingame3ds.cpp:476
 #, menu
 msgid "Which screen takes the top screen's place. In the game, touchpad click + L1 swaps them."
 msgstr "Welcher Bildschirm den Platz des oberen einnimmt. Im Spiel tauscht Touchpad-Klick + L1 sie."
 
-#: port/app/ingame3ds.cpp:473 port/frontend/shell/settings.cpp:607
+#: port/app/ingame3ds.cpp:477 port/frontend/shell/settings.cpp:607
 #, menu
 msgid "Border"
 msgstr "Rahmen"
 
-#: port/app/ingame3ds.cpp:474
+#: port/app/ingame3ds.cpp:478
 #, menu
 msgid "Artwork around the screens, never over them. Also in the launcher's Settings > Screens."
 msgstr "Grafiken um die Bildschirme, nie darüber. Auch unter Einstellungen > Bildschirme im Launcher."
 
-#: port/app/ingame3ds.cpp:479 port/frontend/shell/settings.cpp:601
+#: port/app/ingame3ds.cpp:483 port/frontend/shell/settings.cpp:601
 #, menu
 msgid "Screen rotation"
 msgstr "Bildschirmdrehung"
 
-#: port/app/ingame3ds.cpp:480
+#: port/app/ingame3ds.cpp:484
 #, menu
 msgid "For the games played with the DS held on its side, like a book (Hotel Dusk): both screens turn together."
 msgstr "Für Spiele, bei denen man den DS seitlich hält wie ein Buch (Hotel Dusk): beide Bildschirme drehen sich zusammen."
 
-#: port/app/ingame3ds.cpp:482
+#: port/app/ingame3ds.cpp:486
 #, menu
 msgid "The screen filter and the performance overlay."
 msgstr "Der Bildschirmfilter und die Leistungsanzeige."
 
-#: port/app/ingame3ds.cpp:483 port/frontend/shell/settings.cpp:578
+#: port/app/ingame3ds.cpp:487 port/frontend/shell/settings.cpp:578
 #, menu
 msgid "Screen filter"
 msgstr "Bildschirmfilter"
 
-#: port/app/ingame3ds.cpp:484
+#: port/app/ingame3ds.cpp:488
 #, menu
 msgid "How the DS's 256 x 192 screens are scaled to the TV. Sharp keeps every pixel square and even; Smooth blurs them together; Square pixels takes the nearest, uneven at most sizes."
 msgstr "Wie die 256 x 192 Pixel großen Bildschirme des DS auf den Fernseher skaliert werden. Scharf hält jedes Pixel quadratisch und gleich groß; Weich verwischt sie ineinander; Quadratische Pixel nimmt das nächste, bei den meisten Größen ungleichmäßig."
 
-#: port/app/ingame3ds.cpp:487 port/app/ingame3ds.cpp:500 port/frontend/shell/settings.cpp:544 port/frontend/shell/settings.cpp:545 port/frontend/shell/settings.cpp:573 port/frontend/shell/settings.cpp:574 port/frontend/shell/settings.cpp:591 port/frontend/shell/settings.cpp:592
+#: port/app/ingame3ds.cpp:491 port/app/ingame3ds.cpp:504 port/frontend/shell/settings.cpp:544 port/frontend/shell/settings.cpp:545 port/frontend/shell/settings.cpp:573 port/frontend/shell/settings.cpp:574 port/frontend/shell/settings.cpp:591 port/frontend/shell/settings.cpp:592
 #, menu
 msgid "The frame rate and the emulation's speed, in the top left corner."
 msgstr "Die Bildrate und die Geschwindigkeit der Emulation, oben links."
 
-#: port/app/ingame3ds.cpp:492
+#: port/app/ingame3ds.cpp:496
 #, menu
 msgid "Internal resolution, texture filter and the performance overlay."
 msgstr "Interne Auflösung, Texturfilter und die Leistungsanzeige."
 
-#: port/app/ingame3ds.cpp:493 port/frontend/shell/settings.cpp:509 port/frontend/shell/settings.cpp:549
+#: port/app/ingame3ds.cpp:497 port/frontend/shell/settings.cpp:509 port/frontend/shell/settings.cpp:549
 #, menu
 msgid "Internal resolution"
 msgstr "Interne Auflösung"
 
-#: port/app/ingame3ds.cpp:494
+#: port/app/ingame3ds.cpp:498
 #, menu
 msgid "How large the 3D scenes are drawn before they are scaled to the TV. Higher is sharper and asks more of the GPU."
 msgstr "Wie groß die 3D-Szenen gezeichnet werden, bevor sie auf den Fernseher skaliert werden. Höher ist schärfer und fordert die GPU stärker."
 
-#: port/app/ingame3ds.cpp:495 port/frontend/shell/settings.cpp:514
+#: port/app/ingame3ds.cpp:499 port/frontend/shell/settings.cpp:514
 #, menu
 msgid "Texture filter"
 msgstr "Texturfilter"
 
-#: port/app/ingame3ds.cpp:496
+#: port/app/ingame3ds.cpp:500
 #, menu
 msgid "Smooths textures as they are scaled up. The costliest setting here: if a game stutters, try None first."
 msgstr "Glättet Texturen beim Hochskalieren. Die aufwendigste Einstellung hier: Wenn ein Spiel ruckelt, versuche zuerst „Keiner“."
 
 #. no speed limit
-#: port/app/ingame3ds.cpp:504 port/eden/ingame.cpp:490 port/frontend/shell/settings.cpp:766
+#: port/app/ingame3ds.cpp:508 port/eden/ingame.cpp:490 port/frontend/shell/settings.cpp:766
 #, menu
 msgid "Speed limit"
 msgstr "Tempolimit"
 
 #. no speed limit
-#: port/app/ingame3ds.cpp:504 port/app/ingame3ds.cpp:507 port/eden/ingame.cpp:474 port/frontend/shell/settings.cpp:765
+#: port/app/ingame3ds.cpp:508 port/app/ingame3ds.cpp:511 port/eden/ingame.cpp:474 port/frontend/shell/settings.cpp:765
 #, menu
 msgctxt "speed limit"
 msgid "None"
 msgstr "Keins"
 
-#: port/app/ingame3ds.cpp:505 port/eden/ingame.cpp:491
+#: port/app/ingame3ds.cpp:509 port/eden/ingame.cpp:491
 #, menu
 msgid "Above 100% hurries through slow scenes; None runs as fast as the PS5 can. For this game only."
 msgstr "Über 100 % eilt durch langsame Szenen; „Keins“ läuft so schnell, wie die PS5 kann. Nur für dieses Spiel."
 
-#: port/app/ingame3ds.cpp:509 port/app/ingame3ds.cpp:512 port/eden/ingame.cpp:489
+#: port/app/ingame3ds.cpp:513 port/app/ingame3ds.cpp:516 port/eden/ingame.cpp:489
 #, menu
 msgid "Speed"
 msgstr "Geschwindigkeit"
 
-#: port/app/ingame3ds.cpp:509 port/eden/ingame.cpp:489 port/frontend/shell/settings.cpp:766
+#: port/app/ingame3ds.cpp:513 port/eden/ingame.cpp:489 port/frontend/shell/settings.cpp:766
 #, menu
 msgid "How fast the game may run."
 msgstr "Wie schnell das Spiel laufen darf."
 
-#: port/app/ingame3ds.cpp:512
+#: port/app/ingame3ds.cpp:516
 #, menu
 msgid "The emulated CPU's clock, and how fast the game may run."
 msgstr "Der Takt der emulierten CPU und wie schnell das Spiel laufen darf."
 
-#: port/app/ingame3ds.cpp:513 port/frontend/shell/settings.cpp:743
+#: port/app/ingame3ds.cpp:517 port/frontend/shell/settings.cpp:743
 #, menu
 msgid "CPU clock"
 msgstr "CPU-Takt"
 
-#: port/app/ingame3ds.cpp:514
+#: port/app/ingame3ds.cpp:518
 #, menu
 msgid "Below 100% can bring a slow game to full speed; above it smooths games that dropped frames on the 3DS."
 msgstr "Unter 100 % kann ein langsames Spiel auf volle Geschwindigkeit bringen; darüber glättet es Spiele, die auf dem 3DS Bilder ausließen."
 
-#: port/app/ingame3ds.cpp:520
+#: port/app/ingame3ds.cpp:524
 #, menu
 msgid "Save states"
 msgstr "Speicherzustände"
 
-#: port/app/ingame3ds.cpp:520 port/app/ingame3ds.cpp:632 port/app/ingame3ds.cpp:633
+#: port/app/ingame3ds.cpp:524 port/app/ingame3ds.cpp:645 port/app/ingame3ds.cpp:646
 #, menu
 msgid "Slot {0}"
 msgstr "Platz {0}"
 
-#: port/app/ingame3ds.cpp:521
+#: port/app/ingame3ds.cpp:525
 #, menu
 msgid "Five slots for this game: save exactly where you are, and come back to it."
 msgstr "Fünf Plätze für dieses Spiel: Speichere genau dort, wo du bist, und kehre dorthin zurück."
 
 #. a save state slot's number, then when it was saved (or empty)
-#: port/app/ingame3ds.cpp:523
+#: port/app/ingame3ds.cpp:527
 #, menu
 msgid "Slot"
 msgstr "Platz"
 
 #. a save state slot's number, then when it was saved (or empty)
-#: port/app/ingame3ds.cpp:523
+#: port/app/ingame3ds.cpp:527
 #, menu
 msgid "(empty)"
 msgstr "(leer)"
 
-#: port/app/ingame3ds.cpp:524
+#: port/app/ingame3ds.cpp:528
 #, menu
 msgid "Which of this game's five slots to save to or load from. In the game, touchpad click + Square saves to it, and touchpad click + Triangle held loads it."
 msgstr "In welchen der fünf Plätze dieses Spiels gespeichert oder aus welchem geladen wird. Im Spiel speichert Touchpad-Klick + Quadrat darin, und Touchpad-Klick + gehaltenes Dreieck lädt daraus."
 
-#: port/app/ingame3ds.cpp:526
+#: port/app/ingame3ds.cpp:530
 #, menu
 msgid "Save to this slot"
 msgstr "In diesem Platz speichern"
 
-#: port/app/ingame3ds.cpp:527
+#: port/app/ingame3ds.cpp:531
 #, menu
 msgid "Saves the game as it is now, replacing what the slot had. Newer app versions may not load it: keep saving in the game too."
 msgstr "Speichert das Spiel, wie es gerade ist, und ersetzt den Inhalt des Platzes. Neuere App-Versionen laden ihn vielleicht nicht: Speichere auch weiterhin im Spiel."
 
-#: port/app/ingame3ds.cpp:529
+#: port/app/ingame3ds.cpp:533
 #, menu
 msgid "Cheats"
 msgstr "Cheats"
 
-#: port/app/ingame3ds.cpp:530
+#: port/app/ingame3ds.cpp:534
 #, menu
 msgid "The game's cheats, from melonds/cheats/<game file>.mch (melonDS's format)."
 msgstr "Die Cheats des Spiels, aus melonds/cheats/<Spieldatei>.mch (melonDS-Format)."
 
-#: port/app/ingame3ds.cpp:531
+#: port/app/ingame3ds.cpp:535
 #, menu
 msgid "The game's cheats, from azahar/cheats/<title ID>.txt (Gateway format)."
 msgstr "Die Cheats des Spiels aus azahar/cheats/<Titel-ID>.txt (Gateway-Format)."
 
-#: port/app/ingame3ds.cpp:534
+#: port/app/ingame3ds.cpp:538
 #, menu
 msgid "Cross, Left or Right turns it on or off, at once; it is kept for next time."
 msgstr "Kreuz, Links oder Rechts schaltet ihn sofort ein oder aus; das bleibt fürs nächste Mal."
 
-#: port/app/ingame3ds.cpp:536
+#: port/app/ingame3ds.cpp:540
 #, menu
 msgid "No cheats for this game"
 msgstr "Keine Cheats für dieses Spiel"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/app/ingame3ds.cpp:538
+#: port/app/ingame3ds.cpp:542
 #, menu
 msgid "Put them in {0}/melonds/cheats/<game file>.mch (the game's file name, .mch for .nds), then start the game again."
 msgstr "Lege sie in {0}/melonds/cheats/<Spieldatei>.mch ab (der Dateiname des Spiels, .mch statt .nds) und starte das Spiel dann neu."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/app/ingame3ds.cpp:541
+#: port/app/ingame3ds.cpp:545
 #, menu
 msgid "Put them in {0}/azahar/cheats/<title ID>.txt, then start the game again."
 msgstr "Lege sie in {0}/azahar/cheats/<Titel-ID>.txt ab und starte das Spiel dann neu."
 
 #. how many of the game's cheats are on: {0} of {1}
-#: port/app/ingame3ds.cpp:544 port/frontend/shell/eden.cpp:1482
+#: port/app/ingame3ds.cpp:548 port/frontend/shell/eden.cpp:1482
 #, menu
 msgid "{0} of {1} on"
 msgstr "{0} von {1} an"
 
-#: port/app/ingame3ds.cpp:550
+#: port/app/ingame3ds.cpp:554
 #, menu
 msgid "Achievements"
 msgstr "Erfolge"
 
-#: port/app/ingame3ds.cpp:550 port/frontend/shell/classic.cpp:463 port/frontend/shell/installs.cpp:376 port/frontend/shell/pages.cpp:324 port/frontend/shell/pages.cpp:822 port/frontend/shell/pages.cpp:1208 port/frontend/shell/shell.cpp:2428
+#: port/app/ingame3ds.cpp:554 port/frontend/shell/classic.cpp:463 port/frontend/shell/installs.cpp:376 port/frontend/shell/pages.cpp:324 port/frontend/shell/pages.cpp:822 port/frontend/shell/pages.cpp:1208 port/frontend/shell/shell.cpp:2428
 #, menu
 msgid "{0} of {1}"
 msgstr "{0} von {1}"
 
-#: port/app/ingame3ds.cpp:551
+#: port/app/ingame3ds.cpp:555
 #, menu
 msgid "This game's RetroAchievements."
 msgstr "Die RetroAchievements dieses Spiels."
 
-#: port/app/ingame3ds.cpp:557
+#: port/app/ingame3ds.cpp:561
 #, menu
 msgid "Earned"
 msgstr "Erhalten"
 
-#: port/app/ingame3ds.cpp:557
+#: port/app/ingame3ds.cpp:561
 #, menu
 msgid "Earned {0}"
 msgstr "Erhalten {0}"
 
-#: port/app/ingame3ds.cpp:557
+#: port/app/ingame3ds.cpp:561
 #, menu
 msgid "{0} point"
 msgid_plural "{0} points"
 msgstr[0] "{0} Punkt"
 msgstr[1] "{0} Punkte"
 
-#: port/app/ingame3ds.cpp:561
+#: port/app/ingame3ds.cpp:565
 #, menu
 msgid "No achievements"
 msgstr "Keine Erfolge"
 
-#: port/app/ingame3ds.cpp:562
+#: port/app/ingame3ds.cpp:566
 #, menu
 msgid "RetroAchievements lists a game's achievements once it has a set for it."
 msgstr "RetroAchievements zeigt die Erfolge eines Spiels, sobald es ein Set dafür gibt."
 
-#: port/app/ingame3ds.cpp:567
+#: port/app/ingame3ds.cpp:571
 #, menu
 msgid "Hold an amiibo dump to the 3DS's reader when the game asks for one."
 msgstr "Halte einen amiibo-Dump an das Lesegerät des 3DS, wenn das Spiel danach fragt."
 
-#: port/app/ingame3ds.cpp:571
+#: port/app/ingame3ds.cpp:575
 #, menu
 msgid "Left and Right choose an amiibo dump; Cross holds it to the reader."
 msgstr "Links und Rechts wählen einen amiibo-Dump; Kreuz hält ihn ans Lesegerät."
 
-#: port/app/ingame3ds.cpp:572
+#: port/app/ingame3ds.cpp:576
 #, menu
 msgid "Take the amiibo away"
 msgstr "amiibo wegnehmen"
 
-#: port/app/ingame3ds.cpp:572
+#: port/app/ingame3ds.cpp:576
 #, menu
 msgid "Takes the amiibo off the reader, as lifting it off would."
 msgstr "Nimmt das amiibo vom Lesegerät, als würdest du es abheben."
 
 #. the DS's lid, closed or open
-#: port/app/ingame3ds.cpp:579
+#: port/app/ingame3ds.cpp:583
 #, menu
 msgid "Lid closed"
 msgstr "Deckel zu"
 
-#: port/app/ingame3ds.cpp:580
+#: port/app/ingame3ds.cpp:584
 #, menu
 msgid "The lid, the left stick's deadzone and where A and B are. Hold R3 to blow into the microphone."
 msgstr "Der Deckel, die Totzone des linken Sticks und wo A und B liegen. Halte R3, um ins Mikrofon zu pusten."
 
-#: port/app/ingame3ds.cpp:581
+#: port/app/ingame3ds.cpp:585
 #, menu
 msgid "Lid"
 msgstr "Deckel"
 
-#: port/app/ingame3ds.cpp:581
+#: port/app/ingame3ds.cpp:585
 #, menu
 msgid "Closed"
 msgstr "Geschlossen"
 
-#: port/app/ingame3ds.cpp:581 port/frontend/shell/eden.cpp:479 port/frontend/shell/eden.cpp:492 port/frontend/shell/eden.cpp:501 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:508 port/frontend/shell/eden.cpp:1300 port/frontend/shell/shell.cpp:1404 port/frontend/shell/shell.cpp:1433 port/frontend/shell/shell.cpp:1442 port/frontend/shell/shell.cpp:1451 port/frontend/shell/shell.cpp:1457 port/frontend/shell/shell.cpp:1472
+#: port/app/ingame3ds.cpp:585 port/frontend/shell/eden.cpp:479 port/frontend/shell/eden.cpp:492 port/frontend/shell/eden.cpp:501 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:508 port/frontend/shell/eden.cpp:1300 port/frontend/shell/shell.cpp:1404 port/frontend/shell/shell.cpp:1433 port/frontend/shell/shell.cpp:1442 port/frontend/shell/shell.cpp:1451 port/frontend/shell/shell.cpp:1457 port/frontend/shell/shell.cpp:1472
 #, menu
 msgid "Open"
 msgstr "Öffnen"
 
-#: port/app/ingame3ds.cpp:582
+#: port/app/ingame3ds.cpp:586
 #, menu
 msgid "Closes the DS's lid, for games that ask you to; the DS sleeps until it is opened. Choose it again to open it."
 msgstr "Schließt den Deckel des DS, für Spiele, die dich darum bitten; der DS schläft, bis er geöffnet wird. Wähle es erneut, um ihn zu öffnen."
 
-#: port/app/ingame3ds.cpp:583 port/app/ingame3ds.cpp:593 port/frontend/shell/settings.cpp:677
+#: port/app/ingame3ds.cpp:587 port/app/ingame3ds.cpp:597 port/frontend/shell/settings.cpp:677
 #, menu
 msgid "Stick deadzone"
 msgstr "Stick-Totzone"
 
-#: port/app/ingame3ds.cpp:584
+#: port/app/ingame3ds.cpp:588
 #, menu
 msgid "How far the left stick moves before it presses the D-pad. Raise it if something drifts when you let go."
 msgstr "Wie weit sich der linke Stick bewegen muss, bevor er das Steuerkreuz drückt. Erhöhe sie, wenn nach dem Loslassen etwas driftet."
 
-#: port/app/ingame3ds.cpp:586
+#: port/app/ingame3ds.cpp:590
 #, menu
 msgid "A on Circle and B on Cross, where the DS has them, or the other way round, with X and Y swapped to match."
 msgstr "A auf Kreis und B auf Kreuz, wo der DS sie hat, oder umgekehrt, mit X und Y passend getauscht."
 
-#: port/app/ingame3ds.cpp:590
+#: port/app/ingame3ds.cpp:594
 #, menu
 msgid "Motion controls, the sticks' deadzone and where A and B are."
 msgstr "Bewegungssteuerung, die Totzone der Sticks und wo A und B liegen."
 
-#: port/app/ingame3ds.cpp:592
+#: port/app/ingame3ds.cpp:596
 #, menu
 msgid "The DualSense's gyroscope and accelerometer as the 3DS's, for the games that aim or steer by tilting."
 msgstr "Gyroskop und Beschleunigungssensor des DualSense als die des 3DS, für Spiele, in denen man durch Neigen zielt oder lenkt."
 
-#: port/app/ingame3ds.cpp:594
+#: port/app/ingame3ds.cpp:598
 #, menu
 msgid "How far a stick moves before the game sees it. Raise it if something drifts when you let go."
 msgstr "Wie weit sich ein Stick bewegen muss, bevor das Spiel es merkt. Erhöhe sie, wenn beim Loslassen etwas weiterdriftet."
 
-#: port/app/ingame3ds.cpp:596
+#: port/app/ingame3ds.cpp:600
 #, menu
 msgid "A on Circle and B on Cross, where the 3DS has them, or the other way round, with X and Y swapped to match."
 msgstr "A auf Kreis und B auf Kreuz, wo der 3DS sie hat, oder umgekehrt, mit X und Y passend vertauscht."
 
-#: port/app/ingame3ds.cpp:608
+#: port/app/ingame3ds.cpp:612
 #, menu
 msgid "Load this slot"
 msgstr "Diesen Platz laden"
 
-#: port/app/ingame3ds.cpp:609
+#: port/app/ingame3ds.cpp:613
 #, menu
 msgid "Goes back to the moment the slot was saved. What you did since is lost, so Cross is held."
 msgstr "Kehrt zu dem Moment zurück, als der Platz gespeichert wurde. Was du seitdem getan hast, geht verloren, daher wird Kreuz gehalten."
 
-#: port/app/ingame3ds.cpp:614 port/frontend/shell/settings.cpp:703
+#: port/app/ingame3ds.cpp:616
+#, menu
+msgid "Undo the last load"
+msgstr "Letztes Laden rückgängig machen"
+
+#: port/app/ingame3ds.cpp:617
+#, menu
+msgid "Goes back to the moment before the last load, as if it had not been made. What you did since the load is lost, so Cross is held."
+msgstr "Kehrt zu dem Moment vor dem letzten Laden zurück, als wäre es nicht geschehen. Was du seit dem Laden getan hast, geht verloren, daher wird Kreuz gehalten."
+
+#: port/app/ingame3ds.cpp:627 port/frontend/shell/settings.cpp:703
 #, menu
 msgid "The touch screen"
 msgstr "Der Touchscreen"
 
-#: port/app/ingame3ds.cpp:614 port/frontend/shell/settings.cpp:703
+#: port/app/ingame3ds.cpp:627 port/frontend/shell/settings.cpp:703
 #, menu
 msgid "The bottom screen"
 msgstr "Der untere Bildschirm"
 
-#: port/app/ingame3ds.cpp:632
+#: port/app/ingame3ds.cpp:645
 #, menu
 msgid "Save state"
 msgstr "Zustand speichern"
 
-#: port/app/ingame3ds.cpp:633
+#: port/app/ingame3ds.cpp:646
 #, menu
 msgid "Load state"
 msgstr "Zustand laden"
 
-#: port/app/ingame3ds.cpp:633
+#: port/app/ingame3ds.cpp:646
 #, menu
 msgid "Slot {0} empty"
 msgstr "Platz {0} leer"
 
-#: port/app/ingame3ds.cpp:640
+#: port/app/ingame3ds.cpp:653
 #, menu
 msgid "Slot {0}: {1}"
 msgstr "Platz {0}: {1}"
 
-#: port/app/ingame3ds.cpp:713 port/app/ingame3ds.cpp:1003
+#: port/app/ingame3ds.cpp:726 port/app/ingame3ds.cpp:1034
 #, menu
 msgid "Slot {0} is empty"
 msgstr "Platz {0} ist leer"
 
-#: port/app/ingame3ds.cpp:721 port/app/ingame3ds.cpp:1008
+#: port/app/ingame3ds.cpp:734 port/app/ingame3ds.cpp:1039
 #, menu
 msgid "Saving…"
 msgstr "Wird gespeichert …"
 
-#: port/app/ingame3ds.cpp:721 port/app/ingame3ds.cpp:1008 port/eden/ingame.cpp:384 port/eden/ingame.cpp:386
+#: port/app/ingame3ds.cpp:734 port/app/ingame3ds.cpp:740 port/app/ingame3ds.cpp:1039 port/eden/ingame.cpp:384 port/eden/ingame.cpp:386
 #, menu
 msgid "Loading…"
 msgstr "Wird geladen …"
 
 #. the in-game menu's badge: the game waits behind the menu
-#: port/app/ingame3ds.cpp:774
+#: port/app/ingame3ds.cpp:793
 #, menu
 msgid "Paused"
 msgstr "Pausiert"
@@ -1761,33 +1771,33 @@ msgid "90° left"
 msgstr "90° links"
 
 #. the 3DS borders' names (artwork around the screens)
-#: port/app/ingame3ds.h:135 port/frontend/shell/settings.cpp:44
+#: port/app/ingame3ds.h:139 port/frontend/shell/settings.cpp:44
 #, menu
 msgctxt "border"
 msgid "None"
 msgstr "Keiner"
 
 #. the 3DS borders' names (artwork around the screens)
-#: port/app/ingame3ds.h:135 port/frontend/shell/settings.cpp:44
+#: port/app/ingame3ds.h:139 port/frontend/shell/settings.cpp:44
 #, menu
 msgctxt "border"
 msgid "Midnight"
 msgstr "Mitternacht"
 
 #. the 3DS borders' names (artwork around the screens)
-#: port/app/ingame3ds.h:136 port/frontend/shell/settings.cpp:44
+#: port/app/ingame3ds.h:140 port/frontend/shell/settings.cpp:44
 #, menu
 msgctxt "border"
 msgid "Waves"
 msgstr "Wellen"
 
-#: port/app/ingame3ds.h:136 port/frontend/shell/settings.cpp:45
+#: port/app/ingame3ds.h:140 port/frontend/shell/settings.cpp:45
 #, menu
 msgctxt "border"
 msgid "Aurora"
 msgstr "Polarlicht"
 
-#: port/app/ingame3ds.h:136 port/frontend/shell/settings.cpp:45
+#: port/app/ingame3ds.h:140 port/frontend/shell/settings.cpp:45
 #, menu
 msgctxt "border"
 msgid "Shell"
@@ -1818,7 +1828,7 @@ msgstr "Sein meta-Ordner beschreibt keinen Wii U-Titel (meta.xml)."
 msgid "This is where it is installed already."
 msgstr "Hier ist er bereits installiert."
 
-#: port/app/install.cpp:510 port/azahar/core.cpp:984
+#: port/app/install.cpp:510 port/azahar/core.cpp:1022
 #, menu
 msgid "An install is already running."
 msgstr "Es läuft bereits eine Installation."
@@ -2496,184 +2506,190 @@ msgid "The game did not accept it."
 msgstr "Das Spiel hat es nicht angenommen."
 
 #. a save state's slot whose date is unknown
-#: port/azahar/core.cpp:215
+#: port/azahar/core.cpp:221
 #, menu
 msgid "saved"
 msgstr "gespeichert"
 
 #. in place of a save state's date: it was made by another version of the app
-#: port/azahar/core.cpp:220
+#: port/azahar/core.cpp:226
 #, menu
 msgid "another version's"
 msgstr "andere Version"
 
-#: port/azahar/core.cpp:263
+#: port/azahar/core.cpp:269
 #, menu
 msgid "No amiibo reader"
 msgstr "Kein amiibo-Lesegerät"
 
 #. the amiibo was taken off the 3DS's reader
-#: port/azahar/core.cpp:268
+#: port/azahar/core.cpp:274
 #, menu
 msgid "Taken away"
 msgstr "Weggenommen"
 
-#: port/azahar/core.cpp:274
+#: port/azahar/core.cpp:280
 #, menu
 msgid "Not an amiibo dump"
 msgstr "Kein amiibo-Dump"
 
 #. a cheat ({0}) turned on or off
-#: port/azahar/core.cpp:286
+#: port/azahar/core.cpp:292
 #, menu
 msgid "{0}: on"
 msgstr "{0}: an"
 
 #. a cheat ({0}) turned on or off
-#: port/azahar/core.cpp:286
+#: port/azahar/core.cpp:292
 #, menu
 msgid "{0}: off"
 msgstr "{0}: aus"
 
 #. how a save state's save or load went
-#: port/azahar/core.cpp:322 port/melonds/core.cpp:512
+#: port/azahar/core.cpp:328 port/melonds/core.cpp:533
 #, menu
 msgid "Loaded slot {0}"
 msgstr "Platz {0} geladen"
 
 #. how a save state's save or load went
-#: port/azahar/core.cpp:322 port/melonds/core.cpp:495
+#: port/azahar/core.cpp:328 port/melonds/core.cpp:516
 #, menu
 msgid "Saved slot {0}"
 msgstr "In Platz {0} gespeichert"
 
-#: port/azahar/core.cpp:323 port/melonds/core.cpp:520
+#: port/azahar/core.cpp:329 port/melonds/core.cpp:543
 #, menu
 msgid "Made by another version"
 msgstr "Von einer anderen Version erstellt"
 
-#: port/azahar/core.cpp:324 port/melonds/core.cpp:496 port/melonds/core.cpp:504 port/melonds/core.cpp:506
+#: port/azahar/core.cpp:330 port/melonds/core.cpp:506 port/melonds/core.cpp:517 port/melonds/core.cpp:525 port/melonds/core.cpp:527
 #, menu
 msgid "It did not work"
 msgstr "Das hat nicht geklappt"
 
+#. how undoing the last load went
+#: port/azahar/core.cpp:332 port/melonds/core.cpp:501
+#, menu
+msgid "Back to before the load"
+msgstr "Zurück vor das Laden"
+
 #. why a 3DS game did not start
-#: port/azahar/core.cpp:553
+#: port/azahar/core.cpp:562
 #, menu
 msgid "This is not a 3DS game Azahar can start."
 msgstr "Das ist kein 3DS-Spiel, das Azahar starten kann."
 
-#: port/azahar/core.cpp:554 port/melonds/core.cpp:824
+#: port/azahar/core.cpp:563 port/melonds/core.cpp:848
 #, menu
 msgid "The game could not be loaded."
 msgstr "Das Spiel konnte nicht geladen werden."
 
-#: port/azahar/core.cpp:558 port/frontend/shell/shell.cpp:963
+#: port/azahar/core.cpp:567 port/frontend/shell/shell.cpp:963
 #, menu
 msgid "The game is encrypted, and Azahar plays only decrypted games, with keys or without: decrypt it on your 3DS first (GodMode9)."
 msgstr "Das Spiel ist verschlüsselt, und Azahar spielt nur entschlüsselte Spiele, mit oder ohne Schlüssel: Entschlüssle es zuerst auf deinem 3DS (GodMode9)."
 
-#: port/azahar/core.cpp:560
+#: port/azahar/core.cpp:569
 #, menu
 msgid "The game's format is not supported."
 msgstr "Das Format des Spiels wird nicht unterstützt."
 
-#: port/azahar/core.cpp:561
+#: port/azahar/core.cpp:570
 #, menu
 msgid "GBA Virtual Console games are not supported."
 msgstr "GBA-Virtual-Console-Spiele werden nicht unterstützt."
 
-#: port/azahar/core.cpp:562
+#: port/azahar/core.cpp:571
 #, menu
 msgid "The game's system mode could not be found."
 msgstr "Der Systemmodus des Spiels wurde nicht gefunden."
 
-#: port/azahar/core.cpp:563
+#: port/azahar/core.cpp:572
 #, menu
 msgid "The game needs 3DS system files Azahar does not have."
 msgstr "Das Spiel braucht 3DS-Systemdateien, die Azahar nicht hat."
 
-#: port/azahar/core.cpp:565
+#: port/azahar/core.cpp:574
 #, menu
 msgid "The game's patches could not be applied."
 msgstr "Die Patches des Spiels konnten nicht angewendet werden."
 
-#: port/azahar/core.cpp:566
+#: port/azahar/core.cpp:575
 #, menu
 msgid "Azahar's renderer or CPU did not start."
 msgstr "Renderer oder CPU von Azahar sind nicht gestartet."
 
-#: port/azahar/core.cpp:568
+#: port/azahar/core.cpp:577
 #, menu
 msgid "The Artic Base server did not answer: check the 3DS's address, that Artic Base runs on it, and that the 3DS and the PS5 are on the same network."
 msgstr "Der Artic-Base-Server hat nicht geantwortet: Prüfe die Adresse des 3DS, ob Artic Base darauf läuft und ob 3DS und PS5 im selben Netzwerk sind."
 
-#: port/azahar/core.cpp:636
+#: port/azahar/core.cpp:657
 #, menu
 msgid "The game is busy: try again"
 msgstr "Das Spiel ist beschäftigt: Versuche es noch einmal"
 
 #. the PS5's notification as an Artic Base game ends because the 3DS stopped answering
-#: port/azahar/core.cpp:655
+#: port/azahar/core.cpp:687
 #, menu
 msgid "The 3DS stopped answering: the Artic Base game has stopped."
 msgstr "Der 3DS antwortet nicht mehr: Das Artic-Base-Spiel wurde beendet."
 
-#: port/azahar/core.cpp:657
+#: port/azahar/core.cpp:689
 #, menu
 msgid "The 3DS game stopped: {0}"
 msgstr "Das 3DS-Spiel wurde beendet: {0}"
 
-#: port/azahar/core.cpp:706
+#: port/azahar/core.cpp:738
 #, menu
 msgid "A CIA file is installed, not played: install it from Settings > Game files, then start the game."
 msgstr "Eine CIA-Datei wird installiert, nicht gespielt: Installiere sie unter Einstellungen > Spieldateien und starte dann das Spiel."
 
-#: port/azahar/core.cpp:756
+#: port/azahar/core.cpp:788
 #, menu
 msgid "Azahar did not start: {0}"
 msgstr "Azahar ist nicht gestartet: {0}"
 
-#: port/azahar/core.cpp:765
+#: port/azahar/core.cpp:797
 #, menu
 msgid "Artic Setup did not finish: the Artic Setup Tool on the 3DS says why. If it says nothing, check the 3DS's address, and that the 3DS and the PS5 are on the same network."
 msgstr "Artic Setup wurde nicht abgeschlossen: Das Artic Setup Tool auf dem 3DS zeigt, warum. Zeigt es nichts an, prüfe die Adresse des 3DS und ob 3DS und PS5 im selben Netzwerk sind."
 
 #. why an Artic Base game did not start, when the 3DS had answered; Y is the 3DS's button
-#: port/azahar/core.cpp:771
+#: port/azahar/core.cpp:803
 #, menu
 msgid "The 3DS answered, then Artic Base stopped before the game started. On the 3DS, press Y in the Artic Base app to restart its server, then connect again. If it stops again, Settings > Diagnostics > Copy logs to USB copies Azahar's log, which says what failed."
 msgstr "Der 3DS hat geantwortet, dann hat Artic Base vor dem Spielstart aufgehört. Drücke auf dem 3DS in der Artic-Base-App Y, um ihren Server neu zu starten, und verbinde dich dann erneut. Bricht es wieder ab, kopiert Einstellungen > Diagnose > Protokolle auf USB kopieren das Protokoll von Azahar, das zeigt, was fehlgeschlagen ist."
 
 #. the PS5's notification as a 3DS game starts
-#: port/azahar/core.cpp:839
+#: port/azahar/core.cpp:872
 #, menu
 msgid "Touchpad click + Options: the in-game menu. A touchpad click alone: the bottom screen"
 msgstr "Touchpad-Klick + OPTIONS: das Spielmenü. Nur ein Touchpad-Klick: der untere Bildschirm"
 
 #. why a CIA file could not be installed, after "It could not be installed:"
-#: port/azahar/core.cpp:1053
+#: port/azahar/core.cpp:1091
 #, menu
 msgid "it is encrypted, the CIA or the game inside it. Azahar installs only fully decrypted CIA files: decrypt it with GodMode9 on a 3DS, or play the game's decrypted .3ds or .cci file instead"
 msgstr "sie ist verschlüsselt, die CIA oder das Spiel darin. Azahar installiert nur vollständig entschlüsselte CIA-Dateien: Entschlüssele sie mit GodMode9 auf einem 3DS oder spiele stattdessen die entschlüsselte .3ds- oder .cci-Datei des Spiels"
 
-#: port/azahar/core.cpp:1056
+#: port/azahar/core.cpp:1094
 #, menu
 msgid "it is not a CIA file, or it is damaged (check the file's size)"
 msgstr "es ist keine CIA-Datei oder sie ist beschädigt (prüfe die Dateigröße)"
 
-#: port/azahar/core.cpp:1058
+#: port/azahar/core.cpp:1096
 #, menu
 msgid "the file could not be read"
 msgstr "die Datei konnte nicht gelesen werden"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/azahar/core.cpp:1061
+#: port/azahar/core.cpp:1099
 #, menu
 msgid "Azahar stopped part-way through; {0}/azahar/log/azahar_log.txt says why"
 msgstr "Azahar hat mittendrin aufgehört; {0}/azahar/log/azahar_log.txt sagt, warum"
 
-#: port/azahar/core.cpp:1063
+#: port/azahar/core.cpp:1101
 #, menu
 msgid "it is not a CIA Azahar can install"
 msgstr "es ist keine CIA, die Azahar installieren kann"
@@ -7083,39 +7099,39 @@ msgid "The launcher could not start: {0}. The boot log in {1}/logs has more."
 msgstr "Der Launcher konnte nicht starten: {0}. Mehr steht im Boot-Protokoll in {1}/logs."
 
 #. a notification as a DS game stops because the PS5's GPU stopped drawing its screens
-#: port/melonds/core.cpp:728
+#: port/melonds/core.cpp:752
 msgid "The DS game's screens stopped (the GPU's device was lost)."
 msgstr "Die Bildschirme des DS-Spiels wurden beendet (das Gerät der GPU ging verloren)."
 
 #. why a DS game in a .zip, .7z or .rar archive did not start
-#: port/melonds/core.cpp:792
+#: port/melonds/core.cpp:816
 msgid "There is no DS game in this archive, or the archive could not be read."
 msgstr "In diesem Archiv ist kein DS-Spiel, oder das Archiv konnte nicht gelesen werden."
 
-#: port/melonds/core.cpp:798
+#: port/melonds/core.cpp:822
 msgid "The DS game in this archive could not be read: is the archive whole?"
 msgstr "Das DS-Spiel in diesem Archiv konnte nicht gelesen werden: Ist das Archiv vollständig?"
 
 #. why a DS game did not start
-#: port/melonds/core.cpp:810 port/melonds/core.cpp:847
+#: port/melonds/core.cpp:834 port/melonds/core.cpp:871
 msgid "This is not a DS game melonDS can read."
 msgstr "Das ist kein DS-Spiel, das melonDS lesen kann."
 
-#: port/melonds/core.cpp:817
+#: port/melonds/core.cpp:841
 msgid "DSi games are not supported yet."
 msgstr "DSi-Spiele werden noch nicht unterstützt."
 
 #. the PS5's notification as a DS game starts
-#: port/melonds/core.cpp:953
+#: port/melonds/core.cpp:979
 msgid "Touchpad click + Options: the in-game menu. A touchpad click alone: the touch screen. R3: the microphone"
 msgstr "Touchpad-Klick + OPTIONS: das Spielmenü. Nur ein Touchpad-Klick: der Touchscreen. R3: das Mikrofon"
 
 #. notifications as melonDS stops a DS game
-#: port/melonds/core.cpp:1047
+#: port/melonds/core.cpp:1075
 msgid "The game asked for the DS's GBA mode, which melonDS does not have."
 msgstr "Das Spiel hat den GBA-Modus des DS angefordert, den melonDS nicht hat."
 
-#: port/melonds/core.cpp:1049
+#: port/melonds/core.cpp:1077
 msgid "The DS game crashed."
 msgstr "Das DS-Spiel ist abgestürzt."
 

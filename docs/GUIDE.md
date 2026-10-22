@@ -361,6 +361,8 @@ WUD or WUX files, or an unpacked game in an archive; a 3DS CIA sent this way is 
 - **Save states (3DS).** Five slots per game; loading is held (hold Cross until the ring fills).
   Touchpad click + Square saves to the slot chosen in the menu, and touchpad click + Triangle, held a
   moment, loads it, without opening the menu (on the DS too); a PS5 notification says how it went.
+  After a load, **Undo the last load** (held) puts the game back as it was just before it, for a
+  wrong slot loaded by mistake.
   States made by earlier PS5-ECAM builds load too. Keep saving in the game as well.
 - **Cheats (3DS).** Put a game's cheats in `/data/ps5cemu/azahar/cheats/<title ID>.txt` (16 hex
   digits, shown in the in-game menu), in the Gateway format desktop Azahar uses, and turn them on and

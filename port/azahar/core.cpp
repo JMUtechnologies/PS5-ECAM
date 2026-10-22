@@ -198,8 +198,14 @@ namespace ps5azahar
 		std::string s_name;
 		uint64_t s_titleId = 0;
 		bool s_coreTouched = false; // LaunchGame got as far as starting Azahar's core
-		// a save state the menu asked for, for the emulation thread: a save to slot n (n), a load (-n)
+		// a save state the menu asked for, for the emulation thread: a save to slot n (n), a load (-n),
+		// or the last load undone (kUndoRequest). Before each load the game as it is goes to kUndoSlot,
+		// a slot of Azahar's the menu does not show, for Undo the last load
+		constexpr int kUndoRequest = -1000;
+		constexpr u32 kUndoSlot = 10;
 		std::atomic<int> s_stateRequest{0};
+		// the emulation thread's: the load waiting has its undo saved (s_undoSaved), and it was (s_undoKept)
+		bool s_undoSaved = false, s_undoKept = false;
 		std::atomic<uint64_t> s_stateAskedAt{0}; // sceKernelGetProcessTime
 
 		// The menu's save state slots: when each was saved, as Azahar lists them
@@ -319,10 +325,13 @@ namespace ps5azahar
 			const bool load = request < 0;
 			const int slot = std::abs(request);
 			// tr: how a save state's save or load went
-			const std::string message = result == Status::Success ? (load ? ps5lang::TrF("Loaded slot {0}", slot) : ps5lang::TrF("Saved slot {0}", slot)) :
+			std::string message = result == Status::Success ? (load ? ps5lang::TrF("Loaded slot {0}", slot) : ps5lang::TrF("Saved slot {0}", slot)) :
 				result == Status::ErrorSavestateBuildMismatch ? std::string(ps5lang::Tr("Made by another version")) :
 																std::string(ps5lang::Tr("It did not work"));
-			ps5log::Line("[azahar] {} slot {}: {}{}", load ? "load from" : "save to", slot, message,
+			if (request == kUndoRequest && result == Status::Success)
+				message = ps5lang::Tr("Back to before the load");
+			ps5log::Line("[azahar] {}: {}{}", request == kUndoRequest ? std::string("undo the last load") :
+				fmt::format("{} slot {}", load ? "load from" : "save to", slot), message,
 				result == Status::Success ? std::string() : fmt::format(" ({})", system.GetStatusDetails()));
 			ps5ingame3ds::SetStateMessage(message);
 			if (!ps5ingame3ds::MenuOpen())
@@ -622,22 +631,45 @@ namespace ps5azahar
 					sceKernelUsleep(16000);
 					continue;
 				}
-				bool stateNow = false;
+				bool stateNow = false, undoNow = false;
 				if (request && !system.Kernel().AreAsyncOperationsPending())
 				{
-					s_stateRequest = 0;
-					system.SendSignal(request > 0 ? Core::System::Signal::Save : Core::System::Signal::Load, (u32)std::abs(request));
-					stateNow = true;
+					if (request < 0 && request != kUndoRequest && !s_undoSaved)
+					{
+						// the game as it is first, for Undo the last load; the load at the next turn
+						system.SendSignal(Core::System::Signal::Save, kUndoSlot);
+						undoNow = true;
+					}
+					else
+					{
+						s_stateRequest = 0;
+						s_undoSaved = false;
+						system.SendSignal(request > 0 ? Core::System::Signal::Save : Core::System::Signal::Load,
+							request == kUndoRequest ? kUndoSlot : (u32)std::abs(request));
+						stateNow = true;
+					}
 				}
 				else if (request && sceKernelGetProcessTime() - s_stateAskedAt > 5000000)
 				{
 					s_stateRequest = 0;
+					s_undoSaved = false;
 					ps5log::Line("[azahar] save state: the game stayed busy for 5 s");
 					ps5ingame3ds::SetStateMessage(ps5lang::Tr("The game is busy: try again"));
 				}
 				const auto result = system.RunLoop();
+				if (undoNow)
+				{
+					// a failed save leaves the load as it was, without its undo
+					s_undoSaved = true;
+					s_undoKept = result == Core::System::ResultStatus::Success;
+				}
 				if (stateNow)
+				{
 					ReportState(request, result, system);
+					// a load done: undone from the slot kept before it; an undo done: nothing more to undo
+					if (request < 0 && result == Core::System::ResultStatus::Success)
+						ps5ingame3ds::SetUndoAvailable(request != kUndoRequest && s_undoKept);
+				}
 				if (result == Core::System::ResultStatus::ErrorSavestate || result == Core::System::ResultStatus::ErrorSavestateBuildMismatch)
 					continue; // the game carries on as it was
 				if (result == Core::System::ResultStatus::ShutdownRequested)
@@ -823,6 +855,7 @@ namespace ps5azahar
 		}
 		ShowInMenu();
 		ShowStateSlots();
+		ps5ingame3ds::SetUndoAvailable(false); // kUndoSlot is a load of this session's to undo, or nothing
 		ShowExtras();
 		ps5ingame3ds::LoadBorder(settings.border);
 		PublishScreens();
@@ -924,6 +957,11 @@ namespace ps5azahar
 			{
 				s_stateAskedAt = sceKernelGetProcessTime();
 				s_stateRequest = load ? -slot : slot;
+			}
+			else if (ps5ingame3ds::TakeUndoRequest())
+			{
+				s_stateAskedAt = sceKernelGetProcessTime();
+				s_stateRequest = kUndoRequest;
 			}
 			if (ps5ingame3ds::TakeLibraryRequest())
 			{
