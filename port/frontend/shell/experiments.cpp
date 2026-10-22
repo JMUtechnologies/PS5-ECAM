@@ -850,17 +850,15 @@ namespace ps5shell
 
 	void Shell::TermDrawCrt(Canvas& canvas)
 	{
-		// scanlines, a brighter band rolling down, the tube's dark corners, and (unless Reduce motion) a
-		// flicker too slight to notice but as a tube
+		// scanlines, a brighter band rolling down (unless Reduce motion) and the tube's dark corners. Each
+		// line two layout units on whole units, so it covers whole pixels at 1080p and 4K alike: at 1.6 they
+		// came out one pixel here and two there, and a flicker at 53 Hz over the whole screen (#72) is gone
 		for (float y = 0; y < 1080; y += 4)
-			canvas.Rect({0, y, 1920, 1.6f}, 0, 0x2e000000);
-		const bool still = m_settings.ui.reduceMotion;
-		const float t = (float)(m_now - m_start);
-		if (!still)
+			canvas.Rect({0, y, 1920, 2}, 0, 0x24000000);
+		if (!m_settings.ui.reduceMotion)
 		{
-			const float band = std::fmod(t * 140.0f, 1500.0f) - 200;
+			const float band = std::fmod((float)(m_now - m_start) * 140.0f, 1500.0f) - 200;
 			canvas.LinearGradient({0, band, 1920, 180}, 0, ui::SetAlpha(Accent(), 0), ui::SetAlpha(Accent(), 0.035f), 0, band, 0, band + 180);
-			canvas.Rect({0, 0, 1920, 1080}, 0, ui::SetAlpha(0xff000000, 0.025f * (0.5f + 0.5f * std::sin(t * 53.0f))));
 		}
 		canvas.RadialGradient({0, 0, 1920, 1080}, 0, 0x00000000, 0x80000000, 960, 540, 1250, 860, 0.62f);
 	}
