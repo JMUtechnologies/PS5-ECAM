@@ -29,7 +29,7 @@ namespace ps5emu
 		uint32_t dlcCount = 0;
 		std::string format;			 // WUA, WUD, WUX, folder (code/content/meta) or RPX; 3DS, CIA, 3DSX...; NDS, DSI
 		std::string publisher;		 // a 3DS game's, from its SMDH; a DS game's, from its banner
-		std::string gameId;			 // the ID on its box, GameTDB's (boxart.h): ALZE01 (Wii U), AREE (3DS), AMCE (DS)
+		std::string gameId;			 // the ID on its box, GameTDB's (boxart.h): ALZE01 (Wii U), AREE (3DS), AMCE (DS), AHNXA (Switch)
 		bool nds = false;			 // a Nintendo DS game, which the DS side lists and melonDS plays (port/melonds)
 		// A 3DS or Wii U game in an archive (app/game_archives.h): path is the archive's, and this the
 		// entry unpacked to start it, a ROM (index, its name and size) or a Wii U title's folder

@@ -73,17 +73,19 @@ namespace ps5boxart
 
 		bool Valid(const std::string& id)
 		{
-			if (id.size() != 4 && id.size() != 6)
+			if (id.size() < 4 || id.size() > 6)
 				return false;
 			return std::all_of(id.begin(), id.end(), [](char c) { return (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'); });
 		}
 
-		// GameTDB's region folders to try, the game's own first: the ID's fourth letter is its region
+		// GameTDB's region folders to try, the game's own first: the ID's fourth letter is its region. A
+		// Switch game's five letters name none: America's first, as its English title found it
 		std::vector<std::string> Regions(const std::string& id)
 		{
 			std::string own;
-			switch (id[3])
+			switch (id.size() == 5 ? '\0' : id[3])
 			{
+			case '\0': own = "US"; break;
 			case 'E': own = "US"; break;
 			case 'J': own = "JA"; break;
 			case 'K': own = "KO"; break;

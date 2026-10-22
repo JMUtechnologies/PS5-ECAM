@@ -14,7 +14,8 @@
 // (covers/, keyed by the file's path in roms/), so both show them. What it read of each file is kept in
 // cache/switch-games.txt until the file changes. Without keys, or for a file they do not open, a game
 // is named by its file, and its title ID is the one in its name ("Game [0100ABCD12345000].nsp"), else
-// one made from its path (kIdTag).
+// one made from its path (kIdTag). Its GameTDB ID (gameId: box art, the About page) is the game
+// GameTDB has by its name, else by its file's (gameinfo.h, FindByTitle).
 
 #pragma once
 

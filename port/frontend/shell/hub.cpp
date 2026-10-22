@@ -246,7 +246,7 @@ namespace ps5shell
 		// tr: the heading over a game's description
 		canvas.Text(Style(kOverlineStyle), x, aboutTop - 34, TrC("game", "About"), Secondary(), kAboutWidth, 1);
 		std::string synopsis = game.known ? game.info.synopsis : std::string();
-		// (GameTDB has no Switch games at all: a Switch game's name and picture are its file's own)
+		// (a Switch game has no ID on its box in its files: GameTDB finds it by its name, or does not)
 		if (synopsis.empty())
 			synopsis = g.gameId.empty() && !IsSwitch() ? Tr("GameTDB knows a game by the ID on its box, which this dump does not have.") :
 														 Tr("GameTDB has no description of this game yet.");

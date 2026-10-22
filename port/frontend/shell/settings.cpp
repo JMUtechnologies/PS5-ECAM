@@ -225,7 +225,6 @@ namespace ps5shell
 			pages.push_back({"artic", Tr("Artic Base"), Tr("Play from your 3DS, over your network."), Icon::Artic});
 		pages.push_back({"online", Tr("Online"), IsWiiU() ? Tr("Box art, graphic packs and PS5-ECAM's updates.") :
 										   IsDs()	 ? Tr("Box art, RetroAchievements and PS5-ECAM's updates.") :
-										   IsSwitch() ? Tr("PS5-ECAM's updates.") :
 													   Tr("Box art and PS5-ECAM's updates."),
 			Icon::Globe});
 		pages.push_back({"launcher", Tr("Launcher"), Tr("Theme, sides, language and text."), Icon::Sparkle});
@@ -969,30 +968,26 @@ namespace ps5shell
 				"into Azahar, for the Home Menu and the games that need them."));
 		else if (page == "online")
 		{
-			// GameTDB has no Switch games: their covers are Eden's
-			if (!IsSwitch())
-				toggle("boxart", Tr("Box art from GameTDB"), settings.boxArt, Tr("Covers for the library, downloaded once."),
-					Tr("The first time a game shows up, its cover is downloaded from GameTDB (art.gametdb.com) by the ID on its box. Off: nothing "
-					"more is downloaded."));
+			// (a Switch game's ID is the game GameTDB has by its name: port/eden/library.h)
+			toggle("boxart", Tr("Box art from GameTDB"), settings.boxArt, Tr("Covers for the library, downloaded once."),
+				Tr("The first time a game shows up, its cover is downloaded from GameTDB (art.gametdb.com) by the ID on its box. Off: nothing "
+				"more is downloaded."));
 			// downloading the covers now: the missing ones, or every one again
-			if (!IsSwitch())
-			{
-				int missing = 0;
-				for (const Game& game : m_games)
-					missing += !game.entry.game.gameId.empty() && game.boxArt.empty();
-				const size_t pending = ps5boxart::Pending();
-				const std::string status = pending ? TrP((long long)pending, "Downloading: {0} left", "Downloading: {0} left") :
-					ps5boxart::Answered() == 0 ? std::string(Tr("GameTDB did not answer: is the PS5 online?")) :
-					missing				   ? TrP(missing, "{0} game without box art", "{0} games without box art") :
-											 std::string(Tr("Every game has box art"));
-				action(Kind::Action, "boxartmissing", Tr("Download missing box art"), status, Tr("Tries again for every game without a cover."),
-					Tr("Asks GameTDB again for the cover of every game on this side that has none, including games it had no cover for "
-					   "before. Covers are downloaded in the background while you use the launcher."));
-				action(Kind::Hold, "boxartall", Tr("Download all box art again"), m_message.empty() ? Tr("Hold Cross") : m_message,
-					Tr("Replaces every cover on this side with a fresh download."),
-					Tr("Downloads the cover of every game on this side again, replacing the ones you have. Useful when a cover is wrong or "
-					   "looks broken."));
-			}
+			int missing = 0;
+			for (const Game& game : m_games)
+				missing += !game.entry.game.gameId.empty() && game.boxArt.empty();
+			const size_t pending = ps5boxart::Pending();
+			const std::string status = pending ? TrP((long long)pending, "Downloading: {0} left", "Downloading: {0} left") :
+				ps5boxart::Answered() == 0 ? std::string(Tr("GameTDB did not answer: is the PS5 online?")) :
+				missing				   ? TrP(missing, "{0} game without box art", "{0} games without box art") :
+										 std::string(Tr("Every game has box art"));
+			action(Kind::Action, "boxartmissing", Tr("Download missing box art"), status, Tr("Tries again for every game without a cover."),
+				Tr("Asks GameTDB again for the cover of every game on this side that has none, including games it had no cover for "
+				   "before. Covers are downloaded in the background while you use the launcher."));
+			action(Kind::Hold, "boxartall", Tr("Download all box art again"), m_message.empty() ? Tr("Hold Cross") : m_message,
+				Tr("Replaces every cover on this side with a fresh download."),
+				Tr("Downloads the cover of every game on this side again, replacing the ones you have. Useful when a cover is wrong or "
+				   "looks broken."));
 			if (IsWiiU())
 				action(Kind::Action, "packs", Tr("Community graphic packs"), PacksStatus(), Tr("Cross checks GitHub for newer ones."),
 					Tr("Cemu's community graphic packs, from GitHub's latest release when it is newer than the ones installed. The packs bundled "

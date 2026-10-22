@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // PS5-ECAM: box art for the launcher's game details, from GameTDB (art.gametdb.com), which has
-// the Wii U's, the 3DS's and the DS's covers by the ID printed on each game's box (ALZE01 for a Wii U
-// game, AREE for a 3DS one, AMCE for a DS one). They are fetched in the background over HTTP, as the
-// Wii's homebrew loaders fetch theirs, decoded, scaled to the launcher's cover and kept as TGAs it
-// shows: covers/boxart/<wiiu|3ds|ds>/<ID>.tga. An ID GameTDB answers "not found" for in every region
+// the Wii U's, the 3DS's, the DS's and the Switch's covers by the ID printed on each game's box (ALZE01
+// for a Wii U game, AREE for a 3DS one, AMCE for a DS one, AHNXA for a Switch one, found by its name:
+// gameinfo.h). They are fetched in the background over HTTP, as the Wii's homebrew loaders fetch
+// theirs, decoded, scaled to the launcher's cover and kept as TGAs it shows:
+// covers/boxart/<wiiu|3ds|ds|switch>/<ID>.tga. An ID GameTDB answers "not found" for in every region
 // is remembered (<ID>.none) and asked for again after two weeks, or when Settings > Online asks for
 // the missing covers. No network, or GameTDB refusing or busy, is tried again a little later: it never
 // counts as "no cover".
@@ -21,7 +22,7 @@ namespace ps5boxart
 		WiiU,
 		N3ds,
 		Nds, // a DS game, on the 3DS side
-		Switch, // GameTDB has no Switch covers: a Switch game's are Eden's (port/eden)
+		Switch,
 	};
 
 	// The largest a cover is kept: the launcher's cover area at 4K
@@ -36,7 +37,7 @@ namespace ps5boxart
 	void Refetch(System system, const std::vector<std::string>& ids, bool replace);
 	// How many covers are waiting to be fetched (or being fetched)
 	size_t Pending();
-	// The covers that arrived since the last call, as "<wiiu|3ds|ds>/<ID>" (a replaced one included)
+	// The covers that arrived since the last call, as "<wiiu|3ds|ds|switch>/<ID>" (a replaced one included)
 	std::vector<std::string> TakeArrived();
 	// How many covers have arrived since the start: the launcher shows a new one when it changes.
 	uint32_t Arrivals();

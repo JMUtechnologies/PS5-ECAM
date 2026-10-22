@@ -369,14 +369,15 @@ namespace ps5pad
 }
 
 // -- GameTDB's box art, in brief: what the preview's own folder has ---------------------------------
-// (build/preview/boxart/<wiiu|3ds>/<ID>.tga, put there by hand: GameTDB's covers are not ours to
-// keep in the repository)
+// (build/preview/boxart/<wiiu|3ds|switch>/<ID>.tga, put there by hand: GameTDB's covers are not ours
+// to keep in the repository)
 
 namespace ps5boxart
 {
 	std::string Path(System system, const std::string& id)
 	{
-		const std::string path = output + "/boxart/" + (system == System::WiiU ? "wiiu/" : "3ds/") + id + ".tga";
+		const std::string path =
+			output + "/boxart/" + (system == System::WiiU ? "wiiu/" : system == System::Switch ? "switch/" : "3ds/") + id + ".tga";
 		return !id.empty() && std::ifstream(path).good() ? path : std::string();
 	}
 	void Fetch(System, const std::vector<std::string>&) {}

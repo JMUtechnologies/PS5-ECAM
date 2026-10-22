@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <map>
@@ -28,6 +29,8 @@ namespace ps5gameinfo
 			bool loaded = false;
 			std::string text;
 			std::unordered_map<std::string, size_t> lines;
+			bool titled = false;
+			std::unordered_map<std::string, std::string> titles; // a title (Simplified) -> its game's ID, once FindByTitle asks
 		};
 
 		std::mutex s_mutex;
@@ -44,7 +47,7 @@ namespace ps5gameinfo
 		{
 			database.loaded = true;
 			const std::string path = Folder() + (system == ps5boxart::System::WiiU ? "/wiiu.tsv.gz" :
-				system == ps5boxart::System::Nds ? "/ds.tsv.gz" : "/3ds.tsv.gz");
+				system == ps5boxart::System::Nds ? "/ds.tsv.gz" : system == ps5boxart::System::Switch ? "/switch.tsv.gz" : "/3ds.tsv.gz");
 			gzFile file = gzopen(path.c_str(), "rb");
 			if (!file)
 			{
@@ -85,11 +88,101 @@ namespace ps5gameinfo
 			}
 			return out;
 		}
+
+		// A title as titles are compared: its letters and digits, lower case, accents and full-width
+		// letters folded ("Pokémon™ Sword" and "POKEMON SWORD" are one), "&" as "and"; another script's
+		// letters as they are, its punctuation (・, 「」) left out
+		std::string Simplified(std::string_view title)
+		{
+			// U+00C0 to U+00FF without their accents (× and ÷ are not letters)
+			static constexpr char kLatin1[] = "aaaaaaaceeeeiiiidnooooo ouuuuyts"
+											  "aaaaaaaceeeeiiiidnooooo ouuuuyty";
+			std::string out;
+			for (size_t i = 0; i < title.size();)
+			{
+				const unsigned char lead = (unsigned char)title[i];
+				const size_t length = lead >= 0xF0 ? 4 : lead >= 0xE0 ? 3 : lead >= 0xC0 ? 2 : 1;
+				if (i + length > title.size())
+					break;
+				uint32_t code = length == 4 ? lead & 0x07 : length == 3 ? lead & 0x0F : length == 2 ? lead & 0x1F : lead;
+				for (size_t k = 1; k < length; k++)
+					code = code << 6 | ((unsigned char)title[i + k] & 0x3F);
+				const std::string_view bytes = title.substr(i, length);
+				i += length;
+				if (code >= 0xFF01 && code <= 0xFF5E)
+					code -= 0xFEE0; // full-width ASCII
+				if (code < 0x80)
+				{
+					if (std::isalnum((int)code))
+						out += (char)std::tolower((int)code);
+					else if (code == '&')
+						out += "and";
+				}
+				else if (code >= 0xC0 && code <= 0xFF)
+				{
+					if (kLatin1[code - 0xC0] != ' ')
+						out += kLatin1[code - 0xC0];
+				}
+				// symbols and punctuation (™, dashes, quotes, CJK's and full-width's) left out
+				else if (code >= 0x100 && !(code >= 0x2000 && code <= 0x2BFF) && !(code >= 0x3000 && code <= 0x303F) && code != 0x30FB &&
+					!(code >= 0xFE30 && code <= 0xFE4F) && !(code >= 0xFF00 && code <= 0xFF65))
+					out += bytes;
+			}
+			return out;
+		}
+
+		// Each title's game, for FindByTitle. A title several games have (a game's editions for each
+		// region: AURVA to AURVL) is the one GameTDB has for every region, its ID ending in A, else one
+		// for all regions or America's, else the first
+		void IndexTitles(Database& database)
+		{
+			database.titled = true;
+			std::unordered_map<std::string, int> ranks;
+			for (size_t start = 0; start < database.text.size();)
+			{
+				size_t end = database.text.find('\n', start);
+				if (end == std::string::npos)
+					end = database.text.size();
+				const std::string_view line = std::string_view(database.text).substr(start, end - start);
+				start = end + 1;
+				const size_t idEnd = line.find('\t');
+				const size_t titleEnd = idEnd == std::string_view::npos ? idEnd : line.find('\t', idEnd + 1);
+				if (titleEnd == std::string_view::npos)
+					continue;
+				const size_t regionEnd = std::min(line.find('\t', titleEnd + 1), line.size());
+				const std::string_view id = line.substr(0, idEnd), region = line.substr(titleEnd + 1, regionEnd - titleEnd - 1);
+				const std::string key = Simplified(Unescape(line.substr(idEnd + 1, titleEnd - idEnd - 1)));
+				if (id.empty() || key.empty())
+					continue;
+				const int rank = (id.back() == 'A' ? 0 : 2) + (region == "ALL" || region.find("USA") != std::string_view::npos ? 0 : 1);
+				const auto [it, added] = ranks.emplace(key, rank);
+				if (added || rank < it->second)
+				{
+					it->second = rank;
+					database.titles[key] = std::string(id);
+				}
+			}
+		}
+	}
+
+	std::string FindByTitle(ps5boxart::System system, const std::string& title)
+	{
+		const std::string key = Simplified(title);
+		if (key.empty())
+			return {};
+		std::lock_guard lock(s_mutex);
+		Database& database = s_databases[system];
+		if (!database.loaded)
+			Load(system, database);
+		if (!database.titled)
+			IndexTitles(database);
+		const auto it = database.titles.find(key);
+		return it == database.titles.end() ? std::string() : it->second;
 	}
 
 	bool Find(ps5boxart::System system, const std::string& id, Info& info)
 	{
-		if (id.empty() || system == ps5boxart::System::Switch) // GameTDB's databases have no Switch games
+		if (id.empty())
 			return false;
 		std::lock_guard lock(s_mutex);
 		Database& database = s_databases[system];

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "library.h"
 #include "nx_files.h"
+#include "../app/gameinfo.h"
 #include "../app/paths.h"
 #include "../ps5/log.h"
 
@@ -412,7 +413,17 @@ namespace ps5eden
 			std::set<uint64_t> listed;
 			std::erase_if(games, [&](const ps5emu::Game& game) { return !listed.insert(game.titleId).second; });
 			std::sort(games.begin(), games.end(), [](const ps5emu::Game& a, const ps5emu::Game& b) { return Lower(a.name) < Lower(b.name); });
-			ps5log::Line("[switch] {} Switch games in {}", games.size(), scanned);
+			// GameTDB's ID for each, for its box art and About page: the game it has by this one's name,
+			// else by its file's
+			size_t found = 0;
+			for (ps5emu::Game& game : games)
+			{
+				game.gameId = ps5gameinfo::FindByTitle(ps5boxart::System::Switch, game.name);
+				if (game.gameId.empty())
+					game.gameId = ps5gameinfo::FindByTitle(ps5boxart::System::Switch, CleanTitle(game.path));
+				found += !game.gameId.empty();
+			}
+			ps5log::Line("[switch] {} Switch games in {}, {} of them GameTDB's", games.size(), scanned, found);
 			{
 				std::lock_guard lock(s_mutex);
 				s_games = std::move(games);

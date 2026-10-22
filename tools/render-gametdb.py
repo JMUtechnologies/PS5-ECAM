@@ -2,14 +2,15 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """GameTDB's game information for the launcher and the in-game menus: each game's description,
 developer, publisher, release date, genre, players and rating, by the ID on its box (ALZE01 for a
-Wii U game, AREE for a 3DS one, AMCE for a DS one, as for the box art).
+Wii U game, AREE for a 3DS one, AMCE for a DS one, AHNXA for a Switch one, as for the box art).
 
-    render-gametdb.py [OUTPUT_FOLDER] [--from FOLDER] [--only wiiu|3ds|ds]
+    render-gametdb.py [OUTPUT_FOLDER] [--from FOLDER] [--only wiiu|3ds|ds|switch]
 
-Downloads GameTDB's English Wii U, 3DS and DS databases (www.gametdb.com/wiiutdb.zip, 3dstdb.zip and
-dstdb.zip), or reads them from FOLDER, and writes wiiu.tsv.gz, 3ds.tsv.gz and ds.tsv.gz (default:
-port/app/gametdb), or only the one --only names: one game a line, sorted by ID, its fields separated
-by tabs, with tabs, line breaks and backslashes in them written as \\t, \\n and \\\\:
+Downloads GameTDB's English Wii U, 3DS, DS and Switch databases (www.gametdb.com/wiiutdb.zip,
+3dstdb.zip, dstdb.zip and switchtdb.zip), or reads them from FOLDER, and writes wiiu.tsv.gz,
+3ds.tsv.gz, ds.tsv.gz and switch.tsv.gz (default: port/app/gametdb), or only the one --only names: one
+game a line, sorted by ID, its fields separated by tabs, with tabs, line breaks and backslashes in them
+written as \\t, \\n and \\\\:
 
     id  title  region  synopsis  developer  publisher  released  genre  players  rating
 
@@ -28,7 +29,7 @@ import urllib.request
 import xml.etree.ElementTree as ElementTree
 import zipfile
 
-SOURCES = {"wiiu": "wiiutdb", "3ds": "3dstdb", "ds": "dstdb"}
+SOURCES = {"wiiu": "wiiutdb", "3ds": "3dstdb", "ds": "dstdb", "switch": "switchtdb"}
 URL = "https://www.gametdb.com/{}.zip?LANG=EN"
 
 
@@ -66,7 +67,8 @@ def convert(xml, out_path):
     rows = {}
     for game in root.iter("game"):
         game_id = (game.findtext("id") or "").strip().upper()
-        if not re.fullmatch(r"[A-Z0-9]{4}|[A-Z0-9]{6}", game_id) or game_id in rows:
+        # a Switch game's is five letters, its product code's last part (HAC-P-AHNXA)
+        if not re.fullmatch(r"[A-Z0-9]{4,6}", game_id) or game_id in rows:
             continue
         locale = next((l for l in game.findall("locale") if l.get("lang") == "EN"), None)
         title = text(locale.find("title")) if locale is not None else ""
@@ -75,6 +77,13 @@ def convert(xml, out_path):
         rating_text = ""
         if rating is not None and rating.get("value"):
             rating_text = f"{rating.get('type', '')} {rating.get('value')}".strip()
+        else:
+            # the Switch's database names the board in the tag, <rating_ESRB value="T">, and can have
+            # several: ESRB's, else PEGI's, else the first
+            boards = [child for child in game if child.tag.startswith("rating_") and child.get("value")]
+            boards.sort(key=lambda board: {"rating_ESRB": 0, "rating_PEGI": 1}.get(board.tag, 2))
+            if boards:
+                rating_text = f"{boards[0].tag[len('rating_'):]} {boards[0].get('value')}"
         players = game.find("input")
         player_count = players.get("players", "") if players is not None else ""
         row = [game_id, title, text(game.find("region")), synopsis, text(game.find("developer")),

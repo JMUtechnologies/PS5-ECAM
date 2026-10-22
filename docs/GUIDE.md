@@ -233,9 +233,10 @@ Switch side (not a network share: Eden cannot read those).
 
 - `.nsp` and `.xci` play directly. An update or DLC in a game's folder goes with that game; ones in
   `/data/ps5cemu/eden/updates` are found too.
-- The library names a game by its file until Eden has read it once (it reads each game as it
-  starts, and ProsperoEden's own library reads them all): then it has the game's own name and
-  icon. A picture beside a game with its name (`Game.png` or `Game.jpg`) is its box art.
+- With your keys the library reads each game's own name and icon from its file (without them, it
+  names a game by its file). Its box art and description come from GameTDB, which knows a Switch
+  game by its name: the app looks it up by the game's own name, else its file's. A picture beside a
+  game with its name (`Game.png` or `Game.jpg`) is its box art instead.
 - A title ID in brackets in the file's name, as dumps have it, keeps the game's settings and its
   place in Recently played whatever the file is called.
 - A standalone ProsperoEden's files in `/data/prosperoeden` are used while `/data/ps5cemu/eden` has
@@ -351,10 +352,10 @@ idea and prototype, #38.)
 ## Online
 
 - **Box art:** the first time a game shows up, the app downloads its cover from GameTDB
-  (`art.gametdb.com`) by the ID on the game's box, in the background, into
-  `/data/ps5cemu/covers/boxart`. A failed download is tried again a few seconds later; a cover
-  GameTDB doesn't have is asked for again after two weeks. **Settings > Online** turns the downloads
-  off, and has *Download missing box art* and *Download all box art again*.
+  (`art.gametdb.com`) by the ID on the game's box (a Switch game's is found by its name), in the
+  background, into `/data/ps5cemu/covers/boxart`. A failed download is tried again a few seconds
+  later; a cover GameTDB doesn't have is asked for again after two weeks. **Settings > Online** turns
+  the downloads off, and has *Download missing box art* and *Download all box art again*.
 - **Updates:** when the app starts fresh, it asks GitHub for the latest release. When a newer
   PS5-ECAM is out, it asks whether to install it: **Update now** downloads the release, checks it
   against the release's SHA-256, puts its files in place of the old ones and starts the app again.

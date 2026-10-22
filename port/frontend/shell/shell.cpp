@@ -634,8 +634,10 @@ namespace ps5shell
 	void Shell::MakeGame(Game& game, const ps5catalog::Entry& entry)
 	{
 		game.entry = entry;
-		// a Switch game's box art is a picture of the player's own beside it (GameTDB has none)
-		game.boxArt = IsSwitch() ? ps5eden::BoxArt(entry.game) : ps5boxart::Path(BoxOf(entry.game), entry.game.gameId);
+		// a Switch game's box art is a picture of the player's own beside it, else GameTDB's
+		game.boxArt = IsSwitch() ? ps5eden::BoxArt(entry.game) : std::string();
+		if (game.boxArt.empty())
+			game.boxArt = ps5boxart::Path(BoxOf(entry.game), entry.game.gameId);
 		game.known = ps5gameinfo::Find(BoxOf(entry.game), entry.game.gameId, game.info);
 		// the list names games in English: GameTDB's title finds one whose own name is in the menus'
 		// language (7.7). It has no DS or Switch games yet.
@@ -736,8 +738,13 @@ namespace ps5shell
 				for (Game& game : m_games)
 					if (game.entry.game.gameId == id)
 					{
-						game.boxArt = ps5boxart::Path(BoxOf(game.entry.game), id);
-						m_images->Forget(game.boxArt);
+						// (a Switch game's own picture beside it stays)
+						const std::string path = ps5boxart::Path(BoxOf(game.entry.game), id);
+						if (game.boxArt.empty() || game.boxArt == path)
+						{
+							game.boxArt = path;
+							m_images->Forget(game.boxArt);
+						}
 					}
 			}
 			for (Game& game : m_games)
