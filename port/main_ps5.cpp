@@ -474,6 +474,9 @@ int main(int argc, char* argv[])
 			{"switch-keys", "Switch keys", "prod.keys and title.keys, dumped from your own Switch.", eden + "/keys"},
 			{"switch-firmware", "Switch firmware", "The firmware's .nca files, dumped from your own Switch.", eden + "/firmware"},
 			{"amiibo", "Amiibo", "Your amiibo dumps (.bin), for the Wii U and the 3DS.", ps5paths::Root() + "/amiibo"},
+			{"3ds-camera", "3DS camera",
+				"A picture (PNG or JPEG) the 3DS's cameras see, the newest sent: a QR code for a game to scan.",
+				ps5paths::Root() + "/azahar/camera"},
 			{"music", "Launcher music", "MP3 and WAV files, for Settings > Audio > Launcher music.", ps5paths::Root() + "/music"},
 		};
 		std::erase_if(folders, [](const ps5stream::Folder& folder) { return folder.path.empty() || ps5netfs::is_net(folder.path); });

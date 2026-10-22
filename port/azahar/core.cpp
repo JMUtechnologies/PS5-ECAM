@@ -30,6 +30,7 @@
 #include "../ps5/pad.h"
 #include "../ps5/privilege.h"
 #include "../ps5/vulkan_display.h"
+#include "camera.h"
 
 #include "audio_core/sink_details.h"
 #include "common/file_util.h"
@@ -437,7 +438,10 @@ namespace ps5azahar
 			values.enable_audio_stretching = true;
 			values.volume = std::clamp(settings.volume, 0, 100) / 100.0f;
 			values.input_type = AudioCore::InputType::Null;
-			values.camera_name.fill("blank"); // the 3DS cameras see nothing: the PS5 has none to lend
+			// the 3DS's cameras see a picture from azahar/camera, the newest (camera.h): the PS5 has no camera to lend
+			RegisterPictureCamera();
+			values.camera_name.fill(kPictureCamera);
+			values.camera_config.fill(ps5paths::Root() + "/azahar/camera");
 			input::Configure(settings);
 		}
 

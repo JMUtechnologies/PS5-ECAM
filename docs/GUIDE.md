@@ -111,6 +111,11 @@ work stops before a game starts.
   `aes_keys.txt` in `/data/ps5cemu/azahar/sysdata` takes the place of all of them, so leave it out
   unless it is complete; when it lacks what the setup needs, the 3DS's screen says so.
 - An on-screen keyboard for games that ask for text.
+- **The cameras see a picture:** put a PNG or JPEG in `/data/ps5cemu/azahar/camera`, or send one
+  from a phone with the remote touch screen's **Add files to the PS5** (**3DS camera**), and both of
+  the 3DS's cameras see the newest, fitted on white: a QR code for Pokémon's QR Scanner, a Mii or an
+  Animal Crossing design to scan. It is read again each time the game turns a camera on. With no
+  picture there, they see black.
 
 ## Nintendo DS (melonDS)
 
@@ -337,6 +342,7 @@ progress, and goes straight into the app's folder for it:
 | Wii U, 3DS, DS and Switch games | each side's games folder, as **Settings > Game files** has it (not a network share) |
 | Switch keys, Switch firmware | Eden's `keys/` and `firmware/` |
 | Amiibo | `/data/ps5cemu/amiibo` |
+| 3DS camera | `/data/ps5cemu/azahar/camera`: the picture the 3DS's cameras see |
 | Launcher music | `/data/ps5cemu/music` |
 
 A file of the same name that is there already is never replaced, and a file cut short (the phone
@@ -506,7 +512,8 @@ every 10 seconds with the frame rate, and `[crash]` lines if an emulator crashes
   menu.
 - Batman: Arkham Origins needs its 60 FPS graphic pack turned off; with it on, it glitches and
   crashes once gameplay loads ([#15](https://github.com/premohq/PS5-ECAM/issues/15)).
-- 3DS camera, microphone, local wireless and online play aren't supported.
+- The 3DS's microphone, local wireless and online play aren't supported, and its cameras see a
+  picture, not the room ([3DS camera](#nintendo-3ds-azahar)).
 - 3DS texture filters are expensive at high internal resolutions; if a game stutters, try Texture
   filter: None first.
 - The first start with a large Wii U shader cache takes a few minutes while Cemu builds the

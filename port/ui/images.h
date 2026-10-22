@@ -22,6 +22,10 @@
 
 namespace ui
 {
+	// A picture file (TGA, PNG or JPEG) as RGBA rows, decoded on the caller's thread: the 3DS's
+	// camera (port/azahar/camera.cpp) reads its picture so. False when it cannot be read
+	bool DecodeFile(const std::string& path, std::vector<uint8_t>& rgba, int& width, int& height);
+
 	struct Picture
 	{
 		TextureId texture = 0; // 0 until it is on the GPU
