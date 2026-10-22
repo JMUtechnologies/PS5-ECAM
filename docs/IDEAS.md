@@ -17,6 +17,8 @@ Each idea done is marked **Done** where it is listed below, with its commit.
 |---|---|---|
 | [S1](#s1) | [`1b497d3`](https://github.com/premohq/PS5-ECAM/commit/1b497d3) | An unreadable `ps5cemu.json` is kept as `ps5cemu.json.broken`, and the launcher says so once |
 | [S6](#s6) | [`6536915`](https://github.com/premohq/PS5-ECAM/commit/6536915) | **Back up to USB** takes the Switch's saves and Eden's user profiles, and restores them |
+| [S5](#s5) | [`a7c6115`](https://github.com/premohq/PS5-ECAM/commit/a7c6115) | GitHub Actions runs the string table check and the PC tests at every push and pull request |
+| [G1](#g1) | [`6f8dcd8`](https://github.com/premohq/PS5-ECAM/commit/6f8dcd8) | Touchpad click + Square saves a state, + Triangle held loads it (3DS and DS) |
 
 Being worked on separately (not here): the Switch side's in-game menu, its settings and button
 remapping ([N1](#n1)), its rooms ([I2](#i2)), ReShade on the Wii U side ([I1](#i1)), and the box art
@@ -64,7 +66,7 @@ this: #15 (Batman's 60 FPS pack), #20 (3DS cheats), #24 (a graphic pack with `co
 write a `[bench]` summary from the `[perf]` lines, so Discord testers can send numbers. Then settle the
 defaults and delete the paths that lost.
 
-<a id="s5"></a>**S5. CI on every push** (S to M)
+<a id="s5"></a>**S5. CI on every push** (S to M) · **Done:** [`a7c6115`](https://github.com/premohq/PS5-ECAM/commit/a7c6115)
 `.github` has only the issue templates. A GitHub Actions job on Ubuntu 24.04 could run what already runs
 on a PC: `tools/tests` (archives, keyboard, music, netfs, stream), `tools/reshade-check.sh`,
 `tools/lang.py check` and the launcher preview's screenshots. The PS5 build itself can stay manual.
@@ -155,7 +157,7 @@ GitHub and downloads one, as ES-DE's theme downloader does.
 
 ## Quality of life: in a game
 
-<a id="g1"></a>**G1. Quick save and quick load hotkeys** (S)
+<a id="g1"></a>**G1. Quick save and quick load hotkeys** (S) · **Done:** [`6f8dcd8`](https://github.com/premohq/PS5-ECAM/commit/6f8dcd8)
 The guide's shortcuts are touchpad click + Options, L1 and R1; Square and Triangle look free. Touchpad click + Square
 saves to the current slot and + Triangle loads it (held, as loading in the menu is), on the 3DS and DS.
 RetroArch, DuckStation and DraStic all have this.
