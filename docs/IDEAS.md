@@ -28,6 +28,7 @@ Each idea done is marked **Done** where it is listed below, with its commit.
 | [S7](#s7) | [`0891a28`](https://github.com/premohq/PS5-ECAM/commit/0891a28) | Backups hold the settings too (each game's own, Cemu's, controller profiles, themes); a restore starts the app again to use them |
 | [S8](#s8) | [`b436783`](https://github.com/premohq/PS5-ECAM/commit/b436783) | An update keeps the version it replaces; **Go back to** in Settings > Online; **Skip this version** on the prompt |
 | [I4](#i4) | [`759f8e3`](https://github.com/premohq/PS5-ECAM/commit/759f8e3) | **3D for red and cyan glasses** in the 3DS side's Graphics (and each game's) |
+| [G3](#g3) | [`1d54168`](https://github.com/premohq/PS5-ECAM/commit/1d54168) | Quit to the library saves a state; **Resume where you left off** in the game's Options menu (3DS and DS) |
 
 Being worked on separately (not here): the Switch side's in-game menu, its settings and button
 remapping ([N1](#n1)), its rooms ([I2](#i2)), ReShade on the Wii U side ([I1](#i1)), and the box art
@@ -175,7 +176,7 @@ RetroArch, DuckStation and DraStic all have this.
 The slots show a number and whether they are empty. A small picture of the game and when it was made, as
 RetroArch, Delta and DuckStation show them. The frame can be read as the remote screen reads it.
 
-<a id="g3"></a>**G3. Resume where you left off** (M)
+<a id="g3"></a>**G3. Resume where you left off** (M) · **Done:** [`1d54168`](https://github.com/premohq/PS5-ECAM/commit/1d54168)
 On **Quit to the library**, a 3DS or DS game makes an automatic save state, and its page offers
 **Resume** beside **Play**. RetroArch's auto save state and Delta's resume work this way.
 
