@@ -11,8 +11,11 @@
 #include <rapidjson/document.h>
 
 #include <arpa/inet.h>
+#include <sys/socket.h>
 
 #include <algorithm>
+#include <cerrno>
+#include <chrono>
 #include <mutex>
 #include <thread>
 
@@ -42,6 +45,25 @@ namespace ps5rooms
 		std::mutex s_mutex;
 		Status s_status; // under s_mutex
 		bool s_asked = false;
+		// when the download under way started: one still going after kStuck is given up on (Cross
+		// starts another), whatever kept it from its own timeouts
+		std::chrono::steady_clock::time_point s_started;
+		constexpr auto kStuck = std::chrono::seconds(30);
+
+		// The console's own non-blocking option on each socket curl opens, as ProsperoEden's
+		// console_curl.c sets it: the C library refuses curl's fcntl(O_NONBLOCK) on a socket
+		// (ps5/fcntl.cpp answers only F_SETFD), and a blocking one waits after the answer until the
+		// server closes the connection, which the room directory never does: the list stayed
+		// "Downloading…", curl's timeouts unread
+		constexpr int kSoNbio = 0x1200;
+
+		int NonBlocking(void*, curl_socket_t socket, curlsocktype)
+		{
+			const int on = 1;
+			if (setsockopt(socket, SOL_SOCKET, kSoNbio, &on, sizeof(on)) != 0)
+				ps5log::Line("[rooms] the socket stays blocking (SO_NBIO: errno {})", errno);
+			return CURL_SOCKOPT_OK;
+		}
 
 		size_t Collect(char* data, size_t size, size_t count, void* out)
 		{
@@ -166,6 +188,9 @@ namespace ps5rooms
 			if (CURL* curl = curl_easy_init())
 			{
 				curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, why);
+				curl_easy_setopt(curl, CURLOPT_SOCKOPTFUNCTION, NonBlocking);
+				// as ProsperoEden asks for the list: one request, one answer, no HTTP/2 session kept open
+				curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, (long)CURL_HTTP_VERSION_1_1);
 				static const std::string ca = ps5paths::Assets() + "/cacert.pem"; // the console has no store of its own
 				curl_slist* headers = curl_slist_append(nullptr, "api-version: 1");
 				if (resolve)
@@ -210,9 +235,13 @@ namespace ps5rooms
 	{
 		std::lock_guard lock(s_mutex);
 		s_asked = true;
-		if (s_status.busy)
+		const auto now = std::chrono::steady_clock::now();
+		if (s_status.busy && now - s_started < kStuck)
 			return;
+		if (s_status.busy)
+			ps5log::Line("[rooms] the last download never ended: another one");
 		s_status.busy = true;
+		s_started = now;
 		ps5log::Line("[rooms] downloading the public list ({})", kDirectory);
 		std::thread(Fetch).detach(); // a download of its own, which nothing waits for
 	}
