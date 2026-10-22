@@ -51,6 +51,9 @@ namespace ps5launcher
 		std::string launchErrorDs;  // and the last DS game
 		std::string launchErrorSwitch; // and the last Switch game
 		std::vector<std::string> diagnostics; // the lines Settings > Diagnostics shows
+		// the session before this one ended in a crash: its first [crash] line (boot.prev.log), said once
+		// as the launcher starts; empty: it did not
+		std::string lastCrash;
 		// a home screen tile's game (--rom, app/forwarders.h): started as soon as its side can, on that
 		// side, by its path (or its file's name); empty: none
 		std::string autoLaunch;

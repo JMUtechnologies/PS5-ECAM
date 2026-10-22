@@ -48,6 +48,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -90,6 +91,18 @@ extern "C" int32_t sceKernelGetSystemSwVersion(SceKernelSwVersion* version);
 
 namespace
 {
+	// The session before this one's first crash report (ps5/crash.h, Cemu's handler: boot.prev.log's
+	// first "[crash] " line, without it), or empty when it ended without one
+	std::string LastCrash()
+	{
+		std::ifstream log(ps5paths::Logs() + "/boot.prev.log");
+		std::string line;
+		while (std::getline(log, line))
+			if (line.rfind("[crash] ", 0) == 0)
+				return line.substr(8, 160);
+		return {};
+	}
+
 	// The console's firmware, as its settings show it ("11.60"), for the boot log and Diagnostics:
 	// most reports hinge on it
 	std::string Firmware()
@@ -470,6 +483,9 @@ int main(int argc, char* argv[])
 
 	ps5launcher::Status status;
 	status.diagnostics = Diagnostics(ps5privilege::Current());
+	status.lastCrash = LastCrash();
+	if (!status.lastCrash.empty())
+		ps5log::Line("[main] the last session ended in a crash: {}", status.lastCrash);
 	status.autoLaunch = tile.rom;
 	status.autoLaunchSide = tile.side;
 	// after the game: the library, or for a tile's game (--exit-after-game) the PS5's home screen, as

@@ -490,6 +490,9 @@ It asks for your firmware, HEN, app version and logs, which almost every problem
 - **Clear shader caches** (hold Cross): for a game that crashes on a bad or shared cache.
   Games build them again as they run.
 
+When a session ends in a crash, the next start says so once, with the crash report's first line,
+so its log can be copied before it is pushed out by the next few starts.
+
 The boot log also gets a `[memory]` line once a minute, a `[perf]` (Wii U) or `[perf3ds]` (3DS) line
 every 10 seconds with the frame rate, and `[crash]` lines if an emulator crashes.
 

@@ -223,6 +223,16 @@ namespace ps5shell
 					"it was is kept as {0}: mend it on a computer and put it back as ps5cemu.json, or leave it.",
 					broken));
 		}
+		// the session before this one ended in a crash (main_ps5.cpp): said once, with where its log is
+		else if (!m_status.lastCrash.empty())
+		{
+			OpenHelp(Tr("PS5-ECAM closed after a crash"),
+				// tr: {0} is the crash report's first line in the log, as it is: "signal 11 at 0x7f3a..."
+				TrF("The last time, PS5-ECAM stopped with a crash: {0}. Its log is kept: Settings > Diagnostics > Copy logs to USB puts it "
+					"on a drive, with the sessions before it, to attach to a report on GitHub.",
+					m_status.lastCrash));
+			m_status.lastCrash.clear();
+		}
 		// Eden's opening: the PS5's launch picture handed over to the launcher, as the app starts (not
 		// after a game, nor over what a failed one says)
 		else if (SectionLayout() && !ClassicLayout() && !returning && m_screen == ScreenId::Home && m_status.autoLaunch.empty())
