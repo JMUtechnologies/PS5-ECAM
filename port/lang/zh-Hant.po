@@ -880,12 +880,12 @@ msgstr "在30fps遊戲的每兩幀之間產生一幀，以60顯示。立即生�
 #: port/app/ingame.cpp:213 port/frontend/shell/settings.cpp:528
 #, menu
 msgid "ReShade"
-msgstr ""
+msgstr "ReShade"
 
 #: port/app/ingame.cpp:214
 #, menu
 msgid "Your ReShade preset over the game's picture (Settings > Graphics says where it goes). It changes at once."
-msgstr ""
+msgstr "疊加在遊戲畫面上的ReShade預設（放在哪裡見「設定 > 圖形」）。立即生效。"
 
 #: port/app/ingame.cpp:215 port/app/ingame3ds.cpp:495 port/app/ingame3ds.cpp:508 port/eden/ingame.cpp:576 port/frontend/shell/settings.cpp:534 port/frontend/shell/settings.cpp:587 port/frontend/shell/settings.cpp:641 port/frontend/shell/settings.cpp:659
 #, menu
@@ -4234,6 +4234,8 @@ msgid ""
 "Cross, then a DualSense button or the touchpad's click: it becomes this one. If another button already had it, the two swap.\n"
 "Square puts its default back."
 msgstr ""
+"按交叉按鈕，再按DualSense按鈕或觸控板按下：就會成為此按鈕。若其他按鈕已在使用，兩者會對調。\n"
+"按正方按鈕恢復其預設。"
 
 #: port/frontend/shell/pages.cpp:884
 msgid ""
@@ -4753,7 +4755,7 @@ msgstr "將DualSense作為3DS。"
 
 #: port/frontend/shell/settings.cpp:225
 msgid "The DualSense as the Switch."
-msgstr ""
+msgstr "將DualSense當作Switch。"
 
 #: port/frontend/shell/settings.cpp:226
 msgid "The DualSense as the DS."
@@ -4785,11 +4787,11 @@ msgstr "模擬DS的語言與BIOS。"
 
 #: port/frontend/shell/settings.cpp:240
 msgid "Performance"
-msgstr ""
+msgstr "效能"
 
 #: port/frontend/shell/settings.cpp:240
 msgid "Speed against accuracy, and the emulated Switch's memory."
-msgstr ""
+msgstr "速度與準確度的取捨，以及模擬的Switch的記憶體。"
 
 #: port/frontend/shell/settings.cpp:241
 msgid "Where your Wii U games are, and installs into the Wii U's storage."
@@ -5031,11 +5033,11 @@ msgstr "MihawkGen會在每幀需要兩次以上更新的遊戲的每兩幀之間
 
 #: port/frontend/shell/settings.cpp:528
 msgid "Your ReShade preset and effects, from {0}."
-msgstr ""
+msgstr "來自{0}的ReShade預設與效果。"
 
 #: port/frontend/shell/settings.cpp:529
 msgid "Runs a ReShade preset made on a PC over the game's picture, before the GamePad's screen and the menus. Put ReShadePreset.ini (or presets/<title ID>.ini for one game) with the Shaders and Textures folders it uses in {0}. Compiled as the game starts; the boot log says what runs. Also in the in-game menu."
-msgstr ""
+msgstr "將在電腦上製作的ReShade預設套用到遊戲畫面上，在GamePad畫面和選單之前。請把ReShadePreset.ini（單一遊戲用presets/<遊戲ID>.ini）以及它使用的Shaders和Textures資料夾放到{0}。遊戲開始時編譯；啟動記錄會寫明執行了什麼。遊戲內選單中也有。"
 
 #: port/frontend/shell/settings.cpp:534
 msgid "Frame rate, CPU and memory in a corner."
@@ -5172,19 +5174,19 @@ msgstr "許多Switch遊戲以ASTC格式儲存材質，PS5的GPU無法讀取：Ed
 
 #: port/frontend/shell/settings.cpp:629
 msgid "Output resolution"
-msgstr ""
+msgstr "輸出解析度"
 
 #: port/frontend/shell/settings.cpp:630 port/frontend/shell/settings.cpp:631
 msgid "The size of the picture Eden sends to the TV. Applies to the next game."
-msgstr ""
+msgstr "Eden傳送到電視的畫面大小。從下一個遊戲起生效。"
 
 #: port/frontend/shell/settings.cpp:633
 msgid "120 Hz"
-msgstr ""
+msgstr "120 Hz"
 
 #: port/frontend/shell/settings.cpp:633 port/frontend/shell/settings.cpp:634
 msgid "For a TV that takes 120 Hz. Applies to the next game."
-msgstr ""
+msgstr "適用於支援120 Hz的電視。從下一個遊戲起生效。"
 
 #: port/frontend/shell/settings.cpp:638
 msgid "ProsperoEden's own frame generation, with MihawkGen: a picture made between each two frames, so a game at 30 fps is shown at 60. It asks more of the GPU and adds a little delay. Applies to the next game."
@@ -5344,7 +5346,7 @@ msgstr "搖桿移動多少後遊戲才會察覺，適用於兩個搖桿。如果
 
 #: port/frontend/shell/settings.cpp:727
 msgid "Which DualSense button presses each of the Switch's buttons. A is on Circle and B on Cross by default, where the Switch has them; + is Options and - the touchpad's click. The D-pad and the sticks stay the Switch's own."
-msgstr ""
+msgstr "用DualSense的哪個按鈕按下Switch的每個按鈕。預設與Switch的位置相同：A在圓圈按鈕，B在交叉按鈕；+是OPTIONS按鈕，-是觸控板按下。方向鍵和搖桿保持Switch原樣。"
 
 #: port/frontend/shell/settings.cpp:730 port/frontend/shell/settings.cpp:730 port/frontend/shell/settings.cpp:791
 msgid "Default buttons and deadzone."
@@ -5514,71 +5516,71 @@ msgstr "以Switch本身速度的百分比表示。高於100%時，在PS5有餘�
 
 #: port/frontend/shell/settings.cpp:876 port/frontend/shell/settings.cpp:877
 msgid "The language Switch games see. Automatic: the menus' own."
-msgstr ""
+msgstr "Switch遊戲看到的語言。自動：選單的語言。"
 
 #: port/frontend/shell/settings.cpp:883
 msgid "Memory"
-msgstr ""
+msgstr "記憶體"
 
 #: port/frontend/shell/settings.cpp:884 port/frontend/shell/settings.cpp:885
 msgid "4 GB is the Switch's own. More, for mods that ask for it. Applies to the next game."
-msgstr ""
+msgstr "4 GB是Switch本身的記憶體。更多，供需要的模組使用。從下一個遊戲起生效。"
 
 #: port/frontend/shell/settings.cpp:899
 msgid "Fast GPU"
-msgstr ""
+msgstr "快速GPU"
 
 #: port/frontend/shell/settings.cpp:899
 msgid "Eden's lowest GPU accuracy: faster, and some effects may be drawn wrong."
-msgstr ""
+msgstr "Eden最低的GPU準確度：更快，部分效果可能畫錯。"
 
 #: port/frontend/shell/settings.cpp:901
 msgid "Unsafe CPU"
-msgstr ""
+msgstr "不安全CPU"
 
 #: port/frontend/shell/settings.cpp:901
 msgid "Quicker, inexact floating-point maths. Faster; a few games misbehave."
-msgstr ""
+msgstr "更快但不精確的浮點運算。更快；少數遊戲會出問題。"
 
 #: port/frontend/shell/settings.cpp:903
 msgid "Unsafe DMA"
-msgstr ""
+msgstr "不安全DMA"
 
 #: port/frontend/shell/settings.cpp:903
 msgid "Eden's unsafe DMA accuracy: faster, a few games show glitches."
-msgstr ""
+msgstr "Eden不安全的DMA準確度：更快，少數遊戲會出現畫面錯誤。"
 
 #: port/frontend/shell/settings.cpp:905
 msgid "Reactive flushing"
-msgstr ""
+msgstr "回應式清除"
 
 #: port/frontend/shell/settings.cpp:905
 msgid "Keeps effects that read back the GPU's work right. Off is faster; some break."
-msgstr ""
+msgstr "保持讀回GPU結果的效果正確。關閉較快；部分效果會出錯。"
 
 #: port/frontend/shell/settings.cpp:907
 msgid "Skip cache invalidation"
-msgstr ""
+msgstr "略過快取失效"
 
 #: port/frontend/shell/settings.cpp:907
 msgid "Fewer CPU cache invalidations: faster, rarely wrong."
-msgstr ""
+msgstr "減少CPU快取失效：更快，很少出錯。"
 
 #: port/frontend/shell/settings.cpp:909
 msgid "Precompile code"
-msgstr ""
+msgstr "預先編譯程式碼"
 
 #: port/frontend/shell/settings.cpp:909
 msgid "Compiles the code earlier sessions ran before the game needs it: fewer hitches."
-msgstr ""
+msgstr "在遊戲需要之前編譯先前執行過的程式碼：減少卡頓。"
 
 #: port/frontend/shell/settings.cpp:911
 msgid "Compact memory"
-msgstr ""
+msgstr "精簡記憶體"
 
 #: port/frontend/shell/settings.cpp:911
 msgid "Keeps the game's mostly empty memory small, for the biggest games."
-msgstr ""
+msgstr "讓遊戲中大多為空的記憶體保持較小，適合最大的遊戲。"
 
 #: port/frontend/shell/settings.cpp:919
 msgid "The emulated DS's language."
