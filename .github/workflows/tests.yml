@@ -18,7 +18,7 @@ jobs:
       - name: Packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends clang-18 pkg-config libarchive-dev libzip-dev libssl-dev libfmt-dev p7zip-full ffmpeg
+          sudo apt-get install -y --no-install-recommends clang-18 pkg-config libarchive-dev libzip-dev libzstd-dev libssl-dev libfmt-dev p7zip-full ffmpeg
 
       - name: Downloads kept between runs
         uses: actions/cache@v4

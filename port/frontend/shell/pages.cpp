@@ -930,7 +930,7 @@ namespace ps5shell
 		m_browseFiles = 0;
 		if (m_filesMode == 2)
 			for (const auto& file : ListEntries(folder, false, ok))
-				if (Lower(file).ends_with(".cia"))
+				if (Lower(file).ends_with(".cia") || Lower(file).ends_with(".zcia")) // (Azahar installs a compressed one too)
 				{
 					m_browseEntries.push_back(file);
 					m_browseFiles++;
@@ -1156,6 +1156,7 @@ namespace ps5shell
 		m_installProgress.clear();
 		m_installFraction = -1;
 		m_inspected.clear();
+		m_chosenCia = {};
 		if (status.state == State::Done)
 		{
 			m_filesMessage = Tr("Installed. The library has it with its game.");
@@ -1260,7 +1261,13 @@ namespace ps5shell
 		if (cia)
 		{
 			const bool file = IsFileEntry(m_browseSelected);
-			const auto title = file ? ps5azahar::Inspect(JoinPath(m_browseFolder, m_browseEntries[m_browseSelected])) : ps5azahar::Title{};
+			const std::string chosen = file ? JoinPath(m_browseFolder, m_browseEntries[m_browseSelected]) : std::string();
+			if (file && m_chosenCia.path != chosen)
+			{
+				const ps5azahar::Title read = ps5azahar::Inspect(chosen);
+				m_chosenCia = {chosen, read.name, read.titleId, read.version};
+			}
+			const ChosenCia title = file ? m_chosenCia : ChosenCia{};
 			current = !file ? ShortPath(m_browseFolder, 40) : title.name.empty() ? m_browseEntries[m_browseSelected] : title.name;
 			lines[0] = {TrC("kind", "Type"), !file ? Tr("A folder") : title.titleId ? CiaKind(title.titleId) : "CIA"};
 			lines[1] = {Tr("Title ID"), file && title.titleId ? Hex(title.titleId) : "-"};

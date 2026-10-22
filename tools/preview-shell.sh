@@ -13,10 +13,10 @@
 #
 # Needs what `make deps` fetches (pacbrew's fmt, the sysroot's RapidJSON, ReShade's stb), clang-18,
 # python3, and the PC's Vulkan loader with a driver (Mesa's lavapipe will do: libvulkan-dev and
-# mesa-vulkan-drivers), FreeType's and zlib's headers (libfreetype-dev, zlib1g-dev); for the languages
-# Lexend lacks, the Noto fonts (fonts-noto-core, fonts-noto-cjk) stand in for the console's. What the
-# launcher writes (its settings, the catalogue, the 3DS games' icons) goes in build/shell-preview/data,
-# in place of /data/ps5cemu. Box art can be tried by putting TGAs in
+# mesa-vulkan-drivers), FreeType's, zlib's and zstd's headers (libfreetype-dev, zlib1g-dev,
+# libzstd-dev); for the languages Lexend lacks, the Noto fonts (fonts-noto-core, fonts-noto-cjk) stand
+# in for the console's. What the launcher writes (its settings, the catalogue, the 3DS games' icons)
+# goes in build/shell-preview/data, in place of /data/ps5cemu. Box art can be tried by putting TGAs in
 # build/shell-preview/boxart/<wiiu|3ds|ds>/<ID>.tga.
 
 set -euo pipefail
@@ -103,5 +103,5 @@ done
 if ((${#stale[@]})); then
     printf '%s\n' "${stale[@]}" | xargs -P "$JOBS" -I{} bash -c 'source=${1%%:*}; object=${1#*:}; shift; clang++-18 "$@" -c "$source" -o "$object"' _ {} "${flags[@]}"
 fi
-clang++-18 "${objects[@]}" -lvulkan -lfreetype -lz -lpthread -o "$out/shell-preview"
+clang++-18 "${objects[@]}" -lvulkan -lfreetype -lz -lzstd -lpthread -o "$out/shell-preview"
 "$out/shell-preview" "$out" "$script" "$games" "$games/3ds" "$games/ds" 2>"$out/preview.log"

@@ -267,6 +267,57 @@ int main(int argc, char* argv[])
 		CHECK((names == std::vector<std::string>{"Checkpoint/Checkpoint.3dsx"}));
 	}
 
+	// -- Azahar's compressed files, alone and in an archive -----------------------------------------------
+	{
+		const std::string compressed = work + "/3ds-z", zip = compressed + "/Compressed.zip";
+		// what an earlier version kept of the archive, which read nothing in a compressed ROM: read again
+		{
+			fs::create_directories(work + "/data/azahar");
+			ps5archive::Probes earlier(work + "/data/azahar/archives.bin");
+			uint64_t size = 0;
+			int64_t time = 0;
+			CHECK(ps5archive::Probes::Stamp(zip, size, time));
+			std::vector<std::string> fields(9);
+			fields[0] = "0";
+			earlier.Keep(zip, size, time, fields);
+			earlier.Save();
+		}
+		const std::vector<ps5emu::Game> games = Scan3ds(compressed);
+		const ps5emu::Game* kart = Find(games, "Mario Kart 7.zcci");
+		CHECK(kart && kart->name == "Mario Kart 7" && kart->titleId == 0x0004000000030600 && kart->gameId == "AMKE" && kart->format == "Z3DS");
+		CHECK(!ps5azahar::CoverPath(kart->titleId).empty());
+		// the icon as the dump's own, from frames past the headers'
+		const ps5azahar::Title packed = ps5azahar::Inspect(compressed + "/Mario Kart 7.zcci"), plain = ps5azahar::Inspect(samples + "/Mario Kart 7.cci");
+		CHECK(packed.readable && !packed.encrypted && packed.boxId == "AMKE" && !packed.icon.empty() && packed.icon == plain.icon && packed.smdh == plain.smdh);
+		const ps5emu::Game* emblem = Find(games, "Fire Emblem Awakening.zcxi");
+		CHECK(emblem && emblem->name == "Fire Emblem Awakening" && emblem->titleId == 0x00040000000A0500 && emblem->gameId == "AFEE" &&
+			emblem->format == "ZCXI");
+		const ps5emu::Game* checkpoint = Find(games, "Checkpoint.z3dsx");
+		CHECK(checkpoint && checkpoint->name == "Checkpoint" && checkpoint->format == "Z3DSX" && (checkpoint->titleId >> 60) == 0xF);
+		const ps5emu::Game* kirby = Find(games, "Kirby Planet Robobot.zcia");
+		CHECK(kirby && kirby->name == "Kirby: Planet Robobot" && kirby->titleId == 0x000400000017C100 && kirby->version == 1040 && kirby->format == "ZCIA");
+		CHECK(!Find(games, "Kirby Planet Robobot Update.zcia"));
+		const ps5emu::Game* renamed = Find(games, "Renamed.cci");
+		CHECK(renamed && renamed->name == "Kid Icarus: Uprising" && renamed->titleId == 0x0004000000030200 && renamed->format == "Z3DS");
+		const ps5emu::Game* mario = Find(games, "Compressed.zip");
+		CHECK(mario && mario->Archived() && mario->name == "Super Mario 3D Land" && mario->titleId == 0x0004000000053F00 && mario->gameId == "AREE" &&
+			mario->archiveMember == "Super Mario 3D Land.zcci" && mario->format == "ZIP");
+		CHECK(LogLines("Compressed.zip: Super Mario 3D Land.zcci") == 1);
+		if (seven)
+		{
+			const ps5emu::Game* pokemon = Find(games, "Pokemon.7z");
+			CHECK(pokemon && pokemon->name == "Pokémon Ultra Sun" && pokemon->titleId == 0x00040000001B5000 && pokemon->archiveMember.empty());
+		}
+		// again: what this version kept of the archive, nothing read out of it
+		const std::vector<ps5emu::Game> again = Scan3ds(compressed);
+		const ps5emu::Game* cached = Find(again, "Compressed.zip");
+		CHECK(cached && cached->name == "Super Mario 3D Land" && cached->gameId == "AREE" && LogLines("Compressed.zip: Super Mario 3D Land.zcci") == 1);
+		// a CIA's SMDH from its end, then its TMD ahead of it
+		const ps5azahar::Title alone = ps5azahar::Inspect(work + "/3ds-z-alone/Kirby.zcia"), cia = ps5azahar::Inspect(samples + "/Kirby Planet Robobot.cia");
+		CHECK(alone.readable && alone.format == "ZCIA" && alone.name == "Kirby: Planet Robobot" && alone.titleId == 0x000400000017C100 && alone.version == 1040 &&
+			!alone.icon.empty() && alone.icon == cia.icon);
+	}
+
 	// -- the 3DS side's library ---------------------------------------------------------------------------
 	{
 		const std::vector<ps5emu::Game> games = Scan3ds(n3ds);

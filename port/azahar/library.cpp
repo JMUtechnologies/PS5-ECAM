@@ -16,10 +16,12 @@
 #include <filesystem>
 #include <fstream>
 #include <functional>
+#include <map>
 #include <mutex>
 #include <optional>
 #include <set>
 #include <thread>
+#include <zstd.h>
 
 namespace fs = std::filesystem;
 
@@ -31,6 +33,10 @@ namespace ps5azahar
 		constexpr size_t kSmdhSize = 0x36C0;
 		constexpr int kIconSize = 48;
 		constexpr int kScanDepth = 4;
+		// a Z3DS file's header, and the most of its metadata read (a CIA's SMDH and title info, in Azahar's)
+		constexpr size_t kZ3dsHeaderSize = 0x20, kZ3dsMetadataMax = 0x10000;
+		// the end of zstd's seekable format: its seek table's footer ends with this
+		constexpr uint32_t kSeekTableMagic = 0x8F92EAB1;
 
 		std::mutex s_mutex;
 		std::vector<ps5emu::Game> s_games; // under s_mutex
@@ -201,7 +207,8 @@ namespace ps5azahar
 			return true;
 		}
 
-		// (its meta section, which has the icon, is read before what comes ahead of it: a plain file's only)
+		// (its meta section, which has the icon, is read before what comes ahead of it: a plain file's only,
+		// and not a compressed one's, whose SMDH Azahar keeps in its metadata)
 		bool ReadCia(const Reader& read, Title& title)
 		{
 			uint8_t header[0x20];
@@ -220,7 +227,7 @@ namespace ps5azahar
 				title.titleId = U64BE(tmdHeader.data() + 0x140 + 0x4C);
 				title.version = (uint16_t)(tmdHeader[0x140 + 0x9C] << 8 | tmdHeader[0x140 + 0x9D]);
 			}
-			if (U32(header + 0x14) >= 0x400 + kSmdhSize)
+			if (title.smdh.empty() && U32(header + 0x14) >= 0x400 + kSmdhSize)
 				ReadSmdh(ReadBytes(read, meta + 0x400, kSmdhSize), title);
 			// Encrypted, the CIA's contents with its title key or the game with its own, and Azahar
 			// installs nothing (Service::AM::CheckCIAToInstall), whatever keys it has. The first: the
@@ -254,10 +261,191 @@ namespace ps5azahar
 			return true;
 		}
 
-		// What a file is, by its extension, read as read gives it (Inspect's)
-		Title InspectWith(const std::string& extension, const Reader& read)
+		// Azahar's compressed files (.zcci, .zcxi, .z3dsx, .zcia; common/file_derived.h): a Z3DS header, the
+		// metadata Azahar keeps beside the file, then the file in zstd's seekable format: frames of 256 KiB
+		// of it (a CIA's 32 MiB), each compressed on its own, and a table of their sizes after the last.
+		// Read as the file it holds, each read decompressed from the frame its first byte is in, the table
+		// read as far as that frame, when read reads anywhere (a plain file); else, as an archive's entry
+		// is read, from the start, at offsets that only go up
+		class Z3ds
 		{
-			Title title;
+		public:
+			Z3ds(const Reader& read, bool random) : m_read(read), m_random(random) {}
+			~Z3ds() { ZSTD_freeDStream(m_stream); }
+			Z3ds(const Z3ds&) = delete;
+			Z3ds& operator=(const Z3ds&) = delete;
+
+			// False when it is no Z3DS file, or one of a version Azahar does not write
+			bool Open()
+			{
+				uint8_t header[kZ3dsHeaderSize];
+				if (!m_read(0, header, sizeof(header)) || std::memcmp(header, "Z3DS", 4) != 0 || header[8] != 1)
+					return false;
+				m_underlying.assign((const char*)header + 4, strnlen((const char*)header + 4, 4));
+				const uint16_t headerSize = header[0xA] | header[0xB] << 8;
+				const uint32_t metadataSize = U32(header + 0xC);
+				m_start = (uint64_t)headerSize + metadataSize;
+				m_end = m_start + U64(header + 0x10);
+				m_size = U64(header + 0x18);
+				if (headerSize < kZ3dsHeaderSize || m_end < m_start)
+					return false;
+				// a version, then items until one of type 0: a type (1: bytes), the name's size, the bytes' size
+				// (16 bits), the name, the bytes
+				const std::vector<uint8_t> metadata = ReadBytes(m_read, headerSize, std::min<size_t>(metadataSize, kZ3dsMetadataMax));
+				if (!metadata.empty() && metadata[0] == 1)
+					for (size_t at = 1; at + 4 <= metadata.size() && metadata[at] != 0;)
+					{
+						const size_t name = at + 4, bytes = name + metadata[at + 1], end = bytes + (metadata[at + 2] | metadata[at + 3] << 8);
+						if (end > metadata.size())
+							break;
+						if (metadata[at] == 1)
+							m_metadata[std::string((const char*)&metadata[name], bytes - name)].assign(metadata.begin() + (std::ptrdiff_t)bytes,
+								metadata.begin() + (std::ptrdiff_t)end);
+						at = end;
+					}
+				if (!(m_stream = ZSTD_createDStream()))
+					return false;
+				m_in.resize(ZSTD_DStreamInSize());
+				m_out.resize(ZSTD_DStreamOutSize());
+				if (m_random)
+					ReadTableFooter();
+				Restart(m_start, 0);
+				return true;
+			}
+
+			// What the file holds starts with: NCSD, NCCH, 3DSX or CIA
+			const std::string& Underlying() const { return m_underlying; }
+
+			const std::vector<uint8_t>* Metadata(const std::string& name) const
+			{
+				const auto found = m_metadata.find(name);
+				return found != m_metadata.end() ? &found->second : nullptr;
+			}
+
+			// The file's bytes at offset, as a Reader reads them
+			bool Read(uint64_t offset, void* out, size_t bytes)
+			{
+				if (!m_stream || offset > m_size || bytes > m_size - offset)
+					return false;
+				// on from where the last read ended, unless the bytes are behind it or in a frame after its own
+				if (const std::optional<Frame> frame = FrameAt(offset); frame && (offset < m_position || frame->out > m_position))
+					Restart(frame->in, frame->out);
+				else if (offset < m_position)
+				{
+					if (!m_random)
+						return false;
+					Restart(m_start, 0);
+				}
+				uint8_t* to = static_cast<uint8_t*>(out);
+				while (bytes > 0)
+				{
+					if (m_inPos == m_inSize)
+					{
+						const size_t size = (size_t)std::min<uint64_t>(m_in.size(), m_end - m_next);
+						if (size == 0 || !m_read(m_next, m_in.data(), size))
+							return false;
+						m_next += size;
+						m_inPos = 0;
+						m_inSize = size;
+					}
+					ZSTD_inBuffer input{m_in.data(), m_inSize, m_inPos};
+					// no further than the read's last byte
+					ZSTD_outBuffer output{m_out.data(), (size_t)std::min<uint64_t>(m_out.size(), offset + bytes - m_position), 0};
+					if (ZSTD_isError(ZSTD_decompressStream(m_stream, &output, &input)))
+					{
+						Restart(m_start, 0);
+						return false;
+					}
+					m_inPos = input.pos;
+					if (m_position + output.pos > offset)
+					{
+						const size_t skip = (size_t)(offset - m_position), kept = output.pos - skip;
+						std::memcpy(to, m_out.data() + skip, kept);
+						to += kept;
+						offset += kept;
+						bytes -= kept;
+					}
+					m_position += output.pos;
+				}
+				return true;
+			}
+
+		private:
+			struct Frame
+			{
+				uint64_t in, out; // where it starts in the Z3DS file, and in the file it holds
+			};
+
+			// The seek table's footer, at the end of the compressed data: the frames' count, a byte whose top
+			// bit says each frame's entry has a checksum after its sizes, and the magic number. Without it,
+			// each read goes on from the last, or from the start
+			void ReadTableFooter()
+			{
+				uint8_t footer[9];
+				if (m_end - m_start < sizeof(footer) || !m_read(m_end - sizeof(footer), footer, sizeof(footer)) || U32(footer + 5) != kSeekTableMagic)
+					return;
+				m_entrySize = footer[4] & 0x80 ? 12 : 8;
+				const uint64_t table = (uint64_t)U32(footer) * m_entrySize;
+				if (m_end - m_start < sizeof(footer) + table)
+					return;
+				m_table = m_end - sizeof(footer) - table;
+				m_tableFrames = U32(footer);
+				m_frames = {{m_start, 0}};
+			}
+
+			// The frame offset is in, the table read as far as it (512 entries at a time): none without the
+			// table, or past what it covers
+			std::optional<Frame> FrameAt(uint64_t offset)
+			{
+				while (!m_frames.empty() && m_frames.back().out <= offset && m_framesRead < m_tableFrames)
+				{
+					const size_t count = (size_t)std::min<uint64_t>(512, m_tableFrames - m_framesRead);
+					const std::vector<uint8_t> entries = ReadBytes(m_read, m_table + m_framesRead * m_entrySize, count * m_entrySize);
+					if (entries.empty())
+					{
+						m_tableFrames = m_framesRead;
+						break;
+					}
+					for (size_t i = 0; i < count; i++)
+					{
+						const Frame last = m_frames.back();
+						m_frames.push_back({last.in + U32(&entries[i * m_entrySize]), last.out + U32(&entries[i * m_entrySize + 4])});
+					}
+					m_framesRead += count;
+				}
+				// (each frame's start, then where the last one read ends)
+				const auto after = std::upper_bound(m_frames.begin(), m_frames.end(), offset, [](uint64_t at, const Frame& frame) { return at < frame.out; });
+				if (after == m_frames.begin() || after == m_frames.end())
+					return std::nullopt;
+				return *(after - 1);
+			}
+
+			void Restart(uint64_t in, uint64_t position)
+			{
+				ZSTD_DCtx_reset(m_stream, ZSTD_reset_session_only);
+				m_next = in;
+				m_position = position;
+				m_inPos = m_inSize = 0;
+			}
+
+			const Reader& m_read;
+			const bool m_random;
+			std::string m_underlying;
+			std::map<std::string, std::vector<uint8_t>> m_metadata;
+			uint64_t m_start = 0, m_end = 0, m_size = 0; // the compressed data, and the size of what it holds
+			uint64_t m_table = 0, m_tableFrames = 0, m_framesRead = 0;
+			size_t m_entrySize = 8;
+			std::vector<Frame> m_frames;
+			ZSTD_DStream* m_stream = nullptr;
+			std::vector<uint8_t> m_in, m_out;
+			size_t m_inPos = 0, m_inSize = 0; // what of m_in is still to be decompressed
+			uint64_t m_next = 0;			  // where m_in's next bytes are read from
+			uint64_t m_position = 0;		  // what decompressing gives next: where in the file it holds
+		};
+
+		// What a file is, by its extension, read as read gives it, into title
+		void ReadAs(const std::string& extension, const Reader& read, Title& title)
+		{
 			if (extension == ".3ds" || extension == ".cci")
 			{
 				uint8_t header[0x200];
@@ -287,10 +475,36 @@ namespace ps5azahar
 			}
 			else
 			{
-				// Azahar's compressed dumps: listed, their contents read by Azahar when they start
-				title.format = extension == ".z3dsx" ? "Z3DSX" : "Z3DS";
+				// a compressed file not read as one (InspectWith): listed, its contents read by Azahar when it starts
+				title.format = extension == ".z3dsx" ? "Z3DSX" : extension == ".zcia" ? "ZCIA" : "Z3DS";
 				title.readable = true;
 			}
+		}
+
+		// What a file is, read as read gives it: anywhere when random (a plain file), else at offsets that
+		// only go up (an archive's entry). A compressed file by its first bytes, as Azahar knows one whatever
+		// its name, and read as the file it holds is (its format then Z3DS, ZCXI, Z3DSX or ZCIA); any other
+		// by its extension
+		Title InspectWith(const std::string& extension, const Reader& read, bool random)
+		{
+			Title title;
+			uint8_t magic[4];
+			if (read(0, magic, sizeof(magic)) && std::memcmp(magic, "Z3DS", 4) == 0)
+			{
+				Z3ds z3ds(read, random);
+				const std::string& underlying = z3ds.Underlying();
+				if (z3ds.Open() && (underlying == "NCSD" || underlying == "NCCH" || underlying == "3DSX" || underlying == "CIA"))
+				{
+					// a CIA's SMDH, kept beside it: its own is at its end, a frame of 32 MiB from the rest
+					if (const std::vector<uint8_t>* smdh = z3ds.Metadata("smdh"))
+						ReadSmdh(*smdh, title);
+					ReadAs(underlying == "NCSD" ? ".3ds" : underlying == "NCCH" ? ".cxi" : underlying == "3DSX" ? ".3dsx" : ".cia",
+						[&z3ds](uint64_t offset, void* out, size_t bytes) { return z3ds.Read(offset, out, bytes); }, title);
+					title.format = "Z" + title.format;
+					return title;
+				}
+			}
+			ReadAs(extension, read, title);
 			return title;
 		}
 
@@ -305,7 +519,7 @@ namespace ps5azahar
 
 		bool Known(const std::string& extension)
 		{
-			for (const char* known : {".3ds", ".cci", ".cxi", ".cia", ".3dsx", ".app", ".elf", ".axf", ".z3ds", ".zcci", ".zcxi", ".z3dsx"})
+			for (const char* known : {".3ds", ".cci", ".cxi", ".cia", ".3dsx", ".app", ".elf", ".axf", ".z3ds", ".zcci", ".zcxi", ".z3dsx", ".zcia"})
 				if (extension == known)
 					return true;
 			return false;
@@ -358,6 +572,8 @@ namespace ps5azahar
 			kVersion,
 			kBoxId,
 			kSmdh,
+			kFormat, // the ROM's, as Inspect names it (3DS, ZCXI...): an earlier version's records, which have
+					 // no such field, are read again, as that read nothing in a compressed ROM
 			kArchiveFields,
 		};
 
@@ -368,10 +584,10 @@ namespace ps5azahar
 		};
 
 		// What an archive's 3DS game is: its first ROM by name, as the DS side finds its own (case aside,
-		// a Mac's copies left out, and CIA files: installed, not played, and their icon is at their end),
-		// else the first file libarchive gave no name that starts as an NCSD (.3ds), an NCCH (.cxi) or a
-		// 3DSX does. A ROM is read as far as its icon, and one that sorts after a ROM found already is not
-		// read. Empty when the archive cannot be read
+		// a Mac's copies left out, and CIA files, compressed or not: installed, not played, and a plain one's
+		// icon is at its end), else the first file libarchive gave no name that starts as an NCSD (.3ds), an
+		// NCCH (.cxi) or a 3DSX does, or as Azahar's compression of one. A ROM is read as far as its icon, and
+		// one that sorts after a ROM found already is not read. Empty when the archive cannot be read
 		std::vector<std::string> ProbeArchive(const std::string& path)
 		{
 			const auto started = std::chrono::steady_clock::now();
@@ -384,7 +600,7 @@ namespace ps5azahar
 					if (named || unnamed)
 						return true; // a ROM by its name is taken before one with none, and the first of those
 				}
-				else if (extension == ".cia" || !Known(extension) || (named && Lower(entry.name) >= Lower(named->entry.name)))
+				else if (extension == ".cia" || extension == ".zcia" || !Known(extension) || (named && Lower(entry.name) >= Lower(named->entry.name)))
 					return true;
 				// its first bytes: what a nameless one is, and the first that Inspect reads
 				std::vector<uint8_t> head((size_t)std::min<uint64_t>(entry.size, 0x200));
@@ -398,6 +614,10 @@ namespace ps5azahar
 						extension = ".cxi";
 					else if (head.size() >= 4 && std::memcmp(head.data(), "3DSX", 4) == 0)
 						extension = ".3dsx";
+					else if (head.size() >= 8 && std::memcmp(head.data(), "Z3DS", 4) == 0 &&
+						(std::memcmp(head.data() + 4, "NCSD", 4) == 0 || std::memcmp(head.data() + 4, "NCCH", 4) == 0 ||
+							std::memcmp(head.data() + 4, "3DSX", 4) == 0))
+						extension = ".z3ds"; // (read as what it holds is)
 					else
 						return true;
 				}
@@ -412,7 +632,7 @@ namespace ps5azahar
 						bytes -= kept;
 					}
 					return bytes == 0 || stream.ReadAt(offset, to, bytes);
-				});
+				}, false);
 				(entry.name.empty() ? unnamed : named) = ArchivedRom{entry, std::move(title)};
 				return true;
 			}, &error);
@@ -434,6 +654,7 @@ namespace ps5azahar
 				fields[kVersion] = std::to_string(found->title.version);
 				fields[kBoxId] = found->title.boxId;
 				fields[kSmdh].assign(found->title.smdh.begin(), found->title.smdh.end());
+				fields[kFormat] = found->title.format;
 			}
 			ps5log::Line("[azahar] {}: {} ({} ms)", path,
 				!found ? std::string("no 3DS game in it") : !named ? std::string("a ROM whose name the PS5 cannot show") : found->entry.name,
@@ -506,7 +727,7 @@ namespace ps5azahar
 					continue;
 				// an update's or DLC's CIA is installed with its game (Settings > Game files > Install a CIA file), not played
 				const uint32_t kind = (uint32_t)(title.titleId >> 32);
-				if (title.format == "CIA" && (kind == 0x0004000E || kind == 0x0004008C))
+				if ((title.format == "CIA" || title.format == "ZCIA") && (kind == 0x0004000E || kind == 0x0004008C))
 					continue;
 				ps5emu::Game game;
 				game.titleId = title.titleId ? title.titleId : PathId(path);
@@ -614,7 +835,7 @@ namespace ps5azahar
 		if (!file.stream)
 			return {};
 		return InspectWith(Lower(fs::path(path).extension().string()),
-			[&file](uint64_t offset, void* out, size_t bytes) { return file.Read(offset, out, bytes); });
+			[&file](uint64_t offset, void* out, size_t bytes) { return file.Read(offset, out, bytes); }, true);
 	}
 
 	void StartScan(const std::string& folder)

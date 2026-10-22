@@ -789,6 +789,14 @@ namespace ps5shell
 		std::string m_filesMessage, m_installFolder, m_installProgress;
 		float m_installFraction = -1;
 		std::map<std::string, ps5emu::InstallCandidate> m_inspected;
+		// the CIA file chosen to install, as the 3DS side's library reads it: once, not at each frame (a
+		// compressed one is decompressed for it)
+		struct ChosenCia
+		{
+			std::string path, name;
+			uint64_t titleId = 0;
+			uint16_t version = 0;
+		} m_chosenCia;
 		bool m_installing = false;
 		struct Updates
 		{

@@ -774,7 +774,9 @@ namespace ps5azahar
 		SetUp();
 		std::string path = game.path.string();
 		ps5log::Line("[azahar] launching {} ({:016x}) from {}", game.name, game.titleId, path);
-		if (game.path.extension() == ".cia" || game.path.extension() == ".CIA")
+		std::string extension = game.path.extension().string();
+		std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+		if (extension == ".cia" || extension == ".zcia")
 		{
 			// a CIA is installed, not played: its game starts from the 3DS's SD card
 			path = Service::AM::GetTitleContentPath(Service::FS::MediaType::SDMC, game.titleId);
