@@ -138,7 +138,7 @@ namespace ps5shell
 	std::vector<System> Shell::RailSides() const
 	{
 		std::vector<System> sides;
-		for (System side : {System::WiiU, System::N3ds, System::Nds, System::Switch})
+		for (System side : kBarOrder) // the bar's order, as the other themes show the sides
 			if (SideShown(side))
 				sides.push_back(side);
 		return sides;

@@ -165,9 +165,19 @@ namespace ps5shell
 		bool IsDs() const { return m_side == System::Nds; }
 		bool IsSwitch() const { return m_side == System::Switch; }
 		static constexpr int kSides = ps5launcher::kSideCount;
-		static int SideIndex(System side) { return (int)side; } // 0 Wii U, 1 3DS, 2 DS, 3 Switch: the bar's order
+		static int SideIndex(System side) { return (int)side; } // 0 Wii U, 1 3DS, 2 DS, 3 Switch: its bit in ui.sides, its catalogue
 		int SideIndex() const { return SideIndex(m_side); }
-		static System NextSide(System side) { return (System)((SideIndex(side) + 1) % kSides); }
+		// the bar's order (the owner's, 2026-10-22): Wii U, Switch, DS, 3DS; m_barFocus counts in it
+		static constexpr System kBarOrder[kSides] = {System::WiiU, System::Switch, System::Nds, System::N3ds};
+		static int BarIndex(System side)
+		{
+			for (int i = 0; i < kSides; i++)
+				if (kBarOrder[i] == side)
+					return i;
+			return 0;
+		}
+		static System BarSide(int position) { return kBarOrder[position < 0 ? 0 : position % kSides]; }
+		static System NextSide(System side) { return BarSide(BarIndex(side) + 1); }
 		// the sides the bar offers (Settings > Launcher, ui.sides): at least one
 		bool SideShown(System side) const { return m_settings.ui.sides & (1 << SideIndex(side)); }
 		int SidesShown() const

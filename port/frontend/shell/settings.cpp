@@ -1231,14 +1231,15 @@ namespace ps5shell
 			toggle("side-wiiu", Tr("Wii U side"), SideShown(System::WiiU), Tr("Cemu's games, in the bar."),
 				Tr("Whether the bar shows the Wii U side (Cemu). Hidden, its games and settings are kept and come back when it is turned on "
 				   "again. At least one side stays on."));
-			toggle("side-3ds", Tr("3DS side"), SideShown(System::N3ds), Tr("Azahar's games, in the bar."),
-				Tr("Whether the bar shows the 3DS side (Azahar). Hidden, its games and settings are kept and come back when it is turned on "
+			// in the bar's order: Wii U, Switch, DS, 3DS
+			toggle("side-switch", Tr("Switch side"), SideShown(System::Switch), Tr("Eden's games, in the bar."),
+				Tr("Whether the bar shows the Switch side (Eden). Hidden, its games and settings are kept and come back when it is turned on "
 				   "again. At least one side stays on."));
 			toggle("side-ds", Tr("DS side"), SideShown(System::Nds), Tr("melonDS's games, in the bar."),
 				Tr("Whether the bar shows the DS side (melonDS). Hidden, its games and settings are kept and come back when it is turned on "
 				   "again. At least one side stays on."));
-			toggle("side-switch", Tr("Switch side"), SideShown(System::Switch), Tr("Eden's games, in the bar."),
-				Tr("Whether the bar shows the Switch side (Eden). Hidden, its games and settings are kept and come back when it is turned on "
+			toggle("side-3ds", Tr("3DS side"), SideShown(System::N3ds), Tr("Azahar's games, in the bar."),
+				Tr("Whether the bar shows the 3DS side (Azahar). Hidden, its games and settings are kept and come back when it is turned on "
 				   "again. At least one side stays on."));
 			toggle("pictures", Tr("Game pictures behind menus"), settings.ui.gamePictures, Tr("The focused game's cover, softened, behind the screens."),
 				Tr("The focused game's picture fills the screen behind the menus, softened and dimmed, so moving the focus changes the whole "

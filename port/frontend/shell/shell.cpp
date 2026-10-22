@@ -586,7 +586,7 @@ namespace ps5shell
 	{
 		for (int i = 1; i <= kSides; i++)
 		{
-			const System next = (System)((SideIndex(side) + i) % kSides);
+			const System next = BarSide(BarIndex(side) + i);
 			if (SideShown(next))
 				return next;
 		}
@@ -595,7 +595,7 @@ namespace ps5shell
 
 	System Shell::FirstShownSide() const
 	{
-		for (System side : {System::WiiU, System::N3ds, System::Nds, System::Switch})
+		for (System side : kBarOrder)
 			if (SideShown(side))
 				return side;
 		return System::WiiU;
@@ -647,7 +647,7 @@ namespace ps5shell
 		}
 		// the focus on the side's games (or pages)
 		m_onBar = false;
-		m_barFocus = SideIndex();
+		m_barFocus = BarIndex(m_side);
 	}
 
 	void Shell::MakeGame(Game& game, const ps5catalog::Entry& entry)
@@ -1210,7 +1210,7 @@ namespace ps5shell
 		{
 			const int step = press.button == Button::Right ? 1 : -1;
 			int next = m_barFocus + step;
-			while (next >= 0 && next < kSides && !SideShown((System)next)) // past the sides not shown
+			while (next >= 0 && next < kSides && !SideShown(BarSide(next))) // past the sides not shown
 				next += step;
 			if (next < 0 || next > kSides + 1)
 			{
@@ -1227,8 +1227,8 @@ namespace ps5shell
 			break;
 		}
 		case Button::Cross:
-			if (m_barFocus < kSides && m_barFocus != SideIndex())
-				SwitchSide((System)m_barFocus);
+			if (m_barFocus < kSides && BarSide(m_barFocus) != m_side)
+				SwitchSide(BarSide(m_barFocus));
 			else
 			{
 				m_onBar = false;
@@ -1275,7 +1275,7 @@ namespace ps5shell
 		tile(1, {116, y + 2, 26, 26}, 7, 0xebffffff);
 		tile(2, {88, y + 30, 26, 26}, 7, 0xebffffff);
 		tile(3, {116, y + 30, 26, 26}, 7, 0xebffffff);
-		// the side switch: Wii U | 3DS | DS | Switch
+		// the side switch, in the bar's order: Wii U | Switch | DS | 3DS
 		float x = 160;
 		const ui::TextStyle sideStyle = Style({22, ui::Weight::SemiBold, 1.0f});
 		constexpr float kTile = 34;
@@ -1284,8 +1284,8 @@ namespace ps5shell
 		int shown = 0;
 		for (int i = 0; i < kSides; i++)
 		{
-			widths[i] = 12 + kTile + 10 + m_fonts.Width(sideStyle, SideTitle((System)i)) + 20;
-			if (SideShown((System)i))
+			widths[i] = 12 + kTile + 10 + m_fonts.Width(sideStyle, SideTitle(BarSide(i))) + 20;
+			if (SideShown(BarSide(i)))
 				pillWidth += widths[i] + (shown++ ? 4 : 0);
 		}
 		const Box pill{x, y, pillWidth, h};
@@ -1294,15 +1294,16 @@ namespace ps5shell
 		float sx = x + 4;
 		for (int i = 0; i < kSides; i++)
 		{
-			if (!SideShown((System)i))
+			const System side = BarSide(i);
+			if (!SideShown(side))
 				continue;
-			const bool on = i == SideIndex();
-			const uint32_t colour = AccentOf((System)i);
+			const bool on = side == m_side;
+			const uint32_t colour = AccentOf(side);
 			const Box segment{sx, y + 5, widths[i], h - 10};
 			if (on)
 				canvas.Rect(segment, segment.h / 2, ui::SetAlpha(colour, 0.24f));
-			tile(i, {sx + 12, segment.CentreY() - kTile / 2, kTile, kTile}, 9, on ? 0xffffffff : 0x73ffffff);
-			const ui::TextBlock text = m_fonts.Layout(sideStyle, SideTitle((System)i));
+			tile(SideIndex(side), {sx + 12, segment.CentreY() - kTile / 2, kTile, kTile}, 9, on ? 0xffffffff : 0x73ffffff);
+			const ui::TextBlock text = m_fonts.Layout(sideStyle, SideTitle(side));
 			canvas.Text(text, sx + 12 + kTile + 10, segment.CentreY() - text.height * 0.5f, on ? kText : Tertiary());
 			if (m_onBar && m_barFocus == i)
 				Focus(segment, segment.h / 2);
@@ -1382,7 +1383,7 @@ namespace ps5shell
 				return hints;
 		}
 		if (m_onBar && (m_screen == ScreenId::Library || m_screen == ScreenId::Settings) && !InGameSettings())
-			return {{Icon::LeftRight, Tr("Move")}, {Icon::Cross, m_barFocus < kSides && m_barFocus != SideIndex() ? Tr("Switch") : Tr("Open")},
+			return {{Icon::LeftRight, Tr("Move")}, {Icon::Cross, m_barFocus < kSides && BarSide(m_barFocus) != m_side ? Tr("Switch") : Tr("Open")},
 				{Icon::Touchpad, other}};
 		switch (m_screen)
 		{
