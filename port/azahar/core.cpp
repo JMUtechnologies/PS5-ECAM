@@ -325,6 +325,8 @@ namespace ps5azahar
 			ps5log::Line("[azahar] {} slot {}: {}{}", load ? "load from" : "save to", slot, message,
 				result == Status::Success ? std::string() : fmt::format(" ({})", system.GetStatusDetails()));
 			ps5ingame3ds::SetStateMessage(message);
+			if (!ps5ingame3ds::MenuOpen())
+				ps5notify::Send(message); // a shortcut's: the menu is not there to say it
 			ShowStateSlots();
 			// a load makes the 3DS's input services over: the DualSense goes back to them
 			if (load && result == Status::Success)
@@ -835,6 +837,7 @@ namespace ps5azahar
 	{
 		// tr: the PS5's notification as a 3DS game starts
 		ps5notify::Send(ps5lang::Tr("Touchpad click + Options: the in-game menu. A touchpad click alone: the bottom screen"));
+		ps5pad::SetStateShortcuts(true);
 		Core::System& system = Core::System::GetInstance();
 		uint64_t polls = 0;
 		ps5emu::LogMemory();
@@ -866,7 +869,8 @@ namespace ps5azahar
 						stats.emulation_speed * 100.0, breakdown.empty() ? "no frames" : breakdown, s_settings.cpuClock,
 						s_settings.resolution, s_settings.textureFilter);
 			}
-			switch (ps5pad::TakeShortcut())
+			const ps5pad::Shortcut shortcut = ps5pad::TakeShortcut();
+			switch (shortcut)
 			{
 			case ps5pad::Shortcut::Menu:
 				ps5ingame3ds::ToggleMenu();
@@ -883,6 +887,15 @@ namespace ps5azahar
 				menu.layout = (menu.layout + 1) % 4;
 				ApplyMenu(menu);
 				ShowInMenu();
+				break;
+			}
+			case ps5pad::Shortcut::SaveState:
+			case ps5pad::Shortcut::LoadState:
+			{
+				// touchpad click + Square, or + Triangle held: the menu's slot, as its rows ask
+				std::string why;
+				if (!ps5ingame3ds::AskState(shortcut == ps5pad::Shortcut::LoadState, why))
+					ps5notify::Send(why);
 				break;
 			}
 			case ps5pad::Shortcut::None:
@@ -952,6 +965,7 @@ namespace ps5azahar
 		system.Shutdown();
 		ps5log::Line("[azahar] shut down in {} ms", elapsed());
 		input::Shutdown();
+		ps5pad::SetStateShortcuts(false);
 		s_shutDown = true;
 	}
 

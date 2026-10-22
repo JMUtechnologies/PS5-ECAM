@@ -268,12 +268,14 @@ software you own, and don't download or share them.
 | Touchpad click + L1 | Switch the main screen between TV and GamePad |
 | Touchpad click + R1 | Show or hide the second screen in the corner |
 
-| In a 3DS game | Action |
+| In a 3DS or DS game | Action |
 |---|---|
 | Touchpad | Bottom screen cursor: click to tap, hold the click to drag |
 | Touchpad click + Options | Open the in-game menu |
 | Touchpad click + L1 | Swap the screens |
 | Touchpad click + R1 | Next screen layout |
+| Touchpad click + Square | Save state, to the slot chosen in the in-game menu (slot 1 at first) |
+| Touchpad click + Triangle, held | Load state, from that slot |
 
 **Settings > Controls > Buttons** on the 3DS and DS sides can also give a DualSense button one of
 these, held (none has a button until you give it one):
@@ -336,6 +338,8 @@ idea and prototype, #38.)
   put the next figure on a slot, and **Empty** takes it off. The game saves its progress into the dump,
   as it would on the toy. A real portal plugged into the PS5 isn't supported.
 - **Save states (3DS).** Five slots per game; loading is held (hold Cross until the ring fills).
+  Touchpad click + Square saves to the slot chosen in the menu, and touchpad click + Triangle, held a
+  moment, loads it, without opening the menu (on the DS too); a PS5 notification says how it went.
   States made by earlier PS5-ECAM builds load too. Keep saving in the game as well.
 - **Cheats (3DS).** Put a game's cheats in `/data/ps5cemu/azahar/cheats/<title ID>.txt` (16 hex
   digits, shown in the in-game menu), in the Gateway format desktop Azahar uses, and turn them on and

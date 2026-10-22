@@ -521,7 +521,8 @@ namespace ps5ingame3ds
 				Tr("Five slots for this game: save exactly where you are, and come back to it."), {
 				// tr: a save state slot's number, then when it was saved (or empty)
 				{"slot", Tr("Slot"), fmt::format("{}  {}", s_stateSlot, time.empty() ? Tr("(empty)") : time), true,
-					Tr("Which of this game's five slots to save to or load from.")},
+					Tr("Which of this game's five slots to save to or load from. In the game, touchpad click + Square saves to it, and "
+					   "touchpad click + Triangle held loads it.")},
 				{"save", Tr("Save to this slot"), stateMessage, false,
 					Tr("Saves the game as it is now, replacing what the slot had. Newer app versions may not load it: keep saving in the game too.")},
 			}});
@@ -991,6 +992,20 @@ namespace ps5ingame3ds
 			return false;
 		request = s_extrasRequest;
 		s_extrasRequest = {};
+		return true;
+	}
+
+	bool AskState(bool load, std::string& why)
+	{
+		std::lock_guard lock(s_mutex);
+		if (load && (s_stateSlot > (int)s_stateTimes.size() || s_stateTimes[s_stateSlot - 1].empty()))
+		{
+			why = TrF("Slot {0} is empty", s_stateSlot);
+			return false;
+		}
+		s_stateRequest = load ? -s_stateSlot : s_stateSlot;
+		s_stateAction = load ? "load" : "save";
+		s_stateMessage = load ? Tr("Loading…") : Tr("Saving…");
 		return true;
 	}
 

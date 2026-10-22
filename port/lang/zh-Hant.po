@@ -116,7 +116,7 @@ msgstr "找不到遊戲的本體檔案。"
 msgid "The game could not be mounted. Check that its files are still in the game files folder."
 msgstr "無法掛載遊戲。檢查遊戲檔案是否仍在遊戲檔案資料夾中。"
 
-#: port/app/emulator.cpp:766 port/azahar/core.cpp:568
+#: port/app/emulator.cpp:766 port/azahar/core.cpp:570
 #, menu
 msgid "The game could not be started."
 msgstr "無法啟動遊戲。"
@@ -138,7 +138,7 @@ msgstr "缺少其title.tik。"
 msgid "The executable could not be started."
 msgstr "無法啟動執行檔。"
 
-#: port/app/emulator.cpp:798 port/melonds/core.cpp:893
+#: port/app/emulator.cpp:798 port/melonds/core.cpp:895
 msgid "The Vulkan renderer did not start: {0}"
 msgstr "Vulkan渲染器未能啟動：{0}"
 
@@ -147,7 +147,7 @@ msgstr "Vulkan渲染器未能啟動：{0}"
 msgid "Touchpad click + Options: the in-game menu (screens, picture, volume, controls, the library)"
 msgstr "觸控板按鈕＋選項按鈕：遊戲內選單（畫面、畫面比例、音量、操作、遊戲庫）"
 
-#: port/app/emulator.cpp:1082
+#: port/app/emulator.cpp:1084
 msgid "PS5-ECAM could not start itself again to show the library: start it again from the home screen."
 msgstr "PS5-ECAM無法重新啟動以顯示遊戲庫：請從主頁重新啟動。"
 
@@ -755,7 +755,7 @@ msgid "GamePad"
 msgstr "GamePad"
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
-#: port/app/ingame.cpp:192 port/app/ingame.cpp:338 port/app/ingame3ds.cpp:633 port/frontend/shell/settings.cpp:196
+#: port/app/ingame.cpp:192 port/app/ingame.cpp:338 port/app/ingame3ds.cpp:634 port/frontend/shell/settings.cpp:196
 #, menu
 msgid "Screens"
 msgstr "畫面"
@@ -968,7 +968,7 @@ msgstr "重新啟動遊戲後才會生效：傳送門會在遊戲啟動時連接
 msgid "Plugged in as a game starts, as in Cemu. Its figures are below while it is on."
 msgstr "與Cemu相同，在遊戲啟動時連接。啟用時，公仔會列在下方。"
 
-#: port/app/ingame.cpp:266 port/app/ingame3ds.cpp:607
+#: port/app/ingame.cpp:266 port/app/ingame3ds.cpp:608
 #, menu
 msgid "Empty"
 msgstr "空"
@@ -1015,13 +1015,13 @@ msgid "The game's sound. Left and Right change it by 10%."
 msgstr "遊戲的聲音。按左右每次調整10%。"
 
 #. amiibo is Nintendo's name for its figures, as it writes it in the language
-#: port/app/ingame.cpp:292 port/app/ingame.cpp:339 port/app/ingame3ds.cpp:566 port/app/ingame3ds.cpp:567
+#: port/app/ingame.cpp:292 port/app/ingame.cpp:339 port/app/ingame3ds.cpp:567 port/app/ingame3ds.cpp:568
 #, menu
 msgid "Amiibo"
 msgstr "amiibo"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/app/ingame.cpp:295 port/app/ingame3ds.cpp:569
+#: port/app/ingame.cpp:295 port/app/ingame3ds.cpp:570
 #, menu
 msgid "Put amiibo dumps (.bin) in {0}/amiibo to scan them here."
 msgstr "將amiibo備份檔（.bin）放入{0}/amiibo，即可在此掃描。"
@@ -1032,7 +1032,7 @@ msgid "Left and Right choose an amiibo dump; Cross touches it to the GamePad whe
 msgstr "按左右選擇amiibo備份檔；遊戲要求時，按交叉按鈕讓它觸碰GamePad。"
 
 #. the DS's lid, closed or open
-#: port/app/ingame.cpp:297 port/app/ingame3ds.cpp:578 port/app/ingame3ds.cpp:589 port/frontend/shell/pages.cpp:811 port/frontend/shell/settings.cpp:198
+#: port/app/ingame.cpp:297 port/app/ingame3ds.cpp:579 port/app/ingame3ds.cpp:590 port/frontend/shell/pages.cpp:811 port/frontend/shell/settings.cpp:198
 #, menu
 msgid "Controls"
 msgstr "操作"
@@ -1067,7 +1067,7 @@ msgstr "模擬控制器"
 msgid "What the game sees in this player's hands. Most games want the GamePad for player 1."
 msgstr "遊戲認定此玩家手上拿的控制器。大多數遊戲要玩家1使用GamePad。"
 
-#: port/app/ingame.cpp:303 port/app/ingame3ds.cpp:590 port/frontend/shell/pages.cpp:450 port/frontend/shell/pages.cpp:596 port/frontend/shell/settings.cpp:675
+#: port/app/ingame.cpp:303 port/app/ingame3ds.cpp:591 port/frontend/shell/pages.cpp:450 port/frontend/shell/pages.cpp:596 port/frontend/shell/settings.cpp:675
 #, menu
 msgid "Motion controls"
 msgstr "體感操作"
@@ -1112,17 +1112,17 @@ msgstr "右搖桿死區"
 msgid "How far the right stick moves before the game sees it. Raise it if the camera drifts."
 msgstr "右搖桿要移動多少遊戲才會偵測到。視角自己飄移時可調高。"
 
-#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:584 port/app/ingame3ds.cpp:594 port/frontend/shell/pages.cpp:451 port/frontend/shell/pages.cpp:616 port/frontend/shell/settings.cpp:652 port/frontend/shell/welcome.cpp:58
+#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:585 port/app/ingame3ds.cpp:595 port/frontend/shell/pages.cpp:451 port/frontend/shell/pages.cpp:616 port/frontend/shell/settings.cpp:652 port/frontend/shell/welcome.cpp:58
 #, menu
 msgid "A and B"
 msgstr "A與B"
 
-#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:575 port/frontend/shell/pages.cpp:618 port/frontend/shell/settings.cpp:652 port/frontend/shell/welcome.cpp:59
+#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:576 port/frontend/shell/pages.cpp:618 port/frontend/shell/settings.cpp:652 port/frontend/shell/welcome.cpp:59
 #, menu
 msgid "A on Circle"
 msgstr "A在圓圈按鈕"
 
-#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:575 port/frontend/shell/pages.cpp:618 port/frontend/shell/settings.cpp:652 port/frontend/shell/welcome.cpp:59
+#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:576 port/frontend/shell/pages.cpp:618 port/frontend/shell/settings.cpp:652 port/frontend/shell/welcome.cpp:59
 #, menu
 msgid "A on Cross"
 msgstr "A在交叉按鈕"
@@ -1182,29 +1182,29 @@ msgstr "觸碰GamePad的螢幕，或按下指派給觸控板按鈕的按鈕（�
 msgid "The GamePad's screen"
 msgstr "GamePad的螢幕"
 
-#: port/app/ingame.cpp:323 port/app/ingame3ds.cpp:600 port/eden/ingame.cpp:498
+#: port/app/ingame.cpp:323 port/app/ingame3ds.cpp:601 port/eden/ingame.cpp:498
 #, menu
 msgid "Quit to the home screen"
 msgstr "結束並回到主頁"
 
-#: port/app/ingame.cpp:324 port/app/ingame3ds.cpp:601 port/eden/ingame.cpp:499
+#: port/app/ingame.cpp:324 port/app/ingame3ds.cpp:602 port/eden/ingame.cpp:499
 #, menu
 msgid "Leaves the game and closes PS5-ECAM, as its home screen tile asks. What you have not saved in the game is lost, so Cross is held."
 msgstr "離開遊戲並關閉PS5-ECAM，這是該遊戲主頁圖示的設定。遊戲中未存檔的進度會遺失，因此需按住交叉按鈕。"
 
-#: port/app/ingame.cpp:325 port/app/ingame3ds.cpp:602 port/eden/ingame.cpp:500
+#: port/app/ingame.cpp:325 port/app/ingame3ds.cpp:603 port/eden/ingame.cpp:500
 #, menu
 msgid "Quit to the library"
 msgstr "結束並回到遊戲庫"
 
-#: port/app/ingame.cpp:326 port/app/ingame3ds.cpp:603 port/eden/ingame.cpp:501
+#: port/app/ingame.cpp:326 port/app/ingame3ds.cpp:604 port/eden/ingame.cpp:501
 #, menu
 msgid "Leaves the game for the library. What you have not saved in the game is lost, so Cross is held."
 msgstr "離開遊戲並回到遊戲庫。遊戲中未存檔的進度會遺失，因此需按住交叉按鈕。"
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
 #. the quick actions: big tiles at the top of the in-game menu, a word or two each
-#: port/app/ingame.cpp:338 port/app/ingame3ds.cpp:630 port/eden/ingame.cpp:511
+#: port/app/ingame.cpp:338 port/app/ingame3ds.cpp:631 port/eden/ingame.cpp:511
 #, menu
 msgid "Resume"
 msgstr "繼續遊戲"
@@ -1244,22 +1244,22 @@ msgstr "未能掃描（錯誤{0}）"
 msgid "Running"
 msgstr "執行中"
 
-#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:780 port/eden/ingame.cpp:583 port/frontend/shell/eden.cpp:490 port/frontend/shell/eden.cpp:499 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1381 port/frontend/shell/shell.cpp:1385 port/frontend/shell/shell.cpp:1419 port/frontend/shell/shell.cpp:1435 port/frontend/shell/shell.cpp:1443 port/frontend/shell/shell.cpp:1451 port/frontend/shell/shell.cpp:1454 port/frontend/shell/shell.cpp:2390
+#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:781 port/eden/ingame.cpp:583 port/frontend/shell/eden.cpp:490 port/frontend/shell/eden.cpp:499 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1381 port/frontend/shell/shell.cpp:1385 port/frontend/shell/shell.cpp:1419 port/frontend/shell/shell.cpp:1435 port/frontend/shell/shell.cpp:1443 port/frontend/shell/shell.cpp:1451 port/frontend/shell/shell.cpp:1454 port/frontend/shell/shell.cpp:2390
 #, menu
 msgid "Choose"
 msgstr "選擇"
 
-#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:780 port/eden/ingame.cpp:583 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1401 port/frontend/shell/shell.cpp:1444 port/frontend/shell/shell.cpp:1448 port/frontend/shell/shell.cpp:1451 port/frontend/shell/shell.cpp:1454 port/frontend/shell/shell.cpp:1465
+#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:781 port/eden/ingame.cpp:583 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1401 port/frontend/shell/shell.cpp:1444 port/frontend/shell/shell.cpp:1448 port/frontend/shell/shell.cpp:1451 port/frontend/shell/shell.cpp:1454 port/frontend/shell/shell.cpp:1465
 #, menu
 msgid "Change"
 msgstr "變更"
 
-#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:780 port/eden/ingame.cpp:583
+#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:781 port/eden/ingame.cpp:583
 #, menu
 msgid "Back to the game"
 msgstr "回到遊戲"
 
-#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:780 port/eden/ingame.cpp:583 port/frontend/shell/eden.cpp:479 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:508 port/frontend/shell/eden.cpp:511 port/frontend/shell/installs.cpp:329 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1402 port/frontend/shell/shell.cpp:1411 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1443 port/frontend/shell/shell.cpp:1444 port/frontend/shell/shell.cpp:1448 port/frontend/shell/shell.cpp:1452 port/frontend/shell/shell.cpp:1454 port/frontend/shell/shell.cpp:1458 port/frontend/shell/shell.cpp:1462 port/frontend/shell/shell.cpp:1466
+#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:781 port/eden/ingame.cpp:583 port/frontend/shell/eden.cpp:479 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:508 port/frontend/shell/eden.cpp:511 port/frontend/shell/installs.cpp:329 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1402 port/frontend/shell/shell.cpp:1411 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1443 port/frontend/shell/shell.cpp:1444 port/frontend/shell/shell.cpp:1448 port/frontend/shell/shell.cpp:1452 port/frontend/shell/shell.cpp:1454 port/frontend/shell/shell.cpp:1458 port/frontend/shell/shell.cpp:1462 port/frontend/shell/shell.cpp:1466
 #, menu
 msgid "Back"
 msgstr "返回"
@@ -1451,7 +1451,7 @@ msgstr "低於100%可讓緩慢的遊戲達到全速；高於100%可讓在3DS上�
 msgid "Save states"
 msgstr "即時存檔"
 
-#: port/app/ingame3ds.cpp:520 port/app/ingame3ds.cpp:631 port/app/ingame3ds.cpp:632
+#: port/app/ingame3ds.cpp:520 port/app/ingame3ds.cpp:632 port/app/ingame3ds.cpp:633
 #, menu
 msgid "Slot {0}"
 msgstr "欄位{0}"
@@ -1475,246 +1475,246 @@ msgstr "（空）"
 
 #: port/app/ingame3ds.cpp:524
 #, menu
-msgid "Which of this game's five slots to save to or load from."
-msgstr "要存入或讀取此遊戲五個欄位中的哪一個。"
+msgid "Which of this game's five slots to save to or load from. In the game, touchpad click + Square saves to it, and touchpad click + Triangle held loads it."
+msgstr "要存入或讀取此遊戲五個欄位中的哪一個。遊戲中，按觸控板按鈕＋正方按鈕存入該欄位，按觸控板按鈕＋長按三角按鈕從中讀取。"
 
-#: port/app/ingame3ds.cpp:525
+#: port/app/ingame3ds.cpp:526
 #, menu
 msgid "Save to this slot"
 msgstr "存到此欄位"
 
-#: port/app/ingame3ds.cpp:526
+#: port/app/ingame3ds.cpp:527
 #, menu
 msgid "Saves the game as it is now, replacing what the slot had. Newer app versions may not load it: keep saving in the game too."
 msgstr "存下遊戲目前的狀態，取代欄位原本的內容。較新版本的應用程式可能無法讀取：遊戲內也要繼續存檔。"
 
-#: port/app/ingame3ds.cpp:528
+#: port/app/ingame3ds.cpp:529
 #, menu
 msgid "Cheats"
 msgstr "金手指"
 
-#: port/app/ingame3ds.cpp:529
+#: port/app/ingame3ds.cpp:530
 #, menu
 msgid "The game's cheats, from melonds/cheats/<game file>.mch (melonDS's format)."
 msgstr "此遊戲的金手指，來自melonds/cheats/<遊戲檔名>.mch（melonDS的格式）。"
 
-#: port/app/ingame3ds.cpp:530
+#: port/app/ingame3ds.cpp:531
 #, menu
 msgid "The game's cheats, from azahar/cheats/<title ID>.txt (Gateway format)."
 msgstr "此遊戲的金手指，來自azahar/cheats/<Title ID>.txt（Gateway格式）。"
 
-#: port/app/ingame3ds.cpp:533
+#: port/app/ingame3ds.cpp:534
 #, menu
 msgid "Cross, Left or Right turns it on or off, at once; it is kept for next time."
 msgstr "按交叉按鈕或左右可立即啟用或停用，並保留到下次。"
 
-#: port/app/ingame3ds.cpp:535
+#: port/app/ingame3ds.cpp:536
 #, menu
 msgid "No cheats for this game"
 msgstr "此遊戲沒有金手指"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/app/ingame3ds.cpp:537
+#: port/app/ingame3ds.cpp:538
 #, menu
 msgid "Put them in {0}/melonds/cheats/<game file>.mch (the game's file name, .mch for .nds), then start the game again."
 msgstr "放入{0}/melonds/cheats/<遊戲檔名>.mch（遊戲的檔名，副檔名.nds改為.mch），再重新啟動遊戲。"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/app/ingame3ds.cpp:540
+#: port/app/ingame3ds.cpp:541
 #, menu
 msgid "Put them in {0}/azahar/cheats/<title ID>.txt, then start the game again."
 msgstr "放入{0}/azahar/cheats/<Title ID>.txt，再重新啟動遊戲。"
 
 #. how many of the game's cheats are on: {0} of {1}
-#: port/app/ingame3ds.cpp:543 port/frontend/shell/eden.cpp:1482
+#: port/app/ingame3ds.cpp:544 port/frontend/shell/eden.cpp:1482
 #, menu
 msgid "{0} of {1} on"
 msgstr "已啟用{0}/{1}個"
 
-#: port/app/ingame3ds.cpp:549
+#: port/app/ingame3ds.cpp:550
 #, menu
 msgid "Achievements"
 msgstr "成就"
 
-#: port/app/ingame3ds.cpp:549 port/frontend/shell/classic.cpp:463 port/frontend/shell/installs.cpp:376 port/frontend/shell/pages.cpp:324 port/frontend/shell/pages.cpp:822 port/frontend/shell/pages.cpp:1208 port/frontend/shell/shell.cpp:2418
+#: port/app/ingame3ds.cpp:550 port/frontend/shell/classic.cpp:463 port/frontend/shell/installs.cpp:376 port/frontend/shell/pages.cpp:324 port/frontend/shell/pages.cpp:822 port/frontend/shell/pages.cpp:1208 port/frontend/shell/shell.cpp:2418
 #, menu
 msgid "{0} of {1}"
 msgstr "{0}/{1}"
 
-#: port/app/ingame3ds.cpp:550
+#: port/app/ingame3ds.cpp:551
 #, menu
 msgid "This game's RetroAchievements."
 msgstr "此遊戲的RetroAchievements成就。"
 
-#: port/app/ingame3ds.cpp:556
+#: port/app/ingame3ds.cpp:557
 #, menu
 msgid "Earned"
 msgstr "已取得"
 
-#: port/app/ingame3ds.cpp:556
+#: port/app/ingame3ds.cpp:557
 #, menu
 msgid "Earned {0}"
 msgstr "{0}取得"
 
-#: port/app/ingame3ds.cpp:556
+#: port/app/ingame3ds.cpp:557
 #, menu
 msgid "{0} point"
 msgid_plural "{0} points"
 msgstr[0] "{0}分"
 
-#: port/app/ingame3ds.cpp:560
+#: port/app/ingame3ds.cpp:561
 #, menu
 msgid "No achievements"
 msgstr "沒有成就"
 
-#: port/app/ingame3ds.cpp:561
+#: port/app/ingame3ds.cpp:562
 #, menu
 msgid "RetroAchievements lists a game's achievements once it has a set for it."
 msgstr "RetroAchievements為遊戲建立成就集後，這裡會列出其成就。"
 
-#: port/app/ingame3ds.cpp:566
+#: port/app/ingame3ds.cpp:567
 #, menu
 msgid "Hold an amiibo dump to the 3DS's reader when the game asks for one."
 msgstr "遊戲要求時，將amiibo備份檔放上3DS的讀取器。"
 
-#: port/app/ingame3ds.cpp:570
+#: port/app/ingame3ds.cpp:571
 #, menu
 msgid "Left and Right choose an amiibo dump; Cross holds it to the reader."
 msgstr "按左右選擇amiibo備份檔；按交叉按鈕放上讀取器。"
 
-#: port/app/ingame3ds.cpp:571
+#: port/app/ingame3ds.cpp:572
 #, menu
 msgid "Take the amiibo away"
 msgstr "移開amiibo"
 
-#: port/app/ingame3ds.cpp:571
+#: port/app/ingame3ds.cpp:572
 #, menu
 msgid "Takes the amiibo off the reader, as lifting it off would."
 msgstr "將amiibo從讀取器移開，如同把它拿起來。"
 
 #. the DS's lid, closed or open
-#: port/app/ingame3ds.cpp:578
+#: port/app/ingame3ds.cpp:579
 #, menu
 msgid "Lid closed"
 msgstr "上蓋已闔上"
 
-#: port/app/ingame3ds.cpp:579
+#: port/app/ingame3ds.cpp:580
 #, menu
 msgid "The lid, the left stick's deadzone and where A and B are. Hold R3 to blow into the microphone."
 msgstr "上蓋、左搖桿死區以及A與B的位置。按住R3可對麥克風吹氣。"
 
-#: port/app/ingame3ds.cpp:580
+#: port/app/ingame3ds.cpp:581
 #, menu
 msgid "Lid"
 msgstr "上蓋"
 
-#: port/app/ingame3ds.cpp:580
+#: port/app/ingame3ds.cpp:581
 #, menu
 msgid "Closed"
 msgstr "闔上"
 
-#: port/app/ingame3ds.cpp:580 port/frontend/shell/eden.cpp:479 port/frontend/shell/eden.cpp:492 port/frontend/shell/eden.cpp:501 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:508 port/frontend/shell/eden.cpp:1300 port/frontend/shell/shell.cpp:1394 port/frontend/shell/shell.cpp:1423 port/frontend/shell/shell.cpp:1432 port/frontend/shell/shell.cpp:1441 port/frontend/shell/shell.cpp:1447 port/frontend/shell/shell.cpp:1462
+#: port/app/ingame3ds.cpp:581 port/frontend/shell/eden.cpp:479 port/frontend/shell/eden.cpp:492 port/frontend/shell/eden.cpp:501 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:508 port/frontend/shell/eden.cpp:1300 port/frontend/shell/shell.cpp:1394 port/frontend/shell/shell.cpp:1423 port/frontend/shell/shell.cpp:1432 port/frontend/shell/shell.cpp:1441 port/frontend/shell/shell.cpp:1447 port/frontend/shell/shell.cpp:1462
 #, menu
 msgid "Open"
 msgstr "打開"
 
-#: port/app/ingame3ds.cpp:581
+#: port/app/ingame3ds.cpp:582
 #, menu
 msgid "Closes the DS's lid, for games that ask you to; the DS sleeps until it is opened. Choose it again to open it."
 msgstr "闔上DS的上蓋，用於要求闔上的遊戲；打開前DS會進入睡眠。再選一次即可打開。"
 
-#: port/app/ingame3ds.cpp:582 port/app/ingame3ds.cpp:592 port/frontend/shell/settings.cpp:677
+#: port/app/ingame3ds.cpp:583 port/app/ingame3ds.cpp:593 port/frontend/shell/settings.cpp:677
 #, menu
 msgid "Stick deadzone"
 msgstr "搖桿死區"
 
-#: port/app/ingame3ds.cpp:583
+#: port/app/ingame3ds.cpp:584
 #, menu
 msgid "How far the left stick moves before it presses the D-pad. Raise it if something drifts when you let go."
 msgstr "左搖桿要移動多少才會按下十字按鈕。放開後仍會飄移時可調高。"
 
-#: port/app/ingame3ds.cpp:585
+#: port/app/ingame3ds.cpp:586
 #, menu
 msgid "A on Circle and B on Cross, where the DS has them, or the other way round, with X and Y swapped to match."
 msgstr "A在圓圈按鈕、B在交叉按鈕（與DS相同），或反過來（X與Y隨之對調）。"
 
-#: port/app/ingame3ds.cpp:589
+#: port/app/ingame3ds.cpp:590
 #, menu
 msgid "Motion controls, the sticks' deadzone and where A and B are."
 msgstr "體感操作、搖桿死區以及A與B的位置。"
 
-#: port/app/ingame3ds.cpp:591
+#: port/app/ingame3ds.cpp:592
 #, menu
 msgid "The DualSense's gyroscope and accelerometer as the 3DS's, for the games that aim or steer by tilting."
 msgstr "將DualSense的陀螺儀與加速度感應器作為3DS的感應器，用於靠傾斜來瞄準或轉向的遊戲。"
 
-#: port/app/ingame3ds.cpp:593
+#: port/app/ingame3ds.cpp:594
 #, menu
 msgid "How far a stick moves before the game sees it. Raise it if something drifts when you let go."
 msgstr "搖桿要移動多少遊戲才會偵測到。放開後仍會飄移時可調高。"
 
-#: port/app/ingame3ds.cpp:595
+#: port/app/ingame3ds.cpp:596
 #, menu
 msgid "A on Circle and B on Cross, where the 3DS has them, or the other way round, with X and Y swapped to match."
 msgstr "A在圓圈按鈕、B在交叉按鈕（與3DS相同），或反過來（X與Y隨之對調）。"
 
-#: port/app/ingame3ds.cpp:607
+#: port/app/ingame3ds.cpp:608
 #, menu
 msgid "Load this slot"
 msgstr "從此欄位讀檔"
 
-#: port/app/ingame3ds.cpp:608
+#: port/app/ingame3ds.cpp:609
 #, menu
 msgid "Goes back to the moment the slot was saved. What you did since is lost, so Cross is held."
 msgstr "回到此欄位存檔時的狀態。之後的進度會遺失，因此需按住交叉按鈕。"
 
-#: port/app/ingame3ds.cpp:613 port/frontend/shell/settings.cpp:703
+#: port/app/ingame3ds.cpp:614 port/frontend/shell/settings.cpp:703
 #, menu
 msgid "The touch screen"
 msgstr "觸控螢幕"
 
-#: port/app/ingame3ds.cpp:613 port/frontend/shell/settings.cpp:703
+#: port/app/ingame3ds.cpp:614 port/frontend/shell/settings.cpp:703
 #, menu
 msgid "The bottom screen"
 msgstr "下螢幕"
 
-#: port/app/ingame3ds.cpp:631
+#: port/app/ingame3ds.cpp:632
 #, menu
 msgid "Save state"
 msgstr "即時存檔"
 
-#: port/app/ingame3ds.cpp:632
+#: port/app/ingame3ds.cpp:633
 #, menu
 msgid "Load state"
 msgstr "即時讀檔"
 
-#: port/app/ingame3ds.cpp:632
+#: port/app/ingame3ds.cpp:633
 #, menu
 msgid "Slot {0} empty"
 msgstr "欄位{0}：空"
 
-#: port/app/ingame3ds.cpp:639
+#: port/app/ingame3ds.cpp:640
 #, menu
 msgid "Slot {0}: {1}"
 msgstr "欄位{0}：{1}"
 
-#: port/app/ingame3ds.cpp:712
+#: port/app/ingame3ds.cpp:713 port/app/ingame3ds.cpp:1003
 #, menu
 msgid "Slot {0} is empty"
 msgstr "欄位{0}是空的"
 
-#: port/app/ingame3ds.cpp:720
+#: port/app/ingame3ds.cpp:721 port/app/ingame3ds.cpp:1008
 #, menu
 msgid "Saving…"
 msgstr "存檔中…"
 
-#: port/app/ingame3ds.cpp:720 port/eden/ingame.cpp:384 port/eden/ingame.cpp:386
+#: port/app/ingame3ds.cpp:721 port/app/ingame3ds.cpp:1008 port/eden/ingame.cpp:384 port/eden/ingame.cpp:386
 #, menu
 msgid "Loading…"
 msgstr "讀檔中…"
 
 #. the in-game menu's badge: the game waits behind the menu
-#: port/app/ingame3ds.cpp:773
+#: port/app/ingame3ds.cpp:774
 #, menu
 msgid "Paused"
 msgstr "已暫停"
@@ -1758,33 +1758,33 @@ msgid "90° left"
 msgstr "向左90°"
 
 #. the 3DS borders' names (artwork around the screens)
-#: port/app/ingame3ds.h:131 port/frontend/shell/settings.cpp:44
+#: port/app/ingame3ds.h:135 port/frontend/shell/settings.cpp:44
 #, menu
 msgctxt "border"
 msgid "None"
 msgstr "無"
 
 #. the 3DS borders' names (artwork around the screens)
-#: port/app/ingame3ds.h:131 port/frontend/shell/settings.cpp:44
+#: port/app/ingame3ds.h:135 port/frontend/shell/settings.cpp:44
 #, menu
 msgctxt "border"
 msgid "Midnight"
 msgstr "午夜"
 
 #. the 3DS borders' names (artwork around the screens)
-#: port/app/ingame3ds.h:132 port/frontend/shell/settings.cpp:44
+#: port/app/ingame3ds.h:136 port/frontend/shell/settings.cpp:44
 #, menu
 msgctxt "border"
 msgid "Waves"
 msgstr "波浪"
 
-#: port/app/ingame3ds.h:132 port/frontend/shell/settings.cpp:45
+#: port/app/ingame3ds.h:136 port/frontend/shell/settings.cpp:45
 #, menu
 msgctxt "border"
 msgid "Aurora"
 msgstr "極光"
 
-#: port/app/ingame3ds.h:132 port/frontend/shell/settings.cpp:45
+#: port/app/ingame3ds.h:136 port/frontend/shell/settings.cpp:45
 #, menu
 msgctxt "border"
 msgid "Shell"
@@ -1815,7 +1815,7 @@ msgstr "其meta資料夾並未描述Wii U軟體（meta.xml）。"
 msgid "This is where it is installed already."
 msgstr "已安裝在此處。"
 
-#: port/app/install.cpp:510 port/azahar/core.cpp:970
+#: port/app/install.cpp:510 port/azahar/core.cpp:984
 #, menu
 msgid "An install is already running."
 msgstr "已有安裝正在進行。"
@@ -2555,122 +2555,122 @@ msgid "It did not work"
 msgstr "未成功"
 
 #. why a 3DS game did not start
-#: port/azahar/core.cpp:551
+#: port/azahar/core.cpp:553
 #, menu
 msgid "This is not a 3DS game Azahar can start."
 msgstr "這不是Azahar能啟動的3DS遊戲。"
 
-#: port/azahar/core.cpp:552 port/melonds/core.cpp:822
+#: port/azahar/core.cpp:554 port/melonds/core.cpp:824
 #, menu
 msgid "The game could not be loaded."
 msgstr "無法載入遊戲。"
 
-#: port/azahar/core.cpp:556 port/frontend/shell/shell.cpp:953
+#: port/azahar/core.cpp:558 port/frontend/shell/shell.cpp:953
 #, menu
 msgid "The game is encrypted, and Azahar plays only decrypted games, with keys or without: decrypt it on your 3DS first (GodMode9)."
 msgstr "遊戲已加密，不論有無金鑰，Azahar都只能遊玩已解密的遊戲：先在3DS上解密（GodMode9）。"
 
-#: port/azahar/core.cpp:558
+#: port/azahar/core.cpp:560
 #, menu
 msgid "The game's format is not supported."
 msgstr "不支援此遊戲的格式。"
 
-#: port/azahar/core.cpp:559
+#: port/azahar/core.cpp:561
 #, menu
 msgid "GBA Virtual Console games are not supported."
 msgstr "不支援GBA Virtual Console遊戲。"
 
-#: port/azahar/core.cpp:560
+#: port/azahar/core.cpp:562
 #, menu
 msgid "The game's system mode could not be found."
 msgstr "找不到遊戲的系統模式。"
 
-#: port/azahar/core.cpp:561
+#: port/azahar/core.cpp:563
 #, menu
 msgid "The game needs 3DS system files Azahar does not have."
 msgstr "遊戲需要Azahar沒有的3DS系統檔案。"
 
-#: port/azahar/core.cpp:563
+#: port/azahar/core.cpp:565
 #, menu
 msgid "The game's patches could not be applied."
 msgstr "無法套用遊戲的修正檔。"
 
-#: port/azahar/core.cpp:564
+#: port/azahar/core.cpp:566
 #, menu
 msgid "Azahar's renderer or CPU did not start."
 msgstr "Azahar的渲染器或CPU未能啟動。"
 
-#: port/azahar/core.cpp:566
+#: port/azahar/core.cpp:568
 #, menu
 msgid "The Artic Base server did not answer: check the 3DS's address, that Artic Base runs on it, and that the 3DS and the PS5 are on the same network."
 msgstr "Artic Base伺服器沒有回應：檢查3DS的位址、3DS上是否正在執行Artic Base，以及3DS與PS5是否在同一個網路。"
 
-#: port/azahar/core.cpp:634
+#: port/azahar/core.cpp:636
 #, menu
 msgid "The game is busy: try again"
 msgstr "遊戲忙碌中：請再試一次"
 
 #. the PS5's notification as an Artic Base game ends because the 3DS stopped answering
-#: port/azahar/core.cpp:653
+#: port/azahar/core.cpp:655
 #, menu
 msgid "The 3DS stopped answering: the Artic Base game has stopped."
 msgstr "3DS已停止回應：Artic Base遊戲已停止。"
 
-#: port/azahar/core.cpp:655
+#: port/azahar/core.cpp:657
 #, menu
 msgid "The 3DS game stopped: {0}"
 msgstr "3DS遊戲已停止：{0}"
 
-#: port/azahar/core.cpp:704
+#: port/azahar/core.cpp:706
 #, menu
 msgid "A CIA file is installed, not played: install it from Settings > Game files, then start the game."
 msgstr "CIA檔案需要安裝，無法直接遊玩：在「設定 > 遊戲檔案」中安裝，再啟動遊戲。"
 
-#: port/azahar/core.cpp:754
+#: port/azahar/core.cpp:756
 #, menu
 msgid "Azahar did not start: {0}"
 msgstr "Azahar未能啟動：{0}"
 
-#: port/azahar/core.cpp:763
+#: port/azahar/core.cpp:765
 #, menu
 msgid "Artic Setup did not finish: the Artic Setup Tool on the 3DS says why. If it says nothing, check the 3DS's address, and that the 3DS and the PS5 are on the same network."
 msgstr "Artic Setup沒有完成：3DS上的Artic Setup Tool會顯示原因。如果沒有顯示，請檢查3DS的位址，以及3DS與PS5是否在同一個網路。"
 
 #. why an Artic Base game did not start, when the 3DS had answered; Y is the 3DS's button
-#: port/azahar/core.cpp:769
+#: port/azahar/core.cpp:771
 #, menu
 msgid "The 3DS answered, then Artic Base stopped before the game started. On the 3DS, press Y in the Artic Base app to restart its server, then connect again. If it stops again, Settings > Diagnostics > Copy logs to USB copies Azahar's log, which says what failed."
 msgstr "3DS已回應，但Artic Base在遊戲開始前停止了。請在3DS上的Artic Base應用程式中按Y重新啟動其伺服器，然後再次連線。如果再次停止，「設定 > 診斷 > 將記錄檔複製到USB」會複製Azahar的記錄檔，其中記錄了失敗的原因。"
 
 #. the PS5's notification as a 3DS game starts
-#: port/azahar/core.cpp:837
+#: port/azahar/core.cpp:839
 #, menu
 msgid "Touchpad click + Options: the in-game menu. A touchpad click alone: the bottom screen"
 msgstr "觸控板按鈕＋選項按鈕：遊戲內選單。只按觸控板按鈕：下螢幕"
 
 #. why a CIA file could not be installed, after "It could not be installed:"
-#: port/azahar/core.cpp:1039
+#: port/azahar/core.cpp:1053
 #, menu
 msgid "it is encrypted, the CIA or the game inside it. Azahar installs only fully decrypted CIA files: decrypt it with GodMode9 on a 3DS, or play the game's decrypted .3ds or .cci file instead"
 msgstr "該CIA或其中的遊戲已加密。Azahar只能安裝完全解密的CIA檔案：在3DS上用GodMode9解密，或改玩該遊戲已解密的.3ds或.cci檔案"
 
-#: port/azahar/core.cpp:1042
+#: port/azahar/core.cpp:1056
 #, menu
 msgid "it is not a CIA file, or it is damaged (check the file's size)"
 msgstr "不是CIA檔案，或檔案已損毀（檢查檔案大小）"
 
-#: port/azahar/core.cpp:1044
+#: port/azahar/core.cpp:1058
 #, menu
 msgid "the file could not be read"
 msgstr "無法讀取檔案"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/azahar/core.cpp:1047
+#: port/azahar/core.cpp:1061
 #, menu
 msgid "Azahar stopped part-way through; {0}/azahar/log/azahar_log.txt says why"
 msgstr "Azahar中途停止；原因請見{0}/azahar/log/azahar_log.txt"
 
-#: port/azahar/core.cpp:1049
+#: port/azahar/core.cpp:1063
 #, menu
 msgid "it is not a CIA Azahar can install"
 msgstr "不是Azahar能安裝的CIA"
@@ -7027,39 +7027,39 @@ msgid "The launcher could not start: {0}. The boot log in {1}/logs has more."
 msgstr "啟動器無法啟動：{0}。{1}/logs中的啟動記錄檔有更多資訊。"
 
 #. a notification as a DS game stops because the PS5's GPU stopped drawing its screens
-#: port/melonds/core.cpp:726
+#: port/melonds/core.cpp:728
 msgid "The DS game's screens stopped (the GPU's device was lost)."
 msgstr "DS遊戲的畫面已停止（GPU裝置遺失）。"
 
 #. why a DS game in a .zip, .7z or .rar archive did not start
-#: port/melonds/core.cpp:790
+#: port/melonds/core.cpp:792
 msgid "There is no DS game in this archive, or the archive could not be read."
 msgstr "此壓縮檔中沒有DS遊戲，或無法讀取此壓縮檔。"
 
-#: port/melonds/core.cpp:796
+#: port/melonds/core.cpp:798
 msgid "The DS game in this archive could not be read: is the archive whole?"
 msgstr "無法讀取此壓縮檔中的DS遊戲：壓縮檔是否完整？"
 
 #. why a DS game did not start
-#: port/melonds/core.cpp:808 port/melonds/core.cpp:845
+#: port/melonds/core.cpp:810 port/melonds/core.cpp:847
 msgid "This is not a DS game melonDS can read."
 msgstr "這不是melonDS能讀取的DS遊戲。"
 
-#: port/melonds/core.cpp:815
+#: port/melonds/core.cpp:817
 msgid "DSi games are not supported yet."
 msgstr "尚不支援DSi遊戲。"
 
 #. the PS5's notification as a DS game starts
-#: port/melonds/core.cpp:951
+#: port/melonds/core.cpp:953
 msgid "Touchpad click + Options: the in-game menu. A touchpad click alone: the touch screen. R3: the microphone"
 msgstr "觸控板按鈕＋選項按鈕：遊戲內選單。只按觸控板按鈕：觸控螢幕。R3：麥克風"
 
 #. notifications as melonDS stops a DS game
-#: port/melonds/core.cpp:1034
+#: port/melonds/core.cpp:1047
 msgid "The game asked for the DS's GBA mode, which melonDS does not have."
 msgstr "遊戲要求使用DS的GBA模式，但melonDS沒有此模式。"
 
-#: port/melonds/core.cpp:1036
+#: port/melonds/core.cpp:1049
 msgid "The DS game crashed."
 msgstr "DS遊戲已當機。"
 

@@ -70,6 +70,7 @@ namespace ps5pad
 			// GamePad's screen, and until when a short click's tap lasts
 			uint64_t clickedAt = 0, tapUntil = 0;
 			bool chordUsed = false, touched = false;
+			uint64_t loadAt = 0; // Triangle pressed with the click, for the load state shortcut: when (0: none)
 		};
 
 		std::mutex s_mutex;
@@ -79,6 +80,7 @@ namespace ps5pad
 		std::atomic<Shortcut> s_pendingShortcut{Shortcut::None};
 		std::array<std::atomic<bool>, kMaxPlayers> s_touchpadButton{};
 		std::atomic<uint32_t> s_turbo{0};
+		std::atomic<bool> s_stateShortcuts{false};
 
 		void OpenSlot(int player, int32_t user)
 		{
@@ -256,6 +258,7 @@ namespace ps5pad
 	{
 		constexpr uint64_t kTouchDelayUs = 150000; // a shortcut's button within this is no touch
 		constexpr uint64_t kTapUs = 80000;		   // how long a shorter click touches, once released
+		constexpr uint64_t kLoadHoldUs = 600000;   // Triangle held this long loads: a load loses what was played since
 		const uint64_t now = sceKernelGetProcessTime();
 		std::lock_guard lock(s_mutex);
 		Slot& slot = s_slots[std::clamp(player, 0, kMaxPlayers - 1)];
@@ -270,10 +273,28 @@ namespace ps5pad
 				slot.clickedAt = now;
 				slot.chordUsed = slot.touched = false;
 			}
-			const Shortcut shortcut = pressed(kOptions) ? Shortcut::Menu
-				: pressed(kL1)							? Shortcut::SwapScreens
-				: pressed(kR1)							? Shortcut::CornerScreen
-														: Shortcut::None;
+			Shortcut shortcut = pressed(kOptions) ? Shortcut::Menu
+				: pressed(kL1)					  ? Shortcut::SwapScreens
+				: pressed(kR1)					  ? Shortcut::CornerScreen
+												  : Shortcut::None;
+			if (s_stateShortcuts)
+			{
+				if (shortcut == Shortcut::None && pressed(kSquare))
+					shortcut = Shortcut::SaveState;
+				if (!(buttons & kTriangle))
+					slot.loadAt = 0;
+				else if (pressed(kTriangle))
+				{
+					slot.loadAt = now;
+					slot.chordUsed = true; // no touch while it is held
+				}
+				else if (shortcut == Shortcut::None && slot.loadAt && now - slot.loadAt >= kLoadHoldUs)
+				{
+					shortcut = Shortcut::LoadState;
+					slot.loadAt = 0; // once a hold
+				}
+				result.buttons &= ~(kSquare | kTriangle);
+			}
 			if (shortcut != Shortcut::None)
 			{
 				s_pendingShortcut = shortcut;
@@ -283,8 +304,12 @@ namespace ps5pad
 			result.touch = !slot.chordUsed && now - slot.clickedAt >= kTouchDelayUs;
 			slot.touched |= result.touch;
 		}
-		else if ((previous & kTouchPad) && !slot.chordUsed && !slot.touched)
-			slot.tapUntil = now + kTapUs;
+		else
+		{
+			slot.loadAt = 0;
+			if ((previous & kTouchPad) && !slot.chordUsed && !slot.touched)
+				slot.tapUntil = now + kTapUs;
+		}
 		if (now < slot.tapUntil)
 			result.touch = true;
 		// a button instead, for a player whose click is one: pressed when the touch would be
@@ -300,6 +325,11 @@ namespace ps5pad
 	Shortcut TakeShortcut()
 	{
 		return s_pendingShortcut.exchange(Shortcut::None);
+	}
+
+	void SetStateShortcuts(bool on)
+	{
+		s_stateShortcuts = on;
 	}
 
 	void SetTouchpadButton(int player, bool button)

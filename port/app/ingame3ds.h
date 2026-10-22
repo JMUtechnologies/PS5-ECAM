@@ -105,6 +105,10 @@ namespace ps5ingame3ds
 	void SetStateSlots(const std::vector<std::string>& times);
 	void SetStateMessage(const std::string& message);
 	bool TakeStateRequest(bool& load, int& slot);
+	// The save state shortcuts (ps5pad::Shortcut::SaveState, LoadState): a save to the menu's slot or
+	// a load from it, asked for as the menu's own rows ask (TakeStateRequest then has it); false, with
+	// why, when the slot to load is empty
+	bool AskState(bool load, std::string& why);
 
 	// The same page's amiibo and cheats. From the game's loop: the amiibo files (names in
 	// /data/ps5cemu/amiibo), the game's cheats (name, on) and what came of the last request; for it,

@@ -523,6 +523,8 @@ namespace ps5melonds
 			}
 			ps5log::Line("[ds] {} slot {}: {}", load ? "load from" : "save to", slot, message);
 			ps5ingame3ds::SetStateMessage(message);
+			if (!ps5ingame3ds::MenuOpen())
+				ps5notify::Send(message); // a shortcut's: the menu is not there to say it
 			ShowStateSlots();
 		}
 
@@ -949,6 +951,7 @@ namespace ps5melonds
 	{
 		// tr: the PS5's notification as a DS game starts
 		ps5notify::Send(ps5lang::Tr("Touchpad click + Options: the in-game menu. A touchpad click alone: the touch screen. R3: the microphone"));
+		ps5pad::SetStateShortcuts(true);
 		uint64_t polls = 0;
 		uint32_t lastEmulated = 0, lastShown = 0;
 		uint64_t lastSecond = sceKernelGetProcessTime();
@@ -981,7 +984,8 @@ namespace ps5melonds
 			// RetroAchievements in the menu: what is earned, read again about once a second while it is open
 			if (s_cheevos && polls % 250 == 1 && ps5ingame3ds::MenuOpen())
 				ShowAchievements();
-			switch (ps5pad::TakeShortcut())
+			const ps5pad::Shortcut shortcut = ps5pad::TakeShortcut();
+			switch (shortcut)
 			{
 			case ps5pad::Shortcut::Menu:
 				ps5ingame3ds::ToggleMenu();
@@ -1001,6 +1005,15 @@ namespace ps5melonds
 				menu.layout = (menu.layout + 1) % 4;
 				ApplyMenu(menu);
 				ShowInMenu();
+				break;
+			}
+			case ps5pad::Shortcut::SaveState:
+			case ps5pad::Shortcut::LoadState:
+			{
+				// touchpad click + Square, or + Triangle held: the menu's slot, as its rows ask
+				std::string why;
+				if (!ps5ingame3ds::AskState(shortcut == ps5pad::Shortcut::LoadState, why))
+					ps5notify::Send(why);
 				break;
 			}
 			case ps5pad::Shortcut::None:
@@ -1069,6 +1082,7 @@ namespace ps5melonds
 		s_nds = nullptr;
 		s_cheats.reset();
 		ps5log::Line("[ds] shut down in {} ms", elapsed());
+		ps5pad::SetStateShortcuts(false);
 		s_shutDown = true;
 	}
 }

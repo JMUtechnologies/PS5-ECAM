@@ -116,7 +116,7 @@ msgstr "Không tìm thấy tệp gốc của trò chơi."
 msgid "The game could not be mounted. Check that its files are still in the game files folder."
 msgstr "Không thể gắn trò chơi. Kiểm tra xem tệp của trò chơi có còn trong thư mục trò chơi không."
 
-#: port/app/emulator.cpp:766 port/azahar/core.cpp:568
+#: port/app/emulator.cpp:766 port/azahar/core.cpp:570
 #, menu
 msgid "The game could not be started."
 msgstr "Không thể khởi động trò chơi."
@@ -138,7 +138,7 @@ msgstr "Thiếu tệp title.tik của trò chơi."
 msgid "The executable could not be started."
 msgstr "Không thể khởi động tệp thực thi."
 
-#: port/app/emulator.cpp:798 port/melonds/core.cpp:893
+#: port/app/emulator.cpp:798 port/melonds/core.cpp:895
 msgid "The Vulkan renderer did not start: {0}"
 msgstr "Trình kết xuất Vulkan không khởi động được: {0}"
 
@@ -147,7 +147,7 @@ msgstr "Trình kết xuất Vulkan không khởi động được: {0}"
 msgid "Touchpad click + Options: the in-game menu (screens, picture, volume, controls, the library)"
 msgstr "Nhấn bàn di cảm ứng + OPTIONS: menu trong trò chơi (màn hình, hình ảnh, âm lượng, điều khiển, thư viện)"
 
-#: port/app/emulator.cpp:1082
+#: port/app/emulator.cpp:1084
 msgid "PS5-ECAM could not start itself again to show the library: start it again from the home screen."
 msgstr "PS5-ECAM không thể tự khởi động lại để hiện thư viện: hãy mở lại từ màn hình chính."
 
@@ -755,7 +755,7 @@ msgid "GamePad"
 msgstr "GamePad"
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
-#: port/app/ingame.cpp:192 port/app/ingame.cpp:338 port/app/ingame3ds.cpp:633 port/frontend/shell/settings.cpp:196
+#: port/app/ingame.cpp:192 port/app/ingame.cpp:338 port/app/ingame3ds.cpp:634 port/frontend/shell/settings.cpp:196
 #, menu
 msgid "Screens"
 msgstr "Màn hình"
@@ -968,7 +968,7 @@ msgstr "Trò chơi nhận thay đổi khi khởi động lại: cổng được 
 msgid "Plugged in as a game starts, as in Cemu. Its figures are below while it is on."
 msgstr "Được cắm vào khi trò chơi khởi động, như trong Cemu. Khi bật, các mô hình của cổng nằm bên dưới."
 
-#: port/app/ingame.cpp:266 port/app/ingame3ds.cpp:607
+#: port/app/ingame.cpp:266 port/app/ingame3ds.cpp:608
 #, menu
 msgid "Empty"
 msgstr "Trống"
@@ -1015,13 +1015,13 @@ msgid "The game's sound. Left and Right change it by 10%."
 msgstr "Âm thanh của trò chơi. Nhấn trái/phải để đổi 10% mỗi lần."
 
 #. amiibo is Nintendo's name for its figures, as it writes it in the language
-#: port/app/ingame.cpp:292 port/app/ingame.cpp:339 port/app/ingame3ds.cpp:566 port/app/ingame3ds.cpp:567
+#: port/app/ingame.cpp:292 port/app/ingame.cpp:339 port/app/ingame3ds.cpp:567 port/app/ingame3ds.cpp:568
 #, menu
 msgid "Amiibo"
 msgstr "amiibo"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/app/ingame.cpp:295 port/app/ingame3ds.cpp:569
+#: port/app/ingame.cpp:295 port/app/ingame3ds.cpp:570
 #, menu
 msgid "Put amiibo dumps (.bin) in {0}/amiibo to scan them here."
 msgstr "Đặt bản dump amiibo (.bin) vào {0}/amiibo để quét tại đây."
@@ -1032,7 +1032,7 @@ msgid "Left and Right choose an amiibo dump; Cross touches it to the GamePad whe
 msgstr "Nhấn trái/phải để chọn bản dump amiibo; khi trò chơi yêu cầu, nút Chữ thập chạm nó vào GamePad."
 
 #. the DS's lid, closed or open
-#: port/app/ingame.cpp:297 port/app/ingame3ds.cpp:578 port/app/ingame3ds.cpp:589 port/frontend/shell/pages.cpp:811 port/frontend/shell/settings.cpp:198
+#: port/app/ingame.cpp:297 port/app/ingame3ds.cpp:579 port/app/ingame3ds.cpp:590 port/frontend/shell/pages.cpp:811 port/frontend/shell/settings.cpp:198
 #, menu
 msgid "Controls"
 msgstr "Điều khiển"
@@ -1067,7 +1067,7 @@ msgstr "Tay cầm giả lập"
 msgid "What the game sees in this player's hands. Most games want the GamePad for player 1."
 msgstr "Thứ trò chơi thấy trong tay người chơi này. Phần lớn trò chơi cần GamePad cho người chơi 1."
 
-#: port/app/ingame.cpp:303 port/app/ingame3ds.cpp:590 port/frontend/shell/pages.cpp:450 port/frontend/shell/pages.cpp:596 port/frontend/shell/settings.cpp:675
+#: port/app/ingame.cpp:303 port/app/ingame3ds.cpp:591 port/frontend/shell/pages.cpp:450 port/frontend/shell/pages.cpp:596 port/frontend/shell/settings.cpp:675
 #, menu
 msgid "Motion controls"
 msgstr "Điều khiển chuyển động"
@@ -1112,17 +1112,17 @@ msgstr "Vùng chết cần phải"
 msgid "How far the right stick moves before the game sees it. Raise it if the camera drifts."
 msgstr "Cần phải phải di chuyển bao xa thì trò chơi mới nhận. Tăng lên nếu camera tự trôi."
 
-#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:584 port/app/ingame3ds.cpp:594 port/frontend/shell/pages.cpp:451 port/frontend/shell/pages.cpp:616 port/frontend/shell/settings.cpp:652 port/frontend/shell/welcome.cpp:58
+#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:585 port/app/ingame3ds.cpp:595 port/frontend/shell/pages.cpp:451 port/frontend/shell/pages.cpp:616 port/frontend/shell/settings.cpp:652 port/frontend/shell/welcome.cpp:58
 #, menu
 msgid "A and B"
 msgstr "A và B"
 
-#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:575 port/frontend/shell/pages.cpp:618 port/frontend/shell/settings.cpp:652 port/frontend/shell/welcome.cpp:59
+#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:576 port/frontend/shell/pages.cpp:618 port/frontend/shell/settings.cpp:652 port/frontend/shell/welcome.cpp:59
 #, menu
 msgid "A on Circle"
 msgstr "A ở nút Tròn"
 
-#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:575 port/frontend/shell/pages.cpp:618 port/frontend/shell/settings.cpp:652 port/frontend/shell/welcome.cpp:59
+#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:576 port/frontend/shell/pages.cpp:618 port/frontend/shell/settings.cpp:652 port/frontend/shell/welcome.cpp:59
 #, menu
 msgid "A on Cross"
 msgstr "A ở nút Chữ thập"
@@ -1182,29 +1182,29 @@ msgstr "Chạm màn hình GamePad, hoặc nhấn nút được gán cho Bàn di 
 msgid "The GamePad's screen"
 msgstr "Màn hình GamePad"
 
-#: port/app/ingame.cpp:323 port/app/ingame3ds.cpp:600 port/eden/ingame.cpp:498
+#: port/app/ingame.cpp:323 port/app/ingame3ds.cpp:601 port/eden/ingame.cpp:498
 #, menu
 msgid "Quit to the home screen"
 msgstr "Thoát về màn hình chính"
 
-#: port/app/ingame.cpp:324 port/app/ingame3ds.cpp:601 port/eden/ingame.cpp:499
+#: port/app/ingame.cpp:324 port/app/ingame3ds.cpp:602 port/eden/ingame.cpp:499
 #, menu
 msgid "Leaves the game and closes PS5-ECAM, as its home screen tile asks. What you have not saved in the game is lost, so Cross is held."
 msgstr "Rời trò chơi và đóng PS5-ECAM, theo biểu tượng của trò chơi trên màn hình chính. Những gì chưa lưu trong trò chơi sẽ mất, nên cần giữ nút Chữ thập."
 
-#: port/app/ingame.cpp:325 port/app/ingame3ds.cpp:602 port/eden/ingame.cpp:500
+#: port/app/ingame.cpp:325 port/app/ingame3ds.cpp:603 port/eden/ingame.cpp:500
 #, menu
 msgid "Quit to the library"
 msgstr "Thoát về thư viện"
 
-#: port/app/ingame.cpp:326 port/app/ingame3ds.cpp:603 port/eden/ingame.cpp:501
+#: port/app/ingame.cpp:326 port/app/ingame3ds.cpp:604 port/eden/ingame.cpp:501
 #, menu
 msgid "Leaves the game for the library. What you have not saved in the game is lost, so Cross is held."
 msgstr "Rời trò chơi để về thư viện. Những gì chưa lưu trong trò chơi sẽ mất, nên cần giữ nút Chữ thập."
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
 #. the quick actions: big tiles at the top of the in-game menu, a word or two each
-#: port/app/ingame.cpp:338 port/app/ingame3ds.cpp:630 port/eden/ingame.cpp:511
+#: port/app/ingame.cpp:338 port/app/ingame3ds.cpp:631 port/eden/ingame.cpp:511
 #, menu
 msgid "Resume"
 msgstr "Tiếp tục"
@@ -1244,22 +1244,22 @@ msgstr "Chưa quét được (lỗi {0})"
 msgid "Running"
 msgstr "Đang chạy"
 
-#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:780 port/eden/ingame.cpp:583 port/frontend/shell/eden.cpp:490 port/frontend/shell/eden.cpp:499 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1381 port/frontend/shell/shell.cpp:1385 port/frontend/shell/shell.cpp:1419 port/frontend/shell/shell.cpp:1435 port/frontend/shell/shell.cpp:1443 port/frontend/shell/shell.cpp:1451 port/frontend/shell/shell.cpp:1454 port/frontend/shell/shell.cpp:2390
+#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:781 port/eden/ingame.cpp:583 port/frontend/shell/eden.cpp:490 port/frontend/shell/eden.cpp:499 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1381 port/frontend/shell/shell.cpp:1385 port/frontend/shell/shell.cpp:1419 port/frontend/shell/shell.cpp:1435 port/frontend/shell/shell.cpp:1443 port/frontend/shell/shell.cpp:1451 port/frontend/shell/shell.cpp:1454 port/frontend/shell/shell.cpp:2390
 #, menu
 msgid "Choose"
 msgstr "Chọn"
 
-#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:780 port/eden/ingame.cpp:583 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1401 port/frontend/shell/shell.cpp:1444 port/frontend/shell/shell.cpp:1448 port/frontend/shell/shell.cpp:1451 port/frontend/shell/shell.cpp:1454 port/frontend/shell/shell.cpp:1465
+#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:781 port/eden/ingame.cpp:583 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1401 port/frontend/shell/shell.cpp:1444 port/frontend/shell/shell.cpp:1448 port/frontend/shell/shell.cpp:1451 port/frontend/shell/shell.cpp:1454 port/frontend/shell/shell.cpp:1465
 #, menu
 msgid "Change"
 msgstr "Đổi"
 
-#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:780 port/eden/ingame.cpp:583
+#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:781 port/eden/ingame.cpp:583
 #, menu
 msgid "Back to the game"
 msgstr "Quay lại trò chơi"
 
-#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:780 port/eden/ingame.cpp:583 port/frontend/shell/eden.cpp:479 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:508 port/frontend/shell/eden.cpp:511 port/frontend/shell/installs.cpp:329 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1402 port/frontend/shell/shell.cpp:1411 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1443 port/frontend/shell/shell.cpp:1444 port/frontend/shell/shell.cpp:1448 port/frontend/shell/shell.cpp:1452 port/frontend/shell/shell.cpp:1454 port/frontend/shell/shell.cpp:1458 port/frontend/shell/shell.cpp:1462 port/frontend/shell/shell.cpp:1466
+#: port/app/ingame.cpp:575 port/app/ingame3ds.cpp:781 port/eden/ingame.cpp:583 port/frontend/shell/eden.cpp:479 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:508 port/frontend/shell/eden.cpp:511 port/frontend/shell/installs.cpp:329 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1402 port/frontend/shell/shell.cpp:1411 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1443 port/frontend/shell/shell.cpp:1444 port/frontend/shell/shell.cpp:1448 port/frontend/shell/shell.cpp:1452 port/frontend/shell/shell.cpp:1454 port/frontend/shell/shell.cpp:1458 port/frontend/shell/shell.cpp:1462 port/frontend/shell/shell.cpp:1466
 #, menu
 msgid "Back"
 msgstr "Quay lại"
@@ -1451,7 +1451,7 @@ msgstr "Dưới 100% có thể giúp trò chơi chậm đạt đủ tốc độ;
 msgid "Save states"
 msgstr "Trạng thái đã lưu"
 
-#: port/app/ingame3ds.cpp:520 port/app/ingame3ds.cpp:631 port/app/ingame3ds.cpp:632
+#: port/app/ingame3ds.cpp:520 port/app/ingame3ds.cpp:632 port/app/ingame3ds.cpp:633
 #, menu
 msgid "Slot {0}"
 msgstr "Ô {0}"
@@ -1475,246 +1475,246 @@ msgstr "(trống)"
 
 #: port/app/ingame3ds.cpp:524
 #, menu
-msgid "Which of this game's five slots to save to or load from."
-msgstr "Lưu vào hoặc tải từ ô nào trong năm ô của trò chơi này."
+msgid "Which of this game's five slots to save to or load from. In the game, touchpad click + Square saves to it, and touchpad click + Triangle held loads it."
+msgstr "Lưu vào hoặc tải từ ô nào trong năm ô của trò chơi này. Trong trò chơi, nhấn bàn di cảm ứng + Vuông để lưu vào ô này, và nhấn bàn di cảm ứng + giữ Tam giác để tải từ ô này."
 
-#: port/app/ingame3ds.cpp:525
+#: port/app/ingame3ds.cpp:526
 #, menu
 msgid "Save to this slot"
 msgstr "Lưu vào ô này"
 
-#: port/app/ingame3ds.cpp:526
+#: port/app/ingame3ds.cpp:527
 #, menu
 msgid "Saves the game as it is now, replacing what the slot had. Newer app versions may not load it: keep saving in the game too."
 msgstr "Lưu trò chơi như hiện tại, thay thế nội dung cũ của ô. Phiên bản ứng dụng mới hơn có thể không tải được: vẫn nên lưu trong trò chơi."
 
-#: port/app/ingame3ds.cpp:528
+#: port/app/ingame3ds.cpp:529
 #, menu
 msgid "Cheats"
 msgstr "Mã gian lận"
 
-#: port/app/ingame3ds.cpp:529
+#: port/app/ingame3ds.cpp:530
 #, menu
 msgid "The game's cheats, from melonds/cheats/<game file>.mch (melonDS's format)."
 msgstr "Mã gian lận của trò chơi, từ melonds/cheats/<tệp trò chơi>.mch (định dạng của melonDS)."
 
-#: port/app/ingame3ds.cpp:530
+#: port/app/ingame3ds.cpp:531
 #, menu
 msgid "The game's cheats, from azahar/cheats/<title ID>.txt (Gateway format)."
 msgstr "Mã gian lận của trò chơi, từ azahar/cheats/<title ID>.txt (định dạng Gateway)."
 
-#: port/app/ingame3ds.cpp:533
+#: port/app/ingame3ds.cpp:534
 #, menu
 msgid "Cross, Left or Right turns it on or off, at once; it is kept for next time."
 msgstr "Nhấn Chữ thập, trái hoặc phải để bật hoặc tắt ngay; lựa chọn được giữ cho lần sau."
 
-#: port/app/ingame3ds.cpp:535
+#: port/app/ingame3ds.cpp:536
 #, menu
 msgid "No cheats for this game"
 msgstr "Trò chơi này không có mã gian lận"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/app/ingame3ds.cpp:537
+#: port/app/ingame3ds.cpp:538
 #, menu
 msgid "Put them in {0}/melonds/cheats/<game file>.mch (the game's file name, .mch for .nds), then start the game again."
 msgstr "Đặt chúng vào {0}/melonds/cheats/<tệp trò chơi>.mch (tên tệp của trò chơi, .mch thay cho .nds), rồi khởi động lại trò chơi."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/app/ingame3ds.cpp:540
+#: port/app/ingame3ds.cpp:541
 #, menu
 msgid "Put them in {0}/azahar/cheats/<title ID>.txt, then start the game again."
 msgstr "Đặt chúng vào {0}/azahar/cheats/<title ID>.txt, rồi khởi động lại trò chơi."
 
 #. how many of the game's cheats are on: {0} of {1}
-#: port/app/ingame3ds.cpp:543 port/frontend/shell/eden.cpp:1482
+#: port/app/ingame3ds.cpp:544 port/frontend/shell/eden.cpp:1482
 #, menu
 msgid "{0} of {1} on"
 msgstr "Bật {0}/{1}"
 
-#: port/app/ingame3ds.cpp:549
+#: port/app/ingame3ds.cpp:550
 #, menu
 msgid "Achievements"
 msgstr "Thành tựu"
 
-#: port/app/ingame3ds.cpp:549 port/frontend/shell/classic.cpp:463 port/frontend/shell/installs.cpp:376 port/frontend/shell/pages.cpp:324 port/frontend/shell/pages.cpp:822 port/frontend/shell/pages.cpp:1208 port/frontend/shell/shell.cpp:2418
+#: port/app/ingame3ds.cpp:550 port/frontend/shell/classic.cpp:463 port/frontend/shell/installs.cpp:376 port/frontend/shell/pages.cpp:324 port/frontend/shell/pages.cpp:822 port/frontend/shell/pages.cpp:1208 port/frontend/shell/shell.cpp:2418
 #, menu
 msgid "{0} of {1}"
 msgstr "{0}/{1}"
 
-#: port/app/ingame3ds.cpp:550
+#: port/app/ingame3ds.cpp:551
 #, menu
 msgid "This game's RetroAchievements."
 msgstr "Thành tựu RetroAchievements của trò chơi này."
 
-#: port/app/ingame3ds.cpp:556
+#: port/app/ingame3ds.cpp:557
 #, menu
 msgid "Earned"
 msgstr "Đã đạt"
 
-#: port/app/ingame3ds.cpp:556
+#: port/app/ingame3ds.cpp:557
 #, menu
 msgid "Earned {0}"
 msgstr "Đạt {0}"
 
-#: port/app/ingame3ds.cpp:556
+#: port/app/ingame3ds.cpp:557
 #, menu
 msgid "{0} point"
 msgid_plural "{0} points"
 msgstr[0] "{0} điểm"
 
-#: port/app/ingame3ds.cpp:560
+#: port/app/ingame3ds.cpp:561
 #, menu
 msgid "No achievements"
 msgstr "Không có thành tựu"
 
-#: port/app/ingame3ds.cpp:561
+#: port/app/ingame3ds.cpp:562
 #, menu
 msgid "RetroAchievements lists a game's achievements once it has a set for it."
 msgstr "RetroAchievements liệt kê thành tựu của một trò chơi khi đã có bộ thành tựu cho trò chơi đó."
 
-#: port/app/ingame3ds.cpp:566
+#: port/app/ingame3ds.cpp:567
 #, menu
 msgid "Hold an amiibo dump to the 3DS's reader when the game asks for one."
 msgstr "Đưa bản dump amiibo lại gần đầu đọc của 3DS khi trò chơi yêu cầu."
 
-#: port/app/ingame3ds.cpp:570
+#: port/app/ingame3ds.cpp:571
 #, menu
 msgid "Left and Right choose an amiibo dump; Cross holds it to the reader."
 msgstr "Nhấn trái/phải để chọn bản dump amiibo; nút Chữ thập đưa nó lại gần đầu đọc."
 
-#: port/app/ingame3ds.cpp:571
+#: port/app/ingame3ds.cpp:572
 #, menu
 msgid "Take the amiibo away"
 msgstr "Bỏ amiibo ra"
 
-#: port/app/ingame3ds.cpp:571
+#: port/app/ingame3ds.cpp:572
 #, menu
 msgid "Takes the amiibo off the reader, as lifting it off would."
 msgstr "Bỏ amiibo khỏi đầu đọc, như khi nhấc nó ra."
 
 #. the DS's lid, closed or open
-#: port/app/ingame3ds.cpp:578
+#: port/app/ingame3ds.cpp:579
 #, menu
 msgid "Lid closed"
 msgstr "Đã gập nắp"
 
-#: port/app/ingame3ds.cpp:579
+#: port/app/ingame3ds.cpp:580
 #, menu
 msgid "The lid, the left stick's deadzone and where A and B are. Hold R3 to blow into the microphone."
 msgstr "Nắp máy, vùng chết của cần trái và vị trí của A và B. Giữ R3 để thổi vào micrô."
 
-#: port/app/ingame3ds.cpp:580
+#: port/app/ingame3ds.cpp:581
 #, menu
 msgid "Lid"
 msgstr "Nắp"
 
-#: port/app/ingame3ds.cpp:580
+#: port/app/ingame3ds.cpp:581
 #, menu
 msgid "Closed"
 msgstr "Gập"
 
-#: port/app/ingame3ds.cpp:580 port/frontend/shell/eden.cpp:479 port/frontend/shell/eden.cpp:492 port/frontend/shell/eden.cpp:501 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:508 port/frontend/shell/eden.cpp:1300 port/frontend/shell/shell.cpp:1394 port/frontend/shell/shell.cpp:1423 port/frontend/shell/shell.cpp:1432 port/frontend/shell/shell.cpp:1441 port/frontend/shell/shell.cpp:1447 port/frontend/shell/shell.cpp:1462
+#: port/app/ingame3ds.cpp:581 port/frontend/shell/eden.cpp:479 port/frontend/shell/eden.cpp:492 port/frontend/shell/eden.cpp:501 port/frontend/shell/eden.cpp:506 port/frontend/shell/eden.cpp:508 port/frontend/shell/eden.cpp:1300 port/frontend/shell/shell.cpp:1394 port/frontend/shell/shell.cpp:1423 port/frontend/shell/shell.cpp:1432 port/frontend/shell/shell.cpp:1441 port/frontend/shell/shell.cpp:1447 port/frontend/shell/shell.cpp:1462
 #, menu
 msgid "Open"
 msgstr "Mở"
 
-#: port/app/ingame3ds.cpp:581
+#: port/app/ingame3ds.cpp:582
 #, menu
 msgid "Closes the DS's lid, for games that ask you to; the DS sleeps until it is opened. Choose it again to open it."
 msgstr "Gập nắp DS, cho các trò chơi yêu cầu điều đó; DS ngủ cho đến khi mở ra. Chọn lại để mở."
 
-#: port/app/ingame3ds.cpp:582 port/app/ingame3ds.cpp:592 port/frontend/shell/settings.cpp:677
+#: port/app/ingame3ds.cpp:583 port/app/ingame3ds.cpp:593 port/frontend/shell/settings.cpp:677
 #, menu
 msgid "Stick deadzone"
 msgstr "Vùng chết cần"
 
-#: port/app/ingame3ds.cpp:583
+#: port/app/ingame3ds.cpp:584
 #, menu
 msgid "How far the left stick moves before it presses the D-pad. Raise it if something drifts when you let go."
 msgstr "Cần trái phải di chuyển bao xa thì mới nhấn D-pad. Tăng lên nếu có gì tự trôi khi bạn thả tay."
 
-#: port/app/ingame3ds.cpp:585
+#: port/app/ingame3ds.cpp:586
 #, menu
 msgid "A on Circle and B on Cross, where the DS has them, or the other way round, with X and Y swapped to match."
 msgstr "A ở nút Tròn và B ở nút Chữ thập, như vị trí trên DS, hoặc ngược lại, với X và Y đổi chỗ cho khớp."
 
-#: port/app/ingame3ds.cpp:589
+#: port/app/ingame3ds.cpp:590
 #, menu
 msgid "Motion controls, the sticks' deadzone and where A and B are."
 msgstr "Điều khiển chuyển động, vùng chết của cần và vị trí của A và B."
 
-#: port/app/ingame3ds.cpp:591
+#: port/app/ingame3ds.cpp:592
 #, menu
 msgid "The DualSense's gyroscope and accelerometer as the 3DS's, for the games that aim or steer by tilting."
 msgstr "Con quay hồi chuyển và gia tốc kế của DualSense thay cho của 3DS, cho các trò chơi ngắm hoặc lái bằng cách nghiêng."
 
-#: port/app/ingame3ds.cpp:593
+#: port/app/ingame3ds.cpp:594
 #, menu
 msgid "How far a stick moves before the game sees it. Raise it if something drifts when you let go."
 msgstr "Cần phải di chuyển bao xa thì trò chơi mới nhận. Tăng lên nếu có gì tự trôi khi bạn thả tay."
 
-#: port/app/ingame3ds.cpp:595
+#: port/app/ingame3ds.cpp:596
 #, menu
 msgid "A on Circle and B on Cross, where the 3DS has them, or the other way round, with X and Y swapped to match."
 msgstr "A ở nút Tròn và B ở nút Chữ thập, như vị trí trên 3DS, hoặc ngược lại, với X và Y đổi chỗ cho khớp."
 
-#: port/app/ingame3ds.cpp:607
+#: port/app/ingame3ds.cpp:608
 #, menu
 msgid "Load this slot"
 msgstr "Tải ô này"
 
-#: port/app/ingame3ds.cpp:608
+#: port/app/ingame3ds.cpp:609
 #, menu
 msgid "Goes back to the moment the slot was saved. What you did since is lost, so Cross is held."
 msgstr "Quay về lúc ô được lưu. Những gì đã làm từ đó sẽ mất, nên cần giữ nút Chữ thập."
 
-#: port/app/ingame3ds.cpp:613 port/frontend/shell/settings.cpp:703
+#: port/app/ingame3ds.cpp:614 port/frontend/shell/settings.cpp:703
 #, menu
 msgid "The touch screen"
 msgstr "Màn hình cảm ứng"
 
-#: port/app/ingame3ds.cpp:613 port/frontend/shell/settings.cpp:703
+#: port/app/ingame3ds.cpp:614 port/frontend/shell/settings.cpp:703
 #, menu
 msgid "The bottom screen"
 msgstr "Màn hình dưới"
 
-#: port/app/ingame3ds.cpp:631
+#: port/app/ingame3ds.cpp:632
 #, menu
 msgid "Save state"
 msgstr "Lưu trạng thái"
 
-#: port/app/ingame3ds.cpp:632
+#: port/app/ingame3ds.cpp:633
 #, menu
 msgid "Load state"
 msgstr "Tải trạng thái"
 
-#: port/app/ingame3ds.cpp:632
+#: port/app/ingame3ds.cpp:633
 #, menu
 msgid "Slot {0} empty"
 msgstr "Ô {0} trống"
 
-#: port/app/ingame3ds.cpp:639
+#: port/app/ingame3ds.cpp:640
 #, menu
 msgid "Slot {0}: {1}"
 msgstr "Ô {0}: {1}"
 
-#: port/app/ingame3ds.cpp:712
+#: port/app/ingame3ds.cpp:713 port/app/ingame3ds.cpp:1003
 #, menu
 msgid "Slot {0} is empty"
 msgstr "Ô {0} đang trống"
 
-#: port/app/ingame3ds.cpp:720
+#: port/app/ingame3ds.cpp:721 port/app/ingame3ds.cpp:1008
 #, menu
 msgid "Saving…"
 msgstr "Đang lưu…"
 
-#: port/app/ingame3ds.cpp:720 port/eden/ingame.cpp:384 port/eden/ingame.cpp:386
+#: port/app/ingame3ds.cpp:721 port/app/ingame3ds.cpp:1008 port/eden/ingame.cpp:384 port/eden/ingame.cpp:386
 #, menu
 msgid "Loading…"
 msgstr "Đang tải…"
 
 #. the in-game menu's badge: the game waits behind the menu
-#: port/app/ingame3ds.cpp:773
+#: port/app/ingame3ds.cpp:774
 #, menu
 msgid "Paused"
 msgstr "Tạm dừng"
@@ -1758,33 +1758,33 @@ msgid "90° left"
 msgstr "Xoay trái 90°"
 
 #. the 3DS borders' names (artwork around the screens)
-#: port/app/ingame3ds.h:131 port/frontend/shell/settings.cpp:44
+#: port/app/ingame3ds.h:135 port/frontend/shell/settings.cpp:44
 #, menu
 msgctxt "border"
 msgid "None"
 msgstr "Không"
 
 #. the 3DS borders' names (artwork around the screens)
-#: port/app/ingame3ds.h:131 port/frontend/shell/settings.cpp:44
+#: port/app/ingame3ds.h:135 port/frontend/shell/settings.cpp:44
 #, menu
 msgctxt "border"
 msgid "Midnight"
 msgstr "Nửa đêm"
 
 #. the 3DS borders' names (artwork around the screens)
-#: port/app/ingame3ds.h:132 port/frontend/shell/settings.cpp:44
+#: port/app/ingame3ds.h:136 port/frontend/shell/settings.cpp:44
 #, menu
 msgctxt "border"
 msgid "Waves"
 msgstr "Sóng"
 
-#: port/app/ingame3ds.h:132 port/frontend/shell/settings.cpp:45
+#: port/app/ingame3ds.h:136 port/frontend/shell/settings.cpp:45
 #, menu
 msgctxt "border"
 msgid "Aurora"
 msgstr "Cực quang"
 
-#: port/app/ingame3ds.h:132 port/frontend/shell/settings.cpp:45
+#: port/app/ingame3ds.h:136 port/frontend/shell/settings.cpp:45
 #, menu
 msgctxt "border"
 msgid "Shell"
@@ -1815,7 +1815,7 @@ msgstr "Thư mục meta không mô tả một tựa Wii U (meta.xml)."
 msgid "This is where it is installed already."
 msgstr "Nội dung đã được cài ở đây rồi."
 
-#: port/app/install.cpp:510 port/azahar/core.cpp:970
+#: port/app/install.cpp:510 port/azahar/core.cpp:984
 #, menu
 msgid "An install is already running."
 msgstr "Đang cài một nội dung khác."
@@ -2555,122 +2555,122 @@ msgid "It did not work"
 msgstr "Không thành công"
 
 #. why a 3DS game did not start
-#: port/azahar/core.cpp:551
+#: port/azahar/core.cpp:553
 #, menu
 msgid "This is not a 3DS game Azahar can start."
 msgstr "Đây không phải trò chơi 3DS mà Azahar khởi động được."
 
-#: port/azahar/core.cpp:552 port/melonds/core.cpp:822
+#: port/azahar/core.cpp:554 port/melonds/core.cpp:824
 #, menu
 msgid "The game could not be loaded."
 msgstr "Không thể tải trò chơi."
 
-#: port/azahar/core.cpp:556 port/frontend/shell/shell.cpp:953
+#: port/azahar/core.cpp:558 port/frontend/shell/shell.cpp:953
 #, menu
 msgid "The game is encrypted, and Azahar plays only decrypted games, with keys or without: decrypt it on your 3DS first (GodMode9)."
 msgstr "Trò chơi đã được mã hóa, và Azahar chỉ chơi trò chơi đã giải mã, dù có khóa hay không: giải mã nó trên máy 3DS trước (GodMode9)."
 
-#: port/azahar/core.cpp:558
+#: port/azahar/core.cpp:560
 #, menu
 msgid "The game's format is not supported."
 msgstr "Định dạng của trò chơi không được hỗ trợ."
 
-#: port/azahar/core.cpp:559
+#: port/azahar/core.cpp:561
 #, menu
 msgid "GBA Virtual Console games are not supported."
 msgstr "Không hỗ trợ trò chơi GBA Virtual Console."
 
-#: port/azahar/core.cpp:560
+#: port/azahar/core.cpp:562
 #, menu
 msgid "The game's system mode could not be found."
 msgstr "Không tìm thấy chế độ hệ thống của trò chơi."
 
-#: port/azahar/core.cpp:561
+#: port/azahar/core.cpp:563
 #, menu
 msgid "The game needs 3DS system files Azahar does not have."
 msgstr "Trò chơi cần tệp hệ thống 3DS mà Azahar không có."
 
-#: port/azahar/core.cpp:563
+#: port/azahar/core.cpp:565
 #, menu
 msgid "The game's patches could not be applied."
 msgstr "Không thể áp dụng bản vá của trò chơi."
 
-#: port/azahar/core.cpp:564
+#: port/azahar/core.cpp:566
 #, menu
 msgid "Azahar's renderer or CPU did not start."
 msgstr "Trình kết xuất hoặc CPU của Azahar không khởi động được."
 
-#: port/azahar/core.cpp:566
+#: port/azahar/core.cpp:568
 #, menu
 msgid "The Artic Base server did not answer: check the 3DS's address, that Artic Base runs on it, and that the 3DS and the PS5 are on the same network."
 msgstr "Máy chủ Artic Base không phản hồi: kiểm tra địa chỉ 3DS, Artic Base có đang chạy trên đó không, và 3DS với PS5 có cùng mạng không."
 
-#: port/azahar/core.cpp:634
+#: port/azahar/core.cpp:636
 #, menu
 msgid "The game is busy: try again"
 msgstr "Trò chơi đang bận: vui lòng thử lại"
 
 #. the PS5's notification as an Artic Base game ends because the 3DS stopped answering
-#: port/azahar/core.cpp:653
+#: port/azahar/core.cpp:655
 #, menu
 msgid "The 3DS stopped answering: the Artic Base game has stopped."
 msgstr "3DS đã ngừng phản hồi: trò chơi Artic Base đã dừng."
 
-#: port/azahar/core.cpp:655
+#: port/azahar/core.cpp:657
 #, menu
 msgid "The 3DS game stopped: {0}"
 msgstr "Trò chơi 3DS đã dừng: {0}"
 
-#: port/azahar/core.cpp:704
+#: port/azahar/core.cpp:706
 #, menu
 msgid "A CIA file is installed, not played: install it from Settings > Game files, then start the game."
 msgstr "Tệp CIA là để cài, không phải để chơi: cài nó trong Cài đặt > Tệp trò chơi, rồi khởi động trò chơi."
 
-#: port/azahar/core.cpp:754
+#: port/azahar/core.cpp:756
 #, menu
 msgid "Azahar did not start: {0}"
 msgstr "Azahar không khởi động được: {0}"
 
-#: port/azahar/core.cpp:763
+#: port/azahar/core.cpp:765
 #, menu
 msgid "Artic Setup did not finish: the Artic Setup Tool on the 3DS says why. If it says nothing, check the 3DS's address, and that the 3DS and the PS5 are on the same network."
 msgstr "Artic Setup chưa hoàn tất: Artic Setup Tool trên 3DS cho biết lý do. Nếu không thấy gì, hãy kiểm tra địa chỉ 3DS, và 3DS với PS5 có cùng mạng không."
 
 #. why an Artic Base game did not start, when the 3DS had answered; Y is the 3DS's button
-#: port/azahar/core.cpp:769
+#: port/azahar/core.cpp:771
 #, menu
 msgid "The 3DS answered, then Artic Base stopped before the game started. On the 3DS, press Y in the Artic Base app to restart its server, then connect again. If it stops again, Settings > Diagnostics > Copy logs to USB copies Azahar's log, which says what failed."
 msgstr "3DS đã phản hồi, nhưng sau đó Artic Base dừng trước khi trò chơi bắt đầu. Trên 3DS, nhấn Y trong ứng dụng Artic Base để khởi động lại máy chủ của nó, rồi kết nối lại. Nếu lại dừng, Cài đặt > Chẩn đoán > Sao chép nhật ký vào USB sẽ sao chép nhật ký của Azahar, cho biết điều gì đã lỗi."
 
 #. the PS5's notification as a 3DS game starts
-#: port/azahar/core.cpp:837
+#: port/azahar/core.cpp:839
 #, menu
 msgid "Touchpad click + Options: the in-game menu. A touchpad click alone: the bottom screen"
 msgstr "Nhấn bàn di cảm ứng + OPTIONS: menu trong trò chơi. Chỉ nhấn bàn di cảm ứng: màn hình dưới"
 
 #. why a CIA file could not be installed, after "It could not be installed:"
-#: port/azahar/core.cpp:1039
+#: port/azahar/core.cpp:1053
 #, menu
 msgid "it is encrypted, the CIA or the game inside it. Azahar installs only fully decrypted CIA files: decrypt it with GodMode9 on a 3DS, or play the game's decrypted .3ds or .cci file instead"
 msgstr "tệp CIA hoặc trò chơi bên trong đã được mã hóa. Azahar chỉ cài tệp CIA đã giải mã hoàn toàn: giải mã bằng GodMode9 trên 3DS, hoặc chơi tệp .3ds hay .cci đã giải mã của trò chơi"
 
-#: port/azahar/core.cpp:1042
+#: port/azahar/core.cpp:1056
 #, menu
 msgid "it is not a CIA file, or it is damaged (check the file's size)"
 msgstr "đây không phải tệp CIA, hoặc tệp bị hỏng (kiểm tra kích thước tệp)"
 
-#: port/azahar/core.cpp:1044
+#: port/azahar/core.cpp:1058
 #, menu
 msgid "the file could not be read"
 msgstr "không đọc được tệp"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/azahar/core.cpp:1047
+#: port/azahar/core.cpp:1061
 #, menu
 msgid "Azahar stopped part-way through; {0}/azahar/log/azahar_log.txt says why"
 msgstr "Azahar dừng giữa chừng; {0}/azahar/log/azahar_log.txt ghi lý do"
 
-#: port/azahar/core.cpp:1049
+#: port/azahar/core.cpp:1063
 #, menu
 msgid "it is not a CIA Azahar can install"
 msgstr "đây không phải tệp CIA mà Azahar cài được"
@@ -7027,39 +7027,39 @@ msgid "The launcher could not start: {0}. The boot log in {1}/logs has more."
 msgstr "Trình khởi chạy không khởi động được: {0}. Nhật ký khởi động trong {1}/logs có thêm chi tiết."
 
 #. a notification as a DS game stops because the PS5's GPU stopped drawing its screens
-#: port/melonds/core.cpp:726
+#: port/melonds/core.cpp:728
 msgid "The DS game's screens stopped (the GPU's device was lost)."
 msgstr "Màn hình của trò chơi DS đã dừng (mất thiết bị GPU)."
 
 #. why a DS game in a .zip, .7z or .rar archive did not start
-#: port/melonds/core.cpp:790
+#: port/melonds/core.cpp:792
 msgid "There is no DS game in this archive, or the archive could not be read."
 msgstr "Không có trò chơi DS nào trong tệp nén này, hoặc không đọc được tệp nén."
 
-#: port/melonds/core.cpp:796
+#: port/melonds/core.cpp:798
 msgid "The DS game in this archive could not be read: is the archive whole?"
 msgstr "Không đọc được trò chơi DS trong tệp nén này: tệp nén có nguyên vẹn không?"
 
 #. why a DS game did not start
-#: port/melonds/core.cpp:808 port/melonds/core.cpp:845
+#: port/melonds/core.cpp:810 port/melonds/core.cpp:847
 msgid "This is not a DS game melonDS can read."
 msgstr "Đây không phải trò chơi DS mà melonDS đọc được."
 
-#: port/melonds/core.cpp:815
+#: port/melonds/core.cpp:817
 msgid "DSi games are not supported yet."
 msgstr "Chưa hỗ trợ trò chơi DSi."
 
 #. the PS5's notification as a DS game starts
-#: port/melonds/core.cpp:951
+#: port/melonds/core.cpp:953
 msgid "Touchpad click + Options: the in-game menu. A touchpad click alone: the touch screen. R3: the microphone"
 msgstr "Nhấn bàn di cảm ứng + OPTIONS: menu trong trò chơi. Chỉ nhấn bàn di cảm ứng: màn hình cảm ứng. R3: micrô"
 
 #. notifications as melonDS stops a DS game
-#: port/melonds/core.cpp:1034
+#: port/melonds/core.cpp:1047
 msgid "The game asked for the DS's GBA mode, which melonDS does not have."
 msgstr "Trò chơi yêu cầu chế độ GBA của DS, mà melonDS không có."
 
-#: port/melonds/core.cpp:1036
+#: port/melonds/core.cpp:1049
 msgid "The DS game crashed."
 msgstr "Trò chơi DS đã gặp sự cố."
 
