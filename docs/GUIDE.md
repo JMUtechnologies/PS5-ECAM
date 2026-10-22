@@ -49,6 +49,8 @@ work stops before a game starts.
   also hides any side you don't use.
 - **What's new:** on the first start and after an update, the app opens once on what the version
   brings.
+- **Screensaver:** after five minutes with no button pressed, the launcher dims, so a still menu does
+  not mark an OLED TV. Any button wakes it, and does nothing else.
 - **Home screen tiles:** **Add to home screen** in a game's Options menu makes the game a tile of its
   own on the PS5's home screen (the open PS5 Forwarder Format, in `/data/homebrew`), with its box art.
   ShadowMount Plus shows it; starting it opens the game straight away and closes the app after it.

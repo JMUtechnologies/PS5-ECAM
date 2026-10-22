@@ -313,6 +313,21 @@ namespace ps5shell
 			ps5pad::Rescan(); // controllers joining or leaving, about every two seconds
 
 		ui::Actions actions = m_input.Poll(m_now);
+		// the screensaver, for OLED screens: the launcher dims after kIdleSeconds with no button pressed,
+		// and the press that wakes it does nothing else
+		constexpr double kIdleSeconds = 300;
+		if (m_lastInput < 0)
+			m_lastInput = m_now;
+		if (!actions.presses.empty() || actions.held)
+		{
+			const bool asleep = m_now - m_lastInput > kIdleSeconds;
+			m_lastInput = m_now;
+			if (asleep)
+			{
+				actions = {};
+				m_input.Reset();
+			}
+		}
 		if (m_capture.active)
 		{
 			PollCapture();
@@ -348,6 +363,9 @@ namespace ps5shell
 		m_list.Clear();
 		Canvas canvas(m_list, m_fonts);
 		Draw(canvas);
+		// the screensaver's dimming, over everything: in over three seconds, gone at a press
+		if (const double idle = m_now - m_lastInput - kIdleSeconds; idle > 0 && !m_launch.active)
+			canvas.Rect({0, 0, 1920, 1080}, 0, ui::SetAlpha(0xff000000, 0.85f * (float)std::min(idle / 3.0, 1.0)));
 		// the glyphs this frame rendered, uploaded with it; the atlas made again when they made it grow
 		if (m_fonts.AtlasHeight() != m_atlasHeight)
 		{
