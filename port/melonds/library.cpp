@@ -535,6 +535,7 @@ namespace ps5melonds
 		for (const char* sub : {"games", "bios", "saves"})
 			fs::create_directories(fs::path(Root()) / sub, ec);
 		std::thread([folder] {
+			const auto started = std::chrono::steady_clock::now();
 			std::vector<ps5emu::Game> games;
 			Probes probes;
 			LoadProbes(probes);
@@ -544,7 +545,7 @@ namespace ps5melonds
 			// the same game twice (a copy in another folder): listed once, as the 3DS's title IDs are
 			games.erase(std::unique(games.begin(), games.end(), [](const ps5emu::Game& a, const ps5emu::Game& b) { return a.titleId == b.titleId; }),
 				games.end());
-			ps5log::Line("[ds] {} DS games in {}", games.size(), folder);
+			ps5log::Line("[ds] {} DS games in {} ({} ms)", games.size(), folder, (long long)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - started).count());
 			{
 				std::lock_guard lock(s_mutex);
 				s_games = std::move(games);

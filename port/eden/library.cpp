@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 
 #include <algorithm>
+#include <chrono>
 #include <atomic>
 #include <cctype>
 #include <cstdio>
@@ -406,6 +407,7 @@ namespace ps5eden
 			fs::create_directories(fs::path(DataFolder()) / sub, ec);
 		const std::string scanned = ScanFolder(folder);
 		std::thread([scanned] {
+			const auto started = std::chrono::steady_clock::now();
 			std::vector<ps5emu::Game> games;
 			std::vector<fs::path> covers;
 			ScanWithKeys(scanned, games, covers);
@@ -423,7 +425,7 @@ namespace ps5eden
 					game.gameId = ps5gameinfo::FindByTitle(ps5boxart::System::Switch, CleanTitle(game.path));
 				found += !game.gameId.empty();
 			}
-			ps5log::Line("[switch] {} Switch games in {}, {} of them GameTDB's", games.size(), scanned, found);
+			ps5log::Line("[switch] {} Switch games in {}, {} of them GameTDB's ({} ms)", games.size(), scanned, found, (long long)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - started).count());
 			{
 				std::lock_guard lock(s_mutex);
 				s_games = std::move(games);

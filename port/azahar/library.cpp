@@ -848,6 +848,7 @@ namespace ps5azahar
 		for (const char* sub : {"games", "sysdata", "sdmc"})
 			fs::create_directories(fs::path(Root()) / sub, ec);
 		std::thread([folder] {
+			const auto started = std::chrono::steady_clock::now();
 			std::vector<ps5emu::Game> games;
 			ps5archive::Probes probes(Root() + "/archives.bin");
 			Scan(folder, 0, games, probes);
@@ -861,7 +862,7 @@ namespace ps5azahar
 			ScanInstalled(games);
 			AddInstalledUpdates(games);
 			std::sort(games.begin(), games.end(), [](const ps5emu::Game& a, const ps5emu::Game& b) { return Lower(a.name) < Lower(b.name); });
-			ps5log::Line("[azahar] {} 3DS games in {}", games.size(), folder);
+			ps5log::Line("[azahar] {} 3DS games in {} ({} ms)", games.size(), folder, (long long)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - started).count());
 			{
 				std::lock_guard lock(s_mutex);
 				s_games = std::move(games);

@@ -276,8 +276,10 @@ int main(int argc, char* argv[])
 	// first, so a HEN is asked only when something the app needs is out of reach without one
 	// (ps5cemu.json as it is: the defaults when /data is not open yet)
 	const ps5settings::Launcher early = ps5settings::Load();
+	const uint64_t acquiring = sceKernelGetProcessTime();
 	const ps5privilege::Result privileges =
 		ps5privilege::Acquire({early.gamesFolder, early.n3ds.gamesFolder, early.nds.gamesFolder}, early.alwaysAskHen);
+	const uint64_t acquired = sceKernelGetProcessTime();
 	if (privileges.filesystem)
 	{
 		// the drives the HEN left out opened first (below for the game folders the settings name):
@@ -288,7 +290,8 @@ int main(int argc, char* argv[])
 		ps5log::Open(ps5paths::Logs().c_str());
 	}
 	ps5log::Line("[main] firmware {}", Firmware());
-	ps5log::Line("[main] {}", privileges.summary);
+	// (how long the HEN, the probes and the elevation helper took: a start's first wait)
+	ps5log::Line("[main] {} ({} ms)", privileges.summary, (acquired - acquiring) / 1000);
 	if (privileges.filesystem)
 		DumpImports();
 	ps5crash::Install(); // Cemu's own replaces it, in a session Cemu runs in
