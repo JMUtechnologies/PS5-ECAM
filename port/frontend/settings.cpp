@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <fstream>
+#include <mutex>
 #include <sstream>
 #include <utility>
 
@@ -18,7 +19,8 @@ namespace ps5settings
 	{
 		using Writer = rapidjson::PrettyWriter<rapidjson::StringBuffer>;
 
-		std::string s_broken; // where Load moved a ps5cemu.json it could not read (TakeBrokenFile)
+		std::mutex s_brokenMutex; // Load runs on the remote touch screen's threads too (its upload folders)
+		std::string s_broken;	  // where Load moved a ps5cemu.json it could not read (TakeBrokenFile)
 
 		std::string Hex(uint64_t value)
 		{
@@ -205,6 +207,7 @@ namespace ps5settings
 			// kept beside it, not written over by the next Save
 			file.close();
 			const std::string broken = ps5paths::LauncherSettings() + ".broken";
+			std::lock_guard lock(s_brokenMutex);
 			if (std::rename(ps5paths::LauncherSettings().c_str(), broken.c_str()) == 0)
 				s_broken = broken;
 			return settings;
@@ -530,6 +533,7 @@ namespace ps5settings
 
 	std::string TakeBrokenFile()
 	{
+		std::lock_guard lock(s_brokenMutex);
 		return std::exchange(s_broken, {});
 	}
 

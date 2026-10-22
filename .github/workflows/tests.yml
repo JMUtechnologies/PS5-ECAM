@@ -51,4 +51,5 @@ jobs:
           c++ -std=c++20 -pthread -DFMT_HEADER_ONLY -Ibuild/tests -Iport/stream tools/tests/stream-host.cpp \
               port/stream/stream.cpp port/stream/websocket.cpp -lcrypto -o build/tests/stream-host
           python3 -B tools/tests/test-stream.py build/tests/stream-host
+          python3 -B tools/tests/test-upload.py build/tests/stream-host
           node tools/tests/test-stream-browser.js

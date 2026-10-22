@@ -180,8 +180,12 @@ mkdir -p build/tests/fmt && cp -r .deps/pacbrew-*/opt/ps5-payload-sdk/target/use
 c++ -std=c++20 -pthread -DFMT_HEADER_ONLY -Ibuild/tests/fmt -Iport/stream tools/tests/stream-host.cpp \
     port/stream/stream.cpp port/stream/websocket.cpp -lcrypto -o build/tests/stream-host
 python3 tools/tests/test-stream.py build/tests/stream-host
+python3 tools/tests/test-upload.py build/tests/stream-host
 node tools/tests/test-stream-browser.js
 ```
+
+`test-upload.py` sends files to the files page (`/files`, `port/stream/files.h`): whole, refused
+names and folders, nothing replaced, and a file cut short leaving nothing behind.
 
 ## Tests on a PC
 

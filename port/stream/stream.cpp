@@ -2,15 +2,19 @@
 // PS5-ECAM: the remote touch screen's server (stream.h), from dolphin78's prototype (#38).
 #include "stream.h"
 #include "browser.h"
+#include "files.h"
 #include "jpeg.h"
 #include "websocket.h"
 #include "../ps5/log.h"
 
 #include <arpa/inet.h>
+#include <fcntl.h>
 #include <ifaddrs.h>
 #include <netinet/in.h>
 #include <poll.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/statvfs.h>
 #include <unistd.h>
 
 #include <algorithm>
@@ -21,6 +25,7 @@
 #include <condition_variable>
 #include <cstdio>
 #include <deque>
+#include <filesystem>
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -75,6 +80,11 @@ namespace ps5stream
 		std::deque<Pointer> s_edges; // presses and releases not read yet, so a quick tap is not lost
 		uint64_t s_touchOwner = 0;	 // the /input socket that touches: the newest
 		Clock::time_point s_lastTouch{};
+
+		// where a browser's files may go (SetUploadFolders): under s_foldersMutex
+		std::mutex s_foldersMutex;
+		std::function<std::vector<Folder>()> s_folders;
+		std::atomic<uint64_t> s_uploads{0}; // to name each upload's .part file
 
 		bool Alive()
 		{
@@ -237,6 +247,183 @@ namespace ps5stream
 				ps5log::Line("[stream] no browser is showing the screen");
 		}
 
+		// -- files from a browser (the /files page) ---------------------------------------------------
+
+		std::vector<Folder> UploadFolders()
+		{
+			std::function<std::vector<Folder>()> list;
+			{
+				std::lock_guard lock(s_foldersMutex);
+				list = s_folders;
+			}
+			return list ? list() : std::vector<Folder>{};
+		}
+
+		// %41 and + as an address's query has them
+		std::string Unescape(const std::string& text)
+		{
+			std::string out;
+			for (size_t i = 0; i < text.size(); i++)
+			{
+				if (text[i] == '+')
+					out += ' ';
+				else if (text[i] == '%' && i + 2 < text.size() && std::isxdigit((unsigned char)text[i + 1]) && std::isxdigit((unsigned char)text[i + 2]))
+				{
+					out += (char)std::stoi(text.substr(i + 1, 2), nullptr, 16);
+					i += 2;
+				}
+				else
+					out += text[i];
+			}
+			return out;
+		}
+
+		// A query's value ("3ds" for to in "to=3ds&name=..."), unescaped
+		std::string QueryValue(const std::string& query, const std::string& key)
+		{
+			size_t start = 0;
+			while (start <= query.size())
+			{
+				const size_t end = std::min(query.find('&', start), query.size());
+				const std::string pair = query.substr(start, end - start);
+				if (pair.rfind(key + "=", 0) == 0)
+					return Unescape(pair.substr(key.size() + 1));
+				start = end + 1;
+			}
+			return {};
+		}
+
+		// A file's name as a browser sends it: a name alone, no folder, nothing hidden, nothing that
+		// is not text
+		bool SafeName(const std::string& name)
+		{
+			if (name.empty() || name.size() > 200 || name[0] == '.' || name == "..")
+				return false;
+			for (const char c : name)
+				if (c == '/' || c == '\\' || (unsigned char)c < 0x20 || c == 0x7f)
+					return false;
+			return true;
+		}
+
+		std::string JsonText(const std::string& text)
+		{
+			std::string out = "\"";
+			for (const char c : text)
+			{
+				if (c == '"' || c == '\\')
+					out += '\\';
+				if ((unsigned char)c >= 0x20)
+					out += c;
+			}
+			return out + "\"";
+		}
+
+		// A request header's value (Content-Length), its name in any case; empty when there is none
+		std::string Header(const std::string& head, const std::string& name)
+		{
+			std::string lower = head;
+			std::transform(lower.begin(), lower.end(), lower.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+			std::string key = "\r\n" + name + ":";
+			std::transform(key.begin(), key.end(), key.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+			const size_t at = lower.find(key);
+			if (at == std::string::npos)
+				return {};
+			const size_t start = head.find_first_not_of(' ', at + key.size());
+			const size_t end = head.find("\r\n", at + key.size());
+			return start == std::string::npos || end == std::string::npos || start > end ? std::string() : head.substr(start, end - start);
+		}
+
+		void ReplyText(int fd, int code, const std::string& text)
+		{
+			Reply(fd, code, "text/plain; charset=utf-8", {text.begin(), text.end()});
+		}
+
+		// PUT /upload?to=<a folder's id>&name=<the file's name>, the file as the body
+		void Upload(int fd, const std::string& query, const std::string& head, std::string body)
+		{
+			namespace fs = std::filesystem;
+			const std::string to = QueryValue(query, "to"), name = QueryValue(query, "name");
+			const std::string lengthText = Header(head, "Content-Length");
+			std::string folder;
+			for (const Folder& candidate : UploadFolders())
+				if (candidate.id == to)
+					folder = candidate.path;
+			if (folder.empty())
+				return ReplyText(fd, 400, "That folder is not one the app takes files in.");
+			if (!SafeName(name))
+				return ReplyText(fd, 400, "That file's name cannot be used.");
+			if (lengthText.empty() || lengthText.find_first_not_of("0123456789") != std::string::npos || lengthText.size() > 15)
+				return ReplyText(fd, 411, "The browser did not say how large the file is.");
+			const uint64_t length = std::stoull(lengthText);
+			std::error_code ec;
+			fs::create_directories(folder, ec);
+			const fs::path target = fs::path(folder) / name;
+			if (fs::exists(target, ec))
+				return ReplyText(fd, 409, "There is a file of that name there already: it is left as it is.");
+			struct statvfs space{};
+			if (statvfs(folder.c_str(), &space) == 0 && space.f_frsize &&
+				(uint64_t)space.f_bavail * space.f_frsize < length + (64ull << 20))
+				return ReplyText(fd, 507, "Not enough free space for it on the PS5.");
+			const fs::path part = fs::path(folder) / ("." + name + "." + std::to_string(++s_uploads) + ".part");
+			const int out = open(part.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+			if (out < 0)
+				return ReplyText(fd, 500, "The file could not be made there.");
+			fchmod(out, 0666); // open to every user, as every file the app makes (app/file_modes.h)
+			uint64_t written = 0;
+			auto put = [&](const char* data, size_t size) {
+				while (size)
+				{
+					const ssize_t n = write(out, data, size);
+					if (n <= 0)
+						return false;
+					data += n, size -= (size_t)n, written += (uint64_t)n;
+				}
+				return true;
+			};
+			if (body.size() > length)
+				body.resize(length);
+			bool ok = put(body.data(), body.size());
+			std::vector<char> buffer(1 << 20);
+			auto heard = Clock::now();
+			while (ok && written < length && s_running)
+			{
+				pollfd wait{fd, POLLIN, 0};
+				if (poll(&wait, 1, 100) <= 0)
+				{
+					ok = Clock::now() - heard < std::chrono::seconds(30); // the browser went away
+					continue;
+				}
+				const ssize_t n = recv(fd, buffer.data(), (size_t)std::min<uint64_t>(buffer.size(), length - written), 0);
+				if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR))
+					continue;
+				ok = n > 0 && put(buffer.data(), (size_t)n);
+				heard = Clock::now();
+			}
+			ok = close(out) == 0 && ok && written == length;
+			if (ok && fs::exists(target, ec))
+				ok = false; // another browser's, sent meanwhile
+			if (ok)
+				fs::rename(part, target, ec);
+			if (!ok || ec)
+			{
+				fs::remove(part, ec);
+				ps5log::Line("[stream] a file from a browser did not arrive whole: {} ({} of {} bytes)", target.string(), written, length);
+				return ReplyText(fd, 500, "It did not arrive whole: send it again.");
+			}
+			ps5log::Line("[stream] a file from a browser: {} ({} KB)", target.string(), length / 1000);
+			ReplyText(fd, 201, "Done.");
+		}
+
+		// The folders, for the page: [{"id": ..., "label": ..., "hint": ...}]
+		std::string FoldersJson()
+		{
+			std::string json = "[";
+			for (const Folder& folder : UploadFolders())
+				json += (json.size() > 1 ? "," : "") + std::string("{\"id\":") + JsonText(folder.id) + ",\"label\":" + JsonText(folder.label) +
+					",\"hint\":" + JsonText(folder.hint) + "}";
+			return json + "]";
+		}
+
 		void HandleClient(int fd)
 		{
 			ConfigureSocket(fd);
@@ -263,10 +450,25 @@ namespace ps5stream
 				return;
 			const size_t end = request.find(" HTTP/1.1\r\n");
 			const std::string path = end != std::string::npos && request.rfind("GET ", 0) == 0 ? request.substr(4, end - 4) : "";
-			if (path == "/")
+			if (end != std::string::npos && request.rfind("PUT /upload?", 0) == 0)
+			{
+				const size_t headEnd = request.find("\r\n\r\n");
+				Upload(fd, request.substr(12, end - 12), request.substr(0, headEnd + 2), request.substr(headEnd + 4));
+			}
+			else if (path == "/")
 			{
 				const std::string page = kBrowser;
 				Reply(fd, 200, "text/html; charset=utf-8", {page.begin(), page.end()});
+			}
+			else if (path == "/files")
+			{
+				const std::string page = kFiles;
+				Reply(fd, 200, "text/html; charset=utf-8", {page.begin(), page.end()});
+			}
+			else if (path == "/folders")
+			{
+				const std::string json = FoldersJson();
+				Reply(fd, 200, "application/json", {json.begin(), json.end()});
 			}
 			else if (path == "/input" || path == "/video")
 			{
@@ -503,6 +705,12 @@ namespace ps5stream
 			s_raw = std::move(frame);
 		}
 		s_frameChanged.notify_all();
+	}
+
+	void SetUploadFolders(std::function<std::vector<Folder>()> list)
+	{
+		std::lock_guard lock(s_foldersMutex);
+		s_folders = std::move(list);
 	}
 
 	bool Touch(float& x, float& y)

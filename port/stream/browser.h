@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // PS5-ECAM: the remote touch screen's page (stream.h), from dolphin78's prototype (#38): the
-// picture, filling the browser, and its touches; a quiet splash while there is no picture.
+// picture, filling the browser, and its touches; a quiet splash while there is no picture, with the
+// way to the files page (files.h).
 #pragma once
 namespace ps5stream {
 constexpr const char* kBrowser = R"HTML(<!doctype html><html><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><title>PS5-ECAM touch screen</title>
@@ -13,6 +14,7 @@ constexpr const char* kBrowser = R"HTML(<!doctype html><html><meta name="viewpor
 .mark:before{content:"";position:absolute;inset:-26px;border:1px solid #7bb9ff0b;border-radius:62px}
 .mark svg{width:88px;height:88px;filter:drop-shadow(0 0 18px #65aeff33)}
 .status{margin:0;color:#a5b3c7;font:500 13px/1.5 system-ui,sans-serif;letter-spacing:.12em}
+.files{color:#80bfff;font:500 13px/1.5 system-ui,sans-serif;letter-spacing:.08em;text-decoration:none;padding:10px 18px;border:1px solid #80bfff33;border-radius:999px}
 .dots{display:flex;gap:7px}.dots i{width:4px;height:4px;border-radius:50%;background:#8bc2ff;animation:breathe 2s ease-in-out infinite}.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s;background:#e8c47b}
 @keyframes breathe{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
 @media(prefers-reduced-motion:reduce){.dots i{animation:none;opacity:.6}}
@@ -21,6 +23,7 @@ constexpr const char* kBrowser = R"HTML(<!doctype html><html><meta name="viewpor
 <div id="splash" role="status" aria-live="polite"><div class="splash-content">
 <div class="mark"><svg viewBox="0 0 88 88" fill="none" aria-hidden="true"><defs><linearGradient id="glow" x1="12" y1="16" x2="78" y2="76" gradientUnits="userSpaceOnUse"><stop stop-color="#80bfff"/><stop offset="1" stop-color="#e8c47b"/></linearGradient></defs><rect x="9" y="21" width="70" height="46" rx="14" stroke="url(#glow)" stroke-width="2"/><rect x="26" y="30" width="36" height="28" rx="5" fill="#80bfff0a" stroke="url(#glow)" stroke-width="1.5"/><path d="M15 44h6m-3-3v6" stroke="#80bfff" stroke-width="1.5" stroke-linecap="round"/><circle cx="70" cy="40" r="1.5" fill="#e8c47b"/><circle cx="70" cy="48" r="1.5" fill="#e8c47b"/></svg></div>
 <p class="status">Waiting for video</p><div class="dots" aria-hidden="true"><i></i><i></i><i></i></div>
+<a class="files" href="/files">Add files to the PS5</a>
 </div></div>
 <script>
 const screen=document.querySelector('#screen'),splash=document.querySelector('#splash');

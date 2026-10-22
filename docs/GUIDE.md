@@ -318,11 +318,30 @@ idea and prototype, #38.)
 
 - **What it costs:** nothing while no browser shows it. While one does, the PS5 copies that screen up
   to 30 times a second (on the Wii U and the 3DS from the GPU), so a game can run a little slower.
-- **Privacy:** any device on your network can open the page and touch. The traffic is plain HTTP on
-  your local network. Turn it off on a network you share.
+- **Privacy:** any device on your network can open the page and touch, and send files to the
+  folders below. The traffic is plain HTTP on your local network. Turn it off on a network you share.
 - **If the phone can't reach it:** guest Wi-Fi often keeps devices apart (client isolation); use the
   main network. The page shows "Waiting for video" until a game is running. A phone that goes to
   sleep or leaves the page lets go of its touch within a second, and reconnects when you come back.
+
+### Adding files from a phone or computer
+
+The same page has **Add files to the PS5** (or go to `http://<the PS5's address>:8080/files`): choose
+where they go, choose the files, and **Send**. No FTP client and no USB drive. Each file shows its
+progress, and goes straight into the app's folder for it:
+
+| Where to | Goes to |
+|---|---|
+| Wii U, 3DS, DS and Switch games | each side's games folder, as **Settings > Game files** has it (not a network share) |
+| Switch keys, Switch firmware | Eden's `keys/` and `firmware/` |
+| Amiibo | `/data/ps5cemu/amiibo` |
+| Launcher music | `/data/ps5cemu/music` |
+
+A file of the same name that is there already is never replaced, and a file cut short (the phone
+slept, the page was left) is removed, so send it again. A new game shows in the library the next time
+its side opens, or at once with **Settings > Game files > Look for games now**. Wii U games go as WUA,
+WUD or WUX files, or an unpacked game in an archive; a 3DS CIA sent this way is installed from
+**Install a CIA file** as usual.
 
 ## Amiibo, save states, cheats and mods
 

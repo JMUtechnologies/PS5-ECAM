@@ -444,7 +444,28 @@ int main(int argc, char* argv[])
 	ps5pad::Init();
 	ps5pad::SetVibrationEnabled(settings.rumble);
 	ps5window::Initialize();
-	// the remote touch screen, when it is on: the app's, so it runs from here through the game
+	// the remote touch screen, when it is on: the app's, so it runs from here through the game. Its
+	// files page sends to each side's games folder as the settings have it at the time, Eden's keys
+	// and firmware, amiibo and the launcher's music; never to a network share (nothing is written there)
+	ps5stream::SetUploadFolders([] {
+		const ps5settings::Launcher now = ps5settings::Load();
+		const std::string eden = ps5eden::GameFilesFolder();
+		std::vector<ps5stream::Folder> folders = {
+			{"wiiu", "Wii U games", "WUA, WUD and WUX files, or an unpacked game in a .zip, .7z or .rar.", now.gamesFolder},
+			{"3ds", "3DS games",
+				"Decrypted .3ds, .cci, .cxi and .3dsx files, alone or in an archive. A CIA sent here is installed from Settings > Game "
+				"files > Install a CIA file.",
+				now.n3ds.gamesFolder},
+			{"ds", "DS games", ".nds files, alone or in a .zip, .7z or .rar.", now.nds.gamesFolder},
+			{"switch", "Switch games", ".nsp and .xci files: a game, its update or its DLC.", ps5eden::ScanFolder(now.nx.gamesFolder)},
+			{"switch-keys", "Switch keys", "prod.keys and title.keys, dumped from your own Switch.", eden + "/keys"},
+			{"switch-firmware", "Switch firmware", "The firmware's .nca files, dumped from your own Switch.", eden + "/firmware"},
+			{"amiibo", "Amiibo", "Your amiibo dumps (.bin), for the Wii U and the 3DS.", ps5paths::Root() + "/amiibo"},
+			{"music", "Launcher music", "MP3 and WAV files, for Settings > Audio > Launcher music.", ps5paths::Root() + "/music"},
+		};
+		std::erase_if(folders, [](const ps5stream::Folder& folder) { return folder.path.empty() || ps5netfs::is_net(folder.path); });
+		return folders;
+	});
 	ps5stream::Configure(settings.remoteScreen);
 
 	ps5launcher::Status status;
