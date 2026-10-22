@@ -214,7 +214,7 @@ namespace
 		for (const char* ds : {".nds", ".srl", ".dsi"})
 			if (extension == ds)
 				tile.side = ps5launcher::System::Nds;
-		for (const char* n3ds : {".3ds", ".cci", ".cxi", ".cia", ".3dsx", ".app", ".elf", ".axf", ".z3ds", ".zcci", ".zcxi", ".z3dsx"})
+		for (const char* n3ds : {".3ds", ".cci", ".cxi", ".cia", ".3dsx", ".app", ".elf", ".axf", ".z3ds", ".zcci", ".zcxi", ".z3dsx", ".zcia"})
 			if (extension == n3ds)
 				tile.side = ps5launcher::System::N3ds;
 		for (const char* nx : {".nsp", ".xci"})

@@ -226,9 +226,10 @@ those names there. A `.zip` has no such limit.
 Put games in `/data/ps5cemu/azahar/games`, or pick another folder in **Settings > Game files** on the 3DS side.
 
 - `.3ds`, `.cci`, `.cxi` and `.app` dumps, `.3dsx` and `.elf` homebrew, and Azahar's compressed
-  formats (`.z3ds`, `.zcci`, `.zcxi`, `.z3dsx`) play directly.
-- `.cia` files are installed first from **Settings > Game files > Install a CIA file**; updates and DLC too. Azahar
-  only installs fully decrypted CIAs, the game inside included.
+  formats (`.z3ds`, `.zcci`, `.zcxi`, `.z3dsx`) play directly. The library reads a compressed game's
+  name, icon and box art as it does any other's.
+- `.cia` files, and Azahar's compressed `.zcia`, are installed first from **Settings > Game files > Install a CIA
+  file**; updates and DLC too. Azahar only installs fully decrypted CIAs, the game inside included.
 - Dumps must be decrypted too: Azahar plays no encrypted game, whatever keys it has. Decrypt them on
   your 3DS first (GodMode9).
 - A game can also stay in a `.zip`, `.7z` or `.rar` archive, or a `.tar` (`.tar.gz`, `.tar.xz` and

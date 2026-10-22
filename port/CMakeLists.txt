@@ -383,6 +383,7 @@ target_link_libraries(CemuPS5 PUBLIC
 	OpenSSL::Crypto # the remote touch screen's WebSocket handshake (stream/websocket.cpp)
 	ZLIB::ZLIB
 	libzip::zip
+	zstd::zstd # Azahar's compressed 3DS files, read by the 3DS side's library (azahar/library.cpp)
 )
 
 # Azahar's core and its PS5 frontend (tools/build-azahar.sh builds them in Azahar's tree): the
