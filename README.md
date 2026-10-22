@@ -19,8 +19,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/premohq/PS5-ECAM/raw/releases/PS5-ECAM-v5.0.0.zip"><b>Download 5.0.0</b></a> (ZIP, 81.5 MB) ·
-  <a href="https://github.com/premohq/PS5-ECAM/releases/tag/v5.0.0">Release notes</a> ·
+  <a href="https://github.com/premohq/PS5-ECAM/raw/releases/PS5-ECAM-v5.0.1.zip"><b>Download 5.0.1</b></a> (ZIP, 84.9 MB) ·
+  <a href="https://github.com/premohq/PS5-ECAM/releases/tag/v5.0.1">Release notes</a> ·
   <a href="#install">Install</a> ·
   <a href="docs/GUIDE.md">Guide</a> ·
   <a href="docs/COMPATIBILITY.md">Compatibility</a> ·
@@ -29,28 +29,31 @@
 
 ---
 
-## What's new in 5.0.0
+## What's new in 5.0.1
 
-A fourth system, a new name, and everything 4.0.2 was going to bring. The details are in the [release notes](https://github.com/premohq/PS5-ECAM/releases/tag/v5.0.0).
+The Switch side now works like the others, save states come to the 3DS and DS, and ReShade to the Wii U.
+The details are in the [release notes](https://github.com/premohq/PS5-ECAM/releases/tag/v5.0.1).
 
-- **Nintendo Switch:** Switch games on [Eden](https://github.com/eden-emu/mirror), through
-  [ProsperoEden](https://github.com/Swordpdf/ProsperoEden)'s PS5 port, as a fourth side beside the Wii U,
-  3DS and DS, on every theme. Resolution, upscaling, ASTC textures, docked or handheld, and each game's
-  own settings are in the launcher; ProsperoEden's own launcher, one press away, has mods, cheats,
-  updates and DLC, profiles and more. Bring your own keys and firmware ([how](docs/GUIDE.md#nintendo-switch-eden)).
-- **A new name and a new look:** PS5CEMU-HAR is now PS5-ECAM, with a new icon and home screen art.
-  Your games, saves, settings and backups stay where they are: nothing moves.
-- **3DS games save again, and installed games can be deleted** ([#55](https://github.com/premohq/PS5-ECAM/issues/55), [#56](https://github.com/premohq/PS5-ECAM/issues/56), [#58](https://github.com/premohq/PS5-ECAM/issues/58)): every
-  file and folder the app makes is open to every user.
-- **Games in archives** ([#50](https://github.com/premohq/PS5-ECAM/issues/50)): `.zip`, `.7z`, `.rar` and tar archives are in the library on
-  the Wii U, 3DS and DS sides; DS games play from them, and a Wii U or 3DS game is unpacked once, the
-  first time it starts ([how](docs/GUIDE.md#games-in-archives)), building on Mafiacoding's ZIP support.
-- **Artic Setup needs no keys from you** ([#45](https://github.com/premohq/PS5-ECAM/issues/45)), and Artic Base has dolphin78's fix for connections that
-  failed at once (it doesn't work for everyone yet, so #45 stays open);
-  **Quit to the library** returns to the library ([#60](https://github.com/premohq/PS5-ECAM/issues/60)); an encrypted 3DS game is refused with a
-  reason ([#57](https://github.com/premohq/PS5-ECAM/issues/57)).
-- **New buttons** for the 3DS and DS: *Touch at the cursor*, *Fast forward* and *Rewind* (DS) ([#59](https://github.com/premohq/PS5-ECAM/issues/59), [#54](https://github.com/premohq/PS5-ECAM/issues/54));
-  keyboards with each language's letters ([#51](https://github.com/premohq/PS5-ECAM/issues/51)); the app's data on the drive it is installed on ([#52](https://github.com/premohq/PS5-ECAM/issues/52)).
+- **Switch games start, in the app's own look** ([#67](https://github.com/premohq/PS5-ECAM/issues/67), [#64](https://github.com/premohq/PS5-ECAM/issues/64)):
+  PS5-ECAM's loading screen, and the same in-game menu as the other sides on **touchpad click +
+  Options** (upscaling, FSR sharpening, anti-aliasing, frame generation, speed, volume, docked or
+  handheld, controller type, deadzone, amiibo). The library reads each game's own files, with
+  GameTDB box art. **Controls > Buttons** remaps the Switch's buttons, a **Performance** page has
+  ProsperoEden's switches and memory sizes, and **Settings > Multiplayer** joins ProsperoEden's public
+  rooms.
+- **Save states on the 3DS and DS:** touchpad click + Square saves, + Triangle held loads; *Undo the
+  last load*; *Quit to the library* saves a state and *Resume* goes on from it. A fast forward that
+  turns on and off with a press.
+- **ReShade on the Wii U** (**Settings > Graphics** or the in-game menu): your PC presets and effects
+  in `/data/ps5cemu/reshade`. **Frame generation** with MihawkGen on the Wii U and 3DS
+  ([#66](https://github.com/premohq/PS5-ECAM/issues/66)), off by default.
+- **3DS:** Artic Setup works, from dolphin78 ([#45](https://github.com/premohq/PS5-ECAM/issues/45), [#70](https://github.com/premohq/PS5-ECAM/pull/70)); 3D for red and cyan
+  glasses; the cameras see a picture from `azahar/camera` (QR codes); screen rotation.
+- **Amiibo by series** on the Wii U and Switch: folders of dumps in `/data/ps5cemu/amiibo`.
+- **Fixes:** leaving a game no longer closes the app ([#68](https://github.com/premohq/PS5-ECAM/issues/68)); Wii Party U's minigames
+  ([#65](https://github.com/premohq/PS5-ECAM/issues/65)); Russian, Ukrainian and Greek letters ([#69](https://github.com/premohq/PS5-ECAM/issues/69)); downloads that hung; graphic packs copied in
+  by hand are kept. Also: an update can be undone, backups carry the settings and the Switch's saves,
+  a phone sends files into the app's folders, and the launcher dims after five idle minutes.
 
 Changes in earlier versions are in their [release notes](https://github.com/premohq/PS5-ECAM/releases).
 
@@ -60,8 +63,8 @@ Changes in earlier versions are in their [release notes](https://github.com/prem
 |---|---|---|---|---|
 | **Emulator** | Cemu, x64 recompiler, Vulkan | Azahar, dynarmic recompiler, Vulkan | melonDS, ARM recompiler | Eden (ProsperoEden), dynarmic, Vulkan |
 | **Plays** | `.wua`, `.wud`, `.wux`, unpacked games (also in `.zip`, `.7z` and `.rar` archives) | `.3ds`, `.cci`, `.cxi`, `.app`, `.3dsx`, `.elf`, compressed `.z*`, also in `.zip`, `.7z` and `.rar` archives; installed `.cia` | `.nds`, also in `.zip`, `.7z` and `.rar` archives | `.nsp`, `.xci`, each alone or in a folder with its update and DLC |
-| **Picture** | 4K output, 120 Hz, FSR 1, graphic packs | up to 10x resolution, texture filters, layouts, borders | sharp, smooth or square pixels, layouts, borders | up to 4x resolution, FSR 1, docked or handheld, frame generation |
-| **Extras** | mods, accounts, amiibo, Skylanders portals, updates and DLC | save states, cheats, amiibo, mods, Artic Base | save states, cheats, RetroAchievements | mods, cheats, updates and DLC (from their folders) |
+| **Picture** | 4K output, 120 Hz, FSR 1, graphic packs, ReShade, frame generation | up to 10x resolution, texture filters, layouts, borders, red-cyan 3D, frame generation | sharp, smooth or square pixels, layouts, borders | up to 4x resolution, FSR 1, anti-aliasing, docked or handheld, frame generation |
+| **Extras** | mods, accounts, amiibo, Skylanders portals, updates and DLC | save states, cheats, amiibo, mods, cameras, Artic Base | save states, cheats, RetroAchievements | amiibo, online rooms, mods, cheats, updates and DLC (from their folders) |
 
 - **One launcher for all four:** box art and game info from GameTDB, search, sorting and favourites,
   a page for each game, settings for each game, and an in-game menu on every system.
@@ -73,7 +76,7 @@ Changes in earlier versions are in their [release notes](https://github.com/prem
 
 1. **A PS5 that runs homebrew.** Any firmware up to 13.60, with etaHEN, OnionHEN, or an ELF loader on
    port 9021. See the [firmware and setup guide](docs/HEN-SETUP.md).
-2. **Copy the app.** Download the [5.0.0 ZIP](https://github.com/premohq/PS5-ECAM/raw/releases/PS5-ECAM-v5.0.0.zip) ([release notes](https://github.com/premohq/PS5-ECAM/releases/tag/v5.0.0)),
+2. **Copy the app.** Download the [5.0.1 ZIP](https://github.com/premohq/PS5-ECAM/raw/releases/PS5-ECAM-v5.0.1.zip) ([release notes](https://github.com/premohq/PS5-ECAM/releases/tag/v5.0.1)),
    extract it and copy the `PPSA99360` folder to `/data/homebrew/PPSA99360`.
 3. **Let your HEN in.** etaHEN: add `PPSA99360` to its app jailbreak list. OnionHEN: add `PPSA99360`
    at the end of `exact_title_ids` in `config.ini`, with no comma after it. Any other: have an ELF
