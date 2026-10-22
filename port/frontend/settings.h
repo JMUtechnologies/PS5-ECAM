@@ -282,6 +282,9 @@ namespace ps5settings
 
 	Launcher Load();
 	bool Save(const Launcher& settings);
+	// A ps5cemu.json Load could not read is moved to ps5cemu.json.broken, and the defaults used, so the
+	// next Save does not write over it (a hand edit's slip costs nothing): where it went, once, then empty
+	std::string TakeBrokenFile();
 
 	// -- games' own settings -------------------------------------------
 	// side: "wiiu", "3ds", "ds" or "switch", as ps5cemu.json names them

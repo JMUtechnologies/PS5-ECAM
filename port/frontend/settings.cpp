@@ -10,12 +10,15 @@
 #include <cstdio>
 #include <fstream>
 #include <sstream>
+#include <utility>
 
 namespace ps5settings
 {
 	namespace
 	{
 		using Writer = rapidjson::PrettyWriter<rapidjson::StringBuffer>;
+
+		std::string s_broken; // where Load moved a ps5cemu.json it could not read (TakeBrokenFile)
 
 		std::string Hex(uint64_t value)
 		{
@@ -198,7 +201,14 @@ namespace ps5settings
 		text << file.rdbuf();
 		rapidjson::Document json;
 		if (json.Parse(text.str().c_str()).HasParseError() || !json.IsObject())
+		{
+			// kept beside it, not written over by the next Save
+			file.close();
+			const std::string broken = ps5paths::LauncherSettings() + ".broken";
+			if (std::rename(ps5paths::LauncherSettings().c_str(), broken.c_str()) == 0)
+				s_broken = broken;
 			return settings;
+		}
 		ReadString(json, "gamesFolder", settings.gamesFolder);
 		settings.gamesFolder = ps5paths::Relocated(settings.gamesFolder); // saved before the data moved to a drive (#52)
 		ReadInt(json, "upscaleFilter", settings.upscaleFilter, 0, 4);
@@ -516,6 +526,11 @@ namespace ps5settings
 			file << buffer.GetString() << '\n';
 		}
 		return std::rename(temporary.c_str(), ps5paths::LauncherSettings().c_str()) == 0;
+	}
+
+	std::string TakeBrokenFile()
+	{
+		return std::exchange(s_broken, {});
 	}
 
 	// -- games' own settings ------------------------------------------------------------------------

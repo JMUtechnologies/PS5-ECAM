@@ -213,6 +213,16 @@ namespace ps5shell
 		}
 		if (!launchError.empty())
 			OpenHelp(Tr("The game could not start"), launchError);
+		// a ps5cemu.json that could not be read, kept aside (ps5settings::TakeBrokenFile): said once
+		else if (const std::string broken = ps5settings::TakeBrokenFile(); !broken.empty())
+		{
+			ps5log::Line("[settings] ps5cemu.json could not be read: kept as {}, the defaults used", broken);
+			OpenHelp(Tr("Your settings could not be read"),
+				// tr: {0} is where the unreadable settings file is kept: /data/ps5cemu/ps5cemu.json.broken
+				TrF("The launcher's settings file, ps5cemu.json, has a mistake in it, so every setting is back to its default. The file as "
+					"it was is kept as {0}: mend it on a computer and put it back as ps5cemu.json, or leave it.",
+					broken));
+		}
 		// Eden's opening: the PS5's launch picture handed over to the launcher, as the app starts (not
 		// after a game, nor over what a failed one says)
 		else if (SectionLayout() && !ClassicLayout() && !returning && m_screen == ScreenId::Home && m_status.autoLaunch.empty())
