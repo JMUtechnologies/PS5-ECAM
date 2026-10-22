@@ -26,6 +26,7 @@ Each idea done is marked **Done** where it is listed below, with its commit.
 | [T1](#t1) | [`0f30424`](https://github.com/premohq/PS5-ECAM/commit/0f30424) | The 3DS's cameras see the newest picture in `azahar/camera` (or sent from a phone), for QR codes |
 | [L7](#l7) | [`6d374e0`](https://github.com/premohq/PS5-ECAM/commit/6d374e0) | The launcher dims after five minutes with no button pressed; the waking press does nothing else |
 | [S7](#s7) | [`0891a28`](https://github.com/premohq/PS5-ECAM/commit/0891a28) | Backups hold the settings too (each game's own, Cemu's, controller profiles, themes); a restore starts the app again to use them |
+| [S8](#s8) | [`b436783`](https://github.com/premohq/PS5-ECAM/commit/b436783) | An update keeps the version it replaces; **Go back to** in Settings > Online; **Skip this version** on the prompt |
 
 Being worked on separately (not here): the Switch side's in-game menu, its settings and button
 remapping ([N1](#n1)), its rooms ([I2](#i2)), ReShade on the Wii U side ([I1](#i1)), and the box art
@@ -86,7 +87,7 @@ on a PC: `tools/tests` (archives, keyboard, music, netfs, stream), `tools/reshad
 Add `ps5cemu.json` (each game's own settings), Cemu's `controllerProfiles/` and `themes/` to a backup, so
 a reinstall or a second PS5 starts where you were. They are small.
 
-<a id="s8"></a>**S8. Updates you can undo** (M)
+<a id="s8"></a>**S8. Updates you can undo** (M) · **Done:** [`b436783`](https://github.com/premohq/PS5-ECAM/commit/b436783), all but the release notes before installing
 `port/app/updates.cpp` moves the new files over the old ones. Keep what it replaces in a `previous/`
 folder and offer **Settings > Online > Go back to 5.0.0**. While there: **Skip this version**, and the
 release notes shown before **Update now** (What's new only shows after). Dolphin has update tracks for
