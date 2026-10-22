@@ -53,6 +53,9 @@ namespace ps5settings
 		// (it has no fragment shader barycentrics, and RADV and the outlines' invariance disagree,
 		// Citra #7376). Settings > Graphics, and a game's own
 		bool hwShaders = true;
+		// the 3DS's 3D, as red and cyan for anaglyph glasses (Azahar's render_3d, the 3D slider all the way
+		// up): Settings > Graphics, and a game's own. Off, the 3DS's 3D screen shows one eye, as before
+		bool anaglyph = false;
 		// the DS's games (melonDS: port/melonds)
 		int dsFilter = 0;			  // how the DS's screens are scaled to the TV: sharp, smooth, square pixels (ps5melonds::screens::Filter)
 		int dsRotation = 0;			  // the DS turned this many quarter turns clockwise, for the games held on their side (Hotel Dusk)

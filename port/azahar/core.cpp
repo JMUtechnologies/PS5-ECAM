@@ -441,6 +441,9 @@ namespace ps5azahar
 			// the 3DS's cameras see a picture from azahar/camera, the newest (camera.h): the PS5 has no camera to lend
 			RegisterPictureCamera();
 			values.camera_name.fill(kPictureCamera);
+			// the 3DS's 3D for red and cyan glasses: both eyes' pictures, the slider all the way up
+			values.render_3d = settings.anaglyph ? Settings::StereoRenderOption::Anaglyph : Settings::StereoRenderOption::Off;
+			values.factor_3d = settings.anaglyph ? 100u : 0u;
 			values.camera_config.fill(ps5paths::Root() + "/azahar/camera");
 			input::Configure(settings);
 		}
@@ -820,6 +823,9 @@ namespace ps5azahar
 			return false;
 		}
 
+		// the layout and the presenting pipeline as the settings have them (the 3D mode among them)
+		s_window->UpdateLayout();
+		system.GPU().Renderer().Settings().shader_update_requested = true;
 		u64 programId = 0;
 		system.GetAppLoader().ReadProgramId(programId);
 		// the 3DS's language, set before the game first runs and asks for it (Load may have set one

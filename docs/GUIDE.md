@@ -95,6 +95,9 @@ work stops before a game starts.
   ScaleForce, xBRZ, MMPX), and shaders compiled in the background so games don't stutter.
 - **Frame generation**, as on the Wii U side (**Settings > Graphics**, a game's settings or the
   in-game menu; off by default): a 3DS game at 30 fps is shown at 60.
+- **3D for red and cyan glasses** (**Settings > Graphics** or a game's settings; off by default): the
+  3DS's 3D, both eyes' pictures in one as Azahar's anaglyph mode makes them, for cheap red and cyan
+  glasses, with the 3D slider all the way up.
 - Screen layouts: a large top screen with the bottom one beside it, the top screen only, side by
   side, or stacked; either screen can take the main spot.
 - **Borders:** Midnight, Waves, Aurora, Shell or PS5-ECAM artwork around the screens in every layout, from

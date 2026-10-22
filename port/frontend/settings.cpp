@@ -86,6 +86,7 @@ namespace ps5settings
 			ReadBool(json, "tscClock", n3ds.tscClock);
 			ReadBool(json, "invariantPosition", n3ds.invariantPosition);
 			ReadBool(json, "hwShaders", n3ds.hwShaders);
+			ReadBool(json, "anaglyph", n3ds.anaglyph);
 			ReadString(json, "turbo", n3ds.turbo);
 			ReadInt(json, "region", n3ds.region, -1, 6);
 			ReadInt(json, "language", n3ds.language, -1, 11);
@@ -140,6 +141,8 @@ namespace ps5settings
 			writer.Bool(n3ds.invariantPosition);
 			writer.Key("hwShaders");
 			writer.Bool(n3ds.hwShaders);
+			writer.Key("anaglyph");
+			writer.Bool(n3ds.anaglyph);
 			writer.Key("turbo");
 			writer.String(n3ds.turbo.c_str());
 			writer.Key("region");
@@ -590,6 +593,7 @@ namespace ps5settings
 				{"dsOwnBios", nullptr, nullptr, nullptr, &N3ds::dsOwnBios},
 				{"invariantPosition", nullptr, nullptr, nullptr, &N3ds::invariantPosition},
 				{"hwShaders", nullptr, nullptr, nullptr, &N3ds::hwShaders},
+				{"anaglyph", nullptr, nullptr, nullptr, &N3ds::anaglyph},
 				{"nxResolution", nullptr, nullptr, &N3ds::nxResolution, nullptr, 0, 6},
 				{"nxFilter", nullptr, nullptr, &N3ds::nxFilter, nullptr, 0, 3},
 				{"nxAstc", nullptr, nullptr, &N3ds::nxAstc, nullptr, 0, 1},
@@ -629,7 +633,7 @@ namespace ps5settings
 		static const std::vector<std::string> wiiu = {"upscaleFilter", "highFrameRate", "framePacing", "frameGeneration", "overlay", "asyncShaders",
 			"volume"};
 		static const std::vector<std::string> n3ds = {"resolution", "textureFilter", "customTextures", "asyncShaderCompilation", "invariantPosition", "hwShaders", "layout", "border",
-			"volume", "region", "language", "cpuClock", "frameGeneration"};
+			"volume", "region", "language", "cpuClock", "frameGeneration", "anaglyph"};
 		static const std::vector<std::string> nds = {"dsFilter", "dsRotation", "dsJit", "layout", "border", "volume", "language", "dsOwnBios"};
 		static const std::vector<std::string> nx = {"nxResolution", "nxFilter", "nxAstc", "nxFrameGeneration", "nxDocked", "nxSpeedLimit", "volume"};
 		static const std::vector<std::string> none;

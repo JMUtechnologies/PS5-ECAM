@@ -541,6 +541,11 @@ namespace ps5shell
 					   "on its outlined models with hardware shaders on; the Pokémon games are drawn right with Hardware shaders off "
 					   "instead. Applies to the next game.")),
 				"invariantPosition");
+			own(toggle("anaglyph", Tr("3D for red and cyan glasses"), hand.anaglyph, Tr("The 3DS's 3D, in red and cyan."),
+					Tr("The 3DS's 3D screen as both eyes' pictures in one, red for the left and cyan for the right, to see in 3D with red and "
+					   "cyan glasses, as Azahar's anaglyph mode makes it, the 3D slider all the way up. Colours change with it. Applies to "
+					   "the next game.")),
+				"anaglyph");
 			toggle("performance-hand", Tr("Performance overlay"), hand.performance, Tr("The frame rate and the emulation's speed, in the top left corner."),
 				Tr("The frame rate and the emulation's speed, in the top left corner."));
 		}
@@ -1505,6 +1510,8 @@ namespace ps5shell
 				hand.invariantPosition = on;
 			else if (id == "hwshaders")
 				hand.hwShaders = on;
+			else if (id == "anaglyph")
+				hand.anaglyph = on;
 			else if (id == "motion")
 				hand.motion = on;
 			else if (id == "dsjit")
