@@ -144,17 +144,30 @@ New in 5.0.0: a side of its own, in the Switch's red, to the right of the DS.
   instead, as on the other sides.
 - **Settings** on the Switch side: the internal resolution (0.5x to 4x of the game's own 720p
   handheld or 1080p docked), upscaling to 4K (FSR 1 among them), ASTC textures (compressed, or full
-  quality for a game whose textures look blocky), **frame generation** (ProsperoEden's own, with
-  MihawkGen: a game at 30 fps shown at 60; off by default), the performance overlay, the volume, and
-  in **System** docked or handheld and the **speed limit** (100% to 300%, or none: a game held to 30
+  quality for a game whose textures look blocky), FSR 1's sharpening, **anti-aliasing** (FXAA or
+  SMAA; off by default), **frame generation** (ProsperoEden's own, with MihawkGen: a game at 30 fps
+  shown at 60; off by default), the performance overlay, the volume, the sticks' deadzone, and in
+  **System** docked or handheld, the **controller type** (automatic, Pro Controller, handheld, a
+  Joy-Con pair or a single Joy-Con) and the **speed limit** (100% to 300%, or none: a game held to 30
   fps can reach 60 where the PS5 has the time to spare). A game can have its own of each (**Game
   settings**), as on the other sides.
 - **The loading screen and the in-game menu are PS5-ECAM's**: a Switch game starts with the app's
-  loading screen (its cover, its name, what is loading), and **touchpad click + Options** opens the
-  same in-game menu as on the other sides: the upscaling filter, frame generation (when the game
-  started with it on), the speed limit, the volume, and Quit to the library. The game runs on behind
-  the menu with its controller still, as a Wii U game does. ProsperoEden's own launcher is not opened
-  from the app.
+  loading screen from its first moment (its cover, its name, what is loading), and **touchpad click
+  + Options** opens the same in-game menu as on the other sides: graphics (the upscaling filter, FSR
+  sharpening, anti-aliasing, frame generation when the game started with it on, the performance
+  overlay), the speed limit, the volume, controls (docked or handheld, the controller type, vibration,
+  the stick deadzone), **amiibo** (dumps in `amiibo/` touched to the controller when the game asks,
+  as on the Wii U side), the room and who is in it, and Quit to the library. Each changes at once,
+  and what you change is kept for the next games. The game runs on behind the menu with its
+  controller still, as a Wii U game does.
+- **Multiplayer** (**Settings > Multiplayer** on the Switch side): ProsperoEden's rooms, in the app.
+  Choose one of the public rooms (ProsperoEden's own featured rooms first) or a private one by its
+  address, port and password, and a nickname; each Switch game then joins it as it starts, and you
+  choose Local Wireless (or local play) in the game to play with the others in it. A room that
+  cannot be joined brings you back to the library with why.
+- **ProsperoEden's own screens never show**: its launcher is not opened from the app. A game that
+  does not start, stops with an error or crashes comes back to PS5-ECAM's library, which says why,
+  a home screen tile's game too.
 - **Covers**: GameTDB's box art, or each game's own icon (**Settings > Online > Switch covers**).
 - Your Switch's **keys** and **firmware** are needed, dumped from your own console: see
   [Game files](#nintendo-switch).
