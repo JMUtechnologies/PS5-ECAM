@@ -1092,4 +1092,15 @@ namespace ps5archive
 namespace ps5eden
 {
 	void WriteSession(const Session&) {}
+	std::string Nickname(const ps5settings::N3ds& nx) { return nx.nxNickname.empty() ? std::string("PlayerPS5") : nx.nxNickname; }
+}
+
+#include "eden/rooms.h"
+
+namespace ps5rooms
+{
+	void Refresh() {}
+	bool Asked() { return true; }
+	Status Get() { return {false, true, {}, {}}; }
+	bool ValidNickname(const std::string& name) { return name.size() >= 4 && name.size() <= 20; }
 }

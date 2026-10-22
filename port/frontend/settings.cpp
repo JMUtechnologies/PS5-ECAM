@@ -99,6 +99,15 @@ namespace ps5settings
 			ReadBool(json, "nxFrameGeneration", n3ds.nxFrameGeneration);
 			ReadInt(json, "nxSpeedLimit", n3ds.nxSpeedLimit, 0, 4);
 			ReadInt(json, "nxCovers", n3ds.nxCovers, 0, 1);
+			ReadInt(json, "nxAntiAliasing", n3ds.nxAntiAliasing, 0, 2);
+			ReadInt(json, "nxSharpening", n3ds.nxSharpening, 0, 200);
+			ReadInt(json, "nxController", n3ds.nxController, -1, 4);
+			ReadInt(json, "nxDeadzone", n3ds.nxDeadzone, 0, 30);
+			ReadString(json, "nxRoomHost", n3ds.nxRoomHost);
+			ReadInt(json, "nxRoomPort", n3ds.nxRoomPort, 1, 65535);
+			ReadString(json, "nxRoomName", n3ds.nxRoomName);
+			ReadString(json, "nxRoomPassword", n3ds.nxRoomPassword);
+			ReadString(json, "nxNickname", n3ds.nxNickname);
 			ReadString(json, "articAddress", n3ds.articAddress);
 			ReadInt(json, "gameCount", n3ds.gameCount, -1, 1000000);
 			if (json.HasMember("buttons") && json["buttons"].IsObject())
@@ -171,6 +180,24 @@ namespace ps5settings
 			writer.Int(n3ds.nxSpeedLimit);
 			writer.Key("nxCovers");
 			writer.Int(n3ds.nxCovers);
+			writer.Key("nxAntiAliasing");
+			writer.Int(n3ds.nxAntiAliasing);
+			writer.Key("nxSharpening");
+			writer.Int(n3ds.nxSharpening);
+			writer.Key("nxController");
+			writer.Int(n3ds.nxController);
+			writer.Key("nxDeadzone");
+			writer.Int(n3ds.nxDeadzone);
+			writer.Key("nxRoomHost");
+			writer.String(n3ds.nxRoomHost.c_str());
+			writer.Key("nxRoomPort");
+			writer.Int(n3ds.nxRoomPort);
+			writer.Key("nxRoomName");
+			writer.String(n3ds.nxRoomName.c_str());
+			writer.Key("nxRoomPassword");
+			writer.String(n3ds.nxRoomPassword.c_str());
+			writer.Key("nxNickname");
+			writer.String(n3ds.nxNickname.c_str());
 			writer.Key("articAddress");
 			writer.String(n3ds.articAddress.c_str());
 			writer.Key("gameCount");
@@ -574,6 +601,9 @@ namespace ps5settings
 				{"nxDocked", nullptr, nullptr, nullptr, &N3ds::nxDocked},
 				{"nxFrameGeneration", nullptr, nullptr, nullptr, &N3ds::nxFrameGeneration},
 				{"nxSpeedLimit", nullptr, nullptr, &N3ds::nxSpeedLimit, nullptr, 0, 4},
+				{"nxAntiAliasing", nullptr, nullptr, &N3ds::nxAntiAliasing, nullptr, 0, 2},
+				{"nxSharpening", nullptr, nullptr, &N3ds::nxSharpening, nullptr, 0, 200},
+				{"nxController", nullptr, nullptr, &N3ds::nxController, nullptr, -1, 4},
 			};
 			return fields;
 		}
@@ -609,7 +639,8 @@ namespace ps5settings
 		static const std::vector<std::string> n3ds = {"resolution", "textureFilter", "customTextures", "asyncShaderCompilation", "invariantPosition", "hwShaders", "layout", "border",
 			"volume", "region", "language", "cpuClock", "frameGeneration"};
 		static const std::vector<std::string> nds = {"dsFilter", "dsRotation", "dsJit", "layout", "border", "volume", "language", "dsOwnBios"};
-		static const std::vector<std::string> nx = {"nxResolution", "nxFilter", "nxAstc", "nxFrameGeneration", "nxDocked", "nxSpeedLimit", "volume"};
+		static const std::vector<std::string> nx = {"nxResolution", "nxFilter", "nxAstc", "nxFrameGeneration", "nxDocked", "nxSpeedLimit", "volume",
+			"nxAntiAliasing", "nxSharpening", "nxController"};
 		static const std::vector<std::string> none;
 		return side == "wiiu" ? wiiu : side == "3ds" ? n3ds : side == "ds" ? nds : side == "switch" ? nx : none;
 	}
@@ -695,6 +726,10 @@ namespace ps5settings
 			to.deadzone = from.deadzone;
 			to.performance = from.performance;
 			to.buttons = from.buttons;
+			to.nxDeadzone = from.nxDeadzone;
+			// the Switch menu's Vibration is Settings > Controls' own, every side's
+			if (side == "switch")
+				merged.rumble = after.rumble;
 		}
 		const std::string key = GameKey(side, titleId);
 		const auto own = all.games.find(key);

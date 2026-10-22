@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <cstdlib>
 #include <deque>
 #include <fstream>
 #include <sys/stat.h>
@@ -22,6 +23,8 @@ namespace ps5eden
 		constexpr const char* kFilters[] = {"bilinear", "fsr", "bicubic", "nearest"};
 		constexpr const char* kAstc[] = {"compressed", "full"};
 		constexpr const char* kSpeedLimits[] = {"100", "150", "200", "300", "unlimited"};
+		constexpr const char* kAntiAliasing[] = {"none", "fxaa", "smaa"};
+		constexpr const char* kControllers[] = {"auto", "pro", "handheld", "dual_joycons", "left_joycon", "right_joycon"};
 		// the lines of Eden's trace a boot log takes, the last ones
 		constexpr size_t kTraceLines = 60;
 
@@ -67,6 +70,21 @@ namespace ps5eden
 		Set(args, "volume=" + std::to_string(std::clamp(nx.volume, 0, 100)));
 		Set(args, std::string("fps_overlay=") + (nx.performance ? "1" : "0"));
 		Set(args, std::string("vibration=") + (forGame.rumble ? "1" : "0")); // Settings > Controls' Vibration, every side's
+		// PS5-ECAM's own (patches/eden 0008): anti-aliasing, FSR's sharpening, the controller and the sticks' deadzone
+		Set(args, std::string("anti_aliasing=") + kAntiAliasing[std::clamp(nx.nxAntiAliasing, 0, 2)]);
+		Set(args, "fsr_sharpening=" + std::to_string(std::clamp(nx.nxSharpening, 0, 200)));
+		Set(args, std::string("controller=") + kControllers[std::clamp(nx.nxController + 1, 0, 5)]);
+		Set(args, "deadzone=" + std::to_string(std::clamp(nx.nxDeadzone, 0, 30)));
+		// the room Settings > Multiplayer chose, joined before the game starts (ProsperoEden's rooms)
+		if (!nx.nxRoomHost.empty())
+		{
+			Set(args, "room_host=" + nx.nxRoomHost);
+			Set(args, "room_port=" + std::to_string(nx.nxRoomPort));
+			Set(args, "room_name=" + nx.nxRoomName);
+			Set(args, "room_nickname=" + Nickname(nx));
+			if (!nx.nxRoomPassword.empty())
+				Set(args, "room_password=" + nx.nxRoomPassword);
+		}
 		return args;
 	}
 
@@ -99,6 +117,8 @@ namespace ps5eden
 			line(out, "font", ps5lang::GetMenuFont().path);
 			line(out, "face", std::to_string(ps5lang::GetMenuFont().face));
 			line(out, "exit", ps5emu::ExitAfterGame() ? "1" : "0"); // a home screen tile's game: its menu quits to the home screen
+			line(out, "game", fmt::format("{:016x}", session.titleId)); // what the menu changes is kept under it (TakeResult)
+			line(out, "root", ps5paths::Root());						 // the data folder, for its amiibo/
 			if (!out)
 			{
 				ps5log::Line("[switch] {} could not be written: Eden shows its own loading screen", staged);
@@ -111,6 +131,114 @@ namespace ps5eden
 	std::string RequestFile()
 	{
 		return DataFolder() + "/launch-request.txt";
+	}
+
+	std::string Nickname(const ps5settings::N3ds& nx)
+	{
+		// ProsperoEden's own when none is chosen
+		return nx.nxNickname.empty() ? std::string("PlayerPS5") : nx.nxNickname;
+	}
+
+	Result TakeResult()
+	{
+		Result result;
+		const std::string file = ps5ingamenx::ResultFile();
+		std::ifstream in(file);
+		if (!in)
+			return result;
+		result.found = true;
+		for (std::string line; std::getline(in, line);)
+		{
+			const size_t equals = line.find('=');
+			if (equals == std::string::npos)
+				continue;
+			const std::string key = line.substr(0, equals), value = line.substr(equals + 1);
+			const int number = std::atoi(value.c_str());
+			auto& s = result.settings;
+			if (key == "state")
+				result.state = value;
+			else if (key == "error")
+				result.error = value;
+			else if (key == "game")
+				result.titleId = std::strtoull(value.c_str(), nullptr, 16);
+			else if (key == "changed")
+				result.changed = value == "1";
+			else if (key == "filter")
+				s.filter = number;
+			else if (key == "antiAliasing")
+				s.antiAliasing = number;
+			else if (key == "sharpening")
+				s.sharpening = number;
+			else if (key == "frameGeneration")
+				s.frameGeneration = number != 0;
+			else if (key == "overlay")
+				s.overlay = number != 0;
+			else if (key == "speedLimit")
+				s.speedLimit = number;
+			else if (key == "volume")
+				s.volume = number;
+			else if (key == "docked")
+				s.docked = number != 0;
+			else if (key == "controller")
+				s.controller = number;
+			else if (key == "vibration")
+				s.vibration = number != 0;
+			else if (key == "deadzone")
+				s.deadzone = number;
+		}
+		in.close();
+		std::remove(file.c_str());
+		ps5log::Line("[switch] Eden's result: {}{}{}", result.state, result.error.empty() ? "" : ": ", result.error);
+		return result;
+	}
+
+	std::string ResultMessage(const Result& result)
+	{
+		using ps5lang::Tr;
+		using ps5lang::TrF;
+		if (result.state == "running")
+			// Eden's program stopped without saying so: a crash, or the console closed it
+			return TrF("The Switch game stopped: Eden closed while it ran. Its logs are in {0}.", DataFolder() + "/logs");
+		if (result.state != "failed" || result.error.empty())
+			return {};
+		// a room that could not be joined: "room:" its name, a tab, Eden's words
+		if (result.error.rfind("room:", 0) == 0)
+		{
+			const size_t tab = result.error.find('\t');
+			const std::string name = result.error.substr(5, tab == std::string::npos ? std::string::npos : tab - 5);
+			const std::string why = tab == std::string::npos ? std::string() : result.error.substr(tab + 1);
+			// tr: a Switch game's room (Settings > Multiplayer) could not be joined: its name ({0}) and why ({1}, in English)
+			return TrF("The room {0} could not be joined: {1} Choose another in Settings > Multiplayer, or play offline.", name, why);
+		}
+		if (result.error.rfind("Forwarded game not found", 0) == 0)
+			return Tr("Eden could not find the game's file. Is the drive with it plugged in?");
+		// tr: why a Switch game stopped or did not start, in Eden's own words (English)
+		return TrF("The Switch game did not start or stopped: {0}", result.error);
+	}
+
+	void KeepMenuChanges(const Result& result)
+	{
+		if (!result.changed)
+			return;
+		// into the game's own settings when it has some, else the side's, as the other sides' menus do
+		const ps5settings::Launcher all = ps5settings::Load();
+		const ps5settings::Launcher before = ps5settings::ForGame(all, "switch", result.titleId);
+		ps5settings::Launcher after = before;
+		ps5settings::N3ds& nx = after.nx;
+		const Result::Settings& s = result.settings;
+		nx.nxFilter = std::clamp(s.filter, 0, 3);
+		nx.nxAntiAliasing = std::clamp(s.antiAliasing, 0, 2);
+		nx.nxSharpening = std::clamp(s.sharpening, 0, 200);
+		nx.nxFrameGeneration = s.frameGeneration;
+		nx.performance = s.overlay;
+		nx.nxSpeedLimit = std::clamp(s.speedLimit, 0, 4);
+		nx.volume = std::clamp(s.volume, 0, 100);
+		nx.nxDocked = s.docked;
+		nx.nxController = std::clamp(s.controller, -1, 4);
+		nx.nxDeadzone = std::clamp(s.deadzone, 0, 30);
+		after.rumble = s.vibration;
+		ps5settings::SaveChanges("switch", result.titleId, before, after);
+		ps5log::Line("[switch] the in-game menu's changes kept");
 	}
 
 	std::string TakeStaleRequest()

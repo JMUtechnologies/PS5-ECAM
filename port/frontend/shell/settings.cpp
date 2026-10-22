@@ -19,7 +19,9 @@
 #include "../../azahar/azahar.h"
 #include "../../azahar/controls.h"
 #include "../../azahar/library.h"
+#include "../../eden/eden.h"
 #include "../../eden/library.h"
+#include "../../eden/rooms.h"
 #include "../../melonds/library.h"
 #include "../../melonds/melonds.h"
 #include "../../ps5/privilege.h"
@@ -115,6 +117,29 @@ namespace ps5shell
 		constexpr const char* kNxResolutions[] = {"0.5x", "0.75x", "1x", "1.5x", "2x", "3x", "4x"};
 		// Eden's upscaling filters, in its order (bilinear, AMD FSR, bicubic, nearest), by kUpscaleFilters' names
 		constexpr int kNxFilters[] = {0, 4, 1, 3};
+		// AMD FSR 1's sharpening on the Switch side, Eden's slider: each step halves it, shown as the share
+		// left of the sharpest
+		constexpr int kNxSharpening[] = {0, 25, 50, 100, 200};
+		// tr: the Switch's controller types, as a game sees the DualSense (Automatic: what the game takes)
+		constexpr const char* kNxControllers[] = {TrMark("Automatic"), TrMark("Pro Controller"), TrMark("Handheld"), TrMark("Joy-Con pair"),
+			TrMark("Left Joy-Con"), TrMark("Right Joy-Con")};
+
+		int NxSharpeningIndex(int value)
+		{
+			int best = 0;
+			for (int i = 1; i < (int)std::size(kNxSharpening); i++)
+				if (std::abs(kNxSharpening[i] - value) < std::abs(kNxSharpening[best] - value))
+					best = i;
+			return best;
+		}
+
+		// whether a room's address is one Eden takes: a name or an IPv4 address
+		bool RoomHost(const std::string& host)
+		{
+			return !host.empty() && host.size() <= 253 && std::all_of(host.begin(), host.end(), [](char c) {
+				return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '.' || c == '-';
+			});
+		}
 
 		// the DualSense buttons a turbo can be on, by the names the settings keep them by (ps5pad::ButtonNamed)
 		constexpr const char* kTurboInputs[] = {"Cross", "Circle", "Square", "Triangle", "L1", "R1", "L2", "R2", "L3", "R3", "Create"};
@@ -223,6 +248,9 @@ namespace ps5shell
 				Icon::Save});
 		if (Is3ds())
 			pages.push_back({"artic", Tr("Artic Base"), Tr("Play from your 3DS, over your network."), Icon::Artic});
+		// ProsperoEden's rooms (port/eden/rooms.h), the Switch side's own page
+		if (IsSwitch())
+			pages.push_back({"rooms", Tr("Multiplayer"), Tr("Rooms for the games' local wireless play, online."), Icon::Globe});
 		pages.push_back({"online", Tr("Online"), IsWiiU() ? Tr("Box art, graphic packs and PS5-ECAM's updates.") :
 										   IsDs()	 ? Tr("Box art, RetroAchievements and PS5-ECAM's updates.") :
 													   Tr("Box art and PS5-ECAM's updates."),
@@ -558,6 +586,23 @@ namespace ps5shell
 					Tr("Bilinear is soft, Bicubic sharper; Nearest neighbour keeps pixels square. AMD FSR 1 keeps edges clean for a game drawn "
 					   "below 4K, for a little more work by the GPU.")),
 				"nxFilter");
+			// FSR 1's own setting, while it is the filter
+			if (hand.nxFilter == 1)
+			{
+				std::vector<std::string> levels;
+				for (int value : kNxSharpening)
+					levels.push_back(Percent((int)std::lround(100.0 * std::pow(2.0, -value / 100.0))));
+				own(choice("nx-sharpening", Tr("FSR sharpening"), levels, NxSharpeningIndex(hand.nxSharpening),
+						Tr("How much AMD FSR 1 sharpens the picture."),
+						Tr("How much AMD FSR 1 sharpens the picture as it scales it to the TV: 100% is the most, and each step down halves it. "
+						   "Also in the in-game menu, where it changes at once.")),
+					"nxSharpening");
+			}
+			own(choice("nx-aa", Tr("Anti-aliasing"), {Tr("Off"), "FXAA", "SMAA"}, hand.nxAntiAliasing, Tr("Smooths the jagged edges of the picture."),
+					Tr("Eden's anti-aliasing, over the game's picture: FXAA smooths edges lightly, SMAA more cleanly, each for a little more "
+					   "work by the GPU. Off, as Eden has it. Also in the in-game menu, where it changes at once."),
+					Kind::Segmented),
+				"nxAntiAliasing");
 			own(choice("nx-astc", Tr("ASTC textures"), {Tr("Compressed"), Tr("Full quality")}, hand.nxAstc,
 					Tr("Compressed saves graphics memory; full quality looks best."),
 					Tr("Many Switch games keep their textures in ASTC, which the PS5's GPU cannot read: Eden converts them. Compressed keeps them "
@@ -636,6 +681,11 @@ namespace ps5shell
 		{
 			toggle("rumble", Tr("Vibration"), settings.rumble, Tr("The DualSense's rumble, in games and in the launcher."),
 				Tr("Off, the DualSense never rumbles, in games or in the launcher. The same on every side."));
+			if (IsSwitch())
+				slider("nx-deadzone", Tr("Stick deadzone"), hand.nxDeadzone, 30, Tr("How far a stick moves before it counts."),
+					Tr("How far a stick moves before the game sees it, for both sticks. Raise it if a character or the camera drifts when you "
+					   "let go of the stick; lower it for finer control. Also in the in-game menu."))
+					->value = Percent(hand.nxDeadzone);
 			// a Switch game's buttons are the Switch's own, where the DualSense has them
 			if (!IsSwitch())
 			{
@@ -758,6 +808,14 @@ namespace ps5shell
 					   "asks less of the GPU. A few games look or play differently in each. Applies to the next game."),
 					Kind::Segmented),
 				"nxDocked");
+			std::vector<std::string> controllers;
+			for (const char* name : kNxControllers)
+				controllers.push_back(Tr(name));
+			own(choice("nx-controller", Tr("Controller type"), controllers, hand.nxController + 1, Tr("What a game sees in your hands."),
+					Tr("Automatic gives each game the controller it takes: a Pro Controller for most. A game that does not work with one may "
+					   "with a Joy-Con pair; Handheld is player 1's alone, for games played on the console's own screen. Also in the in-game "
+					   "menu.")),
+				"nxController");
 			// Eden's speed limit, as ProsperoEden's Settings > Performance has it
 			std::vector<std::string> speeds;
 			for (int percent : {100, 150, 200, 300})
@@ -957,6 +1015,54 @@ namespace ps5shell
 			action(Kind::Link, "artic", Tr("Artic Base"), settings.n3ds.articAddress, Tr("Play a game from your 3DS, and set up from it."),
 				Tr("Artic Base plays a game from a 3DS on your network, its saves staying on the 3DS; Artic Setup copies a 3DS's system files "
 				"into Azahar, for the Home Menu and the games that need them."));
+		else if (page == "rooms")
+		{
+			// the public list, downloaded once as the page first opens; Cross on its row again
+			if (!ps5rooms::Asked())
+				ps5rooms::Refresh();
+			const ps5rooms::Status rooms = ps5rooms::Get();
+			const bool joined = !hand.nxRoomHost.empty();
+			const std::string about = Tr("A room is a server where Switch games find each other for their local wireless play, as in desktop "
+										 "Eden and ProsperoEden. The room chosen here is joined as each Switch game starts: then choose Local "
+										 "Wireless (or local play) in the game. A room that cannot be joined brings you back here with why.");
+			Row* room = action(Kind::Action, "nx-room", Tr("Room"), joined ? hand.nxRoomName : std::string(Tr("None: games play offline")),
+				joined ? Tr("Joined as a Switch game starts. Cross plays offline again.") : Tr("Choose a public room below, or a private one."),
+				about);
+			room->dimmed = !joined;
+			action(Kind::Action, "nx-nickname", Tr("Nickname"), ps5eden::Nickname(hand), Tr("Your name in the room."),
+				Tr("What the others in a room see of you: 4 to 20 letters, digits, spaces, dots, dashes or underscores, as Eden takes them."));
+			const bool privateRoom = joined && hand.nxRoomName == hand.nxRoomHost;
+			action(Kind::Action, "nx-private", Tr("Private room"),
+				privateRoom ? fmt::format("{}:{}", hand.nxRoomHost, hand.nxRoomPort) : std::string(Tr("Cross to enter one")),
+				Tr("A room by its address, port and password."),
+				Tr("A room someone gave you the address of: its address (a name or an IPv4 address), its UDP port (24872 unless they "
+				   "say otherwise) and its password, if it has one."));
+			const std::string status = rooms.busy ? std::string(Tr("Downloading…")) :
+				!rooms.error.empty()				? rooms.error :
+				rooms.rooms.empty()				? std::string(Tr("No public rooms right now")) :
+													  TrP((long long)rooms.rooms.size(), "{0} room", "{0} rooms");
+			action(Kind::Action, "nx-refresh", Tr("Public rooms"), status, Tr("Cross downloads the list again."),
+				Tr("ProsperoEden's list of public rooms: its own featured rooms first, then the others, the fullest first. A room for "
+				   "another version of Eden cannot be joined.") + std::string("\n\n") + about);
+			// the rooms themselves, ProsperoEden's own first (the most a page lists)
+			for (size_t i = 0; i < rooms.rooms.size() && i < 80; i++)
+			{
+				const ps5rooms::Room& r = rooms.rooms[i];
+				std::string value = fmt::format("{}/{}", r.players, r.capacity);
+				if (r.password)
+					value += std::string(" \u00b7 ") + Tr("Password");
+				if (r.featured)
+					// tr: one of ProsperoEden's own rooms, which its list puts first
+					value = std::string(Tr("Featured")) + " \u00b7 " + value;
+				if (!r.compatible)
+					value = Tr("Another version");
+				const bool chosen = joined && hand.nxRoomHost == r.address && hand.nxRoomPort == r.port;
+				Row* row = action(Kind::Action, "nx-public", chosen ? TrF("{0} (chosen)", r.name) : r.name, value,
+					r.game.empty() ? std::string(Tr("Any game")) : r.game, about);
+				row->index = (int)i;
+				row->dimmed = !r.compatible;
+			}
+		}
 		else if (page == "online")
 		{
 			// (a Switch game's ID is the game GameTDB has by its name: port/eden/library.h)
@@ -1382,6 +1488,12 @@ namespace ps5shell
 			hand.nxSpeedLimit = std::clamp(index, 0, 4);
 		else if (id == "nx-covers")
 			hand.nxCovers = std::clamp(index, 0, 1);
+		else if (id == "nx-sharpening")
+			hand.nxSharpening = kNxSharpening[std::clamp(index, 0, (int)std::size(kNxSharpening) - 1)];
+		else if (id == "nx-aa")
+			hand.nxAntiAliasing = std::clamp(index, 0, 2);
+		else if (id == "nx-controller")
+			hand.nxController = std::clamp(index - 1, -1, 4);
 		else if (id == "theme")
 			settings.ui.theme = index >= 0 && index < (int)m_themes.size() ? m_themes[index].id : "";
 		else if (id == "abeverywhere")
@@ -1534,10 +1646,11 @@ namespace ps5shell
 			int* value = id == "musicvolume" ? &settings.musicVolume :
 				id == "volume"				 ? (IsWiiU() ? &settings.volume : &hand.volume) :
 				id == "deadzone"			 ? &hand.deadzone :
+				id == "nx-deadzone"			 ? &hand.nxDeadzone :
 											   nullptr;
 			if (!value)
 				return false;
-			const int most = id == "deadzone" ? 50 : 100, by = id == "deadzone" ? 5 : 10;
+			const int most = id == "deadzone" ? 50 : id == "nx-deadzone" ? 30 : 100, by = id == "deadzone" ? 5 : id == "nx-deadzone" ? 2 : 10;
 			int next = *value + (cross ? by : step * by);
 			if (cross && next > most)
 				next = 0;
@@ -1911,6 +2024,97 @@ namespace ps5shell
 		{
 			m_pageFrom = ScreenId::Settings;
 			ArticOpen();
+		}
+		else if (id == "nx-room")
+		{
+			// offline again
+			if (hand.nxRoomHost.empty())
+				return;
+			hand.nxRoomHost.clear();
+			hand.nxRoomName.clear();
+			hand.nxRoomPassword.clear();
+			SaveSettings();
+			Toast(Tr("Switch games play offline"));
+		}
+		else if (id == "nx-nickname")
+		{
+			OpenTextKeyboard(Tr("Your nickname in rooms"), hand.nxNickname, 20, false, [this](const std::string& name) {
+				if (name.empty())
+					return;
+				if (!ps5rooms::ValidNickname(name))
+				{
+					Toast(Tr("A nickname is 4 to 20 letters, digits, spaces, dots, dashes or underscores."));
+					return;
+				}
+				Handheld(System::Switch).nxNickname = name;
+				SaveSettings();
+				// tr: the nickname shown in Switch rooms ({0})
+				Toast(TrF("In rooms you are {0}", name));
+			});
+		}
+		else if (id == "nx-refresh")
+			ps5rooms::Refresh();
+		else if (id == "nx-public")
+		{
+			const ps5rooms::Status rooms = ps5rooms::Get();
+			if (row.index < 0 || row.index >= (int)rooms.rooms.size())
+				return;
+			const ps5rooms::Room room = rooms.rooms[row.index];
+			if (!room.compatible)
+			{
+				m_feedback.Play(ui::Cue::Denied);
+				Toast(Tr("This room is for another version of Eden."));
+				return;
+			}
+			auto choose = [this, room](const std::string& password) {
+				ps5settings::N3ds& nx = Handheld(System::Switch);
+				nx.nxRoomHost = room.address;
+				nx.nxRoomPort = room.port;
+				nx.nxRoomName = room.name;
+				nx.nxRoomPassword = password;
+				SaveSettings();
+				// tr: the room ({0}) Switch games join from now on
+				Toast(TrF("Switch games join {0} as they start", room.name));
+			};
+			if (room.password)
+				// tr: the password of a room ({0}: its name)
+				OpenTextKeyboard(TrF("{0}'s password", room.name), "", 128, true, [choose](const std::string& password) {
+					if (!password.empty())
+						choose(password);
+				});
+			else
+				choose("");
+		}
+		else if (id == "nx-private")
+		{
+			// its address, its port, then its password (none: empty)
+			const std::string host = hand.nxRoomName == hand.nxRoomHost ? hand.nxRoomHost : std::string();
+			OpenTextKeyboard(Tr("The room's address"), host, 253, false, [this](const std::string& host) {
+				if (host.empty())
+					return;
+				if (!RoomHost(host))
+				{
+					Toast(Tr("An address is a name or an IPv4 address: letters, digits, dots and dashes."));
+					return;
+				}
+				OpenTextKeyboard(Tr("Its UDP port"), std::to_string(ps5rooms::kDefaultPort), 5, false, [this, host](const std::string& port) {
+					const int number = std::atoi(port.c_str());
+					if (number <= 0 || number > 65535 || port.find_first_not_of("0123456789") != std::string::npos)
+					{
+						Toast(Tr("A port is a number from 1 to 65535."));
+						return;
+					}
+					OpenTextKeyboard(Tr("Its password (empty: none)"), "", 128, true, [this, host, number](const std::string& password) {
+						ps5settings::N3ds& nx = Handheld(System::Switch);
+						nx.nxRoomHost = host;
+						nx.nxRoomPort = number;
+						nx.nxRoomName = host;
+						nx.nxRoomPassword = password;
+						SaveSettings();
+						Toast(TrF("Switch games join {0} as they start", host));
+					});
+				});
+			});
 		}
 		else if (id == "homemenu")
 		{

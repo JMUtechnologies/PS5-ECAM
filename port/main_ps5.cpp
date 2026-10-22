@@ -486,6 +486,24 @@ int main(int argc, char* argv[])
 	if (privileges.filesystem)
 		if (std::string why = ps5eden::TakeStaleRequest(); !why.empty())
 			status.launchErrorSwitch = why;
+	// what the Switch side's last game came to in Eden's program (port/eden/eden.h): why it did not start
+	// or stopped, said once on the Switch side, never in ProsperoEden's launcher; and what its in-game
+	// menu changed, kept as the other sides' menus keep theirs
+	if (privileges.filesystem)
+		if (const ps5eden::Result result = ps5eden::TakeResult(); result.found)
+		{
+			if (std::string why = ps5eden::ResultMessage(result); !why.empty())
+				status.launchErrorSwitch = why;
+			if (result.changed)
+			{
+				ps5eden::KeepMenuChanges(result);
+				const ps5settings::Launcher kept = ps5settings::Load();
+				settings.nx = kept.nx;
+				settings.games = kept.games;
+				settings.rumble = kept.rumble;
+				ps5pad::SetVibrationEnabled(settings.rumble);
+			}
+		}
 
 	// One emulator per session: none starts until a side opens (the side last used, or the chooser's).
 	// Cemu's core (its guest memory, system threads, crash handler, graphic packs and game scan) runs

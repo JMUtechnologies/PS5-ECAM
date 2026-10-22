@@ -69,6 +69,14 @@ namespace ps5settings
 		bool nxFrameGeneration = false; // ProsperoEden's frame generation, with MihawkGen: off, as ProsperoEden has it
 		int nxSpeedLimit = 0;		  // Eden's speed limit: 100%, 150%, 200%, 300% or none (ProsperoEden's kSpeedLimitKeys)
 		int nxCovers = 0;			  // the Switch side's covers: GameTDB's box art, or each game's own icon
+		int nxAntiAliasing = 0;		  // Eden's anti-aliasing: none, FXAA, SMAA
+		int nxSharpening = 25;		  // AMD FSR 1's sharpening, Eden's slider: 0 (the sharpest) to 200
+		int nxController = -1;		  // the controller a Switch game sees: -1 automatic, then Pro, handheld, Joy-Con pair, left, right
+		int nxDeadzone = 8;			  // the sticks' deadzone in a Switch game, percent (Eden's own default)
+		// ProsperoEden's rooms (Settings > Multiplayer): the one a Switch game joins as it starts, none
+		// when nxRoomHost is empty, and the nickname shown in it
+		std::string nxRoomHost, nxRoomName, nxRoomPassword, nxNickname;
+		int nxRoomPort = 24872;
 		std::string articAddress;	  // the last Artic Base server's IPv4 address, a 3DS on the network
 		int gameCount = -1;			  // the library's games when last looked for (the start screen's); -1: never
 		std::map<std::string, std::string> buttons; // 3DS button: DualSense input, where not the default

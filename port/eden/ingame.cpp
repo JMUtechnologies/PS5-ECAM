@@ -15,6 +15,8 @@
 #include <atomic>
 #include <chrono>
 #include <cstdio>
+#include <cmath>
+#include <filesystem>
 #include <fstream>
 #include <mutex>
 #include <vector>
@@ -32,9 +34,22 @@ namespace ps5ingamenx
 		// the game, from the session file (Start)
 		std::mutex s_mutex;
 		std::string s_title, s_details, s_coverPath;
+		std::string s_root;		// the app's data folder (its amiibo/)
+		std::string s_game;		// the title ID the launcher keeps the game's settings under
 		bool s_session = false; // a session file was there: this side's screens are drawn
 		Settings s_settings;	// under s_mutex
 		bool s_changed = false;
+		bool s_everChanged = false; // for the result file: the launcher keeps what the menu changed
+		Room s_room;				// under s_mutex
+
+		// the amiibo dumps in the data folder's amiibo/, listed as the menu opens (the renderer's thread),
+		// the one asked for (under s_mutex) and what came of the last one
+		std::vector<std::string> s_amiibo;
+		int s_amiiboIndex = 0;
+		std::string s_amiiboRequest;
+		bool s_amiiboAsked = false;
+		std::string s_amiiboName;
+		std::atomic<int> s_amiiboAnswer{-1};
 
 		std::atomic<int> s_step{(int)Step::None};
 		std::atomic<size_t> s_shadersDone{0}, s_shadersOf{0};
@@ -52,6 +67,31 @@ namespace ps5ingamenx
 		constexpr const char* kFilters[] = {TrMark("Bilinear"), TrMark("AMD FSR 1"), TrMark("Bicubic"), TrMark("Nearest neighbour")};
 		constexpr int kFilterCount = 4;
 		constexpr int kSpeedLimits[] = {100, 150, 200, 300, 0}; // percent; 0 is none
+		// tr: anti-aliasing in the Switch's in-game menu: none, or Eden's two methods (FXAA and SMAA, their own names)
+		constexpr const char* kAntiAliasing[] = {TrMark("Off"), "FXAA", "SMAA"};
+		// FSR 1's sharpening, Eden's slider: each step of it halves the sharpening, shown as the share left
+		// of the sharpest (100%, 84%, 71%, 50%, 25%)
+		constexpr int kSharpening[] = {0, 25, 50, 100, 200};
+		constexpr int kSharpeningCount = 5;
+		// tr: the Switch's controller types, as the game sees the DualSense (Automatic: a Pro Controller)
+		constexpr const char* kControllers[] = {TrMark("Automatic"), TrMark("Pro Controller"), TrMark("Handheld"), TrMark("Joy-Con pair"),
+			TrMark("Left Joy-Con"), TrMark("Right Joy-Con")};
+		constexpr int kHandheld = 1; // in Settings::controller
+		constexpr int kDeadzoneStep = 2, kDeadzoneMost = 30;
+
+		int SharpeningIndex(int value)
+		{
+			int best = 0;
+			for (int i = 1; i < kSharpeningCount; i++)
+				if (std::abs(kSharpening[i] - value) < std::abs(kSharpening[best] - value))
+					best = i;
+			return best;
+		}
+
+		std::string SharpeningName(int value)
+		{
+			return Percent((int)std::lround(100.0 * std::pow(2.0, -value / 100.0)));
+		}
 
 		uint64_t Now()
 		{
@@ -474,17 +514,58 @@ namespace ps5ingamenx
 			return percent ? Percent(percent) : std::string(TrC("speed limit", "None"));
 		}
 
+		std::string ControllerName(int controller)
+		{
+			return Tr(kControllers[std::clamp(controller + 1, 0, 5)]);
+		}
+
+		std::string AmiiboValue()
+		{
+			if (s_amiibo.empty())
+				return Tr("None");
+			const std::string& name = s_amiibo[std::clamp(s_amiiboIndex, 0, (int)s_amiibo.size() - 1)];
+			std::string answered;
+			{
+				std::lock_guard lock(s_mutex);
+				answered = s_amiiboName;
+			}
+			// what came of the last one, while it is the one shown
+			if (answered == name)
+				switch ((AmiiboAnswer)s_amiiboAnswer.load())
+				{
+				// tr: {0} is an amiibo dump's file name
+				case AmiiboAnswer::Touched: return TrF("Scanned {0}", name);
+				// tr: the amiibo taken away from the controller, as from the Switch's NFC reader
+				case AmiiboAnswer::Removed: return TrF("{0} taken away", name);
+				case AmiiboAnswer::NotAsked: return Tr("The game is not asking for one");
+				case AmiiboAnswer::NotAnAmiibo: return Tr("Not an amiibo dump");
+				case AmiiboAnswer::Unreadable: return Tr("Could not be read");
+				default: break;
+				}
+			return name;
+		}
+
 		std::vector<ps5menu::Row> MenuRows(const Settings& settings, bool exitAfterGame)
 		{
 			using Row = ps5menu::Row;
 			const std::string on = Tr("On"), off = Tr("Off");
 			std::vector<Row> rows;
-			Row graphics{"graphics", Tr("Graphics"), FilterName(settings.filter), false, Tr("How the picture is scaled to the TV."), {
-				{"filter", Tr("Upscaling to 4K"), FilterName(settings.filter), true, Tr("How the picture is scaled to the TV.")},
+			Row graphics{"graphics", Tr("Graphics"), FilterName(settings.filter), false,
+				Tr("Upscaling, anti-aliasing, frame generation and the performance overlay. Kept for the next games."), {
+				{"filter", Tr("Upscaling to 4K"), FilterName(settings.filter), true,
+					Tr("How the picture is scaled to the TV: Bicubic is sharp, Bilinear softer, AMD FSR 1 keeps edges clean. It changes at once.")},
 			}};
+			// FSR 1's own setting, while it is the filter
+			if (settings.filter == 1)
+				graphics.rows.push_back({"sharpening", Tr("FSR sharpening"), SharpeningName(settings.sharpening), true,
+					Tr("How much AMD FSR 1 sharpens the picture as it scales it: 100% is the most. It changes at once.")});
+			graphics.rows.push_back({"aa", Tr("Anti-aliasing"), Tr(kAntiAliasing[std::clamp(settings.antiAliasing, 0, 2)]), true,
+				Tr("Smooths the jagged edges of the game's picture: FXAA lightly, SMAA more cleanly, for a little more work by the GPU. It changes at once.")});
 			if (settings.canGenerate)
 				graphics.rows.push_back({"framegen", Tr("Frame generation"), settings.frameGeneration ? on : off, true,
 					Tr("A picture made between each two frames of a game at 30 fps, so it is shown at 60. It changes at once.")});
+			graphics.rows.push_back({"overlay", Tr("Performance overlay"), settings.overlay ? on : off, true,
+				Tr("The frame rate and the emulation's speed, in a corner of the screen.")});
 			rows.push_back(graphics);
 			rows.push_back({"pace", Tr("Speed"), SpeedName(settings.speedLimit), false, Tr("How fast the game may run."), {
 				{"speed", Tr("Speed limit"), SpeedName(settings.speedLimit), true,
@@ -493,6 +574,46 @@ namespace ps5ingamenx
 			Row volume{"volume", Tr("Volume"), Percent(settings.volume), true, Tr("The game's sound. Left and Right change it by 10%.")};
 			volume.slider = settings.volume / 100.0f;
 			rows.push_back(volume);
+			// tr: the emulated Switch's console mode: in its dock, or handheld
+			const std::string mode = settings.docked ? TrC("switch mode", "Docked") : TrC("switch mode", "Handheld");
+			rows.push_back({"controls", Tr("Controls"), fmt::format("{} · {}", mode, ControllerName(settings.controller)), false,
+				Tr("Docked or handheld, the controller the game sees, vibration and the sticks' deadzone."), {
+				{"docked", Tr("Console mode"), mode, true,
+					Tr("Docked, the game draws for a TV, at its sharpest; handheld, for the console's own screen, which asks less of the GPU. The "
+					   "game is told at once, as when a Switch leaves its dock.")},
+				{"controller", Tr("Controller type"), ControllerName(settings.controller), true,
+					Tr("What the game sees in your hands. Automatic is a Pro Controller; Handheld needs Handheld mode, and is player 1's alone. "
+					   "Some games ask you to press a button to take the new one.")},
+				{"vibration", Tr("Vibration"), settings.vibration ? on : off, true,
+					Tr("The DualSense's rumble when the game asks for it. For every side, as Settings > Controls has it.")},
+				{"deadzone", Tr("Stick deadzone"), Percent(settings.deadzone), true,
+					Tr("How far a stick moves before the game sees it. Raise it if a character or the camera drifts.")},
+			}});
+			// tr: amiibo is Nintendo's name for its figures, as it writes it in the language
+			rows.push_back({"amiibo", Tr("Amiibo"), AmiiboValue(), true,
+				// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
+				s_amiibo.empty() ? TrF("Put amiibo dumps (.bin) in {0}/amiibo to scan them here.", s_root) :
+								   Tr("Left and Right choose an amiibo dump; Cross touches it to the controller when the game asks for one, "
+									  "and again takes it away.")});
+			// the room joined for the game (the launcher's Multiplayer page), and who is in it
+			Room room;
+			{
+				std::lock_guard lock(s_mutex);
+				room = s_room;
+			}
+			if (room.joined || room.lost)
+			{
+				Row players{"room", Tr("Room"), room.lost ? std::string(Tr("Connection lost")) : room.name, false,
+					Tr("The room joined for this game: choose Local Wireless (or local play) in the game to play with the others in it.")};
+				for (size_t i = 0; i < room.members.size(); i++)
+					players.rows.push_back({fmt::format("member{}", i), room.members[i], "", false, Tr("In the room.")});
+				if (players.rows.empty())
+					players.rows.push_back({"nomembers", Tr("Nobody else yet"), "", false, Tr("The players in the room show here as they join.")});
+				else if (!room.lost)
+					// tr: how many players are in the room
+					players.value = fmt::format("{} · {}", room.name, ps5lang::TrP((int)room.members.size(), "{0} player", "{0} players"));
+				rows.push_back(players);
+			}
 			// a home screen tile's game closes the app instead, as the row says (#48)
 			Row leave = exitAfterGame ?
 				Row{"leave", Tr("Quit to the home screen"), "", false,
@@ -505,10 +626,35 @@ namespace ps5ingamenx
 			return rows;
 		}
 
-		std::vector<ps5menu::Tile> Tiles()
+		// The quick actions above the list: back to the game, docked or handheld, and the amiibo chosen in
+		// the list touched to the controller
+		std::vector<ps5menu::Tile> Tiles(const Settings& settings)
 		{
 			// tr: the quick actions: big tiles at the top of the in-game menu, a word or two each
-			return {{"resume", Tr("Resume"), "resume"}};
+			return {{"resume", Tr("Resume"), "resume"},
+				{"docked", Tr("Console mode"), "swap", settings.docked ? TrC("switch mode", "Docked") : TrC("switch mode", "Handheld")},
+				{"amiibo", Tr("Amiibo"), "amiibo", s_amiibo.empty() ? Tr("None") : Tr("Scan")}};
+		}
+
+		void FindAmiibo()
+		{
+			s_amiibo.clear();
+			std::error_code error;
+			for (const auto& entry : std::filesystem::directory_iterator(s_root + "/amiibo", error))
+			{
+				std::string extension = entry.path().extension().string();
+				std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+				if (entry.is_regular_file(error) && extension == ".bin")
+					s_amiibo.push_back(entry.path().filename().string());
+			}
+			std::sort(s_amiibo.begin(), s_amiibo.end());
+			s_amiiboIndex = s_amiibo.empty() ? 0 : std::clamp(s_amiiboIndex, 0, (int)s_amiibo.size() - 1);
+		}
+
+		// a step through count choices: Left and Right, or Cross onwards
+		int Cycle(int index, int count, const ps5menu::Action& action)
+		{
+			return (std::clamp(index, 0, count - 1) + (action.change ? action.change : 1) + count) % count;
 		}
 
 		void Act(const ps5menu::Action& action, const Settings& settings)
@@ -526,19 +672,63 @@ namespace ps5ingamenx
 				s_open = false;
 				return;
 			}
+			if (id == "amiibo")
+			{
+				if (s_amiibo.empty())
+					return;
+				if (!action.chosen)
+				{
+					s_amiiboIndex = (s_amiiboIndex + action.change + (int)s_amiibo.size()) % (int)s_amiibo.size();
+					return;
+				}
+				// the one shown, touched; touched again (it is still on the controller), taken away
+				const std::string& name = s_amiibo[s_amiiboIndex];
+				std::lock_guard lock(s_mutex);
+				const bool there = s_amiiboName == name && (AmiiboAnswer)s_amiiboAnswer.load() == AmiiboAnswer::Touched;
+				s_amiiboRequest = there ? std::string() : s_root + "/amiibo/" + name;
+				s_amiiboName = name;
+				s_amiiboAnswer = -1;
+				s_amiiboAsked = true;
+				return;
+			}
 			if (id == "filter")
-				next.filter = (std::clamp(settings.filter, 0, kFilterCount - 1) + (action.change ? action.change : 1) + kFilterCount) % kFilterCount;
+				next.filter = Cycle(settings.filter, kFilterCount, action);
+			else if (id == "sharpening")
+				next.sharpening = kSharpening[Cycle(SharpeningIndex(settings.sharpening), kSharpeningCount, action)];
+			else if (id == "aa")
+				next.antiAliasing = Cycle(settings.antiAliasing, 3, action);
 			else if (id == "framegen")
 				next.frameGeneration = !settings.frameGeneration;
+			else if (id == "overlay")
+				next.overlay = !settings.overlay;
 			else if (id == "speed")
-				next.speedLimit = (std::clamp(settings.speedLimit, 0, 4) + (action.change ? action.change : 1) + 5) % 5;
+				next.speedLimit = Cycle(settings.speedLimit, 5, action);
 			else if (id == "volume")
 				next.volume = action.chosen && settings.volume >= 100 ? 0 : std::clamp(settings.volume + action.change * 10, 0, 100);
+			else if (id == "docked")
+			{
+				// the handheld controller is not played docked: a Pro Controller then
+				next.docked = !settings.docked;
+				if (next.docked && settings.controller == kHandheld)
+					next.controller = -1;
+			}
+			else if (id == "controller")
+			{
+				next.controller = Cycle(settings.controller + 1, 6, action) - 1;
+				if (next.controller == kHandheld)
+					next.docked = false;
+			}
+			else if (id == "vibration")
+				next.vibration = !settings.vibration;
+			else if (id == "deadzone")
+				next.deadzone = action.chosen && settings.deadzone >= kDeadzoneMost ? 0 :
+					std::clamp(settings.deadzone + (action.change ? action.change : 1) * kDeadzoneStep, 0, kDeadzoneMost);
 			else
 				return;
 			std::lock_guard lock(s_mutex);
 			s_settings = next;
 			s_changed = true;
+			s_everChanged = true;
 		}
 
 		bool s_exitAfterGame = false;
@@ -554,9 +744,12 @@ namespace ps5ingamenx
 				details = s_details;
 			}
 			if (s_menuFresh.exchange(false))
+			{
 				s_side.Reset();
+				FindAmiibo();
+			}
 			bool close = false;
-			const ps5menu::Action action = s_side.Update(MenuRows(settings, s_exitAfterGame), Tiles(), s_menuButtons, Now(), close);
+			const ps5menu::Action action = s_side.Update(MenuRows(settings, s_exitAfterGame), Tiles(settings), s_menuButtons, Now(), close);
 			if (close)
 			{
 				s_open = false;
@@ -579,7 +772,7 @@ namespace ps5ingamenx
 			header.cover = g.cover.id;
 			header.coverWidth = (float)g.cover.width;
 			header.coverHeight = (float)g.cover.height;
-			s_side.Draw(canvas, {g.head, g.body, g.row, g.small, g.chip}, header, MenuRows(settings, s_exitAfterGame), Tiles(),
+			s_side.Draw(canvas, {g.head, g.body, g.row, g.small, g.chip}, header, MenuRows(settings, s_exitAfterGame), Tiles(settings),
 				{{"cross", Tr("Choose")}, {"leftright", Tr("Change")}, {"circle", s_side.Open().empty() ? Tr("Back to the game") : Tr("Back")}});
 		}
 
@@ -606,7 +799,7 @@ namespace ps5ingamenx
 	void Start(const Settings& settings)
 	{
 		std::ifstream in(SessionFile());
-		std::string title, details, cover, language, font;
+		std::string title, details, cover, language, font, game, root = ps5paths::kDefaultRoot;
 		int face = 0;
 		bool exitAfterGame = false;
 		for (std::string line; std::getline(in, line);)
@@ -629,22 +822,93 @@ namespace ps5ingamenx
 				face = std::atoi(value.c_str());
 			else if (key == "exit")
 				exitAfterGame = value == "1";
+			else if (key == "game")
+				game = value;
+			else if (key == "root" && !value.empty())
+				root = value;
 		}
 		const bool session = in.is_open() && !title.empty();
 		in.close();
 		std::remove(SessionFile().c_str()); // this game's: the next one leaves its own
 		ps5lang::Load(language);
 		ps5lang::SetMenuFont({font, face});
-		std::lock_guard lock(s_mutex);
-		s_title = title;
-		s_details = details;
-		s_coverPath = cover;
-		s_session = session;
-		s_settings = settings;
-		s_exitAfterGame = exitAfterGame;
-		s_loading = session;
+		{
+			std::lock_guard lock(s_mutex);
+			s_title = title;
+			s_details = details;
+			s_coverPath = cover;
+			s_game = game;
+			s_root = root;
+			s_session = session;
+			s_settings = settings;
+			s_everChanged = false;
+			s_exitAfterGame = exitAfterGame;
+			s_loading = session;
+		}
 		ps5log::Line("[ingamenx] {}: {}", session ? title : std::string("no session file"),
 			session ? "PS5-ECAM's loading screen and menu" : "Eden's own loading screen, no menu");
+		// from here until Eden's program says otherwise, a session that never ends was a crash
+		if (session)
+			WriteResult("running");
+	}
+
+	void WriteResult(const char* state, const std::string& error)
+	{
+		Settings settings;
+		std::string game;
+		bool changed;
+		{
+			std::lock_guard lock(s_mutex);
+			settings = s_settings;
+			game = s_game;
+			changed = s_everChanged;
+		}
+		const std::string file = ResultFile(), staged = file + ".new";
+		{
+			std::ofstream out(staged, std::ios::trunc);
+			std::string why = error;
+			std::replace(why.begin(), why.end(), '\n', ' ');
+			out << "state=" << state << '\n';
+			if (!why.empty())
+				out << "error=" << why << '\n';
+			if (!game.empty())
+				out << "game=" << game << '\n';
+			if (changed)
+				out << "changed=1\nfilter=" << settings.filter << "\nantiAliasing=" << settings.antiAliasing << "\nsharpening="
+					<< settings.sharpening << "\nframeGeneration=" << settings.frameGeneration << "\noverlay=" << settings.overlay
+					<< "\nspeedLimit=" << settings.speedLimit << "\nvolume=" << settings.volume << "\ndocked=" << settings.docked
+					<< "\ncontroller=" << settings.controller << "\nvibration=" << settings.vibration << "\ndeadzone=" << settings.deadzone
+					<< '\n';
+			if (!out)
+			{
+				ps5log::Line("[ingamenx] {} could not be written", staged);
+				return;
+			}
+		}
+		std::rename(staged.c_str(), file.c_str());
+		ps5log::Line("[ingamenx] result: {}{}", state, error.empty() ? std::string() : ": " + error);
+	}
+
+	void SetRoom(const Room& room)
+	{
+		std::lock_guard lock(s_mutex);
+		s_room = room;
+	}
+
+	bool TakeAmiiboRequest(std::string& path)
+	{
+		std::lock_guard lock(s_mutex);
+		if (!s_amiiboAsked)
+			return false;
+		s_amiiboAsked = false;
+		path = s_amiiboRequest;
+		return true;
+	}
+
+	void SetAmiiboAnswer(AmiiboAnswer answer)
+	{
+		s_amiiboAnswer = (int)answer;
+		ps5log::Line("[ingamenx] amiibo: answer {}", (int)answer);
 	}
 
 	void SetLoading(Step step)

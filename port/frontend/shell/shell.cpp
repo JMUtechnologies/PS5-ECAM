@@ -259,6 +259,7 @@ namespace ps5shell
 			if (m_choice->system == ps5launcher::System::Switch)
 			{
 				ps5eden::Session session{m_choice->game.name};
+				session.titleId = m_choice->game.titleId;
 				if (const int index = FindGame(m_choice->game.titleId); index >= 0)
 				{
 					Game& game = m_games[index];

@@ -168,6 +168,8 @@ add_library(CemuPS5 STATIC
 	eden/library.h
 	eden/nx_files.cpp
 	eden/nx_files.h
+	eden/rooms.cpp
+	eden/rooms.h
 	melonds/archive.cpp
 	melonds/archive.h
 	melonds/library.cpp
@@ -282,6 +284,7 @@ set_source_files_properties(
 	eden/launch.cpp
 	eden/library.cpp
 	eden/nx_files.cpp
+	eden/rooms.cpp
 	melonds/archive.cpp
 	melonds/library.cpp
 	melonds/screens.cpp

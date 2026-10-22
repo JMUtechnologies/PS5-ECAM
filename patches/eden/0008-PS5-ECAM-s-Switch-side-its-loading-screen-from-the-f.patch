@@ -1,0 +1,535 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Thu, 22 Oct 2026 06:01:20 +0000
+Subject: [PATCH] PS5-ECAM's Switch side: its loading screen from the first
+ frame, the whole in-game menu, rooms, and back to PS5-ECAM
+
+PS5-ECAM's loading screen is drawn from the first loading frame: PresentLoading gives its drawing the
+instance too, which only Composite did, so ProsperoEden's loading screen showed for the whole load
+and PS5-ECAM's for its last second.
+
+A game PS5-ECAM started (--rom with --return) never ends at ProsperoEden's launcher: one that is not
+found, fails to start or stops with an error goes back to PS5-ECAM, a home screen tile's too, with
+why in PS5-ECAM's result file (its port/eden/ingame.h), and a crash restart starts PS5-ECAM's eboot
+first. An earlier crash, which PS5-ECAM says, no longer keeps its game from starting.
+
+The in-game menu changes, at once: anti-aliasing and FSR's sharpening (read as each frame is
+presented), the performance overlay (ShowHud, nothing saved), docked or handheld (the game told, as
+desktop Eden does), the controller type (each player connected again with it), vibration and the
+sticks' deadzone (Pad::SetDeadzone). Amiibo: Eden's virtual_amiibo engine, which the emulated
+controllers' NFC reads, is built into the pad library, and a dump is loaded while the game looks
+for one. The room PS5-ECAM's Multiplayer page chose (--set room_host=..., room_port, room_name,
+room_nickname, room_password) is joined before the game starts, and the menu shows who is in it.
+The session's new settings: anti_aliasing, fsr_sharpening, deadzone, controller.
+---
+ headless/CMakeLists.txt     |   3 +-
+ headless/devices.h          |  15 ++-
+ headless/graphics.cpp       |   9 ++
+ headless/graphics.h         |   3 +
+ headless/main.cpp           | 183 ++++++++++++++++++++++++++++++++++--
+ headless/pad.cpp            |  16 +++-
+ headless/settings_store.h   |  32 ++++++-
+ headless/vulkan_loading.inc |   6 ++
+ src/lifecycle.c             |   5 +-
+ 9 files changed, 256 insertions(+), 16 deletions(-)
+
+diff --git a/headless/CMakeLists.txt b/headless/CMakeLists.txt
+index 0dcb7e0..879f8f8 100644
+--- a/headless/CMakeLists.txt
++++ b/headless/CMakeLists.txt
+@@ -2283,7 +2283,8 @@ set_property(TARGET hid_core PROPERTY SOURCES "${npad_sources}")
+ add_library(eden-pad STATIC "${EDEN_PORT_DIR}/pad.cpp" "${EDEN_PORT_DIR}/pad_haptics.cpp"
+     "${PROJECT_SOURCE_DIR}/src/input_common/input_engine.cpp"
+     "${PROJECT_SOURCE_DIR}/src/input_common/input_poller.cpp"
+-    "${PROJECT_SOURCE_DIR}/src/input_common/drivers/virtual_gamepad.cpp")
++    "${PROJECT_SOURCE_DIR}/src/input_common/drivers/virtual_gamepad.cpp"
++    "${PROJECT_SOURCE_DIR}/src/input_common/drivers/virtual_amiibo.cpp")
+ target_include_directories(eden-pad PUBLIC "${EDEN_PORT_DIR}" "${pad_contract}" "${audio_contract}" "${PROJECT_SOURCE_DIR}/src")
+ target_link_libraries(eden-pad PUBLIC common)
+ target_compile_options(eden-pad PRIVATE -fno-rtti $<$<BOOL:${PS5_NATIVE}>:-femulated-tls>)
+diff --git a/headless/devices.h b/headless/devices.h
+index ab175a2..309d920 100644
+--- a/headless/devices.h
++++ b/headless/devices.h
+@@ -1,7 +1,9 @@
+ // SPDX-License-Identifier: GPL-3.0-or-later
+ #pragma once
++#include <algorithm>
+ #include <array>
+ #include <atomic>
++#include <cmath>
+ #include <condition_variable>
+ #include <memory>
+ #include <mutex>
+@@ -9,6 +11,7 @@
+ #include <thread>
+ #include <vector>
+ #include "audio_core/sink/sink.h"
++#include "input_common/drivers/virtual_amiibo.h"
+ #include "input_common/drivers/virtual_gamepad.h"
+ #include "input_common/input_engine.h"
+ #include "button_mapping.h"
+@@ -100,6 +103,15 @@ public:
+     void Consume(std::span<const ps5::pad::Data> samples) { Consume(0, samples); }
+     void Consume(std::size_t player, std::span<const ps5::pad::Data> samples);
+     PadEngine& Engine() { return *engine; }
++    // How far a stick moves before the game sees it (0 to 0.5), changed while a game runs
++    // (PS5-ECAM's in-game menu)
++    void SetDeadzone(float value) {
++        if (std::isfinite(value)) deadzone.store(std::clamp(value, 0.0f, 0.5f));
++    }
++    float Deadzone() const { return deadzone.load(); }
++    // Amiibo as Eden's own "virtual_amiibo" engine, which player 1's and the handheld's NFC read
++    // (hid_core's emulated controller): a dump touched to the controller when the game asks for one
++    InputCommon::VirtualAmiibo& Amiibo() { return *amiibo; }
+ private:
+     struct Slot {
+         int user = -1;
+@@ -121,7 +133,8 @@ private:
+     void OpenSlot(std::size_t player, int user);
+     void CloseSlot(std::size_t player);
+     std::shared_ptr<PadEngine> engine;
+-    float deadzone;
++    std::shared_ptr<InputCommon::VirtualAmiibo> amiibo;
++    std::atomic<float> deadzone;
+     float trigger_threshold;
+     ButtonMapping mapping = kDefaultMapping;
+     std::array<Slot, kMaxPlayers> slots{};
+diff --git a/headless/graphics.cpp b/headless/graphics.cpp
+index 2e7adb3..96b5a82 100644
+--- a/headless/graphics.cpp
++++ b/headless/graphics.cpp
+@@ -606,6 +606,15 @@ void ToggleHud() {
+     preferences.hud = enabled;
+     if (!SavePreferences(preferences)) Report("settings", "Could not save HUD preference");
+ }
++bool HudShown() {
++    return hud_enabled.load(std::memory_order_relaxed);
++}
++void ShowHud(bool shown) {
++    hud_enabled.store(shown, std::memory_order_relaxed);
++    Performance::gpu_time_wanted.store(
++        shown && (hud_fields.load(std::memory_order_relaxed) & static_cast<int>(kHudFieldGpu)) != 0,
++        std::memory_order_relaxed);
++}
+ HudSnapshot GetVulkanHud() {
+     return vulkan_loading || hud_enabled.load(std::memory_order_relaxed) ? vulkan_hud : HudSnapshot{};
+ }
+diff --git a/headless/graphics.h b/headless/graphics.h
+index e958ae8..4d03c40 100644
+--- a/headless/graphics.h
++++ b/headless/graphics.h
+@@ -10,6 +10,9 @@ namespace VideoCore { class RendererBase; }
+ namespace Core { class System; }
+ namespace Eden {
+ void ToggleHud();
++// The overlay shown or not for this session, nothing saved: PS5-ECAM's in-game menu keeps its own
++bool HudShown();
++void ShowHud(bool shown);
+ class GraphicsWindow final : public Core::Frontend::EmuWindow {
+ public:
+     explicit GraphicsWindow(bool use_vulkan = false);
+diff --git a/headless/main.cpp b/headless/main.cpp
+index 513746f..2b37355 100644
+--- a/headless/main.cpp
++++ b/headless/main.cpp
+@@ -137,9 +137,10 @@ extern "C" unsigned long long eden_dmb_dropped, eden_checkbit_fused;
+ #include "stop_limit.h"
+ #ifdef EDEN_ECAM
+ #include "ingame.h"
++#include "multiplayer.h"
+ 
+ // PS5-ECAM's in-game menu (its port/eden/ingame.h): the settings it shows, as this session has them
+-static ps5ingamenx::Settings EcamSettings() {
++static ps5ingamenx::Settings EcamSettings(const Eden::Pad* pad) {
+     ps5ingamenx::Settings settings;
+     switch (Settings::values.scaling_filter.GetValue()) {
+     case Settings::ScalingFilter::Fsr: settings.filter = 1; break;
+@@ -156,14 +157,58 @@ static ps5ingamenx::Settings EcamSettings() {
+     settings.frameGeneration = Eden::MihawkGenBridge::active.load();
+     settings.canGenerate = settings.frameGeneration;  // its network is loaded only when the game starts with it
+ #endif
++    settings.antiAliasing = static_cast<int>(Settings::values.anti_aliasing.GetValue());
++    settings.sharpening = Settings::values.fsr_sharpening_slider.GetValue();
++    settings.overlay = Eden::HudShown();
++    settings.docked = Settings::IsDockedMode();
++    settings.controller = Eden::session_controller.load();
++    settings.vibration = Settings::values.vibration_enabled.GetValue();
++    if (pad) settings.deadzone = static_cast<int>(std::lround(pad->Deadzone() * 100.0f));
+     return settings;
+ }
+ 
+-// What the menu changed, at once
+-static void EcamApply(const ps5ingamenx::Settings& settings) {
++// The players' controllers as the menu's Controller type has them, while the game runs, as Eden's
++// desktop input settings do: each one disconnected, given the type, connected again; the handheld is
++// a controller of its own, player 1's alone. Automatic is a Pro Controller here.
++static void EcamControllers(Core::System& system, const Eden::Pad& pad, int controller) {
++    using Core::HID::NpadStyleIndex;
++    Eden::session_controller = controller;
++    const NpadStyleIndex style = Eden::ChosenStyle(controller).value_or(NpadStyleIndex::Fullkey);
++    const bool handheld = style == NpadStyleIndex::Handheld;
++    const unsigned connected = pad.ConnectedPlayers() | 1u;
++    for (std::size_t index = 0; index < Eden::Pad::kMaxPlayers; ++index) {
++        auto* emulated = system.HIDCore().GetEmulatedControllerByIndex(index);
++        auto& player = Settings::values.players.GetValue()[index];
++        const bool present = !handheld && (connected & (1u << index)) != 0;
++        emulated->Disconnect();
++        player.connected = present;
++        player.controller_type = Eden::ControllerSetting(controller < 0 || handheld ? 0 : controller);
++        if (!present) continue;
++        emulated->SetNpadStyleIndex(style);
++        emulated->Connect(true);
++    }
++    auto* emulated_handheld = system.HIDCore().GetEmulatedController(Core::HID::NpadIdType::Handheld);
++    emulated_handheld->Disconnect();
++    Settings::values.players.GetValue()[8].connected = handheld;
++    if (handheld) {
++        emulated_handheld->SetNpadStyleIndex(NpadStyleIndex::Handheld);
++        emulated_handheld->Connect(true);
++    }
++    Eden::handheld_in_use = handheld;
++}
++
++// What the menu changed, at once. The handheld controller and Docked mode do not go together: the
++// one chosen last decides
++static void EcamApply(ps5ingamenx::Settings settings, Core::System& system, Eden::Pad& pad) {
++    const ps5ingamenx::Settings was = EcamSettings(&pad);
+     static constexpr Settings::ScalingFilter filters[] = {Settings::ScalingFilter::Bilinear, Settings::ScalingFilter::Fsr,
+                                                           Settings::ScalingFilter::Bicubic, Settings::ScalingFilter::NearestNeighbor};
+     Settings::values.scaling_filter.SetValue(filters[std::clamp(settings.filter, 0, 3)]);
++    // both read as each frame is presented (present/layer.cpp, fsr.cpp)
++    static constexpr Settings::AntiAliasing aa[] = {Settings::AntiAliasing::None, Settings::AntiAliasing::Fxaa,
++                                                    Settings::AntiAliasing::Smaa};
++    Settings::values.anti_aliasing.SetValue(aa[std::clamp(settings.antiAliasing, 0, 2)]);
++    Settings::values.fsr_sharpening_slider.SetValue(std::clamp(settings.sharpening, 0, 200));
+     const int percent = Eden::kSpeedLimitPercent[std::clamp(settings.speedLimit, 0, 4)];
+     Settings::values.use_speed_limit.SetValue(percent > 0);
+     Settings::values.speed_limit.SetValue(static_cast<u16>(percent > 0 ? percent : 100));
+@@ -171,8 +216,75 @@ static void EcamApply(const ps5ingamenx::Settings& settings) {
+ #ifdef EDEN_PS5_MIHAWKGEN
+     if (settings.canGenerate) Eden::MihawkGenBridge::active.store(settings.frameGeneration);
+ #endif
+-    LOG_INFO(Frontend, "EDEN_ECAM_MENU filter={} speed={} volume={} frame_gen={}", settings.filter, percent, settings.volume,
+-             settings.frameGeneration);
++    if (settings.overlay != was.overlay) Eden::ShowHud(settings.overlay);
++    Settings::values.vibration_enabled.SetValue(settings.vibration);
++    pad.SetDeadzone(std::clamp(settings.deadzone, 0, 50) / 100.0f);
++    constexpr int kHandheld = 1;  // kControllerKeys
++    if (settings.controller != was.controller && settings.controller == kHandheld) settings.docked = false;
++    if (settings.docked != was.docked && settings.docked && settings.controller == kHandheld) settings.controller = -1;
++    if (settings.controller != was.controller) EcamControllers(system, pad, settings.controller);
++    if (settings.docked != was.docked) {
++        // as Eden's desktop frontend does (configure_input.cpp, OnDockedModeChanged): the game is told
++        Settings::values.use_docked_mode.SetValue(settings.docked ? Settings::ConsoleMode::Docked : Settings::ConsoleMode::Handheld);
++        system.GetAppletManager().OperationModeChanged();
++    }
++    LOG_INFO(Frontend, "EDEN_ECAM_MENU filter={} aa={} sharpening={} speed={} volume={} frame_gen={} overlay={} docked={} "
++             "controller={} vibration={} deadzone={}", settings.filter, settings.antiAliasing, settings.sharpening, percent,
++             settings.volume, settings.frameGeneration, settings.overlay, settings.docked, settings.controller,
++             settings.vibration, settings.deadzone);
++}
++
++// An amiibo dump touched to player 1's controller, or the one there taken away, as Eden's desktop
++// frontend does it (OnLoadAmiibo): only while the game looks for one
++static ps5ingamenx::AmiiboAnswer EcamAmiibo(Eden::Pad& pad, const std::string& path) {
++    using State = InputCommon::VirtualAmiibo::State;
++    using Info = InputCommon::VirtualAmiibo::Info;
++    auto& amiibo = pad.Amiibo();
++    // the one there first goes (the game is looking again, as after a scan)
++    if (amiibo.GetCurrentState() == State::TagNearby) amiibo.CloseAmiibo();
++    if (path.empty()) return ps5ingamenx::AmiiboAnswer::Removed;
++    if (amiibo.GetCurrentState() != State::WaitingForAmiibo) return ps5ingamenx::AmiiboAnswer::NotAsked;
++    switch (amiibo.LoadAmiibo(path)) {
++    case Info::Success: return ps5ingamenx::AmiiboAnswer::Touched;
++    case Info::NotAnAmiibo: return ps5ingamenx::AmiiboAnswer::NotAnAmiibo;
++    case Info::WrongDeviceState: return ps5ingamenx::AmiiboAnswer::NotAsked;
++    default: return ps5ingamenx::AmiiboAnswer::Unreadable;
++    }
++}
++
++// The room PS5-ECAM's Multiplayer page chose (settings_store.h's Session), joined before the game
++// starts, as ProsperoEden's launcher has the player do: false when it could not be, with why in the
++// result file ("room:" and the room's name, then Eden's words)
++static bool EcamJoinRoom(Eden::Multiplayer::RoomClient& rooms) {
++    using Eden::Multiplayer::Phase;
++    const auto& session = Eden::Session();
++    if (session.room_host.empty()) return true;
++    Eden::Multiplayer::Connection connection;
++    connection.host = session.room_host;
++    if (session.room_port > 0) connection.port = static_cast<std::uint16_t>(session.room_port);
++    connection.nickname = session.room_nickname.empty() ? "PlayerPS5" : session.room_nickname;
++    connection.password = session.room_password;
++    const std::string name = session.room_name.empty() ? connection.host : session.room_name;
++    Eden::BootTrace::Line("joining PS5-ECAM's room %s:%u", connection.host.c_str(), unsigned(connection.port));
++    if (rooms.GetSnapshot().phase == Phase::Connected) return true;
++    const bool asked = rooms.Connect(connection);
++    const auto until = std::chrono::steady_clock::now() + std::chrono::seconds(20);
++    for (;;) {
++        const auto snapshot = rooms.GetSnapshot();
++        if (snapshot.phase == Phase::Connected) {
++            Eden::Report("multiplayer", ("Joined " + name + " for the game").c_str());
++            return true;
++        }
++        if (!asked || snapshot.phase == Phase::Failed || snapshot.phase == Phase::Idle ||
++            std::chrono::steady_clock::now() > until) {
++            const std::string why = !snapshot.error.empty() ? snapshot.error : "The room did not answer.";
++            rooms.Leave();
++            Eden::Report("multiplayer", ("Could not join " + name + ": " + why).c_str());
++            ps5ingamenx::WriteResult("failed", "room:" + name + "\t" + why);
++            return false;
++        }
++        std::this_thread::sleep_for(std::chrono::milliseconds(50));
++    }
+ }
+ #endif
+ namespace Common {
+@@ -587,9 +699,17 @@ int main(int argc, char** argv) {
+         Eden::BootTrace::Line("started by PS5CEMU-HAR: rom %s, return %s, exit after the game %d",
+                               forwarded.rom.empty() ? "none" : "given", host_eboot.empty() ? "default" : host_eboot.c_str(),
+                               forwarded.exit_after_game ? 1 : 0);
++        // PS5-ECAM asked for this game, from its Switch side, with a way back: whatever happens to it
++        // ends there, never at ProsperoEden's launcher (PS5-ECAM says why: ingame.h's result file).
++        // An earlier crash, which PS5-ECAM said already, does not keep the game from starting.
++        const bool ecam_started = !forwarded.rom.empty() && !forwarded.return_to.empty();
++        if (ecam_started && !last_crash.report.empty()) {
++            Eden::BootTrace::Line("the last run crashed (%s): PS5-ECAM's game starts all the same", last_crash.report.c_str());
++            launch_error.clear();
++        }
+         std::string forwarded_game;
+         bool forwarded_session = false;
+-        if (!forwarded.rom.empty() && last_crash.report.empty()) {
++        if (!forwarded.rom.empty() && (last_crash.report.empty() || ecam_started)) {
+             const std::string path = Eden::ResolveForwardedRom(forwarded.rom, Eden::AssetsPath("roms"));
+             if (!path.empty() && Eden::FileExists(path)) forwarded_game = path;
+             else launch_error = "Forwarded game not found: " + (path.empty() ? forwarded.rom : path);
+@@ -673,13 +793,30 @@ int main(int argc, char** argv) {
+             selected_game = std::exchange(forwarded_game, {});
+             Eden::BootTrace::Line("starting the forwarded game");
+             KeepForwardedCover(selected_game);
++#ifdef EDEN_ECAM
++            if (ecam_started && !EcamJoinRoom(rooms)) return 0;  // back to PS5-ECAM, which says why
++#endif
+         } else if (forwarded_session && forwarded.exit_after_game && launch_error.empty()) {
+             Eden::Report("exit", "Forwarded game ended");
++#ifdef EDEN_ECAM
++            if (ecam_started) ps5ingamenx::WriteResult("ended");
++#endif
+             eden_stay_closed();
+             return 0;
+         } else if (forwarded_session && launch_error.empty()) {
+             // PS5CEMU-HAR started this game: back to its launcher, on the Switch side
+             Eden::Report("exit", "Game ended: back to PS5CEMU-HAR");
++#ifdef EDEN_ECAM
++            if (ecam_started) ps5ingamenx::WriteResult("ended");
++#endif
++            return 0;
++        } else if (ecam_started) {
++            // PS5-ECAM's game did not start, or stopped with an error: back to PS5-ECAM, a home screen
++            // tile's game too, so that it can say why
++            Eden::Report("exit", ("Back to PS5-ECAM: " + launch_error).c_str());
++#ifdef EDEN_ECAM
++            ps5ingamenx::WriteResult("failed", launch_error);
++#endif
+             return 0;
+         } else {
+         guest_fault_retries = 0;
+@@ -1697,7 +1834,17 @@ int main(int argc, char** argv) {
+                 });
+ #endif
+ #ifdef EDEN_ECAM
+-                ps5ingamenx::Start(EcamSettings());
++                {
++                    // PS5-ECAM's own settings for the session (settings_store.h): anti-aliasing, FSR's
++                    // sharpening and the sticks' deadzone, which ProsperoEden leaves as they are
++                    const auto& session = Eden::Session();
++                    static constexpr Settings::AntiAliasing aa[] = {Settings::AntiAliasing::None, Settings::AntiAliasing::Fxaa,
++                                                                    Settings::AntiAliasing::Smaa};
++                    Settings::values.anti_aliasing.SetValue(aa[std::clamp(session.anti_aliasing, 0, 2)]);
++                    if (session.fsr_sharpening >= 0) Settings::values.fsr_sharpening_slider.SetValue(session.fsr_sharpening);
++                    if (pad && session.deadzone >= 0) pad->SetDeadzone(session.deadzone / 100.0f);
++                }
++                ps5ingamenx::Start(EcamSettings(pad.get()));
+                 ps5ingamenx::SetLoading(ps5ingamenx::Step::Game);
+ #endif
+                 Eden::Loading::Set(Eden::Loading::Step::game);
+@@ -2020,7 +2167,23 @@ int main(int argc, char** argv) {
+                         // does behind PS5-ECAM's Wii U menu: this port keeps system.Pause() out
+                         // (tools/check-gpu-producer-stop.py)
+                         if (pad->TakeEcamToggle()) ps5ingamenx::ToggleMenu();
+-                        if (ps5ingamenx::Settings changed; ps5ingamenx::TakeChanges(changed)) EcamApply(changed);
++                        if (ps5ingamenx::Settings changed; ps5ingamenx::TakeChanges(changed)) EcamApply(changed, system, *pad);
++                        if (std::string amiibo; ps5ingamenx::TakeAmiiboRequest(amiibo))
++                            ps5ingamenx::SetAmiiboAnswer(EcamAmiibo(*pad, amiibo));
++                        {
++                            // the room, as the menu shows it, once a second
++                            static auto room_shown = std::chrono::steady_clock::time_point{};
++                            if (const auto now = std::chrono::steady_clock::now(); now - room_shown >= std::chrono::seconds(1)) {
++                                room_shown = now;
++                                const auto snapshot = rooms.GetSnapshot();
++                                ps5ingamenx::Room room;
++                                room.joined = snapshot.phase == Eden::Multiplayer::Phase::Connected;
++                                room.lost = snapshot.phase == Eden::Multiplayer::Phase::Failed;
++                                room.name = Eden::Session().room_name.empty() ? snapshot.room : Eden::Session().room_name;
++                                room.members = snapshot.members;
++                                ps5ingamenx::SetRoom(room);
++                            }
++                        }
+                         const bool ecam_leave = ps5ingamenx::TakeLeaveRequest();
+ #else
+                         constexpr bool ecam_leave = false;
+@@ -2028,6 +2191,10 @@ int main(int argc, char** argv) {
+                         if (pad->TakeReturnToMenu() || room_lost || ecam_leave) {
+                             // From here the player is waiting to leave (stop_limit.h).
+                             Eden::StopLimit::Begin();
++#ifdef EDEN_ECAM
++                            // a stop that takes too long starts the app again: PS5-ECAM then knows it was no crash
++                            if (ecam_started) ps5ingamenx::WriteResult("leaving");
++#endif
+                             std::lock_guard lock(completion->mutex);
+                             completion->return_to_menu = true;
+                             completion->room_lost = room_lost;
+diff --git a/headless/pad.cpp b/headless/pad.cpp
+index 70ede18..ec47dc9 100644
+--- a/headless/pad.cpp
++++ b/headless/pad.cpp
+@@ -134,19 +134,27 @@ bool PadEngine::TakeRumble(std::size_t player, Rumble& out) {
+ 
+ Pad::Pad(float deadzone_, float threshold)
+     : engine{std::make_shared<PadEngine>("virtual_gamepad")},
++      amiibo{std::make_shared<InputCommon::VirtualAmiibo>("virtual_amiibo")},
+       deadzone{deadzone_}, trigger_threshold{threshold} {
+-    if (!std::isfinite(deadzone) || deadzone < 0 || deadzone >= 1 ||
++    if (!std::isfinite(deadzone_) || deadzone_ < 0 || deadzone_ >= 1 ||
+         !std::isfinite(threshold) || threshold <= 0 || threshold > 1)
+         throw std::invalid_argument("Invalid pad calibration");
+     Common::Input::RegisterInputFactory("virtual_gamepad",
+         std::make_shared<InputCommon::InputFactory>(engine));
+     Common::Input::RegisterOutputFactory("virtual_gamepad",
+         std::make_shared<InputCommon::OutputFactory>(engine));
++    // The emulated controllers' NFC reads "engine:virtual_amiibo" (hid_core), as on desktop Eden
++    Common::Input::RegisterInputFactory("virtual_amiibo",
++        std::make_shared<InputCommon::InputFactory>(amiibo));
++    Common::Input::RegisterOutputFactory("virtual_amiibo",
++        std::make_shared<InputCommon::OutputFactory>(amiibo));
+ }
+ Pad::~Pad() {
+     Close();
+     Common::Input::UnregisterInputFactory("virtual_gamepad");
+     Common::Input::UnregisterOutputFactory("virtual_gamepad");
++    Common::Input::UnregisterInputFactory("virtual_amiibo");
++    Common::Input::UnregisterOutputFactory("virtual_amiibo");
+ }
+ bool Pad::Open() {
+     if (slots[0].handle >= 0) return true;
+@@ -367,10 +375,10 @@ void Pad::Consume(std::size_t player, std::span<const ps5::pad::Data> samples) {
+                                down(game_minus, buttons, left, right) || down(game_plus, buttons, left, right));
+     };
+     bool last_left = false, last_right = false;  // the triggers of the poll's last sample
+-    const auto axis = [this](u8 raw) {
++    const auto axis = [zone = deadzone.load()](u8 raw) {
+         const float x = (static_cast<int>(raw) - 128) / (raw < 128 ? 128.0f : 127.0f);
+-        return std::abs(x) <= deadzone ? 0.0f :
+-            std::copysign((std::abs(x) - deadzone) / (1.0f - deadzone), x);
++        return std::abs(x) <= zone ? 0.0f :
++            std::copysign((std::abs(x) - zone) / (1.0f - zone), x);
+     };
+     auto& last_buttons = slots[player].last_buttons;
+     // Player 1's states go to the recording before the substitutions below take them for usable
+diff --git a/headless/settings_store.h b/headless/settings_store.h
+index c911ffb..4492c2d 100644
+--- a/headless/settings_store.h
++++ b/headless/settings_store.h
+@@ -567,6 +567,12 @@ struct SessionSettings {
+     int resolution = -1, upscaling_filter = -1, astc_textures = -1, hud = -1, volume = -1, docked = -1, vibration = -1;
+     int frame_gen = -1, frame_gen_method = -1;
+     std::string speed_limit;  // performance's speed_limit as the file writes it, which PerformanceFor reads
++    // PS5-ECAM's own: Eden's anti-aliasing (none, FXAA, SMAA), FSR's sharpening (Eden's slider, 0 to
++    // 200, 0 sharpest), the sticks' deadzone in percent, the Controller type (kControllerKeys' index,
++    // -1 automatic; -2 not given), and the room to join before the game (multiplayer.h)
++    int anti_aliasing = -1, fsr_sharpening = -1, deadzone = -1, controller = -2;
++    std::string room_host, room_nickname, room_password, room_name;
++    int room_port = -1;
+ };
+ inline SessionSettings& Session() {
+     static SessionSettings settings;
+@@ -579,6 +585,13 @@ inline SessionSettings& Session() {
+ inline bool SetSessionSetting(std::string_view key, std::string_view value) {
+     const std::string text{value};
+     const auto index = [&](const char* const* keys, int count) { return KeyIndex(text, keys, count, -1); };
++    // a whole number from 0 to maximum, else -1
++    const auto number = [&](int maximum) {
++        if (text.empty() || text.size() > 5 || !std::all_of(text.begin(), text.end(), [](char c) { return c >= '0' && c <= '9'; }))
++            return -1;
++        const int value = std::stoi(text);
++        return value <= maximum ? value : -1;
++    };
+     SessionSettings& session = Session();
+     if (key == "resolution") session.resolution = index(kResolutionKeys, int(std::size(kResolutionKeys)));
+     else if (key == "upscaling_filter") session.upscaling_filter = index(kUpscalingFilterKeys, int(std::size(kUpscalingFilterKeys)));
+@@ -594,7 +607,23 @@ inline bool SetSessionSetting(std::string_view key, std::string_view value) {
+         if (!text.empty() && text.size() <= 3 && std::all_of(text.begin(), text.end(), [](char c) { return c >= '0' && c <= '9'; }))
+             volume = std::stoi(text);
+         session.volume = volume <= 100 ? volume : -1;
+-    } else return false;
++    }
++    // PS5-ECAM's own (SessionSettings)
++    else if (key == "anti_aliasing") session.anti_aliasing = text == "none" ? 0 : text == "fxaa" ? 1 : text == "smaa" ? 2 : -1;
++    else if (key == "fsr_sharpening") session.fsr_sharpening = number(200);
++    else if (key == "deadzone") session.deadzone = number(50);
++    else if (key == "controller") {
++        // kControllerKeys' names, below
++        constexpr const char* names[] = {"pro", "handheld", "dual_joycons", "left_joycon", "right_joycon"};
++        session.controller = text == "auto" ? -1 : index(names, int(std::size(names)));
++        if (session.controller == -1 && text != "auto") session.controller = -2;
++    }
++    else if (key == "room_host") session.room_host = text.size() <= 253 ? text : std::string{};
++    else if (key == "room_port") session.room_port = number(65535);
++    else if (key == "room_nickname") session.room_nickname = text.substr(0, 20);
++    else if (key == "room_password") session.room_password = text.size() <= 128 ? text : std::string{};
++    else if (key == "room_name") session.room_name = text.substr(0, 512);
++    else return false;
+     return true;
+ }
+ 
+@@ -851,6 +880,7 @@ inline Preferences PreferencesFor(uint64_t title_id, const std::string& file) {
+     if (session.vibration >= 0) result.vibration = session.vibration == 1;
+     if (session.frame_gen >= 0) result.frame_gen = session.frame_gen == 1;
+     if (session.frame_gen_method >= 0) result.frame_gen_method = session.frame_gen_method;
++    if (session.controller >= -1) result.controller = session.controller;
+     return result;
+ }
+ 
+diff --git a/headless/vulkan_loading.inc b/headless/vulkan_loading.inc
+index 2e7868e..3e07029 100644
+--- a/headless/vulkan_loading.inc
++++ b/headless/vulkan_loading.inc
+@@ -1,6 +1,12 @@
+ // Runs on the existing GPU worker, before the first guest Composite. Reuse its
+ // swapchain and composition pass without guest captures or FPS notifications.
+ void RendererVulkan::PresentLoading() {
++#ifdef EDEN_ECAM
++    // PS5-ECAM's loading screen (ecam_bridge.h) from this first frame on: given the instance only by
++    // Composite, it waited for the game's first picture, and ProsperoEden's showed for the whole load
++    Eden::EcamVulkan::instance = *instance;
++    Eden::EcamVulkan::gipa = dld.vkGetInstanceProcAddr;
++#endif
+     Frame* frame = present_manager.GetRenderFrame();
+     scheduler.RequestOutsideRenderPassOperationContext();
+     blit_swapchain.DrawToFrame(device, rasterizer, frame, {},
+diff --git a/src/lifecycle.c b/src/lifecycle.c
+index 228c3c1..67f54a3 100644
+--- a/src/lifecycle.c
++++ b/src/lifecycle.c
+@@ -51,7 +51,10 @@ __attribute__((noreturn)) void catchReturnFromMain(int status) {
+ int eden_restart_app(void) {
+     char marker[96];
+     sceKernelDebugOutText(0, "EDEN_PPSA99121_RESTART\n");
+-    int refused = sceSystemServiceLoadExec("/app0/eden/eboot.bin", NULL);
++    // PS5-ECAM's game: PS5-ECAM again, which says what happened, never ProsperoEden's launcher
++    int refused = -1;
++    if (return_to_host && host_eboot && host_eboot[0]) refused = sceSystemServiceLoadExec(host_eboot, NULL);
++    if (refused != 0) refused = sceSystemServiceLoadExec("/app0/eden/eboot.bin", NULL);
+     if (refused != 0) refused = sceSystemServiceLoadExec("/app0/eboot.bin", NULL);
+     snprintf(marker, sizeof(marker), "EDEN_PPSA99121_RESTART_REFUSED rc=%x\n", (unsigned)refused);
+     sceKernelDebugOutText(0, marker);

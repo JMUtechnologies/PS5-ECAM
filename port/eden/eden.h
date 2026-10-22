@@ -35,8 +35,31 @@ namespace ps5eden
 	struct Session
 	{
 		std::string title, details, cover;
+		uint64_t titleId = 0; // the game's settings are kept under it
 	};
 	void WriteSession(const Session& session);
+
+	// What Eden's program left as it ended (ps5ingamenx::ResultFile), taken away as the app starts again:
+	// whether its game ended, failed (and why) or never ended (a crash), and what its in-game menu changed
+	struct Result
+	{
+		bool found = false;
+		std::string state, error;
+		uint64_t titleId = 0;
+		bool changed = false;
+		struct Settings
+		{
+			int filter = 0, antiAliasing = 0, sharpening = 25, speedLimit = 0, volume = 100, controller = -1, deadzone = 8;
+			bool frameGeneration = false, overlay = false, docked = true, vibration = true;
+		} settings;
+	};
+	Result TakeResult();
+	// What the Switch side says of it, in the player's language; empty when all went well
+	std::string ResultMessage(const Result& result);
+	// What the in-game menu changed, kept as the other sides' menus keep theirs (ps5settings::SaveChanges)
+	void KeepMenuChanges(const Result& result);
+	// The nickname shown in a room: Settings > Multiplayer's, else ProsperoEden's own
+	std::string Nickname(const ps5settings::N3ds& nx);
 
 	// Where the arguments Eden is started with also go, one a line: Eden's data folder's
 	// launch-request.txt
