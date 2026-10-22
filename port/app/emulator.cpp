@@ -102,6 +102,8 @@ namespace ps5emu
 		std::atomic<uint32_t> s_framesInFlight{1};
 		// frame generation's setting (PS5Cemu_FrameGeneration)
 		std::atomic<uint32_t> s_frameGeneration{0};
+		// ReShade's (PS5Cemu_ReShade)
+		std::atomic<uint32_t> s_reshade{0};
 
 		// What a call to each clock (and a yield) costs on this console, in nanoseconds, measured as a
 		// game starts: Cemu's GPU thread takes its millisecond clock at every draw call and its timer on
@@ -409,6 +411,7 @@ namespace ps5emu
 				after.touchpadClick[player] = TouchpadClick(player);
 			after.framePacing = ps5display::FramePacing();
 			after.frameGeneration = FrameGeneration();
+			after.reshade = ReShade();
 			ps5settings::SaveChanges("wiiu", s_gameTitle, before, after);
 			// what was saved is what the game now has: the next change is measured from it
 			s_gameSettings = std::make_unique<ps5settings::Launcher>(after);
@@ -670,6 +673,16 @@ namespace ps5emu
 	bool FrameGeneration()
 	{
 		return s_frameGeneration.load(std::memory_order_relaxed) != 0;
+	}
+
+	void SetReShade(bool on)
+	{
+		s_reshade = on ? 1u : 0u;
+	}
+
+	bool ReShade()
+	{
+		return s_reshade.load(std::memory_order_relaxed) != 0;
 	}
 
 	bool Scanning()
@@ -1132,6 +1145,12 @@ uint32 PS5Cemu_FramesInFlight()
 uint32 PS5Cemu_FrameGeneration()
 {
 	return ps5emu::s_frameGeneration.load(std::memory_order_relaxed);
+}
+
+// port/cemu/ReShadePS5.cpp, at each frame: ReShade on the TV's picture
+uint32 PS5Cemu_ReShade()
+{
+	return ps5emu::s_reshade.load(std::memory_order_relaxed);
 }
 
 uint32 PS5Cemu_RefreshMilliHz()

@@ -696,6 +696,9 @@ int main(int argc, char* argv[])
 		ps5emu::SetFrameGeneration(forGame.frameGeneration);
 		if (forGame.frameGeneration)
 			ps5log::Line("[framegen] on for this game: frames are made while it takes two refreshes a frame or more");
+		ps5emu::SetReShade(forGame.reshade);
+		if (forGame.reshade)
+			ps5log::Line("[reshade] on for this game: its preset is compiled at the first frame");
 		ps5window::Initialize();
 		if (ps5emu::LaunchGame(launched, error))
 		{

@@ -210,6 +210,8 @@ namespace
 				Tr("Holds the game to an even rate: 60 fps for 4K at 120 Hz, 30 for 8K at 60 Hz. Off shows each frame when it is done.")},
 			{"framegen", Tr("Frame generation"), ps5emu::FrameGeneration() ? on : off, true,
 				Tr("A picture made between each two frames of a game at 30 fps, so it is shown at 60. It changes at once.")},
+			{"reshade", Tr("ReShade"), ps5emu::ReShade() ? on : off, true,
+				Tr("Your ReShade preset over the game's picture (Settings > Graphics says where it goes). It changes at once.")},
 			{"overlay", Tr("Performance overlay"), overlay ? on : off, true,
 				Tr("Frames per second, CPU and memory use in the top left corner, as Cemu shows them.")},
 			{"notices", Tr("Shader notices"), config.notification.shader_compiling ? on : off, true,
@@ -384,6 +386,12 @@ namespace
 			// read at the next present (port/cemu/FrameGenPS5.cpp)
 			ps5emu::SetFrameGeneration(!ps5emu::FrameGeneration());
 			ps5log::Line("[ingame] frame generation: {}", ps5emu::FrameGeneration() ? "on" : "off");
+		}
+		else if (id == "reshade")
+		{
+			// read at the next frame (port/cemu/ReShadePS5.cpp), the preset compiled then the first time
+			ps5emu::SetReShade(!ps5emu::ReShade());
+			ps5log::Line("[ingame] ReShade: {}", ps5emu::ReShade() ? "on" : "off");
 		}
 		else if (id == "async")
 		{

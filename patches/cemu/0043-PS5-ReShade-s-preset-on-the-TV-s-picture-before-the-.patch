@@ -1,0 +1,120 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Thu, 22 Oct 2026 07:16:59 +0000
+Subject: [PATCH] PS5: ReShade's preset on the TV's picture, before the
+ GamePad's screen and the menus
+
+The port's ReShade (port/cemu/ReShadePS5.h, with ReShadeEffects and ReShadeRuntime and ReShade's own
+effect compiler from .deps/reshade) runs on the swapchain image right after DrawBackbufferQuad has
+drawn the TV's picture into it, while the setting is on: LatteRenderTarget_copyToBackbuffer calls
+PS5Cemu_PostEffects before the GamePad's screen, the overlays and the in-game menu are drawn.
+---
+ src/Cafe/CMakeLists.txt                       | 13 ++++++++++
+ src/Cafe/HW/Latte/Core/LatteRenderTarget.cpp  |  5 ++++
+ .../Latte/Renderer/Vulkan/VulkanRenderer.cpp  | 24 +++++++++++++++++++
+ .../HW/Latte/Renderer/Vulkan/VulkanRenderer.h |  2 ++
+ 4 files changed, 44 insertions(+)
+
+diff --git a/src/Cafe/CMakeLists.txt b/src/Cafe/CMakeLists.txt
+index c00c207..85f5441 100644
+--- a/src/Cafe/CMakeLists.txt
++++ b/src/Cafe/CMakeLists.txt
+@@ -567,6 +567,19 @@ if(CEMU_PS5)
+ 	target_include_directories(CemuCafe PRIVATE "${PS5_MIHAWKGEN}/include" "${PS5_MIHAWKGEN}/src")
+ 	set_source_files_properties(${PS5_MIHAWKGEN_SOURCES} PROPERTIES SKIP_PRECOMPILE_HEADERS ON
+ 		COMPILE_OPTIONS "-include;${CMAKE_CURRENT_SOURCE_DIR}/HW/Latte/Renderer/Vulkan/VulkanAPI.h;-Wno-everything")
++	# ReShade on the TV's picture (port/cemu/ReShadePS5.h): its effect compiler (ReShade's own, BSD-3-Clause,
++	# .deps/reshade with patches/reshade) and the port's runtime for what it compiles
++	set(PS5_RESHADE "${CEMU_PS5_PORT_DIR}/../.deps/reshade")
++	set(PS5_RESHADE_SOURCES)
++	foreach(file effect_codegen_spirv effect_expression effect_lexer effect_parser_exp effect_parser_stmt effect_preprocessor effect_symbol_table)
++		list(APPEND PS5_RESHADE_SOURCES "${PS5_RESHADE}/source/${file}.cpp")
++	endforeach()
++	target_sources(CemuCafe PRIVATE ${PS5_RESHADE_SOURCES}
++		"${CEMU_PS5_PORT_DIR}/cemu/ReShadeEffects.cpp" "${CEMU_PS5_PORT_DIR}/cemu/ReShadeRuntime.cpp" "${CEMU_PS5_PORT_DIR}/cemu/ReShadePS5.cpp")
++	target_include_directories(CemuCafe PRIVATE "${PS5_RESHADE}/source" "${PS5_RESHADE}/deps/spirv/include/spirv/unified1"
++		"${PS5_RESHADE}/deps/stb" "${PS5_RESHADE}/deps/stb_image")
++	set_source_files_properties(${PS5_RESHADE_SOURCES} PROPERTIES SKIP_PRECOMPILE_HEADERS ON COMPILE_OPTIONS "-w")
++	set_source_files_properties("${CEMU_PS5_PORT_DIR}/cemu/ReShadeEffects.cpp" PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+ endif()
+ 
+ if(APPLE)
+diff --git a/src/Cafe/HW/Latte/Core/LatteRenderTarget.cpp b/src/Cafe/HW/Latte/Core/LatteRenderTarget.cpp
+index f3b07a3..84f7038 100644
+--- a/src/Cafe/HW/Latte/Core/LatteRenderTarget.cpp
++++ b/src/Cafe/HW/Latte/Core/LatteRenderTarget.cpp
+@@ -901,6 +901,8 @@ void LatteRenderTarget_getScreenImageArea(sint32* x, sint32* y, sint32* width, s
+ bool PS5Cemu_SecondScreenInCorner(bool gamePadIsPrimary);
+ void PS5Cemu_SetGamePadArea(bool visible, sint32 x, sint32 y, sint32 width, sint32 height);
+ void PS5Cemu_RenderOverlay();
++// ReShade's preset on the TV's picture (port/cemu/ReShadePS5.h), before anything goes over it
++void PS5Cemu_PostEffects();
+ // The remote touch screen (port/stream): whether a browser wants the GamePad's picture now
+ bool PS5Cemu_StreamWantFrame();
+ 
+@@ -1055,7 +1057,10 @@ void LatteRenderTarget_copyToBackbuffer(LatteTextureView* textureView, bool isPa
+ 	g_renderer->DrawBackbufferQuad(textureView, shader, filter==LatteTextureView::MagFilter::kLinear, imageX, imageY, imageWidth, imageHeight, isPadView, clearBackground);
+ #if defined(CEMU_PS5)
+ 	if (!isPadView)
++	{
++		PS5Cemu_PostEffects();
+ 		LatteRenderTarget_ps5DrawSecondScreen(imageX, imageY, imageWidth, imageHeight);
++	}
+ #endif
+ 	g_renderer->HandleScreenshotRequest(textureView, isPadView);
+ 	if (!g_renderer->ImguiBegin(!isPadView))
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+index d28269a..34e95d8 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.cpp
+@@ -2337,6 +2337,7 @@ static bool s_ps5WaitingForPreviousFrame = false;
+ // the port's: frames the GPU may still be drawing when the next is presented (1: Cemu's own)
+ uint32 PS5Cemu_FramesInFlight();
+ #include "FrameGenPS5.h"
++#include "ReShadePS5.h"
+ #define PS5_WAIT_BEGIN() const uint64 ps5WaitStart = __rdtsc()
+ #define PS5_WAIT_END(kind) g_ps5GpuWaitTicks[kind].fetch_add(__rdtsc() - ps5WaitStart, std::memory_order_relaxed)
+ #else
+@@ -3345,6 +3346,29 @@ void VulkanRenderer::SwapBuffer(bool mainWindow)
+ 	presentAcquired(true);
+ }
+ 
++#if defined(CEMU_PS5)
++// PS5: ReShade's preset (port/cemu/ReShadePS5.h) on the TV's picture, once DrawBackbufferQuad has drawn it
++// into the swapchain image (in its present layout after the pass) and before the GamePad's screen and
++// the overlays go over it
++void VulkanRenderer::PS5_PostEffects()
++{
++	if (!ps5reshade::Wanted())
++		return;
++	auto& chainInfo = GetChainInfo(true);
++	if (chainInfo.swapchainImageIndex == -1 || !chainInfo.hasDefinedSwapchainImage)
++		return;
++	draw_endRenderPass();
++	ps5reshade::Apply({m_logicalDevice, m_physicalDevice, getCurrentCommandBuffer(), chainInfo.m_swapchainImages[chainInfo.swapchainImageIndex],
++		chainInfo.m_surfaceFormat.format, chainInfo.getExtent(), CafeSystem::GetForegroundTitleId()});
++}
++
++void PS5Cemu_PostEffects()
++{
++	if (VulkanRenderer* renderer = VulkanRenderer::GetInstance())
++		renderer->PS5_PostEffects();
++}
++#endif
++
+ void VulkanRenderer::Flush(bool waitIdle)
+ {
+ 	if (m_recordedDrawcalls > 0 || m_submitOnIdle)
+diff --git a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.h b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.h
+index 126a845..13663e0 100644
+--- a/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.h
++++ b/src/Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.h
+@@ -235,6 +235,8 @@ public:
+ 	// its declared sizes, where desktop drivers let it run over, and some games (Batman: Arkham
+ 	// Origins) need more image samplers than one pool's 128K. pool is where it came from, to free it.
+ 	VkResult PS5_AllocateDescriptorSet(VkDescriptorSetLayout layout, VkDescriptorSet& set, VkDescriptorPool& pool);
++	// ReShade's preset on the TV's picture just drawn into the swapchain image (port/cemu/ReShadePS5.h)
++	void PS5_PostEffects();
+ #endif
+ 
+ 	void WaitDeviceIdle() const { vkDeviceWaitIdle(m_logicalDevice); }

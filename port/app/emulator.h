@@ -87,6 +87,9 @@ namespace ps5emu
 	// Frame generation (port/cemu/FrameGenPS5.h): the game's setting, read at each present
 	void SetFrameGeneration(bool on);
 	bool FrameGeneration();
+	// ReShade's preset on the TV's picture (port/cemu/ReShadePS5.h): the game's setting, read at each frame
+	void SetReShade(bool on);
+	bool ReShade();
 
 	// Whether Cemu is still looking for games (the library fills in when it is done).
 	bool Scanning();
