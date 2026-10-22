@@ -23,6 +23,7 @@ Each idea done is marked **Done** where it is listed below, with its commit.
 | [S2](#s2) | [`b482092`](https://github.com/premohq/PS5-ECAM/commit/b482092) | The start after a crash says so once, with the crash's first line and Copy logs to USB |
 | [G9](#g9) | [`8777160`](https://github.com/premohq/PS5-ECAM/commit/8777160) | **Fast forward, on and off** in Controls > Buttons (3DS and DS) |
 | [G4](#g4) | [`4f0a5af`](https://github.com/premohq/PS5-ECAM/commit/4f0a5af) | **Undo the last load** in the in-game menu's Save states (3DS and DS) |
+| [T1](#t1) | [`0f30424`](https://github.com/premohq/PS5-ECAM/commit/0f30424) | The 3DS's cameras see the newest picture in `azahar/camera` (or sent from a phone), for QR codes |
 
 Being worked on separately (not here): the Switch side's in-game menu, its settings and button
 remapping ([N1](#n1)), its rooms ([I2](#i2)), ReShade on the Wii U side ([I1](#i1)), and the box art
@@ -252,7 +253,7 @@ The DS's screen filters are Sharp, Smooth and Square pixels. Add an LCD grid, th
 colours, and frame blending for games that flicker sprites to fake transparency, as RetroArch's handheld
 shaders do.
 
-<a id="t1"></a>**T1. The 3DS camera from a picture** (M)
+<a id="t1"></a>**T1. The 3DS camera from a picture** (M) · **Done:** [`0f30424`](https://github.com/premohq/PS5-ECAM/commit/0f30424)
 Azahar's cameras are set to `blank` (`port/azahar/core.cpp:429`). Azahar can show a still image as the
 camera instead: a picture from USB, or one sent from the phone page ([P1](#p1)), for the QR codes
 of Pokémon Sun and Moon, Miis, and Animal Crossing's designs.
