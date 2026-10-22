@@ -57,11 +57,20 @@ float Triangle(vec2 p, vec2 a, vec2 b, vec2 c)
 	return -sqrt(d.x) * sign(d.y);
 }
 
+// A pixel's noise, 0 to 1, from its whole coordinates: integer hashing (PCG's output step), the same
+// at any coordinate. The float hash before it, fract(p * 443.897), ran out of precision at 1080p and
+// 4K, and its noise became stripes; moved each tick, they crossed the screen as lines (#72)
+uint PcgHash(uint v)
+{
+	uint state = v * 747796405u + 2891336453u;
+	uint word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+	return (word >> 22u) ^ word;
+}
+
 float Hash(vec2 p)
 {
-	p = fract(p * vec2(443.897, 441.423));
-	p += dot(p, p.yx + 19.19);
-	return fract((p.x + p.y) * p.x);
+	uvec2 q = uvec2(max(p, vec2(0.0)));
+	return float(PcgHash(q.x + PcgHash(q.y)) >> 8u) * (1.0 / 16777216.0);
 }
 
 void main()
@@ -124,7 +133,8 @@ void main()
 	}
 	else if (kind == 5)
 	{
-		float n = Hash(floor(vPos * pc.scale) + floor(pc.time * 24.0) * vec2(7.0, 13.0));
+		// still: grain that changed 24 times a second read as a flicker over the whole screen (#72)
+		float n = Hash(floor(vPos * pc.scale));
 		colour.a *= n;
 		coverage = clamp(0.5 - d / pixel, 0.0, 1.0);
 	}
