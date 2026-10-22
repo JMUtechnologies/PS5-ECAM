@@ -257,12 +257,17 @@ namespace ps5shell
 		ps5forwarders::Stop();
 		ps5emu::StopFindingInstallables();
 		ps5saves::Finish(); // a backup or restore running finishes first
-		for (int waited = 0; SystemScanning() && !m_failed; waited++)
+		const double waitFrom = host.clock();
+		bool waited = false;
+		while (SystemScanning() && !m_failed)
 		{
-			if (waited == 0)
+			if (!waited)
 				ps5log::Line("[launcher] waiting for the library's scan to finish");
+			waited = true;
 			Frame();
 		}
+		if (waited)
+			ps5log::Line("[launcher] the scan finished {:.0f} ms after the game was chosen", (host.clock() - waitFrom) * 1000);
 		ps5catalog::Save();
 		Frame();
 		// the in-game menus' font for what Lexend lacks: the console's, for this language's words, its

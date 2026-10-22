@@ -100,6 +100,9 @@ namespace ps5privilege
 			}
 		}
 
+		bool ProbeJit();
+		bool CanReachData();
+
 		bool HenJailbreak(std::string& detail, bool& unanswered)
 		{
 			unanswered = false;
@@ -126,10 +129,15 @@ namespace ps5privilege
 				}
 				sceKernelUsleep(kPollUs);
 			}
-			// the HEN removes the request before it is done with the process
-			for (int wait = 0; wait < kMaxPollsAfterConsume && geteuid() != 0; wait++)
+			// the HEN removes the request before it is done with the process: done once the process is root,
+			// or once /data lists and the HEN's JIT memory maps, all the app asks of it. A HEN that leaves
+			// the effective user as it was (euid 1, as Acquire allows) cost every start the whole 3 s here,
+			// and every return from a game is a start
+			int after = 0;
+			for (; after < kMaxPollsAfterConsume && geteuid() != 0 && !(CanReachData() && ProbeJit()); after++)
 				sceKernelUsleep(kPollUs);
-			detail = fmt::format("HEN took the request after {} ms, euid {}", polls * kPollUs / 1000, geteuid());
+			detail = fmt::format("HEN took the request after {} ms, done {} ms later, euid {}", polls * kPollUs / 1000, after * kPollUs / 1000,
+				geteuid());
 			return true;
 		}
 
