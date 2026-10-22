@@ -146,10 +146,13 @@ Bugs still go in [GitHub issues](https://github.com/premohq/PS5-ECAM/issues/new/
 
 Big thanks to the people who sent code and fixes to PS5-ECAM itself:
 
+- **[dolphin78](https://github.com/dolphin78)**, with a massive shoutout: Artic Setup works on the PS5
+  because of him ([#70](https://github.com/premohq/PS5-ECAM/pull/70)). He found and fixed why the 3DS's system update failed and why a
+  New 3DS's setup crashed, and tested it all on his own PS5 with a New 3DS XL. He also made crash
+  reports survive a crash on the 3DS side ([#70](https://github.com/premohq/PS5-ECAM/pull/70)), fixed Artic Base's connections ([#45](https://github.com/premohq/PS5-ECAM/issues/45)), and
+  came up with the remote touch screen and its first prototype ([#38](https://github.com/premohq/PS5-ECAM/issues/38))
 - **[Mafiacoding](https://github.com/Mafiacoding)** for archived games: the ZIP support for the Wii U,
   3DS and DS sides that 5.0.0's archives build on ([#53](https://github.com/premohq/PS5-ECAM/pull/53), [#50](https://github.com/premohq/PS5-ECAM/issues/50))
-- **[dolphin78](https://github.com/dolphin78)** for the remote touch screen's idea and prototype
-  ([#38](https://github.com/premohq/PS5-ECAM/issues/38)) and the Artic Base connection fix ([#45](https://github.com/premohq/PS5-ECAM/issues/45))
 - **[3lmerx503](https://github.com/3lmerx503)** for finding and testing the rumble fix ([#41](https://github.com/premohq/PS5-ECAM/issues/41))
 
 ### Built on
