@@ -920,6 +920,13 @@ namespace ps5shell
 					m_savesMessage = TrP(saves.files, "Done: {0} file", "Done: {0} files");
 					if (saves.restoring && m_status.coreReady)
 						ps5emu::ReloadAccounts();
+					// the settings came back too: the launcher holds the old ones, so the app starts again on
+					// the restored ones, before anything saves the old over them
+					if (saves.restoring && saves.settingsRestored)
+					{
+						ps5log::Line("[saves] the settings were restored: starting over to use them");
+						ps5emu::RestartToLibrary();
+					}
 				}
 				else
 					m_savesMessage = saves.message;
@@ -934,7 +941,8 @@ namespace ps5shell
 			action(Kind::Action, "backup", Tr("Back up to USB"), backupValue, Tr("Every side's saves, save states and Wii U accounts."),
 				Tr("Copies the Wii U's saves (every account's, with the accounts), the 3DS's saves, extra data and save states, the DS's saves "
 				   "and save states, and the Switch's saves with its user profiles to PS5CEMU-HAR-saves on the first USB drive plugged in, in a "
-				   "folder named by the date and time. Never the games, so a backup stays small."));
+				   "folder named by the date and time. Never the games, so a backup stays small. The settings go with them: the launcher's, each "
+				   "game's own and the controllers'."));
 			std::vector<std::string> backups;
 			for (const auto& backup : m_backups)
 				backups.push_back(backup.when + " · " + DriveName(backup.drive));
@@ -947,7 +955,9 @@ namespace ps5shell
 				backups.empty() ? Tr("Back up first, or plug in the drive with your backups.") : Tr("Left and Right choose which backup, the newest first."),
 				// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
 				TrF("Puts the chosen backup's saves back where they came from. The saves there now are moved first to "
-					"{0}/saves-before, so nothing is lost; saves the backup does not have stay as they are.", ps5paths::Root()));
+					"{0}/saves-before, so nothing is lost; saves the backup does not have stay as they are. Its settings come back too, and "
+					"PS5-ECAM starts again to use them.",
+					ps5paths::Root()));
 			restore->options = backups;
 			restore->index = chosen;
 			if (backups.empty())

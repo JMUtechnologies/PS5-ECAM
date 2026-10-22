@@ -476,8 +476,11 @@ still where Wii U mods are added from.
 
 **Backups:** **Settings > Accounts and saves > Back up to USB** copies every side's saves, save
 states, the Wii U's accounts and the Switch's user profiles (never the games) to
-`PS5CEMU-HAR-saves/<date and time>` on the first USB drive plugged in. **Restore from USB** puts a backup back, moving the saves there now to
-`/data/ps5cemu/saves-before` first.
+`PS5CEMU-HAR-saves/<date and time>` on the first USB drive plugged in, with the settings:
+`ps5cemu.json` (every side's and each game's own), Cemu's `settings.xml`, the controller profiles and
+your themes. **Restore from USB** puts a backup back, moving what is there now to
+`/data/ps5cemu/saves-before` first; when the backup has settings, PS5-ECAM then starts again to use
+them. A game's own backup (its **Saves** page) holds its saves alone.
 
 **Wii U saves from Cemu on PC:** with the game closed, copy
 `mlc01/usr/save/00050000/<title ID>/user/<account>` from your PC to

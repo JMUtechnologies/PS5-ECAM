@@ -133,7 +133,7 @@ msgid "The download did not finish: is the PS5 online?"
 msgstr "Le téléchargement n’a pas abouti : la PS5 est-elle en ligne?"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/azahar/core.cpp:1099
+#: port/azahar/core.cpp:1103
 #, menu
 msgid "Azahar stopped part-way through; {0}/azahar/log/azahar_log.txt says why"
 msgstr "Azahar s’est arrêté en cours de route; {0}/azahar/log/azahar_log.txt dit pourquoi"
@@ -248,37 +248,32 @@ msgstr "Chaque compte Wii U a ses propres sauvegardes pour chaque jeu, comme sur
 msgid "The account is removed; its saves stay in the Wii U's storage (and in any backup), so nothing is lost. The account games start on cannot be deleted: choose another first."
 msgstr "Le compte est supprimé; ses sauvegardes restent dans le stockage de la Wii U (et dans toute copie), donc rien n’est perdu. Le compte sur lequel les jeux démarrent ne peut pas être supprimé : choisissez-en d’abord un autre."
 
-#. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:949
-msgid "Puts the chosen backup's saves back where they came from. The saves there now are moved first to {0}/saves-before, so nothing is lost; saves the backup does not have stay as they are."
-msgstr "Remet les sauvegardes de la copie choisie là d’où elles viennent. Les sauvegardes présentes sont d’abord déplacées dans {0}/saves-before, donc rien n’est perdu; les sauvegardes absentes de la copie restent telles quelles."
-
-#: port/frontend/shell/settings.cpp:958
+#: port/frontend/shell/settings.cpp:968
 msgid "Artic Base plays a game from a 3DS on your network, its saves staying on the 3DS; Artic Setup copies a 3DS's system files into Azahar, for the Home Menu and the games that need them."
 msgstr "Artic Base joue à un jeu depuis une 3DS de votre réseau, ses sauvegardes restant sur la 3DS; Artic Setup copie les fichiers système d’une 3DS dans Azahar, pour le menu HOME et les jeux qui en ont besoin."
 
-#: port/frontend/shell/settings.cpp:977
+#: port/frontend/shell/settings.cpp:987
 msgid "GameTDB did not answer: is the PS5 online?"
 msgstr "GameTDB n’a pas répondu : la PS5 est-elle en ligne?"
 
-#: port/frontend/shell/settings.cpp:995
+#: port/frontend/shell/settings.cpp:1005
 msgid "Earn RetroAchievements in DS games with your account, as RetroArch does. Cross signs in with your user name and password; only the sign-in's token is kept on the PS5, never the password. Softcore: save states, cheats and speed stay as they are. RetroAchievements has no sets for the Wii U or the 3DS."
 msgstr "Gagnez des RetroAchievements dans les jeux DS avec votre compte, comme avec RetroArch. Croix vous connecte avec votre nom d’utilisateur et votre mot de passe; seul le jeton de connexion est conservé sur la PS5, jamais le mot de passe. Softcore : sauvegardes d’état, codes de triche et vitesse restent tels quels. RetroAchievements n’a pas d’ensembles pour la Wii U ni pour la 3DS."
 
-#: port/frontend/shell/settings.cpp:1062
+#: port/frontend/shell/settings.cpp:1072
 msgid "Springs become short fades; nothing drifts, breathes or rises behind the menus."
 msgstr "Les ressorts deviennent de courts fondus; rien ne flotte, ne respire ou ne monte derrière les menus."
 
 #. {0} is the folder they are kept in
-#: port/frontend/shell/settings.cpp:1103
+#: port/frontend/shell/settings.cpp:1113
 msgid "Deletes the copies of games unpacked from their archives, kept in {0}. Each is unpacked again the next time it starts; when room is needed, the copies used longest ago go by themselves."
 msgstr "Supprime les copies des jeux décompressés de leurs archives, gardées dans {0}. Chacun est décompressé à nouveau à son prochain lancement; quand il faut de la place, les copies utilisées il y a le plus longtemps partent d’elles-mêmes."
 
-#: port/frontend/shell/settings.cpp:1284
+#: port/frontend/shell/settings.cpp:1294
 msgid "On, a QR code here opens the game's second screen in a phone's browser. Nothing to install; the phone must be on the PS5's network."
 msgstr "Activé, un QR code ici ouvre le second écran du jeu dans le navigateur d’un téléphone. Rien à installer; le téléphone doit être sur le réseau de la PS5."
 
-#: port/frontend/shell/settings.cpp:1984
+#: port/frontend/shell/settings.cpp:1994
 msgid "{0} is deleted; its saves stay"
 msgstr "{0} est supprimé; ses sauvegardes restent"
 
@@ -316,23 +311,23 @@ msgstr[1] "L’ordinateur partage {0} dossiers. Gauche et Droite choisissent; Cr
 msgid "Turn on file sharing for a folder on your computer or NAS, then add it here. The PS5 reads games from it; it never writes to it. A cable does better than Wi-Fi for Wii U games."
 msgstr "Activez le partage de fichiers pour un dossier de votre ordinateur ou NAS, puis ajoutez-le ici. La PS5 y lit les jeux; elle n’y écrit jamais. Pour les jeux Wii U, un câble vaut mieux que le Wi-Fi."
 
-#: port/frontend/shell/shell.cpp:2346
+#: port/frontend/shell/shell.cpp:2364
 msgid "This is {0}. Download and install it now? Your games, saves and settings stay as they are."
 msgstr "Vous avez {0}. Télécharger et installer la nouvelle version maintenant? Vos jeux, sauvegardes et paramètres restent tels quels."
 
-#: port/main_ps5.cpp:544
+#: port/main_ps5.cpp:547
 msgid "This session: Azahar (3DS); Cemu's emulated Wii U is not started"
 msgstr "Cette session : Azahar (3DS); la Wii U émulée de Cemu n’est pas démarrée"
 
-#: port/main_ps5.cpp:562
+#: port/main_ps5.cpp:565
 msgid "This session: melonDS (DS); Cemu's emulated Wii U is not started"
 msgstr "Cette session : melonDS (DS); la Wii U émulée de Cemu n’est pas démarrée"
 
-#: port/main_ps5.cpp:568
+#: port/main_ps5.cpp:571
 msgid "This session: Cemu (Wii U); Azahar's core is not started"
 msgstr "Cette session : Cemu (Wii U); le cœur d’Azahar n’est pas démarré"
 
-#: port/main_ps5.cpp:576
+#: port/main_ps5.cpp:579
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "Pas de mémoire JIT : les jeux Wii U tournent sur l’interpréteur, bien plus lent. PPSA99360 est-il dans la liste de jailbreak d’applis de votre HEN?"
 

@@ -18,7 +18,7 @@ jobs:
       - name: Packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends clang-18 pkg-config libarchive-dev libzip-dev libssl-dev p7zip-full ffmpeg
+          sudo apt-get install -y --no-install-recommends clang-18 pkg-config libarchive-dev libzip-dev libssl-dev libfmt-dev p7zip-full ffmpeg
 
       - name: Downloads kept between runs
         uses: actions/cache@v4
@@ -43,6 +43,12 @@ jobs:
 
       - name: Launcher music
         run: bash tools/tests/test-music.sh
+
+      - name: Backups
+        run: |
+          sudo mkdir -p /mnt/usb0
+          sudo chmod 777 /mnt/usb0
+          bash tools/tests/test-saves.sh
 
       - name: Remote touch screen
         run: |

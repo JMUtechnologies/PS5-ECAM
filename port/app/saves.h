@@ -10,6 +10,8 @@
 //   ds/saves/, ds/states/  melonDS's saves and save states
 //   switch/save/        Eden's games' saves (eden/user/nand/user/save, in /data/ps5cemu whatever the
 //                       data folder), and switch/profiles/ its user profiles (system save 8000000000000010)
+//   settings/           ps5cemu.json (the launcher's, each game's own), Cemu's settings.xml, its
+//                       controllerProfiles/ and themes/: a whole backup's, never a game's
 //   backup.json         when, by which version, how many files and bytes
 //
 // Restoring puts each of a backup's files back where it came from; a file there now is first moved
@@ -52,6 +54,8 @@ namespace ps5saves
 		std::string where;	 // the backup's folder
 		std::string message; // why it failed
 		int finished = 0;	 // how many runs have ended, so a caller sees each end once
+		// a restore put the settings back: the launcher holds the old ones, so the app starts again
+		bool settingsRestored = false;
 	};
 
 	// To the first USB drive that takes a folder; false, with why, when none does or one is running

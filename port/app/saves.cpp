@@ -64,7 +64,18 @@ namespace ps5saves
 				// folders
 				{"switch/save", ps5eden::DataFolder() + "/user/nand/user/save", nullptr},
 				{"switch/profiles", ps5eden::DataFolder() + "/user/nand/system/save/8000000000000010", nullptr},
+				// the settings, so a reinstall or another PS5 starts where this one was: the launcher's (every
+				// side's, each game's own), Cemu's, its controller profiles and the themes. A file is a set too
+				{"settings/ps5cemu.json", root + "/ps5cemu.json", nullptr},
+				{"settings/settings.xml", root + "/settings.xml", nullptr},
+				{"settings/controllerProfiles", root + "/controllerProfiles", nullptr},
+				{"settings/themes", root + "/themes", nullptr},
 			};
+		}
+
+		bool IsSettings(const std::string& set)
+		{
+			return set.rfind("settings/", 0) == 0;
 		}
 
 		// Where a file a restore replaces is kept: saves-before/<stamp> in the data folder, in its shape
@@ -212,6 +223,13 @@ namespace ps5saves
 			{
 				const fs::path from = restoring ? backup / set.name : fs::path(set.source);
 				const fs::path to = restoring ? fs::path(set.source) : backup / set.name;
+				if (game && IsSettings(set.name))
+					continue; // a game's backup is its saves alone
+				if (fs::is_regular_file(from, ec))
+				{
+					files.push_back({from, to, fs::file_size(from, ec)});
+					continue;
+				}
 				if (!fs::is_directory(from, ec))
 					continue;
 				for (auto it = fs::recursive_directory_iterator(from, ec); !ec && it != fs::recursive_directory_iterator(); it.increment(ec))
@@ -233,8 +251,12 @@ namespace ps5saves
 		{
 			std::vector<File> files = List(backup, restoring, game ? &*game : nullptr);
 			uint64_t total = 0;
+			bool settings = false;
 			for (const File& file : files)
+			{
 				total += file.size;
+				settings = settings || (restoring && IsSettings(file.from.lexically_relative(backup).generic_string()));
+			}
 			{
 				std::lock_guard lock(s_mutex);
 				s_status.total = total;
@@ -274,6 +296,10 @@ namespace ps5saves
 			}
 			ps5log::Line("[saves] {} {} files, {} KB {} {}{}", restoring ? "restored" : "backed up", files.size(), total / 1000, restoring ? "from" : "to",
 				backup.string(), restoring && moved ? fmt::format(" ({} kept aside in {})", moved, aside.string()) : std::string());
+			{
+				std::lock_guard lock(s_mutex);
+				s_status.settingsRestored = restoring && settings;
+			}
 			SetState(Status::State::Done);
 		}
 
