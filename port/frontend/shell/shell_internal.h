@@ -895,6 +895,7 @@ namespace ps5shell
 			bool open = false;
 			int choice = 0;
 			double at = 0;
+			double restartAt = -1; // Restart now was chosen then: the app starts again a few frames after
 		} m_update;
 		struct Unpacking
 		{

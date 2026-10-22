@@ -423,9 +423,11 @@ WUD or WUX files, or an unpacked game in an archive; a 3DS CIA sent this way is 
 - **Updates:** when the app starts fresh, it asks GitHub for the latest release. When a newer
   PS5-ECAM is out, it asks whether to install it: **Update now** downloads the release, checks it
   against the release's SHA-256, puts its files in place of the old ones and starts the app again.
-  Your games, saves and settings in `/data/ps5cemu` stay as they are. **Settings > Online >
-  PS5-ECAM updates** checks again. **Skip this version** stops the start from asking about that
-  release (Settings > Online still finds it).
+  Your games, saves and settings in `/data/ps5cemu` stay as they are. Circle stops a download, and
+  one that stalls for 30 seconds stops by itself. If the PS5 doesn't start the app again, the app says
+  so: close it and start it from the home screen. **Settings > Online > PS5-ECAM updates** checks
+  again. **Skip this version** stops the start from asking about that release (Settings > Online
+  still finds it).
 - **Going back:** an update keeps the version it replaces in `/data/ps5cemu/previous-version`, until
   the next update. **Settings > Online > Go back to** (held) puts it back and starts it, and the newer
   release is not offered at start again.
