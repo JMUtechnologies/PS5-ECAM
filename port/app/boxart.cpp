@@ -2,6 +2,7 @@
 #include "boxart.h"
 #include "paths.h"
 #include "../ps5/log.h"
+#include "../ps5/curl_socket.h"
 
 #include <arpa/inet.h>
 #include <curl/curl.h>
@@ -370,6 +371,8 @@ namespace ps5boxart
 		{
 			curl_slist* resolved = PrepareNetwork();
 			CURL* curl = curl_easy_init();
+			if (curl)
+				ps5curl::Setup(curl);
 			if (curl && resolved)
 				curl_easy_setopt(curl, CURLOPT_RESOLVE, resolved);
 			std::map<std::string, int> tries; // folder/ID: how many times it came back Later

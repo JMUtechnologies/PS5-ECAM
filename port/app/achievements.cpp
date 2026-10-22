@@ -5,6 +5,7 @@
 #include "lang.h"
 #include "paths.h"
 #include "../ps5/log.h"
+#include "../ps5/curl_socket.h"
 #include "../ps5/notify.h"
 
 #include <curl/curl.h>
@@ -108,6 +109,7 @@ namespace ps5cheevos
 			CURL* curl = curl_easy_init();
 			if (!curl)
 				return;
+			ps5curl::Setup(curl);
 			static const std::string ca = ps5paths::Assets() + "/cacert.pem"; // the console has no store of its own
 			curl_slist* resolve = Resolve(call.url);
 			curl_slist* headers = nullptr;

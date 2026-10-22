@@ -6,6 +6,7 @@
 #include "paths.h"
 #include "../ps5/kernel.h"
 #include "../ps5/log.h"
+#include "../ps5/curl_socket.h"
 
 #include <curl/curl.h>
 #include <rapidjson/document.h>
@@ -131,6 +132,7 @@ namespace ps5update
 			CURL* curl = curl_easy_init();
 			if (!curl)
 				return nullptr;
+			ps5curl::Setup(curl);
 			static const std::string ca = ps5paths::Assets() + "/cacert.pem"; // the console has no store of its own
 			curl_easy_setopt(curl, CURLOPT_URL, url);
 			if (resolve)

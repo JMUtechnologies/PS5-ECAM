@@ -285,6 +285,15 @@ namespace ps5emu
 			}
 			if (installedVersion == bundledVersion || ps5packs::Newer(installedVersion, bundledVersion))
 				return;
+			// packs put there by hand (GitHub's release unzipped from a PC) have no version.txt, which only
+			// Cemu's downloader and this app write: they stay, where they were deleted for the bundled ones at
+			// every start, so a player's own copy never showed
+			if (installedVersion.empty() && fs::is_directory(target, ec) && !fs::is_empty(target, ec))
+			{
+				ps5log::Line("[emu] {} holds packs copied there by hand (no version.txt): they stay, the bundled {} are not installed",
+					target.string(), bundledVersion);
+				return;
+			}
 			ps5log::Line("[emu] installing community graphic packs {} (had '{}')", bundledVersion, installedVersion);
 			fs::remove_all(target, ec);
 			fs::create_directories(target, ec);
