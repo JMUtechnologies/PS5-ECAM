@@ -516,12 +516,21 @@ namespace ps5update
 	}
 	void Restart() {}
 	void Stop() {}
+	// no release kept from before an update: Go back is not offered
+	std::string PreviousVersion() { return {}; }
+	bool GoBack(std::string& error)
+	{
+		error = "the preview keeps no earlier release";
+		return false;
+	}
 }
 
 // -- Cemu, in brief: sample games, packs and controllers ------------------------------------------
 
 namespace ps5emu
 {
+	void RestartToLibrary() {} // the preview has no app to start over
+
 	namespace
 	{
 		constexpr uint64_t kBreathOfTheWild = 0x00050000101C9400;
