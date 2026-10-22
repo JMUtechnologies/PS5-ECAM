@@ -182,3 +182,12 @@ c++ -std=c++20 -pthread -DFMT_HEADER_ONLY -Ibuild/tests/fmt -Iport/stream tools/
 python3 tools/tests/test-stream.py build/tests/stream-host
 node tools/tests/test-stream-browser.js
 ```
+
+## Tests on a PC
+
+`.github/workflows/tests.yml` runs these at every push and pull request, on Ubuntu 24.04, with only
+what they need fetched (`python3 tools/deps.py fetch pacbrew pugixml dr_mp3`; `deps.py fetch` with
+names fetches only those items): `tools/lang.py check`, `tools/tests/test-keyboard.sh`,
+`test-netfs.sh`, `test-archives.sh` (with `libarchive-dev`, `libzip-dev` and `p7zip-full`),
+`test-music.sh` (with `ffmpeg`), and the remote touch screen's tests above. The same commands run
+them on your own PC.
