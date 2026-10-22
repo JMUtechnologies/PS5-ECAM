@@ -1,0 +1,209 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Thu, 22 Oct 2026 06:07:48 +0000
+Subject: [PATCH] PS5: the screens turned half a turn, and the crosshair over
+ the top screen
+
+Settings::values.upside_down (set by PS5-ECAM, not saved) turns the whole layout half a turn: the
+screens' rectangles are mirrored through the middle of the picture (FramebufferLayout::is_flipped),
+the renderers draw them with the flipped orientations they already had, and a touch is turned back.
+With upright_screen, it is a quarter turn clockwise; PS5-ECAM's 3DS side turns the console a quarter
+turn at a time, as its DS side does.
+
+CursorInfo::over_top_screen: the crosshair over the top screen, for a bottom screen that is not shown
+and is touched all the same.
+---
+ src/common/settings.h                         |  3 ++
+ src/core/frontend/emu_window.cpp              | 20 +++++++++++
+ src/core/frontend/emu_window.h                |  3 ++
+ src/core/frontend/framebuffer_layout.h        |  3 ++
+ .../renderer_opengl/renderer_opengl.cpp       | 18 +++++++---
+ .../renderer_vulkan/renderer_vulkan.cpp       | 34 +++++++++++++------
+ 6 files changed, 66 insertions(+), 15 deletions(-)
+
+diff --git a/src/common/settings.h b/src/common/settings.h
+index 485de05eb..511436273 100644
+--- a/src/common/settings.h
++++ b/src/common/settings.h
+@@ -563,6 +563,9 @@ struct Values {
+     SwitchableSetting<LayoutOption> layout_option{LayoutOption::Default, Keys::layout_option};
+     SwitchableSetting<bool> swap_screen{false, Keys::swap_screen};
+     SwitchableSetting<bool> upright_screen{false, Keys::upright_screen};
++    // PS5: the screens turned half a turn, with upright_screen a quarter turn clockwise; the layout is
++    // mirrored through its middle (EmuWindow::UpdateCurrentFramebufferLayout). Not saved: PS5-ECAM sets it
++    bool upside_down = false;
+     SwitchableSetting<SecondaryDisplayLayout> secondary_display_layout{
+         SecondaryDisplayLayout::OppositeScreenOnly, Keys::secondary_display_layout};
+     SwitchableSetting<std::vector<LayoutOption>> layouts_to_cycle{
+diff --git a/src/core/frontend/emu_window.cpp b/src/core/frontend/emu_window.cpp
+index 46f0885d6..bef7715e0 100644
+--- a/src/core/frontend/emu_window.cpp
++++ b/src/core/frontend/emu_window.cpp
+@@ -144,6 +144,12 @@ bool EmuWindow::TouchPressed(unsigned framebuffer_x, unsigned framebuffer_y) {
+         static_cast<float>(framebuffer_y - framebuffer_layout.bottom_screen.top) /
+         (framebuffer_layout.bottom_screen.bottom - framebuffer_layout.bottom_screen.top);
+ 
++    // PS5: a screen turned half a turn, its point turned back
++    if (framebuffer_layout.is_flipped) {
++        touch_state->touch_x = 1.f - touch_state->touch_x;
++        touch_state->touch_y = 1.f - touch_state->touch_y;
++    }
++
+     if (!framebuffer_layout.is_rotated) {
+         std::swap(touch_state->touch_x, touch_state->touch_y);
+         touch_state->touch_x = 1.f - touch_state->touch_x;
+@@ -275,6 +281,20 @@ void EmuWindow::UpdateCurrentFramebufferLayout(u32 width, u32 height, bool is_po
+         layout = Layout::GetCardboardSettings(layout);
+     }
+     layout.render_3d_mode = stereo_option;
++    // PS5: the whole layout turned half a turn, the screens drawn turned with it (the renderers'
++    // flipped orientations), without stereo's two halves
++    if (Settings::values.upside_down && stereo_option == Settings::StereoRenderOption::Off) {
++        const auto turn = [&layout](Common::Rectangle<u32>& rect) {
++            rect = {layout.width - rect.right, layout.height - rect.bottom, layout.width - rect.left,
++                    layout.height - rect.top};
++        };
++        turn(layout.top_screen);
++        turn(layout.bottom_screen);
++        if (layout.additional_screen_enabled) {
++            turn(layout.additional_screen);
++        }
++        layout.is_flipped = true;
++    }
+     NotifyFramebufferLayoutChanged(layout);
+ }
+ 
+diff --git a/src/core/frontend/emu_window.h b/src/core/frontend/emu_window.h
+index 00a33bd47..d7ffc6ec7 100644
+--- a/src/core/frontend/emu_window.h
++++ b/src/core/frontend/emu_window.h
+@@ -285,6 +285,9 @@ public:
+         /// bottom_screen.GetHeight().
+         float projected_x = 0;
+         float projected_y = 0;
++        /// PS5: the bottom screen is not shown and is touched all the same: the crosshair is over the
++        /// top screen, its coordinates the top screen's
++        bool over_top_screen = false;
+     };
+ 
+     /// Returns the current cursor state. Override to provide cursor position.
+diff --git a/src/core/frontend/framebuffer_layout.h b/src/core/frontend/framebuffer_layout.h
+index 19f1e388a..479e892d5 100644
+--- a/src/core/frontend/framebuffer_layout.h
++++ b/src/core/frontend/framebuffer_layout.h
+@@ -34,6 +34,9 @@ struct FramebufferLayout {
+     Common::Rectangle<u32> bottom_screen;
+     // is_rotated is true when the screen is in landscape mode - not sure why!
+     bool is_rotated = true;
++    // PS5: the screens turned half a turn (Settings::values.upside_down), their rectangles mirrored
++    // through the middle of the picture
++    bool is_flipped = false;
+     bool additional_screen_enabled = false;
+     // top_opacity is currently not used but could be used in the future
+     float top_opacity = 1.0f;
+diff --git a/src/video_core/renderer_opengl/renderer_opengl.cpp b/src/video_core/renderer_opengl/renderer_opengl.cpp
+index 09aad772c..a514d5707 100644
+--- a/src/video_core/renderer_opengl/renderer_opengl.cpp
++++ b/src/video_core/renderer_opengl/renderer_opengl.cpp
+@@ -768,8 +768,13 @@ void RendererOpenGL::DrawTopScreen(const Layout::FramebufferLayout& layout,
+     const float top_screen_width = static_cast<float>(top_screen.GetWidth());
+     const float top_screen_height = static_cast<float>(top_screen.GetHeight());
+ 
+-    const auto orientation = layout.is_rotated ? Layout::DisplayOrientation::Landscape
+-                                               : Layout::DisplayOrientation::Portrait;
++    // PS5: and each turned half a turn more (Settings::values.upside_down)
++    const auto orientation =
++        layout.is_rotated
++            ? (layout.is_flipped ? Layout::DisplayOrientation::LandscapeFlipped
++                                 : Layout::DisplayOrientation::Landscape)
++            : (layout.is_flipped ? Layout::DisplayOrientation::PortraitFlipped
++                                 : Layout::DisplayOrientation::Portrait);
+     switch (layout.render_3d_mode) {
+     case Settings::StereoRenderOption::Off: {
+         const int eye = static_cast<int>(Settings::values.mono_render_option.GetValue());
+@@ -826,8 +831,13 @@ void RendererOpenGL::DrawBottomScreen(const Layout::FramebufferLayout& layout,
+     const float bottom_screen_width = static_cast<float>(bottom_screen.GetWidth());
+     const float bottom_screen_height = static_cast<float>(bottom_screen.GetHeight());
+ 
+-    const auto orientation = layout.is_rotated ? Layout::DisplayOrientation::Landscape
+-                                               : Layout::DisplayOrientation::Portrait;
++    // PS5: and each turned half a turn more (Settings::values.upside_down)
++    const auto orientation =
++        layout.is_rotated
++            ? (layout.is_flipped ? Layout::DisplayOrientation::LandscapeFlipped
++                                 : Layout::DisplayOrientation::Landscape)
++            : (layout.is_flipped ? Layout::DisplayOrientation::PortraitFlipped
++                                 : Layout::DisplayOrientation::Portrait);
+ 
+     switch (layout.render_3d_mode) {
+     case Settings::StereoRenderOption::Off: {
+diff --git a/src/video_core/renderer_vulkan/renderer_vulkan.cpp b/src/video_core/renderer_vulkan/renderer_vulkan.cpp
+index e7a18c38e..2b3b81255 100644
+--- a/src/video_core/renderer_vulkan/renderer_vulkan.cpp
++++ b/src/video_core/renderer_vulkan/renderer_vulkan.cpp
+@@ -980,8 +980,13 @@ void RendererVulkan::DrawTopScreen(const Layout::FramebufferLayout& layout,
+     const float top_screen_width = static_cast<float>(top_screen.GetWidth());
+     const float top_screen_height = static_cast<float>(top_screen.GetHeight());
+ 
+-    const auto orientation = layout.is_rotated ? Layout::DisplayOrientation::Landscape
+-                                               : Layout::DisplayOrientation::Portrait;
++    // PS5: and each turned half a turn more (Settings::values.upside_down)
++    const auto orientation =
++        layout.is_rotated
++            ? (layout.is_flipped ? Layout::DisplayOrientation::LandscapeFlipped
++                                 : Layout::DisplayOrientation::Landscape)
++            : (layout.is_flipped ? Layout::DisplayOrientation::PortraitFlipped
++                                 : Layout::DisplayOrientation::Portrait);
+     switch (layout.render_3d_mode) {
+     case Settings::StereoRenderOption::Off: {
+         const int eye = static_cast<int>(Settings::values.mono_render_option.GetValue());
+@@ -1036,8 +1041,13 @@ void RendererVulkan::DrawBottomScreen(const Layout::FramebufferLayout& layout,
+     const float bottom_screen_width = static_cast<float>(bottom_screen.GetWidth());
+     const float bottom_screen_height = static_cast<float>(bottom_screen.GetHeight());
+ 
+-    const auto orientation = layout.is_rotated ? Layout::DisplayOrientation::Landscape
+-                                               : Layout::DisplayOrientation::Portrait;
++    // PS5: and each turned half a turn more (Settings::values.upside_down)
++    const auto orientation =
++        layout.is_rotated
++            ? (layout.is_flipped ? Layout::DisplayOrientation::LandscapeFlipped
++                                 : Layout::DisplayOrientation::Landscape)
++            : (layout.is_flipped ? Layout::DisplayOrientation::PortraitFlipped
++                                 : Layout::DisplayOrientation::Portrait);
+ 
+     switch (layout.render_3d_mode) {
+     case Settings::StereoRenderOption::Off: {
+@@ -1154,24 +1164,26 @@ void RendererVulkan::DrawCursor(const Layout::FramebufferLayout& layout) {
+     if (!cursor.visible) {
+         return;
+     }
++    // PS5: the screen it is over, the top one while the bottom one is not shown
++    const auto& screen = cursor.over_top_screen ? layout.top_screen : layout.bottom_screen;
+ 
+     const float buf_w = static_cast<float>(layout.width);
+     const float buf_h = static_cast<float>(layout.height);
+ 
+     // Convert from bottom-screen-local to layout-absolute, then to NDC
+-    const float abs_x = layout.bottom_screen.left + cursor.projected_x;
+-    const float abs_y = layout.bottom_screen.top + cursor.projected_y;
++    const float abs_x = screen.left + cursor.projected_x;
++    const float abs_y = screen.top + cursor.projected_y;
+     const float cx = (abs_x / buf_w) * 2.0f - 1.0f;
+     const float cy = (abs_y / buf_h) * 2.0f - 1.0f;
+-    const float ratio = static_cast<float>(layout.bottom_screen.GetHeight()) / 30.0f;
++    const float ratio = static_cast<float>(screen.GetHeight()) / 30.0f;
+     const float rw = ratio / buf_w;
+     const float rh = ratio / buf_h;
+ 
+     // Bottom screen bounds in NDC
+-    const float bl = (layout.bottom_screen.left / buf_w) * 2.0f - 1.0f;
+-    const float bt = (layout.bottom_screen.top / buf_h) * 2.0f - 1.0f;
+-    const float br = (layout.bottom_screen.right / buf_w) * 2.0f - 1.0f;
+-    const float bb = (layout.bottom_screen.bottom / buf_h) * 2.0f - 1.0f;
++    const float bl = (screen.left / buf_w) * 2.0f - 1.0f;
++    const float bt = (screen.top / buf_h) * 2.0f - 1.0f;
++    const float br = (screen.right / buf_w) * 2.0f - 1.0f;
++    const float bb = (screen.bottom / buf_h) * 2.0f - 1.0f;
+ 
+     // Crosshair geometry clamped to bottom screen bounds
+     const float vl = std::fmax(cx - rw / 5.0f, bl);

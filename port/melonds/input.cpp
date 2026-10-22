@@ -48,6 +48,7 @@ namespace ps5melonds::input
 		float s_cursorX = 0.5f, s_cursorY = 0.5f; // 0 to 1 over the bottom screen, as the TV shows it
 		bool s_cursorVisible = false;
 		std::atomic<int> s_rotation{0}; // SetRotation
+		std::atomic<bool> s_hiddenTouch{false}; // SetHiddenTouch
 		std::atomic<bool> s_blowing{false};
 		std::atomic<bool> s_fastForward{false}, s_rewinding{false}, s_rewindBound{false};
 		// the game's loop's: what was held while the menu was open, kept from the game until let go
@@ -198,8 +199,9 @@ namespace ps5melonds::input
 			s_cursorX = fingerX;
 			s_cursorY = fingerY;
 		}
-		// the click touches only a bottom screen that is shown
-		s_touching = touch && bottomShown;
+		// the click touches only a bottom screen that is shown, unless it is touched all the same (the
+		// cursor then over the top screen)
+		s_touching = touch && (bottomShown || s_hiddenTouch);
 		s_blowing = s_micFree && Has(sample, ps5pad::kR3);
 		s_fastForward = fast;
 		s_rewinding = rewind;
@@ -240,6 +242,16 @@ namespace ps5melonds::input
 	void SetRotation(int rotation)
 	{
 		s_rotation = screens::QuarterTurns(rotation);
+	}
+
+	void SetHiddenTouch(bool on)
+	{
+		s_hiddenTouch = on;
+	}
+
+	bool HiddenTouch()
+	{
+		return s_hiddenTouch;
 	}
 
 	bool Blowing()

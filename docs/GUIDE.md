@@ -97,6 +97,13 @@ work stops before a game starts.
   side, or stacked; either screen can take the main spot.
 - **Borders:** Midnight, Waves, Aurora, Shell or PS5-ECAM artwork around the screens in every layout, from
   **Settings > Screens** or the in-game menu.
+- **Screen rotation** (**Settings > Screens** or the in-game menu's Screens and border), as on the DS
+  side: upright, 90° right, upside down or 90° left, for the games held on their side like a book,
+  for the side or one game. The touch screen turns with the screens.
+- **Touch without the bottom screen** (**Settings > Screens** or the in-game menu, off by default, on
+  the DS side too): with the top screen alone on the TV, the touchpad still touches the bottom screen,
+  its cursor over the top one, for games that ask for a touch now and then (Star Fox 64 3D). A game
+  can have its own.
 - DualSense: A on Circle and B on Cross like a real 3DS (or swapped), circle pad and C-stick on the
   sticks, ZL/ZR on L2/R2, motion from the gyro and accelerometer, and every button remappable in
   **Settings > Controls**. The touchpad is the bottom screen.
@@ -123,6 +130,8 @@ New in 4.0.0: a side of its own, in melonDS's green, to the right of the 3DS.
 - **Screen rotation** (**Settings > Screens** or the in-game menu's Screens and border): upright, 90°
   right, upside down or 90° left, for Hotel Dusk and the other games held on their side, for the side
   or one game. The touchpad follows the bottom screen as the TV shows it.
+- **Touch without the bottom screen**, as on the 3DS side: the touchpad touches the bottom screen
+  while only the top one is shown.
 - DualSense: A on Circle and B on Cross like a real DS, the left stick as a second D-pad, every
   button remappable (**Settings > Controls**), the touchpad as the touch screen, and R3 held to blow
   into the microphone.

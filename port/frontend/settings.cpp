@@ -89,6 +89,7 @@ namespace ps5settings
 			ReadInt(json, "border", n3ds.border, 0, 5);
 			ReadInt(json, "dsFilter", n3ds.dsFilter, 0, 2);
 			ReadInt(json, "dsRotation", n3ds.dsRotation, 0, 3);
+			ReadBool(json, "hiddenTouch", n3ds.hiddenTouch);
 			ReadBool(json, "frameGeneration", n3ds.frameGeneration);
 			ReadBool(json, "dsJit", n3ds.dsJit);
 			ReadBool(json, "dsOwnBios", n3ds.dsOwnBios);
@@ -160,6 +161,8 @@ namespace ps5settings
 			writer.Int(n3ds.dsFilter);
 			writer.Key("dsRotation");
 			writer.Int(n3ds.dsRotation);
+			writer.Key("hiddenTouch");
+			writer.Bool(n3ds.hiddenTouch);
 			writer.Key("frameGeneration");
 			writer.Bool(n3ds.frameGeneration);
 			writer.Key("dsJit");
@@ -590,6 +593,7 @@ namespace ps5settings
 				{"cpuClock", nullptr, nullptr, &N3ds::cpuClock, nullptr, 25, 400},
 				{"dsFilter", nullptr, nullptr, &N3ds::dsFilter, nullptr, 0, 2},
 				{"dsRotation", nullptr, nullptr, &N3ds::dsRotation, nullptr, 0, 3},
+				{"hiddenTouch", nullptr, nullptr, nullptr, &N3ds::hiddenTouch},
 				{"frameGeneration", nullptr, nullptr, nullptr, &N3ds::frameGeneration},
 				{"dsJit", nullptr, nullptr, nullptr, &N3ds::dsJit},
 				{"dsOwnBios", nullptr, nullptr, nullptr, &N3ds::dsOwnBios},
@@ -637,8 +641,8 @@ namespace ps5settings
 		static const std::vector<std::string> wiiu = {"upscaleFilter", "highFrameRate", "framePacing", "frameGeneration", "overlay", "asyncShaders",
 			"volume"};
 		static const std::vector<std::string> n3ds = {"resolution", "textureFilter", "customTextures", "asyncShaderCompilation", "invariantPosition", "hwShaders", "layout", "border",
-			"volume", "region", "language", "cpuClock", "frameGeneration"};
-		static const std::vector<std::string> nds = {"dsFilter", "dsRotation", "dsJit", "layout", "border", "volume", "language", "dsOwnBios"};
+			"volume", "region", "language", "cpuClock", "frameGeneration", "dsRotation", "hiddenTouch"};
+		static const std::vector<std::string> nds = {"dsFilter", "dsRotation", "hiddenTouch", "dsJit", "layout", "border", "volume", "language", "dsOwnBios"};
 		static const std::vector<std::string> nx = {"nxResolution", "nxFilter", "nxAstc", "nxFrameGeneration", "nxDocked", "nxSpeedLimit", "volume",
 			"nxAntiAliasing", "nxSharpening", "nxController"};
 		static const std::vector<std::string> none;

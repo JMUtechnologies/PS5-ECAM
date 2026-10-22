@@ -866,8 +866,8 @@ namespace ps5melonds::screens
 				vk.CmdBindDescriptorSets(commands, VK_PIPELINE_BIND_POINT_GRAPHICS, s.layout, 0, 1, &s.screens[i].set, 0, nullptr);
 				Draw(commands, *rects[i], mode, frame.rotation);
 			}
-		const Rect& bottom = frame.bottomRect;
-		if (frame.cursor && bottom.Shown() && s.screens[1].filled)
+		const Rect& bottom = frame.cursorOnTop ? frame.topRect : frame.bottomRect;
+		if (frame.cursor && bottom.Shown() && s.screens[frame.cursorOnTop ? 0 : 1].filled)
 		{
 			// Azahar's crosshair: two bars, a sixtieth of the screen's height long each way and a fifth of
 			// that thick, kept on the bottom screen

@@ -29,4 +29,9 @@ namespace ps5azahar::input
 	// The cursor over the bottom screen, from 0 to 1 across it; true while a finger is on the
 	// touchpad (EmuWindow::GetCursorInfo).
 	bool Cursor(float& x, float& y);
+
+	// Whether the touchpad touches the bottom screen while only the top one is shown, the cursor over
+	// the top screen (Settings > Screens' Touch without the bottom screen)
+	void SetHiddenTouch(bool on);
+	bool HiddenTouch();
 }

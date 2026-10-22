@@ -397,6 +397,7 @@ namespace ps5melonds
 			menu.border = s_settings.border;
 			menu.screenFilter = s_settings.dsFilter;
 			menu.rotation = s_settings.dsRotation;
+			menu.hiddenTouch = s_settings.hiddenTouch;
 			menu.lidClosed = view.lidClosed;
 			return menu;
 		}
@@ -440,6 +441,8 @@ namespace ps5melonds
 			s_settings.dsFilter = menu.screenFilter;
 			s_settings.dsRotation = screens::QuarterTurns(menu.rotation);
 			input::SetRotation(s_settings.dsRotation);
+			s_settings.hiddenTouch = menu.hiddenTouch;
+			input::SetHiddenTouch(menu.hiddenTouch);
 			if (menu.border != s_settings.border)
 			{
 				s_settings.border = menu.border;
@@ -626,7 +629,9 @@ namespace ps5melonds
 				frame.rotation = view.rotation;
 				frame.filter = view.filter;
 				const bool held = ps5ingame3ds::MenuOpen() || !nds.IsRunning();
-				frame.cursor = input::Cursor(frame.cursorX, frame.cursorY) && !held;
+				// over the bottom screen, or over the top one while the bottom one is touched all the same
+				frame.cursorOnTop = !frame.bottomRect.Shown();
+				frame.cursor = input::Cursor(frame.cursorX, frame.cursorY) && !held && (!frame.cursorOnTop || input::HiddenTouch());
 				if (!held)
 				{
 					// rewind, held (#54): no sound while it is; let go, the game goes on from there, the
@@ -907,6 +912,7 @@ namespace ps5melonds
 			s_view.filter = settings.dsFilter;
 		}
 		input::SetRotation(settings.dsRotation);
+		input::SetHiddenTouch(settings.hiddenTouch);
 		s_stopReason = -1;
 		s_stateRequest = 0;
 		{

@@ -43,7 +43,8 @@ namespace ps5ingame3ds
 		bool frameGeneration = false; // the picture between each two frames of a game at 30 fps (port/cemu/FrameGenPS5.h)
 		// the DS's (Console::Nds)
 		int screenFilter = 0;	  // how its screens are scaled to the TV: kScreenFilters
-		int rotation = 0;		  // the DS turned this many quarter turns clockwise: kRotations
+		int rotation = 0;		  // the console turned this many quarter turns clockwise, the 3DS's too: kRotations
+		bool hiddenTouch = false; // the touchpad touches the bottom screen while only the top one shows
 		bool lidClosed = false;	  // the DS closed, for the games that ask (for this game only)
 	};
 
@@ -56,7 +57,7 @@ namespace ps5ingame3ds
 	// tr: how the DS's screens are scaled to the TV: the filters' names
 	constexpr const char* kScreenFilters[] = {ps5lang::TrMark("Sharp"), ps5lang::TrMark("Smooth"), ps5lang::TrMark("Square pixels")};
 	constexpr int kScreenFilterCount = (int)std::size(kScreenFilters);
-	// tr: the DS's two screens turned together, a quarter turn at a time, for the games held on their side:
+	// tr: the DS's (and the 3DS's) two screens turned together, a quarter turn at a time, for the games held on their side:
 	// upright, a quarter turn clockwise, upside down, a quarter turn counterclockwise
 	constexpr const char* kRotations[] = {ps5lang::TrMark("Upright"), ps5lang::TrMark("90° right"), ps5lang::TrMark("Upside down"),
 		ps5lang::TrMark("90° left")};

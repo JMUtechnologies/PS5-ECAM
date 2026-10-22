@@ -34,6 +34,7 @@ namespace ps5azahar::input
 		bool s_cursorVisible = false;
 		float s_cursorX = 0, s_cursorY = 0; // 0 to 1 over the bottom screen
 		bool s_touching = false;
+		std::atomic<bool> s_hiddenTouch{false}; // SetHiddenTouch
 		// The game's loop's: the buttons held while the menu was open (the press that closed it among
 		// them), kept from the game until each is let go, and the same for the sticks and the click
 		uint32_t s_heldOver = 0;
@@ -324,10 +325,11 @@ namespace ps5azahar::input
 			Settings::is_temporary_frame_limit = fast;
 		}
 
-		// the click touches only a bottom screen that is shown
+		// the click touches only a bottom screen that is shown, unless it is touched all the same
 		const auto& layout = window.GetFramebufferLayout();
 		const auto& bottom = layout.bottom_screen;
-		if (!layout.bottom_screen_enabled)
+		const bool hidden = !layout.bottom_screen_enabled || bottom.GetWidth() == 0;
+		if (hidden && !s_hiddenTouch)
 			touch = false;
 
 		float cursorX, cursorY;
@@ -358,6 +360,28 @@ namespace ps5azahar::input
 			return;
 		}
 
+		// the bottom screen not shown and touched all the same: where the cursor is over the top screen,
+		// as the touch screen has it (turned back as EmuWindow::TouchPressed turns it)
+		if (hidden)
+		{
+			float touchX = cursorX, touchY = cursorY;
+			if (layout.is_flipped)
+			{
+				touchX = 1.0f - touchX;
+				touchY = 1.0f - touchY;
+			}
+			if (!layout.is_rotated)
+			{
+				std::swap(touchX, touchY);
+				touchX = 1.0f - touchX;
+			}
+			if (touch)
+				window.TouchNormalized(touchX, touchY);
+			else if (wasTouching)
+				window.TouchReleased();
+			return;
+		}
+
 		// where the cursor is (where it last was, without a finger)
 		const unsigned x = bottom.left + (unsigned)(cursorX * std::max(1u, bottom.GetWidth() - 1));
 		const unsigned y = bottom.top + (unsigned)(cursorY * std::max(1u, bottom.GetHeight() - 1));
@@ -367,6 +391,16 @@ namespace ps5azahar::input
 			window.TouchMoved(x, y);
 		else if (wasTouching)
 			window.TouchReleased();
+	}
+
+	void SetHiddenTouch(bool on)
+	{
+		s_hiddenTouch = on;
+	}
+
+	bool HiddenTouch()
+	{
+		return s_hiddenTouch;
 	}
 
 	bool Cursor(float& x, float& y)

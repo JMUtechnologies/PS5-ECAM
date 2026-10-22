@@ -642,13 +642,23 @@ namespace ps5shell
 					Tr("One above the other, the top one alone, the top one large with the bottom one beside it, or the two side by side. In a "
 					"game, touchpad click + R1 goes to the next.")),
 				"layout");
-			if (IsDs())
+			if (IsDs() || Is3ds())
 				own(choice("dsrotation", Tr("Screen rotation"), Options(kDsRotations), hand.dsRotation,
 						Tr("For the games held on their side, like a book."),
-						Tr("Turns the DS's two screens together, a quarter turn at a time, for the games played with the DS held on its side, "
-						   "like a book (Hotel Dusk). The touchpad moves the cursor over the bottom screen as the TV shows it. The in-game menu "
-						   "changes it too.")),
+						IsDs() ? Tr("Turns the DS's two screens together, a quarter turn at a time, for the games played with the DS held on its side, "
+									"like a book (Hotel Dusk). The touchpad moves the cursor over the bottom screen as the TV shows it. The in-game menu "
+									"changes it too.") :
+								 Tr("Turns the 3DS's two screens together, a quarter turn at a time, for the games played with the 3DS held on its "
+									"side, like a book. The touchpad moves the cursor over the bottom screen as the TV shows it. The in-game menu "
+									"changes it too.")),
 					"dsRotation");
+			if (IsDs() || Is3ds())
+				own(toggle("hiddentouch", Tr("Touch without the bottom screen"), hand.hiddenTouch,
+						Tr("The touchpad touches it while only the top screen shows."),
+						Tr("With the top screen alone on the TV, the touchpad still touches the bottom screen: its cursor moves over the top "
+						   "screen as if the bottom one were there, for the games that ask for a touch now and then (Star Fox 64 3D). Off, "
+						   "the touchpad touches only a bottom screen that is shown. A game can have its own; the in-game menu changes it too.")),
+					"hiddenTouch");
 			own(choice("border", Tr("Border"), Options(kBorderThemes), hand.border, Tr("Artwork around the screens."),
 					Tr("Artwork around the screens, never over them. It follows every layout, and the in-game menu changes it too."),
 					Kind::Swatches),
@@ -1607,6 +1617,8 @@ namespace ps5shell
 				hand.performance = on;
 			else if (id == "nx-framegeneration")
 				hand.nxFrameGeneration = on;
+			else if (id == "hiddentouch")
+				hand.hiddenTouch = on;
 			else if (id == "dsownbios")
 				hand.dsOwnBios = on;
 			else

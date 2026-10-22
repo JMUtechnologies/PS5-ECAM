@@ -473,11 +473,16 @@ namespace ps5ingame3ds
 				{"border", Tr("Border"), BorderName(settings.border), true,
 					Tr("Artwork around the screens, never over them. Also in the launcher's Settings > Screens.")},
 			}});
-			// the DS turned with its screens, for the games played holding it on its side
-			if (ds)
-				rows.back().rows.insert(rows.back().rows.begin() + 2,
-					{"rotation", Tr("Screen rotation"), Tr(kRotations[std::clamp(settings.rotation, 0, kRotationCount - 1)]), true,
-						Tr("For the games played with the DS held on its side, like a book (Hotel Dusk): both screens turn together.")});
+			// the console turned with its screens, for the games played holding it on its side
+			rows.back().rows.insert(rows.back().rows.begin() + 2,
+				{"rotation", Tr("Screen rotation"), Tr(kRotations[std::clamp(settings.rotation, 0, kRotationCount - 1)]), true,
+					ds ? Tr("For the games played with the DS held on its side, like a book (Hotel Dusk): both screens turn together.") :
+						 Tr("For the games played with the 3DS held on its side, like a book: both screens turn together, and the touch "
+							"screen with them.")});
+			// the bottom screen touched while only the top one shows
+			rows.back().rows.insert(rows.back().rows.begin() + 3,
+				{"hiddentouch", Tr("Touch without the bottom screen"), settings.hiddenTouch ? on : off, true,
+					Tr("With the top screen alone, the touchpad still touches the bottom screen, its cursor over the top one (Star Fox 64 3D).")});
 			if (ds)
 				rows.push_back({"graphics", Tr("Graphics"), Tr(filter), false, Tr("The screen filter and the performance overlay."), {
 					{"dsfilter", Tr("Screen filter"), Tr(filter), true,
@@ -675,6 +680,8 @@ namespace ps5ingame3ds
 				next.screenFilter = (std::clamp(settings.screenFilter, 0, kScreenFilterCount - 1) + change + kScreenFilterCount) % kScreenFilterCount;
 			else if (id == "rotation")
 				next.rotation = (std::clamp(settings.rotation, 0, kRotationCount - 1) + change + kRotationCount) % kRotationCount;
+			else if (id == "hiddentouch")
+				next.hiddenTouch = !settings.hiddenTouch;
 			else if (id == "framegen")
 				next.frameGeneration = !settings.frameGeneration;
 			else if (id == "lid")

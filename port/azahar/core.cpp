@@ -124,13 +124,17 @@ namespace ps5azahar
 				CursorInfo cursor;
 				float x, y;
 				const auto& layout = GetFramebufferLayout();
-				// only over a bottom screen that is shown (not with the top screen alone)
-				cursor.visible = input::Cursor(x, y) && !ps5ingame3ds::MenuOpen() && !ps5ingame3ds::KeyboardOpen() && layout.bottom_screen_enabled &&
-					layout.bottom_screen.GetWidth() > 0;
-				// in the bottom screen's pixels on the TV, from its top left corner, as Azahar draws
-				// its crosshair: where the touch lands
-				cursor.projected_x = x * layout.bottom_screen.GetWidth();
-				cursor.projected_y = y * layout.bottom_screen.GetHeight();
+				// over a bottom screen that is shown; with the top screen alone, over it when the bottom
+				// one is touched all the same (Touch without the bottom screen)
+				const bool hidden = !layout.bottom_screen_enabled || layout.bottom_screen.GetWidth() == 0;
+				const auto& screen = hidden ? layout.top_screen : layout.bottom_screen;
+				cursor.visible = input::Cursor(x, y) && !ps5ingame3ds::MenuOpen() && !ps5ingame3ds::KeyboardOpen() &&
+					(!hidden || input::HiddenTouch()) && screen.GetWidth() > 0;
+				cursor.over_top_screen = hidden;
+				// in that screen's pixels on the TV, from its top left corner, as Azahar draws its
+				// crosshair: where the touch lands
+				cursor.projected_x = x * screen.GetWidth();
+				cursor.projected_y = y * screen.GetHeight();
 				return cursor;
 			}
 		};
@@ -370,6 +374,16 @@ namespace ps5azahar
 			return Settings::LayoutOption::LargeScreen;
 		}
 
+		// The 3DS turned with its screens, as the DS side turns its own (ps5settings::N3ds::dsRotation:
+		// quarter turns clockwise): Azahar's upright screens are a quarter turn counterclockwise, and
+		// its upside_down (patches/azahar 0034) turns the whole layout half a turn more
+		void SetRotation(int rotation)
+		{
+			const int turns = ((rotation % 4) + 4) % 4;
+			Settings::values.upright_screen = turns == 1 || turns == 3;
+			Settings::values.upside_down = turns == 1 || turns == 2;
+		}
+
 		// The launcher's 3DS settings in Azahar's.
 		void ApplySettings(const ps5settings::N3ds& settings)
 		{
@@ -399,6 +413,8 @@ namespace ps5azahar
 			values.texture_filter = TextureFilterOf(settings.textureFilter);
 			values.layout_option = LayoutOf(settings.layout);
 			values.swap_screen = false;
+			SetRotation(settings.dsRotation);
+			input::SetHiddenTouch(settings.hiddenTouch);
 			// dynarmic's code and the shader JIT's go in executable direct memory (ps5platform/exec.h):
 			// where the console refuses it, Azahar's interpreters run the game (slower) rather than
 			// nothing at all
@@ -431,6 +447,7 @@ namespace ps5azahar
 		}
 
 		// The menu's view of the settings, and the settings it changed
+
 		ps5ingame3ds::Settings MenuSettings(const ps5settings::N3ds& settings)
 		{
 			ps5ingame3ds::Settings menu;
@@ -447,6 +464,8 @@ namespace ps5azahar
 			menu.aOnCircle = MappedInput(settings, Button::A) == ps5emu::PadInput::Circle;
 			menu.border = settings.border;
 			menu.frameGeneration = settings.frameGeneration;
+			menu.rotation = settings.dsRotation;
+			menu.hiddenTouch = settings.hiddenTouch;
 			return menu;
 		}
 
@@ -511,6 +530,10 @@ namespace ps5azahar
 			// the renderer and the sound read these as they go
 			values.layout_option = LayoutOf(menu.layout);
 			values.swap_screen = menu.swapScreens;
+			s_settings.dsRotation = ((menu.rotation % 4) + 4) % 4;
+			SetRotation(s_settings.dsRotation);
+			s_settings.hiddenTouch = menu.hiddenTouch;
+			input::SetHiddenTouch(menu.hiddenTouch);
 			values.resolution_factor = (u32)std::clamp(menu.resolution, 1, 10);
 			values.texture_filter = TextureFilterOf(menu.textureFilter);
 			values.volume = std::clamp(menu.volume, 0, 100) / 100.0f;

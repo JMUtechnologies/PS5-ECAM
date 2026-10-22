@@ -73,6 +73,7 @@ namespace ps5melonds::screens
 		int filter = kSharp;
 		bool cursor = false;	   // the touch cursor, over the bottom screen
 		float cursorX = 0, cursorY = 0; // 0 to 1 across it, as the TV shows it
+		bool cursorOnTop = false;  // over the top screen instead: the bottom one is not shown and touched all the same
 	};
 
 	// The device and the swapchain on VideoOut. False, with the reason, when they cannot be made (what

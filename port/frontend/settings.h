@@ -55,7 +55,10 @@ namespace ps5settings
 		bool hwShaders = true;
 		// the DS's games (melonDS: port/melonds)
 		int dsFilter = 0;			  // how the DS's screens are scaled to the TV: sharp, smooth, square pixels (ps5melonds::screens::Filter)
-		int dsRotation = 0;			  // the DS turned this many quarter turns clockwise, for the games held on their side (Hotel Dusk)
+		// the touchpad touches the bottom screen while only the top one is shown (the top screen alone):
+		// its cursor over the top screen, for the games that want a touch now and then (Star Fox 64 3D)
+		bool hiddenTouch = false;
+		int dsRotation = 0;			  // the DS (or the 3DS) turned this many quarter turns clockwise, for the games held on their side (Hotel Dusk)
 		// the 3DS's: MihawkGen's picture between each two frames of a game at 30 fps (port/cemu/FrameGenPS5.h,
 		// #66), off until measured on the console
 		bool frameGeneration = false;

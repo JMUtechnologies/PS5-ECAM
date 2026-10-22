@@ -50,6 +50,10 @@ namespace ps5melonds
 		// The screens turned that many quarter turns clockwise (screens::Place): the touchpad moves the
 		// cursor over the bottom screen as the TV shows it, and Touch gives the DS's own coordinates
 		void SetRotation(int rotation);
+		// whether the touchpad touches the bottom screen while only the top one is shown, the cursor over
+		// the top screen (Settings > Screens' Touch without the bottom screen)
+		void SetHiddenTouch(bool on);
+		bool HiddenTouch();
 		// The app's own actions (port/azahar/controls.h), for the emulation: fast forward and rewind
 		// held, and whether rewind has an input at all (else no snapshots are kept for it)
 		bool FastForward();
