@@ -76,6 +76,19 @@ namespace ps5settings
 		int nxSharpening = 25;		  // AMD FSR 1's sharpening, Eden's slider: 0 (the sharpest) to 200
 		int nxController = -1;		  // the controller a Switch game sees: -1 automatic, then Pro, handheld, Joy-Con pair, left, right
 		int nxDeadzone = 8;			  // the sticks' deadzone in a Switch game, percent (Eden's own default)
+		// ProsperoEden's Settings, as its own launcher has them (port/eden/launch.cpp hands them over)
+		int nxOutput = 0;			  // the picture Eden presents: 1080p, 1440p, 2160p
+		bool nxHighRefresh = false;	  // the TV at 120 Hz, else 60
+		int nxLanguage = -1;		  // the Switch's system language (ps5eden::kLanguages); -1: the menus' where the Switch has it
+		int nxMemory = 0;			  // the emulated Switch's memory: 4, 6 or 8 GB (Eden's memory layout)
+		bool nxAsyncShaders = false;  // draw before a new shader is ready
+		bool nxFastGpu = false;		  // Eden's lowest GPU accuracy
+		bool nxUnsafeCpu = false;	  // dynarmic's inexact floating-point shortcuts
+		bool nxUnsafeDma = false;	  // Eden's unsafe DMA accuracy
+		bool nxReactiveFlushing = true; // Eden's reactive flushing: off is faster, some effects break
+		bool nxSkipInvalidation = false; // fewer CPU cache invalidations
+		bool nxBlockList = false;	  // the blocks of earlier sessions compiled ahead
+		bool nxCompactMemory = false; // the game's memory in 16 KiB pages where it is mostly zeroes
 		// ProsperoEden's rooms (Settings > Multiplayer): the one a Switch game joins as it starts, none
 		// when nxRoomHost is empty, and the nickname shown in it
 		std::string nxRoomHost, nxRoomName, nxRoomPassword, nxNickname;
@@ -143,6 +156,9 @@ namespace ps5settings
 		// MihawkGen's picture between each two frames of a game at two refreshes a frame or more
 		// (port/cemu/FrameGenPS5.h, #66): off until measured on the console
 		bool frameGeneration = false;
+		// ReShade's preset on the TV's picture (port/cemu/ReShadePS5.h): /data/ps5cemu/reshade's
+		// ReShadePreset.ini, or the game's own in presets/
+		bool reshade = false;
 		bool overlay = false;		  // Cemu's performance overlay from the start
 		bool asyncShaders = true;	  // Cemu's async_compile (Settings > Graphics, and the in-game menu's Graphics)
 		bool shaderNotices = true;	  // Cemu's "compiled shaders/pipelines" notices over a game (its notification.shader_compiling, #37)

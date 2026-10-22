@@ -1,0 +1,141 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Thu, 22 Oct 2026 07:10:13 +0000
+Subject: [PATCH] PS5-ECAM's Switch side: its in-game menu on every frame, and
+ ProsperoEden's other settings
+
+PS5-ECAM's loading screen and menu are drawn on the swapchain's frames only (those with their
+render_ready semaphore), never a screenshot's. Their drawing follows this window pass when Eden makes
+it again (a new filter, the swapchain's image count after the loading screen): before, the menu
+stopped being drawn there while it still held the controller.
+
+The session's new settings, as ProsperoEden's Settings has them: output_resolution, refresh_rate,
+language, and two packed into one value each, as LoadExec carries the arguments too: performance
+(memory_layout and the Performance switches, name:value pairs) and mapping (game:pad button pairs,
+button_mapping.h's names; one that is not a whole mapping leaves the defaults).
+---
+ headless/settings_store.h       | 65 ++++++++++++++++++++++++++++++++-
+ headless/vulkan_hud_prepare.inc |  8 +++-
+ 2 files changed, 69 insertions(+), 4 deletions(-)
+
+diff --git a/headless/settings_store.h b/headless/settings_store.h
+index 4492c2d..9181303 100644
+--- a/headless/settings_store.h
++++ b/headless/settings_store.h
+@@ -573,11 +573,32 @@ struct SessionSettings {
+     int anti_aliasing = -1, fsr_sharpening = -1, deadzone = -1, controller = -2;
+     std::string room_host, room_nickname, room_password, room_name;
+     int room_port = -1;
++    // PS5-ECAM's too, as ProsperoEden's Settings has them: the Performance switches (kPerformanceKeys'
++    // order, 1 on, 0 off), the memory layout (kMemoryLayoutKeys' index), the picture's output and
++    // refresh rate, the system language games see (kLanguageKeys' index) and the button mapping
++    std::array<int, 8> performance{-1, -1, -1, -1, -1, -1, -1, -1};
++    int memory_layout = -1, output = -1, refresh = -1, language = -1;
++    bool has_mapping = false;
++    ButtonMapping mapping = kDefaultMapping;
+ };
+ inline SessionSettings& Session() {
+     static SessionSettings settings;
+     return settings;
+ }
++// "name:value,name:value": PS5-ECAM's values packed into one --set (performance, mapping); a piece
++// without its colon is an empty name, which matches nothing
++inline std::vector<std::pair<std::string, std::string>> SessionPairs(const std::string& text) {
++    std::vector<std::pair<std::string, std::string>> pairs;
++    for (size_t at = 0; at < text.size();) {
++        const size_t comma = std::min(text.find(',', at), text.size());
++        const std::string piece = text.substr(at, comma - at);
++        const size_t colon = piece.find(':');
++        if (colon == std::string::npos) pairs.emplace_back(std::string{}, piece);
++        else pairs.emplace_back(piece.substr(0, colon), piece.substr(colon + 1));
++        at = comma + 1;
++    }
++    return pairs;
++}
+ // One of them by its key in this file (video's resolution, upscaling_filter, astc_textures,
+ // fps_overlay, frame_gen and frame_gen_method, audio's volume, controls' vibration, a game's
+ // console_mode, performance's speed_limit) and value as the file has it; false when the key or the
+@@ -623,7 +644,34 @@ inline bool SetSessionSetting(std::string_view key, std::string_view value) {
+     else if (key == "room_nickname") session.room_nickname = text.substr(0, 20);
+     else if (key == "room_password") session.room_password = text.size() <= 128 ? text : std::string{};
+     else if (key == "room_name") session.room_name = text.substr(0, 512);
+-    else return false;
++    else if (key == "output_resolution") session.output = index(kOutputKeys, int(std::size(kOutputKeys)));
++    else if (key == "refresh_rate") session.refresh = index(kRefreshKeys, int(std::size(kRefreshKeys)));
++    else if (key == "language") session.language = index(kLanguageKeys, int(std::size(kLanguageKeys)));
++    else if (key == "performance") {
++        // name:value pairs, comma separated (few arguments: LoadExec carries them too): the Performance
++        // switches (kPerformanceKeys, below) with 1 or 0, and memory_layout with kMemoryLayoutKeys' names
++        constexpr const char* switches[] = {"block_list", "async_shaders", "fast_gpu", "unsafe_cpu",
++                                            "unsafe_dma", "reactive_flushing", "skip_invalidation", "compact_memory"};
++        constexpr const char* layouts[] = {"4Gb", "6Gb", "8Gb"};
++        for (const auto& [name, setting] : SessionPairs(text)) {
++            if (name == "memory_layout") session.memory_layout = KeyIndex(setting, layouts, int(std::size(layouts)), -1);
++            else if (const int which = KeyIndex(name, switches, int(std::size(switches)), -1); which >= 0)
++                session.performance[which] = setting == "1" ? 1 : setting == "0" ? 0 : -1;
++        }
++    } else if (key == "mapping") {
++        // game:pad pairs by button_mapping.h's names, over ProsperoEden's defaults; one that does not
++        // make a whole mapping (a pad button twice, a name unknown) leaves the defaults
++        ButtonMapping mapping = kDefaultMapping;
++        bool named = true;
++        for (const auto& [name, pad_name] : SessionPairs(text)) {
++            const int game = KeyIndex(name, kGameButtonKeys, kGameButtons, -1);
++            const int pad = KeyIndex(pad_name, kPadButtonKeys, kPadButtons, -1);
++            named = named && game >= 0 && pad >= 0;
++            if (named) mapping[game] = pad;
++        }
++        session.has_mapping = named && ValidMapping(mapping);
++        session.mapping = session.has_mapping ? mapping : kDefaultMapping;
++    } else return false;
+     return true;
+ }
+ 
+@@ -881,6 +929,10 @@ inline Preferences PreferencesFor(uint64_t title_id, const std::string& file) {
+     if (session.frame_gen >= 0) result.frame_gen = session.frame_gen == 1;
+     if (session.frame_gen_method >= 0) result.frame_gen_method = session.frame_gen_method;
+     if (session.controller >= -1) result.controller = session.controller;
++    if (session.output >= 0) result.output = session.output;
++    if (session.refresh >= 0) result.refresh = session.refresh;
++    if (session.language >= 0) result.language = session.language;
++    if (session.has_mapping) result.mapping = session.mapping;
+     return result;
+ }
+ 
+@@ -957,7 +1009,16 @@ inline bool SavePerformance(uint64_t title_id, const PerformanceSettings& value,
+ // side started it with over them (Session; a value that is not one of kSpeedLimitKeys leaves them).
+ inline PerformanceSettings PerformanceFor(uint64_t title_id, const std::string& file = SettingsFile()) {
+     PerformanceSettings result = LoadPerformance(title_id, file);
+-    result.speed_limit = KeyIndex(Session().speed_limit, kSpeedLimitKeys, int(std::size(kSpeedLimitKeys)), result.speed_limit);
++    const SessionSettings& session = Session();
++    result.speed_limit = KeyIndex(session.speed_limit, kSpeedLimitKeys, int(std::size(kSpeedLimitKeys)), result.speed_limit);
++    // PS5-ECAM's switches and memory layout for the game, over the file's
++    bool* const switches[] = {&result.block_list, &result.async_shaders, &result.fast_gpu, &result.unsafe_cpu,
++                              &result.unsafe_dma, &result.reactive_flushing, &result.skip_invalidation,
++                              &result.compact_memory};
++    static_assert(std::size(switches) == kPerformanceSwitches && std::size(SessionSettings{}.performance) == kPerformanceSwitches);
++    for (int i = 0; i < kPerformanceSwitches; ++i)
++        if (session.performance[i] >= 0) *switches[i] = session.performance[i] == 1;
++    if (session.memory_layout >= 0) result.memory_layout = session.memory_layout;
+     return result;
+ }
+ 
+diff --git a/headless/vulkan_hud_prepare.inc b/headless/vulkan_hud_prepare.inc
+index dd3d7a4..00abfa3 100644
+--- a/headless/vulkan_hud_prepare.inc
++++ b/headless/vulkan_hud_prepare.inc
+@@ -36,8 +36,12 @@
+     const VkDescriptorSet hud_descriptor_set = hud_pipeline ? hud_sets[0] : VkDescriptorSet{};
+ #ifdef EDEN_ECAM
+     // PS5-ECAM's loading screen and in-game menu (ecam_bridge.h): drawn with the overlay, on the
+-    // picture presented, around this pass's own drawing
+-    const bool ecam = hud_memory != nullptr && Eden::EcamVulkan::instance != VK_NULL_HANDLE;
++    // picture presented, around this pass's own drawing. Only on the swapchain's frames, which the
++    // present manager made with their semaphore: a screenshot's frame (RenderToBuffer) has none.
++    // This pass is made again when the filter or the swapchain's image count changes (BlitScreen::
++    // SetWindowAdaptPass): the drawing follows it to the new one.
++    const bool ecam = hud_memory != nullptr && Eden::EcamVulkan::instance != VK_NULL_HANDLE &&
++                      *dst->render_ready != VK_NULL_HANDLE;
+     ps5ingamenx::Target ecam_target{};
+     if (ecam) {
+         ecam_target.getInstanceProcAddr = Eden::EcamVulkan::gipa;

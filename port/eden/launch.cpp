@@ -25,6 +25,9 @@ namespace ps5eden
 		constexpr const char* kSpeedLimits[] = {"100", "150", "200", "300", "unlimited"};
 		constexpr const char* kAntiAliasing[] = {"none", "fxaa", "smaa"};
 		constexpr const char* kControllers[] = {"auto", "pro", "handheld", "dual_joycons", "left_joycon", "right_joycon"};
+		constexpr const char* kOutputs[] = {"1080p", "1440p", "2160p"};
+		constexpr const char* kMemoryLayouts[] = {"4Gb", "6Gb", "8Gb"};
+
 		// the lines of Eden's trace a boot log takes, the last ones
 		constexpr size_t kTraceLines = 60;
 
@@ -75,6 +78,20 @@ namespace ps5eden
 		Set(args, "fsr_sharpening=" + std::to_string(std::clamp(nx.nxSharpening, 0, 200)));
 		Set(args, std::string("controller=") + kControllers[std::clamp(nx.nxController + 1, 0, 5)]);
 		Set(args, "deadzone=" + std::to_string(std::clamp(nx.nxDeadzone, 0, 30)));
+		// ProsperoEden's Settings the launcher has too (patches/eden 0009): the picture's output and refresh
+		// rate, the Switch's language, the Performance switches and memory, and the buttons, the last two
+		// packed into one value each (LoadExec carries the arguments as well as the request file)
+		Set(args, std::string("output_resolution=") + kOutputs[std::clamp(nx.nxOutput, 0, 2)]);
+		Set(args, std::string("refresh_rate=") + (nx.nxHighRefresh ? "120" : "60"));
+		Set(args, std::string("language=") + kLanguages[LanguageFor(nx)].key);
+		const std::pair<const char*, bool> switches[] = {{"async_shaders", nx.nxAsyncShaders}, {"fast_gpu", nx.nxFastGpu},
+			{"unsafe_cpu", nx.nxUnsafeCpu}, {"unsafe_dma", nx.nxUnsafeDma}, {"reactive_flushing", nx.nxReactiveFlushing},
+			{"skip_invalidation", nx.nxSkipInvalidation}, {"block_list", nx.nxBlockList}, {"compact_memory", nx.nxCompactMemory}};
+		std::string performance = std::string("memory_layout:") + kMemoryLayouts[std::clamp(nx.nxMemory, 0, 2)];
+		for (const auto& [name, on] : switches)
+			performance += fmt::format(",{}:{}", name, on ? 1 : 0);
+		Set(args, "performance=" + performance);
+		Set(args, "mapping=" + MappingValue(nx));
 		// the room Settings > Multiplayer chose, joined before the game starts (ProsperoEden's rooms)
 		if (!nx.nxRoomHost.empty())
 		{

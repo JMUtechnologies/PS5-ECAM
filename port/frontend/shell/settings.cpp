@@ -222,7 +222,7 @@ namespace ps5shell
 		pages.push_back({"audio", Tr("Audio"), Tr("The games' sound, and the launcher's."), Icon::Speaker});
 		pages.push_back({"controls", Tr("Controls"), IsWiiU() ? Tr("What each player's DualSense is to the Wii U.") :
 				Is3ds()										  ? Tr("The DualSense as the 3DS.") :
-				IsSwitch()									  ? Tr("The DualSense's vibration.") :
+				IsSwitch()									  ? Tr("The DualSense as the Switch.") :
 																Tr("The DualSense as the DS."),
 			Icon::Pad});
 		// the remote touch screen is this program's: a Switch game runs in Eden's
@@ -235,6 +235,9 @@ namespace ps5shell
 														   IsSwitch() ? Tr("The emulated Switch: docked or handheld.") :
 																		Tr("The emulated DS's language and BIOS."),
 				Icon::Chip});
+		// ProsperoEden's Settings > Performance, as its launcher has it
+		if (IsSwitch())
+			pages.push_back({"performance", Tr("Performance"), Tr("Speed against accuracy, and the emulated Switch's memory."), Icon::Pulse});
 		pages.push_back({"files", Tr("Game files"), IsWiiU() ? Tr("Where your Wii U games are, and installs into the Wii U's storage.") :
 										Is3ds()		 ? Tr("Where your 3DS games are, and installs into the 3DS's storage.") :
 										IsSwitch()	 ? Tr("Where your Switch games are, with its keys and firmware.") :
@@ -263,10 +266,10 @@ namespace ps5shell
 		if (!InGameSettings())
 			return pages;
 		// a game's settings: only the pages with something a game can have its own of (SideRows' rows
-		// with a setting: Graphics, Screens, Audio and System)
+		// with a setting: Graphics, Screens, Audio, System and the Switch's Performance)
 		std::vector<SettingsPage> game;
 		for (const SettingsPage& page : pages)
-			if (page.id == "graphics" || page.id == "screens" || page.id == "audio" || page.id == "system")
+			if (page.id == "graphics" || page.id == "screens" || page.id == "audio" || page.id == "system" || page.id == "performance")
 				game.push_back({page.id, page.title, TrF("For {0} only. Its other settings follow its side's.", m_gameName), page.icon});
 		// its saves alone (6.15), whatever settings it has of its own (a Switch game's are Eden's)
 		if (!IsSwitch())
@@ -521,6 +524,13 @@ namespace ps5shell
 					   "is shown at 60, or at 60 with 120 Hz output. A game that runs faster is shown as it is. It costs the GPU about 2 ms a "
 					   "picture at 4K, and adds a little delay. Also in the in-game menu.")),
 				"frameGeneration");
+			// ReShade's preset, as a PC's ReShade makes it (port/cemu/ReShadePS5.h)
+			own(toggle("reshade", Tr("ReShade"), settings.reshade, TrF("Your ReShade preset and effects, from {0}.", ps5paths::Root() + "/reshade"),
+					TrF("Runs a ReShade preset made on a PC over the game's picture, before the GamePad's screen and the menus. Put "
+						"ReShadePreset.ini (or presets/<title ID>.ini for one game) with the Shaders and Textures folders it uses in {0}. "
+						"Compiled as the game starts; the boot log says what runs. Also in the in-game menu.",
+						ps5paths::Root() + "/reshade")),
+				"reshade");
 			own(toggle("overlay", Tr("Performance overlay"), settings.overlay, Tr("Frame rate, CPU and memory in a corner."),
 					Tr("Frames per second, CPU and memory use in the top left corner, as Cemu shows them. Also in the in-game menu.")),
 				"overlay");
@@ -610,6 +620,14 @@ namespace ps5shell
 					   "blocky. Applies to the next game."),
 					Kind::Segmented),
 				"nxAstc");
+			// ProsperoEden's Settings > Video: the picture Eden hands the console, and the TV's refresh rate
+			own(choice("nx-output", Tr("Output resolution"), {"1080p", "1440p", "2160p"}, std::clamp(hand.nxOutput, 0, 2),
+					Tr("The size of the picture Eden sends to the TV. Applies to the next game."),
+					Tr("The size of the picture Eden sends to the TV. Applies to the next game."), Kind::Segmented),
+				"nxOutput");
+			own(toggle("nx-120hz", Tr("120 Hz"), hand.nxHighRefresh, Tr("For a TV that takes 120 Hz. Applies to the next game."),
+					Tr("For a TV that takes 120 Hz. Applies to the next game.")),
+				"nxHighRefresh");
 			// ProsperoEden's own, with the method that needs nothing of the player's (Lossless Scaling would)
 			own(toggle("nx-framegeneration", Tr("Frame generation"), hand.nxFrameGeneration, Tr("A game held to 30 fps shown at 60."),
 					Tr("ProsperoEden's own frame generation, with MihawkGen: a picture made between each two frames, so a game at 30 fps is shown "
@@ -696,7 +714,17 @@ namespace ps5shell
 					Tr("How far a stick moves before the game sees it, for both sticks. Raise it if a character or the camera drifts when you "
 					   "let go of the stick; lower it for finer control. Also in the in-game menu."))
 					->value = Percent(hand.nxDeadzone);
-			// a Switch game's buttons are the Switch's own, where the DualSense has them
+			// a Switch game's buttons, as Eden maps them (port/eden/eden.h)
+			if (IsSwitch())
+			{
+				action(Kind::Link, "buttons", Tr("Buttons"), TrP((int)ps5eden::ListMappings(hand).size(), "{0} button set", "{0} buttons set"),
+					Tr("Which DualSense button presses each button."),
+					Tr("Which DualSense button presses each of the Switch's buttons. A is on Circle and B on Cross by default, where the Switch has "
+					   "them; + is Options and - the touchpad's click. The D-pad and the sticks stay the Switch's own."));
+				action(Kind::Hold, "resetcontrols", Tr("Reset to defaults"), m_message.empty() ? Tr("Hold Cross") : m_message,
+					Tr("Default buttons and deadzone."), Tr("Default buttons and deadzone."));
+			}
+			// the turbo button is the app's own, which Eden's program does not have
 			if (!IsSwitch())
 			{
 				int index = 0;
@@ -835,6 +863,51 @@ namespace ps5shell
 					Tr("As a share of the Switch's own speed. Above 100%, a game held to 30 fps can reach 60 where the PS5 has the time to spare, "
 					   "and a game that keeps time by its frames plays faster. None runs as fast as the PS5 can. Applies to the next game.")),
 				"nxSpeedLimit");
+			// the system language games see, each named in its own language
+			std::vector<std::string> languages{Tr("Automatic")};
+			for (const auto& language : ps5eden::kLanguages)
+				languages.push_back(language.name);
+			own(choice("nx-language", Tr("Language"), languages, std::clamp(hand.nxLanguage + 1, 0, (int)languages.size() - 1),
+					Tr("The language Switch games see. Automatic: the menus' own."),
+					Tr("The language Switch games see. Automatic: the menus' own.")),
+				"nxLanguage");
+		}
+		else if (page == "performance" && IsSwitch())
+		{
+			// ProsperoEden's Settings > Performance, each for every Switch game or one game's own
+			own(choice("nx-memory", Tr("Memory"), {"4 GB", "6 GB", "8 GB"}, std::clamp(hand.nxMemory, 0, 2),
+					Tr("4 GB is the Switch's own. More, for mods that ask for it. Applies to the next game."),
+					Tr("4 GB is the Switch's own. More, for mods that ask for it. Applies to the next game."), Kind::Segmented),
+				"nxMemory");
+			own(toggle("nx-async", Tr("Async shader compile"), hand.nxAsyncShaders, Tr("No stutter while new shaders build."),
+					Tr("On, a new shader is built while the game carries on, so it does not stutter, but some things may be missing for a moment. "
+					"Off, the game waits for each one: stutter, but nothing drawn wrong.")),
+				"nxAsyncShaders");
+			const struct
+			{
+				const char* id;
+				const char* label;
+				const char* about;
+				bool ps5settings::N3ds::* value;
+				const char* field;
+			} switches[] = {
+				{"nx-fastgpu", TrMark("Fast GPU"), TrMark("Eden's lowest GPU accuracy: faster, and some effects may be drawn wrong."),
+					&ps5settings::N3ds::nxFastGpu, "nxFastGpu"},
+				{"nx-unsafecpu", TrMark("Unsafe CPU"), TrMark("Quicker, inexact floating-point maths. Faster; a few games misbehave."),
+					&ps5settings::N3ds::nxUnsafeCpu, "nxUnsafeCpu"},
+				{"nx-unsafedma", TrMark("Unsafe DMA"), TrMark("Eden's unsafe DMA accuracy: faster, a few games show glitches."),
+					&ps5settings::N3ds::nxUnsafeDma, "nxUnsafeDma"},
+				{"nx-reactive", TrMark("Reactive flushing"), TrMark("Keeps effects that read back the GPU's work right. Off is faster; some break."),
+					&ps5settings::N3ds::nxReactiveFlushing, "nxReactiveFlushing"},
+				{"nx-skipinvalidation", TrMark("Skip cache invalidation"), TrMark("Fewer CPU cache invalidations: faster, rarely wrong."),
+					&ps5settings::N3ds::nxSkipInvalidation, "nxSkipInvalidation"},
+				{"nx-blocklist", TrMark("Precompile code"), TrMark("Compiles the code earlier sessions ran before the game needs it: fewer hitches."),
+					&ps5settings::N3ds::nxBlockList, "nxBlockList"},
+				{"nx-compactmemory", TrMark("Compact memory"), TrMark("Keeps the game's mostly empty memory small, for the biggest games."),
+					&ps5settings::N3ds::nxCompactMemory, "nxCompactMemory"},
+			};
+			for (const auto& s : switches)
+				own(toggle(s.id, Tr(s.label), hand.*(s.value), Tr(s.about), Tr(s.about)), s.field);
 		}
 		else if (page == "system")
 		{
@@ -1504,6 +1577,12 @@ namespace ps5shell
 			hand.nxAntiAliasing = std::clamp(index, 0, 2);
 		else if (id == "nx-controller")
 			hand.nxController = std::clamp(index - 1, -1, 4);
+		else if (id == "nx-output")
+			hand.nxOutput = std::clamp(index, 0, 2);
+		else if (id == "nx-language")
+			hand.nxLanguage = std::clamp(index - 1, -1, (int)std::size(ps5eden::kLanguages) - 1);
+		else if (id == "nx-memory")
+			hand.nxMemory = std::clamp(index, 0, 2);
 		else if (id == "theme")
 			settings.ui.theme = index >= 0 && index < (int)m_themes.size() ? m_themes[index].id : "";
 		else if (id == "abeverywhere")
@@ -1617,6 +1696,26 @@ namespace ps5shell
 				hand.performance = on;
 			else if (id == "nx-framegeneration")
 				hand.nxFrameGeneration = on;
+			else if (id == "reshade")
+				settings.reshade = on;
+			else if (id == "nx-120hz")
+				hand.nxHighRefresh = on;
+			else if (id == "nx-async")
+				hand.nxAsyncShaders = on;
+			else if (id == "nx-fastgpu")
+				hand.nxFastGpu = on;
+			else if (id == "nx-unsafecpu")
+				hand.nxUnsafeCpu = on;
+			else if (id == "nx-unsafedma")
+				hand.nxUnsafeDma = on;
+			else if (id == "nx-reactive")
+				hand.nxReactiveFlushing = on;
+			else if (id == "nx-skipinvalidation")
+				hand.nxSkipInvalidation = on;
+			else if (id == "nx-blocklist")
+				hand.nxBlockList = on;
+			else if (id == "nx-compactmemory")
+				hand.nxCompactMemory = on;
 			else if (id == "hiddentouch")
 				hand.hiddenTouch = on;
 			else if (id == "dsownbios")
@@ -2181,6 +2280,8 @@ namespace ps5shell
 		else if (id == "resetcontrols")
 		{
 			ps5azahar::ResetControls(Handheld(m_side));
+			if (m_side == System::Switch)
+				Handheld(m_side).nxDeadzone = ps5settings::N3ds{}.nxDeadzone;
 			SaveSettings();
 			// tr: what a held row says once it has done its work
 			m_message = TrC("finished", "Done");

@@ -61,6 +61,30 @@ namespace ps5eden
 	// The nickname shown in a room: Settings > Multiplayer's, else ProsperoEden's own
 	std::string Nickname(const ps5settings::N3ds& nx);
 
+	// The Switch's twelve buttons on the DualSense, as Eden maps them (its button_mapping.h): each on
+	// one of the DualSense's buttons, the touchpad's click included, kept by name in the Switch side's
+	// settings (N3ds::buttons) where it is not ProsperoEden's default (A on Circle, B on Cross, + on
+	// Options, - on the touchpad's click). Setting one swaps it with the button that had that input,
+	// so no DualSense button presses two; None puts its default back.
+	std::vector<ps5emu::ButtonMapping> ListMappings(const ps5settings::N3ds& nx);
+	void SetMapping(ps5settings::N3ds& nx, size_t index, ps5emu::PadInput input);
+	// Whether an input can be a Switch button: the DualSense's buttons, not its D-pad or sticks
+	bool Mappable(ps5emu::PadInput input);
+	// Every button's, as the game's --set mapping= hands them to Eden ("a:circle,b:cross,...")
+	std::string MappingValue(const ps5settings::N3ds& nx);
+
+	// The Switch's system languages, as Eden names them (its settings_store.h's kLanguageKeys), each in
+	// its own language
+	struct Language
+	{
+		const char* key;
+		const char* name;
+	};
+	extern const Language kLanguages[18];
+	// The one a game sees: nxLanguage's, or for -1 the menus' (ps5lang) where the Switch has it, else
+	// English (US)
+	int LanguageFor(const ps5settings::N3ds& nx);
+
 	// Where the arguments Eden is started with also go, one a line: Eden's data folder's
 	// launch-request.txt
 	std::string RequestFile();

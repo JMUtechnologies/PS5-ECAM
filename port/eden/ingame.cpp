@@ -58,6 +58,15 @@ namespace ps5ingamenx
 
 		std::atomic<bool> s_ready{false}; // the renderer's ImGui is up: the menu can open
 		std::atomic<bool> s_open{false};
+		// the menu just closed: the game's controller stays still until player 1 lets go of every button,
+		// so the one that closed it (Cross on Resume, Circle) never reaches the game
+		std::atomic<bool> s_release{false};
+
+		void CloseMenu()
+		{
+			s_release = true;
+			s_open = false;
+		}
 		std::atomic<bool> s_menuFresh{false};
 		std::atomic<bool> s_leave{false};
 		std::atomic<uint32_t> s_buttons{0};
@@ -663,13 +672,13 @@ namespace ps5ingamenx
 			Settings next = settings;
 			if (id == "resume")
 			{
-				s_open = false;
+				CloseMenu();
 				return;
 			}
 			if (id == "leave")
 			{
 				s_leave = true; // held to here
-				s_open = false;
+				CloseMenu();
 				return;
 			}
 			if (id == "amiibo")
@@ -752,7 +761,7 @@ namespace ps5ingamenx
 			const ps5menu::Action action = s_side.Update(MenuRows(settings, s_exitAfterGame), Tiles(settings), s_menuButtons, Now(), close);
 			if (close)
 			{
-				s_open = false;
+				CloseMenu();
 				return;
 			}
 			if (!action.id.empty())
@@ -938,7 +947,11 @@ namespace ps5ingamenx
 		s_buttons = buttons;
 		s_leftX = leftX;
 		s_leftY = leftY;
-		return s_open;
+		if (s_open)
+			return true;
+		if (s_release && buttons == 0)
+			s_release = false;
+		return s_release;
 	}
 
 	void ToggleMenu()
@@ -947,14 +960,18 @@ namespace ps5ingamenx
 			return; // nothing to draw it with yet, or the game is still loading
 		const bool open = !s_open;
 		if (open)
+		{
 			s_menuFresh = true;
-		s_open = open;
+			s_open = true;
+		}
+		else
+			CloseMenu();
 		ps5log::Line("[ingamenx] the menu {}", open ? "opens" : "closes");
 	}
 
 	bool MenuOpen()
 	{
-		return s_open;
+		return s_open || s_release;
 	}
 
 	bool TakeChanges(Settings& settings)
@@ -1000,8 +1017,16 @@ namespace ps5ingamenx
 				g.ready = true;
 				s_ready = true;
 			}
+			// Eden makes its window pass again when the filter or the swapchain's image count changes (the
+			// game's first frame after the loading screen, a filter chosen in the menu). Each one has the
+			// same single attachment, in the swapchain's format, so ImGui's pipeline draws in any of them
 			if (target.renderPass != g.target.renderPass || target.width != g.target.width || target.height != g.target.height)
-				return; // another pass than the screen's (a capture's)
+			{
+				ps5log::Line("[ingamenx] Eden's window pass made again ({}x{}): drawn in the new one", target.width, target.height);
+				g.target.renderPass = target.renderPass;
+				g.target.width = target.width;
+				g.target.height = target.height;
+			}
 			ImGui::SetCurrentContext(g.context);
 			if (!g.fontsUploaded)
 			{

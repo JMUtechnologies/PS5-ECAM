@@ -104,6 +104,18 @@ namespace ps5settings
 			ReadInt(json, "nxSharpening", n3ds.nxSharpening, 0, 200);
 			ReadInt(json, "nxController", n3ds.nxController, -1, 4);
 			ReadInt(json, "nxDeadzone", n3ds.nxDeadzone, 0, 30);
+			ReadInt(json, "nxOutput", n3ds.nxOutput, 0, 2);
+			ReadBool(json, "nxHighRefresh", n3ds.nxHighRefresh);
+			ReadInt(json, "nxLanguage", n3ds.nxLanguage, -1, 17);
+			ReadInt(json, "nxMemory", n3ds.nxMemory, 0, 2);
+			ReadBool(json, "nxAsyncShaders", n3ds.nxAsyncShaders);
+			ReadBool(json, "nxFastGpu", n3ds.nxFastGpu);
+			ReadBool(json, "nxUnsafeCpu", n3ds.nxUnsafeCpu);
+			ReadBool(json, "nxUnsafeDma", n3ds.nxUnsafeDma);
+			ReadBool(json, "nxReactiveFlushing", n3ds.nxReactiveFlushing);
+			ReadBool(json, "nxSkipInvalidation", n3ds.nxSkipInvalidation);
+			ReadBool(json, "nxBlockList", n3ds.nxBlockList);
+			ReadBool(json, "nxCompactMemory", n3ds.nxCompactMemory);
 			ReadString(json, "nxRoomHost", n3ds.nxRoomHost);
 			ReadInt(json, "nxRoomPort", n3ds.nxRoomPort, 1, 65535);
 			ReadString(json, "nxRoomName", n3ds.nxRoomName);
@@ -191,6 +203,30 @@ namespace ps5settings
 			writer.Int(n3ds.nxController);
 			writer.Key("nxDeadzone");
 			writer.Int(n3ds.nxDeadzone);
+			writer.Key("nxOutput");
+			writer.Int(n3ds.nxOutput);
+			writer.Key("nxHighRefresh");
+			writer.Bool(n3ds.nxHighRefresh);
+			writer.Key("nxLanguage");
+			writer.Int(n3ds.nxLanguage);
+			writer.Key("nxMemory");
+			writer.Int(n3ds.nxMemory);
+			writer.Key("nxAsyncShaders");
+			writer.Bool(n3ds.nxAsyncShaders);
+			writer.Key("nxFastGpu");
+			writer.Bool(n3ds.nxFastGpu);
+			writer.Key("nxUnsafeCpu");
+			writer.Bool(n3ds.nxUnsafeCpu);
+			writer.Key("nxUnsafeDma");
+			writer.Bool(n3ds.nxUnsafeDma);
+			writer.Key("nxReactiveFlushing");
+			writer.Bool(n3ds.nxReactiveFlushing);
+			writer.Key("nxSkipInvalidation");
+			writer.Bool(n3ds.nxSkipInvalidation);
+			writer.Key("nxBlockList");
+			writer.Bool(n3ds.nxBlockList);
+			writer.Key("nxCompactMemory");
+			writer.Bool(n3ds.nxCompactMemory);
 			writer.Key("nxRoomHost");
 			writer.String(n3ds.nxRoomHost.c_str());
 			writer.Key("nxRoomPort");
@@ -235,6 +271,7 @@ namespace ps5settings
 		ReadBool(json, "highFrameRate", settings.highFrameRate);
 		ReadInt(json, "framePacing", settings.framePacing, 1, 3);
 		ReadBool(json, "frameGeneration", settings.frameGeneration);
+		ReadBool(json, "reshade", settings.reshade);
 		ReadBool(json, "overlay", settings.overlay);
 		ReadBool(json, "rumble", settings.rumble);
 		ReadString(json, "turbo", settings.turbo);
@@ -375,6 +412,8 @@ namespace ps5settings
 		writer.Int(settings.framePacing);
 		writer.Key("frameGeneration");
 		writer.Bool(settings.frameGeneration);
+		writer.Key("reshade");
+		writer.Bool(settings.reshade);
 		writer.Key("overlay");
 		writer.Bool(settings.overlay);
 		writer.Key("rumble");
@@ -571,6 +610,7 @@ namespace ps5settings
 				{"highFrameRate", nullptr, &Launcher::highFrameRate},
 				{"framePacing", &Launcher::framePacing, nullptr, nullptr, nullptr, 1, 3},
 				{"frameGeneration", nullptr, &Launcher::frameGeneration},
+				{"reshade", nullptr, &Launcher::reshade},
 				{"overlay", nullptr, &Launcher::overlay},
 				{"asyncShaders", nullptr, &Launcher::asyncShaders},
 				{"volume", &Launcher::volume, nullptr, nullptr, nullptr, 0, 100},
@@ -608,6 +648,18 @@ namespace ps5settings
 				{"nxAntiAliasing", nullptr, nullptr, &N3ds::nxAntiAliasing, nullptr, 0, 2},
 				{"nxSharpening", nullptr, nullptr, &N3ds::nxSharpening, nullptr, 0, 200},
 				{"nxController", nullptr, nullptr, &N3ds::nxController, nullptr, -1, 4},
+				{"nxOutput", nullptr, nullptr, &N3ds::nxOutput, nullptr, 0, 2},
+				{"nxHighRefresh", nullptr, nullptr, nullptr, &N3ds::nxHighRefresh},
+				{"nxLanguage", nullptr, nullptr, &N3ds::nxLanguage, nullptr, -1, 17},
+				{"nxMemory", nullptr, nullptr, &N3ds::nxMemory, nullptr, 0, 2},
+				{"nxAsyncShaders", nullptr, nullptr, nullptr, &N3ds::nxAsyncShaders},
+				{"nxFastGpu", nullptr, nullptr, nullptr, &N3ds::nxFastGpu},
+				{"nxUnsafeCpu", nullptr, nullptr, nullptr, &N3ds::nxUnsafeCpu},
+				{"nxUnsafeDma", nullptr, nullptr, nullptr, &N3ds::nxUnsafeDma},
+				{"nxReactiveFlushing", nullptr, nullptr, nullptr, &N3ds::nxReactiveFlushing},
+				{"nxSkipInvalidation", nullptr, nullptr, nullptr, &N3ds::nxSkipInvalidation},
+				{"nxBlockList", nullptr, nullptr, nullptr, &N3ds::nxBlockList},
+				{"nxCompactMemory", nullptr, nullptr, nullptr, &N3ds::nxCompactMemory},
 			};
 			return fields;
 		}
@@ -638,13 +690,14 @@ namespace ps5settings
 
 	const std::vector<std::string>& GameSettingNames(const std::string& side)
 	{
-		static const std::vector<std::string> wiiu = {"upscaleFilter", "highFrameRate", "framePacing", "frameGeneration", "overlay", "asyncShaders",
+		static const std::vector<std::string> wiiu = {"upscaleFilter", "highFrameRate", "framePacing", "frameGeneration", "reshade", "overlay", "asyncShaders",
 			"volume"};
 		static const std::vector<std::string> n3ds = {"resolution", "textureFilter", "customTextures", "asyncShaderCompilation", "invariantPosition", "hwShaders", "layout", "border",
 			"volume", "region", "language", "cpuClock", "frameGeneration", "dsRotation", "hiddenTouch"};
 		static const std::vector<std::string> nds = {"dsFilter", "dsRotation", "hiddenTouch", "dsJit", "layout", "border", "volume", "language", "dsOwnBios"};
 		static const std::vector<std::string> nx = {"nxResolution", "nxFilter", "nxAstc", "nxFrameGeneration", "nxDocked", "nxSpeedLimit", "volume",
-			"nxAntiAliasing", "nxSharpening", "nxController"};
+			"nxAntiAliasing", "nxSharpening", "nxController", "nxOutput", "nxHighRefresh", "nxLanguage", "nxMemory", "nxAsyncShaders", "nxFastGpu",
+			"nxUnsafeCpu", "nxUnsafeDma", "nxReactiveFlushing", "nxSkipInvalidation", "nxBlockList", "nxCompactMemory"};
 		static const std::vector<std::string> none;
 		return side == "wiiu" ? wiiu : side == "3ds" ? n3ds : side == "ds" ? nds : side == "switch" ? nx : none;
 	}

@@ -144,7 +144,8 @@ namespace ps5rooms
 			{
 				uint32_t address = 0;
 				const int resolver = sceNetResolverCreate("ps5cemu-rooms", pool, 0);
-				const int found = resolver >= 0 ? sceNetResolverStartNtoa(resolver, kHost, &address, 0, 0, 0) : resolver;
+				// 5 s a try, twice: a lookup that never answers ends, and says so
+				const int found = resolver >= 0 ? sceNetResolverStartNtoa(resolver, kHost, &address, 5 * 1000 * 1000, 2, 0) : resolver;
 				if (resolver >= 0)
 					sceNetResolverDestroy(resolver);
 				if (found >= 0 && address != 0)
@@ -152,14 +153,19 @@ namespace ps5rooms
 					char text[INET_ADDRSTRLEN] = {};
 					inet_ntop(AF_INET, &address, text, sizeof(text));
 					resolve = curl_slist_append(resolve, (std::string(kHost) + ":443:" + text).c_str());
+					ps5log::Line("[rooms] {} is {}", kHost, text);
 				}
+				else
+					ps5log::Line("[rooms] the PS5's resolver did not find {} ({:#x}): curl looks it up", kHost, (uint32_t)found);
 				sceNetPoolDestroy(pool);
 			}
 			std::string body, error;
 			long http = 0;
 			CURLcode result = CURLE_FAILED_INIT;
+			char why[CURL_ERROR_SIZE] = {};
 			if (CURL* curl = curl_easy_init())
 			{
+				curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, why);
 				static const std::string ca = ps5paths::Assets() + "/cacert.pem"; // the console has no store of its own
 				curl_slist* headers = curl_slist_append(nullptr, "api-version: 1");
 				if (resolve)
@@ -188,8 +194,8 @@ namespace ps5rooms
 				error = ps5lang::TrF("The public room list answered HTTP {0}. Try again later.", http);
 			else
 				rooms = Parse(body, error);
-			ps5log::Line("[rooms] public rooms: curl {} http {} bytes {} rooms {}{}", (int)result, http, body.size(), rooms.size(),
-				error.empty() ? std::string() : ": " + error);
+			ps5log::Line("[rooms] public rooms: curl {} ({}) http {} bytes {} rooms {}{}", (int)result, why[0] ? why : curl_easy_strerror(result), http,
+				body.size(), rooms.size(), error.empty() ? std::string() : ": " + error);
 			std::lock_guard lock(s_mutex);
 			s_status.busy = false;
 			s_status.fetched = true;
@@ -207,6 +213,7 @@ namespace ps5rooms
 		if (s_status.busy)
 			return;
 		s_status.busy = true;
+		ps5log::Line("[rooms] downloading the public list ({})", kDirectory);
 		std::thread(Fetch).detach(); // a download of its own, which nothing waits for
 	}
 

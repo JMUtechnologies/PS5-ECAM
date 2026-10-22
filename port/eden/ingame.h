@@ -127,10 +127,12 @@ namespace ps5ingamenx
 	bool DrawsLoading();
 
 	// Player 1's controller, each time Eden reads it (its scePad layout is the app's, ps5/pad.h). True
-	// while the menu is up: the game then gets a still controller.
+	// while the menu is up, and after it closes until every button is let go: the game then gets a
+	// still controller.
 	bool Controller(uint32_t buttons, uint8_t leftX, uint8_t leftY);
 	// Touchpad click + Options
 	void ToggleMenu();
+	// The menu up, or its buttons not yet let go (Controller): the other players' games get still ones
 	bool MenuOpen();
 	// For Eden's game loop: a change made in the menu since the last call, and the library asked for
 	bool TakeChanges(Settings& settings);

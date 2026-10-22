@@ -162,6 +162,7 @@ add_library(CemuPS5 STATIC
 	azahar/controls.h
 	azahar/library.cpp
 	azahar/library.h
+	eden/controls.cpp
 	eden/eden.h
 	eden/launch.cpp
 	eden/library.cpp
@@ -281,6 +282,7 @@ set_source_files_properties(
 	azahar/controls.cpp
 	azahar/library.cpp
 	azahar/unavailable.cpp
+	eden/controls.cpp
 	eden/launch.cpp
 	eden/library.cpp
 	eden/nx_files.cpp

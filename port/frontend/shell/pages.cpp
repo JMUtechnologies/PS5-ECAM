@@ -12,6 +12,7 @@
 #include "../../azahar/azahar.h"
 #include "../../azahar/controls.h"
 #include "../../azahar/library.h"
+#include "../../eden/eden.h"
 #include "../../eden/library.h"
 #include "../../melonds/library.h"
 #include "../../melonds/melonds.h"
@@ -686,6 +687,8 @@ namespace ps5shell
 			return ps5emu::ListMappings(m_player);
 		if (m_mappingSide == System::N3ds)
 			return ps5azahar::ListMappings(m_settings.n3ds);
+		if (m_mappingSide == System::Switch)
+			return ps5eden::ListMappings(m_settings.nx);
 		std::vector<ps5emu::ButtonMapping> mappings;
 		for (ps5azahar::Button button : ps5azahar::DsButtons())
 			mappings.push_back(ps5azahar::Mapping(m_settings.nds, button, true));
@@ -695,6 +698,13 @@ namespace ps5shell
 	// a handheld's mapping changed: the row in the list is a 3DS button, or one of the DS's
 	void Shell::SetHandheldMapping(int index, ps5emu::PadInput input)
 	{
+		// a Switch button: Eden's mapping, where None is its default again (port/eden/eden.h)
+		if (m_mappingSide == System::Switch)
+		{
+			ps5eden::SetMapping(m_settings.nx, (size_t)std::max(index, 0), input);
+			SaveSettings();
+			return;
+		}
 		const bool ds = m_mappingSide == System::Nds;
 		if (ds && (index < 0 || index >= (int)ps5azahar::DsButtons().size()))
 			return;
@@ -732,7 +742,8 @@ namespace ps5shell
 					SetHandheldMapping(m_mapSelected, ps5emu::PadInput::None);
 				else
 					ps5emu::SetMapping(m_player, m_mapSelected, ps5emu::PadInput::None);
-				m_mapMessage = Tr("Cleared: no DualSense button is this one now.");
+				// every Switch button is on a DualSense button: Square puts its default back
+				m_mapMessage = m_mappingSide == System::Switch ? Tr("Done.") : Tr("Cleared: no DualSense button is this one now.");
 				m_feedback.Play(ui::Cue::Back);
 			}
 			break;
@@ -776,12 +787,19 @@ namespace ps5shell
 		}
 		else if (!m_capture.released)
 			m_capture.released = idle;
-		else if ((data.buttons & ps5pad::kTouchPad) && m_mappingSide != System::WiiU)
+		else if ((data.buttons & ps5pad::kTouchPad) && m_mappingSide != System::WiiU && m_mappingSide != System::Switch)
 		{
 			m_capture.active = false;
 			m_mapMessage = Tr("Cancelled: it stays as it was.");
 		}
-		else if (const auto input = data.buttons & ps5pad::kTouchPad ? ps5emu::PadInput::TouchPad : Pressed(data); input != ps5emu::PadInput::None)
+		else if (const auto input = data.buttons & ps5pad::kTouchPad ? ps5emu::PadInput::TouchPad : Pressed(data);
+				 m_mappingSide == System::Switch && input != ps5emu::PadInput::None && !ps5eden::Mappable(input))
+		{
+			// the Switch's buttons go on the DualSense's buttons: its D-pad and sticks stay the Switch's own
+			m_capture.active = false;
+			m_mapMessage = Tr("Cancelled: it stays as it was.");
+		}
+		else if (input != ps5emu::PadInput::None)
 		{
 			m_capture.active = false;
 			if (m_mappingSide != System::WiiU)
@@ -789,7 +807,7 @@ namespace ps5shell
 			else
 				ps5emu::SetMapping(m_player, m_mapSelected, input);
 			m_mapMessage = Tr("Done.");
-			if (input == ps5emu::PadInput::TouchPad && !touchpadButton)
+			if (input == ps5emu::PadInput::TouchPad && !touchpadButton && m_mappingSide == System::WiiU)
 			{
 				// the click becomes this player's button: Touchpad click on their page says so, and changes it back
 				m_settings.touchpadClick[m_player] = 2;
@@ -852,15 +870,19 @@ namespace ps5shell
 			const int seconds = (int)std::max(0.0, m_capture.until - m_now) + 1;
 			// tr: {0} is a button of the Wii U's or the 3DS's controller
 			message = TrF("Press the DualSense button, trigger or stick direction for {0} now.", ButtonName(mapping.button)) + "\n" +
-				(m_mappingSide == System::WiiU ?
+				(m_mappingSide == System::WiiU || m_mappingSide == System::Switch ?
 						TrP(seconds, "{0} second left; then it stays as it was. The touchpad's click counts too.",
 							"{0} seconds left; then it stays as it was. The touchpad's click counts too.") :
 						TrP(seconds, "{0} second left. A touchpad click cancels.", "{0} seconds left. A touchpad click cancels."));
 		}
 		else
 			message = (m_mapMessage.empty() ? "" : m_mapMessage + "\n\n") +
-				Tr("Cross, then a DualSense button, trigger or stick direction: it becomes this one. If another button already had it, the "
-				   "two swap.\nSquare clears it.");
+				(m_mappingSide == System::Switch ?
+						// tr: a Switch button's mapping: each is on a DualSense button (the touchpad's click too), never on none
+						Tr("Cross, then a DualSense button or the touchpad's click: it becomes this one. If another button already had it, the "
+						   "two swap.\nSquare puts its default back.") :
+						Tr("Cross, then a DualSense button, trigger or stick direction: it becomes this one. If another button already had it, the "
+						   "two swap.\nSquare clears it."));
 		ui::TextStyle body = Style({24, ui::Weight::Regular, 1.45f});
 		body.tabular = true;
 		canvas.Text(body, panel.x + 40, panel.y + 280, message, Secondary(), panel.w - 80, 7);
