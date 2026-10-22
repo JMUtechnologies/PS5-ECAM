@@ -162,5 +162,8 @@ void main()
 	}
 
 	float alpha = colour.a * coverage;
-	outColour = vec4(colour.rgb * alpha, alpha);
+	// half a step of noise at the target's 8 bits a channel: the dark gradients behind the menus came out
+	// in bands, a line wherever a level changed, which only the grain had hidden
+	float dither = (Hash(gl_FragCoord.xy) - 0.5) / 255.0;
+	outColour = vec4((colour.rgb + dither) * alpha, alpha);
 }
