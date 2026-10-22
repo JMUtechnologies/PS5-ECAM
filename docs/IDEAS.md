@@ -9,6 +9,18 @@ and left out is at the end). Where an idea comes from another emulator or launch
 
 **Effort:** S is a day or two, M about a week, L more than that or needs research first.
 
+## Progress
+
+Each idea done is marked **Done** where it is listed below, with its commit.
+
+| Idea | Commit | What it changed |
+|---|---|---|
+| [S1](#s1) | [`1b497d3`](https://github.com/premohq/PS5-ECAM/commit/1b497d3) | An unreadable `ps5cemu.json` is kept as `ps5cemu.json.broken`, and the launcher says so once |
+
+Being worked on separately (not here): the Switch side's in-game menu, its settings and button
+remapping ([N1](#n1)), its rooms ([I2](#i2)), ReShade on the Wii U side ([I1](#i1)), and the box art
+downloader.
+
 ## Start here
 
 The ten with the most value for the work, in order:
@@ -26,7 +38,7 @@ The ten with the most value for the work, in order:
 
 ## Stability and fixes
 
-<a id="s1"></a>**S1. A broken `ps5cemu.json` is kept, not wiped** (S)
+<a id="s1"></a>**S1. A broken `ps5cemu.json` is kept, not wiped** (S) · **Done:** [`1b497d3`](https://github.com/premohq/PS5-ECAM/commit/1b497d3)
 `ps5settings::Load` returns the defaults when the file does not parse (`port/frontend/settings.cpp:200`),
 and the next `Save` writes over it. Many settings are "only in ps5cemu.json", so people do edit it by
 hand, and one missing comma then loses every game's own settings, the accounts by PS5 user, the theme
