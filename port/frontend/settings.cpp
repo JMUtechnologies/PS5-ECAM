@@ -96,6 +96,8 @@ namespace ps5settings
 			ReadInt(json, "nxFilter", n3ds.nxFilter, 0, 3);
 			ReadInt(json, "nxAstc", n3ds.nxAstc, 0, 1);
 			ReadBool(json, "nxDocked", n3ds.nxDocked);
+			ReadBool(json, "nxFrameGeneration", n3ds.nxFrameGeneration);
+			ReadInt(json, "nxSpeedLimit", n3ds.nxSpeedLimit, 0, 4);
 			ReadString(json, "articAddress", n3ds.articAddress);
 			ReadInt(json, "gameCount", n3ds.gameCount, -1, 1000000);
 			if (json.HasMember("buttons") && json["buttons"].IsObject())
@@ -162,6 +164,10 @@ namespace ps5settings
 			writer.Int(n3ds.nxAstc);
 			writer.Key("nxDocked");
 			writer.Bool(n3ds.nxDocked);
+			writer.Key("nxFrameGeneration");
+			writer.Bool(n3ds.nxFrameGeneration);
+			writer.Key("nxSpeedLimit");
+			writer.Int(n3ds.nxSpeedLimit);
 			writer.Key("articAddress");
 			writer.String(n3ds.articAddress.c_str());
 			writer.Key("gameCount");
@@ -563,6 +569,8 @@ namespace ps5settings
 				{"nxFilter", nullptr, nullptr, &N3ds::nxFilter, nullptr, 0, 3},
 				{"nxAstc", nullptr, nullptr, &N3ds::nxAstc, nullptr, 0, 1},
 				{"nxDocked", nullptr, nullptr, nullptr, &N3ds::nxDocked},
+				{"nxFrameGeneration", nullptr, nullptr, nullptr, &N3ds::nxFrameGeneration},
+				{"nxSpeedLimit", nullptr, nullptr, &N3ds::nxSpeedLimit, nullptr, 0, 4},
 			};
 			return fields;
 		}
@@ -598,7 +606,7 @@ namespace ps5settings
 		static const std::vector<std::string> n3ds = {"resolution", "textureFilter", "customTextures", "asyncShaderCompilation", "invariantPosition", "hwShaders", "layout", "border",
 			"volume", "region", "language", "cpuClock", "frameGeneration"};
 		static const std::vector<std::string> nds = {"dsFilter", "dsRotation", "dsJit", "layout", "border", "volume", "language", "dsOwnBios"};
-		static const std::vector<std::string> nx = {"nxResolution", "nxFilter", "nxAstc", "nxDocked", "volume"};
+		static const std::vector<std::string> nx = {"nxResolution", "nxFilter", "nxAstc", "nxFrameGeneration", "nxDocked", "nxSpeedLimit", "volume"};
 		static const std::vector<std::string> none;
 		return side == "wiiu" ? wiiu : side == "3ds" ? n3ds : side == "ds" ? nds : side == "switch" ? nx : none;
 	}

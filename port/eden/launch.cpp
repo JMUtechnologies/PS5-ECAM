@@ -20,6 +20,7 @@ namespace ps5eden
 		constexpr const char* kResolutions[] = {"0.5x", "0.75x", "1x", "1.5x", "2x", "3x", "4x"};
 		constexpr const char* kFilters[] = {"bilinear", "fsr", "bicubic", "nearest"};
 		constexpr const char* kAstc[] = {"compressed", "full"};
+		constexpr const char* kSpeedLimits[] = {"100", "150", "200", "300", "unlimited"};
 		// the lines of Eden's trace a boot log takes, the last ones
 		constexpr size_t kTraceLines = 60;
 
@@ -56,6 +57,12 @@ namespace ps5eden
 		Set(args, std::string("upscaling_filter=") + kFilters[std::clamp(nx.nxFilter, 0, 3)]);
 		Set(args, std::string("astc_textures=") + kAstc[std::clamp(nx.nxAstc, 0, 1)]);
 		Set(args, std::string("console_mode=") + (nx.nxDocked ? "docked" : "handheld"));
+		// ProsperoEden's frame generation with MihawkGen, whose network it ships (Lossless Scaling would
+		// need the player's own copy), and Eden's speed limit (patches/eden 0006)
+		Set(args, std::string("frame_gen=") + (nx.nxFrameGeneration ? "1" : "0"));
+		if (nx.nxFrameGeneration)
+			Set(args, "frame_gen_method=mihawkgen");
+		Set(args, std::string("speed_limit=") + kSpeedLimits[std::clamp(nx.nxSpeedLimit, 0, 4)]);
 		Set(args, "volume=" + std::to_string(std::clamp(nx.volume, 0, 100)));
 		Set(args, std::string("fps_overlay=") + (nx.performance ? "1" : "0"));
 		Set(args, std::string("vibration=") + (forGame.rumble ? "1" : "0")); // Settings > Controls' Vibration, every side's

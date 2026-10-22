@@ -144,8 +144,11 @@ New in 5.0.0: a side of its own, in the Switch's red, to the right of the DS.
   instead, as on the other sides.
 - **Settings** on the Switch side: the internal resolution (0.5x to 4x of the game's own 720p
   handheld or 1080p docked), upscaling to 4K (FSR 1 among them), ASTC textures (compressed, or full
-  quality for a game whose textures look blocky), the performance overlay, the volume, and docked or
-  handheld (**System**). A game can have its own of each (**Game settings**), as on the other sides.
+  quality for a game whose textures look blocky), **frame generation** (ProsperoEden's own, with
+  MihawkGen: a game at 30 fps shown at 60; off by default), the performance overlay, the volume, and
+  in **System** docked or handheld and the **speed limit** (100% to 300%, or none: a game held to 30
+  fps can reach 60 where the PS5 has the time to spare). A game can have its own of each (**Game
+  settings**), as on the other sides.
 - **ProsperoEden's own launcher** is one press away: **Settings > Game files > Open ProsperoEden**,
   or a game's menu (Options) > **Mods, cheats and updates**. It has everything Eden can do besides:
   its library and game files, updates and DLC, mods and cheats, each game's own settings and

@@ -566,6 +566,11 @@ namespace ps5shell
 					   "blocky. Applies to the next game."),
 					Kind::Segmented),
 				"nxAstc");
+			// ProsperoEden's own, with the method that needs nothing of the player's (Lossless Scaling would)
+			own(toggle("nx-framegeneration", Tr("Frame generation"), hand.nxFrameGeneration, Tr("A game held to 30 fps shown at 60."),
+					Tr("ProsperoEden's own frame generation, with MihawkGen: a picture made between each two frames, so a game at 30 fps is shown "
+					   "at 60. It asks more of the GPU and adds a little delay. Applies to the next game.")),
+				"nxFrameGeneration");
 			toggle("performance-hand", Tr("Performance overlay"), hand.performance, Tr("The frame rate and the emulation's speed, in the top left corner."),
 				Tr("The frame rate and the emulation's speed, in the top left corner."));
 		}
@@ -759,6 +764,15 @@ namespace ps5shell
 					   "asks less of the GPU. A few games look or play differently in each. Applies to the next game."),
 					Kind::Segmented),
 				"nxDocked");
+			// Eden's speed limit, as ProsperoEden's Settings > Performance has it
+			std::vector<std::string> speeds;
+			for (int percent : {100, 150, 200, 300})
+				speeds.push_back(Percent(percent));
+			speeds.push_back(TrC("speed limit", "None"));
+			own(choice("nx-speedlimit", Tr("Speed limit"), speeds, std::clamp(hand.nxSpeedLimit, 0, 4), Tr("How fast the game may run."),
+					Tr("As a share of the Switch's own speed. Above 100%, a game held to 30 fps can reach 60 where the PS5 has the time to spare, "
+					   "and a game that keeps time by its frames plays faster. None runs as fast as the PS5 can. Applies to the next game.")),
+				"nxSpeedLimit");
 		}
 		else if (page == "system")
 		{
@@ -1373,6 +1387,8 @@ namespace ps5shell
 			hand.nxAstc = std::clamp(index, 0, 1);
 		else if (id == "nx-docked")
 			hand.nxDocked = index == 0;
+		else if (id == "nx-speedlimit")
+			hand.nxSpeedLimit = std::clamp(index, 0, 4);
 		else if (id == "theme")
 			settings.ui.theme = index >= 0 && index < (int)m_themes.size() ? m_themes[index].id : "";
 		else if (id == "abeverywhere")
@@ -1484,6 +1500,8 @@ namespace ps5shell
 				hand.dsJit = on;
 			else if (id == "performance-hand")
 				hand.performance = on;
+			else if (id == "nx-framegeneration")
+				hand.nxFrameGeneration = on;
 			else if (id == "dsownbios")
 				hand.dsOwnBios = on;
 			else

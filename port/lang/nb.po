@@ -7,7 +7,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: port/app/accounts.cpp:68 port/frontend/shell/settings.cpp:1784
+#: port/app/accounts.cpp:68 port/frontend/shell/settings.cpp:1802
 msgid "The Wii U has twelve accounts at most."
 msgstr "Wii U har maks tolv kontoer."
 
@@ -863,7 +863,7 @@ msgstr "Jevn bildetakt"
 msgid "Holds the game to an even rate: 60 fps for 4K at 120 Hz, 30 for 8K at 60 Hz. Off shows each frame when it is done."
 msgstr "Holder spillet i en jevn takt: 60 fps for 4K ved 120 Hz, 30 for 8K ved 60 Hz. Av viser hvert bilde så snart det er klart."
 
-#: port/app/ingame.cpp:211 port/app/ingame3ds.cpp:497 port/frontend/shell/settings.cpp:492 port/frontend/shell/settings.cpp:529
+#: port/app/ingame.cpp:211 port/app/ingame3ds.cpp:497 port/frontend/shell/settings.cpp:492 port/frontend/shell/settings.cpp:529 port/frontend/shell/settings.cpp:570
 #, menu
 msgid "Frame generation"
 msgstr "Bildegenerering"
@@ -873,7 +873,7 @@ msgstr "Bildegenerering"
 msgid "A picture made between each two frames of a game at 30 fps, so it is shown at 60. It changes at once."
 msgstr "Et bilde laget mellom hver to bilder i et spill på 30 fps, så det vises med 60. Det endres med en gang."
 
-#: port/app/ingame.cpp:213 port/app/ingame3ds.cpp:486 port/app/ingame3ds.cpp:499 port/frontend/shell/settings.cpp:497 port/frontend/shell/settings.cpp:545 port/frontend/shell/settings.cpp:569 port/frontend/shell/settings.cpp:587
+#: port/app/ingame.cpp:213 port/app/ingame3ds.cpp:486 port/app/ingame3ds.cpp:499 port/frontend/shell/settings.cpp:497 port/frontend/shell/settings.cpp:545 port/frontend/shell/settings.cpp:574 port/frontend/shell/settings.cpp:592
 #, menu
 msgid "Performance overlay"
 msgstr "Ytelsesvisning"
@@ -1065,7 +1065,7 @@ msgstr "Emulert kontroller"
 msgid "What the game sees in this player's hands. Most games want the GamePad for player 1."
 msgstr "Hva spillet ser i hendene på denne spilleren. De fleste spill vil ha GamePad-en for spiller 1."
 
-#: port/app/ingame.cpp:303 port/app/ingame3ds.cpp:590 port/frontend/shell/pages.cpp:450 port/frontend/shell/pages.cpp:596 port/frontend/shell/settings.cpp:676
+#: port/app/ingame.cpp:303 port/app/ingame3ds.cpp:590 port/frontend/shell/pages.cpp:450 port/frontend/shell/pages.cpp:596 port/frontend/shell/settings.cpp:681
 #, menu
 msgid "Motion controls"
 msgstr "Bevegelseskontroll"
@@ -1080,7 +1080,7 @@ msgstr "Denne har ingen"
 msgid "The DualSense's gyroscope and accelerometer, for the games that aim or steer by tilting."
 msgstr "DualSense-kontrollerens gyroskop og akselerometer, for spill der man sikter eller styrer ved å vippe."
 
-#: port/app/ingame.cpp:305 port/frontend/shell/pages.cpp:450 port/frontend/shell/pages.cpp:604 port/frontend/shell/settings.cpp:633
+#: port/app/ingame.cpp:305 port/frontend/shell/pages.cpp:450 port/frontend/shell/pages.cpp:604 port/frontend/shell/settings.cpp:638
 #, menu
 msgid "Vibration"
 msgstr "Vibrasjon"
@@ -1110,17 +1110,17 @@ msgstr "Dødsone for høyre spak"
 msgid "How far the right stick moves before the game sees it. Raise it if the camera drifts."
 msgstr "Hvor langt høyre spak beveger seg før spillet merker det. Øk den hvis kameraet glir av seg selv."
 
-#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:584 port/app/ingame3ds.cpp:594 port/frontend/shell/pages.cpp:451 port/frontend/shell/pages.cpp:616 port/frontend/shell/settings.cpp:653 port/frontend/shell/welcome.cpp:58
+#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:584 port/app/ingame3ds.cpp:594 port/frontend/shell/pages.cpp:451 port/frontend/shell/pages.cpp:616 port/frontend/shell/settings.cpp:658 port/frontend/shell/welcome.cpp:58
 #, menu
 msgid "A and B"
 msgstr "A og B"
 
-#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:575 port/frontend/shell/pages.cpp:618 port/frontend/shell/settings.cpp:653 port/frontend/shell/welcome.cpp:59
+#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:575 port/frontend/shell/pages.cpp:618 port/frontend/shell/settings.cpp:658 port/frontend/shell/welcome.cpp:59
 #, menu
 msgid "A on Circle"
 msgstr "A på Sirkel"
 
-#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:575 port/frontend/shell/pages.cpp:618 port/frontend/shell/settings.cpp:653 port/frontend/shell/welcome.cpp:59
+#: port/app/ingame.cpp:311 port/app/ingame3ds.cpp:575 port/frontend/shell/pages.cpp:618 port/frontend/shell/settings.cpp:658 port/frontend/shell/welcome.cpp:59
 #, menu
 msgid "A on Cross"
 msgstr "A på Kryss"
@@ -1175,7 +1175,7 @@ msgid "Touches the GamePad's screen, or presses the button set to Touchpad click
 msgstr "Berører GamePadens skjerm, eller trykker på knappen som er satt til Klikk på styreflaten (- hvis ingen er det). Snarveiene virker fortsatt."
 
 #. the remote touch screen's row: which screen a phone or a tablet shows
-#: port/app/ingame.cpp:320 port/frontend/shell/settings.cpp:704
+#: port/app/ingame.cpp:320 port/frontend/shell/settings.cpp:709
 #, menu
 msgid "The GamePad's screen"
 msgstr "GamePadens skjerm"
@@ -1336,7 +1336,7 @@ msgstr "Øvre"
 msgid "Which screen takes the top screen's place. In the game, touchpad click + L1 swaps them."
 msgstr "Hvilken skjerm som tar den øvre skjermens plass. I spillet bytter klikk på styreflaten + L1 om på dem."
 
-#: port/app/ingame3ds.cpp:473 port/frontend/shell/settings.cpp:603
+#: port/app/ingame3ds.cpp:473 port/frontend/shell/settings.cpp:608
 #, menu
 msgid "Border"
 msgstr "Ramme"
@@ -1346,7 +1346,7 @@ msgstr "Ramme"
 msgid "Artwork around the screens, never over them. Also in the launcher's Settings > Screens."
 msgstr "Grafikk rundt skjermene, aldri over dem. Også i Innstillinger > Skjermer i startprogrammet."
 
-#: port/app/ingame3ds.cpp:479 port/frontend/shell/settings.cpp:597
+#: port/app/ingame3ds.cpp:479 port/frontend/shell/settings.cpp:602
 #, menu
 msgid "Screen rotation"
 msgstr "Skjermrotasjon"
@@ -1361,7 +1361,7 @@ msgstr "For spill der man holder DS-en på siden som en bok (Hotel Dusk): begge 
 msgid "The screen filter and the performance overlay."
 msgstr "Skjermfilteret og ytelsesvisningen."
 
-#: port/app/ingame3ds.cpp:483 port/frontend/shell/settings.cpp:574
+#: port/app/ingame3ds.cpp:483 port/frontend/shell/settings.cpp:579
 #, menu
 msgid "Screen filter"
 msgstr "Skjermfilter"
@@ -1371,7 +1371,7 @@ msgstr "Skjermfilter"
 msgid "How the DS's 256 x 192 screens are scaled to the TV. Sharp keeps every pixel square and even; Smooth blurs them together; Square pixels takes the nearest, uneven at most sizes."
 msgstr "Hvordan DS-ens skjermer på 256 x 192 skaleres til TV-en. Skarp holder hver piksel kvadratisk og lik; Myk lar dem flyte sammen; Kvadratiske piksler tar den nærmeste, ujevnt ved de fleste størrelser."
 
-#: port/app/ingame3ds.cpp:487 port/app/ingame3ds.cpp:500 port/frontend/shell/settings.cpp:545 port/frontend/shell/settings.cpp:546 port/frontend/shell/settings.cpp:569 port/frontend/shell/settings.cpp:570 port/frontend/shell/settings.cpp:587 port/frontend/shell/settings.cpp:588
+#: port/app/ingame3ds.cpp:487 port/app/ingame3ds.cpp:500 port/frontend/shell/settings.cpp:545 port/frontend/shell/settings.cpp:546 port/frontend/shell/settings.cpp:574 port/frontend/shell/settings.cpp:575 port/frontend/shell/settings.cpp:592 port/frontend/shell/settings.cpp:593
 #, menu
 msgid "The frame rate and the emulation's speed, in the top left corner."
 msgstr "Bildefrekvensen og emuleringens hastighet, øverst til venstre."
@@ -1402,13 +1402,13 @@ msgid "Smooths textures as they are scaled up. The costliest setting here: if a 
 msgstr "Glatter ut teksturer når de skaleres opp. Den tyngste innstillingen her: hvis et spill hakker, prøv Ingen først."
 
 #. no speed limit
-#: port/app/ingame3ds.cpp:504
+#: port/app/ingame3ds.cpp:504 port/frontend/shell/settings.cpp:772
 #, menu
 msgid "Speed limit"
 msgstr "Fartsgrense"
 
 #. no speed limit
-#: port/app/ingame3ds.cpp:504 port/app/ingame3ds.cpp:507
+#: port/app/ingame3ds.cpp:504 port/app/ingame3ds.cpp:507 port/frontend/shell/settings.cpp:771
 #, menu
 msgctxt "speed limit"
 msgid "None"
@@ -1424,7 +1424,7 @@ msgstr "Over 100 % farer gjennom trege scener; Ingen går så raskt PS5-en klar
 msgid "Speed"
 msgstr "Hastighet"
 
-#: port/app/ingame3ds.cpp:509
+#: port/app/ingame3ds.cpp:509 port/frontend/shell/settings.cpp:772
 #, menu
 msgid "How fast the game may run."
 msgstr "Hvor fort spillet kan gå."
@@ -1434,7 +1434,7 @@ msgstr "Hvor fort spillet kan gå."
 msgid "The emulated CPU's clock, and how fast the game may run."
 msgstr "Den emulerte CPU-ens klokkefrekvens, og hvor raskt spillet får gå."
 
-#: port/app/ingame3ds.cpp:513 port/frontend/shell/settings.cpp:744
+#: port/app/ingame3ds.cpp:513 port/frontend/shell/settings.cpp:749
 #, menu
 msgid "CPU clock"
 msgstr "CPU-klokke"
@@ -1622,7 +1622,7 @@ msgstr "Åpne"
 msgid "Closes the DS's lid, for games that ask you to; the DS sleeps until it is opened. Choose it again to open it."
 msgstr "Lukker DS-ens lokk, for spill som ber deg om det; DS-en sover til den åpnes. Velg det igjen for å åpne den."
 
-#: port/app/ingame3ds.cpp:582 port/app/ingame3ds.cpp:592 port/frontend/shell/settings.cpp:678
+#: port/app/ingame3ds.cpp:582 port/app/ingame3ds.cpp:592 port/frontend/shell/settings.cpp:683
 #, menu
 msgid "Stick deadzone"
 msgstr "Spakenes dødsone"
@@ -1667,12 +1667,12 @@ msgstr "Last inn denne plassen"
 msgid "Goes back to the moment the slot was saved. What you did since is lost, so Cross is held."
 msgstr "Går tilbake til øyeblikket plassen ble lagret. Det du har gjort siden, går tapt, derfor holdes Kryss inne."
 
-#: port/app/ingame3ds.cpp:613 port/frontend/shell/settings.cpp:704
+#: port/app/ingame3ds.cpp:613 port/frontend/shell/settings.cpp:709
 #, menu
 msgid "The touch screen"
 msgstr "Berøringsskjermen"
 
-#: port/app/ingame3ds.cpp:613 port/frontend/shell/settings.cpp:704
+#: port/app/ingame3ds.cpp:613 port/frontend/shell/settings.cpp:709
 #, menu
 msgid "The bottom screen"
 msgstr "Den nedre skjermen"
@@ -2199,7 +2199,7 @@ msgstr "Det kunne ikke installeres: {0}"
 msgid "The new packs could not take the old ones' place"
 msgstr "De nye pakkene kunne ikke ta plassen til de gamle"
 
-#: port/app/remote_menu.h:29 port/frontend/shell/settings.cpp:205 port/frontend/shell/settings.cpp:705 port/frontend/shell/settings.cpp:2196
+#: port/app/remote_menu.h:29 port/frontend/shell/settings.cpp:205 port/frontend/shell/settings.cpp:710 port/frontend/shell/settings.cpp:2214
 #, menu
 msgid "Remote touch screen"
 msgstr "Fjernberøringsskjerm"
@@ -2215,7 +2215,7 @@ msgstr "{0} i nettleseren på en telefon eller et nettbrett, med berøring: skan
 msgid "A phone or tablet on the PS5's network. Sound stays on the PS5."
 msgstr "En telefon eller et nettbrett på PS5-ens nettverk. Lyden blir på PS5-en."
 
-#: port/app/remote_menu.h:108 port/frontend/shell/settings.cpp:2204
+#: port/app/remote_menu.h:108 port/frontend/shell/settings.cpp:2222
 #, menu
 msgid "Turn it off and on again once that is fixed."
 msgstr "Slå den av og på igjen når det er fikset."
@@ -2678,11 +2678,11 @@ msgstr "det er ikke en CIA som Azahar kan installere"
 msgid "The PS5 has no memory left for this Wii U game, so it has to stop. The boot log has the details."
 msgstr "PS5-en har ikke mer minne til dette Wii U-spillet, så det må stoppe. Oppstartsloggen har detaljene."
 
-#: port/eden/launch.cpp:69 port/eden/launch.cpp:81 port/frontend/shell/shell.cpp:1010 port/main_ps5.cpp:518
+#: port/eden/launch.cpp:76 port/eden/launch.cpp:88 port/frontend/shell/shell.cpp:1010 port/main_ps5.cpp:518
 msgid "This build has no Switch emulator: eden/eboot.bin is not in the app's folder."
 msgstr "Denne versjonen har ingen Switch-emulator: eden/eboot.bin ligger ikke i appens mappe."
 
-#: port/eden/launch.cpp:74 port/eden/launch.cpp:86 port/eden/launch.cpp:115
+#: port/eden/launch.cpp:81 port/eden/launch.cpp:93 port/eden/launch.cpp:122
 msgid "The console did not start Eden. The boot log says what it answered."
 msgstr "Konsollen startet ikke Eden. Oppstartsloggen sier hva den svarte."
 
@@ -2710,7 +2710,7 @@ msgstr[0] "{0} fil slettet ({1} MB)"
 msgstr[1] "{0} filer slettet ({1} MB)"
 
 #. what clearing the unpacked games did; {1} is the room it made, as in 2.4 GB
-#: port/frontend/actions.cpp:202 port/frontend/shell/settings.cpp:1095 port/frontend/shell/settings.cpp:1940
+#: port/frontend/actions.cpp:202 port/frontend/shell/settings.cpp:1109 port/frontend/shell/settings.cpp:1958
 msgid "None to delete"
 msgstr "Ingenting å slette"
 
@@ -3042,7 +3042,7 @@ msgstr "Velg et spill fra biblioteket ditt."
 msgid "Launch game"
 msgstr "Start spillet"
 
-#: port/frontend/shell/classic.cpp:322 port/frontend/shell/classic.cpp:539 port/frontend/shell/pages.cpp:1467 port/frontend/shell/pages.cpp:1478 port/frontend/shell/settings.cpp:225 port/frontend/shell/settings.cpp:953 port/frontend/shell/setup.cpp:243
+#: port/frontend/shell/classic.cpp:322 port/frontend/shell/classic.cpp:539 port/frontend/shell/pages.cpp:1467 port/frontend/shell/pages.cpp:1478 port/frontend/shell/settings.cpp:225 port/frontend/shell/settings.cpp:967 port/frontend/shell/setup.cpp:243
 msgid "Artic Base"
 msgstr "Artic Base"
 
@@ -3150,7 +3150,7 @@ msgstr "Preferanser"
 msgid "On this console"
 msgstr "På denne konsollen"
 
-#: port/frontend/shell/classic.cpp:601 port/frontend/shell/settings.cpp:1058 port/frontend/shell/welcome.cpp:208
+#: port/frontend/shell/classic.cpp:601 port/frontend/shell/settings.cpp:1072 port/frontend/shell/welcome.cpp:208
 msgid "Make it yours"
 msgstr "Gjør det til ditt"
 
@@ -3422,7 +3422,7 @@ msgid "Everything is ready"
 msgstr "Alt er klart"
 
 #. above Settings' pages: whose settings they are ({0}: Wii U, Nintendo 3DS or Nintendo DS)
-#: port/frontend/shell/eden.cpp:1583 port/frontend/shell/eden.cpp:1675 port/frontend/shell/experiments.cpp:650 port/frontend/shell/settings.cpp:2290
+#: port/frontend/shell/eden.cpp:1583 port/frontend/shell/eden.cpp:1675 port/frontend/shell/experiments.cpp:650 port/frontend/shell/settings.cpp:2308
 msgid "{0} settings"
 msgstr "{0}-innstillinger"
 
@@ -3572,7 +3572,7 @@ msgstr "Alt som ble funnet, er installert."
 msgid "Game files"
 msgstr "Spillfiler"
 
-#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:831 port/frontend/shell/shell.cpp:1766
+#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:845 port/frontend/shell/shell.cpp:1766
 msgid "Updates and DLC"
 msgstr "Oppdateringer og DLC"
 
@@ -3653,7 +3653,7 @@ msgstr "Den installeres i Wii U-ens lagring (mlc01). Det som er installert nå, 
 msgid "Setup"
 msgstr "Oppsett"
 
-#: port/frontend/shell/library.cpp:75 port/frontend/shell/library.cpp:112 port/frontend/shell/library.cpp:144 port/frontend/shell/settings.cpp:1071
+#: port/frontend/shell/library.cpp:75 port/frontend/shell/library.cpp:112 port/frontend/shell/library.cpp:144 port/frontend/shell/settings.cpp:1085
 msgid "Setup check"
 msgstr "Oppsettsjekk"
 
@@ -3695,7 +3695,7 @@ msgstr "Legg Switch-spillene dine (.nsp eller .xci, alene eller hvert i sin egen
 msgid "Put your Wii U games (.wua, .wud, .wux, or folders with code, content and meta, alone or in .zip, .7z or .rar archives) in {0}, or choose any folder the PS5 can read, such as one on a USB drive."
 msgstr "Legg Wii U-spillene dine (.wua, .wud, .wux eller mapper med code, content og meta, alene eller i .zip-, .7z- eller .rar-arkiver) i {0}, eller velg en hvilken som helst mappe som PS5-en kan lese, for eksempel på en USB-stasjon."
 
-#: port/frontend/shell/library.cpp:116 port/frontend/shell/library.cpp:151 port/frontend/shell/settings.cpp:809
+#: port/frontend/shell/library.cpp:116 port/frontend/shell/library.cpp:151 port/frontend/shell/settings.cpp:823
 msgid "Open ProsperoEden"
 msgstr "Åpne ProsperoEden"
 
@@ -3736,7 +3736,7 @@ msgid "Presets · choosing one turns it on"
 msgstr "Forhåndsinnstillinger · å velge én slår den på"
 
 #. what a held row says once it has done its work
-#: port/frontend/shell/pages.cpp:397 port/frontend/shell/settings.cpp:1954
+#: port/frontend/shell/pages.cpp:397 port/frontend/shell/settings.cpp:1972
 msgctxt "finished"
 msgid "Done"
 msgstr "Ferdig"
@@ -3810,16 +3810,16 @@ msgid "The default buttons, vibration, motion and deadzones for this controller.
 msgstr "Standardknappene, vibrasjonen, bevegelsen og dødsonene for denne kontrolleren. Holdes inne for å bekrefte."
 
 #. {0} is the player's number, {1} an emulated controller (Wii U GamePad)
-#: port/frontend/shell/pages.cpp:451 port/frontend/shell/pages.cpp:632 port/frontend/shell/pages.cpp:811 port/frontend/shell/pages.cpp:817 port/frontend/shell/settings.cpp:693
+#: port/frontend/shell/pages.cpp:451 port/frontend/shell/pages.cpp:632 port/frontend/shell/pages.cpp:811 port/frontend/shell/pages.cpp:817 port/frontend/shell/settings.cpp:698
 msgid "Buttons"
 msgstr "Knapper"
 
-#: port/frontend/shell/pages.cpp:452 port/frontend/shell/pages.cpp:633 port/frontend/shell/settings.cpp:698
+#: port/frontend/shell/pages.cpp:452 port/frontend/shell/pages.cpp:633 port/frontend/shell/settings.cpp:703
 msgid "Reset to defaults"
 msgstr "Tilbakestill til standard"
 
 #. {0} is an emulated controller (Wii U GamePad)
-#: port/frontend/shell/pages.cpp:488 port/frontend/shell/pages.cpp:591 port/frontend/shell/settings.cpp:664
+#: port/frontend/shell/pages.cpp:488 port/frontend/shell/pages.cpp:591 port/frontend/shell/settings.cpp:669
 msgid "Player {0}"
 msgstr "Spiller {0}"
 
@@ -3879,17 +3879,17 @@ msgstr "Klikket trykker på knappen som er satt til Klikk på styreflaten."
 msgid "The click touches the GamePad's screen."
 msgstr "Klikket berører GamePadens skjerm."
 
-#: port/frontend/shell/pages.cpp:632 port/frontend/shell/settings.cpp:693
+#: port/frontend/shell/pages.cpp:632 port/frontend/shell/settings.cpp:698
 msgid "{0} button set"
 msgid_plural "{0} buttons set"
 msgstr[0] "{0} knapp satt"
 msgstr[1] "{0} knapper satt"
 
-#: port/frontend/shell/pages.cpp:632 port/frontend/shell/settings.cpp:693
+#: port/frontend/shell/pages.cpp:632 port/frontend/shell/settings.cpp:698
 msgid "Which DualSense button presses each button."
 msgstr "Hvilken DualSense-knapp som trykker på hver knapp."
 
-#: port/frontend/shell/pages.cpp:633 port/frontend/shell/pages.cpp:1501 port/frontend/shell/pages.cpp:1505 port/frontend/shell/settings.cpp:698 port/frontend/shell/settings.cpp:887 port/frontend/shell/settings.cpp:939 port/frontend/shell/settings.cpp:977 port/frontend/shell/settings.cpp:1077 port/frontend/shell/settings.cpp:1080 port/frontend/shell/settings.cpp:1094 port/frontend/shell/settings.cpp:1130 port/frontend/shell/settings.cpp:1192 port/frontend/shell/settings.cpp:1234 port/frontend/shell/shares.cpp:328
+#: port/frontend/shell/pages.cpp:633 port/frontend/shell/pages.cpp:1501 port/frontend/shell/pages.cpp:1505 port/frontend/shell/settings.cpp:703 port/frontend/shell/settings.cpp:901 port/frontend/shell/settings.cpp:953 port/frontend/shell/settings.cpp:991 port/frontend/shell/settings.cpp:1091 port/frontend/shell/settings.cpp:1094 port/frontend/shell/settings.cpp:1108 port/frontend/shell/settings.cpp:1144 port/frontend/shell/settings.cpp:1206 port/frontend/shell/settings.cpp:1248 port/frontend/shell/shares.cpp:328
 msgid "Hold Cross"
 msgstr "Hold Kryss inne"
 
@@ -4037,19 +4037,19 @@ msgstr "Avbrutt. Det som ble kopiert, ble fjernet, sammen med tidligere kopier a
 msgid "Cancelled. What was installed before is as it was."
 msgstr "Avbrutt. Det som var installert før, er som det var."
 
-#: port/frontend/shell/pages.cpp:1169 port/frontend/shell/settings.cpp:780 port/frontend/shell/setup.cpp:183
+#: port/frontend/shell/pages.cpp:1169 port/frontend/shell/settings.cpp:794 port/frontend/shell/setup.cpp:183
 msgid "3DS games"
 msgstr "3DS-spill"
 
-#: port/frontend/shell/pages.cpp:1170 port/frontend/shell/settings.cpp:780 port/frontend/shell/setup.cpp:183
+#: port/frontend/shell/pages.cpp:1170 port/frontend/shell/settings.cpp:794 port/frontend/shell/setup.cpp:183
 msgid "DS games"
 msgstr "DS-spill"
 
-#: port/frontend/shell/pages.cpp:1171 port/frontend/shell/settings.cpp:780 port/frontend/shell/setup.cpp:183
+#: port/frontend/shell/pages.cpp:1171 port/frontend/shell/settings.cpp:794 port/frontend/shell/setup.cpp:183
 msgid "Switch games"
 msgstr "Switch-spill"
 
-#: port/frontend/shell/pages.cpp:1172 port/frontend/shell/settings.cpp:780 port/frontend/shell/setup.cpp:183
+#: port/frontend/shell/pages.cpp:1172 port/frontend/shell/settings.cpp:794 port/frontend/shell/setup.cpp:183
 msgid "Wii U games"
 msgstr "Wii U-spill"
 
@@ -4126,7 +4126,7 @@ msgstr "Spill her"
 msgid "Cannot be read"
 msgstr "Kan ikke leses"
 
-#: port/frontend/shell/pages.cpp:1269 port/frontend/shell/pages.cpp:1276 port/frontend/shell/settings.cpp:804
+#: port/frontend/shell/pages.cpp:1269 port/frontend/shell/pages.cpp:1276 port/frontend/shell/settings.cpp:818
 msgid "Found"
 msgstr "Funnet"
 
@@ -4134,7 +4134,7 @@ msgstr "Funnet"
 msgid "Missing: Eden cannot read Switch games without it"
 msgstr "Mangler: uten den kan ikke Eden lese Switch-spill"
 
-#: port/frontend/shell/pages.cpp:1282 port/frontend/shell/settings.cpp:770
+#: port/frontend/shell/pages.cpp:1282 port/frontend/shell/settings.cpp:784
 msgid "Your DS's BIOS"
 msgstr "DS-ens BIOS"
 
@@ -4439,7 +4439,7 @@ msgstr "Eden"
 msgid "ProsperoEden's launcher: a rail of sections, Home around your game, Settings as tiles."
 msgstr "ProsperoEdens oppstarter: en skinne med seksjoner, Hjem rundt spillet ditt, innstillinger som fliser."
 
-#: port/frontend/shell/settings.cpp:189 port/frontend/shell/settings.cpp:468 port/frontend/shell/settings.cpp:738 port/frontend/shell/settings.cpp:765 port/frontend/shell/settings.cpp:1321 port/frontend/shell/setup.cpp:511
+#: port/frontend/shell/settings.cpp:189 port/frontend/shell/settings.cpp:468 port/frontend/shell/settings.cpp:743 port/frontend/shell/settings.cpp:779 port/frontend/shell/settings.cpp:1335 port/frontend/shell/setup.cpp:511
 msgid "Language"
 msgstr "Språk"
 
@@ -4741,7 +4741,7 @@ msgstr "Holder et spill på en jevn bildefrekvens."
 msgid "Each frame stays on screen for at least two or three refreshes, so a game that cannot hold the display's rate runs at an even one: 60 or 40 fps with 120 Hz output, 30 or 20 without. 60 fps with 120 Hz output suits a game at 4K that sometimes drops under 60; 30 fps at 60 Hz suits one at 8K. Also in the in-game menu."
 msgstr "Hvert bilde blir på skjermen i minst to eller tre oppdateringer, slik at et spill som ikke klarer skjermens takt, går jevnt: 60 eller 40 fps med 120 Hz-utgang, 30 eller 20 uten. 60 fps med 120 Hz-utgang passer et spill i 4K som noen ganger faller under 60; 30 fps ved 60 Hz et i 8K. Også i spillmenyen."
 
-#: port/frontend/shell/settings.cpp:492 port/frontend/shell/settings.cpp:529
+#: port/frontend/shell/settings.cpp:492 port/frontend/shell/settings.cpp:529 port/frontend/shell/settings.cpp:570
 msgid "A game held to 30 fps shown at 60."
 msgstr "Et spill låst til 30 fps vist med 60."
 
@@ -4854,227 +4854,231 @@ msgstr "Komprimerte sparer grafikkminne; full kvalitet ser best ut."
 msgid "Many Switch games keep their textures in ASTC, which the PS5's GPU cannot read: Eden converts them. Compressed keeps them small, as BC3; full quality keeps them as they are, at four times the graphics memory, for a game whose textures look blocky. Applies to the next game."
 msgstr "Mange Switch-spill har teksturene sine i ASTC, som GPU-en i PS5 ikke kan lese: Eden konverterer dem. Komprimerte holder dem små, som BC3; full kvalitet beholder dem som de er, med fire ganger grafikkminnet, for et spill der teksturene ser kantete ut. Gjelder fra neste spill."
 
-#: port/frontend/shell/settings.cpp:574
+#: port/frontend/shell/settings.cpp:571
+msgid "ProsperoEden's own frame generation, with MihawkGen: a picture made between each two frames, so a game at 30 fps is shown at 60. It asks more of the GPU and adds a little delay. Applies to the next game."
+msgstr "ProsperoEdens egen bildegenerering, med MihawkGen: et bilde laget mellom hver to bilder, så et spill på 30 fps vises med 60. Det krever mer av GPU-en og gir en liten forsinkelse. Gjelder fra neste spill."
+
+#: port/frontend/shell/settings.cpp:579
 msgid "How the DS's screens are scaled."
 msgstr "Hvordan DS-ens skjermer skaleres."
 
-#: port/frontend/shell/settings.cpp:575
+#: port/frontend/shell/settings.cpp:580
 msgid "How the DS's 256 x 192 screens are scaled to the TV. Sharp keeps every pixel square and even at any size; Smooth blurs them together; Square pixels takes the nearest, uneven where the size is not a whole number. The in-game menu changes it too."
 msgstr "Hvordan DS-ens skjermer på 256 x 192 skaleres til TV-en. Skarp holder hver piksel kvadratisk og lik i alle størrelser; Myk lar dem flyte sammen; Kvadratiske piksler tar den nærmeste, ujevnt der størrelsen ikke er et helt tall. Spillmenyen endrer det også."
 
-#: port/frontend/shell/settings.cpp:581
+#: port/frontend/shell/settings.cpp:586
 msgid "Recompiler"
 msgstr "Rekompilator"
 
-#: port/frontend/shell/settings.cpp:582
+#: port/frontend/shell/settings.cpp:587
 msgid "melonDS's JIT: much faster than its interpreter."
 msgstr "melonDS sin JIT: mye raskere enn tolkeren."
 
-#: port/frontend/shell/settings.cpp:582
+#: port/frontend/shell/settings.cpp:587
 msgid "No executable memory: the slower interpreter runs."
 msgstr "Ikke noe kjørbart minne: den tregere tolkeren kjører."
 
-#: port/frontend/shell/settings.cpp:583
+#: port/frontend/shell/settings.cpp:588
 msgid "Runs the DS's two CPUs on melonDS's recompiler, in the executable memory the PS5 gives (Diagnostics says whether it does), much faster than its interpreter. Off: the interpreter, slower, for a game the recompiler gets wrong. Applies to the next game."
 msgstr "Kjører DS-ens to prosessorer på melonDS sin rekompilator, i det kjørbare minnet PS5-en gir (Diagnostikk viser om den gjør det), mye raskere enn tolkeren. Av: tolkeren, tregere, for et spill rekompilatoren kjører feil. Gjelder fra neste spill."
 
-#: port/frontend/shell/settings.cpp:592
+#: port/frontend/shell/settings.cpp:597
 msgid "Screen layout"
 msgstr "Skjermoppsett"
 
-#: port/frontend/shell/settings.cpp:592
+#: port/frontend/shell/settings.cpp:597
 msgid "How the two screens share the TV."
 msgstr "Hvordan de to skjermene deler TV-en."
 
-#: port/frontend/shell/settings.cpp:593
+#: port/frontend/shell/settings.cpp:598
 msgid "One above the other, the top one alone, the top one large with the bottom one beside it, or the two side by side. In a game, touchpad click + R1 goes to the next."
 msgstr "Den ene over den andre, bare den øvre, den øvre stor med den nedre ved siden av, eller begge side om side. I et spill går klikk på styreflaten + R1 til neste."
 
-#: port/frontend/shell/settings.cpp:598
+#: port/frontend/shell/settings.cpp:603
 msgid "For the games held on their side, like a book."
 msgstr "For spill man holder på siden som en bok."
 
-#: port/frontend/shell/settings.cpp:599
+#: port/frontend/shell/settings.cpp:604
 msgid "Turns the DS's two screens together, a quarter turn at a time, for the games played with the DS held on its side, like a book (Hotel Dusk). The touchpad moves the cursor over the bottom screen as the TV shows it. The in-game menu changes it too."
 msgstr "Dreier DS-ens to skjermer sammen, en kvart omdreining om gangen, for spill der man holder DS-en på siden som en bok (Hotel Dusk). Styreflaten flytter markøren over den nedre skjermen slik TV-en viser den. Spillmenyen endrer det også."
 
-#: port/frontend/shell/settings.cpp:603
+#: port/frontend/shell/settings.cpp:608
 msgid "Artwork around the screens."
 msgstr "Grafikk rundt skjermene."
 
-#: port/frontend/shell/settings.cpp:604
+#: port/frontend/shell/settings.cpp:609
 msgid "Artwork around the screens, never over them. It follows every layout, and the in-game menu changes it too."
 msgstr "Grafikk rundt skjermene, aldri over dem. Den følger hver layout, og spillmenyen endrer den også."
 
-#: port/frontend/shell/settings.cpp:610
+#: port/frontend/shell/settings.cpp:615
 msgid "Wii U games' volume"
 msgstr "Wii U-spillenes volum"
 
-#: port/frontend/shell/settings.cpp:610
+#: port/frontend/shell/settings.cpp:615
 msgid "3DS games' volume"
 msgstr "3DS-spillenes volum"
 
-#: port/frontend/shell/settings.cpp:610
+#: port/frontend/shell/settings.cpp:615
 msgid "Switch games' volume"
 msgstr "Switch-spillenes volum"
 
-#: port/frontend/shell/settings.cpp:610
+#: port/frontend/shell/settings.cpp:615
 msgid "DS games' volume"
 msgstr "DS-spillenes volum"
 
-#: port/frontend/shell/settings.cpp:611
+#: port/frontend/shell/settings.cpp:616
 msgid "The games' sound."
 msgstr "Spillenes lyd."
 
-#: port/frontend/shell/settings.cpp:611
+#: port/frontend/shell/settings.cpp:616
 msgid "The games' sound on this side. Left and Right change it by 10%."
 msgstr "Spillenes lyd på denne siden. Venstre og Høyre endrer den med 10 %."
 
-#: port/frontend/shell/settings.cpp:614
+#: port/frontend/shell/settings.cpp:619
 msgid "GamePad speaker"
 msgstr "GamePad-høyttaler"
 
-#: port/frontend/shell/settings.cpp:614
+#: port/frontend/shell/settings.cpp:619
 msgid "The Wii U GamePad's own sound, on the DualSense."
 msgstr "Wii U GamePad-ens egen lyd, på DualSense."
 
-#: port/frontend/shell/settings.cpp:615
+#: port/frontend/shell/settings.cpp:620
 msgid "The sounds games play on the Wii U GamePad's speaker, from player 1's DualSense speaker. Many games send their whole sound there too, so it is off unless you want it. Applies to the next game."
 msgstr "Lydene spill spiller av i Wii U GamePad-ens høyttaler, fra spiller 1s DualSense-høyttaler. Mange spill sender også all lyden sin dit, så den er av med mindre du vil ha den. Gjelder fra neste spill."
 
-#: port/frontend/shell/settings.cpp:622
+#: port/frontend/shell/settings.cpp:627
 msgid "Launcher music"
 msgstr "Startprogrammets musikk"
 
-#: port/frontend/shell/settings.cpp:622
+#: port/frontend/shell/settings.cpp:627
 msgid "Music that plays in the menus."
 msgstr "Musikk som spilles i menyene."
 
-#: port/frontend/shell/settings.cpp:623
+#: port/frontend/shell/settings.cpp:628
 msgid "The launcher's own music, one of yours, or none. To use your own, put MP3 or WAV files in {0}; they appear here. Every side plays the same."
 msgstr "Startprogrammets egen musikk, en av dine eller ingen. For å bruke din egen, legg MP3- eller WAV-filer i {0}; de vises her. Alle sider spiller det samme."
 
-#: port/frontend/shell/settings.cpp:626
+#: port/frontend/shell/settings.cpp:631
 msgid "Music volume"
 msgstr "Musikkvolum"
 
-#: port/frontend/shell/settings.cpp:626
+#: port/frontend/shell/settings.cpp:631
 msgid "How loud the menus' music is."
 msgstr "Hvor høyt menyenes musikk spiller."
 
-#: port/frontend/shell/settings.cpp:627
+#: port/frontend/shell/settings.cpp:632
 msgid "How loud the launcher's music is. Left and Right change it by 10%."
 msgstr "Hvor høyt startprogrammets musikk spiller. Venstre og høyre endrer den med 10 %."
 
-#: port/frontend/shell/settings.cpp:628
+#: port/frontend/shell/settings.cpp:633
 msgid "Menu sounds"
 msgstr "Menylyder"
 
-#: port/frontend/shell/settings.cpp:628
+#: port/frontend/shell/settings.cpp:633
 msgid "The sounds of moving and choosing."
 msgstr "Lydene når man flytter og velger."
 
-#: port/frontend/shell/settings.cpp:629
+#: port/frontend/shell/settings.cpp:634
 msgid "The launcher's sounds as you move, choose and go back."
 msgstr "Startprogrammets lyder når du flytter, velger og går tilbake."
 
-#: port/frontend/shell/settings.cpp:633
+#: port/frontend/shell/settings.cpp:638
 msgid "The DualSense's rumble, in games and in the launcher."
 msgstr "DualSense-vibrasjonen, i spill og i startprogrammet."
 
-#: port/frontend/shell/settings.cpp:634
+#: port/frontend/shell/settings.cpp:639
 msgid "Off, the DualSense never rumbles, in games or in the launcher. The same on every side."
 msgstr "Av: DualSense vibrerer aldri, verken i spill eller i startprogrammet. Likt på alle sider."
 
-#: port/frontend/shell/settings.cpp:637
+#: port/frontend/shell/settings.cpp:642
 msgid "Buttons and controllers"
 msgstr "Knapper og kontrollere"
 
-#: port/frontend/shell/settings.cpp:637
+#: port/frontend/shell/settings.cpp:642
 msgid "Set in ProsperoEden's own Settings > Controls."
 msgstr "Stilles inn under Innstillinger > Kontroller i ProsperoEden."
 
-#: port/frontend/shell/settings.cpp:638
+#: port/frontend/shell/settings.cpp:643
 msgid "Eden plays Switch games in a program of its own, ProsperoEden's: which DualSense button presses each of the Switch's, the controller a game sees (Pro Controller, Joy-Cons or handheld) and each game's own are in its Settings > Controls. Cross opens it; leaving it comes back here."
 msgstr "Eden kjører Switch-spill i et eget program, ProsperoEden sitt: hvilken DualSense-knapp som trykker hver Switch-knapp, kontrolleren et spill ser (Pro Controller, Joy-Con eller håndholdt) og hvert spills egne innstillinger ligger under Innstillinger > Kontroller der. Kryss åpner det; når du går ut av det, kommer du tilbake hit."
 
-#: port/frontend/shell/settings.cpp:645
+#: port/frontend/shell/settings.cpp:650
 msgid "Turbo button"
 msgstr "Turboknapp"
 
-#: port/frontend/shell/settings.cpp:645
+#: port/frontend/shell/settings.cpp:650
 msgid "Hold it and it presses again and again by itself."
 msgstr "Hold den inne, så trykker den av seg selv om og om igjen."
 
-#: port/frontend/shell/settings.cpp:646
+#: port/frontend/shell/settings.cpp:651
 msgid "Choose a DualSense button: while you hold it in a game, it presses and lets go by itself about fifteen times a second, for games that make you mash. The button keeps whatever it is mapped to. None turns it off. Every player on this side has it."
 msgstr "Velg en DualSense-knapp: mens du holder den inne i et spill, trykker og slipper den av seg selv omtrent femten ganger i sekundet, for spill der du må hamre. Knappen beholder tilordningen sin. Ingen slår det av. Alle spillere på denne siden har den."
 
-#: port/frontend/shell/settings.cpp:654
+#: port/frontend/shell/settings.cpp:659
 msgid "Where A is: on Circle, as on the console, or on Cross."
 msgstr "Hvor A sitter: på Sirkel, som på konsollen, eller på Kryss."
 
-#: port/frontend/shell/settings.cpp:655
+#: port/frontend/shell/settings.cpp:660
 msgid "A on Circle and B on Cross, where the console has them, or A on Cross and B on Circle, as PlayStation games confirm. X and Y swap to match. Also in the in-game menu."
 msgstr "A på Sirkel og B på Kryss, der konsollen har dem, eller A på Kryss og B på Sirkel, slik PlayStation-spill bekrefter. X og Y byttes tilsvarende. Også i spillmenyen."
 
-#: port/frontend/shell/settings.cpp:665
+#: port/frontend/shell/settings.cpp:670
 msgid "Cross: this player's controller, motion and buttons."
 msgstr "Kryss: denne spillerens kontroller, bevegelse og knapper."
 
-#: port/frontend/shell/settings.cpp:665
+#: port/frontend/shell/settings.cpp:670
 msgid "No DualSense for this player yet."
 msgstr "Ingen DualSense for denne spilleren ennå."
 
-#: port/frontend/shell/settings.cpp:666
+#: port/frontend/shell/settings.cpp:671
 msgid "What the game sees in this player's hands, and its motion, vibration, deadzones and buttons. Player 1 is the signed-in user who started the app; the other signed-in users' DualSenses are players 2 to 4."
 msgstr "Hva spillet ser i hendene på denne spilleren, og bevegelse, vibrasjon, dødsoner og knapper. Spiller 1 er den påloggede brukeren som startet appen; de andre påloggede brukernes DualSense-kontrollere er spiller 2 til 4."
 
-#: port/frontend/shell/settings.cpp:676
+#: port/frontend/shell/settings.cpp:681
 msgid "The DualSense's motion as the 3DS's."
 msgstr "DualSense-kontrollerens bevegelse som 3DS-ens."
 
-#: port/frontend/shell/settings.cpp:677
+#: port/frontend/shell/settings.cpp:682
 msgid "The DualSense's gyroscope and accelerometer as the 3DS's own, for the games that aim or steer by tilting it."
 msgstr "DualSense-kontrollerens gyroskop og akselerometer som 3DS-ens egne, for spill der man sikter eller styrer ved å vippe den."
 
-#: port/frontend/shell/settings.cpp:678
+#: port/frontend/shell/settings.cpp:683
 msgid "How far a stick moves before it counts."
 msgstr "Hvor langt en spak beveger seg før det teller."
 
-#: port/frontend/shell/settings.cpp:679
+#: port/frontend/shell/settings.cpp:684
 msgid "How far a stick moves before the game sees it, for the circle pad and the C-stick. Raise it if something drifts when you let go of the stick; lower it for finer control."
 msgstr "Hvor langt en spak beveger seg før spillet merker det, for Circle Pad og C-spak. Øk den hvis noe glir når du slipper spaken; senk den for finere kontroll."
 
-#: port/frontend/shell/settings.cpp:681
+#: port/frontend/shell/settings.cpp:686
 msgid "How far the left stick moves before it presses the DS's D-pad. Raise it if a direction is pressed when you let go of the stick."
 msgstr "Hvor langt venstre spak må bevege seg før den trykker på DS-ens retningsknapp. Øk den hvis en retning forblir trykket når du slipper spaken."
 
-#: port/frontend/shell/settings.cpp:694
+#: port/frontend/shell/settings.cpp:699
 msgid "Which DualSense button presses each of the 3DS's buttons. A is on Circle and B on Cross by default, where the 3DS has them; the circle pad is the left stick, the C-stick the right one, and the touchpad the touch screen."
 msgstr "Hvilken DualSense-knapp som trykker på hver av 3DS-ens knapper. Som standard sitter A på Sirkel og B på Kryss, der 3DS-en har dem; Circle Pad er venstre spak, C-Stick den høyre, og styreflaten berøringsskjermen."
 
-#: port/frontend/shell/settings.cpp:696
+#: port/frontend/shell/settings.cpp:701
 msgid "Which DualSense button presses each of the DS's buttons. A is on Circle and B on Cross by default, where the DS has them; the left stick is a second D-pad, the touchpad the touch screen, and holding R3 blows into the microphone."
 msgstr "Hvilken DualSense-knapp som trykker på hver av DS-ens knapper. Som standard sitter A på Sirkel og B på Kryss, der DS-en har dem; venstre spak er en ekstra retningsknapp, styreflaten berøringsskjermen, og å holde inne R3 blåser i mikrofonen."
 
-#: port/frontend/shell/settings.cpp:699
+#: port/frontend/shell/settings.cpp:704
 msgid "Default buttons, motion and deadzone."
 msgstr "Standardknapper, bevegelse og dødsone."
 
-#: port/frontend/shell/settings.cpp:699
+#: port/frontend/shell/settings.cpp:704
 msgid "Default buttons and deadzone."
 msgstr "Standardknapper og dødsone."
 
-#: port/frontend/shell/settings.cpp:699
+#: port/frontend/shell/settings.cpp:704
 msgid "The default buttons, motion and deadzone."
 msgstr "Standardknappene, bevegelsen og dødsonen."
 
-#: port/frontend/shell/settings.cpp:705
+#: port/frontend/shell/settings.cpp:710
 msgid "{0} in a phone's or tablet's browser, with touch."
 msgstr "{0} i nettleseren på en telefon eller et nettbrett, med berøring."
 
-#: port/frontend/shell/settings.cpp:706
+#: port/frontend/shell/settings.cpp:711
 msgid ""
 "{0} in any browser on the PS5's network, a phone's, a tablet's or a computer's, with nothing to install, and its touches sent back to the game. Scan the code shown here, or open the address. The DualSense stays the buttons, and the sound stays on the PS5.\n"
 "While a browser shows it, the PS5 copies that screen up to 30 times a second, so a game can run a little slower; with no browser, it costs nothing. Any device on your network can open the page, so turn it off on a network you share.\n"
@@ -5084,786 +5088,790 @@ msgstr ""
 "Mens en nettleser viser den, kopierer PS5-en skjermen opptil 30 ganger i sekundet, så et spill kan gå litt tregere; uten nettleser koster det ingenting. Alle enheter på nettverket ditt kan åpne siden, så slå den av på et delt nettverk.\n"
 "Én bryter for alle sider (GamePadens skjerm er spiller 1s), også i et spills meny (klikk på styreflaten + OPTIONS). Etter dolphin78s idé og prototype (#38)."
 
-#: port/frontend/shell/settings.cpp:719
+#: port/frontend/shell/settings.cpp:724
 msgid "For the Skylanders games."
 msgstr "For Skylanders-spillene."
 
-#: port/frontend/shell/settings.cpp:720
+#: port/frontend/shell/settings.cpp:725
 msgid "For Disney Infinity 3.0."
 msgstr "For Disney Infinity 3.0."
 
-#: port/frontend/shell/settings.cpp:721
+#: port/frontend/shell/settings.cpp:726
 msgid "For LEGO Dimensions."
 msgstr "For LEGO Dimensions."
 
-#: port/frontend/shell/settings.cpp:722
+#: port/frontend/shell/settings.cpp:727
 msgid "Cemu's emulated portal, plugged in as a game starts. In the game, the menu's USB devices category puts figures on it: dumps in {0}. A real portal plugged into the PS5 is not supported."
 msgstr "Cemus emulerte portal, koblet til når et spill starter. I spillet setter menyens kategori USB-enheter figurer på den: dumper i {0}. En ekte portal koblet til PS5-en støttes ikke."
 
-#: port/frontend/shell/settings.cpp:734
+#: port/frontend/shell/settings.cpp:739
 msgid "Region"
 msgstr "Region"
 
-#: port/frontend/shell/settings.cpp:734
+#: port/frontend/shell/settings.cpp:739
 msgid "The emulated 3DS's region."
 msgstr "Den emulerte 3DS-ens region."
 
-#: port/frontend/shell/settings.cpp:735
+#: port/frontend/shell/settings.cpp:740
 msgid "Automatic takes each game's own region. A game made for another region may refuse to start or show other languages. Applies to the next game."
 msgstr "Automatisk tar hvert spills egen region. Et spill laget for en annen region kan nekte å starte eller vise andre språk. Gjelder fra neste spill."
 
-#: port/frontend/shell/settings.cpp:738
+#: port/frontend/shell/settings.cpp:743
 msgid "The emulated 3DS's language."
 msgstr "Den emulerte 3DS-ens språk."
 
-#: port/frontend/shell/settings.cpp:739
+#: port/frontend/shell/settings.cpp:744
 msgid "The language games that follow the console's show their text in. Applies to the next game."
 msgstr "Språket som spill som følger konsollens, viser teksten sin på. Gjelder fra neste spill."
 
-#: port/frontend/shell/settings.cpp:744
+#: port/frontend/shell/settings.cpp:749
 msgid "The emulated 3DS's CPU speed."
 msgstr "Prosessorhastigheten til den emulerte 3DS-en."
 
-#: port/frontend/shell/settings.cpp:745
+#: port/frontend/shell/settings.cpp:750
 msgid "How fast the emulated CPU runs, against a 3DS's: higher can steady a game that slows down where a 3DS would not, and asks more of the PS5; lower can speed up one held back by its own pacing. 100% is a 3DS. Also in the in-game menu."
 msgstr "Hvor fort den emulerte prosessoren går sammenlignet med en 3DS sin: høyere kan stabilisere et spill som går tregt der en 3DS ikke ville gjort det, og krever mer av PS5-en; lavere kan få fart på et spill som holdes tilbake av sitt eget tempo. 100 % er en 3DS. Også i spillmenyen."
 
-#: port/frontend/shell/settings.cpp:748
+#: port/frontend/shell/settings.cpp:753
 msgid "Home Menu"
 msgstr "HOME-meny"
 
-#: port/frontend/shell/settings.cpp:748
+#: port/frontend/shell/settings.cpp:753
 msgid "Start"
 msgstr "Start"
 
-#: port/frontend/shell/settings.cpp:748
+#: port/frontend/shell/settings.cpp:753
 msgid "Run Artic Setup first"
 msgstr "Kjør Artic Setup først"
 
-#: port/frontend/shell/settings.cpp:749
+#: port/frontend/shell/settings.cpp:754
 msgid "The 3DS Home Menu, from your console's files."
 msgstr "3DS-ens HOME-meny, fra konsollens filer."
 
-#: port/frontend/shell/settings.cpp:750
+#: port/frontend/shell/settings.cpp:755
 msgid "Starts the 3DS Home Menu, once Artic Base's setup has copied your own console's system files (Artic Base)."
 msgstr "Starter 3DS-ens HOME-meny når Artic Base-oppsettet har kopiert systemfilene til din egen konsoll (Artic Base)."
 
 #. the emulated Switch's console mode: in its dock, or handheld
-#: port/frontend/shell/settings.cpp:756
+#: port/frontend/shell/settings.cpp:761
 msgid "Console mode"
 msgstr "Konsollmodus"
 
 #. the emulated Switch's console mode: in its dock, or handheld
-#: port/frontend/shell/settings.cpp:756
+#: port/frontend/shell/settings.cpp:761
 msgctxt "switch mode"
 msgid "Docked"
 msgstr "I dokken"
 
 #. the emulated Switch's console mode: in its dock, or handheld
-#: port/frontend/shell/settings.cpp:756
+#: port/frontend/shell/settings.cpp:761
 msgctxt "switch mode"
 msgid "Handheld"
 msgstr "Håndholdt"
 
-#: port/frontend/shell/settings.cpp:757
+#: port/frontend/shell/settings.cpp:762
 msgid "Docked: the TV's picture. Handheld: the console's own screen's."
 msgstr "I dokken: bildet til TV-en. Håndholdt: bildet til konsollens egen skjerm."
 
-#: port/frontend/shell/settings.cpp:758
+#: port/frontend/shell/settings.cpp:763
 msgid "Docked, games draw for a TV, at their sharpest (1080p for most); handheld, for the console's own screen (720p), which asks less of the GPU. A few games look or play differently in each. Applies to the next game."
 msgstr "I dokken tegner spillene for en TV, så skarpt som mulig (1080p for de fleste); håndholdt for konsollens egen skjerm (720p), som krever mindre av GPU-en. Noen få spill ser ut eller spilles annerledes i hver modus. Gjelder fra neste spill."
 
-#: port/frontend/shell/settings.cpp:765
+#: port/frontend/shell/settings.cpp:773
+msgid "As a share of the Switch's own speed. Above 100%, a game held to 30 fps can reach 60 where the PS5 has the time to spare, and a game that keeps time by its frames plays faster. None runs as fast as the PS5 can. Applies to the next game."
+msgstr "Som en andel av Switchens egen fart. Over 100 % kan et spill låst til 30 fps nå 60 der PS5-en har tid til overs, og et spill som holder tiden med bildene sine, går raskere. Ingen går så raskt PS5-en klarer. Gjelder fra neste spill."
+
+#: port/frontend/shell/settings.cpp:779
 msgid "The emulated DS's language."
 msgstr "Den emulerte DS-ens språk."
 
-#: port/frontend/shell/settings.cpp:766
+#: port/frontend/shell/settings.cpp:780
 msgid "The DS's own language, which many games follow. The DS has Japanese, English, French, German, Italian, Spanish and Chinese; any other language uses English. Applies to the next game."
 msgstr "DS-ens eget språk, som mange spill følger. DS-en har japansk, engelsk, fransk, tysk, italiensk, spansk og kinesisk; alle andre språk blir engelsk. Gjelder fra neste spill."
 
-#: port/frontend/shell/settings.cpp:770
+#: port/frontend/shell/settings.cpp:784
 msgid "Found in melonds/bios."
 msgstr "Funnet i melonds/bios."
 
-#: port/frontend/shell/settings.cpp:770
+#: port/frontend/shell/settings.cpp:784
 msgid "Not found: melonDS's built-in BIOS runs the games."
 msgstr "Ikke funnet: melonDS sin innebygde BIOS kjører spillene."
 
 #. {0} is the folder for a DS's own BIOS and firmware dumps
-#: port/frontend/shell/settings.cpp:772
+#: port/frontend/shell/settings.cpp:786
 msgid "bios7.bin, bios9.bin and firmware.bin, dumped from your own DS, in {0}: melonDS runs on them when they are there and this is on. Without them, its own replacements (FreeBIOS) run most games as well. Applies to the next game."
 msgstr "bios7.bin, bios9.bin og firmware.bin, hentet fra din egen DS, i {0}: melonDS kjører på dem når de er der og dette er på. Uten dem kjører de egne erstatningene (FreeBIOS) de fleste spill like godt. Gjelder fra neste spill."
 
-#: port/frontend/shell/settings.cpp:782
+#: port/frontend/shell/settings.cpp:796
 msgid "Where your games are. Cross picks another."
 msgstr "Hvor spillene dine er. Kryss velger en annen mappe."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:784
+#: port/frontend/shell/settings.cpp:798
 msgid "Your Wii U games: .wua, .wud, .wux, or folders with code, content and meta, alone or in .zip, .7z or .rar archives. Encrypted .wud and .wux need their keys in {0}/keys.txt."
 msgstr "Wii U-spillene dine: .wua, .wud, .wux eller mapper med code, content og meta, alene eller i .zip-, .7z- eller .rar-arkiver. Krypterte .wud og .wux trenger nøklene sine i {0}/keys.txt."
 
-#: port/frontend/shell/settings.cpp:786
+#: port/frontend/shell/settings.cpp:800
 msgid "Your 3DS games: .3ds or .cci, .cxi, .3dsx and Azahar's compressed dumps, decrypted, alone or in .zip, .7z or .rar archives, here or in the folders in it. CIA files are installed (Install a CIA file). Encrypted dumps do not start, with keys or without: decrypt them on your 3DS first (GodMode9)."
 msgstr "3DS-spillene dine: .3ds eller .cci, .cxi, .3dsx og Azahars komprimerte dumper, dekrypterte, alene eller i .zip-, .7z- eller .rar-arkiver, her eller i mappene i den. CIA-filer installeres (Installer en CIA-fil). Krypterte dumper starter ikke, med eller uten nøkler: dekrypter dem først på 3DS-en din (GodMode9)."
 
-#: port/frontend/shell/settings.cpp:789
+#: port/frontend/shell/settings.cpp:803
 msgid "Your Switch games: .nsp and .xci files, alone or each in a folder of its own with its update and DLC. Eden's own folder is the default: ProsperoEden's library lists the same games."
 msgstr "Switch-spillene dine: .nsp- og .xci-filer, alene eller hvert i sin egen mappe med oppdateringen og DLC-en. Edens egen mappe er standard: ProsperoEdens bibliotek viser de samme spillene."
 
-#: port/frontend/shell/settings.cpp:791
+#: port/frontend/shell/settings.cpp:805
 msgid "Your DS games: .nds files, alone or in .zip, .7z or .rar archives, here or in the folders in it."
 msgstr "DS-spillene dine: .nds-filer, alene eller i .zip-, .7z- eller .rar-arkiver, her eller i undermappene."
 
-#: port/frontend/shell/settings.cpp:792
+#: port/frontend/shell/settings.cpp:806
 msgid "Look for games now"
 msgstr "Se etter spill nå"
 
-#: port/frontend/shell/settings.cpp:792 port/frontend/shell/shares.cpp:292
+#: port/frontend/shell/settings.cpp:806 port/frontend/shell/shares.cpp:292
 msgid "Looking…"
 msgstr "Ser etter…"
 
-#: port/frontend/shell/settings.cpp:792
+#: port/frontend/shell/settings.cpp:806
 msgid "This side's folder, again."
 msgstr "Denne sidens mappe, på nytt."
 
-#: port/frontend/shell/settings.cpp:793
+#: port/frontend/shell/settings.cpp:807
 msgid "Looks through this side's folder again, as it does each time the side opens."
 msgstr "Går gjennom denne sidens mappe på nytt, slik den gjør hver gang siden åpnes."
 
-#: port/frontend/shell/settings.cpp:799 port/frontend/shell/setup.cpp:272
+#: port/frontend/shell/settings.cpp:813 port/frontend/shell/setup.cpp:272
 msgid "Switch keys"
 msgstr "Switch-nøkler"
 
-#: port/frontend/shell/settings.cpp:799
+#: port/frontend/shell/settings.cpp:813
 msgid "prod.keys found"
 msgstr "prod.keys funnet"
 
-#: port/frontend/shell/settings.cpp:799 port/frontend/shell/settings.cpp:804
+#: port/frontend/shell/settings.cpp:813 port/frontend/shell/settings.cpp:818
 msgid "Missing"
 msgstr "Mangler"
 
-#: port/frontend/shell/settings.cpp:800
+#: port/frontend/shell/settings.cpp:814
 msgid "Eden can read your games."
 msgstr "Eden kan lese spillene dine."
 
-#: port/frontend/shell/settings.cpp:800 port/frontend/shell/setup.cpp:274
+#: port/frontend/shell/settings.cpp:814 port/frontend/shell/setup.cpp:274
 msgid "prod.keys is missing: Eden cannot read Switch games without it"
 msgstr "prod.keys mangler: uten den kan ikke Eden lese Switch-spill"
 
-#: port/frontend/shell/settings.cpp:801 port/frontend/shell/setup.cpp:277
+#: port/frontend/shell/settings.cpp:815 port/frontend/shell/setup.cpp:277
 msgid "Eden reads Switch games with your own console's keys: prod.keys (and title.keys), dumped from your Switch, in {0}/keys. No keys come with PS5-ECAM."
 msgstr "Eden leser Switch-spill med nøklene til din egen konsoll: prod.keys (og title.keys), hentet ut fra Switchen din, i {0}/keys. PS5-ECAM inneholder ingen nøkler."
 
-#: port/frontend/shell/settings.cpp:804 port/frontend/shell/setup.cpp:282
+#: port/frontend/shell/settings.cpp:818 port/frontend/shell/setup.cpp:282
 msgid "Switch firmware"
 msgstr "Switch-fastvare"
 
-#: port/frontend/shell/settings.cpp:805
+#: port/frontend/shell/settings.cpp:819
 msgid "Games that need the system's files start."
 msgstr "Spill som trenger systemfilene, starter."
 
-#: port/frontend/shell/settings.cpp:805 port/frontend/shell/setup.cpp:285
+#: port/frontend/shell/settings.cpp:819 port/frontend/shell/setup.cpp:285
 msgid "No firmware yet: many games need it to start"
 msgstr "Ingen fastvare ennå: mange spill trenger den for å starte"
 
-#: port/frontend/shell/settings.cpp:806 port/frontend/shell/setup.cpp:288
+#: port/frontend/shell/settings.cpp:820 port/frontend/shell/setup.cpp:288
 msgid "Many Switch games need the console's own system files: its firmware's .nca files, dumped from your Switch, in {0}/firmware. No firmware comes with PS5-ECAM."
 msgstr "Mange Switch-spill trenger konsollens egne systemfiler: fastvarens .nca-filer, hentet ut fra Switchen din, i {0}/firmware. PS5-ECAM inneholder ingen fastvare."
 
-#: port/frontend/shell/settings.cpp:809
+#: port/frontend/shell/settings.cpp:823
 msgid "Updates and DLC, mods, cheats, profiles and more."
 msgstr "Oppdateringer og DLC, modder, juksekoder, profiler og mer."
 
-#: port/frontend/shell/settings.cpp:810
+#: port/frontend/shell/settings.cpp:824
 msgid "ProsperoEden's own launcher, which Eden comes with: its library and game files, updates and DLC, mods and cheats, each game's own settings, profiles, rooms and downloads. Leaving it comes back here."
 msgstr "ProsperoEdens egen starter, som følger med Eden: biblioteket og spillfilene, oppdateringer og DLC, modder og juksekoder, hvert spills egne innstillinger, profiler, rom og nedlastinger. Når du går ut av den, kommer du tilbake hit."
 
-#: port/frontend/shell/settings.cpp:817 port/frontend/shell/shares.cpp:536 port/frontend/shell/whatsnew.cpp:34
+#: port/frontend/shell/settings.cpp:831 port/frontend/shell/shares.cpp:536 port/frontend/shell/whatsnew.cpp:34
 msgid "Network shares"
 msgstr "Nettverksdelinger"
 
-#: port/frontend/shell/settings.cpp:817
+#: port/frontend/shell/settings.cpp:831
 msgid "{0} share"
 msgid_plural "{0} shares"
 msgstr[0] "{0} deling"
 msgstr[1] "{0} delinger"
 
-#: port/frontend/shell/settings.cpp:818
+#: port/frontend/shell/settings.cpp:832
 msgid "Games on a computer or a NAS, over SMB or NFS."
 msgstr "Spill på en datamaskin eller NAS, over SMB eller NFS."
 
-#: port/frontend/shell/settings.cpp:819
+#: port/frontend/shell/settings.cpp:833
 msgid "A folder shared by a Windows, macOS or Linux computer or a NAS, read where it is: add it here, then choose a games folder on it with the folder browser, where each share is a tab. Nothing is ever written to it; saves and installs stay on the PS5. A cable does better than Wi-Fi for Wii U games."
 msgstr "En mappe som deles av en Windows-, macOS- eller Linux-maskin eller en NAS, lest der den er: legg den til her, og velg så en spillmappe på den med mappeleseren, der hver deling er en fane. Ingenting skrives noen gang til den; lagringer og installasjoner blir på PS5-en. For Wii U-spill fungerer en kabel bedre enn Wi-Fi."
 
-#: port/frontend/shell/settings.cpp:826 port/frontend/shell/setup.cpp:219
+#: port/frontend/shell/settings.cpp:840 port/frontend/shell/setup.cpp:219
 msgid "Wii U disc keys"
 msgstr "Wii U-platenøkler"
 
-#: port/frontend/shell/settings.cpp:826 port/frontend/shell/setup.cpp:221
+#: port/frontend/shell/settings.cpp:840 port/frontend/shell/setup.cpp:221
 msgid "keys.txt found"
 msgstr "keys.txt funnet"
 
-#: port/frontend/shell/settings.cpp:827
+#: port/frontend/shell/settings.cpp:841
 msgid "Only encrypted .wud and .wux need them."
 msgstr "Bare krypterte .wud og .wux trenger dem."
 
-#: port/frontend/shell/settings.cpp:827 port/frontend/shell/setup.cpp:221
+#: port/frontend/shell/settings.cpp:841 port/frontend/shell/setup.cpp:221
 msgid "keys.txt is missing: only encrypted .wud and .wux need it"
 msgstr "keys.txt mangler: bare krypterte .wud og .wux trenger den"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:829
+#: port/frontend/shell/settings.cpp:843
 msgid "Encrypted .wud and .wux dumps need their disc keys in {0}/keys.txt, one a line. Decrypted dumps, .wua and folders need none."
 msgstr "Krypterte .wud- og .wux-dumper trenger platenøklene sine i {0}/keys.txt, én per linje. Dekrypterte dumper, .wua og mapper trenger ingen."
 
-#: port/frontend/shell/settings.cpp:831
+#: port/frontend/shell/settings.cpp:845
 msgid "Found on your drives, each installed with one press."
 msgstr "Funnet på stasjonene dine, hver installert med ett trykk."
 
-#: port/frontend/shell/settings.cpp:832
+#: port/frontend/shell/settings.cpp:846
 msgid "Looks on every USB drive and extended storage plugged in, in the games folder and in /data for updates, DLC and games (folders with code, content and meta), and lists them by game with what is installed now. Cross installs one, Square every new one; each goes into the Wii U's storage (mlc01), as Cemu's Install game title, update or DLC does. Triangle there chooses a folder anywhere else."
 msgstr "Leter på alle tilkoblede USB-stasjoner og utvidede lagringer, i spillmappen og i /data etter oppdateringer, DLC og spill (mapper med code, content og meta), og viser dem per spill sammen med det som er installert nå. Kryss installerer én, Firkant alle nye; hver havner i Wii U-ens lagring (mlc01), slik Cemus «Install game title, update or DLC» gjør. Trekant velger der en hvilken som helst annen mappe."
 
-#: port/frontend/shell/settings.cpp:836
+#: port/frontend/shell/settings.cpp:850
 msgid "Mods from USB"
 msgstr "Modder fra USB"
 
-#: port/frontend/shell/settings.cpp:836
+#: port/frontend/shell/settings.cpp:850
 msgid "Cemu mods from the ps5cemu/mods folder on your drives."
 msgstr "Cemu-modder fra mappen ps5cemu/mods på stasjonene dine."
 
-#: port/frontend/shell/settings.cpp:837
+#: port/frontend/shell/settings.cpp:851
 msgid "Copies the mods in a USB drive's ps5cemu/mods folder into the app's graphic packs, where each shows on its game's Graphic packs page, off until you turn it on. A mod is a Cemu graphic pack (a folder with a rules.txt), or, for one shared without it, a folder with content and aoc folders, in a folder named by its game's title ID. A game's menu has Add mods from USB as well, which gives such mods that game. The guide on GitHub, docs/MODS.md, has more."
 msgstr "Kopierer moddene i en USB-stasjons ps5cemu/mods-mappe til appens grafikkpakker, der hver vises på spillets side Grafikkpakker, av til du slår den på. En modd er en grafikkpakke for Cemu (en mappe med en rules.txt) eller, for en som er delt uten den, en mappe med mappene content og aoc, i en mappe oppkalt etter spillets tittel-ID. Et spills meny har også Legg til modder fra USB, som gir slike modder det spillet. Veiledningen på GitHub, docs/MODS.md, forteller mer."
 
-#: port/frontend/shell/settings.cpp:843
+#: port/frontend/shell/settings.cpp:857
 msgid "Install a CIA file"
 msgstr "Installer en CIA-fil"
 
-#: port/frontend/shell/settings.cpp:843
+#: port/frontend/shell/settings.cpp:857
 msgid "A game, an update or DLC."
 msgstr "Et spill, en oppdatering eller et DLC."
 
-#: port/frontend/shell/settings.cpp:844
+#: port/frontend/shell/settings.cpp:858
 msgid "Installs a CIA into the 3DS's storage, as Azahar's Install CIA does: an update or DLC goes with its game, and a game joins the library. Circle cancels while it runs."
 msgstr "Installerer en CIA i 3DS-ens lagring, slik Azahars Install CIA gjør: en oppdatering eller et DLC havner hos spillet sitt, og et spill legges til i biblioteket. Sirkel avbryter mens det pågår."
 
-#: port/frontend/shell/settings.cpp:867
+#: port/frontend/shell/settings.cpp:881
 msgid "Account games start on"
 msgstr "Konto spill starter med"
 
-#: port/frontend/shell/settings.cpp:868
+#: port/frontend/shell/settings.cpp:882
 msgid "Chosen by your PS5 user: One account for each PS5 user is on."
 msgstr "Valgt av PS5-brukeren din: Én konto per PS5-bruker er på."
 
-#: port/frontend/shell/settings.cpp:869
+#: port/frontend/shell/settings.cpp:883
 msgid "The next game starts on these saves. A game already running keeps its own."
 msgstr "Neste spill starter med disse lagringene. Et spill som allerede kjører, beholder sine."
 
-#: port/frontend/shell/settings.cpp:870
+#: port/frontend/shell/settings.cpp:884
 msgid "Each Wii U account has its own saves of every game, as on a Wii U. The next game you start uses the one shown here; a game already running keeps the one it started with."
 msgstr "Hver Wii U-konto har egne lagringer for hvert spill, som på en Wii U. Neste spill du starter, bruker den som vises her; et spill som allerede kjører, beholder den det startet med."
 
 #. how many Wii U accounts there are, of the twelve a Wii U has at most
-#: port/frontend/shell/settings.cpp:875
+#: port/frontend/shell/settings.cpp:889
 msgid "New account"
 msgstr "Ny konto"
 
 #. how many Wii U accounts there are, of the twelve a Wii U has at most
-#: port/frontend/shell/settings.cpp:875
+#: port/frontend/shell/settings.cpp:889
 msgid "{0} of 12"
 msgstr "{0} av 12"
 
-#: port/frontend/shell/settings.cpp:876
+#: port/frontend/shell/settings.cpp:890
 msgid "A new account starts with no saves."
 msgstr "En ny konto starter uten lagringer."
 
-#: port/frontend/shell/settings.cpp:876
+#: port/frontend/shell/settings.cpp:890
 msgid "Name it with the keyboard, ten letters at most. Games start on it from then on."
 msgstr "Gi den et navn med tastaturet, maks ti bokstaver. Spill starter med den fra da av."
 
-#: port/frontend/shell/settings.cpp:877
+#: port/frontend/shell/settings.cpp:891
 msgid "Rename {0}"
 msgstr "Gi {0} nytt navn"
 
-#: port/frontend/shell/settings.cpp:877
+#: port/frontend/shell/settings.cpp:891
 msgid "The account games start on."
 msgstr "Kontoen spill starter med."
 
-#: port/frontend/shell/settings.cpp:878
+#: port/frontend/shell/settings.cpp:892
 msgid "The name games show for this account, ten letters at most. Its saves stay as they are."
 msgstr "Navnet spill viser for denne kontoen, maks ti bokstaver. Lagringene forblir som de er."
 
-#: port/frontend/shell/settings.cpp:886
+#: port/frontend/shell/settings.cpp:900
 msgid "Delete an account"
 msgstr "Slett en konto"
 
-#: port/frontend/shell/settings.cpp:887
+#: port/frontend/shell/settings.cpp:901
 msgid "Only one"
 msgstr "Bare én"
 
-#: port/frontend/shell/settings.cpp:888
+#: port/frontend/shell/settings.cpp:902
 msgid "There is only one account, and games start on it."
 msgstr "Det finnes bare én konto, og spill starter med den."
 
-#: port/frontend/shell/settings.cpp:888
+#: port/frontend/shell/settings.cpp:902
 msgid "Left and Right choose which. Its saves stay in the Wii U's storage."
 msgstr "Venstre og Høyre velger hvilken. Lagringene blir i Wii U-ens lagring."
 
-#: port/frontend/shell/settings.cpp:889
+#: port/frontend/shell/settings.cpp:903
 msgid "The account is removed; its saves stay in the Wii U's storage (and in any backup), so nothing is lost. The account games start on cannot be deleted: choose another first."
 msgstr "Kontoen fjernes; lagringene blir i Wii U-ens lagring (og i alle sikkerhetskopier), så ingenting går tapt. Kontoen spill starter med, kan ikke slettes: velg en annen først."
 
-#: port/frontend/shell/settings.cpp:895
+#: port/frontend/shell/settings.cpp:909
 msgid "One account for each PS5 user"
 msgstr "Én konto per PS5-bruker"
 
-#: port/frontend/shell/settings.cpp:896
+#: port/frontend/shell/settings.cpp:910
 msgid "Whoever starts PS5-ECAM plays on their own saves."
 msgstr "Den som starter PS5-ECAM, spiller med sine egne lagringer."
 
-#: port/frontend/shell/settings.cpp:897
+#: port/frontend/shell/settings.cpp:911
 msgid "The PS5 user who starts the app plays on a Wii U account of their own, made the first time with their PS5 name, so brothers and sisters each keep their own saves just by starting the app from their own PS5 user."
 msgstr "PS5-brukeren som starter appen, spiller på sin egen Wii U-konto, som lages første gang med brukerens PS5-navn, så søsken beholder hver sine lagringer bare ved å starte appen fra sin egen PS5-bruker."
 
 #. a backup or restore of the saves, finished ({0}: how many files)
-#: port/frontend/shell/settings.cpp:916 port/frontend/shell/settings.cpp:1177
+#: port/frontend/shell/settings.cpp:930 port/frontend/shell/settings.cpp:1191
 msgid "Done: {0} file"
 msgid_plural "Done: {0} files"
 msgstr[0] "Ferdig: {0} fil"
 msgstr[1] "Ferdig: {0} filer"
 
 #. a backup of the saves, as it copies ({0}: a percentage)
-#: port/frontend/shell/settings.cpp:926 port/frontend/shell/settings.cpp:941 port/frontend/shell/settings.cpp:1216 port/frontend/shell/settings.cpp:1236
+#: port/frontend/shell/settings.cpp:940 port/frontend/shell/settings.cpp:955 port/frontend/shell/settings.cpp:1230 port/frontend/shell/settings.cpp:1250
 msgid "Copying: {0}"
 msgstr "Kopierer: {0}"
 
 #. the newest backup of the saves: when, and on which drive
-#: port/frontend/shell/settings.cpp:929 port/frontend/shell/settings.cpp:1218
+#: port/frontend/shell/settings.cpp:943 port/frontend/shell/settings.cpp:1232
 msgid "Last: {0} · {1}"
 msgstr "Siste: {0} · {1}"
 
-#: port/frontend/shell/settings.cpp:930 port/frontend/shell/settings.cpp:1213
+#: port/frontend/shell/settings.cpp:944 port/frontend/shell/settings.cpp:1227
 msgid "Back up to USB"
 msgstr "Sikkerhetskopier til USB"
 
-#: port/frontend/shell/settings.cpp:930
+#: port/frontend/shell/settings.cpp:944
 msgid "Every side's saves, save states and Wii U accounts."
 msgstr "Alle siders lagringer, lagrede tilstander og Wii U-kontoer."
 
-#: port/frontend/shell/settings.cpp:931
+#: port/frontend/shell/settings.cpp:945
 msgid "Copies the Wii U's saves (every account's, with the accounts), the 3DS's saves, extra data and save states, and the DS's saves and save states to PS5CEMU-HAR-saves on the first USB drive plugged in, in a folder named by the date and time. Never the games, so a backup stays small."
 msgstr "Kopierer Wii U-ens lagringer (alle kontoenes, med kontoene), 3DS-ens lagringer, ekstradata og lagrede tilstander, og DS-ens lagringer og lagrede tilstander til PS5CEMU-HAR-saves på den første tilkoblede USB-stasjonen, i en mappe oppkalt etter dato og klokkeslett. Aldri spillene, så en sikkerhetskopi forblir liten."
 
-#: port/frontend/shell/settings.cpp:939 port/frontend/shell/settings.cpp:1234
+#: port/frontend/shell/settings.cpp:953 port/frontend/shell/settings.cpp:1248
 msgid "No backups found"
 msgstr "Fant ingen sikkerhetskopier"
 
-#: port/frontend/shell/settings.cpp:942 port/frontend/shell/settings.cpp:1233
+#: port/frontend/shell/settings.cpp:956 port/frontend/shell/settings.cpp:1247
 msgid "Restore from USB"
 msgstr "Gjenopprett fra USB"
 
-#: port/frontend/shell/settings.cpp:943
+#: port/frontend/shell/settings.cpp:957
 msgid "Back up first, or plug in the drive with your backups."
 msgstr "Ta sikkerhetskopi først, eller koble til stasjonen med sikkerhetskopiene dine."
 
-#: port/frontend/shell/settings.cpp:943 port/frontend/shell/settings.cpp:1237
+#: port/frontend/shell/settings.cpp:957 port/frontend/shell/settings.cpp:1251
 msgid "Left and Right choose which backup, the newest first."
 msgstr "Venstre og Høyre velger sikkerhetskopi, den nyeste først."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:945
+#: port/frontend/shell/settings.cpp:959
 msgid "Puts the chosen backup's saves back where they came from. The saves there now are moved first to {0}/saves-before, so nothing is lost; saves the backup does not have stay as they are."
 msgstr "Legger lagringene fra den valgte sikkerhetskopien tilbake der de kom fra. Lagringene som er der nå, flyttes først til {0}/saves-before, så ingenting går tapt; lagringer som sikkerhetskopien ikke har, forblir som de er."
 
-#: port/frontend/shell/settings.cpp:953
+#: port/frontend/shell/settings.cpp:967
 msgid "Play a game from your 3DS, and set up from it."
 msgstr "Spill et spill fra 3DS-en din, og sett opp fra den."
 
-#: port/frontend/shell/settings.cpp:954
+#: port/frontend/shell/settings.cpp:968
 msgid "Artic Base plays a game from a 3DS on your network, its saves staying on the 3DS; Artic Setup copies a 3DS's system files into Azahar, for the Home Menu and the games that need them."
 msgstr "Artic Base spiller et spill fra en 3DS på nettverket ditt, med lagringene på 3DS-en; Artic Setup kopierer en 3DS sine systemfiler til Azahar, for HOME-menyen og spillene som trenger dem."
 
-#: port/frontend/shell/settings.cpp:960
+#: port/frontend/shell/settings.cpp:974
 msgid "Box art from GameTDB"
 msgstr "Omslag fra GameTDB"
 
-#: port/frontend/shell/settings.cpp:960
+#: port/frontend/shell/settings.cpp:974
 msgid "Covers for the library, downloaded once."
 msgstr "Omslag til biblioteket, lastet ned én gang."
 
-#: port/frontend/shell/settings.cpp:961
+#: port/frontend/shell/settings.cpp:975
 msgid "The first time a game shows up, its cover is downloaded from GameTDB (art.gametdb.com) by the ID on its box. Off: nothing more is downloaded."
 msgstr "Første gang et spill dukker opp, lastes omslaget ned fra GameTDB (art.gametdb.com) ut fra ID-en på esken. Av: ingenting mer lastes ned."
 
-#: port/frontend/shell/settings.cpp:970
+#: port/frontend/shell/settings.cpp:984
 msgid "Downloading: {0} left"
 msgid_plural "Downloading: {0} left"
 msgstr[0] "Laster ned: {0} igjen"
 msgstr[1] "Laster ned: {0} igjen"
 
-#: port/frontend/shell/settings.cpp:971
+#: port/frontend/shell/settings.cpp:985
 msgid "GameTDB did not answer: is the PS5 online?"
 msgstr "GameTDB svarte ikke: er PS5-en på nett?"
 
-#: port/frontend/shell/settings.cpp:972
+#: port/frontend/shell/settings.cpp:986
 msgid "{0} game without box art"
 msgid_plural "{0} games without box art"
 msgstr[0] "{0} spill uten omslag"
 msgstr[1] "{0} spill uten omslag"
 
-#: port/frontend/shell/settings.cpp:973
+#: port/frontend/shell/settings.cpp:987
 msgid "Every game has box art"
 msgstr "Alle spill har omslag"
 
-#: port/frontend/shell/settings.cpp:974
+#: port/frontend/shell/settings.cpp:988
 msgid "Download missing box art"
 msgstr "Last ned manglende omslag"
 
-#: port/frontend/shell/settings.cpp:974
+#: port/frontend/shell/settings.cpp:988
 msgid "Tries again for every game without a cover."
 msgstr "Prøver igjen for hvert spill uten omslag."
 
-#: port/frontend/shell/settings.cpp:975
+#: port/frontend/shell/settings.cpp:989
 msgid "Asks GameTDB again for the cover of every game on this side that has none, including games it had no cover for before. Covers are downloaded in the background while you use the launcher."
 msgstr "Spør GameTDB på nytt om omslaget til hvert spill på denne siden som mangler et, også spill den ikke hadde noe omslag for før. Omslagene lastes ned i bakgrunnen mens du bruker startprogrammet."
 
-#: port/frontend/shell/settings.cpp:977
+#: port/frontend/shell/settings.cpp:991
 msgid "Download all box art again"
 msgstr "Last ned alle omslag på nytt"
 
-#: port/frontend/shell/settings.cpp:978
+#: port/frontend/shell/settings.cpp:992
 msgid "Replaces every cover on this side with a fresh download."
 msgstr "Erstatter hvert omslag på denne siden med en fersk nedlasting."
 
-#: port/frontend/shell/settings.cpp:979
+#: port/frontend/shell/settings.cpp:993
 msgid "Downloads the cover of every game on this side again, replacing the ones you have. Useful when a cover is wrong or looks broken."
 msgstr "Laster ned omslaget til hvert spill på denne siden på nytt og erstatter dem du har. Nyttig når et omslag er feil eller ser ødelagt ut."
 
-#: port/frontend/shell/settings.cpp:983
+#: port/frontend/shell/settings.cpp:997
 msgid "Community graphic packs"
 msgstr "Fellesskapets grafikkpakker"
 
-#: port/frontend/shell/settings.cpp:983
+#: port/frontend/shell/settings.cpp:997
 msgid "Cross checks GitHub for newer ones."
 msgstr "Kryss ser etter nyere på GitHub."
 
-#: port/frontend/shell/settings.cpp:984
+#: port/frontend/shell/settings.cpp:998
 msgid "Cemu's community graphic packs, from GitHub's latest release when it is newer than the ones installed. The packs bundled with the app stay as the fallback."
 msgstr "Cemus grafikkpakker fra fellesskapet, fra GitHubs nyeste utgivelse når den er nyere enn de installerte. Pakkene som følger med appen, blir værende som reserve."
 
-#: port/frontend/shell/settings.cpp:990
+#: port/frontend/shell/settings.cpp:1004
 msgid "Earn RetroAchievements in DS games with your account, as RetroArch does. Cross signs in with your user name and password; only the sign-in's token is kept on the PS5, never the password. Softcore: save states, cheats and speed stay as they are. RetroAchievements has no sets for the Wii U or the 3DS."
 msgstr "Tjen RetroAchievements i DS-spill med kontoen din, som i RetroArch. Kryss logger på med brukernavn og passord; bare påloggingens token lagres på PS5-en, aldri passordet. Softcore: lagrede tilstander, juksekoder og hastighet forblir som de er. RetroAchievements har ingen sett for Wii U eller 3DS."
 
 #. the RetroAchievements account signed in: its name ({1}) and softcore points ({0})
-#: port/frontend/shell/settings.cpp:995 port/frontend/shell/settings.cpp:999 port/frontend/shell/whatsnew.cpp:35
+#: port/frontend/shell/settings.cpp:1009 port/frontend/shell/settings.cpp:1013 port/frontend/shell/whatsnew.cpp:35
 msgid "RetroAchievements"
 msgstr "RetroAchievements"
 
-#: port/frontend/shell/settings.cpp:996
+#: port/frontend/shell/settings.cpp:1010
 msgid "{1} · {0} point"
 msgid_plural "{1} · {0} points"
 msgstr[0] "{1} · {0} poeng"
 msgstr[1] "{1} · {0} poeng"
 
-#: port/frontend/shell/settings.cpp:996
+#: port/frontend/shell/settings.cpp:1010
 msgid "Hold Cross to sign out"
 msgstr "Hold Kryss inne for å logge av"
 
-#: port/frontend/shell/settings.cpp:997
+#: port/frontend/shell/settings.cpp:1011
 msgid "Signed in: DS games with a set earn achievements."
 msgstr "Pålogget: DS-spill med et sett gir prestasjoner."
 
-#: port/frontend/shell/settings.cpp:1000
+#: port/frontend/shell/settings.cpp:1014
 msgid "Signing in…"
 msgstr "Logger på …"
 
-#: port/frontend/shell/settings.cpp:1000
+#: port/frontend/shell/settings.cpp:1014
 msgid "Cross to sign in"
 msgstr "Kryss for å logge på"
 
-#: port/frontend/shell/settings.cpp:1001
+#: port/frontend/shell/settings.cpp:1015
 msgid "Achievements in DS games, with your RetroAchievements account."
 msgstr "Prestasjoner i DS-spill, med RetroAchievements-kontoen din."
 
-#: port/frontend/shell/settings.cpp:1002
+#: port/frontend/shell/settings.cpp:1016
 msgid "Unlock notices"
 msgstr "Varsler om prestasjoner"
 
-#: port/frontend/shell/settings.cpp:1002
+#: port/frontend/shell/settings.cpp:1016
 msgid "Each unlock as the PS5's notification."
 msgstr "Hver prestasjon som et varsel fra PS5-en."
 
-#: port/frontend/shell/settings.cpp:1003
+#: port/frontend/shell/settings.cpp:1017
 msgid "An achievement earned, and the count as a game starts, shown as the PS5's own notifications. Off: they are only in the in-game menu's Achievements."
 msgstr "En opptjent prestasjon, og antallet når et spill starter, vist som PS5-ens egne varsler. Av: de finnes bare under Prestasjoner i spillmenyen."
 
-#: port/frontend/shell/settings.cpp:1008
+#: port/frontend/shell/settings.cpp:1022
 msgid "PS5-ECAM updates"
 msgstr "PS5-ECAM-oppdateringer"
 
-#: port/frontend/shell/settings.cpp:1008
+#: port/frontend/shell/settings.cpp:1022
 msgid "Cross checks GitHub for a newer version."
 msgstr "Kryss ser etter en nyere versjon på GitHub."
 
-#: port/frontend/shell/settings.cpp:1009
+#: port/frontend/shell/settings.cpp:1023
 msgid "PS5-ECAM asks GitHub for its latest release each time it starts. Cross asks again, or installs the newer version it found: the release's files are downloaded, checked and put in place of these, and the app starts again. Your games, saves and settings stay as they are."
 msgstr "PS5-ECAM spør GitHub om sin nyeste utgivelse hver gang den starter. Kryss spør på nytt, eller installerer den nyere versjonen den fant: utgivelsens filer lastes ned, sjekkes og settes i stedet for disse, og appen starter på nytt. Spillene, lagringene og innstillingene dine forblir som de er."
 
 #. a theme that is still being tried out: "Phantom (experimental)"
-#: port/frontend/shell/settings.cpp:1024
+#: port/frontend/shell/settings.cpp:1038
 msgid "{0} (experimental)"
 msgstr "{0} (eksperimentelt)"
 
-#: port/frontend/shell/settings.cpp:1029
+#: port/frontend/shell/settings.cpp:1043
 msgid "Theme"
 msgstr "Tema"
 
-#: port/frontend/shell/settings.cpp:1031
+#: port/frontend/shell/settings.cpp:1045
 msgid "How the launcher looks: its colours, its corners and what moves behind the menus. Phantom and Terminal are experiments of their own. Make your own as a JSON file in {0}/themes, starting from any of these: the text under this page says how. Only the launcher changes: the in-game menus and the games stay as they are."
 msgstr "Hvordan startprogrammet ser ut: fargene, hjørnene og det som beveger seg bak menyene. Phantom og Terminal er egne eksperimenter. Lag ditt eget som en JSON-fil i {0}/themes, med utgangspunkt i et av disse: teksten under denne siden forklarer hvordan. Bare startprogrammet endres: spillmenyene og spillene forblir som de er."
 
-#: port/frontend/shell/settings.cpp:1037
+#: port/frontend/shell/settings.cpp:1051
 msgid "Wii U side"
 msgstr "Wii U-siden"
 
-#: port/frontend/shell/settings.cpp:1037
+#: port/frontend/shell/settings.cpp:1051
 msgid "Cemu's games, in the bar."
 msgstr "Cemus spill, i linjen."
 
-#: port/frontend/shell/settings.cpp:1038
+#: port/frontend/shell/settings.cpp:1052
 msgid "Whether the bar shows the Wii U side (Cemu). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
 msgstr "Om linjen viser Wii U-siden (Cemu). Skjult beholdes spillene og innstillingene, og de kommer tilbake når den slås på igjen. Minst én side forblir på."
 
-#: port/frontend/shell/settings.cpp:1040
+#: port/frontend/shell/settings.cpp:1054
 msgid "3DS side"
 msgstr "3DS-siden"
 
-#: port/frontend/shell/settings.cpp:1040
+#: port/frontend/shell/settings.cpp:1054
 msgid "Azahar's games, in the bar."
 msgstr "Azahars spill, i linjen."
 
-#: port/frontend/shell/settings.cpp:1041
+#: port/frontend/shell/settings.cpp:1055
 msgid "Whether the bar shows the 3DS side (Azahar). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
 msgstr "Om linjen viser 3DS-siden (Azahar). Skjult beholdes spillene og innstillingene, og de kommer tilbake når den slås på igjen. Minst én side forblir på."
 
-#: port/frontend/shell/settings.cpp:1043
+#: port/frontend/shell/settings.cpp:1057
 msgid "DS side"
 msgstr "DS-siden"
 
-#: port/frontend/shell/settings.cpp:1043
+#: port/frontend/shell/settings.cpp:1057
 msgid "melonDS's games, in the bar."
 msgstr "melonDS sine spill, i linjen."
 
-#: port/frontend/shell/settings.cpp:1044
+#: port/frontend/shell/settings.cpp:1058
 msgid "Whether the bar shows the DS side (melonDS). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
 msgstr "Om linjen viser DS-siden (melonDS). Skjult beholdes spillene og innstillingene, og de kommer tilbake når den slås på igjen. Minst én side forblir på."
 
-#: port/frontend/shell/settings.cpp:1046
+#: port/frontend/shell/settings.cpp:1060
 msgid "Switch side"
 msgstr "Switch-siden"
 
-#: port/frontend/shell/settings.cpp:1046
+#: port/frontend/shell/settings.cpp:1060
 msgid "Eden's games, in the bar."
 msgstr "Edens spill, i linjen."
 
-#: port/frontend/shell/settings.cpp:1047
+#: port/frontend/shell/settings.cpp:1061
 msgid "Whether the bar shows the Switch side (Eden). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
 msgstr "Om linjen viser Switch-siden (Eden). Skjult beholdes spillene og innstillingene, og de kommer tilbake når den slås på igjen. Minst én side forblir på."
 
-#: port/frontend/shell/settings.cpp:1049
+#: port/frontend/shell/settings.cpp:1063
 msgid "Game pictures behind menus"
 msgstr "Spillbilder bak menyene"
 
-#: port/frontend/shell/settings.cpp:1049
+#: port/frontend/shell/settings.cpp:1063
 msgid "The focused game's cover, softened, behind the screens."
 msgstr "Det valgte spillets omslag, mykt, bak skjermene."
 
-#: port/frontend/shell/settings.cpp:1050
+#: port/frontend/shell/settings.cpp:1064
 msgid "The focused game's picture fills the screen behind the menus, softened and dimmed, so moving the focus changes the whole screen. Off: the game's colours only."
 msgstr "Det valgte spillets bilde fyller skjermen bak menyene, mykt og dempet, slik at det å flytte markeringen endrer hele skjermen. Av: bare spillets farger."
 
-#: port/frontend/shell/settings.cpp:1052
+#: port/frontend/shell/settings.cpp:1066
 msgid "Larger text"
 msgstr "Større tekst"
 
-#: port/frontend/shell/settings.cpp:1052
+#: port/frontend/shell/settings.cpp:1066
 msgid "Every size of text a step up."
 msgstr "Hver tekststørrelse ett trinn større."
 
-#: port/frontend/shell/settings.cpp:1053
+#: port/frontend/shell/settings.cpp:1067
 msgid "Every style of text a step larger: captions from 20 to 23, reading text from 26 to 30."
 msgstr "Hver tekststil ett trinn større: bildetekster fra 20 til 23, brødtekst fra 26 til 30."
 
-#: port/frontend/shell/settings.cpp:1054
+#: port/frontend/shell/settings.cpp:1068
 msgid "High contrast"
 msgstr "Høy kontrast"
 
-#: port/frontend/shell/settings.cpp:1054
+#: port/frontend/shell/settings.cpp:1068
 msgid "Opaque panels, full-strength text, a thicker ring."
 msgstr "Ugjennomsiktige paneler, full tekst, en tykkere ring."
 
-#: port/frontend/shell/settings.cpp:1055
+#: port/frontend/shell/settings.cpp:1069
 msgid "Opaque panels instead of glass, all text at full strength, a thicker focus ring and no grain or pictures behind the menus."
 msgstr "Ugjennomsiktige paneler i stedet for glass, all tekst i full styrke, en tykkere markeringsring og ingen korning eller bilder bak menyene."
 
-#: port/frontend/shell/settings.cpp:1056
+#: port/frontend/shell/settings.cpp:1070
 msgid "Reduce motion"
 msgstr "Reduser bevegelse"
 
-#: port/frontend/shell/settings.cpp:1056
+#: port/frontend/shell/settings.cpp:1070
 msgid "Fades in place of movement."
 msgstr "Overtoninger i stedet for bevegelse."
 
-#: port/frontend/shell/settings.cpp:1057
+#: port/frontend/shell/settings.cpp:1071
 msgid "Springs become short fades; nothing drifts, breathes or rises behind the menus."
 msgstr "Fjærer blir korte overtoninger; ingenting driver, puster eller stiger bak menyene."
 
-#: port/frontend/shell/settings.cpp:1058
+#: port/frontend/shell/settings.cpp:1072
 msgid "The first-start choices again: sides, theme, buttons."
 msgstr "Valgene fra første oppstart igjen: sider, tema, knapper."
 
-#: port/frontend/shell/settings.cpp:1059
+#: port/frontend/shell/settings.cpp:1073
 msgid "The page the first start opens on: the language, the sides, the theme, A and B, the music, vibration and the games' pictures, on one page."
 msgstr "Siden første oppstart åpner på: språket, sidene, temaet, A og B, musikken, vibrasjon og spillenes bilder, på én side."
 
-#: port/frontend/shell/settings.cpp:1065
+#: port/frontend/shell/settings.cpp:1079
 msgid "Hold to confirm"
 msgstr "Hold inne for å bekrefte"
 
-#: port/frontend/shell/settings.cpp:1066
+#: port/frontend/shell/settings.cpp:1080
 msgid "How long Cross is held for what cannot be undone."
 msgstr "Hvor lenge Kryss holdes inne for det som ikke kan angres."
 
-#: port/frontend/shell/settings.cpp:1067
+#: port/frontend/shell/settings.cpp:1081
 msgid "Clearing caches, Artic Setup and resetting controls are held to confirm, never pressed twice. This is how long."
 msgstr "Tømming av hurtigbuffere, Artic Setup og tilbakestilling av kontroller bekreftes ved å holde inne, aldri ved å trykke to ganger. Så lenge."
 
-#: port/frontend/shell/settings.cpp:1071
+#: port/frontend/shell/settings.cpp:1085
 msgid "Storage, recompilers, games, keys and box art, checked."
 msgstr "Lagring, rekompilatorer, spill, nøkler og omslag, sjekket."
 
-#: port/frontend/shell/settings.cpp:1072
+#: port/frontend/shell/settings.cpp:1086
 msgid "Each check has a status, what it means and what to do. It is also shown on the first start and whenever a check fails as the app starts."
 msgstr "Hver sjekk har en status, hva den betyr og hva man skal gjøre. Den vises også ved første start og når en sjekk feiler mens appen starter."
 
-#: port/frontend/shell/settings.cpp:1074
+#: port/frontend/shell/settings.cpp:1088
 msgid "Copy logs to USB"
 msgstr "Kopier logger til USB"
 
-#: port/frontend/shell/settings.cpp:1074
+#: port/frontend/shell/settings.cpp:1088
 msgid "The logs a report needs, onto a USB drive."
 msgstr "Loggene en feilrapport trenger, til en USB-stasjon."
 
-#: port/frontend/shell/settings.cpp:1075
+#: port/frontend/shell/settings.cpp:1089
 msgid "Copies the last five sessions' logs and the settings into a dated folder on a USB drive, to attach to a report."
 msgstr "Kopierer loggene fra de fem siste øktene og innstillingene til en datert mappe på en USB-stasjon, for å legge ved en rapport."
 
-#: port/frontend/shell/settings.cpp:1077 port/frontend/shell/settings.cpp:1080
+#: port/frontend/shell/settings.cpp:1091 port/frontend/shell/settings.cpp:1094
 msgid "Clear shader caches"
 msgstr "Tøm shaderhurtigbuffere"
 
-#: port/frontend/shell/settings.cpp:1078 port/frontend/shell/settings.cpp:1081
+#: port/frontend/shell/settings.cpp:1092 port/frontend/shell/settings.cpp:1095
 msgid "For a game that crashes on a bad cache."
 msgstr "For et spill som krasjer på grunn av en dårlig hurtigbuffer."
 
-#: port/frontend/shell/settings.cpp:1078
+#: port/frontend/shell/settings.cpp:1092
 msgid "Deletes Cemu's shader caches. Games build them again as they run: the first minutes stutter."
 msgstr "Sletter Cemus shaderhurtigbuffere. Spillene bygger dem opp igjen mens de kjører: de første minuttene hakker."
 
-#: port/frontend/shell/settings.cpp:1082
+#: port/frontend/shell/settings.cpp:1096
 msgid "Deletes Azahar's shader caches. Games build them again as they run: the first minutes stutter."
 msgstr "Sletter Azahars shaderhurtigbuffere. Spillene bygger dem opp igjen mens de kjører: de første minuttene hakker."
 
 #. Settings > Diagnostics: the copies of games unpacked from their archives (.zip, .7z...), kept for their next start
-#: port/frontend/shell/settings.cpp:1092
+#: port/frontend/shell/settings.cpp:1106
 msgid "Unpacked games"
 msgstr "Utpakkede spill"
 
-#: port/frontend/shell/settings.cpp:1096
+#: port/frontend/shell/settings.cpp:1110
 msgid "Games from archives, kept unpacked for their next start."
 msgstr "Spill fra arkiver, lagret utpakket til neste start."
 
 #. {0} is the folder they are kept in
-#: port/frontend/shell/settings.cpp:1098
+#: port/frontend/shell/settings.cpp:1112
 msgid "Deletes the copies of games unpacked from their archives, kept in {0}. Each is unpacked again the next time it starts; when room is needed, the copies used longest ago go by themselves."
 msgstr "Sletter kopiene av spill som er pakket ut av arkivene sine, lagret i {0}. Hvert spill pakkes ut igjen neste gang det starter; når det trengs plass, forsvinner kopiene som er brukt for lengst siden, av seg selv."
 
-#: port/frontend/shell/settings.cpp:1129
+#: port/frontend/shell/settings.cpp:1143
 msgid "Back to defaults"
 msgstr "Tilbake til standard"
 
-#: port/frontend/shell/settings.cpp:1131
+#: port/frontend/shell/settings.cpp:1145
 msgid "This game goes back to its side's settings."
 msgstr "Dette spillet bruker sidens innstillinger igjen."
 
-#: port/frontend/shell/settings.cpp:1132
+#: port/frontend/shell/settings.cpp:1146
 msgid "Clears this game's own settings, so it uses its side's settings again, like every other game."
 msgstr "Fjerner spillets egne innstillinger, så det bruker sidens innstillinger igjen, som alle andre spill."
 
 #. a Wii U account by its number, when its name cannot be read
-#: port/frontend/shell/settings.cpp:1149
+#: port/frontend/shell/settings.cpp:1163
 msgid "Account {0}"
 msgstr "Konto {0}"
 
 #. a Wii U game's save that all its accounts share
-#: port/frontend/shell/settings.cpp:1151
+#: port/frontend/shell/settings.cpp:1165
 msgid "Every account's"
 msgstr "Alle kontoers"
 
-#: port/frontend/shell/settings.cpp:1152
+#: port/frontend/shell/settings.cpp:1166
 msgid "Save data"
 msgstr "Lagrede data"
 
 #. a 3DS game's extra data (its extdata), which some games keep beside their saves
-#: port/frontend/shell/settings.cpp:1154
+#: port/frontend/shell/settings.cpp:1168
 msgid "Extra data"
 msgstr "Ekstra data"
 
-#: port/frontend/shell/settings.cpp:1155
+#: port/frontend/shell/settings.cpp:1169
 msgid "{0} save state"
 msgid_plural "{0} save states"
 msgstr[0] "{0} lagret tilstand"
 msgstr[1] "{0} lagrede tilstander"
 
-#: port/frontend/shell/settings.cpp:1193
+#: port/frontend/shell/settings.cpp:1207
 msgid "Held: moved to saves-before on the PS5, so it can still come back."
 msgstr "Holdt: flyttes til saves-before på PS5-en, så den kan komme tilbake."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1195
+#: port/frontend/shell/settings.cpp:1209
 msgid "Holding Cross moves these files to {0}/saves-before, in a folder named by the date and time, and the game starts without them next time. Nothing is deleted: copy them back from there (or restore a backup) to have them again."
 msgstr "Når du holder Kryss inne, flyttes filene til {0}/saves-before, i en mappe med dato og klokkeslett, og spillet starter uten dem neste gang. Ingenting slettes: kopier dem tilbake derfra (eller gjenopprett en sikkerhetskopi) for å få dem igjen."
 
-#: port/frontend/shell/settings.cpp:1205
+#: port/frontend/shell/settings.cpp:1219
 msgid "No saves yet"
 msgstr "Ingen lagringer ennå"
 
-#: port/frontend/shell/settings.cpp:1206
+#: port/frontend/shell/settings.cpp:1220
 msgid "They appear here once the game has saved."
 msgstr "De vises her så snart spillet har lagret."
 
-#: port/frontend/shell/settings.cpp:1219
+#: port/frontend/shell/settings.cpp:1233
 msgid "This game's saves, to the first USB drive."
 msgstr "Spillets lagringer til den første USB-stasjonen."
 
-#: port/frontend/shell/settings.cpp:1220
+#: port/frontend/shell/settings.cpp:1234
 msgid "Copies this game's saves (every account's, on the Wii U) and its save states to PS5CEMU-HAR-saves on the first USB drive plugged in, in a folder named by the date and time, the same way a backup of every side's saves is made."
 msgstr "Kopierer spillets lagringer (alle kontoers, på Wii U) og de lagrede tilstandene til PS5CEMU-HAR-saves på den første tilkoblede USB-stasjonen, i en mappe med dato og klokkeslett, på samme måte som en sikkerhetskopi av alle siders lagringer."
 
-#: port/frontend/shell/settings.cpp:1237
+#: port/frontend/shell/settings.cpp:1251
 msgid "No backup on the drives plugged in has this game's saves."
 msgstr "Ingen sikkerhetskopi på de tilkoblede stasjonene har lagringer av dette spillet."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1239
+#: port/frontend/shell/settings.cpp:1253
 msgid "Puts this game's saves from the chosen backup back where they came from, and nothing else. Its saves there now are moved first to {0}/saves-before, so nothing is lost."
 msgstr "Legger spillets lagringer fra den valgte sikkerhetskopien tilbake der de kom fra, og ingenting annet. Lagringene som er der nå, flyttes først til {0}/saves-before, så ingenting går tapt."
 
-#: port/frontend/shell/settings.cpp:1261
+#: port/frontend/shell/settings.cpp:1275
 msgid ""
 "Your own theme: a file such as sunset.json in {0}/themes, read as the app starts, then listed under Theme by its name:\n"
 "{{\"name\": \"Sunset\", \"base\": \"midnight\", \"colours\": {{\"wiiu\": \"#ff7a59\", \"ink-0\": \"#120806\"}}, \"corners\": 0.5, \"motif\": \"slashes\"}}\n"
@@ -5874,26 +5882,26 @@ msgstr ""
 "base: et tema å starte fra (classic, midnight, phantom, terminal). colours: ink-0 til ink-2 (bakgrunnen), text, wiiu, n3ds, nds og nx (hver sides), glass, line, good, warn, bad og focus, som #rrggbb. corners: 0 firkantet til 1.5 rund. motif: side, none, slashes eller grid."
 
 #. {0} is Eden's data folder; {1} its game files folder (the same one unless ProsperoEden chose another)
-#: port/frontend/shell/settings.cpp:1270
+#: port/frontend/shell/settings.cpp:1284
 msgid "Saves: {0}/user/nand/user/save. Updates and DLC: beside a game, in its own folder, or in {1}/updates. Mods and cheats: {1}/mods. Covers and names: {0}/covers, once Eden has read a game. ProsperoEden's own launcher has the rest."
 msgstr "Lagringer: {0}/user/nand/user/save. Oppdateringer og DLC: ved siden av et spill, i sin egen mappe, eller i {1}/updates. Modder og juksekoder: {1}/mods. Omslag og navn: {0}/covers, når Eden har lest et spill. Resten finnes i ProsperoEdens egen starter."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1275
+#: port/frontend/shell/settings.cpp:1289
 msgid "Saves: {0}/melonds/saves (a .sav beside the game is taken the first time). Save states: melonds/states. Cheats: melonds/cheats/<game file>.mch, melonDS's format. DSi games, the DS's wireless and its GBA slot are not there."
 msgstr "Lagringer: {0}/melonds/saves (en .sav ved siden av spillet tas første gang). Lagrede tilstander: melonds/states. Juksekoder: melonds/cheats/<spillfil>.mch, i melonDS-format. DSi-spill, DS-ens trådløse funksjon og GBA-sporet støttes ikke."
 
-#: port/frontend/shell/settings.cpp:1279
+#: port/frontend/shell/settings.cpp:1293
 msgid "On, a QR code here opens the game's second screen in a phone's browser. Nothing to install; the phone must be on the PS5's network."
 msgstr "På: en QR-kode her åpner spillets andre skjerm i nettleseren på en telefon. Ingenting å installere; telefonen må være på PS5-ens nettverk."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1283
+#: port/frontend/shell/settings.cpp:1297
 msgid "Figure dumps go in {0}/figures: skylanders, infinity and dimensions. Switch a portal on here, start the game, then put figures on it from the in-game menu (touchpad click + Options > USB devices)."
 msgstr "Figurdumper legges i {0}/figures: skylanders, infinity og dimensions. Slå på en portal her, start spillet, og sett så figurer på den fra spillmenyen (klikk på styreflaten + OPTIONS > USB-enheter)."
 
 #. {0} is the app's version; {1} its data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on; {2} Eden's game files folder, /data/ps5cemu/eden
-#: port/frontend/shell/settings.cpp:1288
+#: port/frontend/shell/settings.cpp:1302
 msgid ""
 "Cemu, the Wii U emulator, by the Cemu team and its contributors; RADV on the PS5 by Mihawk-99 and mpereiraesaa; the community graphic packs' authors.\n"
 "Azahar, the 3DS emulator, by the Azahar team and the Citra contributors before them; Mihawk-99's PS5 port of it and dynarmic.\n"
@@ -5924,113 +5932,113 @@ msgstr ""
 "Versjon {0}"
 
 #. the first choice in the language list: the PS5's own ({0}, in its own words)
-#: port/frontend/shell/settings.cpp:1306
+#: port/frontend/shell/settings.cpp:1320
 msgid "The PS5's language: {0}"
 msgstr "PS5-ens språk: {0}"
 
-#: port/frontend/shell/settings.cpp:1331
+#: port/frontend/shell/settings.cpp:1345
 msgid "Language: {0}"
 msgstr "Språk: {0}"
 
-#: port/frontend/shell/settings.cpp:1436
+#: port/frontend/shell/settings.cpp:1452
 msgid "One side at least stays on"
 msgstr "Minst én side forblir på"
 
 #. the Wii U account games start on now ({0}: its name)
-#: port/frontend/shell/settings.cpp:1559 port/frontend/shell/settings.cpp:1717 port/frontend/shell/settings.cpp:1792
+#: port/frontend/shell/settings.cpp:1577 port/frontend/shell/settings.cpp:1735 port/frontend/shell/settings.cpp:1810
 msgid "Games start on {0}'s saves"
 msgstr "Spill starter med {0}s lagringer"
 
-#: port/frontend/shell/settings.cpp:1642
+#: port/frontend/shell/settings.cpp:1660
 msgid "This game has no ID to save settings under"
 msgstr "Dette spillet har ingen ID å lagre innstillinger under"
 
-#: port/frontend/shell/settings.cpp:1740
+#: port/frontend/shell/settings.cpp:1758
 msgid "Backing up {0}'s saves…"
 msgstr "Tar sikkerhetskopi av lagringene til {0} …"
 
-#: port/frontend/shell/settings.cpp:1787
+#: port/frontend/shell/settings.cpp:1805
 msgid "A name for the new account"
 msgstr "Et navn på den nye kontoen"
 
-#: port/frontend/shell/settings.cpp:1804
+#: port/frontend/shell/settings.cpp:1822
 msgid "A new name"
 msgstr "Et nytt navn"
 
-#: port/frontend/shell/settings.cpp:1806
+#: port/frontend/shell/settings.cpp:1824
 msgid "Renamed {0}"
 msgstr "{0} har fått nytt navn"
 
-#: port/frontend/shell/settings.cpp:1815
+#: port/frontend/shell/settings.cpp:1833
 msgid "Backing up every side's saves…"
 msgstr "Tar sikkerhetskopi av alle siders lagringer …"
 
-#: port/frontend/shell/settings.cpp:1904
+#: port/frontend/shell/settings.cpp:1922
 msgid "Starting the 3DS"
 msgstr "Starter 3DS-en"
 
-#: port/frontend/shell/settings.cpp:1913
+#: port/frontend/shell/settings.cpp:1931
 msgid "Your RetroAchievements user name"
 msgstr "Brukernavnet ditt på RetroAchievements"
 
-#: port/frontend/shell/settings.cpp:1916
+#: port/frontend/shell/settings.cpp:1934
 msgid "{0}'s RetroAchievements password"
 msgstr "RetroAchievements-passordet til {0}"
 
-#: port/frontend/shell/settings.cpp:1918
+#: port/frontend/shell/settings.cpp:1936
 msgid "Signing in to RetroAchievements…"
 msgstr "Logger på RetroAchievements …"
 
 #. what clearing the unpacked games did; {1} is the room it made, as in 2.4 GB
-#: port/frontend/shell/settings.cpp:1940
+#: port/frontend/shell/settings.cpp:1958
 msgid "{0} game deleted ({1})"
 msgid_plural "{0} games deleted ({1})"
 msgstr[0] "{0} spill slettet ({1})"
 msgstr[1] "{0} spill slettet ({1})"
 
 #. a held row's result: the covers are on their way
-#: port/frontend/shell/settings.cpp:1947
+#: port/frontend/shell/settings.cpp:1965
 msgid "Downloading in the background"
 msgstr "Laster ned i bakgrunnen"
 
-#: port/frontend/shell/settings.cpp:1968
+#: port/frontend/shell/settings.cpp:1986
 msgid "{0} is deleted; its saves stay"
 msgstr "{0} er slettet; lagringene blir"
 
-#: port/frontend/shell/settings.cpp:1981
+#: port/frontend/shell/settings.cpp:1999
 msgid "Restoring the saves of {0}…"
 msgstr "Gjenoppretter lagringene fra {0} …"
 
-#: port/frontend/shell/settings.cpp:1989
+#: port/frontend/shell/settings.cpp:2007
 msgid "Signed out of RetroAchievements"
 msgstr "Logget av RetroAchievements"
 
-#: port/frontend/shell/settings.cpp:1998
+#: port/frontend/shell/settings.cpp:2016
 msgid "Restoring {0}'s saves of {1}…"
 msgstr "Gjenoppretter lagringene til {0} fra {1} …"
 
 #. one of a game's saves moved out of the way ({0}: which, as its row names it)
-#: port/frontend/shell/settings.cpp:2012
+#: port/frontend/shell/settings.cpp:2030
 msgid "{0}: moved to saves-before"
 msgstr "{0}: flyttet til saves-before"
 
-#: port/frontend/shell/settings.cpp:2023
+#: port/frontend/shell/settings.cpp:2041
 msgid "Done: back to its side's settings"
 msgstr "Ferdig: sidens innstillinger igjen"
 
-#: port/frontend/shell/settings.cpp:2196
+#: port/frontend/shell/settings.cpp:2214
 msgid "Scan it, or open"
 msgstr "Skann den, eller åpne"
 
-#: port/frontend/shell/settings.cpp:2202
+#: port/frontend/shell/settings.cpp:2220
 msgid "Same network as the PS5. Nothing to install: the browser is enough. Sound stays on the PS5. Any browser on the network can see it and touch."
 msgstr "Samme nettverk som PS5-en. Ingenting å installere: nettleseren holder. Lyden blir på PS5-en. Alle nettlesere på nettverket kan se den og berøre den."
 
-#: port/frontend/shell/settings.cpp:2234
+#: port/frontend/shell/settings.cpp:2252
 msgid "Support PS5-ECAM"
 msgstr "Støtt PS5-ECAM"
 
-#: port/frontend/shell/settings.cpp:2245
+#: port/frontend/shell/settings.cpp:2263
 msgid "PS5-ECAM is free. If it brings your games back, you can support its work here."
 msgstr "PS5-ECAM er gratis. Hvis den gir deg spillene dine tilbake, kan du støtte arbeidet her."
 

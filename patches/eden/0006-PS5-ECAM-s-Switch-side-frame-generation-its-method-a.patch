@@ -1,0 +1,98 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Thu, 22 Oct 2026 00:33:51 +0000
+Subject: [PATCH] PS5-ECAM's Switch side: frame generation, its method and the
+ speed limit for the game it starts
+
+PS5-ECAM's launcher has this program's Frame generation (with MihawkGen) and Speed limit on its
+Switch side, for the side and for each game, and starts a game with them as --set frame_gen,
+frame_gen_method and speed_limit. They go over Settings and the game's own for that session as the
+other --set settings do: PreferencesFor for frame generation, PerformanceFor (LoadPerformance's,
+with the session's speed limit) for the speed limit.
+---
+ headless/main.cpp         |  5 +++--
+ headless/settings_store.h | 27 ++++++++++++++++++++++-----
+ 2 files changed, 25 insertions(+), 7 deletions(-)
+
+diff --git a/headless/main.cpp b/headless/main.cpp
+index 67475bb..db0819e 100644
+--- a/headless/main.cpp
++++ b/headless/main.cpp
+@@ -1320,8 +1320,9 @@ int main(int argc, char** argv) {
+                                     " Hz, ASTC textures " + (astc_full ? "decoded" : "as BC3")).c_str());
+             // Speed against accuracy ("performance" in the settings file, settings_store.h): each
+             // one is off unless chosen there, for every game or for this one. The levels start
+-            // every session at their exact values (above), so one that is not chosen is off.
+-            const auto speed = Eden::LoadPerformance(eden_game_title_id(guest));
++            // every session at their exact values (above), so one that is not chosen is off. The
++            // speed limit PS5CEMU-HAR's Switch side started the game with goes over them.
++            const auto speed = Eden::PerformanceFor(eden_game_title_id(guest));
+             Settings::values.use_asynchronous_shaders = speed.async_shaders;
+             if (speed.fast_gpu) {
+                 // Nothing calls UpdateGPUAccuracy() here; set the live value too.
+diff --git a/headless/settings_store.h b/headless/settings_store.h
+index 6a49190..c911ffb 100644
+--- a/headless/settings_store.h
++++ b/headless/settings_store.h
+@@ -560,18 +560,22 @@ inline bool SavePreferences(const Preferences& value, const std::string& file =
+ }
+ 
+ // PS5CEMU-HAR's Switch side starts a game with its own launcher's settings for it (--set key=value,
+-// forwarded_launch.h): its resolution, upscaling filter, ASTC textures, overlay, volume, vibration
+-// and console mode, over Settings and the game's own for that session; -1 where it gave none.
++// forwarded_launch.h): its resolution, upscaling filter, ASTC textures, overlay, volume, vibration,
++// console mode, frame generation with its method, and speed limit, over Settings and the game's own
++// for that session; -1 (no speed limit's text) where it gave none.
+ struct SessionSettings {
+     int resolution = -1, upscaling_filter = -1, astc_textures = -1, hud = -1, volume = -1, docked = -1, vibration = -1;
++    int frame_gen = -1, frame_gen_method = -1;
++    std::string speed_limit;  // performance's speed_limit as the file writes it, which PerformanceFor reads
+ };
+ inline SessionSettings& Session() {
+     static SessionSettings settings;
+     return settings;
+ }
+-// One of them by its key in this file (video's resolution, upscaling_filter, astc_textures and
+-// fps_overlay, audio's volume, controls' vibration, a game's console_mode) and value as the file
+-// has it; false when the key or the value is not one of those.
++// One of them by its key in this file (video's resolution, upscaling_filter, astc_textures,
++// fps_overlay, frame_gen and frame_gen_method, audio's volume, controls' vibration, a game's
++// console_mode, performance's speed_limit) and value as the file has it; false when the key or the
++// value is not one of those (a speed limit's value is checked as the session reads it).
+ inline bool SetSessionSetting(std::string_view key, std::string_view value) {
+     const std::string text{value};
+     const auto index = [&](const char* const* keys, int count) { return KeyIndex(text, keys, count, -1); };
+@@ -582,6 +586,9 @@ inline bool SetSessionSetting(std::string_view key, std::string_view value) {
+     else if (key == "fps_overlay") session.hud = text == "1" || text == "true" ? 1 : text == "0" || text == "false" ? 0 : -1;
+     else if (key == "vibration") session.vibration = text == "1" || text == "true" ? 1 : text == "0" || text == "false" ? 0 : -1;
+     else if (key == "console_mode") session.docked = text == "docked" ? 1 : text == "handheld" ? 0 : -1;
++    else if (key == "frame_gen") session.frame_gen = text == "1" || text == "true" ? 1 : text == "0" || text == "false" ? 0 : -1;
++    else if (key == "frame_gen_method") session.frame_gen_method = index(kFrameGenMethodKeys, int(std::size(kFrameGenMethodKeys)));
++    else if (key == "speed_limit") session.speed_limit = text;
+     else if (key == "volume") {
+         int volume = -1;
+         if (!text.empty() && text.size() <= 3 && std::all_of(text.begin(), text.end(), [](char c) { return c >= '0' && c <= '9'; }))
+@@ -842,6 +849,8 @@ inline Preferences PreferencesFor(uint64_t title_id, const std::string& file) {
+     if (session.hud >= 0) result.hud = session.hud == 1;
+     if (session.volume >= 0) result.volume = session.volume;
+     if (session.vibration >= 0) result.vibration = session.vibration == 1;
++    if (session.frame_gen >= 0) result.frame_gen = session.frame_gen == 1;
++    if (session.frame_gen_method >= 0) result.frame_gen_method = session.frame_gen_method;
+     return result;
+ }
+ 
+@@ -914,6 +923,14 @@ inline bool SavePerformance(uint64_t title_id, const PerformanceSettings& value,
+     return Settings::Write(document, file);
+ }
+ 
++// The values a session of a game uses: LoadPerformance's, with the speed limit PS5CEMU-HAR's Switch
++// side started it with over them (Session; a value that is not one of kSpeedLimitKeys leaves them).
++inline PerformanceSettings PerformanceFor(uint64_t title_id, const std::string& file = SettingsFile()) {
++    PerformanceSettings result = LoadPerformance(title_id, file);
++    result.speed_limit = KeyIndex(Session().speed_limit, kSpeedLimitKeys, int(std::size(kSpeedLimitKeys)), result.speed_limit);
++    return result;
++}
++
+ // Library > Game settings > Mods: the names of the game's mods that are switched off (mods.h). A
+ // mod is on unless it is listed, so one added later is used without a visit to the launcher.
+ inline std::vector<std::string> LoadDisabledMods(uint64_t title_id, const std::string& file = SettingsFile()) {
