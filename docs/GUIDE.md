@@ -283,6 +283,8 @@ these, held (none has a button until you give it one):
 - **Touch at the cursor:** touches the touch screen where the touchpad's cursor is, as a click of
   the touchpad does. Move your finger on the touchpad and hold the button to draw.
 - **Fast forward:** the game runs as fast as it can while held.
+- **Fast forward, on and off:** a press runs the game as fast as it can, and the next press puts it
+  back to its speed.
 - **Rewind** (DS): the game runs back, up to the last 15 seconds, while held, and goes on from
   there when you let go. The 3DS has no rewind.
 

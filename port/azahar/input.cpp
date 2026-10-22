@@ -40,8 +40,9 @@ namespace ps5azahar::input
 		bool s_sticksHeldOver = false, s_touchHeldOver = false;
 		// The game's loop's too: the inputs of the app's own actions (controls.h), and whether fast
 		// forward is on
-		PadInput s_touchInput = PadInput::None, s_fastInput = PadInput::None;
+		PadInput s_touchInput = PadInput::None, s_fastInput = PadInput::None, s_fastToggleInput = PadInput::None;
 		bool s_fastForward = false;
+		bool s_fastLatched = false, s_fastTogglePressed = false; // Fast forward, on and off: on, and its button down
 
 		constexpr float kStickRest = 0.25f; // a stick nearer the middle than this is let go of
 
@@ -239,6 +240,8 @@ namespace ps5azahar::input
 		profile.use_touch_from_button = false;
 		s_touchInput = MappedInput(settings, Button::TouchAtCursor);
 		s_fastInput = MappedInput(settings, Button::FastForward);
+		s_fastToggleInput = MappedInput(settings, Button::FastToggle);
+		s_fastLatched = false;
 	}
 
 	void Shutdown()
@@ -303,7 +306,12 @@ namespace ps5azahar::input
 				// the app's own actions (controls.h), from what is left for the game: a touch where the
 				// cursor is, as the touchpad's click (#59), and fast forward (#54)
 				touch = touch || Amount(sample, s_touchInput) > 0.5f;
-				fast = Amount(sample, s_fastInput) > 0.5f;
+				// and fast forward on from one press of its toggle to the next
+				const bool toggle = Amount(sample, s_fastToggleInput) > 0.5f;
+				if (toggle && !s_fastTogglePressed)
+					s_fastLatched = !s_fastLatched;
+				s_fastTogglePressed = toggle;
+				fast = Amount(sample, s_fastInput) > 0.5f || s_fastLatched;
 			}
 			if (!blocked && data.touchCount > 0)
 			{
