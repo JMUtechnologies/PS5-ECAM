@@ -19,6 +19,7 @@ Each idea done is marked **Done** where it is listed below, with its commit.
 | [S6](#s6) | [`6536915`](https://github.com/premohq/PS5-ECAM/commit/6536915) | **Back up to USB** takes the Switch's saves and Eden's user profiles, and restores them |
 | [S5](#s5) | [`a7c6115`](https://github.com/premohq/PS5-ECAM/commit/a7c6115) | GitHub Actions runs the string table check and the PC tests at every push and pull request |
 | [G1](#g1) | [`6f8dcd8`](https://github.com/premohq/PS5-ECAM/commit/6f8dcd8) | Touchpad click + Square saves a state, + Triangle held loads it (3DS and DS) |
+| [P1](#p1) | [`86fff8a`](https://github.com/premohq/PS5-ECAM/commit/86fff8a) | **Add files to the PS5** on the remote touch screen's page: games, Switch keys and firmware, amiibo and music from a phone's browser |
 
 Being worked on separately (not here): the Switch side's in-game menu, its settings and button
 remapping ([N1](#n1)), its rooms ([I2](#i2)), ReShade on the Wii U side ([I1](#i1)), and the box art
@@ -277,7 +278,7 @@ players 1 to 4), flash on an achievement, or take the cover's colour.
 The remote touch screen's HTTP server (`port/stream`) already reaches every phone on the network. It can
 do more.
 
-<a id="p1"></a>**P1. Add games, keys and saves from a browser** (M)
+<a id="p1"></a>**P1. Add games, keys and saves from a browser** (M) · **Done:** [`86fff8a`](https://github.com/premohq/PS5-ECAM/commit/86fff8a), without the PIN or saves: the same network switch as the touch screen, and fixed folders
 An upload page, behind a PIN shown on the TV, that puts each file where it goes: a game in its side's
 folder, `prod.keys` in `eden/keys`, a CIA to install. No FTP client and no USB drive. Provenance on iOS
 has a built-in web server for the same thing.
