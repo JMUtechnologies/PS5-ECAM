@@ -25,7 +25,7 @@ namespace ps5shell
 		// the release notes' highlights: changed with each release that has something to say
 		const News kNews[] = {
 			// tr: What's new: the Switch side, Eden in ProsperoEden's PS5 port
-			{Icon::Play, TrMark("Nintendo Switch"), TrMark("Switch games on Eden, a fourth system, with ProsperoEden's launcher for mods, cheats and updates.")},
+			{Icon::Play, TrMark("Nintendo Switch"), TrMark("Switch games on Eden, a fourth system, with the app's own loading screen and in-game menu.")},
 			// tr: What's new: the app's new name, PS5-ECAM (left as it is)
 			{Icon::Sparkle, TrMark("A new name: PS5-ECAM"), TrMark("Four consoles in one app, and a new icon to match.")},
 			{Icon::Drive, TrMark("Games in archives"), TrMark("Wii U, 3DS and DS games in .zip, .7z and .rar files, unpacked as they start.")},

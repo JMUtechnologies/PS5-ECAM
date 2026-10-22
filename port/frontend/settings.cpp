@@ -98,6 +98,7 @@ namespace ps5settings
 			ReadBool(json, "nxDocked", n3ds.nxDocked);
 			ReadBool(json, "nxFrameGeneration", n3ds.nxFrameGeneration);
 			ReadInt(json, "nxSpeedLimit", n3ds.nxSpeedLimit, 0, 4);
+			ReadInt(json, "nxCovers", n3ds.nxCovers, 0, 1);
 			ReadString(json, "articAddress", n3ds.articAddress);
 			ReadInt(json, "gameCount", n3ds.gameCount, -1, 1000000);
 			if (json.HasMember("buttons") && json["buttons"].IsObject())
@@ -168,6 +169,8 @@ namespace ps5settings
 			writer.Bool(n3ds.nxFrameGeneration);
 			writer.Key("nxSpeedLimit");
 			writer.Int(n3ds.nxSpeedLimit);
+			writer.Key("nxCovers");
+			writer.Int(n3ds.nxCovers);
 			writer.Key("articAddress");
 			writer.String(n3ds.articAddress.c_str());
 			writer.Key("gameCount");

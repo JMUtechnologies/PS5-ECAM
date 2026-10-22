@@ -68,6 +68,7 @@ namespace ps5settings
 		bool nxDocked = true;		  // the emulated Switch in its dock (the TV's picture), else handheld
 		bool nxFrameGeneration = false; // ProsperoEden's frame generation, with MihawkGen: off, as ProsperoEden has it
 		int nxSpeedLimit = 0;		  // Eden's speed limit: 100%, 150%, 200%, 300% or none (ProsperoEden's kSpeedLimitKeys)
+		int nxCovers = 0;			  // the Switch side's covers: GameTDB's box art, or each game's own icon
 		std::string articAddress;	  // the last Artic Base server's IPv4 address, a 3DS on the network
 		int gameCount = -1;			  // the library's games when last looked for (the start screen's); -1: never
 		std::map<std::string, std::string> buttons; // 3DS button: DualSense input, where not the default

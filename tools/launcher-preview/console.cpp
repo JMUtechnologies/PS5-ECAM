@@ -1084,3 +1084,12 @@ namespace ps5archive
 		return copies;
 	}
 }
+
+// -- the Switch side's hand-over to Eden (its loading screen and in-game menu), in brief: nothing written
+
+#include "eden/eden.h"
+
+namespace ps5eden
+{
+	void WriteSession(const Session&) {}
+}

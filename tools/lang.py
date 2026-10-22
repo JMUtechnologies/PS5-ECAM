@@ -37,6 +37,7 @@ CALLS = {"Tr": (None, 0), "TrC": (0, 1), "TrF": (None, 0), "TrFC": (0, 1), "TrP"
 MENU_FILES = {
     "port/app/ingame.cpp",
     "port/app/ingame3ds.cpp",
+    "port/eden/ingame.cpp",
     "port/app/side_menu.h",
     "port/app/remote_menu.h",
     "port/app/ingame3ds.h",

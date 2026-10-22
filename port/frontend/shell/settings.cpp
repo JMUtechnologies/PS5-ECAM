@@ -197,7 +197,7 @@ namespace ps5shell
 		pages.push_back({"audio", Tr("Audio"), Tr("The games' sound, and the launcher's."), Icon::Speaker});
 		pages.push_back({"controls", Tr("Controls"), IsWiiU() ? Tr("What each player's DualSense is to the Wii U.") :
 				Is3ds()										  ? Tr("The DualSense as the 3DS.") :
-				IsSwitch()									  ? Tr("Vibration, and ProsperoEden's own controls.") :
+				IsSwitch()									  ? Tr("The DualSense's vibration.") :
 																Tr("The DualSense as the DS."),
 			Icon::Pad});
 		// the remote touch screen is this program's: a Switch game runs in Eden's
@@ -636,13 +636,8 @@ namespace ps5shell
 		{
 			toggle("rumble", Tr("Vibration"), settings.rumble, Tr("The DualSense's rumble, in games and in the launcher."),
 				Tr("Off, the DualSense never rumbles, in games or in the launcher. The same on every side."));
-			// a Switch game's buttons are Eden's: its own launcher sets them
-			if (IsSwitch())
-				action(Kind::Link, "eden-controls", Tr("Buttons and controllers"), "ProsperoEden", Tr("Set in ProsperoEden's own Settings > Controls."),
-					Tr("Eden plays Switch games in a program of its own, ProsperoEden's: which DualSense button presses each of the Switch's, the "
-					   "controller a game sees (Pro Controller, Joy-Cons or handheld) and each game's own are in its Settings > Controls. Cross "
-					   "opens it; leaving it comes back here."));
-			else
+			// a Switch game's buttons are the Switch's own, where the DualSense has them
+			if (!IsSwitch())
 			{
 				int index = 0;
 				auto options = TurboOptions(IsWiiU() ? settings.turbo : hand.turbo, index);
@@ -799,14 +794,13 @@ namespace ps5shell
 				Is3ds()	 ? Tr("Your 3DS games: .3ds or .cci, .cxi, .3dsx and Azahar's compressed dumps, decrypted, alone or in .zip, .7z or .rar "
 						   "archives, here or in the folders in it. CIA files are installed (Install a CIA file). Encrypted dumps do not start, "
 						   "with keys or without: decrypt them on your 3DS first (GodMode9).") :
-				IsSwitch() ? Tr("Your Switch games: .nsp and .xci files, alone or each in a folder of its own with its update and DLC. Eden's own "
-							   "folder is the default: ProsperoEden's library lists the same games.") :
+				IsSwitch() ? Tr("Your Switch games: .nsp and .xci files, alone or each in a folder of its own with its update and DLC.") :
 						   Tr("Your DS games: .nds files, alone or in .zip, .7z or .rar archives, here or in the folders in it."));
 			action(Kind::Action, "rescan", Tr("Look for games now"), m_scanning ? Tr("Looking…") : "", Tr("This side's folder, again."),
 				Tr("Looks through this side's folder again, as it does each time the side opens."));
 			if (IsSwitch())
 			{
-				// Eden's own files: the keys and firmware it needs, and its launcher for the rest
+				// Eden's own files: the keys and firmware it needs
 				const std::string files = ps5eden::GameFilesFolder();
 				const bool keys = ps5eden::KeysFound(), firmware = ps5eden::FirmwareFound();
 				action(Kind::Action, "nxkeys", Tr("Switch keys"), keys ? std::string(Tr("prod.keys found")) : std::string(Tr("Missing")),
@@ -819,9 +813,6 @@ namespace ps5shell
 					TrF("Many Switch games need the console's own system files: its firmware's .nca files, dumped from your Switch, "
 						"in {0}/firmware. No firmware comes with PS5-ECAM.",
 						files));
-				action(Kind::Link, "eden", Tr("Open ProsperoEden"), "", Tr("Updates and DLC, mods, cheats, profiles and more."),
-					Tr("ProsperoEden's own launcher, which Eden comes with: its library and game files, updates and DLC, mods and cheats, each "
-					   "game's own settings, profiles, rooms and downloads. Leaving it comes back here."));
 			}
 			else
 			{
@@ -972,6 +963,11 @@ namespace ps5shell
 			toggle("boxart", Tr("Box art from GameTDB"), settings.boxArt, Tr("Covers for the library, downloaded once."),
 				Tr("The first time a game shows up, its cover is downloaded from GameTDB (art.gametdb.com) by the ID on its box. Off: nothing "
 				"more is downloaded."));
+			// the Switch side's covers: GameTDB's box art, or each game's own icon, as the Switch's home menu has them
+			if (IsSwitch())
+				choice("nx-covers", Tr("Switch covers"), {Tr("Box art"), Tr("Game icons")}, hand.nxCovers, Tr("GameTDB's box art, or each game's own icon."),
+					Tr("Box art is GameTDB's, found by each game's name. Game icons are the games' own, read from their files, as the Switch's "
+					   "home menu shows them. A picture beside a game (Game.png or Game.jpg) is its cover either way."));
 			// downloading the covers now: the missing ones, or every one again
 			int missing = 0;
 			for (const Game& game : m_games)
@@ -1275,9 +1271,9 @@ namespace ps5shell
 					   "motif: side, none, slashes or grid.",
 				ps5paths::Root());
 		if (page == "files" && IsSwitch())
-			// tr: {0} is Eden's data folder; {1} its game files folder (the same one unless ProsperoEden chose another)
+			// tr: {0} is Eden's data folder; {1} its game files folder (the same one unless another was chosen)
 			return TrF("Saves: {0}/user/nand/user/save. Updates and DLC: beside a game, in its own folder, or in {1}/updates. Mods and "
-					   "cheats: {1}/mods. Covers and names: {0}/covers, once Eden has read a game. ProsperoEden's own launcher has the rest.",
+					   "cheats: {1}/mods. Covers and names: {0}/covers, once Eden has read a game.",
 				ps5eden::DataFolder(), ps5eden::GameFilesFolder());
 		if (page == "files" && IsDs())
 			// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
@@ -1384,6 +1380,8 @@ namespace ps5shell
 			hand.nxDocked = index == 0;
 		else if (id == "nx-speedlimit")
 			hand.nxSpeedLimit = std::clamp(index, 0, 4);
+		else if (id == "nx-covers")
+			hand.nxCovers = std::clamp(index, 0, 1);
 		else if (id == "theme")
 			settings.ui.theme = index >= 0 && index < (int)m_themes.size() ? m_themes[index].id : "";
 		else if (id == "abeverywhere")
@@ -1594,6 +1592,13 @@ namespace ps5shell
 			ps5boxart::SetEnabled(m_settings.boxArt);
 			if (m_settings.boxArt)
 				FetchBoxArt();
+		}
+		if (id == "nx-covers")
+		{
+			// each game's cover again, the other kind: box art fetched where it is missing
+			for (Game& game : m_games)
+				game.boxArt = SwitchCover(game.entry.game);
+			FetchBoxArt();
 		}
 		SaveSettings();
 	}
@@ -1887,8 +1892,6 @@ namespace ps5shell
 		}
 		else if (id == "player")
 			PlayerOpen(row.index);
-		else if (id == "eden" || id == "eden-controls")
-			OpenEden();
 		else if (id == "nxkeys" || id == "nxfirmware")
 			OpenHelp(row.label, row.help);
 		else if (id == "install")

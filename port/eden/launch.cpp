@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "eden.h"
+#include "ingame.h"
 #include "library.h"
 #include "../app/lang.h"
 #include "../app/paths.h"
@@ -81,16 +82,30 @@ namespace ps5eden
 		error = ps5lang::Tr("The console did not start Eden. The boot log says what it answered.");
 	}
 
-	void OpenLauncher(std::string& error)
+	void WriteSession(const Session& session)
 	{
-		if (!Available())
+		// a line each, key=value, its line breaks taken out
+		auto line = [](std::ofstream& out, const char* key, std::string value) {
+			std::replace(value.begin(), value.end(), '\n', ' ');
+			out << key << '=' << value << '\n';
+		};
+		const std::string file = ps5ingamenx::SessionFile(), staged = file + ".new";
 		{
-			error = ps5lang::Tr("This build has no Switch emulator: eden/eboot.bin is not in the app's folder.");
-			return;
+			std::ofstream out(staged, std::ios::trunc);
+			line(out, "title", session.title);
+			line(out, "details", session.details);
+			line(out, "cover", session.cover);
+			line(out, "language", ps5lang::Current());
+			line(out, "font", ps5lang::GetMenuFont().path);
+			line(out, "face", std::to_string(ps5lang::GetMenuFont().face));
+			line(out, "exit", ps5emu::ExitAfterGame() ? "1" : "0"); // a home screen tile's game: its menu quits to the home screen
+			if (!out)
+			{
+				ps5log::Line("[switch] {} could not be written: Eden shows its own loading screen", staged);
+				return;
+			}
 		}
-		ps5log::Line("[switch] opening Eden's own launcher");
-		ps5emu::LoadExecApp(kProgram, {}, true, RequestFile());
-		error = ps5lang::Tr("The console did not start Eden. The boot log says what it answered.");
+		std::rename(staged.c_str(), file.c_str());
 	}
 
 	std::string RequestFile()

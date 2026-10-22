@@ -1,0 +1,447 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Thu, 22 Oct 2026 04:40:03 +0000
+Subject: [PATCH] PS5-ECAM's Switch side: its loading screen and in-game menu,
+ drawn over Eden's frames
+
+PS5-ECAM's port/eden/ingame.h, compiled in from the checkout PS5ECAM_PORT names (headless/ecam.cmake,
+with Dear ImGui): its loading screen in place of ProsperoEden's (vulkan_hud_draw.inc leaves its own out),
+and its in-game menu on touchpad click + Options, as on PS5-ECAM's other sides. Both are recorded into
+the window pass around its own drawing (ecam_bridge.h). While the menu is up, player 1's controller is
+the menu's and every game controller is still; the game runs on behind it, as Cemu's does behind
+PS5-ECAM's Wii U menu, since system.Pause() stays out of main.cpp (tools/check-gpu-producer-stop.py).
+What the menu changes (upscaling filter, frame generation, speed limit, volume) applies at once; Quit to
+the library leaves as touchpad + L1 does.
+---
+ headless/CMakeLists.txt            |  5 +++
+ headless/devices.h                 |  3 ++
+ headless/ecam.cmake                | 32 ++++++++++++++
+ headless/ecam_bridge.h             | 12 ++++++
+ headless/graphics.cpp              |  7 +++
+ headless/main.cpp                  | 69 +++++++++++++++++++++++++++++-
+ headless/pad.cpp                   | 24 +++++++++++
+ headless/vulkan.cmake              |  3 +-
+ headless/vulkan_ecam_composite.inc |  5 +++
+ headless/vulkan_hud_draw.inc       | 16 ++++++-
+ headless/vulkan_hud_prepare.inc    | 17 ++++++++
+ tools/prepare-vulkan-port.py       | 17 ++++++--
+ 12 files changed, 204 insertions(+), 6 deletions(-)
+ create mode 100644 headless/ecam.cmake
+ create mode 100644 headless/ecam_bridge.h
+ create mode 100644 headless/vulkan_ecam_composite.inc
+
+diff --git a/headless/CMakeLists.txt b/headless/CMakeLists.txt
+index 3495139..0dcb7e0 100644
+--- a/headless/CMakeLists.txt
++++ b/headless/CMakeLists.txt
+@@ -2339,6 +2339,7 @@ if(NOT EDEN_PS5_VULKAN)
+     list(FILTER video_sources EXCLUDE REGEX "^(renderer_vulkan|vulkan_common)/")
+ else()
+     include("${EDEN_PORT_DIR}/vulkan.cmake")
++    include("${EDEN_PORT_DIR}/ecam.cmake")
+ endif()
+ list(REMOVE_ITEM video_sources video_core.cpp gpu.cpp)
+ list(APPEND video_sources "${PORT_BUILD_DIR}/video_core.cpp")
+@@ -3124,6 +3125,10 @@ write_derived("${PORT_BUILD_DIR}/version/app_version.h"
+     "// Generated from sce_sys/param.json (contentVersion).\n#pragma once\n#define EDEN_APP_VERSION \"${app_version}\"\n")
+ target_include_directories(eden-headless PRIVATE "${PORT_BUILD_DIR}/version")
+ target_link_libraries(eden-headless PRIVATE core eden-pad)
++if(TARGET ecam_ingame)
++    target_link_libraries(eden-headless PRIVATE ecam_ingame)
++    target_compile_definitions(eden-headless PRIVATE EDEN_ECAM=1)
++endif()
+ # A game's text entry on the PS5's own on-screen keyboard (system_keyboard.h, keyboard_applet.h).
+ target_sources(eden-headless PRIVATE "${EDEN_PORT_DIR}/system_keyboard.cpp")
+ target_sources(eden-headless PRIVATE "${EDEN_PORT_DIR}/multiplayer.cpp")
+diff --git a/headless/devices.h b/headless/devices.h
+index 76175e6..ab175a2 100644
+--- a/headless/devices.h
++++ b/headless/devices.h
+@@ -77,6 +77,8 @@ public:
+     bool Poll();
+     bool TakeReturnToMenu() { return return_to_menu.exchange(false); }
+     bool TakeHudToggle() { return hud_toggle.exchange(false); }
++    // PS5-ECAM's in-game menu (its port/eden/ingame.h): touchpad click + Options, as on its other sides
++    bool TakeEcamToggle() { return ecam_toggle.exchange(false); }
+     // Players with a controller (bit per player), and those whose controller came or went.
+     unsigned ConnectedPlayers() const { return connected_players.load(); }
+     unsigned TakeConnectionChanges() { return connection_changes.exchange(0); }
+@@ -127,6 +129,7 @@ private:
+     bool owns_user_service = false;
+     std::atomic<bool> return_to_menu = false;
+     std::atomic<bool> hud_toggle = false;
++    std::atomic<bool> ecam_toggle = false;
+     std::atomic<unsigned> connected_players = 0;
+     std::atomic<unsigned> connection_changes = 0;
+     unsigned polls_since_scan = 0;
+diff --git a/headless/ecam.cmake b/headless/ecam.cmake
+new file mode 100644
+index 0000000..021c75f
+--- /dev/null
++++ b/headless/ecam.cmake
+@@ -0,0 +1,32 @@
++# PS5-ECAM's Switch side: its loading screen and in-game menu (PS5-ECAM's port/eden/ingame.h), drawn
++# here over Eden's own frames, in place of ProsperoEden's loading screen. Its code and Dear ImGui come
++# from the PS5-ECAM checkout that PS5ECAM_PORT names (its port/ folder: tools/build-eden.sh sets it).
++# Without it, Eden is built as ProsperoEden's, with its own screens.
++set(PS5ECAM_PORT "$ENV{PS5ECAM_PORT}" CACHE PATH "PS5-ECAM's port/ folder, for the Switch side's screens")
++if(PS5ECAM_PORT AND EXISTS "${PS5ECAM_PORT}/eden/ingame.cpp")
++    set(ecam_imgui "${PS5ECAM_PORT}/../.deps/Cemu/dependencies/imgui")
++    add_library(ecam_ingame STATIC
++        "${ecam_imgui}/imgui.cpp" "${ecam_imgui}/imgui_draw.cpp" "${ecam_imgui}/imgui_tables.cpp"
++        "${ecam_imgui}/imgui_widgets.cpp" "${ecam_imgui}/backends/imgui_impl_vulkan.cpp"
++        "${PS5ECAM_PORT}/eden/ingame.cpp" "${PS5ECAM_PORT}/eden/ingame_log.cpp"
++        "${PS5ECAM_PORT}/app/lang.cpp" "${PS5ECAM_PORT}/app/keyboard.cpp" "${PS5ECAM_PORT}/ui/text.cpp")
++    target_include_directories(ecam_ingame PUBLIC "${PS5ECAM_PORT}/eden"
++        PRIVATE "${ecam_imgui}" "${ecam_imgui}/backends" "${PS5ECAM_PORT}")
++    # its Vulkan through Eden's device (ingame.cpp loads what it calls), text without FreeType's fonts
++    target_compile_definitions(ecam_ingame PRIVATE VK_NO_PROTOTYPES IMGUI_IMPL_VULKAN_NO_PROTOTYPES PS5ECAM_TEXT_NO_FONTS)
++    target_compile_options(ecam_ingame PRIVATE -Wno-unused-function -Wno-unused-parameter -Wno-unused-variable
++        -Wno-unused-const-variable -Wno-missing-field-initializers
++        $<$<BOOL:${PS5_NATIVE}>:-femulated-tls>)
++    set_target_properties(ecam_ingame PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
++    target_link_libraries(ecam_ingame PUBLIC Vulkan::Headers) # ingame.h names Vulkan's types
++    if(TARGET fmt::fmt)
++        target_link_libraries(ecam_ingame PUBLIC fmt::fmt)
++    elseif(TARGET fmt)
++        target_link_libraries(ecam_ingame PUBLIC fmt)
++    endif()
++    foreach(ecam_user video_core eden-pad)
++        target_link_libraries(${ecam_user} PRIVATE ecam_ingame)
++        target_compile_definitions(${ecam_user} PRIVATE EDEN_ECAM=1)
++    endforeach()
++    message(STATUS "PS5-ECAM's Switch screens: from ${PS5ECAM_PORT}")
++endif()
+diff --git a/headless/ecam_bridge.h b/headless/ecam_bridge.h
+new file mode 100644
+index 0000000..be45461
+--- /dev/null
++++ b/headless/ecam_bridge.h
+@@ -0,0 +1,12 @@
++// SPDX-License-Identifier: GPL-3.0-or-later
++#pragma once
++// PS5-ECAM's loading screen and in-game menu (its port/eden/ingame.h) in the Vulkan renderer: the
++// instance its drawing loads Vulkan from, set as each frame is handed to the display.
++#ifdef EDEN_ECAM
++#include "ingame.h"
++
++namespace Eden::EcamVulkan {
++inline VkInstance instance = VK_NULL_HANDLE;
++inline PFN_vkGetInstanceProcAddr gipa = nullptr;
++}  // namespace Eden::EcamVulkan
++#endif
+diff --git a/headless/graphics.cpp b/headless/graphics.cpp
+index ff532f4..2e7adb3 100644
+--- a/headless/graphics.cpp
++++ b/headless/graphics.cpp
+@@ -38,6 +38,10 @@ extern "C" void eden_glapi_tls_context_init() {}
+ extern "C" int sceSystemServiceHideSplashScreen(void);
+ #endif
+ 
++#ifdef EDEN_ECAM
++#include "ingame.h"
++#endif
++
+ namespace Eden {
+ #ifdef EDEN_PS5_VULKAN
+ void PresentVulkanLoading(VideoCore::RendererBase& renderer);
+@@ -742,6 +746,9 @@ void GraphicsWindow::OnFrameDisplayed() {
+             std::printf("EDEN_LOADING_DONE frames=%u seconds=%.2f\n", vulkan_loading_frames,
+                         now - vulkan_loading_start);
+         vulkan_loading = false;
++#ifdef EDEN_ECAM
++        ps5ingamenx::EndLoading();
++#endif
+ #ifdef EDEN_PS5_VULKAN
+         vulkan_hud_clock.Present(now);
+         if (system && now - vulkan_hud_stats_time >= 1.0) {
+diff --git a/headless/main.cpp b/headless/main.cpp
+index db0819e..513746f 100644
+--- a/headless/main.cpp
++++ b/headless/main.cpp
+@@ -135,6 +135,46 @@ extern "C" unsigned long long eden_dmb_dropped, eden_checkbit_fused;
+ #endif
+ #include "profiles.h"
+ #include "stop_limit.h"
++#ifdef EDEN_ECAM
++#include "ingame.h"
++
++// PS5-ECAM's in-game menu (its port/eden/ingame.h): the settings it shows, as this session has them
++static ps5ingamenx::Settings EcamSettings() {
++    ps5ingamenx::Settings settings;
++    switch (Settings::values.scaling_filter.GetValue()) {
++    case Settings::ScalingFilter::Fsr: settings.filter = 1; break;
++    case Settings::ScalingFilter::Bicubic: settings.filter = 2; break;
++    case Settings::ScalingFilter::NearestNeighbor: settings.filter = 3; break;
++    default: settings.filter = 0; break;
++    }
++    const int percent = Settings::values.use_speed_limit.GetValue() ? Settings::values.speed_limit.GetValue() : 0;
++    settings.speedLimit = 4;
++    for (int i = 0; i < 5; ++i)
++        if (Eden::kSpeedLimitPercent[i] == percent) settings.speedLimit = i;
++    settings.volume = Settings::values.volume.GetValue();
++#ifdef EDEN_PS5_MIHAWKGEN
++    settings.frameGeneration = Eden::MihawkGenBridge::active.load();
++    settings.canGenerate = settings.frameGeneration;  // its network is loaded only when the game starts with it
++#endif
++    return settings;
++}
++
++// What the menu changed, at once
++static void EcamApply(const ps5ingamenx::Settings& settings) {
++    static constexpr Settings::ScalingFilter filters[] = {Settings::ScalingFilter::Bilinear, Settings::ScalingFilter::Fsr,
++                                                          Settings::ScalingFilter::Bicubic, Settings::ScalingFilter::NearestNeighbor};
++    Settings::values.scaling_filter.SetValue(filters[std::clamp(settings.filter, 0, 3)]);
++    const int percent = Eden::kSpeedLimitPercent[std::clamp(settings.speedLimit, 0, 4)];
++    Settings::values.use_speed_limit.SetValue(percent > 0);
++    Settings::values.speed_limit.SetValue(static_cast<u16>(percent > 0 ? percent : 100));
++    Settings::values.volume.SetValue(static_cast<u8>(std::clamp(settings.volume, 0, 100)));
++#ifdef EDEN_PS5_MIHAWKGEN
++    if (settings.canGenerate) Eden::MihawkGenBridge::active.store(settings.frameGeneration);
++#endif
++    LOG_INFO(Frontend, "EDEN_ECAM_MENU filter={} speed={} volume={} frame_gen={}", settings.filter, percent, settings.volume,
++             settings.frameGeneration);
++}
++#endif
+ namespace Common {
+ bool SparseTablesAvailable() noexcept; // src/memory_pages.cpp
+ void SetGuestMemoryService(bool on, bool scan, bool dedup) noexcept; // src/guest_memory_service.inc
+@@ -1655,6 +1695,10 @@ int main(int argc, char** argv) {
+                         std::this_thread::sleep_for(std::chrono::milliseconds(8));
+                     }
+                 });
++#endif
++#ifdef EDEN_ECAM
++                ps5ingamenx::Start(EcamSettings());
++                ps5ingamenx::SetLoading(ps5ingamenx::Step::Game);
+ #endif
+                 Eden::Loading::Set(Eden::Loading::Step::game);
+                 Eden::BootTrace::Line("loading the game");
+@@ -1695,6 +1739,9 @@ int main(int argc, char** argv) {
+                 Eden::BootTrace::Line("game loaded (status %u)", static_cast<unsigned>(loaded));
+                 Eden::Report("loader", "Game loaded; initializing renderer");
+                 Eden::Loading::Set(Eden::Loading::Step::graphics);
++#ifdef EDEN_ECAM
++                ps5ingamenx::SetLoading(ps5ingamenx::Step::Graphics);
++#endif
+ #ifdef EDEN_PS5_OPENGL
+                 // Retain the failure, then release CPU readiness and complete normal
+                 // shutdown before reporting it. Unwinding before OnGpuReady can hang.
+@@ -1731,6 +1778,9 @@ int main(int argc, char** argv) {
+                     std::atomic<size_t> built{0}, total{0};
+                     std::atomic<bool> counted{false};
+                     Eden::Loading::Set(Eden::Loading::Step::shaders);
++#ifdef EDEN_ECAM
++                    ps5ingamenx::SetLoading(ps5ingamenx::Step::Shaders);
++#endif
+                     const auto load_start = std::chrono::steady_clock::now();
+                     std::jthread reporter([&](std::stop_token stop) {
+ #if defined(EDEN_DEV_PROFILE) && defined(PS5_NATIVE)
+@@ -1755,6 +1805,9 @@ int main(int argc, char** argv) {
+                             if (stage != VideoCore::LoadCallbackStage::Build) return;
+                             built = value;
+                             Eden::Loading::Shaders(value, count);
++#ifdef EDEN_ECAM
++                            ps5ingamenx::SetShaders(value, count);
++#endif
+                             total = count;
+                             counted = true;
+ #if defined(EDEN_DEV_PROFILE) && defined(PS5_NATIVE)
+@@ -1833,6 +1886,9 @@ int main(int argc, char** argv) {
+                 }
+                 Eden::TakeGuestFault(); // Nothing from an earlier session belongs to this one.
+                 Eden::Loading::Set(Eden::Loading::Step::starting);
++#ifdef EDEN_ECAM
++                ps5ingamenx::SetLoading(ps5ingamenx::Step::Starting);
++#endif
+                 system.Run();
+ #if defined(EDEN_DEV_PROFILE) && defined(PS5_NATIVE)
+                 Eden::Stall::Trace("main running");
+@@ -1958,7 +2014,18 @@ int main(int argc, char** argv) {
+ #ifdef PS5_NATIVE
+                         room_lost = rooms.GameConnectionLost();
+ #endif
+-                        if (pad->TakeReturnToMenu() || room_lost) {
++#ifdef EDEN_ECAM
++                        // PS5-ECAM's in-game menu (ingame.h): opened and closed, what it changed applied at once,
++                        // and leaving when it asks. The game runs on behind it, its controller still, as Cemu's
++                        // does behind PS5-ECAM's Wii U menu: this port keeps system.Pause() out
++                        // (tools/check-gpu-producer-stop.py)
++                        if (pad->TakeEcamToggle()) ps5ingamenx::ToggleMenu();
++                        if (ps5ingamenx::Settings changed; ps5ingamenx::TakeChanges(changed)) EcamApply(changed);
++                        const bool ecam_leave = ps5ingamenx::TakeLeaveRequest();
++#else
++                        constexpr bool ecam_leave = false;
++#endif
++                        if (pad->TakeReturnToMenu() || room_lost || ecam_leave) {
+                             // From here the player is waiting to leave (stop_limit.h).
+                             Eden::StopLimit::Begin();
+                             std::lock_guard lock(completion->mutex);
+diff --git a/headless/pad.cpp b/headless/pad.cpp
+index 5b0f99b..70ede18 100644
+--- a/headless/pad.cpp
++++ b/headless/pad.cpp
+@@ -1,5 +1,8 @@
+ // SPDX-License-Identifier: GPL-3.0-or-later
+ #include "devices.h"
++#ifdef EDEN_ECAM
++#include "ingame.h"
++#endif
+ #include <algorithm>
+ #include <cmath>
+ #include <numbers>
+@@ -403,6 +406,27 @@ void Pad::Consume(std::size_t player, std::span<const ps5::pad::Data> samples) {
+             slot.touch_chord = true;
+             slot.select_held = false;
+         }
++#ifdef EDEN_ECAM
++        // PS5-ECAM's in-game menu (ingame.h): touchpad click + Options, either side, opens and closes it;
++        // while it is up, player 1's controller is the menu's and every player's game gets a still one
++        constexpr ButtonMask ecam_chord = kButtonTouchPad | kButtonOptions;
++        const bool ecam = (pressed & ecam_chord) == ecam_chord;
++        if (ecam && (last_buttons & ecam_chord) != ecam_chord) ecam_toggle = true;
++        if (ecam) {
++            sample.buttons &= ~ecam_chord;
++            slot.touch_chord = true;
++            slot.select_held = false;
++        }
++        const bool ecam_menu = player == 0 ? ps5ingamenx::Controller(sample.buttons | (pressed & kButtonTouchPad),
++                                                                     sample.left_stick.x, sample.left_stick.y)
++                                           : ps5ingamenx::MenuOpen();
++        if (ecam_menu) {
++            sample = neutral_data(raw.timestamp_us);
++            slot.touch_chord = true;
++            slot.select_held = false;
++            slot.select_pulse = 0;
++        }
++#endif
+         if (!touch && touched) {
+             if (!slot.touch_chord && !slot.select_held) slot.select_pulse = kSelectTapPolls + 1;
+             slot.select_held = false;
+diff --git a/headless/vulkan.cmake b/headless/vulkan.cmake
+index c886224..6c2c341 100644
+--- a/headless/vulkan.cmake
++++ b/headless/vulkan.cmake
+@@ -15,7 +15,8 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+     "${PORT_ROOT}/tools/prepare-vulkan-port.py"
+     "${EDEN_PORT_DIR}/vulkan_hud.vert" "${EDEN_PORT_DIR}/vulkan_hud.frag"
+     "${EDEN_PORT_DIR}/vulkan_hud_prepare.inc" "${EDEN_PORT_DIR}/vulkan_hud_draw.inc"
+-    "${EDEN_PORT_DIR}/vulkan_loading.inc" "${EDEN_PORT_DIR}/vulkan_mihawkgen.inc")
++    "${EDEN_PORT_DIR}/vulkan_loading.inc" "${EDEN_PORT_DIR}/vulkan_mihawkgen.inc"
++    "${EDEN_PORT_DIR}/vulkan_ecam_composite.inc" "${EDEN_PORT_DIR}/ecam_bridge.h")
+ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+     "${EDEN_PORT_DIR}/vulkan_download_batch.inc"
+     "${EDEN_PORT_DIR}/vulkan_gc_downloads.inc"
+diff --git a/headless/vulkan_ecam_composite.inc b/headless/vulkan_ecam_composite.inc
+new file mode 100644
+index 0000000..55cea52
+--- /dev/null
++++ b/headless/vulkan_ecam_composite.inc
+@@ -0,0 +1,5 @@
++#ifdef EDEN_ECAM
++// PS5-ECAM's loading screen and in-game menu (ecam_bridge.h): the instance their drawing loads Vulkan from.
++Eden::EcamVulkan::instance = *instance;
++Eden::EcamVulkan::gipa = dld.vkGetInstanceProcAddr;
++#endif
+diff --git a/headless/vulkan_hud_draw.inc b/headless/vulkan_hud_draw.inc
+index fb99a4b..2adbf78 100644
+--- a/headless/vulkan_hud_draw.inc
++++ b/headless/vulkan_hud_draw.inc
+@@ -6,7 +6,13 @@
+         const uint32_t hud_size_field = (hud.loading & Eden::kHudSizeMask) >> Eden::kHudSizeShift;
+         const uint32_t hud_box = static_cast<uint32_t>(Eden::kHudBoxUnits) * hud_size_field / 2u;
+         const bool loading = Eden::HudLoading(hud);
+-        if (hud.width && (loading || (render_area.width >= hud_units(hud.x + hud.width) &&
++#ifdef EDEN_ECAM
++        // PS5-ECAM's loading screen is drawn in place of this one (ecam_bridge.h)
++        const bool ecam_loading = ecam && ps5ingamenx::DrawsLoading();
++#else
++        const bool ecam_loading = false;
++#endif
++        if (hud.width && !(loading && ecam_loading) && (loading || (render_area.width >= hud_units(hud.x + hud.width) &&
+                                       render_area.height >= hud_units(hud.y + hud_box)))) {
+             const VkRect2D scissor = loading ? VkRect2D{{0, 0}, render_area} :
+                 VkRect2D{{static_cast<int32_t>(hud_units(hud.x)), static_cast<int32_t>(hud_units(hud.y))},
+@@ -32,3 +38,11 @@
+             cmdbuf.PushConstants(hud_pipeline_layout, VK_SHADER_STAGE_FRAGMENT_BIT, constants);
+             cmdbuf.Draw(4, 1, 0, 0);
+         }
++#ifdef EDEN_ECAM
++        if (ecam) {
++            auto target = ecam_target;
++            target.commandBuffer = *cmdbuf;
++            target.insideRenderPass = true;
++            ps5ingamenx::Record(target);
++        }
++#endif
+diff --git a/headless/vulkan_hud_prepare.inc b/headless/vulkan_hud_prepare.inc
+index 41ac240..dd3d7a4 100644
+--- a/headless/vulkan_hud_prepare.inc
++++ b/headless/vulkan_hud_prepare.inc
+@@ -34,3 +34,20 @@
+     const VkPipeline hud_graphics_pipeline = *hud_pipeline;
+     const VkPipelineLayout hud_pipeline_layout = *hud_layout;
+     const VkDescriptorSet hud_descriptor_set = hud_pipeline ? hud_sets[0] : VkDescriptorSet{};
++#ifdef EDEN_ECAM
++    // PS5-ECAM's loading screen and in-game menu (ecam_bridge.h): drawn with the overlay, on the
++    // picture presented, around this pass's own drawing
++    const bool ecam = hud_memory != nullptr && Eden::EcamVulkan::instance != VK_NULL_HANDLE;
++    ps5ingamenx::Target ecam_target{};
++    if (ecam) {
++        ecam_target.getInstanceProcAddr = Eden::EcamVulkan::gipa;
++        ecam_target.instance = Eden::EcamVulkan::instance;
++        ecam_target.physicalDevice = device.GetPhysical();
++        ecam_target.device = *device.GetLogical();
++        ecam_target.queueFamily = device.GetGraphicsFamily();
++        ecam_target.renderPass = renderpass;
++        ecam_target.imageCount = 8;  // ImGui's buffers, more than the frames in flight
++        ecam_target.width = render_area.width;
++        ecam_target.height = render_area.height;
++    }
++#endif
+diff --git a/tools/prepare-vulkan-port.py b/tools/prepare-vulkan-port.py
+index 47f23b9..3c3104d 100644
+--- a/tools/prepare-vulkan-port.py
++++ b/tools/prepare-vulkan-port.py
+@@ -821,13 +821,13 @@ adapt('src/video_core/renderer_vulkan/renderer_vulkan.h',
+ adapt('src/video_core/renderer_vulkan/renderer_vulkan.cpp', 'vulkan_renderer.cpp', [
+     ('#include "video_core/renderer_vulkan/renderer_vulkan.h"',
+      '#include "video_core/renderer_vulkan/renderer_vulkan.h"\n#include "display_refresh.h"\n'
+-     '#include "diagnostics.h"\n#include "hud.h"'),
++     '#include "diagnostics.h"\n#include "hud.h"\n#include "ecam_bridge.h"'),
+     # The overlay's resolution piece (hud.h): the guest's own picture, taken as it is handed to the
+     # display. The OpenGL renderer does not say, so the piece stays off there (vulkan_loading.inc
+     # does the same for the loading screen).
+     ('void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebuffers) {',
+      'void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebuffers) {\n'
+-     + (port / 'vulkan_guest_resolution.inc').read_text()),
++     + (port / 'vulkan_guest_resolution.inc').read_text() + (port / 'vulkan_ecam_composite.inc').read_text()),
+     # The HUD counted the guest rate only: OnFrameDisplayed() runs once per Composite(), while the
+     # frames frame generation adds are presented through PresentManager::Present() (hud.h). Count
+     # every frame handed to the present manager.
+@@ -895,13 +895,24 @@ adapt('src/video_core/renderer_vulkan/present/window_adapt_pass.h',
+ adapt('src/video_core/renderer_vulkan/present/window_adapt_pass.cpp', 'vulkan_window_adapt_pass.cpp', [
+     ('#include "core/frontend/framebuffer_layout.h"',
+      '#include "core/frontend/framebuffer_layout.h"\n#include "hud.h"\n#include "loading_art.h"\n'
+-     '#include "vulkan_hud_shaders.h"'),
++     '#include "vulkan_hud_shaders.h"\n#include "ecam_bridge.h"'),
+     ('const Layout::FramebufferLayout& layout, Frame* dst) {',
+      'const Layout::FramebufferLayout& layout, Frame* dst, MemoryAllocator* hud_memory) {'),
+     ('    scheduler.Record([=](vk::CommandBuffer cmdbuf) {',
+      (port / 'vulkan_hud_prepare.inc').read_text() + '\n    scheduler.Record([=](vk::CommandBuffer cmdbuf) {'),
+     ('        cmdbuf.EndRenderPass();',
+      (port / 'vulkan_hud_draw.inc').read_text() + '\n        cmdbuf.EndRenderPass();'),
++    # PS5-ECAM's loading screen and in-game menu (ecam_bridge.h): what they upload, outside the pass
++    ('        BeginRenderPass(cmdbuf, renderpass, host_framebuffer, render_area);',
++     '#ifdef EDEN_ECAM\n'
++     '        if (ecam) {\n'
++     '            auto target = ecam_target;\n'
++     '            target.commandBuffer = *cmdbuf;\n'
++     '            target.insideRenderPass = false;\n'
++     '            ps5ingamenx::Record(target);\n'
++     '        }\n'
++     '#endif\n'
++     '        BeginRenderPass(cmdbuf, renderpass, host_framebuffer, render_area);'),
+ ])
+ adapt('src/video_core/renderer_vulkan/vk_blit_screen.cpp', 'vulkan_blit_screen.cpp', [
+     ('VkFormat current_swapchain_view_format) {',

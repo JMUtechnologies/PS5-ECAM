@@ -15,6 +15,7 @@
 #include "../../app/updates.h"
 #include "../../azahar/azahar.h"
 #include "../../azahar/library.h"
+#include "../../eden/eden.h"
 #include "../../eden/library.h"
 #include "../../melonds/library.h"
 #include "../../ps5/kernel.h"
@@ -252,6 +253,23 @@ namespace ps5shell
 			ps5lang::SetMenuFont({font.path, font.face});
 			if (!font.path.empty())
 				ps5log::Line("[ui] the in-game menu's second font: {} (face {})", font.path, font.face);
+			// a Switch game's loading screen and in-game menu are drawn by Eden's program: what they show
+			// of the game, as the other sides' menus have it (its name, GameTDB's publisher and year, its
+			// cover), left for it
+			if (m_choice->system == ps5launcher::System::Switch)
+			{
+				ps5eden::Session session{m_choice->game.name};
+				if (const int index = FindGame(m_choice->game.titleId); index >= 0)
+				{
+					Game& game = m_games[index];
+					if (game.known)
+						for (const std::string& part : {game.info.publisher, ps5gameinfo::Year(game.info.released)})
+							if (!part.empty())
+								session.details += (session.details.empty() ? "" : "  /  ") + part;
+					session.cover = game.boxArt.empty() ? ps5eden::CoverPath(game.entry.game) : game.boxArt;
+				}
+				ps5eden::WriteSession(session);
+			}
 		}
 		ps5sound::Stop();
 		m_feedback.Stop();
@@ -634,10 +652,7 @@ namespace ps5shell
 	void Shell::MakeGame(Game& game, const ps5catalog::Entry& entry)
 	{
 		game.entry = entry;
-		// a Switch game's box art is a picture of the player's own beside it, else GameTDB's
-		game.boxArt = IsSwitch() ? ps5eden::BoxArt(entry.game) : std::string();
-		if (game.boxArt.empty())
-			game.boxArt = ps5boxart::Path(BoxOf(entry.game), entry.game.gameId);
+		game.boxArt = IsSwitch() ? SwitchCover(entry.game) : ps5boxart::Path(BoxOf(entry.game), entry.game.gameId);
 		game.known = ps5gameinfo::Find(BoxOf(entry.game), entry.game.gameId, game.info);
 		// the list names games in English: GameTDB's title finds one whose own name is in the menus'
 		// language (7.7). It has no DS or Switch games yet.
@@ -650,6 +665,15 @@ namespace ps5shell
 		if (name.rfind("the ", 0) == 0)
 			name = name.substr(4);
 		game.sortName = name;
+	}
+
+	std::string Shell::SwitchCover(const ps5emu::Game& game) const
+	{
+		// a picture of the player's own beside the game first; then GameTDB's box art, or the game's own icon
+		// as Settings > Online chooses (empty until it is there: the card with the icon, or the name)
+		if (std::string own = ps5eden::BoxArt(game); !own.empty())
+			return own;
+		return Handheld(System::Switch).nxCovers == 1 ? ps5eden::CoverPath(game) : ps5boxart::Path(ps5boxart::System::Switch, game.gameId);
 	}
 
 	void Shell::LoadGames()
@@ -724,8 +748,12 @@ namespace ps5shell
 		{
 			m_switchCoverArrivals = ps5eden::CoverArrivals();
 			for (Game& game : m_games)
+			{
 				if (game.icon.empty())
 					game.iconLooked = false;
+				if (game.boxArt.empty())
+					game.boxArt = SwitchCover(game.entry.game); // the icon, when it is the cover
+			}
 		}
 		if (ps5boxart::Arrivals() != m_boxArrivals)
 		{
@@ -749,7 +777,7 @@ namespace ps5shell
 			}
 			for (Game& game : m_games)
 				if (game.boxArt.empty())
-					game.boxArt = ps5boxart::Path(BoxOf(game.entry.game), game.entry.game.gameId);
+					game.boxArt = IsSwitch() ? SwitchCover(game.entry.game) : ps5boxart::Path(BoxOf(game.entry.game), game.entry.game.gameId);
 		}
 	}
 
@@ -863,7 +891,9 @@ namespace ps5shell
 
 	void Shell::FetchBoxArt()
 	{
-		// the side's covers, from GameTDB's covers of its system
+		// the side's covers, from GameTDB's covers of its system (none for a Switch side showing the games' icons)
+		if (IsSwitch() && Handheld(System::Switch).nxCovers == 1)
+			return;
 		std::vector<std::string> ids;
 		for (const Game& game : m_games)
 			if (!game.entry.game.gameId.empty())
@@ -1006,20 +1036,6 @@ namespace ps5shell
 		m_feedback.Play(ui::Cue::Launch);
 		ps5log::Line("[launcher] {} chosen on the {} side", game.name, SideTitle(m_side));
 		TermLog(fmt::format("run \"{}\"", game.name));
-	}
-
-	void Shell::OpenEden()
-	{
-		// Eden's own launcher, in place of this one (main_ps5.cpp: a Switch choice without a game)
-		if (!ps5eden::Available())
-		{
-			m_feedback.Play(ui::Cue::Denied);
-			OpenHelp(Tr("Eden is not in this build"), Tr("This build has no Switch emulator: eden/eboot.bin is not in the app's folder."));
-			return;
-		}
-		ps5emu::Game eden;
-		eden.name = "ProsperoEden";
-		LaunchGame(eden, Tr("Opening ProsperoEden"), {760, 240, 400, 400});
 	}
 
 	void Shell::Toast(const std::string& text)
@@ -1763,9 +1779,6 @@ namespace ps5shell
 		m_menu.items.push_back({"settings", own ? Tr("Game settings: custom") : Tr("Game settings")});
 		if (g.entry.game.titleId != 0 && !IsSwitch())
 			m_menu.items.push_back({"saves", Tr("Saves")}); // its own, by account (6.15)
-		// a Switch game's mods, cheats, updates and DLC are in Eden's own launcher
-		if (IsSwitch())
-			m_menu.items.push_back({"eden", Tr("Mods, cheats and updates")});
 		if (IsWiiU() && m_status.coreReady)
 		{
 			m_menu.items.push_back({"packs", Tr("Graphic packs")});
@@ -2098,8 +2111,6 @@ namespace ps5shell
 					if (InGameSettings())
 						m_page = "gamesaves";
 				}
-				else if (id == "eden")
-					OpenEden();
 				else if (id == "favourite")
 				{
 					g.entry.favourite = !g.entry.favourite;
@@ -2217,7 +2228,7 @@ namespace ps5shell
 			canvas.Text(Style(kHeadingStyle), sheet.x + 36, sheet.y + 78, game.entry.game.name, kText, sheet.w - 72, 1);
 			static const std::map<std::string, Icon> kIcons = {{"play", Icon::Play}, {"hub", Icon::ChevronRight}, {"settings", Icon::Sparkle},
 				{"saves", Icon::Save}, {"packs", Icon::Gear}, {"mods", Icon::Usb}, {"updates", Icon::Download}, {"favourite", Icon::Star},
-				{"tile", Icon::Home}, {"untile", Icon::Home}, {"eden", Icon::Gear}};
+				{"tile", Icon::Home}, {"untile", Icon::Home}};
 			for (int i = 0; i < count; i++)
 			{
 				const Box row{sheet.x + 20, sheet.y + 136 + i * rowH, sheet.w - 40, rowH - 6};

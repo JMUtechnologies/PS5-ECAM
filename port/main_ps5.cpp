@@ -611,12 +611,10 @@ int main(int argc, char* argv[])
 			// Eden's own program in place of this one: it starts the game at once, with this side's settings
 			// and the game's own, and starts this app again on the Switch side when the game ends (or
 			// closes it, for a tile's game). The side is saved first, so a crash in it comes back here too.
-			// A choice with no game is ProsperoEden's own launcher (Shell::OpenEden).
+			// Eden draws PS5-ECAM's loading screen and in-game menu over the game (port/eden/ingame.h),
+			// from what the launcher left it (ps5eden::WriteSession).
 			RememberSide("switch");
-			if (game.path.empty())
-				ps5eden::OpenLauncher(error);
-			else
-				ps5eden::LaunchGame(game, forGame, ps5emu::ExitAfterGame(), error);
+			ps5eden::LaunchGame(game, forGame, ps5emu::ExitAfterGame(), error);
 			ps5log::Line("[main] {} did not start: {}", game.name, error);
 			status.launchErrorSwitch = error;
 			settings.side = "switch"; // Shell::Run clears it, and says why on the Switch side

@@ -112,8 +112,6 @@ namespace ps5shell
 		buttons = {Tr("Choose a folder"), Tr("Setup check")};
 		if (Is3ds())
 			buttons.insert(buttons.begin() + 1, Tr("Play from your 3DS")); // Artic Base needs no games here
-		if (IsSwitch())
-			buttons.insert(buttons.begin() + 1, Tr("Open ProsperoEden")); // its own launcher, with its downloads
 		return true;
 	}
 
@@ -148,8 +146,6 @@ namespace ps5shell
 				m_pageFrom = ScreenId::Library;
 				ArticOpen();
 			}
-			else if (chosen == Tr("Open ProsperoEden"))
-				OpenEden();
 			else if (chosen == Tr("Diagnostics"))
 			{
 				ShowTab(ScreenId::Settings);

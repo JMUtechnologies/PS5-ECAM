@@ -235,6 +235,8 @@ namespace ps5shell
 		void PollGames();
 		void PollCore(); // Cemu's library, loading beside the launcher (ps5emu::StartCore): ready, or why not
 		void MakeGame(Game& game, const ps5catalog::Entry& entry);
+		// a Switch game's cover: a picture beside it, else GameTDB's box art or its own icon (Settings > Online)
+		std::string SwitchCover(const ps5emu::Game& game) const;
 		std::string IconOf(Game& game);
 		std::string CoverOf(Game& game); // box art, else the icon (looked for at most one a frame)
 		// The backdrop's picture (7.4): a Wii U game's boot screen (looked for at most one a frame,
@@ -267,7 +269,6 @@ namespace ps5shell
 		void Toast(const std::string& text);
 		// the Switch side: Eden's own launcher (its mods, cheats, updates and DLC, profiles, rooms), which
 		// comes back here when it is left
-		void OpenEden();
 
 		// -- shared drawing (widgets.cpp) ----------------------------------------------------------
 		ui::TextStyle Style(ui::TextStyle style) const; // larger text, when asked for

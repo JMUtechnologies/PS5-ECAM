@@ -4,8 +4,8 @@
 // at once (--rom), with the Switch side's settings and the game's own over them (--set key=value), and
 // starts this app's eboot.bin again when the game ends (--return), which opens on the Switch side
 // (ps5cemu.json's side, saved before); a home screen tile's game closes the app instead
-// (--exit-after-game). Eden's own launcher, with all it has besides (mods, cheats, updates and DLC,
-// profiles, rooms, its per-game settings), starts the same way without a game.
+// (--exit-after-game). ProsperoEden's own launcher is never shown: Eden draws PS5-ECAM's loading screen
+// and in-game menu over the game (ingame.h), from what WriteSession leaves it.
 //
 // On the console LoadExec does not carry a program's arguments (MihawkOS saw argc 1 on every
 // restart, and 5.0.0's Switch games never started, #67): they go in RequestFile too, which Eden takes
@@ -28,8 +28,15 @@ namespace ps5eden
 	// Eden's program in place of this one, the game started at once. Returns only when it could not
 	// start, with why
 	void LaunchGame(const ps5emu::Game& game, const ps5settings::Launcher& forGame, bool exitAfterGame, std::string& error);
-	// Eden's own launcher, the same way
-	void OpenLauncher(std::string& error);
+
+	// What Eden's drawing of the loading screen and the in-game menu needs of the game (ingame.h): its
+	// name, GameTDB's publisher and year, its cover's TGA, and the menus' language and second font
+	// (ps5lang's, as the launcher hands over), in ps5ingamenx::SessionFile
+	struct Session
+	{
+		std::string title, details, cover;
+	};
+	void WriteSession(const Session& session);
 
 	// Where the arguments Eden is started with also go, one a line: Eden's data folder's
 	// launch-request.txt

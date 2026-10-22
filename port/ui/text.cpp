@@ -2,6 +2,10 @@
 // PS5-ECAM's UI kit: text (text.h).
 
 #include "text.h"
+
+// PS5ECAM_TEXT_NO_FONTS: the text's shaping and breaking alone, without FreeType's fonts (Eden's program,
+// for the Switch side's in-game menu: port/eden/ingame.h)
+#ifndef PS5ECAM_TEXT_NO_FONTS
 #include "gfx.h"
 
 #include <ft2build.h>
@@ -9,6 +13,7 @@
 #include FT_MODULE_H
 
 #include <zlib.h>
+#endif
 
 #include <algorithm>
 #include <cmath>
@@ -508,6 +513,7 @@ namespace ui
 		return lines;
 	}
 
+#ifndef PS5ECAM_TEXT_NO_FONTS
 	struct Fonts::Fallback
 	{
 		struct Face
@@ -1061,6 +1067,8 @@ namespace ui
 				return style.size;
 		}
 	}
+
+#endif
 
 	std::u32string Decode(std::string_view utf8)
 	{

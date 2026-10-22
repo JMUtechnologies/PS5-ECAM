@@ -4,10 +4,8 @@
 # (Eden, the Switch emulator, for the PS5; GPL-3.0-or-later), from .deps/ProsperoEdenX with
 # patches/eden, by its own build (its Makefile's package: its pinned inputs, RADV, FFmpeg, Eden). The
 # app carries it as eden/ (tools/package.sh): the Switch side starts eden/eboot.bin with LoadExec, and
-# it starts PS5-ECAM's eboot.bin again when its game ends or its own launcher is left (patches/eden).
-# Every ProsperoEden feature is in it, its own launcher with them (mods, cheats, updates and DLC, save
-# sync, rooms, downloads, per-game settings): the Switch side opens it for what it has no page of its
-# own for.
+# it starts PS5-ECAM's eboot.bin again when its game ends (patches/eden). The Switch side never shows
+# ProsperoEden's own screens: Eden draws PS5-ECAM's loading screen and in-game menu (port/eden/ingame.h).
 #
 #   tools/build-eden.sh    apply patches/eden if needed, build, copy the program to build/eden
 #
@@ -45,6 +43,9 @@ fi
 export EDEN_HOST_PATH=${EDEN_CMAKE_DIR:-$HOME/hosttools/cmake-3.31.8/bin}
 [[ -x $EDEN_HOST_PATH/cmake ]] || { echo "no cmake in $EDEN_HOST_PATH (EDEN_CMAKE_DIR): ProsperoEdenX wants 3.31 or later" >&2; exit 2; }
 export RADV_BUILD_JOBS=${RADV_BUILD_JOBS:-4}
+# the Switch side's loading screen and in-game menu, PS5-ECAM's own, compiled into Eden's program from
+# this checkout (port/eden/ingame.h, patches/eden: headless/ecam.cmake)
+export PS5ECAM_PORT=$PS5CEMU_ROOT/port
 make -C "$eden" package JOBS="${EDEN_JOBS:-5}"
 
 # The program and the files it reads from its own folder (storage_paths.h: AppDir() is the app's

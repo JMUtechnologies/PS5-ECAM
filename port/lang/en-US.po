@@ -7,23 +7,24 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: port/app/gameinfo.cpp:164
+#: port/app/gameinfo.cpp:257
 msgctxt "genre"
 msgid "American football"
 msgstr "Football"
 
-#: port/app/gameinfo.cpp:180
+#: port/app/gameinfo.cpp:273
 msgctxt "genre"
 msgid "Football"
 msgstr "Soccer"
 
-#: port/app/gameinfo.cpp:186
+#: port/app/gameinfo.cpp:279
 msgctxt "genre"
 msgid "Tower defence"
 msgstr "Tower defense"
 
 #. how a game's picture is scaled: the methods' names
-#: port/app/ingame.cpp:175 port/frontend/shell/settings.cpp:70
+#. the Switch side's upscaling filters, as the launcher names them (Eden's order: bilinear, FSR 1, bicubic, nearest)
+#: port/app/ingame.cpp:175 port/eden/ingame.cpp:52 port/frontend/shell/settings.cpp:70
 #, menu
 msgid "Nearest neighbour"
 msgstr "Nearest neighbor"
@@ -38,18 +39,18 @@ msgstr "A on Circle and B on Cross, where the 3DS has them, or the other way aro
 msgid "Centre pad"
 msgstr "Center pad"
 
-#: port/frontend/shell/eden.cpp:836 port/frontend/shell/eden.cpp:1353 port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1768
+#: port/frontend/shell/eden.cpp:836 port/frontend/shell/eden.cpp:1353 port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1788
 msgid "Favourite"
 msgstr "Favorite"
 
 #. Eden's Library: which games it shows (L2), the Library's filters
 #. the Library's filters, as library.cpp names them
 #. the Library's filters, each with its count after it
-#: port/frontend/shell/eden.cpp:983 port/frontend/shell/eden.cpp:1117 port/frontend/shell/experiments.cpp:496 port/frontend/shell/library.cpp:509
+#: port/frontend/shell/eden.cpp:983 port/frontend/shell/eden.cpp:1117 port/frontend/shell/experiments.cpp:496 port/frontend/shell/library.cpp:505
 msgid "Favourites"
 msgstr "Favorites"
 
-#: port/frontend/shell/eden.cpp:1158 port/frontend/shell/library.cpp:582
+#: port/frontend/shell/eden.cpp:1158 port/frontend/shell/library.cpp:578
 msgid "Options on a game, then Favourite, puts it here."
 msgstr "Options on a game, then Favorite, puts it here."
 
@@ -77,26 +78,26 @@ msgstr "Canceled. What was installed before is as it was."
 msgid "Frosted glass over each side's colours: the default look."
 msgstr "Frosted glass over each side's colors: the default look."
 
-#: port/frontend/shell/settings.cpp:476
+#: port/frontend/shell/settings.cpp:475
 msgid "Bicubic is sharp, Bicubic Hermite a little softer, Bilinear softer still; Nearest neighbour keeps pixels square. AMD FSR 1 keeps edges clean for a game drawn below 4K, for a little more work by the GPU than Bicubic."
 msgstr "Bicubic is sharp, Bicubic Hermite a little softer, Bilinear softer still; Nearest neighbor keeps pixels square. AMD FSR 1 keeps edges clean for a game drawn below 4K, for a little more work by the GPU than Bicubic."
 
-#: port/frontend/shell/settings.cpp:1045
+#: port/frontend/shell/settings.cpp:1036
 msgid "How the launcher looks: its colours, its corners and what moves behind the menus. Phantom and Terminal are experiments of their own. Make your own as a JSON file in {0}/themes, starting from any of these: the text under this page says how. Only the launcher changes: the in-game menus and the games stay as they are."
 msgstr "How the launcher looks: its colors, its corners and what moves behind the menus. Phantom and Terminal are experiments of their own. Make your own as a JSON file in {0}/themes, starting from any of these: the text under this page says how. Only the launcher changes: the in-game menus and the games stay as they are."
 
-#: port/frontend/shell/settings.cpp:1064
+#: port/frontend/shell/settings.cpp:1055
 msgid "The focused game's picture fills the screen behind the menus, softened and dimmed, so moving the focus changes the whole screen. Off: the game's colours only."
 msgstr "The focused game's picture fills the screen behind the menus, softened and dimmed, so moving the focus changes the whole screen. Off: the game's colors only."
 
-#: port/frontend/shell/shell.cpp:1768
+#: port/frontend/shell/shell.cpp:1788
 msgid "Not a favourite"
 msgstr "Not a favorite"
 
-#: port/frontend/shell/shell.cpp:2102
+#: port/frontend/shell/shell.cpp:2120
 msgid "Added to Favourites"
 msgstr "Added to Favorites"
 
-#: port/frontend/shell/shell.cpp:2102
+#: port/frontend/shell/shell.cpp:2120
 msgid "Taken out of Favourites"
 msgstr "Taken out of Favorites"
