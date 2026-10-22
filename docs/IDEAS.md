@@ -27,6 +27,7 @@ Each idea done is marked **Done** where it is listed below, with its commit.
 | [L7](#l7) | [`6d374e0`](https://github.com/premohq/PS5-ECAM/commit/6d374e0) | The launcher dims after five minutes with no button pressed; the waking press does nothing else |
 | [S7](#s7) | [`0891a28`](https://github.com/premohq/PS5-ECAM/commit/0891a28) | Backups hold the settings too (each game's own, Cemu's, controller profiles, themes); a restore starts the app again to use them |
 | [S8](#s8) | [`b436783`](https://github.com/premohq/PS5-ECAM/commit/b436783) | An update keeps the version it replaces; **Go back to** in Settings > Online; **Skip this version** on the prompt |
+| [I4](#i4) | [`759f8e3`](https://github.com/premohq/PS5-ECAM/commit/759f8e3) | **3D for red and cyan glasses** in the 3DS side's Graphics (and each game's) |
 
 Being worked on separately (not here): the Switch side's in-game menu, its settings and button
 remapping ([N1](#n1)), its rooms ([I2](#i2)), ReShade on the Wii U side ([I1](#i1)), and the box art
@@ -319,7 +320,7 @@ or a PS5 and a PC, play local wireless games together.
 melonDS 1.0 has local multiplayer over a LAN. Two PS5s on one network as two DSes: Mario Kart DS,
 Pokémon trades and battles.
 
-<a id="i4"></a>**I4. The 3DS's 3D** (S to M)
+<a id="i4"></a>**I4. The 3DS's 3D** (S to M) · **Done:** [`759f8e3`](https://github.com/premohq/PS5-ECAM/commit/759f8e3), red and cyan only (side by side for 3D TVs not yet)
 Azahar can draw the 3DS's stereo picture as red and cyan anaglyph, or side by side for a 3D TV. Cheap
 glasses, and the 3D slider back.
 
