@@ -115,6 +115,9 @@ namespace ps5settings
 		int sides = 15;
 		bool switchOffered = true;	 // the Switch side was offered: those whose sides predate it (4.0.2) see it once
 		std::string lastVersion;	 // the version that ran last: a newer one says what it brings, once (Make it yours)
+		// a release the start does not offer (the update's Skip this version, or one gone back from), as
+		// ps5update::Readable writes it; Settings > Online still finds it
+		std::string skipVersion;
 		std::string theme;			 // the launcher's look (ui/theme.h): a built-in theme's id, or user:<file> in themes/; empty: the default
 		int libraryFilter[4] = {0, 0, 0, 0}; // per side (Wii U, 3DS, DS, Switch): All, Recently added, Favourites, Graphic packs on (Wii U)
 		int librarySort[4] = {0, 0, 0, 0};   // Recently played (the default: the Library is where a side opens), A to Z, Release year, How it runs

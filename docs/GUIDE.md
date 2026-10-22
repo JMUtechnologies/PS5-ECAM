@@ -395,7 +395,11 @@ WUD or WUX files, or an unpacked game in an archive; a 3DS CIA sent this way is 
   PS5-ECAM is out, it asks whether to install it: **Update now** downloads the release, checks it
   against the release's SHA-256, puts its files in place of the old ones and starts the app again.
   Your games, saves and settings in `/data/ps5cemu` stay as they are. **Settings > Online >
-  PS5-ECAM updates** checks again.
+  PS5-ECAM updates** checks again. **Skip this version** stops the start from asking about that
+  release (Settings > Online still finds it).
+- **Going back:** an update keeps the version it replaces in `/data/ps5cemu/previous-version`, until
+  the next update. **Settings > Online > Go back to** (held) puts it back and starts it, and the newer
+  release is not offered at start again.
 
 Without an internet connection, the libraries just show the game icons.
 

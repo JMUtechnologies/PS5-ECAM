@@ -1024,6 +1024,14 @@ namespace ps5shell
 				Tr("PS5-ECAM asks GitHub for its latest release each time it starts. Cross asks again, or installs the newer version it found: "
 				   "the release's files are downloaded, checked and put in place of these, and the app starts again. Your games, saves and "
 				   "settings stay as they are."));
+			// the release the last update replaced, kept until the next (ps5update::PreviousVersion)
+			if (const std::string previous = ps5update::PreviousVersion(); !previous.empty())
+				// tr: {0} is the version the last update replaced, as in 5.0.0
+				action(Kind::Hold, "goback", TrF("Go back to {0}", ps5update::Readable(previous)), m_message.empty() ? Tr("Hold Cross") : m_message,
+					Tr("The version before the last update, kept as it was."),
+					Tr("The last update kept the version it replaced. Holding Cross puts its files back in place of these, and PS5-ECAM starts "
+					   "again as that version. Your games, saves and settings stay as they are. The newer version is not offered at start "
+					   "again; this page still finds it."));
 		}
 		else if (page == "launcher")
 		{
@@ -1971,6 +1979,18 @@ namespace ps5shell
 			ChangeSetting(Row{Row::Kind::Action, "boxartall"}, 0, true);
 			// tr: a held row's result: the covers are on their way
 			m_message = Tr("Downloading in the background");
+		}
+		else if (id == "goback")
+		{
+			// the release the last update replaced back in place, and not offered again at start
+			std::string error;
+			if (ps5update::GoBack(error))
+			{
+				m_settings.ui.skipVersion = ps5update::Readable(PS5CEMU_VERSION);
+				SaveSettings();
+				ps5update::Restart();
+			}
+			m_message = error;
 		}
 		else if (id == "resetcontrols")
 		{

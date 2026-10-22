@@ -350,7 +350,10 @@ namespace ps5shell
 			PollUnpacking();
 		if (m_screen == ScreenId::Updates || m_updates.installing)
 			PollUpdates();
-		const bool prompting = ps5update::Prompting();
+		// a release skipped (Skip this version, or gone back from) is not offered at start
+		const auto update = ps5update::GetStatus();
+		const bool prompting = ps5update::Prompting() && !(update.state == ps5update::Status::State::Available && !update.installing &&
+														  ps5update::Readable(update.latest) == m_settings.ui.skipVersion);
 		if (prompting != m_update.open)
 		{
 			m_update.open = prompting;
@@ -1882,10 +1885,10 @@ namespace ps5shell
 		{
 			const auto status = ps5update::GetStatus();
 			using State = ps5update::Status::State;
-			const int choices = status.state == State::Available ? 2 : status.state == State::Ready || status.state == State::Failed ? 1 : 0;
+			const int choices = status.state == State::Available ? 3 : status.state == State::Ready || status.state == State::Failed ? 1 : 0;
 			if ((b == Button::Left || b == Button::Right) && choices > 1)
 			{
-				m_update.choice = 1 - m_update.choice;
+				m_update.choice = (m_update.choice + (b == Button::Right ? 1 : choices - 1)) % choices;
 				m_feedback.Play(ui::Cue::Focus);
 			}
 			else if (b == Button::Circle)
@@ -1895,9 +1898,16 @@ namespace ps5shell
 			}
 			else if (b == Button::Cross && choices > 0)
 			{
-				// Available: Update now, Later; Ready: Restart now; Failed: OK
+				// Available: Update now, Later, Skip this version; Ready: Restart now; Failed: OK
 				if (status.state == State::Available && m_update.choice == 0)
 					ps5update::Install();
+				else if (status.state == State::Available && m_update.choice == 2)
+				{
+					m_settings.ui.skipVersion = ps5update::Readable(status.latest);
+					SaveSettings();
+					ps5log::Line("[update] {} skipped: not offered at start", m_settings.ui.skipVersion);
+					ps5update::Dismiss();
+				}
 				else if (status.state == State::Ready)
 					ps5update::Restart();
 				else
@@ -2362,7 +2372,7 @@ namespace ps5shell
 			case State::Available:
 				title = TrF("PS5-ECAM {0} is out", next);
 				text = TrF("This is {0}. Download and install it now? Your games, saves and settings stay as they are.", mine);
-				choices = {Tr("Update now"), Tr("Later")};
+				choices = {Tr("Update now"), Tr("Later"), Tr("Skip this version")};
 				break;
 			case State::Downloading:
 				title = TrF("Updating to {0}", next);

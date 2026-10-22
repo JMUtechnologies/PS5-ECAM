@@ -287,6 +287,28 @@ namespace ps5update
 		// The folder the app runs from, which the update replaces the files of: the one ShadowMountPlus
 		// mounted it from (on a USB drive, say, with an older copy left in /data/homebrew), else the
 		// usual install folder, else where the app was found. Empty for an app mounted from an image.
+		// The release an update replaced: its files as they were, and version.txt (PreviousVersion)
+		fs::path PreviousFolder()
+		{
+			return fs::path(ps5paths::Root()) / "previous-version";
+		}
+
+		// A file kept as it is, in the same shape under to: a second name for it where the drive has
+		// them (no space taken), else a copy
+		bool Keep(const fs::path& file, const fs::path& to)
+		{
+			std::error_code ec;
+			fs::create_directories(to.parent_path(), ec);
+			fs::remove(to, ec);
+			fs::create_hard_link(file, to, ec);
+			if (ec)
+			{
+				ec.clear();
+				fs::copy_file(file, to, fs::copy_options::overwrite_existing, ec);
+			}
+			return !ec;
+		}
+
 		fs::path AppFolder()
 		{
 			bool image = false;
@@ -518,6 +540,21 @@ namespace ps5update
 			}
 			// the program last, so that until then the app is the old one whole
 			std::stable_partition(files.begin(), files.end(), [](const fs::path& file) { return file != "eboot.bin"; });
+			// what each file replaces kept as it is, for Settings > Online's Go back (PreviousVersion), until
+			// the next update: a file this release does not have stays in the app as it is anyway
+			const fs::path previous = PreviousFolder();
+			fs::remove_all(previous, ec);
+			bool kept = true;
+			for (const fs::path& file : files)
+				if (fs::exists(app / file, ec))
+					kept = kept && Keep(app / file, previous / file);
+			if (kept)
+				kept = static_cast<bool>(std::ofstream(previous / "version.txt") << PS5CEMU_VERSION << '\n');
+			if (!kept)
+			{
+				ps5log::Line("[update] the release being replaced could not be kept: no going back to it");
+				fs::remove_all(previous, ec);
+			}
 			for (const fs::path& file : files)
 			{
 				if (!fs::exists((app / file).parent_path(), ec))
@@ -617,6 +654,51 @@ namespace ps5update
 	{
 		std::lock_guard lock(s_mutex);
 		return s_status;
+	}
+
+	std::string PreviousVersion()
+	{
+		std::ifstream file(PreviousFolder() / "version.txt");
+		std::string version;
+		std::getline(file, version);
+		return version;
+	}
+
+	bool GoBack(std::string& error)
+	{
+		const fs::path previous = PreviousFolder(), app = AppFolder();
+		const std::string version = PreviousVersion();
+		if (version.empty() || app.empty())
+		{
+			error = ps5lang::Tr("No earlier version is kept here.");
+			return false;
+		}
+		Stop(); // no update installing meanwhile
+		std::vector<fs::path> files;
+		std::error_code ec;
+		for (auto it = fs::recursive_directory_iterator(previous, ec); !ec && it != fs::recursive_directory_iterator(); it.increment(ec))
+			if (it->is_regular_file(ec) && it->path().filename() != "version.txt")
+				files.push_back(it->path().lexically_relative(previous));
+		// the program last, as an update puts it, so a failure part-way leaves this one's to start
+		std::stable_partition(files.begin(), files.end(), [](const fs::path& file) { return file != "eboot.bin"; });
+		for (const fs::path& file : files)
+		{
+			fs::rename(previous / file, app / file, ec);
+			if (ec)
+			{
+				ec.clear();
+				fs::copy_file(previous / file, app / file, fs::copy_options::overwrite_existing, ec);
+			}
+			if (ec)
+			{
+				ps5log::Line("[update] going back to {}: {} could not be put back ({})", version, file.string(), ec.message());
+				error = ps5lang::TrF("{0} could not be put back ({1}): copy that release's PPSA99360 folder over by hand", file.string(), ec.message());
+				return false;
+			}
+		}
+		fs::remove_all(previous, ec);
+		ps5log::Line("[update] back to {} ({} files): starting it", version, files.size());
+		return true;
 	}
 
 	bool Prompting()

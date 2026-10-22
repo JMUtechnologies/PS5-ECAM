@@ -321,6 +321,7 @@ namespace ps5settings
 			if (!switchOffered)
 				out.sides |= 8;
 			ReadString(ui, "lastVersion", out.lastVersion);
+			ReadString(ui, "skipVersion", out.skipVersion);
 			ReadString(ui, "theme", out.theme);
 			// each side's filter and sort (3.5.0 kept two of each under names of their own; its sort, A to
 			// Z by default, is not taken: the Library opens on the games played last now that it is
@@ -502,6 +503,8 @@ namespace ps5settings
 		writer.Bool(settings.ui.switchOffered);
 		writer.Key("lastVersion");
 		writer.String(settings.ui.lastVersion.c_str());
+		writer.Key("skipVersion");
+		writer.String(settings.ui.skipVersion.c_str());
 		writer.Key("theme");
 		writer.String(settings.ui.theme.c_str());
 		writer.Key("libraryFilter");

@@ -49,6 +49,13 @@ namespace ps5update
 	void Restart();
 	// Before a game: the check or download is cut short and waited for.
 	void Stop();
+
+	// The release an update replaced, kept (its files in the data folder's previous-version/, as each
+	// was before the update put its own in place): its version ("5.0.0"), or empty when none is kept
+	std::string PreviousVersion();
+	// That release's files back in place of these, and the kept copy let go of: then Restart() runs it.
+	// False, with why, when its files could not be put back (the app is then as it was)
+	bool GoBack(std::string& error);
 	// Before the app starts over or closes (LoadExec): a check Stop left waiting on the PS5's resolver,
 	// waited for up to maxMs, as a restart with a download running ended the app instead.
 	void WaitForCheck(int maxMs);
