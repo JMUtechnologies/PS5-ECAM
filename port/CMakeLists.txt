@@ -135,6 +135,8 @@ add_library(CemuPS5 STATIC
 	app/saves.h
 	app/lang.cpp
 	app/lang.h
+	app/update_files.cpp
+	app/update_files.h
 	app/updates.cpp
 	app/updates.h
 	app/usb_devices.cpp

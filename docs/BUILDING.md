@@ -189,9 +189,11 @@ names and folders, nothing replaced, and a file cut short leaving nothing behind
 ## Tests on a PC
 
 `.github/workflows/tests.yml` runs these at every push and pull request, on Ubuntu 24.04, with only
-what they need fetched (`python3 tools/deps.py fetch pacbrew pugixml dr_mp3`; `deps.py fetch` with
-names fetches only those items): `tools/lang.py check`, `tools/tests/test-keyboard.sh`,
+what they need fetched (`python3 tools/deps.py fetch pacbrew pugixml dr_mp3 rapidjson`; `deps.py fetch`
+with names fetches only those items): `tools/lang.py check`, `tools/tests/test-keyboard.sh`,
 `test-netfs.sh`, `test-archives.sh` (with `libarchive-dev`, `libzip-dev`, `libzstd-dev` and `p7zip-full`),
-`test-music.sh` (with `ffmpeg`), `test-saves.sh` (Back up to USB and Restore from USB, into a writable
-`/mnt/usb0`, with `libfmt-dev`), and the remote touch screen's tests above. The same commands run
-them on your own PC.
+`test-music.sh` (with `ffmpeg`), `test-update.sh` (an update's ZIP unpacked four files at a time, with
+`libzip-dev` and `libfmt-dev`; `CXX=g++ SANITIZE=thread` runs it under ThreadSanitizer),
+`test-catalog.sh` (the library's `library.json`: every side's games, games in archives, play time),
+`test-saves.sh` (Back up to USB and Restore from USB, into a writable `/mnt/usb0`, with `libfmt-dev`),
+and the remote touch screen's tests above. The same commands run them on your own PC.

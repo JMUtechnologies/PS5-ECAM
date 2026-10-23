@@ -2212,7 +2212,7 @@ msgstr "{0}を作成できませんでした"
 msgid "{0} could not be copied: is the PS5's storage full?"
 msgstr "{0}をコピーできませんでした。PS5のストレージがいっぱいではありませんか？"
 
-#: port/app/mods.cpp:229 port/app/pack_updates.cpp:265 port/app/updates.cpp:568
+#: port/app/mods.cpp:229 port/app/pack_updates.cpp:268 port/app/updates.cpp:517
 msgid "Stopped for a game"
 msgstr "ゲームのために中断しました"
 
@@ -2224,15 +2224,15 @@ msgstr "{0}を読み込めませんでした"
 msgid "{0} could not be written"
 msgstr "{0}を書き込めませんでした"
 
-#: port/app/pack_updates.cpp:132 port/app/updates.cpp:392
+#: port/app/pack_updates.cpp:132 port/app/update_files.cpp:68
 msgid "the download is not a ZIP ({0})"
 msgstr "ダウンロードしたものがZIPではありません（{0}）"
 
-#: port/app/pack_updates.cpp:160 port/app/updates.cpp:418
+#: port/app/pack_updates.cpp:160 port/app/update_files.cpp:116
 msgid "{0} could not be unpacked"
 msgstr "{0}を展開できませんでした"
 
-#: port/app/pack_updates.cpp:177 port/app/updates.cpp:438
+#: port/app/pack_updates.cpp:177 port/app/update_files.cpp:126
 msgid "stopped for a game"
 msgstr "ゲームのために中断しました"
 
@@ -2240,24 +2240,24 @@ msgstr "ゲームのために中断しました"
 msgid "the download holds no packs"
 msgstr "ダウンロードしたものにパックが入っていません"
 
-#: port/app/pack_updates.cpp:194 port/app/updates.cpp:656
+#: port/app/pack_updates.cpp:194 port/app/updates.cpp:614
 msgid "GitHub could not be found: is the PS5 online?"
 msgstr "GitHubが見つかりません。PS5はオンラインですか？"
 
 #. why an update did not finish
-#: port/app/pack_updates.cpp:227 port/app/updates.cpp:471
+#: port/app/pack_updates.cpp:228 port/app/updates.cpp:415
 msgid "GitHub did not answer with a release"
 msgstr "GitHubからリリースが返ってきませんでした"
 
-#: port/app/pack_updates.cpp:265
+#: port/app/pack_updates.cpp:268
 msgid "The download did not finish"
 msgstr "ダウンロードが完了しませんでした"
 
-#: port/app/pack_updates.cpp:280 port/frontend/shell/installs.cpp:195 port/frontend/shell/pages.cpp:1176
+#: port/app/pack_updates.cpp:283 port/frontend/shell/installs.cpp:195 port/frontend/shell/pages.cpp:1176
 msgid "It could not be installed: {0}"
 msgstr "インストールできませんでした：{0}"
 
-#: port/app/pack_updates.cpp:291
+#: port/app/pack_updates.cpp:294
 msgid "The new packs could not take the old ones' place"
 msgstr "新しいパックを古いパックと入れ替えられませんでした"
 
@@ -2313,65 +2313,65 @@ msgstr "長押し"
 msgid "Hold Cross until the ring fills."
 msgstr "リングがいっぱいになるまで×ボタンを長押しします。"
 
+#: port/app/update_files.cpp:92
+msgid "the download has no eboot.bin"
+msgstr "ダウンロードしたものにeboot.binがありません"
+
+#: port/app/update_files.cpp:117
+msgid "{0} could not be written (is /data full?)"
+msgstr "{0}を書き込めませんでした（/dataがいっぱいですか？）"
+
 #. at a start after an update: {0} the release installed, {1} the folder, {2} this release
 #: port/app/updates.cpp:321
 msgid "{0} was installed in {1}, but the PS5 started {2} again. Close PS5-ECAM and start it from the home screen; if it is still {2}, copy the release's PPSA99360 folder over by hand."
 msgstr "{0}を{1}にインストールしましたが、PS5は{2}を再び起動しました。PS5-ECAMを閉じてホーム画面から起動してください。まだ{2}のままなら、リリースのPPSA99360フォルダーを手動で上書きコピーしてください。"
 
-#: port/app/updates.cpp:428
-msgid "{0} could not be written (is /data full?)"
-msgstr "{0}を書き込めませんでした（/dataがいっぱいですか？）"
-
-#: port/app/updates.cpp:443
-msgid "the download has no eboot.bin"
-msgstr "ダウンロードしたものにeboot.binがありません"
-
-#: port/app/updates.cpp:478
+#: port/app/updates.cpp:422
 msgid "The latest release's version ({0}) is not one this can read"
 msgstr "最新リリースのバージョン（{0}）を読み取れません"
 
-#: port/app/updates.cpp:511
+#: port/app/updates.cpp:455
 msgid "The release's checksums could not be downloaded"
 msgstr "リリースのチェックサムをダウンロードできませんでした"
 
-#: port/app/updates.cpp:540
+#: port/app/updates.cpp:484
 msgid "The releases branch has no checksum for {0}"
 msgstr "releasesブランチに{0}のチェックサムがありません"
 
-#: port/app/updates.cpp:554
+#: port/app/updates.cpp:498
 msgid "The download could not start"
 msgstr "ダウンロードを開始できませんでした"
 
-#: port/app/updates.cpp:568
+#: port/app/updates.cpp:517
 msgid "The download did not finish: is the PS5 online?"
 msgstr "ダウンロードが完了しませんでした。PS5はオンラインですか？"
 
-#: port/app/updates.cpp:577
+#: port/app/updates.cpp:526
 msgid "The download is damaged (SHA-256 {0}, not {1})"
 msgstr "ダウンロードしたものが破損しています（SHA-256が{1}ではなく{0}）"
 
-#: port/app/updates.cpp:587
+#: port/app/updates.cpp:536
 msgid "PS5-ECAM runs from an image, whose files can't be replaced: install the new release by hand"
 msgstr "PS5-ECAMはイメージから実行されていて、ファイルを置き換えられません。新しいリリースは手動でインストールしてください"
 
-#: port/app/updates.cpp:599
+#: port/app/updates.cpp:549
 msgid "It could not be unpacked: {0}"
 msgstr "展開できませんでした：{0}"
 
-#: port/app/updates.cpp:629
+#: port/app/updates.cpp:581
 msgid "{0} could not be replaced ({1}): copy the release's PPSA99360 folder over by hand"
 msgstr "{0}を置き換えられませんでした（{1}）。リリースのPPSA99360フォルダーを手動で上書きコピーしてください"
 
-#: port/app/updates.cpp:746
+#: port/app/updates.cpp:704
 msgid "No earlier version is kept here."
 msgstr "以前のバージョンは保存されていません。"
 
-#: port/app/updates.cpp:769
+#: port/app/updates.cpp:727
 msgid "{0} could not be put back ({1}): copy that release's PPSA99360 folder over by hand"
 msgstr "{0}を元に戻せませんでした（{1}）。そのリリースのPPSA99360フォルダーを手動で上書きコピーしてください"
 
 #. an update is installed, but the app could not start itself again to run it
-#: port/app/updates.cpp:825
+#: port/app/updates.cpp:783
 msgid "The PS5 did not start PS5-ECAM again. Close it and start it from the home screen to finish the update."
 msgstr "PS5がPS5-ECAMを再起動しませんでした。アップデートを完了するには、PS5-ECAMを閉じてホーム画面から起動してください。"
 
@@ -2954,29 +2954,29 @@ msgid "{0} player"
 msgid_plural "{0} players"
 msgstr[0] "{0}人のプレイヤー"
 
-#: port/eden/launch.cpp:112 port/main_ps5.cpp:618
+#: port/eden/launch.cpp:112 port/main_ps5.cpp:630
 msgid "This build has no Switch emulator: eden/eboot.bin is not in the app's folder."
 msgstr "このビルドにはSwitchエミュレーターがありません：アプリのフォルダーにeden/eboot.binがありません。"
 
-#: port/eden/launch.cpp:117 port/eden/launch.cpp:282
+#: port/eden/launch.cpp:117 port/eden/launch.cpp:285
 msgid "The console did not start Eden. The boot log says what it answered."
 msgstr "本体がEdenを起動しませんでした。起動ログに本体の応答があります。"
 
-#: port/eden/launch.cpp:218
+#: port/eden/launch.cpp:221
 msgid "The Switch game stopped: Eden closed while it ran. Its logs are in {0}."
 msgstr "Switchのゲームが止まりました：実行中にEdenが閉じました。ログは{0}にあります。"
 
 #. a Switch game's room (Settings > Multiplayer) could not be joined: its name ({0}) and why ({1}, in English)
-#: port/eden/launch.cpp:228
+#: port/eden/launch.cpp:231
 msgid "The room {0} could not be joined: {1} Choose another in Settings > Multiplayer, or play offline."
 msgstr "ルーム{0}に入れませんでした：{1} 設定 > マルチプレイで別のルームを選ぶか、オフラインで遊んでください。"
 
-#: port/eden/launch.cpp:231
+#: port/eden/launch.cpp:234
 msgid "Eden could not find the game's file. Is the drive with it plugged in?"
 msgstr "Edenがゲームのファイルを見つけられませんでした。ファイルのあるドライブはつながっていますか？"
 
 #. why a Switch game stopped or did not start, in Eden's own words (English)
-#: port/eden/launch.cpp:233
+#: port/eden/launch.cpp:236
 msgid "The Switch game did not start or stopped: {0}"
 msgstr "Switchのゲームが起動しなかったか、止まりました：{0}"
 
@@ -2988,16 +2988,16 @@ msgstr "公開ルームの一覧を読み取れませんでした。"
 msgid "No usable rooms were returned."
 msgstr "使えるルームが返ってきませんでした。"
 
-#: port/eden/rooms.cpp:172
+#: port/eden/rooms.cpp:173
 msgid "The public room list is too large."
 msgstr "公開ルームの一覧が大きすぎます。"
 
-#: port/eden/rooms.cpp:173
+#: port/eden/rooms.cpp:174
 msgid "Could not download the public rooms. Is the PS5 online? Cross tries again."
 msgstr "公開ルームをダウンロードできませんでした。PS5はオンラインですか？×ボタンでもう一度試します。"
 
 #. the room directory's answer was an HTTP error ({0}: its number)
-#: port/eden/rooms.cpp:176
+#: port/eden/rooms.cpp:177
 msgid "The public room list answered HTTP {0}. Try again later."
 msgstr "公開ルームの一覧がHTTP {0}を返しました。あとでもう一度試してください。"
 
@@ -7359,49 +7359,49 @@ msgstr "過去最大のアップデートをひと目で。詳しくはGitHubの
 msgid "This game"
 msgstr "このゲーム"
 
-#: port/main_ps5.cpp:150
+#: port/main_ps5.cpp:151
 msgid "Firmware {0}"
 msgstr "システムソフトウェア{0}"
 
-#: port/main_ps5.cpp:152
+#: port/main_ps5.cpp:153
 msgid "Logs: {0}, {1}/log.txt"
 msgstr "ログ：{0}、{1}/log.txt"
 
-#: port/main_ps5.cpp:153
+#: port/main_ps5.cpp:154
 msgid "Boot log not written (/data is unreachable)"
 msgstr "起動ログを書き込めませんでした（/dataにアクセスできません）"
 
-#: port/main_ps5.cpp:528
+#: port/main_ps5.cpp:536
 msgid "PS5-ECAM cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5-ECAM."
 msgstr "PS5-ECAMは/dataにアクセスできません。アプリのジェイルブレイクリストにPPSA99360を入れたHENかelfldrを読み込んでから、PS5-ECAMを再起動してください。"
 
-#: port/main_ps5.cpp:606
+#: port/main_ps5.cpp:618
 msgid "This session: Azahar (3DS); Cemu's emulated Wii U is not started"
 msgstr "今回のセッション：Azahar（3DS）。CemuのエミュレートするWii Uは起動していません"
 
-#: port/main_ps5.cpp:616
+#: port/main_ps5.cpp:628
 msgid "This session: Eden (Switch), in a program of its own; Cemu's emulated Wii U is not started"
 msgstr "今回のセッション：Eden（Switch）、専用のプログラムで。CemuのエミュレートするWii Uは起動していません"
 
-#: port/main_ps5.cpp:626
+#: port/main_ps5.cpp:638
 msgid "This session: melonDS (DS); Cemu's emulated Wii U is not started"
 msgstr "今回のセッション：melonDS（DS）。CemuのエミュレートするWii Uは起動していません"
 
-#: port/main_ps5.cpp:633
+#: port/main_ps5.cpp:645
 msgid "This session: Cemu (Wii U); Azahar's core is not started"
 msgstr "今回のセッション：Cemu（Wii U）。Azaharのコアは起動していません"
 
-#: port/main_ps5.cpp:643
+#: port/main_ps5.cpp:655
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "JITメモリーがありません：Wii Uのゲームはずっと遅いインタープリターで動作します。PPSA99360はHENのアプリのジェイルブレイクリストに入っていますか？"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/main_ps5.cpp:685
+#: port/main_ps5.cpp:697
 msgid "The launcher could not start. The boot log in {0}/logs says why."
 msgstr "ランチャーを起動できませんでした。理由は{0}/logsの起動ログにあります。"
 
 #. {0} is why; {1} the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the app's drive
-#: port/main_ps5.cpp:687
+#: port/main_ps5.cpp:699
 msgid "The launcher could not start: {0}. The boot log in {1}/logs has more."
 msgstr "ランチャーを起動できませんでした：{0}。詳しくは{1}/logsの起動ログにあります。"
 
