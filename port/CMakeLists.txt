@@ -178,6 +178,7 @@ add_library(CemuPS5 STATIC
 	melonds/library.cpp
 	melonds/library.h
 	melonds/melonds.h
+	melonds/screen_place.cpp
 	melonds/screens.cpp
 	melonds/screens.h
 	melonds/shaders.h
@@ -290,6 +291,7 @@ set_source_files_properties(
 	eden/rooms.cpp
 	melonds/archive.cpp
 	melonds/library.cpp
+	melonds/screen_place.cpp
 	melonds/screens.cpp
 	melonds/unavailable.cpp
 	frontend/actions.cpp

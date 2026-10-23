@@ -82,10 +82,9 @@ checked by reading and compiling. Before a release:
 - `shell_internal.h` is still one class for the whole launcher, and `shell/settings.cpp` about 2,700
   lines: split the settings pages into their own files, and the Library's, the hub's and the pages'
   state out of the class.
-- Host tests for what was checked by hand: the DS screens' placement with the gap and rotation (move
-  `Place` out of `melonds/screens.cpp`, which needs Vulkan), `ps5net::Resolve`'s cache; run the
-  preview's scripts in CI (they need lavapipe). The catalogue's round trip (archive fields, play time)
-  and the update's unpacking have theirs now (`test-catalog.sh`, `test-update.sh`).
+- Host tests for what was checked by hand: `ps5net::Resolve`'s cache; run the preview's scripts in CI
+  (they need lavapipe). The catalogue's round trip (archive fields, play time), the update's unpacking
+  and the DS screens' places have theirs now (`test-catalog.sh`, `test-update.sh`, `test-screens.sh`).
 
 ## Next: a folder for each emulator
 

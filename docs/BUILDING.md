@@ -195,5 +195,6 @@ with names fetches only those items): `tools/lang.py check`, `tools/tests/test-k
 `test-music.sh` (with `ffmpeg`), `test-update.sh` (an update's ZIP unpacked four files at a time, with
 `libzip-dev` and `libfmt-dev`; `CXX=g++ SANITIZE=thread` runs it under ThreadSanitizer),
 `test-catalog.sh` (the library's `library.json`: every side's games, games in archives, play time),
+`test-screens.sh` (where the DS's screens go: every layout, swap, quarter turn and gap),
 `test-saves.sh` (Back up to USB and Restore from USB, into a writable `/mnt/usb0`, with `libfmt-dev`),
 and the remote touch screen's tests above. The same commands run them on your own PC.
