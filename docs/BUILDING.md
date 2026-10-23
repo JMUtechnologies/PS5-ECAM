@@ -52,8 +52,7 @@ python3 tools/symbolize-crash.py dist/ps5cemu-v3.0.0.elf boot.log
 - Boost, pugixml, libzip, glslang and RapidJSON
 - Mihawk's PS5_Mesa, PS5_Vulkan and payload SDK fork
 - compiler-rt's emulated TLS and CPU-model builtins
-- the Cemu community graphic packs
-- ProsperoEden
+- ProsperoEdenX, the Switch side's program (`make eden` builds it)
 
 **RADV.** `make radv` builds the driver with PS5_Vulkan's own recipe, from the pinned Mesa fork and
 the payload SDK fork, whose platform layer the PS5 winsys is built on. It then builds the same
@@ -111,7 +110,7 @@ else compiles, links and packages, but its output (`build/app-check`) is not an 
 | `port/app/` | Cemu's start-up without wxWidgets, the game list, game icons and box art, graphic packs, controller settings, installs, and what the app shows over a game: both in-game menus, the GamePad's screen and the touchpad's cursor |
 | `port/azahar/` | Azahar's side: the 3DS library (read by the launcher itself), its controls, and its PS5 frontend (built in Azahar's tree): the window on VideoOut, the DualSense as the 3DS, AudioOut, CIA installs |
 | `port/melonds/` | The DS side: its library (read by the launcher itself), and melonDS's PS5 frontend (built in melonDS's tree): the DS's platform, its two screens on VideoOut, the DualSense as the DS, AudioOut |
-| `port/frontend/` | The launcher (`shell/`): the Wii U, 3DS and DS sides of one shell, opening on the side last used, drawn with the UI kit; the settings (`settings.h`), games' own settings included |
+| `port/frontend/` | The launcher (`shell/`): the Wii U, Switch, DS and 3DS sides of one shell and one layout (themes are skins over it), opening on the side last used, drawn with the UI kit; the settings (`settings.h`), games' own settings included |
 | `port/ui/` | The UI kit the new launcher draws with: Vulkan on the RADV the app links, presenting to VideoOut; signed-distance shapes and text (Lexend baked by `tools/render-sdf-font.sh`), pictures, springs, the DualSense as actions, and the design's tokens |
 | `port/main_ps5.cpp` | The entry point: the sandbox escape, logs, Cemu's core, the launcher, the game |
 | `patches/cemu/`, `patches/azahar/`, `patches/melonds/` | The port's changes to Cemu's, Azahar's and melonDS's own files |

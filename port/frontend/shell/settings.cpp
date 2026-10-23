@@ -356,7 +356,7 @@ namespace ps5shell
 			OpenHelp(Tr("No mods on your drives"),
 				Tr("Copy each mod's folder into a ps5cemu/mods folder on a USB drive and plug it in. A mod is a Cemu graphic pack (a "
 				   "folder with a rules.txt), or a folder with content and aoc folders in it for the files it replaces. The guide on "
-				   "GitHub, docs/MODS.md, has more."));
+				   "GitHub, docs/GUIDE.md, has more."));
 			return;
 		}
 		ps5mods::Start(drives, titleId, name);
@@ -664,6 +664,11 @@ namespace ps5shell
 									"side, like a book. The touchpad moves the cursor over the bottom screen as the TV shows it. The in-game menu "
 									"changes it too.")),
 					"dsRotation");
+			if (IsDs() || Is3ds())
+				own(toggle("screengap", Tr("Screen gap"), hand.screenGap, Tr("The two screens held apart, as the hinge holds them."),
+						Tr("A gap between the two screens wherever both show: one above the other, side by side, or turned like a book. "
+						   "A game can have its own; the in-game menu's quick actions change it too.")),
+					"screenGap");
 			if (IsDs() || Is3ds())
 				own(toggle("hiddentouch", Tr("Touch without the bottom screen"), hand.hiddenTouch,
 						Tr("The touchpad touches it while only the top screen shows."),
@@ -984,7 +989,7 @@ namespace ps5shell
 					Tr("Copies the mods in a USB drive's ps5cemu/mods folder into the app's graphic packs, where each shows on its game's "
 					   "Graphic packs page, off until you turn it on. A mod is a Cemu graphic pack (a folder with a rules.txt), or, for one "
 					   "shared without it, a folder with content and aoc folders, in a folder named by its game's title ID. A game's menu "
-					   "has Add mods from USB as well, which gives such mods that game. The guide on GitHub, docs/MODS.md, has more.")));
+					   "has Add mods from USB as well, which gives such mods that game. The guide on GitHub, docs/GUIDE.md, has more.")));
 			}
 			else if (Is3ds())
 				action(Kind::Link, "installcia", Tr("Install a CIA file"), "", Tr("A game, an update or DLC."),
@@ -1746,6 +1751,8 @@ namespace ps5shell
 				hand.nxCompactMemory = on;
 			else if (id == "hiddentouch")
 				hand.hiddenTouch = on;
+			else if (id == "screengap")
+				hand.screenGap = on;
 			else if (id == "dsownbios")
 				hand.dsOwnBios = on;
 			else
@@ -2658,8 +2665,10 @@ namespace ps5shell
 					Focus(item, 14);
 			}
 			canvas.Draw(pages[i].icon, {item.x + 22, item.CentreY() - 14, 28, 28}, selected ? Accent() : Secondary());
-			const ui::TextStyle style = Style({24, selected ? ui::Weight::SemiBold : ui::Weight::Medium, 1.0f});
-			const ui::TextBlock text = m_fonts.Layout(style, pages[i].title, item.w - 86, 1);
+			// the pages' names all one size (#76): a long one takes two lines rather than a smaller size
+			ui::TextStyle style = Style({24, selected ? ui::Weight::SemiBold : ui::Weight::Medium, 1.0f});
+			style.minScale = 1;
+			const ui::TextBlock text = m_fonts.Layout(style, pages[i].title, item.w - 86, 2);
 			canvas.Text(text, item.x + 68, item.CentreY() - text.height * 0.5f, selected ? kText : Secondary());
 		}
 		canvas.PopClip();
@@ -2678,11 +2687,12 @@ namespace ps5shell
 		const float available = dialog.Bottom() - 28 - ry;
 		const float scroll = std::max(0.0f, (m_settingRow + 1) * (rowH + 12) - available);
 		canvas.PushClip({px - 20, ry - 12, pw + 40, available + 24});
+		const float labelScale = LabelScale(rows, pw); // every row's label the same size (#76)
 		for (int i = 0; i < (int)rows.size(); i++)
 		{
 			const Box box{px, ry + i * (rowH + 12) - scroll, pw, rowH};
 			const bool focused = m_onRows && i == m_settingRow;
-			DrawRow(canvas, rows[i], box, focused);
+			DrawRow(canvas, rows[i], box, focused, labelScale);
 			if (focused && rows[i].kind == Row::Kind::Hold)
 				HoldRing(canvas, box, m_holdProgress);
 		}

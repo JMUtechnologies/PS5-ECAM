@@ -637,10 +637,11 @@ namespace ps5shell
 		// rows past the page's foot scroll with the focus
 		const float scroll = std::max(0.0f, (m_playerRow + 1) * kPlayerRowStep - (kListBottom - kListTop));
 		canvas.PushClip({kListX - 20, kListTop - 12, kListWidth + 40, kListBottom - kListTop + 24});
+		const float labelScale = LabelScale(rows, kListWidth);
 		for (int i = 0; i < kPlayerRows; i++)
 		{
 			const Box box{kListX, kListTop + i * kPlayerRowStep - scroll, kListWidth, kPlayerRowHeight};
-			DrawRow(canvas, rows[i], box, i == m_playerRow);
+			DrawRow(canvas, rows[i], box, i == m_playerRow, labelScale);
 			if (i == kRowReset && i == m_playerRow)
 				HoldRing(canvas, box, m_holdProgress);
 		}

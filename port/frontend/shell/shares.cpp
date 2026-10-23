@@ -580,6 +580,7 @@ namespace ps5shell
 			sheet.w - 96, 1);
 		canvas.Text(Style(kCaptionStyle), sheet.x + 48, sheet.y + 74, Tr("Nothing is ever written to it."), Tertiary(), sheet.w - 96, 1);
 		const std::vector<Row> rows = ShareRows();
+		const float labelScale = LabelScale(rows, sheet.w - 80);
 		float y = sheet.y + 116;
 		for (int i = 0; i <= kRemove; i++)
 		{
@@ -588,7 +589,7 @@ namespace ps5shell
 			const bool focused = i == m_shares.row;
 			const float h = focused && !rows[i].description.empty() ? kFieldH + 32 : kFieldH;
 			const Box box{sheet.x + 40, y, sheet.w - 80, h};
-			DrawRow(canvas, rows[i], box, focused);
+			DrawRow(canvas, rows[i], box, focused, labelScale);
 			if (focused)
 			{
 				Focus(box, kRadiusCard);

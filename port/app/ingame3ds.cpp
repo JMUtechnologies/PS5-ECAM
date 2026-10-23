@@ -488,8 +488,13 @@ namespace ps5ingame3ds
 					ds ? Tr("For the games played with the DS held on its side, like a book (Hotel Dusk): both screens turn together.") :
 						 Tr("For the games played with the 3DS held on its side, like a book: both screens turn together, and the touch "
 							"screen with them.")});
-			// the bottom screen touched while only the top one shows
+			// a gap between the screens, as the hinge makes: also a quick action
 			rows.back().rows.insert(rows.back().rows.begin() + 3,
+				{"gap", Tr("Screen gap"), settings.screenGap ? on : off, true,
+					Tr("A gap between the two screens where both show, as the console's hinge makes: one above the other, side by side, "
+					   "or turned like a book.")});
+			// the bottom screen touched while only the top one shows
+			rows.back().rows.insert(rows.back().rows.begin() + 4,
 				{"hiddentouch", Tr("Touch without the bottom screen"), settings.hiddenTouch ? on : off, true,
 					Tr("With the top screen alone, the touchpad still touches the bottom screen, its cursor over the top one (Star Fox 64 3D).")});
 			if (ds)
@@ -654,7 +659,9 @@ namespace ps5ingame3ds
 			std::vector<ps5menu::Tile> tiles{{"resume", Tr("Resume"), "resume"},
 				{"save", Tr("Save state"), "save", TrF("Slot {0}", s_stateSlot)},
 				{"load", Tr("Load state"), "load", empty ? TrF("Slot {0} empty", s_stateSlot) : TrF("Slot {0}", s_stateSlot), !empty},
-				{"layout", Tr("Screens"), "screens", LayoutName(settings.layout)}};
+				{"layout", Tr("Screens"), "screens", LayoutName(settings.layout)},
+				// tr: the quick action that puts a gap between the two screens, and its state
+				{"gap", Tr("Screen gap"), "gap", settings.screenGap ? Tr("On") : Tr("Off")}};
 			// how the last save or load went, on its tile (Made by another version, Saved slot 1...)
 			for (ps5menu::Tile& tile : tiles)
 				if (!message.empty() && tile.id == s_stateAction)
@@ -701,6 +708,8 @@ namespace ps5ingame3ds
 				next.rotation = (std::clamp(settings.rotation, 0, kRotationCount - 1) + change + kRotationCount) % kRotationCount;
 			else if (id == "hiddentouch")
 				next.hiddenTouch = !settings.hiddenTouch;
+			else if (id == "gap")
+				next.screenGap = !settings.screenGap;
 			else if (id == "framegen")
 				next.frameGeneration = !settings.frameGeneration;
 			else if (id == "lid")

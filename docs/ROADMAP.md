@@ -1,4 +1,71 @@
-# Ideas
+# Roadmap
+
+What PS5-ECAM is working towards: first the rebuild and stability work still open (the launcher
+rewrite of October 2026 and the issues around it), then the longer list of ideas to pick from.
+Written 23 October 2026.
+
+## Now: finishing the rebuild
+
+The launcher is one layout now (themes are skins over it), a 3DS or DS game comes back to the library
+without the app starting over, the graphic packs download on demand, a network share's library is
+kept between looks, and every network call has a timeout. What is left:
+
+### To check on a console
+
+None of the October rebuild has run on a PS5 yet: the PC preview draws the launcher, and the rest was
+checked by reading and compiling. Before a release:
+
+1. **3DS and DS back to the library:** quit a game, play another of the same side, quit again; then a
+   Wii U game after a 3DS one (that one starts the app over, `--rom`), and Resume where you left off
+   after it. The boot log says `back to the library in this process` each time.
+2. **Screen gap:** the quick action on the 3DS and DS, in every layout and turned like a book; the
+   touch screen still under the cursor.
+3. **Graphic packs:** downloaded on the first Wii U start without them (`[packs]` in the boot log),
+   and the packs a game has on still on after.
+4. **An update from 5.0.1:** it installs, and `assets/graphicPacks` and the TGA borders are gone from
+   the app's folder afterwards (moved into `previous-version`).
+5. **Network shares:** a side on a share opens at once with "As found last time"; Look for games
+   now finds a game added since.
+6. **3DS borders** (now PNG) show in a game.
+
+### Stability
+
+- **The Wii U side still starts the app over** after a game: Cemu keeps VideoOut (its GPU thread owns
+  the swapchain until the process ends). Find whether `LatteThread_Exit` can hand VideoOut back, as
+  Azahar and melonDS do, so the Wii U side comes back in place too; until then the restart stays,
+  with its known ways of failing (#60, #68).
+- **Slow downloads and installs** ([#73](https://github.com/premohq/PS5-ECAM/issues/73)): on one
+  console the packs took about 8 minutes to unpack and an update about 20 to install. Time each step
+  in the boot log (download, unpack, each file moved), check whether the launcher's frame loop starves
+  the threads doing it (their priority against the main thread's), and write files in fewer, larger
+  operations. The update now carries about 2,000 fewer files (no graphic packs).
+- **Switch games with a mods folder do not start** ([#77](https://github.com/premohq/PS5-ECAM/issues/77)):
+  nothing of the launcher's reaches Eden's mods, so it is in Eden's program. Needs the reporter's boot
+  log; compare ProsperoEdenX's mod loading with upstream ProsperoEden's newest (its new folder
+  structure), port the fix and move the pin.
+- **Switch games on 8.60** ([#72](https://github.com/premohq/PS5-ECAM/issues/72)): one report that
+  they did not start on an earlier version; no log yet.
+- **Play time is never counted:** `ps5catalog::AddMinutes` has no caller, so "played" stays at 0.
+  Count a game's minutes when it ends (in place now for the 3DS and DS; across the restart for the
+  Wii U and Switch, by a record the next start reads).
+
+### Lighter
+
+- **Eden's `ui/` folder** (about 25 MB) goes into the app whole: find which of its files Eden's
+  program still reads now that PS5-ECAM's launcher and menus replace its own, and package only those.
+- **`sce_sys/pic1.dds`** is a copy of `pic0.dds` (8 MB): check whether the console needs it.
+- **Package size in the README** for the next release, and its notes.
+
+### Cleaner code
+
+- `shell_internal.h` is still one class for the whole launcher, and `shell/settings.cpp` about 2,700
+  lines: split the settings pages into their own files, and the Library's, the hub's and the pages'
+  state out of the class.
+- Host tests for what was checked by hand: the catalogue's round trip (archive fields), the DS
+  screens' placement with the gap and rotation, `ps5net::Resolve`'s cache; run the preview's scripts
+  in CI (they need lavapipe).
+
+## Ideas
 
 A list of things PS5-ECAM could do next: fixes, quality of life, new features and a few long shots.
 Written 22 October 2026, against the code at `184f41f` (5.0.1 in progress). Nothing here is planned or
@@ -9,7 +76,7 @@ and left out is at the end). Where an idea comes from another emulator or launch
 
 **Effort:** S is a day or two, M about a week, L more than that or needs research first.
 
-## Progress
+### Progress
 
 Each idea done is marked **Done** where it is listed below, with its commit.
 
@@ -34,7 +101,7 @@ Being worked on separately (not here): the Switch side's in-game menu, its setti
 remapping ([N1](#n1)), its rooms ([I2](#i2)), ReShade on the Wii U side ([I1](#i1)), and the box art
 downloader.
 
-## Start here
+### Start here
 
 The ten with the most value for the work, in order:
 
@@ -49,7 +116,7 @@ The ten with the most value for the work, in order:
 9. [S5](#s5) CI on every push
 10. [I1](#i1) Turn on the ReShade code that is already in the tree
 
-## Stability and fixes
+### Stability and fixes
 
 <a id="s1"></a>**S1. A broken `ps5cemu.json` is kept, not wiped** (S) · **Done:** [`1b497d3`](https://github.com/premohq/PS5-ECAM/commit/1b497d3)
 `ps5settings::Load` returns the defaults when the file does not parse (`port/frontend/settings.cpp:200`),
@@ -111,7 +178,7 @@ Fetch the list at start (as the box art is) so it changes without an app update,
 offer a QR code for a "how it ran" report. RPCS3 shows its compatibility list in its game list the same
 way.
 
-## Quality of life: the launcher and library
+### Quality of life: the launcher and library
 
 <a id="l1"></a>**L1. Your own collections** (M)
 The Library's filters are All, Recently added, Favourites and Graphic packs on. Add named collections
@@ -165,7 +232,7 @@ a game (or in the in-game menu) where each player presses Cross to take their pl
 Themes are JSON files in `/data/ps5cemu/themes`. A page that lists a community themes repository on
 GitHub and downloads one, as ES-DE's theme downloader does.
 
-## Quality of life: in a game
+### Quality of life: in a game
 
 <a id="g1"></a>**G1. Quick save and quick load hotkeys** (S) · **Done:** [`6f8dcd8`](https://github.com/premohq/PS5-ECAM/commit/6f8dcd8)
 The guide's shortcuts are touchpad click + Options, L1 and R1; Square and Triangle look free. Touchpad click + Square
@@ -204,7 +271,7 @@ game's page, and one picked as the game's background.
 <a id="g9"></a>**G9. Fast forward as a toggle** (S) · **Done:** [`8777160`](https://github.com/premohq/PS5-ECAM/commit/8777160)
 Today it works only while held. An option to press once for on and again for off, as RetroArch offers.
 
-## The Switch side
+### The Switch side
 
 Since ProsperoEden's launcher is no longer opened from the app (`1579f25`), these went with it.
 
@@ -229,7 +296,7 @@ one game's save, and take one from a JKSV or Checkpoint dump made on a real Swit
 Eden cannot read shares, so the Switch side refuses them. Either Eden reads through the app's `/net`
 layer (`port/ps5/netfs_files.cpp`), or the share's game gets a **Copy to the PS5** action.
 
-## New features for each system
+### New features for each system
 
 <a id="w1"></a>**W1. Wii U online with Pretendo** (L)
 Cemu on a PC plays online through Pretendo Network with your own Wii U's `otp.bin`, `seeprom.bin` and
@@ -268,7 +335,7 @@ The DS's achievements are softcore only (`port/app/achievements.h`). Hardcore tu
 cheats and slow speeds, and adds leaderboards. Rich presence, and the badges' pictures in the menu, can
 come with it. RetroArch, DuckStation and PCSX2 all offer it.
 
-## The DualSense
+### The DualSense
 
 <a id="h1"></a>**H1. The DualSense's microphone as the game's** (L, needs a test first)
 The DS side has "R3 held to blow". The DualSense has a microphone: Nintendogs, Spirit Tracks' pan
@@ -282,7 +349,7 @@ Check first that the payload SDK reaches `scePadSetTriggerEffect`.
 `ui/feedback.cpp` lights it in the side's colour. In a game it could show the player's number (Wii U,
 players 1 to 4), flash on an achievement, or take the cover's colour.
 
-## A phone or computer as a companion
+### A phone or computer as a companion
 
 The remote touch screen's HTTP server (`port/stream`) already reaches every phone on the network. It can
 do more.
@@ -304,7 +371,7 @@ may only give motion over HTTPS, so check that first.
 A page listing your games, and the latest `boot.log` to attach to an issue from the phone. Goes with
 [S2](#s2).
 
-## Bigger and stranger
+### Bigger and stranger
 
 <a id="i1"></a>**I1. Turn on the ReShade code that is already in the tree** (M)
 `port/cemu/ReShadeEffects.cpp` and `ReShadeRuntime.cpp`, about 2,200 lines, compile ReShade `.fx`
@@ -335,7 +402,7 @@ would look like your games, not their boxes.
 them by title ID from a public cheat collection, or read an R4 `usrcheat.dat` for the DS. RetroArch has a
 cheat downloader and Apollo Save Tool has online patches.
 
-## Checked and left out
+### Checked and left out
 
 These came up and are already in the app: play time, turbo buttons, themes and your own themes, favourites
 and sorting, rewind and fast forward on the DS, five save state slots on the 3DS and DS, RetroAchievements

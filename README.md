@@ -119,8 +119,8 @@ Every shortcut, the in-game menu and the rest are in the [guide](docs/GUIDE.md).
 ## Documentation
 
 - [Guide](docs/GUIDE.md): the launcher, each system, controls, saves, mods, the remote touch screen and where files are kept
-- [Firmware and setup](docs/HEN-SETUP.md) · [Mods](docs/MODS.md) · [Compatibility](docs/COMPATIBILITY.md)
-- [Building from source](docs/BUILDING.md) · [Driver performance](docs/DRIVER-PERFORMANCE.md)
+- [Firmware and setup](docs/HEN-SETUP.md) · [Mods](docs/GUIDE.md#mods) · [Compatibility](docs/COMPATIBILITY.md)
+- [Building from source](docs/BUILDING.md) · [Driver performance](docs/DRIVER-PERFORMANCE.md) · [Roadmap](docs/ROADMAP.md)
 - Problems: **Settings > Diagnostics > Copy logs to USB**, then [open an issue](https://github.com/premohq/PS5-ECAM/issues/new/choose)
 
 ## Building

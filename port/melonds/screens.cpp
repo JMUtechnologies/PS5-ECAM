@@ -644,7 +644,7 @@ namespace ps5melonds::screens
 		}
 	}
 
-	void Place(int layout, bool swapped, int rotation, float width, float height, Rect& top, Rect& bottom)
+	void Place(int layout, bool swapped, int rotation, bool gap, float width, float height, Rect& top, Rect& bottom)
 	{
 		const int turns = QuarterTurns(rotation);
 		if (turns != 0)
@@ -653,7 +653,7 @@ namespace ps5melonds::screens
 			// each corner turned clockwise onto the picture
 			const bool sideways = turns % 2 == 1;
 			const float uprightWidth = sideways ? height : width, uprightHeight = sideways ? width : height;
-			Place(layout, swapped, 0, uprightWidth, uprightHeight, top, bottom);
+			Place(layout, swapped, 0, gap, uprightWidth, uprightHeight, top, bottom);
 			auto turn = [&](Rect& rect) {
 				if (!rect.Shown())
 					return;
@@ -678,6 +678,7 @@ namespace ps5melonds::screens
 		Rect* first = swapped ? &bottom : &top;	 // the main screen: the top one, or the bottom one swapped
 		Rect* second = swapped ? &top : &bottom;
 		constexpr float w = kScreenWidth, h = kScreenHeight;
+		const float g = gap ? kGap : 0; // in the DS's pixels, scaled with them
 		// the screens' box fitted to the picture and centred, as Azahar's MaxRectangle fits its own
 		auto fit = [&](float boxWidth, float boxHeight, float& scale, float& x, float& y) {
 			scale = std::min(width / boxWidth, height / boxHeight);
@@ -699,21 +700,23 @@ namespace ps5melonds::screens
 			// the main screen large, the other a quarter of its size at its bottom right (Azahar's
 			// large_screen_proportion 4, small_screen_position BottomRight)
 			constexpr float kProportion = 4.0f;
-			fit(w + w / kProportion, h, scale, x, y);
+			fit(w + g + w / kProportion, h, scale, x, y);
 			*first = rect(x, y, w * scale, h * scale);
 			const float smallWidth = w / kProportion * scale, smallHeight = h / kProportion * scale;
-			*second = rect(first->right, first->bottom - std::round(smallHeight), smallWidth, smallHeight);
+			*second = Rect{std::round(x + (w + g) * scale), first->bottom - std::round(smallHeight), std::round(x + (w + g) * scale + smallWidth),
+				first->bottom};
 			break;
 		}
 		case 3: // side by side, the main one on the left
-			fit(w * 2, h, scale, x, y);
+			fit(w * 2 + g, h, scale, x, y);
 			*first = rect(x, y, w * scale, h * scale);
-			*second = rect(first->right, y, w * scale, h * scale);
+			// its edges from the whole box's, so that rounding never takes it past the picture
+			*second = Rect{std::round(x + (w + g) * scale), y, std::round(x + (2 * w + g) * scale), std::round(y + h * scale)};
 			break;
 		default: // stacked, the main one above
-			fit(w, h * 2, scale, x, y);
+			fit(w, h * 2 + g, scale, x, y);
 			*first = rect(x, y, w * scale, h * scale);
-			*second = rect(x, first->bottom, w * scale, h * scale);
+			*second = Rect{x, std::round(y + (h + g) * scale), std::round(x + w * scale), std::round(y + (2 * h + g) * scale)};
 			break;
 		}
 	}

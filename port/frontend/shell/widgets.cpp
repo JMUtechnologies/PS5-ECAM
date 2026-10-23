@@ -254,28 +254,27 @@ namespace ps5shell
 		canvas.Rect({thumb, y + 4, 28, 28}, 14, on || ui::LightTheme() ? 0xffffffff : (focused ? 0xffd8dde6 : 0xffb4bac6));
 	}
 
-	void Shell::DrawRow(Canvas& canvas, const Row& row, const Box& box, bool focused)
+	namespace
 	{
-		canvas.PushAlpha(row.dimmed ? 0.5f : 1.0f);
-		canvas.Rect(box, kRadiusCard, focused ? Surface2() : Surface());
-		canvas.Ring(box, kRadiusCard, 1.5f, kGlassEdge);
-		const ui::TextStyle label = Style(kBodyStyle);
-		const ui::TextStyle caption = Style(kCaptionStyle);
-		const ui::TextStyle value = Style(kLabelStyle);
-		const bool described = focused && !row.description.empty();
-		const float inner = box.w - 56;
-		const float right = box.Right() - 28;
+		constexpr float kPip = 14, kPipGap = 6, kTrack = 220, kSwatch = 46;
+	}
 
+	Shell::RowControl Shell::RowControlOf(const Row& row, float boxWidth, bool focused)
+	{
+		const ui::TextStyle label = Style(kBodyStyle);
+		const ui::TextStyle value = Style(kLabelStyle);
+		const float inner = boxWidth - 56;
 		// the control on the right first, then the label in what it leaves (a third of the row at the
 		// least): a longer language's words make the control's text smaller, then cut it, never let it
 		// run into the label (7.2)
 		const float labelNatural = m_fonts.Width(label, row.label);
 		const float labelLeast = std::min(labelNatural, inner * 0.34f);
-		// fixed: the control's part that is not its value's text; valueMost: how wide that text may be
-		float fixed = 0, valueMost = 0, control = 0;
-		ui::TextStyle segment = Style({22, ui::Weight::SemiBold, 1.0f});
-		float segmentShare = 0; // each segment's widest, when even the smaller text does not fit
-		static constexpr float kPip = 14, kPipGap = 6, kTrack = 220, kSwatch = 46;
+		RowControl out;
+		float& fixed = out.fixed;
+		float& valueMost = out.valueMost;
+		ui::TextStyle& segment = out.segment;
+		float& segmentShare = out.segmentShare;
+		segment = Style({22, ui::Weight::SemiBold, 1.0f});
 		switch (row.kind)
 		{
 		case Row::Kind::Toggle: fixed = 64; break;
@@ -303,9 +302,46 @@ namespace ps5shell
 		case Row::Kind::Hold:
 		case Row::Kind::Link: fixed = row.kind == Row::Kind::Link ? 40 : 0, valueMost = row.value.empty() ? 0.0f : inner * 0.45f; break;
 		}
-		control = fixed + std::min(m_fonts.Width(value, row.value), valueMost);
-		const float labelWidth = std::max(inner * 0.3f, inner - control - 24);
-		const ui::TextBlock labelBlock = m_fonts.Layout(label, row.label, labelWidth, 1);
+		const float control = fixed + std::min(m_fonts.Width(value, row.value), valueMost);
+		out.labelWidth = std::max(inner * 0.3f, inner - control - 24);
+		return out;
+	}
+
+	float Shell::LabelScale(const std::vector<Row>& rows, float boxWidth)
+	{
+		const ui::TextStyle label = Style(kBodyStyle);
+		float scale = 1;
+		for (const Row& row : rows)
+		{
+			const float natural = m_fonts.Width(label, row.label);
+			// focused: when the room is least (a choice's arrows)
+			if (natural > 0)
+				scale = std::min(scale, RowControlOf(row, boxWidth, true).labelWidth / natural);
+		}
+		return std::clamp(scale, label.minScale, 1.0f);
+	}
+
+	void Shell::DrawRow(Canvas& canvas, const Row& row, const Box& box, bool focused, float labelScale)
+	{
+		canvas.PushAlpha(row.dimmed ? 0.5f : 1.0f);
+		canvas.Rect(box, kRadiusCard, focused ? Surface2() : Surface());
+		canvas.Ring(box, kRadiusCard, 1.5f, kGlassEdge);
+		ui::TextStyle label = Style(kBodyStyle);
+		if (labelScale > 0)
+		{
+			// the list's one size: a label still too long for it is cut, never made smaller on its own
+			label.size *= labelScale;
+			label.minScale = 1;
+		}
+		const ui::TextStyle caption = Style(kCaptionStyle);
+		const ui::TextStyle value = Style(kLabelStyle);
+		const bool described = focused && !row.description.empty();
+		const float inner = box.w - 56;
+		const float right = box.Right() - 28;
+		const RowControl layout = RowControlOf(row, box.w, focused);
+		const float fixed = layout.fixed, valueMost = layout.valueMost, segmentShare = layout.segmentShare;
+		const ui::TextStyle segment = layout.segment;
+		const ui::TextBlock labelBlock = m_fonts.Layout(label, row.label, layout.labelWidth, 1);
 		const float labelY = described ? box.y + 16 : box.CentreY() - labelBlock.height * 0.5f;
 		canvas.Text(labelBlock, box.x + 28, labelY, kText);
 		// game settings: whether the value is the side's (Default) or the game's own
