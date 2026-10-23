@@ -95,6 +95,7 @@ namespace ps5settings
 			ReadInt(json, "border", n3ds.border, 0, 5);
 			ReadInt(json, "dsFilter", n3ds.dsFilter, 0, 2);
 			ReadInt(json, "dsRotation", n3ds.dsRotation, 0, 3);
+			ReadBool(json, "screenGap", n3ds.screenGap);
 			ReadBool(json, "hiddenTouch", n3ds.hiddenTouch);
 			ReadBool(json, "frameGeneration", n3ds.frameGeneration);
 			ReadBool(json, "dsJit", n3ds.dsJit);
@@ -181,6 +182,8 @@ namespace ps5settings
 			writer.Int(n3ds.dsFilter);
 			writer.Key("dsRotation");
 			writer.Int(n3ds.dsRotation);
+			writer.Key("screenGap");
+			writer.Bool(n3ds.screenGap);
 			writer.Key("hiddenTouch");
 			writer.Bool(n3ds.hiddenTouch);
 			writer.Key("frameGeneration");
@@ -658,6 +661,7 @@ namespace ps5settings
 				{"cpuClock", nullptr, nullptr, &N3ds::cpuClock, nullptr, 25, 400},
 				{"dsFilter", nullptr, nullptr, &N3ds::dsFilter, nullptr, 0, 2},
 				{"dsRotation", nullptr, nullptr, &N3ds::dsRotation, nullptr, 0, 3},
+				{"screenGap", nullptr, nullptr, nullptr, &N3ds::screenGap},
 				{"hiddenTouch", nullptr, nullptr, nullptr, &N3ds::hiddenTouch},
 				{"frameGeneration", nullptr, nullptr, nullptr, &N3ds::frameGeneration},
 				{"dsJit", nullptr, nullptr, nullptr, &N3ds::dsJit},
@@ -719,8 +723,8 @@ namespace ps5settings
 		static const std::vector<std::string> wiiu = {"upscaleFilter", "highFrameRate", "framePacing", "frameGeneration", "reshade", "overlay", "asyncShaders",
 			"volume"};
 		static const std::vector<std::string> n3ds = {"resolution", "textureFilter", "customTextures", "asyncShaderCompilation", "invariantPosition", "hwShaders", "layout", "border",
-			"volume", "region", "language", "cpuClock", "frameGeneration", "dsRotation", "hiddenTouch", "anaglyph"};
-		static const std::vector<std::string> nds = {"dsFilter", "dsRotation", "hiddenTouch", "dsJit", "layout", "border", "volume", "language", "dsOwnBios"};
+			"volume", "region", "language", "cpuClock", "frameGeneration", "dsRotation", "screenGap", "hiddenTouch", "anaglyph"};
+		static const std::vector<std::string> nds = {"dsFilter", "dsRotation", "screenGap", "hiddenTouch", "dsJit", "layout", "border", "volume", "language", "dsOwnBios"};
 		static const std::vector<std::string> nx = {"nxResolution", "nxFilter", "nxAstc", "nxFrameGeneration", "nxDocked", "nxSpeedLimit", "volume",
 			"nxAntiAliasing", "nxSharpening", "nxController", "nxOutput", "nxHighRefresh", "nxLanguage", "nxMemory", "nxAsyncShaders", "nxFastGpu",
 			"nxUnsafeCpu", "nxUnsafeDma", "nxReactiveFlushing", "nxSkipInvalidation", "nxBlockList", "nxCompactMemory"};

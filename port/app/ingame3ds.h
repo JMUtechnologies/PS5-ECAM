@@ -44,6 +44,7 @@ namespace ps5ingame3ds
 		// the DS's (Console::Nds)
 		int screenFilter = 0;	  // how its screens are scaled to the TV: kScreenFilters
 		int rotation = 0;		  // the console turned this many quarter turns clockwise, the 3DS's too: kRotations
+		bool screenGap = false;	  // a gap between the two screens, as the console's hinge makes (the 3DS's too)
 		bool hiddenTouch = false; // the touchpad touches the bottom screen while only the top one shows
 		bool lidClosed = false;	  // the DS closed, for the games that ask (for this game only)
 	};

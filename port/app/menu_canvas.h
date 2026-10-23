@@ -533,7 +533,7 @@ namespace ps5menu
 			return total <= width ? kLabel - 2 : std::max((kLabel - 2) * 0.75f, (kLabel - 2) * width / total);
 		}
 
-		// A quick action's picture, drawn in lines around x, y: resume, save, load, screens, swap,
+		// A quick action's picture, drawn in lines around x, y: resume, save, load, screens, gap, swap,
 		// packs, amiibo
 		void Icon(const std::string& name, float x, float y, ImU32 colour) const
 		{
@@ -564,6 +564,12 @@ namespace ps5menu
 				// the 3DS's two screens, the top one wider
 				draw->AddRect({c.x - 12 * s, c.y - 13 * s}, {c.x + 12 * s, c.y - 1 * s}, colour, 2 * s, 0, thick);
 				draw->AddRect({c.x - 8 * s, c.y + 3 * s}, {c.x + 8 * s, c.y + 13 * s}, colour, 2 * s, 0, thick);
+			}
+			else if (name == "gap")
+			{
+				// two screens side by side, held apart, as a book's pages
+				draw->AddRect({c.x - 14 * s, c.y - 10 * s}, {c.x - 4 * s, c.y + 10 * s}, colour, 2 * s, 0, thick);
+				draw->AddRect({c.x + 4 * s, c.y - 10 * s}, {c.x + 14 * s, c.y + 10 * s}, colour, 2 * s, 0, thick);
 			}
 			else if (name == "swap")
 			{

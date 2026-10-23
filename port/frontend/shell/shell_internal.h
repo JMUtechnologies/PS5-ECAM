@@ -292,7 +292,23 @@ namespace ps5shell
 		float Badge(Canvas& canvas, float x, float y, System side);
 		void DrawCover(Canvas& canvas, Game& game, const Box& box, bool focused, float lift);
 		void DrawGameName(Canvas& canvas, Game& game, const Box& box);
-		void DrawRow(Canvas& canvas, const Row& row, const Box& box, bool focused);
+		// labelScale: the list's one size for its labels (LabelScale); 0: the row fits its own label,
+		// a little smaller when it is long
+		void DrawRow(Canvas& canvas, const Row& row, const Box& box, bool focused, float labelScale = 0);
+		// The room a row's label has beside its control, and how the control takes the rest (DrawRow)
+		struct RowControl
+		{
+			float fixed = 0;	   // the control's part that is not its value's text
+			float valueMost = 0;   // how wide that text may be
+			float labelWidth = 0;  // what is left for the label
+			float segmentShare = 0; // a segmented control's each segment's widest, when even smaller text does not fit
+			ui::TextStyle segment;
+		};
+		RowControl RowControlOf(const Row& row, float boxWidth, bool focused);
+		// One size for every label of a list's rows (#76): the size the label tightest for its room
+		// needs, at most the step text takes before an ellipsis, so a longer language's rows are not
+		// each a size of their own
+		float LabelScale(const std::vector<Row>& rows, float boxWidth);
 		void DrawToggle(Canvas& canvas, float x, float y, bool on, bool focused);
 		void HoldRing(Canvas& canvas, const Box& box, float progress);
 		float Enter(int part) const; // a screen's part, arriving: 0 to 1, 40 ms apart

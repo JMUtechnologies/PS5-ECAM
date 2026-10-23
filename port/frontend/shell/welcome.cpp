@@ -219,10 +219,11 @@ namespace ps5shell
 		const float target = std::max(0.0f, (m_welcomeRow + 1) * kRowStep - (kListBottom - kListTop));
 		m_welcomeScroll += (target - m_welcomeScroll) * std::min(1.0f, m_dt * (m_settings.ui.reduceMotion ? 60.0f : 14.0f));
 		canvas.PushClip({0, kListTop - 12, kSafeX + kListWidth + 24, kListBottom - kListTop + 24});
+		const float labelScale = LabelScale(rows, kListWidth);
 		for (int i = 0; i < (int)rows.size(); i++)
 		{
 			const Box box{kSafeX, kListTop + i * kRowStep - m_welcomeScroll, kListWidth, kRowHeight};
-			DrawRow(canvas, rows[i], box, i == m_welcomeRow);
+			DrawRow(canvas, rows[i], box, i == m_welcomeRow, labelScale);
 		}
 		canvas.PopClip();
 		canvas.PopOffset();

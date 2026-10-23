@@ -214,6 +214,9 @@ namespace ps5azahar
 		bool s_undoSaved = false, s_undoKept = false;
 		// Resume where you left off: the state saved as the game is quit, in a slot the menu does not show
 		constexpr int kResumeSlot = ps5saves::kResumeSlot;
+		// the screens held apart by this many of the 3DS's pixels where both show (Azahar's screen_gap):
+		// an eighth of a screen's height, as the DS side's screens::kGap
+		constexpr int kScreenGap = 30;
 		bool s_resume = false;				   // the game goes on from it as it starts (SetResume)
 		std::atomic<bool> s_quitAfterState{false}; // quit once the state saved for it is made
 		bool s_artic = false;					   // the game is Artic Base's, the 3DS's own: no state to resume from
@@ -437,6 +440,7 @@ namespace ps5azahar
 			values.layout_option = LayoutOf(settings.layout);
 			values.swap_screen = false;
 			SetRotation(settings.dsRotation);
+			values.screen_gap = settings.screenGap ? kScreenGap : 0;
 			input::SetHiddenTouch(settings.hiddenTouch);
 			// dynarmic's code and the shader JIT's go in executable direct memory (ps5platform/exec.h):
 			// where the console refuses it, Azahar's interpreters run the game (slower) rather than
@@ -494,6 +498,7 @@ namespace ps5azahar
 			menu.border = settings.border;
 			menu.frameGeneration = settings.frameGeneration;
 			menu.rotation = settings.dsRotation;
+			menu.screenGap = settings.screenGap;
 			menu.hiddenTouch = settings.hiddenTouch;
 			return menu;
 		}
@@ -561,6 +566,8 @@ namespace ps5azahar
 			values.swap_screen = menu.swapScreens;
 			s_settings.dsRotation = ((menu.rotation % 4) + 4) % 4;
 			SetRotation(s_settings.dsRotation);
+			s_settings.screenGap = menu.screenGap;
+			values.screen_gap = menu.screenGap ? kScreenGap : 0;
 			s_settings.hiddenTouch = menu.hiddenTouch;
 			input::SetHiddenTouch(menu.hiddenTouch);
 			values.resolution_factor = (u32)std::clamp(menu.resolution, 1, 10);

@@ -62,6 +62,9 @@ namespace ps5settings
 		// its cursor over the top screen, for the games that want a touch now and then (Star Fox 64 3D)
 		bool hiddenTouch = false;
 		int dsRotation = 0;			  // the DS (or the 3DS) turned this many quarter turns clockwise, for the games held on their side (Hotel Dusk)
+		// a gap between the two screens, as the hinge makes on the console: one above the other, side by
+		// side and turned like a book (the in-game menu's quick action, Settings > Screens)
+		bool screenGap = false;
 		// the 3DS's: MihawkGen's picture between each two frames of a game at 30 fps (port/cemu/FrameGenPS5.h,
 		// #66), off until measured on the console
 		bool frameGeneration = false;

@@ -34,7 +34,9 @@ namespace ps5melonds::screens
 	// rotation: the DS turned that many quarter turns clockwise, both screens and the layout with them,
 	// for the games held on their side (Hotel Dusk, Brain Age): laid out upright on the picture turned
 	// back, then turned onto it.
-	void Place(int layout, bool swapped, int rotation, float width, float height, Rect& top, Rect& bottom);
+	// gap: the screens held kGap of the DS's pixels apart, as the hinge holds them, where both show.
+	constexpr float kGap = 24;
+	void Place(int layout, bool swapped, int rotation, bool gap, float width, float height, Rect& top, Rect& bottom);
 	// The quarter turns, 0 to 3, of any number of them
 	inline int QuarterTurns(int rotation)
 	{
