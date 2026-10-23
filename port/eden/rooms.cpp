@@ -149,7 +149,8 @@ namespace ps5rooms
 				// as ProsperoEden asks for the list: one request, one answer, no HTTP/2 session kept open
 				curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, (long)CURL_HTTP_VERSION_1_1);
 				static const std::string ca = ps5paths::Assets() + "/cacert.pem"; // the console has no store of its own
-				curl_slist* headers = curl_slist_append(nullptr, "api-version: 1");
+				// and the connection closed by the server after its answer (ps5/curl_socket.h, #78)
+				curl_slist* headers = ps5curl::Headers(curl_slist_append(nullptr, "api-version: 1"));
 				if (resolve)
 					curl_easy_setopt(curl, CURLOPT_RESOLVE, resolve);
 				curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);

@@ -194,7 +194,8 @@ namespace ps5packs
 				Set(Status::State::Failed, ps5lang::Tr("GitHub could not be found: is the PS5 online?"));
 				return;
 			}
-			curl_slist* headers = curl_slist_append(nullptr, "Accept: application/vnd.github+json");
+			// each request asks for its connection to be closed after the answer (ps5/curl_socket.h, #78)
+			curl_slist* headers = ps5curl::Headers(curl_slist_append(nullptr, "Accept: application/vnd.github+json"));
 			std::string body;
 			CURL* curl = Session(resolve, headers);
 			curl_easy_setopt(curl, CURLOPT_URL, kLatest);
@@ -247,7 +248,8 @@ namespace ps5packs
 			fs::create_directories(archive.parent_path(), ec);
 			Download download;
 			download.file.open(archive, std::ios::binary | std::ios::trunc);
-			curl = Session(resolve, nullptr);
+			headers = ps5curl::Headers();
+			curl = Session(resolve, headers);
 			curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Write);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &download);
@@ -256,6 +258,7 @@ namespace ps5packs
 			result = curl_easy_perform(curl);
 			curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http);
 			curl_easy_cleanup(curl);
+			curl_slist_free_all(headers);
 			curl_slist_free_all(resolve);
 			download.file.close();
 			if (result != CURLE_OK || http != 200 || download.written == 0)

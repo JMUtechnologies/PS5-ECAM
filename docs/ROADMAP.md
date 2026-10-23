@@ -27,6 +27,9 @@ checked by reading and compiling. Before a release:
 5. **Network shares:** a side on a share opens at once with "As found last time"; Look for games
    now finds a game added since.
 6. **3DS borders** (now PNG) show in a game.
+7. **Update timing (#78):** Check for updates answers in about a second; an update takes a minute or
+   two, not 20 to 30, with no "0 of 0 MB" step. Box art, the graphic packs, RetroAchievements and the
+   Switch rooms still download.
 
 ### Stability
 
@@ -34,24 +37,15 @@ checked by reading and compiling. Before a release:
   the swapchain until the process ends). Find whether `LatteThread_Exit` can hand VideoOut back, as
   Azahar and melonDS do, so the Wii U side comes back in place too; until then the restart stays,
   with its known ways of failing (#60, #68).
-- **Updates and downloads that wait for minutes** ([#78](https://github.com/premohq/PS5-ECAM/issues/78),
+- **Updates and downloads that waited for minutes** ([#78](https://github.com/premohq/PS5-ECAM/issues/78),
   the real cause of [#73](https://github.com/premohq/PS5-ECAM/issues/73) and #72's "update loop"):
-  dolphin78 timed every step on a console. Each request finishes in a second, then
-  `curl_easy_cleanup` sits on the idle keep-alive connection until the server drops it: 30 s for
-  api.github.com (the check's "is out" 30 s after start), many minutes for raw.githubusercontent.com
-  (the "0 of 0 MB" and the "70 of 70 MB" waits). The cause is probably curl making the socket
-  non-blocking with `fcntl`, which the PS5's sockets ignore. Their fix, confirmed on a console, sends
-  `Connection: close` with every request: the update takes 74 s instead of 20 to 30 minutes, and the
-  check answers in under a second. To do:
-  - Apply their patch (in the issue's comment) to `port/app/updates.cpp`, onto this branch's
-    version, which has the cancel and the stall timeout already. Only the ZIP's transfer moves the
-    dialog's figures, so `SHA256SUMS` no longer shows as "0 of 0 MB".
-  - Send the same header from every other curl user, which waits the same way after each request:
-    the graphic packs (`pack_updates.cpp`: the packs "at 100%" for 8 minutes in #73), box art
-    (`boxart.cpp`), RetroAchievements (`achievements.cpp`) and the Switch rooms (`eden/rooms.cpp`).
-    Better: one place, beside `ps5curl::Setup`, that every session takes it from.
-  - Correct the comments that blame the resolver for the check's 30 s (`ps5update::Stop`, this
-    branch's `ps5/net.h`). The shared resolver and its timeouts stay, but the wait was the cleanup.
+  dolphin78 timed every step on a console. Each request finished in a second, then
+  `curl_easy_cleanup` sat on the idle keep-alive connection until the server dropped it (probably
+  curl's `fcntl` non-blocking, which the PS5's sockets ignore). **Done** with their fix, onto this
+  branch's cancel and stall timeout: every request now sends `Connection: close`, from one place
+  (`ps5curl::Headers` in `ps5/curl_socket.h`) that the update, the graphic packs, box art,
+  RetroAchievements and the Switch rooms all take it from; only the ZIP moves the dialog's figures
+  (no more "0 of 0 MB" for `SHA256SUMS`); the comments that blamed the resolver are corrected. Left:
   - The install's remaining minute is unpacking 1,852 files one at a time and moving each into
     place: unpack in parallel, as `port/app/install.cpp` does (fewer files now, with no graphic
     packs).

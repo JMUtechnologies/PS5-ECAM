@@ -5,6 +5,11 @@
 // the connection, its own timeouts unread. Settings > Multiplayer's public rooms stayed "Downloading…"
 // for good that way, and the community graphic packs' download could fail. Each socket curl opens
 // gets the console's own non-blocking option, SO_NBIO, instead.
+//
+// And every request asks the server to close the connection after its answer (Headers): kept alive,
+// it held curl_easy_cleanup until the server dropped it, 30 s for api.github.com and minutes for
+// raw.githubusercontent.com, as curl reads what is left before closing a socket (#78, found and fixed
+// on a console by dolphin78: an update took 20 to 30 minutes, then 74 s).
 
 #pragma once
 
@@ -27,5 +32,12 @@ namespace ps5curl
 	{
 		curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
 		curl_easy_setopt(curl, CURLOPT_SOCKOPTFUNCTION, NonBlocking);
+	}
+
+	// The headers every request sends (CURLOPT_HTTPHEADER): "Connection: close", added to list (a null
+	// list makes a new one). Freed with curl_slist_free_all once the handle is cleaned up
+	inline curl_slist* Headers(curl_slist* list = nullptr)
+	{
+		return curl_slist_append(list, "Connection: close");
 	}
 }
