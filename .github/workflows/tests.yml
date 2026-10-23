@@ -50,6 +50,9 @@ jobs:
       - name: Library catalogue
         run: bash tools/tests/test-catalog.sh
 
+      - name: DS screens' places
+        run: bash tools/tests/test-screens.sh
+
       - name: Backups
         run: |
           sudo mkdir -p /mnt/usb0
