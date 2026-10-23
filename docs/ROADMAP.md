@@ -1,8 +1,8 @@
 # Roadmap
 
 What PS5-ECAM is working towards: first the rebuild and stability work still open (the launcher
-rewrite of October 2026 and the issues around it), then the longer list of ideas to pick from.
-Written 23 October 2026.
+rewrite of October 2026 and the issues around it), then a release that gives each emulator a folder of
+its own, then the longer list of ideas to pick from. Written 23 October 2026.
 
 ## Now: finishing the rebuild
 
@@ -86,6 +86,70 @@ checked by reading and compiling. Before a release:
 - Host tests for what was checked by hand: the catalogue's round trip (archive fields), the DS
   screens' placement with the gap and rotation, `ps5net::Resolve`'s cache; run the preview's scripts
   in CI (they need lavapipe).
+
+## Next: a folder for each emulator
+
+A release of its own, once the rebuild has shipped and run on consoles, so that a known-good version
+is there underneath it. **Effort:** M, most of it the paths saved in files and testing on each kind of
+drive.
+
+### What changes
+
+The data folder is named after the app, and each emulator's files are in a folder named after it.
+Today Cemu's lie at the top of `/data/ps5cemu`, among the launcher's:
+
+```
+/data/PS5-ECAM/
+  cemu/      settings.xml, mlc01/ (installed games and saves), games/, keys.txt, graphicPacks/,
+             controllerProfiles/
+  azahar/    as now
+  melonds/   as now
+  eden/      as now
+  launcher/  its settings (ps5cemu.json now), library.json, covers/, themes/, music/, network shares
+  amiibo/  cache/  logs/      shared by more than one side
+```
+
+The other old names go too: `PS5CEMU-HAR-data` on a USB drive or extended storage, `ps5cemu.json`, and
+in the code the `PS5CEMU_` macros and the `ps5cemu` names.
+
+**What stays:** the app's title ID, `PPSA99360`. Every home screen tile starts the app by it, so a new
+one would break them all, and a title ID can only be four letters and five digits anyway. The name on
+the home screen is already PS5-ECAM. With the same app, an update needs no new install and leaves no
+old app to delete: the in-app update replaces the files in place as it does now.
+
+### How it goes
+
+1. The update installs as any other.
+2. At the first start of the new version, a prompt explains the change: **Reorganize** or **Not now**.
+3. **Reorganize** moves the folders. They are on the same drive, so each move is a rename, not a copy:
+   about 20 of them, under a second whatever the data's size (300 GB of Wii U games moves as fast as
+   one file), with no free space needed. It works the same for data on a USB drive or extended storage.
+4. **Not now** keeps the old layout working, and asks again later; Settings has the same button.
+
+### What needs care
+
+- **Paths saved in files:** Cemu's `settings.xml` (its MLC path and game folders), Azahar's config,
+  Eden's `prosperoeden.json` (`game_files`), the launcher's `library.json`, and the caches keyed by path
+  (`archives.bin`, `cache/switch-games.txt`, Eden's `covers/`). Each is rewritten from the old place to
+  the new. `ps5paths::Relocated` (`port/app/paths.h`) already does this for data moved to a USB drive
+  (#52): the same idea, for more folders.
+- **Home screen tiles:** each one stores its game's full path (`--rom`, `port/app/forwarders.h`). A
+  game in `/data/ps5cemu/games` would no longer be there, so the new version translates an old path when
+  a tile starts it: the tiles keep working, and nobody remakes them.
+- **Eden's program has its folder built in:** `kDataDir` is `/data/ps5cemu/eden` in
+  `patches/eden/0003`. It changes there, and Eden is rebuilt (`tools/build-eden.sh`) and shipped in the
+  same update.
+- **Go back to the previous version** (Settings > Online, `ps5update::GoBack`): the release before would
+  look for `/data/ps5cemu`, find nothing and start as if new (nothing lost, but it looks lost). Go back
+  moves the folders back first, or is not offered once they have moved.
+- **A power cut halfway through:** each move is written down before it is made, so the next start
+  finishes the reorganizing or puts everything back.
+- **Backups** (`port/app/saves.h`) are stored by system, not by folder, so a backup from before
+  restores into the new places; only its `settings/` names the old `ps5cemu.json`.
+- **Saves** live inside these folders and move with them: nothing to convert.
+- **To check on a console:** reorganizing on `/data`, on a USB drive and on extended storage; tiles made
+  before; Go back after reorganizing; Not now, then Reorganize from Settings; an update from the
+  release before straight to this one.
 
 ## Ideas
 
