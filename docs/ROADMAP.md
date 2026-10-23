@@ -28,7 +28,9 @@ checked by reading and compiling. Before a release:
    now finds a game added since.
 6. **3DS borders** (now PNG) show in a game.
 7. **Update timing (#78):** Check for updates answers in about a second; an update takes a minute or
-   two, not 20 to 30, with no "0 of 0 MB" step. Box art, the graphic packs, RetroAchievements and the
+   two, not 20 to 30, with no "0 of 0 MB" step; the boot log's `files unpacked in` and `moved into
+   place in` give the install's own times (32.5 s and 17.7 s one at a time). Go back in Settings >
+   Online still puts the release before back. Box art, the graphic packs, RetroAchievements and the
    Switch rooms still download.
 
 ### Stability
@@ -45,10 +47,10 @@ checked by reading and compiling. Before a release:
   branch's cancel and stall timeout: every request now sends `Connection: close`, from one place
   (`ps5curl::Headers` in `ps5/curl_socket.h`) that the update, the graphic packs, box art,
   RetroAchievements and the Switch rooms all take it from; only the ZIP moves the dialog's figures
-  (no more "0 of 0 MB" for `SHA256SUMS`); the comments that blamed the resolver are corrected. Left:
-  - The install's remaining minute is unpacking 1,852 files one at a time and moving each into
-    place: unpack in parallel, as `port/app/install.cpp` does (fewer files now, with no graphic
-    packs).
+  (no more "0 of 0 MB" for `SHA256SUMS`); the comments that blamed the resolver are corrected. The
+  install's remaining minute (1,852 files unpacked, kept for Go back and moved into place one at a
+  time) is now shared out among four threads, as `port/app/install.cpp` copies a game, with
+  `eboot.bin` still moved last; there are fewer files too, with no graphic packs.
 - **Switch games with a mods folder do not start** ([#77](https://github.com/premohq/PS5-ECAM/issues/77)):
   nothing of the launcher's reaches Eden's mods, so it is in Eden's program. Needs the reporter's boot
   log; compare ProsperoEdenX's mod loading with upstream ProsperoEden's newest (its new folder

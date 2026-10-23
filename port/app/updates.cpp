@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <array>
 #include <atomic>
+#include <chrono>
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -276,9 +277,6 @@ namespace ps5update
 			return sha.Hex();
 		}
 
-		// The folder the app runs from, which the update replaces the files of: the one ShadowMountPlus
-		// mounted it from (on a USB drive, say, with an older copy left in /data/homebrew), else the
-		// usual install folder, else where the app was found. Empty for an app mounted from an image.
 		// The release an update replaced: its files as they were, and version.txt (PreviousVersion)
 		fs::path PreviousFolder()
 		{
@@ -372,6 +370,9 @@ namespace ps5update
 			ps5log::Line("[update] {} is no longer the app's: {} file(s) {}", path.string(), (int64_t)removed, keep.empty() ? "deleted" : "kept for going back");
 		}
 
+		// The folder the app runs from, which the update replaces the files of: the one ShadowMountPlus
+		// mounted it from (on a USB drive, say, with an older copy left in /data/homebrew), else the
+		// usual install folder, else where the app was found. Empty for an app mounted from an image.
 		fs::path AppFolder()
 		{
 			bool image = false;
@@ -384,22 +385,99 @@ namespace ps5update
 			return fs::exists(ps5paths::kMountedEboot, ec) ? fs::path(ps5paths::kInstallDir) : fs::path(ps5paths::AppDir());
 		}
 
+		// How many files the install works on at once, as install.cpp copies a game: the PS5's drive takes
+		// about 10 ms to make, link or move one, and one at a time the 1,852 files of 5.0.1 took a minute
+		// (#78)
+		constexpr int kWorkers = 4;
+
+		// work(worker, i) for each i below count, shared out among kWorkers threads (worker: which one, 0
+		// to kWorkers - 1), until one returns false: false then, the others ending at their next item
+		template <class Work>
+		bool InParallel(size_t count, Work work)
+		{
+			std::atomic<size_t> next{0};
+			std::atomic<bool> failed{false};
+			auto worker = [&](int w) {
+				for (size_t i = next++; i < count && !failed; i = next++)
+					if (!work(w, i))
+						failed = true;
+			};
+			std::vector<std::thread> workers;
+			for (int w = 1; w < kWorkers; w++)
+				workers.emplace_back(worker, w);
+			worker(0);
+			for (std::thread& thread : workers)
+				thread.join();
+			return !failed;
+		}
+
+		// Each file's folder made, one at a time before the workers, rather than by all at once
+		void MakeFolders(const fs::path& under, const std::vector<fs::path>& files)
+		{
+			std::vector<fs::path> folders;
+			for (const fs::path& file : files)
+				if (file.has_parent_path())
+					folders.push_back(file.parent_path());
+			std::sort(folders.begin(), folders.end());
+			folders.erase(std::unique(folders.begin(), folders.end()), folders.end());
+			std::error_code ec;
+			for (const fs::path& folder : folders)
+				if (!fs::exists(under / folder, ec))
+				{
+					fs::create_directories(under / folder, ec);
+					fs::permissions(under / folder, fs::perms::all, ec);
+				}
+		}
+
+		// folder and all in it deleted, its files kWorkers at a time
+		void RemoveAll(const fs::path& folder)
+		{
+			std::error_code ec;
+			std::vector<fs::path> files;
+			for (auto it = fs::recursive_directory_iterator(folder, ec); !ec && it != fs::recursive_directory_iterator(); it.increment(ec))
+				if (!it->is_directory(ec))
+					files.push_back(it->path());
+			InParallel(files.size(), [&](int, size_t i) {
+				std::error_code ignored;
+				fs::remove(files[i], ignored);
+				return true;
+			});
+			fs::remove_all(folder, ec);
+		}
+
+		double Seconds(std::chrono::steady_clock::time_point since)
+		{
+			return std::chrono::duration<double>(std::chrono::steady_clock::now() - since).count();
+		}
+
 		// The release's PPSA99360 folder unpacked into folder (made new); its files, relative to it
 		bool Unpack(const fs::path& archive, const fs::path& folder, std::vector<fs::path>& files, std::string& error)
 		{
-			int code = 0;
-			zip_t* zip = zip_open(archive.c_str(), ZIP_RDONLY, &code);
-			if (!zip)
+			// a handle for each worker, libzip's being for one thread at a time
+			struct Handle
 			{
-				error = ps5lang::TrF("the download is not a ZIP ({0})", code);
-				return false;
+				zip_t* zip = nullptr;
+				~Handle()
+				{
+					if (zip)
+						zip_close(zip);
+				}
+			};
+			std::array<Handle, kWorkers> handles;
+			for (Handle& handle : handles)
+			{
+				int code = 0;
+				if (!(handle.zip = zip_open(archive.c_str(), ZIP_RDONLY, &code)))
+				{
+					error = ps5lang::TrF("the download is not a ZIP ({0})", code);
+					return false;
+				}
 			}
-			const zip_int64_t entries = zip_get_num_entries(zip, 0);
-			std::vector<char> buffer(1 << 16);
-			bool ok = entries > 0;
-			for (zip_int64_t i = 0; ok && i < entries && !s_stop; i++)
+			std::vector<zip_uint64_t> indices; // each of files' entry in the archive
+			const zip_int64_t entries = zip_get_num_entries(handles[0].zip, 0);
+			for (zip_int64_t i = 0; i < entries; i++)
 			{
-				const char* name = zip_get_name(zip, (zip_uint64_t)i, 0);
+				const char* name = zip_get_name(handles[0].zip, (zip_uint64_t)i, 0);
 				if (!name)
 					continue;
 				std::string entry = name;
@@ -410,41 +488,46 @@ namespace ps5update
 					entry.erase(0, std::strlen(ps5paths::kTitleId) + 1);
 				if (entry.empty() || entry.back() == '/')
 					continue;
-				const fs::path path = folder / entry;
-				std::error_code ec;
-				fs::create_directories(path.parent_path(), ec);
-				zip_file_t* in = zip_fopen_index(zip, (zip_uint64_t)i, 0);
+				indices.push_back((zip_uint64_t)i);
+				files.push_back(entry);
+			}
+			if (std::find(files.begin(), files.end(), fs::path("eboot.bin")) == files.end())
+			{
+				error = ps5lang::Tr("the download has no eboot.bin");
+				return false;
+			}
+			MakeFolders(folder, files);
+			std::mutex failure; // error, from the first worker to fail
+			std::array<std::vector<char>, kWorkers> buffers;
+			const bool ok = InParallel(files.size(), [&](int worker, size_t i) {
+				if (s_stop)
+					return false;
+				const fs::path path = folder / files[i];
+				std::vector<char>& buffer = buffers[worker];
+				buffer.resize(1 << 16);
+				zip_file_t* in = zip_fopen_index(handles[worker].zip, indices[i], 0);
 				std::ofstream out(path, std::ios::binary | std::ios::trunc);
-				if (!in || !out)
-				{
-					error = ps5lang::TrF("{0} could not be unpacked", entry);
-					ok = false;
-				}
-				for (zip_int64_t read; ok && (read = zip_fread(in, buffer.data(), buffer.size())) > 0;)
+				const bool opened = in && out;
+				for (zip_int64_t read; opened && (read = zip_fread(in, buffer.data(), buffer.size())) > 0;)
 					out.write(buffer.data(), (std::streamsize)read);
 				if (in)
 					zip_fclose(in);
 				out.close();
-				if (ok && !out)
+				if (!opened || !out)
 				{
-					error = ps5lang::TrF("{0} could not be written (is /data full?)", entry);
-					ok = false;
+					std::lock_guard lock(failure);
+					if (error.empty())
+						error = !opened ? ps5lang::TrF("{0} could not be unpacked", files[i].string()) :
+										  ps5lang::TrF("{0} could not be written (is /data full?)", files[i].string());
+					return false;
 				}
 				// readable, writable and runnable by all, as the app's files are when copied over
+				std::error_code ec;
 				fs::permissions(path, fs::perms::all, ec);
-				files.push_back(entry);
-			}
-			zip_close(zip);
-			if (ok && s_stop)
-			{
+				return true;
+			});
+			if (!ok && error.empty())
 				error = ps5lang::Tr("stopped for a game");
-				ok = false;
-			}
-			if (ok && std::find(files.begin(), files.end(), fs::path("eboot.bin")) == files.end())
-			{
-				error = ps5lang::Tr("the download has no eboot.bin");
-				ok = false;
-			}
 			return ok;
 		}
 
@@ -596,47 +679,56 @@ namespace ps5update
 			}
 			ps5log::Line("[update] installing in {}", app.string());
 			const fs::path staging = app.string() + ".update";
-			fs::remove_all(staging, ec);
+			RemoveAll(staging);
 			std::vector<fs::path> files;
 			std::string error;
+			const auto unpacking = std::chrono::steady_clock::now();
 			if (!Unpack(archive, staging, files, error))
 			{
-				fs::remove_all(staging, ec);
+				RemoveAll(staging);
 				fs::remove(archive, ec);
 				Fail(ps5lang::TrF("It could not be unpacked: {0}", error));
 				return;
 			}
+			ps5log::Line("[update] {} files unpacked in {:.1f} s", files.size(), Seconds(unpacking));
+			const auto moving = std::chrono::steady_clock::now();
 			// the program last, so that until then the app is the old one whole
 			std::stable_partition(files.begin(), files.end(), [](const fs::path& file) { return file != "eboot.bin"; });
 			// what each file replaces kept as it is, for Settings > Online's Go back (PreviousVersion), until
 			// the next update: a file this release does not have stays in the app as it is anyway
 			const fs::path previous = PreviousFolder();
-			fs::remove_all(previous, ec);
-			bool kept = true;
-			for (const fs::path& file : files)
-				if (fs::exists(app / file, ec))
-					kept = kept && Keep(app / file, previous / file);
+			RemoveAll(previous);
+			bool kept = InParallel(files.size(), [&](int, size_t i) {
+				std::error_code missing;
+				return !fs::exists(app / files[i], missing) || Keep(app / files[i], previous / files[i]);
+			});
 			if (kept)
 				kept = static_cast<bool>(std::ofstream(previous / "version.txt") << PS5CEMU_VERSION << '\n');
 			if (!kept)
 			{
 				ps5log::Line("[update] the release being replaced could not be kept: no going back to it");
-				fs::remove_all(previous, ec);
+				RemoveAll(previous);
 			}
-			for (const fs::path& file : files)
+			MakeFolders(app, files);
+			std::mutex failure;
+			std::string failed; // under failure: the first file that could not be moved, and why
+			auto move = [&](int, size_t i) {
+				std::error_code why;
+				fs::rename(staging / files[i], app / files[i], why);
+				if (!why)
+					return true;
+				std::lock_guard lock(failure);
+				if (failed.empty())
+					failed = ps5lang::TrF("{0} could not be replaced ({1}): copy the release's PPSA99360 folder over by hand", files[i].string(), why.message());
+				return false;
+			};
+			// all but the program at once, then the program (files' last) on its own
+			if (!InParallel(files.size() - 1, move) || !move(0, files.size() - 1))
 			{
-				if (!fs::exists((app / file).parent_path(), ec))
-				{
-					fs::create_directories((app / file).parent_path(), ec);
-					fs::permissions((app / file).parent_path(), fs::perms::all, ec);
-				}
-				fs::rename(staging / file, app / file, ec);
-				if (ec)
-				{
-					Fail(ps5lang::TrF("{0} could not be replaced ({1}): copy the release's PPSA99360 folder over by hand", file.string(), ec.message()));
-					return;
-				}
+				Fail(failed);
+				return;
 			}
+			ps5log::Line("[update] the files kept and moved into place in {:.1f} s", Seconds(moving));
 			// what earlier releases carried and this one does not: into the kept release with the rest, for Go
 			// back, rather than left in the app for good
 			for (const char* retired : kRetired)
