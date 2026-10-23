@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // PS5-ECAM: hosts' addresses for everything the app asks of the network (box art, updates, graphic
 // packs, RetroAchievements, network shares). The console's libc finds no name (getaddrinfo fails), so the
-// PS5's own resolver is asked: 2 s a try, three tries, never left waiting for good (an update's install
-// once waited on it with no end, #73), and each host found is kept for the session, so the next download
-// does not ask again.
+// PS5's own resolver is asked: 2 s a try, three tries, never left waiting for good, and each host found
+// is kept for the session, so the next download does not ask again. (The update's long waits, #73, were
+// not the resolver's but curl's on a kept-alive connection: ps5/curl_socket.h, #78.)
 
 #pragma once
 

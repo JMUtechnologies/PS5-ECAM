@@ -54,6 +54,9 @@ namespace ps5update
 		std::thread s_thread;
 		std::atomic<bool> s_stop{false};
 		std::atomic<bool> s_cancelled{false}; // Cancel: what the thread finds after is not shown
+		// the ZIP's transfer is under way: only its figures are the sheet's (SHA256SUMS' 1357 bytes showed
+		// as "0 of 0 MB" before it, #78)
+		std::atomic<bool> s_counting{false};
 		std::atomic<bool> s_running{false};	  // s_thread has not ended
 
 		void Set(Status::State state, const std::string& message = {})
@@ -103,7 +106,7 @@ namespace ps5update
 
 		int Progress(void*, curl_off_t total, curl_off_t received, curl_off_t, curl_off_t)
 		{
-			if (!s_cancelled)
+			if (!s_cancelled && s_counting)
 			{
 				std::lock_guard lock(s_mutex);
 				s_status.total = total > 0 ? (uint64_t)total : s_status.total;
@@ -151,9 +154,8 @@ namespace ps5update
 			CURL* curl = Session(resolve, url.c_str());
 			if (!curl)
 				return false;
-			curl_slist* headers = accept ? curl_slist_append(nullptr, accept) : nullptr;
-			if (headers)
-				curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+			curl_slist* headers = ps5curl::Headers(accept ? curl_slist_append(nullptr, accept) : nullptr);
+			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Collect);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &body);
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
@@ -554,12 +556,17 @@ namespace ps5update
 				Fail(ps5lang::Tr("The download could not start"));
 				return;
 			}
+			curl_slist* headers = ps5curl::Headers();
+			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Write);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &download);
+			s_counting = true;
 			const CURLcode result = curl_easy_perform(curl);
+			s_counting = false;
 			long http = 0;
 			curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http);
 			curl_easy_cleanup(curl);
+			curl_slist_free_all(headers);
 			download.file.close();
 			if (result != CURLE_OK || http != 200 || download.written == 0)
 			{
@@ -830,10 +837,11 @@ namespace ps5update
 		s_stop = true;
 		if (!s_thread.joinable())
 			return;
-		// A game never waits on the check: the PS5's resolver can take half a minute to find GitHub on
-		// some networks (the check then finished 31 s into the app), with no way to cut it short, and a
-		// game chosen meanwhile sat on a black screen. Waited on briefly, a check still running is left
-		// to end by itself: it stops at its next step (s_stop), before any download or file write.
+		// A game never waits on the check: a step of it can still be waiting on the network (its 31 s
+		// into the app were curl_easy_cleanup's wait on a kept-alive connection, #78, before every request
+		// asked for it to be closed), and a game chosen meanwhile sat on a black screen. Waited on
+		// briefly, a check still running is left to end by itself: it stops at its next step (s_stop),
+		// before any download or file write.
 		int waited = 0;
 		for (; s_running && waited < 25; waited++)
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));

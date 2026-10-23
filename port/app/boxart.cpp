@@ -312,8 +312,14 @@ namespace ps5boxart
 		{
 			curl_slist* resolved = PrepareNetwork();
 			CURL* curl = curl_easy_init();
+			// each cover's connection closed by GameTDB after its answer (ps5/curl_socket.h, #78): one closed
+			// by curl instead held the worker until the server dropped it. The list lives with the worker
+			static curl_slist* const headers = ps5curl::Headers();
 			if (curl)
+			{
 				ps5curl::Setup(curl);
+				curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+			}
 			if (curl && resolved)
 				curl_easy_setopt(curl, CURLOPT_RESOLVE, resolved);
 			std::map<std::string, int> tries; // folder/ID: how many times it came back Later

@@ -87,7 +87,8 @@ namespace ps5cheevos
 			ps5curl::Setup(curl);
 			static const std::string ca = ps5paths::Assets() + "/cacert.pem"; // the console has no store of its own
 			curl_slist* resolve = Resolve(call.url);
-			curl_slist* headers = nullptr;
+			// the connection closed by the server after its answer (ps5/curl_socket.h, #78)
+			curl_slist* headers = ps5curl::Headers();
 			if (!call.post.empty())
 				headers = curl_slist_append(headers, ("Content-Type: " + (call.type.empty() ? std::string("application/x-www-form-urlencoded") : call.type)).c_str());
 			curl_easy_setopt(curl, CURLOPT_URL, call.url.c_str());
@@ -102,8 +103,7 @@ namespace ps5cheevos
 			curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
 			curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 			curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 3L);
-			if (headers)
-				curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 			if (!call.post.empty())
 			{
 				curl_easy_setopt(curl, CURLOPT_POSTFIELDS, call.post.c_str());
