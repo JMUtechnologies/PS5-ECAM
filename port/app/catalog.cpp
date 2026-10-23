@@ -239,10 +239,14 @@ namespace ps5catalog
 			entry->lastPlayed = when;
 	}
 
-	void AddMinutes(System side, uint64_t titleId, uint32_t minutes)
+	uint32_t Ended(System side, uint64_t titleId, int64_t when)
 	{
-		if (Entry* entry = Find(side, titleId))
-			entry->minutesPlayed += minutes;
+		Entry* entry = Find(side, titleId);
+		if (!entry || entry->lastPlayed <= 0 || when < entry->lastPlayed || when - entry->lastPlayed > 86400)
+			return 0;
+		const uint32_t minutes = (uint32_t)((when - entry->lastPlayed + 30) / 60);
+		entry->minutesPlayed += minutes;
+		return minutes;
 	}
 
 	void Migrate(System side, const std::vector<uint64_t>& recent)

@@ -32,6 +32,8 @@ checked by reading and compiling. Before a release:
    place in` give the install's own times (32.5 s and 17.7 s one at a time). Go back in Settings >
    Online still puts the release before back. Box art, the graphic packs, RetroAchievements and the
    Switch rooms still download.
+8. **Play time:** a game played a few minutes shows them in the library and on its page, on each
+   side; for the Switch, after the app comes back from Eden (`played for` in the boot log).
 
 ### Stability
 
@@ -57,9 +59,6 @@ checked by reading and compiling. Before a release:
   structure), port the fix and move the pin.
 - **Switch games on 8.60** ([#72](https://github.com/premohq/PS5-ECAM/issues/72)): one report that
   they did not start on an earlier version; no log yet.
-- **Play time is never counted:** `ps5catalog::AddMinutes` has no caller, so "played" stays at 0.
-  Count a game's minutes when it ends (in place now for the 3DS and DS; across the restart for the
-  Wii U and Switch, by a record the next start reads).
 
 ### On GitHub
 

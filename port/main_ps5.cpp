@@ -48,6 +48,7 @@
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
+#include <ctime>
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -512,6 +513,13 @@ int main(int argc, char* argv[])
 	// restart, which the PS5 has answered by closing the app instead (#60, #68). What the in-game menu
 	// saved is read again; the launcher opens on the game's side.
 	std::optional<ps5launcher::System> gameRan; // the emulator whose game ran in this process
+	// A game that ended: the minutes since the launcher started it (ps5catalog::Played) added to its play
+	// time, which the library and the game's page show
+	auto countPlayTime = [](ps5catalog::System side, uint64_t titleId, const std::string& name, int64_t ended) {
+		const uint32_t minutes = ps5catalog::Ended(side, titleId, ended);
+		ps5catalog::Save();
+		ps5log::Line("[main] {} played for {} min", name, minutes);
+	};
 	auto backInProcess = [&](ps5launcher::System system) {
 		if (ps5emu::ExitAfterGame())
 			ps5emu::ExitApp();
@@ -556,6 +564,10 @@ int main(int argc, char* argv[])
 		{
 			if (std::string why = ps5eden::ResultMessage(result); !why.empty())
 				status.launchErrorSwitch = why;
+			// to when the game ended or was being left; a crash leaves "running", written as it started
+			if ((result.state == "ended" || result.state == "leaving") && result.written > 0)
+				if (const ps5catalog::Entry* entry = ps5catalog::Find(ps5catalog::System::Switch, result.titleId))
+					countPlayTime(ps5catalog::System::Switch, result.titleId, entry->game.name, result.written);
 			if (result.changed)
 			{
 				ps5eden::KeepMenuChanges(result);
@@ -758,6 +770,7 @@ int main(int argc, char* argv[])
 			if (ps5melonds::LaunchGame(game, forGame.nds, error))
 			{
 				ps5melonds::RunGame();
+				countPlayTime(ps5catalog::System::Nds, game.titleId, game.name, std::time(nullptr));
 				backInProcess(ps5launcher::System::Nds);
 				continue;
 			}
@@ -785,6 +798,7 @@ int main(int argc, char* argv[])
 			if (ps5azahar::LaunchGame(launched, forGame.n3ds, error))
 			{
 				ps5azahar::RunGame();
+				countPlayTime(ps5catalog::System::N3ds, game.titleId, game.name, std::time(nullptr));
 				backInProcess(ps5launcher::System::N3ds);
 				continue;
 			}
@@ -815,6 +829,7 @@ int main(int argc, char* argv[])
 		if (ps5emu::LaunchGame(launched, error))
 		{
 			ps5emu::RunGame();
+			countPlayTime(ps5catalog::System::WiiU, game.titleId, game.name, std::time(nullptr));
 			afterGame("wiiu");
 			return 0;
 		}

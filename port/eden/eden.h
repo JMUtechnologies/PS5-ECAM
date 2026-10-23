@@ -46,6 +46,7 @@ namespace ps5eden
 		bool found = false;
 		std::string state, error;
 		uint64_t titleId = 0;
+		int64_t written = 0; // when Eden last wrote it, seconds since 1970: as the game ended, for its state "ended" or "leaving"
 		bool changed = false;
 		struct Settings
 		{

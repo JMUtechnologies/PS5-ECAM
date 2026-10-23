@@ -164,6 +164,9 @@ namespace ps5eden
 		if (!in)
 			return result;
 		result.found = true;
+		struct stat info;
+		if (stat(file.c_str(), &info) == 0)
+			result.written = info.st_mtime;
 		for (std::string line; std::getline(in, line);)
 		{
 			const size_t equals = line.find('=');
