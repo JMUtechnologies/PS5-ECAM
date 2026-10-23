@@ -1,11 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5-ECAM: the Library: where every side opens, every game on it,
-// found fast, the one played last in focus. Filters across the top with their counts, Sort (Square)
-// and Search (Triangle); the covers on a shelf of equal rows, the focused one lifted with its name and
-// facts under it; L2 and R2 jump to the previous or next letter (or year, or status); an index of the
-// letters at the right. On the 3DS side the shelf's first tile is Artic Base. Before there is a game
-// to show (a notice, Cemu starting, the first scan, no games yet) a card says why, with what to do
-// (6.1: what Home showed).
+// PS5-ECAM: the Library, where every side opens, the launcher's one layout (Meyer Oscar's, 6.11).
+// Recently played first: the side's games by when they were last played, a row of their box art under
+// Today, This week and Earlier, the focused one's name, play time, when it was played and its update
+// under the row. Then the Library: Sort (Square) and Search (Triangle), its filters with their counts
+// (All, Recently added, Favourites, Graphic packs on) when Settings > Launcher has them on, and every
+// game on the side as a list, a row
+// each with its cover, its name, when it was played and how it runs; L2 and R2 jump to the previous or
+// next letter (or year, or status), an index of the letters at the right for A to Z. On the 3DS side the
+// list's first row is Artic Base. Every cover is the whole box art at its own shape, never cut to fit.
+// Before there is a game to show (a notice, Cemu starting, the first scan, no games yet) a card says
+// why, with what to do (6.1: what Home showed). The theme (ui/theme.h) only changes how it looks.
 
 #include "shell_internal.h"
 #include "../actions.h"
@@ -33,7 +37,10 @@ namespace ps5shell
 				names.push_back(Tr(sort));
 			return names;
 		}
-		constexpr float kGridTop = 236;
+
+		constexpr int kRecentMost = 8;
+		constexpr float kRecentTop = 224, kRecentHeight = 300, kRecentGap = 24;
+		constexpr float kListPitch = 104;
 
 		int StatusRank(const ps5compat::Report* report)
 		{
@@ -42,11 +49,27 @@ namespace ps5shell
 			const std::string kind = ps5compat::Kind(report->status);
 			return report->status == "Playable" ? 0 : kind == "good" ? 0 : kind == "warn" ? 1 : report->status == "Crashes" ? 2 : 3;
 		}
-	}
 
-	int Shell::LibraryColumns() const
-	{
-		return IsWiiU() ? 8 : RecentLayout() ? 7 : 6;
+		// a game's facts in a line, the empty ones left out
+		std::string Facts(const std::vector<std::string>& facts)
+		{
+			std::string line;
+			for (const std::string& fact : facts)
+				if (!fact.empty())
+					line += (line.empty() ? "" : " · ") + fact;
+			return line;
+		}
+
+		// when a game was played, as Recently played groups them: 0 today, 1 this week, 2 earlier
+		int Group(int64_t when)
+		{
+			const int64_t now = std::time(nullptr);
+			std::tm today{}, then{};
+			const std::time_t t0 = now, t1 = when;
+			if (localtime_r(&t0, &today) && localtime_r(&t1, &then) && today.tm_yday == then.tm_yday && today.tm_year == then.tm_year)
+				return 0;
+			return now - when < 7 * 86400 ? 1 : 2;
+		}
 	}
 
 	int Shell::LibraryFilters() const
@@ -54,14 +77,41 @@ namespace ps5shell
 		return IsWiiU() && m_status.coreReady ? 4 : 3;
 	}
 
+	int Shell::LibraryFilter() const
+	{
+		const int filter = m_settings.ui.libraryFilter[SideIndex()];
+		return m_settings.ui.libraryFilters && filter < LibraryFilters() ? filter : 0;
+	}
+
+	int Shell::LibraryTop() const
+	{
+		return !m_recent.empty() ? 0 : m_settings.ui.libraryFilters ? 1 : 2;
+	}
+
 	int Shell::LibraryGame() const
 	{
-		// Meyer Oscar's, in its Recently played row
-		if (RecentLayout() && m_oscarZone == 0 && m_recentIndex >= 0 && m_recentIndex < (int)m_recent.size())
-			return m_recent[m_recentIndex] < (int)m_games.size() ? m_recent[m_recentIndex] : -1;
+		if (m_libraryZone == 0)
+			return m_recentIndex >= 0 && m_recentIndex < (int)m_recent.size() && m_recent[m_recentIndex] < (int)m_games.size() ? m_recent[m_recentIndex] : -1;
 		const int at = m_libraryIndex - ArticTiles();
 		const int game = at >= 0 && at < (int)m_shelf.size() ? m_shelf[at] : -1;
-		return game < (int)m_games.size() ? game : -1; // a shelf of a side being left has none
+		return game < (int)m_games.size() ? game : -1; // a list of a side being left has none
+	}
+
+	Box Shell::CoverBox(Game& game, float x, float bottom, float height, float maxWidth)
+	{
+		// the box art's own shape once it has loaded, else its case's: the Wii U's tall, the 3DS's and
+		// the DS's a little wider than tall
+		const ui::Picture& picture = Cover(game);
+		float aspect = IsWiiU() ? 0.714f : 1.08f;
+		if (picture.texture && picture.width > 0 && picture.height > 0)
+			aspect = (float)picture.width / picture.height;
+		float w = height * aspect, h = height;
+		if (w > maxWidth)
+		{
+			w = maxWidth;
+			h = w / aspect;
+		}
+		return {x, bottom - h, w, h};
 	}
 
 	bool Shell::LibraryState(std::string& kicker, std::string& title, std::string& text, std::vector<std::string>& buttons) const
@@ -186,10 +236,7 @@ namespace ps5shell
 	void Shell::LibraryRefresh()
 	{
 		const int side = SideIndex();
-		int& filter = m_settings.ui.libraryFilter[side];
-		if (filter >= LibraryFilters())
-			filter = 0;
-		const int shown = RecentLayout() ? 0 : filter; // Meyer Oscar's Library has no filters: every game
+		const int filter = LibraryFilter();
 		const int sort = std::clamp(m_settings.ui.librarySort[side], 0, 3);
 		const int focused = LibraryGame();
 		if (focused >= 0)
@@ -200,11 +247,11 @@ namespace ps5shell
 		for (int i = 0; i < (int)m_games.size(); i++)
 		{
 			Game& game = m_games[i];
-			if (shown == 1 && game.entry.added < recent)
+			if (filter == 1 && game.entry.added < recent)
 				continue;
-			if (shown == 2 && !game.entry.favourite)
+			if (filter == 2 && !game.entry.favourite)
 				continue;
-			if (shown == 3 && IsWiiU())
+			if (filter == 3 && IsWiiU())
 			{
 				if (game.packsOn < 0) // none known while Cemu's library loads; asked again once it has
 					game.packsOn = m_status.coreReady ? ps5emu::EnabledGraphicPackCount(game.entry.game.titleId) : 0;
@@ -246,16 +293,26 @@ namespace ps5shell
 		for (int i = 0; i < (int)m_shelf.size(); i++)
 			if (m_games[m_shelf[i]].entry.game.titleId == m_libraryFocusTitle)
 				m_libraryIndex = i + offset;
-		RecentRefresh();
+
+		// Recently played: the games last played, the last first; the focus on its game, else on the one asked for
+		m_recent.clear();
+		for (int i = 0; i < (int)m_games.size(); i++)
+			if (m_games[i].entry.lastPlayed > 0)
+				m_recent.push_back(i);
+		std::stable_sort(m_recent.begin(), m_recent.end(), [&](int a, int b) { return m_games[a].entry.lastPlayed > m_games[b].entry.lastPlayed; });
+		if ((int)m_recent.size() > kRecentMost)
+			m_recent.resize(kRecentMost);
+		m_recentIndex = 0;
+		for (int i = 0; i < (int)m_recent.size(); i++)
+			if (m_games[m_recent[i]].entry.game.titleId == m_libraryFocusTitle)
+				m_recentIndex = i;
+		m_libraryZone = std::max(m_libraryZone, LibraryTop());
+		if (m_libraryZone == 1 && !m_settings.ui.libraryFilters)
+			m_libraryZone = 2;
 	}
 
 	void Shell::LibraryUpdate(const ui::Press& press)
 	{
-		if (SectionLayout())
-		{
-			EdenLibraryUpdate(press); // covers beside the game's details (eden.cpp, 6.17)
-			return;
-		}
 		const Button b = press.button;
 		{
 			std::string kicker, title, text;
@@ -266,54 +323,98 @@ namespace ps5shell
 				return;
 			}
 		}
-		if (RecentLayout())
-		{
-			RecentUpdate(press);
-			return;
-		}
 		const int side = SideIndex();
-		const int columns = LibraryColumns();
 		const int offset = ArticTiles();
 		const int total = (int)m_shelf.size() + offset;
-		auto sortPicker = [this, side] {
-			OpenPicker(TrC("tab", "Library"), Tr("Sort"), SortNames(), m_settings.ui.librarySort[side],
-				[this, side](int choice) {
-					m_settings.ui.librarySort[side] = choice;
-					SaveSettings();
-					LibraryRefresh();
-				});
+		const int top = LibraryTop();
+		const bool filters = m_settings.ui.libraryFilters;
+		m_libraryZone = std::max(m_libraryZone, top);
+		if (m_libraryZone == 1 && !filters)
+			m_libraryZone = 2;
+		auto zone = [&](int to) {
+			m_libraryZone = to;
+			m_feedback.Play(ui::Cue::Focus);
 		};
-		if (b == Button::Square)
+		switch (b)
 		{
-			sortPicker();
+		case Button::Square:
+			OpenPicker(TrC("tab", "Library"), Tr("Sort"), SortNames(), m_settings.ui.librarySort[side], [this, side](int choice) {
+				m_settings.ui.librarySort[side] = choice;
+				SaveSettings();
+				LibraryRefresh();
+			});
 			return;
-		}
-		if (b == Button::Triangle)
-		{
-			OpenKeyboard();
-			return;
-		}
-		if (b == Button::Circle)
-		{
-			// the search let go, then up to the filters, then the bar: the Library is where a side opens
+		case Button::Triangle: OpenKeyboard(); return;
+		case Button::Circle:
+			// the search let go, then up to the top, then the bar: the Library is where a side opens
 			if (!m_search.empty())
 			{
 				m_search.clear();
 				LibraryRefresh();
 				m_feedback.Play(ui::Cue::Back);
 			}
-			else if (m_libraryZone == 1)
+			else if (m_libraryZone > top)
 			{
-				m_libraryZone = 0;
+				m_libraryZone = top;
 				m_feedback.Play(ui::Cue::Back);
 			}
 			else
 				FocusBar();
 			return;
+		case Button::Options:
+			if (LibraryGame() >= 0)
+				OpenGameMenu(LibraryGame());
+			return;
+		case Button::Cross:
+			if (m_libraryZone == 1)
+			{
+				if (total > 0)
+					zone(2);
+				else
+					m_feedback.Play(ui::Cue::Edge, press.repeat);
+			}
+			else if (m_libraryZone == 2 && m_libraryIndex < offset)
+			{
+				m_feedback.Play(ui::Cue::Select);
+				m_pageFrom = ScreenId::Library;
+				ArticOpen();
+			}
+			else if (LibraryGame() >= 0)
+				Launch(LibraryGame());
+			else
+				m_feedback.Play(ui::Cue::Denied);
+			return;
+		default: break;
 		}
 		if (m_libraryZone == 0)
 		{
-			const int filters = LibraryFilters();
+			switch (b)
+			{
+			case Button::Left:
+			case Button::Right:
+			{
+				const int next = m_recentIndex + (b == Button::Right ? 1 : -1);
+				if (next < 0 || next >= (int)m_recent.size())
+					m_feedback.Play(ui::Cue::Edge, press.repeat);
+				else
+				{
+					m_recentIndex = next;
+					m_feedback.Play(ui::Cue::Focus);
+				}
+				break;
+			}
+			case Button::Up: FocusBar(); break;
+			case Button::Down:
+				if (filters || total > 0)
+					zone(filters ? 1 : 2);
+				else
+					m_feedback.Play(ui::Cue::Edge, press.repeat);
+				break;
+			default: break;
+			}
+		}
+		else if (m_libraryZone == 1)
+		{
 			int& filter = m_settings.ui.libraryFilter[side];
 			switch (b)
 			{
@@ -321,7 +422,7 @@ namespace ps5shell
 			case Button::Right:
 			{
 				const int next = filter + (b == Button::Right ? 1 : -1);
-				if (next < 0 || next >= filters)
+				if (next < 0 || next >= LibraryFilters())
 					m_feedback.Play(ui::Cue::Edge, press.repeat);
 				else
 				{
@@ -334,128 +435,95 @@ namespace ps5shell
 				}
 				break;
 			}
-			case Button::Up: FocusBar(); break;
+			case Button::Up:
+				if (top == 0)
+					zone(0);
+				else
+					FocusBar();
+				break;
 			case Button::Down:
-			case Button::Cross:
 				if (total > 0)
-				{
-					m_libraryZone = 1;
-					m_feedback.Play(ui::Cue::Focus);
-				}
+					zone(2);
 				else
 					m_feedback.Play(ui::Cue::Edge, press.repeat);
 				break;
 			default: break;
 			}
-			return;
 		}
-		if (total == 0)
+		else if (total > 0)
 		{
-			if (b == Button::Up)
-				m_libraryZone = 0;
-			return;
-		}
-		int& at = m_libraryIndex;
-		auto move = [&](int to) {
-			to = std::clamp(to, 0, total - 1);
-			if (to == at)
-				m_feedback.Play(ui::Cue::Edge, press.repeat);
-			else
-			{
-				at = to;
-				m_feedback.Play(ui::Cue::Focus);
-			}
-		};
-		switch (b)
-		{
-		case Button::Left:
-			if (at % columns == 0)
-				m_feedback.Play(ui::Cue::Edge, press.repeat);
-			else
-				move(at - 1);
-			break;
-		case Button::Right:
-			if (at % columns == columns - 1)
-				m_feedback.Play(ui::Cue::Edge, press.repeat);
-			else
-				move(at + 1);
-			break;
-		case Button::Up:
-			if (at < columns)
-			{
-				m_libraryZone = 0;
-				m_feedback.Play(ui::Cue::Focus);
-			}
-			else
-				move(at - columns);
-			break;
-		case Button::Down:
-			if (at + columns < total)
-				move(at + columns);
-			else if (at / columns < (total - 1) / columns)
-				move(total - 1);
-			else
-				m_feedback.Play(ui::Cue::Edge, press.repeat);
-			break;
-		case Button::L2:
-		case Button::R2:
-		{
-			// to the previous or next group: letter, year or status, as sorted
-			const int sort = m_settings.ui.librarySort[side];
-			auto group = [&](int index) -> int {
-				if (index < offset)
-					return -1;
-				const Game& game = m_games[m_shelf[index - offset]];
-				if (sort == 2)
-					return game.year;
-				if (sort == 3)
-					return StatusRank(game.report);
-				if (sort == 0)
-					return (index - offset) / 10;
-				const char c = game.sortName.empty() ? '#' : game.sortName[0];
-				return std::isalpha((unsigned char)c) ? c : '#';
-			};
-			const int current = group(at);
-			int to = at;
-			if (b == Button::R2)
-			{
-				while (to < total - 1 && group(to) == current)
-					to++;
-			}
-			else
-			{
-				while (to > 0 && group(to - 1) == current)
-					to--;
-				if (to == at && to > 0)
+			int& at = m_libraryIndex;
+			at = std::clamp(at, 0, total - 1);
+			auto move = [&](int to) {
+				to = std::clamp(to, 0, total - 1);
+				if (to == at)
+					m_feedback.Play(ui::Cue::Edge, press.repeat);
+				else
 				{
-					const int previous = group(to - 1);
-					to--;
-					while (to > 0 && group(to - 1) == previous)
-						to--;
+					at = to;
+					m_feedback.Play(ui::Cue::Focus);
 				}
-			}
-			move(to);
-			break;
-		}
-		case Button::Cross:
-		{
-			if (at < ArticTiles())
+			};
+			switch (b)
 			{
-				m_feedback.Play(ui::Cue::Select);
-				m_pageFrom = ScreenId::Library;
-				ArticOpen();
+			case Button::Up:
+				if (at > 0)
+					move(at - 1);
+				else if (top < 2)
+					zone(filters ? 1 : 0);
+				else
+					FocusBar();
+				break;
+			case Button::Down: move(at + 1); break;
+			case Button::L2:
+			case Button::R2:
+			{
+				// to the previous or next group: letter, year or status, as sorted
+				const int sort = m_settings.ui.librarySort[side];
+				auto group = [&](int index) -> int {
+					if (index < offset)
+						return -1;
+					const Game& game = m_games[m_shelf[index - offset]];
+					if (sort == 2)
+						return game.year;
+					if (sort == 3)
+						return StatusRank(game.report);
+					if (sort == 0)
+						return (index - offset) / 10;
+					const char c = game.sortName.empty() ? '#' : game.sortName[0];
+					return std::isalpha((unsigned char)c) ? c : '#';
+				};
+				const int current = group(at);
+				int to = at;
+				if (b == Button::R2)
+				{
+					while (to < total - 1 && group(to) == current)
+						to++;
+				}
+				else
+				{
+					while (to > 0 && group(to - 1) == current)
+						to--;
+					if (to == at && to > 0)
+					{
+						const int previous = group(to - 1);
+						to--;
+						while (to > 0 && group(to - 1) == previous)
+							to--;
+					}
+				}
+				move(to);
 				break;
 			}
-			const int game = LibraryGame();
-			if (game >= 0)
-				Launch(game);
-			break;
+			default: break;
+			}
 		}
-		case Button::Options:
-			if (LibraryGame() >= 0)
-				OpenGameMenu(LibraryGame());
-			break;
-		default: break;
+		else if (b == Button::Up)
+		{
+			if (top < 2)
+				zone(filters ? 1 : 0);
+			else
+				FocusBar();
 		}
 		if (LibraryGame() >= 0)
 			m_libraryFocusTitle = m_games[LibraryGame()].entry.game.titleId;
@@ -463,11 +531,6 @@ namespace ps5shell
 
 	void Shell::LibraryDraw(Canvas& canvas)
 	{
-		if (SectionLayout())
-		{
-			EdenLibraryDraw(canvas);
-			return;
-		}
 		DrawBar(canvas, true);
 		{
 			std::string kicker, title, text;
@@ -478,208 +541,246 @@ namespace ps5shell
 				return;
 			}
 		}
-		if (RecentLayout())
-		{
-			RecentDraw(canvas);
-			return;
-		}
 		const int side = SideIndex();
-		const bool wiiu = IsWiiU();
 		const int offset = ArticTiles();
-		const int columns = LibraryColumns();
-		const float tileW = wiiu ? 186.0f : 216.0f, tileH = wiiu ? 260.0f : 200.0f, gap = wiiu ? 24.0f : 28.0f;
-		const float pitch = tileH + 112;
 		const int total = (int)m_shelf.size() + offset;
+		const bool recent = !m_recent.empty(), filters = m_settings.ui.libraryFilters;
+		m_libraryZone = std::max(m_libraryZone, LibraryTop());
+		const float headTop = recent ? 590.0f : 132.0f, filterTop = headTop + 58, listTop = filterTop + (filters ? 76 : 8);
+		const int game = LibraryGame();
+		WantBackdrop(game >= 0 ? &m_games[game] : nullptr);
 
-		// the filters, with their counts, and Sort and Search at the right
-		canvas.PushAlpha(Enter(1));
-		const int64_t recent = std::time(nullptr) - 30 * 86400;
-		int counts[4] = {(int)m_games.size(), 0, 0, 0};
-		for (Game& game : m_games)
+		// the page scrolls as one: past the list's first row, Recently played goes up and away, the
+		// Library's heading at the top; then only as far as the focused row needs to be seen
+		float target = m_libraryScroll.target;
+		if (m_libraryZone < 2 || m_libraryIndex == 0)
+			target = 0;
+		else
 		{
-			counts[1] += game.entry.added >= recent;
-			counts[2] += game.entry.favourite;
-			counts[3] += game.packsOn > 0;
+			const float rowTop = listTop + m_libraryIndex * kListPitch, rowBottom = rowTop + kListPitch - 12;
+			if (rowBottom - target > 960)
+				target = rowBottom - 960;
+			if (rowTop - target < 196)
+				target = rowTop - 196;
+			target = std::max(target, headTop - 132);
 		}
-		// tr: the Library's filters, each with its count after it
-		const char* names[4] = {TrC("filter", "All"), Tr("Recently added"), Tr("Favourites"), Tr("Graphic packs on")};
-		const int filters = LibraryFilters();
-		const int filter = m_settings.ui.libraryFilter[side];
-		// Sort and Search at the right first: the filters have the rest of the row, their text a step
-		// smaller at a time in a language whose words do not fit it
-		const ui::TextStyle action = Style({24, ui::Weight::Medium, 1.0f});
-		const std::string sortLabel = TrF("Sort: {0}", Tr(kSorts[std::clamp(m_settings.ui.librarySort[side], 0, 3)]));
-		const float actionsWidth = m_fonts.Width(action, Tr("Search")) + 36 + 34 + m_fonts.Width(action, sortLabel) + 36;
-		const float filtersRoom = 1920 - 2 * kSafeX - actionsWidth - 40 - (m_scanning || !m_search.empty() ? 260 : 0);
-		ui::TextStyle pillStyle = Style({26, ui::Weight::Medium, 1.0f});
-		ui::TextStyle countStyle = Style({20, ui::Weight::SemiBold, 1.0f, 0, false, true});
-		auto filtersWidth = [&] {
-			float width = 0;
-			for (int i = 0; i < filters; i++)
-				width += 26 + m_fonts.Width(pillStyle, names[i]) + 12 + m_fonts.Width(countStyle, std::to_string(counts[i])) + 26 + 14;
-			return width;
-		};
-		for (int step = 0; step < 6 && filtersWidth() > filtersRoom; step++)
-		{
-			pillStyle.size -= 2;
-			countStyle.size -= 1;
-		}
-		float x = kSafeX;
-		for (int i = 0; i < filters; i++)
-		{
-			const bool on = i == filter;
-			const std::string count = i == 3 && counts[3] == 0 ? "" : std::to_string(counts[i]);
-			const float w = 26 + m_fonts.Width(pillStyle, names[i]) + (count.empty() ? 0 : 12 + m_fonts.Width(countStyle, count)) + 26;
-			const Box pill{x, 136, w, 52};
-			canvas.Rect(pill, 26, on ? ui::SetAlpha(Accent(), 0.22f) : Surface());
-			canvas.Ring(pill, 26, 1.5f, on ? ui::SetAlpha(Accent(), 0.5f) : kGlassEdge);
-			const ui::TextBlock text = m_fonts.Layout(pillStyle, names[i]);
-			canvas.Text(text, x + 26, pill.CentreY() - text.height * 0.5f, on ? kText : Secondary());
-			if (!count.empty())
-			{
-				const ui::TextBlock number = m_fonts.Layout(countStyle, count);
-				canvas.Text(number, x + 26 + text.width + 12, pill.CentreY() - number.height * 0.5f, on ? Accent() : Tertiary());
-			}
-			if (!m_onBar && m_libraryZone == 0 && on)
-				Focus(pill, 26);
-			x += w + 14;
-		}
-		const float room = 1920 - kSafeX - actionsWidth - 20 - (x + 12);
-		if (!m_search.empty())
-			Chip(canvas, x + 6, 143, TrF("Search: {0}", m_search));
-		if (m_scanning)
-			canvas.Text(Style(kCaptionStyle), x + 12, 150, Tr("Looking for new games…"), Tertiary(), std::max(120.0f, room), 1);
-		// Sort and Search
-		float right = 1920 - kSafeX;
-		const ui::TextBlock searchText = m_fonts.Layout(action, Tr("Search"));
-		right -= searchText.width;
-		canvas.Text(searchText, right, 162 - searchText.height * 0.5f, Secondary());
-		canvas.Draw(Icon::Triangle, {right - 36, 148, 28, 28}, Secondary());
-		right -= 36 + 34;
-		const ui::TextBlock sortText = m_fonts.Layout(action, sortLabel);
-		right -= sortText.width;
-		canvas.Text(sortText, right, 162 - sortText.height * 0.5f, Secondary());
-		canvas.Draw(Icon::Square, {right - 36, 148, 28, 28}, Secondary());
-		canvas.PopAlpha();
-
-		// the shelf
-		if (total == 0)
-		{
-			WantBackdrop(nullptr);
-			canvas.PushAlpha(Enter(2));
-			canvas.Text(Style(kTitleStyle), kSafeX, 320,
-				m_scanning			? std::string(Tr("Looking for games…")) :
-				!m_search.empty()	? TrF("Nothing matches “{0}”", m_search) :
-				filter				? std::string(Tr("None here yet")) :
-									  std::string(Tr("No games yet")),
-				kText, 1920 - 2 * kSafeX, 1);
-			canvas.Text(Style(kBodyStyle), kSafeX, 390,
-				!m_search.empty() ? Tr("Circle clears the search.") :
-				filter == 2		  ? Tr("Options on a game, then Favourite, puts it here.") :
-				filter			  ? Tr("All shows every game.") :
-									Tr("Settings > Game files says where they go."),
-				Secondary(), 900, 3);
-			canvas.PopAlpha();
-			return;
-		}
-		m_libraryIndex = std::clamp(m_libraryIndex, 0, total - 1);
-		const int focusRow = m_libraryIndex / columns;
-		m_libraryScroll.target = std::max(0, focusRow - 1) * pitch;
+		m_libraryScroll.target = target;
 		m_libraryScroll.omega = m_settings.ui.reduceMotion ? 60.0f : kScrollOmega;
 		m_libraryScroll.Update(m_dt);
 		const float scroll = m_libraryScroll.value;
-		const int game = LibraryGame();
-		WantBackdrop(game >= 0 ? &m_games[game] : nullptr);
-		canvas.PushAlpha(Enter(2));
-		canvas.PushOffset(0, (1 - Enter(2)) * 30);
-		canvas.PushClip({0, 210, 1920, 870});
-		Box focusedBox{};
+
+		canvas.PushAlpha(Enter(1));
+		canvas.PushClip({0, 116, 1920, 964});
+		canvas.PushOffset(0, -scroll);
+		const ui::TextStyle heading = Style({32, ui::Weight::SemiBold, 1.0f});
+		const ui::TextStyle tool = Style({22, ui::Weight::Medium, 1.0f});
+
+		// Recently played
+		if (recent)
+		{
+			canvas.Text(heading, kSafeX, 132, Tr("Recently played"), kText, 900, 1);
+			// tr: when the games in Recently played were last played: the labels over the row
+			const char* groups[3] = {Tr("Today"), Tr("This week"), Tr("Earlier")};
+			float x = kSafeX;
+			int lastGroup = -1;
+			Box focusedBox{};
+			for (int i = 0; i < (int)m_recent.size(); i++)
+			{
+				Game& g = m_games[m_recent[i]];
+				const Box box = CoverBox(g, x, kRecentTop + kRecentHeight, kRecentHeight, 420);
+				const int group = Group(g.entry.lastPlayed);
+				if (group != lastGroup)
+				{
+					canvas.Text(Style(kOverlineStyle), box.x, 176, groups[group], Tertiary(), 0, 1);
+					lastGroup = group;
+				}
+				const bool focused = !m_onBar && m_libraryZone == 0 && i == m_recentIndex;
+				if (box.x < 1920)
+				{
+					if (focused)
+						focusedBox = box;
+					else
+						DrawCover(canvas, g, box, false, 0);
+				}
+				x = box.Right() + kRecentGap + (focused ? 12 : 0);
+			}
+			if (focusedBox.w > 0)
+			{
+				// lifted from its bottom left, so it rises clear of its neighbours
+				const float lift = m_settings.ui.reduceMotion ? 0.0f : 0.05f;
+				const Box lifted{focusedBox.x, focusedBox.Bottom() - focusedBox.h * (1 + lift), focusedBox.w * (1 + lift), focusedBox.h * (1 + lift)};
+				DrawCover(canvas, m_games[m_recent[m_recentIndex]], lifted, true, 0);
+			}
+			// the game in focus there (or played last), under the row: its name, play time, when it was last
+			// played, its update and DLC
+			Game& g = m_games[m_recent[std::clamp(m_recentIndex, 0, (int)m_recent.size() - 1)]];
+			const ui::TextBlock name = canvas.Text(Style({26, ui::Weight::SemiBold, 1.0f}), kSafeX, 544, g.entry.game.name, kText, 900, 1);
+			std::vector<std::string> facts = {Played(g), LastPlayedWords(g.entry.lastPlayed)};
+			const ps5emu::Game& entry = g.entry.game;
+			if (IsWiiU() && entry.hasUpdate)
+				// tr: the update a Wii U game has installed ({0}: its version, as 208)
+				facts.push_back(TrF("Update v{0}", entry.version));
+			if (entry.dlcCount)
+				facts.push_back(TrP(entry.dlcCount, "{0} DLC", "{0} DLC"));
+			canvas.Text(Style({22, ui::Weight::Regular, 1.0f}), kSafeX + name.width + 16, 548, Facts(facts), Secondary(), 1920 - 2 * kSafeX - name.width - 16, 1);
+		}
+
+		// the Library: its heading and count, Sort and Search at the right
+		const ui::TextBlock title = canvas.Text(heading, kSafeX, headTop, TrC("tab", "Library"), kText, 600, 1);
+		// tr: how many games the Library has
+		const ui::TextBlock count = canvas.Text(tool, kSafeX + title.width + 24, headTop + 9, TrP((int)m_games.size(), "{0} game", "{0} games"), Tertiary(), 300, 1);
+		if (m_scanning)
+			canvas.Text(Style(kCaptionStyle), kSafeX + title.width + 24 + count.width + 24, headTop + 11, Tr("Looking for new games…"), Tertiary(), 360, 1);
+		else if (m_status.lastLook[side])
+			// tr: the Library's list is the one found on the network share last time (#75); Look for games now is in Settings > Game files
+			canvas.Text(Style(kCaptionStyle), kSafeX + title.width + 24 + count.width + 24, headTop + 11, Tr("As found last time"), Tertiary(), 360, 1);
+		{
+			float right = 1920 - kSafeX;
+			const ui::TextBlock search = m_fonts.Layout(tool, m_search.empty() ? std::string(Tr("Search")) : TrF("Search: {0}", m_search));
+			right -= search.width;
+			canvas.Text(search, right, headTop + 20 - search.height * 0.5f, m_search.empty() ? Secondary() : kText);
+			canvas.Draw(Icon::Triangle, {right - 38, headTop + 5, 30, 30}, Secondary());
+			right -= 38 + 34;
+			const ui::TextBlock sort = m_fonts.Layout(tool, TrF("Sort: {0}", Tr(kSorts[std::clamp(m_settings.ui.librarySort[side], 0, 3)])));
+			right -= sort.width;
+			canvas.Text(sort, right, headTop + 20 - sort.height * 0.5f, Secondary());
+			canvas.Draw(Icon::Square, {right - 38, headTop + 5, 30, 30}, Secondary());
+		}
+
+		// the filters, with their counts (Settings > Launcher)
+		if (filters)
+		{
+			const int64_t added = std::time(nullptr) - 30 * 86400;
+			int counts[4] = {(int)m_games.size(), 0, 0, 0};
+			for (Game& g : m_games)
+			{
+				counts[1] += g.entry.added >= added;
+				counts[2] += g.entry.favourite;
+				counts[3] += g.packsOn > 0;
+			}
+			// tr: the Library's filters, each with its count after it
+			const char* names[4] = {TrC("filter", "All"), Tr("Recently added"), Tr("Favourites"), Tr("Graphic packs on")};
+			const int count = LibraryFilters();
+			const int filter = LibraryFilter();
+			ui::TextStyle pillStyle = Style({24, ui::Weight::Medium, 1.0f});
+			ui::TextStyle countStyle = Style({19, ui::Weight::SemiBold, 1.0f, 0, false, true});
+			auto filtersWidth = [&] {
+				float width = 0;
+				for (int i = 0; i < count; i++)
+					width += 24 + m_fonts.Width(pillStyle, names[i]) + 12 + m_fonts.Width(countStyle, std::to_string(counts[i])) + 24 + 14;
+				return width;
+			};
+			// a step smaller at a time in a language whose words do not fit the row
+			for (int step = 0; step < 6 && filtersWidth() > 1920 - 2 * kSafeX; step++)
+			{
+				pillStyle.size -= 2;
+				countStyle.size -= 1;
+			}
+			float x = kSafeX;
+			for (int i = 0; i < count; i++)
+			{
+				const bool on = i == filter;
+				const std::string number = i == 3 && counts[3] == 0 ? "" : std::to_string(counts[i]);
+				const float w = 24 + m_fonts.Width(pillStyle, names[i]) + (number.empty() ? 0 : 12 + m_fonts.Width(countStyle, number)) + 24;
+				const Box pill{x, filterTop, w, 48};
+				canvas.Rect(pill, 24, on ? ui::SetAlpha(Accent(), 0.22f) : Surface());
+				canvas.Ring(pill, 24, 1.5f, on ? ui::SetAlpha(Accent(), 0.5f) : kGlassEdge);
+				const ui::TextBlock text = m_fonts.Layout(pillStyle, names[i]);
+				canvas.Text(text, x + 24, pill.CentreY() - text.height * 0.5f, on ? kText : Secondary());
+				if (!number.empty())
+				{
+					const ui::TextBlock digits = m_fonts.Layout(countStyle, number);
+					canvas.Text(digits, x + 24 + text.width + 12, pill.CentreY() - digits.height * 0.5f, on ? Accent() : Tertiary());
+				}
+				if (!m_onBar && m_libraryZone == 1 && on)
+					Focus(pill, 24);
+				x += w + 14;
+			}
+		}
+
+		// the list
+		if (total == 0)
+		{
+			const int filter = LibraryFilter();
+			canvas.Text(Style(kBodyStyle), kSafeX, listTop + 10,
+				!m_search.empty() ? TrF("Nothing matches “{0}”. Circle clears the search.", m_search) :
+				m_scanning		  ? std::string(Tr("Looking for games…")) :
+				filter == 2		  ? std::string(Tr("Options on a game, then Favourite, puts it here.")) :
+				filter			  ? std::string(Tr("All shows every game.")) :
+									std::string(Tr("No games yet. Settings > Game files says where they go.")),
+				Secondary(), 1200, 2);
+		}
 		for (int index = 0; index < total; index++)
 		{
-			const int row = index / columns, column = index % columns;
-			const Box box{kSafeX + column * (tileW + gap), kGridTop + row * pitch - scroll, tileW, tileH};
-			if (box.Bottom() < 200 || box.y > 1090)
+			const float rowTop = listTop + index * kListPitch;
+			if (rowTop - scroll > 1080 || rowTop + kListPitch - scroll < 116)
 				continue;
-			const bool focused = !m_onBar && m_libraryZone == 1 && index == m_libraryIndex;
+			const bool focused = !m_onBar && m_libraryZone == 2 && index == m_libraryIndex;
+			// a row each: a small cover, the name, play time and when it was played, how it runs
+			const Box row{kSafeX, rowTop, 1920 - 2 * kSafeX - 40, kListPitch - 12};
+			canvas.Rect(row, kRadiusCard, focused ? Surface2() : Surface());
 			if (focused)
-			{
-				focusedBox = box;
-				continue; // drawn last, over its neighbours
-			}
+				Focus(row, kRadiusCard, index < offset ? kN3ds : 0);
 			if (index < offset)
 			{
 				// Artic Base: a game from your 3DS
-				canvas.Rect(box, kRadiusCard, Wash(0.05f));
-				canvas.Ring(box, kRadiusCard, 2, ui::SetAlpha(kN3ds, 0.45f));
-				canvas.Text(Style({26, ui::Weight::SemiBold, 1.2f}), box.x + 16, box.y + box.h * 0.22f, Tr("Play from your 3DS"), kText, box.w - 32, 2,
-					ui::Align::Centre);
-				canvas.Text(Style({19, ui::Weight::Regular, 1.3f}), box.x + 16, box.y + box.h * 0.6f, Tr("Artic Base, over your network"), Secondary(),
-					box.w - 32, 2, ui::Align::Centre);
+				canvas.Text(Style({26, ui::Weight::SemiBold, 1.0f}), row.x + 124, row.y + 18, Tr("Play from your 3DS"), kText, 1000, 1);
+				canvas.Text(Style({21, ui::Weight::Regular, 1.0f}), row.x + 124, row.y + 54, Tr("Artic Base, over your network"), Secondary(), 1000, 1);
+				continue;
 			}
-			else
-				DrawCover(canvas, m_games[m_shelf[index - offset]], box, false, 0);
+			Game& g = m_games[m_shelf[index - offset]];
+			const Box cover = CoverBox(g, row.x + 14, row.Bottom() - 10, row.h - 20, 90);
+			DrawCover(canvas, g, cover.Offset((90 - cover.w) * 0.5f, 0), false, 0);
+			canvas.Text(Style({26, ui::Weight::SemiBold, 1.0f}), row.x + 124, row.y + 18, g.entry.game.name, kText, 1000, 1);
+			const std::string facts = Facts({Played(g), LastPlayedWords(g.entry.lastPlayed)});
+			canvas.Text(Style({21, ui::Weight::Regular, 1.0f}), row.x + 124, row.y + 54, facts.empty() ? Byline(g) : facts, Secondary(), 1000, 1);
+			if (g.report)
+				Chip(canvas, row.Right() - 260, row.CentreY() - 17, TrC("status", g.report->status), ps5compat::Kind(g.report->status), 34);
 		}
-		if (focusedBox.w > 0)
-		{
-			const float lift = m_settings.ui.reduceMotion ? 0.0f : 0.07f;
-			if (m_libraryIndex < offset)
-			{
-				const Box box = focusedBox.Scaled(1 + lift);
-				canvas.Rect(box, kRadiusCard, Wash(0.1f));
-				canvas.Text(Style({26, ui::Weight::SemiBold, 1.2f}), box.x + 16, box.y + box.h * 0.22f, Tr("Play from your 3DS"), kText, box.w - 32, 2,
-					ui::Align::Centre);
-				canvas.Text(Style({19, ui::Weight::Regular, 1.3f}), box.x + 16, box.y + box.h * 0.6f, Tr("Artic Base, over your network"), Secondary(),
-					box.w - 32, 2, ui::Align::Centre);
-				Focus(box, kRadiusCard, kN3ds);
-			}
-			else
-			{
-				Game& g = m_games[m_shelf[m_libraryIndex - offset]];
-				DrawCover(canvas, g, focusedBox, true, lift);
-				// its name and facts under it
-				const float under = focusedBox.Bottom() + tileH * lift * 0.5f + 22;
-				const float infoX = std::min(focusedBox.x, 1920 - kSafeX - 640);
-				const ui::TextBlock name = canvas.Text(Style({28, ui::Weight::SemiBold, 1.15f}), infoX, under, g.entry.game.name, kText, 640, 1);
-				float fx = infoX;
-				const ui::TextBlock facts = canvas.Text(Style({22, ui::Weight::Regular, 1.2f}), fx, under + name.height + 6, Byline(g), Secondary(), 420, 1);
-				fx += facts.width + 14;
-				if (g.report)
-					fx += Chip(canvas, fx, under + name.height + 2, TrC("status", g.report->status), ps5compat::Kind(g.report->status), 34) + 10;
-				if (!Played(g).empty())
-					Chip(canvas, fx, under + name.height + 2, Played(g), "", 34);
-			}
-		}
-		canvas.PopClip();
 		canvas.PopOffset();
-		canvas.PopAlpha();
+		canvas.PopClip();
 
-		// the index of letters at the right, for A to Z
-		if (m_settings.ui.librarySort[side] == 1 && m_shelf.size() > 12)
+		// the list fades into the page under its last row seen, over the hints
+		canvas.LinearGradient({0, 880, 1920, 200}, 0, ui::SetAlpha(kInk0, 0), ui::SetAlpha(kInk0, 1), 0, 880, 0, 1020);
+		const float viewTop = std::max(listTop - scroll, 196.0f), view = 960 - viewTop;
+		if (m_settings.ui.librarySort[side] == 1 && m_shelf.size() > 12 && view > 160)
 		{
+			// sorted A to Z: an index of the letters at the right, the focused game's lit
 			std::vector<char> letters;
 			for (int index : m_shelf)
 			{
 				const char c = m_games[index].sortName.empty() ? '#' : (char)std::toupper((unsigned char)m_games[index].sortName[0]);
 				const char letter = std::isalpha((unsigned char)c) ? c : '#';
-				if (letters.empty() || letters.back() != letter)
-					if (std::find(letters.begin(), letters.end(), letter) == letters.end())
-						letters.push_back(letter);
+				if (std::find(letters.begin(), letters.end(), letter) == letters.end())
+					letters.push_back(letter);
 			}
 			const char current = game >= 0 && !m_games[game].sortName.empty() && std::isalpha((unsigned char)m_games[game].sortName[0]) ?
 				(char)std::toupper((unsigned char)m_games[game].sortName[0]) :
 				'#';
-			const float step = std::min(25.0f, 640.0f / letters.size());
-			float y = 540 - letters.size() * step / 2;
-			canvas.PushAlpha(Enter(3));
+			const float step = std::min(25.0f, (view - 20) / letters.size());
+			float y = viewTop + (view - letters.size() * step) / 2;
 			for (char letter : letters)
 			{
-				const bool on = letter == current && game >= 0;
+				const bool on = letter == current && game >= 0 && m_libraryZone == 2;
 				if (on)
-					canvas.Rect({1852 - 15, y - 2, 30, 30}, 15, Accent());
-				canvas.Text(Style({16, ui::Weight::SemiBold, 1.0f}), 1852, y + 6, std::string(1, letter), on ? kInk1 : Tertiary(), 0, 0, ui::Align::Centre);
+					canvas.Rect({1864 - 15, y - 2, 30, 30}, 15, Accent());
+				canvas.Text(Style({16, ui::Weight::SemiBold, 1.0f}), 1864, y + 6, std::string(1, letter), on ? kInk1 : Tertiary(), 0, 0, ui::Align::Centre);
 				y += step;
 			}
-			canvas.PopAlpha();
 		}
+		else
+		{
+			// where in the list the page is: a thin bar at the right, while it has more than is seen
+			const float content = total * kListPitch;
+			if (total > 0 && content > view + 1 && view > 80)
+			{
+				const float seen = std::clamp(scroll + viewTop - listTop, 0.0f, content - view);
+				const float thumb = std::max(48.0f, view * view / content);
+				const float x = 1920 - 52 - 4;
+				canvas.Rect({x, viewTop, 4, view}, 2, Wash(0.08f));
+				canvas.Rect({x, viewTop + (view - thumb) * seen / std::max(1.0f, content - view), 4, thumb}, 2, Wash(0.4f));
+			}
+		}
+		canvas.PopAlpha();
 	}
 }

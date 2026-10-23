@@ -8,12 +8,11 @@
 #include "../ps5/kernel.h"
 #include "../ps5/log.h"
 #include "../ps5/curl_socket.h"
+#include "../ps5/net.h"
 
 #include <curl/curl.h>
 #include <rapidjson/document.h>
 #include <zip.h>
-
-#include <arpa/inet.h>
 
 #include <algorithm>
 #include <array>
@@ -28,17 +27,9 @@
 #include <tuple>
 #include <vector>
 
-// The PS5's network library, as app/boxart.cpp uses it: getaddrinfo finds nothing on the console,
-// so each host's address comes from the PS5's resolver and is given to curl
-extern "C"
-{
-	int sceNetInit(void);
-	int sceNetPoolCreate(const char* name, int size, int flags);
-	int sceNetPoolDestroy(int pool);
-	int sceNetResolverCreate(const char* name, int pool, int flags);
-	int sceNetResolverStartNtoa(int resolver, const char* host, uint32_t* address, int timeoutUs, int retries, int flags);
-	int sceNetResolverDestroy(int resolver);
-}
+// The PS5's network library: getaddrinfo finds nothing on the console, so each host's address comes
+// from the PS5's resolver (ps5/net.h) and is given to curl
+extern "C" int sceNetInit(void);
 
 namespace fs = std::filesystem;
 
@@ -96,29 +87,17 @@ namespace ps5update
 			return true;
 		}
 
-		// "host:443:address" for each host the PS5's resolver finds
+		// "host:443:address" for each host the PS5's resolver finds: asked once a session (ps5/net.h), so the
+		// install after the check asks again for nothing, where it could wait on the resolver for good (#73)
 		curl_slist* Resolve()
 		{
 			curl_slist* list = nullptr;
-			const int pool = sceNetPoolCreate("ps5cemu-update", 16 * 1024, 0);
-			if (pool < 0)
-				return nullptr;
 			for (const char* host : kHosts)
 			{
 				if (s_stop)
 					break; // a game is starting: the next host is not asked for
-				uint32_t address = 0;
-				const int resolver = sceNetResolverCreate("ps5cemu-update", pool, 0);
-				const int result = resolver >= 0 ? sceNetResolverStartNtoa(resolver, host, &address, 0, 0, 0) : resolver;
-				if (resolver >= 0)
-					sceNetResolverDestroy(resolver);
-				if (result < 0 || address == 0)
-					continue;
-				char text[INET_ADDRSTRLEN] = {};
-				inet_ntop(AF_INET, &address, text, sizeof(text));
-				list = curl_slist_append(list, fmt::format("{}:443:{}", host, text).c_str());
+				list = ps5net::AddResolve(list, host, 443);
 			}
-			sceNetPoolDestroy(pool);
 			return list;
 		}
 
@@ -359,6 +338,36 @@ namespace ps5update
 				fs::copy_file(file, to, fs::copy_options::overwrite_existing, ec);
 			}
 			return !ec;
+		}
+
+		// Files and folders earlier releases put in the app that this one does not have: the community
+		// graphic packs (pack_updates.h downloads them, #74), the opening picture of the launcher's Eden
+		// layout, the 3DS borders as TGA (PNG now)
+		constexpr const char* kRetired[] = {"assets/graphicPacks", "assets/ui/opening.jpg", "assets/borders/aurora.tga",
+			"assets/borders/midnight.tga", "assets/borders/ps5cemu-har.tga", "assets/borders/shell.tga", "assets/borders/waves.tga"};
+
+		// path (in app) moved under keep, as it was, or deleted when keep is empty
+		void Retire(const fs::path& app, const fs::path& path, const fs::path& keep)
+		{
+			std::error_code ec;
+			if (!fs::exists(app / path, ec))
+				return;
+			if (!keep.empty())
+			{
+				std::vector<fs::path> files;
+				if (fs::is_directory(app / path, ec))
+				{
+					for (auto it = fs::recursive_directory_iterator(app / path, ec); !ec && it != fs::recursive_directory_iterator(); it.increment(ec))
+						if (it->is_regular_file(ec))
+							files.push_back(it->path().lexically_relative(app));
+				}
+				else
+					files.push_back(path);
+				for (const fs::path& file : files)
+					Keep(app / file, keep / file);
+			}
+			const auto removed = fs::remove_all(app / path, ec);
+			ps5log::Line("[update] {} is no longer the app's: {} file(s) {}", path.string(), (int64_t)removed, keep.empty() ? "deleted" : "kept for going back");
 		}
 
 		fs::path AppFolder()
@@ -621,6 +630,10 @@ namespace ps5update
 					return;
 				}
 			}
+			// what earlier releases carried and this one does not: into the kept release with the rest, for Go
+			// back, rather than left in the app for good
+			for (const char* retired : kRetired)
+				Retire(app, retired, kept ? previous : fs::path());
 			fs::remove_all(staging, ec);
 			fs::remove(archive, ec);
 			std::ofstream(InstalledRecord(), std::ios::trunc) << latest << '\n' << app.string() << '\n';
@@ -743,6 +756,7 @@ namespace ps5update
 		std::stable_partition(files.begin(), files.end(), [](const fs::path& file) { return file != "eboot.bin"; });
 		for (const fs::path& file : files)
 		{
+			fs::create_directories((app / file).parent_path(), ec); // a folder that release had and this one has not
 			fs::rename(previous / file, app / file, ec);
 			if (ec)
 			{

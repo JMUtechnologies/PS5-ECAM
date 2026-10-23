@@ -29,7 +29,7 @@
 // started. PREVIEW_LANGUAGE names the menus' language ("de"; "qps", tools/lang.py pseudo's, for text
 // that does not fit), PREVIEW_SYSTEM_LANGUAGE the PS5's (its number: 4 is German, 0 Japanese).
 // PREVIEW_WHATSNEW starts as after an update (Make it yours, with what the version brings); PREVIEW_THEME
-// names a theme (ui/theme.h's id: phantom, terminal...); PREVIEW_SIDES the sides shown (1 Wii U, 2 3DS, 4 DS).
+// names a theme (ui/theme.h's id: link-jack, midnight...); PREVIEW_SIDES the sides shown (1 Wii U, 2 3DS, 4 DS).
 
 #include "console.h"
 

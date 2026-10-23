@@ -13,10 +13,12 @@
 #     assets/ui/                      the launcher's font (fonts/lexend.sdf), the in-game menus'
 #                                     (fonts/Lexend-*.ttf), sounds and the two sides' tiles
 #     assets/compatibility.md         the compatibility list, for the game pages' status
-#     assets/cemu/                    Cemu's game profiles and the Wii U system fonts
-#     assets/graphicPacks/            the community graphic packs (installed on first start)
+#     assets/cemu/                    Cemu's game profiles and the Wii U system fonts (the community
+#                                     graphic packs are not in the app: it downloads them, #74)
 #     assets/gametdb/                 GameTDB's game information (descriptions, publishers, dates)
-#     assets/lang/                    the menus' translations, one string table a language (<code>.po)
+#     assets/lang/                    the menus' translations, one string table a language (<code>.po,
+#                                     without the comments that say where each string is from)
+#     assets/borders/                 the 3DS side's border pictures (PNG)
 #     eden/                           the Switch side's program, ProsperoEdenX (tools/build-eden.sh): its
 #                                     eboot.bin, which the launcher starts with LoadExec, its launcher's
 #                                     ui/, its frame generation's network, its Lapy helper (lapy.elf, its
@@ -127,15 +129,13 @@ make -s -C "$PS5CEMU_ROOT/port/payloads" PS5_PAYLOAD_SDK="$PS5_PAYLOAD_SDK" OUTP
 # The launcher (port/ui): Lexend's four weights as one signed-distance atlas
 # (tools/render-sdf-font.sh, committed), three as TrueType for the in-game menus' ImGui
 # (tools/render-menu-fonts.py, committed) and their licence, the menu's sounds and the music
-# (tools/render-sounds.py, committed), the two sides' tiles the bar shows (tools/render-icons.py), and
-# the launch picture Eden opens out of (sce_sys/pic0.dds as a 1920x1080 JPEG, committed: shell/eden.cpp)
+# (tools/render-sounds.py, committed), and the sides' tiles the bar shows (tools/render-icons.py)
 ui=$app/assets/ui
 mkdir -p "$ui/fonts" "$ui/sounds" "$ui/icons"
 cp "$PS5CEMU_ROOT/port/ui/fonts/lexend.sdf" "$PS5CEMU_ROOT"/port/ui/fonts/Lexend-*.ttf "$PS5CEMU_ROOT/tools/fonts/OFL.txt" "$ui/fonts/"
 cp "$PS5CEMU_ROOT"/port/frontend/ui/sounds/*.wav "$ui/sounds/"
 cp "$work/icons/ui/icons/ps5cemu-72.tga" "$work/icons/ui/icons/azahar-72.tga" "$work/icons/ui/icons/melonds-72.tga" \
     "$work/icons/ui/icons/eden-72.tga" "$ui/icons/"
-cp "$PS5CEMU_ROOT/port/frontend/ui/opening.jpg" "$ui/"
 
 # Cemu's read-only data: game profiles, and the Wii U's system fonts games draw text with.
 mkdir -p "$app/assets/cemu/resources"
@@ -155,23 +155,17 @@ cp "$PS5CEMU_ROOT"/port/app/gametdb/*.tsv.gz "$app/assets/gametdb/"
 # the menus' translations (app/lang.h, tools/lang.py): every table but the pseudo-language's, which
 # only the preview finds text that does not fit with
 mkdir -p "$app/assets/lang"
-find "$PS5CEMU_ROOT/port/lang" -name '*.po' ! -name qps.po -exec cp {} "$app/assets/lang/" \;
+# a third smaller without the comments (where each string is from, notes for translators) and blank
+# lines: app/lang.cpp reads only the strings and the "#," flags (fuzzy, menu)
+for po in "$PS5CEMU_ROOT"/port/lang/*.po; do
+    [[ $(basename "$po") == qps.po ]] || sed -e '/^#[^,]/d' -e '/^#$/d' -e '/^$/d' "$po" >"$app/assets/lang/$(basename "$po")"
+done
 # the compatibility list the game pages show a status from (app/compatibility.h)
 cp "$PS5CEMU_ROOT/docs/COMPATIBILITY.md" "$app/assets/compatibility.md"
 # the 3DS side's border themes (tools/render-borders.py, committed)
 mkdir -p "$app/assets/borders"
-cp "$PS5CEMU_ROOT"/port/azahar/borders/*.tga "$app/assets/borders/"
+cp "$PS5CEMU_ROOT"/port/azahar/borders/*.png "$app/assets/borders/"
 cp -a "$deps/Cemu/bin/resources/sharedFonts" "$app/assets/cemu/resources/"
-
-# The community graphic packs, with the version file Cemu's downloader writes.
-python3 - "$deps/graphic-packs/graphicPacks987.zip" "$app/assets/graphicPacks" <<'PY'
-import os, sys, zipfile
-archive, target = sys.argv[1:3]
-with zipfile.ZipFile(archive) as packs:
-    packs.extractall(target)
-with open(os.path.join(target, "version.txt"), "w") as version:
-    version.write("Github987")
-PY
 
 # The Switch side's program (tools/build-eden.sh): ProsperoEdenX's eboot.bin and the files it reads
 # from its own folder, with the boilerplate's libc.prx beside it as in the app's own sce_module

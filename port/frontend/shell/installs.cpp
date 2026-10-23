@@ -203,8 +203,7 @@ namespace ps5shell
 		m_updates.installing = m_updates.stopping = false;
 		m_updates.queue.clear();
 		ps5emu::RefreshInstalledVersions(m_updates.found);
-		ps5emu::Rescan();
-		m_scanning = true;
+		LookForGames();
 		if (status.state == State::Done)
 		{
 			Toast(m_updates.finished > 1 ? TrP(m_updates.finished, "{0} installed", "{0} installed") : std::string(Tr("Installed")));

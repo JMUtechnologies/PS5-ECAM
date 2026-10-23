@@ -22,10 +22,15 @@
 #include <atomic>
 #include <cctype>
 #include <cstdlib>
-#include <fstream>
 #include <iterator>
 #include <mutex>
 #include <utility>
+
+// ui/images.cpp's: a picture file decoded as RGBA rows, with the launcher's stb_image
+namespace ui
+{
+	bool DecodeFile(const std::string& path, std::vector<uint8_t>& rgba, int& width, int& height);
+}
 
 // Cemu's overlay font, compressed into Cemu (resource/CafeDefaultFont.cpp)
 uint8* extractCafeDefaultFont(sint32* size);
@@ -928,8 +933,8 @@ namespace ps5ingame3ds
 		s_borderFresh = true;
 	}
 
-	// The border's picture, from the app's assets/borders (tools/render-borders.py: uncompressed 24- or
-	// 32-bit TGA), for the menu's renderer to draw round the screens
+	// The border's picture, from the app's assets/borders (tools/render-borders.py: PNG), for the menu's
+	// renderer to draw round the screens
 	void LoadBorder(int theme)
 	{
 		theme = std::clamp(theme, 0, kBorderCount - 1);
@@ -939,33 +944,13 @@ namespace ps5ingame3ds
 		{
 			std::string name = kBorderNames[theme];
 			std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-			const std::string path = ps5paths::Assets() + "/borders/" + name + ".tga";
-			std::ifstream file(path, std::ios::binary);
-			std::vector<uint8_t> data((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-			const int bytes = data.size() >= 18 ? data[16] / 8 : 0;
-			if (data.size() >= 18 && data[2] == 2 && (bytes == 3 || bytes == 4))
+			const std::string path = ps5paths::Assets() + "/borders/" + name + ".png";
+			if (!ui::DecodeFile(path, rgba, width, height))
 			{
-				width = data[12] | data[13] << 8;
-				height = data[14] | data[15] << 8;
-				const bool topFirst = data[17] & 0x20;
-				const size_t start = 18 + data[0];
-				if (data.size() >= start + (size_t)width * height * bytes)
-				{
-					rgba.resize((size_t)width * height * 4);
-					for (int y = 0; y < height; y++)
-						for (int x = 0; x < width; x++)
-						{
-							const uint8_t* in = &data[start + ((size_t)(topFirst ? y : height - 1 - y) * width + x) * bytes];
-							uint8_t* out = &rgba[((size_t)y * width + x) * 4];
-							out[0] = in[2];
-							out[1] = in[1];
-							out[2] = in[0];
-							out[3] = 255;
-						}
-				}
-			}
-			if (rgba.empty())
+				rgba.clear();
+				width = height = 0;
 				ps5log::Line("[ingame3ds] border {}: {} could not be read", kBorderNames[theme], path);
+			}
 		}
 		SetBorder(theme, std::move(rgba), width, height);
 	}

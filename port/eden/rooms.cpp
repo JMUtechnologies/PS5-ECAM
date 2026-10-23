@@ -7,6 +7,7 @@
 #include "../app/paths.h"
 #include "../ps5/curl_socket.h"
 #include "../ps5/log.h"
+#include "../ps5/net.h"
 
 #include <curl/curl.h>
 #include <rapidjson/document.h>
@@ -17,18 +18,6 @@
 #include <chrono>
 #include <mutex>
 #include <thread>
-
-// The PS5's network library, as app/pack_updates.cpp uses it: getaddrinfo finds nothing on the
-// console, so the host's address comes from the PS5's resolver and is given to curl
-extern "C"
-{
-	int sceNetInit(void);
-	int sceNetPoolCreate(const char* name, int size, int flags);
-	int sceNetPoolDestroy(int pool);
-	int sceNetResolverCreate(const char* name, int pool, int flags);
-	int sceNetResolverStartNtoa(int resolver, const char* host, uint32_t* address, int timeoutUs, int retries, int flags);
-	int sceNetResolverDestroy(int resolver);
-}
 
 namespace ps5rooms
 {
@@ -143,28 +132,12 @@ namespace ps5rooms
 
 		void Fetch()
 		{
-			sceNetInit();
 			curl_global_init(CURL_GLOBAL_DEFAULT);
-			curl_slist* resolve = nullptr;
-			if (const int pool = sceNetPoolCreate("ps5cemu-rooms", 16 * 1024, 0); pool >= 0)
-			{
-				uint32_t address = 0;
-				const int resolver = sceNetResolverCreate("ps5cemu-rooms", pool, 0);
-				// 5 s a try, twice: a lookup that never answers ends, and says so
-				const int found = resolver >= 0 ? sceNetResolverStartNtoa(resolver, kHost, &address, 5 * 1000 * 1000, 2, 0) : resolver;
-				if (resolver >= 0)
-					sceNetResolverDestroy(resolver);
-				if (found >= 0 && address != 0)
-				{
-					char text[INET_ADDRSTRLEN] = {};
-					inet_ntop(AF_INET, &address, text, sizeof(text));
-					resolve = curl_slist_append(resolve, (std::string(kHost) + ":443:" + text).c_str());
-					ps5log::Line("[rooms] {} is {}", kHost, text);
-				}
-				else
-					ps5log::Line("[rooms] the PS5's resolver did not find {} ({:#x}): curl looks it up", kHost, (uint32_t)found);
-				sceNetPoolDestroy(pool);
-			}
+			curl_slist* resolve = ps5net::AddResolve(nullptr, kHost, 443); // ps5/net.h: a lookup that never answers ends
+			if (resolve)
+				ps5log::Line("[rooms] {}", resolve->data);
+			else
+				ps5log::Line("[rooms] the PS5's resolver did not find {}: curl looks it up", kHost);
 			std::string body, error;
 			long http = 0;
 			CURLcode result = CURLE_FAILED_INIT;

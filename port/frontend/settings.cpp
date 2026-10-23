@@ -290,6 +290,7 @@ namespace ps5settings
 		ReadBool(json, "reshade", settings.reshade);
 		ReadBool(json, "overlay", settings.overlay);
 		ReadBool(json, "rumble", settings.rumble);
+		ReadBool(json, "lookOnShares", settings.lookOnShares);
 		ReadString(json, "turbo", settings.turbo);
 		if (json.HasMember("touchpadClick") && json["touchpadClick"].IsArray())
 			for (rapidjson::SizeType i = 0; i < json["touchpadClick"].Size() && i < 4; i++)
@@ -381,6 +382,7 @@ namespace ps5settings
 			ReadBool(ui, "largerText", out.largerText);
 			ReadBool(ui, "highContrast", out.highContrast);
 			ReadBool(ui, "reduceMotion", out.reduceMotion);
+			ReadBool(ui, "libraryFilters", out.libraryFilters);
 			ReadInt(ui, "holdMs", out.holdMs, 400, 1500);
 			ReadBool(ui, "gamePictures", out.gamePictures);
 			ReadBool(ui, "setupDone", out.setupDone);
@@ -409,7 +411,6 @@ namespace ps5settings
 			};
 			readSides("libraryFilter", out.libraryFilter, 3, 2);
 			readSides("librarySort", out.librarySort, 3, 3);
-			readSides("libraryDisplay", out.libraryDisplay, 1, 1);
 		}
 		return settings;
 	}
@@ -435,6 +436,8 @@ namespace ps5settings
 		writer.Bool(settings.overlay);
 		writer.Key("rumble");
 		writer.Bool(settings.rumble);
+		writer.Key("lookOnShares");
+		writer.Bool(settings.lookOnShares);
 		writer.Key("turbo");
 		writer.String(settings.turbo.c_str());
 		writer.Key("touchpadClick");
@@ -579,6 +582,8 @@ namespace ps5settings
 		writer.String(settings.ui.skipVersion.c_str());
 		writer.Key("theme");
 		writer.String(settings.ui.theme.c_str());
+		writer.Key("libraryFilters");
+		writer.Bool(settings.ui.libraryFilters);
 		writer.Key("libraryFilter");
 		writer.StartArray();
 		for (int filter : settings.ui.libraryFilter)
@@ -588,11 +593,6 @@ namespace ps5settings
 		writer.StartArray();
 		for (int sort : settings.ui.librarySort)
 			writer.Int(sort);
-		writer.EndArray();
-		writer.Key("libraryDisplay");
-		writer.StartArray();
-		for (int display : settings.ui.libraryDisplay)
-			writer.Int(display);
 		writer.EndArray();
 		writer.EndObject();
 		writer.EndObject();

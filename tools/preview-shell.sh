@@ -56,13 +56,11 @@ for save in 80000001:4100000 80000002:3800000 common:12000; do
 done
 
 # the app's folder as the console has it, for the pictures the launcher reads from its assets: the
-# sides' tiles (from the last `make package`, when there was one: tools/render-icons.py draws them) and
-# the launch picture Eden opens out of
+# sides' tiles (from the last `make package`, when there was one: tools/render-icons.py draws them)
 app=$out/app
 rm -rf "$app"
 mkdir -p "$app/assets/ui/icons"
 touch "$app/eboot.bin"
-cp port/frontend/ui/opening.jpg "$app/assets/ui/"
 for tile in ps5cemu-72.tga azahar-72.tga melonds-72.tga eden-72.tga; do
     [[ -f $PS5CEMU_BUILD/package/icons/ui/icons/$tile ]] && cp "$PS5CEMU_BUILD/package/icons/ui/icons/$tile" "$app/assets/ui/icons/"
 done
@@ -82,7 +80,7 @@ flags=(-std=c++20 -O1 -g -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-
     -I "$out/include" -I "$PS5CEMU_SYSROOT/include" -I port -I port/app -I tools/launcher-preview
     -I "$PS5CEMU_ROOT/.deps/reshade/deps/stb" $(pkg-config --cflags freetype2))
 sources=(tools/launcher-preview/shell.cpp tools/launcher-preview/console.cpp
-    port/frontend/shell/classic.cpp port/frontend/shell/eden.cpp port/frontend/shell/experiments.cpp port/frontend/shell/hub.cpp port/frontend/shell/installs.cpp port/frontend/shell/library.cpp port/frontend/shell/pages.cpp port/frontend/shell/recent.cpp
+    port/frontend/shell/hub.cpp port/frontend/shell/installs.cpp port/frontend/shell/library.cpp port/frontend/shell/pages.cpp
     port/frontend/shell/settings.cpp port/frontend/shell/setup.cpp port/frontend/shell/shares.cpp port/frontend/shell/shell.cpp port/frontend/shell/welcome.cpp port/frontend/shell/whatsnew.cpp port/frontend/shell/widgets.cpp
     port/ui/canvas.cpp port/ui/feedback.cpp port/ui/gfx.cpp port/ui/images.cpp port/ui/input.cpp port/ui/qr.cpp port/ui/text.cpp port/ui/theme.cpp
     port/ui/vkfn.cpp port/app/catalog.cpp port/app/saves.cpp port/app/gameinfo.cpp port/app/lang.cpp port/app/compatibility.cpp port/app/keyboard.cpp port/frontend/actions.cpp

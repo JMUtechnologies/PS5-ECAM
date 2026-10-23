@@ -3,13 +3,10 @@
 #include "paths.h"
 #include "../ps5/log.h"
 #include "../ps5/curl_socket.h"
+#include "../ps5/net.h"
 
-#include <arpa/inet.h>
 #include <curl/curl.h>
-#include <netdb.h>
-#include <netinet/in.h>
 #include <png.h>
-#include <sys/socket.h>
 #include <turbojpeg.h>
 
 #include <algorithm>
@@ -27,17 +24,6 @@
 
 namespace fs = std::filesystem;
 
-// The PS5's network library (libSceNet): a title starts it itself, where a payload finds it started
-// by the system, and its resolver is what libc's getaddrinfo asks too
-extern "C"
-{
-	int sceNetInit(void);
-	int sceNetPoolCreate(const char* name, int size, int flags);
-	int sceNetPoolDestroy(int pool);
-	int sceNetResolverCreate(const char* name, int pool, int flags);
-	int sceNetResolverStartNtoa(int resolver, const char* host, uint32_t* address, int timeoutUs, int retries, int flags);
-	int sceNetResolverDestroy(int resolver);
-}
 
 namespace ps5boxart
 {
@@ -310,61 +296,16 @@ namespace ps5boxart
 			return !ec && fs::file_time_type::clock::now() - when < kNoneAgain;
 		}
 
-		// GameTDB's address through the PS5's resolver, as "host:80:address" for curl; empty when
-		// it cannot be found
-		std::string ResolveWithSystem()
-		{
-			const int pool = sceNetPoolCreate("ps5cemu-boxart", 16 * 1024, 0);
-			if (pool < 0)
-			{
-				ps5log::Line("[boxart] sceNetPoolCreate failed: {:#x}", (uint32_t)pool);
-				return {};
-			}
-			uint32_t address = 0;
-			const int resolver = sceNetResolverCreate("ps5cemu-boxart", pool, 0);
-			const int result = resolver >= 0 ? sceNetResolverStartNtoa(resolver, kHost, &address, 0, 0, 0) : resolver;
-			if (resolver >= 0)
-				sceNetResolverDestroy(resolver);
-			sceNetPoolDestroy(pool);
-			if (result < 0 || address == 0)
-			{
-				ps5log::Line("[boxart] the PS5's resolver could not find {}: {:#x}", kHost, (uint32_t)result);
-				return {};
-			}
-			char text[INET_ADDRSTRLEN] = {};
-			inet_ntop(AF_INET, &address, text, sizeof(text));
-			return fmt::format("{}:80:{}", kHost, text);
-		}
-
-		// The network, before the first download: libSceNet started, and GameTDB's address found by
-		// libc's getaddrinfo (curl's way) or else by the PS5's resolver, which curl is then given.
-		// Null when there is no way to GameTDB.
+		// The network, before the first download: GameTDB's address from the PS5's resolver (ps5/net.h;
+		// libc's getaddrinfo finds nothing on the console), given to curl for HTTP and HTTPS, should GameTDB
+		// send its pictures there. Null when there is no way to GameTDB
 		curl_slist* PrepareNetwork()
 		{
-			const int net = sceNetInit();
 			curl_global_init(CURL_GLOBAL_DEFAULT);
-			addrinfo hints{};
-			hints.ai_family = AF_INET;
-			hints.ai_socktype = SOCK_STREAM;
-			addrinfo* found = nullptr;
-			const int lookup = getaddrinfo(kHost, "80", &hints, &found);
-			if (lookup == 0 && found)
-			{
-				char text[INET_ADDRSTRLEN] = {};
-				inet_ntop(AF_INET, &reinterpret_cast<sockaddr_in*>(found->ai_addr)->sin_addr, text, sizeof(text));
-				ps5log::Line("[boxart] network ready (sceNetInit {:#x}): {} is {}", (uint32_t)net, kHost, text);
-				freeaddrinfo(found);
-				return nullptr;
-			}
-			ps5log::Line("[boxart] getaddrinfo({}) failed ({}, sceNetInit {:#x}): trying the PS5's resolver", kHost, lookup, (uint32_t)net);
-			const std::string entry = ResolveWithSystem();
-			if (entry.empty())
-				return nullptr;
-			ps5log::Line("[boxart] {} through the PS5's resolver", entry);
-			// and for HTTPS, should GameTDB send its pictures there
-			std::string secure = entry;
-			secure.replace(secure.find(":80:"), 4, ":443:");
-			return curl_slist_append(curl_slist_append(nullptr, entry.c_str()), secure.c_str());
+			curl_slist* resolved = ps5net::AddResolve(ps5net::AddResolve(nullptr, kHost, 80), kHost, 443);
+			if (resolved)
+				ps5log::Line("[boxart] {}", resolved->data);
+			return resolved;
 		}
 
 		void Worker()

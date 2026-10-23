@@ -51,7 +51,7 @@ whole output, so the app puts it back to every refresh before the launcher and t
 ## Breath of the Wild at 4K60 and 8K30: the settings
 
 VideoOut's largest buffer is 3840x2160, so 8K is drawn at 7680x4320 and scaled to the 4K screen by
-Cemu (four samples a pixel). Both use the bundled community graphic packs (the in-game menu, or
+Cemu (four samples a pixel). Both use the community graphic packs (the in-game menu, or
 Triangle on the game in the library):
 
 | | 4K at 60 | 8K at 30 |

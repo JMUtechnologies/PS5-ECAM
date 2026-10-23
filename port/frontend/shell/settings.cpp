@@ -159,14 +159,12 @@ namespace ps5shell
 		}
 
 		// the built-in themes' names and lines (ui/theme.cpp), for the translations
-		[[maybe_unused]] constexpr const char* kThemeWords[] = {TrMark("Link Jack"), TrMark("Classic (3.0)"), TrMark("Midnight"), TrMark("Phantom"), TrMark("Terminal"),
-			TrMark("Frosted glass over each side's colours: the default look."), TrMark("3.0.0's launcher: deep blue panels, flatter, a little squarer."),
+		[[maybe_unused]] constexpr const char* kThemeWords[] = {TrMark("Light"), TrMark("Link Jack"), TrMark("Classic (3.0)"), TrMark("Midnight"),
+			TrMark("Eden"), TrMark("Frosted glass over each side's colours."),
+			TrMark("3.0.0's launcher: deep blue panels, flatter, a little squarer."),
 			TrMark("True black behind everything and nothing moving: for OLED screens."),
-			TrMark("A heist game's menus as a launcher: slanted name plates, your games as a list, bursts behind the covers."),
-			TrMark("A hacker's console as a launcher: a file tree, your games as a table, a log, phosphor and scanlines."), TrMark("Meyer Oscar"),
-			TrMark("Meyer Oscar Light"), TrMark("Your recently played games first, then your whole library."),
-			TrMark("Meyer Oscar with a light background."), TrMark("Eden"),
-			TrMark("ProsperoEden's launcher: a rail of sections, Home around your game, Settings as tiles.")};
+			TrMark("Dark frosted glass and rounder corners, the side's light drifting and motes of light rising."),
+			TrMark("A light background with dark text.")};
 
 		int ClockIndex(int clock)
 		{
@@ -184,15 +182,6 @@ namespace ps5shell
 			for (const char* name : list)
 				options.push_back(context ? TrC(context, name) : Tr(name));
 			return options;
-		}
-
-		// the border names' context: kBorderThemes' first five
-		std::vector<std::string> BorderNames()
-		{
-			std::vector<std::string> names;
-			for (size_t i = 0; i < std::size(kBorderThemes); i++)
-				names.push_back(i + 1 < std::size(kBorderThemes) ? TrC("border", kBorderThemes[i]) : kBorderThemes[i]);
-			return names;
 		}
 
 		std::vector<std::string> TextureFilterNames()
@@ -943,7 +932,15 @@ namespace ps5shell
 				IsSwitch() ? Tr("Your Switch games: .nsp and .xci files, alone or each in a folder of its own with its update and DLC.") :
 						   Tr("Your DS games: .nds files, alone or in .zip, .7z or .rar archives, here or in the folders in it."));
 			action(Kind::Action, "rescan", Tr("Look for games now"), m_scanning ? Tr("Looking…") : "", Tr("This side's folder, again."),
-				Tr("Looks through this side's folder again, as it does each time the side opens."));
+				Tr("Looks through this side's folder again: games added since appear, and games taken away go."));
+			// #75: a large library on a share is a long look at every start
+			if (!ps5netfs::shares().empty())
+				toggle("lookonshares", Tr("Look on network shares at every start"), settings.lookOnShares,
+					Tr("Off: the games found last time, at once."),
+					Tr("A games folder on a network share is looked through each time its side opens, and the app starts again after "
+					   "every game: with a large library that is a long wait. Off, the side shows the games it found there last time at "
+					   "once; Look for games now looks again when you have added some. Folders on the PS5 or a USB drive are looked "
+					   "through every time either way."));
 			if (IsSwitch())
 			{
 				// Eden's own files: the keys and firmware it needs
@@ -1190,8 +1187,8 @@ namespace ps5shell
 				   "looks broken."));
 			if (IsWiiU())
 				action(Kind::Action, "packs", Tr("Community graphic packs"), PacksStatus(), Tr("Cross checks GitHub for newer ones."),
-					Tr("Cemu's community graphic packs, from GitHub's latest release when it is newer than the ones installed. The packs bundled "
-					"with the app stay as the fallback."));
+					Tr("Cemu's community graphic packs, from GitHub's latest release when it is newer than the ones installed. They are not "
+					   "in the app: the first time the Wii U side starts without them, they are downloaded in the background."));
 			if (IsDs())
 			{
 				// RetroAchievements (6.16): only the DS has sets
@@ -1236,18 +1233,16 @@ namespace ps5shell
 				for (int i = 0; i < (int)m_themes.size(); i++)
 				{
 					const ui::Theme& theme = m_themes[i];
-					const std::string name = theme.id.rfind("user:", 0) == 0 ? theme.name : std::string(Tr(theme.name.c_str()));
-					// tr: a theme that is still being tried out: "Phantom (experimental)"
-					names.push_back(theme.experimental ? TrF("{0} (experimental)", name) : name);
-					if (theme.id == settings.ui.theme)
+					names.push_back(theme.id.rfind("user:", 0) == 0 ? theme.name : std::string(Tr(theme.name.c_str())));
+					if (theme.id == ui::CurrentTheme().id) // (an id from before 5.1 is the one it now names)
 						index = i;
 				}
 				const ui::Theme& current = m_themes.empty() ? ui::BuiltInThemes().front() : m_themes[std::min(index, (int)m_themes.size() - 1)];
 				choice("theme", Tr("Theme"), names, index,
 					current.id.rfind("user:", 0) == 0 ? current.description : std::string(Tr(current.description.c_str())),
-					TrF("How the launcher looks: its colours, its corners and what moves behind the menus. Phantom and Terminal are experiments "
-						"of their own. Make your own as a JSON file in {0}/themes, starting from any of these: the text under this page says "
-						"how. Only the launcher changes: the in-game menus and the games stay as they are.",
+					TrF("How the launcher looks: its colours, its corners and what moves behind the menus. Every theme has the same screens and "
+						"buttons. Make your own as a JSON file in {0}/themes, starting from any of these: the text under this page says how. "
+						"Only the launcher changes: the in-game menus and the games stay as they are.",
 						ps5paths::Root()));
 			}
 			// the sides the bar offers: any mix, at least one
@@ -1267,6 +1262,9 @@ namespace ps5shell
 			toggle("pictures", Tr("Game pictures behind menus"), settings.ui.gamePictures, Tr("The focused game's cover, softened, behind the screens."),
 				Tr("The focused game's picture fills the screen behind the menus, softened and dimmed, so moving the focus changes the whole "
 				"screen. Off: the game's colours only."));
+			toggle("filters", Tr("Library filters"), settings.ui.libraryFilters, Tr("All, Recently added, Favourites: a row over the list."),
+				Tr("A row of filters over the Library's list: All, Recently added (the last 30 days), Favourites and, on the Wii U side, "
+				   "Graphic packs on, each with its count. Off: the list has every game, and Sort and Search are all it needs."));
 			toggle("largertext", Tr("Larger text"), settings.ui.largerText, Tr("Every size of text a step up."),
 				Tr("Every style of text a step larger: captions from 20 to 23, reading text from 26 to 30."));
 			toggle("highcontrast", Tr("High contrast"), settings.ui.highContrast, Tr("Opaque panels, full-strength text, a thicker ring."),
@@ -1478,10 +1476,10 @@ namespace ps5shell
 		if (page == "launcher")
 			return TrF("Your own theme: a file such as sunset.json in {0}/themes, read as the app starts, then listed under Theme by its name:\n"
 					   "{{\"name\": \"Sunset\", \"base\": \"midnight\", \"colours\": {{\"wiiu\": \"#ff7a59\", \"ink-0\": \"#120806\"}}, "
-					   "\"corners\": 0.5, \"motif\": \"slashes\"}}\n"
-					   "base: a theme to start from (classic, midnight, phantom, terminal). colours: ink-0 to ink-2 (the background), text, "
+					   "\"corners\": 0.5, \"motif\": \"none\"}}\n"
+					   "base: a theme to start from (light, link-jack, classic, midnight, eden). colours: ink-0 to ink-2 (the background), text, "
 					   "wiiu, n3ds, nds and nx (each side's), glass, line, good, warn, bad and focus, as #rrggbb. corners: 0 square to 1.5 round. "
-					   "motif: side, none, slashes or grid.",
+					   "motif: side, none or eden.",
 				ps5paths::Root());
 		if (page == "files" && IsSwitch())
 			// tr: {0} is Eden's data folder; {1} its game files folder (the same one unless another was chosen)
@@ -1674,6 +1672,10 @@ namespace ps5shell
 			}
 			else if (id == "pictures")
 				settings.ui.gamePictures = on;
+			else if (id == "filters")
+				settings.ui.libraryFilters = on;
+			else if (id == "lookonshares")
+				settings.lookOnShares = on;
 			else if (id == "menusounds")
 				settings.menuSounds = on;
 			else if (id == "gamepadspeaker")
@@ -1829,10 +1831,14 @@ namespace ps5shell
 		{
 			ApplyTheme();
 			m_feedback.SetLight(Accent());
-			LibraryRefresh(); // Meyer Oscar's Library has no filters, the others' have
 		}
 		if (id == "side-wiiu" || id == "side-3ds" || id == "side-ds" || id == "side-switch")
 			SidesChanged();
+		if (id == "filters")
+		{
+			m_libraryIndex = 0;
+			LibraryRefresh(); // every game again, or the side's filter
+		}
 		if (id == "accountperuser" && m_settings.accountPerUser)
 			UseOwnAccount();
 		if (id == "remote")
@@ -1910,7 +1916,7 @@ namespace ps5shell
 			Toast(Tr("This game has no ID to save settings under"));
 			return;
 		}
-		m_gameFrom = m_screen == ScreenId::Hub ? ScreenId::Hub : m_screen == ScreenId::Home ? ScreenId::Home : ScreenId::Library;
+		m_gameFrom = m_screen == ScreenId::Hub ? ScreenId::Hub : ScreenId::Library;
 		m_sidePage = m_page;
 		m_gameTitle = g.titleId;
 		m_gameName = g.name;
@@ -2097,17 +2103,7 @@ namespace ps5shell
 		else if (id == "shares")
 			SharesOpen(ScreenId::Settings);
 		else if (id == "rescan")
-		{
-			if (Is3ds())
-				ps5azahar::StartScan(hand.gamesFolder);
-			else if (IsDs())
-				ps5melonds::StartScan(hand.gamesFolder);
-			else if (IsSwitch())
-				ps5eden::StartScan(hand.gamesFolder);
-			else if (m_status.coreReady)
-				ps5emu::Rescan();
-			m_scanning = CoreReady();
-		}
+			LookForGames();
 		else if (id == "boxartmissing" || id == "boxartall")
 		{
 			std::vector<std::string> ids;
@@ -2398,12 +2394,6 @@ namespace ps5shell
 
 	void Shell::SettingsUpdate(const ui::Press& press, const ui::Actions& actions)
 	{
-		// Eden's board of tiles (eden.cpp, 6.17); its pages' rows are every theme's
-		if (EdenLayout() && !InGameSettings() && !m_onRows)
-		{
-			EdenBoardUpdate(press);
-			return;
-		}
 		const auto pages = SettingsPages();
 		if (pages.empty())
 		{
@@ -2479,17 +2469,11 @@ namespace ps5shell
 				m_feedback.Play(ui::Cue::Back);
 				if (InGameSettings())
 					GameSettingsClose();
-				else if (SectionLayout())
-					EdenGo(0); // the experiments' Settings, a section: Home
 				else
 				{
 					ShowTab(ScreenId::Library);
 					m_barFocus = kSides;
 				}
-				break;
-			case Button::Left:
-				if (SectionLayout() && !InGameSettings())
-					FocusBar(); // the experiments' rail
 				break;
 			default: break;
 			}
@@ -2620,13 +2604,8 @@ namespace ps5shell
 
 	void Shell::SettingsDraw(Canvas& canvas)
 	{
-		if (SectionLayout())
-		{
-			EdenSettingsDraw(canvas); // a board of tiles, and pages of three parts (6.17)
-			return;
-		}
-		// a dialog over the screen it was opened from, on every side and in every theme but Eden (6.5): that
-		// screen as it was, dimmed, taking no input and asking for no focus
+		// a dialog over the screen it was opened from, on every side and in every theme (6.5): that screen as
+		// it was, dimmed, taking no input and asking for no focus
 		m_behind = true;
 		if (InGameSettings() && m_gameFrom == ScreenId::Hub)
 			HubDraw(canvas);

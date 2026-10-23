@@ -215,5 +215,4 @@ namespace ps5paths
 	inline std::string Assets() { return AppDir() + "/assets"; }
 	// Cemu's read-only data (gameProfiles, resources)
 	inline std::string CemuData() { return Assets() + "/cemu"; }
-	inline std::string BundledGraphicPacks() { return Assets() + "/graphicPacks"; }
 }

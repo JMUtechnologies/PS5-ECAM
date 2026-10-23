@@ -53,6 +53,9 @@ namespace ps5emu
 		bool gamePadSpeaker = false; // the GamePad's sound on player 1's DualSense speaker (Cemu's pad_device)
 		bool shaderNotices = true;	 // Cemu's "compiled shaders/pipelines" notices (its notification.shader_compiling)
 		int touchpadClick[4] = {0, 0, 0, 0}; // each player's touchpad click (ApplyTouchpadClick)
+		// the games folder (a network share's, #75) not looked through as Cemu starts: the titles of its
+		// last look (title_list_cache.xml) as they are, until Rescan
+		bool keepGameList = false;
 	};
 
 	// Paths, settings (with PS5 defaults on first start), MLC, graphic packs, controllers and
@@ -68,6 +71,8 @@ namespace ps5emu
 	// for it (before a game: the launcher leaves no thread behind).
 	void StartCore(const Options& options);
 	bool CoreStarted(bool& ok, std::string& error);
+	// Whether the core started with the last look's titles (Options::keepGameList, and Cemu had a list)
+	bool KeptGameList();
 	void FinishCoreStart();
 
 	// The game about to start and the settings it starts with (its side's, with its own over them:

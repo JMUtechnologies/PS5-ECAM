@@ -1,20 +1,24 @@
 # The new launcher's first start (PREVIEW_FIRST=1 tools/preview-shell.sh tools/launcher-preview/shell-first.txt):
-# Make it yours, the Setup check, then the Library of the first side with games, nothing asking which.
+# What's new, Make it yours, the Setup check, then the Library of the first side with games, nothing
+# asking which.
 wait 90
+shot first-whatsnew           # what the version brings
+press cross                   # on to Make it yours
+wait 40
 shot first-welcome            # Make it yours: the look and feel, chosen once
-press down down down down     # the theme
+press down down down down down # the theme, under the language and the sides
 wait 25
 shot first-welcome-theme
-press right                   # Classic (3.0)
+press right                   # Link Jack
 wait 30
-shot first-theme-classic
-press right right             # Phantom, an experiment
+shot first-theme-link-jack
+press right right             # Midnight
 wait 30
-shot first-theme-phantom
-press right                   # Terminal, the other
+shot first-theme-midnight
+press right                   # Eden
 wait 30
-shot first-theme-terminal
-press left left left left     # back to the default
+shot first-theme-eden
+press left left left left     # back to the default, Light
 wait 20
 press circle                  # on to the Setup check
 wait 60

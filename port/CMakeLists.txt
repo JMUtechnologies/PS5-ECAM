@@ -185,15 +185,11 @@ add_library(CemuPS5 STATIC
 	frontend/settings.cpp
 	frontend/settings.h
 	frontend/shell.h
-	frontend/shell/classic.cpp
-	frontend/shell/eden.cpp
-	frontend/shell/experiments.cpp
 	frontend/shell/host_ps5.cpp
 	frontend/shell/hub.cpp
 	frontend/shell/installs.cpp
 	frontend/shell/library.cpp
 	frontend/shell/pages.cpp
-	frontend/shell/recent.cpp
 	frontend/shell/settings.cpp
 	frontend/shell/setup.cpp
 	frontend/shell/shares.cpp
@@ -218,6 +214,8 @@ add_library(CemuPS5 STATIC
 	ps5/kernel.h
 	ps5/log.cpp
 	ps5/log.h
+	ps5/net.cpp
+	ps5/net.h
 	ps5/netfs_files.cpp
 	ps5/notify.cpp
 	ps5/notify.h
@@ -294,15 +292,11 @@ set_source_files_properties(
 	melonds/unavailable.cpp
 	frontend/actions.cpp
 	frontend/settings.cpp
-	frontend/shell/classic.cpp
-	frontend/shell/eden.cpp
-	frontend/shell/experiments.cpp
 	frontend/shell/host_ps5.cpp
 	frontend/shell/hub.cpp
 	frontend/shell/installs.cpp
 	frontend/shell/library.cpp
 	frontend/shell/pages.cpp
-	frontend/shell/recent.cpp
 	frontend/shell/settings.cpp
 	frontend/shell/setup.cpp
 	frontend/shell/shares.cpp
@@ -317,6 +311,7 @@ set_source_files_properties(
 	ps5/fcntl.cpp
 	ps5/profiler.cpp
 	ps5/log.cpp
+	ps5/net.cpp
 	ps5/netfs_files.cpp
 	ps5/notify.cpp
 	ps5/pad.cpp

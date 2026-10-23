@@ -146,9 +146,9 @@ namespace ps5settings
 		// ps5update::Readable writes it; Settings > Online still finds it
 		std::string skipVersion;
 		std::string theme;			 // the launcher's look (ui/theme.h): a built-in theme's id, or user:<file> in themes/; empty: the default
+		bool libraryFilters = false;		 // the Library's filter row (Settings > Launcher); off: every game, as All
 		int libraryFilter[4] = {0, 0, 0, 0}; // per side (Wii U, 3DS, DS, Switch): All, Recently added, Favourites, Graphic packs on (Wii U)
 		int librarySort[4] = {0, 0, 0, 0};   // Recently played (the default: the Library is where a side opens), A to Z, Release year, How it runs
-		int libraryDisplay[4] = {0, 0, 0, 0}; // Meyer Oscar's library, per side: 0 a grid of covers, 1 a list
 	};
 
 	struct Launcher
@@ -182,6 +182,9 @@ namespace ps5settings
 		// account of their own, by their PS5 user ID ("0x10fd1069") to Cemu's persistent ID ("80000002")
 		bool accountPerUser = false;
 		std::map<std::string, std::string> accountsByUser;
+		// a side whose games folder is on a network share looks through it each time it opens (Settings >
+		// Game files, #75); off: the list from its last look shows at once, until Look for games now
+		bool lookOnShares = false;
 		bool pinCpuThreads = false;	  // an experiment (ps5/threads.h): only in ps5cemu.json
 		// only in ps5cemu.json: Cemu's pipeline compile threads but the first below normal priority, as
 		// Cemu runs them on Windows (ps5/threads.h). An experiment, off: the console schedules by strict
