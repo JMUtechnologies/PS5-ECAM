@@ -42,9 +42,11 @@ namespace ps5catalog
 	void Replace(System side, const std::vector<ps5emu::Game>& scanned);
 	void SetFavourite(System side, uint64_t titleId, bool favourite);
 	void SetAmbient(System side, uint64_t titleId, const uint32_t ambient[2]);
-	// A game started (now), and ended after so many minutes
+	// A game started (when: now, as the launcher starts it)
 	void Played(System side, uint64_t titleId, int64_t when);
-	void AddMinutes(System side, uint64_t titleId, uint32_t minutes);
+	// It ended (when): the minutes since it started added to its play time, which this returns. A
+	// session over a day long had the clock changed under it, or the console at rest: not counted
+	uint32_t Ended(System side, uint64_t titleId, int64_t when);
 	// The launcher's old recent lists, which have no times: their order kept as last-played times,
 	// for the games that have none yet
 	void Migrate(System side, const std::vector<uint64_t>& recent);
