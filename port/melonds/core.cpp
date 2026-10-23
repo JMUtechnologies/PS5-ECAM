@@ -987,6 +987,7 @@ namespace ps5melonds
 		s_framesEmulated = 0;
 		s_framesShown = 0;
 		// RetroAchievements, when someone has signed in: the game's ROM hashed to find its set
+		s_cheevos = false;
 		if (const melonDS::NDSCart::CartCommon* loaded = s_nds->GetNDSCart())
 			s_cheevos = ps5cheevos::StartGame(path, ReadDsMemory, loaded->GetROM(), loaded->GetROMLength());
 		ps5ingame3ds::SetAchievements(s_cheevos, {}, {});
@@ -1130,9 +1131,11 @@ namespace ps5melonds
 		auto elapsed = [&] {
 			return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - started).count();
 		};
-		// The app starts over after this, and the save is written below: a shutdown that hangs is cut
-		// short by starting over from here, as the 3DS's is
+		// The library shows after this, in this process (main_ps5.cpp), and the save is written below: a
+		// shutdown that hangs is cut short by starting the app over from here, as the 3DS's is. Each
+		// game's shutdown watched afresh: the process can run several
 		static std::atomic_bool s_shutDown = false;
+		s_shutDown = false;
 		std::thread([] {
 			for (int waited = 0; waited < 50 && !s_shutDown; waited++)
 				sceKernelUsleep(100000);

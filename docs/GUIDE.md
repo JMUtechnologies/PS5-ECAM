@@ -22,7 +22,9 @@ wrong.
 | Circle | Back |
 
 The app opens on the Library of the side a game came back from, or else the side you used last,
-with the game you played last in focus. You can switch sides without the app restarting. Each emulator's core only starts
+with the game you played last in focus. You can switch sides without the app restarting, and a 3DS
+or DS game comes back to the library without it either (its emulator shuts down first; a game on
+another emulator after it starts the app over, as every game used to). Each emulator's core only starts
 with one of its games, so the emulators never run at the same time, and the launcher's background
 work stops before a game starts.
 
@@ -564,8 +566,8 @@ every 10 seconds with the frame rate, and `[crash]` lines if an emulator crashes
 
 ## Known issues
 
-- Going back to the library restarts the app, and a Wii U game keeps running behind the in-game
-  menu.
+- Going back to the library from a Wii U game restarts the app (Cemu keeps the screen), and a Wii U
+  game keeps running behind the in-game menu.
 - Batman: Arkham Origins needs its 60 FPS graphic pack turned off; with it on, it glitches and
   crashes once gameplay loads ([#15](https://github.com/premohq/PS5-ECAM/issues/15)).
 - The 3DS's microphone, local wireless and online play aren't supported, and its cameras see a

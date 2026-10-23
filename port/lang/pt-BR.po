@@ -1866,7 +1866,7 @@ msgstr "A pasta meta dele não descreve um título de Wii U (meta.xml)."
 msgid "This is where it is installed already."
 msgstr "Ele já está instalado aqui."
 
-#: port/app/install.cpp:510 port/azahar/core.cpp:1102
+#: port/app/install.cpp:510 port/azahar/core.cpp:1103
 #, menu
 msgid "An install is already running."
 msgstr "Já há uma instalação em andamento."
@@ -2729,28 +2729,28 @@ msgid "Touchpad click + Options: the in-game menu. A touchpad click alone: the b
 msgstr "Clique no touch pad + OPTIONS: o menu do jogo. Só um clique no touch pad: a tela inferior"
 
 #. why a CIA file could not be installed, after "It could not be installed:"
-#: port/azahar/core.cpp:1171
+#: port/azahar/core.cpp:1172
 #, menu
 msgid "it is encrypted, the CIA or the game inside it. Azahar installs only fully decrypted CIA files: decrypt it with GodMode9 on a 3DS, or play the game's decrypted .3ds or .cci file instead"
 msgstr "ele está criptografado, o CIA ou o jogo dentro dele. O Azahar só instala arquivos CIA totalmente descriptografados: descriptografe-o com o GodMode9 em um 3DS, ou jogue o arquivo .3ds ou .cci descriptografado do jogo"
 
-#: port/azahar/core.cpp:1174
+#: port/azahar/core.cpp:1175
 #, menu
 msgid "it is not a CIA file, or it is damaged (check the file's size)"
 msgstr "não é um arquivo CIA, ou está corrompido (verifique o tamanho do arquivo)"
 
-#: port/azahar/core.cpp:1176
+#: port/azahar/core.cpp:1177
 #, menu
 msgid "the file could not be read"
 msgstr "não foi possível ler o arquivo"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/azahar/core.cpp:1179
+#: port/azahar/core.cpp:1180
 #, menu
 msgid "Azahar stopped part-way through; {0}/azahar/log/azahar_log.txt says why"
 msgstr "O Azahar parou no meio do caminho; {0}/azahar/log/azahar_log.txt diz por quê"
 
-#: port/azahar/core.cpp:1181
+#: port/azahar/core.cpp:1182
 #, menu
 msgid "it is not a CIA Azahar can install"
 msgstr "não é um CIA que o Azahar consiga instalar"
@@ -2945,7 +2945,7 @@ msgid_plural "{0} players"
 msgstr[0] "{0} jogador"
 msgstr[1] "{0} jogadores"
 
-#: port/eden/launch.cpp:112 port/main_ps5.cpp:599
+#: port/eden/launch.cpp:112 port/main_ps5.cpp:618
 msgid "This build has no Switch emulator: eden/eboot.bin is not in the app's folder."
 msgstr "Esta versão não tem emulador de Switch: eden/eboot.bin não está na pasta do app."
 
@@ -7379,49 +7379,49 @@ msgstr "A maior atualização até agora, em um relance. As notas da versão no 
 msgid "This game"
 msgstr "Este jogo"
 
-#: port/main_ps5.cpp:149
+#: port/main_ps5.cpp:150
 msgid "Firmware {0}"
 msgstr "Firmware {0}"
 
-#: port/main_ps5.cpp:151
+#: port/main_ps5.cpp:152
 msgid "Logs: {0}, {1}/log.txt"
 msgstr "Logs: {0}, {1}/log.txt"
 
-#: port/main_ps5.cpp:152
+#: port/main_ps5.cpp:153
 msgid "Boot log not written (/data is unreachable)"
 msgstr "Log de inicialização não gravado (/data inacessível)"
 
-#: port/main_ps5.cpp:509
+#: port/main_ps5.cpp:528
 msgid "PS5-ECAM cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5-ECAM."
 msgstr "O PS5-ECAM não consegue acessar /data. Carregue um HEN com PPSA99360 na lista de jailbreak de apps dele, ou o elfldr, e depois inicie o PS5-ECAM de novo."
 
-#: port/main_ps5.cpp:587
+#: port/main_ps5.cpp:606
 msgid "This session: Azahar (3DS); Cemu's emulated Wii U is not started"
 msgstr "Esta sessão: Azahar (3DS); o Wii U emulado do Cemu não foi iniciado"
 
-#: port/main_ps5.cpp:597
+#: port/main_ps5.cpp:616
 msgid "This session: Eden (Switch), in a program of its own; Cemu's emulated Wii U is not started"
 msgstr "Esta sessão: Eden (Switch), em um programa próprio; o Wii U emulado do Cemu não foi iniciado"
 
-#: port/main_ps5.cpp:607
+#: port/main_ps5.cpp:626
 msgid "This session: melonDS (DS); Cemu's emulated Wii U is not started"
 msgstr "Esta sessão: melonDS (DS); o Wii U emulado do Cemu não foi iniciado"
 
-#: port/main_ps5.cpp:614
+#: port/main_ps5.cpp:633
 msgid "This session: Cemu (Wii U); Azahar's core is not started"
 msgstr "Esta sessão: Cemu (Wii U); o núcleo do Azahar não foi iniciado"
 
-#: port/main_ps5.cpp:624
+#: port/main_ps5.cpp:643
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "Sem memória JIT: os jogos de Wii U rodam no interpretador, muito mais lento. O PPSA99360 está na lista de jailbreak de apps do seu HEN?"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/main_ps5.cpp:658
+#: port/main_ps5.cpp:685
 msgid "The launcher could not start. The boot log in {0}/logs says why."
 msgstr "O launcher não pôde iniciar. O log de inicialização em {0}/logs diz por quê."
 
 #. {0} is why; {1} the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the app's drive
-#: port/main_ps5.cpp:660
+#: port/main_ps5.cpp:687
 msgid "The launcher could not start: {0}. The boot log in {1}/logs has more."
 msgstr "O launcher não conseguiu iniciar: {0}. O log de inicialização em {1}/logs tem mais detalhes."
 
@@ -7449,16 +7449,16 @@ msgid "DSi games are not supported yet."
 msgstr "Jogos de DSi ainda não são compatíveis."
 
 #. the PS5's notification as a DS game starts
-#: port/melonds/core.cpp:1006
+#: port/melonds/core.cpp:1007
 msgid "Touchpad click + Options: the in-game menu. A touchpad click alone: the touch screen. R3: the microphone"
 msgstr "Clique no touch pad + OPTIONS: o menu do jogo. Só um clique no touch pad: a tela de toque. R3: o microfone"
 
 #. notifications as melonDS stops a DS game
-#: port/melonds/core.cpp:1122
+#: port/melonds/core.cpp:1123
 msgid "The game asked for the DS's GBA mode, which melonDS does not have."
 msgstr "O jogo pediu o modo GBA do DS, que o melonDS não tem."
 
-#: port/melonds/core.cpp:1124
+#: port/melonds/core.cpp:1125
 msgid "The DS game crashed."
 msgstr "O jogo de DS travou."
 

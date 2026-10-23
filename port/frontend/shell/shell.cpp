@@ -1143,7 +1143,7 @@ namespace ps5shell
 			{
 				m_status.autoLaunch.clear();
 				ps5log::Line("[launcher] starting the tile's game: {}", m_games[i].entry.game.name);
-				Launch(i);
+				Launch(i, std::exchange(m_status.autoLaunchResume, false));
 				return;
 			}
 		}
