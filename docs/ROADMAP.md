@@ -49,10 +49,6 @@ checked by reading and compiling. Before a release:
   - The install's remaining minute is unpacking 1,852 files one at a time and moving each into
     place: unpack in parallel, as `port/app/install.cpp` does (fewer files now, with no graphic
     packs).
-- **A fresh build fails to fetch the boilerplate:** `tools/deps.json` points at
-  `blackbearreloaded/ps5-native-app-boilerplate`, which no longer exists (noted in PR #70).
-  [drakmor's copy](https://github.com/drakmor/ps5-native-app-boilerplate) has the pinned commit
-  (`dd44bbdc`, checked): change the URL.
 - **Switch games with a mods folder do not start** ([#77](https://github.com/premohq/PS5-ECAM/issues/77)):
   nothing of the launcher's reaches Eden's mods, so it is in Eden's program. Needs the reporter's boot
   log; compare ProsperoEdenX's mod loading with upstream ProsperoEden's newest (its new folder
