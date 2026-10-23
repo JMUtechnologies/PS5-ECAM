@@ -2212,7 +2212,7 @@ msgstr "{0} tidak bisa dibuat"
 msgid "{0} could not be copied: is the PS5's storage full?"
 msgstr "{0} tidak bisa disalin: apakah penyimpanan PS5 penuh?"
 
-#: port/app/mods.cpp:229 port/app/pack_updates.cpp:265 port/app/updates.cpp:568
+#: port/app/mods.cpp:229 port/app/pack_updates.cpp:268 port/app/updates.cpp:517
 msgid "Stopped for a game"
 msgstr "Dihentikan untuk sebuah game"
 
@@ -2224,15 +2224,15 @@ msgstr "{0} tidak bisa dibaca"
 msgid "{0} could not be written"
 msgstr "{0} tidak bisa ditulis"
 
-#: port/app/pack_updates.cpp:132 port/app/updates.cpp:392
+#: port/app/pack_updates.cpp:132 port/app/update_files.cpp:68
 msgid "the download is not a ZIP ({0})"
 msgstr "unduhan bukan ZIP ({0})"
 
-#: port/app/pack_updates.cpp:160 port/app/updates.cpp:418
+#: port/app/pack_updates.cpp:160 port/app/update_files.cpp:116
 msgid "{0} could not be unpacked"
 msgstr "{0} tidak bisa diekstrak"
 
-#: port/app/pack_updates.cpp:177 port/app/updates.cpp:438
+#: port/app/pack_updates.cpp:177 port/app/update_files.cpp:126
 msgid "stopped for a game"
 msgstr "dihentikan untuk sebuah game"
 
@@ -2240,24 +2240,24 @@ msgstr "dihentikan untuk sebuah game"
 msgid "the download holds no packs"
 msgstr "unduhan tidak berisi paket"
 
-#: port/app/pack_updates.cpp:194 port/app/updates.cpp:656
+#: port/app/pack_updates.cpp:194 port/app/updates.cpp:614
 msgid "GitHub could not be found: is the PS5 online?"
 msgstr "GitHub tidak ditemukan: apakah PS5 sedang online?"
 
 #. why an update did not finish
-#: port/app/pack_updates.cpp:227 port/app/updates.cpp:471
+#: port/app/pack_updates.cpp:228 port/app/updates.cpp:415
 msgid "GitHub did not answer with a release"
 msgstr "GitHub tidak menjawab dengan rilis"
 
-#: port/app/pack_updates.cpp:265
+#: port/app/pack_updates.cpp:268
 msgid "The download did not finish"
 msgstr "Unduhan tidak selesai"
 
-#: port/app/pack_updates.cpp:280 port/frontend/shell/installs.cpp:195 port/frontend/shell/pages.cpp:1176
+#: port/app/pack_updates.cpp:283 port/frontend/shell/installs.cpp:195 port/frontend/shell/pages.cpp:1176
 msgid "It could not be installed: {0}"
 msgstr "Tidak bisa dipasang: {0}"
 
-#: port/app/pack_updates.cpp:291
+#: port/app/pack_updates.cpp:294
 msgid "The new packs could not take the old ones' place"
 msgstr "Paket baru tidak bisa menggantikan yang lama"
 
@@ -2313,65 +2313,65 @@ msgstr "Tahan"
 msgid "Hold Cross until the ring fills."
 msgstr "Tahan Silang sampai cincinnya penuh."
 
+#: port/app/update_files.cpp:92
+msgid "the download has no eboot.bin"
+msgstr "unduhan tidak berisi eboot.bin"
+
+#: port/app/update_files.cpp:117
+msgid "{0} could not be written (is /data full?)"
+msgstr "{0} tidak bisa ditulis (apakah /data penuh?)"
+
 #. at a start after an update: {0} the release installed, {1} the folder, {2} this release
 #: port/app/updates.cpp:321
 msgid "{0} was installed in {1}, but the PS5 started {2} again. Close PS5-ECAM and start it from the home screen; if it is still {2}, copy the release's PPSA99360 folder over by hand."
 msgstr "{0} sudah dipasang di {1}, tetapi PS5 menjalankan {2} lagi. Tutup PS5-ECAM lalu jalankan dari layar beranda; jika masih {2}, salin folder PPSA99360 dari rilis ke atasnya secara manual."
 
-#: port/app/updates.cpp:428
-msgid "{0} could not be written (is /data full?)"
-msgstr "{0} tidak bisa ditulis (apakah /data penuh?)"
-
-#: port/app/updates.cpp:443
-msgid "the download has no eboot.bin"
-msgstr "unduhan tidak berisi eboot.bin"
-
-#: port/app/updates.cpp:478
+#: port/app/updates.cpp:422
 msgid "The latest release's version ({0}) is not one this can read"
 msgstr "Versi rilis terbaru ({0}) tidak bisa dibaca"
 
-#: port/app/updates.cpp:511
+#: port/app/updates.cpp:455
 msgid "The release's checksums could not be downloaded"
 msgstr "Checksum rilis tidak bisa diunduh"
 
-#: port/app/updates.cpp:540
+#: port/app/updates.cpp:484
 msgid "The releases branch has no checksum for {0}"
 msgstr "Cabang rilis tidak punya checksum untuk {0}"
 
-#: port/app/updates.cpp:554
+#: port/app/updates.cpp:498
 msgid "The download could not start"
 msgstr "Unduhan tidak bisa dimulai"
 
-#: port/app/updates.cpp:568
+#: port/app/updates.cpp:517
 msgid "The download did not finish: is the PS5 online?"
 msgstr "Unduhan tidak selesai: apakah PS5 sedang online?"
 
-#: port/app/updates.cpp:577
+#: port/app/updates.cpp:526
 msgid "The download is damaged (SHA-256 {0}, not {1})"
 msgstr "Unduhan rusak (SHA-256 {0}, bukan {1})"
 
-#: port/app/updates.cpp:587
+#: port/app/updates.cpp:536
 msgid "PS5-ECAM runs from an image, whose files can't be replaced: install the new release by hand"
 msgstr "PS5-ECAM berjalan dari image yang file-filenya tidak bisa diganti: pasang rilis baru secara manual"
 
-#: port/app/updates.cpp:599
+#: port/app/updates.cpp:549
 msgid "It could not be unpacked: {0}"
 msgstr "Tidak bisa diekstrak: {0}"
 
-#: port/app/updates.cpp:629
+#: port/app/updates.cpp:581
 msgid "{0} could not be replaced ({1}): copy the release's PPSA99360 folder over by hand"
 msgstr "{0} tidak bisa diganti ({1}): salin folder PPSA99360 dari rilis ke atasnya secara manual"
 
-#: port/app/updates.cpp:746
+#: port/app/updates.cpp:704
 msgid "No earlier version is kept here."
 msgstr "Tidak ada versi lama yang disimpan di sini."
 
-#: port/app/updates.cpp:769
+#: port/app/updates.cpp:727
 msgid "{0} could not be put back ({1}): copy that release's PPSA99360 folder over by hand"
 msgstr "{0} tidak bisa dikembalikan ({1}): salin folder PPSA99360 dari rilis itu ke atasnya secara manual"
 
 #. an update is installed, but the app could not start itself again to run it
-#: port/app/updates.cpp:825
+#: port/app/updates.cpp:783
 msgid "The PS5 did not start PS5-ECAM again. Close it and start it from the home screen to finish the update."
 msgstr "PS5 tidak memulai ulang PS5-ECAM. Tutup lalu jalankan dari layar beranda untuk menyelesaikan pembaruan."
 
@@ -2954,29 +2954,29 @@ msgid "{0} player"
 msgid_plural "{0} players"
 msgstr[0] "{0} pemain"
 
-#: port/eden/launch.cpp:112 port/main_ps5.cpp:618
+#: port/eden/launch.cpp:112 port/main_ps5.cpp:630
 msgid "This build has no Switch emulator: eden/eboot.bin is not in the app's folder."
 msgstr "Versi ini tidak punya emulator Switch: eden/eboot.bin tidak ada di folder aplikasi."
 
-#: port/eden/launch.cpp:117 port/eden/launch.cpp:282
+#: port/eden/launch.cpp:117 port/eden/launch.cpp:285
 msgid "The console did not start Eden. The boot log says what it answered."
 msgstr "Konsol tidak memulai Eden. Log boot menyebutkan jawabannya."
 
-#: port/eden/launch.cpp:218
+#: port/eden/launch.cpp:221
 msgid "The Switch game stopped: Eden closed while it ran. Its logs are in {0}."
 msgstr "Game Switch berhenti: Eden tertutup saat berjalan. Log-nya ada di {0}."
 
 #. a Switch game's room (Settings > Multiplayer) could not be joined: its name ({0}) and why ({1}, in English)
-#: port/eden/launch.cpp:228
+#: port/eden/launch.cpp:231
 msgid "The room {0} could not be joined: {1} Choose another in Settings > Multiplayer, or play offline."
 msgstr "Tidak bisa masuk ke ruang {0}: {1} Pilih yang lain di Pengaturan > Multipemain, atau main offline."
 
-#: port/eden/launch.cpp:231
+#: port/eden/launch.cpp:234
 msgid "Eden could not find the game's file. Is the drive with it plugged in?"
 msgstr "Eden tidak menemukan file game. Apakah drive berisi file itu tersambung?"
 
 #. why a Switch game stopped or did not start, in Eden's own words (English)
-#: port/eden/launch.cpp:233
+#: port/eden/launch.cpp:236
 msgid "The Switch game did not start or stopped: {0}"
 msgstr "Game Switch tidak dimulai atau berhenti: {0}"
 
@@ -2988,16 +2988,16 @@ msgstr "Daftar ruang publik tidak bisa dibaca."
 msgid "No usable rooms were returned."
 msgstr "Tidak ada ruang yang bisa dipakai yang dikembalikan."
 
-#: port/eden/rooms.cpp:172
+#: port/eden/rooms.cpp:173
 msgid "The public room list is too large."
 msgstr "Daftar ruang publik terlalu besar."
 
-#: port/eden/rooms.cpp:173
+#: port/eden/rooms.cpp:174
 msgid "Could not download the public rooms. Is the PS5 online? Cross tries again."
 msgstr "Tidak bisa mengunduh ruang publik. Apakah PS5 online? Silang mencoba lagi."
 
 #. the room directory's answer was an HTTP error ({0}: its number)
-#: port/eden/rooms.cpp:176
+#: port/eden/rooms.cpp:177
 msgid "The public room list answered HTTP {0}. Try again later."
 msgstr "Daftar ruang publik menjawab HTTP {0}. Coba lagi nanti."
 
@@ -7359,49 +7359,49 @@ msgstr "Pembaruan terbesar sejauh ini, sekilas. Catatan rilis di GitHub berisi s
 msgid "This game"
 msgstr "Game ini"
 
-#: port/main_ps5.cpp:150
+#: port/main_ps5.cpp:151
 msgid "Firmware {0}"
 msgstr "Firmware {0}"
 
-#: port/main_ps5.cpp:152
+#: port/main_ps5.cpp:153
 msgid "Logs: {0}, {1}/log.txt"
 msgstr "Log: {0}, {1}/log.txt"
 
-#: port/main_ps5.cpp:153
+#: port/main_ps5.cpp:154
 msgid "Boot log not written (/data is unreachable)"
 msgstr "Log mulai tidak ditulis (/data tidak bisa dijangkau)"
 
-#: port/main_ps5.cpp:528
+#: port/main_ps5.cpp:536
 msgid "PS5-ECAM cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5-ECAM."
 msgstr "PS5-ECAM tidak bisa menjangkau /data. Muat HEN dengan PPSA99360 di daftar jailbreak aplikasinya, atau elfldr, lalu mulai ulang PS5-ECAM."
 
-#: port/main_ps5.cpp:606
+#: port/main_ps5.cpp:618
 msgid "This session: Azahar (3DS); Cemu's emulated Wii U is not started"
 msgstr "Sesi ini: Azahar (3DS); Wii U emulasi Cemu tidak dimulai"
 
-#: port/main_ps5.cpp:616
+#: port/main_ps5.cpp:628
 msgid "This session: Eden (Switch), in a program of its own; Cemu's emulated Wii U is not started"
 msgstr "Sesi ini: Eden (Switch), di programnya sendiri; Wii U emulasi Cemu tidak dimulai"
 
-#: port/main_ps5.cpp:626
+#: port/main_ps5.cpp:638
 msgid "This session: melonDS (DS); Cemu's emulated Wii U is not started"
 msgstr "Sesi ini: melonDS (DS); Wii U emulasi Cemu tidak dimulai"
 
-#: port/main_ps5.cpp:633
+#: port/main_ps5.cpp:645
 msgid "This session: Cemu (Wii U); Azahar's core is not started"
 msgstr "Sesi ini: Cemu (Wii U); inti Azahar tidak dimulai"
 
-#: port/main_ps5.cpp:643
+#: port/main_ps5.cpp:655
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "Tanpa memori JIT: game Wii U berjalan di interpreter, jauh lebih lambat. Apakah PPSA99360 ada di daftar jailbreak aplikasi HEN-mu?"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/main_ps5.cpp:685
+#: port/main_ps5.cpp:697
 msgid "The launcher could not start. The boot log in {0}/logs says why."
 msgstr "Peluncur tidak bisa dimulai. Log mulai di {0}/logs menjelaskan alasannya."
 
 #. {0} is why; {1} the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the app's drive
-#: port/main_ps5.cpp:687
+#: port/main_ps5.cpp:699
 msgid "The launcher could not start: {0}. The boot log in {1}/logs has more."
 msgstr "Peluncur tidak bisa dimulai: {0}. Log boot di {1}/logs berisi detailnya."
 

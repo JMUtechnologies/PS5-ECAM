@@ -27,7 +27,7 @@ jobs:
           key: deps-${{ hashFiles('tools/deps.json') }}
 
       - name: What the tests need
-        run: python3 -B tools/deps.py fetch pacbrew pugixml dr_mp3
+        run: python3 -B tools/deps.py fetch pacbrew pugixml dr_mp3 rapidjson
 
       - name: String tables
         run: python3 -B tools/lang.py check
@@ -43,6 +43,12 @@ jobs:
 
       - name: Launcher music
         run: bash tools/tests/test-music.sh
+
+      - name: Updates' files
+        run: bash tools/tests/test-update.sh
+
+      - name: Library catalogue
+        run: bash tools/tests/test-catalog.sh
 
       - name: Backups
         run: |
