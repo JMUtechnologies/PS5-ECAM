@@ -6,9 +6,10 @@
 //  3. the launcher until a game is chosen (frontend/shell.h), on the side last used;
 //  4. the game, on Cemu's or Azahar's Vulkan renderer, or melonDS's screens on VideoOut, with its side's
 //     settings and the game's own over them (frontend/settings.h, ForGame), until the in-game menu
-//     (touchpad + Options) asks for the library, which starts PS5-ECAM over (app/emulator.h,
-//     RestartToLibrary) on that emulator's side. A Switch game runs in Eden's own program instead
-//     (eden/eboot.bin, port/eden), which starts PS5-ECAM again on the Switch side when it ends.
+//     (touchpad + Options) asks for the library: a 3DS or DS game's emulator shuts down and the
+//     launcher shows again in this process; a Wii U game starts PS5-ECAM over (app/emulator.h,
+//     RestartToLibrary), as Cemu cannot let VideoOut go. A Switch game runs in Eden's own program
+//     instead (eden/eboot.bin, port/eden), which starts PS5-ECAM again on the Switch side when it ends.
 
 #include "app/achievements.h"
 #include "app/catalog.h"
@@ -187,11 +188,13 @@ namespace
 
 	// A home screen tile's arguments (app/forwarders.h, the PS5 Forwarder Format's): --rom <path> names
 	// the game to start at once, a full path or a file's name in its side's library, and
-	// --exit-after-game closes the app after it instead of showing the library
+	// --exit-after-game closes the app after it instead of showing the library. --resume, the app's own
+	// (a game handed to a fresh process: main), has it go on from its last quit's state
 	struct TileGame
 	{
 		std::string rom;
 		bool exitAfterGame = false;
+		bool resume = false;
 		ps5launcher::System side = ps5launcher::System::WiiU;
 	};
 
@@ -205,6 +208,8 @@ namespace
 				tile.rom = argv[++i];
 			else if (arg == "--exit-after-game")
 				tile.exitAfterGame = true;
+			else if (arg == "--resume")
+				tile.resume = true;
 		}
 		// the side by the file's type: the DS's, the 3DS's and the Switch's are their own, the rest the Wii
 		// U's (.wua, .wud, .wux, .rpx, a folder)
@@ -494,6 +499,7 @@ int main(int argc, char* argv[])
 		ps5log::Line("[main] the last session ended in a crash: {}", status.lastCrash);
 	status.autoLaunch = tile.rom;
 	status.autoLaunchSide = tile.side;
+	status.autoLaunchResume = tile.resume;
 	// after the game: the library, or for a tile's game (--exit-after-game) the PS5's home screen, as
 	// the in-game menus say (SetExitAfterGame, below)
 	auto afterGame = [&](const char* side) {
@@ -501,6 +507,19 @@ int main(int argc, char* argv[])
 			ps5emu::ExitApp();
 		RememberSide(side);
 		ps5emu::RestartToLibrary();
+	};
+	// A 3DS or DS game's emulator, shut down whole, gives way to the launcher in this process: no
+	// restart, which the PS5 has answered by closing the app instead (#60, #68). What the in-game menu
+	// saved is read again; the launcher opens on the game's side.
+	std::optional<ps5launcher::System> gameRan; // the emulator whose game ran in this process
+	auto backInProcess = [&](ps5launcher::System system) {
+		if (ps5emu::ExitAfterGame())
+			ps5emu::ExitApp();
+		settings = ps5settings::Load();
+		settings.side = ps5launcher::SideName(system);
+		ps5pad::SetTurbo(0); // the game's turbo button is not the launcher's
+		gameRan = system;
+		ps5log::Line("[main] back to the library in this process, on the {} side", ps5launcher::SideTitle(system));
 	};
 	std::string error;
 	if (!privileges.filesystem)
@@ -646,6 +665,14 @@ int main(int argc, char* argv[])
 		ps5forwarders::Stop();
 		ps5filemodes::Stop();
 		ps5log::Line("[main] the launcher's work stopped in {} ms", (sceKernelGetProcessTime() - stopping) / 1000);
+		if ((outcome != ps5shell::Outcome::Chosen || !choice) && gameRan)
+		{
+			// after a game in this process the launcher could not draw again: from a fresh process, as
+			// before it came back in place
+			ps5log::Line("[main] the launcher could not start again after the game: starting PS5-ECAM over");
+			RememberSide(ps5launcher::SideName(*gameRan));
+			ps5emu::RestartToLibrary();
+		}
 		if (outcome != ps5shell::Outcome::Chosen || !choice)
 		{
 			// the launcher could not draw, and there is nothing else to show: the boot log says why. Wait
@@ -671,6 +698,22 @@ int main(int argc, char* argv[])
 			ps5log::Line("[main] {} starts from its copy unpacked from {}", game.name, game.path.string());
 		}
 		const char* side = ps5launcher::SideName(choice->system);
+		// a game on another emulator than the one whose game ran here: from a fresh process, where every
+		// renderer has always started (by --rom, as a home screen tile's); the same emulator's starts here
+		// again. Should the app not start again, the game starts here all the same
+		// (Artic Base's, from the 3DS on the network, is no game a library lists: it starts here)
+		if (gameRan && choice->system != *gameRan && choice->system != ps5launcher::System::Switch &&
+			!ps5azahar::IsArtic(game.path.string()))
+		{
+			ps5log::Line("[main] {} is the {} side's, after a {} game here: starting PS5-ECAM over for it", game.name,
+				ps5launcher::SideTitle(choice->system), ps5launcher::SideTitle(*gameRan));
+			RememberSide(side);
+			std::vector<std::string> args = {"--rom", game.path.string()};
+			if (choice->resume)
+				args.push_back("--resume");
+			ps5emu::LoadExecApp("eboot.bin", args, false);
+			ps5log::Line("[main] PS5-ECAM did not start again: {} starts in this process", game.name);
+		}
 		// a tile's game that closes the app after it: its in-game menu says so instead of the library (#48)
 		ps5emu::SetExitAfterGame(tile.exitAfterGame && IsTileGame(tile, game));
 		// the side's settings, and the game's own over them
@@ -715,8 +758,8 @@ int main(int argc, char* argv[])
 			if (ps5melonds::LaunchGame(game, forGame.nds, error))
 			{
 				ps5melonds::RunGame();
-				afterGame("ds");
-				return 0;
+				backInProcess(ps5launcher::System::Nds);
+				continue;
 			}
 			ps5log::Line("[main] {} did not start: {}", game.name, error);
 			if (ps5melonds::CoreTouched())
@@ -742,8 +785,8 @@ int main(int argc, char* argv[])
 			if (ps5azahar::LaunchGame(launched, forGame.n3ds, error))
 			{
 				ps5azahar::RunGame();
-				afterGame("3ds");
-				return 0;
+				backInProcess(ps5launcher::System::N3ds);
+				continue;
 			}
 			ps5log::Line("[main] {} did not start: {}", game.name, error);
 			if (ps5azahar::CoreTouched())

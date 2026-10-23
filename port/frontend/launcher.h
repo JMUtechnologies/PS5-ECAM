@@ -58,6 +58,7 @@ namespace ps5launcher
 		// side, by its path (or its file's name); empty: none
 		std::string autoLaunch;
 		System autoLaunchSide = System::WiiU;
+		bool autoLaunchResume = false; // and it goes on from its last quit's state
 		// per side (Wii U, 3DS, DS, Switch): its list is its last look's, its games folder a network share's
 		// that this session has not looked through (Settings > Game files, #75)
 		bool lastLook[4] = {};

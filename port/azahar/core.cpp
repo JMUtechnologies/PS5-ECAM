@@ -1054,12 +1054,13 @@ namespace ps5azahar
 		auto elapsed = [&] {
 			return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - started).count();
 		};
-		// The app starts over after this, and the game's saves are on the SD card already (written as
-		// the game writes them): a shutdown that takes long (18 s was seen, the screen frozen) is cut
-		// short by starting over from here. Not before 15 s: the app started over while Azahar was
-		// still shutting down closed instead (#60), and the DS's game, stopped whole before the app
-		// starts over, comes back to the library.
+		// The library shows after this, in this process (main_ps5.cpp), and the game's saves are on the
+		// SD card already (written as the game writes them): a shutdown that takes long (18 s was seen,
+		// the screen frozen) is cut short by starting the app over from here. Not before 15 s: the app
+		// started over while Azahar was still shutting down closed instead (#60). Each game's shutdown
+		// watched afresh: the process can run several
 		static std::atomic_bool s_shutDown = false;
+		s_shutDown = false;
 		std::thread([] {
 			for (int waited = 0; waited < 150 && !s_shutDown; waited++)
 			{
