@@ -71,8 +71,6 @@ namespace ps5shell
 		Artic,
 		Updates, // Updates and DLC (6.12)
 		Shares,	 // Network shares (6.14)
-		Home,	 // Eden's (eden.cpp, 6.17): the game to continue, its cover, the recent games
-		About,	 // Eden's: who made what, the version, the support card
 	};
 
 	struct ShareJob; // shares.cpp: a test or a look around the network, on a thread of its own
@@ -156,8 +154,6 @@ namespace ps5shell
 		void DrawHints(Canvas& canvas, const std::vector<Hint>& hints);
 		void DrawOverlays(Canvas& canvas);
 		std::vector<Hint> Hints() const;
-		double Now() const { return m_now; }
-		float Dt() const { return m_dt; }
 
 		// -- sides and games ----------------------------------------------------------------------
 		bool IsWiiU() const { return m_side == System::WiiU; }
@@ -177,7 +173,6 @@ namespace ps5shell
 			return 0;
 		}
 		static System BarSide(int position) { return kBarOrder[position < 0 ? 0 : position % kSides]; }
-		static System NextSide(System side) { return BarSide(BarIndex(side) + 1); }
 		// the sides the bar offers (Settings > Launcher, ui.sides): at least one
 		bool SideShown(System side) const { return m_settings.ui.sides & (1 << SideIndex(side)); }
 		int SidesShown() const
@@ -194,10 +189,6 @@ namespace ps5shell
 		static const char* SystemName(System side)
 		{
 			return side == System::N3ds ? "Nintendo 3DS" : side == System::Nds ? "Nintendo DS" : side == System::Switch ? "Nintendo Switch" : "Wii U";
-		}
-		static const char* EmulatorName(System side)
-		{
-			return side == System::N3ds ? "Azahar" : side == System::Nds ? "melonDS" : side == System::Switch ? "Eden" : "Cemu";
 		}
 		ps5catalog::System CatalogSide() const { return (ps5catalog::System)SideIndex(); }
 		static ps5boxart::System BoxSide(System side)
@@ -224,6 +215,9 @@ namespace ps5shell
 			return Is3ds() ? m_status.notice3ds : IsDs() ? m_status.noticeDs : IsSwitch() ? m_status.noticeSwitch : m_status.notice;
 		}
 		bool SystemScanning() const;
+		// the side's folder looked through again, its list replaced with what is found (also one a network
+		// share's that this session kept the last look of, #75)
+		void LookForGames();
 		uint32_t Accent() const { return AccentOf(m_side); }
 		static uint32_t AccentOf(System side)
 		{
@@ -248,7 +242,6 @@ namespace ps5shell
 		// a Switch game's cover: a picture beside it, else GameTDB's box art or its own icon (Settings > Online)
 		std::string SwitchCover(const ps5emu::Game& game) const;
 		std::string IconOf(Game& game);
-		std::string CoverOf(Game& game); // box art, else the icon (looked for at most one a frame)
 		// The backdrop's picture (7.4): a Wii U game's boot screen (looked for at most one a frame,
 		// sharing the icons' budget: each mounts the game), else the box art
 		std::string BackdropOf(Game& game);
@@ -278,8 +271,6 @@ namespace ps5shell
 		void PollUnpacking();
 		void StopUnpacking(); // and joins its thread
 		void Toast(const std::string& text);
-		// the Switch side: Eden's own launcher (its mods, cheats, updates and DLC, profiles, rooms), which
-		// comes back here when it is left
 
 		// -- shared drawing (widgets.cpp) ----------------------------------------------------------
 		ui::TextStyle Style(ui::TextStyle style) const; // larger text, when asked for
@@ -337,128 +328,9 @@ namespace ps5shell
 		// the theme Settings names (ui.theme), made the kit's; the themes the list offers
 		void ApplyTheme();
 		std::vector<ui::Theme> m_themes;
-		void DrawSlashes(Canvas& canvas, float alpha); // Phantom's motif
-		void DrawGrid(Canvas& canvas, float alpha);	   // Terminal's
-		void DrawEden(Canvas& canvas, float alpha);	   // Eden's (ProsperoEden 1.001's light), under the scrims
+		void DrawEden(Canvas& canvas, float alpha);	   // the Eden theme's motif (ProsperoEden 1.001's light), under the scrims
 		void DrawMotes(Canvas& canvas, float alpha);   // and its motes of light rising, over them
-
-		// -- Eden (eden.cpp): ProsperoEden 1.001's launcher, in each side's colours.
-		// A rail of sections at the left (Home, Library, Settings, About; L1 and R1 between them, the sides
-		// under them), Home around the game to continue, the Library's covers beside the focused game's
-		// details, Settings as a board of tiles whose pages (and a game's settings) are pages of three parts,
-		// the launch picture opening into it, and a launch of its own. Every other page is the one every
-		// theme has.
-		bool EdenLayout() const { return ui::CurrentLayout() == ui::Layout::Eden; }
-		// the launchers of sections (Home, Library, Settings, About) beside a rail: Eden, and the experiments
-		// Phantom and Terminal (experiments.cpp), which share its navigation and draw every part their own way
-		bool PhantomLayout() const { return ui::CurrentLayout() == ui::Layout::Phantom; }
-		bool TerminalLayout() const { return ui::CurrentLayout() == ui::Layout::Terminal; }
-		// Classic (classic.cpp, 6.20): 2.0.0 B's launcher over the same sections, its header's words for the rail
-		bool ClassicLayout() const { return ui::CurrentLayout() == ui::Layout::Classic; }
-		bool SectionLayout() const { return EdenLayout() || PhantomLayout() || TerminalLayout() || ClassicLayout(); }
-		int SectionColumns() const; // the Library's columns: Eden's grid, the experiments' one-column list
-
-		// -- Phantom (experiments.cpp, 6.18): after a heist game's menus. Black, white and the side's loud
-		// colour; slanted name plates; the Library as a list of names beside the focused cover on a burst
-		void PhantomPlate(Canvas& canvas, const Box& box, float skew, uint32_t colour); // a parallelogram
-		void PhantomBurst(Canvas& canvas, float cx, float cy, float radius, uint32_t colour, float turn); // a spiked star
-		float PhantomTag(Canvas& canvas, float x, float y, const std::string& text, uint32_t ground, uint32_t ink, float size = 20);
-		void PhantomBackdrop(Canvas& canvas);
-		void PhantomDrawRail(Canvas& canvas);
-		void PhantomDrawHints(Canvas& canvas, const std::vector<Hint>& hints);
-		void PhantomHomeDraw(Canvas& canvas);
-		void PhantomLibraryDraw(Canvas& canvas);
-		void PhantomSettingsDraw(Canvas& canvas);
-		void PhantomAboutDraw(Canvas& canvas);
-		void PhantomDrawLaunch(Canvas& canvas);
-		void PhantomDrawOpening(Canvas& canvas);
-		void PhantomStateDraw(Canvas& canvas, float y); // LibraryState's card, Phantom's way
-		void TermStateDraw(Canvas& canvas, const Box& panel);
-		Box TermButton(Canvas& canvas, float x, float y, Icon icon, const std::string& label, bool focused, bool primary);
-		// -- Terminal (experiments.cpp, 6.19): after a hacker's console. Panels with a title on their edge, a
-		// status line, the sections as a file tree, the Library as a table, a log of what was done, scanlines
-		void TermPanel(Canvas& canvas, const Box& box, const std::string& title);
-		void TermStatus(Canvas& canvas);
-		void TermLog(const std::string& line); // a line of the log (what was done), as a command
-		void TermBackdrop(Canvas& canvas);
-		void TermDrawRail(Canvas& canvas);
-		void TermDrawHints(Canvas& canvas, const std::vector<Hint>& hints);
-		void TermHomeDraw(Canvas& canvas);
-		void TermLibraryDraw(Canvas& canvas);
-		void TermSettingsDraw(Canvas& canvas);
-		void TermAboutDraw(Canvas& canvas);
-		void TermDrawLaunch(Canvas& canvas);
-		void TermDrawOpening(Canvas& canvas);
-		void TermDrawCrt(Canvas& canvas); // scanlines, a rolling band, the tube's vignette: over everything
-		// -- Classic (classic.cpp, 6.20): the launcher of 2.0.0 B
-		void ClassicPanel(Canvas& canvas, const Box& box, float radius);
-		Box ClassicButton(Canvas& canvas, const Box& box, const std::string& label, bool focused, bool primary);
-		void ClassicTitle(Canvas& canvas, const std::string& title, const std::string& copy);
-		void ClassicStateDraw(Canvas& canvas, const Box& panel);
-		void ClassicBackdrop(Canvas& canvas);
-		void ClassicDrawRail(Canvas& canvas);
-		void ClassicDrawHints(Canvas& canvas, const std::vector<Hint>& hints);
-		void ClassicHomeDraw(Canvas& canvas);
-		void ClassicLibraryDraw(Canvas& canvas);
-		void ClassicSettingsDraw(Canvas& canvas);
-		void ClassicAboutDraw(Canvas& canvas);
-		void ClassicDrawLaunch(Canvas& canvas);
-		void ClassicDrawOpening(Canvas& canvas);
-		std::vector<std::string> m_termLog;
-		double m_termLogAt = 0;
-		int EdenSectionIndex() const;  // the rail's section the screen is (0 Home, 1 Library, 2 Settings, 3 About), else -1
-		bool EdenOnBoard() const;	   // where L1 and R1 go between the sections and Left reaches the rail
-		void EdenGo(int section);
-		bool EdenBarUpdate(const ui::Press& press);
-		std::vector<System> RailSides() const; // the sides shown, as the rail lists them under the sections
-		void SideTile(Canvas& canvas, System side, const Box& box, float radius, uint32_t tint); // a side's square, its console's glyph in it
-		void EdenDrawRail(Canvas& canvas);
-		float EdenDrawClock(Canvas& canvas); // the clock and the controllers at the top right; where they begin
-		void EdenDrawTitle(Canvas& canvas, const std::string& title, const std::string& copy);
-		void EdenDrawHints(Canvas& canvas, const std::vector<Hint>& hints);
-		std::vector<Hint> EdenHints(bool& handled) const;
-		void EdenDrawScrims(Canvas& canvas);
-		void EdenArrive(Canvas& canvas, int part, float rise); // a part of the screen arriving (pushes an alpha and an offset)
-		void EdenLeave(Canvas& canvas);
-		int EdenContinueGame() const; // the side's game to continue (the one played last), else -1
-		std::vector<int> EdenRecentGames(int continuing) const; // up to four played before it
-		int OwnSettings(const Game& game) const; // how many settings the game has of its own
-		std::string EdenRunsWith(Game& game);	 // its side, emulator, graphic packs and own settings, in a line
-		void EdenHomeUpdate(const ui::Press& press);
-		void EdenHomeDraw(Canvas& canvas);
-		void EdenStateDraw(Canvas& canvas, float x, float y, float width); // LibraryState's card, beside the rail
-		void EdenLibraryUpdate(const ui::Press& press);
-		void EdenLibraryDraw(Canvas& canvas);
-		void EdenDetailDraw(Canvas& canvas, int game);
-		std::vector<SettingsPage> EdenBoardPages() const; // Settings' pages but About (the rail's)
-		void EdenBoardUpdate(const ui::Press& press);
-		void EdenSettingsDraw(Canvas& canvas);
-		void EdenBoardDraw(Canvas& canvas);
-		void EdenPageDraw(Canvas& canvas); // a page of Settings, or a game's settings, in three parts
-		std::string EdenSummary(const std::string& page); // a page's values in a few words, one page refreshed a frame
-		void EdenAboutUpdate(const ui::Press& press);
-		void EdenAboutDraw(Canvas& canvas);
-		void EdenDrawLaunch(Canvas& canvas);
-		void EdenStartOpening();
-		bool EdenOpeningUpdate(const ui::Press& press); // a press skips it
-		void EdenDrawOpening(Canvas& canvas);
-		bool m_railFocus = false;
-		int m_railIndex = 0;	   // the sections, then the sides
-		ui::Spring m_railOpen;	   // 0 its icons, 1 open with their names (the focus on it)
-		ui::Spring m_railLit[4];   // the section shown
-		ui::Spring m_edenShade;	   // 0 Home's shade (the artwork clear at the right), 1 an even one
-		int m_edenDirection = 1;   // the way a section arrives from: 1 below the last, -1 above
-		int m_homeFocus = 0;	   // Play, Game settings, the recent games (2 to 5), View all games (6)
-		ui::Spring m_edenScroll;   // the Library's covers
-		std::map<std::string, std::string> m_edenSummaries; // the pages' values, by page id ("game:" a game's)
-		std::string m_edenSummaryOwner;						// whose they are: the side, and the game
-		size_t m_edenSummaryNext = 0;
-		Box m_edenLaunchFrom;	   // what Cross would start, where it is drawn this frame: the launch flies from there
-		int m_edenDetailGame = -2; // the game the Library's details show, and since when (they fade in)
-		double m_edenDetailAt = 0;
-		bool m_openingOn = false; // the launch picture opening into the launcher
-		double m_openingAt = -1;  // when it began: once its picture is in, the splash let go of
-		bool m_splashHidden = false;
+		bool m_splashHidden = false; // the PS5's splash let go of, once the launcher has drawn
 
 		void SetupOpen(bool first);
 		void SetupUpdate(const ui::Press& press);
@@ -469,17 +341,12 @@ namespace ps5shell
 
 		void LibraryUpdate(const ui::Press& press);
 		void LibraryDraw(Canvas& canvas);
-		// Meyer Oscar's Library (6.11): Recently played, a row of covers, then the Library, every game as
-		// a grid or a list
-		bool RecentLayout() const { return ui::CurrentLayout() == ui::Layout::Recent; }
-		void RecentRefresh();
-		void RecentUpdate(const ui::Press& press);
-		void RecentDraw(Canvas& canvas);
-		Box CoverBox(Game& game, float x, float bottom, float height, float maxWidth); // the whole box art at its own shape
-		void LibraryRefresh(); // the filter and the sort again
+		void LibraryRefresh(); // the filter, the sort and Recently played again
 		int LibraryGame() const;
-		int LibraryColumns() const;
+		Box CoverBox(Game& game, float x, float bottom, float height, float maxWidth); // the whole box art at its own shape
 		int LibraryFilters() const; // All, Recently added, Favourites, and Graphic packs on (Wii U)
+		int LibraryFilter() const;	// the one in use: All while Settings > Launcher has the filters off
+		int LibraryTop() const;		// the first zone: Recently played, else the filters, else the list
 		int ArticTiles() const { return Is3ds() ? 1 : 0; } // the 3DS side's shelf starts with Artic Base
 		// what the Library shows in place of its shelf: a notice, Cemu starting, the scan, no games
 		// (6.1, 6.2), its buttons in m_stateButtons; false when the shelf shows
@@ -692,17 +559,12 @@ namespace ps5shell
 		// Library
 		std::vector<int> m_shelf; // indices in m_games, filtered and sorted
 		int m_libraryIndex = 0;	  // in m_shelf (and the Artic tile first on the 3DS side)
-		int m_libraryZone = 1;	  // 0 the filters, 1 the shelf
+		int m_libraryZone = 0;	  // 0 Recently played, 1 the filters, 2 the list
+		std::vector<int> m_recent; // Recently played: indices in m_games, the last played first
+		int m_recentIndex = 0;
 		ui::Spring m_libraryScroll;
 		std::string m_search;
 		uint64_t m_libraryFocusTitle = 0;
-
-		// Meyer Oscar's Library: the recent games (indices in m_games, the last played first), the focus
-		// in the row (m_oscarZone 0) or in the library under it (1, m_libraryIndex in m_shelf)
-		std::vector<int> m_recent;
-		int m_recentIndex = 0;
-		int m_oscarZone = 0;
-		ui::Spring m_recentScroll;
 
 		// each side keeps its focus across a switch (5.3): its Library game, by title
 		uint64_t m_sideFocus[kSides] = {};
@@ -724,7 +586,6 @@ namespace ps5shell
 		std::string m_unpackedDone;	 // Diagnostics: what clearing the unpacked games did
 		uint64_t m_unpackedBytes = 0; // their size, looked at now and then
 		double m_unpackedAt = -100;
-		std::string m_packsShown;
 		bool m_packsReloaded = false;
 		uint32_t m_modsFinished = 0;  // the mods' runs answered (ps5mods::Status::finished)
 		double m_modsToastAt = 0;	  // when a copy's progress was last said

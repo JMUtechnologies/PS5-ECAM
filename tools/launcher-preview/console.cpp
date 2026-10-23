@@ -665,6 +665,7 @@ namespace ps5emu
 		return true;
 	}
 	void FinishCoreStart() {}
+	bool KeptGameList() { return false; }
 	void LogMemory() {}
 	void Rescan() {}
 	// the games' icons, when build/preview/covers has them (copied there by hand, as the box art)

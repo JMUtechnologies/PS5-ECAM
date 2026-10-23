@@ -82,6 +82,13 @@ namespace ps5catalog
 				entry.game.publisher = String(item, "publisher");
 				entry.game.gameId = String(item, "gameId");
 				entry.game.nds = item.HasMember("nds") && item["nds"].IsBool() && item["nds"].GetBool();
+				// a game in an archive: what is unpacked to start it, so it starts from this list too (a network
+				// share's, not looked through at every start: #75)
+				if (item.HasMember("archiveIndex") && item["archiveIndex"].IsInt())
+					entry.game.archiveIndex = item["archiveIndex"].GetInt();
+				entry.game.archiveFolder = item.HasMember("archiveFolder") && item["archiveFolder"].IsBool() && item["archiveFolder"].GetBool();
+				entry.game.archiveMember = String(item, "archiveMember");
+				entry.game.archiveSize = (uint64_t)Int(item, "archiveSize");
 				entry.ambient[0] = (uint32_t)std::strtoul(String(item, "ambient0").c_str(), nullptr, 16);
 				entry.ambient[1] = (uint32_t)std::strtoul(String(item, "ambient1").c_str(), nullptr, 16);
 				entry.added = Int(item, "added");
@@ -132,6 +139,17 @@ namespace ps5catalog
 				{
 					writer.Key("nds");
 					writer.Bool(true);
+				}
+				if (entry.game.Archived())
+				{
+					writer.Key("archiveIndex");
+					writer.Int(entry.game.archiveIndex);
+					writer.Key("archiveFolder");
+					writer.Bool(entry.game.archiveFolder);
+					writer.Key("archiveMember");
+					writer.String(entry.game.archiveMember.c_str());
+					writer.Key("archiveSize");
+					writer.Uint64(entry.game.archiveSize);
 				}
 				char colour[9];
 				std::snprintf(colour, sizeof(colour), "%08x", entry.ambient[0]);

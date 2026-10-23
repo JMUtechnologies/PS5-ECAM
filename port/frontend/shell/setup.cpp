@@ -594,22 +594,19 @@ namespace ps5shell
 	void Shell::DrawBrandBackdrop(Canvas& canvas, float seam)
 	{
 		const Box screen{0, 0, 1920, 1080};
-		const bool themed = ui::CurrentMotif() != ui::Motif::Side;
-		canvas.LinearGradient(screen, 0, themed ? kInk1 : 0xff160c08, kInk0, 0, 0, 0, 1080);
+		// the banner's dark brown over a dark theme; a theme with its own motif, or a light one, its own inks
+		const bool themed = ui::CurrentMotif() != ui::Motif::Side, light = ui::LightTheme();
+		canvas.LinearGradient(screen, 0, themed || light ? kInk1 : 0xff160c08, kInk0, 0, 0, 0, 1080);
 		// the Wii U's blue far behind the left, the 3DS's gold behind the right, as the banner has them, and
 		// the DS's green rising from below the middle (the theme's colours for them)
-		const uint32_t wiiu = themed ? kWiiu : 0xffdf9f3b;
+		const uint32_t wiiu = themed || light ? kWiiu : 0xffdf9f3b;
 		canvas.RadialGradient(screen, 0, ui::SetAlpha(wiiu, 0.30f), ui::SetAlpha(wiiu, 0), 0.18f * 1920, 0.40f * 1080, 605, 529);
 		canvas.RadialGradient(screen, 0, ui::SetAlpha(kN3ds, 0.20f), ui::SetAlpha(kN3ds, 0), 0.88f * 1920, 0.60f * 1080, 605, 529);
 		canvas.RadialGradient(screen, 0, ui::SetAlpha(kNds, 0.14f), ui::SetAlpha(kNds, 0), 0.5f * 1920, 1.05f * 1080, 700, 420);
 		if (themed)
 		{
 			// a theme's own motif across the whole screen, no seam
-			if (ui::CurrentMotif() == ui::Motif::Slashes)
-				DrawSlashes(canvas, 0.8f);
-			else if (ui::CurrentMotif() == ui::Motif::Grid)
-				DrawGrid(canvas, 0.8f);
-			else if (ui::CurrentMotif() == ui::Motif::Eden)
+			if (ui::CurrentMotif() == ui::Motif::Eden)
 				DrawEden(canvas, 0.8f);
 		}
 		else
@@ -626,6 +623,7 @@ namespace ps5shell
 		}
 		if (!m_settings.ui.highContrast)
 			canvas.Grain(screen, 0x0cffffff);
-		canvas.RadialGradient(screen, 0, 0x00000000, 0x8c000000, 960, 432, 1248, 1026, 0.55f);
+		if (!light) // the edges darkened, behind a dark theme's light text
+			canvas.RadialGradient(screen, 0, 0x00000000, 0x8c000000, 960, 432, 1248, 1026, 0.55f);
 	}
 }

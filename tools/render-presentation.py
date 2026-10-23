@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Draw PS5-ECAM's art: its logo with its name, as the home screen's background (sce_sys/pic0.dds),
-its tile (sce_sys/icon0.png), the README's banner (docs/banner.png) and the launch picture the Eden
-theme opens out of (port/frontend/ui/opening.jpg).
+its tile (sce_sys/icon0.png) and the README's banner (docs/banner.png).
 
-    render-presentation.py [--title-font FONT] [--banner PNG] [--opening JPG] SCE_SYS_DIR [PREVIEW_PNG]
+    render-presentation.py [--title-font FONT] [--banner PNG] SCE_SYS_DIR [PREVIEW_PNG]
 
 The logo is four flat rounded squares as a window's four panes, the Wii U's top left, the 3DS's top
 right, the DS's bottom left and the Switch's bottom right, each in its side's colour with its console
@@ -265,34 +264,27 @@ def write_dds(path, blocks):
 
 def main():
     args = sys.argv[1:]
-    banner_path = opening_path = None
-    while len(args) >= 2 and args[0] in ("--title-font", "--banner", "--opening"):
+    banner_path = None
+    while len(args) >= 2 and args[0] in ("--title-font", "--banner"):
         if args[0] == "--title-font":
             if not os.path.isfile(args[1]):
                 sys.exit("no font at " + args[1])
             HEAVY.insert(0, args[1])
-        elif args[0] == "--banner":
-            banner_path = args[1]
         else:
-            opening_path = args[1]
+            banner_path = args[1]
         args = args[2:]
     if len(args) not in (1, 2):
         sys.exit(__doc__)
     out = args[0]
-    image, centres = picture()
+    image, _ = picture()
     rgb = np.asarray(image)
     blocks = encode_bc7(rgb)
     decoded = decode_bc7(blocks, W, H)
     error = np.sqrt(np.mean((decoded.astype(np.float64) - rgb) ** 2))
     print(f"pic0.dds: BC7, {len(blocks)} bytes, RMS error {error:.2f}")
     write_dds(os.path.join(out, "pic0.dds"), blocks)
-    # the squares where the 1920x1080 launcher has the picture (shell/eden.cpp's kConsoles)
-    print("kConsoles: " + ", ".join(f"{{{x / 2:.0f}, {y / 2:.0f}}}" for x, y in centres))
     if len(args) == 2:
         Image.fromarray(decoded, "RGB").save(args[1])
-    if opening_path:
-        Image.fromarray(decoded, "RGB").resize((1920, 1080), Image.LANCZOS).save(opening_path, quality=90)
-        print(f"{opening_path}: 1920x1080")
     tile().save(os.path.join(out, "icon0.png"))
     print("icon0.png: 512x512")
     if banner_path:

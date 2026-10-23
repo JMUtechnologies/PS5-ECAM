@@ -1082,6 +1082,8 @@ namespace ps5shell
 			GamesFolder(m_filesSide) = m_browseFolder;
 			const bool saved = ps5settings::Save(m_settings);
 			const bool here = m_filesSide == m_side;
+			if (here)
+				m_status.lastLook[SideIndex(m_filesSide)] = false; // the new folder's games replace the list
 			if (here && m_filesSide == System::N3ds)
 			{
 				ps5azahar::StartScan(m_browseFolder);
@@ -1161,17 +1163,7 @@ namespace ps5shell
 		{
 			m_filesMessage = Tr("Installed. The library has it with its game.");
 			if (m_filesSide == m_side)
-			{
-				if (Is3ds())
-					ps5azahar::StartScan(m_settings.n3ds.gamesFolder);
-				else if (IsDs())
-					ps5melonds::StartScan(m_settings.nds.gamesFolder);
-				else if (IsSwitch())
-					ps5eden::StartScan(m_settings.nx.gamesFolder);
-				else
-					ps5emu::Rescan();
-				m_scanning = true;
-			}
+				LookForGames();
 			Toast(Tr("Installed"));
 		}
 		else if (status.state == State::Cancelled && m_filesMode == 2)

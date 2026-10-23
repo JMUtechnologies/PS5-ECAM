@@ -5,6 +5,7 @@
  * Copyright (C) 2026 Ruben (Project Porpoise)
  * SPDX-License-Identifier: GPL-3.0-or-later */
 #include "netfs.h"
+#include "../ps5/net.h"
 
 #include <algorithm>
 #include <cctype>
@@ -1625,41 +1626,18 @@ void shutdown()
 #ifdef __PROSPERO__
 /* The console's libc has no getaddrinfo in the modules the app loads:
  * libsmb2 and libnfs are built to call these instead. An address as it is, a name through
- * the console's own resolver (DNS). */
+ * the console's own resolver (DNS, ps5/net.h). */
 extern "C"
 {
-int sceNetInit(void);
-int sceNetPoolCreate(const char *name, int size, int flags);
-int sceNetPoolDestroy(int memid);
-int sceNetResolverCreate(const char *name, int memid, int flags);
-int sceNetResolverStartNtoa(int rid, const char *hostname, struct in_addr *addr, int timeout, int retry,
-                            int flags);
-int sceNetResolverDestroy(int rid);
-
 int porpoise_netfs_getaddrinfo(const char *node, const char *service, const struct addrinfo *,
                                struct addrinfo **res)
 {
     if (!node || !res)
         return EAI_NONAME;
     in_addr addr{};
-    if (inet_pton(AF_INET, node, &addr) != 1)
-    {
-        (void)sceNetInit();
-        const int pool = sceNetPoolCreate("ps5cemu-netfs", 4 * 1024, 0);
-        if (pool < 0)
-            return EAI_FAIL;
-        const int rid = sceNetResolverCreate("ps5cemu-netfs", pool, 0);
-        int rc = -1;
-        if (rid >= 0)
-        {
-            /* 2 s a try, 3 tries (microseconds), never left waiting. */
-            rc = sceNetResolverStartNtoa(rid, node, &addr, 2 * 1000 * 1000, 2, 0);
-            sceNetResolverDestroy(rid);
-        }
-        sceNetPoolDestroy(pool);
-        if (rc < 0)
-            return EAI_NONAME;
-    }
+    addr.s_addr = ps5net::Resolve(node);
+    if (addr.s_addr == 0)
+        return EAI_NONAME;
     auto *sin = static_cast<sockaddr_in *>(std::calloc(1, sizeof(sockaddr_in)));
     auto *ai = static_cast<addrinfo *>(std::calloc(1, sizeof(addrinfo)));
     if (!sin || !ai)

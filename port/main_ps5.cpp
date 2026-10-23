@@ -557,6 +557,25 @@ int main(int argc, char* argv[])
 	// so until then only their game lists and settings are loaded.
 	std::optional<ps5launcher::System> started;
 	const size_t sessionLine = status.diagnostics.size();
+	// A games folder on a network share is not looked through each time its side opens unless Settings >
+	// Game files asks (#75): with hundreds of games that is a long wait, at every start (and the app
+	// starts again after every game). The launcher shows the side's list from its last look, until Look
+	// for games now. A first look, and one in a folder the list has no game from, happen anyway.
+	auto keepList = [&](ps5launcher::System system, const std::string& folder) {
+		bool keep = false;
+		if (ps5netfs::is_net(folder) && !settings.lookOnShares)
+			for (const ps5catalog::Entry& entry : ps5catalog::Games((ps5catalog::System)system))
+				if (entry.game.path.string().rfind(folder, 0) == 0)
+				{
+					keep = true;
+					break;
+				}
+		status.lastLook[(int)system] = keep;
+		if (keep)
+			ps5log::Line("[main] the {} side's games folder {} is a network share's: the list from its last look, no look now",
+				ps5launcher::SideTitle(system), folder);
+		return keep;
+	};
 	auto prepare = [&](ps5launcher::System system) {
 		if (started == system)
 			return;
@@ -566,7 +585,8 @@ int main(int argc, char* argv[])
 		{
 			ps5log::Line("[main] the 3DS side: Cemu's emulated Wii U is not started");
 			status.diagnostics.push_back(ps5lang::Tr("This session: Azahar (3DS); Cemu's emulated Wii U is not started"));
-			ps5azahar::StartScan(settings.n3ds.gamesFolder);
+			if (!keepList(system, settings.n3ds.gamesFolder))
+				ps5azahar::StartScan(settings.n3ds.gamesFolder);
 			ps5emu::LogMemory(); // the 3DS side's start, against Cemu's
 			return;
 		}
@@ -577,14 +597,16 @@ int main(int argc, char* argv[])
 			status.diagnostics.push_back(ps5lang::Tr("This session: Eden (Switch), in a program of its own; Cemu's emulated Wii U is not started"));
 			if (privileges.filesystem && !ps5eden::Available())
 				status.noticeSwitch = ps5lang::Tr("This build has no Switch emulator: eden/eboot.bin is not in the app's folder.");
-			ps5eden::StartScan(settings.nx.gamesFolder);
+			if (!keepList(system, settings.nx.gamesFolder))
+				ps5eden::StartScan(settings.nx.gamesFolder);
 			return;
 		}
 		if (system == ps5launcher::System::Nds)
 		{
 			ps5log::Line("[main] the DS side: Cemu's emulated Wii U is not started");
 			status.diagnostics.push_back(ps5lang::Tr("This session: melonDS (DS); Cemu's emulated Wii U is not started"));
-			ps5melonds::StartScan(settings.nds.gamesFolder);
+			if (!keepList(system, settings.nds.gamesFolder))
+				ps5melonds::StartScan(settings.nds.gamesFolder);
 			ps5emu::LogMemory();
 			return;
 		}
@@ -595,7 +617,9 @@ int main(int argc, char* argv[])
 		// Cemu's library loads on a thread of its own while the launcher draws, from its catalogue: the
 		// app opens at once (the launcher polls it, and says why when it fails)
 		status.coreStarting = true;
-		ps5emu::StartCore(Options(settings));
+		ps5emu::Options options = Options(settings);
+		options.keepGameList = keepList(system, settings.gamesFolder);
+		ps5emu::StartCore(options);
 		if (!privileges.jit)
 			ps5notify::Send(ps5lang::Tr("No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"));
 	};

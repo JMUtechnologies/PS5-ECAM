@@ -6,8 +6,9 @@ so one picture fits every layout, swapped or not.
 
     render-borders.py OUTPUT_FOLDER
 
-Writes midnight.tga, waves.tga, aurora.tga, shell.tga and ps5cemu-har.tga: 960x540, 24-bit,
-uncompressed, top row first. They are smooth enough to be scaled up to 4K. Needs NumPy and Pillow. The pictures are the
+Writes midnight.png, waves.png, aurora.png, shell.png and ps5cemu-har.png: 960x540, 24-bit, losslessly
+compressed (port/app/ingame3ds.cpp reads them with the launcher's stb_image). They are smooth enough to be
+scaled up to 4K. Needs NumPy and Pillow. The pictures are the
 app's own, drawn here: nothing is taken from a console or a game."""
 import importlib.util
 import math
@@ -113,21 +114,12 @@ def har():
 THEMES = {"midnight": midnight, "waves": waves, "aurora": aurora, "shell": shell, "ps5cemu-har": har}
 
 
-def write_tga(path, rgb):
-    """Uncompressed 24-bit TGA, top row first (descriptor bit 5), as port/azahar/core.cpp reads it."""
-    h, w, _ = rgb.shape
-    header = bytes([0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, w & 255, w >> 8, h & 255, h >> 8, 24, 0x20])
-    with open(path, "wb") as f:
-        f.write(header)
-        f.write(np.ascontiguousarray(rgb[..., ::-1]).tobytes())  # BGR
-
-
 def main():
     out = sys.argv[1] if len(sys.argv) > 1 else "port/azahar/borders"
     os.makedirs(out, exist_ok=True)
     for name, make in THEMES.items():
         image = Image.fromarray(np.clip(make(), 0, 255).astype(np.uint8)).resize((OUT_W, OUT_H), Image.LANCZOS)
-        write_tga(os.path.join(out, f"{name}.tga"), np.asarray(image))
+        image.convert("RGB").save(os.path.join(out, f"{name}.png"), optimize=True)
         print("wrote", name)
 
 

@@ -6,6 +6,7 @@
 #include "paths.h"
 #include "../ps5/log.h"
 #include "../ps5/curl_socket.h"
+#include "../ps5/net.h"
 #include "../ps5/notify.h"
 
 #include <curl/curl.h>
@@ -14,8 +15,6 @@
 #include <rapidjson/writer.h>
 #include <rc_client.h>
 #include <rc_consoles.h>
-
-#include <arpa/inet.h>
 
 #include <algorithm>
 #include <atomic>
@@ -28,17 +27,6 @@
 #include <iterator>
 #include <mutex>
 #include <thread>
-
-// The PS5's resolver, as app/updates.cpp uses it: getaddrinfo finds nothing on the console, so the
-// host's address is looked up here and given to curl
-extern "C"
-{
-	int sceNetPoolCreate(const char* name, int size, int flags);
-	int sceNetPoolDestroy(int pool);
-	int sceNetResolverCreate(const char* name, int pool, int flags);
-	int sceNetResolverStartNtoa(int resolver, const char* host, uint32_t* address, int timeoutUs, int retries, int flags);
-	int sceNetResolverDestroy(int resolver);
-}
 
 namespace ps5cheevos
 {
@@ -79,7 +67,7 @@ namespace ps5cheevos
 			return size * count;
 		}
 
-		// "host:443:address", from the PS5's resolver, for the URL's host
+		// "host:port:address", from the PS5's resolver (ps5/net.h), for the URL's host
 		curl_slist* Resolve(const std::string& url)
 		{
 			const size_t start = url.find("://");
@@ -87,21 +75,8 @@ namespace ps5cheevos
 				return nullptr;
 			const size_t end = url.find_first_of(":/", start + 3);
 			const std::string host = url.substr(start + 3, end == std::string::npos ? std::string::npos : end - start - 3);
-			const int pool = sceNetPoolCreate("ps5cemu-cheevos", 16 * 1024, 0);
-			if (pool < 0)
-				return nullptr;
-			uint32_t address = 0;
-			const int resolver = sceNetResolverCreate("ps5cemu-cheevos", pool, 0);
-			const int result = resolver >= 0 ? sceNetResolverStartNtoa(resolver, host.c_str(), &address, 0, 0, 0) : resolver;
-			if (resolver >= 0)
-				sceNetResolverDestroy(resolver);
-			sceNetPoolDestroy(pool);
-			if (result < 0 || address == 0)
-				return nullptr;
-			char text[INET_ADDRSTRLEN] = {};
-			inet_ntop(AF_INET, &address, text, sizeof(text));
 			const bool https = url.compare(0, 8, "https://") == 0;
-			return curl_slist_append(nullptr, fmt::format("{}:{}:{}", host, https ? 443 : 80, text).c_str());
+			return ps5net::AddResolve(nullptr, host, https ? 443 : 80);
 		}
 
 		void Perform(const Call& call, std::string& body, long& http)

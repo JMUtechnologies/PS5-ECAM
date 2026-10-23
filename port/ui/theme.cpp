@@ -74,10 +74,21 @@ namespace ui
 			return channel(0) | channel(8) | channel(16) | (colour & 0xff000000);
 		}
 
+		// the ids themes had before 5.1, as they are now: Meyer Oscar's layout is everyone's, so its light
+		// look is the default and its dark one Link Jack's; the experiments Phantom and Terminal are gone.
+		// "light" names the default too (its id is empty), as a theme file's base
+		std::string CurrentId(const std::string& id)
+		{
+			if (id == "light" || id == "meyer-oscar-light" || id == "phantom" || id == "terminal")
+				return "";
+			if (id == "meyer-oscar")
+				return "link-jack";
+			return id;
+		}
+
 		Motif MotifNamed(const std::string& name, Motif fallback)
 		{
-			return name == "side" ? Motif::Side : name == "none" ? Motif::None : name == "slashes" ? Motif::Slashes : name == "grid" ? Motif::Grid :
-				name == "eden" ? Motif::Eden : fallback;
+			return name == "side" ? Motif::Side : name == "none" ? Motif::None : name == "eden" ? Motif::Eden : fallback;
 		}
 
 		Theme s_current;
@@ -88,19 +99,28 @@ namespace ui
 	{
 		static const std::vector<Theme> themes = [] {
 			std::vector<Theme> list;
+			// the default: Meyer Oscar Light's light ground with dark text (its id empty, as the default's is)
+			Theme light;
+			light.name = "Light";
+			light.description = "A light background with dark text.";
+			light.light = true;
+			light.colours = Colours({{"ink-0", "#eef2f7"}, {"ink-1", "#ffffff"}, {"ink-2", "#e3e8f0"}, {"glass", "#ffffffb8"},
+				{"glass-2", "#ffffffeb"}, {"glass-edge", "#0c16281a"}, {"line", "#0c16281a"}, {"scrim", "#0c1628a6"}, {"text", "#0d1526"},
+				{"text-2", "#0d1526a8"}, {"text-3", "#0d152675"}, {"wiiu", "#1f73d6"}, {"n3ds", "#c4870f"}, {"nds", "#3f9e2a"}, {"nx", "#d4202e"},
+				{"good", "#13a578"}, {"warn", "#c47a00"}, {"bad", "#d23c3c"}, {"focus", "#0d1526"}});
+			list.push_back(light);
+
 			Theme standard;
+			standard.id = "link-jack";
 			standard.name = "Link Jack";
-			standard.description = "Frosted glass over each side's colours: the default look.";
+			standard.description = "Frosted glass over each side's colours.";
 			list.push_back(standard);
 
-			// Classic: the launcher 2.0.0 B had, the app's first (shell/classic.cpp): Continue playing and
-			// Recently played on Home, the Library and Settings as lists beside what is focused, over the
-			// Homebrew Launchers' grounds in each side's colour
+			// the deep blue panels the launcher of 3.0.0 had, flatter and squarer
 			Theme classic;
 			classic.id = "classic";
-			classic.name = "Classic";
-			classic.description = "The original launcher of 2.0: Continue playing, recent games, and lists beside each game's details.";
-			classic.layout = Layout::Classic;
+			classic.name = "Classic (3.0)";
+			classic.description = "3.0.0's launcher: deep blue panels, flatter, a little squarer.";
 			classic.colours = Colours({{"ink-0", "#06101e"}, {"ink-1", "#081426"}, {"ink-2", "#0e1f38"}, {"text", "#f3f7ff"}, {"text-2", "#b8c8de"},
 				{"text-3", "#8a9db8"}, {"glass", "#ffffff10"}, {"glass-2", "#ffffff1a"}, {"glass-edge", "#ffffff1e"}, {"line", "#ffffff1e"},
 				{"wiiu", "#5aa2f0"}, {"n3ds", "#e3b14a"}, {"nds", "#62c454"}, {"nx", "#e84a55"}, {"focus", "#f3f7ff"}});
@@ -116,17 +136,13 @@ namespace ui
 			midnight.motif = Motif::None;
 			list.push_back(midnight);
 
-			// Eden: ProsperoEden 1.001's launcher (blackbearreloaded/ProsperoEden, GPL-3.0-or-later): its
-			// layout (a rail of sections at the left, Home around the game to continue, the Library's covers
-			// beside the game's details, Settings as tiles, its opening and launch: shell/eden.cpp) and its
-			// Canopy theme's look: frosted glass tinted dark, a pale ring of light as the focus, rounder
-			// corners, the side's light drifting where Canopy's sun is, with motes of light rising. In each
-			// side's own colours (Wii U blue, 3DS gold, DS green), its bubbles, waves or pixels faint behind.
+			// Eden: ProsperoEden 1.001's Canopy look (blackbearreloaded/ProsperoEden, GPL-3.0-or-later): frosted
+			// glass tinted dark, a pale ring of light as the focus, rounder corners, the side's light drifting
+			// where Canopy's sun is, with motes of light rising, each side's own motif faint behind
 			Theme eden;
 			eden.id = "eden";
 			eden.name = "Eden";
-			eden.description = "ProsperoEden's launcher: a rail of sections, Home around your game, Settings as tiles.";
-			eden.layout = Layout::Eden;
+			eden.description = "Dark frosted glass and rounder corners, the side's light drifting and motes of light rising.";
 			eden.colours = Colours({{"ink-0", "#05080c"}, {"ink-1", "#0a1219"}, {"ink-2", "#121c26"}, {"glass", "#14202cb8"},
 				{"glass-2", "#22344ac8"}, {"glass-edge", "#8fa4b85c"}, {"line", "#53667a52"}, {"scrim", "#010407cc"}, {"text", "#f0f5f8"},
 				{"text-2", "#c5d0d9"}, {"text-3", "#8c9aa6"}, {"focus", "#e8f1ff"}, {"warn", "#e8b39a"}});
@@ -134,57 +150,6 @@ namespace ui
 			eden.motif = Motif::Eden;
 			list.push_back(eden);
 
-			// experimental: two launchers of their own (shell/experiments.cpp), inspired by games' menus rather
-			// than a console's
-			Theme phantom;
-			phantom.id = "phantom";
-			phantom.name = "Phantom";
-			phantom.description = "A heist game's menus as a launcher: slanted name plates, your games as a list, bursts behind the covers.";
-			phantom.experimental = true;
-			phantom.layout = Layout::Phantom;
-			phantom.colours = Colours({{"ink-0", "#0a0708"}, {"ink-1", "#140c0e"}, {"ink-2", "#22141a"}, {"glass", "#ffffff12"},
-				{"glass-2", "#ffffff1c"}, {"glass-edge", "#ffffff38"}, {"line", "#ffffff22"}, {"text", "#ffffff"}, {"text-2", "#ffffffc8"},
-				{"text-3", "#ffffff80"}, {"wiiu", "#ff2a46"}, {"wiiu-strong", "#d0102c"}, {"wiiu-ink", "#2a0408"}, {"n3ds", "#ffe14d"},
-				{"n3ds-strong", "#e0b800"}, {"n3ds-ink", "#2a2302"}, {"nds", "#3fc8ff"}, {"nds-strong", "#1a9fe0"}, {"nds-ink", "#031c2a"},
-				{"nx", "#ff7a1a"}, {"nx-strong", "#e05a00"}, {"nx-ink", "#2a1202"}});
-			phantom.corners = 0.12f;
-			phantom.motif = Motif::Slashes;
-			list.push_back(phantom);
-
-			Theme terminal;
-			terminal.id = "terminal";
-			terminal.name = "Terminal";
-			terminal.description = "A hacker's console as a launcher: a file tree, your games as a table, a log, phosphor and scanlines.";
-			terminal.experimental = true;
-			terminal.layout = Layout::Terminal;
-			terminal.colours = Colours({{"ink-0", "#03080a"}, {"ink-1", "#071216"}, {"ink-2", "#0c1c22"}, {"glass", "#39ffd60d"},
-				{"glass-2", "#39ffd61a"}, {"glass-edge", "#39ffd640"}, {"line", "#39ffd626"}, {"text", "#d6fff4"}, {"text-2", "#d6fff4b0"},
-				{"text-3", "#d6fff470"}, {"wiiu", "#39ffd6"}, {"wiiu-strong", "#12c9a6"}, {"wiiu-ink", "#032a22"}, {"n3ds", "#ffb238"},
-				{"n3ds-strong", "#d98a10"}, {"n3ds-ink", "#2a1a02"}, {"nds", "#8cff5a"}, {"nds-strong", "#5ad42e"}, {"nds-ink", "#0e2a04"},
-				{"nx", "#ff5a7a"}, {"nx-strong", "#d93a5a"}, {"nx-ink", "#2a0410"},
-				{"bad", "#ff5a5a"}, {"focus", "#d6fff4"}});
-			terminal.corners = 0.0f;
-			terminal.motif = Motif::Grid;
-			list.push_back(terminal);
-
-			// the games played last first and large, then the whole library: always the list's last two
-			Theme oscar;
-			oscar.id = "meyer-oscar";
-			oscar.name = "Meyer Oscar";
-			oscar.description = "Your recently played games first, then your whole library.";
-			oscar.layout = Layout::Recent;
-			list.push_back(oscar);
-
-			Theme oscarLight = oscar;
-			oscarLight.id = "meyer-oscar-light";
-			oscarLight.name = "Meyer Oscar Light";
-			oscarLight.description = "Meyer Oscar with a light background.";
-			oscarLight.light = true;
-			oscarLight.colours = Colours({{"ink-0", "#eef2f7"}, {"ink-1", "#ffffff"}, {"ink-2", "#e3e8f0"}, {"glass", "#ffffffb8"},
-				{"glass-2", "#ffffffeb"}, {"glass-edge", "#0c16281a"}, {"line", "#0c16281a"}, {"scrim", "#0c1628a6"}, {"text", "#0d1526"},
-				{"text-2", "#0d1526a8"}, {"text-3", "#0d152675"}, {"wiiu", "#1f73d6"}, {"n3ds", "#c4870f"}, {"nds", "#3f9e2a"}, {"nx", "#d4202e"},
-				{"good", "#13a578"}, {"warn", "#c47a00"}, {"bad", "#d23c3c"}, {"focus", "#0d1526"}});
-			list.push_back(oscarLight);
 			return list;
 		}();
 		return themes;
@@ -222,12 +187,11 @@ namespace ui
 			// the base's look first, then the file's over it
 			if (json.HasMember("base") && json["base"].IsString())
 				for (const Theme& base : BuiltInThemes())
-					if (base.id == json["base"].GetString())
+					if (base.id == CurrentId(json["base"].GetString()))
 						theme = base;
 			theme.id = "user:" + file.filename().string();
 			theme.name = file.stem().string();
 			theme.description = "Your own, from " + file.filename().string() + ".";
-			theme.experimental = false;
 			if (json.HasMember("name") && json["name"].IsString() && json["name"].GetStringLength() > 0)
 				theme.name = json["name"].GetString();
 			// "colours", or "colors" as American English writes it
@@ -254,19 +218,16 @@ namespace ui
 
 	std::vector<Theme> AllThemes(const std::string& folder)
 	{
-		// the built-in ones but the last two, the player's own, then Meyer Oscar and Meyer Oscar Light
-		const std::vector<Theme>& builtIn = BuiltInThemes();
-		std::vector<Theme> themes(builtIn.begin(), builtIn.end() - 2);
+		std::vector<Theme> themes = BuiltInThemes();
 		for (Theme& theme : UserThemes(folder))
 			themes.push_back(std::move(theme));
-		themes.insert(themes.end(), builtIn.end() - 2, builtIn.end());
 		return themes;
 	}
 
 	Theme FindTheme(const std::string& id, const std::string& folder)
 	{
 		for (const Theme& theme : BuiltInThemes())
-			if (theme.id == id)
+			if (theme.id == CurrentId(id))
 				return theme;
 		if (id.rfind("user:", 0) == 0)
 			for (Theme& theme : UserThemes(folder))
@@ -309,11 +270,6 @@ namespace ui
 	Motif CurrentMotif()
 	{
 		return s_current.motif;
-	}
-
-	Layout CurrentLayout()
-	{
-		return s_current.layout;
 	}
 
 	bool LightTheme()

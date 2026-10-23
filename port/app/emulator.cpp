@@ -94,6 +94,7 @@ namespace ps5emu
 	{
 		bool s_firstStart = false;
 		bool s_coreStarted = false; // Cemu's settings are loaded: this session is Cemu's
+		bool s_keepGameList = false; // Options::keepGameList, for LibraryInit
 		std::atomic<bool> s_exitAfterGame{false}; // SetExitAfterGame: read by the in-game menus' threads
 		// the draws Cemu records in a command buffer before it submits it (PS5Cemu_SubmitDraws)
 		constexpr uint32_t kCemuSubmitDraws = 300;
@@ -263,45 +264,6 @@ namespace ps5emu
 				path = ps5paths::Relocated(path);
 		}
 
-		// The community graphic packs bundled with the app (assets/graphicPacks, with its
-		// version.txt) go where Cemu's own downloader puts them, once per bundled release, unless
-		// newer ones were downloaded there since (pack_updates.h). Packs of your own elsewhere in
-		// graphicPacks/ are left alone.
-		void InstallBundledGraphicPacks()
-		{
-			std::error_code ec;
-			const fs::path bundled = ps5paths::BundledGraphicPacks();
-			const fs::path target = ActiveSettings::GetUserDataPath("graphicPacks/downloadedGraphicPacks");
-			std::string bundledVersion, installedVersion;
-			{
-				std::ifstream file(bundled / "version.txt");
-				std::getline(file, bundledVersion);
-			}
-			if (bundledVersion.empty())
-				return;
-			{
-				std::ifstream file(target / "version.txt");
-				std::getline(file, installedVersion);
-			}
-			if (installedVersion == bundledVersion || ps5packs::Newer(installedVersion, bundledVersion))
-				return;
-			// packs put there by hand (GitHub's release unzipped from a PC) have no version.txt, which only
-			// Cemu's downloader and this app write: they stay, where they were deleted for the bundled ones at
-			// every start, so a player's own copy never showed
-			if (installedVersion.empty() && fs::is_directory(target, ec) && !fs::is_empty(target, ec))
-			{
-				ps5log::Line("[emu] {} holds packs copied there by hand (no version.txt): they stay, the bundled {} are not installed",
-					target.string(), bundledVersion);
-				return;
-			}
-			ps5log::Line("[emu] installing community graphic packs {} (had '{}')", bundledVersion, installedVersion);
-			fs::remove_all(target, ec);
-			fs::create_directories(target, ec);
-			fs::copy(bundled, target, fs::copy_options::recursive | fs::copy_options::overwrite_existing, ec);
-			if (ec)
-				ps5log::Line("[emu] graphic packs: {}", ec.message());
-		}
-
 		// Player 1 is the GamePad on the DualSense of whoever started PS5Cemu, players 2-4 Pro
 		// Controllers on the other signed-in users' DualSenses. Only when no profile exists yet. A
 		// game sees players 2-4's only while their DualSense is there (DetachAbsentPlayers).
@@ -364,8 +326,17 @@ namespace ps5emu
 			const fs::path mlcPath = ActiveSettings::GetMlcPath();
 			if (!mlcPath.empty())
 				CafeTitleList::SetMLCPath(mlcPath);
-			CafeTitleList::Refresh();
-			archives::StartScan(GetConfig().game_paths); // the games in archives, which Cemu's scan does not read
+			// a folder on a network share is looked through only when asked (Options::keepGameList): the list
+			// of the last look, Cemu's title cache, stands until Rescan
+			std::error_code ec;
+			s_keepGameList = s_keepGameList && fs::exists(ActiveSettings::GetUserDataPath("title_list_cache.xml"), ec);
+			if (s_keepGameList)
+				ps5log::Line("[emu] the games folder is not looked through now: Cemu's titles from the last look");
+			else
+			{
+				CafeTitleList::Refresh();
+				archives::StartScan(GetConfig().game_paths); // the games in archives, which Cemu's scan does not read
+			}
 			CafeSaveList::Initialize();
 			if (!mlcPath.empty())
 			{
@@ -575,7 +546,9 @@ namespace ps5emu
 			error = ps5lang::TrF("PS5-ECAM cannot create the MLC folder {0}", _pathToUtf8(ActiveSettings::GetMlcPath()));
 			return false;
 		}
-		InstallBundledGraphicPacks();
+		// the community graphic packs are not in the app (#74): GitHub's latest, downloaded in the
+		// background when there are none (pack_updates.h)
+		ps5packs::StartIfMissing();
 		ActiveSettings::Init();
 		LibraryInit();
 		s_coreStarted = true;
@@ -596,6 +569,7 @@ namespace ps5emu
 		if (s_coreState != 0)
 			return;
 		s_coreState = 1;
+		s_keepGameList = options.keepGameList;
 		const uint64_t started = sceKernelGetProcessTime();
 		s_coreThread = std::thread([options, started] {
 			std::string error;
@@ -607,6 +581,11 @@ namespace ps5emu
 			s_coreError = error;
 			s_coreState = 2;
 		});
+	}
+
+	bool KeptGameList()
+	{
+		return s_keepGameList;
 	}
 
 	bool CoreStarted(bool& ok, std::string& error)

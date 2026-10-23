@@ -26,8 +26,8 @@ with the game you played last in focus. You can switch sides without the app res
 with one of its games, so the emulators never run at the same time, and the launcher's background
 work stops before a game starts.
 
-- **Library:** every game's box art from [GameTDB](https://www.gametdb.com/) in a grid (its icon
-  until the cover arrives), sorted by when you last played it, with filters, sorting and search
+- **Library:** your recently played games' box art from [GameTDB](https://www.gametdb.com/) in a row
+  (its icon until the cover arrives), then every game as a list, with sorting and search
 - **Game pages:** a game's description, developer, publisher, release date, genre, players and
   rating from GameTDB, and how it runs from the [compatibility list](COMPATIBILITY.md); a Wii U
   game's graphic packs
@@ -41,10 +41,12 @@ work stops before a game starts.
 - **Music and menu sounds:** an original setup theme, or your own: put MP3 or WAV files in
   `/data/ps5cemu/music` and choose one, or *Shuffle your music*, in **Settings > Audio > Launcher
   music**, which also sets its volume or turns it off
-- **Themes** (**Settings > Launcher > Theme**): Link Jack (the default); Classic, the launcher of 2.0
-  with Continue playing, Recently played and lists beside the game in focus; Eden, after ProsperoEden's
-  launcher; Meyer Oscar and Meyer Oscar Light (your recently played games first); Midnight (true
-  black, for OLED screens); and two experiments, Phantom and Terminal. Your own: a JSON file in
+- **The Library:** your recently played games first, then every game on the side as a list, with
+  Sort (Square), Search (Triangle) and L2 and R2 to jump by letter. **Settings > Launcher > Library
+  filters** adds a row of filters over the list (All, Recently added, Favourites, Graphic packs on).
+- **Themes** (**Settings > Launcher > Theme**) change how the launcher looks, never what it does:
+  Light (the default), Link Jack (frosted glass over each side's colours), Classic (3.0)'s deep blue,
+  Eden (after ProsperoEden's look) and Midnight (true black, for OLED screens). Your own: a JSON file in
   `/data/ps5cemu/themes`; the Theme row's help (Triangle) shows the format. **Settings > Launcher**
   also hides any side you don't use.
 - **What's new:** on the first start and after an update, the app opens once on what the version
@@ -66,7 +68,9 @@ work stops before a game starts.
 - Plays WUA, WUD/WUX and unpacked games from any folder the PS5 can read, unpacked games in `.zip`,
   `.7z`, `.rar` and tar archives too ([how](#games-in-archives)).
 - The Cemu community graphic packs, organized by folder like Cemu's Graphic Packs window, with a
-  dropdown for each preset.
+  dropdown for each preset. They are not in the app's download: the first time the Wii U side starts
+  without them, it downloads GitHub's latest release in the background (about 3 MB), and
+  **Settings > Online > Community graphic packs** brings them up to date.
 - Player 1's DualSense is the GamePad and other signed-in players get Pro Controllers, up to four
   players. Each player can be a GamePad, Pro Controller, Classic Controller, or Wii Remote with or
   without a Nunchuk, with motion controls, rumble, stick deadzones and button mapping.
@@ -197,6 +201,13 @@ New in 5.0.0: a side of its own, in the Switch's red, to the right of the DS.
   Eden's user profiles, as it does every side's saves.
 
 ## Game files
+
+A side's games folder can be on the PS5, a USB drive, or a network share (a computer or NAS over SMB
+or NFS: **Settings > Game files > Network shares**; not the Switch side). Each side looks through its
+folder for new games when it opens, except a folder on a network share: with a large library that is
+a long wait at every start, so the side shows the games it found there last time at once ("As found
+last time" beside the Library's count). **Settings > Game files > Look for games now** looks again
+after you add games; **Look on network shares at every start** brings back the look at every start.
 
 ### Wii U
 
@@ -428,6 +439,11 @@ WUD or WUX files, or an unpacked game in an archive; a 3DS CIA sent this way is 
   so: close it and start it from the home screen. **Settings > Online > PS5-ECAM updates** checks
   again. **Skip this version** stops the start from asking about that release (Settings > Online
   still finds it).
+- **Graphic packs (Wii U):** the Cemu community graphic packs come from GitHub
+  (`cemu-project/cemu_graphic_packs`), not with the app: the first time the Wii U side starts without
+  any, they are downloaded in the background into `graphicPacks/downloadedGraphicPacks` (packs you
+  copied there yourself count, and are not replaced). **Settings > Online > Community graphic packs**
+  fetches a newer release.
 - **Going back:** an update keeps the version it replaces in `/data/ps5cemu/previous-version`, until
   the next update. **Settings > Online > Go back to** (held) puts it back and starts it, and the newer
   release is not offered at start again.

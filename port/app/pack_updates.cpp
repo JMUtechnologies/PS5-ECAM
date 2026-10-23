@@ -4,12 +4,11 @@
 #include "paths.h"
 #include "../ps5/log.h"
 #include "../ps5/curl_socket.h"
+#include "../ps5/net.h"
 
 #include <curl/curl.h>
 #include <rapidjson/document.h>
 #include <zip.h>
-
-#include <arpa/inet.h>
 
 #include <atomic>
 #include <cctype>
@@ -19,18 +18,6 @@
 #include <mutex>
 #include <thread>
 #include <vector>
-
-// The PS5's network library, as app/updates.cpp uses it: getaddrinfo finds nothing on the console,
-// so each host's address comes from the PS5's resolver and is given to curl
-extern "C"
-{
-	int sceNetInit(void);
-	int sceNetPoolCreate(const char* name, int size, int flags);
-	int sceNetPoolDestroy(int pool);
-	int sceNetResolverCreate(const char* name, int pool, int flags);
-	int sceNetResolverStartNtoa(int resolver, const char* host, uint32_t* address, int timeoutUs, int retries, int flags);
-	int sceNetResolverDestroy(int resolver);
-}
 
 namespace fs = std::filesystem;
 
@@ -62,27 +49,16 @@ namespace ps5packs
 				s_status.message = message;
 		}
 
-		// "host:443:address" for each host the PS5's resolver finds
+		// "host:443:address" for each host the PS5's resolver finds (ps5/net.h)
 		curl_slist* Resolve()
 		{
 			curl_slist* list = nullptr;
-			const int pool = sceNetPoolCreate("ps5cemu-packs", 16 * 1024, 0);
-			if (pool < 0)
-				return nullptr;
 			for (const char* host : kHosts)
 			{
-				uint32_t address = 0;
-				const int resolver = sceNetResolverCreate("ps5cemu-packs", pool, 0);
-				const int result = resolver >= 0 ? sceNetResolverStartNtoa(resolver, host, &address, 0, 0, 0) : resolver;
-				if (resolver >= 0)
-					sceNetResolverDestroy(resolver);
-				if (result < 0 || address == 0)
-					continue;
-				char text[INET_ADDRSTRLEN] = {};
-				inet_ntop(AF_INET, &address, text, sizeof(text));
-				list = curl_slist_append(list, fmt::format("{}:443:{}", host, text).c_str());
+				if (s_stop)
+					break;
+				list = ps5net::AddResolve(list, host, 443);
 			}
-			sceNetPoolDestroy(pool);
 			return list;
 		}
 
@@ -102,6 +78,9 @@ namespace ps5packs
 			curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 			curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 5L);
 			curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10L);
+			// a download that stalls (under 1 KB/s for 30 s) fails, rather than showing the same figure for good
+			curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1024L);
+			curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 30L);
 			curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
 			return curl;
 		}
@@ -208,7 +187,6 @@ namespace ps5packs
 
 		void Run()
 		{
-			sceNetInit();
 			curl_global_init(CURL_GLOBAL_DEFAULT);
 			curl_slist* resolve = Resolve();
 			if (!resolve)
@@ -357,6 +335,23 @@ namespace ps5packs
 			s_thread.join();
 		s_stop = false;
 		s_thread = std::thread(Run);
+	}
+
+	bool Missing()
+	{
+		std::error_code ec;
+		const fs::path folder = PacksFolder();
+		return !fs::is_directory(folder, ec) || fs::is_empty(folder, ec);
+	}
+
+	void StartIfMissing()
+	{
+		static std::atomic<bool> asked{false};
+		if (Missing() && !asked.exchange(true))
+		{
+			ps5log::Line("[packs] none installed: downloading GitHub's latest");
+			Start();
+		}
 	}
 
 	Status GetStatus()

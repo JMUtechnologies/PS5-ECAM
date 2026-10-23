@@ -27,7 +27,7 @@ namespace ps5shell
 			return;
 		m_hubGame = game;
 		if (from != ScreenId::Hub)
-			m_hubFrom = from == ScreenId::Home ? ScreenId::Home : ScreenId::Library; // Eden's Home, else the Library
+			m_hubFrom = ScreenId::Library;
 		m_hubAction = 0;
 		m_hubAbout = false;
 		m_hubScroll.Snap(0);

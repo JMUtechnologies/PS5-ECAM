@@ -80,22 +80,12 @@ shot setup-focus
 press circle                  # back to Diagnostics
 wait 20
 press circle                  # its page in the list
-press touchpad                # the 3DS side's Settings: its own pages
+press touchpad                # the next side in the bar's order: the Switch side's Settings
 wait 60
-shot settings-3ds
-press l2 down                 # Screens
-press right
-wait 25
-shot settings-3ds-screens
-press circle
-press l1                      # the 3DS side's Library
+shot settings-switch
+press l1                      # the Switch side's Library
 wait 45
-shot library-3ds
-press left left left left left left # Artic Base, the shelf's first tile
-press cross
-wait 45
-shot artic
-press circle
+shot library-switch
 press touchpad                # the DS side: its own Library, in melonDS's green
 wait 60
 shot library-ds
@@ -113,8 +103,26 @@ press right                   # its Graphics
 wait 25
 shot settings-ds-graphics
 press circle
-press l1                      # back to the Library
+press touchpad                # the 3DS side's Settings: its own pages
+wait 60
+shot settings-3ds
+press l2 down                 # Screens
+press right
+wait 25
+shot settings-3ds-screens
+press circle
+press l1                      # the 3DS side's Library
+wait 45
+shot library-3ds
+press down                    # its list, on the game played last
+press up                      # Artic Base, the list's first row
 wait 20
+press cross
+wait 45
+shot artic
+press circle
+wait 20
+press up                      # back up to Recently played
 press cross                   # play the focused game
 wait 25
 shot launch
