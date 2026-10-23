@@ -174,8 +174,9 @@ Big thanks to the people who sent code and fixes to PS5-ECAM itself:
   with contributions from **mpereiraesaa**
 - **BlackBearReloaded** for ProsperoEden, which the launcher's layout, artwork, Eden theme and software
   renderer build on, and the
-  [PS5 Native App Boilerplate](https://github.com/blackbearreloaded/ps5-native-app-boilerplate) for
-  the app runtime, packaging and sandbox elevation
+  PS5 Native App Boilerplate for the app runtime, packaging and sandbox elevation (its repository went
+  with their account: [drakmor's copy](https://github.com/drakmor/ps5-native-app-boilerplate) is the
+  one the build fetches)
 - **heydemoura** for the [PS5 Forwarder Format](https://github.com/heydemoura/ps5-forwarder-format)
   the home screen tiles use
 - **John Törnblom** for the [PS5 Payload SDK](https://github.com/ps5-payload-dev/sdk), and
