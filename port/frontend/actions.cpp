@@ -130,13 +130,12 @@ namespace ps5actions
 		const std::time_t now = std::time(nullptr);
 		if (const std::tm* local = std::localtime(&now))
 			std::strftime(stamp, sizeof(stamp), "%Y-%m-%d-%H%M%S", local);
-		const std::string root = ps5paths::Root();
 		const std::string logs = ps5paths::Logs();
 		// Azahar's log of the session before too: Azahar renames its log .old.txt as it starts, which the
 		// 3DS side's Settings and Setup check make it do (their Home Menu row), so after a 3DS game failed
 		// and the app started over, its log is that one by the time this runs (#45)
-		std::vector<std::string> files = {logs + "/boot.log", root + "/log.txt", root + "/azahar/log/azahar_log.txt",
-			root + "/azahar/log/azahar_log.old.txt", ps5paths::LauncherSettings(), root + "/settings.xml"};
+		std::vector<std::string> files = {logs + "/boot.log", ps5paths::CemuRoot() + "/log.txt", ps5paths::Azahar() + "/log/azahar_log.txt",
+			ps5paths::Azahar() + "/log/azahar_log.old.txt", ps5paths::LauncherSettings(), ps5paths::CemuRoot() + "/settings.xml"};
 		// the sessions before, each with Cemu's log of it (port/ps5/log.cpp)
 		for (const char* age : {"prev", "2", "3", "4"})
 		{
@@ -154,7 +153,7 @@ namespace ps5actions
 					copied++;
 			// the Switch side's: Eden's program keeps logs of its own, and its crash reports, in its folder
 			bool listed = false;
-			const std::string edenLogs = std::string(ps5paths::kDefaultRoot) + "/eden/logs";
+			const std::string edenLogs = ps5paths::Eden() + "/logs";
 			for (const std::string& name : ListEntries(edenLogs, false, listed))
 				if (CopyFile(edenLogs + "/" + name, folder + "/eden-" + name))
 					copied++;
@@ -181,7 +180,7 @@ namespace ps5actions
 	std::string ClearShaderCaches(bool n3ds)
 	{
 		namespace fs = std::filesystem;
-		const std::string folder = n3ds ? ps5paths::Root() + "/azahar/shaders" : ps5paths::Cache() + "/shaderCache";
+		const std::string folder = n3ds ? ps5paths::Azahar() + "/shaders" : ps5paths::CemuCache() + "/shaderCache";
 		std::error_code ec;
 		int files = 0;
 		uintmax_t bytes = 0;

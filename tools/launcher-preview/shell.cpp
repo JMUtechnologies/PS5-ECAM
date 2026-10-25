@@ -135,13 +135,13 @@ int main(int argc, char* argv[])
 	ps5lang::Load(settings.ui.language);
 	ps5launcher::Status status;
 	status.diagnostics = {"PS5-ECAM preview: Cemu at 32e6628, Azahar at 4aef900", "Jailbroken by the HEN: /data reachable, executable memory",
-		"Boot log: /data/ps5cemu/logs/boot.log", "Cemu's log: /data/ps5cemu/log.txt"};
+		"Boot log: /data/ps5cemu/logs/boot.log", "Cemu's log: " + ps5paths::CemuRoot() + "/log.txt"};
 	if (std::getenv("PREVIEW_NO_DATA"))
 		status.notice = status.notice3ds = status.noticeDs = status.noticeSwitch =
 			"PS5-ECAM cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5-ECAM.";
 	else if (std::getenv("PREVIEW_LAUNCH_ERROR"))
 		status.launchError = ps5lang::Tr("This is not a Wii U game PS5-ECAM can start.") + std::string(" ") +
-			ps5lang::Tr("Its disc key is missing from /data/ps5cemu/keys.txt.");
+			ps5lang::TrF("Its disc key is missing from {0}/keys.txt.", ps5paths::CemuRoot());
 
 	// as main_ps5.cpp's: a side opens when the launcher opens it (the preview's Cemu starts at once)
 	std::optional<ps5launcher::Choice> choice;

@@ -53,13 +53,13 @@ namespace ps5saves
 		{
 			const std::string root = ps5paths::Root();
 			return {
-				{"wiiu/save", root + "/mlc01/usr/save", nullptr},
-				{"3ds/sdmc", root + "/azahar/sdmc/Nintendo 3DS", SdmcSave},
-				{"3ds/nand", root + "/azahar/nand/data", nullptr},
-				{"3ds/states", root + "/azahar/states", nullptr},
-				{"ds/saves", root + "/melonds/saves", nullptr},
-				{"ds/states", root + "/melonds/states", nullptr},
-				// Eden's, in /data/ps5cemu/eden whatever the data folder (its program keeps them there):
+				{"wiiu/save", ps5paths::Mlc() + "/usr/save", nullptr},
+				{"3ds/sdmc", ps5paths::Azahar() + "/sdmc/Nintendo 3DS", SdmcSave},
+				{"3ds/nand", ps5paths::Azahar() + "/nand/data", nullptr},
+				{"3ds/states", ps5paths::Azahar() + "/states", nullptr},
+				{"ds/saves", ps5paths::MelonDs() + "/saves", nullptr},
+				{"ds/states", ps5paths::MelonDs() + "/states", nullptr},
+				// Eden's selected console directory, shared with its separate executable:
 				// the games' saves, and the system save with its user profiles, whose IDs name the saves'
 				// folders
 				{"switch/save", ps5eden::DataFolder() + "/user/nand/user/save", nullptr},
@@ -67,8 +67,8 @@ namespace ps5saves
 				// the settings, so a reinstall or another PS5 starts where this one was: the launcher's (every
 				// side's, each game's own), Cemu's, its controller profiles and the themes. A file is a set too
 				{"settings/ps5cemu.json", root + "/ps5cemu.json", nullptr},
-				{"settings/settings.xml", root + "/settings.xml", nullptr},
-				{"settings/controllerProfiles", root + "/controllerProfiles", nullptr},
+				{"settings/settings.xml", ps5paths::CemuRoot() + "/settings.xml", nullptr},
+				{"settings/controllerProfiles", ps5paths::CemuRoot() + "/controllerProfiles", nullptr},
 				{"settings/themes", root + "/themes", nullptr},
 			};
 		}
@@ -82,7 +82,9 @@ namespace ps5saves
 		// there; Eden's, in /data/ps5cemu's whatever the data folder, as a rename does not cross drives
 		fs::path KeptPath(const std::string& stamp, const fs::path& file)
 		{
-			for (const std::string& root : {ps5paths::Root(), std::string(ps5paths::kDefaultRoot)})
+			// Each system keeps replaced saves on its own filesystem, including Eden on /data
+			// while the launcher and other systems are on a USB drive.
+			for (const std::string& root : {ps5paths::CemuRoot(), ps5paths::Azahar(), ps5paths::MelonDs(), ps5eden::DataFolder(), ps5paths::Root()})
 			{
 				const fs::path relative = file.lexically_relative(root);
 				if (!relative.empty() && *relative.begin() != "..")
@@ -369,7 +371,7 @@ namespace ps5saves
 	std::string ResumeState(const GameRef& game)
 	{
 		if (game.side == 1)
-			return fmt::format("{}/azahar/states/{:016X}.{:02d}.cst", ps5paths::Root(), game.titleId, kResumeSlot);
+			return fmt::format("{}/states/{:016X}.{:02d}.cst", ps5paths::Azahar(), game.titleId, kResumeSlot);
 		if (game.side != 2)
 			return {};
 		// named by the game's file, an archive's by the archive (a .tar.gz's without its .tar), as melonDS's are
@@ -378,14 +380,13 @@ namespace ps5saves
 		std::transform(inner.begin(), inner.end(), inner.begin(), [](unsigned char c) { return (char)std::tolower(c); });
 		if (inner == ".tar")
 			stem = fs::path(stem).stem().string();
-		return fmt::format("{}/melonds/states/{}.ml{}", ps5paths::Root(), stem, kResumeSlot);
+		return fmt::format("{}/states/{}.ml{}", ps5paths::MelonDs(), stem, kResumeSlot);
 	}
 
 	std::vector<GameSave> FindGameSaves(const GameRef& game)
 	{
 		std::vector<GameSave> saves;
 		std::error_code ec;
-		const std::string root = ps5paths::Root();
 		auto keep = [&](GameSave save) {
 			for (const std::string& path : save.paths)
 				Measure(path, save);
@@ -395,7 +396,7 @@ namespace ps5saves
 		if (game.side == 0)
 		{
 			// mlc01/usr/save/<high>/<low>/user/<account> and user/common
-			const fs::path user = fs::path(root) / "mlc01/usr/save" / Hex8((uint32_t)(game.titleId >> 32)) / Hex8((uint32_t)game.titleId) / "user";
+			const fs::path user = fs::path(ps5paths::Mlc()) / "usr/save" / Hex8((uint32_t)(game.titleId >> 32)) / Hex8((uint32_t)game.titleId) / "user";
 			std::vector<GameSave> accounts;
 			for (auto it = fs::directory_iterator(user, ec); !ec && it != fs::directory_iterator(); it.increment(ec))
 			{
@@ -423,7 +424,7 @@ namespace ps5saves
 		else if (game.side == 1)
 		{
 			// azahar/sdmc/Nintendo 3DS/<id0>/<id1>/title/<high>/<low>/data, and extdata/00000000/<unique ID>
-			const fs::path sdmc = fs::path(root) / "azahar/sdmc/Nintendo 3DS";
+			const fs::path sdmc = fs::path(ps5paths::Azahar()) / "sdmc/Nintendo 3DS";
 			GameSave data, extra;
 			data.kind = GameSave::Kind::Data;
 			extra.kind = GameSave::Kind::ExtData;
@@ -446,7 +447,7 @@ namespace ps5saves
 			GameSave states;
 			states.kind = GameSave::Kind::States;
 			const std::string prefix = fmt::format("{:016X}.", game.titleId);
-			for (auto it = fs::directory_iterator(fs::path(root) / "azahar/states", ec); !ec && it != fs::directory_iterator(); it.increment(ec))
+			for (auto it = fs::directory_iterator(fs::path(ps5paths::Azahar()) / "states", ec); !ec && it != fs::directory_iterator(); it.increment(ec))
 				if (it->path().filename().string().rfind(prefix, 0) == 0)
 					states.paths.push_back(it->path().string());
 			keep(std::move(states));
@@ -457,11 +458,11 @@ namespace ps5saves
 			const std::string stem = DsStem(game);
 			GameSave save;
 			save.kind = GameSave::Kind::Data;
-			save.paths = {(fs::path(root) / "melonds/saves" / (stem + ".sav")).string()};
+			save.paths = {(fs::path(ps5paths::MelonDs()) / "saves" / (stem + ".sav")).string()};
 			keep(std::move(save));
 			GameSave states;
 			states.kind = GameSave::Kind::States;
-			for (auto it = fs::directory_iterator(fs::path(root) / "melonds/states", ec); !ec && it != fs::directory_iterator(); it.increment(ec))
+			for (auto it = fs::directory_iterator(fs::path(ps5paths::MelonDs()) / "states", ec); !ec && it != fs::directory_iterator(); it.increment(ec))
 			{
 				const std::string name = it->path().filename().string();
 				if (name.rfind(stem + ".ml", 0) == 0 && name.size() == stem.size() + 4)
@@ -475,10 +476,11 @@ namespace ps5saves
 	std::string MoveAside(const GameSave& save, std::string& error)
 	{
 		std::error_code ec;
-		const fs::path aside = fs::path(ps5paths::Root()) / "saves-before" / Stamp();
+		const std::string stamp = Stamp();
+		const fs::path aside = save.paths.empty() ? fs::path(ps5paths::Root()) / "saves-before" / stamp : KeptPath(stamp, save.paths.front()).parent_path();
 		for (const std::string& path : save.paths)
 		{
-			const fs::path kept = aside / fs::path(path).lexically_relative(ps5paths::Root());
+			const fs::path kept = KeptPath(stamp, path);
 			fs::create_directories(kept.parent_path(), ec);
 			fs::rename(path, kept, ec);
 			if (ec)

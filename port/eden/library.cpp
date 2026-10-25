@@ -336,7 +336,7 @@ namespace ps5eden
 
 	std::string DataFolder()
 	{
-		return std::string(ps5paths::kDefaultRoot) + "/eden";
+		return ps5paths::Eden();
 	}
 
 	std::string DefaultGamesFolder()
@@ -359,7 +359,7 @@ namespace ps5eden
 			{
 				const std::string saved = json["game_files"].GetString();
 				if (saved.size() > 1 && saved[0] == '/' && saved.back() != '/')
-					return saved;
+					return saved == std::string(ps5paths::kDefaultRoot) + "/eden" ? DataFolder() : saved;
 			}
 		}
 		const std::string keys = "/keys/prod.keys";

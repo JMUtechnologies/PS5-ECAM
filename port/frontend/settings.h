@@ -22,7 +22,7 @@ namespace ps5settings
 	// buttons, language and the ds... ones)
 	struct N3ds
 	{
-		std::string gamesFolder = ps5paths::Root() + "/azahar/games";
+		std::string gamesFolder = ps5paths::Azahar() + "/games";
 		int resolution = 6;			  // the internal resolution, times the 3DS's 400x240
 		int layout = 2;				  // the screens' layout (ps5azahar::Layout): the top one large
 		int textureFilter = 0;		  // none
@@ -109,17 +109,17 @@ namespace ps5settings
 	inline N3ds DsDefaults()
 	{
 		N3ds nds;
-		nds.gamesFolder = ps5paths::Root() + "/melonds/games";
+		nds.gamesFolder = ps5paths::MelonDs() + "/games";
 		nds.layout = 0;
 		return nds;
 	}
 
-	// The Switch side's: Eden's games folder, which is fixed in its program (/data/ps5cemu/eden/roms,
-	// ps5eden::GamesFolder), and its volume, as Eden has them
+	// The Switch side's: Eden's selected console games folder (/data/eden/roms on a new
+	// install, or legacy discovery), and its volume, as Eden has them
 	inline N3ds SwitchDefaults()
 	{
 		N3ds nx;
-		nx.gamesFolder = std::string(ps5paths::kDefaultRoot) + "/eden/roms";
+		nx.gamesFolder = ps5paths::Eden() + "/roms";
 		return nx;
 	}
 

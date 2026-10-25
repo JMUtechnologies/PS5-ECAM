@@ -36,7 +36,7 @@ namespace ps5ingamenx
 	// keeps the game's settings under, in hex)
 	inline std::string SessionFile()
 	{
-		return std::string(ps5paths::kDefaultRoot) + "/eden/ecam-session.txt";
+		return ps5paths::EdenSessionFile();
 	}
 
 	// What Eden's program leaves for the launcher (ps5eden::TakeResult), a line each: state= (running
@@ -45,7 +45,7 @@ namespace ps5ingamenx
 	// changed=1 with the settings the menu left (Settings' names) when it changed any
 	inline std::string ResultFile()
 	{
-		return std::string(ps5paths::kDefaultRoot) + "/eden/ecam-result.txt";
+		return ps5paths::EdenResultFile();
 	}
 
 	// What the menu shows and changes, as Eden names them

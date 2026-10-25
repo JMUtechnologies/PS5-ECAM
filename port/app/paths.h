@@ -3,28 +3,26 @@
 //
 //   /data/homebrew/PPSA99360/        the app (eboot.bin, sce_sys, assets) as ShadowMountPlus mounts it
 //   /app0/                           the same, read-only, from inside the app's sandbox (AppDir)
-//   /data/ps5cemu/                   everything PS5Cemu writes; survives app updates. On the USB drive
-//                                    or extended storage the app is installed on, its
-//                                    PS5CEMU-HAR-data folder instead (DecideRoot, #52)
-//     settings.xml, ps5cemu.json     Cemu's settings and the launcher's
-//     log.txt                        Cemu's log
-//     controllerProfiles/            Cemu's controller profiles
-//     mlc01/                         the Wii U's internal storage: installed games, updates, DLC, saves
-//     games/                         the default game files folder (.wua, .wud/.wux, .rpx folders)
-//     keys.txt                       disc keys for encrypted .wud/.wux dumps
-//     graphicPacks/                  community packs (downloadedGraphicPacks/) and your own
-//     cache/                         shader and pipeline caches (radv/: RADV's own)
-//     covers/                        game icons converted for the launcher
-//     logs/                          boot.log (the port), boot.prev.log and boot.2-4.log the sessions
-//                                    before, cemu.prev.txt and cemu.2-4.txt their log.txt
+//   /data/cemu/                      Wii U games, MLC, keys, packs and Cemu settings
+//   /data/azahar/                    3DS games, SD/NAND storage, keys and settings
+//   /data/melonds/                   DS games, BIOS/firmware, saves and cheats
+//   /data/eden/                      Switch games, keys, firmware, add-ons and user storage
+//   /data/ps5cemu/                   shared launcher settings, logs, covers and downloads
+// Existing installs under ps5cemu are discovered without moving data. tools/separate-systems.py
+// backs up and verifies copies before activating the separate folders.
 
 #pragma once
 
+#include "system_layout.h"
+
+#include <algorithm>
+#include <cerrno>
 #include <cstdio>
 #include <cstring>
 #include <initializer_list>
 #include <string>
 #include <sys/stat.h>
+#include <vector>
 
 namespace ps5paths
 {
@@ -59,10 +57,90 @@ namespace ps5paths
 		}
 	}
 
+	namespace detail
+	{
+		struct SystemRoots
+		{
+			bool decided = false;
+			std::string azahar, melonds, eden;
+		};
+		inline SystemRoots& SelectedSystems() { static SystemRoots roots; return roots; }
+	}
+
 	// The data folder: kDefaultRoot until main has decided it (DecideRoot), then the one decided
 	inline const std::string& Root() { return detail::RootSlot(); }
-	inline std::string Mlc() { return Root() + "/mlc01"; }
-	inline std::string Games() { return Root() + "/games"; }
+	inline std::string CemuFolder() { return ecam_layout::Sibling(Root(), "cemu"); }
+	inline std::string Azahar() { const auto& s = detail::SelectedSystems(); return s.decided ? s.azahar : ecam_layout::System(Root(), "azahar"); }
+	inline std::string MelonDs() { const auto& s = detail::SelectedSystems(); return s.decided ? s.melonds : ecam_layout::System(Root(), "melonds"); }
+	// Eden's separate process shares this exact selection algorithm; its storage stays on /data.
+	inline std::string Eden() { const auto& s = detail::SelectedSystems(); return s.decided ? s.eden : ecam_layout::System(kDefaultRoot, "eden"); }
+	inline std::string EdenRequestFile() { return Eden() + "/launch-request.txt"; }
+	inline std::string EdenSessionFile() { return Eden() + "/ecam-session.txt"; }
+	inline std::string EdenResultFile() { return Eden() + "/ecam-result.txt"; }
+	inline bool Present(const std::string& path) { return ecam_layout::Present(path); }
+	namespace detail
+	{
+		inline std::string FindCemuRoot(const std::string& root) { return ecam_layout::Cemu(root); }
+	}
+	inline const std::string& CemuRoot()
+	{
+		// Used only after DecideRoot and elevation. Cemu's own paths are fixed for the process.
+		static const std::string folder = detail::FindCemuRoot(Root());
+		return folder;
+	}
+	// Main calls this after elevation and DecideRoot, before any thread. Early settings reads
+	// can discover defaults without fixing a choice while the process is still in its sandbox.
+	inline void DecideSystemRoots()
+	{
+		auto& s = detail::SelectedSystems();
+		if (s.decided) return;
+		s.azahar = ecam_layout::System(Root(), "azahar");
+		s.melonds = ecam_layout::System(Root(), "melonds");
+		s.eden = ecam_layout::System(kDefaultRoot, "eden");
+		(void)CemuRoot();
+		s.decided = true;
+	}
+	inline std::string Mlc() { return CemuRoot() + "/mlc01"; }
+	inline std::string Games() { return CemuFolder() + "/games"; }
+	inline std::string CemuCache() { return CemuRoot() + "/cache"; }
+	inline std::string DiscKeys() { return CemuRoot() + "/keys.txt"; }
+
+	inline std::vector<std::string> GameFolders(const std::vector<std::string>& configured)
+	{
+		std::vector<std::string> folders;
+		auto add = [&](const std::string& folder) {
+			if (std::find(folders.begin(), folders.end(), folder) == folders.end())
+				folders.push_back(folder);
+		};
+		const std::string legacy = Root() + "/games";
+		for (const std::string& folder : configured.empty() ? std::vector<std::string>{Games()} : configured)
+		{
+			if (folder == Games() || folder == legacy || folder == Root() + "/cemu/games")
+			{
+				add(Games());
+				if (Present(legacy) && !ecam_layout::Activated(CemuFolder()))
+					add(legacy);
+				if (Present(Root() + "/cemu/games") && !ecam_layout::Activated(CemuFolder()))
+					add(Root() + "/cemu/games");
+			}
+			else
+				add(folder); // custom local, USB and network paths remain explicit choices
+		}
+		return folders;
+	}
+	// Native input and storage directories, made at startup without inventing unsupported content.
+	inline std::vector<std::string> SystemDirectories()
+	{
+		std::vector<std::string> directories{Games()};
+		auto add = [&](const std::string& base, std::initializer_list<const char*> names) {
+			for (const char* name : names) directories.push_back(base + "/" + name);
+		};
+		add(CemuRoot(), {"updates", "dlc", "mlc01", "graphicPacks", "controllerProfiles"});
+		add(Azahar(), {"games", "updates", "dlc", "sysdata", "nand", "sdmc", "cheats", "load"});
+		add(MelonDs(), {"games", "bios", "saves", "states", "cheats"});
+		add(Eden(), {"roms", "updates", "keys", "firmware", "mods", "user", "config"});
+		return directories;
+	}
 	inline std::string Cache() { return Root() + "/cache"; }
 	inline std::string RadvCache() { return Root() + "/cache/radv"; }
 	inline std::string Logs() { return Root() + "/logs"; }
@@ -73,6 +151,13 @@ namespace ps5paths
 	// while the data was in /data follows the data to the drive it was moved to (#52)
 	inline std::string Relocated(const std::string& path)
 	{
+		if (Root() != kDefaultRoot)
+			for (const char* system : {"cemu", "azahar", "melonds"})
+			{
+				const std::string old = ecam_layout::Sibling(kDefaultRoot, system);
+				if (path == old || path.starts_with(old + "/"))
+					return ecam_layout::Sibling(Root(), system) + path.substr(old.size());
+			}
 		const size_t length = std::strlen(kDefaultRoot);
 		if (Root() == kDefaultRoot || path.compare(0, length, kDefaultRoot) != 0 || (path.size() > length && path[length] != '/'))
 			return path;

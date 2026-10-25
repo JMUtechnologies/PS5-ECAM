@@ -148,7 +148,7 @@ namespace
 				PS5CEMU_AZAHAR_COMMIT, PS5CEMU_MELONDS_COMMIT, PS5CEMU_EDEN_COMMIT),
 			ps5lang::TrF("Firmware {0}", Firmware()),
 			privileges.summary,
-			ps5log::Path()[0] ? ps5lang::TrF("Logs: {0}, {1}/log.txt", ps5log::Path(), ps5paths::Root()) :
+			ps5log::Path()[0] ? ps5lang::TrF("Logs: {0}, {1}/log.txt", ps5log::Path(), ps5paths::CemuRoot()) :
 								ps5lang::Tr("Boot log not written (/data is unreachable)"),
 		};
 	}
@@ -285,6 +285,7 @@ int main(int argc, char* argv[])
 		// log goes in it
 		ps5privilege::ReachFolders({early.gamesFolder, early.n3ds.gamesFolder, early.nds.gamesFolder});
 		ps5paths::DecideRoot();
+		ps5paths::DecideSystemRoots();
 		ps5log::Open(ps5paths::Logs().c_str());
 	}
 	ps5log::Line("[main] firmware {}", Firmware());
@@ -324,6 +325,23 @@ int main(int argc, char* argv[])
 	ps5threads::SetIsolation(settings.isolateCores);
 	// the first thread but main: the boot log's writer, after the elevation helper is done with the
 	// process (it must find it single-threaded)
+	if (privileges.filesystem)
+	{
+		for (const std::string& directory : ps5paths::SystemDirectories())
+		{
+			std::error_code ec;
+			std::filesystem::create_directories(directory, ec);
+			if (ec) ps5log::Line("[paths] could not create {}: {}", directory, ec.message());
+		}
+		// Only a comment, never a supplied key. Do not create an empty 3DS aes_keys.txt: that
+		// would override Azahar's built-in keys. DS BIOS and Switch keys are supplied by the user.
+		if (FILE* keys = std::fopen(ps5paths::DiscKeys().c_str(), "wx"))
+		{
+			std::fputs("# Add your Wii U disc keys here, one per line.\n", keys);
+			std::fclose(keys);
+		}
+		ps5log::Line("[paths] Wii U: {}; 3DS: {}; DS: {}; Switch: {}", ps5paths::CemuRoot(), ps5paths::Azahar(), ps5paths::MelonDs(), ps5paths::Eden());
+	}
 	ps5log::StartWriter();
 	{
 		// the app's folder decided here, the process's root now final (app/paths.h, #26)
@@ -476,7 +494,7 @@ int main(int argc, char* argv[])
 			{"amiibo", "Amiibo", "Your amiibo dumps (.bin), for the Wii U and the 3DS.", ps5paths::Root() + "/amiibo"},
 			{"3ds-camera", "3DS camera",
 				"A picture (PNG or JPEG) the 3DS's cameras see, the newest sent: a QR code for a game to scan.",
-				ps5paths::Root() + "/azahar/camera"},
+				ps5paths::Azahar() + "/camera"},
 			{"music", "Launcher music", "MP3 and WAV files, for Settings > Audio > Launcher music.", ps5paths::Root() + "/music"},
 		};
 		std::erase_if(folders, [](const ps5stream::Folder& folder) { return folder.path.empty() || ps5netfs::is_net(folder.path); });

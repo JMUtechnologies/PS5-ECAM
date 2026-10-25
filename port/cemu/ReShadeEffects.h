@@ -5,7 +5,7 @@
 // uniforms with its values and loads the pictures textures name. PostEffectsPS5.cpp runs the
 // result on Vulkan. Nothing here needs a GPU, so tools/reshade-check.sh runs it on a PC.
 //
-//   /data/ps5cemu/reshade/
+//   /data/cemu/reshade/
 //     ReShadePreset.ini           the preset every game uses
 //     presets/<title ID>.ini      a game's own (00050000101C9500.ini: Breath of the Wild, EUR)
 //     Shaders/, Textures/         .fx and .fxh files, and the pictures they load
@@ -83,7 +83,7 @@ namespace ps5reshade
 		std::string Summary() const; // "SMAA, LumaSharpen" or why nothing runs
 	};
 
-	// The folder the effects, textures and presets are looked for in (/data/ps5cemu/reshade)
+	// The folder the effects, textures and presets are looked for in (/data/cemu/reshade)
 	fs::path Root();
 	// The preset for a game: its own in presets/, or ReShadePreset.ini; empty when there is neither
 	fs::path PresetFor(const fs::path& root, uint64_t titleId);

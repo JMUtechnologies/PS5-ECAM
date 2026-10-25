@@ -23,7 +23,7 @@
 
 namespace ps5melonds
 {
-	inline std::string Root() { return ps5paths::Root() + "/melonds"; }
+	inline std::string Root() { return ps5paths::MelonDs(); }
 
 	// Whether this build has melonDS's core.
 	bool Available();

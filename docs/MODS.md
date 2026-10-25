@@ -50,11 +50,14 @@ can be written with or without the dash, `00050000-101C9400`). Breath of the Wil
 
 ## Where mods are kept
 
-Mods added from a drive are copied to `/data/ps5cemu/graphicPacks/mods/`. Cemu finds a pack anywhere
-in `/data/ps5cemu/graphicPacks`, so mods copied there with FTP or a file manager work too, as long as
+The paths below are for new installs. Legacy installs keep their original root-level
+`graphicPacks` and `log.txt`; [System folders](SYSTEM-FOLDERS.md) explains discovery and migration.
+
+Mods added from a drive are copied to `/data/cemu/graphicPacks/mods/`. Cemu finds a pack anywhere
+in `/data/cemu/graphicPacks`, so mods copied there with FTP or a file manager work too, as long as
 each has its `rules.txt` (only mods added from a drive get one written for them).
 
-To remove a mod, turn it off, or delete its folder from `/data/ps5cemu/graphicPacks/mods/` with FTP
+To remove a mod, turn it off, or delete its folder from `/data/cemu/graphicPacks/mods/` with FTP
 or a file manager.
 
 ## Writing a rules.txt
@@ -78,7 +81,7 @@ describes the rest (presets, patches, shaders).
 ## When a mod does not work
 
 - **It is not on the game's Graphic packs page:** its `rules.txt` names another title ID (another
-  region of the game), or is missing. `/data/ps5cemu/log.txt` names the packs Cemu could not read.
+  region of the game), or is missing. `/data/cemu/log.txt` names the packs Cemu could not read.
 - **The game does not change:** the folders inside the mod must be spelt `content`, `aoc` and `code`
   in lower case (mods added from a drive are fixed for you), and directly in the mod's folder.
 - **The game crashes:** the mod may be for another version of the game (update it in **Updates and
@@ -90,9 +93,9 @@ describes the rest (presets, patches, shaders).
 ## 3DS mods
 
 3DS games take LayeredFS mods, as Azahar on a PC does: put a mod's `romfs/` and `exefs/` folders in
-`/data/ps5cemu/azahar/load/mods/<title ID>/`. Texture packs go in
-`/data/ps5cemu/azahar/load/textures/<title ID>/`, with **Settings > Graphics > Custom textures** on.
-With the data on the app's drive, these folders are in its `PS5CEMU-HAR-data` folder instead.
+`/data/azahar/load/mods/<title ID>/`. Texture packs go in
+`/data/azahar/load/textures/<title ID>/`, with **Settings > Graphics > Custom textures** on.
+With the data on the app's drive, these folders are in the sibling `azahar` directory on that drive instead.
 
 - **Names as Azahar writes them.** The PS5 tells capitals from small letters: `load`, `mods`,
   `romfs` and `exefs` in small letters, the title ID in 16 digits with capital letters (it starts

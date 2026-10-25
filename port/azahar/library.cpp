@@ -624,7 +624,7 @@ namespace ps5azahar
 		// Azahar's folders from the first start, so there is somewhere to put games and keys before
 		// a game has run: the default games folder, and sysdata for aes_keys.txt
 		std::error_code ec;
-		for (const char* sub : {"games", "sysdata", "sdmc"})
+		for (const char* sub : {"updates", "dlc", "games", "sysdata", "sdmc"})
 			fs::create_directories(fs::path(Root()) / sub, ec);
 		std::thread([folder] {
 			std::vector<ps5emu::Game> games;

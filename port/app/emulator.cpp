@@ -259,8 +259,12 @@ namespace ps5emu
 			// a settings.xml from /data/ps5cemu, moved with the rest to the app's drive (#52): its
 			// folders follow it there
 			config.mlc_path = ps5paths::Relocated(config.mlc_path.GetValue());
+			if (config.mlc_path.GetValue() == ps5paths::Root() + "/mlc01" ||
+				config.mlc_path.GetValue() == ps5paths::Root() + "/cemu/mlc01")
+				config.mlc_path = ps5paths::Mlc();
 			for (std::string& path : config.game_paths)
 				path = ps5paths::Relocated(path);
+			config.game_paths = ps5paths::GameFolders(config.game_paths);
 		}
 
 		// The community graphic packs bundled with the app (assets/graphicPacks, with its
@@ -546,19 +550,23 @@ namespace ps5emu
 		if (s_coreStarted)
 			return true; // back on the Wii U side after the 3DS's, in the same process
 		std::set<fs::path> failedWriteAccess;
-		ActiveSettings::SetPaths(false, ps5paths::Eboot(), ps5paths::Root(), ps5paths::Root(), ps5paths::Cache(),
+		ActiveSettings::SetPaths(false, ps5paths::Eboot(), ps5paths::CemuRoot(), ps5paths::CemuRoot(), ps5paths::CemuCache(),
 			ps5paths::CemuData(), failedWriteAccess);
 		if (!failedWriteAccess.empty())
 		{
 			error = ps5lang::TrF("PS5-ECAM cannot write to {0}. Is the HEN loaded?", _pathToUtf8(*failedWriteAccess.begin()));
 			return false;
 		}
-		cemuLog_createLogFile(false); // log.txt in /data/ps5cemu, as on the desktop
+		cemuLog_createLogFile(false); // log.txt in CemuRoot(), beside its settings
 		CreateDirectories(ActiveSettings::GetConfigPath("controllerProfiles"));
 		CreateDirectories(fs::path(ps5paths::Root()) / "amiibo"); // both emulators' in-game menus scan from here
 		CreateDirectories(ps5paths::Games());
+		CreateDirectories(ps5paths::CemuRoot() + "/updates");
+		CreateDirectories(ps5paths::CemuRoot() + "/dlc");
 		CreateDirectories(ps5paths::Logs());
 		ps5log::Line("[emu] app folder: {}", ps5paths::AppDir());
+		ps5log::Line("[emu] Cemu data folder: {}{}", ps5paths::CemuRoot(),
+			ps5paths::CemuRoot() == ps5paths::Root() ? " (legacy layout, kept in place)" : "");
 		// (RADV's shader cache folder is set as the app starts: main_ps5.cpp)
 
 		GetConfigHandle().SetFilename(ActiveSettings::GetConfigPath("settings.xml").generic_wstring());
@@ -645,13 +653,14 @@ namespace ps5emu
 			ApplyTouchpadClick(player, options.touchpadClick[player]);
 		if (options.overlay)
 			config.overlay.fps = config.overlay.cpu_usage = config.overlay.ram_usage = true;
-		const bool newFolder = !options.gamesFolder.empty() &&
-			(config.game_paths.size() != 1 || config.game_paths.front() != options.gamesFolder);
+		const auto folders = ps5paths::GameFolders({options.gamesFolder});
+		const bool newFolder = !options.gamesFolder.empty() && config.game_paths != folders;
 		if (newFolder)
 		{
-			config.game_paths = {options.gamesFolder};
+			config.game_paths = folders;
 			CafeTitleList::ClearScanPaths();
-			CafeTitleList::AddScanPath(_utf8ToPath(options.gamesFolder));
+			for (const std::string& folder : config.game_paths)
+				CafeTitleList::AddScanPath(_utf8ToPath(folder));
 			CafeTitleList::Refresh();
 			archives::StartScan(config.game_paths);
 			ps5log::Line("[emu] games folder is now {}", options.gamesFolder);
@@ -797,7 +806,7 @@ namespace ps5emu
 				error = ps5lang::Tr("This is not a Wii U game PS5-ECAM can start.");
 				if (launchTitle.GetInvalidReason() == TitleInfo::InvalidReason::NO_DISC_KEY)
 					// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-					error += std::string(" ") + ps5lang::TrF("Its disc key is missing from {0}/keys.txt.", ps5paths::Root());
+					error += std::string(" ") + ps5lang::TrF("Its disc key is missing from {0}/keys.txt.", ps5paths::CemuRoot());
 				else if (launchTitle.GetInvalidReason() == TitleInfo::InvalidReason::NO_TITLE_TIK)
 					error += std::string(" ") + ps5lang::Tr("Its title.tik is missing.");
 				return false;

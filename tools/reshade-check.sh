@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # ReShade as the app runs it, on a PC: builds tools/reshade-check (build/reshade-check) from the
 # app's own ReShade code (port/cemu/ReShadeEffects.cpp and ReShadeRuntime.cpp) and ReShade's
-# compiler (.deps/reshade), then runs it on a folder laid out as /data/ps5cemu/reshade is:
+# compiler (.deps/reshade), then runs it on a folder laid out as /data/cemu/reshade is:
 #
 #   tools/reshade-check.sh FOLDER                          compile what the preset turns on
 #   tools/reshade-check.sh FOLDER --run IN.png OUT.png     ... and draw it on IN.png (- for a test

@@ -1,0 +1,31 @@
+diff --git a/.github/workflows/tests.yml b/.github/workflows/tests.yml
+index a1ee786..6269899 100644
+--- a/.github/workflows/tests.yml
++++ b/.github/workflows/tests.yml
+@@ -27,11 +27,25 @@ jobs:
+           key: deps-${{ hashFiles('tools/deps.json') }}
+ 
+       - name: What the tests need
+-        run: python3 -B tools/deps.py fetch pacbrew pugixml dr_mp3
++        run: python3 -B tools/deps.py fetch pacbrew pugixml dr_mp3 prosperoedenx
+ 
+       - name: String tables
+         run: python3 -B tools/lang.py check
+ 
++      - name: System paths and legacy discovery
++        run: bash tools/tests/test-paths.sh
++
++      - name: Separate Eden program paths
++        run: |
++          bash tools/eden-patches.sh apply
++          bash tools/tests/test-eden-paths.sh
++
++      - name: Verified system migration
++        run: python3 -B tools/tests/test-separate-systems.py
++
++      - name: Saves in both data layouts
++        run: bash tools/tests/test-saves-paths.sh
++
+       - name: Keyboards
+         run: bash tools/tests/test-keyboard.sh
+ 

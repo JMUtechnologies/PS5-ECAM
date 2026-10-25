@@ -573,7 +573,7 @@ namespace ps5reshade
 
 	fs::path Root()
 	{
-		return fs::path(ps5paths::Root()) / "reshade";
+		return fs::path(ps5paths::CemuRoot()) / "reshade";
 	}
 
 	fs::path PresetFor(const fs::path& root, uint64_t titleId)

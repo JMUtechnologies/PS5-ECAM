@@ -215,7 +215,7 @@ namespace ps5shell
 		}
 
 		// the keys encrypted dumps need
-		const bool discKeys = IsFile(ps5paths::Root() + "/keys.txt");
+		const bool discKeys = IsFile(ps5paths::DiscKeys());
 		Check wiiuKeys{"wiiu-keys", Tr("Wii U disc keys")};
 		wiiuKeys.state = discKeys ? 0 : 1;
 		wiiuKeys.detail = discKeys ? Tr("keys.txt found") : Tr("keys.txt is missing: only encrypted .wud and .wux need it");
@@ -223,7 +223,7 @@ namespace ps5shell
 		wiiuKeys.aboutTitle = Tr("Keys for encrypted discs");
 		wiiuKeys.about = TrF("Encrypted .wud and .wux dumps need their disc keys in {0}/keys.txt, one a line. Decrypted dumps, .wua files and "
 							 "folders with code, content and meta need none.",
-			ps5paths::Root());
+			ps5paths::CemuRoot());
 		wiiuKeys.guide = std::string(kRepository) + "#wii-u";
 		wiiuKeys.guideTitle = Tr("the game files page");
 		if (SideShown(System::WiiU))

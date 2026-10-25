@@ -471,7 +471,7 @@ namespace ps5azahar
 			// the 3DS's 3D for red and cyan glasses: both eyes' pictures, the slider all the way up
 			values.render_3d = settings.anaglyph ? Settings::StereoRenderOption::Anaglyph : Settings::StereoRenderOption::Off;
 			values.factor_3d = settings.anaglyph ? 100u : 0u;
-			values.camera_config.fill(ps5paths::Root() + "/azahar/camera");
+			values.camera_config.fill(ps5paths::Azahar() + "/camera");
 			input::Configure(settings);
 		}
 
@@ -1174,7 +1174,7 @@ namespace ps5azahar
 			case Result::ErrorFailedToOpenFile: s_install.message = ps5lang::Tr("the file could not be read"); break;
 			case Result::ErrorAborted:
 				// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-				s_install.message = ps5lang::TrF("Azahar stopped part-way through; {0}/azahar/log/azahar_log.txt says why", ps5paths::Root());
+				s_install.message = ps5lang::TrF("Azahar stopped part-way through; {0}/azahar/log/azahar_log.txt says why", ecam_layout::Parent(ps5paths::Azahar()));
 				break;
 			default: s_install.message = ps5lang::Tr("it is not a CIA Azahar can install"); break;
 			}
