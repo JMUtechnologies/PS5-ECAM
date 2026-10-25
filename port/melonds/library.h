@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5-ECAM: the DS games in the DS side's game files folder (/data/ps5cemu/melonds/games by
+// PS5-ECAM: the DS games in the DS side's game files folder (/data/melonds/games by
 // default), for the launcher, which melonDS starts.
 //
 // A DS game's name and publisher are its banner's English title (two or three lines: the name, a

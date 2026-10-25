@@ -555,9 +555,9 @@ namespace ps5ingame3ds
 				cheatRows.rows.push_back({"nocheats", Tr("No cheats for this game"), "", false,
 					// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
 					ds ? TrF("Put them in {0}/melonds/cheats/<game file>.mch (the game's file name, .mch for .nds), then start "
-							 "the game again.", ps5paths::Root()) :
+							 "the game again.", ecam_layout::Parent(ps5paths::MelonDs())) :
 						 // tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-						 TrF("Put them in {0}/azahar/cheats/<title ID>.txt, then start the game again.", ps5paths::Root())});
+						 TrF("Put them in {0}/azahar/cheats/<title ID>.txt, then start the game again.", ecam_layout::Parent(ps5paths::Azahar()))});
 			else
 				// tr: how many of the game's cheats are on: {0} of {1}
 				cheatRows.value = TrF("{0} of {1} on", std::count_if(cheats.begin(), cheats.end(), [](const auto& c) { return c.second; }), cheats.size());

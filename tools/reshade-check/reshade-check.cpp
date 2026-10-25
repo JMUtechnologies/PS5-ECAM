@@ -7,7 +7,7 @@
 //
 //   reshade-check FOLDER [--title ID] [--size WxH] [--run IN.png|- OUT.png] [--frames N]
 //
-// FOLDER is laid out as /data/ps5cemu/reshade is on the console. The exit status is 0 only when
+// FOLDER is laid out as /data/cemu/reshade is on the console. The exit status is 0 only when
 // every technique the preset turns on compiled, was made and (with --run) drew without a
 // validation error.
 

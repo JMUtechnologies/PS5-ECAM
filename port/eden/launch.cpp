@@ -147,7 +147,7 @@ namespace ps5eden
 
 	std::string RequestFile()
 	{
-		return DataFolder() + "/launch-request.txt";
+		return ps5paths::EdenRequestFile();
 	}
 
 	std::string Nickname(const ps5settings::N3ds& nx)

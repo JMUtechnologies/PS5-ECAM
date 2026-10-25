@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "log.h"
 #include "kernel.h"
+#include "../app/paths.h"
 
 #include <pthread.h>
 #include <pthread_np.h>
@@ -168,8 +169,8 @@ namespace ps5log
 		mkdir(folder, 0777);
 		s_path = std::string(folder) + "/boot.log";
 		Rotate(s_path, folder, "boot", ".log");
-		// Cemu's log.txt, one folder up, is rewritten each start: kept beside the boot logs it goes with
-		Rotate(root + "/log.txt", folder, "cemu", ".txt");
+		// Cemu's log.txt is rewritten each start: kept beside the boot logs it goes with
+		Rotate(ps5paths::CemuRoot() + "/log.txt", folder, "cemu", ".txt");
 		FILE* file = fopen(s_path.c_str(), "w");
 		if (!file)
 			return;

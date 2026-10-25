@@ -2,7 +2,7 @@
 // PS5Cemu: the port's boot log, /data/ps5cemu/logs/boot.log. Every line also goes to stdout, which
 // the console's klog shows. From StartWriter on, lines are written by a thread of the log's own (a
 // write to /data can take 25 ms on the console): Flush before the process ends or the file is read.
-// Cemu's own log (log.txt) is separate and lives in /data/ps5cemu. Open keeps the four sessions
+// Cemu's own log (log.txt) is separate and lives in CemuRoot() (app/paths.h). Open keeps the four sessions
 // before: boot.prev.log, boot.2.log to boot.4.log, each with Cemu's log of it as cemu.prev.txt,
 // cemu.2.txt and so on.
 

@@ -15,7 +15,7 @@
 //   backup.json         when, by which version, how many files and bytes
 //
 // Restoring puts each of a backup's files back where it came from; a file there now is first moved
-// to /data/ps5cemu/saves-before/<date and time>/ (the data folder's), in the same shape, so restoring
+// to its owning data folder's saves-before/<date and time>/, in the same shape, so restoring
 // loses nothing. Saves
 // the backup does not have stay as they are. Both run on a thread of their own, one at a time.
 
@@ -92,7 +92,7 @@ namespace ps5saves
 		int64_t changed = 0; // its newest file's time, seconds since 1970
 	};
 	std::vector<GameSave> FindGameSaves(const GameRef& game);
-	// Moved, never deleted: to /data/ps5cemu/saves-before/<date and time>/, in the same shape, as a
+	// Moved, never deleted: to the owning system's saves-before/<date and time>/, in the same shape, as a
 	// restore moves what it replaces. Where to, or empty with why in error.
 	std::string MoveAside(const GameSave& save, std::string& error);
 	// This game's saves alone, as a whole backup is, so Restore from USB knows it too

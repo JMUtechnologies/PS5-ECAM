@@ -514,11 +514,11 @@ namespace ps5shell
 					   "picture at 4K, and adds a little delay. Also in the in-game menu.")),
 				"frameGeneration");
 			// ReShade's preset, as a PC's ReShade makes it (port/cemu/ReShadePS5.h)
-			own(toggle("reshade", Tr("ReShade"), settings.reshade, TrF("Your ReShade preset and effects, from {0}.", ps5paths::Root() + "/reshade"),
+			own(toggle("reshade", Tr("ReShade"), settings.reshade, TrF("Your ReShade preset and effects, from {0}.", ps5paths::CemuRoot() + "/reshade"),
 					TrF("Runs a ReShade preset made on a PC over the game's picture, before the GamePad's screen and the menus. Put "
 						"ReShadePreset.ini (or presets/<title ID>.ini for one game) with the Shaders and Textures folders it uses in {0}. "
 						"Compiled as the game starts; the boot log says what runs. Also in the in-game menu.",
-						ps5paths::Root() + "/reshade")),
+						ps5paths::CemuRoot() + "/reshade")),
 				"reshade");
 			own(toggle("overlay", Tr("Performance overlay"), settings.overlay, Tr("Frame rate, CPU and memory in a corner."),
 					Tr("Frames per second, CPU and memory use in the top left corner, as Cemu shows them. Also in the in-game menu.")),
@@ -544,7 +544,7 @@ namespace ps5shell
 				"textureFilter");
 			own(toggle("customtextures", Tr("Custom textures"), hand.customTextures, Tr("Texture packs from azahar/load/textures."),
 					// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-					TrF("Texture packs in {0}/azahar/load/textures/<title ID>, as the desktop Azahar loads them.", ps5paths::Root())),
+					TrF("Texture packs in {0}/azahar/load/textures/<title ID>, as the desktop Azahar loads them.", ecam_layout::Parent(ps5paths::Azahar()))),
 				"customTextures");
 			// off by default, as desktop Azahar: on, a draw whose shader is still building is skipped (Alpha
 			// Sapphire's first cutscene drew its Pokemon as their dark outlines alone)
@@ -930,7 +930,7 @@ namespace ps5shell
 				Tr("Where your games are. Cross picks another."),
 				// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
 				IsWiiU() ? TrF("Your Wii U games: .wua, .wud, .wux, or folders with code, content and meta, alone or in .zip, .7z or .rar archives. "
-							"Encrypted .wud and .wux need their keys in {0}/keys.txt.", ps5paths::Root()) :
+							"Encrypted .wud and .wux need their keys in {0}/keys.txt.", ps5paths::CemuRoot()) :
 				Is3ds()	 ? Tr("Your 3DS games: .3ds or .cci, .cxi, .3dsx and Azahar's compressed dumps, decrypted, alone or in .zip, .7z or .rar "
 						   "archives, here or in the folders in it. CIA files are installed (Install a CIA file). Encrypted dumps do not start, "
 						   "with keys or without: decrypt them on your 3DS first (GodMode9).") :
@@ -974,12 +974,12 @@ namespace ps5shell
 			}
 			if (IsWiiU())
 			{
-				const bool keys = IsFile(ps5paths::Root() + "/keys.txt");
+				const bool keys = IsFile(ps5paths::DiscKeys());
 				action(Kind::Action, "keys", Tr("Wii U disc keys"), keys ? std::string(Tr("keys.txt found")) : std::string(),
 					keys ? Tr("Only encrypted .wud and .wux need them.") : Tr("keys.txt is missing: only encrypted .wud and .wux need it"),
 					// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
 					TrF("Encrypted .wud and .wux dumps need their disc keys in {0}/keys.txt, one a line. Decrypted dumps, .wua and "
-						"folders need none.", ps5paths::Root()));
+						"folders need none.", ps5paths::CemuRoot()));
 				cemu(action(Kind::Link, "install", Tr("Updates and DLC"), "", Tr("Found on your drives, each installed with one press."),
 					Tr("Looks on every USB drive and extended storage plugged in, in the games folder and in /data for updates, DLC and games "
 					   "(folders with code, content and meta), and lists them by game with what is installed now. Cross installs one, Square "
@@ -1495,7 +1495,7 @@ namespace ps5shell
 			// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
 			return TrF("Saves: {0}/melonds/saves (a .sav beside the game is taken the first time). Save states: melonds/states. Cheats: "
 					   "melonds/cheats/<game file>.mch, melonDS's format. DSi games, the DS's wireless and its GBA slot are not there.",
-				ps5paths::Root());
+				ecam_layout::Parent(ps5paths::MelonDs()));
 		if (page == "remote" && !m_settings.remoteScreen)
 			return Tr("On, a QR code here opens the game's second screen in a phone's browser. Nothing to install; the phone must be on the "
 				   "PS5's network.");
@@ -1505,17 +1505,17 @@ namespace ps5shell
 					   "put figures on it from the in-game menu (touchpad click + Options > USB devices).",
 				ps5paths::Root());
 		if (page == "about")
-			// tr: {0} is the app's version; {1} its data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on; {2} Eden's game files folder, /data/ps5cemu/eden
+			// tr: {0} is the app's version; {1} its data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on; {2} Eden's game files folder; {3} Cemu's selected data folder; {4} its default games folder; {5} Azahar's selected folder; {6} melonDS's selected folder
 			return TrF("Cemu, the Wii U emulator, by the Cemu team and its contributors; RADV on the PS5 by Mihawk-99 and mpereiraesaa; the "
 				   "community graphic packs' authors.\nAzahar, the 3DS emulator, by the Azahar team and the Citra contributors before them; "
 				   "Mihawk-99's PS5 port of it and dynarmic.\nmelonDS, the DS emulator, by Arisotura and the melonDS team.\nEden, the Switch "
 				   "emulator, by the Eden team; ProsperoEden, its PS5 port and launcher, by Sword, BlackBearReloaded, bawsdeep, Rockiu0 and its "
 				   "contributors.\nBox art and game information: GameTDB. The font: Lexend. The remote touch screen: dolphin78's idea and "
 				   "prototype.\nAn unofficial port, not affiliated with the Cemu, Azahar, melonDS or Eden teams, Nintendo or Sony.\n\nWii U "
-				   "games: {1}/games, storage and saves: {1}/mlc01, keys: {1}/keys.txt\n3DS games: {1}/azahar/games, storage: "
-				   "{1}/azahar/sdmc\nDS games: {1}/melonds/games, saves: {1}/melonds/saves\nSwitch games: {2}/roms, keys: {2}/keys, firmware: "
+				   "games: {4}, storage and saves: {3}/mlc01, keys: {3}/keys.txt\n3DS games: {5}/games, storage: "
+				   "{5}/sdmc\nDS games: {6}/games, saves: {6}/saves\nSwitch games: {2}/roms, keys: {2}/keys, firmware: "
 				   "{2}/firmware\n\nVersion {0}",
-				ps5update::Readable(PS5CEMU_VERSION), ps5paths::Root(), ps5eden::GameFilesFolder());
+				ps5update::Readable(PS5CEMU_VERSION), ps5paths::Root(), ps5eden::GameFilesFolder(), ps5paths::CemuRoot(), ps5paths::Games(), ps5paths::Azahar(), ps5paths::MelonDs());
 		return {};
 	}
 

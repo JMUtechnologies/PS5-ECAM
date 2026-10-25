@@ -1,0 +1,272 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Codex <codex@localhost>
+Date: Sun, 25 Oct 2026 01:50:48 -0700
+Subject: [PATCH] Keep Switch data in its own top-level Eden folder with
+ verified legacy migration
+
+---
+ headless/assets_dir.h                   | 11 ++---
+ headless/ecam_layout.h                  | 57 +++++++++++++++++++++++++
+ headless/main.cpp                       | 12 +++---
+ headless/metadata_bridge.cpp            |  2 +-
+ headless/prosperoeden/eden_services.cpp |  4 +-
+ headless/prosperoeden/frontend.cpp      |  2 +-
+ headless/storage_paths.h                | 30 +++++++++----
+ 7 files changed, 95 insertions(+), 23 deletions(-)
+ create mode 100644 headless/ecam_layout.h
+
+diff --git a/headless/assets_dir.h b/headless/assets_dir.h
+index 599d277..82cfef3 100644
+--- a/headless/assets_dir.h
++++ b/headless/assets_dir.h
+@@ -16,12 +16,13 @@ namespace Eden {
+ // files to /data/prosperoeden when it can). Without filesystem access nothing can be read.
+ inline std::string ResolveAssetsDir() {
+     const std::string legacy = AppFile("assets");
+-    if (!FilesystemAccess()) return kDefaultAssetsDir;
+-    if (std::string saved = LoadSavedAssetsDir(); !saved.empty()) return saved;
++    if (!FilesystemAccess()) return DataDir();
++    if (std::string saved = LoadSavedAssetsDir(); !saved.empty())
++        return saved == std::string{ECAM_SHARED_DATA} + "/eden" ? DataDir() : saved;
+     const std::string keys = "/keys/prod.keys";
+-    if (!FileExists(kDefaultAssetsDir + keys) && FileExists(legacy + keys)) return legacy;
+-    if (!FileExists(kDefaultAssetsDir + keys) && FileExists(kStandaloneDataDir + keys)) return kStandaloneDataDir;
+-    return kDefaultAssetsDir;
++    if (!FileExists(DataDir() + keys) && FileExists(legacy + keys)) return legacy;
++    if (!FileExists(DataDir() + keys) && FileExists(kStandaloneDataDir + keys)) return kStandaloneDataDir;
++    return DataDir();
+ }
+ 
+ // The game files folder in use by this process.
+diff --git a/headless/ecam_layout.h b/headless/ecam_layout.h
+new file mode 100644
+index 0000000..7b30290
+--- /dev/null
++++ b/headless/ecam_layout.h
+@@ -0,0 +1,57 @@
++// SPDX-License-Identifier: GPL-3.0-or-later
++// Shared with Eden's separate executable. Discovery reads only; migration activates verified copies.
++#ifndef ECAM_SYSTEM_LAYOUT_H
++#define ECAM_SYSTEM_LAYOUT_H
++#include <cerrno>
++#include <cstdio>
++#include <cstring>
++#include <initializer_list>
++#include <string>
++#include <sys/stat.h>
++namespace ecam_layout
++{
++    inline constexpr const char* kMarker = ".ecam-separated-v2";
++    inline constexpr const char* kVersion = "ecam-system-layout-v2\n";
++    inline std::string Parent(const std::string& path)
++    {
++        const size_t end = path.find_last_of('/');
++        return end == 0 ? "/" : path.substr(0, end);
++    }
++    inline std::string Sibling(const std::string& shared, const char* system)
++    {
++        const std::string parent = Parent(shared);
++        return parent + (parent == "/" ? "" : "/") + system;
++    }
++    inline bool Present(const std::string& path)
++    {
++        struct stat info{};
++        return lstat(path.c_str(), &info) == 0 || (errno != ENOENT && errno != ENOTDIR);
++    }
++    inline bool Activated(const std::string& directory)
++    {
++        if (FILE* file = std::fopen((directory + "/" + kMarker).c_str(), "rb"))
++        {
++            char value[64]{};
++            const size_t length = std::fread(value, 1, sizeof(value), file);
++            std::fclose(file);
++            return length == std::strlen(kVersion) && std::memcmp(value, kVersion, length) == 0;
++        }
++        return false;
++    }
++    inline std::string System(const std::string& shared, const char* system)
++    {
++        const std::string target = Sibling(shared, system), legacy = shared + "/" + system;
++        return Activated(target) || !Present(legacy) ? target : legacy;
++    }
++    inline std::string Cemu(const std::string& shared)
++    {
++        const std::string target = Sibling(shared, "cemu");
++        if (Activated(target)) return target;
++        for (const char* name : {"settings.xml", "mlc01", "keys.txt", "controllerProfiles", "graphicPacks", "reshade"})
++            if (Present(shared + "/" + name)) return shared;
++        // Also discover a nested Cemu layout if a previous development build created one.
++        return Present(shared + "/cemu") ? shared + "/cemu" : target;
++    }
++}
++
++#endif
+diff --git a/headless/main.cpp b/headless/main.cpp
+index 2b37355..bdd0c18 100644
+--- a/headless/main.cpp
++++ b/headless/main.cpp
+@@ -401,7 +401,7 @@ static void MigrateSandboxData() {
+ // it is a rename of each folder. Nothing moves unless all of it can: a folder chosen in Settings,
+ // or anything already in /data/prosperoeden, leaves everything where it is.
+ static void MoveGameFilesOutOfTheApp() {
+-    const std::string from = std::string{Eden::kInstallDir} + "/assets", to = Eden::kDefaultAssetsDir;
++    const std::string from = std::string{Eden::kInstallDir} + "/assets", to = Eden::DataDir();
+     const std::string saved = Eden::LoadSavedAssetsDir();
+     if ((!saved.empty() && saved != from) || !Eden::FileExists(from + "/keys/prod.keys") ||
+         Eden::FileExists(to + "/keys/prod.keys"))
+@@ -576,16 +576,16 @@ int main(int argc, char** argv) {
+                 " uid=" + std::to_string(getuid()) + "/" + std::to_string(geteuid()) +
+                 " gid=" + std::to_string(getgid()) + "/" + std::to_string(getegid());
+             Eden::Report("filesystem access", access.c_str());
+-            if (Eden::FilesystemAccess() && Eden::AssetsDir() == Eden::kDefaultAssetsDir)
++            if (Eden::FilesystemAccess() && Eden::AssetsDir() == Eden::DataDir())
+                 for (const char* folder : {"/keys", "/firmware", "/roms", "/updates", "/mods", "/ryujinx"})
+-                    (void)mkdir((std::string{Eden::kDefaultAssetsDir} + folder).c_str(), 0777);
++                    (void)mkdir((std::string{Eden::DataDir()} + folder).c_str(), 0777);
+             // RADV's shader cache is kept with the app's data (its own default is /app0), so it also
+             // works when the app is installed as a read-only package image. The cache an earlier
+             // version kept in the app folder moves over.
+             if (Eden::FilesystemAccess()) {
+-                const std::string cache = std::string{Eden::kDataDir} + "/cache/radv";
++                const std::string cache = std::string{Eden::DataDir()} + "/cache/radv";
+                 const std::string before = Eden::AppFile("radv-shader-cache");
+-                (void)mkdir((std::string{Eden::kDataDir} + "/cache").c_str(), 0777);
++                (void)mkdir((std::string{Eden::DataDir()} + "/cache").c_str(), 0777);
+                 if (!Eden::DirectoryExists(cache) && Eden::DirectoryExists(before) &&
+                     std::rename(before.c_str(), cache.c_str()) != 0)
+                     Eden::Report("cache", "The driver's shader cache could not move to the data folder; it starts empty");
+@@ -681,7 +681,7 @@ int main(int argc, char** argv) {
+         // not carry on the console (forwarded_launch.h). In the data folder, so read with filesystem
+         // access only; the program's own arguments without one.
+         std::vector<std::string> request;
+-        if (Eden::FilesystemAccess()) request = Eden::TakeLaunchRequest(std::string{Eden::kDataDir} + "/launch-request.txt");
++        if (Eden::FilesystemAccess()) request = Eden::TakeLaunchRequest(std::string{Eden::DataDir()} + "/launch-request.txt");
+         std::vector<char*> request_argv;
+         for (std::string& arg : request) request_argv.push_back(arg.data());
+         const std::string request_note = !request.empty() ? std::to_string(request.size()) + " arguments" :
+diff --git a/headless/metadata_bridge.cpp b/headless/metadata_bridge.cpp
+index 5dfcd6d..eeefb57 100644
+--- a/headless/metadata_bridge.cpp
++++ b/headless/metadata_bridge.cpp
+@@ -543,7 +543,7 @@ int eden_save_import(uint64_t title_id, char* path, size_t capacity) {
+         return EDEN_SAVE_NO_USER;
+     }
+     const std::string title = TitleName(title_id);
+-    const fs::path backups = fs::path{Eden::kDataDir} / "backup" / "save-import";
++    const fs::path backups = fs::path{Eden::DataDir()} / "backup" / "save-import";
+     bool replaced = false;
+     if (!Eden::RyujinxSaves::Import(source.saves, root / user / title, root / std::string(32, '0') / title, backups,
+                                     title + "-" + TimeStamp(), error, &replaced)) {
+diff --git a/headless/prosperoeden/eden_services.cpp b/headless/prosperoeden/eden_services.cpp
+index 1d5a8a3..3eb976e 100644
+--- a/headless/prosperoeden/eden_services.cpp
++++ b/headless/prosperoeden/eden_services.cpp
+@@ -1253,7 +1253,7 @@ pe::ui::FolderInfo EdenServices::folder_info(const std::string& directory) {
+ 
+ std::string EdenServices::files_folder() { return Eden::AssetsDir(); }
+ std::string EdenServices::saved_files_folder() { return Eden::LoadSavedAssetsDir(); }
+-std::string EdenServices::default_files_folder() { return Eden::kDefaultAssetsDir; }
++std::string EdenServices::default_files_folder() { return Eden::DataDir(); }
+ 
+ bool EdenServices::set_files_folder(const std::string& directory) {
+     const bool saved = Eden::SaveAssetsDir(directory);
+@@ -1670,7 +1670,7 @@ void EdenServices::StartSync(std::vector<SyncJob> jobs, bool before) {
+                 places.save = Eden::UserDir() + "/nand/user/save/0000000000000000/" + profile + "/" + title;
+                 places.store = SyncFolder() + "/" + profile;
+                 places.work = places.store + "/work";
+-                places.backups = std::string{Eden::kDataDir} + "/backup/save-sync/" + profile;
++                places.backups = std::string{Eden::DataDir()} + "/backup/save-sync/" + profile;
+                 places.lister = ListSaveFolder;
+                 result = Eden::Remote::SyncSaveData(
+                     item.setup.type, item.setup.settings, item.game, places,
+diff --git a/headless/prosperoeden/frontend.cpp b/headless/prosperoeden/frontend.cpp
+index 8bbddfc..db8fcc4 100644
+--- a/headless/prosperoeden/frontend.cpp
++++ b/headless/prosperoeden/frontend.cpp
+@@ -245,7 +245,7 @@ std::string RunApp(const std::string& launch_error, bool first_start, Eden::Mult
+         const bool input_ready = radio_input_init();
+         if (!input_ready) Eden::Report("menu failure", "The controller could not be opened");
+         // No update check of its own: PS5CEMU-HAR updates its whole app folder, eden/ with it.
+-        pe::ui::RuntimeLauncher launcher(services, textures, fonts, batch, first_start, Eden::kDataDir, audio_ready ? mixer.get() : nullptr, LoadLanguage);
++        pe::ui::RuntimeLauncher launcher(services, textures, fonts, batch, first_start, Eden::DataDir(), audio_ready ? mixer.get() : nullptr, LoadLanguage);
+         int menu_volume = launcher.menu_volume();
+         mixer->set_bus_gain(pe::audio::Bus::ui, MenuGain(menu_volume));
+         std::fprintf(stderr, "EDEN_LAUNCHER display=%dx%d sounds=%d audio=%d ready_ms=%lld\n", display.width(),
+diff --git a/headless/storage_paths.h b/headless/storage_paths.h
+index 08f51c8..81a905b 100644
+--- a/headless/storage_paths.h
++++ b/headless/storage_paths.h
+@@ -3,7 +3,7 @@
+ // first thing in main) the app uses real console paths:
+ //   app folder     the eden/ folder of PS5CEMU-HAR's app (PPSA99360), normally
+ //                  /data/homebrew/PPSA99360/eden: PS5CEMU-HAR starts it with LoadExec
+-//   data           /data/ps5cemu/eden: config/ (prosperoeden.json), logs/, covers/, user/,
++//   data           /data/eden (legacy /data/ps5cemu/eden discovered in place): config/ (prosperoeden.json), logs/, covers/, user/,
+ //                  wallpapers/ (docs/WALLPAPERS.md)
+ // Without it (no resident service or local elfldr, or the request failed) the app has no data:
+ // it reads the app folder as /app0, keeps only its logs in /download0, and the launcher says
+@@ -11,6 +11,7 @@
+ // then, and a console where access came and went showed one set or the other: saves and
+ // settings seemed to be gone.
+ #pragma once
++#include "ecam_layout.h"
+ #include <cstdio>
+ #include <string>
+ #include <string_view>
+@@ -19,8 +20,9 @@
+ namespace Eden {
+ // PS5CEMU-HAR (PPSA99360) runs this program from its app folder's eden/ (its Switch side).
+ inline constexpr const char* kHostTitle = "PPSA99360";
+-inline constexpr const char* kDataDir = "/data/ps5cemu/eden";
+-inline constexpr const char* kDefaultAssetsDir = "/data/ps5cemu/eden";
++#ifndef ECAM_SHARED_DATA
++#define ECAM_SHARED_DATA "/data/ps5cemu"
++#endif
+ // A standalone ProsperoEden's data: its keys, firmware and games are used where they are
+ // while /data/ps5cemu/eden has no keys (assets_dir.h).
+ inline constexpr const char* kStandaloneDataDir = "/data/prosperoeden";
+@@ -35,6 +37,18 @@ inline int& FilesystemAccessStatus() {
+ }
+ inline bool FilesystemAccess() { return FilesystemAccessStatus() == 0; }
+ 
++// Resolve after elevation, never during static initialization in the sandbox. This is the same
++// legacy/verified-copy selection used by the host launcher for its launch request and saves.
++inline const std::string& DataDir() {
++    if (!FilesystemAccess()) {
++        static const std::string unavailable = ecam_layout::Sibling(ECAM_SHARED_DATA, "eden");
++        return unavailable;
++    }
++    static const std::string selected = ecam_layout::System(ECAM_SHARED_DATA, "eden");
++    return selected;
++}
++
++
+ inline bool FileExists(const std::string& path) {
+     struct stat info {};
+     return stat(path.c_str(), &info) == 0 && S_ISREG(info.st_mode);
+@@ -64,12 +78,12 @@ inline const std::string& AppDir() {
+ inline std::string AppFile(std::string_view name) { return AppDir() + "/" + std::string(name); }
+ 
+ // Settings, logs, covers and Eden's user folder.
+-inline std::string ConfigDir() { return std::string{kDataDir} + "/config"; }
++inline std::string ConfigDir() { return std::string{DataDir()} + "/config"; }
+ // The logs alone have a place in the sandbox: they are how a start without access is looked into.
+-inline std::string LogsDir() { return FilesystemAccess() ? std::string{kDataDir} + "/logs" : "/download0/eden-headless-g7"; }
+-inline std::string CoversDir() { return std::string{kDataDir} + "/covers"; }
++inline std::string LogsDir() { return FilesystemAccess() ? std::string{DataDir()} + "/logs" : "/download0/eden-headless-g7"; }
++inline std::string CoversDir() { return std::string{DataDir()} + "/covers"; }
+ // The wallpaper images the launcher can show (Settings > Appearance > Wallpaper).
+-inline std::string WallpapersDir() { return std::string{kDataDir} + "/wallpapers"; }
++inline std::string WallpapersDir() { return std::string{DataDir()} + "/wallpapers"; }
+ // A game's cover in that folder. Covers are keyed by the ROM's file name in the game files
+ // folder, not its full path, so they survive a new game files folder.
+ inline unsigned int HashPath(std::string_view path) {
+@@ -82,7 +96,7 @@ inline std::string CoverFile(std::string_view file) {
+     std::snprintf(name, sizeof(name), "/%08x.tga", HashPath(file));
+     return CoversDir() + name;
+ }
+-inline std::string UserDir() { return std::string{kDataDir} + "/user"; }
++inline std::string UserDir() { return std::string{DataDir()} + "/user"; }
+ inline std::string ConfigFile(std::string_view name) { return ConfigDir() + "/" + std::string(name); }
+ inline std::string LogFile(std::string_view name) { return LogsDir() + "/" + std::string(name); }
+ 

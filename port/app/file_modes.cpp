@@ -30,11 +30,11 @@ namespace ps5filemodes
 		{
 			return ps5paths::Root() + "/files-opened";
 		}
-		constexpr int kVersion = 1;
+		constexpr int kVersion = 3;
 		constexpr size_t kExamples = 3; // of those the app may not change, in the boot log
 		// the sides' own game folders hold the player's files, which the app only reads: an FTP client's
 		// upload keeps its owner's mode
-		constexpr const char* kPlayers[] = {"/games", "/azahar/games", "/melonds/games", "/eden/roms", "/eden/keys", "/eden/firmware", "/eden/updates",
+		constexpr const char* kPlayers[] = {"/games", "/cemu/games", "/cemu/updates", "/cemu/dlc", "/azahar/games", "/melonds/games", "/eden/roms", "/eden/keys", "/eden/firmware", "/eden/updates",
 			"/eden/mods"};
 
 		std::thread s_thread;
@@ -124,6 +124,9 @@ namespace ps5filemodes
 			for (const char* folder : kPlayers)
 				if (path == ps5paths::Root() + folder)
 					return true;
+			for (const std::string& root : {ps5paths::CemuRoot(), ps5paths::Azahar(), ps5paths::MelonDs(), ps5paths::Eden()})
+				for (const char* sub : {"/games", "/roms", "/updates", "/dlc", "/keys", "/firmware", "/bios", "/mods"})
+					if (path == root + sub) return true;
 			return false;
 		}
 
@@ -141,8 +144,16 @@ namespace ps5filemodes
 				std::string path;
 				struct stat st;
 				bool refused; // its own mode, already counted
+				dev_t device;
 			};
-			std::vector<Folder> folders{{ps5paths::Root(), root, false}};
+			std::vector<Folder> folders{{ps5paths::Root(), root, false, root.st_dev}};
+			for (const std::string& system : {ps5paths::CemuRoot(), ps5paths::Azahar(), ps5paths::MelonDs(), ps5paths::Eden()})
+			{
+				if (system == ps5paths::Root() || system.starts_with(ps5paths::Root() + "/")) continue;
+				struct stat info{};
+				if (lstat(system.c_str(), &info) == 0 && S_ISDIR(info.st_mode))
+					folders.push_back({system, info, !Open(walk, system, info), info.st_dev});
+			}
 			while (!folders.empty() && !s_stop)
 			{
 				const Folder folder = std::move(folders.back());
@@ -166,11 +177,11 @@ namespace ps5filemodes
 					struct stat st{};
 					// another file system mounted in it is not the app's to change; a link is left as it is,
 					// and not followed
-					if (lstat(path.c_str(), &st) != 0 || st.st_dev != root.st_dev || PlayersFolder(path))
+					if (lstat(path.c_str(), &st) != 0 || st.st_dev != folder.device || PlayersFolder(path))
 						continue;
 					const bool open = Open(walk, path, st);
 					if (S_ISDIR(st.st_mode))
-						folders.push_back({std::move(path), st, !open});
+						folders.push_back({std::move(path), st, !open, folder.device});
 				}
 				closedir(dir);
 			}

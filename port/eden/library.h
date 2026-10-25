@@ -3,7 +3,7 @@
 // the app's folder: ProsperoEdenX, premohq's fork of Sword's ProsperoEden, built by
 // tools/build-eden.sh), for the launcher.
 //
-// Eden's data is where its program keeps it, /data/ps5cemu/eden: keys/ (prod.keys, title.keys),
+// Eden's data is where its program keeps it, /data/eden: keys/ (prod.keys, title.keys),
 // firmware/, roms/ (the games: .nsp and .xci files, alone or in a folder per game with its update
 // and DLC), updates/, mods/, covers/ and config/prosperoeden.json. Its game files folder may be
 // another (prosperoeden.json's game_files, or a standalone ProsperoEden's /data/prosperoeden while

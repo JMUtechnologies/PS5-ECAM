@@ -65,9 +65,9 @@ int main() {
 	ps5saves::Finish();
 	// Resume where you left off's states: Azahar's slot 11 by the title ID, melonDS's by the file (an archive's without .tar)
 	ps5saves::GameRef n3ds; n3ds.side = 1; n3ds.titleId = 0x0004000000055d00;
-	Check(ps5saves::ResumeState(n3ds) == (root / "azahar/states/0004000000055D00.11.cst").string(), "the 3DS's resume state");
+	Check(ps5saves::ResumeState(n3ds) == ps5paths::Azahar() + "/states/0004000000055D00.11.cst", "the 3DS's resume state");
 	ps5saves::GameRef tar; tar.side = 2; tar.file = "/games/Mario.tar.gz";
-	Check(ps5saves::ResumeState(tar) == (root / "melonds/states/Mario.ml11").string(), "the DS's, an archive's by its name");
+	Check(ps5saves::ResumeState(tar) == ps5paths::MelonDs() + "/states/Mario.ml11", "the DS's, an archive's by its name");
 	ps5saves::GameRef wiiu; wiiu.side = 0;
 	Check(ps5saves::ResumeState(wiiu).empty(), "none for the Wii U");
 	return failures != 0;

@@ -38,7 +38,7 @@ namespace ps5packs
 
 		fs::path PacksFolder()
 		{
-			return fs::path(ps5paths::Root()) / "graphicPacks" / "downloadedGraphicPacks";
+			return fs::path(ps5paths::CemuRoot()) / "graphicPacks" / "downloadedGraphicPacks";
 		}
 
 		void Set(Status::State state, const std::string& message = {})

@@ -39,14 +39,14 @@ done
 python3 -B tools/launcher-preview/make-3ds-samples.py "$games/3ds" "$games/ds"
 # Switch games where Eden keeps them (the Switch side's default folder, ps5eden::DefaultGamesFolder):
 # empty files by a dump's names, one in a folder of its own with its update, and Eden's keys
-roms=$out/data/eden/roms
-mkdir -p "$roms/Mario Kart 8 Deluxe" "$out/data/eden/keys" "$out/data/eden/firmware"
+roms=$out/eden/roms
+mkdir -p "$roms/Mario Kart 8 Deluxe" "$out/eden/keys" "$out/eden/firmware"
 for game in "Super Mario Odyssey [0100000000010000][v0].nsp" "The Legend of Zelda Tears of the Kingdom [0100F2C0115B6000].xci" \
     "Animal Crossing New Horizons [01006F8002326000].nsp" "Metroid Dread (USA).xci" "Mario Kart 8 Deluxe/Mario Kart 8 Deluxe [0100152000022000].nsp" \
     "Mario Kart 8 Deluxe/Mario Kart 8 Deluxe [0100152000022800][v1966080].nsp"; do
     : >"$roms/$game"
 done
-: >"$out/data/eden/keys/prod.keys"
+: >"$out/eden/keys/prod.keys"
 # a game's saves for its Saves page: Breath of the Wild's, two accounts' and the
 # one they share
 for save in 80000001:4100000 80000002:3800000 common:12000; do

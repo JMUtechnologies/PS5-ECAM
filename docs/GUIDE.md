@@ -129,10 +129,10 @@ work stops before a game starts.
 - **Artic Base:** play a game straight from your own 3DS over the network. Start Artic Base on the
   3DS, open **Settings > Artic Base** and enter the address the 3DS shows. The same page runs the Artic Setup Tool, which copies your 3DS's system files.
   The setup needs no keys from you: Azahar's own are built in, as in its official builds. An
-  `aes_keys.txt` in `/data/ps5cemu/azahar/sysdata` takes the place of all of them, so leave it out
+  `aes_keys.txt` in `/data/azahar/sysdata` takes the place of all of them, so leave it out
   unless it is complete; when it lacks what the setup needs, the 3DS's screen says so.
 - An on-screen keyboard for games that ask for text.
-- **The cameras see a picture:** put a PNG or JPEG in `/data/ps5cemu/azahar/camera`, or send one
+- **The cameras see a picture:** put a PNG or JPEG in `/data/azahar/camera`, or send one
   from a phone with the remote touch screen's **Add files to the PS5** (**3DS camera**), and both of
   the 3DS's cameras see the newest, fitted on white: a QR code for Pokémon's QR Scanner, a Mii or an
   Animal Crossing design to scan. It is read again each time the game turns a camera on. With no
@@ -157,7 +157,7 @@ New in 4.0.0: a side of its own, in melonDS's green, to the right of the 3DS.
 - Save states (five slots), melonDS's `.mch` cheats and the same in-game menu as the 3DS side's.
 - Games in `.zip`, `.7z`, `.rar` and tar archives play as they are, as in melonDS's own frontend.
 - No BIOS needed: melonDS's own replacements run most games. Your own DS's `bios7.bin`, `bios9.bin`
-  and `firmware.bin` in `/data/ps5cemu/melonds/bios` are used when they are there
+  and `firmware.bin` in `/data/melonds/bios` are used when they are there
   (**Settings > System**).
 - Not there: DSi games, the DS's wireless and its GBA slot.
 
@@ -202,7 +202,7 @@ New in 5.0.0: a side of its own, in the Switch's red, to the right of the DS.
 - Eden reaches `/data` as PS5-ECAM does: through etaHEN with `PPSA99360` in its app jailbreak list
   (or OnionHEN's `exact_title_ids`), else through its own helper and the console's ELF loader on port
   9021. Without it Eden reads no keys or games, and its launcher says so.
-- Saves are Eden's, in `/data/ps5cemu/eden/user/nand/user/save`. **Back up to USB** takes them, with
+- Saves are Eden's, in `/data/eden/user/nand/user/save`. **Back up to USB** takes them, with
   Eden's user profiles, as it does every side's saves.
 
 ## Game files
@@ -216,7 +216,7 @@ after you add games; **Look on network shares at every start** brings back the l
 
 ### Wii U
 
-Put games in `/data/ps5cemu/games`, or pick another folder in **Settings > Game files** on the Wii U side.
+Put games in `/data/cemu/games`, or pick another folder in **Settings > Game files** on the Wii U side.
 
 ```text
 <game folder>/
@@ -228,7 +228,11 @@ Put games in `/data/ps5cemu/games`, or pick another folder in **Settings > Game 
     └── meta/
 ```
 
-Encrypted WUD and WUX dumps also need their disc keys in `/data/ps5cemu/keys.txt`.
+Encrypted WUD and WUX dumps also need their disc keys in `/data/cemu/keys.txt` on a new
+install. Existing Cemu installs keep their legacy keys, settings and storage in place; the Setup
+check shows the keys path in use. See [System folders](SYSTEM-FOLDERS.md) before reorganizing an
+existing install. Unpacked update and DLC sources can go in `/data/cemu/updates` and `/data/cemu/dlc`;
+**Updates and DLC** discovers them and installs them into Cemu's `mlc01` storage.
 
 An unpacked game can also stay in a `.zip`, `.7z` or `.rar` archive, or a `.tar` (`.tar.gz`,
 `.tar.xz` and the like), one game to an archive: its first folder by name with `code`, `content` and
@@ -239,7 +243,7 @@ those names there. A `.zip` has no such limit.
 
 ### Nintendo 3DS
 
-Put games in `/data/ps5cemu/azahar/games`, or pick another folder in **Settings > Game files** on the 3DS side.
+Put games in `/data/azahar/games`, or pick another folder in **Settings > Game files** on the 3DS side.
 
 - `.3ds`, `.cci`, `.cxi` and `.app` dumps, `.3dsx` and `.elf` homebrew, and Azahar's compressed
   formats (`.z3ds`, `.zcci`, `.zcxi`, `.z3dsx`) play directly. The library reads a compressed game's
@@ -254,9 +258,9 @@ Put games in `/data/ps5cemu/azahar/games`, or pick another folder in **Settings 
 
 ### Nintendo DS
 
-Put games (`.nds`) in `/data/ps5cemu/melonds/games`, or pick another folder in **Settings > Game
+Put games (`.nds`) in `/data/melonds/games`, or pick another folder in **Settings > Game
 files** on the DS side. A save (`.sav`) beside a game is taken the first time it starts; from then on
-saves are in `/data/ps5cemu/melonds/saves`.
+saves are in `/data/melonds/saves`.
 
 A game can stay in its `.zip`, `.7z` or `.rar` archive, or a `.tar` (`.tar.gz`, `.tar.xz` and the
 like): its first `.nds` by name is the game, read into memory when it starts, and nothing is
@@ -264,11 +268,11 @@ extracted. Its saves are named by the archive, as a game's are by its file.
 
 ### Nintendo Switch
 
-Put games in `/data/ps5cemu/eden/roms`, or pick another folder in **Settings > Game files** on the
+Put games in `/data/eden/roms`, or pick another folder in **Settings > Game files** on the
 Switch side (not a network share: Eden cannot read those).
 
 ```text
-/data/ps5cemu/eden/
+/data/eden/
 ├── keys/
 │   ├── prod.keys                   your Switch's keys: Eden reads no game without them
 │   └── title.keys
@@ -281,14 +285,14 @@ Switch side (not a network share: Eden cannot read those).
 ```
 
 - `.nsp` and `.xci` play directly. An update or DLC in a game's folder goes with that game; ones in
-  `/data/ps5cemu/eden/updates` are found too.
+  `/data/eden/updates` are found too.
 - With your keys the library reads each game's own name and icon from its file (without them, it
   names a game by its file). Its box art and description come from GameTDB, which knows a Switch
   game by its name: the app looks it up by the game's own name, else its file's. A picture beside a
   game with its name (`Game.png` or `Game.jpg`) is its box art instead.
 - A title ID in brackets in the file's name, as dumps have it, keeps the game's settings and its
   place in Recently played whatever the file is called.
-- A standalone ProsperoEden's files in `/data/prosperoeden` are used while `/data/ps5cemu/eden` has
+- A standalone ProsperoEden's files in `/data/prosperoeden` are used while `/data/eden` has
   no keys.
 
 ### Games in archives
@@ -386,7 +390,7 @@ progress, and goes straight into the app's folder for it:
 | Wii U, 3DS, DS and Switch games | each side's games folder, as **Settings > Game files** has it (not a network share) |
 | Switch keys, Switch firmware | Eden's `keys/` and `firmware/` |
 | Amiibo | `/data/ps5cemu/amiibo` |
-| 3DS camera | `/data/ps5cemu/azahar/camera`: the picture the 3DS's cameras see |
+| 3DS camera | `/data/azahar/camera`: the picture the 3DS's cameras see |
 | Launcher music | `/data/ps5cemu/music` |
 
 A file of the same name that is there already is never replaced, and a file cut short (the phone
@@ -417,11 +421,11 @@ WUD or WUX files, or an unpacked game in an archive; a 3DS CIA sent this way is 
   (a moment longer), and the game's Options menu then has **Resume where you left off**, which starts
   the game and goes on from there. **Play** starts it as before. Not for Artic Base games.
   States made by earlier PS5-ECAM builds load too. Keep saving in the game as well.
-- **Cheats (3DS).** Put a game's cheats in `/data/ps5cemu/azahar/cheats/<title ID>.txt` (16 hex
+- **Cheats (3DS).** Put a game's cheats in `/data/azahar/cheats/<title ID>.txt` (16 hex
   digits, shown in the in-game menu), in the Gateway format desktop Azahar uses, and turn them on and
   off from the menu.
 - **Custom textures (3DS).** Turn on **Settings > Graphics > Custom textures** (3DS) and put a pack in
-  `/data/ps5cemu/azahar/load/textures/<title ID>/`.
+  `/data/azahar/load/textures/<title ID>/`.
 - **Mods:** [below](#mods).
 
 ## Mods
@@ -476,11 +480,14 @@ can be written with or without the dash, `00050000-101C9400`). Breath of the Wil
 
 ### Where mods are kept
 
-Mods added from a drive are copied to `/data/ps5cemu/graphicPacks/mods/`. Cemu finds a pack anywhere
-in `/data/ps5cemu/graphicPacks`, so mods copied there with FTP or a file manager work too, as long as
+The paths below are a new install's. An install from before keeps `graphicPacks` and `log.txt` in
+`/data/ps5cemu` until it is separated ([System folders](SYSTEM-FOLDERS.md)).
+
+Mods added from a drive are copied to `/data/cemu/graphicPacks/mods/`. Cemu finds a pack anywhere
+in `/data/cemu/graphicPacks`, so mods copied there with FTP or a file manager work too, as long as
 each has its `rules.txt` (only mods added from a drive get one written for them).
 
-To remove a mod, turn it off, or delete its folder from `/data/ps5cemu/graphicPacks/mods/` with FTP
+To remove a mod, turn it off, or delete its folder from `/data/cemu/graphicPacks/mods/` with FTP
 or a file manager.
 
 ### Writing a rules.txt
@@ -504,7 +511,7 @@ describes the rest (presets, patches, shaders).
 ### When a mod does not work
 
 - **It is not on the game's Graphic packs page:** its `rules.txt` names another title ID (another
-  region of the game), or is missing. `/data/ps5cemu/log.txt` names the packs Cemu could not read.
+  region of the game), or is missing. `/data/cemu/log.txt` names the packs Cemu could not read.
 - **The game does not change:** the folders inside the mod must be spelt `content`, `aoc` and `code`
   in lower case (mods added from a drive are fixed for you), and directly in the mod's folder.
 - **The game crashes:** the mod may be for another version of the game (update it in **Updates and
@@ -516,9 +523,10 @@ describes the rest (presets, patches, shaders).
 ### 3DS mods
 
 3DS games take LayeredFS mods, as Azahar on a PC does: put a mod's `romfs/` and `exefs/` folders in
-`/data/ps5cemu/azahar/load/mods/<title ID>/`. Texture packs go in
-`/data/ps5cemu/azahar/load/textures/<title ID>/`, with **Settings > Graphics > Custom textures** on.
-With the data on the app's drive, these folders are in its `PS5CEMU-HAR-data` folder instead.
+`/data/azahar/load/mods/<title ID>/`. Texture packs go in
+`/data/azahar/load/textures/<title ID>/`, with **Settings > Graphics > Custom textures** on.
+With the data on the app's drive, these folders are in the `azahar` folder beside its
+`PS5CEMU-HAR-data` folder instead.
 
 - **Names as Azahar writes them.** The PS5 tells capitals from small letters: `load`, `mods`,
   `romfs` and `exefs` in small letters, the title ID in 16 digits with capital letters (it starts
@@ -557,56 +565,13 @@ Without an internet connection, the libraries just show the game icons.
 
 ## Where files are stored
 
-Everything the app writes goes to `/data/ps5cemu`, except your game files (or to the app's drive:
-[below](#everything-on-the-apps-drive)):
+The systems now have separate folders directly under `/data`: `/data/cemu`, `/data/azahar`,
+`/data/melonds`, and `/data/eden`. Shared launcher files stay in `/data/ps5cemu`.
+[System folders](SYSTEM-FOLDERS.md) gives the complete games, updates, DLC, keys, firmware,
+BIOS, saves and settings tree, legacy detection rules and verified backup-and-copy migration.
 
-```text
-/data/ps5cemu/
-├── ps5cemu.json                    launcher settings
-├── settings.xml                    Cemu settings
-├── controllerProfiles/             Cemu controller profiles
-├── mlc01/                          Wii U storage: installed updates and DLC, saves
-├── games/                          default Wii U game folder
-├── keys.txt                        disc keys for encrypted Wii U dumps
-├── graphicPacks/                   community graphic packs and your own
-├── cache/                          Cemu shader and pipeline caches, and archives/: the Wii U and
-│                                   3DS games unpacked from archives
-├── archives.bin                    what the library read of Wii U games in archives
-├── amiibo/                         your amiibo dumps (.bin), for both emulators
-├── figures/                        Skylanders, Disney Infinity and LEGO Dimensions dumps (Wii U)
-├── azahar/
-│   ├── games/                      default 3DS game folder
-│   ├── sdmc/                       3DS SD card: installed CIAs, saves, extra data
-│   ├── nand/                       3DS system storage
-│   ├── sysdata/                    aes_keys.txt, if you add it
-│   ├── cheats/                     3DS cheats, <title ID>.txt
-│   ├── load/                       3DS custom textures (textures/) and mods (mods/)
-│   ├── shaders/                    Azahar shader cache
-│   ├── archives.bin                what the library read of 3DS games in archives
-│   └── log/azahar_log.txt          Azahar log
-├── melonds/
-│   ├── games/                      default DS game folder
-│   ├── saves/                      DS saves, <game file>.sav
-│   ├── states/                     DS save states
-│   ├── cheats/                     DS cheats, <game file>.mch
-│   ├── archives.bin                what the library read of DS games in archives
-│   └── bios/                       your DS's bios7.bin, bios9.bin and firmware.bin, if you add them
-├── eden/                           the Switch side's, always in /data (Eden's program keeps it there)
-│   ├── keys/                       your Switch's prod.keys and title.keys
-│   ├── firmware/                   your Switch's firmware
-│   ├── roms/                       default Switch game folder
-│   ├── updates/, mods/             updates and DLC, mods and cheats
-│   ├── user/                       Eden's storage: saves in user/nand/user/save
-│   ├── covers/                     games' icons and names, once Eden has read them
-│   ├── config/prosperoeden.json    ProsperoEden's own settings
-│   └── logs/                       Eden's logs (Copy logs to USB takes them)
-├── covers/                         game icons and box art (boxart/)
-├── music/                          your own launcher music (.mp3, .wav)
-├── themes/                         your own launcher themes (.json)
-├── log.txt                         Cemu log
-└── logs/                           app logs: boot.log, and boot.prev.log to boot.4.log for the
-                                    four sessions before, each with its Cemu log (cemu.prev.txt...)
-```
+Existing installations stay discoverable in their original locations until migration is
+explicitly activated. The app does not automatically move or delete installed content.
 
 **FTP and file managers:** every file and folder the app makes is open to every user (folders 0777,
 files 0666), so an FTP client or a file manager can change or delete it, installed CIAs included.
@@ -617,34 +582,30 @@ setting `/data/ps5cemu` to 777 from a file manager opens them.
 
 ### Everything on the app's drive
 
-With the app installed on a USB drive or the extended storage (ShadowMountPlus mounting it from
-there), a `PS5CEMU-HAR-data` folder at the top of that drive takes the place of `/data/ps5cemu`, with
-the same files in it, and the app makes nothing in `/data`. A first start on a drive makes that folder
-itself when there is no `/data/ps5cemu` yet.
-
-To move an install that already keeps its data in `/data/ps5cemu`: with the app closed, copy
-everything in `/data/ps5cemu` into a new `PS5CEMU-HAR-data` folder at the top of the app's drive (FTP
-or a file manager), start the app, check your games and saves are there, then delete
-`/data/ps5cemu`. Game folders inside `/data/ps5cemu` follow the data to the drive. The Setup check's
-**Storage** shows the folder in use, as `boot.log`'s `[main] data folder` line does. An app installed
-in `/data`, or mounted from an image, keeps `/data/ps5cemu`. The drive's `ps5cemu/mods` folder is
-still where Wii U mods are added from.
+When the app uses a drive's `PS5CEMU-HAR-data` for shared launcher data, new Cemu, Azahar
+and melonDS storage uses siblings on that drive: `cemu`, `azahar` and `melonds`. Eden remains
+on the console at `/data/eden` (or its discovered legacy location). A first start on a drive
+still decides the launcher root as before. Existing whole-root installs remain discoverable.
+Use the [system migration guide](SYSTEM-FOLDERS.md#launcher-data-on-an-app-drive) to migrate
+existing content; retain a full verified backup and both source copies. The Setup check shows
+the launcher root, while `boot.log` records each system root.
 
 **Backups:** **Settings > Accounts and saves > Back up to USB** copies every side's saves, save
 states, the Wii U's accounts and the Switch's user profiles (never the games) to
 `PS5CEMU-HAR-saves/<date and time>` on the first USB drive plugged in, with the settings:
 `ps5cemu.json` (every side's and each game's own), Cemu's `settings.xml`, the controller profiles and
 your themes. **Restore from USB** puts a backup back, moving what is there now to
-`/data/ps5cemu/saves-before` first; when the backup has settings, PS5-ECAM then starts again to use
+the owning system's `saves-before` folder first; when the backup has settings, PS5-ECAM then starts again to use
 them. A game's own backup (its **Saves** page) holds its saves alone.
 
 **Wii U saves from Cemu on PC:** with the game closed, copy
 `mlc01/usr/save/00050000/<title ID>/user/<account>` from your PC to
-`/data/ps5cemu/mlc01/usr/save/00050000/<title ID>/user/80000001`.
+`/data/cemu/mlc01/usr/save/00050000/<title ID>/user/80000001` on a new install
+(or the original `/data/ps5cemu/mlc01/...` on a legacy install).
 
 **3DS saves from Azahar or Citra on PC:** copy
 `sdmc/Nintendo 3DS/<ID0>/<ID1>/title/00040000/<title ID>/data` to the same path under
-`/data/ps5cemu/azahar/sdmc/Nintendo 3DS/`. ID0 and ID1 are all zeros in Azahar, on PC and PS5.
+`/data/azahar/sdmc/Nintendo 3DS/`. ID0 and ID1 are all zeros in Azahar, on PC and PS5.
 
 ## Reporting problems
 

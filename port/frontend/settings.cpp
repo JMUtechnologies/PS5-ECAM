@@ -69,7 +69,7 @@ namespace ps5settings
 		}
 
 		// relocate: a folder in the data folder follows it to a drive (the Switch's does not: Eden's
-		// program keeps its data in /data/ps5cemu/eden wherever ours is)
+		// program resolves /data/eden or its legacy /data/ps5cemu/eden wherever ours is)
 		void ReadN3ds(const rapidjson::Value& json, N3ds& n3ds, bool relocate = true)
 		{
 			ReadString(json, "gamesFolder", n3ds.gamesFolder);
@@ -339,8 +339,14 @@ namespace ps5settings
 			ReadN3ds(json["n3ds"], settings.n3ds);
 		if (json.HasMember("nds") && json["nds"].IsObject())
 			ReadN3ds(json["nds"], settings.nds);
+		if (settings.n3ds.gamesFolder == ps5paths::Root() + "/azahar/games")
+			settings.n3ds.gamesFolder = ps5paths::Azahar() + "/games";
+		if (settings.nds.gamesFolder == ps5paths::Root() + "/melonds/games")
+			settings.nds.gamesFolder = ps5paths::MelonDs() + "/games";
 		if (json.HasMember("switch") && json["switch"].IsObject())
 			ReadN3ds(json["switch"], settings.nx, false);
+		if (settings.nx.gamesFolder == std::string(ps5paths::kDefaultRoot) + "/eden/roms")
+			settings.nx.gamesFolder = ps5paths::Eden() + "/roms";
 		if (json.HasMember("games") && json["games"].IsObject())
 			for (const auto& game : json["games"].GetObject())
 			{

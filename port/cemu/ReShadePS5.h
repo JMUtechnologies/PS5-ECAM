@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // PS5-ECAM: ReShade on the Wii U side's picture. The preset and effects a PC's ReShade uses
-// (ReShadeEffects.h: /data/ps5cemu/reshade, ReShadePreset.ini or presets/<title ID>.ini, Shaders/ and
+// (ReShadeEffects.h: /data/cemu/reshade, ReShadePreset.ini or presets/<title ID>.ini, Shaders/ and
 // Textures/) run on the TV's picture each frame (ReShadeRuntime.h), once Cemu has drawn it into the
 // swapchain image and before the GamePad's screen, the overlays and the in-game menu go over it: Cemu's
 // LatteRenderTarget_copyToBackbuffer calls VulkanRenderer::PS5_PostEffects (patches/cemu), which calls

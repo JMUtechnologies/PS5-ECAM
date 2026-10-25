@@ -685,7 +685,7 @@ namespace ps5emu
 	{
 		std::vector<Game> games;
 		auto add = [&](uint64_t id, const char* name, uint16_t version, bool update, uint32_t dlc, const char* format, const char* box = "") {
-			games.push_back({id, name, std::string("/data/ps5cemu/games/") + name + ".wua", version, update, dlc, format});
+			games.push_back({id, name, std::string("/data/cemu/games/") + name + ".wua", version, update, dlc, format});
 			games.back().gameId = box;
 		};
 		add(0x0005000010110E00, "Bayonetta 2", 0, false, 0, "WUA", "AQUE01");
@@ -701,7 +701,7 @@ namespace ps5emu
 		add(0x0005000010172600, "Pikmin 3", 0, false, 0, "NUS", "AC3E01");
 		// one in an archive (app/wiiu_archives.h): starting it shows the unpacking sheet
 		add(0x0005000010110900, "Yoshi's Woolly World", 0, false, 0, "ZIP", "AYCE01");
-		games.back().path = "/data/ps5cemu/games/Yoshi's Woolly World.zip";
+		games.back().path = "/data/cemu/games/Yoshi's Woolly World.zip";
 		games.back().archiveFolder = true;
 		games.back().archiveMember = "Yoshi's Woolly World [AYCE01]/";
 		games.back().archiveSize = 5216000000ull;
@@ -931,8 +931,8 @@ namespace ps5emu
 		{
 			add("/mnt/ext0/updates/MK8 DLC", "/mnt/ext0", "Mario Kart 8", 0x0005000C1010EC00, Kind::Dlc, 112, -1, 2300000000ull);
 			add("/mnt/ext0/updates/MK8 v64", "/mnt/ext0", "Mario Kart 8", 0x0005000E1010EC00, Kind::Update, 64, 64, 1100000000ull);
-			add("/data/ps5cemu/games/XCX update", "/data", "Xenoblade Chronicles X", 0x0005000E1014B800, Kind::Update, 16, 33, 100000000ull);
-			add("/data/ps5cemu/games/Splatoon v288 (NUS)", "/data", "", 0x0005000E10176900, Kind::Update, 288, -1, 1600000000ull, true);
+			add("/data/cemu/games/XCX update", "/data", "Xenoblade Chronicles X", 0x0005000E1014B800, Kind::Update, 16, 33, 100000000ull);
+			add("/data/cemu/games/Splatoon v288 (NUS)", "/data", "", 0x0005000E10176900, Kind::Update, 288, -1, 1600000000ull, true);
 		}
 		return found;
 	}

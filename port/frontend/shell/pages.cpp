@@ -1306,9 +1306,9 @@ namespace ps5shell
 			}
 			else
 			{
-				const bool keys = IsFile(ps5paths::Root() + "/keys.txt");
+				const bool keys = IsFile(ps5paths::DiscKeys());
 				// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-				lines[1] = {"keys.txt", keys ? TrF("Found in {0}", ps5paths::Root()) : std::string(Tr("Missing (only .wud/.wux need it)"))};
+				lines[1] = {"keys.txt", keys ? TrF("Found in {0}", ps5paths::CemuRoot()) : std::string(Tr("Missing (only .wud/.wux need it)"))};
 				ready[1] = keys;
 			}
 			lines[2] = {Tr("In use"), ShortPath(GamesFolder(m_filesSide), 40)};
