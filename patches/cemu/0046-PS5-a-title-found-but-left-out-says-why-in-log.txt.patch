@@ -1,0 +1,78 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Mon, 26 Oct 2026 23:33:39 +0000
+Subject: [PATCH] PS5: a title found but left out says why in log.txt
+
+A game folder, file or archive entry the title list refuses was dropped without a word, so a game the
+library did not list left nothing to go on. Each now has a line: no disc key, missing files, unreadable,
+or code, content and meta folders not named in small letters (the PS5's storage tells them apart; the
+scan does not, DetectFormat does).
+---
+ src/Cafe/TitleList/TitleList.cpp | 30 ++++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
+
+diff --git a/src/Cafe/TitleList/TitleList.cpp b/src/Cafe/TitleList/TitleList.cpp
+index 7b75fac..4917784 100644
+--- a/src/Cafe/TitleList/TitleList.cpp
++++ b/src/Cafe/TitleList/TitleList.cpp
+@@ -210,6 +210,27 @@ void _RemoveTitleFromMultimap(TitleInfo* titleInfo)
+ 	cemu_assert_suspicious();
+ }
+ 
++// PS5: a title found but left out, and why, in log.txt: the games a library does not list are said
++// there instead of nowhere. The PS5's storage tells capitals from small letters, so a folder whose
++// code, content and meta folders are named otherwise is found by the scan, which ignores case, and
++// then refused by DetectFormat, which does not.
++static void PS5LogUnusableTitle(const fs::path& path, const TitleInfo* titleInfo)
++{
++	std::error_code ec;
++	const char* why = "its format is not one Cemu reads";
++	switch (titleInfo->GetInvalidReason())
++	{
++	case TitleInfo::InvalidReason::BAD_PATH_OR_INACCESSIBLE: why = "it could not be read"; break;
++	case TitleInfo::InvalidReason::NO_DISC_KEY: why = "its disc key is not in keys.txt"; break;
++	case TitleInfo::InvalidReason::NO_TITLE_TIK: why = "its title.tik, or its meta, app or cos XML, is missing"; break;
++	default:
++		if (fs::is_directory(path, ec) && !(fs::exists(path / "code", ec) && fs::exists(path / "content", ec) && fs::exists(path / "meta", ec)))
++			why = "its code, content and meta folders must be named in small letters";
++		break;
++	}
++	cemuLog_log(LogType::Force, "Title not listed: {}: {}", _pathToUtf8(path), why);
++}
++
+ // check if path is a valid title and if it is, permanently add it to the title list
+ // in the special case that path points to a WUA file, all contained titles will be added
+ void CafeTitleList::AddTitleFromPath(fs::path path)
+@@ -244,7 +265,10 @@ void CafeTitleList::AddTitleFromPath(fs::path path)
+ 			if (titleInfo->IsValid())
+ 				AddDiscoveredTitle(titleInfo);
+ 			else
++			{
++				PS5LogUnusableTitle(path / dirEntry.name, titleInfo);
+ 				delete titleInfo;
++			}
+ 		}
+ 		delete zar;
+ 		return;
+@@ -253,7 +277,10 @@ void CafeTitleList::AddTitleFromPath(fs::path path)
+ 	if (titleInfo->IsValid())
+ 		AddDiscoveredTitle(titleInfo);
+ 	else
++	{
++		PS5LogUnusableTitle(path, titleInfo);
+ 		delete titleInfo;
++	}
+ }
+ 
+ bool CafeTitleList::RefreshWorkerThread()
+@@ -390,7 +417,10 @@ void CafeTitleList::ScanGamePath(const fs::path& path)
+ 		if (titleInfo->IsValid())
+ 			AddDiscoveredTitle(titleInfo);
+ 		else
++		{
++			PS5LogUnusableTitle(path, titleInfo);
+ 			delete titleInfo;
++		}
+ 		// if there are other folders besides content/code/meta then traverse those
+ 		if (dirsInDirectory.size() > 3)
+ 		{
