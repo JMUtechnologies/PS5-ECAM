@@ -32,6 +32,9 @@ jobs:
       - name: String tables
         run: python3 -B tools/lang.py check
 
+      - name: Performance comparison tools
+        run: python3 -B tools/tests/test-performance.py
+
       - name: Keyboards
         run: bash tools/tests/test-keyboard.sh
 
@@ -59,3 +62,4 @@ jobs:
           python3 -B tools/tests/test-stream.py build/tests/stream-host
           python3 -B tools/tests/test-upload.py build/tests/stream-host
           node tools/tests/test-stream-browser.js
+
