@@ -7,7 +7,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: port/app/accounts.cpp:68 port/frontend/shell/settings.cpp:2065
+#: port/app/accounts.cpp:68 port/frontend/shell/settings.cpp:2095
 msgid "The Wii U has twelve accounts at most."
 msgstr "Wii U có tối đa mười hai tài khoản."
 
@@ -95,59 +95,59 @@ msgctxt "status"
 msgid "Won't start"
 msgstr "Không chạy"
 
-#: port/app/emulator.cpp:365
+#: port/app/emulator.cpp:370
 msgid "the PS5 Vulkan driver did not start"
 msgstr "trình điều khiển Vulkan của PS5 không khởi động được"
 
-#: port/app/emulator.cpp:524
+#: port/app/emulator.cpp:529 port/frontend/shell/settings.cpp:2350 port/frontend/shell/shell.cpp:1884
 msgid "PS5-ECAM cannot write to {0}. Is the HEN loaded?"
 msgstr "PS5-ECAM không thể ghi vào {0}. HEN đã được nạp chưa?"
 
-#: port/app/emulator.cpp:546
+#: port/app/emulator.cpp:555
 msgid "PS5-ECAM cannot create the MLC folder {0}"
 msgstr "PS5-ECAM không thể tạo thư mục MLC {0}"
 
 #. why a Wii U game did not start
-#: port/app/emulator.cpp:756
+#: port/app/emulator.cpp:766
 msgid "The game's base files were not found."
 msgstr "Không tìm thấy tệp gốc của trò chơi."
 
-#: port/app/emulator.cpp:762
+#: port/app/emulator.cpp:772
 msgid "The game could not be mounted. Check that its files are still in the game files folder."
 msgstr "Không thể gắn trò chơi. Kiểm tra xem tệp của trò chơi có còn trong thư mục trò chơi không."
 
-#: port/app/emulator.cpp:767 port/azahar/core.cpp:627
+#: port/app/emulator.cpp:777 port/azahar/core.cpp:627
 #, menu
 msgid "The game could not be started."
 msgstr "Không thể khởi động trò chơi."
 
-#: port/app/emulator.cpp:776
+#: port/app/emulator.cpp:786
 msgid "This is not a Wii U game PS5-ECAM can start."
 msgstr "Đây không phải trò chơi Wii U mà PS5-ECAM khởi động được."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/app/emulator.cpp:779
+#: port/app/emulator.cpp:789
 msgid "Its disc key is missing from {0}/keys.txt."
 msgstr "Thiếu khóa đĩa của trò chơi trong {0}/keys.txt."
 
-#: port/app/emulator.cpp:781
+#: port/app/emulator.cpp:791
 msgid "Its title.tik is missing."
 msgstr "Thiếu tệp title.tik của trò chơi."
 
-#: port/app/emulator.cpp:786
+#: port/app/emulator.cpp:796
 msgid "The executable could not be started."
 msgstr "Không thể khởi động tệp thực thi."
 
-#: port/app/emulator.cpp:799 port/melonds/core.cpp:944
+#: port/app/emulator.cpp:809 port/melonds/core.cpp:944
 msgid "The Vulkan renderer did not start: {0}"
 msgstr "Trình kết xuất Vulkan không khởi động được: {0}"
 
 #. the PS5's notification as a Wii U game starts
-#: port/app/emulator.cpp:857
+#: port/app/emulator.cpp:867
 msgid "Touchpad click + Options: the in-game menu (screens, picture, volume, controls, the library)"
 msgstr "Nhấn bàn di cảm ứng + OPTIONS: menu trong trò chơi (màn hình, hình ảnh, âm lượng, điều khiển, thư viện)"
 
-#: port/app/emulator.cpp:1085
+#: port/app/emulator.cpp:1095
 msgid "PS5-ECAM could not start itself again to show the library: start it again from the home screen."
 msgstr "PS5-ECAM không thể tự khởi động lại để hiện thư viện: hãy mở lại từ màn hình chính."
 
@@ -667,32 +667,32 @@ msgid "Wrestling"
 msgstr "Đấu vật"
 
 #. the Wii U's controllers, by the names Nintendo gave them in the language
-#: port/app/ingame.cpp:138 port/frontend/actions.cpp:369
+#: port/app/ingame.cpp:138 port/frontend/actions.cpp:368
 #, menu
 msgid "Wii U GamePad"
 msgstr "Wii U GamePad"
 
-#: port/app/ingame.cpp:139 port/frontend/actions.cpp:370
+#: port/app/ingame.cpp:139 port/frontend/actions.cpp:369
 #, menu
 msgid "Wii U Pro Controller"
 msgstr "Wii U Pro Controller"
 
-#: port/app/ingame.cpp:140 port/frontend/actions.cpp:371
+#: port/app/ingame.cpp:140 port/frontend/actions.cpp:370
 #, menu
 msgid "Classic Controller"
 msgstr "Classic Controller"
 
-#: port/app/ingame.cpp:141 port/frontend/actions.cpp:372
+#: port/app/ingame.cpp:141 port/frontend/actions.cpp:371
 #, menu
 msgid "Wii Remote"
 msgstr "Wii Remote"
 
-#: port/app/ingame.cpp:142 port/frontend/actions.cpp:373
+#: port/app/ingame.cpp:142 port/frontend/actions.cpp:372
 #, menu
 msgid "Wii Remote + Nunchuk"
 msgstr "Wii Remote + Nunchuk"
 
-#: port/app/ingame.cpp:145 port/frontend/actions.cpp:376
+#: port/app/ingame.cpp:145 port/frontend/actions.cpp:375
 #, menu
 msgid "No controller"
 msgstr "Không có tay cầm"
@@ -949,7 +949,7 @@ msgstr "Đang đọc các gói…"
 msgid "The community graphic packs have none for this game."
 msgstr "Gói đồ họa cộng đồng không có gói nào cho trò chơi này."
 
-#: port/app/ingame.cpp:243 port/app/ingame.cpp:345 port/frontend/shell/hub.cpp:231 port/frontend/shell/pages.cpp:305 port/frontend/shell/shell.cpp:1743
+#: port/app/ingame.cpp:243 port/app/ingame.cpp:345 port/frontend/shell/hub.cpp:231 port/frontend/shell/pages.cpp:305 port/frontend/shell/shell.cpp:1796
 #, menu
 msgid "Graphic packs"
 msgstr "Gói đồ họa"
@@ -1269,12 +1269,12 @@ msgstr "Chưa quét được (lỗi {0})"
 msgid "Running"
 msgstr "Đang chạy"
 
-#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1383 port/frontend/shell/shell.cpp:1387 port/frontend/shell/shell.cpp:1414 port/frontend/shell/shell.cpp:1423 port/frontend/shell/shell.cpp:1431 port/frontend/shell/shell.cpp:1439 port/frontend/shell/shell.cpp:1442 port/frontend/shell/shell.cpp:2365
+#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1440 port/frontend/shell/shell.cpp:1467 port/frontend/shell/shell.cpp:1476 port/frontend/shell/shell.cpp:1484 port/frontend/shell/shell.cpp:1492 port/frontend/shell/shell.cpp:1495 port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2492
 #, menu
 msgid "Choose"
 msgstr "Chọn"
 
-#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1396 port/frontend/shell/shell.cpp:1432 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1439 port/frontend/shell/shell.cpp:1442 port/frontend/shell/shell.cpp:1453
+#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1449 port/frontend/shell/shell.cpp:1485 port/frontend/shell/shell.cpp:1489 port/frontend/shell/shell.cpp:1492 port/frontend/shell/shell.cpp:1495 port/frontend/shell/shell.cpp:1506
 #, menu
 msgid "Change"
 msgstr "Đổi"
@@ -1284,7 +1284,7 @@ msgstr "Đổi"
 msgid "Back to the game"
 msgstr "Quay lại trò chơi"
 
-#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/installs.cpp:328 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1397 port/frontend/shell/shell.cpp:1406 port/frontend/shell/shell.cpp:1424 port/frontend/shell/shell.cpp:1431 port/frontend/shell/shell.cpp:1432 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1440 port/frontend/shell/shell.cpp:1442 port/frontend/shell/shell.cpp:1446 port/frontend/shell/shell.cpp:1450 port/frontend/shell/shell.cpp:1454
+#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/installs.cpp:330 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1450 port/frontend/shell/shell.cpp:1459 port/frontend/shell/shell.cpp:1477 port/frontend/shell/shell.cpp:1484 port/frontend/shell/shell.cpp:1485 port/frontend/shell/shell.cpp:1489 port/frontend/shell/shell.cpp:1493 port/frontend/shell/shell.cpp:1495 port/frontend/shell/shell.cpp:1499 port/frontend/shell/shell.cpp:1503 port/frontend/shell/shell.cpp:1507
 #, menu
 msgid "Back"
 msgstr "Quay lại"
@@ -1587,7 +1587,7 @@ msgstr "Bật {0}/{1}"
 msgid "Achievements"
 msgstr "Thành tựu"
 
-#: port/app/ingame3ds.cpp:569 port/frontend/shell/installs.cpp:375 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:841 port/frontend/shell/pages.cpp:1224 port/frontend/shell/shell.cpp:2395
+#: port/app/ingame3ds.cpp:569 port/frontend/shell/installs.cpp:377 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:841 port/frontend/shell/pages.cpp:1224 port/frontend/shell/shell.cpp:2521
 #, menu
 msgid "{0} of {1}"
 msgstr "{0}/{1}"
@@ -1664,7 +1664,7 @@ msgstr "Nắp"
 msgid "Closed"
 msgstr "Gập"
 
-#: port/app/ingame3ds.cpp:600 port/frontend/shell/shell.cpp:1389 port/frontend/shell/shell.cpp:1418 port/frontend/shell/shell.cpp:1429 port/frontend/shell/shell.cpp:1435 port/frontend/shell/shell.cpp:1450
+#: port/app/ingame3ds.cpp:600 port/frontend/shell/shell.cpp:1442 port/frontend/shell/shell.cpp:1471 port/frontend/shell/shell.cpp:1482 port/frontend/shell/shell.cpp:1488 port/frontend/shell/shell.cpp:1503
 #, menu
 msgid "Open"
 msgstr "Mở"
@@ -1881,7 +1881,7 @@ msgstr "Nội dung đã được cài ở đây rồi."
 msgid "An install is already running."
 msgstr "Đang cài một nội dung khác."
 
-#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2337 port/frontend/shell/shell.cpp:2366
+#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2424 port/frontend/shell/shell.cpp:2453 port/frontend/shell/shell.cpp:2475 port/frontend/shell/shell.cpp:2494
 #, menu
 msgid "OK"
 msgstr "OK"
@@ -1897,37 +1897,37 @@ msgstr "Trò chơi cần nhập"
 msgid "Some text"
 msgstr "Văn bản"
 
-#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2255
+#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2342
 #, menu
 msgid "L1 R1: {0}"
 msgstr "L1 R1: {0}"
 
 #. the in-game keyboard's keys
-#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2278
+#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2365
 #, menu
 msgid "Shift: on"
 msgstr "Shift: bật"
 
 #. the in-game keyboard's keys
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1381 port/frontend/shell/shell.cpp:2278
+#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2365
 #, menu
 msgid "Shift"
 msgstr "Shift"
 
-#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2278
+#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2365
 #, menu
 msgid "Space"
 msgstr "Dấu cách"
 
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1381 port/frontend/shell/shell.cpp:2278
+#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2365
 #, menu
 msgid "Delete"
 msgstr "Xóa"
 
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:173 port/frontend/shell/shares.cpp:300 port/frontend/shell/shell.cpp:1381
+#: port/app/keyboard_menu.h:173 port/frontend/shell/shares.cpp:300 port/frontend/shell/shell.cpp:1434
 #, menu
 msgid "Type"
 msgstr "Gõ"
@@ -2253,7 +2253,7 @@ msgstr "GitHub không trả về bản phát hành"
 msgid "The download did not finish"
 msgstr "Chưa tải xuống xong"
 
-#: port/app/pack_updates.cpp:283 port/frontend/shell/installs.cpp:195 port/frontend/shell/pages.cpp:1176
+#: port/app/pack_updates.cpp:283 port/frontend/shell/installs.cpp:197 port/frontend/shell/pages.cpp:1176
 msgid "It could not be installed: {0}"
 msgstr "Không thể cài: {0}"
 
@@ -2261,7 +2261,7 @@ msgstr "Không thể cài: {0}"
 msgid "The new packs could not take the old ones' place"
 msgstr "Các gói mới không thay được các gói cũ"
 
-#: port/app/remote_menu.h:29 port/frontend/shell/settings.cpp:219 port/frontend/shell/settings.cpp:791 port/frontend/shell/settings.cpp:2559
+#: port/app/remote_menu.h:29 port/frontend/shell/settings.cpp:219 port/frontend/shell/settings.cpp:791 port/frontend/shell/settings.cpp:2615
 #, menu
 msgid "Remote touch screen"
 msgstr "Màn hình cảm ứng từ xa"
@@ -2277,28 +2277,28 @@ msgstr "{0} trong trình duyệt của điện thoại hoặc máy tính bảng,
 msgid "A phone or tablet on the PS5's network. Sound stays on the PS5."
 msgstr "Điện thoại hoặc máy tính bảng trong mạng của PS5. Âm thanh vẫn phát trên PS5."
 
-#: port/app/remote_menu.h:108 port/frontend/shell/settings.cpp:2567
+#: port/app/remote_menu.h:108 port/frontend/shell/settings.cpp:2623
 #, menu
 msgid "Turn it off and on again once that is fixed."
 msgstr "Tắt rồi bật lại sau khi đã khắc phục."
 
-#: port/app/saves.cpp:279 port/app/saves.cpp:486
+#: port/app/saves.cpp:281 port/app/saves.cpp:488
 msgid "A save could not be moved aside: {0}"
 msgstr "Không thể chuyển một bản lưu sang chỗ khác: {0}"
 
-#: port/app/saves.cpp:286
+#: port/app/saves.cpp:288
 msgid "A file could not be copied: {0}"
 msgstr "Không thể sao chép một tệp: {0}"
 
-#: port/app/saves.cpp:310
+#: port/app/saves.cpp:312
 msgid "A backup is already running."
 msgstr "Đang sao lưu."
 
-#: port/app/saves.cpp:342 port/app/saves.cpp:606
+#: port/app/saves.cpp:344 port/app/saves.cpp:608
 msgid "No USB drive found: plug one in, formatted exFAT or FAT32."
 msgstr "Không tìm thấy ổ USB: cắm một ổ định dạng exFAT hoặc FAT32."
 
-#: port/app/saves.cpp:547 port/app/saves.cpp:615
+#: port/app/saves.cpp:549 port/app/saves.cpp:617
 msgid "That backup is not there any more."
 msgstr "Bản sao lưu đó không còn nữa."
 
@@ -2655,7 +2655,7 @@ msgstr "Đây không phải trò chơi 3DS mà Azahar khởi động được."
 msgid "The game could not be loaded."
 msgstr "Không thể tải trò chơi."
 
-#: port/azahar/core.cpp:615 port/frontend/shell/shell.cpp:967
+#: port/azahar/core.cpp:615 port/frontend/shell/shell.cpp:1008
 #, menu
 msgid "The game is encrypted, and Azahar plays only decrypted games, with keys or without: decrypt it on your 3DS first (GodMode9)."
 msgstr "Trò chơi đã được mã hóa, và Azahar chỉ chơi trò chơi đã giải mã, dù có khóa hay không: giải mã nó trên máy 3DS trước (GodMode9)."
@@ -2917,7 +2917,7 @@ msgstr "Cần phải di chuyển bao xa trước khi trò chơi nhận thấy. T
 msgid "Left and Right choose an amiibo dump; Cross touches it to the controller when the game asks for one, and again takes it away."
 msgstr "Nhấn trái/phải để chọn bản dump amiibo; khi trò chơi yêu cầu, nút Chữ thập chạm nó vào tay cầm, và nhấn lần nữa để lấy ra."
 
-#: port/eden/ingame.cpp:627 port/frontend/shell/settings.cpp:1128
+#: port/eden/ingame.cpp:627 port/frontend/shell/settings.cpp:1150
 #, menu
 msgid "Room"
 msgstr "Phòng"
@@ -2954,7 +2954,7 @@ msgid "{0} player"
 msgid_plural "{0} players"
 msgstr[0] "{0} người chơi"
 
-#: port/eden/launch.cpp:112 port/main_ps5.cpp:630
+#: port/eden/launch.cpp:112 port/main_ps5.cpp:658
 msgid "This build has no Switch emulator: eden/eboot.bin is not in the app's folder."
 msgstr "Bản này không có trình giả lập Switch: không có eden/eboot.bin trong thư mục của ứng dụng."
 
@@ -3008,290 +3008,290 @@ msgid "{0} KB"
 msgstr "{0} KB"
 
 #. {1} is the USB drive's number
-#: port/frontend/actions.cpp:172
+#: port/frontend/actions.cpp:171
 msgid "{0} file to USB drive {1}"
 msgid_plural "{0} files to USB drive {1}"
 msgstr[0] "{0} tệp vào ổ USB {1}"
 
-#: port/frontend/actions.cpp:175
+#: port/frontend/actions.cpp:174
 msgid "No USB drive found"
 msgstr "Không tìm thấy ổ USB"
 
-#: port/frontend/actions.cpp:202
+#: port/frontend/actions.cpp:201
 msgid "{0} file deleted ({1} MB)"
 msgid_plural "{0} files deleted ({1} MB)"
 msgstr[0] "Đã xóa {0} tệp ({1} MB)"
 
 #. what clearing the unpacked games did; {1} is the room it made, as in 2.4 GB
-#: port/frontend/actions.cpp:202 port/frontend/shell/settings.cpp:1316 port/frontend/shell/settings.cpp:2300
+#: port/frontend/actions.cpp:201 port/frontend/shell/settings.cpp:1346 port/frontend/shell/settings.cpp:2330
 msgid "None to delete"
 msgstr "Không có gì để xóa"
 
-#: port/frontend/actions.cpp:209
+#: port/frontend/actions.cpp:208
 msgid "USB drive {0}"
 msgstr "Ổ USB {0}"
 
-#: port/frontend/actions.cpp:211
+#: port/frontend/actions.cpp:210
 msgid "Extended storage {0}"
 msgstr "Bộ lưu trữ mở rộng {0}"
 
 #. what an install is
-#: port/frontend/actions.cpp:384 port/frontend/actions.cpp:463
+#: port/frontend/actions.cpp:383 port/frontend/actions.cpp:462
 msgid "Game"
 msgstr "Trò chơi"
 
-#: port/frontend/actions.cpp:385 port/frontend/actions.cpp:464
+#: port/frontend/actions.cpp:384 port/frontend/actions.cpp:463
 msgid "Update"
 msgstr "Bản cập nhật"
 
 #. an update found to install ({0}: its version, as 208)
-#: port/frontend/actions.cpp:386 port/frontend/actions.cpp:465 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:866
+#: port/frontend/actions.cpp:385 port/frontend/actions.cpp:464 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:907
 msgid "DLC"
 msgstr "DLC"
 
-#: port/frontend/actions.cpp:387 port/frontend/actions.cpp:467
+#: port/frontend/actions.cpp:386 port/frontend/actions.cpp:466
 msgid "System title"
 msgstr "Tựa hệ thống"
 
-#: port/frontend/actions.cpp:466
+#: port/frontend/actions.cpp:465
 msgid "Demo"
 msgstr "Bản dùng thử"
 
-#: port/frontend/actions.cpp:467
+#: port/frontend/actions.cpp:466
 msgid "Title"
 msgstr "Tựa"
 
-#: port/frontend/actions.cpp:475
+#: port/frontend/actions.cpp:474
 msgctxt "button"
 msgid "Cross"
 msgstr "Chữ thập"
 
-#: port/frontend/actions.cpp:475
+#: port/frontend/actions.cpp:474
 msgctxt "button"
 msgid "Circle"
 msgstr "Tròn"
 
-#: port/frontend/actions.cpp:475
+#: port/frontend/actions.cpp:474
 msgctxt "button"
 msgid "Square"
 msgstr "Vuông"
 
-#: port/frontend/actions.cpp:476
+#: port/frontend/actions.cpp:475
 msgctxt "button"
 msgid "Triangle"
 msgstr "Tam giác"
 
-#: port/frontend/actions.cpp:476
+#: port/frontend/actions.cpp:475
 msgctxt "button"
 msgid "Create"
 msgstr "Create"
 
-#: port/frontend/actions.cpp:476
+#: port/frontend/actions.cpp:475
 msgctxt "button"
 msgid "Options"
 msgstr "OPTIONS"
 
-#: port/frontend/actions.cpp:476
+#: port/frontend/actions.cpp:475
 msgctxt "button"
 msgid "Touchpad"
 msgstr "Bàn di cảm ứng"
 
-#: port/frontend/actions.cpp:477
+#: port/frontend/actions.cpp:476
 msgctxt "button"
 msgid "D-pad up"
 msgstr "D-pad lên"
 
-#: port/frontend/actions.cpp:477
+#: port/frontend/actions.cpp:476
 msgctxt "button"
 msgid "D-pad down"
 msgstr "D-pad xuống"
 
-#: port/frontend/actions.cpp:477
+#: port/frontend/actions.cpp:476
 msgctxt "button"
 msgid "D-pad left"
 msgstr "D-pad trái"
 
-#: port/frontend/actions.cpp:477
+#: port/frontend/actions.cpp:476
 msgctxt "button"
 msgid "D-pad right"
 msgstr "D-pad phải"
 
-#: port/frontend/actions.cpp:478
+#: port/frontend/actions.cpp:477
 msgctxt "button"
 msgid "Left stick up"
 msgstr "Cần trái lên"
 
-#: port/frontend/actions.cpp:478
+#: port/frontend/actions.cpp:477
 msgctxt "button"
 msgid "Left stick down"
 msgstr "Cần trái xuống"
 
-#: port/frontend/actions.cpp:478
+#: port/frontend/actions.cpp:477
 msgctxt "button"
 msgid "Left stick left"
 msgstr "Cần trái sang trái"
 
-#: port/frontend/actions.cpp:479
+#: port/frontend/actions.cpp:478
 msgctxt "button"
 msgid "Left stick right"
 msgstr "Cần trái sang phải"
 
-#: port/frontend/actions.cpp:479
+#: port/frontend/actions.cpp:478
 msgctxt "button"
 msgid "Left stick click"
 msgstr "Nhấn cần trái"
 
-#: port/frontend/actions.cpp:479
+#: port/frontend/actions.cpp:478
 msgctxt "button"
 msgid "Right stick up"
 msgstr "Cần phải lên"
 
-#: port/frontend/actions.cpp:480
+#: port/frontend/actions.cpp:479
 msgctxt "button"
 msgid "Right stick down"
 msgstr "Cần phải xuống"
 
-#: port/frontend/actions.cpp:480
+#: port/frontend/actions.cpp:479
 msgctxt "button"
 msgid "Right stick left"
 msgstr "Cần phải sang trái"
 
-#: port/frontend/actions.cpp:480
+#: port/frontend/actions.cpp:479
 msgctxt "button"
 msgid "Right stick right"
 msgstr "Cần phải sang phải"
 
-#: port/frontend/actions.cpp:481
+#: port/frontend/actions.cpp:480
 msgctxt "button"
 msgid "Right stick click"
 msgstr "Nhấn cần phải"
 
-#: port/frontend/actions.cpp:481
+#: port/frontend/actions.cpp:480
 msgctxt "button"
 msgid "Circle pad up"
 msgstr "Circle Pad lên"
 
-#: port/frontend/actions.cpp:481
+#: port/frontend/actions.cpp:480
 msgctxt "button"
 msgid "Circle pad down"
 msgstr "Circle Pad xuống"
 
-#: port/frontend/actions.cpp:482
+#: port/frontend/actions.cpp:481
 msgctxt "button"
 msgid "Circle pad left"
 msgstr "Circle Pad trái"
 
-#: port/frontend/actions.cpp:482
+#: port/frontend/actions.cpp:481
 msgctxt "button"
 msgid "Circle pad right"
 msgstr "Circle Pad phải"
 
-#: port/frontend/actions.cpp:482
+#: port/frontend/actions.cpp:481
 msgctxt "button"
 msgid "C-stick up"
 msgstr "C-Stick lên"
 
-#: port/frontend/actions.cpp:483
+#: port/frontend/actions.cpp:482
 msgctxt "button"
 msgid "C-stick down"
 msgstr "C-Stick xuống"
 
-#: port/frontend/actions.cpp:483
+#: port/frontend/actions.cpp:482
 msgctxt "button"
 msgid "C-stick left"
 msgstr "C-Stick trái"
 
-#: port/frontend/actions.cpp:483
+#: port/frontend/actions.cpp:482
 msgctxt "button"
 msgid "C-stick right"
 msgstr "C-Stick phải"
 
-#: port/frontend/actions.cpp:484
+#: port/frontend/actions.cpp:483
 msgctxt "button"
 msgid "Nunchuk stick up"
 msgstr "Cần Nunchuk lên"
 
-#: port/frontend/actions.cpp:484
+#: port/frontend/actions.cpp:483
 msgctxt "button"
 msgid "Nunchuk stick down"
 msgstr "Cần Nunchuk xuống"
 
-#: port/frontend/actions.cpp:484
+#: port/frontend/actions.cpp:483
 msgctxt "button"
 msgid "Nunchuk stick left"
 msgstr "Cần Nunchuk trái"
 
-#: port/frontend/actions.cpp:485
+#: port/frontend/actions.cpp:484
 msgctxt "button"
 msgid "Nunchuk stick right"
 msgstr "Cần Nunchuk phải"
 
-#: port/frontend/actions.cpp:485
+#: port/frontend/actions.cpp:484
 msgctxt "button"
 msgid "Nunchuk C"
 msgstr "Nunchuk C"
 
-#: port/frontend/actions.cpp:485
+#: port/frontend/actions.cpp:484
 msgctxt "button"
 msgid "Nunchuk Z"
 msgstr "Nunchuk Z"
 
-#: port/frontend/actions.cpp:485
+#: port/frontend/actions.cpp:484
 msgctxt "button"
 msgid "Home"
 msgstr "HOME"
 
-#: port/frontend/actions.cpp:486
+#: port/frontend/actions.cpp:485
 msgctxt "button"
 msgid "Start"
 msgstr "START"
 
-#: port/frontend/actions.cpp:486
+#: port/frontend/actions.cpp:485
 msgctxt "button"
 msgid "Select"
 msgstr "SELECT"
 
-#: port/frontend/actions.cpp:486
+#: port/frontend/actions.cpp:485
 msgctxt "button"
 msgid "+ (Start)"
 msgstr "+ (START)"
 
-#: port/frontend/actions.cpp:486
+#: port/frontend/actions.cpp:485
 msgctxt "button"
 msgid "- (Select)"
 msgstr "- (SELECT)"
 
-#: port/frontend/actions.cpp:487
+#: port/frontend/actions.cpp:486
 msgctxt "button"
 msgid "Blow into the mic"
 msgstr "Thổi vào micrô"
 
-#: port/frontend/actions.cpp:487
+#: port/frontend/actions.cpp:486
 msgctxt "button"
 msgid "Show the GamePad's screen"
 msgstr "Hiện màn hình GamePad"
 
-#: port/frontend/actions.cpp:487
+#: port/frontend/actions.cpp:486
 msgctxt "button"
 msgid "None"
 msgstr "Không có"
 
-#: port/frontend/actions.cpp:491
+#: port/frontend/actions.cpp:490
 msgctxt "button"
 msgid "Touch at the cursor"
 msgstr "Chạm tại con trỏ"
 
-#: port/frontend/actions.cpp:491
+#: port/frontend/actions.cpp:490
 msgctxt "button"
 msgid "Fast forward"
 msgstr "Tua nhanh"
 
-#: port/frontend/actions.cpp:491
+#: port/frontend/actions.cpp:490
 msgctxt "button"
 msgid "Fast forward, on and off"
 msgstr "Tua nhanh, bật và tắt"
 
-#: port/frontend/actions.cpp:492
+#: port/frontend/actions.cpp:491
 msgctxt "button"
 msgid "Rewind"
 msgstr "Tua lại"
@@ -3303,11 +3303,11 @@ msgstr "Tua lại"
 msgid "Update v{0}"
 msgstr "Cập nhật v{0}"
 
-#: port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1747
+#: port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1800
 msgid "Favourite"
 msgstr "Yêu thích"
 
-#: port/frontend/shell/hub.cpp:225 port/frontend/shell/shell.cpp:1420 port/frontend/shell/shell.cpp:1421 port/frontend/shell/shell.cpp:1725
+#: port/frontend/shell/hub.cpp:225 port/frontend/shell/shell.cpp:1473 port/frontend/shell/shell.cpp:1474 port/frontend/shell/shell.cpp:1778
 msgid "Play"
 msgstr "Chơi"
 
@@ -3320,7 +3320,7 @@ msgstr[0] "Gói đồ họa · {0} đang bật"
 msgid "Game settings · custom"
 msgstr "Cài đặt trò chơi · tùy chỉnh"
 
-#: port/frontend/shell/hub.cpp:236 port/frontend/shell/shell.cpp:1738
+#: port/frontend/shell/hub.cpp:236 port/frontend/shell/shell.cpp:1791
 msgid "Game settings"
 msgstr "Cài đặt trò chơi"
 
@@ -3364,7 +3364,7 @@ msgstr "Nhà phát hành"
 msgid "Players"
 msgstr "Số người chơi"
 
-#: port/frontend/shell/hub.cpp:278 port/frontend/shell/installs.cpp:508 port/frontend/shell/pages.cpp:1266 port/frontend/shell/pages.cpp:1332
+#: port/frontend/shell/hub.cpp:278 port/frontend/shell/installs.cpp:510 port/frontend/shell/pages.cpp:1266 port/frontend/shell/pages.cpp:1332
 msgid "Title ID"
 msgstr "Title ID"
 
@@ -3404,7 +3404,7 @@ msgstr "Đã cài v{0}: bản này mới hơn"
 msgid "v{0} installed: this is older"
 msgstr "Đã cài v{0}: bản này cũ hơn"
 
-#: port/frontend/shell/installs.cpp:57 port/frontend/shell/installs.cpp:209 port/frontend/shell/pages.cpp:1168
+#: port/frontend/shell/installs.cpp:57 port/frontend/shell/installs.cpp:211 port/frontend/shell/pages.cpp:1168
 msgid "Installed"
 msgstr "Đã cài"
 
@@ -3412,143 +3412,143 @@ msgstr "Đã cài"
 msgid "The PS5"
 msgstr "PS5"
 
-#: port/frontend/shell/installs.cpp:190
+#: port/frontend/shell/installs.cpp:192
 msgid "Stopped. What was installed before is back as it was."
 msgstr "Đã dừng. Nội dung đã cài trước đó được khôi phục nguyên trạng."
 
-#: port/frontend/shell/installs.cpp:209
+#: port/frontend/shell/installs.cpp:211
 msgid "{0} installed"
 msgid_plural "{0} installed"
 msgstr[0] "Đã cài {0}"
 
-#: port/frontend/shell/installs.cpp:283
+#: port/frontend/shell/installs.cpp:285
 msgid "Everything found is installed already"
 msgstr "Mọi thứ tìm thấy đều đã được cài"
 
-#: port/frontend/shell/installs.cpp:317 port/frontend/shell/shell.cpp:2395
+#: port/frontend/shell/installs.cpp:319 port/frontend/shell/shell.cpp:2521
 msgid "Stopping…"
 msgstr "Đang dừng…"
 
-#: port/frontend/shell/installs.cpp:317
+#: port/frontend/shell/installs.cpp:319
 msgid "Stop"
 msgstr "Dừng"
 
-#: port/frontend/shell/installs.cpp:323 port/frontend/shell/pages.cpp:1184 port/frontend/shell/shell.cpp:1450
+#: port/frontend/shell/installs.cpp:325 port/frontend/shell/pages.cpp:1184 port/frontend/shell/shell.cpp:1503
 msgid "Install"
 msgstr "Cài"
 
 #. Square on Updates and DLC: install every one not installed yet, or newer ({0}: how many)
-#: port/frontend/shell/installs.cpp:326
+#: port/frontend/shell/installs.cpp:328
 msgid "Install every new one ({0})"
 msgstr "Cài mọi thứ mới ({0})"
 
-#: port/frontend/shell/installs.cpp:327 port/frontend/shell/library.cpp:162 port/frontend/shell/pages.cpp:1189 port/frontend/shell/setup.cpp:185
+#: port/frontend/shell/installs.cpp:329 port/frontend/shell/library.cpp:162 port/frontend/shell/pages.cpp:1189 port/frontend/shell/setup.cpp:185
 msgid "Choose a folder"
 msgstr "Chọn thư mục"
 
-#: port/frontend/shell/installs.cpp:349
+#: port/frontend/shell/installs.cpp:351
 msgid "Looking in {0}…"
 msgstr "Đang tìm trong {0}…"
 
-#: port/frontend/shell/installs.cpp:351
+#: port/frontend/shell/installs.cpp:353
 msgid "Nothing to install was found on the drives plugged in."
 msgstr "Không tìm thấy gì để cài trên các ổ đang cắm."
 
 #. where updates and DLC were found ({0}: "USB drive 1, The PS5"), then how many are new
-#: port/frontend/shell/installs.cpp:355
+#: port/frontend/shell/installs.cpp:357
 msgid "Found on {0}."
 msgstr "Tìm thấy trên {0}."
 
-#: port/frontend/shell/installs.cpp:356
+#: port/frontend/shell/installs.cpp:358
 msgid "{0} new to install."
 msgid_plural "{0} new to install."
 msgstr[0] "{0} mục mới để cài."
 
-#: port/frontend/shell/installs.cpp:356
+#: port/frontend/shell/installs.cpp:358
 msgid "Everything found is installed."
 msgstr "Mọi thứ tìm thấy đều đã được cài."
 
-#: port/frontend/shell/installs.cpp:359 port/frontend/shell/settings.cpp:230 port/frontend/shell/shares.cpp:535
+#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:230 port/frontend/shell/shares.cpp:535 port/frontend/shell/shell.cpp:2480
 msgid "Game files"
 msgstr "Tệp trò chơi"
 
-#: port/frontend/shell/installs.cpp:360 port/frontend/shell/settings.cpp:983 port/frontend/shell/shell.cpp:1745
+#: port/frontend/shell/installs.cpp:362 port/frontend/shell/settings.cpp:983 port/frontend/shell/shell.cpp:1798
 msgid "Updates and DLC"
 msgstr "Bản cập nhật và DLC"
 
 #. Updates and DLC, installing: which of how many ({0} of {1})
-#: port/frontend/shell/installs.cpp:373
+#: port/frontend/shell/installs.cpp:375
 msgid "Installing {0} of {1}"
 msgstr "Đang cài {0}/{1}"
 
 #. how fast an install copies, in megabytes a second
-#: port/frontend/shell/installs.cpp:379
+#: port/frontend/shell/installs.cpp:381
 msgid "{0} MB/s"
 msgstr "{0} MB/s"
 
 #. an install's time left, in seconds or minutes
-#: port/frontend/shell/installs.cpp:382
+#: port/frontend/shell/installs.cpp:384
 msgid "about {0} second left"
 msgid_plural "about {0} seconds left"
 msgstr[0] "còn khoảng {0} giây"
 
-#: port/frontend/shell/installs.cpp:383
+#: port/frontend/shell/installs.cpp:385
 msgid "about {0} minute left"
 msgid_plural "about {0} minutes left"
 msgstr[0] "còn khoảng {0} phút"
 
-#: port/frontend/shell/installs.cpp:399
+#: port/frontend/shell/installs.cpp:401
 msgid "Nothing found to install"
 msgstr "Không tìm thấy gì để cài"
 
-#: port/frontend/shell/installs.cpp:401
+#: port/frontend/shell/installs.cpp:403
 msgid "Every USB drive and extended storage plugged in, the games folder and /data were searched, four folders deep, for updates, DLC and games as folders with code, content and meta (the format Cemu installs). Put them on a USB drive, or press Triangle to choose a folder anywhere."
 msgstr "Đã tìm trong mọi ổ USB và bộ lưu trữ mở rộng đang cắm, thư mục trò chơi và /data, sâu bốn cấp thư mục, các bản cập nhật, DLC và trò chơi dạng thư mục có code, content và meta (định dạng Cemu cài). Đặt chúng vào ổ USB, hoặc nhấn nút Tam giác để chọn thư mục ở bất kỳ đâu."
 
-#: port/frontend/shell/installs.cpp:455
+#: port/frontend/shell/installs.cpp:457
 msgid "v{0} installed"
 msgstr "Đã cài v{0}"
 
 #. a row of Updates and DLC while it installs ({0}: a percentage)
-#: port/frontend/shell/installs.cpp:476
+#: port/frontend/shell/installs.cpp:478
 msgid "Installing · {0}"
 msgstr "Đang cài · {0}"
 
-#: port/frontend/shell/installs.cpp:478
+#: port/frontend/shell/installs.cpp:480
 msgid "Waiting"
 msgstr "Đang chờ"
 
-#: port/frontend/shell/installs.cpp:500
+#: port/frontend/shell/installs.cpp:502
 msgid "Runs from where it is"
 msgstr "Chạy ngay tại chỗ"
 
-#: port/frontend/shell/installs.cpp:500 port/frontend/shell/pages.cpp:1348
+#: port/frontend/shell/installs.cpp:502 port/frontend/shell/pages.cpp:1348
 msgid "To install"
 msgstr "Cần cài"
 
 #. a title's version to install ({0}), and the one installed now ({1})
-#: port/frontend/shell/installs.cpp:507 port/frontend/shell/pages.cpp:1267 port/frontend/shell/pages.cpp:1334 port/frontend/shell/settings.cpp:253
+#: port/frontend/shell/installs.cpp:509 port/frontend/shell/pages.cpp:1267 port/frontend/shell/pages.cpp:1334 port/frontend/shell/settings.cpp:253
 msgid "Version"
 msgstr "Phiên bản"
 
 #. a title's version to install ({0}), and the one installed now ({1})
-#: port/frontend/shell/installs.cpp:507 port/frontend/shell/pages.cpp:1334
+#: port/frontend/shell/installs.cpp:509 port/frontend/shell/pages.cpp:1334
 msgid "v{0}, not installed yet"
 msgstr "v{0}, chưa cài"
 
-#: port/frontend/shell/installs.cpp:507 port/frontend/shell/pages.cpp:1335
+#: port/frontend/shell/installs.cpp:509 port/frontend/shell/pages.cpp:1335
 msgid "v{0}, v{1} installed now"
 msgstr "v{0}, hiện đã cài v{1}"
 
-#: port/frontend/shell/installs.cpp:509
+#: port/frontend/shell/installs.cpp:511
 msgid "Where it is"
 msgstr "Vị trí"
 
-#: port/frontend/shell/installs.cpp:521
+#: port/frontend/shell/installs.cpp:523
 msgid "Cemu runs it straight from the game files folder (title.tmd and .app files): put it there and the library lists it with its game."
 msgstr "Cemu chạy nó ngay từ thư mục trò chơi (tệp title.tmd và .app): đặt nó ở đó và thư viện sẽ liệt kê cùng trò chơi của nó."
 
-#: port/frontend/shell/installs.cpp:522
+#: port/frontend/shell/installs.cpp:524
 msgid "It is installed into the Wii U's storage (mlc01). What is installed now is set aside until it finishes, and put back if you stop."
 msgstr "Được cài vào bộ lưu trữ của Wii U (mlc01). Nội dung đang cài được tạm để sang một bên cho đến khi xong, và được trả lại nếu bạn dừng."
 
@@ -3580,7 +3580,7 @@ msgstr "Thiết lập"
 msgid "Something needs a look"
 msgstr "Có mục cần xem lại"
 
-#: port/frontend/shell/library.cpp:125 port/frontend/shell/library.cpp:162 port/frontend/shell/library.cpp:192 port/frontend/shell/settings.cpp:1292
+#: port/frontend/shell/library.cpp:125 port/frontend/shell/library.cpp:162 port/frontend/shell/library.cpp:192 port/frontend/shell/settings.cpp:1322
 msgid "Setup check"
 msgstr "Kiểm tra thiết lập"
 
@@ -3588,7 +3588,7 @@ msgstr "Kiểm tra thiết lập"
 msgid "Diagnostics"
 msgstr "Chẩn đoán"
 
-#: port/frontend/shell/library.cpp:132 port/frontend/shell/shell.cpp:992 port/frontend/shell/shell.cpp:2385
+#: port/frontend/shell/library.cpp:132 port/frontend/shell/shell.cpp:1033 port/frontend/shell/shell.cpp:2511
 msgid "Starting Cemu"
 msgstr "Đang khởi động Cemu"
 
@@ -3635,12 +3635,12 @@ msgid "Play from your 3DS"
 msgstr "Chơi từ máy 3DS"
 
 #. the launcher's tabs
-#: port/frontend/shell/library.cpp:341 port/frontend/shell/library.cpp:629 port/frontend/shell/shell.cpp:1328
+#: port/frontend/shell/library.cpp:341 port/frontend/shell/library.cpp:629 port/frontend/shell/shell.cpp:1369
 msgctxt "tab"
 msgid "Library"
 msgstr "Thư viện"
 
-#: port/frontend/shell/library.cpp:341 port/frontend/shell/shell.cpp:1416
+#: port/frontend/shell/library.cpp:341 port/frontend/shell/shell.cpp:1469
 msgid "Sort"
 msgstr "Sắp xếp"
 
@@ -3679,7 +3679,7 @@ msgstr "Đang tìm trò chơi mới…"
 msgid "As found last time"
 msgstr "Như lần trước tìm thấy"
 
-#: port/frontend/shell/library.cpp:639 port/frontend/shell/shell.cpp:1416 port/frontend/shell/shell.cpp:2249
+#: port/frontend/shell/library.cpp:639 port/frontend/shell/shell.cpp:1469 port/frontend/shell/shell.cpp:2336
 msgid "Search"
 msgstr "Tìm kiếm"
 
@@ -3756,7 +3756,7 @@ msgstr "Gói này không có mô tả."
 msgid "No presets"
 msgstr "Không có cấu hình sẵn"
 
-#: port/frontend/shell/pages.cpp:361 port/frontend/shell/shell.cpp:1440
+#: port/frontend/shell/pages.cpp:361 port/frontend/shell/shell.cpp:1493
 msgid "Presets"
 msgstr "Cấu hình sẵn"
 
@@ -3765,7 +3765,7 @@ msgid "Presets · choosing one turns it on"
 msgstr "Cấu hình sẵn · chọn một cái sẽ bật nó"
 
 #. what a held row says once it has done its work
-#: port/frontend/shell/pages.cpp:398 port/frontend/shell/settings.cpp:2329
+#: port/frontend/shell/pages.cpp:398 port/frontend/shell/settings.cpp:2385
 msgctxt "finished"
 msgid "Done"
 msgstr "Đã xong"
@@ -3923,7 +3923,7 @@ msgid "Which DualSense button presses each button."
 msgstr "Nút DualSense nào nhấn từng nút."
 
 #. {0} is the version the last update replaced, as in 5.0.0
-#: port/frontend/shell/pages.cpp:634 port/frontend/shell/pages.cpp:1523 port/frontend/shell/pages.cpp:1527 port/frontend/shell/settings.cpp:723 port/frontend/shell/settings.cpp:784 port/frontend/shell/settings.cpp:1039 port/frontend/shell/settings.cpp:1099 port/frontend/shell/settings.cpp:1189 port/frontend/shell/settings.cpp:1226 port/frontend/shell/settings.cpp:1298 port/frontend/shell/settings.cpp:1301 port/frontend/shell/settings.cpp:1315 port/frontend/shell/settings.cpp:1351 port/frontend/shell/settings.cpp:1413 port/frontend/shell/settings.cpp:1455 port/frontend/shell/shares.cpp:328
+#: port/frontend/shell/pages.cpp:634 port/frontend/shell/pages.cpp:1523 port/frontend/shell/pages.cpp:1527 port/frontend/shell/settings.cpp:723 port/frontend/shell/settings.cpp:784 port/frontend/shell/settings.cpp:1005 port/frontend/shell/settings.cpp:1061 port/frontend/shell/settings.cpp:1121 port/frontend/shell/settings.cpp:1211 port/frontend/shell/settings.cpp:1249 port/frontend/shell/settings.cpp:1328 port/frontend/shell/settings.cpp:1331 port/frontend/shell/settings.cpp:1345 port/frontend/shell/settings.cpp:1381 port/frontend/shell/settings.cpp:1443 port/frontend/shell/settings.cpp:1485 port/frontend/shell/shares.cpp:328
 msgid "Hold Cross"
 msgstr "Giữ nút Chữ thập"
 
@@ -4197,7 +4197,7 @@ msgstr "Đã tìm thấy trong {0}"
 msgid "Missing (only .wud/.wux need it)"
 msgstr "Thiếu (chỉ .wud/.wux mới cần)"
 
-#: port/frontend/shell/pages.cpp:1314 port/frontend/shell/shell.cpp:2138 port/frontend/shell/shell.cpp:2165
+#: port/frontend/shell/pages.cpp:1314 port/frontend/shell/shell.cpp:2225 port/frontend/shell/shell.cpp:2252
 msgid "In use"
 msgstr "Đang dùng"
 
@@ -4238,7 +4238,7 @@ msgstr "Đang kết nối với {0}"
 msgid "Artic Setup Tool"
 msgstr "Artic Setup Tool"
 
-#: port/frontend/shell/pages.cpp:1489 port/frontend/shell/pages.cpp:1500 port/frontend/shell/settings.cpp:242 port/frontend/shell/settings.cpp:1115 port/frontend/shell/setup.cpp:243
+#: port/frontend/shell/pages.cpp:1489 port/frontend/shell/pages.cpp:1500 port/frontend/shell/settings.cpp:242 port/frontend/shell/settings.cpp:1137 port/frontend/shell/setup.cpp:243
 msgid "Artic Base"
 msgstr "Artic Base"
 
@@ -4427,7 +4427,7 @@ msgstr "Kính mờ tối và góc bo tròn hơn, ánh sáng của bên trôi nh�
 msgid "A light background with dark text."
 msgstr "Nền sáng với chữ tối."
 
-#: port/frontend/shell/settings.cpp:203 port/frontend/shell/settings.cpp:487 port/frontend/shell/settings.cpp:824 port/frontend/shell/settings.cpp:869 port/frontend/shell/settings.cpp:913 port/frontend/shell/settings.cpp:1542 port/frontend/shell/setup.cpp:511
+#: port/frontend/shell/settings.cpp:203 port/frontend/shell/settings.cpp:487 port/frontend/shell/settings.cpp:824 port/frontend/shell/settings.cpp:869 port/frontend/shell/settings.cpp:913 port/frontend/shell/settings.cpp:1572 port/frontend/shell/setup.cpp:511
 msgid "Language"
 msgstr "Ngôn ngữ"
 
@@ -4527,7 +4527,7 @@ msgstr "Nơi chứa trò chơi DS, và nơi lưu bản lưu của chúng."
 msgid "Accounts and saves"
 msgstr "Tài khoản và bản lưu"
 
-#: port/frontend/shell/settings.cpp:238 port/frontend/shell/settings.cpp:265 port/frontend/shell/shell.cpp:1740
+#: port/frontend/shell/settings.cpp:238 port/frontend/shell/settings.cpp:265 port/frontend/shell/shell.cpp:1793
 msgid "Saves"
 msgstr "Bản lưu"
 
@@ -4629,7 +4629,7 @@ msgstr "Nhấn Chữ thập để tải xuống"
 msgid "{0}: Cross to install"
 msgstr "{0}: nhấn Chữ thập để cài"
 
-#: port/frontend/shell/settings.cpp:314 port/frontend/shell/settings.cpp:1140 port/frontend/shell/shell.cpp:2306
+#: port/frontend/shell/settings.cpp:314 port/frontend/shell/settings.cpp:1162 port/frontend/shell/shell.cpp:2393
 msgid "Downloading…"
 msgstr "Đang tải xuống…"
 
@@ -5497,645 +5497,679 @@ msgstr "Trò chơi, bản cập nhật hoặc DLC."
 msgid "Installs a CIA into the 3DS's storage, as Azahar's Install CIA does: an update or DLC goes with its game, and a game joins the library. Circle cancels while it runs."
 msgstr "Cài một tệp CIA vào bộ lưu trữ của 3DS, như mục Install CIA của Azahar: bản cập nhật hoặc DLC đi cùng trò chơi của nó, còn trò chơi vào thư viện. Nhấn nút Tròn để hủy khi đang chạy."
 
-#: port/frontend/shell/settings.cpp:1019
+#: port/frontend/shell/settings.cpp:1004 port/frontend/shell/shell.cpp:2481
+msgid "A folder for each system"
+msgstr "Một thư mục cho mỗi hệ máy"
+
+#: port/frontend/shell/settings.cpp:1005
+msgid "Cannot move"
+msgstr "Không thể di chuyển"
+
+#. {0} is a file or folder already where one would be moved to
+#: port/frontend/shell/settings.cpp:1007
+msgid "In the way: {0}"
+msgstr "Bị cản bởi: {0}"
+
+#: port/frontend/shell/settings.cpp:1008
+msgid "Each system's files are in a folder of their own."
+msgstr "Tệp của mỗi hệ máy nằm trong thư mục riêng."
+
+#: port/frontend/shell/settings.cpp:1009
+msgid "Your files from before into a folder for each system."
+msgstr "Đưa tệp cũ của bạn vào một thư mục cho mỗi hệ máy."
+
+#: port/frontend/shell/settings.cpp:1010
+msgid "Puts each system's files back into {0}, where they were before. Going back to an earlier version needs them there, as it looks for them there. PS5-ECAM starts again to do it."
+msgstr "Đưa tệp của mỗi hệ máy trở lại {0}, nơi chúng ở trước đây. Quay lại phiên bản trước cần chúng ở đó, vì phiên bản đó tìm chúng ở đó. PS5-ECAM sẽ khởi động lại để làm việc này."
+
+#. {0} is the app's data folder, /data/ps5cemu; {1} lists the four folders: /data/cemu, /data/azahar, ...
+#: port/frontend/shell/settings.cpp:1014
+msgid "Moves each system's files from {0} into a folder of its own: {1}. They are renamed on the same drive, never copied, so it takes a moment whatever their size, and nothing is deleted. PS5-ECAM starts again to do it; a system that cannot move stays as it was. This row puts them back."
+msgstr "Chuyển tệp của mỗi hệ máy từ {0} vào thư mục riêng: {1}. Chúng được đổi tên trên cùng ổ đĩa, không bao giờ sao chép, nên chỉ mất một lát dù lớn đến đâu, và không có gì bị xóa. PS5-ECAM sẽ khởi động lại để làm việc này; hệ máy nào không chuyển được sẽ giữ nguyên. Hàng này đưa chúng trở lại."
+
+#: port/frontend/shell/settings.cpp:1041
 msgid "Account games start on"
 msgstr "Tài khoản để khởi động trò chơi"
 
-#: port/frontend/shell/settings.cpp:1020
+#: port/frontend/shell/settings.cpp:1042
 msgid "Chosen by your PS5 user: One account for each PS5 user is on."
 msgstr "Do người dùng PS5 chọn: Mỗi người dùng PS5 một tài khoản đang bật."
 
-#: port/frontend/shell/settings.cpp:1021
+#: port/frontend/shell/settings.cpp:1043
 msgid "The next game starts on these saves. A game already running keeps its own."
 msgstr "Trò chơi tiếp theo khởi động với các bản lưu này. Trò chơi đang chạy giữ tài khoản của nó."
 
-#: port/frontend/shell/settings.cpp:1022
+#: port/frontend/shell/settings.cpp:1044
 msgid "Each Wii U account has its own saves of every game, as on a Wii U. The next game you start uses the one shown here; a game already running keeps the one it started with."
 msgstr "Mỗi tài khoản Wii U có bản lưu riêng của mọi trò chơi, như trên Wii U. Trò chơi tiếp theo bạn khởi động dùng tài khoản hiện ở đây; trò chơi đang chạy giữ tài khoản nó đã khởi động cùng."
 
 #. how many Wii U accounts there are, of the twelve a Wii U has at most
-#: port/frontend/shell/settings.cpp:1027
+#: port/frontend/shell/settings.cpp:1049
 msgid "New account"
 msgstr "Tài khoản mới"
 
 #. how many Wii U accounts there are, of the twelve a Wii U has at most
-#: port/frontend/shell/settings.cpp:1027
+#: port/frontend/shell/settings.cpp:1049
 msgid "{0} of 12"
 msgstr "{0}/12"
 
-#: port/frontend/shell/settings.cpp:1028
+#: port/frontend/shell/settings.cpp:1050
 msgid "A new account starts with no saves."
 msgstr "Tài khoản mới không có bản lưu nào."
 
-#: port/frontend/shell/settings.cpp:1028
+#: port/frontend/shell/settings.cpp:1050
 msgid "Name it with the keyboard, ten letters at most. Games start on it from then on."
 msgstr "Đặt tên bằng bàn phím, tối đa mười ký tự. Từ đó trò chơi sẽ khởi động bằng tài khoản này."
 
-#: port/frontend/shell/settings.cpp:1029
+#: port/frontend/shell/settings.cpp:1051
 msgid "Rename {0}"
 msgstr "Đổi tên {0}"
 
-#: port/frontend/shell/settings.cpp:1029
+#: port/frontend/shell/settings.cpp:1051
 msgid "The account games start on."
 msgstr "Tài khoản dùng để khởi động trò chơi."
 
-#: port/frontend/shell/settings.cpp:1030
+#: port/frontend/shell/settings.cpp:1052
 msgid "The name games show for this account, ten letters at most. Its saves stay as they are."
 msgstr "Tên mà trò chơi hiện cho tài khoản này, tối đa mười ký tự. Bản lưu giữ nguyên."
 
-#: port/frontend/shell/settings.cpp:1038
+#: port/frontend/shell/settings.cpp:1060
 msgid "Delete an account"
 msgstr "Xóa một tài khoản"
 
-#: port/frontend/shell/settings.cpp:1039
+#: port/frontend/shell/settings.cpp:1061
 msgid "Only one"
 msgstr "Chỉ có một"
 
-#: port/frontend/shell/settings.cpp:1040
+#: port/frontend/shell/settings.cpp:1062
 msgid "There is only one account, and games start on it."
 msgstr "Chỉ có một tài khoản, và trò chơi khởi động bằng tài khoản đó."
 
-#: port/frontend/shell/settings.cpp:1040
+#: port/frontend/shell/settings.cpp:1062
 msgid "Left and Right choose which. Its saves stay in the Wii U's storage."
 msgstr "Nhấn trái/phải để chọn tài khoản. Bản lưu của nó vẫn ở trong bộ lưu trữ của Wii U."
 
-#: port/frontend/shell/settings.cpp:1041
+#: port/frontend/shell/settings.cpp:1063
 msgid "The account is removed; its saves stay in the Wii U's storage (and in any backup), so nothing is lost. The account games start on cannot be deleted: choose another first."
 msgstr "Tài khoản bị xóa; bản lưu của nó vẫn ở trong bộ lưu trữ của Wii U (và trong mọi bản sao lưu), nên không mất gì. Không thể xóa tài khoản dùng để khởi động trò chơi: chọn tài khoản khác trước."
 
-#: port/frontend/shell/settings.cpp:1047
+#: port/frontend/shell/settings.cpp:1069
 msgid "One account for each PS5 user"
 msgstr "Mỗi người dùng PS5 một tài khoản"
 
-#: port/frontend/shell/settings.cpp:1048
+#: port/frontend/shell/settings.cpp:1070
 msgid "Whoever starts PS5-ECAM plays on their own saves."
 msgstr "Ai khởi động PS5-ECAM sẽ chơi bằng bản lưu của chính mình."
 
-#: port/frontend/shell/settings.cpp:1049
+#: port/frontend/shell/settings.cpp:1071
 msgid "The PS5 user who starts the app plays on a Wii U account of their own, made the first time with their PS5 name, so brothers and sisters each keep their own saves just by starting the app from their own PS5 user."
 msgstr "Người dùng PS5 khởi động ứng dụng sẽ chơi bằng tài khoản Wii U riêng, được tạo lần đầu với tên PS5 của họ, nên anh chị em mỗi người giữ bản lưu riêng chỉ bằng cách mở ứng dụng từ người dùng PS5 của mình."
 
 #. a backup or restore of the saves, finished ({0}: how many files)
-#: port/frontend/shell/settings.cpp:1068 port/frontend/shell/settings.cpp:1398
+#: port/frontend/shell/settings.cpp:1090 port/frontend/shell/settings.cpp:1428
 msgid "Done: {0} file"
 msgid_plural "Done: {0} files"
 msgstr[0] "Xong: {0} tệp"
 
 #. a backup of the saves, as it copies ({0}: a percentage)
-#: port/frontend/shell/settings.cpp:1085 port/frontend/shell/settings.cpp:1101 port/frontend/shell/settings.cpp:1437 port/frontend/shell/settings.cpp:1457
+#: port/frontend/shell/settings.cpp:1107 port/frontend/shell/settings.cpp:1123 port/frontend/shell/settings.cpp:1467 port/frontend/shell/settings.cpp:1487
 msgid "Copying: {0}"
 msgstr "Đang sao chép: {0}"
 
 #. the newest backup of the saves: when, and on which drive
-#: port/frontend/shell/settings.cpp:1088 port/frontend/shell/settings.cpp:1439
+#: port/frontend/shell/settings.cpp:1110 port/frontend/shell/settings.cpp:1469
 msgid "Last: {0} · {1}"
 msgstr "Gần nhất: {0} · {1}"
 
-#: port/frontend/shell/settings.cpp:1089 port/frontend/shell/settings.cpp:1434
+#: port/frontend/shell/settings.cpp:1111 port/frontend/shell/settings.cpp:1464
 msgid "Back up to USB"
 msgstr "Sao lưu vào USB"
 
-#: port/frontend/shell/settings.cpp:1089
+#: port/frontend/shell/settings.cpp:1111
 msgid "Every side's saves, save states and Wii U accounts."
 msgstr "Bản lưu, trạng thái đã lưu và tài khoản Wii U của mọi bên."
 
-#: port/frontend/shell/settings.cpp:1090
+#: port/frontend/shell/settings.cpp:1112
 msgid "Copies the Wii U's saves (every account's, with the accounts), the 3DS's saves, extra data and save states, the DS's saves and save states, and the Switch's saves with its user profiles to PS5CEMU-HAR-saves on the first USB drive plugged in, in a folder named by the date and time. Never the games, so a backup stays small. The settings go with them: the launcher's, each game's own and the controllers'."
 msgstr "Sao chép bản lưu Wii U (của mọi tài khoản, cùng các tài khoản), bản lưu, dữ liệu bổ sung và trạng thái đã lưu của 3DS, bản lưu và trạng thái đã lưu của DS, cùng bản lưu của Switch kèm hồ sơ người dùng vào PS5CEMU-HAR-saves trên ổ USB đầu tiên đang cắm, trong một thư mục đặt tên theo ngày giờ. Không bao giờ sao chép trò chơi, nên bản sao lưu luôn nhỏ. Cài đặt cũng đi kèm: của trình khởi chạy, của từng trò chơi và của tay cầm."
 
-#: port/frontend/shell/settings.cpp:1099 port/frontend/shell/settings.cpp:1455
+#: port/frontend/shell/settings.cpp:1121 port/frontend/shell/settings.cpp:1485
 msgid "No backups found"
 msgstr "Không tìm thấy bản sao lưu"
 
-#: port/frontend/shell/settings.cpp:1102 port/frontend/shell/settings.cpp:1454
+#: port/frontend/shell/settings.cpp:1124 port/frontend/shell/settings.cpp:1484
 msgid "Restore from USB"
 msgstr "Khôi phục từ USB"
 
-#: port/frontend/shell/settings.cpp:1103
+#: port/frontend/shell/settings.cpp:1125
 msgid "Back up first, or plug in the drive with your backups."
 msgstr "Sao lưu trước, hoặc cắm ổ có bản sao lưu."
 
-#: port/frontend/shell/settings.cpp:1103 port/frontend/shell/settings.cpp:1458
+#: port/frontend/shell/settings.cpp:1125 port/frontend/shell/settings.cpp:1488
 msgid "Left and Right choose which backup, the newest first."
 msgstr "Nhấn trái/phải để chọn bản sao lưu, mới nhất trước."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1105
+#: port/frontend/shell/settings.cpp:1127
 msgid "Puts the chosen backup's saves back where they came from. The saves there now are moved first to {0}/saves-before, so nothing is lost; saves the backup does not have stay as they are. Its settings come back too, and PS5-ECAM starts again to use them."
 msgstr "Đưa bản lưu của bản sao lưu đã chọn về chỗ cũ. Bản lưu hiện có được chuyển trước vào {0}/saves-before, nên không mất gì; bản lưu mà bản sao lưu không có vẫn giữ nguyên. Cài đặt của bản sao lưu cũng được khôi phục, và PS5-ECAM khởi động lại để dùng chúng."
 
-#: port/frontend/shell/settings.cpp:1115
+#: port/frontend/shell/settings.cpp:1137
 msgid "Play a game from your 3DS, and set up from it."
 msgstr "Chơi trò chơi từ máy 3DS, và thiết lập từ máy đó."
 
-#: port/frontend/shell/settings.cpp:1116
+#: port/frontend/shell/settings.cpp:1138
 msgid "Artic Base plays a game from a 3DS on your network, its saves staying on the 3DS; Artic Setup copies a 3DS's system files into Azahar, for the Home Menu and the games that need them."
 msgstr "Artic Base chơi trò chơi từ máy 3DS trong mạng, bản lưu vẫn ở trên 3DS; Artic Setup sao chép tệp hệ thống của 3DS vào Azahar, cho HOME Menu và các trò chơi cần chúng."
 
-#: port/frontend/shell/settings.cpp:1125
+#: port/frontend/shell/settings.cpp:1147
 msgid "A room is a server where Switch games find each other for their local wireless play, as in desktop Eden and ProsperoEden. The room chosen here is joined as each Switch game starts: then choose Local Wireless (or local play) in the game. A room that cannot be joined brings you back here with why."
 msgstr "Phòng là một máy chủ nơi các trò chơi Switch tìm thấy nhau để chơi không dây cục bộ, như trong Eden trên máy tính và trong ProsperoEden. Phòng chọn ở đây được tham gia khi mỗi trò chơi Switch khởi động: sau đó chọn Chơi không dây cục bộ (hoặc chơi cục bộ) trong trò chơi. Phòng không vào được sẽ đưa bạn về đây kèm lý do."
 
-#: port/frontend/shell/settings.cpp:1128
+#: port/frontend/shell/settings.cpp:1150
 msgid "None: games play offline"
 msgstr "Không có: trò chơi chơi ngoại tuyến"
 
-#: port/frontend/shell/settings.cpp:1129
+#: port/frontend/shell/settings.cpp:1151
 msgid "Joined as a Switch game starts. Cross plays offline again."
 msgstr "Được tham gia khi một trò chơi Switch khởi động. Nút Chữ thập quay về chơi ngoại tuyến."
 
-#: port/frontend/shell/settings.cpp:1129
+#: port/frontend/shell/settings.cpp:1151
 msgid "Choose a public room below, or a private one."
 msgstr "Chọn một phòng công khai bên dưới, hoặc một phòng riêng."
 
-#: port/frontend/shell/settings.cpp:1132
+#: port/frontend/shell/settings.cpp:1154
 msgid "Nickname"
 msgstr "Biệt danh"
 
-#: port/frontend/shell/settings.cpp:1132
+#: port/frontend/shell/settings.cpp:1154
 msgid "Your name in the room."
 msgstr "Tên của bạn trong phòng."
 
-#: port/frontend/shell/settings.cpp:1133
+#: port/frontend/shell/settings.cpp:1155
 msgid "What the others in a room see of you: 4 to 20 letters, digits, spaces, dots, dashes or underscores, as Eden takes them."
 msgstr "Những gì người khác trong phòng thấy về bạn: 4 đến 20 chữ cái Latinh, chữ số, khoảng trắng, dấu chấm, gạch ngang hoặc gạch dưới, như Eden nhận."
 
-#: port/frontend/shell/settings.cpp:1135
+#: port/frontend/shell/settings.cpp:1157
 msgid "Private room"
 msgstr "Phòng riêng"
 
-#: port/frontend/shell/settings.cpp:1136
+#: port/frontend/shell/settings.cpp:1158
 msgid "Cross to enter one"
 msgstr "Nút Chữ thập để nhập"
 
-#: port/frontend/shell/settings.cpp:1137
+#: port/frontend/shell/settings.cpp:1159
 msgid "A room by its address, port and password."
 msgstr "Một phòng theo địa chỉ, cổng và mật khẩu."
 
-#: port/frontend/shell/settings.cpp:1138
+#: port/frontend/shell/settings.cpp:1160
 msgid "A room someone gave you the address of: its address (a name or an IPv4 address), its UDP port (24872 unless they say otherwise) and its password, if it has one."
 msgstr "Một phòng mà ai đó đưa bạn địa chỉ: địa chỉ của nó (một tên hoặc một địa chỉ IPv4), cổng UDP (24872 trừ khi họ nói khác) và mật khẩu, nếu có."
 
-#: port/frontend/shell/settings.cpp:1142
+#: port/frontend/shell/settings.cpp:1164
 msgid "No public rooms right now"
 msgstr "Hiện không có phòng công khai"
 
-#: port/frontend/shell/settings.cpp:1143
+#: port/frontend/shell/settings.cpp:1165
 msgid "{0} room"
 msgid_plural "{0} rooms"
 msgstr[0] "{0} phòng"
 
-#: port/frontend/shell/settings.cpp:1144
+#: port/frontend/shell/settings.cpp:1166
 msgid "Public rooms"
 msgstr "Phòng công khai"
 
-#: port/frontend/shell/settings.cpp:1144
+#: port/frontend/shell/settings.cpp:1166
 msgid "Cross downloads the list again."
 msgstr "Nút Chữ thập tải lại danh sách."
 
-#: port/frontend/shell/settings.cpp:1145
+#: port/frontend/shell/settings.cpp:1167
 msgid "ProsperoEden's list of public rooms: its own featured rooms first, then the others, the fullest first. A room for another version of Eden cannot be joined."
 msgstr "Danh sách phòng công khai của ProsperoEden: các phòng nổi bật của chính nó trước, rồi đến các phòng khác, phòng đông nhất trước. Không thể vào phòng dành cho phiên bản Eden khác."
 
-#: port/frontend/shell/settings.cpp:1153 port/frontend/shell/shares.cpp:317 port/frontend/shell/shares.cpp:489
+#: port/frontend/shell/settings.cpp:1175 port/frontend/shell/shares.cpp:317 port/frontend/shell/shares.cpp:489
 msgid "Password"
 msgstr "Mật khẩu"
 
 #. one of ProsperoEden's own rooms, which its list puts first
-#: port/frontend/shell/settings.cpp:1156
+#: port/frontend/shell/settings.cpp:1178
 msgid "Featured"
 msgstr "Nổi bật"
 
-#: port/frontend/shell/settings.cpp:1158
+#: port/frontend/shell/settings.cpp:1180
 msgid "Another version"
 msgstr "Phiên bản khác"
 
-#: port/frontend/shell/settings.cpp:1160
+#: port/frontend/shell/settings.cpp:1182
 msgid "{0} (chosen)"
 msgstr "{0} (đã chọn)"
 
-#: port/frontend/shell/settings.cpp:1161
+#: port/frontend/shell/settings.cpp:1183
 msgid "Any game"
 msgstr "Mọi trò chơi"
 
-#: port/frontend/shell/settings.cpp:1169
+#: port/frontend/shell/settings.cpp:1191
 msgid "Box art from GameTDB"
 msgstr "Ảnh bìa từ GameTDB"
 
-#: port/frontend/shell/settings.cpp:1169
+#: port/frontend/shell/settings.cpp:1191
 msgid "Covers for the library, downloaded once."
 msgstr "Ảnh bìa cho thư viện, tải xuống một lần."
 
-#: port/frontend/shell/settings.cpp:1170
+#: port/frontend/shell/settings.cpp:1192
 msgid "The first time a game shows up, its cover is downloaded from GameTDB (art.gametdb.com) by the ID on its box. Off: nothing more is downloaded."
 msgstr "Lần đầu một trò chơi xuất hiện, ảnh bìa của nó được tải xuống từ GameTDB (art.gametdb.com) theo ID trên hộp. Tắt: không tải xuống thêm gì."
 
-#: port/frontend/shell/settings.cpp:1174
+#: port/frontend/shell/settings.cpp:1196
 msgid "Switch covers"
 msgstr "Ảnh bìa Switch"
 
-#: port/frontend/shell/settings.cpp:1174 port/frontend/shell/setup.cpp:300
+#: port/frontend/shell/settings.cpp:1196 port/frontend/shell/setup.cpp:300
 msgid "Box art"
 msgstr "Ảnh bìa"
 
-#: port/frontend/shell/settings.cpp:1174
+#: port/frontend/shell/settings.cpp:1196
 msgid "Game icons"
 msgstr "Biểu tượng trò chơi"
 
-#: port/frontend/shell/settings.cpp:1174
+#: port/frontend/shell/settings.cpp:1196
 msgid "GameTDB's box art, or each game's own icon."
 msgstr "Ảnh bìa từ GameTDB, hoặc biểu tượng riêng của mỗi trò chơi."
 
-#: port/frontend/shell/settings.cpp:1175
+#: port/frontend/shell/settings.cpp:1197
 msgid "Box art is GameTDB's, found by each game's name. Game icons are the games' own, read from their files, as the Switch's home menu shows them. A picture beside a game (Game.png or Game.jpg) is its cover either way."
 msgstr "Ảnh bìa lấy từ GameTDB, tìm theo tên của mỗi trò chơi. Biểu tượng là của chính trò chơi, đọc từ tệp của nó, như menu HOME của Switch hiển thị. Một hình ảnh cạnh trò chơi (Game.png hoặc Game.jpg) là ảnh bìa của nó trong cả hai trường hợp."
 
-#: port/frontend/shell/settings.cpp:1182
+#: port/frontend/shell/settings.cpp:1204
 msgid "Downloading: {0} left"
 msgid_plural "Downloading: {0} left"
 msgstr[0] "Đang tải xuống: còn {0}"
 
-#: port/frontend/shell/settings.cpp:1183
+#: port/frontend/shell/settings.cpp:1205
 msgid "GameTDB did not answer: is the PS5 online?"
 msgstr "GameTDB không phản hồi: PS5 có đang kết nối mạng không?"
 
-#: port/frontend/shell/settings.cpp:1184
+#: port/frontend/shell/settings.cpp:1206
 msgid "{0} game without box art"
 msgid_plural "{0} games without box art"
 msgstr[0] "{0} trò chơi chưa có ảnh bìa"
 
-#: port/frontend/shell/settings.cpp:1185
+#: port/frontend/shell/settings.cpp:1207
 msgid "Every game has box art"
 msgstr "Mọi trò chơi đều có ảnh bìa"
 
-#: port/frontend/shell/settings.cpp:1186
+#: port/frontend/shell/settings.cpp:1208
 msgid "Download missing box art"
 msgstr "Tải xuống ảnh bìa còn thiếu"
 
-#: port/frontend/shell/settings.cpp:1186
+#: port/frontend/shell/settings.cpp:1208
 msgid "Tries again for every game without a cover."
 msgstr "Thử lại cho mọi trò chơi chưa có ảnh bìa."
 
-#: port/frontend/shell/settings.cpp:1187
+#: port/frontend/shell/settings.cpp:1209
 msgid "Asks GameTDB again for the cover of every game on this side that has none, including games it had no cover for before. Covers are downloaded in the background while you use the launcher."
 msgstr "Hỏi lại GameTDB ảnh bìa của mọi trò chơi ở bên này chưa có ảnh, kể cả những trò chơi trước đây không có. Ảnh bìa được tải xuống ngầm trong lúc bạn dùng trình khởi chạy."
 
-#: port/frontend/shell/settings.cpp:1189
+#: port/frontend/shell/settings.cpp:1211
 msgid "Download all box art again"
 msgstr "Tải xuống lại mọi ảnh bìa"
 
-#: port/frontend/shell/settings.cpp:1190
+#: port/frontend/shell/settings.cpp:1212
 msgid "Replaces every cover on this side with a fresh download."
 msgstr "Thay mọi ảnh bìa ở bên này bằng bản mới tải xuống."
 
-#: port/frontend/shell/settings.cpp:1191
+#: port/frontend/shell/settings.cpp:1213
 msgid "Downloads the cover of every game on this side again, replacing the ones you have. Useful when a cover is wrong or looks broken."
 msgstr "Tải xuống lại ảnh bìa của mọi trò chơi ở bên này, thay cho ảnh đang có. Hữu ích khi ảnh bìa sai hoặc trông bị hỏng."
 
-#: port/frontend/shell/settings.cpp:1194
+#: port/frontend/shell/settings.cpp:1216
 msgid "Community graphic packs"
 msgstr "Gói đồ họa cộng đồng"
 
-#: port/frontend/shell/settings.cpp:1194
+#: port/frontend/shell/settings.cpp:1216
 msgid "Cross checks GitHub for newer ones."
 msgstr "Nhấn Chữ thập để kiểm tra bản mới hơn trên GitHub."
 
-#: port/frontend/shell/settings.cpp:1195
+#: port/frontend/shell/settings.cpp:1217
 msgid "Cemu's community graphic packs, from GitHub's latest release when it is newer than the ones installed. They are not in the app: the first time the Wii U side starts without them, they are downloaded in the background."
 msgstr "Gói đồ họa cộng đồng của Cemu, từ bản phát hành mới nhất trên GitHub khi nó mới hơn bản đã cài. Các gói không có sẵn trong ứng dụng: lần đầu bên Wii U khởi động mà chưa có gói, chúng sẽ được tải về ở chế độ nền."
 
-#: port/frontend/shell/settings.cpp:1201
+#: port/frontend/shell/settings.cpp:1223
 msgid "Earn RetroAchievements in DS games with your account, as RetroArch does. Cross signs in with your user name and password; only the sign-in's token is kept on the PS5, never the password. Softcore: save states, cheats and speed stay as they are. RetroAchievements has no sets for the Wii U or the 3DS."
 msgstr "Đạt thành tựu RetroAchievements trong trò chơi DS bằng tài khoản của bạn, như RetroArch. Nhấn nút Chữ thập để đăng nhập bằng tên người dùng và mật khẩu; PS5 chỉ giữ token đăng nhập, không bao giờ giữ mật khẩu. Softcore: trạng thái đã lưu, mã gian lận và tốc độ vẫn dùng như cũ. RetroAchievements không có bộ thành tựu cho Wii U hay 3DS."
 
 #. the RetroAchievements account signed in: its name ({1}) and softcore points ({0})
-#: port/frontend/shell/settings.cpp:1206 port/frontend/shell/settings.cpp:1210 port/frontend/shell/whatsnew.cpp:35
+#: port/frontend/shell/settings.cpp:1228 port/frontend/shell/settings.cpp:1232 port/frontend/shell/whatsnew.cpp:35
 msgid "RetroAchievements"
 msgstr "RetroAchievements"
 
-#: port/frontend/shell/settings.cpp:1207
+#: port/frontend/shell/settings.cpp:1229
 msgid "{1} · {0} point"
 msgid_plural "{1} · {0} points"
 msgstr[0] "{1} · {0} điểm"
 
-#: port/frontend/shell/settings.cpp:1207
+#: port/frontend/shell/settings.cpp:1229
 msgid "Hold Cross to sign out"
 msgstr "Giữ nút Chữ thập để đăng xuất"
 
-#: port/frontend/shell/settings.cpp:1208
+#: port/frontend/shell/settings.cpp:1230
 msgid "Signed in: DS games with a set earn achievements."
 msgstr "Đã đăng nhập: trò chơi DS có bộ thành tựu sẽ mang lại thành tựu."
 
-#: port/frontend/shell/settings.cpp:1211
+#: port/frontend/shell/settings.cpp:1233
 msgid "Signing in…"
 msgstr "Đang đăng nhập…"
 
-#: port/frontend/shell/settings.cpp:1211
+#: port/frontend/shell/settings.cpp:1233
 msgid "Cross to sign in"
 msgstr "Nhấn Chữ thập để đăng nhập"
 
-#: port/frontend/shell/settings.cpp:1212
+#: port/frontend/shell/settings.cpp:1234
 msgid "Achievements in DS games, with your RetroAchievements account."
 msgstr "Thành tựu trong trò chơi DS, bằng tài khoản RetroAchievements."
 
-#: port/frontend/shell/settings.cpp:1213
+#: port/frontend/shell/settings.cpp:1235
 msgid "Unlock notices"
 msgstr "Thông báo mở khóa"
 
-#: port/frontend/shell/settings.cpp:1213
+#: port/frontend/shell/settings.cpp:1235
 msgid "Each unlock as the PS5's notification."
 msgstr "Mỗi lần mở khóa là một thông báo của PS5."
 
-#: port/frontend/shell/settings.cpp:1214
+#: port/frontend/shell/settings.cpp:1236
 msgid "An achievement earned, and the count as a game starts, shown as the PS5's own notifications. Off: they are only in the in-game menu's Achievements."
 msgstr "Thành tựu vừa đạt, và số thành tựu khi trò chơi khởi động, hiện thành thông báo của chính PS5. Tắt: chúng chỉ có trong mục Thành tựu của menu trong trò chơi."
 
-#: port/frontend/shell/settings.cpp:1219
+#: port/frontend/shell/settings.cpp:1241
 msgid "PS5-ECAM updates"
 msgstr "Bản cập nhật PS5-ECAM"
 
-#: port/frontend/shell/settings.cpp:1219
+#: port/frontend/shell/settings.cpp:1241
 msgid "Cross checks GitHub for a newer version."
 msgstr "Nhấn Chữ thập để kiểm tra phiên bản mới hơn trên GitHub."
 
-#: port/frontend/shell/settings.cpp:1220
+#: port/frontend/shell/settings.cpp:1242
 msgid "PS5-ECAM asks GitHub for its latest release each time it starts. Cross asks again, or installs the newer version it found: the release's files are downloaded, checked and put in place of these, and the app starts again. Your games, saves and settings stay as they are."
 msgstr "Mỗi lần khởi động, PS5-ECAM hỏi GitHub bản phát hành mới nhất. Nhấn Chữ thập để hỏi lại, hoặc cài phiên bản mới hơn đã tìm thấy: tệp của bản phát hành được tải xuống, kiểm tra rồi thay cho tệp hiện tại, và ứng dụng khởi động lại. Trò chơi, bản lưu và cài đặt giữ nguyên."
 
 #. {0} is the version the last update replaced, as in 5.0.0
-#: port/frontend/shell/settings.cpp:1226
+#: port/frontend/shell/settings.cpp:1249
 msgid "Go back to {0}"
 msgstr "Quay lại {0}"
 
-#: port/frontend/shell/settings.cpp:1227
+#: port/frontend/shell/settings.cpp:1250
 msgid "The version before the last update, kept as it was."
 msgstr "Phiên bản trước lần cập nhật gần nhất, được giữ nguyên."
 
-#: port/frontend/shell/settings.cpp:1228
+#: port/frontend/shell/settings.cpp:1251
 msgid "The last update kept the version it replaced. Holding Cross puts its files back in place of these, and PS5-ECAM starts again as that version. Your games, saves and settings stay as they are. The newer version is not offered at start again; this page still finds it."
 msgstr "Lần cập nhật gần nhất đã giữ lại phiên bản mà nó thay thế. Giữ nút Chữ thập để đặt lại các tệp của phiên bản đó thay cho các tệp này, rồi PS5-ECAM khởi động lại dưới phiên bản đó. Trò chơi, bản lưu và cài đặt của bạn vẫn giữ nguyên. Phiên bản mới hơn sẽ không được đề xuất lại khi khởi động; trang này vẫn tìm thấy nó."
 
-#: port/frontend/shell/settings.cpp:1246
+#: port/frontend/shell/settings.cpp:1258
+msgid "Put each system's files back first: Settings > Game files > A folder for each system."
+msgstr "Hãy đưa tệp của mỗi hệ máy trở lại trước: Cài đặt > Tệp trò chơi > Một thư mục cho mỗi hệ máy."
+
+#: port/frontend/shell/settings.cpp:1276
 msgid "Theme"
 msgstr "Giao diện"
 
-#: port/frontend/shell/settings.cpp:1248
+#: port/frontend/shell/settings.cpp:1278
 msgid "How the launcher looks: its colours, its corners and what moves behind the menus. Every theme has the same screens and buttons. Make your own as a JSON file in {0}/themes, starting from any of these: the text under this page says how. Only the launcher changes: the in-game menus and the games stay as they are."
 msgstr "Diện mạo của trình khởi chạy: màu sắc, góc bo và những gì chuyển động sau menu. Mọi giao diện đều có cùng màn hình và nút. Tự tạo giao diện bằng tệp JSON trong {0}/themes, bắt đầu từ bất kỳ giao diện nào ở đây: phần chữ bên dưới trang này hướng dẫn cách làm. Chỉ trình khởi chạy thay đổi: menu trong trò chơi và trò chơi giữ nguyên."
 
-#: port/frontend/shell/settings.cpp:1254
+#: port/frontend/shell/settings.cpp:1284
 msgid "Wii U side"
 msgstr "Bên Wii U"
 
-#: port/frontend/shell/settings.cpp:1254
+#: port/frontend/shell/settings.cpp:1284
 msgid "Cemu's games, in the bar."
 msgstr "Trò chơi của Cemu, trên thanh."
 
-#: port/frontend/shell/settings.cpp:1255
+#: port/frontend/shell/settings.cpp:1285
 msgid "Whether the bar shows the Wii U side (Cemu). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
 msgstr "Thanh có hiện bên Wii U (Cemu) hay không. Khi ẩn, trò chơi và cài đặt của bên đó vẫn được giữ và trở lại khi bật lại. Luôn có ít nhất một bên được bật."
 
-#: port/frontend/shell/settings.cpp:1258
+#: port/frontend/shell/settings.cpp:1288
 msgid "Switch side"
 msgstr "Bên Switch"
 
-#: port/frontend/shell/settings.cpp:1258
+#: port/frontend/shell/settings.cpp:1288
 msgid "Eden's games, in the bar."
 msgstr "Trò chơi của Eden, trên thanh."
 
-#: port/frontend/shell/settings.cpp:1259
+#: port/frontend/shell/settings.cpp:1289
 msgid "Whether the bar shows the Switch side (Eden). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
 msgstr "Thanh có hiện bên Switch (Eden) hay không. Khi ẩn, trò chơi và cài đặt của bên đó vẫn được giữ và trở lại khi bật lại. Luôn có ít nhất một bên được bật."
 
-#: port/frontend/shell/settings.cpp:1261
+#: port/frontend/shell/settings.cpp:1291
 msgid "DS side"
 msgstr "Bên DS"
 
-#: port/frontend/shell/settings.cpp:1261
+#: port/frontend/shell/settings.cpp:1291
 msgid "melonDS's games, in the bar."
 msgstr "Trò chơi của melonDS, trên thanh."
 
-#: port/frontend/shell/settings.cpp:1262
+#: port/frontend/shell/settings.cpp:1292
 msgid "Whether the bar shows the DS side (melonDS). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
 msgstr "Thanh có hiện bên DS (melonDS) hay không. Khi ẩn, trò chơi và cài đặt của bên đó vẫn được giữ và trở lại khi bật lại. Luôn có ít nhất một bên được bật."
 
-#: port/frontend/shell/settings.cpp:1264
+#: port/frontend/shell/settings.cpp:1294
 msgid "3DS side"
 msgstr "Bên 3DS"
 
-#: port/frontend/shell/settings.cpp:1264
+#: port/frontend/shell/settings.cpp:1294
 msgid "Azahar's games, in the bar."
 msgstr "Trò chơi của Azahar, trên thanh."
 
-#: port/frontend/shell/settings.cpp:1265
+#: port/frontend/shell/settings.cpp:1295
 msgid "Whether the bar shows the 3DS side (Azahar). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
 msgstr "Thanh có hiện bên 3DS (Azahar) hay không. Khi ẩn, trò chơi và cài đặt của bên đó vẫn được giữ và trở lại khi bật lại. Luôn có ít nhất một bên được bật."
 
-#: port/frontend/shell/settings.cpp:1267
+#: port/frontend/shell/settings.cpp:1297
 msgid "Game pictures behind menus"
 msgstr "Ảnh trò chơi sau menu"
 
-#: port/frontend/shell/settings.cpp:1267
+#: port/frontend/shell/settings.cpp:1297
 msgid "The focused game's cover, softened, behind the screens."
 msgstr "Ảnh bìa của trò chơi đang chọn, làm mờ, phía sau màn hình."
 
-#: port/frontend/shell/settings.cpp:1268
+#: port/frontend/shell/settings.cpp:1298
 msgid "The focused game's picture fills the screen behind the menus, softened and dimmed, so moving the focus changes the whole screen. Off: the game's colours only."
 msgstr "Ảnh của trò chơi đang chọn phủ kín màn hình sau menu, làm mờ và tối đi, nên di chuyển mục chọn sẽ đổi cả màn hình. Tắt: chỉ màu của trò chơi."
 
-#: port/frontend/shell/settings.cpp:1270
+#: port/frontend/shell/settings.cpp:1300
 msgid "Library filters"
 msgstr "Bộ lọc thư viện"
 
-#: port/frontend/shell/settings.cpp:1270
+#: port/frontend/shell/settings.cpp:1300
 msgid "All, Recently added, Favourites: a row over the list."
 msgstr "Tất cả, Mới thêm, Yêu thích: một hàng phía trên danh sách."
 
-#: port/frontend/shell/settings.cpp:1271
+#: port/frontend/shell/settings.cpp:1301
 msgid "A row of filters over the Library's list: All, Recently added (the last 30 days), Favourites and, on the Wii U side, Graphic packs on, each with its count. Off: the list has every game, and Sort and Search are all it needs."
 msgstr "Một hàng bộ lọc phía trên danh sách thư viện: Tất cả, Mới thêm (30 ngày gần nhất), Yêu thích và, ở bên Wii U, Đang bật gói đồ họa, mỗi bộ lọc kèm số lượng. Tắt: danh sách có mọi trò chơi, chỉ cần Sắp xếp và Tìm kiếm là đủ."
 
-#: port/frontend/shell/settings.cpp:1273
+#: port/frontend/shell/settings.cpp:1303
 msgid "Larger text"
 msgstr "Chữ lớn hơn"
 
-#: port/frontend/shell/settings.cpp:1273
+#: port/frontend/shell/settings.cpp:1303
 msgid "Every size of text a step up."
 msgstr "Mọi cỡ chữ tăng một bậc."
 
-#: port/frontend/shell/settings.cpp:1274
+#: port/frontend/shell/settings.cpp:1304
 msgid "Every style of text a step larger: captions from 20 to 23, reading text from 26 to 30."
 msgstr "Mọi kiểu chữ lớn hơn một bậc: chú thích từ 20 lên 23, chữ đọc từ 26 lên 30."
 
-#: port/frontend/shell/settings.cpp:1275
+#: port/frontend/shell/settings.cpp:1305
 msgid "High contrast"
 msgstr "Độ tương phản cao"
 
-#: port/frontend/shell/settings.cpp:1275
+#: port/frontend/shell/settings.cpp:1305
 msgid "Opaque panels, full-strength text, a thicker ring."
 msgstr "Bảng không trong suốt, chữ đậm đủ, viền chọn dày hơn."
 
-#: port/frontend/shell/settings.cpp:1276
+#: port/frontend/shell/settings.cpp:1306
 msgid "Opaque panels instead of glass, all text at full strength, a thicker focus ring and no grain or pictures behind the menus."
 msgstr "Bảng không trong suốt thay cho kính, mọi chữ ở độ đậm tối đa, viền chọn dày hơn và không có hạt hay ảnh sau menu."
 
-#: port/frontend/shell/settings.cpp:1277
+#: port/frontend/shell/settings.cpp:1307
 msgid "Reduce motion"
 msgstr "Giảm chuyển động"
 
-#: port/frontend/shell/settings.cpp:1277
+#: port/frontend/shell/settings.cpp:1307
 msgid "Fades in place of movement."
 msgstr "Mờ dần thay cho chuyển động."
 
-#: port/frontend/shell/settings.cpp:1278
+#: port/frontend/shell/settings.cpp:1308
 msgid "Springs become short fades; nothing drifts, breathes or rises behind the menus."
 msgstr "Hiệu ứng nảy thành mờ dần ngắn; không có gì trôi, nhịp thở hay bay lên sau menu."
 
-#: port/frontend/shell/settings.cpp:1279 port/frontend/shell/welcome.cpp:208
+#: port/frontend/shell/settings.cpp:1309 port/frontend/shell/welcome.cpp:208
 msgid "Make it yours"
 msgstr "Tùy biến theo ý bạn"
 
-#: port/frontend/shell/settings.cpp:1279
+#: port/frontend/shell/settings.cpp:1309
 msgid "The first-start choices again: sides, theme, buttons."
 msgstr "Các lựa chọn của lần khởi động đầu: các bên, giao diện, nút."
 
-#: port/frontend/shell/settings.cpp:1280
+#: port/frontend/shell/settings.cpp:1310
 msgid "The page the first start opens on: the language, the sides, the theme, A and B, the music, vibration and the games' pictures, on one page."
 msgstr "Trang mở ra ở lần khởi động đầu: ngôn ngữ, các bên, giao diện, A và B, nhạc, rung và ảnh trò chơi, trên một trang."
 
-#: port/frontend/shell/settings.cpp:1286
+#: port/frontend/shell/settings.cpp:1316
 msgid "Hold to confirm"
 msgstr "Giữ để xác nhận"
 
-#: port/frontend/shell/settings.cpp:1287
+#: port/frontend/shell/settings.cpp:1317
 msgid "How long Cross is held for what cannot be undone."
 msgstr "Thời gian giữ nút Chữ thập cho những thao tác không hoàn tác được."
 
-#: port/frontend/shell/settings.cpp:1288
+#: port/frontend/shell/settings.cpp:1318
 msgid "Clearing caches, Artic Setup and resetting controls are held to confirm, never pressed twice. This is how long."
 msgstr "Xóa bộ nhớ đệm, Artic Setup và khôi phục điều khiển đều cần giữ để xác nhận, không bao giờ là nhấn hai lần. Đây là thời gian giữ."
 
-#: port/frontend/shell/settings.cpp:1292
+#: port/frontend/shell/settings.cpp:1322
 msgid "Storage, recompilers, games, keys and box art, checked."
 msgstr "Kiểm tra bộ lưu trữ, trình biên dịch lại, trò chơi, khóa và ảnh bìa."
 
-#: port/frontend/shell/settings.cpp:1293
+#: port/frontend/shell/settings.cpp:1323
 msgid "Each check has a status, what it means and what to do. It is also shown on the first start and whenever a check fails as the app starts."
 msgstr "Mỗi mục kiểm tra có trạng thái, ý nghĩa và cách xử lý. Nó cũng hiện ở lần khởi động đầu và mỗi khi có mục kiểm tra không đạt lúc ứng dụng khởi động."
 
-#: port/frontend/shell/settings.cpp:1295
+#: port/frontend/shell/settings.cpp:1325
 msgid "Copy logs to USB"
 msgstr "Sao chép nhật ký vào USB"
 
-#: port/frontend/shell/settings.cpp:1295
+#: port/frontend/shell/settings.cpp:1325
 msgid "The logs a report needs, onto a USB drive."
 msgstr "Nhật ký cần cho báo cáo lỗi, vào ổ USB."
 
-#: port/frontend/shell/settings.cpp:1296
+#: port/frontend/shell/settings.cpp:1326
 msgid "Copies the last five sessions' logs and the settings into a dated folder on a USB drive, to attach to a report."
 msgstr "Sao chép nhật ký của năm phiên gần nhất và các mục cài đặt vào một thư mục ghi ngày trên ổ USB, để đính kèm vào báo cáo lỗi."
 
-#: port/frontend/shell/settings.cpp:1298 port/frontend/shell/settings.cpp:1301
+#: port/frontend/shell/settings.cpp:1328 port/frontend/shell/settings.cpp:1331
 msgid "Clear shader caches"
 msgstr "Xóa bộ nhớ đệm shader"
 
-#: port/frontend/shell/settings.cpp:1299 port/frontend/shell/settings.cpp:1302
+#: port/frontend/shell/settings.cpp:1329 port/frontend/shell/settings.cpp:1332
 msgid "For a game that crashes on a bad cache."
 msgstr "Cho trò chơi bị sập vì bộ nhớ đệm hỏng."
 
-#: port/frontend/shell/settings.cpp:1299
+#: port/frontend/shell/settings.cpp:1329
 msgid "Deletes Cemu's shader caches. Games build them again as they run: the first minutes stutter."
 msgstr "Xóa bộ nhớ đệm shader của Cemu. Trò chơi dựng lại chúng khi chạy: vài phút đầu sẽ giật."
 
-#: port/frontend/shell/settings.cpp:1303
+#: port/frontend/shell/settings.cpp:1333
 msgid "Deletes Azahar's shader caches. Games build them again as they run: the first minutes stutter."
 msgstr "Xóa bộ nhớ đệm shader của Azahar. Trò chơi dựng lại chúng khi chạy: vài phút đầu sẽ giật."
 
 #. Settings > Diagnostics: the copies of games unpacked from their archives (.zip, .7z...), kept for their next start
-#: port/frontend/shell/settings.cpp:1313
+#: port/frontend/shell/settings.cpp:1343
 msgid "Unpacked games"
 msgstr "Trò chơi đã giải nén"
 
-#: port/frontend/shell/settings.cpp:1317
+#: port/frontend/shell/settings.cpp:1347
 msgid "Games from archives, kept unpacked for their next start."
 msgstr "Trò chơi từ tệp nén, được giữ ở dạng đã giải nén cho lần khởi động sau."
 
 #. {0} is the folder they are kept in
-#: port/frontend/shell/settings.cpp:1319
+#: port/frontend/shell/settings.cpp:1349
 msgid "Deletes the copies of games unpacked from their archives, kept in {0}. Each is unpacked again the next time it starts; when room is needed, the copies used longest ago go by themselves."
 msgstr "Xóa các bản sao của trò chơi đã giải nén từ tệp nén, được giữ trong {0}. Mỗi trò chơi sẽ được giải nén lại vào lần khởi động sau; khi cần chỗ trống, các bản sao lâu nhất chưa dùng sẽ tự bị xóa."
 
-#: port/frontend/shell/settings.cpp:1350
+#: port/frontend/shell/settings.cpp:1380
 msgid "Back to defaults"
 msgstr "Về mặc định"
 
-#: port/frontend/shell/settings.cpp:1352
+#: port/frontend/shell/settings.cpp:1382
 msgid "This game goes back to its side's settings."
 msgstr "Trò chơi này trở lại dùng cài đặt của bên nó."
 
-#: port/frontend/shell/settings.cpp:1353
+#: port/frontend/shell/settings.cpp:1383
 msgid "Clears this game's own settings, so it uses its side's settings again, like every other game."
 msgstr "Xóa các mục cài đặt riêng của trò chơi này, để nó lại dùng cài đặt của bên nó như mọi trò chơi khác."
 
 #. a Wii U account by its number, when its name cannot be read
-#: port/frontend/shell/settings.cpp:1370
+#: port/frontend/shell/settings.cpp:1400
 msgid "Account {0}"
 msgstr "Tài khoản {0}"
 
 #. a Wii U game's save that all its accounts share
-#: port/frontend/shell/settings.cpp:1372
+#: port/frontend/shell/settings.cpp:1402
 msgid "Every account's"
 msgstr "Chung cho mọi tài khoản"
 
-#: port/frontend/shell/settings.cpp:1373
+#: port/frontend/shell/settings.cpp:1403
 msgid "Save data"
 msgstr "Dữ liệu lưu"
 
 #. a 3DS game's extra data (its extdata), which some games keep beside their saves
-#: port/frontend/shell/settings.cpp:1375
+#: port/frontend/shell/settings.cpp:1405
 msgid "Extra data"
 msgstr "Dữ liệu bổ sung"
 
-#: port/frontend/shell/settings.cpp:1376
+#: port/frontend/shell/settings.cpp:1406
 msgid "{0} save state"
 msgid_plural "{0} save states"
 msgstr[0] "{0} bản lưu trạng thái"
 
-#: port/frontend/shell/settings.cpp:1414
+#: port/frontend/shell/settings.cpp:1444
 msgid "Held: moved to saves-before on the PS5, so it can still come back."
 msgstr "Giữ: chuyển vào saves-before trên PS5, nên vẫn lấy lại được."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1416
+#: port/frontend/shell/settings.cpp:1446
 msgid "Holding Cross moves these files to {0}/saves-before, in a folder named by the date and time, and the game starts without them next time. Nothing is deleted: copy them back from there (or restore a backup) to have them again."
 msgstr "Giữ nút Chữ thập sẽ chuyển các tệp này vào {0}/saves-before, trong một thư mục đặt tên theo ngày giờ, và lần sau trò chơi khởi động mà không có chúng. Không có gì bị xóa: sao chép chúng từ đó về (hoặc khôi phục một bản sao lưu) để có lại."
 
-#: port/frontend/shell/settings.cpp:1426
+#: port/frontend/shell/settings.cpp:1456
 msgid "No saves yet"
 msgstr "Chưa có bản lưu"
 
-#: port/frontend/shell/settings.cpp:1427
+#: port/frontend/shell/settings.cpp:1457
 msgid "They appear here once the game has saved."
 msgstr "Chúng hiện ở đây khi trò chơi đã lưu."
 
-#: port/frontend/shell/settings.cpp:1440
+#: port/frontend/shell/settings.cpp:1470
 msgid "This game's saves, to the first USB drive."
 msgstr "Bản lưu của trò chơi này, vào ổ USB đầu tiên."
 
-#: port/frontend/shell/settings.cpp:1441
+#: port/frontend/shell/settings.cpp:1471
 msgid "Copies this game's saves (every account's, on the Wii U) and its save states to PS5CEMU-HAR-saves on the first USB drive plugged in, in a folder named by the date and time, the same way a backup of every side's saves is made."
 msgstr "Sao chép bản lưu của trò chơi này (của mọi tài khoản, trên Wii U) và trạng thái đã lưu của nó vào PS5CEMU-HAR-saves trên ổ USB đầu tiên đang cắm, trong một thư mục đặt tên theo ngày giờ, giống như khi sao lưu bản lưu của mọi bên."
 
-#: port/frontend/shell/settings.cpp:1458
+#: port/frontend/shell/settings.cpp:1488
 msgid "No backup on the drives plugged in has this game's saves."
 msgstr "Không bản sao lưu nào trên các ổ đang cắm có bản lưu của trò chơi này."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1460
+#: port/frontend/shell/settings.cpp:1490
 msgid "Puts this game's saves from the chosen backup back where they came from, and nothing else. Its saves there now are moved first to {0}/saves-before, so nothing is lost."
 msgstr "Đưa bản lưu của trò chơi này từ bản sao lưu đã chọn về chỗ cũ, không gì khác. Bản lưu hiện có của nó được chuyển trước vào {0}/saves-before, nên không mất gì."
 
-#: port/frontend/shell/settings.cpp:1482
+#: port/frontend/shell/settings.cpp:1512
 msgid ""
 "Your own theme: a file such as sunset.json in {0}/themes, read as the app starts, then listed under Theme by its name:\n"
 "{{\"name\": \"Sunset\", \"base\": \"midnight\", \"colours\": {{\"wiiu\": \"#ff7a59\", \"ink-0\": \"#120806\"}}, \"corners\": 0.5, \"motif\": \"none\"}}\n"
@@ -6146,26 +6180,26 @@ msgstr ""
 "base: giao diện để bắt đầu (light, link-jack, classic, midnight, eden). colours: ink-0 đến ink-2 (nền), text, wiiu, n3ds, nds và nx (màu của từng bên), glass, line, good, warn, bad và focus, dạng #rrggbb. corners: từ 0 (vuông) đến 1.5 (tròn). motif: side, none hoặc eden."
 
 #. {0} is Eden's data folder; {1} its game files folder (the same one unless another was chosen)
-#: port/frontend/shell/settings.cpp:1491
+#: port/frontend/shell/settings.cpp:1521
 msgid "Saves: {0}/user/nand/user/save. Updates and DLC: beside a game, in its own folder, or in {1}/updates. Mods and cheats: {1}/mods. Covers and names: {0}/covers, once Eden has read a game."
 msgstr "Bản lưu: {0}/user/nand/user/save. Bản cập nhật và DLC: cạnh trò chơi, trong thư mục riêng của nó, hoặc trong {1}/updates. Bản mod và mã gian lận: {1}/mods. Ảnh bìa và tên: {0}/covers, sau khi Eden đã đọc trò chơi."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1496
+#: port/frontend/shell/settings.cpp:1526
 msgid "Saves: {0}/melonds/saves (a .sav beside the game is taken the first time). Save states: melonds/states. Cheats: melonds/cheats/<game file>.mch, melonDS's format. DSi games, the DS's wireless and its GBA slot are not there."
 msgstr "Bản lưu: {0}/melonds/saves (tệp .sav cạnh trò chơi được lấy ở lần đầu). Trạng thái đã lưu: melonds/states. Mã gian lận: melonds/cheats/<tệp trò chơi>.mch, định dạng của melonDS. Không có trò chơi DSi, kết nối không dây và khe GBA của DS."
 
-#: port/frontend/shell/settings.cpp:1500
+#: port/frontend/shell/settings.cpp:1530
 msgid "On, a QR code here opens the game's second screen in a phone's browser. Nothing to install; the phone must be on the PS5's network."
 msgstr "Khi bật, mã QR ở đây mở màn hình thứ hai của trò chơi trong trình duyệt điện thoại. Không cần cài gì; điện thoại phải ở trong mạng của PS5."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1504
+#: port/frontend/shell/settings.cpp:1534
 msgid "Figure dumps go in {0}/figures: skylanders, infinity and dimensions. Switch a portal on here, start the game, then put figures on it from the in-game menu (touchpad click + Options > USB devices)."
 msgstr "Bản dump mô hình đặt trong {0}/figures: skylanders, infinity và dimensions. Bật một cổng ở đây, khởi động trò chơi, rồi đặt mô hình lên từ menu trong trò chơi (nhấn bàn di cảm ứng + OPTIONS > Thiết bị USB)."
 
 #. {0} is the app's version; {1} its data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on; {2} Eden's game files folder; {3} Cemu's selected data folder; {4} its default games folder; {5} Azahar's selected folder; {6} melonDS's selected folder
-#: port/frontend/shell/settings.cpp:1509
+#: port/frontend/shell/settings.cpp:1539
 msgid ""
 "Cemu, the Wii U emulator, by the Cemu team and its contributors; RADV on the PS5 by Mihawk-99 and mpereiraesaa; the community graphic packs' authors.\n"
 "Azahar, the 3DS emulator, by the Azahar team and the Citra contributors before them; Mihawk-99's PS5 port of it and dynarmic.\n"
@@ -6196,168 +6230,172 @@ msgstr ""
 "Phiên bản {0}"
 
 #. the first choice in the language list: the PS5's own ({0}, in its own words)
-#: port/frontend/shell/settings.cpp:1527
+#: port/frontend/shell/settings.cpp:1557
 msgid "The PS5's language: {0}"
 msgstr "Ngôn ngữ của PS5: {0}"
 
-#: port/frontend/shell/settings.cpp:1552
+#: port/frontend/shell/settings.cpp:1582
 msgid "Language: {0}"
 msgstr "Ngôn ngữ: {0}"
 
-#: port/frontend/shell/settings.cpp:1673
+#: port/frontend/shell/settings.cpp:1703
 msgid "One side at least stays on"
 msgstr "Luôn có ít nhất một bên được bật"
 
 #. the Wii U account games start on now ({0}: its name)
-#: port/frontend/shell/settings.cpp:1829 port/frontend/shell/settings.cpp:1998 port/frontend/shell/settings.cpp:2073
+#: port/frontend/shell/settings.cpp:1859 port/frontend/shell/settings.cpp:2028 port/frontend/shell/settings.cpp:2103
 msgid "Games start on {0}'s saves"
 msgstr "Trò chơi khởi động với bản lưu của {0}"
 
-#: port/frontend/shell/settings.cpp:1923
+#: port/frontend/shell/settings.cpp:1953
 msgid "This game has no ID to save settings under"
 msgstr "Trò chơi này không có ID để lưu cài đặt"
 
-#: port/frontend/shell/settings.cpp:2021
+#: port/frontend/shell/settings.cpp:2051
 msgid "Backing up {0}'s saves…"
 msgstr "Đang sao lưu bản lưu của {0}…"
 
-#: port/frontend/shell/settings.cpp:2068
+#: port/frontend/shell/settings.cpp:2098
 msgid "A name for the new account"
 msgstr "Tên cho tài khoản mới"
 
-#: port/frontend/shell/settings.cpp:2085
+#: port/frontend/shell/settings.cpp:2115
 msgid "A new name"
 msgstr "Tên mới"
 
-#: port/frontend/shell/settings.cpp:2087
+#: port/frontend/shell/settings.cpp:2117
 msgid "Renamed {0}"
 msgstr "Đã đổi tên {0}"
 
-#: port/frontend/shell/settings.cpp:2096
+#: port/frontend/shell/settings.cpp:2126
 msgid "Backing up every side's saves…"
 msgstr "Đang sao lưu bản lưu của mọi bên…"
 
-#: port/frontend/shell/settings.cpp:2177
+#: port/frontend/shell/settings.cpp:2207
 msgid "Switch games play offline"
 msgstr "Trò chơi Switch chơi ngoại tuyến"
 
-#: port/frontend/shell/settings.cpp:2181
+#: port/frontend/shell/settings.cpp:2211
 msgid "Your nickname in rooms"
 msgstr "Biệt danh của bạn trong phòng"
 
-#: port/frontend/shell/settings.cpp:2186
+#: port/frontend/shell/settings.cpp:2216
 msgid "A nickname is 4 to 20 letters, digits, spaces, dots, dashes or underscores."
 msgstr "Biệt danh gồm 4 đến 20 chữ cái Latinh, chữ số, khoảng trắng, dấu chấm, gạch ngang hoặc gạch dưới."
 
 #. the nickname shown in Switch rooms ({0})
-#: port/frontend/shell/settings.cpp:2192
+#: port/frontend/shell/settings.cpp:2222
 msgid "In rooms you are {0}"
 msgstr "Trong phòng, bạn là {0}"
 
-#: port/frontend/shell/settings.cpp:2206
+#: port/frontend/shell/settings.cpp:2236
 msgid "This room is for another version of Eden."
 msgstr "Phòng này dành cho phiên bản Eden khác."
 
 #. the room ({0}) Switch games join from now on
-#: port/frontend/shell/settings.cpp:2217 port/frontend/shell/settings.cpp:2254
+#: port/frontend/shell/settings.cpp:2247 port/frontend/shell/settings.cpp:2284
 msgid "Switch games join {0} as they start"
 msgstr "Trò chơi Switch vào {0} khi khởi động"
 
 #. the password of a room ({0}: its name)
-#: port/frontend/shell/settings.cpp:2221
+#: port/frontend/shell/settings.cpp:2251
 msgid "{0}'s password"
 msgstr "Mật khẩu của {0}"
 
-#: port/frontend/shell/settings.cpp:2232
+#: port/frontend/shell/settings.cpp:2262
 msgid "The room's address"
 msgstr "Địa chỉ của phòng"
 
-#: port/frontend/shell/settings.cpp:2237
+#: port/frontend/shell/settings.cpp:2267
 msgid "An address is a name or an IPv4 address: letters, digits, dots and dashes."
 msgstr "Địa chỉ là một tên hoặc một địa chỉ IPv4: chữ cái, chữ số, dấu chấm và gạch ngang."
 
-#: port/frontend/shell/settings.cpp:2240
+#: port/frontend/shell/settings.cpp:2270
 msgid "Its UDP port"
 msgstr "Cổng UDP của nó"
 
-#: port/frontend/shell/settings.cpp:2244
+#: port/frontend/shell/settings.cpp:2274
 msgid "A port is a number from 1 to 65535."
 msgstr "Cổng là một số từ 1 đến 65535."
 
-#: port/frontend/shell/settings.cpp:2247
+#: port/frontend/shell/settings.cpp:2277
 msgid "Its password (empty: none)"
 msgstr "Mật khẩu của nó (để trống: không có)"
 
-#: port/frontend/shell/settings.cpp:2264
+#: port/frontend/shell/settings.cpp:2294
 msgid "Starting the 3DS"
 msgstr "Đang khởi động 3DS"
 
-#: port/frontend/shell/settings.cpp:2273
+#: port/frontend/shell/settings.cpp:2303
 msgid "Your RetroAchievements user name"
 msgstr "Tên người dùng RetroAchievements của bạn"
 
-#: port/frontend/shell/settings.cpp:2276
+#: port/frontend/shell/settings.cpp:2306
 msgid "{0}'s RetroAchievements password"
 msgstr "Mật khẩu RetroAchievements của {0}"
 
-#: port/frontend/shell/settings.cpp:2278
+#: port/frontend/shell/settings.cpp:2308
 msgid "Signing in to RetroAchievements…"
 msgstr "Đang đăng nhập RetroAchievements…"
 
 #. what clearing the unpacked games did; {1} is the room it made, as in 2.4 GB
-#: port/frontend/shell/settings.cpp:2300
+#: port/frontend/shell/settings.cpp:2330
 msgid "{0} game deleted ({1})"
 msgid_plural "{0} games deleted ({1})"
 msgstr[0] "Đã xóa {0} trò chơi ({1})"
 
 #. a held row's result: the covers are on their way
-#: port/frontend/shell/settings.cpp:2307
+#: port/frontend/shell/settings.cpp:2337
 msgid "Downloading in the background"
 msgstr "Đang tải xuống ngầm"
 
-#: port/frontend/shell/settings.cpp:2343
+#: port/frontend/shell/settings.cpp:2357 port/frontend/shell/shell.cpp:434
+msgid "Close PS5-ECAM and start it again from the home screen: the folders move as it starts."
+msgstr "Đóng PS5-ECAM rồi mở lại từ màn hình chính: các thư mục được chuyển khi ứng dụng khởi động."
+
+#: port/frontend/shell/settings.cpp:2399
 msgid "{0} is deleted; its saves stay"
 msgstr "Đã xóa {0}; bản lưu vẫn còn"
 
-#: port/frontend/shell/settings.cpp:2356
+#: port/frontend/shell/settings.cpp:2412
 msgid "Restoring the saves of {0}…"
 msgstr "Đang khôi phục bản lưu của {0}…"
 
-#: port/frontend/shell/settings.cpp:2364
+#: port/frontend/shell/settings.cpp:2420
 msgid "Signed out of RetroAchievements"
 msgstr "Đã đăng xuất khỏi RetroAchievements"
 
-#: port/frontend/shell/settings.cpp:2373
+#: port/frontend/shell/settings.cpp:2429
 msgid "Restoring {0}'s saves of {1}…"
 msgstr "Đang khôi phục bản lưu của {0} từ bản sao lưu {1}…"
 
 #. one of a game's saves moved out of the way ({0}: which, as its row names it)
-#: port/frontend/shell/settings.cpp:2387
+#: port/frontend/shell/settings.cpp:2443
 msgid "{0}: moved to saves-before"
 msgstr "{0}: đã chuyển vào saves-before"
 
-#: port/frontend/shell/settings.cpp:2398
+#: port/frontend/shell/settings.cpp:2454
 msgid "Done: back to its side's settings"
 msgstr "Xong: đã về cài đặt của bên"
 
-#: port/frontend/shell/settings.cpp:2559
+#: port/frontend/shell/settings.cpp:2615
 msgid "Scan it, or open"
 msgstr "Quét mã, hoặc mở"
 
-#: port/frontend/shell/settings.cpp:2565
+#: port/frontend/shell/settings.cpp:2621
 msgid "Same network as the PS5. Nothing to install: the browser is enough. Sound stays on the PS5. Any browser on the network can see it and touch."
 msgstr "Cùng mạng với PS5. Không cần cài gì: chỉ cần trình duyệt. Âm thanh vẫn ở trên PS5. Mọi trình duyệt trong mạng đều xem và chạm được."
 
-#: port/frontend/shell/settings.cpp:2597
+#: port/frontend/shell/settings.cpp:2653
 msgid "Support PS5-ECAM"
 msgstr "Ủng hộ PS5-ECAM"
 
-#: port/frontend/shell/settings.cpp:2608
+#: port/frontend/shell/settings.cpp:2664
 msgid "PS5-ECAM is free. If it brings your games back, you can support its work here."
 msgstr "PS5-ECAM miễn phí. Nếu nó giúp bạn chơi lại các trò chơi của mình, bạn có thể ủng hộ công sức làm ra nó tại đây."
 
 #. above Settings' pages: whose settings they are ({0}: Wii U, Nintendo 3DS or Nintendo DS)
-#: port/frontend/shell/settings.cpp:2648
+#: port/frontend/shell/settings.cpp:2704
 msgid "{0} settings"
 msgstr "Cài đặt {0}"
 
@@ -6874,367 +6912,389 @@ msgstr "Bật chia sẻ tệp cho một thư mục trên máy tính hoặc NAS, 
 msgid "Nothing is ever written to it."
 msgstr "Không bao giờ ghi gì lên đó."
 
-#: port/frontend/shell/shell.cpp:213
+#: port/frontend/shell/shell.cpp:214
 msgid "Saved your place in the library"
 msgstr "Đã lưu vị trí của bạn trong thư viện"
 
-#: port/frontend/shell/shell.cpp:216 port/frontend/shell/shell.cpp:952 port/frontend/shell/shell.cpp:967 port/frontend/shell/shell.cpp:1035
+#: port/frontend/shell/shell.cpp:217 port/frontend/shell/shell.cpp:993 port/frontend/shell/shell.cpp:1008 port/frontend/shell/shell.cpp:1076
 msgid "The game could not start"
 msgstr "Không thể khởi động trò chơi"
 
-#: port/frontend/shell/shell.cpp:221
+#: port/frontend/shell/shell.cpp:222
 msgid "Your settings could not be read"
 msgstr "Không đọc được cài đặt"
 
 #. {0} is where the unreadable settings file is kept: /data/ps5cemu/ps5cemu.json.broken
-#: port/frontend/shell/shell.cpp:223
+#: port/frontend/shell/shell.cpp:224
 msgid "The launcher's settings file, ps5cemu.json, has a mistake in it, so every setting is back to its default. The file as it was is kept as {0}: mend it on a computer and put it back as ps5cemu.json, or leave it."
 msgstr "Tệp cài đặt của trình khởi chạy, ps5cemu.json, có lỗi nên mọi cài đặt đã trở về mặc định. Tệp như lúc trước được giữ lại tại {0}: hãy sửa nó trên máy tính rồi đặt lại thành ps5cemu.json, hoặc cứ để đó."
 
-#: port/frontend/shell/shell.cpp:230
+#: port/frontend/shell/shell.cpp:231
 msgid "PS5-ECAM closed after a crash"
 msgstr "PS5-ECAM đã đóng sau một sự cố"
 
 #. {0} is the crash report's first line in the log, as it is: "signal 11 at 0x7f3a..."
-#: port/frontend/shell/shell.cpp:232
+#: port/frontend/shell/shell.cpp:233
 msgid "The last time, PS5-ECAM stopped with a crash: {0}. Its log is kept: Settings > Diagnostics > Copy logs to USB puts it on a drive, with the sessions before it, to attach to a report on GitHub."
 msgstr "Lần trước, PS5-ECAM đã dừng vì một sự cố: {0}. Nhật ký của nó vẫn được giữ: Cài đặt > Chẩn đoán > Sao chép nhật ký vào USB sẽ chép nó vào ổ đĩa, cùng các phiên trước đó, để đính kèm vào báo cáo trên GitHub."
 
-#: port/frontend/shell/shell.cpp:746
+#: port/frontend/shell/shell.cpp:247
+msgid "Some files could not move"
+msgstr "Không chuyển được một số tệp"
+
+#. {0} names the systems whose files did not move into folders of their own: "Wii U, Nintendo 3DS"
+#: port/frontend/shell/shell.cpp:249
+msgid "{0}: their files stayed where they were, with nothing lost. The boot log says why: Settings > Diagnostics > Copy logs to USB."
+msgstr "{0}: tệp vẫn ở nguyên chỗ cũ, không mất gì. Nhật ký khởi động cho biết lý do: Cài đặt > Chẩn đoán > Sao chép nhật ký vào USB."
+
+#: port/frontend/shell/shell.cpp:257
+msgid "The folders have moved"
+msgstr "Đã chuyển các thư mục"
+
+#: port/frontend/shell/shell.cpp:787
 msgid "Cemu did not start: {0}"
 msgstr "Cemu không khởi động được: {0}"
 
-#: port/frontend/shell/shell.cpp:875
+#: port/frontend/shell/shell.cpp:916
 msgid "{0} min played"
 msgid_plural "{0} min played"
 msgstr[0] "Đã chơi {0} phút"
 
-#: port/frontend/shell/shell.cpp:876
+#: port/frontend/shell/shell.cpp:917
 msgid "{0} h played"
 msgid_plural "{0} h played"
 msgstr[0] "Đã chơi {0} giờ"
 
-#: port/frontend/shell/shell.cpp:891
+#: port/frontend/shell/shell.cpp:932
 msgid "today"
 msgstr "hôm nay"
 
-#: port/frontend/shell/shell.cpp:893
+#: port/frontend/shell/shell.cpp:934
 msgid "yesterday"
 msgstr "hôm qua"
 
-#: port/frontend/shell/shell.cpp:895
+#: port/frontend/shell/shell.cpp:936
 msgid "{0} day ago"
 msgid_plural "{0} days ago"
 msgstr[0] "{0} ngày trước"
 
-#: port/frontend/shell/shell.cpp:897
+#: port/frontend/shell/shell.cpp:938
 msgid "{0} week ago"
 msgid_plural "{0} weeks ago"
 msgstr[0] "{0} tuần trước"
 
-#: port/frontend/shell/shell.cpp:898
+#: port/frontend/shell/shell.cpp:939
 msgid "{0} month ago"
 msgid_plural "{0} months ago"
 msgstr[0] "{0} tháng trước"
 
-#: port/frontend/shell/shell.cpp:944
+#: port/frontend/shell/shell.cpp:985
 msgid "Cemu is still starting"
 msgstr "Cemu vẫn đang khởi động"
 
-#: port/frontend/shell/shell.cpp:953
+#: port/frontend/shell/shell.cpp:994
 msgid "Eden needs your Switch's keys to read its games: prod.keys (and title.keys), dumped from your own Switch, in {0}/keys. The Setup check says what else is missing."
 msgstr "Eden cần khóa của máy Switch để đọc trò chơi: prod.keys (và title.keys) trích xuất từ chính máy Switch của bạn, trong {0}/keys. Kiểm tra thiết lập cho biết còn thiếu gì nữa."
 
-#: port/frontend/shell/shell.cpp:989
+#: port/frontend/shell/shell.cpp:1030
 msgid "Starting melonDS"
 msgstr "Đang khởi động melonDS"
 
-#: port/frontend/shell/shell.cpp:990 port/frontend/shell/shell.cpp:2385
+#: port/frontend/shell/shell.cpp:1031 port/frontend/shell/shell.cpp:2511
 msgid "Starting Azahar"
 msgstr "Đang khởi động Azahar"
 
-#: port/frontend/shell/shell.cpp:991
+#: port/frontend/shell/shell.cpp:1032
 msgid "Starting Eden"
 msgstr "Đang khởi động Eden"
 
-#: port/frontend/shell/shell.cpp:1078
+#: port/frontend/shell/shell.cpp:1119
 msgid "Making {0}'s home screen tile…"
 msgstr "Đang tạo biểu tượng màn hình chính cho {0}…"
 
-#: port/frontend/shell/shell.cpp:1085
+#: port/frontend/shell/shell.cpp:1126
 msgid "Removing {0}'s home screen tile…"
 msgstr "Đang gỡ biểu tượng màn hình chính của {0}…"
 
-#: port/frontend/shell/shell.cpp:1097
+#: port/frontend/shell/shell.cpp:1138
 msgid "The tile could not be removed"
 msgstr "Không thể gỡ biểu tượng"
 
-#: port/frontend/shell/shell.cpp:1097
+#: port/frontend/shell/shell.cpp:1138
 msgid "The tile could not be made"
 msgstr "Không thể tạo biểu tượng"
 
-#: port/frontend/shell/shell.cpp:1103
+#: port/frontend/shell/shell.cpp:1144
 msgid "The tile is removed"
 msgstr "Đã gỡ biểu tượng"
 
-#: port/frontend/shell/shell.cpp:1104
+#: port/frontend/shell/shell.cpp:1145
 msgid "Its folder is gone from /data/homebrew. If its picture stays on the home screen, delete it there (Options, then Delete), or restart ShadowMount Plus."
 msgstr "Thư mục của nó đã bị xóa khỏi /data/homebrew. Nếu hình vẫn còn trên màn hình chính, hãy xóa ở đó (OPTIONS, rồi Xóa) hoặc khởi động lại ShadowMount Plus."
 
 #. {0} is the tile's folder, /data/homebrew/PPSA99xxx
-#: port/frontend/shell/shell.cpp:1109
+#: port/frontend/shell/shell.cpp:1150
 msgid "The tile is made again"
 msgstr "Đã tạo lại biểu tượng"
 
 #. {0} is the tile's folder, /data/homebrew/PPSA99xxx
-#: port/frontend/shell/shell.cpp:1109
+#: port/frontend/shell/shell.cpp:1150
 msgid "The tile is made"
 msgstr "Đã tạo biểu tượng"
 
-#: port/frontend/shell/shell.cpp:1110
+#: port/frontend/shell/shell.cpp:1151
 msgid "It is in {0}. ShadowMount Plus puts it on the PS5's home screen as it does any homebrew: if it does not show, restart ShadowMount Plus or the console. The tile starts the game in PS5-ECAM, and closing the game closes the app."
 msgstr "Nó nằm ở {0}. ShadowMount Plus đưa nó lên màn hình chính của PS5 như mọi homebrew khác: nếu không thấy, hãy khởi động lại ShadowMount Plus hoặc máy. Biểu tượng sẽ khởi động trò chơi trong PS5-ECAM, và đóng trò chơi sẽ đóng ứng dụng."
 
-#: port/frontend/shell/shell.cpp:1123
+#: port/frontend/shell/shell.cpp:1164
 msgid "The tile's game could not start"
 msgstr "Không thể khởi động trò chơi của biểu tượng"
 
-#: port/frontend/shell/shell.cpp:1151
+#: port/frontend/shell/shell.cpp:1192
 msgid "It is not in the library: {0}"
 msgstr "Không có trong thư viện: {0}"
 
 #. the launcher's tabs
-#: port/frontend/shell/shell.cpp:1328
+#: port/frontend/shell/shell.cpp:1369
 msgctxt "tab"
 msgid "Settings"
 msgstr "Cài đặt"
 
-#: port/frontend/shell/shell.cpp:1381 port/frontend/shell/shell.cpp:1429 port/frontend/shell/shell.cpp:2278
+#: port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:1482 port/frontend/shell/shell.cpp:2365
 msgid "Done"
 msgstr "Xong"
 
-#: port/frontend/shell/shell.cpp:1383 port/frontend/shell/shell.cpp:1445 port/frontend/shell/shell.cpp:1449 port/frontend/shell/shell.cpp:2368 port/frontend/shell/shell.cpp:2399
+#: port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1498 port/frontend/shell/shell.cpp:1502 port/frontend/shell/shell.cpp:2455 port/frontend/shell/shell.cpp:2525
 msgid "Cancel"
 msgstr "Hủy"
 
-#: port/frontend/shell/shell.cpp:1385 port/frontend/shell/shell.cpp:1387 port/frontend/shell/shell.cpp:1435
+#: port/frontend/shell/shell.cpp:1438 port/frontend/shell/shell.cpp:1440 port/frontend/shell/shell.cpp:1488
 msgid "Close"
 msgstr "Đóng"
 
-#: port/frontend/shell/shell.cpp:1389 port/frontend/shell/shell.cpp:1420
+#: port/frontend/shell/shell.cpp:1442 port/frontend/shell/shell.cpp:1473
 msgid "Move"
 msgstr "Di chuyển"
 
-#: port/frontend/shell/shell.cpp:1389
+#: port/frontend/shell/shell.cpp:1442
 msgid "Switch"
 msgstr "Đổi bên"
 
-#: port/frontend/shell/shell.cpp:1394
+#: port/frontend/shell/shell.cpp:1447
 msgid "Continue"
 msgstr "Tiếp tục"
 
-#: port/frontend/shell/shell.cpp:1396 port/frontend/shell/shell.cpp:1431 port/frontend/shell/shell.cpp:1432 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1442
+#: port/frontend/shell/shell.cpp:1449 port/frontend/shell/shell.cpp:1484 port/frontend/shell/shell.cpp:1485 port/frontend/shell/shell.cpp:1489 port/frontend/shell/shell.cpp:1495
 msgid "More about it"
 msgstr "Xem thêm"
 
-#: port/frontend/shell/shell.cpp:1397 port/frontend/shell/welcome.cpp:104
+#: port/frontend/shell/shell.cpp:1450 port/frontend/shell/welcome.cpp:104
 msgid "Continue to the Setup check"
 msgstr "Tiếp tục đến Kiểm tra thiết lập"
 
-#: port/frontend/shell/shell.cpp:1397 port/frontend/shell/shell.cpp:1406 port/frontend/shell/welcome.cpp:104
+#: port/frontend/shell/shell.cpp:1450 port/frontend/shell/shell.cpp:1459 port/frontend/shell/welcome.cpp:104
 msgid "Continue to the Library"
 msgstr "Tiếp tục đến Thư viện"
 
-#: port/frontend/shell/shell.cpp:1402
+#: port/frontend/shell/shell.cpp:1455
 msgid "Change the language"
 msgstr "Đổi ngôn ngữ"
 
-#: port/frontend/shell/shell.cpp:1405
+#: port/frontend/shell/shell.cpp:1458
 msgid "Check again"
 msgstr "Kiểm tra lại"
 
-#: port/frontend/shell/shell.cpp:1416
+#: port/frontend/shell/shell.cpp:1469
 msgid "Filters"
 msgstr "Bộ lọc"
 
-#: port/frontend/shell/shell.cpp:1420 port/frontend/shell/shell.cpp:1421 port/frontend/shell/shell.cpp:1423
+#: port/frontend/shell/shell.cpp:1473 port/frontend/shell/shell.cpp:1474 port/frontend/shell/shell.cpp:1476
 msgid "Options"
 msgstr "Tùy chọn"
 
-#: port/frontend/shell/shell.cpp:1421
+#: port/frontend/shell/shell.cpp:1474
 msgid "Jump by letter"
 msgstr "Nhảy theo chữ cái"
 
-#: port/frontend/shell/shell.cpp:1423
+#: port/frontend/shell/shell.cpp:1476
 msgid "Back to the buttons"
 msgstr "Quay lại các nút"
 
-#: port/frontend/shell/shell.cpp:1424
+#: port/frontend/shell/shell.cpp:1477
 msgid "Scroll"
 msgstr "Cuộn"
 
-#: port/frontend/shell/shell.cpp:1429 port/frontend/shell/shell.cpp:1435
+#: port/frontend/shell/shell.cpp:1482 port/frontend/shell/shell.cpp:1488
 msgid "Pages"
 msgstr "Trang"
 
-#: port/frontend/shell/shell.cpp:1432 port/frontend/shell/widgets.cpp:349
+#: port/frontend/shell/shell.cpp:1485 port/frontend/shell/widgets.cpp:349
 msgid "Default"
 msgstr "Mặc định"
 
-#: port/frontend/shell/shell.cpp:1439
+#: port/frontend/shell/shell.cpp:1492
 msgid "Back to the packs"
 msgstr "Quay lại các gói"
 
-#: port/frontend/shell/shell.cpp:1440
+#: port/frontend/shell/shell.cpp:1493
 msgid "On / off"
 msgstr "Bật/tắt"
 
-#: port/frontend/shell/shell.cpp:1446
+#: port/frontend/shell/shell.cpp:1499
 msgid "Assign"
 msgstr "Gán"
 
-#: port/frontend/shell/shell.cpp:1446
+#: port/frontend/shell/shell.cpp:1499
 msgid "Clear"
 msgstr "Xóa"
 
-#: port/frontend/shell/shell.cpp:1450
+#: port/frontend/shell/shell.cpp:1503
 msgid "Use this folder"
 msgstr "Dùng thư mục này"
 
-#: port/frontend/shell/shell.cpp:1453
+#: port/frontend/shell/shell.cpp:1506
 msgid "Number"
 msgstr "Chữ số"
 
-#: port/frontend/shell/shell.cpp:1453
+#: port/frontend/shell/shell.cpp:1506
 msgid "Keep"
 msgstr "Lưu"
 
-#: port/frontend/shell/shell.cpp:1454
+#: port/frontend/shell/shell.cpp:1507
 msgid "Edit"
 msgstr "Sửa"
 
-#: port/frontend/shell/shell.cpp:1454
+#: port/frontend/shell/shell.cpp:1507
 msgid "Connect"
 msgstr "Kết nối"
 
-#: port/frontend/shell/shell.cpp:1454
+#: port/frontend/shell/shell.cpp:1507
 msgid "Hold to set up"
 msgstr "Giữ để thiết lập"
 
-#: port/frontend/shell/shell.cpp:1732
+#: port/frontend/shell/shell.cpp:1785
 msgid "Resume where you left off"
 msgstr "Tiếp tục từ chỗ đã dừng"
 
-#: port/frontend/shell/shell.cpp:1735
+#: port/frontend/shell/shell.cpp:1788
 msgid "Game hub"
 msgstr "Trang trò chơi"
 
-#: port/frontend/shell/shell.cpp:1738
+#: port/frontend/shell/shell.cpp:1791
 msgid "Game settings: custom"
 msgstr "Cài đặt trò chơi: tùy chỉnh"
 
-#: port/frontend/shell/shell.cpp:1744
+#: port/frontend/shell/shell.cpp:1797
 msgid "Add mods from USB"
 msgstr "Thêm mod từ USB"
 
-#: port/frontend/shell/shell.cpp:1747
+#: port/frontend/shell/shell.cpp:1800
 msgid "Not a favourite"
 msgstr "Bỏ yêu thích"
 
-#: port/frontend/shell/shell.cpp:1749
+#: port/frontend/shell/shell.cpp:1802
 msgid "Remove from home screen"
 msgstr "Gỡ khỏi màn hình chính"
 
-#: port/frontend/shell/shell.cpp:1751
+#: port/frontend/shell/shell.cpp:1804
 msgid "Add to home screen"
 msgstr "Thêm vào màn hình chính"
 
-#: port/frontend/shell/shell.cpp:2095
+#: port/frontend/shell/shell.cpp:2182
 msgid "Added to Favourites"
 msgstr "Đã thêm vào Yêu thích"
 
-#: port/frontend/shell/shell.cpp:2095
+#: port/frontend/shell/shell.cpp:2182
 msgid "Taken out of Favourites"
 msgstr "Đã bỏ khỏi Yêu thích"
 
-#: port/frontend/shell/shell.cpp:2300
+#: port/frontend/shell/shell.cpp:2387
 msgid "PS5-ECAM {0} is out"
 msgstr "Đã có PS5-ECAM {0}"
 
-#: port/frontend/shell/shell.cpp:2301
+#: port/frontend/shell/shell.cpp:2388
 msgid "This is {0}. Download and install it now? Your games, saves and settings stay as they are."
 msgstr "Đây là {0}. Tải xuống và cài ngay? Trò chơi, bản lưu và cài đặt giữ nguyên."
 
-#: port/frontend/shell/shell.cpp:2302
+#: port/frontend/shell/shell.cpp:2389
 msgid "Update now"
 msgstr "Cập nhật ngay"
 
-#: port/frontend/shell/shell.cpp:2302 port/frontend/shell/shell.cpp:2326 port/frontend/shell/shell.cpp:2365
+#: port/frontend/shell/shell.cpp:2389 port/frontend/shell/shell.cpp:2413 port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2475 port/frontend/shell/shell.cpp:2492
 msgid "Later"
 msgstr "Để sau"
 
-#: port/frontend/shell/shell.cpp:2302
+#: port/frontend/shell/shell.cpp:2389
 msgid "Skip this version"
 msgstr "Bỏ qua phiên bản này"
 
-#: port/frontend/shell/shell.cpp:2305 port/frontend/shell/shell.cpp:2310 port/frontend/shell/shell.cpp:2315
+#: port/frontend/shell/shell.cpp:2392 port/frontend/shell/shell.cpp:2397 port/frontend/shell/shell.cpp:2402
 msgid "Updating to {0}"
 msgstr "Đang cập nhật lên {0}"
 
-#: port/frontend/shell/shell.cpp:2306
+#: port/frontend/shell/shell.cpp:2393
 msgid "Downloading: {0} of {1} MB"
 msgstr "Đang tải xuống: {0}/{1} MB"
 
-#: port/frontend/shell/shell.cpp:2311
+#: port/frontend/shell/shell.cpp:2398
 msgid "Checking the download"
 msgstr "Đang kiểm tra tệp tải xuống"
 
-#: port/frontend/shell/shell.cpp:2316
+#: port/frontend/shell/shell.cpp:2403
 msgid "Installing"
 msgstr "Đang cài"
 
-#: port/frontend/shell/shell.cpp:2320
+#: port/frontend/shell/shell.cpp:2407
 msgid "{0} is installed"
 msgstr "Đã cài {0}"
 
-#: port/frontend/shell/shell.cpp:2322
+#: port/frontend/shell/shell.cpp:2409 port/frontend/shell/shell.cpp:2466
 msgid "Starting PS5-ECAM again…"
 msgstr "Đang khởi động lại PS5-ECAM…"
 
-#: port/frontend/shell/shell.cpp:2326 port/frontend/shell/shell.cpp:2331
+#: port/frontend/shell/shell.cpp:2413 port/frontend/shell/shell.cpp:2418
 msgid "Restart now"
 msgstr "Khởi động lại ngay"
 
-#: port/frontend/shell/shell.cpp:2330
+#: port/frontend/shell/shell.cpp:2417
 msgid "PS5-ECAM starts again to finish the update."
 msgstr "PS5-ECAM khởi động lại để hoàn tất cập nhật."
 
-#: port/frontend/shell/shell.cpp:2335
+#: port/frontend/shell/shell.cpp:2422
 msgid "The update did not finish"
 msgstr "Cập nhật chưa hoàn tất"
 
-#: port/frontend/shell/shell.cpp:2336
+#: port/frontend/shell/shell.cpp:2423
 msgid "PS5-ECAM is still {0}."
 msgstr "PS5-ECAM vẫn là {0}."
 
-#: port/frontend/shell/shell.cpp:2339
+#: port/frontend/shell/shell.cpp:2426
 msgid "Checking for updates"
 msgstr "Đang kiểm tra cập nhật"
 
-#: port/frontend/shell/shell.cpp:2345
+#: port/frontend/shell/shell.cpp:2432
 msgid "PS5-ECAM update"
 msgstr "Bản cập nhật PS5-ECAM"
 
-#: port/frontend/shell/shell.cpp:2365
+#: port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2492
 msgid "Select"
 msgstr "Xác nhận"
 
-#: port/frontend/shell/shell.cpp:2366
+#: port/frontend/shell/shell.cpp:2453
 msgid "Restart"
 msgstr "Khởi động lại"
 
+#. {0} lists the four folders: /data/cemu, /data/azahar, /data/melonds, /data/eden
+#: port/frontend/shell/shell.cpp:2469
+msgid "Your Wii U, 3DS, DS and Switch files go into folders of their own: {0}. They are moved on the same drive, never copied, so it takes a moment whatever their size. PS5-ECAM starts again to do it."
+msgstr "Tệp Wii U, 3DS, DS và Switch của bạn được chuyển vào thư mục riêng: {0}. Chúng được chuyển trên cùng ổ đĩa, không bao giờ sao chép, nên chỉ mất một lát dù lớn đến đâu. PS5-ECAM sẽ khởi động lại để làm việc này."
+
+#: port/frontend/shell/shell.cpp:2475
+msgid "Reorganize"
+msgstr "Sắp xếp lại"
+
 #. under an archived game's name while it is unpacked, the first time it starts
-#: port/frontend/shell/shell.cpp:2388
+#: port/frontend/shell/shell.cpp:2514
 msgid "Unpacking the game from its archive. This is done once: the copy is kept for the next start."
 msgstr "Đang giải nén trò chơi từ tệp nén. Việc này chỉ làm một lần: bản sao được giữ cho lần khởi động sau."
 
@@ -7359,49 +7419,49 @@ msgstr "Bản cập nhật lớn nhất từ trước đến nay, tóm tắt. Gh
 msgid "This game"
 msgstr "Trò chơi này"
 
-#: port/main_ps5.cpp:151
+#: port/main_ps5.cpp:152
 msgid "Firmware {0}"
 msgstr "Firmware {0}"
 
-#: port/main_ps5.cpp:153
+#: port/main_ps5.cpp:154
 msgid "Logs: {0}, {1}/log.txt"
 msgstr "Nhật ký: {0}, {1}/log.txt"
 
-#: port/main_ps5.cpp:154
+#: port/main_ps5.cpp:155
 msgid "Boot log not written (/data is unreachable)"
 msgstr "Chưa ghi nhật ký khởi động (không truy cập được /data)"
 
-#: port/main_ps5.cpp:536
+#: port/main_ps5.cpp:564
 msgid "PS5-ECAM cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5-ECAM."
 msgstr "PS5-ECAM không truy cập được /data. Nạp HEN có PPSA99360 trong danh sách app jailbreak, hoặc elfldr, rồi khởi động lại PS5-ECAM."
 
-#: port/main_ps5.cpp:618
+#: port/main_ps5.cpp:646
 msgid "This session: Azahar (3DS); Cemu's emulated Wii U is not started"
 msgstr "Phiên này: Azahar (3DS); Wii U giả lập của Cemu chưa khởi động"
 
-#: port/main_ps5.cpp:628
+#: port/main_ps5.cpp:656
 msgid "This session: Eden (Switch), in a program of its own; Cemu's emulated Wii U is not started"
 msgstr "Phiên này: Eden (Switch), trong một chương trình riêng; Wii U giả lập của Cemu chưa khởi động"
 
-#: port/main_ps5.cpp:638
+#: port/main_ps5.cpp:666
 msgid "This session: melonDS (DS); Cemu's emulated Wii U is not started"
 msgstr "Phiên này: melonDS (DS); Wii U giả lập của Cemu chưa khởi động"
 
-#: port/main_ps5.cpp:645
+#: port/main_ps5.cpp:673
 msgid "This session: Cemu (Wii U); Azahar's core is not started"
 msgstr "Phiên này: Cemu (Wii U); lõi của Azahar chưa khởi động"
 
-#: port/main_ps5.cpp:655
+#: port/main_ps5.cpp:683
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "Không có bộ nhớ JIT: trò chơi Wii U chạy bằng trình thông dịch, chậm hơn nhiều. PPSA99360 có trong danh sách app jailbreak của HEN không?"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/main_ps5.cpp:697
+#: port/main_ps5.cpp:725
 msgid "The launcher could not start. The boot log in {0}/logs says why."
 msgstr "Trình khởi chạy không khởi động được. Nhật ký khởi động trong {0}/logs ghi lý do."
 
 #. {0} is why; {1} the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the app's drive
-#: port/main_ps5.cpp:699
+#: port/main_ps5.cpp:727
 msgid "The launcher could not start: {0}. The boot log in {1}/logs has more."
 msgstr "Trình khởi chạy không khởi động được: {0}. Nhật ký khởi động trong {1}/logs có thêm chi tiết."
 

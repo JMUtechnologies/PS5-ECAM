@@ -7,7 +7,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: port/app/accounts.cpp:68 port/frontend/shell/settings.cpp:2065
+#: port/app/accounts.cpp:68 port/frontend/shell/settings.cpp:2095
 msgid "The Wii U has twelve accounts at most."
 msgstr "La Wii U ha al massimo dodici account."
 
@@ -96,59 +96,59 @@ msgctxt "status"
 msgid "Won't start"
 msgstr "Non si avvia"
 
-#: port/app/emulator.cpp:365
+#: port/app/emulator.cpp:370
 msgid "the PS5 Vulkan driver did not start"
 msgstr "il driver Vulkan della PS5 non si è avviato"
 
-#: port/app/emulator.cpp:524
+#: port/app/emulator.cpp:529 port/frontend/shell/settings.cpp:2350 port/frontend/shell/shell.cpp:1884
 msgid "PS5-ECAM cannot write to {0}. Is the HEN loaded?"
 msgstr "PS5-ECAM non può scrivere in {0}. L’HEN è caricato?"
 
-#: port/app/emulator.cpp:546
+#: port/app/emulator.cpp:555
 msgid "PS5-ECAM cannot create the MLC folder {0}"
 msgstr "PS5-ECAM non può creare la cartella MLC {0}"
 
 #. why a Wii U game did not start
-#: port/app/emulator.cpp:756
+#: port/app/emulator.cpp:766
 msgid "The game's base files were not found."
 msgstr "I file di base del gioco non sono stati trovati."
 
-#: port/app/emulator.cpp:762
+#: port/app/emulator.cpp:772
 msgid "The game could not be mounted. Check that its files are still in the game files folder."
 msgstr "Impossibile montare il gioco. Controlla che i suoi file siano ancora nella cartella dei giochi."
 
-#: port/app/emulator.cpp:767 port/azahar/core.cpp:627
+#: port/app/emulator.cpp:777 port/azahar/core.cpp:627
 #, menu
 msgid "The game could not be started."
 msgstr "Impossibile avviare il gioco."
 
-#: port/app/emulator.cpp:776
+#: port/app/emulator.cpp:786
 msgid "This is not a Wii U game PS5-ECAM can start."
 msgstr "Non è un gioco Wii U che PS5-ECAM può avviare."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/app/emulator.cpp:779
+#: port/app/emulator.cpp:789
 msgid "Its disc key is missing from {0}/keys.txt."
 msgstr "Manca la sua chiave del disco in {0}/keys.txt."
 
-#: port/app/emulator.cpp:781
+#: port/app/emulator.cpp:791
 msgid "Its title.tik is missing."
 msgstr "Manca il suo title.tik."
 
-#: port/app/emulator.cpp:786
+#: port/app/emulator.cpp:796
 msgid "The executable could not be started."
 msgstr "Impossibile avviare l’eseguibile."
 
-#: port/app/emulator.cpp:799 port/melonds/core.cpp:944
+#: port/app/emulator.cpp:809 port/melonds/core.cpp:944
 msgid "The Vulkan renderer did not start: {0}"
 msgstr "Il renderer Vulkan non si è avviato: {0}"
 
 #. the PS5's notification as a Wii U game starts
-#: port/app/emulator.cpp:857
+#: port/app/emulator.cpp:867
 msgid "Touchpad click + Options: the in-game menu (screens, picture, volume, controls, the library)"
 msgstr "Clic sul touch pad + OPTIONS: il menu di gioco (schermi, immagine, volume, comandi, libreria)"
 
-#: port/app/emulator.cpp:1085
+#: port/app/emulator.cpp:1095
 msgid "PS5-ECAM could not start itself again to show the library: start it again from the home screen."
 msgstr "PS5-ECAM non è riuscito a riavviarsi per mostrare la libreria: avvialo di nuovo dalla schermata Home."
 
@@ -668,32 +668,32 @@ msgid "Wrestling"
 msgstr "Wrestling"
 
 #. the Wii U's controllers, by the names Nintendo gave them in the language
-#: port/app/ingame.cpp:138 port/frontend/actions.cpp:369
+#: port/app/ingame.cpp:138 port/frontend/actions.cpp:368
 #, menu
 msgid "Wii U GamePad"
 msgstr "Wii U GamePad"
 
-#: port/app/ingame.cpp:139 port/frontend/actions.cpp:370
+#: port/app/ingame.cpp:139 port/frontend/actions.cpp:369
 #, menu
 msgid "Wii U Pro Controller"
 msgstr "Wii U Pro Controller"
 
-#: port/app/ingame.cpp:140 port/frontend/actions.cpp:371
+#: port/app/ingame.cpp:140 port/frontend/actions.cpp:370
 #, menu
 msgid "Classic Controller"
 msgstr "Controller Classic"
 
-#: port/app/ingame.cpp:141 port/frontend/actions.cpp:372
+#: port/app/ingame.cpp:141 port/frontend/actions.cpp:371
 #, menu
 msgid "Wii Remote"
 msgstr "Telecomando Wii"
 
-#: port/app/ingame.cpp:142 port/frontend/actions.cpp:373
+#: port/app/ingame.cpp:142 port/frontend/actions.cpp:372
 #, menu
 msgid "Wii Remote + Nunchuk"
 msgstr "Telecomando Wii + Nunchuk"
 
-#: port/app/ingame.cpp:145 port/frontend/actions.cpp:376
+#: port/app/ingame.cpp:145 port/frontend/actions.cpp:375
 #, menu
 msgid "No controller"
 msgstr "Nessun controller"
@@ -950,7 +950,7 @@ msgstr "Lettura dei pacchetti…"
 msgid "The community graphic packs have none for this game."
 msgstr "I pacchetti grafici della community non ne hanno per questo gioco."
 
-#: port/app/ingame.cpp:243 port/app/ingame.cpp:345 port/frontend/shell/hub.cpp:231 port/frontend/shell/pages.cpp:305 port/frontend/shell/shell.cpp:1743
+#: port/app/ingame.cpp:243 port/app/ingame.cpp:345 port/frontend/shell/hub.cpp:231 port/frontend/shell/pages.cpp:305 port/frontend/shell/shell.cpp:1796
 #, menu
 msgid "Graphic packs"
 msgstr "Pacchetti grafici"
@@ -1271,12 +1271,12 @@ msgstr "Non scansionato (errore {0})"
 msgid "Running"
 msgstr "In corso"
 
-#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1383 port/frontend/shell/shell.cpp:1387 port/frontend/shell/shell.cpp:1414 port/frontend/shell/shell.cpp:1423 port/frontend/shell/shell.cpp:1431 port/frontend/shell/shell.cpp:1439 port/frontend/shell/shell.cpp:1442 port/frontend/shell/shell.cpp:2365
+#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1440 port/frontend/shell/shell.cpp:1467 port/frontend/shell/shell.cpp:1476 port/frontend/shell/shell.cpp:1484 port/frontend/shell/shell.cpp:1492 port/frontend/shell/shell.cpp:1495 port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2492
 #, menu
 msgid "Choose"
 msgstr "Scegli"
 
-#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1396 port/frontend/shell/shell.cpp:1432 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1439 port/frontend/shell/shell.cpp:1442 port/frontend/shell/shell.cpp:1453
+#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1449 port/frontend/shell/shell.cpp:1485 port/frontend/shell/shell.cpp:1489 port/frontend/shell/shell.cpp:1492 port/frontend/shell/shell.cpp:1495 port/frontend/shell/shell.cpp:1506
 #, menu
 msgid "Change"
 msgstr "Cambia"
@@ -1286,7 +1286,7 @@ msgstr "Cambia"
 msgid "Back to the game"
 msgstr "Torna al gioco"
 
-#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/installs.cpp:328 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1397 port/frontend/shell/shell.cpp:1406 port/frontend/shell/shell.cpp:1424 port/frontend/shell/shell.cpp:1431 port/frontend/shell/shell.cpp:1432 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1440 port/frontend/shell/shell.cpp:1442 port/frontend/shell/shell.cpp:1446 port/frontend/shell/shell.cpp:1450 port/frontend/shell/shell.cpp:1454
+#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/installs.cpp:330 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1450 port/frontend/shell/shell.cpp:1459 port/frontend/shell/shell.cpp:1477 port/frontend/shell/shell.cpp:1484 port/frontend/shell/shell.cpp:1485 port/frontend/shell/shell.cpp:1489 port/frontend/shell/shell.cpp:1493 port/frontend/shell/shell.cpp:1495 port/frontend/shell/shell.cpp:1499 port/frontend/shell/shell.cpp:1503 port/frontend/shell/shell.cpp:1507
 #, menu
 msgid "Back"
 msgstr "Indietro"
@@ -1589,7 +1589,7 @@ msgstr "{0} di {1} attivi"
 msgid "Achievements"
 msgstr "Obiettivi"
 
-#: port/app/ingame3ds.cpp:569 port/frontend/shell/installs.cpp:375 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:841 port/frontend/shell/pages.cpp:1224 port/frontend/shell/shell.cpp:2395
+#: port/app/ingame3ds.cpp:569 port/frontend/shell/installs.cpp:377 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:841 port/frontend/shell/pages.cpp:1224 port/frontend/shell/shell.cpp:2521
 #, menu
 msgid "{0} of {1}"
 msgstr "{0} di {1}"
@@ -1667,7 +1667,7 @@ msgstr "Coperchio"
 msgid "Closed"
 msgstr "Chiuso"
 
-#: port/app/ingame3ds.cpp:600 port/frontend/shell/shell.cpp:1389 port/frontend/shell/shell.cpp:1418 port/frontend/shell/shell.cpp:1429 port/frontend/shell/shell.cpp:1435 port/frontend/shell/shell.cpp:1450
+#: port/app/ingame3ds.cpp:600 port/frontend/shell/shell.cpp:1442 port/frontend/shell/shell.cpp:1471 port/frontend/shell/shell.cpp:1482 port/frontend/shell/shell.cpp:1488 port/frontend/shell/shell.cpp:1503
 #, menu
 msgid "Open"
 msgstr "Apri"
@@ -1884,7 +1884,7 @@ msgstr "È già installato qui."
 msgid "An install is already running."
 msgstr "È già in corso un’installazione."
 
-#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2337 port/frontend/shell/shell.cpp:2366
+#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2424 port/frontend/shell/shell.cpp:2453 port/frontend/shell/shell.cpp:2475 port/frontend/shell/shell.cpp:2494
 #, menu
 msgid "OK"
 msgstr "OK"
@@ -1900,37 +1900,37 @@ msgstr "Il gioco chiede"
 msgid "Some text"
 msgstr "Un testo"
 
-#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2255
+#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2342
 #, menu
 msgid "L1 R1: {0}"
 msgstr "L1 R1: {0}"
 
 #. the in-game keyboard's keys
-#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2278
+#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2365
 #, menu
 msgid "Shift: on"
 msgstr "Maiusc: attivo"
 
 #. the in-game keyboard's keys
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1381 port/frontend/shell/shell.cpp:2278
+#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2365
 #, menu
 msgid "Shift"
 msgstr "Maiusc"
 
-#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2278
+#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2365
 #, menu
 msgid "Space"
 msgstr "Spazio"
 
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1381 port/frontend/shell/shell.cpp:2278
+#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2365
 #, menu
 msgid "Delete"
 msgstr "Cancella"
 
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:173 port/frontend/shell/shares.cpp:300 port/frontend/shell/shell.cpp:1381
+#: port/app/keyboard_menu.h:173 port/frontend/shell/shares.cpp:300 port/frontend/shell/shell.cpp:1434
 #, menu
 msgid "Type"
 msgstr "Scrivi"
@@ -2256,7 +2256,7 @@ msgstr "GitHub non ha risposto con una release"
 msgid "The download did not finish"
 msgstr "Il download non è terminato"
 
-#: port/app/pack_updates.cpp:283 port/frontend/shell/installs.cpp:195 port/frontend/shell/pages.cpp:1176
+#: port/app/pack_updates.cpp:283 port/frontend/shell/installs.cpp:197 port/frontend/shell/pages.cpp:1176
 msgid "It could not be installed: {0}"
 msgstr "Impossibile installarlo: {0}"
 
@@ -2264,7 +2264,7 @@ msgstr "Impossibile installarlo: {0}"
 msgid "The new packs could not take the old ones' place"
 msgstr "I nuovi pacchetti non hanno potuto sostituire i vecchi"
 
-#: port/app/remote_menu.h:29 port/frontend/shell/settings.cpp:219 port/frontend/shell/settings.cpp:791 port/frontend/shell/settings.cpp:2559
+#: port/app/remote_menu.h:29 port/frontend/shell/settings.cpp:219 port/frontend/shell/settings.cpp:791 port/frontend/shell/settings.cpp:2615
 #, menu
 msgid "Remote touch screen"
 msgstr "Touch screen remoto"
@@ -2280,28 +2280,28 @@ msgstr "{0} nel browser di uno smartphone o di un tablet, con il tocco: scansion
 msgid "A phone or tablet on the PS5's network. Sound stays on the PS5."
 msgstr "Uno smartphone o un tablet sulla rete della PS5. L’audio resta sulla PS5."
 
-#: port/app/remote_menu.h:108 port/frontend/shell/settings.cpp:2567
+#: port/app/remote_menu.h:108 port/frontend/shell/settings.cpp:2623
 #, menu
 msgid "Turn it off and on again once that is fixed."
 msgstr "Disattivalo e riattivalo quando il problema è risolto."
 
-#: port/app/saves.cpp:279 port/app/saves.cpp:486
+#: port/app/saves.cpp:281 port/app/saves.cpp:488
 msgid "A save could not be moved aside: {0}"
 msgstr "Impossibile mettere da parte un salvataggio: {0}"
 
-#: port/app/saves.cpp:286
+#: port/app/saves.cpp:288
 msgid "A file could not be copied: {0}"
 msgstr "Impossibile copiare un file: {0}"
 
-#: port/app/saves.cpp:310
+#: port/app/saves.cpp:312
 msgid "A backup is already running."
 msgstr "È già in corso un backup."
 
-#: port/app/saves.cpp:342 port/app/saves.cpp:606
+#: port/app/saves.cpp:344 port/app/saves.cpp:608
 msgid "No USB drive found: plug one in, formatted exFAT or FAT32."
 msgstr "Nessuna unità USB trovata: collegane una formattata in exFAT o FAT32."
 
-#: port/app/saves.cpp:547 port/app/saves.cpp:615
+#: port/app/saves.cpp:549 port/app/saves.cpp:617
 msgid "That backup is not there any more."
 msgstr "Quel backup non c’è più."
 
@@ -2658,7 +2658,7 @@ msgstr "Non è un gioco 3DS che Azahar può avviare."
 msgid "The game could not be loaded."
 msgstr "Impossibile caricare il gioco."
 
-#: port/azahar/core.cpp:615 port/frontend/shell/shell.cpp:967
+#: port/azahar/core.cpp:615 port/frontend/shell/shell.cpp:1008
 #, menu
 msgid "The game is encrypted, and Azahar plays only decrypted games, with keys or without: decrypt it on your 3DS first (GodMode9)."
 msgstr "Il gioco è criptato, e Azahar avvia solo giochi decriptati, con o senza chiavi: decriptalo prima sul tuo 3DS (GodMode9)."
@@ -2920,7 +2920,7 @@ msgstr "Quanto si muove una levetta prima che il gioco se ne accorga. Alzala se 
 msgid "Left and Right choose an amiibo dump; Cross touches it to the controller when the game asks for one, and again takes it away."
 msgstr "Sinistra e Destra scelgono un dump di amiibo; Croce lo avvicina al controller quando il gioco ne chiede uno, e di nuovo lo toglie."
 
-#: port/eden/ingame.cpp:627 port/frontend/shell/settings.cpp:1128
+#: port/eden/ingame.cpp:627 port/frontend/shell/settings.cpp:1150
 #, menu
 msgid "Room"
 msgstr "Stanza"
@@ -2958,7 +2958,7 @@ msgid_plural "{0} players"
 msgstr[0] "{0} giocatore"
 msgstr[1] "{0} giocatori"
 
-#: port/eden/launch.cpp:112 port/main_ps5.cpp:630
+#: port/eden/launch.cpp:112 port/main_ps5.cpp:658
 msgid "This build has no Switch emulator: eden/eboot.bin is not in the app's folder."
 msgstr "Questa versione non ha l'emulatore Switch: eden/eboot.bin non è nella cartella dell'app."
 
@@ -3012,292 +3012,292 @@ msgid "{0} KB"
 msgstr "{0} KB"
 
 #. {1} is the USB drive's number
-#: port/frontend/actions.cpp:172
+#: port/frontend/actions.cpp:171
 msgid "{0} file to USB drive {1}"
 msgid_plural "{0} files to USB drive {1}"
 msgstr[0] "{0} file sull’unità USB {1}"
 msgstr[1] "{0} file sull’unità USB {1}"
 
-#: port/frontend/actions.cpp:175
+#: port/frontend/actions.cpp:174
 msgid "No USB drive found"
 msgstr "Nessuna unità USB trovata"
 
-#: port/frontend/actions.cpp:202
+#: port/frontend/actions.cpp:201
 msgid "{0} file deleted ({1} MB)"
 msgid_plural "{0} files deleted ({1} MB)"
 msgstr[0] "{0} file eliminato ({1} MB)"
 msgstr[1] "{0} file eliminati ({1} MB)"
 
 #. what clearing the unpacked games did; {1} is the room it made, as in 2.4 GB
-#: port/frontend/actions.cpp:202 port/frontend/shell/settings.cpp:1316 port/frontend/shell/settings.cpp:2300
+#: port/frontend/actions.cpp:201 port/frontend/shell/settings.cpp:1346 port/frontend/shell/settings.cpp:2330
 msgid "None to delete"
 msgstr "Niente da eliminare"
 
-#: port/frontend/actions.cpp:209
+#: port/frontend/actions.cpp:208
 msgid "USB drive {0}"
 msgstr "Unità USB {0}"
 
-#: port/frontend/actions.cpp:211
+#: port/frontend/actions.cpp:210
 msgid "Extended storage {0}"
 msgstr "Memoria estesa {0}"
 
 #. what an install is
-#: port/frontend/actions.cpp:384 port/frontend/actions.cpp:463
+#: port/frontend/actions.cpp:383 port/frontend/actions.cpp:462
 msgid "Game"
 msgstr "Gioco"
 
-#: port/frontend/actions.cpp:385 port/frontend/actions.cpp:464
+#: port/frontend/actions.cpp:384 port/frontend/actions.cpp:463
 msgid "Update"
 msgstr "Aggiornamento"
 
 #. an update found to install ({0}: its version, as 208)
-#: port/frontend/actions.cpp:386 port/frontend/actions.cpp:465 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:866
+#: port/frontend/actions.cpp:385 port/frontend/actions.cpp:464 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:907
 msgid "DLC"
 msgstr "DLC"
 
-#: port/frontend/actions.cpp:387 port/frontend/actions.cpp:467
+#: port/frontend/actions.cpp:386 port/frontend/actions.cpp:466
 msgid "System title"
 msgstr "Titolo di sistema"
 
-#: port/frontend/actions.cpp:466
+#: port/frontend/actions.cpp:465
 msgid "Demo"
 msgstr "Demo"
 
-#: port/frontend/actions.cpp:467
+#: port/frontend/actions.cpp:466
 msgid "Title"
 msgstr "Titolo"
 
-#: port/frontend/actions.cpp:475
+#: port/frontend/actions.cpp:474
 msgctxt "button"
 msgid "Cross"
 msgstr "Croce"
 
-#: port/frontend/actions.cpp:475
+#: port/frontend/actions.cpp:474
 msgctxt "button"
 msgid "Circle"
 msgstr "Cerchio"
 
-#: port/frontend/actions.cpp:475
+#: port/frontend/actions.cpp:474
 msgctxt "button"
 msgid "Square"
 msgstr "Quadrato"
 
-#: port/frontend/actions.cpp:476
+#: port/frontend/actions.cpp:475
 msgctxt "button"
 msgid "Triangle"
 msgstr "Triangolo"
 
-#: port/frontend/actions.cpp:476
+#: port/frontend/actions.cpp:475
 msgctxt "button"
 msgid "Create"
 msgstr "Create"
 
-#: port/frontend/actions.cpp:476
+#: port/frontend/actions.cpp:475
 msgctxt "button"
 msgid "Options"
 msgstr "OPTIONS"
 
-#: port/frontend/actions.cpp:476
+#: port/frontend/actions.cpp:475
 msgctxt "button"
 msgid "Touchpad"
 msgstr "Touch pad"
 
-#: port/frontend/actions.cpp:477
+#: port/frontend/actions.cpp:476
 msgctxt "button"
 msgid "D-pad up"
 msgstr "Tasto direzionale su"
 
-#: port/frontend/actions.cpp:477
+#: port/frontend/actions.cpp:476
 msgctxt "button"
 msgid "D-pad down"
 msgstr "Tasto direzionale giù"
 
-#: port/frontend/actions.cpp:477
+#: port/frontend/actions.cpp:476
 msgctxt "button"
 msgid "D-pad left"
 msgstr "Tasto direzionale sinistra"
 
-#: port/frontend/actions.cpp:477
+#: port/frontend/actions.cpp:476
 msgctxt "button"
 msgid "D-pad right"
 msgstr "Tasto direzionale destra"
 
-#: port/frontend/actions.cpp:478
+#: port/frontend/actions.cpp:477
 msgctxt "button"
 msgid "Left stick up"
 msgstr "Levetta sinistra su"
 
-#: port/frontend/actions.cpp:478
+#: port/frontend/actions.cpp:477
 msgctxt "button"
 msgid "Left stick down"
 msgstr "Levetta sinistra giù"
 
-#: port/frontend/actions.cpp:478
+#: port/frontend/actions.cpp:477
 msgctxt "button"
 msgid "Left stick left"
 msgstr "Levetta sinistra sinistra"
 
-#: port/frontend/actions.cpp:479
+#: port/frontend/actions.cpp:478
 msgctxt "button"
 msgid "Left stick right"
 msgstr "Levetta sinistra destra"
 
-#: port/frontend/actions.cpp:479
+#: port/frontend/actions.cpp:478
 msgctxt "button"
 msgid "Left stick click"
 msgstr "Pressione levetta sinistra"
 
-#: port/frontend/actions.cpp:479
+#: port/frontend/actions.cpp:478
 msgctxt "button"
 msgid "Right stick up"
 msgstr "Levetta destra su"
 
-#: port/frontend/actions.cpp:480
+#: port/frontend/actions.cpp:479
 msgctxt "button"
 msgid "Right stick down"
 msgstr "Levetta destra giù"
 
-#: port/frontend/actions.cpp:480
+#: port/frontend/actions.cpp:479
 msgctxt "button"
 msgid "Right stick left"
 msgstr "Levetta destra sinistra"
 
-#: port/frontend/actions.cpp:480
+#: port/frontend/actions.cpp:479
 msgctxt "button"
 msgid "Right stick right"
 msgstr "Levetta destra destra"
 
-#: port/frontend/actions.cpp:481
+#: port/frontend/actions.cpp:480
 msgctxt "button"
 msgid "Right stick click"
 msgstr "Pressione levetta destra"
 
-#: port/frontend/actions.cpp:481
+#: port/frontend/actions.cpp:480
 msgctxt "button"
 msgid "Circle pad up"
 msgstr "Pad scorrevole su"
 
-#: port/frontend/actions.cpp:481
+#: port/frontend/actions.cpp:480
 msgctxt "button"
 msgid "Circle pad down"
 msgstr "Pad scorrevole giù"
 
-#: port/frontend/actions.cpp:482
+#: port/frontend/actions.cpp:481
 msgctxt "button"
 msgid "Circle pad left"
 msgstr "Pad scorrevole sinistra"
 
-#: port/frontend/actions.cpp:482
+#: port/frontend/actions.cpp:481
 msgctxt "button"
 msgid "Circle pad right"
 msgstr "Pad scorrevole destra"
 
-#: port/frontend/actions.cpp:482
+#: port/frontend/actions.cpp:481
 msgctxt "button"
 msgid "C-stick up"
 msgstr "Levetta C su"
 
-#: port/frontend/actions.cpp:483
+#: port/frontend/actions.cpp:482
 msgctxt "button"
 msgid "C-stick down"
 msgstr "Levetta C giù"
 
-#: port/frontend/actions.cpp:483
+#: port/frontend/actions.cpp:482
 msgctxt "button"
 msgid "C-stick left"
 msgstr "Levetta C sinistra"
 
-#: port/frontend/actions.cpp:483
+#: port/frontend/actions.cpp:482
 msgctxt "button"
 msgid "C-stick right"
 msgstr "Levetta C destra"
 
-#: port/frontend/actions.cpp:484
+#: port/frontend/actions.cpp:483
 msgctxt "button"
 msgid "Nunchuk stick up"
 msgstr "Levetta del Nunchuk su"
 
-#: port/frontend/actions.cpp:484
+#: port/frontend/actions.cpp:483
 msgctxt "button"
 msgid "Nunchuk stick down"
 msgstr "Levetta del Nunchuk giù"
 
-#: port/frontend/actions.cpp:484
+#: port/frontend/actions.cpp:483
 msgctxt "button"
 msgid "Nunchuk stick left"
 msgstr "Levetta del Nunchuk sinistra"
 
-#: port/frontend/actions.cpp:485
+#: port/frontend/actions.cpp:484
 msgctxt "button"
 msgid "Nunchuk stick right"
 msgstr "Levetta del Nunchuk destra"
 
-#: port/frontend/actions.cpp:485
+#: port/frontend/actions.cpp:484
 msgctxt "button"
 msgid "Nunchuk C"
 msgstr "Nunchuk C"
 
-#: port/frontend/actions.cpp:485
+#: port/frontend/actions.cpp:484
 msgctxt "button"
 msgid "Nunchuk Z"
 msgstr "Nunchuk Z"
 
-#: port/frontend/actions.cpp:485
+#: port/frontend/actions.cpp:484
 msgctxt "button"
 msgid "Home"
 msgstr "HOME"
 
-#: port/frontend/actions.cpp:486
+#: port/frontend/actions.cpp:485
 msgctxt "button"
 msgid "Start"
 msgstr "START"
 
-#: port/frontend/actions.cpp:486
+#: port/frontend/actions.cpp:485
 msgctxt "button"
 msgid "Select"
 msgstr "SELECT"
 
-#: port/frontend/actions.cpp:486
+#: port/frontend/actions.cpp:485
 msgctxt "button"
 msgid "+ (Start)"
 msgstr "+ (START)"
 
-#: port/frontend/actions.cpp:486
+#: port/frontend/actions.cpp:485
 msgctxt "button"
 msgid "- (Select)"
 msgstr "- (SELECT)"
 
-#: port/frontend/actions.cpp:487
+#: port/frontend/actions.cpp:486
 msgctxt "button"
 msgid "Blow into the mic"
 msgstr "Soffiare nel microfono"
 
-#: port/frontend/actions.cpp:487
+#: port/frontend/actions.cpp:486
 msgctxt "button"
 msgid "Show the GamePad's screen"
 msgstr "Mostra lo schermo del GamePad"
 
-#: port/frontend/actions.cpp:487
+#: port/frontend/actions.cpp:486
 msgctxt "button"
 msgid "None"
 msgstr "Nessuno"
 
-#: port/frontend/actions.cpp:491
+#: port/frontend/actions.cpp:490
 msgctxt "button"
 msgid "Touch at the cursor"
 msgstr "Tocca sul cursore"
 
-#: port/frontend/actions.cpp:491
+#: port/frontend/actions.cpp:490
 msgctxt "button"
 msgid "Fast forward"
 msgstr "Avanti veloce"
 
-#: port/frontend/actions.cpp:491
+#: port/frontend/actions.cpp:490
 msgctxt "button"
 msgid "Fast forward, on and off"
 msgstr "Avanti veloce, attiva e disattiva"
 
-#: port/frontend/actions.cpp:492
+#: port/frontend/actions.cpp:491
 msgctxt "button"
 msgid "Rewind"
 msgstr "Riavvolgi"
@@ -3309,11 +3309,11 @@ msgstr "Riavvolgi"
 msgid "Update v{0}"
 msgstr "Aggiornamento v{0}"
 
-#: port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1747
+#: port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1800
 msgid "Favourite"
 msgstr "Preferito"
 
-#: port/frontend/shell/hub.cpp:225 port/frontend/shell/shell.cpp:1420 port/frontend/shell/shell.cpp:1421 port/frontend/shell/shell.cpp:1725
+#: port/frontend/shell/hub.cpp:225 port/frontend/shell/shell.cpp:1473 port/frontend/shell/shell.cpp:1474 port/frontend/shell/shell.cpp:1778
 msgid "Play"
 msgstr "Gioca"
 
@@ -3327,7 +3327,7 @@ msgstr[1] "Pacchetti grafici · {0} attivi"
 msgid "Game settings · custom"
 msgstr "Impostazioni del gioco · personalizzate"
 
-#: port/frontend/shell/hub.cpp:236 port/frontend/shell/shell.cpp:1738
+#: port/frontend/shell/hub.cpp:236 port/frontend/shell/shell.cpp:1791
 msgid "Game settings"
 msgstr "Impostazioni del gioco"
 
@@ -3371,7 +3371,7 @@ msgstr "Editore"
 msgid "Players"
 msgstr "Giocatori"
 
-#: port/frontend/shell/hub.cpp:278 port/frontend/shell/installs.cpp:508 port/frontend/shell/pages.cpp:1266 port/frontend/shell/pages.cpp:1332
+#: port/frontend/shell/hub.cpp:278 port/frontend/shell/installs.cpp:510 port/frontend/shell/pages.cpp:1266 port/frontend/shell/pages.cpp:1332
 msgid "Title ID"
 msgstr "ID titolo"
 
@@ -3411,7 +3411,7 @@ msgstr "v{0} installata: questa è più recente"
 msgid "v{0} installed: this is older"
 msgstr "v{0} installata: questa è più vecchia"
 
-#: port/frontend/shell/installs.cpp:57 port/frontend/shell/installs.cpp:209 port/frontend/shell/pages.cpp:1168
+#: port/frontend/shell/installs.cpp:57 port/frontend/shell/installs.cpp:211 port/frontend/shell/pages.cpp:1168
 msgid "Installed"
 msgstr "Installato"
 
@@ -3419,147 +3419,147 @@ msgstr "Installato"
 msgid "The PS5"
 msgstr "La PS5"
 
-#: port/frontend/shell/installs.cpp:190
+#: port/frontend/shell/installs.cpp:192
 msgid "Stopped. What was installed before is back as it was."
 msgstr "Interrotto. Ciò che era installato prima è tornato com’era."
 
-#: port/frontend/shell/installs.cpp:209
+#: port/frontend/shell/installs.cpp:211
 msgid "{0} installed"
 msgid_plural "{0} installed"
 msgstr[0] "{0} installato"
 msgstr[1] "{0} installati"
 
-#: port/frontend/shell/installs.cpp:283
+#: port/frontend/shell/installs.cpp:285
 msgid "Everything found is installed already"
 msgstr "Tutto ciò che è stato trovato è già installato"
 
-#: port/frontend/shell/installs.cpp:317 port/frontend/shell/shell.cpp:2395
+#: port/frontend/shell/installs.cpp:319 port/frontend/shell/shell.cpp:2521
 msgid "Stopping…"
 msgstr "Interruzione…"
 
-#: port/frontend/shell/installs.cpp:317
+#: port/frontend/shell/installs.cpp:319
 msgid "Stop"
 msgstr "Interrompi"
 
-#: port/frontend/shell/installs.cpp:323 port/frontend/shell/pages.cpp:1184 port/frontend/shell/shell.cpp:1450
+#: port/frontend/shell/installs.cpp:325 port/frontend/shell/pages.cpp:1184 port/frontend/shell/shell.cpp:1503
 msgid "Install"
 msgstr "Installa"
 
 #. Square on Updates and DLC: install every one not installed yet, or newer ({0}: how many)
-#: port/frontend/shell/installs.cpp:326
+#: port/frontend/shell/installs.cpp:328
 msgid "Install every new one ({0})"
 msgstr "Installa tutti i nuovi ({0})"
 
-#: port/frontend/shell/installs.cpp:327 port/frontend/shell/library.cpp:162 port/frontend/shell/pages.cpp:1189 port/frontend/shell/setup.cpp:185
+#: port/frontend/shell/installs.cpp:329 port/frontend/shell/library.cpp:162 port/frontend/shell/pages.cpp:1189 port/frontend/shell/setup.cpp:185
 msgid "Choose a folder"
 msgstr "Scegli una cartella"
 
-#: port/frontend/shell/installs.cpp:349
+#: port/frontend/shell/installs.cpp:351
 msgid "Looking in {0}…"
 msgstr "Ricerca in {0}…"
 
-#: port/frontend/shell/installs.cpp:351
+#: port/frontend/shell/installs.cpp:353
 msgid "Nothing to install was found on the drives plugged in."
 msgstr "Sulle unità collegate non è stato trovato nulla da installare."
 
 #. where updates and DLC were found ({0}: "USB drive 1, The PS5"), then how many are new
-#: port/frontend/shell/installs.cpp:355
+#: port/frontend/shell/installs.cpp:357
 msgid "Found on {0}."
 msgstr "Trovato su {0}."
 
-#: port/frontend/shell/installs.cpp:356
+#: port/frontend/shell/installs.cpp:358
 msgid "{0} new to install."
 msgid_plural "{0} new to install."
 msgstr[0] "{0} nuovo da installare."
 msgstr[1] "{0} nuovi da installare."
 
-#: port/frontend/shell/installs.cpp:356
+#: port/frontend/shell/installs.cpp:358
 msgid "Everything found is installed."
 msgstr "Tutto ciò che è stato trovato è installato."
 
-#: port/frontend/shell/installs.cpp:359 port/frontend/shell/settings.cpp:230 port/frontend/shell/shares.cpp:535
+#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:230 port/frontend/shell/shares.cpp:535 port/frontend/shell/shell.cpp:2480
 msgid "Game files"
 msgstr "File di gioco"
 
-#: port/frontend/shell/installs.cpp:360 port/frontend/shell/settings.cpp:983 port/frontend/shell/shell.cpp:1745
+#: port/frontend/shell/installs.cpp:362 port/frontend/shell/settings.cpp:983 port/frontend/shell/shell.cpp:1798
 msgid "Updates and DLC"
 msgstr "Aggiornamenti e DLC"
 
 #. Updates and DLC, installing: which of how many ({0} of {1})
-#: port/frontend/shell/installs.cpp:373
+#: port/frontend/shell/installs.cpp:375
 msgid "Installing {0} of {1}"
 msgstr "Installazione {0} di {1}"
 
 #. how fast an install copies, in megabytes a second
-#: port/frontend/shell/installs.cpp:379
+#: port/frontend/shell/installs.cpp:381
 msgid "{0} MB/s"
 msgstr "{0} MB/s"
 
 #. an install's time left, in seconds or minutes
-#: port/frontend/shell/installs.cpp:382
+#: port/frontend/shell/installs.cpp:384
 msgid "about {0} second left"
 msgid_plural "about {0} seconds left"
 msgstr[0] "circa {0} secondo rimanente"
 msgstr[1] "circa {0} secondi rimanenti"
 
-#: port/frontend/shell/installs.cpp:383
+#: port/frontend/shell/installs.cpp:385
 msgid "about {0} minute left"
 msgid_plural "about {0} minutes left"
 msgstr[0] "circa {0} minuto rimanente"
 msgstr[1] "circa {0} minuti rimanenti"
 
-#: port/frontend/shell/installs.cpp:399
+#: port/frontend/shell/installs.cpp:401
 msgid "Nothing found to install"
 msgstr "Niente da installare"
 
-#: port/frontend/shell/installs.cpp:401
+#: port/frontend/shell/installs.cpp:403
 msgid "Every USB drive and extended storage plugged in, the games folder and /data were searched, four folders deep, for updates, DLC and games as folders with code, content and meta (the format Cemu installs). Put them on a USB drive, or press Triangle to choose a folder anywhere."
 msgstr "Sono state cercate su ogni unità USB e memoria estesa collegate, nella cartella dei giochi e in /data, fino a quattro livelli di cartelle, aggiornamenti, DLC e giochi in cartelle con code, content e meta (il formato che installa Cemu). Mettili su un’unità USB oppure premi Triangolo per scegliere una cartella qualsiasi."
 
-#: port/frontend/shell/installs.cpp:455
+#: port/frontend/shell/installs.cpp:457
 msgid "v{0} installed"
 msgstr "v{0} installata"
 
 #. a row of Updates and DLC while it installs ({0}: a percentage)
-#: port/frontend/shell/installs.cpp:476
+#: port/frontend/shell/installs.cpp:478
 msgid "Installing · {0}"
 msgstr "Installazione · {0}"
 
-#: port/frontend/shell/installs.cpp:478
+#: port/frontend/shell/installs.cpp:480
 msgid "Waiting"
 msgstr "In attesa"
 
-#: port/frontend/shell/installs.cpp:500
+#: port/frontend/shell/installs.cpp:502
 msgid "Runs from where it is"
 msgstr "Funziona da dove si trova"
 
-#: port/frontend/shell/installs.cpp:500 port/frontend/shell/pages.cpp:1348
+#: port/frontend/shell/installs.cpp:502 port/frontend/shell/pages.cpp:1348
 msgid "To install"
 msgstr "Da installare"
 
 #. a title's version to install ({0}), and the one installed now ({1})
-#: port/frontend/shell/installs.cpp:507 port/frontend/shell/pages.cpp:1267 port/frontend/shell/pages.cpp:1334 port/frontend/shell/settings.cpp:253
+#: port/frontend/shell/installs.cpp:509 port/frontend/shell/pages.cpp:1267 port/frontend/shell/pages.cpp:1334 port/frontend/shell/settings.cpp:253
 msgid "Version"
 msgstr "Versione"
 
 #. a title's version to install ({0}), and the one installed now ({1})
-#: port/frontend/shell/installs.cpp:507 port/frontend/shell/pages.cpp:1334
+#: port/frontend/shell/installs.cpp:509 port/frontend/shell/pages.cpp:1334
 msgid "v{0}, not installed yet"
 msgstr "v{0}, non ancora installato"
 
-#: port/frontend/shell/installs.cpp:507 port/frontend/shell/pages.cpp:1335
+#: port/frontend/shell/installs.cpp:509 port/frontend/shell/pages.cpp:1335
 msgid "v{0}, v{1} installed now"
 msgstr "v{0}, ora è installata la v{1}"
 
-#: port/frontend/shell/installs.cpp:509
+#: port/frontend/shell/installs.cpp:511
 msgid "Where it is"
 msgstr "Dove si trova"
 
-#: port/frontend/shell/installs.cpp:521
+#: port/frontend/shell/installs.cpp:523
 msgid "Cemu runs it straight from the game files folder (title.tmd and .app files): put it there and the library lists it with its game."
 msgstr "Cemu lo usa direttamente dalla cartella dei giochi (file title.tmd e .app): mettilo lì e la libreria lo mostra con il suo gioco."
 
-#: port/frontend/shell/installs.cpp:522
+#: port/frontend/shell/installs.cpp:524
 msgid "It is installed into the Wii U's storage (mlc01). What is installed now is set aside until it finishes, and put back if you stop."
 msgstr "Viene installato nella memoria della Wii U (mlc01). Ciò che è installato ora viene messo da parte finché non finisce, e rimesso a posto se interrompi."
 
@@ -3591,7 +3591,7 @@ msgstr "Configurazione"
 msgid "Something needs a look"
 msgstr "Qualcosa va controllato"
 
-#: port/frontend/shell/library.cpp:125 port/frontend/shell/library.cpp:162 port/frontend/shell/library.cpp:192 port/frontend/shell/settings.cpp:1292
+#: port/frontend/shell/library.cpp:125 port/frontend/shell/library.cpp:162 port/frontend/shell/library.cpp:192 port/frontend/shell/settings.cpp:1322
 msgid "Setup check"
 msgstr "Controllo della configurazione"
 
@@ -3599,7 +3599,7 @@ msgstr "Controllo della configurazione"
 msgid "Diagnostics"
 msgstr "Diagnostica"
 
-#: port/frontend/shell/library.cpp:132 port/frontend/shell/shell.cpp:992 port/frontend/shell/shell.cpp:2385
+#: port/frontend/shell/library.cpp:132 port/frontend/shell/shell.cpp:1033 port/frontend/shell/shell.cpp:2511
 msgid "Starting Cemu"
 msgstr "Avvio di Cemu"
 
@@ -3646,12 +3646,12 @@ msgid "Play from your 3DS"
 msgstr "Gioca dal tuo 3DS"
 
 #. the launcher's tabs
-#: port/frontend/shell/library.cpp:341 port/frontend/shell/library.cpp:629 port/frontend/shell/shell.cpp:1328
+#: port/frontend/shell/library.cpp:341 port/frontend/shell/library.cpp:629 port/frontend/shell/shell.cpp:1369
 msgctxt "tab"
 msgid "Library"
 msgstr "Libreria"
 
-#: port/frontend/shell/library.cpp:341 port/frontend/shell/shell.cpp:1416
+#: port/frontend/shell/library.cpp:341 port/frontend/shell/shell.cpp:1469
 msgid "Sort"
 msgstr "Ordina"
 
@@ -3692,7 +3692,7 @@ msgstr "Ricerca di nuovi giochi…"
 msgid "As found last time"
 msgstr "Come l’ultima volta"
 
-#: port/frontend/shell/library.cpp:639 port/frontend/shell/shell.cpp:1416 port/frontend/shell/shell.cpp:2249
+#: port/frontend/shell/library.cpp:639 port/frontend/shell/shell.cpp:1469 port/frontend/shell/shell.cpp:2336
 msgid "Search"
 msgstr "Cerca"
 
@@ -3769,7 +3769,7 @@ msgstr "Questo pacchetto non ha una descrizione."
 msgid "No presets"
 msgstr "Nessuna preimpostazione"
 
-#: port/frontend/shell/pages.cpp:361 port/frontend/shell/shell.cpp:1440
+#: port/frontend/shell/pages.cpp:361 port/frontend/shell/shell.cpp:1493
 msgid "Presets"
 msgstr "Preimpostazioni"
 
@@ -3778,7 +3778,7 @@ msgid "Presets · choosing one turns it on"
 msgstr "Preimpostazioni · sceglierne una lo attiva"
 
 #. what a held row says once it has done its work
-#: port/frontend/shell/pages.cpp:398 port/frontend/shell/settings.cpp:2329
+#: port/frontend/shell/pages.cpp:398 port/frontend/shell/settings.cpp:2385
 msgctxt "finished"
 msgid "Done"
 msgstr "Fatto"
@@ -3937,7 +3937,7 @@ msgid "Which DualSense button presses each button."
 msgstr "Quale tasto del DualSense preme ogni tasto."
 
 #. {0} is the version the last update replaced, as in 5.0.0
-#: port/frontend/shell/pages.cpp:634 port/frontend/shell/pages.cpp:1523 port/frontend/shell/pages.cpp:1527 port/frontend/shell/settings.cpp:723 port/frontend/shell/settings.cpp:784 port/frontend/shell/settings.cpp:1039 port/frontend/shell/settings.cpp:1099 port/frontend/shell/settings.cpp:1189 port/frontend/shell/settings.cpp:1226 port/frontend/shell/settings.cpp:1298 port/frontend/shell/settings.cpp:1301 port/frontend/shell/settings.cpp:1315 port/frontend/shell/settings.cpp:1351 port/frontend/shell/settings.cpp:1413 port/frontend/shell/settings.cpp:1455 port/frontend/shell/shares.cpp:328
+#: port/frontend/shell/pages.cpp:634 port/frontend/shell/pages.cpp:1523 port/frontend/shell/pages.cpp:1527 port/frontend/shell/settings.cpp:723 port/frontend/shell/settings.cpp:784 port/frontend/shell/settings.cpp:1005 port/frontend/shell/settings.cpp:1061 port/frontend/shell/settings.cpp:1121 port/frontend/shell/settings.cpp:1211 port/frontend/shell/settings.cpp:1249 port/frontend/shell/settings.cpp:1328 port/frontend/shell/settings.cpp:1331 port/frontend/shell/settings.cpp:1345 port/frontend/shell/settings.cpp:1381 port/frontend/shell/settings.cpp:1443 port/frontend/shell/settings.cpp:1485 port/frontend/shell/shares.cpp:328
 msgid "Hold Cross"
 msgstr "Tieni premuto Croce"
 
@@ -4213,7 +4213,7 @@ msgstr "Trovato in {0}"
 msgid "Missing (only .wud/.wux need it)"
 msgstr "Mancante (serve solo ai .wud/.wux)"
 
-#: port/frontend/shell/pages.cpp:1314 port/frontend/shell/shell.cpp:2138 port/frontend/shell/shell.cpp:2165
+#: port/frontend/shell/pages.cpp:1314 port/frontend/shell/shell.cpp:2225 port/frontend/shell/shell.cpp:2252
 msgid "In use"
 msgstr "In uso"
 
@@ -4254,7 +4254,7 @@ msgstr "Connessione a {0}"
 msgid "Artic Setup Tool"
 msgstr "Artic Setup Tool"
 
-#: port/frontend/shell/pages.cpp:1489 port/frontend/shell/pages.cpp:1500 port/frontend/shell/settings.cpp:242 port/frontend/shell/settings.cpp:1115 port/frontend/shell/setup.cpp:243
+#: port/frontend/shell/pages.cpp:1489 port/frontend/shell/pages.cpp:1500 port/frontend/shell/settings.cpp:242 port/frontend/shell/settings.cpp:1137 port/frontend/shell/setup.cpp:243
 msgid "Artic Base"
 msgstr "Artic Base"
 
@@ -4443,7 +4443,7 @@ msgstr "Vetro smerigliato scuro e angoli più arrotondati, la luce del lato che 
 msgid "A light background with dark text."
 msgstr "Uno sfondo chiaro con testo scuro."
 
-#: port/frontend/shell/settings.cpp:203 port/frontend/shell/settings.cpp:487 port/frontend/shell/settings.cpp:824 port/frontend/shell/settings.cpp:869 port/frontend/shell/settings.cpp:913 port/frontend/shell/settings.cpp:1542 port/frontend/shell/setup.cpp:511
+#: port/frontend/shell/settings.cpp:203 port/frontend/shell/settings.cpp:487 port/frontend/shell/settings.cpp:824 port/frontend/shell/settings.cpp:869 port/frontend/shell/settings.cpp:913 port/frontend/shell/settings.cpp:1572 port/frontend/shell/setup.cpp:511
 msgid "Language"
 msgstr "Lingua"
 
@@ -4543,7 +4543,7 @@ msgstr "Dove sono i tuoi giochi DS e dove vanno i loro salvataggi."
 msgid "Accounts and saves"
 msgstr "Account e salvataggi"
 
-#: port/frontend/shell/settings.cpp:238 port/frontend/shell/settings.cpp:265 port/frontend/shell/shell.cpp:1740
+#: port/frontend/shell/settings.cpp:238 port/frontend/shell/settings.cpp:265 port/frontend/shell/shell.cpp:1793
 msgid "Saves"
 msgstr "Salvataggi"
 
@@ -4645,7 +4645,7 @@ msgstr "Croce per scaricare"
 msgid "{0}: Cross to install"
 msgstr "{0}: Croce per installare"
 
-#: port/frontend/shell/settings.cpp:314 port/frontend/shell/settings.cpp:1140 port/frontend/shell/shell.cpp:2306
+#: port/frontend/shell/settings.cpp:314 port/frontend/shell/settings.cpp:1162 port/frontend/shell/shell.cpp:2393
 msgid "Downloading…"
 msgstr "Download in corso…"
 
@@ -5518,651 +5518,685 @@ msgstr "Un gioco, un aggiornamento o un DLC."
 msgid "Installs a CIA into the 3DS's storage, as Azahar's Install CIA does: an update or DLC goes with its game, and a game joins the library. Circle cancels while it runs."
 msgstr "Installa un CIA nella memoria del 3DS, come Install CIA di Azahar: un aggiornamento o un DLC va con il suo gioco, e un gioco entra nella libreria. Cerchio annulla mentre è in corso."
 
-#: port/frontend/shell/settings.cpp:1019
+#: port/frontend/shell/settings.cpp:1004 port/frontend/shell/shell.cpp:2481
+msgid "A folder for each system"
+msgstr "Una cartella per ogni sistema"
+
+#: port/frontend/shell/settings.cpp:1005
+msgid "Cannot move"
+msgstr "Impossibile spostare"
+
+#. {0} is a file or folder already where one would be moved to
+#: port/frontend/shell/settings.cpp:1007
+msgid "In the way: {0}"
+msgstr "D’intralcio: {0}"
+
+#: port/frontend/shell/settings.cpp:1008
+msgid "Each system's files are in a folder of their own."
+msgstr "I file di ogni sistema sono in una cartella propria."
+
+#: port/frontend/shell/settings.cpp:1009
+msgid "Your files from before into a folder for each system."
+msgstr "I tuoi file di prima in una cartella per ogni sistema."
+
+#: port/frontend/shell/settings.cpp:1010
+msgid "Puts each system's files back into {0}, where they were before. Going back to an earlier version needs them there, as it looks for them there. PS5-ECAM starts again to do it."
+msgstr "Rimette i file di ogni sistema in {0}, dove erano prima. Tornare a una versione precedente ne ha bisogno lì, perché li cerca lì. PS5-ECAM si riavvia per farlo."
+
+#. {0} is the app's data folder, /data/ps5cemu; {1} lists the four folders: /data/cemu, /data/azahar, ...
+#: port/frontend/shell/settings.cpp:1014
+msgid "Moves each system's files from {0} into a folder of its own: {1}. They are renamed on the same drive, never copied, so it takes a moment whatever their size, and nothing is deleted. PS5-ECAM starts again to do it; a system that cannot move stays as it was. This row puts them back."
+msgstr "Sposta i file di ogni sistema da {0} in una cartella propria: {1}. Vengono rinominati sulla stessa unità, mai copiati, quindi basta un attimo qualunque sia la loro dimensione, e nulla viene eliminato. PS5-ECAM si riavvia per farlo; un sistema che non si può spostare resta com’era. Questa riga li rimette a posto."
+
+#: port/frontend/shell/settings.cpp:1041
 msgid "Account games start on"
 msgstr "Account con cui si avviano i giochi"
 
-#: port/frontend/shell/settings.cpp:1020
+#: port/frontend/shell/settings.cpp:1042
 msgid "Chosen by your PS5 user: One account for each PS5 user is on."
 msgstr "Scelto dal tuo utente PS5: Un account per ogni utente PS5 è attivo."
 
-#: port/frontend/shell/settings.cpp:1021
+#: port/frontend/shell/settings.cpp:1043
 msgid "The next game starts on these saves. A game already running keeps its own."
 msgstr "Il prossimo gioco si avvia con questi salvataggi. Un gioco già in esecuzione tiene i suoi."
 
-#: port/frontend/shell/settings.cpp:1022
+#: port/frontend/shell/settings.cpp:1044
 msgid "Each Wii U account has its own saves of every game, as on a Wii U. The next game you start uses the one shown here; a game already running keeps the one it started with."
 msgstr "Ogni account Wii U ha i propri salvataggi di ogni gioco, come su una Wii U. Il prossimo gioco che avvii usa quello mostrato qui; un gioco già in esecuzione tiene quello con cui è partito."
 
 #. how many Wii U accounts there are, of the twelve a Wii U has at most
-#: port/frontend/shell/settings.cpp:1027
+#: port/frontend/shell/settings.cpp:1049
 msgid "New account"
 msgstr "Nuovo account"
 
 #. how many Wii U accounts there are, of the twelve a Wii U has at most
-#: port/frontend/shell/settings.cpp:1027
+#: port/frontend/shell/settings.cpp:1049
 msgid "{0} of 12"
 msgstr "{0} di 12"
 
-#: port/frontend/shell/settings.cpp:1028
+#: port/frontend/shell/settings.cpp:1050
 msgid "A new account starts with no saves."
 msgstr "Un nuovo account parte senza salvataggi."
 
-#: port/frontend/shell/settings.cpp:1028
+#: port/frontend/shell/settings.cpp:1050
 msgid "Name it with the keyboard, ten letters at most. Games start on it from then on."
 msgstr "Dagli un nome con la tastiera, al massimo dieci lettere. Da quel momento i giochi si avviano con questo account."
 
-#: port/frontend/shell/settings.cpp:1029
+#: port/frontend/shell/settings.cpp:1051
 msgid "Rename {0}"
 msgstr "Rinomina {0}"
 
-#: port/frontend/shell/settings.cpp:1029
+#: port/frontend/shell/settings.cpp:1051
 msgid "The account games start on."
 msgstr "L’account con cui si avviano i giochi."
 
-#: port/frontend/shell/settings.cpp:1030
+#: port/frontend/shell/settings.cpp:1052
 msgid "The name games show for this account, ten letters at most. Its saves stay as they are."
 msgstr "Il nome che i giochi mostrano per questo account, al massimo dieci lettere. I suoi salvataggi restano come sono."
 
-#: port/frontend/shell/settings.cpp:1038
+#: port/frontend/shell/settings.cpp:1060
 msgid "Delete an account"
 msgstr "Elimina un account"
 
-#: port/frontend/shell/settings.cpp:1039
+#: port/frontend/shell/settings.cpp:1061
 msgid "Only one"
 msgstr "Solo uno"
 
-#: port/frontend/shell/settings.cpp:1040
+#: port/frontend/shell/settings.cpp:1062
 msgid "There is only one account, and games start on it."
 msgstr "C’è un solo account, e i giochi si avviano con quello."
 
-#: port/frontend/shell/settings.cpp:1040
+#: port/frontend/shell/settings.cpp:1062
 msgid "Left and Right choose which. Its saves stay in the Wii U's storage."
 msgstr "Sinistra e Destra scelgono quale. I suoi salvataggi restano nella memoria della Wii U."
 
-#: port/frontend/shell/settings.cpp:1041
+#: port/frontend/shell/settings.cpp:1063
 msgid "The account is removed; its saves stay in the Wii U's storage (and in any backup), so nothing is lost. The account games start on cannot be deleted: choose another first."
 msgstr "L’account viene rimosso; i suoi salvataggi restano nella memoria della Wii U (e in ogni backup), quindi non si perde nulla. L’account con cui si avviano i giochi non si può eliminare: scegline prima un altro."
 
-#: port/frontend/shell/settings.cpp:1047
+#: port/frontend/shell/settings.cpp:1069
 msgid "One account for each PS5 user"
 msgstr "Un account per ogni utente PS5"
 
-#: port/frontend/shell/settings.cpp:1048
+#: port/frontend/shell/settings.cpp:1070
 msgid "Whoever starts PS5-ECAM plays on their own saves."
 msgstr "Chi avvia PS5-ECAM gioca con i propri salvataggi."
 
-#: port/frontend/shell/settings.cpp:1049
+#: port/frontend/shell/settings.cpp:1071
 msgid "The PS5 user who starts the app plays on a Wii U account of their own, made the first time with their PS5 name, so brothers and sisters each keep their own saves just by starting the app from their own PS5 user."
 msgstr "L’utente PS5 che avvia l’app gioca su un proprio account Wii U, creato la prima volta con il suo nome PS5, così fratelli e sorelle tengono ognuno i propri salvataggi semplicemente avviando l’app dal proprio utente PS5."
 
 #. a backup or restore of the saves, finished ({0}: how many files)
-#: port/frontend/shell/settings.cpp:1068 port/frontend/shell/settings.cpp:1398
+#: port/frontend/shell/settings.cpp:1090 port/frontend/shell/settings.cpp:1428
 msgid "Done: {0} file"
 msgid_plural "Done: {0} files"
 msgstr[0] "Fatto: {0} file"
 msgstr[1] "Fatto: {0} file"
 
 #. a backup of the saves, as it copies ({0}: a percentage)
-#: port/frontend/shell/settings.cpp:1085 port/frontend/shell/settings.cpp:1101 port/frontend/shell/settings.cpp:1437 port/frontend/shell/settings.cpp:1457
+#: port/frontend/shell/settings.cpp:1107 port/frontend/shell/settings.cpp:1123 port/frontend/shell/settings.cpp:1467 port/frontend/shell/settings.cpp:1487
 msgid "Copying: {0}"
 msgstr "Copia: {0}"
 
 #. the newest backup of the saves: when, and on which drive
-#: port/frontend/shell/settings.cpp:1088 port/frontend/shell/settings.cpp:1439
+#: port/frontend/shell/settings.cpp:1110 port/frontend/shell/settings.cpp:1469
 msgid "Last: {0} · {1}"
 msgstr "Ultimo: {0} · {1}"
 
-#: port/frontend/shell/settings.cpp:1089 port/frontend/shell/settings.cpp:1434
+#: port/frontend/shell/settings.cpp:1111 port/frontend/shell/settings.cpp:1464
 msgid "Back up to USB"
 msgstr "Backup su USB"
 
-#: port/frontend/shell/settings.cpp:1089
+#: port/frontend/shell/settings.cpp:1111
 msgid "Every side's saves, save states and Wii U accounts."
 msgstr "Salvataggi, stati salvati e account Wii U di tutti i lati."
 
-#: port/frontend/shell/settings.cpp:1090
+#: port/frontend/shell/settings.cpp:1112
 msgid "Copies the Wii U's saves (every account's, with the accounts), the 3DS's saves, extra data and save states, the DS's saves and save states, and the Switch's saves with its user profiles to PS5CEMU-HAR-saves on the first USB drive plugged in, in a folder named by the date and time. Never the games, so a backup stays small. The settings go with them: the launcher's, each game's own and the controllers'."
 msgstr "Copia i salvataggi della Wii U (di tutti gli account, con gli account), i salvataggi, i dati extra e gli stati salvati del 3DS, i salvataggi e gli stati salvati del DS, e i salvataggi di Switch con i suoi profili utente in PS5CEMU-HAR-saves sulla prima unità USB collegata, in una cartella con la data e l’ora. Mai i giochi, così un backup resta piccolo. Le impostazioni vanno con loro: quelle del launcher, quelle di ogni gioco e quelle dei controller."
 
-#: port/frontend/shell/settings.cpp:1099 port/frontend/shell/settings.cpp:1455
+#: port/frontend/shell/settings.cpp:1121 port/frontend/shell/settings.cpp:1485
 msgid "No backups found"
 msgstr "Nessun backup trovato"
 
-#: port/frontend/shell/settings.cpp:1102 port/frontend/shell/settings.cpp:1454
+#: port/frontend/shell/settings.cpp:1124 port/frontend/shell/settings.cpp:1484
 msgid "Restore from USB"
 msgstr "Ripristina da USB"
 
-#: port/frontend/shell/settings.cpp:1103
+#: port/frontend/shell/settings.cpp:1125
 msgid "Back up first, or plug in the drive with your backups."
 msgstr "Fai prima un backup o collega l’unità con i tuoi backup."
 
-#: port/frontend/shell/settings.cpp:1103 port/frontend/shell/settings.cpp:1458
+#: port/frontend/shell/settings.cpp:1125 port/frontend/shell/settings.cpp:1488
 msgid "Left and Right choose which backup, the newest first."
 msgstr "Sinistra e Destra scelgono il backup, dal più recente."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1105
+#: port/frontend/shell/settings.cpp:1127
 msgid "Puts the chosen backup's saves back where they came from. The saves there now are moved first to {0}/saves-before, so nothing is lost; saves the backup does not have stay as they are. Its settings come back too, and PS5-ECAM starts again to use them."
 msgstr "Rimette i salvataggi del backup scelto da dove provenivano. I salvataggi presenti ora vengono prima spostati in {0}/saves-before, quindi non si perde nulla; i salvataggi che il backup non ha restano come sono. Tornano anche le sue impostazioni, e PS5-ECAM si riavvia per usarle."
 
-#: port/frontend/shell/settings.cpp:1115
+#: port/frontend/shell/settings.cpp:1137
 msgid "Play a game from your 3DS, and set up from it."
 msgstr "Gioca a un gioco dal tuo 3DS, e configura a partire da esso."
 
-#: port/frontend/shell/settings.cpp:1116
+#: port/frontend/shell/settings.cpp:1138
 msgid "Artic Base plays a game from a 3DS on your network, its saves staying on the 3DS; Artic Setup copies a 3DS's system files into Azahar, for the Home Menu and the games that need them."
 msgstr "Artic Base fa giocare un gioco da un 3DS sulla tua rete, con i salvataggi che restano sul 3DS; Artic Setup copia i file di sistema di un 3DS in Azahar, per il menu HOME e i giochi che ne hanno bisogno."
 
-#: port/frontend/shell/settings.cpp:1125
+#: port/frontend/shell/settings.cpp:1147
 msgid "A room is a server where Switch games find each other for their local wireless play, as in desktop Eden and ProsperoEden. The room chosen here is joined as each Switch game starts: then choose Local Wireless (or local play) in the game. A room that cannot be joined brings you back here with why."
 msgstr "Una stanza è un server dove i giochi Switch si trovano per il loro gioco wireless locale, come in Eden per computer e in ProsperoEden. Nella stanza scelta qui si entra all’avvio di ogni gioco Switch: poi scegli Wireless locale (o gioco locale) nel gioco. Una stanza in cui non si può entrare ti riporta qui con il motivo."
 
-#: port/frontend/shell/settings.cpp:1128
+#: port/frontend/shell/settings.cpp:1150
 msgid "None: games play offline"
 msgstr "Nessuna: i giochi si giocano offline"
 
-#: port/frontend/shell/settings.cpp:1129
+#: port/frontend/shell/settings.cpp:1151
 msgid "Joined as a Switch game starts. Cross plays offline again."
 msgstr "Vi si entra all’avvio di un gioco Switch. Croce torna offline."
 
-#: port/frontend/shell/settings.cpp:1129
+#: port/frontend/shell/settings.cpp:1151
 msgid "Choose a public room below, or a private one."
 msgstr "Scegli qui sotto una stanza pubblica, o una privata."
 
-#: port/frontend/shell/settings.cpp:1132
+#: port/frontend/shell/settings.cpp:1154
 msgid "Nickname"
 msgstr "Soprannome"
 
-#: port/frontend/shell/settings.cpp:1132
+#: port/frontend/shell/settings.cpp:1154
 msgid "Your name in the room."
 msgstr "Il tuo nome nella stanza."
 
-#: port/frontend/shell/settings.cpp:1133
+#: port/frontend/shell/settings.cpp:1155
 msgid "What the others in a room see of you: 4 to 20 letters, digits, spaces, dots, dashes or underscores, as Eden takes them."
 msgstr "Ciò che gli altri in una stanza vedono di te: da 4 a 20 lettere, cifre, spazi, punti, trattini o trattini bassi, come li accetta Eden."
 
-#: port/frontend/shell/settings.cpp:1135
+#: port/frontend/shell/settings.cpp:1157
 msgid "Private room"
 msgstr "Stanza privata"
 
-#: port/frontend/shell/settings.cpp:1136
+#: port/frontend/shell/settings.cpp:1158
 msgid "Cross to enter one"
 msgstr "Croce per inserirne una"
 
-#: port/frontend/shell/settings.cpp:1137
+#: port/frontend/shell/settings.cpp:1159
 msgid "A room by its address, port and password."
 msgstr "Una stanza dal suo indirizzo, dalla porta e dalla password."
 
-#: port/frontend/shell/settings.cpp:1138
+#: port/frontend/shell/settings.cpp:1160
 msgid "A room someone gave you the address of: its address (a name or an IPv4 address), its UDP port (24872 unless they say otherwise) and its password, if it has one."
 msgstr "Una stanza di cui qualcuno ti ha dato l’indirizzo: il suo indirizzo (un nome o un indirizzo IPv4), la sua porta UDP (24872 salvo diversa indicazione) e la sua password, se ne ha una."
 
-#: port/frontend/shell/settings.cpp:1142
+#: port/frontend/shell/settings.cpp:1164
 msgid "No public rooms right now"
 msgstr "Nessuna stanza pubblica al momento"
 
-#: port/frontend/shell/settings.cpp:1143
+#: port/frontend/shell/settings.cpp:1165
 msgid "{0} room"
 msgid_plural "{0} rooms"
 msgstr[0] "{0} stanza"
 msgstr[1] "{0} stanze"
 
-#: port/frontend/shell/settings.cpp:1144
+#: port/frontend/shell/settings.cpp:1166
 msgid "Public rooms"
 msgstr "Stanze pubbliche"
 
-#: port/frontend/shell/settings.cpp:1144
+#: port/frontend/shell/settings.cpp:1166
 msgid "Cross downloads the list again."
 msgstr "Croce scarica di nuovo l’elenco."
 
-#: port/frontend/shell/settings.cpp:1145
+#: port/frontend/shell/settings.cpp:1167
 msgid "ProsperoEden's list of public rooms: its own featured rooms first, then the others, the fullest first. A room for another version of Eden cannot be joined."
 msgstr "L’elenco delle stanze pubbliche di ProsperoEden: prima le sue stanze in evidenza, poi le altre, le più piene prima. In una stanza per un’altra versione di Eden non si può entrare."
 
-#: port/frontend/shell/settings.cpp:1153 port/frontend/shell/shares.cpp:317 port/frontend/shell/shares.cpp:489
+#: port/frontend/shell/settings.cpp:1175 port/frontend/shell/shares.cpp:317 port/frontend/shell/shares.cpp:489
 msgid "Password"
 msgstr "Password"
 
 #. one of ProsperoEden's own rooms, which its list puts first
-#: port/frontend/shell/settings.cpp:1156
+#: port/frontend/shell/settings.cpp:1178
 msgid "Featured"
 msgstr "In evidenza"
 
-#: port/frontend/shell/settings.cpp:1158
+#: port/frontend/shell/settings.cpp:1180
 msgid "Another version"
 msgstr "Altra versione"
 
-#: port/frontend/shell/settings.cpp:1160
+#: port/frontend/shell/settings.cpp:1182
 msgid "{0} (chosen)"
 msgstr "{0} (scelta)"
 
-#: port/frontend/shell/settings.cpp:1161
+#: port/frontend/shell/settings.cpp:1183
 msgid "Any game"
 msgstr "Qualsiasi gioco"
 
-#: port/frontend/shell/settings.cpp:1169
+#: port/frontend/shell/settings.cpp:1191
 msgid "Box art from GameTDB"
 msgstr "Copertine da GameTDB"
 
-#: port/frontend/shell/settings.cpp:1169
+#: port/frontend/shell/settings.cpp:1191
 msgid "Covers for the library, downloaded once."
 msgstr "Copertine per la libreria, scaricate una volta."
 
-#: port/frontend/shell/settings.cpp:1170
+#: port/frontend/shell/settings.cpp:1192
 msgid "The first time a game shows up, its cover is downloaded from GameTDB (art.gametdb.com) by the ID on its box. Off: nothing more is downloaded."
 msgstr "La prima volta che un gioco compare, la sua copertina viene scaricata da GameTDB (art.gametdb.com) tramite l’ID sulla confezione. Disattivo: non viene scaricato più niente."
 
-#: port/frontend/shell/settings.cpp:1174
+#: port/frontend/shell/settings.cpp:1196
 msgid "Switch covers"
 msgstr "Copertine Switch"
 
-#: port/frontend/shell/settings.cpp:1174 port/frontend/shell/setup.cpp:300
+#: port/frontend/shell/settings.cpp:1196 port/frontend/shell/setup.cpp:300
 msgid "Box art"
 msgstr "Copertine"
 
-#: port/frontend/shell/settings.cpp:1174
+#: port/frontend/shell/settings.cpp:1196
 msgid "Game icons"
 msgstr "Icone dei giochi"
 
-#: port/frontend/shell/settings.cpp:1174
+#: port/frontend/shell/settings.cpp:1196
 msgid "GameTDB's box art, or each game's own icon."
 msgstr "Le copertine di GameTDB o l’icona di ciascun gioco."
 
-#: port/frontend/shell/settings.cpp:1175
+#: port/frontend/shell/settings.cpp:1197
 msgid "Box art is GameTDB's, found by each game's name. Game icons are the games' own, read from their files, as the Switch's home menu shows them. A picture beside a game (Game.png or Game.jpg) is its cover either way."
 msgstr "Le copertine vengono da GameTDB, trovate dal nome di ciascun gioco. Le icone sono quelle dei giochi stessi, lette dai loro file, come le mostra il menu HOME di Switch. Un’immagine accanto a un gioco (Game.png o Game.jpg) è la sua copertina in entrambi i casi."
 
-#: port/frontend/shell/settings.cpp:1182
+#: port/frontend/shell/settings.cpp:1204
 msgid "Downloading: {0} left"
 msgid_plural "Downloading: {0} left"
 msgstr[0] "Download: manca {0}"
 msgstr[1] "Download: mancano {0}"
 
-#: port/frontend/shell/settings.cpp:1183
+#: port/frontend/shell/settings.cpp:1205
 msgid "GameTDB did not answer: is the PS5 online?"
 msgstr "GameTDB non ha risposto: la PS5 è online?"
 
-#: port/frontend/shell/settings.cpp:1184
+#: port/frontend/shell/settings.cpp:1206
 msgid "{0} game without box art"
 msgid_plural "{0} games without box art"
 msgstr[0] "{0} gioco senza copertina"
 msgstr[1] "{0} giochi senza copertina"
 
-#: port/frontend/shell/settings.cpp:1185
+#: port/frontend/shell/settings.cpp:1207
 msgid "Every game has box art"
 msgstr "Tutti i giochi hanno la copertina"
 
-#: port/frontend/shell/settings.cpp:1186
+#: port/frontend/shell/settings.cpp:1208
 msgid "Download missing box art"
 msgstr "Scarica le copertine mancanti"
 
-#: port/frontend/shell/settings.cpp:1186
+#: port/frontend/shell/settings.cpp:1208
 msgid "Tries again for every game without a cover."
 msgstr "Riprova per ogni gioco senza copertina."
 
-#: port/frontend/shell/settings.cpp:1187
+#: port/frontend/shell/settings.cpp:1209
 msgid "Asks GameTDB again for the cover of every game on this side that has none, including games it had no cover for before. Covers are downloaded in the background while you use the launcher."
 msgstr "Chiede di nuovo a GameTDB la copertina di ogni gioco di questo lato che non ce l’ha, anche dei giochi per cui prima non ne aveva. Le copertine vengono scaricate in background mentre usi il launcher."
 
-#: port/frontend/shell/settings.cpp:1189
+#: port/frontend/shell/settings.cpp:1211
 msgid "Download all box art again"
 msgstr "Scarica di nuovo tutte le copertine"
 
-#: port/frontend/shell/settings.cpp:1190
+#: port/frontend/shell/settings.cpp:1212
 msgid "Replaces every cover on this side with a fresh download."
 msgstr "Sostituisce ogni copertina di questo lato con un nuovo download."
 
-#: port/frontend/shell/settings.cpp:1191
+#: port/frontend/shell/settings.cpp:1213
 msgid "Downloads the cover of every game on this side again, replacing the ones you have. Useful when a cover is wrong or looks broken."
 msgstr "Scarica di nuovo la copertina di ogni gioco di questo lato, sostituendo quelle che hai. Utile quando una copertina è sbagliata o sembra danneggiata."
 
-#: port/frontend/shell/settings.cpp:1194
+#: port/frontend/shell/settings.cpp:1216
 msgid "Community graphic packs"
 msgstr "Pacchetti grafici della community"
 
-#: port/frontend/shell/settings.cpp:1194
+#: port/frontend/shell/settings.cpp:1216
 msgid "Cross checks GitHub for newer ones."
 msgstr "Croce cerca quelli più recenti su GitHub."
 
-#: port/frontend/shell/settings.cpp:1195
+#: port/frontend/shell/settings.cpp:1217
 msgid "Cemu's community graphic packs, from GitHub's latest release when it is newer than the ones installed. They are not in the app: the first time the Wii U side starts without them, they are downloaded in the background."
 msgstr "I pacchetti grafici della community di Cemu, dall’ultima release su GitHub quando è più recente di quelli installati. Non sono nell’app: la prima volta che il lato Wii U si avvia senza, vengono scaricati in background."
 
-#: port/frontend/shell/settings.cpp:1201
+#: port/frontend/shell/settings.cpp:1223
 msgid "Earn RetroAchievements in DS games with your account, as RetroArch does. Cross signs in with your user name and password; only the sign-in's token is kept on the PS5, never the password. Softcore: save states, cheats and speed stay as they are. RetroAchievements has no sets for the Wii U or the 3DS."
 msgstr "Ottieni RetroAchievements nei giochi DS con il tuo account, come in RetroArch. Croce accede con nome utente e password; sulla PS5 resta solo il token dell’accesso, mai la password. Softcore: stati salvati, trucchi e velocità restano come sono. RetroAchievements non ha set per Wii U né per 3DS."
 
 #. the RetroAchievements account signed in: its name ({1}) and softcore points ({0})
-#: port/frontend/shell/settings.cpp:1206 port/frontend/shell/settings.cpp:1210 port/frontend/shell/whatsnew.cpp:35
+#: port/frontend/shell/settings.cpp:1228 port/frontend/shell/settings.cpp:1232 port/frontend/shell/whatsnew.cpp:35
 msgid "RetroAchievements"
 msgstr "RetroAchievements"
 
-#: port/frontend/shell/settings.cpp:1207
+#: port/frontend/shell/settings.cpp:1229
 msgid "{1} · {0} point"
 msgid_plural "{1} · {0} points"
 msgstr[0] "{1} · {0} punto"
 msgstr[1] "{1} · {0} punti"
 
-#: port/frontend/shell/settings.cpp:1207
+#: port/frontend/shell/settings.cpp:1229
 msgid "Hold Cross to sign out"
 msgstr "Tieni premuto Croce per uscire"
 
-#: port/frontend/shell/settings.cpp:1208
+#: port/frontend/shell/settings.cpp:1230
 msgid "Signed in: DS games with a set earn achievements."
 msgstr "Accesso effettuato: i giochi DS con un set danno obiettivi."
 
-#: port/frontend/shell/settings.cpp:1211
+#: port/frontend/shell/settings.cpp:1233
 msgid "Signing in…"
 msgstr "Accesso…"
 
-#: port/frontend/shell/settings.cpp:1211
+#: port/frontend/shell/settings.cpp:1233
 msgid "Cross to sign in"
 msgstr "Croce per accedere"
 
-#: port/frontend/shell/settings.cpp:1212
+#: port/frontend/shell/settings.cpp:1234
 msgid "Achievements in DS games, with your RetroAchievements account."
 msgstr "Obiettivi nei giochi DS, con il tuo account RetroAchievements."
 
-#: port/frontend/shell/settings.cpp:1213
+#: port/frontend/shell/settings.cpp:1235
 msgid "Unlock notices"
 msgstr "Avvisi degli obiettivi"
 
-#: port/frontend/shell/settings.cpp:1213
+#: port/frontend/shell/settings.cpp:1235
 msgid "Each unlock as the PS5's notification."
 msgstr "Ogni obiettivo come notifica della PS5."
 
-#: port/frontend/shell/settings.cpp:1214
+#: port/frontend/shell/settings.cpp:1236
 msgid "An achievement earned, and the count as a game starts, shown as the PS5's own notifications. Off: they are only in the in-game menu's Achievements."
 msgstr "Un obiettivo ottenuto, e il conteggio all’avvio di un gioco, mostrati come notifiche della PS5. Disattivato: sono solo in Obiettivi, nel menu di gioco."
 
-#: port/frontend/shell/settings.cpp:1219
+#: port/frontend/shell/settings.cpp:1241
 msgid "PS5-ECAM updates"
 msgstr "Aggiornamenti di PS5-ECAM"
 
-#: port/frontend/shell/settings.cpp:1219
+#: port/frontend/shell/settings.cpp:1241
 msgid "Cross checks GitHub for a newer version."
 msgstr "Croce cerca una versione più recente su GitHub."
 
-#: port/frontend/shell/settings.cpp:1220
+#: port/frontend/shell/settings.cpp:1242
 msgid "PS5-ECAM asks GitHub for its latest release each time it starts. Cross asks again, or installs the newer version it found: the release's files are downloaded, checked and put in place of these, and the app starts again. Your games, saves and settings stay as they are."
 msgstr "PS5-ECAM chiede a GitHub la sua ultima release a ogni avvio. Croce chiede di nuovo, o installa la versione più recente trovata: i file della release vengono scaricati, verificati e messi al posto di questi, e l’app si riavvia. I tuoi giochi, salvataggi e impostazioni restano come sono."
 
 #. {0} is the version the last update replaced, as in 5.0.0
-#: port/frontend/shell/settings.cpp:1226
+#: port/frontend/shell/settings.cpp:1249
 msgid "Go back to {0}"
 msgstr "Torna alla {0}"
 
-#: port/frontend/shell/settings.cpp:1227
+#: port/frontend/shell/settings.cpp:1250
 msgid "The version before the last update, kept as it was."
 msgstr "La versione prima dell’ultimo aggiornamento, conservata com’era."
 
-#: port/frontend/shell/settings.cpp:1228
+#: port/frontend/shell/settings.cpp:1251
 msgid "The last update kept the version it replaced. Holding Cross puts its files back in place of these, and PS5-ECAM starts again as that version. Your games, saves and settings stay as they are. The newer version is not offered at start again; this page still finds it."
 msgstr "L’ultimo aggiornamento ha conservato la versione che ha sostituito. Tenendo premuto Croce, i suoi file tornano al posto di questi e PS5-ECAM si riavvia in quella versione. I tuoi giochi, salvataggi e impostazioni restano come sono. La versione più recente non viene più proposta all’avvio; questa pagina la trova comunque."
 
-#: port/frontend/shell/settings.cpp:1246
+#: port/frontend/shell/settings.cpp:1258
+msgid "Put each system's files back first: Settings > Game files > A folder for each system."
+msgstr "Prima rimetti a posto i file di ogni sistema: Impostazioni > File di gioco > Una cartella per ogni sistema."
+
+#: port/frontend/shell/settings.cpp:1276
 msgid "Theme"
 msgstr "Tema"
 
-#: port/frontend/shell/settings.cpp:1248
+#: port/frontend/shell/settings.cpp:1278
 msgid "How the launcher looks: its colours, its corners and what moves behind the menus. Every theme has the same screens and buttons. Make your own as a JSON file in {0}/themes, starting from any of these: the text under this page says how. Only the launcher changes: the in-game menus and the games stay as they are."
 msgstr "L’aspetto del launcher: i colori, gli angoli e ciò che si muove dietro i menu. Tutti i temi hanno le stesse schermate e gli stessi pulsanti. Crea il tuo come file JSON in {0}/themes, partendo da uno di questi: il testo sotto questa pagina spiega come. Cambia solo il launcher: i menu di gioco e i giochi restano come sono."
 
-#: port/frontend/shell/settings.cpp:1254
+#: port/frontend/shell/settings.cpp:1284
 msgid "Wii U side"
 msgstr "Lato Wii U"
 
-#: port/frontend/shell/settings.cpp:1254
+#: port/frontend/shell/settings.cpp:1284
 msgid "Cemu's games, in the bar."
 msgstr "I giochi di Cemu, nella barra."
 
-#: port/frontend/shell/settings.cpp:1255
+#: port/frontend/shell/settings.cpp:1285
 msgid "Whether the bar shows the Wii U side (Cemu). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
 msgstr "Se la barra mostra il lato Wii U (Cemu). Se è nascosto, i suoi giochi e le sue impostazioni restano e tornano quando lo riattivi. Almeno un lato resta attivo."
 
-#: port/frontend/shell/settings.cpp:1258
+#: port/frontend/shell/settings.cpp:1288
 msgid "Switch side"
 msgstr "Lato Switch"
 
-#: port/frontend/shell/settings.cpp:1258
+#: port/frontend/shell/settings.cpp:1288
 msgid "Eden's games, in the bar."
 msgstr "I giochi di Eden, nella barra."
 
-#: port/frontend/shell/settings.cpp:1259
+#: port/frontend/shell/settings.cpp:1289
 msgid "Whether the bar shows the Switch side (Eden). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
 msgstr "Se la barra mostra il lato Switch (Eden). Se è nascosto, i suoi giochi e le sue impostazioni restano e tornano quando lo riattivi. Almeno un lato resta attivo."
 
-#: port/frontend/shell/settings.cpp:1261
+#: port/frontend/shell/settings.cpp:1291
 msgid "DS side"
 msgstr "Lato DS"
 
-#: port/frontend/shell/settings.cpp:1261
+#: port/frontend/shell/settings.cpp:1291
 msgid "melonDS's games, in the bar."
 msgstr "I giochi di melonDS, nella barra."
 
-#: port/frontend/shell/settings.cpp:1262
+#: port/frontend/shell/settings.cpp:1292
 msgid "Whether the bar shows the DS side (melonDS). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
 msgstr "Se la barra mostra il lato DS (melonDS). Se è nascosto, i suoi giochi e le sue impostazioni restano e tornano quando lo riattivi. Almeno un lato resta attivo."
 
-#: port/frontend/shell/settings.cpp:1264
+#: port/frontend/shell/settings.cpp:1294
 msgid "3DS side"
 msgstr "Lato 3DS"
 
-#: port/frontend/shell/settings.cpp:1264
+#: port/frontend/shell/settings.cpp:1294
 msgid "Azahar's games, in the bar."
 msgstr "I giochi di Azahar, nella barra."
 
-#: port/frontend/shell/settings.cpp:1265
+#: port/frontend/shell/settings.cpp:1295
 msgid "Whether the bar shows the 3DS side (Azahar). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
 msgstr "Se la barra mostra il lato 3DS (Azahar). Se è nascosto, i suoi giochi e le sue impostazioni restano e tornano quando lo riattivi. Almeno un lato resta attivo."
 
-#: port/frontend/shell/settings.cpp:1267
+#: port/frontend/shell/settings.cpp:1297
 msgid "Game pictures behind menus"
 msgstr "Immagini dei giochi dietro i menu"
 
-#: port/frontend/shell/settings.cpp:1267
+#: port/frontend/shell/settings.cpp:1297
 msgid "The focused game's cover, softened, behind the screens."
 msgstr "La copertina del gioco selezionato, sfumata, dietro le schermate."
 
-#: port/frontend/shell/settings.cpp:1268
+#: port/frontend/shell/settings.cpp:1298
 msgid "The focused game's picture fills the screen behind the menus, softened and dimmed, so moving the focus changes the whole screen. Off: the game's colours only."
 msgstr "L’immagine del gioco selezionato riempie lo schermo dietro i menu, sfumata e scurita, così spostare la selezione cambia tutto lo schermo. Disattivo: solo i colori del gioco."
 
-#: port/frontend/shell/settings.cpp:1270
+#: port/frontend/shell/settings.cpp:1300
 msgid "Library filters"
 msgstr "Filtri della libreria"
 
-#: port/frontend/shell/settings.cpp:1270
+#: port/frontend/shell/settings.cpp:1300
 msgid "All, Recently added, Favourites: a row over the list."
 msgstr "Tutti, Aggiunti di recente, Preferiti: una riga sopra l’elenco."
 
-#: port/frontend/shell/settings.cpp:1271
+#: port/frontend/shell/settings.cpp:1301
 msgid "A row of filters over the Library's list: All, Recently added (the last 30 days), Favourites and, on the Wii U side, Graphic packs on, each with its count. Off: the list has every game, and Sort and Search are all it needs."
 msgstr "Una riga di filtri sopra l’elenco della libreria: Tutti, Aggiunti di recente (gli ultimi 30 giorni), Preferiti e, sul lato Wii U, Pacchetti grafici attivi, ognuno con il suo numero. Disattivo: l’elenco ha tutti i giochi, e Ordina e Cerca bastano."
 
-#: port/frontend/shell/settings.cpp:1273
+#: port/frontend/shell/settings.cpp:1303
 msgid "Larger text"
 msgstr "Testo più grande"
 
-#: port/frontend/shell/settings.cpp:1273
+#: port/frontend/shell/settings.cpp:1303
 msgid "Every size of text a step up."
 msgstr "Ogni dimensione del testo un passo più grande."
 
-#: port/frontend/shell/settings.cpp:1274
+#: port/frontend/shell/settings.cpp:1304
 msgid "Every style of text a step larger: captions from 20 to 23, reading text from 26 to 30."
 msgstr "Ogni stile di testo un passo più grande: didascalie da 20 a 23, testo di lettura da 26 a 30."
 
-#: port/frontend/shell/settings.cpp:1275
+#: port/frontend/shell/settings.cpp:1305
 msgid "High contrast"
 msgstr "Contrasto elevato"
 
-#: port/frontend/shell/settings.cpp:1275
+#: port/frontend/shell/settings.cpp:1305
 msgid "Opaque panels, full-strength text, a thicker ring."
 msgstr "Pannelli opachi, testo pieno, un anello più spesso."
 
-#: port/frontend/shell/settings.cpp:1276
+#: port/frontend/shell/settings.cpp:1306
 msgid "Opaque panels instead of glass, all text at full strength, a thicker focus ring and no grain or pictures behind the menus."
 msgstr "Pannelli opachi invece del vetro, tutto il testo a piena intensità, un anello di selezione più spesso, e niente grana o immagini dietro i menu."
 
-#: port/frontend/shell/settings.cpp:1277
+#: port/frontend/shell/settings.cpp:1307
 msgid "Reduce motion"
 msgstr "Riduci il movimento"
 
-#: port/frontend/shell/settings.cpp:1277
+#: port/frontend/shell/settings.cpp:1307
 msgid "Fades in place of movement."
 msgstr "Dissolvenze al posto del movimento."
 
-#: port/frontend/shell/settings.cpp:1278
+#: port/frontend/shell/settings.cpp:1308
 msgid "Springs become short fades; nothing drifts, breathes or rises behind the menus."
 msgstr "Le molle diventano brevi dissolvenze; dietro i menu niente fluttua, respira o sale."
 
-#: port/frontend/shell/settings.cpp:1279 port/frontend/shell/welcome.cpp:208
+#: port/frontend/shell/settings.cpp:1309 port/frontend/shell/welcome.cpp:208
 msgid "Make it yours"
 msgstr "A modo tuo"
 
-#: port/frontend/shell/settings.cpp:1279
+#: port/frontend/shell/settings.cpp:1309
 msgid "The first-start choices again: sides, theme, buttons."
 msgstr "Le scelte del primo avvio di nuovo: lati, tema, tasti."
 
-#: port/frontend/shell/settings.cpp:1280
+#: port/frontend/shell/settings.cpp:1310
 msgid "The page the first start opens on: the language, the sides, the theme, A and B, the music, vibration and the games' pictures, on one page."
 msgstr "La pagina con cui si apre il primo avvio: la lingua, i lati, il tema, A e B, la musica, la vibrazione e le immagini dei giochi, in una sola pagina."
 
-#: port/frontend/shell/settings.cpp:1286
+#: port/frontend/shell/settings.cpp:1316
 msgid "Hold to confirm"
 msgstr "Tieni premuto per confermare"
 
-#: port/frontend/shell/settings.cpp:1287
+#: port/frontend/shell/settings.cpp:1317
 msgid "How long Cross is held for what cannot be undone."
 msgstr "Per quanto si tiene premuto Croce per ciò che non si può annullare."
 
-#: port/frontend/shell/settings.cpp:1288
+#: port/frontend/shell/settings.cpp:1318
 msgid "Clearing caches, Artic Setup and resetting controls are held to confirm, never pressed twice. This is how long."
 msgstr "Svuotare le cache, Artic Setup e ripristinare i comandi si confermano tenendo premuto, mai premendo due volte. Ecco per quanto."
 
-#: port/frontend/shell/settings.cpp:1292
+#: port/frontend/shell/settings.cpp:1322
 msgid "Storage, recompilers, games, keys and box art, checked."
 msgstr "Memoria, ricompilatori, giochi, chiavi e copertine, controllati."
 
-#: port/frontend/shell/settings.cpp:1293
+#: port/frontend/shell/settings.cpp:1323
 msgid "Each check has a status, what it means and what to do. It is also shown on the first start and whenever a check fails as the app starts."
 msgstr "Ogni controllo ha uno stato, cosa significa e cosa fare. Viene mostrato anche al primo avvio e ogni volta che un controllo fallisce all’avvio dell’app."
 
-#: port/frontend/shell/settings.cpp:1295
+#: port/frontend/shell/settings.cpp:1325
 msgid "Copy logs to USB"
 msgstr "Copia i log su USB"
 
-#: port/frontend/shell/settings.cpp:1295
+#: port/frontend/shell/settings.cpp:1325
 msgid "The logs a report needs, onto a USB drive."
 msgstr "I log che servono a una segnalazione, su un’unità USB."
 
-#: port/frontend/shell/settings.cpp:1296
+#: port/frontend/shell/settings.cpp:1326
 msgid "Copies the last five sessions' logs and the settings into a dated folder on a USB drive, to attach to a report."
 msgstr "Copia i log delle ultime cinque sessioni e le impostazioni in una cartella datata su un’unità USB, da allegare a una segnalazione."
 
-#: port/frontend/shell/settings.cpp:1298 port/frontend/shell/settings.cpp:1301
+#: port/frontend/shell/settings.cpp:1328 port/frontend/shell/settings.cpp:1331
 msgid "Clear shader caches"
 msgstr "Svuota le cache degli shader"
 
-#: port/frontend/shell/settings.cpp:1299 port/frontend/shell/settings.cpp:1302
+#: port/frontend/shell/settings.cpp:1329 port/frontend/shell/settings.cpp:1332
 msgid "For a game that crashes on a bad cache."
 msgstr "Per un gioco che si blocca per una cache difettosa."
 
-#: port/frontend/shell/settings.cpp:1299
+#: port/frontend/shell/settings.cpp:1329
 msgid "Deletes Cemu's shader caches. Games build them again as they run: the first minutes stutter."
 msgstr "Elimina le cache degli shader di Cemu. I giochi le ricostruiscono mentre girano: i primi minuti scattano."
 
-#: port/frontend/shell/settings.cpp:1303
+#: port/frontend/shell/settings.cpp:1333
 msgid "Deletes Azahar's shader caches. Games build them again as they run: the first minutes stutter."
 msgstr "Elimina le cache degli shader di Azahar. I giochi le ricostruiscono mentre girano: i primi minuti scattano."
 
 #. Settings > Diagnostics: the copies of games unpacked from their archives (.zip, .7z...), kept for their next start
-#: port/frontend/shell/settings.cpp:1313
+#: port/frontend/shell/settings.cpp:1343
 msgid "Unpacked games"
 msgstr "Giochi estratti"
 
-#: port/frontend/shell/settings.cpp:1317
+#: port/frontend/shell/settings.cpp:1347
 msgid "Games from archives, kept unpacked for their next start."
 msgstr "Giochi da archivi, tenuti estratti per il loro prossimo avvio."
 
 #. {0} is the folder they are kept in
-#: port/frontend/shell/settings.cpp:1319
+#: port/frontend/shell/settings.cpp:1349
 msgid "Deletes the copies of games unpacked from their archives, kept in {0}. Each is unpacked again the next time it starts; when room is needed, the copies used longest ago go by themselves."
 msgstr "Elimina le copie dei giochi estratti dai loro archivi, tenute in {0}. Ognuno viene estratto di nuovo al suo prossimo avvio; quando serve spazio, le copie usate meno di recente se ne vanno da sole."
 
-#: port/frontend/shell/settings.cpp:1350
+#: port/frontend/shell/settings.cpp:1380
 msgid "Back to defaults"
 msgstr "Torna ai predefiniti"
 
-#: port/frontend/shell/settings.cpp:1352
+#: port/frontend/shell/settings.cpp:1382
 msgid "This game goes back to its side's settings."
 msgstr "Questo gioco torna alle impostazioni del suo lato."
 
-#: port/frontend/shell/settings.cpp:1353
+#: port/frontend/shell/settings.cpp:1383
 msgid "Clears this game's own settings, so it uses its side's settings again, like every other game."
 msgstr "Cancella le impostazioni proprie di questo gioco, così torna a usare quelle del suo lato, come ogni altro gioco."
 
 #. a Wii U account by its number, when its name cannot be read
-#: port/frontend/shell/settings.cpp:1370
+#: port/frontend/shell/settings.cpp:1400
 msgid "Account {0}"
 msgstr "Account {0}"
 
 #. a Wii U game's save that all its accounts share
-#: port/frontend/shell/settings.cpp:1372
+#: port/frontend/shell/settings.cpp:1402
 msgid "Every account's"
 msgstr "Di tutti gli account"
 
-#: port/frontend/shell/settings.cpp:1373
+#: port/frontend/shell/settings.cpp:1403
 msgid "Save data"
 msgstr "Dati di salvataggio"
 
 #. a 3DS game's extra data (its extdata), which some games keep beside their saves
-#: port/frontend/shell/settings.cpp:1375
+#: port/frontend/shell/settings.cpp:1405
 msgid "Extra data"
 msgstr "Dati extra"
 
-#: port/frontend/shell/settings.cpp:1376
+#: port/frontend/shell/settings.cpp:1406
 msgid "{0} save state"
 msgid_plural "{0} save states"
 msgstr[0] "{0} stato salvato"
 msgstr[1] "{0} stati salvati"
 
-#: port/frontend/shell/settings.cpp:1414
+#: port/frontend/shell/settings.cpp:1444
 msgid "Held: moved to saves-before on the PS5, so it can still come back."
 msgstr "Tenuto premuto: spostato in saves-before sulla PS5, quindi si può recuperare."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1416
+#: port/frontend/shell/settings.cpp:1446
 msgid "Holding Cross moves these files to {0}/saves-before, in a folder named by the date and time, and the game starts without them next time. Nothing is deleted: copy them back from there (or restore a backup) to have them again."
 msgstr "Tenendo premuto Croce questi file vanno in {0}/saves-before, in una cartella con data e ora, e la prossima volta il gioco parte senza. Non si cancella nulla: ricopiali da lì (o ripristina un backup) per riaverli."
 
-#: port/frontend/shell/settings.cpp:1426
+#: port/frontend/shell/settings.cpp:1456
 msgid "No saves yet"
 msgstr "Ancora nessun salvataggio"
 
-#: port/frontend/shell/settings.cpp:1427
+#: port/frontend/shell/settings.cpp:1457
 msgid "They appear here once the game has saved."
 msgstr "Compaiono qui appena il gioco ha salvato."
 
-#: port/frontend/shell/settings.cpp:1440
+#: port/frontend/shell/settings.cpp:1470
 msgid "This game's saves, to the first USB drive."
 msgstr "I salvataggi di questo gioco, sulla prima unità USB."
 
-#: port/frontend/shell/settings.cpp:1441
+#: port/frontend/shell/settings.cpp:1471
 msgid "Copies this game's saves (every account's, on the Wii U) and its save states to PS5CEMU-HAR-saves on the first USB drive plugged in, in a folder named by the date and time, the same way a backup of every side's saves is made."
 msgstr "Copia i salvataggi di questo gioco (quelli di tutti gli account, su Wii U) e i suoi stati salvati in PS5CEMU-HAR-saves sulla prima unità USB collegata, in una cartella con data e ora, come per il backup dei salvataggi di tutti i lati."
 
-#: port/frontend/shell/settings.cpp:1458
+#: port/frontend/shell/settings.cpp:1488
 msgid "No backup on the drives plugged in has this game's saves."
 msgstr "Nessun backup sulle unità collegate ha salvataggi di questo gioco."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1460
+#: port/frontend/shell/settings.cpp:1490
 msgid "Puts this game's saves from the chosen backup back where they came from, and nothing else. Its saves there now are moved first to {0}/saves-before, so nothing is lost."
 msgstr "Rimette i salvataggi di questo gioco del backup scelto da dove provenivano, e nient’altro. I suoi salvataggi presenti vengono prima spostati in {0}/saves-before, quindi non si perde nulla."
 
-#: port/frontend/shell/settings.cpp:1482
+#: port/frontend/shell/settings.cpp:1512
 msgid ""
 "Your own theme: a file such as sunset.json in {0}/themes, read as the app starts, then listed under Theme by its name:\n"
 "{{\"name\": \"Sunset\", \"base\": \"midnight\", \"colours\": {{\"wiiu\": \"#ff7a59\", \"ink-0\": \"#120806\"}}, \"corners\": 0.5, \"motif\": \"none\"}}\n"
@@ -6173,26 +6207,26 @@ msgstr ""
 "base: un tema di partenza (light, link-jack, classic, midnight, eden). colours: da ink-0 a ink-2 (lo sfondo), text, wiiu, n3ds, nds e nx (quelli di ogni lato), glass, line, good, warn, bad e focus, come #rrggbb. corners: da 0 squadrato a 1.5 arrotondato. motif: side, none o eden."
 
 #. {0} is Eden's data folder; {1} its game files folder (the same one unless another was chosen)
-#: port/frontend/shell/settings.cpp:1491
+#: port/frontend/shell/settings.cpp:1521
 msgid "Saves: {0}/user/nand/user/save. Updates and DLC: beside a game, in its own folder, or in {1}/updates. Mods and cheats: {1}/mods. Covers and names: {0}/covers, once Eden has read a game."
 msgstr "Salvataggi: {0}/user/nand/user/save. Aggiornamenti e DLC: accanto a un gioco, nella sua cartella, o in {1}/updates. Mod e trucchi: {1}/mods. Copertine e nomi: {0}/covers, dopo che Eden ha letto un gioco."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1496
+#: port/frontend/shell/settings.cpp:1526
 msgid "Saves: {0}/melonds/saves (a .sav beside the game is taken the first time). Save states: melonds/states. Cheats: melonds/cheats/<game file>.mch, melonDS's format. DSi games, the DS's wireless and its GBA slot are not there."
 msgstr "Salvataggi: {0}/melonds/saves (un .sav accanto al gioco viene preso la prima volta). Stati salvati: melonds/states. Trucchi: melonds/cheats/<file del gioco>.mch, nel formato di melonDS. I giochi DSi, la connessione wireless del DS e il suo slot GBA non sono supportati."
 
-#: port/frontend/shell/settings.cpp:1500
+#: port/frontend/shell/settings.cpp:1530
 msgid "On, a QR code here opens the game's second screen in a phone's browser. Nothing to install; the phone must be on the PS5's network."
 msgstr "Attivo, un codice QR qui apre il secondo schermo del gioco nel browser di uno smartphone. Niente da installare; lo smartphone deve essere sulla rete della PS5."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1504
+#: port/frontend/shell/settings.cpp:1534
 msgid "Figure dumps go in {0}/figures: skylanders, infinity and dimensions. Switch a portal on here, start the game, then put figures on it from the in-game menu (touchpad click + Options > USB devices)."
 msgstr "I dump delle statuine vanno in {0}/figures: skylanders, infinity e dimensions. Attiva qui un portale, avvia il gioco, poi posaci le statuine dal menu di gioco (clic sul touch pad + OPTIONS > Dispositivi USB)."
 
 #. {0} is the app's version; {1} its data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on; {2} Eden's game files folder; {3} Cemu's selected data folder; {4} its default games folder; {5} Azahar's selected folder; {6} melonDS's selected folder
-#: port/frontend/shell/settings.cpp:1509
+#: port/frontend/shell/settings.cpp:1539
 msgid ""
 "Cemu, the Wii U emulator, by the Cemu team and its contributors; RADV on the PS5 by Mihawk-99 and mpereiraesaa; the community graphic packs' authors.\n"
 "Azahar, the 3DS emulator, by the Azahar team and the Citra contributors before them; Mihawk-99's PS5 port of it and dynarmic.\n"
@@ -6223,169 +6257,173 @@ msgstr ""
 "Versione {0}"
 
 #. the first choice in the language list: the PS5's own ({0}, in its own words)
-#: port/frontend/shell/settings.cpp:1527
+#: port/frontend/shell/settings.cpp:1557
 msgid "The PS5's language: {0}"
 msgstr "Lingua della PS5: {0}"
 
-#: port/frontend/shell/settings.cpp:1552
+#: port/frontend/shell/settings.cpp:1582
 msgid "Language: {0}"
 msgstr "Lingua: {0}"
 
-#: port/frontend/shell/settings.cpp:1673
+#: port/frontend/shell/settings.cpp:1703
 msgid "One side at least stays on"
 msgstr "Almeno un lato resta attivo"
 
 #. the Wii U account games start on now ({0}: its name)
-#: port/frontend/shell/settings.cpp:1829 port/frontend/shell/settings.cpp:1998 port/frontend/shell/settings.cpp:2073
+#: port/frontend/shell/settings.cpp:1859 port/frontend/shell/settings.cpp:2028 port/frontend/shell/settings.cpp:2103
 msgid "Games start on {0}'s saves"
 msgstr "I giochi si avviano con i salvataggi di {0}"
 
-#: port/frontend/shell/settings.cpp:1923
+#: port/frontend/shell/settings.cpp:1953
 msgid "This game has no ID to save settings under"
 msgstr "Questo gioco non ha un ID con cui salvare le impostazioni"
 
-#: port/frontend/shell/settings.cpp:2021
+#: port/frontend/shell/settings.cpp:2051
 msgid "Backing up {0}'s saves…"
 msgstr "Backup dei salvataggi di {0}…"
 
-#: port/frontend/shell/settings.cpp:2068
+#: port/frontend/shell/settings.cpp:2098
 msgid "A name for the new account"
 msgstr "Un nome per il nuovo account"
 
-#: port/frontend/shell/settings.cpp:2085
+#: port/frontend/shell/settings.cpp:2115
 msgid "A new name"
 msgstr "Un nuovo nome"
 
-#: port/frontend/shell/settings.cpp:2087
+#: port/frontend/shell/settings.cpp:2117
 msgid "Renamed {0}"
 msgstr "{0} rinominato"
 
-#: port/frontend/shell/settings.cpp:2096
+#: port/frontend/shell/settings.cpp:2126
 msgid "Backing up every side's saves…"
 msgstr "Backup dei salvataggi di tutti i lati…"
 
-#: port/frontend/shell/settings.cpp:2177
+#: port/frontend/shell/settings.cpp:2207
 msgid "Switch games play offline"
 msgstr "I giochi Switch si giocano offline"
 
-#: port/frontend/shell/settings.cpp:2181
+#: port/frontend/shell/settings.cpp:2211
 msgid "Your nickname in rooms"
 msgstr "Il tuo soprannome nelle stanze"
 
-#: port/frontend/shell/settings.cpp:2186
+#: port/frontend/shell/settings.cpp:2216
 msgid "A nickname is 4 to 20 letters, digits, spaces, dots, dashes or underscores."
 msgstr "Un soprannome ha da 4 a 20 lettere, cifre, spazi, punti, trattini o trattini bassi."
 
 #. the nickname shown in Switch rooms ({0})
-#: port/frontend/shell/settings.cpp:2192
+#: port/frontend/shell/settings.cpp:2222
 msgid "In rooms you are {0}"
 msgstr "Nelle stanze sei {0}"
 
-#: port/frontend/shell/settings.cpp:2206
+#: port/frontend/shell/settings.cpp:2236
 msgid "This room is for another version of Eden."
 msgstr "Questa stanza è per un’altra versione di Eden."
 
 #. the room ({0}) Switch games join from now on
-#: port/frontend/shell/settings.cpp:2217 port/frontend/shell/settings.cpp:2254
+#: port/frontend/shell/settings.cpp:2247 port/frontend/shell/settings.cpp:2284
 msgid "Switch games join {0} as they start"
 msgstr "I giochi Switch entrano in {0} all’avvio"
 
 #. the password of a room ({0}: its name)
-#: port/frontend/shell/settings.cpp:2221
+#: port/frontend/shell/settings.cpp:2251
 msgid "{0}'s password"
 msgstr "Password di {0}"
 
-#: port/frontend/shell/settings.cpp:2232
+#: port/frontend/shell/settings.cpp:2262
 msgid "The room's address"
 msgstr "L’indirizzo della stanza"
 
-#: port/frontend/shell/settings.cpp:2237
+#: port/frontend/shell/settings.cpp:2267
 msgid "An address is a name or an IPv4 address: letters, digits, dots and dashes."
 msgstr "Un indirizzo è un nome o un indirizzo IPv4: lettere, cifre, punti e trattini."
 
-#: port/frontend/shell/settings.cpp:2240
+#: port/frontend/shell/settings.cpp:2270
 msgid "Its UDP port"
 msgstr "La sua porta UDP"
 
-#: port/frontend/shell/settings.cpp:2244
+#: port/frontend/shell/settings.cpp:2274
 msgid "A port is a number from 1 to 65535."
 msgstr "Una porta è un numero da 1 a 65535."
 
-#: port/frontend/shell/settings.cpp:2247
+#: port/frontend/shell/settings.cpp:2277
 msgid "Its password (empty: none)"
 msgstr "La sua password (vuota: nessuna)"
 
-#: port/frontend/shell/settings.cpp:2264
+#: port/frontend/shell/settings.cpp:2294
 msgid "Starting the 3DS"
 msgstr "Avvio del 3DS"
 
-#: port/frontend/shell/settings.cpp:2273
+#: port/frontend/shell/settings.cpp:2303
 msgid "Your RetroAchievements user name"
 msgstr "Il tuo nome utente RetroAchievements"
 
-#: port/frontend/shell/settings.cpp:2276
+#: port/frontend/shell/settings.cpp:2306
 msgid "{0}'s RetroAchievements password"
 msgstr "Password RetroAchievements di {0}"
 
-#: port/frontend/shell/settings.cpp:2278
+#: port/frontend/shell/settings.cpp:2308
 msgid "Signing in to RetroAchievements…"
 msgstr "Accesso a RetroAchievements…"
 
 #. what clearing the unpacked games did; {1} is the room it made, as in 2.4 GB
-#: port/frontend/shell/settings.cpp:2300
+#: port/frontend/shell/settings.cpp:2330
 msgid "{0} game deleted ({1})"
 msgid_plural "{0} games deleted ({1})"
 msgstr[0] "{0} gioco eliminato ({1})"
 msgstr[1] "{0} giochi eliminati ({1})"
 
 #. a held row's result: the covers are on their way
-#: port/frontend/shell/settings.cpp:2307
+#: port/frontend/shell/settings.cpp:2337
 msgid "Downloading in the background"
 msgstr "Download in background"
 
-#: port/frontend/shell/settings.cpp:2343
+#: port/frontend/shell/settings.cpp:2357 port/frontend/shell/shell.cpp:434
+msgid "Close PS5-ECAM and start it again from the home screen: the folders move as it starts."
+msgstr "Chiudi PS5-ECAM e avvialo di nuovo dalla schermata Home: le cartelle vengono spostate all’avvio."
+
+#: port/frontend/shell/settings.cpp:2399
 msgid "{0} is deleted; its saves stay"
 msgstr "{0} è stato eliminato; i suoi salvataggi restano"
 
-#: port/frontend/shell/settings.cpp:2356
+#: port/frontend/shell/settings.cpp:2412
 msgid "Restoring the saves of {0}…"
 msgstr "Ripristino dei salvataggi di {0}…"
 
-#: port/frontend/shell/settings.cpp:2364
+#: port/frontend/shell/settings.cpp:2420
 msgid "Signed out of RetroAchievements"
 msgstr "Disconnesso da RetroAchievements"
 
-#: port/frontend/shell/settings.cpp:2373
+#: port/frontend/shell/settings.cpp:2429
 msgid "Restoring {0}'s saves of {1}…"
 msgstr "Ripristino dei salvataggi di {0} del {1}…"
 
 #. one of a game's saves moved out of the way ({0}: which, as its row names it)
-#: port/frontend/shell/settings.cpp:2387
+#: port/frontend/shell/settings.cpp:2443
 msgid "{0}: moved to saves-before"
 msgstr "{0}: spostato in saves-before"
 
-#: port/frontend/shell/settings.cpp:2398
+#: port/frontend/shell/settings.cpp:2454
 msgid "Done: back to its side's settings"
 msgstr "Fatto: di nuovo le impostazioni del suo lato"
 
-#: port/frontend/shell/settings.cpp:2559
+#: port/frontend/shell/settings.cpp:2615
 msgid "Scan it, or open"
 msgstr "Inquadralo o apri"
 
-#: port/frontend/shell/settings.cpp:2565
+#: port/frontend/shell/settings.cpp:2621
 msgid "Same network as the PS5. Nothing to install: the browser is enough. Sound stays on the PS5. Any browser on the network can see it and touch."
 msgstr "La stessa rete della PS5. Niente da installare: basta il browser. L’audio resta sulla PS5. Qualsiasi browser della rete può vederlo e toccarlo."
 
-#: port/frontend/shell/settings.cpp:2597
+#: port/frontend/shell/settings.cpp:2653
 msgid "Support PS5-ECAM"
 msgstr "Sostieni PS5-ECAM"
 
-#: port/frontend/shell/settings.cpp:2608
+#: port/frontend/shell/settings.cpp:2664
 msgid "PS5-ECAM is free. If it brings your games back, you can support its work here."
 msgstr "PS5-ECAM è gratuito. Se ti ha ridato i tuoi giochi, puoi sostenerne lo sviluppo qui."
 
 #. above Settings' pages: whose settings they are ({0}: Wii U, Nintendo 3DS or Nintendo DS)
-#: port/frontend/shell/settings.cpp:2648
+#: port/frontend/shell/settings.cpp:2704
 msgid "{0} settings"
 msgstr "Impostazioni {0}"
 
@@ -6910,372 +6948,394 @@ msgstr "Attiva la condivisione dei file per una cartella del tuo computer o NAS,
 msgid "Nothing is ever written to it."
 msgstr "Non ci viene mai scritto nulla."
 
-#: port/frontend/shell/shell.cpp:213
+#: port/frontend/shell/shell.cpp:214
 msgid "Saved your place in the library"
 msgstr "La tua posizione nella libreria è salvata"
 
-#: port/frontend/shell/shell.cpp:216 port/frontend/shell/shell.cpp:952 port/frontend/shell/shell.cpp:967 port/frontend/shell/shell.cpp:1035
+#: port/frontend/shell/shell.cpp:217 port/frontend/shell/shell.cpp:993 port/frontend/shell/shell.cpp:1008 port/frontend/shell/shell.cpp:1076
 msgid "The game could not start"
 msgstr "Impossibile avviare il gioco"
 
-#: port/frontend/shell/shell.cpp:221
+#: port/frontend/shell/shell.cpp:222
 msgid "Your settings could not be read"
 msgstr "Impossibile leggere le tue impostazioni"
 
 #. {0} is where the unreadable settings file is kept: /data/ps5cemu/ps5cemu.json.broken
-#: port/frontend/shell/shell.cpp:223
+#: port/frontend/shell/shell.cpp:224
 msgid "The launcher's settings file, ps5cemu.json, has a mistake in it, so every setting is back to its default. The file as it was is kept as {0}: mend it on a computer and put it back as ps5cemu.json, or leave it."
 msgstr "Il file delle impostazioni del launcher, ps5cemu.json, contiene un errore, quindi tutte le impostazioni sono tornate ai valori predefiniti. Il file com’era è conservato come {0}: correggilo su un computer e rimettilo come ps5cemu.json, oppure lascialo stare."
 
-#: port/frontend/shell/shell.cpp:230
+#: port/frontend/shell/shell.cpp:231
 msgid "PS5-ECAM closed after a crash"
 msgstr "PS5-ECAM si è chiuso dopo un crash"
 
 #. {0} is the crash report's first line in the log, as it is: "signal 11 at 0x7f3a..."
-#: port/frontend/shell/shell.cpp:232
+#: port/frontend/shell/shell.cpp:233
 msgid "The last time, PS5-ECAM stopped with a crash: {0}. Its log is kept: Settings > Diagnostics > Copy logs to USB puts it on a drive, with the sessions before it, to attach to a report on GitHub."
 msgstr "L’ultima volta PS5-ECAM si è fermato per un crash: {0}. Il suo log è conservato: Impostazioni > Diagnostica > Copia i log su USB lo copia su un’unità, con le sessioni precedenti, da allegare a una segnalazione su GitHub."
 
-#: port/frontend/shell/shell.cpp:746
+#: port/frontend/shell/shell.cpp:247
+msgid "Some files could not move"
+msgstr "Alcuni file non sono stati spostati"
+
+#. {0} names the systems whose files did not move into folders of their own: "Wii U, Nintendo 3DS"
+#: port/frontend/shell/shell.cpp:249
+msgid "{0}: their files stayed where they were, with nothing lost. The boot log says why: Settings > Diagnostics > Copy logs to USB."
+msgstr "{0}: i loro file sono rimasti dov’erano, senza perdere nulla. Il log di avvio spiega perché: Impostazioni > Diagnostica > Copia i log su USB."
+
+#: port/frontend/shell/shell.cpp:257
+msgid "The folders have moved"
+msgstr "Le cartelle sono state spostate"
+
+#: port/frontend/shell/shell.cpp:787
 msgid "Cemu did not start: {0}"
 msgstr "Cemu non si è avviato: {0}"
 
-#: port/frontend/shell/shell.cpp:875
+#: port/frontend/shell/shell.cpp:916
 msgid "{0} min played"
 msgid_plural "{0} min played"
 msgstr[0] "{0} min di gioco"
 msgstr[1] "{0} min di gioco"
 
-#: port/frontend/shell/shell.cpp:876
+#: port/frontend/shell/shell.cpp:917
 msgid "{0} h played"
 msgid_plural "{0} h played"
 msgstr[0] "{0} h di gioco"
 msgstr[1] "{0} h di gioco"
 
-#: port/frontend/shell/shell.cpp:891
+#: port/frontend/shell/shell.cpp:932
 msgid "today"
 msgstr "oggi"
 
-#: port/frontend/shell/shell.cpp:893
+#: port/frontend/shell/shell.cpp:934
 msgid "yesterday"
 msgstr "ieri"
 
-#: port/frontend/shell/shell.cpp:895
+#: port/frontend/shell/shell.cpp:936
 msgid "{0} day ago"
 msgid_plural "{0} days ago"
 msgstr[0] "{0} giorno fa"
 msgstr[1] "{0} giorni fa"
 
-#: port/frontend/shell/shell.cpp:897
+#: port/frontend/shell/shell.cpp:938
 msgid "{0} week ago"
 msgid_plural "{0} weeks ago"
 msgstr[0] "{0} settimana fa"
 msgstr[1] "{0} settimane fa"
 
-#: port/frontend/shell/shell.cpp:898
+#: port/frontend/shell/shell.cpp:939
 msgid "{0} month ago"
 msgid_plural "{0} months ago"
 msgstr[0] "{0} mese fa"
 msgstr[1] "{0} mesi fa"
 
-#: port/frontend/shell/shell.cpp:944
+#: port/frontend/shell/shell.cpp:985
 msgid "Cemu is still starting"
 msgstr "Cemu si sta ancora avviando"
 
-#: port/frontend/shell/shell.cpp:953
+#: port/frontend/shell/shell.cpp:994
 msgid "Eden needs your Switch's keys to read its games: prod.keys (and title.keys), dumped from your own Switch, in {0}/keys. The Setup check says what else is missing."
 msgstr "Eden ha bisogno delle chiavi della tua Switch per leggerne i giochi: prod.keys (e title.keys), estratte dalla tua Switch, in {0}/keys. Il controllo della configurazione dice cos'altro manca."
 
-#: port/frontend/shell/shell.cpp:989
+#: port/frontend/shell/shell.cpp:1030
 msgid "Starting melonDS"
 msgstr "Avvio di melonDS"
 
-#: port/frontend/shell/shell.cpp:990 port/frontend/shell/shell.cpp:2385
+#: port/frontend/shell/shell.cpp:1031 port/frontend/shell/shell.cpp:2511
 msgid "Starting Azahar"
 msgstr "Avvio di Azahar"
 
-#: port/frontend/shell/shell.cpp:991
+#: port/frontend/shell/shell.cpp:1032
 msgid "Starting Eden"
 msgstr "Avvio di Eden"
 
-#: port/frontend/shell/shell.cpp:1078
+#: port/frontend/shell/shell.cpp:1119
 msgid "Making {0}'s home screen tile…"
 msgstr "Creazione del riquadro di {0} per la schermata Home…"
 
-#: port/frontend/shell/shell.cpp:1085
+#: port/frontend/shell/shell.cpp:1126
 msgid "Removing {0}'s home screen tile…"
 msgstr "Rimozione del riquadro di {0} dalla schermata Home…"
 
-#: port/frontend/shell/shell.cpp:1097
+#: port/frontend/shell/shell.cpp:1138
 msgid "The tile could not be removed"
 msgstr "Impossibile rimuovere il riquadro"
 
-#: port/frontend/shell/shell.cpp:1097
+#: port/frontend/shell/shell.cpp:1138
 msgid "The tile could not be made"
 msgstr "Impossibile creare il riquadro"
 
-#: port/frontend/shell/shell.cpp:1103
+#: port/frontend/shell/shell.cpp:1144
 msgid "The tile is removed"
 msgstr "Il riquadro è stato rimosso"
 
-#: port/frontend/shell/shell.cpp:1104
+#: port/frontend/shell/shell.cpp:1145
 msgid "Its folder is gone from /data/homebrew. If its picture stays on the home screen, delete it there (Options, then Delete), or restart ShadowMount Plus."
 msgstr "La sua cartella non è più in /data/homebrew. Se la sua immagine resta nella schermata Home, eliminala da lì (OPTIONS, poi Elimina) o riavvia ShadowMount Plus."
 
 #. {0} is the tile's folder, /data/homebrew/PPSA99xxx
-#: port/frontend/shell/shell.cpp:1109
+#: port/frontend/shell/shell.cpp:1150
 msgid "The tile is made again"
 msgstr "Il riquadro è stato ricreato"
 
 #. {0} is the tile's folder, /data/homebrew/PPSA99xxx
-#: port/frontend/shell/shell.cpp:1109
+#: port/frontend/shell/shell.cpp:1150
 msgid "The tile is made"
 msgstr "Il riquadro è stato creato"
 
-#: port/frontend/shell/shell.cpp:1110
+#: port/frontend/shell/shell.cpp:1151
 msgid "It is in {0}. ShadowMount Plus puts it on the PS5's home screen as it does any homebrew: if it does not show, restart ShadowMount Plus or the console. The tile starts the game in PS5-ECAM, and closing the game closes the app."
 msgstr "Si trova in {0}. ShadowMount Plus lo mette nella schermata Home della PS5 come qualsiasi homebrew: se non compare, riavvia ShadowMount Plus o la console. Il riquadro avvia il gioco in PS5-ECAM, e chiudendo il gioco si chiude l’app."
 
-#: port/frontend/shell/shell.cpp:1123
+#: port/frontend/shell/shell.cpp:1164
 msgid "The tile's game could not start"
 msgstr "Impossibile avviare il gioco del riquadro"
 
-#: port/frontend/shell/shell.cpp:1151
+#: port/frontend/shell/shell.cpp:1192
 msgid "It is not in the library: {0}"
 msgstr "Non è nella libreria: {0}"
 
 #. the launcher's tabs
-#: port/frontend/shell/shell.cpp:1328
+#: port/frontend/shell/shell.cpp:1369
 msgctxt "tab"
 msgid "Settings"
 msgstr "Impostazioni"
 
-#: port/frontend/shell/shell.cpp:1381 port/frontend/shell/shell.cpp:1429 port/frontend/shell/shell.cpp:2278
+#: port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:1482 port/frontend/shell/shell.cpp:2365
 msgid "Done"
 msgstr "Fatto"
 
-#: port/frontend/shell/shell.cpp:1383 port/frontend/shell/shell.cpp:1445 port/frontend/shell/shell.cpp:1449 port/frontend/shell/shell.cpp:2368 port/frontend/shell/shell.cpp:2399
+#: port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1498 port/frontend/shell/shell.cpp:1502 port/frontend/shell/shell.cpp:2455 port/frontend/shell/shell.cpp:2525
 msgid "Cancel"
 msgstr "Annulla"
 
-#: port/frontend/shell/shell.cpp:1385 port/frontend/shell/shell.cpp:1387 port/frontend/shell/shell.cpp:1435
+#: port/frontend/shell/shell.cpp:1438 port/frontend/shell/shell.cpp:1440 port/frontend/shell/shell.cpp:1488
 msgid "Close"
 msgstr "Chiudi"
 
-#: port/frontend/shell/shell.cpp:1389 port/frontend/shell/shell.cpp:1420
+#: port/frontend/shell/shell.cpp:1442 port/frontend/shell/shell.cpp:1473
 msgid "Move"
 msgstr "Sposta"
 
-#: port/frontend/shell/shell.cpp:1389
+#: port/frontend/shell/shell.cpp:1442
 msgid "Switch"
 msgstr "Cambia"
 
-#: port/frontend/shell/shell.cpp:1394
+#: port/frontend/shell/shell.cpp:1447
 msgid "Continue"
 msgstr "Continua"
 
-#: port/frontend/shell/shell.cpp:1396 port/frontend/shell/shell.cpp:1431 port/frontend/shell/shell.cpp:1432 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1442
+#: port/frontend/shell/shell.cpp:1449 port/frontend/shell/shell.cpp:1484 port/frontend/shell/shell.cpp:1485 port/frontend/shell/shell.cpp:1489 port/frontend/shell/shell.cpp:1495
 msgid "More about it"
 msgstr "Ulteriori info"
 
-#: port/frontend/shell/shell.cpp:1397 port/frontend/shell/welcome.cpp:104
+#: port/frontend/shell/shell.cpp:1450 port/frontend/shell/welcome.cpp:104
 msgid "Continue to the Setup check"
 msgstr "Continua al controllo della configurazione"
 
-#: port/frontend/shell/shell.cpp:1397 port/frontend/shell/shell.cpp:1406 port/frontend/shell/welcome.cpp:104
+#: port/frontend/shell/shell.cpp:1450 port/frontend/shell/shell.cpp:1459 port/frontend/shell/welcome.cpp:104
 msgid "Continue to the Library"
 msgstr "Continua alla libreria"
 
-#: port/frontend/shell/shell.cpp:1402
+#: port/frontend/shell/shell.cpp:1455
 msgid "Change the language"
 msgstr "Cambia lingua"
 
-#: port/frontend/shell/shell.cpp:1405
+#: port/frontend/shell/shell.cpp:1458
 msgid "Check again"
 msgstr "Ricontrolla"
 
-#: port/frontend/shell/shell.cpp:1416
+#: port/frontend/shell/shell.cpp:1469
 msgid "Filters"
 msgstr "Filtri"
 
-#: port/frontend/shell/shell.cpp:1420 port/frontend/shell/shell.cpp:1421 port/frontend/shell/shell.cpp:1423
+#: port/frontend/shell/shell.cpp:1473 port/frontend/shell/shell.cpp:1474 port/frontend/shell/shell.cpp:1476
 msgid "Options"
 msgstr "Opzioni"
 
-#: port/frontend/shell/shell.cpp:1421
+#: port/frontend/shell/shell.cpp:1474
 msgid "Jump by letter"
 msgstr "Salta per lettera"
 
-#: port/frontend/shell/shell.cpp:1423
+#: port/frontend/shell/shell.cpp:1476
 msgid "Back to the buttons"
 msgstr "Torna ai tasti"
 
-#: port/frontend/shell/shell.cpp:1424
+#: port/frontend/shell/shell.cpp:1477
 msgid "Scroll"
 msgstr "Scorri"
 
-#: port/frontend/shell/shell.cpp:1429 port/frontend/shell/shell.cpp:1435
+#: port/frontend/shell/shell.cpp:1482 port/frontend/shell/shell.cpp:1488
 msgid "Pages"
 msgstr "Pagine"
 
-#: port/frontend/shell/shell.cpp:1432 port/frontend/shell/widgets.cpp:349
+#: port/frontend/shell/shell.cpp:1485 port/frontend/shell/widgets.cpp:349
 msgid "Default"
 msgstr "Predefinito"
 
-#: port/frontend/shell/shell.cpp:1439
+#: port/frontend/shell/shell.cpp:1492
 msgid "Back to the packs"
 msgstr "Torna ai pacchetti"
 
-#: port/frontend/shell/shell.cpp:1440
+#: port/frontend/shell/shell.cpp:1493
 msgid "On / off"
 msgstr "Attiva / disattiva"
 
-#: port/frontend/shell/shell.cpp:1446
+#: port/frontend/shell/shell.cpp:1499
 msgid "Assign"
 msgstr "Assegna"
 
-#: port/frontend/shell/shell.cpp:1446
+#: port/frontend/shell/shell.cpp:1499
 msgid "Clear"
 msgstr "Cancella"
 
-#: port/frontend/shell/shell.cpp:1450
+#: port/frontend/shell/shell.cpp:1503
 msgid "Use this folder"
 msgstr "Usa questa cartella"
 
-#: port/frontend/shell/shell.cpp:1453
+#: port/frontend/shell/shell.cpp:1506
 msgid "Number"
 msgstr "Numero"
 
-#: port/frontend/shell/shell.cpp:1453
+#: port/frontend/shell/shell.cpp:1506
 msgid "Keep"
 msgstr "Conferma"
 
-#: port/frontend/shell/shell.cpp:1454
+#: port/frontend/shell/shell.cpp:1507
 msgid "Edit"
 msgstr "Modifica"
 
-#: port/frontend/shell/shell.cpp:1454
+#: port/frontend/shell/shell.cpp:1507
 msgid "Connect"
 msgstr "Connetti"
 
-#: port/frontend/shell/shell.cpp:1454
+#: port/frontend/shell/shell.cpp:1507
 msgid "Hold to set up"
 msgstr "Tieni premuto per configurare"
 
-#: port/frontend/shell/shell.cpp:1732
+#: port/frontend/shell/shell.cpp:1785
 msgid "Resume where you left off"
 msgstr "Riprendi da dove eri rimasto"
 
-#: port/frontend/shell/shell.cpp:1735
+#: port/frontend/shell/shell.cpp:1788
 msgid "Game hub"
 msgstr "Scheda del gioco"
 
-#: port/frontend/shell/shell.cpp:1738
+#: port/frontend/shell/shell.cpp:1791
 msgid "Game settings: custom"
 msgstr "Impostazioni del gioco: personalizzate"
 
-#: port/frontend/shell/shell.cpp:1744
+#: port/frontend/shell/shell.cpp:1797
 msgid "Add mods from USB"
 msgstr "Aggiungi mod da USB"
 
-#: port/frontend/shell/shell.cpp:1747
+#: port/frontend/shell/shell.cpp:1800
 msgid "Not a favourite"
 msgstr "Togli dai preferiti"
 
-#: port/frontend/shell/shell.cpp:1749
+#: port/frontend/shell/shell.cpp:1802
 msgid "Remove from home screen"
 msgstr "Rimuovi dalla schermata Home"
 
-#: port/frontend/shell/shell.cpp:1751
+#: port/frontend/shell/shell.cpp:1804
 msgid "Add to home screen"
 msgstr "Aggiungi alla schermata Home"
 
-#: port/frontend/shell/shell.cpp:2095
+#: port/frontend/shell/shell.cpp:2182
 msgid "Added to Favourites"
 msgstr "Aggiunto ai preferiti"
 
-#: port/frontend/shell/shell.cpp:2095
+#: port/frontend/shell/shell.cpp:2182
 msgid "Taken out of Favourites"
 msgstr "Tolto dai preferiti"
 
-#: port/frontend/shell/shell.cpp:2300
+#: port/frontend/shell/shell.cpp:2387
 msgid "PS5-ECAM {0} is out"
 msgstr "È uscito PS5-ECAM {0}"
 
-#: port/frontend/shell/shell.cpp:2301
+#: port/frontend/shell/shell.cpp:2388
 msgid "This is {0}. Download and install it now? Your games, saves and settings stay as they are."
 msgstr "Questa è la {0}. Scaricarla e installarla ora? I tuoi giochi, salvataggi e impostazioni restano come sono."
 
-#: port/frontend/shell/shell.cpp:2302
+#: port/frontend/shell/shell.cpp:2389
 msgid "Update now"
 msgstr "Aggiorna ora"
 
-#: port/frontend/shell/shell.cpp:2302 port/frontend/shell/shell.cpp:2326 port/frontend/shell/shell.cpp:2365
+#: port/frontend/shell/shell.cpp:2389 port/frontend/shell/shell.cpp:2413 port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2475 port/frontend/shell/shell.cpp:2492
 msgid "Later"
 msgstr "Più tardi"
 
-#: port/frontend/shell/shell.cpp:2302
+#: port/frontend/shell/shell.cpp:2389
 msgid "Skip this version"
 msgstr "Salta questa versione"
 
-#: port/frontend/shell/shell.cpp:2305 port/frontend/shell/shell.cpp:2310 port/frontend/shell/shell.cpp:2315
+#: port/frontend/shell/shell.cpp:2392 port/frontend/shell/shell.cpp:2397 port/frontend/shell/shell.cpp:2402
 msgid "Updating to {0}"
 msgstr "Aggiornamento a {0}"
 
-#: port/frontend/shell/shell.cpp:2306
+#: port/frontend/shell/shell.cpp:2393
 msgid "Downloading: {0} of {1} MB"
 msgstr "Download: {0} di {1} MB"
 
-#: port/frontend/shell/shell.cpp:2311
+#: port/frontend/shell/shell.cpp:2398
 msgid "Checking the download"
 msgstr "Verifica del download"
 
-#: port/frontend/shell/shell.cpp:2316
+#: port/frontend/shell/shell.cpp:2403
 msgid "Installing"
 msgstr "Installazione"
 
-#: port/frontend/shell/shell.cpp:2320
+#: port/frontend/shell/shell.cpp:2407
 msgid "{0} is installed"
 msgstr "{0} è installata"
 
-#: port/frontend/shell/shell.cpp:2322
+#: port/frontend/shell/shell.cpp:2409 port/frontend/shell/shell.cpp:2466
 msgid "Starting PS5-ECAM again…"
 msgstr "Riavvio di PS5-ECAM…"
 
-#: port/frontend/shell/shell.cpp:2326 port/frontend/shell/shell.cpp:2331
+#: port/frontend/shell/shell.cpp:2413 port/frontend/shell/shell.cpp:2418
 msgid "Restart now"
 msgstr "Riavvia ora"
 
-#: port/frontend/shell/shell.cpp:2330
+#: port/frontend/shell/shell.cpp:2417
 msgid "PS5-ECAM starts again to finish the update."
 msgstr "PS5-ECAM si riavvia per completare l’aggiornamento."
 
-#: port/frontend/shell/shell.cpp:2335
+#: port/frontend/shell/shell.cpp:2422
 msgid "The update did not finish"
 msgstr "L’aggiornamento non è terminato"
 
-#: port/frontend/shell/shell.cpp:2336
+#: port/frontend/shell/shell.cpp:2423
 msgid "PS5-ECAM is still {0}."
 msgstr "PS5-ECAM è ancora alla {0}."
 
-#: port/frontend/shell/shell.cpp:2339
+#: port/frontend/shell/shell.cpp:2426
 msgid "Checking for updates"
 msgstr "Ricerca di aggiornamenti"
 
-#: port/frontend/shell/shell.cpp:2345
+#: port/frontend/shell/shell.cpp:2432
 msgid "PS5-ECAM update"
 msgstr "Aggiornamento di PS5-ECAM"
 
-#: port/frontend/shell/shell.cpp:2365
+#: port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2492
 msgid "Select"
 msgstr "Seleziona"
 
-#: port/frontend/shell/shell.cpp:2366
+#: port/frontend/shell/shell.cpp:2453
 msgid "Restart"
 msgstr "Riavvia"
 
+#. {0} lists the four folders: /data/cemu, /data/azahar, /data/melonds, /data/eden
+#: port/frontend/shell/shell.cpp:2469
+msgid "Your Wii U, 3DS, DS and Switch files go into folders of their own: {0}. They are moved on the same drive, never copied, so it takes a moment whatever their size. PS5-ECAM starts again to do it."
+msgstr "I tuoi file di Wii U, 3DS, DS e Switch vanno in cartelle proprie: {0}. Vengono spostati sulla stessa unità, mai copiati, quindi basta un attimo qualunque sia la loro dimensione. PS5-ECAM si riavvia per farlo."
+
+#: port/frontend/shell/shell.cpp:2475
+msgid "Reorganize"
+msgstr "Riorganizza"
+
 #. under an archived game's name while it is unpacked, the first time it starts
-#: port/frontend/shell/shell.cpp:2388
+#: port/frontend/shell/shell.cpp:2514
 msgid "Unpacking the game from its archive. This is done once: the copy is kept for the next start."
 msgstr "Estrazione del gioco dal suo archivio. Avviene una sola volta: la copia viene tenuta per il prossimo avvio."
 
@@ -7400,49 +7460,49 @@ msgstr "L’aggiornamento più grande di sempre, a colpo d’occhio. Le note di 
 msgid "This game"
 msgstr "Questo gioco"
 
-#: port/main_ps5.cpp:151
+#: port/main_ps5.cpp:152
 msgid "Firmware {0}"
 msgstr "Firmware {0}"
 
-#: port/main_ps5.cpp:153
+#: port/main_ps5.cpp:154
 msgid "Logs: {0}, {1}/log.txt"
 msgstr "Log: {0}, {1}/log.txt"
 
-#: port/main_ps5.cpp:154
+#: port/main_ps5.cpp:155
 msgid "Boot log not written (/data is unreachable)"
 msgstr "Log di avvio non scritto (/data non è raggiungibile)"
 
-#: port/main_ps5.cpp:536
+#: port/main_ps5.cpp:564
 msgid "PS5-ECAM cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5-ECAM."
 msgstr "PS5-ECAM non raggiunge /data. Carica un HEN con PPSA99360 nel suo elenco di jailbreak delle app, o elfldr, poi riavvia PS5-ECAM."
 
-#: port/main_ps5.cpp:618
+#: port/main_ps5.cpp:646
 msgid "This session: Azahar (3DS); Cemu's emulated Wii U is not started"
 msgstr "Questa sessione: Azahar (3DS); la Wii U emulata di Cemu non è avviata"
 
-#: port/main_ps5.cpp:628
+#: port/main_ps5.cpp:656
 msgid "This session: Eden (Switch), in a program of its own; Cemu's emulated Wii U is not started"
 msgstr "Questa sessione: Eden (Switch), in un programma proprio; la Wii U emulata di Cemu non è avviata"
 
-#: port/main_ps5.cpp:638
+#: port/main_ps5.cpp:666
 msgid "This session: melonDS (DS); Cemu's emulated Wii U is not started"
 msgstr "Questa sessione: melonDS (DS); la Wii U emulata di Cemu non è avviata"
 
-#: port/main_ps5.cpp:645
+#: port/main_ps5.cpp:673
 msgid "This session: Cemu (Wii U); Azahar's core is not started"
 msgstr "Questa sessione: Cemu (Wii U); il core di Azahar non è avviato"
 
-#: port/main_ps5.cpp:655
+#: port/main_ps5.cpp:683
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "Niente memoria JIT: i giochi Wii U girano sull’interprete, molto più lento. PPSA99360 è nell’elenco di jailbreak delle app del tuo HEN?"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/main_ps5.cpp:697
+#: port/main_ps5.cpp:725
 msgid "The launcher could not start. The boot log in {0}/logs says why."
 msgstr "Il launcher non si è potuto avviare. Il log di avvio in {0}/logs spiega perché."
 
 #. {0} is why; {1} the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the app's drive
-#: port/main_ps5.cpp:699
+#: port/main_ps5.cpp:727
 msgid "The launcher could not start: {0}. The boot log in {1}/logs has more."
 msgstr "Il launcher non si è avviato: {0}. Il log di avvio in {1}/logs ha più dettagli."
 

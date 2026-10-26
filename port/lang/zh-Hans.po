@@ -7,7 +7,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: port/app/accounts.cpp:68 port/frontend/shell/settings.cpp:2065
+#: port/app/accounts.cpp:68 port/frontend/shell/settings.cpp:2095
 msgid "The Wii U has twelve accounts at most."
 msgstr "Wii U最多只能有12个账户。"
 
@@ -95,59 +95,59 @@ msgctxt "status"
 msgid "Won't start"
 msgstr "无法启动"
 
-#: port/app/emulator.cpp:365
+#: port/app/emulator.cpp:370
 msgid "the PS5 Vulkan driver did not start"
 msgstr "PS5 Vulkan驱动未能启动"
 
-#: port/app/emulator.cpp:524
+#: port/app/emulator.cpp:529 port/frontend/shell/settings.cpp:2350 port/frontend/shell/shell.cpp:1884
 msgid "PS5-ECAM cannot write to {0}. Is the HEN loaded?"
 msgstr "PS5-ECAM无法写入{0}。HEN是否已加载？"
 
-#: port/app/emulator.cpp:546
+#: port/app/emulator.cpp:555
 msgid "PS5-ECAM cannot create the MLC folder {0}"
 msgstr "PS5-ECAM无法创建MLC文件夹{0}"
 
 #. why a Wii U game did not start
-#: port/app/emulator.cpp:756
+#: port/app/emulator.cpp:766
 msgid "The game's base files were not found."
 msgstr "未找到游戏的本体文件。"
 
-#: port/app/emulator.cpp:762
+#: port/app/emulator.cpp:772
 msgid "The game could not be mounted. Check that its files are still in the game files folder."
 msgstr "无法挂载游戏。检查其文件是否仍在游戏所在的文件夹中。"
 
-#: port/app/emulator.cpp:767 port/azahar/core.cpp:627
+#: port/app/emulator.cpp:777 port/azahar/core.cpp:627
 #, menu
 msgid "The game could not be started."
 msgstr "无法启动游戏。"
 
-#: port/app/emulator.cpp:776
+#: port/app/emulator.cpp:786
 msgid "This is not a Wii U game PS5-ECAM can start."
 msgstr "这不是PS5-ECAM可以启动的Wii U游戏。"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/app/emulator.cpp:779
+#: port/app/emulator.cpp:789
 msgid "Its disc key is missing from {0}/keys.txt."
 msgstr "{0}/keys.txt中缺少其光盘密钥。"
 
-#: port/app/emulator.cpp:781
+#: port/app/emulator.cpp:791
 msgid "Its title.tik is missing."
 msgstr "缺少其title.tik。"
 
-#: port/app/emulator.cpp:786
+#: port/app/emulator.cpp:796
 msgid "The executable could not be started."
 msgstr "无法启动可执行文件。"
 
-#: port/app/emulator.cpp:799 port/melonds/core.cpp:944
+#: port/app/emulator.cpp:809 port/melonds/core.cpp:944
 msgid "The Vulkan renderer did not start: {0}"
 msgstr "Vulkan渲染器未能启动：{0}"
 
 #. the PS5's notification as a Wii U game starts
-#: port/app/emulator.cpp:857
+#: port/app/emulator.cpp:867
 msgid "Touchpad click + Options: the in-game menu (screens, picture, volume, controls, the library)"
 msgstr "按下触摸板键+选项键：游戏内菜单（屏幕、画面、音量、操作、游戏库）"
 
-#: port/app/emulator.cpp:1085
+#: port/app/emulator.cpp:1095
 msgid "PS5-ECAM could not start itself again to show the library: start it again from the home screen."
 msgstr "PS5-ECAM无法重新启动以显示游戏库：请从主页重新启动它。"
 
@@ -667,32 +667,32 @@ msgid "Wrestling"
 msgstr "摔角"
 
 #. the Wii U's controllers, by the names Nintendo gave them in the language
-#: port/app/ingame.cpp:138 port/frontend/actions.cpp:369
+#: port/app/ingame.cpp:138 port/frontend/actions.cpp:368
 #, menu
 msgid "Wii U GamePad"
 msgstr "Wii U GamePad"
 
-#: port/app/ingame.cpp:139 port/frontend/actions.cpp:370
+#: port/app/ingame.cpp:139 port/frontend/actions.cpp:369
 #, menu
 msgid "Wii U Pro Controller"
 msgstr "Wii U Pro手柄"
 
-#: port/app/ingame.cpp:140 port/frontend/actions.cpp:371
+#: port/app/ingame.cpp:140 port/frontend/actions.cpp:370
 #, menu
 msgid "Classic Controller"
 msgstr "经典手柄"
 
-#: port/app/ingame.cpp:141 port/frontend/actions.cpp:372
+#: port/app/ingame.cpp:141 port/frontend/actions.cpp:371
 #, menu
 msgid "Wii Remote"
 msgstr "Wii遥控器"
 
-#: port/app/ingame.cpp:142 port/frontend/actions.cpp:373
+#: port/app/ingame.cpp:142 port/frontend/actions.cpp:372
 #, menu
 msgid "Wii Remote + Nunchuk"
 msgstr "Wii遥控器+双节棍"
 
-#: port/app/ingame.cpp:145 port/frontend/actions.cpp:376
+#: port/app/ingame.cpp:145 port/frontend/actions.cpp:375
 #, menu
 msgid "No controller"
 msgstr "无手柄"
@@ -949,7 +949,7 @@ msgstr "正在读取图形包…"
 msgid "The community graphic packs have none for this game."
 msgstr "社区图形包中没有适用于此游戏的图形包。"
 
-#: port/app/ingame.cpp:243 port/app/ingame.cpp:345 port/frontend/shell/hub.cpp:231 port/frontend/shell/pages.cpp:305 port/frontend/shell/shell.cpp:1743
+#: port/app/ingame.cpp:243 port/app/ingame.cpp:345 port/frontend/shell/hub.cpp:231 port/frontend/shell/pages.cpp:305 port/frontend/shell/shell.cpp:1796
 #, menu
 msgid "Graphic packs"
 msgstr "图形包"
@@ -1269,12 +1269,12 @@ msgstr "未能读取（错误{0}）"
 msgid "Running"
 msgstr "运行中"
 
-#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1383 port/frontend/shell/shell.cpp:1387 port/frontend/shell/shell.cpp:1414 port/frontend/shell/shell.cpp:1423 port/frontend/shell/shell.cpp:1431 port/frontend/shell/shell.cpp:1439 port/frontend/shell/shell.cpp:1442 port/frontend/shell/shell.cpp:2365
+#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1440 port/frontend/shell/shell.cpp:1467 port/frontend/shell/shell.cpp:1476 port/frontend/shell/shell.cpp:1484 port/frontend/shell/shell.cpp:1492 port/frontend/shell/shell.cpp:1495 port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2492
 #, menu
 msgid "Choose"
 msgstr "选择"
 
-#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1396 port/frontend/shell/shell.cpp:1432 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1439 port/frontend/shell/shell.cpp:1442 port/frontend/shell/shell.cpp:1453
+#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1449 port/frontend/shell/shell.cpp:1485 port/frontend/shell/shell.cpp:1489 port/frontend/shell/shell.cpp:1492 port/frontend/shell/shell.cpp:1495 port/frontend/shell/shell.cpp:1506
 #, menu
 msgid "Change"
 msgstr "更改"
@@ -1284,7 +1284,7 @@ msgstr "更改"
 msgid "Back to the game"
 msgstr "返回游戏"
 
-#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/installs.cpp:328 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1397 port/frontend/shell/shell.cpp:1406 port/frontend/shell/shell.cpp:1424 port/frontend/shell/shell.cpp:1431 port/frontend/shell/shell.cpp:1432 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1440 port/frontend/shell/shell.cpp:1442 port/frontend/shell/shell.cpp:1446 port/frontend/shell/shell.cpp:1450 port/frontend/shell/shell.cpp:1454
+#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/installs.cpp:330 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1450 port/frontend/shell/shell.cpp:1459 port/frontend/shell/shell.cpp:1477 port/frontend/shell/shell.cpp:1484 port/frontend/shell/shell.cpp:1485 port/frontend/shell/shell.cpp:1489 port/frontend/shell/shell.cpp:1493 port/frontend/shell/shell.cpp:1495 port/frontend/shell/shell.cpp:1499 port/frontend/shell/shell.cpp:1503 port/frontend/shell/shell.cpp:1507
 #, menu
 msgid "Back"
 msgstr "返回"
@@ -1587,7 +1587,7 @@ msgstr "已开启{0}/{1}个"
 msgid "Achievements"
 msgstr "成就"
 
-#: port/app/ingame3ds.cpp:569 port/frontend/shell/installs.cpp:375 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:841 port/frontend/shell/pages.cpp:1224 port/frontend/shell/shell.cpp:2395
+#: port/app/ingame3ds.cpp:569 port/frontend/shell/installs.cpp:377 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:841 port/frontend/shell/pages.cpp:1224 port/frontend/shell/shell.cpp:2521
 #, menu
 msgid "{0} of {1}"
 msgstr "{0}/{1}"
@@ -1664,7 +1664,7 @@ msgstr "翻盖"
 msgid "Closed"
 msgstr "合上"
 
-#: port/app/ingame3ds.cpp:600 port/frontend/shell/shell.cpp:1389 port/frontend/shell/shell.cpp:1418 port/frontend/shell/shell.cpp:1429 port/frontend/shell/shell.cpp:1435 port/frontend/shell/shell.cpp:1450
+#: port/app/ingame3ds.cpp:600 port/frontend/shell/shell.cpp:1442 port/frontend/shell/shell.cpp:1471 port/frontend/shell/shell.cpp:1482 port/frontend/shell/shell.cpp:1488 port/frontend/shell/shell.cpp:1503
 #, menu
 msgid "Open"
 msgstr "打开"
@@ -1881,7 +1881,7 @@ msgstr "已安装在此处。"
 msgid "An install is already running."
 msgstr "已有安装正在进行。"
 
-#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2337 port/frontend/shell/shell.cpp:2366
+#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2424 port/frontend/shell/shell.cpp:2453 port/frontend/shell/shell.cpp:2475 port/frontend/shell/shell.cpp:2494
 #, menu
 msgid "OK"
 msgstr "确定"
@@ -1897,37 +1897,37 @@ msgstr "游戏要求输入"
 msgid "Some text"
 msgstr "文字"
 
-#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2255
+#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2342
 #, menu
 msgid "L1 R1: {0}"
 msgstr "L1 R1：{0}"
 
 #. the in-game keyboard's keys
-#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2278
+#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2365
 #, menu
 msgid "Shift: on"
 msgstr "Shift：开"
 
 #. the in-game keyboard's keys
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1381 port/frontend/shell/shell.cpp:2278
+#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2365
 #, menu
 msgid "Shift"
 msgstr "Shift"
 
-#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2278
+#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2365
 #, menu
 msgid "Space"
 msgstr "空格"
 
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1381 port/frontend/shell/shell.cpp:2278
+#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2365
 #, menu
 msgid "Delete"
 msgstr "删除"
 
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:173 port/frontend/shell/shares.cpp:300 port/frontend/shell/shell.cpp:1381
+#: port/app/keyboard_menu.h:173 port/frontend/shell/shares.cpp:300 port/frontend/shell/shell.cpp:1434
 #, menu
 msgid "Type"
 msgstr "输入"
@@ -2253,7 +2253,7 @@ msgstr "GitHub未返回发布版本"
 msgid "The download did not finish"
 msgstr "下载未完成"
 
-#: port/app/pack_updates.cpp:283 port/frontend/shell/installs.cpp:195 port/frontend/shell/pages.cpp:1176
+#: port/app/pack_updates.cpp:283 port/frontend/shell/installs.cpp:197 port/frontend/shell/pages.cpp:1176
 msgid "It could not be installed: {0}"
 msgstr "无法安装：{0}"
 
@@ -2261,7 +2261,7 @@ msgstr "无法安装：{0}"
 msgid "The new packs could not take the old ones' place"
 msgstr "新图形包无法替换旧图形包"
 
-#: port/app/remote_menu.h:29 port/frontend/shell/settings.cpp:219 port/frontend/shell/settings.cpp:791 port/frontend/shell/settings.cpp:2559
+#: port/app/remote_menu.h:29 port/frontend/shell/settings.cpp:219 port/frontend/shell/settings.cpp:791 port/frontend/shell/settings.cpp:2615
 #, menu
 msgid "Remote touch screen"
 msgstr "远程触摸屏"
@@ -2277,28 +2277,28 @@ msgstr "在手机或平板电脑的浏览器中显示{0}，支持触控：扫描
 msgid "A phone or tablet on the PS5's network. Sound stays on the PS5."
 msgstr "与PS5处于同一网络的手机或平板电脑。声音仍从PS5输出。"
 
-#: port/app/remote_menu.h:108 port/frontend/shell/settings.cpp:2567
+#: port/app/remote_menu.h:108 port/frontend/shell/settings.cpp:2623
 #, menu
 msgid "Turn it off and on again once that is fixed."
 msgstr "问题解决后，将其关闭再重新开启。"
 
-#: port/app/saves.cpp:279 port/app/saves.cpp:486
+#: port/app/saves.cpp:281 port/app/saves.cpp:488
 msgid "A save could not be moved aside: {0}"
 msgstr "无法移走存档：{0}"
 
-#: port/app/saves.cpp:286
+#: port/app/saves.cpp:288
 msgid "A file could not be copied: {0}"
 msgstr "无法复制文件：{0}"
 
-#: port/app/saves.cpp:310
+#: port/app/saves.cpp:312
 msgid "A backup is already running."
 msgstr "已有备份正在进行。"
 
-#: port/app/saves.cpp:342 port/app/saves.cpp:606
+#: port/app/saves.cpp:344 port/app/saves.cpp:608
 msgid "No USB drive found: plug one in, formatted exFAT or FAT32."
 msgstr "未找到USB存储设备：插入一个格式为exFAT或FAT32的存储设备。"
 
-#: port/app/saves.cpp:547 port/app/saves.cpp:615
+#: port/app/saves.cpp:549 port/app/saves.cpp:617
 msgid "That backup is not there any more."
 msgstr "该备份已不存在。"
 
@@ -2655,7 +2655,7 @@ msgstr "这不是Azahar可以启动的3DS游戏。"
 msgid "The game could not be loaded."
 msgstr "无法加载游戏。"
 
-#: port/azahar/core.cpp:615 port/frontend/shell/shell.cpp:967
+#: port/azahar/core.cpp:615 port/frontend/shell/shell.cpp:1008
 #, menu
 msgid "The game is encrypted, and Azahar plays only decrypted games, with keys or without: decrypt it on your 3DS first (GodMode9)."
 msgstr "游戏已加密，无论有无密钥，Azahar都只能游玩已解密的游戏：先在3DS上将其解密（GodMode9）。"
@@ -2917,7 +2917,7 @@ msgstr "摇杆移动多少后游戏才会察觉。如果角色或镜头自己漂
 msgid "Left and Right choose an amiibo dump; Cross touches it to the controller when the game asks for one, and again takes it away."
 msgstr "按左右方向键选择amiibo转储文件；游戏要求时，按交叉键将其轻触手柄，再按一次则移开。"
 
-#: port/eden/ingame.cpp:627 port/frontend/shell/settings.cpp:1128
+#: port/eden/ingame.cpp:627 port/frontend/shell/settings.cpp:1150
 #, menu
 msgid "Room"
 msgstr "房间"
@@ -2954,7 +2954,7 @@ msgid "{0} player"
 msgid_plural "{0} players"
 msgstr[0] "{0}名玩家"
 
-#: port/eden/launch.cpp:112 port/main_ps5.cpp:630
+#: port/eden/launch.cpp:112 port/main_ps5.cpp:658
 msgid "This build has no Switch emulator: eden/eboot.bin is not in the app's folder."
 msgstr "此版本没有Switch模拟器：应用文件夹中没有eden/eboot.bin。"
 
@@ -3008,290 +3008,290 @@ msgid "{0} KB"
 msgstr "{0} KB"
 
 #. {1} is the USB drive's number
-#: port/frontend/actions.cpp:172
+#: port/frontend/actions.cpp:171
 msgid "{0} file to USB drive {1}"
 msgid_plural "{0} files to USB drive {1}"
 msgstr[0] "{0}个文件到USB存储设备{1}"
 
-#: port/frontend/actions.cpp:175
+#: port/frontend/actions.cpp:174
 msgid "No USB drive found"
 msgstr "未找到USB存储设备"
 
-#: port/frontend/actions.cpp:202
+#: port/frontend/actions.cpp:201
 msgid "{0} file deleted ({1} MB)"
 msgid_plural "{0} files deleted ({1} MB)"
 msgstr[0] "已删除{0}个文件（{1} MB）"
 
 #. what clearing the unpacked games did; {1} is the room it made, as in 2.4 GB
-#: port/frontend/actions.cpp:202 port/frontend/shell/settings.cpp:1316 port/frontend/shell/settings.cpp:2300
+#: port/frontend/actions.cpp:201 port/frontend/shell/settings.cpp:1346 port/frontend/shell/settings.cpp:2330
 msgid "None to delete"
 msgstr "没有可删除的文件"
 
-#: port/frontend/actions.cpp:209
+#: port/frontend/actions.cpp:208
 msgid "USB drive {0}"
 msgstr "USB存储设备{0}"
 
-#: port/frontend/actions.cpp:211
+#: port/frontend/actions.cpp:210
 msgid "Extended storage {0}"
 msgstr "扩展存储{0}"
 
 #. what an install is
-#: port/frontend/actions.cpp:384 port/frontend/actions.cpp:463
+#: port/frontend/actions.cpp:383 port/frontend/actions.cpp:462
 msgid "Game"
 msgstr "游戏"
 
-#: port/frontend/actions.cpp:385 port/frontend/actions.cpp:464
+#: port/frontend/actions.cpp:384 port/frontend/actions.cpp:463
 msgid "Update"
 msgstr "更新"
 
 #. an update found to install ({0}: its version, as 208)
-#: port/frontend/actions.cpp:386 port/frontend/actions.cpp:465 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:866
+#: port/frontend/actions.cpp:385 port/frontend/actions.cpp:464 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:907
 msgid "DLC"
 msgstr "DLC"
 
-#: port/frontend/actions.cpp:387 port/frontend/actions.cpp:467
+#: port/frontend/actions.cpp:386 port/frontend/actions.cpp:466
 msgid "System title"
 msgstr "系统软件"
 
-#: port/frontend/actions.cpp:466
+#: port/frontend/actions.cpp:465
 msgid "Demo"
 msgstr "体验版"
 
-#: port/frontend/actions.cpp:467
+#: port/frontend/actions.cpp:466
 msgid "Title"
 msgstr "软件"
 
-#: port/frontend/actions.cpp:475
+#: port/frontend/actions.cpp:474
 msgctxt "button"
 msgid "Cross"
 msgstr "交叉键"
 
-#: port/frontend/actions.cpp:475
+#: port/frontend/actions.cpp:474
 msgctxt "button"
 msgid "Circle"
 msgstr "圆圈键"
 
-#: port/frontend/actions.cpp:475
+#: port/frontend/actions.cpp:474
 msgctxt "button"
 msgid "Square"
 msgstr "正方键"
 
-#: port/frontend/actions.cpp:476
+#: port/frontend/actions.cpp:475
 msgctxt "button"
 msgid "Triangle"
 msgstr "三角键"
 
-#: port/frontend/actions.cpp:476
+#: port/frontend/actions.cpp:475
 msgctxt "button"
 msgid "Create"
 msgstr "创建键"
 
-#: port/frontend/actions.cpp:476
+#: port/frontend/actions.cpp:475
 msgctxt "button"
 msgid "Options"
 msgstr "选项键"
 
-#: port/frontend/actions.cpp:476
+#: port/frontend/actions.cpp:475
 msgctxt "button"
 msgid "Touchpad"
 msgstr "触摸板键"
 
-#: port/frontend/actions.cpp:477
+#: port/frontend/actions.cpp:476
 msgctxt "button"
 msgid "D-pad up"
 msgstr "十字键上"
 
-#: port/frontend/actions.cpp:477
+#: port/frontend/actions.cpp:476
 msgctxt "button"
 msgid "D-pad down"
 msgstr "十字键下"
 
-#: port/frontend/actions.cpp:477
+#: port/frontend/actions.cpp:476
 msgctxt "button"
 msgid "D-pad left"
 msgstr "十字键左"
 
-#: port/frontend/actions.cpp:477
+#: port/frontend/actions.cpp:476
 msgctxt "button"
 msgid "D-pad right"
 msgstr "十字键右"
 
-#: port/frontend/actions.cpp:478
+#: port/frontend/actions.cpp:477
 msgctxt "button"
 msgid "Left stick up"
 msgstr "左摇杆上"
 
-#: port/frontend/actions.cpp:478
+#: port/frontend/actions.cpp:477
 msgctxt "button"
 msgid "Left stick down"
 msgstr "左摇杆下"
 
-#: port/frontend/actions.cpp:478
+#: port/frontend/actions.cpp:477
 msgctxt "button"
 msgid "Left stick left"
 msgstr "左摇杆左"
 
-#: port/frontend/actions.cpp:479
+#: port/frontend/actions.cpp:478
 msgctxt "button"
 msgid "Left stick right"
 msgstr "左摇杆右"
 
-#: port/frontend/actions.cpp:479
+#: port/frontend/actions.cpp:478
 msgctxt "button"
 msgid "Left stick click"
 msgstr "按下左摇杆"
 
-#: port/frontend/actions.cpp:479
+#: port/frontend/actions.cpp:478
 msgctxt "button"
 msgid "Right stick up"
 msgstr "右摇杆上"
 
-#: port/frontend/actions.cpp:480
+#: port/frontend/actions.cpp:479
 msgctxt "button"
 msgid "Right stick down"
 msgstr "右摇杆下"
 
-#: port/frontend/actions.cpp:480
+#: port/frontend/actions.cpp:479
 msgctxt "button"
 msgid "Right stick left"
 msgstr "右摇杆左"
 
-#: port/frontend/actions.cpp:480
+#: port/frontend/actions.cpp:479
 msgctxt "button"
 msgid "Right stick right"
 msgstr "右摇杆右"
 
-#: port/frontend/actions.cpp:481
+#: port/frontend/actions.cpp:480
 msgctxt "button"
 msgid "Right stick click"
 msgstr "按下右摇杆"
 
-#: port/frontend/actions.cpp:481
+#: port/frontend/actions.cpp:480
 msgctxt "button"
 msgid "Circle pad up"
 msgstr "滑杆上"
 
-#: port/frontend/actions.cpp:481
+#: port/frontend/actions.cpp:480
 msgctxt "button"
 msgid "Circle pad down"
 msgstr "滑杆下"
 
-#: port/frontend/actions.cpp:482
+#: port/frontend/actions.cpp:481
 msgctxt "button"
 msgid "Circle pad left"
 msgstr "滑杆左"
 
-#: port/frontend/actions.cpp:482
+#: port/frontend/actions.cpp:481
 msgctxt "button"
 msgid "Circle pad right"
 msgstr "滑杆右"
 
-#: port/frontend/actions.cpp:482
+#: port/frontend/actions.cpp:481
 msgctxt "button"
 msgid "C-stick up"
 msgstr "C摇杆上"
 
-#: port/frontend/actions.cpp:483
+#: port/frontend/actions.cpp:482
 msgctxt "button"
 msgid "C-stick down"
 msgstr "C摇杆下"
 
-#: port/frontend/actions.cpp:483
+#: port/frontend/actions.cpp:482
 msgctxt "button"
 msgid "C-stick left"
 msgstr "C摇杆左"
 
-#: port/frontend/actions.cpp:483
+#: port/frontend/actions.cpp:482
 msgctxt "button"
 msgid "C-stick right"
 msgstr "C摇杆右"
 
-#: port/frontend/actions.cpp:484
+#: port/frontend/actions.cpp:483
 msgctxt "button"
 msgid "Nunchuk stick up"
 msgstr "双节棍摇杆上"
 
-#: port/frontend/actions.cpp:484
+#: port/frontend/actions.cpp:483
 msgctxt "button"
 msgid "Nunchuk stick down"
 msgstr "双节棍摇杆下"
 
-#: port/frontend/actions.cpp:484
+#: port/frontend/actions.cpp:483
 msgctxt "button"
 msgid "Nunchuk stick left"
 msgstr "双节棍摇杆左"
 
-#: port/frontend/actions.cpp:485
+#: port/frontend/actions.cpp:484
 msgctxt "button"
 msgid "Nunchuk stick right"
 msgstr "双节棍摇杆右"
 
-#: port/frontend/actions.cpp:485
+#: port/frontend/actions.cpp:484
 msgctxt "button"
 msgid "Nunchuk C"
 msgstr "双节棍C键"
 
-#: port/frontend/actions.cpp:485
+#: port/frontend/actions.cpp:484
 msgctxt "button"
 msgid "Nunchuk Z"
 msgstr "双节棍Z键"
 
-#: port/frontend/actions.cpp:485
+#: port/frontend/actions.cpp:484
 msgctxt "button"
 msgid "Home"
 msgstr "HOME键"
 
-#: port/frontend/actions.cpp:486
+#: port/frontend/actions.cpp:485
 msgctxt "button"
 msgid "Start"
 msgstr "START键"
 
-#: port/frontend/actions.cpp:486
+#: port/frontend/actions.cpp:485
 msgctxt "button"
 msgid "Select"
 msgstr "SELECT键"
 
-#: port/frontend/actions.cpp:486
+#: port/frontend/actions.cpp:485
 msgctxt "button"
 msgid "+ (Start)"
 msgstr "+键（START）"
 
-#: port/frontend/actions.cpp:486
+#: port/frontend/actions.cpp:485
 msgctxt "button"
 msgid "- (Select)"
 msgstr "-键（SELECT）"
 
-#: port/frontend/actions.cpp:487
+#: port/frontend/actions.cpp:486
 msgctxt "button"
 msgid "Blow into the mic"
 msgstr "向麦克风吹气"
 
-#: port/frontend/actions.cpp:487
+#: port/frontend/actions.cpp:486
 msgctxt "button"
 msgid "Show the GamePad's screen"
 msgstr "显示GamePad画面"
 
-#: port/frontend/actions.cpp:487
+#: port/frontend/actions.cpp:486
 msgctxt "button"
 msgid "None"
 msgstr "无"
 
-#: port/frontend/actions.cpp:491
+#: port/frontend/actions.cpp:490
 msgctxt "button"
 msgid "Touch at the cursor"
 msgstr "在光标处触控"
 
-#: port/frontend/actions.cpp:491
+#: port/frontend/actions.cpp:490
 msgctxt "button"
 msgid "Fast forward"
 msgstr "快进"
 
-#: port/frontend/actions.cpp:491
+#: port/frontend/actions.cpp:490
 msgctxt "button"
 msgid "Fast forward, on and off"
 msgstr "快进（开/关）"
 
-#: port/frontend/actions.cpp:492
+#: port/frontend/actions.cpp:491
 msgctxt "button"
 msgid "Rewind"
 msgstr "倒带"
@@ -3303,11 +3303,11 @@ msgstr "倒带"
 msgid "Update v{0}"
 msgstr "更新v{0}"
 
-#: port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1747
+#: port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1800
 msgid "Favourite"
 msgstr "收藏"
 
-#: port/frontend/shell/hub.cpp:225 port/frontend/shell/shell.cpp:1420 port/frontend/shell/shell.cpp:1421 port/frontend/shell/shell.cpp:1725
+#: port/frontend/shell/hub.cpp:225 port/frontend/shell/shell.cpp:1473 port/frontend/shell/shell.cpp:1474 port/frontend/shell/shell.cpp:1778
 msgid "Play"
 msgstr "开始游戏"
 
@@ -3320,7 +3320,7 @@ msgstr[0] "图形包 · 已开启{0}个"
 msgid "Game settings · custom"
 msgstr "游戏设置 · 自定义"
 
-#: port/frontend/shell/hub.cpp:236 port/frontend/shell/shell.cpp:1738
+#: port/frontend/shell/hub.cpp:236 port/frontend/shell/shell.cpp:1791
 msgid "Game settings"
 msgstr "游戏设置"
 
@@ -3364,7 +3364,7 @@ msgstr "发行商"
 msgid "Players"
 msgstr "玩家人数"
 
-#: port/frontend/shell/hub.cpp:278 port/frontend/shell/installs.cpp:508 port/frontend/shell/pages.cpp:1266 port/frontend/shell/pages.cpp:1332
+#: port/frontend/shell/hub.cpp:278 port/frontend/shell/installs.cpp:510 port/frontend/shell/pages.cpp:1266 port/frontend/shell/pages.cpp:1332
 msgid "Title ID"
 msgstr "Title ID"
 
@@ -3404,7 +3404,7 @@ msgstr "已安装v{0}：此版本较新"
 msgid "v{0} installed: this is older"
 msgstr "已安装v{0}：此版本较旧"
 
-#: port/frontend/shell/installs.cpp:57 port/frontend/shell/installs.cpp:209 port/frontend/shell/pages.cpp:1168
+#: port/frontend/shell/installs.cpp:57 port/frontend/shell/installs.cpp:211 port/frontend/shell/pages.cpp:1168
 msgid "Installed"
 msgstr "已安装"
 
@@ -3412,143 +3412,143 @@ msgstr "已安装"
 msgid "The PS5"
 msgstr "PS5"
 
-#: port/frontend/shell/installs.cpp:190
+#: port/frontend/shell/installs.cpp:192
 msgid "Stopped. What was installed before is back as it was."
 msgstr "已停止。之前安装的内容已恢复原样。"
 
-#: port/frontend/shell/installs.cpp:209
+#: port/frontend/shell/installs.cpp:211
 msgid "{0} installed"
 msgid_plural "{0} installed"
 msgstr[0] "已安装{0}个"
 
-#: port/frontend/shell/installs.cpp:283
+#: port/frontend/shell/installs.cpp:285
 msgid "Everything found is installed already"
 msgstr "找到的内容均已安装"
 
-#: port/frontend/shell/installs.cpp:317 port/frontend/shell/shell.cpp:2395
+#: port/frontend/shell/installs.cpp:319 port/frontend/shell/shell.cpp:2521
 msgid "Stopping…"
 msgstr "正在停止…"
 
-#: port/frontend/shell/installs.cpp:317
+#: port/frontend/shell/installs.cpp:319
 msgid "Stop"
 msgstr "停止"
 
-#: port/frontend/shell/installs.cpp:323 port/frontend/shell/pages.cpp:1184 port/frontend/shell/shell.cpp:1450
+#: port/frontend/shell/installs.cpp:325 port/frontend/shell/pages.cpp:1184 port/frontend/shell/shell.cpp:1503
 msgid "Install"
 msgstr "安装"
 
 #. Square on Updates and DLC: install every one not installed yet, or newer ({0}: how many)
-#: port/frontend/shell/installs.cpp:326
+#: port/frontend/shell/installs.cpp:328
 msgid "Install every new one ({0})"
 msgstr "安装所有新内容（{0}）"
 
-#: port/frontend/shell/installs.cpp:327 port/frontend/shell/library.cpp:162 port/frontend/shell/pages.cpp:1189 port/frontend/shell/setup.cpp:185
+#: port/frontend/shell/installs.cpp:329 port/frontend/shell/library.cpp:162 port/frontend/shell/pages.cpp:1189 port/frontend/shell/setup.cpp:185
 msgid "Choose a folder"
 msgstr "选择文件夹"
 
-#: port/frontend/shell/installs.cpp:349
+#: port/frontend/shell/installs.cpp:351
 msgid "Looking in {0}…"
 msgstr "正在{0}中查找…"
 
-#: port/frontend/shell/installs.cpp:351
+#: port/frontend/shell/installs.cpp:353
 msgid "Nothing to install was found on the drives plugged in."
 msgstr "已插入的存储设备上未找到可安装的内容。"
 
 #. where updates and DLC were found ({0}: "USB drive 1, The PS5"), then how many are new
-#: port/frontend/shell/installs.cpp:355
+#: port/frontend/shell/installs.cpp:357
 msgid "Found on {0}."
 msgstr "在{0}上找到。"
 
-#: port/frontend/shell/installs.cpp:356
+#: port/frontend/shell/installs.cpp:358
 msgid "{0} new to install."
 msgid_plural "{0} new to install."
 msgstr[0] "{0}个可安装的新内容。"
 
-#: port/frontend/shell/installs.cpp:356
+#: port/frontend/shell/installs.cpp:358
 msgid "Everything found is installed."
 msgstr "找到的内容均已安装。"
 
-#: port/frontend/shell/installs.cpp:359 port/frontend/shell/settings.cpp:230 port/frontend/shell/shares.cpp:535
+#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:230 port/frontend/shell/shares.cpp:535 port/frontend/shell/shell.cpp:2480
 msgid "Game files"
 msgstr "游戏文件"
 
-#: port/frontend/shell/installs.cpp:360 port/frontend/shell/settings.cpp:983 port/frontend/shell/shell.cpp:1745
+#: port/frontend/shell/installs.cpp:362 port/frontend/shell/settings.cpp:983 port/frontend/shell/shell.cpp:1798
 msgid "Updates and DLC"
 msgstr "更新和DLC"
 
 #. Updates and DLC, installing: which of how many ({0} of {1})
-#: port/frontend/shell/installs.cpp:373
+#: port/frontend/shell/installs.cpp:375
 msgid "Installing {0} of {1}"
 msgstr "正在安装第{0}个，共{1}个"
 
 #. how fast an install copies, in megabytes a second
-#: port/frontend/shell/installs.cpp:379
+#: port/frontend/shell/installs.cpp:381
 msgid "{0} MB/s"
 msgstr "{0} MB/s"
 
 #. an install's time left, in seconds or minutes
-#: port/frontend/shell/installs.cpp:382
+#: port/frontend/shell/installs.cpp:384
 msgid "about {0} second left"
 msgid_plural "about {0} seconds left"
 msgstr[0] "剩余约{0}秒"
 
-#: port/frontend/shell/installs.cpp:383
+#: port/frontend/shell/installs.cpp:385
 msgid "about {0} minute left"
 msgid_plural "about {0} minutes left"
 msgstr[0] "剩余约{0}分钟"
 
-#: port/frontend/shell/installs.cpp:399
+#: port/frontend/shell/installs.cpp:401
 msgid "Nothing found to install"
 msgstr "未找到可安装的内容"
 
-#: port/frontend/shell/installs.cpp:401
+#: port/frontend/shell/installs.cpp:403
 msgid "Every USB drive and extended storage plugged in, the games folder and /data were searched, four folders deep, for updates, DLC and games as folders with code, content and meta (the format Cemu installs). Put them on a USB drive, or press Triangle to choose a folder anywhere."
 msgstr "已在所有插入的USB存储设备和扩展存储、游戏文件夹以及/data中向下查找四层，寻找以包含code、content和meta的文件夹形式存在的更新、DLC和游戏（Cemu安装的格式）。将其放入USB存储设备，或按三角键选择任意位置的文件夹。"
 
-#: port/frontend/shell/installs.cpp:455
+#: port/frontend/shell/installs.cpp:457
 msgid "v{0} installed"
 msgstr "已安装v{0}"
 
 #. a row of Updates and DLC while it installs ({0}: a percentage)
-#: port/frontend/shell/installs.cpp:476
+#: port/frontend/shell/installs.cpp:478
 msgid "Installing · {0}"
 msgstr "正在安装 · {0}"
 
-#: port/frontend/shell/installs.cpp:478
+#: port/frontend/shell/installs.cpp:480
 msgid "Waiting"
 msgstr "等待中"
 
-#: port/frontend/shell/installs.cpp:500
+#: port/frontend/shell/installs.cpp:502
 msgid "Runs from where it is"
 msgstr "从所在位置运行"
 
-#: port/frontend/shell/installs.cpp:500 port/frontend/shell/pages.cpp:1348
+#: port/frontend/shell/installs.cpp:502 port/frontend/shell/pages.cpp:1348
 msgid "To install"
 msgstr "待安装"
 
 #. a title's version to install ({0}), and the one installed now ({1})
-#: port/frontend/shell/installs.cpp:507 port/frontend/shell/pages.cpp:1267 port/frontend/shell/pages.cpp:1334 port/frontend/shell/settings.cpp:253
+#: port/frontend/shell/installs.cpp:509 port/frontend/shell/pages.cpp:1267 port/frontend/shell/pages.cpp:1334 port/frontend/shell/settings.cpp:253
 msgid "Version"
 msgstr "版本"
 
 #. a title's version to install ({0}), and the one installed now ({1})
-#: port/frontend/shell/installs.cpp:507 port/frontend/shell/pages.cpp:1334
+#: port/frontend/shell/installs.cpp:509 port/frontend/shell/pages.cpp:1334
 msgid "v{0}, not installed yet"
 msgstr "v{0}，尚未安装"
 
-#: port/frontend/shell/installs.cpp:507 port/frontend/shell/pages.cpp:1335
+#: port/frontend/shell/installs.cpp:509 port/frontend/shell/pages.cpp:1335
 msgid "v{0}, v{1} installed now"
 msgstr "v{0}，当前已安装v{1}"
 
-#: port/frontend/shell/installs.cpp:509
+#: port/frontend/shell/installs.cpp:511
 msgid "Where it is"
 msgstr "位置"
 
-#: port/frontend/shell/installs.cpp:521
+#: port/frontend/shell/installs.cpp:523
 msgid "Cemu runs it straight from the game files folder (title.tmd and .app files): put it there and the library lists it with its game."
 msgstr "Cemu可直接从游戏所在的文件夹运行（title.tmd和.app文件）：放入该文件夹后，游戏库会将其与对应游戏一起列出。"
 
-#: port/frontend/shell/installs.cpp:522
+#: port/frontend/shell/installs.cpp:524
 msgid "It is installed into the Wii U's storage (mlc01). What is installed now is set aside until it finishes, and put back if you stop."
 msgstr "安装到Wii U的存储空间（mlc01）。安装完成前，当前已安装的内容会暂时移开；如果中途停止，则会放回原处。"
 
@@ -3580,7 +3580,7 @@ msgstr "配置"
 msgid "Something needs a look"
 msgstr "有项目需要检查"
 
-#: port/frontend/shell/library.cpp:125 port/frontend/shell/library.cpp:162 port/frontend/shell/library.cpp:192 port/frontend/shell/settings.cpp:1292
+#: port/frontend/shell/library.cpp:125 port/frontend/shell/library.cpp:162 port/frontend/shell/library.cpp:192 port/frontend/shell/settings.cpp:1322
 msgid "Setup check"
 msgstr "配置检查"
 
@@ -3588,7 +3588,7 @@ msgstr "配置检查"
 msgid "Diagnostics"
 msgstr "诊断"
 
-#: port/frontend/shell/library.cpp:132 port/frontend/shell/shell.cpp:992 port/frontend/shell/shell.cpp:2385
+#: port/frontend/shell/library.cpp:132 port/frontend/shell/shell.cpp:1033 port/frontend/shell/shell.cpp:2511
 msgid "Starting Cemu"
 msgstr "正在启动Cemu"
 
@@ -3635,12 +3635,12 @@ msgid "Play from your 3DS"
 msgstr "从3DS游玩"
 
 #. the launcher's tabs
-#: port/frontend/shell/library.cpp:341 port/frontend/shell/library.cpp:629 port/frontend/shell/shell.cpp:1328
+#: port/frontend/shell/library.cpp:341 port/frontend/shell/library.cpp:629 port/frontend/shell/shell.cpp:1369
 msgctxt "tab"
 msgid "Library"
 msgstr "游戏库"
 
-#: port/frontend/shell/library.cpp:341 port/frontend/shell/shell.cpp:1416
+#: port/frontend/shell/library.cpp:341 port/frontend/shell/shell.cpp:1469
 msgid "Sort"
 msgstr "排序"
 
@@ -3679,7 +3679,7 @@ msgstr "正在查找新游戏…"
 msgid "As found last time"
 msgstr "上次找到的列表"
 
-#: port/frontend/shell/library.cpp:639 port/frontend/shell/shell.cpp:1416 port/frontend/shell/shell.cpp:2249
+#: port/frontend/shell/library.cpp:639 port/frontend/shell/shell.cpp:1469 port/frontend/shell/shell.cpp:2336
 msgid "Search"
 msgstr "搜索"
 
@@ -3756,7 +3756,7 @@ msgstr "此图形包没有说明。"
 msgid "No presets"
 msgstr "无预设"
 
-#: port/frontend/shell/pages.cpp:361 port/frontend/shell/shell.cpp:1440
+#: port/frontend/shell/pages.cpp:361 port/frontend/shell/shell.cpp:1493
 msgid "Presets"
 msgstr "预设"
 
@@ -3765,7 +3765,7 @@ msgid "Presets · choosing one turns it on"
 msgstr "预设 · 选择后即开启"
 
 #. what a held row says once it has done its work
-#: port/frontend/shell/pages.cpp:398 port/frontend/shell/settings.cpp:2329
+#: port/frontend/shell/pages.cpp:398 port/frontend/shell/settings.cpp:2385
 msgctxt "finished"
 msgid "Done"
 msgstr "已完成"
@@ -3923,7 +3923,7 @@ msgid "Which DualSense button presses each button."
 msgstr "每个按键由哪个DualSense按键按下。"
 
 #. {0} is the version the last update replaced, as in 5.0.0
-#: port/frontend/shell/pages.cpp:634 port/frontend/shell/pages.cpp:1523 port/frontend/shell/pages.cpp:1527 port/frontend/shell/settings.cpp:723 port/frontend/shell/settings.cpp:784 port/frontend/shell/settings.cpp:1039 port/frontend/shell/settings.cpp:1099 port/frontend/shell/settings.cpp:1189 port/frontend/shell/settings.cpp:1226 port/frontend/shell/settings.cpp:1298 port/frontend/shell/settings.cpp:1301 port/frontend/shell/settings.cpp:1315 port/frontend/shell/settings.cpp:1351 port/frontend/shell/settings.cpp:1413 port/frontend/shell/settings.cpp:1455 port/frontend/shell/shares.cpp:328
+#: port/frontend/shell/pages.cpp:634 port/frontend/shell/pages.cpp:1523 port/frontend/shell/pages.cpp:1527 port/frontend/shell/settings.cpp:723 port/frontend/shell/settings.cpp:784 port/frontend/shell/settings.cpp:1005 port/frontend/shell/settings.cpp:1061 port/frontend/shell/settings.cpp:1121 port/frontend/shell/settings.cpp:1211 port/frontend/shell/settings.cpp:1249 port/frontend/shell/settings.cpp:1328 port/frontend/shell/settings.cpp:1331 port/frontend/shell/settings.cpp:1345 port/frontend/shell/settings.cpp:1381 port/frontend/shell/settings.cpp:1443 port/frontend/shell/settings.cpp:1485 port/frontend/shell/shares.cpp:328
 msgid "Hold Cross"
 msgstr "按住交叉键"
 
@@ -4197,7 +4197,7 @@ msgstr "已在{0}中找到"
 msgid "Missing (only .wud/.wux need it)"
 msgstr "缺失（仅.wud/.wux需要）"
 
-#: port/frontend/shell/pages.cpp:1314 port/frontend/shell/shell.cpp:2138 port/frontend/shell/shell.cpp:2165
+#: port/frontend/shell/pages.cpp:1314 port/frontend/shell/shell.cpp:2225 port/frontend/shell/shell.cpp:2252
 msgid "In use"
 msgstr "使用中"
 
@@ -4238,7 +4238,7 @@ msgstr "正在连接{0}"
 msgid "Artic Setup Tool"
 msgstr "Artic Setup Tool"
 
-#: port/frontend/shell/pages.cpp:1489 port/frontend/shell/pages.cpp:1500 port/frontend/shell/settings.cpp:242 port/frontend/shell/settings.cpp:1115 port/frontend/shell/setup.cpp:243
+#: port/frontend/shell/pages.cpp:1489 port/frontend/shell/pages.cpp:1500 port/frontend/shell/settings.cpp:242 port/frontend/shell/settings.cpp:1137 port/frontend/shell/setup.cpp:243
 msgid "Artic Base"
 msgstr "Artic Base"
 
@@ -4427,7 +4427,7 @@ msgstr "深色磨砂玻璃与更圆润的边角，平台的光芒缓缓飘动，
 msgid "A light background with dark text."
 msgstr "浅色背景配深色文字。"
 
-#: port/frontend/shell/settings.cpp:203 port/frontend/shell/settings.cpp:487 port/frontend/shell/settings.cpp:824 port/frontend/shell/settings.cpp:869 port/frontend/shell/settings.cpp:913 port/frontend/shell/settings.cpp:1542 port/frontend/shell/setup.cpp:511
+#: port/frontend/shell/settings.cpp:203 port/frontend/shell/settings.cpp:487 port/frontend/shell/settings.cpp:824 port/frontend/shell/settings.cpp:869 port/frontend/shell/settings.cpp:913 port/frontend/shell/settings.cpp:1572 port/frontend/shell/setup.cpp:511
 msgid "Language"
 msgstr "语言"
 
@@ -4527,7 +4527,7 @@ msgstr "DS游戏的位置，以及其存档的位置。"
 msgid "Accounts and saves"
 msgstr "账户与存档"
 
-#: port/frontend/shell/settings.cpp:238 port/frontend/shell/settings.cpp:265 port/frontend/shell/shell.cpp:1740
+#: port/frontend/shell/settings.cpp:238 port/frontend/shell/settings.cpp:265 port/frontend/shell/shell.cpp:1793
 msgid "Saves"
 msgstr "存档"
 
@@ -4629,7 +4629,7 @@ msgstr "按交叉键下载"
 msgid "{0}: Cross to install"
 msgstr "{0}：按交叉键安装"
 
-#: port/frontend/shell/settings.cpp:314 port/frontend/shell/settings.cpp:1140 port/frontend/shell/shell.cpp:2306
+#: port/frontend/shell/settings.cpp:314 port/frontend/shell/settings.cpp:1162 port/frontend/shell/shell.cpp:2393
 msgid "Downloading…"
 msgstr "正在下载…"
 
@@ -5497,645 +5497,679 @@ msgstr "游戏、更新或DLC。"
 msgid "Installs a CIA into the 3DS's storage, as Azahar's Install CIA does: an update or DLC goes with its game, and a game joins the library. Circle cancels while it runs."
 msgstr "将CIA安装到3DS的存储空间，与Azahar的“安装CIA”相同：更新或DLC会归入对应游戏，游戏会加入游戏库。运行时按圆圈键可取消。"
 
-#: port/frontend/shell/settings.cpp:1019
+#: port/frontend/shell/settings.cpp:1004 port/frontend/shell/shell.cpp:2481
+msgid "A folder for each system"
+msgstr "每个系统一个文件夹"
+
+#: port/frontend/shell/settings.cpp:1005
+msgid "Cannot move"
+msgstr "无法移动"
+
+#. {0} is a file or folder already where one would be moved to
+#: port/frontend/shell/settings.cpp:1007
+msgid "In the way: {0}"
+msgstr "有冲突：{0}"
+
+#: port/frontend/shell/settings.cpp:1008
+msgid "Each system's files are in a folder of their own."
+msgstr "每个系统的文件都在各自的文件夹中。"
+
+#: port/frontend/shell/settings.cpp:1009
+msgid "Your files from before into a folder for each system."
+msgstr "把以前的文件放进每个系统各自的文件夹。"
+
+#: port/frontend/shell/settings.cpp:1010
+msgid "Puts each system's files back into {0}, where they were before. Going back to an earlier version needs them there, as it looks for them there. PS5-ECAM starts again to do it."
+msgstr "把每个系统的文件移回{0}，即它们原来的位置。回到旧版本需要文件在那里，因为旧版本在那里查找。PS5-ECAM会为此重新启动。"
+
+#. {0} is the app's data folder, /data/ps5cemu; {1} lists the four folders: /data/cemu, /data/azahar, ...
+#: port/frontend/shell/settings.cpp:1014
+msgid "Moves each system's files from {0} into a folder of its own: {1}. They are renamed on the same drive, never copied, so it takes a moment whatever their size, and nothing is deleted. PS5-ECAM starts again to do it; a system that cannot move stays as it was. This row puts them back."
+msgstr "把每个系统的文件从{0}移到各自的文件夹：{1}。文件在同一存储设备上重命名，从不复制，因此无论多大都只需片刻，也不会删除任何东西。PS5-ECAM会为此重新启动；无法移动的系统保持原样。此项可将它们移回。"
+
+#: port/frontend/shell/settings.cpp:1041
 msgid "Account games start on"
 msgstr "启动游戏所用的账户"
 
-#: port/frontend/shell/settings.cpp:1020
+#: port/frontend/shell/settings.cpp:1042
 msgid "Chosen by your PS5 user: One account for each PS5 user is on."
 msgstr "由PS5用户决定：已开启“每位PS5用户一个账户”。"
 
-#: port/frontend/shell/settings.cpp:1021
+#: port/frontend/shell/settings.cpp:1043
 msgid "The next game starts on these saves. A game already running keeps its own."
 msgstr "下一个游戏将使用这些存档启动。已在运行的游戏保留其自身的账户。"
 
-#: port/frontend/shell/settings.cpp:1022
+#: port/frontend/shell/settings.cpp:1044
 msgid "Each Wii U account has its own saves of every game, as on a Wii U. The next game you start uses the one shown here; a game already running keeps the one it started with."
 msgstr "每个Wii U账户都有自己的所有游戏存档，与Wii U相同。启动的下一个游戏将使用此处显示的账户；已在运行的游戏保留启动时使用的账户。"
 
 #. how many Wii U accounts there are, of the twelve a Wii U has at most
-#: port/frontend/shell/settings.cpp:1027
+#: port/frontend/shell/settings.cpp:1049
 msgid "New account"
 msgstr "新账户"
 
 #. how many Wii U accounts there are, of the twelve a Wii U has at most
-#: port/frontend/shell/settings.cpp:1027
+#: port/frontend/shell/settings.cpp:1049
 msgid "{0} of 12"
 msgstr "{0}/12"
 
-#: port/frontend/shell/settings.cpp:1028
+#: port/frontend/shell/settings.cpp:1050
 msgid "A new account starts with no saves."
 msgstr "新账户没有任何存档。"
 
-#: port/frontend/shell/settings.cpp:1028
+#: port/frontend/shell/settings.cpp:1050
 msgid "Name it with the keyboard, ten letters at most. Games start on it from then on."
 msgstr "用键盘命名，最多10个字。之后游戏会以此账户启动。"
 
-#: port/frontend/shell/settings.cpp:1029
+#: port/frontend/shell/settings.cpp:1051
 msgid "Rename {0}"
 msgstr "重命名{0}"
 
-#: port/frontend/shell/settings.cpp:1029
+#: port/frontend/shell/settings.cpp:1051
 msgid "The account games start on."
 msgstr "启动游戏所用的账户。"
 
-#: port/frontend/shell/settings.cpp:1030
+#: port/frontend/shell/settings.cpp:1052
 msgid "The name games show for this account, ten letters at most. Its saves stay as they are."
 msgstr "游戏中显示的此账户名称，最多10个字。其存档保持不变。"
 
-#: port/frontend/shell/settings.cpp:1038
+#: port/frontend/shell/settings.cpp:1060
 msgid "Delete an account"
 msgstr "删除账户"
 
-#: port/frontend/shell/settings.cpp:1039
+#: port/frontend/shell/settings.cpp:1061
 msgid "Only one"
 msgstr "仅有一个"
 
-#: port/frontend/shell/settings.cpp:1040
+#: port/frontend/shell/settings.cpp:1062
 msgid "There is only one account, and games start on it."
 msgstr "只有一个账户，游戏会以此账户启动。"
 
-#: port/frontend/shell/settings.cpp:1040
+#: port/frontend/shell/settings.cpp:1062
 msgid "Left and Right choose which. Its saves stay in the Wii U's storage."
 msgstr "按左右方向键选择账户。其存档保留在Wii U的存储空间中。"
 
-#: port/frontend/shell/settings.cpp:1041
+#: port/frontend/shell/settings.cpp:1063
 msgid "The account is removed; its saves stay in the Wii U's storage (and in any backup), so nothing is lost. The account games start on cannot be deleted: choose another first."
 msgstr "账户会被移除；其存档保留在Wii U的存储空间中（以及所有备份中），因此不会丢失任何内容。无法删除启动游戏所用的账户：先选择其他账户。"
 
-#: port/frontend/shell/settings.cpp:1047
+#: port/frontend/shell/settings.cpp:1069
 msgid "One account for each PS5 user"
 msgstr "每位PS5用户一个账户"
 
-#: port/frontend/shell/settings.cpp:1048
+#: port/frontend/shell/settings.cpp:1070
 msgid "Whoever starts PS5-ECAM plays on their own saves."
 msgstr "由谁启动PS5-ECAM，就使用谁的存档游玩。"
 
-#: port/frontend/shell/settings.cpp:1049
+#: port/frontend/shell/settings.cpp:1071
 msgid "The PS5 user who starts the app plays on a Wii U account of their own, made the first time with their PS5 name, so brothers and sisters each keep their own saves just by starting the app from their own PS5 user."
 msgstr "启动本应用的PS5用户会使用自己的Wii U账户游玩，首次使用时以其PS5名称创建，因此兄弟姐妹只需从各自的PS5用户启动本应用，就能各自保留自己的存档。"
 
 #. a backup or restore of the saves, finished ({0}: how many files)
-#: port/frontend/shell/settings.cpp:1068 port/frontend/shell/settings.cpp:1398
+#: port/frontend/shell/settings.cpp:1090 port/frontend/shell/settings.cpp:1428
 msgid "Done: {0} file"
 msgid_plural "Done: {0} files"
 msgstr[0] "完成：{0}个文件"
 
 #. a backup of the saves, as it copies ({0}: a percentage)
-#: port/frontend/shell/settings.cpp:1085 port/frontend/shell/settings.cpp:1101 port/frontend/shell/settings.cpp:1437 port/frontend/shell/settings.cpp:1457
+#: port/frontend/shell/settings.cpp:1107 port/frontend/shell/settings.cpp:1123 port/frontend/shell/settings.cpp:1467 port/frontend/shell/settings.cpp:1487
 msgid "Copying: {0}"
 msgstr "正在复制：{0}"
 
 #. the newest backup of the saves: when, and on which drive
-#: port/frontend/shell/settings.cpp:1088 port/frontend/shell/settings.cpp:1439
+#: port/frontend/shell/settings.cpp:1110 port/frontend/shell/settings.cpp:1469
 msgid "Last: {0} · {1}"
 msgstr "最近：{0} · {1}"
 
-#: port/frontend/shell/settings.cpp:1089 port/frontend/shell/settings.cpp:1434
+#: port/frontend/shell/settings.cpp:1111 port/frontend/shell/settings.cpp:1464
 msgid "Back up to USB"
 msgstr "备份到USB"
 
-#: port/frontend/shell/settings.cpp:1089
+#: port/frontend/shell/settings.cpp:1111
 msgid "Every side's saves, save states and Wii U accounts."
 msgstr "所有平台的存档、即时存档和Wii U账户。"
 
-#: port/frontend/shell/settings.cpp:1090
+#: port/frontend/shell/settings.cpp:1112
 msgid "Copies the Wii U's saves (every account's, with the accounts), the 3DS's saves, extra data and save states, the DS's saves and save states, and the Switch's saves with its user profiles to PS5CEMU-HAR-saves on the first USB drive plugged in, in a folder named by the date and time. Never the games, so a backup stays small. The settings go with them: the launcher's, each game's own and the controllers'."
 msgstr "将Wii U的存档（所有账户的存档及账户本身）、3DS的存档、追加数据和即时存档、DS的存档和即时存档，以及Switch的存档及其用户资料，复制到第一个插入的USB存储设备上的PS5CEMU-HAR-saves中，放在以日期和时间命名的文件夹里。不包括游戏，因此备份很小。设置也会一并复制：启动器的设置、每个游戏自己的设置和手柄的设置。"
 
-#: port/frontend/shell/settings.cpp:1099 port/frontend/shell/settings.cpp:1455
+#: port/frontend/shell/settings.cpp:1121 port/frontend/shell/settings.cpp:1485
 msgid "No backups found"
 msgstr "未找到备份"
 
-#: port/frontend/shell/settings.cpp:1102 port/frontend/shell/settings.cpp:1454
+#: port/frontend/shell/settings.cpp:1124 port/frontend/shell/settings.cpp:1484
 msgid "Restore from USB"
 msgstr "从USB恢复"
 
-#: port/frontend/shell/settings.cpp:1103
+#: port/frontend/shell/settings.cpp:1125
 msgid "Back up first, or plug in the drive with your backups."
 msgstr "先进行备份，或插入存有备份的存储设备。"
 
-#: port/frontend/shell/settings.cpp:1103 port/frontend/shell/settings.cpp:1458
+#: port/frontend/shell/settings.cpp:1125 port/frontend/shell/settings.cpp:1488
 msgid "Left and Right choose which backup, the newest first."
 msgstr "按左右方向键选择备份，最新的在前。"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1105
+#: port/frontend/shell/settings.cpp:1127
 msgid "Puts the chosen backup's saves back where they came from. The saves there now are moved first to {0}/saves-before, so nothing is lost; saves the backup does not have stay as they are. Its settings come back too, and PS5-ECAM starts again to use them."
 msgstr "将所选备份中的存档放回原处。当前的存档会先移到{0}/saves-before，因此不会丢失任何内容；备份中没有的存档保持不变。其中的设置也会恢复，PS5-ECAM会重新启动以使用它们。"
 
-#: port/frontend/shell/settings.cpp:1115
+#: port/frontend/shell/settings.cpp:1137
 msgid "Play a game from your 3DS, and set up from it."
 msgstr "从3DS游玩游戏，以及从3DS导入数据。"
 
-#: port/frontend/shell/settings.cpp:1116
+#: port/frontend/shell/settings.cpp:1138
 msgid "Artic Base plays a game from a 3DS on your network, its saves staying on the 3DS; Artic Setup copies a 3DS's system files into Azahar, for the Home Menu and the games that need them."
 msgstr "Artic Base可游玩网络中3DS上的游戏，存档保留在3DS上；Artic Setup会将3DS的系统文件复制到Azahar，供HOME菜单和需要这些文件的游戏使用。"
 
-#: port/frontend/shell/settings.cpp:1125
+#: port/frontend/shell/settings.cpp:1147
 msgid "A room is a server where Switch games find each other for their local wireless play, as in desktop Eden and ProsperoEden. The room chosen here is joined as each Switch game starts: then choose Local Wireless (or local play) in the game. A room that cannot be joined brings you back here with why."
 msgstr "房间是一台服务器，Switch游戏在这里相互找到对方进行本地无线联机，与电脑版Eden和ProsperoEden相同。这里选择的房间会在每个Switch游戏启动时加入：然后在游戏中选择本地无线联机（或本地游戏）。无法加入的房间会带你回到这里，并说明原因。"
 
-#: port/frontend/shell/settings.cpp:1128
+#: port/frontend/shell/settings.cpp:1150
 msgid "None: games play offline"
 msgstr "无：游戏离线游玩"
 
-#: port/frontend/shell/settings.cpp:1129
+#: port/frontend/shell/settings.cpp:1151
 msgid "Joined as a Switch game starts. Cross plays offline again."
 msgstr "Switch游戏启动时加入。按交叉键恢复离线游玩。"
 
-#: port/frontend/shell/settings.cpp:1129
+#: port/frontend/shell/settings.cpp:1151
 msgid "Choose a public room below, or a private one."
 msgstr "在下方选择一个公开房间，或私人房间。"
 
-#: port/frontend/shell/settings.cpp:1132
+#: port/frontend/shell/settings.cpp:1154
 msgid "Nickname"
 msgstr "昵称"
 
-#: port/frontend/shell/settings.cpp:1132
+#: port/frontend/shell/settings.cpp:1154
 msgid "Your name in the room."
 msgstr "你在房间中的名字。"
 
-#: port/frontend/shell/settings.cpp:1133
+#: port/frontend/shell/settings.cpp:1155
 msgid "What the others in a room see of you: 4 to 20 letters, digits, spaces, dots, dashes or underscores, as Eden takes them."
 msgstr "房间里其他人看到的你：4到20个拉丁字母、数字、空格、句点、连字符或下划线，与Eden接受的相同。"
 
-#: port/frontend/shell/settings.cpp:1135
+#: port/frontend/shell/settings.cpp:1157
 msgid "Private room"
 msgstr "私人房间"
 
-#: port/frontend/shell/settings.cpp:1136
+#: port/frontend/shell/settings.cpp:1158
 msgid "Cross to enter one"
 msgstr "按交叉键输入"
 
-#: port/frontend/shell/settings.cpp:1137
+#: port/frontend/shell/settings.cpp:1159
 msgid "A room by its address, port and password."
 msgstr "通过地址、端口和密码指定的房间。"
 
-#: port/frontend/shell/settings.cpp:1138
+#: port/frontend/shell/settings.cpp:1160
 msgid "A room someone gave you the address of: its address (a name or an IPv4 address), its UDP port (24872 unless they say otherwise) and its password, if it has one."
 msgstr "别人给你地址的房间：它的地址（名称或IPv4地址）、UDP端口（除非另有说明为24872）以及密码（如果有）。"
 
-#: port/frontend/shell/settings.cpp:1142
+#: port/frontend/shell/settings.cpp:1164
 msgid "No public rooms right now"
 msgstr "目前没有公开房间"
 
-#: port/frontend/shell/settings.cpp:1143
+#: port/frontend/shell/settings.cpp:1165
 msgid "{0} room"
 msgid_plural "{0} rooms"
 msgstr[0] "{0}个房间"
 
-#: port/frontend/shell/settings.cpp:1144
+#: port/frontend/shell/settings.cpp:1166
 msgid "Public rooms"
 msgstr "公开房间"
 
-#: port/frontend/shell/settings.cpp:1144
+#: port/frontend/shell/settings.cpp:1166
 msgid "Cross downloads the list again."
 msgstr "按交叉键重新下载列表。"
 
-#: port/frontend/shell/settings.cpp:1145
+#: port/frontend/shell/settings.cpp:1167
 msgid "ProsperoEden's list of public rooms: its own featured rooms first, then the others, the fullest first. A room for another version of Eden cannot be joined."
 msgstr "ProsperoEden的公开房间列表：先是它自己的推荐房间，然后是其他房间，人最多的在前。无法加入其他版本Eden的房间。"
 
-#: port/frontend/shell/settings.cpp:1153 port/frontend/shell/shares.cpp:317 port/frontend/shell/shares.cpp:489
+#: port/frontend/shell/settings.cpp:1175 port/frontend/shell/shares.cpp:317 port/frontend/shell/shares.cpp:489
 msgid "Password"
 msgstr "密码"
 
 #. one of ProsperoEden's own rooms, which its list puts first
-#: port/frontend/shell/settings.cpp:1156
+#: port/frontend/shell/settings.cpp:1178
 msgid "Featured"
 msgstr "推荐"
 
-#: port/frontend/shell/settings.cpp:1158
+#: port/frontend/shell/settings.cpp:1180
 msgid "Another version"
 msgstr "其他版本"
 
-#: port/frontend/shell/settings.cpp:1160
+#: port/frontend/shell/settings.cpp:1182
 msgid "{0} (chosen)"
 msgstr "{0}（已选择）"
 
-#: port/frontend/shell/settings.cpp:1161
+#: port/frontend/shell/settings.cpp:1183
 msgid "Any game"
 msgstr "任意游戏"
 
-#: port/frontend/shell/settings.cpp:1169
+#: port/frontend/shell/settings.cpp:1191
 msgid "Box art from GameTDB"
 msgstr "GameTDB封面"
 
-#: port/frontend/shell/settings.cpp:1169
+#: port/frontend/shell/settings.cpp:1191
 msgid "Covers for the library, downloaded once."
 msgstr "游戏库的封面，只下载一次。"
 
-#: port/frontend/shell/settings.cpp:1170
+#: port/frontend/shell/settings.cpp:1192
 msgid "The first time a game shows up, its cover is downloaded from GameTDB (art.gametdb.com) by the ID on its box. Off: nothing more is downloaded."
 msgstr "游戏首次出现时，会根据包装盒上的ID从GameTDB（art.gametdb.com）下载其封面。关闭：不再下载任何内容。"
 
-#: port/frontend/shell/settings.cpp:1174
+#: port/frontend/shell/settings.cpp:1196
 msgid "Switch covers"
 msgstr "Switch封面"
 
-#: port/frontend/shell/settings.cpp:1174 port/frontend/shell/setup.cpp:300
+#: port/frontend/shell/settings.cpp:1196 port/frontend/shell/setup.cpp:300
 msgid "Box art"
 msgstr "封面"
 
-#: port/frontend/shell/settings.cpp:1174
+#: port/frontend/shell/settings.cpp:1196
 msgid "Game icons"
 msgstr "游戏图标"
 
-#: port/frontend/shell/settings.cpp:1174
+#: port/frontend/shell/settings.cpp:1196
 msgid "GameTDB's box art, or each game's own icon."
 msgstr "GameTDB的封面，或每个游戏自己的图标。"
 
-#: port/frontend/shell/settings.cpp:1175
+#: port/frontend/shell/settings.cpp:1197
 msgid "Box art is GameTDB's, found by each game's name. Game icons are the games' own, read from their files, as the Switch's home menu shows them. A picture beside a game (Game.png or Game.jpg) is its cover either way."
 msgstr "封面来自GameTDB，按每个游戏的名称查找。游戏图标是游戏自己的，从其文件中读取，与Switch的HOME菜单显示的一样。游戏旁边的图片（Game.png或Game.jpg）在两种情况下都会作为它的封面。"
 
-#: port/frontend/shell/settings.cpp:1182
+#: port/frontend/shell/settings.cpp:1204
 msgid "Downloading: {0} left"
 msgid_plural "Downloading: {0} left"
 msgstr[0] "正在下载：还剩{0}个"
 
-#: port/frontend/shell/settings.cpp:1183
+#: port/frontend/shell/settings.cpp:1205
 msgid "GameTDB did not answer: is the PS5 online?"
 msgstr "GameTDB未响应：PS5是否已联网？"
 
-#: port/frontend/shell/settings.cpp:1184
+#: port/frontend/shell/settings.cpp:1206
 msgid "{0} game without box art"
 msgid_plural "{0} games without box art"
 msgstr[0] "{0}款游戏没有封面"
 
-#: port/frontend/shell/settings.cpp:1185
+#: port/frontend/shell/settings.cpp:1207
 msgid "Every game has box art"
 msgstr "所有游戏都有封面"
 
-#: port/frontend/shell/settings.cpp:1186
+#: port/frontend/shell/settings.cpp:1208
 msgid "Download missing box art"
 msgstr "下载缺失的封面"
 
-#: port/frontend/shell/settings.cpp:1186
+#: port/frontend/shell/settings.cpp:1208
 msgid "Tries again for every game without a cover."
 msgstr "为所有没有封面的游戏重新下载。"
 
-#: port/frontend/shell/settings.cpp:1187
+#: port/frontend/shell/settings.cpp:1209
 msgid "Asks GameTDB again for the cover of every game on this side that has none, including games it had no cover for before. Covers are downloaded in the background while you use the launcher."
 msgstr "为此平台上所有没有封面的游戏重新向GameTDB请求封面，包括之前没有封面的游戏。使用启动器时，封面会在后台下载。"
 
-#: port/frontend/shell/settings.cpp:1189
+#: port/frontend/shell/settings.cpp:1211
 msgid "Download all box art again"
 msgstr "重新下载所有封面"
 
-#: port/frontend/shell/settings.cpp:1190
+#: port/frontend/shell/settings.cpp:1212
 msgid "Replaces every cover on this side with a fresh download."
 msgstr "用新下载的封面替换此平台上的所有封面。"
 
-#: port/frontend/shell/settings.cpp:1191
+#: port/frontend/shell/settings.cpp:1213
 msgid "Downloads the cover of every game on this side again, replacing the ones you have. Useful when a cover is wrong or looks broken."
 msgstr "重新下载此平台上所有游戏的封面，替换现有封面。适用于封面错误或显示异常的情况。"
 
-#: port/frontend/shell/settings.cpp:1194
+#: port/frontend/shell/settings.cpp:1216
 msgid "Community graphic packs"
 msgstr "社区图形包"
 
-#: port/frontend/shell/settings.cpp:1194
+#: port/frontend/shell/settings.cpp:1216
 msgid "Cross checks GitHub for newer ones."
 msgstr "按交叉键在GitHub上检查更新的版本。"
 
-#: port/frontend/shell/settings.cpp:1195
+#: port/frontend/shell/settings.cpp:1217
 msgid "Cemu's community graphic packs, from GitHub's latest release when it is newer than the ones installed. They are not in the app: the first time the Wii U side starts without them, they are downloaded in the background."
 msgstr "Cemu的社区图形包，当GitHub的最新发布版本比已安装的新时从中获取。图形包不随应用提供：Wii U平台首次在没有图形包的情况下启动时，会在后台下载。"
 
-#: port/frontend/shell/settings.cpp:1201
+#: port/frontend/shell/settings.cpp:1223
 msgid "Earn RetroAchievements in DS games with your account, as RetroArch does. Cross signs in with your user name and password; only the sign-in's token is kept on the PS5, never the password. Softcore: save states, cheats and speed stay as they are. RetroAchievements has no sets for the Wii U or the 3DS."
 msgstr "像RetroArch一样，用自己的账户在DS游戏中获得RetroAchievements成就。按交叉键以用户名和密码登录；PS5上只保存登录令牌，从不保存密码。普通模式（Softcore）：即时存档、金手指和速度保持不变。RetroAchievements没有Wii U或3DS的成就集。"
 
 #. the RetroAchievements account signed in: its name ({1}) and softcore points ({0})
-#: port/frontend/shell/settings.cpp:1206 port/frontend/shell/settings.cpp:1210 port/frontend/shell/whatsnew.cpp:35
+#: port/frontend/shell/settings.cpp:1228 port/frontend/shell/settings.cpp:1232 port/frontend/shell/whatsnew.cpp:35
 msgid "RetroAchievements"
 msgstr "RetroAchievements"
 
-#: port/frontend/shell/settings.cpp:1207
+#: port/frontend/shell/settings.cpp:1229
 msgid "{1} · {0} point"
 msgid_plural "{1} · {0} points"
 msgstr[0] "{1} · {0}分"
 
-#: port/frontend/shell/settings.cpp:1207
+#: port/frontend/shell/settings.cpp:1229
 msgid "Hold Cross to sign out"
 msgstr "按住交叉键退出登录"
 
-#: port/frontend/shell/settings.cpp:1208
+#: port/frontend/shell/settings.cpp:1230
 msgid "Signed in: DS games with a set earn achievements."
 msgstr "已登录：有成就集的DS游戏可获得成就。"
 
-#: port/frontend/shell/settings.cpp:1211
+#: port/frontend/shell/settings.cpp:1233
 msgid "Signing in…"
 msgstr "正在登录…"
 
-#: port/frontend/shell/settings.cpp:1211
+#: port/frontend/shell/settings.cpp:1233
 msgid "Cross to sign in"
 msgstr "按交叉键登录"
 
-#: port/frontend/shell/settings.cpp:1212
+#: port/frontend/shell/settings.cpp:1234
 msgid "Achievements in DS games, with your RetroAchievements account."
 msgstr "用RetroAchievements账户在DS游戏中获得成就。"
 
-#: port/frontend/shell/settings.cpp:1213
+#: port/frontend/shell/settings.cpp:1235
 msgid "Unlock notices"
 msgstr "解锁通知"
 
-#: port/frontend/shell/settings.cpp:1213
+#: port/frontend/shell/settings.cpp:1235
 msgid "Each unlock as the PS5's notification."
 msgstr "每次解锁都显示为PS5通知。"
 
-#: port/frontend/shell/settings.cpp:1214
+#: port/frontend/shell/settings.cpp:1236
 msgid "An achievement earned, and the count as a game starts, shown as the PS5's own notifications. Off: they are only in the in-game menu's Achievements."
 msgstr "获得成就时，以及游戏启动时的成就数，都会显示为PS5自己的通知。关：仅在游戏内菜单的“成就”中显示。"
 
-#: port/frontend/shell/settings.cpp:1219
+#: port/frontend/shell/settings.cpp:1241
 msgid "PS5-ECAM updates"
 msgstr "PS5-ECAM更新"
 
-#: port/frontend/shell/settings.cpp:1219
+#: port/frontend/shell/settings.cpp:1241
 msgid "Cross checks GitHub for a newer version."
 msgstr "按交叉键在GitHub上检查新版本。"
 
-#: port/frontend/shell/settings.cpp:1220
+#: port/frontend/shell/settings.cpp:1242
 msgid "PS5-ECAM asks GitHub for its latest release each time it starts. Cross asks again, or installs the newer version it found: the release's files are downloaded, checked and put in place of these, and the app starts again. Your games, saves and settings stay as they are."
 msgstr "PS5-ECAM每次启动时都会向GitHub查询其最新发布版本。按交叉键可再次查询，或安装找到的新版本：下载发布版本的文件，校验后替换当前文件，然后重新启动应用。游戏、存档和设置保持不变。"
 
 #. {0} is the version the last update replaced, as in 5.0.0
-#: port/frontend/shell/settings.cpp:1226
+#: port/frontend/shell/settings.cpp:1249
 msgid "Go back to {0}"
 msgstr "退回到{0}"
 
-#: port/frontend/shell/settings.cpp:1227
+#: port/frontend/shell/settings.cpp:1250
 msgid "The version before the last update, kept as it was."
 msgstr "上次更新之前的版本，按原样保留。"
 
-#: port/frontend/shell/settings.cpp:1228
+#: port/frontend/shell/settings.cpp:1251
 msgid "The last update kept the version it replaced. Holding Cross puts its files back in place of these, and PS5-ECAM starts again as that version. Your games, saves and settings stay as they are. The newer version is not offered at start again; this page still finds it."
 msgstr "上次更新保留了它所替换的版本。按住交叉键会把那个版本的文件放回来替换当前文件，PS5-ECAM将以该版本重新启动。你的游戏、存档和设置保持不变。启动时不会再提示更新的版本；本页面仍可找到它。"
 
-#: port/frontend/shell/settings.cpp:1246
+#: port/frontend/shell/settings.cpp:1258
+msgid "Put each system's files back first: Settings > Game files > A folder for each system."
+msgstr "请先把每个系统的文件移回：设置 > 游戏文件 > 每个系统一个文件夹。"
+
+#: port/frontend/shell/settings.cpp:1276
 msgid "Theme"
 msgstr "主题"
 
-#: port/frontend/shell/settings.cpp:1248
+#: port/frontend/shell/settings.cpp:1278
 msgid "How the launcher looks: its colours, its corners and what moves behind the menus. Every theme has the same screens and buttons. Make your own as a JSON file in {0}/themes, starting from any of these: the text under this page says how. Only the launcher changes: the in-game menus and the games stay as they are."
 msgstr "启动器的外观：颜色、边角以及菜单背后的动态。每个主题的界面和按钮都相同。可在{0}/themes中以JSON文件制作自己的主题，以其中任意一个为起点：此页面下方的文字说明了方法。只会改变启动器：游戏内菜单和游戏本身保持不变。"
 
-#: port/frontend/shell/settings.cpp:1254
+#: port/frontend/shell/settings.cpp:1284
 msgid "Wii U side"
 msgstr "Wii U平台"
 
-#: port/frontend/shell/settings.cpp:1254
+#: port/frontend/shell/settings.cpp:1284
 msgid "Cemu's games, in the bar."
 msgstr "Cemu的游戏，显示在栏中。"
 
-#: port/frontend/shell/settings.cpp:1255
+#: port/frontend/shell/settings.cpp:1285
 msgid "Whether the bar shows the Wii U side (Cemu). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
 msgstr "栏中是否显示Wii U平台（Cemu）。隐藏时其游戏和设置会保留，重新开启后恢复。至少保留一个平台开启。"
 
-#: port/frontend/shell/settings.cpp:1258
+#: port/frontend/shell/settings.cpp:1288
 msgid "Switch side"
 msgstr "Switch平台"
 
-#: port/frontend/shell/settings.cpp:1258
+#: port/frontend/shell/settings.cpp:1288
 msgid "Eden's games, in the bar."
 msgstr "Eden的游戏，显示在栏中。"
 
-#: port/frontend/shell/settings.cpp:1259
+#: port/frontend/shell/settings.cpp:1289
 msgid "Whether the bar shows the Switch side (Eden). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
 msgstr "栏中是否显示Switch平台（Eden）。隐藏时其游戏和设置会保留，重新开启后恢复。至少保留一个平台开启。"
 
-#: port/frontend/shell/settings.cpp:1261
+#: port/frontend/shell/settings.cpp:1291
 msgid "DS side"
 msgstr "DS平台"
 
-#: port/frontend/shell/settings.cpp:1261
+#: port/frontend/shell/settings.cpp:1291
 msgid "melonDS's games, in the bar."
 msgstr "melonDS的游戏，显示在栏中。"
 
-#: port/frontend/shell/settings.cpp:1262
+#: port/frontend/shell/settings.cpp:1292
 msgid "Whether the bar shows the DS side (melonDS). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
 msgstr "栏中是否显示DS平台（melonDS）。隐藏时其游戏和设置会保留，重新开启后恢复。至少保留一个平台开启。"
 
-#: port/frontend/shell/settings.cpp:1264
+#: port/frontend/shell/settings.cpp:1294
 msgid "3DS side"
 msgstr "3DS平台"
 
-#: port/frontend/shell/settings.cpp:1264
+#: port/frontend/shell/settings.cpp:1294
 msgid "Azahar's games, in the bar."
 msgstr "Azahar的游戏，显示在栏中。"
 
-#: port/frontend/shell/settings.cpp:1265
+#: port/frontend/shell/settings.cpp:1295
 msgid "Whether the bar shows the 3DS side (Azahar). Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."
 msgstr "栏中是否显示3DS平台（Azahar）。隐藏时其游戏和设置会保留，重新开启后恢复。至少保留一个平台开启。"
 
-#: port/frontend/shell/settings.cpp:1267
+#: port/frontend/shell/settings.cpp:1297
 msgid "Game pictures behind menus"
 msgstr "菜单背景显示游戏图片"
 
-#: port/frontend/shell/settings.cpp:1267
+#: port/frontend/shell/settings.cpp:1297
 msgid "The focused game's cover, softened, behind the screens."
 msgstr "在画面背后柔化显示当前选中游戏的封面。"
 
-#: port/frontend/shell/settings.cpp:1268
+#: port/frontend/shell/settings.cpp:1298
 msgid "The focused game's picture fills the screen behind the menus, softened and dimmed, so moving the focus changes the whole screen. Off: the game's colours only."
 msgstr "当前选中游戏的图片会柔化变暗后铺满菜单背后的屏幕，因此移动焦点会改变整个画面。关闭：仅显示游戏的色彩。"
 
-#: port/frontend/shell/settings.cpp:1270
+#: port/frontend/shell/settings.cpp:1300
 msgid "Library filters"
 msgstr "游戏库筛选"
 
-#: port/frontend/shell/settings.cpp:1270
+#: port/frontend/shell/settings.cpp:1300
 msgid "All, Recently added, Favourites: a row over the list."
 msgstr "全部、最近添加、收藏：列表上方的一行。"
 
-#: port/frontend/shell/settings.cpp:1271
+#: port/frontend/shell/settings.cpp:1301
 msgid "A row of filters over the Library's list: All, Recently added (the last 30 days), Favourites and, on the Wii U side, Graphic packs on, each with its count. Off: the list has every game, and Sort and Search are all it needs."
 msgstr "游戏库列表上方的一行筛选：全部、最近添加（最近30天）、收藏，以及Wii U平台上的已开启图形包，各自附带数量。关闭：列表包含所有游戏，排序和搜索就已足够。"
 
-#: port/frontend/shell/settings.cpp:1273
+#: port/frontend/shell/settings.cpp:1303
 msgid "Larger text"
 msgstr "放大文字"
 
-#: port/frontend/shell/settings.cpp:1273
+#: port/frontend/shell/settings.cpp:1303
 msgid "Every size of text a step up."
 msgstr "所有文字都大一号。"
 
-#: port/frontend/shell/settings.cpp:1274
+#: port/frontend/shell/settings.cpp:1304
 msgid "Every style of text a step larger: captions from 20 to 23, reading text from 26 to 30."
 msgstr "所有文字样式都大一号：说明文字从20变为23，正文从26变为30。"
 
-#: port/frontend/shell/settings.cpp:1275
+#: port/frontend/shell/settings.cpp:1305
 msgid "High contrast"
 msgstr "高对比度"
 
-#: port/frontend/shell/settings.cpp:1275
+#: port/frontend/shell/settings.cpp:1305
 msgid "Opaque panels, full-strength text, a thicker ring."
 msgstr "不透明面板、全亮度文字、更粗的焦点框。"
 
-#: port/frontend/shell/settings.cpp:1276
+#: port/frontend/shell/settings.cpp:1306
 msgid "Opaque panels instead of glass, all text at full strength, a thicker focus ring and no grain or pictures behind the menus."
 msgstr "用不透明面板代替玻璃效果，所有文字为全亮度，焦点框更粗，菜单背后没有颗粒和图片。"
 
-#: port/frontend/shell/settings.cpp:1277
+#: port/frontend/shell/settings.cpp:1307
 msgid "Reduce motion"
 msgstr "减少动态效果"
 
-#: port/frontend/shell/settings.cpp:1277
+#: port/frontend/shell/settings.cpp:1307
 msgid "Fades in place of movement."
 msgstr "以淡入淡出代替移动。"
 
-#: port/frontend/shell/settings.cpp:1278
+#: port/frontend/shell/settings.cpp:1308
 msgid "Springs become short fades; nothing drifts, breathes or rises behind the menus."
 msgstr "弹性动画改为短暂的淡入淡出；菜单背后不再有漂移、呼吸或上升的动态。"
 
-#: port/frontend/shell/settings.cpp:1279 port/frontend/shell/welcome.cpp:208
+#: port/frontend/shell/settings.cpp:1309 port/frontend/shell/welcome.cpp:208
 msgid "Make it yours"
 msgstr "个性化设置"
 
-#: port/frontend/shell/settings.cpp:1279
+#: port/frontend/shell/settings.cpp:1309
 msgid "The first-start choices again: sides, theme, buttons."
 msgstr "再次进行首次启动时的选择：平台、主题、按键。"
 
-#: port/frontend/shell/settings.cpp:1280
+#: port/frontend/shell/settings.cpp:1310
 msgid "The page the first start opens on: the language, the sides, the theme, A and B, the music, vibration and the games' pictures, on one page."
 msgstr "首次启动时打开的页面：语言、平台、主题、A和B、音乐、振动和游戏图片，集中在一页。"
 
-#: port/frontend/shell/settings.cpp:1286
+#: port/frontend/shell/settings.cpp:1316
 msgid "Hold to confirm"
 msgstr "长按确认"
 
-#: port/frontend/shell/settings.cpp:1287
+#: port/frontend/shell/settings.cpp:1317
 msgid "How long Cross is held for what cannot be undone."
 msgstr "无法撤销的操作需按住交叉键多久。"
 
-#: port/frontend/shell/settings.cpp:1288
+#: port/frontend/shell/settings.cpp:1318
 msgid "Clearing caches, Artic Setup and resetting controls are held to confirm, never pressed twice. This is how long."
 msgstr "清除缓存、Artic Setup和重置操作都需长按确认，而不是按两次。这里设置按住的时长。"
 
-#: port/frontend/shell/settings.cpp:1292
+#: port/frontend/shell/settings.cpp:1322
 msgid "Storage, recompilers, games, keys and box art, checked."
 msgstr "存储空间、重编译器、游戏、密钥和封面的检查。"
 
-#: port/frontend/shell/settings.cpp:1293
+#: port/frontend/shell/settings.cpp:1323
 msgid "Each check has a status, what it means and what to do. It is also shown on the first start and whenever a check fails as the app starts."
 msgstr "每个检查项都有状态、含义和处理方法。首次启动时，以及应用启动时有检查项失败时，也会显示。"
 
-#: port/frontend/shell/settings.cpp:1295
+#: port/frontend/shell/settings.cpp:1325
 msgid "Copy logs to USB"
 msgstr "复制日志到USB"
 
-#: port/frontend/shell/settings.cpp:1295
+#: port/frontend/shell/settings.cpp:1325
 msgid "The logs a report needs, onto a USB drive."
 msgstr "将问题报告所需的日志复制到USB存储设备。"
 
-#: port/frontend/shell/settings.cpp:1296
+#: port/frontend/shell/settings.cpp:1326
 msgid "Copies the last five sessions' logs and the settings into a dated folder on a USB drive, to attach to a report."
 msgstr "将最近五次运行的日志和设置复制到USB存储设备上以日期命名的文件夹中，以便附在问题报告中。"
 
-#: port/frontend/shell/settings.cpp:1298 port/frontend/shell/settings.cpp:1301
+#: port/frontend/shell/settings.cpp:1328 port/frontend/shell/settings.cpp:1331
 msgid "Clear shader caches"
 msgstr "清除着色器缓存"
 
-#: port/frontend/shell/settings.cpp:1299 port/frontend/shell/settings.cpp:1302
+#: port/frontend/shell/settings.cpp:1329 port/frontend/shell/settings.cpp:1332
 msgid "For a game that crashes on a bad cache."
 msgstr "适用于因缓存损坏而崩溃的游戏。"
 
-#: port/frontend/shell/settings.cpp:1299
+#: port/frontend/shell/settings.cpp:1329
 msgid "Deletes Cemu's shader caches. Games build them again as they run: the first minutes stutter."
 msgstr "删除Cemu的着色器缓存。游戏运行时会重新生成：最初几分钟会卡顿。"
 
-#: port/frontend/shell/settings.cpp:1303
+#: port/frontend/shell/settings.cpp:1333
 msgid "Deletes Azahar's shader caches. Games build them again as they run: the first minutes stutter."
 msgstr "删除Azahar的着色器缓存。游戏运行时会重新生成：最初几分钟会卡顿。"
 
 #. Settings > Diagnostics: the copies of games unpacked from their archives (.zip, .7z...), kept for their next start
-#: port/frontend/shell/settings.cpp:1313
+#: port/frontend/shell/settings.cpp:1343
 msgid "Unpacked games"
 msgstr "已解压的游戏"
 
-#: port/frontend/shell/settings.cpp:1317
+#: port/frontend/shell/settings.cpp:1347
 msgid "Games from archives, kept unpacked for their next start."
 msgstr "来自压缩包的游戏，解压后保留以供下次启动。"
 
 #. {0} is the folder they are kept in
-#: port/frontend/shell/settings.cpp:1319
+#: port/frontend/shell/settings.cpp:1349
 msgid "Deletes the copies of games unpacked from their archives, kept in {0}. Each is unpacked again the next time it starts; when room is needed, the copies used longest ago go by themselves."
 msgstr "删除从压缩包解压的游戏副本，它们保存在{0}。每个游戏会在下次启动时重新解压；需要空间时，最久未使用的副本会自动删除。"
 
-#: port/frontend/shell/settings.cpp:1350
+#: port/frontend/shell/settings.cpp:1380
 msgid "Back to defaults"
 msgstr "恢复默认"
 
-#: port/frontend/shell/settings.cpp:1352
+#: port/frontend/shell/settings.cpp:1382
 msgid "This game goes back to its side's settings."
 msgstr "此游戏恢复使用其平台的设置。"
 
-#: port/frontend/shell/settings.cpp:1353
+#: port/frontend/shell/settings.cpp:1383
 msgid "Clears this game's own settings, so it uses its side's settings again, like every other game."
 msgstr "清除此游戏的专属设置，使其像其他游戏一样再次使用其平台的设置。"
 
 #. a Wii U account by its number, when its name cannot be read
-#: port/frontend/shell/settings.cpp:1370
+#: port/frontend/shell/settings.cpp:1400
 msgid "Account {0}"
 msgstr "账户{0}"
 
 #. a Wii U game's save that all its accounts share
-#: port/frontend/shell/settings.cpp:1372
+#: port/frontend/shell/settings.cpp:1402
 msgid "Every account's"
 msgstr "所有账户共用"
 
-#: port/frontend/shell/settings.cpp:1373
+#: port/frontend/shell/settings.cpp:1403
 msgid "Save data"
 msgstr "存档"
 
 #. a 3DS game's extra data (its extdata), which some games keep beside their saves
-#: port/frontend/shell/settings.cpp:1375
+#: port/frontend/shell/settings.cpp:1405
 msgid "Extra data"
 msgstr "追加数据"
 
-#: port/frontend/shell/settings.cpp:1376
+#: port/frontend/shell/settings.cpp:1406
 msgid "{0} save state"
 msgid_plural "{0} save states"
 msgstr[0] "{0}个即时存档"
 
-#: port/frontend/shell/settings.cpp:1414
+#: port/frontend/shell/settings.cpp:1444
 msgid "Held: moved to saves-before on the PS5, so it can still come back."
 msgstr "按住后会移到PS5上的saves-before，之后仍可恢复。"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1416
+#: port/frontend/shell/settings.cpp:1446
 msgid "Holding Cross moves these files to {0}/saves-before, in a folder named by the date and time, and the game starts without them next time. Nothing is deleted: copy them back from there (or restore a backup) to have them again."
 msgstr "按住交叉键会将这些文件移到{0}/saves-before中以日期和时间命名的文件夹，下次游戏启动时将不含这些文件。不会删除任何内容：从该处复制回来（或恢复备份）即可找回。"
 
-#: port/frontend/shell/settings.cpp:1426
+#: port/frontend/shell/settings.cpp:1456
 msgid "No saves yet"
 msgstr "还没有存档"
 
-#: port/frontend/shell/settings.cpp:1427
+#: port/frontend/shell/settings.cpp:1457
 msgid "They appear here once the game has saved."
 msgstr "游戏保存后会显示在这里。"
 
-#: port/frontend/shell/settings.cpp:1440
+#: port/frontend/shell/settings.cpp:1470
 msgid "This game's saves, to the first USB drive."
 msgstr "将此游戏的存档备份到第一个USB存储设备。"
 
-#: port/frontend/shell/settings.cpp:1441
+#: port/frontend/shell/settings.cpp:1471
 msgid "Copies this game's saves (every account's, on the Wii U) and its save states to PS5CEMU-HAR-saves on the first USB drive plugged in, in a folder named by the date and time, the same way a backup of every side's saves is made."
 msgstr "将此游戏的存档（Wii U为所有账户的存档）和即时存档复制到第一个插入的USB存储设备上的PS5CEMU-HAR-saves中，放在以日期和时间命名的文件夹里，方式与备份所有平台的存档相同。"
 
-#: port/frontend/shell/settings.cpp:1458
+#: port/frontend/shell/settings.cpp:1488
 msgid "No backup on the drives plugged in has this game's saves."
 msgstr "插入的存储设备上没有包含此游戏存档的备份。"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1460
+#: port/frontend/shell/settings.cpp:1490
 msgid "Puts this game's saves from the chosen backup back where they came from, and nothing else. Its saves there now are moved first to {0}/saves-before, so nothing is lost."
 msgstr "将所选备份中此游戏的存档放回原处，不影响其他内容。此游戏当前的存档会先移到{0}/saves-before，因此不会丢失任何内容。"
 
-#: port/frontend/shell/settings.cpp:1482
+#: port/frontend/shell/settings.cpp:1512
 msgid ""
 "Your own theme: a file such as sunset.json in {0}/themes, read as the app starts, then listed under Theme by its name:\n"
 "{{\"name\": \"Sunset\", \"base\": \"midnight\", \"colours\": {{\"wiiu\": \"#ff7a59\", \"ink-0\": \"#120806\"}}, \"corners\": 0.5, \"motif\": \"none\"}}\n"
@@ -6146,26 +6180,26 @@ msgstr ""
 "base：作为起点的主题（light、link-jack、classic、midnight、eden）。colours：ink-0至ink-2（背景）、text、wiiu、n3ds, nds和nx（各平台的颜色）、glass、line、good、warn、bad和focus，格式为#rrggbb。corners：0为方角，1.5为圆角。motif：side、none或eden。"
 
 #. {0} is Eden's data folder; {1} its game files folder (the same one unless another was chosen)
-#: port/frontend/shell/settings.cpp:1491
+#: port/frontend/shell/settings.cpp:1521
 msgid "Saves: {0}/user/nand/user/save. Updates and DLC: beside a game, in its own folder, or in {1}/updates. Mods and cheats: {1}/mods. Covers and names: {0}/covers, once Eden has read a game."
 msgstr "存档：{0}/user/nand/user/save。更新和DLC：放在游戏旁边（其自己的文件夹中）或{1}/updates。模组和金手指：{1}/mods。封面和名称：{0}/covers（Eden读取游戏后）。"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1496
+#: port/frontend/shell/settings.cpp:1526
 msgid "Saves: {0}/melonds/saves (a .sav beside the game is taken the first time). Save states: melonds/states. Cheats: melonds/cheats/<game file>.mch, melonDS's format. DSi games, the DS's wireless and its GBA slot are not there."
 msgstr "存档：{0}/melonds/saves（游戏旁的.sav会在首次使用时导入）。即时存档：melonds/states。金手指：melonds/cheats/<游戏文件名>.mch，melonDS格式。不支持DSi游戏、DS的无线通信及其GBA卡槽。"
 
-#: port/frontend/shell/settings.cpp:1500
+#: port/frontend/shell/settings.cpp:1530
 msgid "On, a QR code here opens the game's second screen in a phone's browser. Nothing to install; the phone must be on the PS5's network."
 msgstr "开启后，此处的二维码可在手机浏览器中打开游戏的第二个屏幕。无需安装；手机必须与PS5处于同一网络。"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1504
+#: port/frontend/shell/settings.cpp:1534
 msgid "Figure dumps go in {0}/figures: skylanders, infinity and dimensions. Switch a portal on here, start the game, then put figures on it from the in-game menu (touchpad click + Options > USB devices)."
 msgstr "手办转储文件放在{0}/figures：skylanders、infinity和dimensions。在此开启传送门，启动游戏，然后从游戏内菜单将手办放上（按下触摸板键+选项键 > USB设备）。"
 
 #. {0} is the app's version; {1} its data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on; {2} Eden's game files folder; {3} Cemu's selected data folder; {4} its default games folder; {5} Azahar's selected folder; {6} melonDS's selected folder
-#: port/frontend/shell/settings.cpp:1509
+#: port/frontend/shell/settings.cpp:1539
 msgid ""
 "Cemu, the Wii U emulator, by the Cemu team and its contributors; RADV on the PS5 by Mihawk-99 and mpereiraesaa; the community graphic packs' authors.\n"
 "Azahar, the 3DS emulator, by the Azahar team and the Citra contributors before them; Mihawk-99's PS5 port of it and dynarmic.\n"
@@ -6196,168 +6230,172 @@ msgstr ""
 "版本{0}"
 
 #. the first choice in the language list: the PS5's own ({0}, in its own words)
-#: port/frontend/shell/settings.cpp:1527
+#: port/frontend/shell/settings.cpp:1557
 msgid "The PS5's language: {0}"
 msgstr "PS5系统语言：{0}"
 
-#: port/frontend/shell/settings.cpp:1552
+#: port/frontend/shell/settings.cpp:1582
 msgid "Language: {0}"
 msgstr "语言：{0}"
 
-#: port/frontend/shell/settings.cpp:1673
+#: port/frontend/shell/settings.cpp:1703
 msgid "One side at least stays on"
 msgstr "至少保留一个平台开启"
 
 #. the Wii U account games start on now ({0}: its name)
-#: port/frontend/shell/settings.cpp:1829 port/frontend/shell/settings.cpp:1998 port/frontend/shell/settings.cpp:2073
+#: port/frontend/shell/settings.cpp:1859 port/frontend/shell/settings.cpp:2028 port/frontend/shell/settings.cpp:2103
 msgid "Games start on {0}'s saves"
 msgstr "游戏以{0}的存档启动"
 
-#: port/frontend/shell/settings.cpp:1923
+#: port/frontend/shell/settings.cpp:1953
 msgid "This game has no ID to save settings under"
 msgstr "此游戏没有可用于保存设置的ID"
 
-#: port/frontend/shell/settings.cpp:2021
+#: port/frontend/shell/settings.cpp:2051
 msgid "Backing up {0}'s saves…"
 msgstr "正在备份{0}的存档…"
 
-#: port/frontend/shell/settings.cpp:2068
+#: port/frontend/shell/settings.cpp:2098
 msgid "A name for the new account"
 msgstr "新账户的名称"
 
-#: port/frontend/shell/settings.cpp:2085
+#: port/frontend/shell/settings.cpp:2115
 msgid "A new name"
 msgstr "新名称"
 
-#: port/frontend/shell/settings.cpp:2087
+#: port/frontend/shell/settings.cpp:2117
 msgid "Renamed {0}"
 msgstr "已重命名{0}"
 
-#: port/frontend/shell/settings.cpp:2096
+#: port/frontend/shell/settings.cpp:2126
 msgid "Backing up every side's saves…"
 msgstr "正在备份所有平台的存档…"
 
-#: port/frontend/shell/settings.cpp:2177
+#: port/frontend/shell/settings.cpp:2207
 msgid "Switch games play offline"
 msgstr "Switch游戏离线游玩"
 
-#: port/frontend/shell/settings.cpp:2181
+#: port/frontend/shell/settings.cpp:2211
 msgid "Your nickname in rooms"
 msgstr "你在房间中的昵称"
 
-#: port/frontend/shell/settings.cpp:2186
+#: port/frontend/shell/settings.cpp:2216
 msgid "A nickname is 4 to 20 letters, digits, spaces, dots, dashes or underscores."
 msgstr "昵称为4到20个拉丁字母、数字、空格、句点、连字符或下划线。"
 
 #. the nickname shown in Switch rooms ({0})
-#: port/frontend/shell/settings.cpp:2192
+#: port/frontend/shell/settings.cpp:2222
 msgid "In rooms you are {0}"
 msgstr "在房间中你是{0}"
 
-#: port/frontend/shell/settings.cpp:2206
+#: port/frontend/shell/settings.cpp:2236
 msgid "This room is for another version of Eden."
 msgstr "这个房间属于其他版本的Eden。"
 
 #. the room ({0}) Switch games join from now on
-#: port/frontend/shell/settings.cpp:2217 port/frontend/shell/settings.cpp:2254
+#: port/frontend/shell/settings.cpp:2247 port/frontend/shell/settings.cpp:2284
 msgid "Switch games join {0} as they start"
 msgstr "Switch游戏启动时会加入{0}"
 
 #. the password of a room ({0}: its name)
-#: port/frontend/shell/settings.cpp:2221
+#: port/frontend/shell/settings.cpp:2251
 msgid "{0}'s password"
 msgstr "{0}的密码"
 
-#: port/frontend/shell/settings.cpp:2232
+#: port/frontend/shell/settings.cpp:2262
 msgid "The room's address"
 msgstr "房间地址"
 
-#: port/frontend/shell/settings.cpp:2237
+#: port/frontend/shell/settings.cpp:2267
 msgid "An address is a name or an IPv4 address: letters, digits, dots and dashes."
 msgstr "地址是名称或IPv4地址：字母、数字、句点和连字符。"
 
-#: port/frontend/shell/settings.cpp:2240
+#: port/frontend/shell/settings.cpp:2270
 msgid "Its UDP port"
 msgstr "它的UDP端口"
 
-#: port/frontend/shell/settings.cpp:2244
+#: port/frontend/shell/settings.cpp:2274
 msgid "A port is a number from 1 to 65535."
 msgstr "端口是1到65535之间的数字。"
 
-#: port/frontend/shell/settings.cpp:2247
+#: port/frontend/shell/settings.cpp:2277
 msgid "Its password (empty: none)"
 msgstr "它的密码（留空：无）"
 
-#: port/frontend/shell/settings.cpp:2264
+#: port/frontend/shell/settings.cpp:2294
 msgid "Starting the 3DS"
 msgstr "正在启动3DS"
 
-#: port/frontend/shell/settings.cpp:2273
+#: port/frontend/shell/settings.cpp:2303
 msgid "Your RetroAchievements user name"
 msgstr "RetroAchievements用户名"
 
-#: port/frontend/shell/settings.cpp:2276
+#: port/frontend/shell/settings.cpp:2306
 msgid "{0}'s RetroAchievements password"
 msgstr "{0}的RetroAchievements密码"
 
-#: port/frontend/shell/settings.cpp:2278
+#: port/frontend/shell/settings.cpp:2308
 msgid "Signing in to RetroAchievements…"
 msgstr "正在登录RetroAchievements…"
 
 #. what clearing the unpacked games did; {1} is the room it made, as in 2.4 GB
-#: port/frontend/shell/settings.cpp:2300
+#: port/frontend/shell/settings.cpp:2330
 msgid "{0} game deleted ({1})"
 msgid_plural "{0} games deleted ({1})"
 msgstr[0] "已删除{0}个游戏（{1}）"
 
 #. a held row's result: the covers are on their way
-#: port/frontend/shell/settings.cpp:2307
+#: port/frontend/shell/settings.cpp:2337
 msgid "Downloading in the background"
 msgstr "正在后台下载"
 
-#: port/frontend/shell/settings.cpp:2343
+#: port/frontend/shell/settings.cpp:2357 port/frontend/shell/shell.cpp:434
+msgid "Close PS5-ECAM and start it again from the home screen: the folders move as it starts."
+msgstr "请关闭PS5-ECAM，然后从主页重新启动：文件夹会在启动时移动。"
+
+#: port/frontend/shell/settings.cpp:2399
 msgid "{0} is deleted; its saves stay"
 msgstr "已删除{0}；其存档保留"
 
-#: port/frontend/shell/settings.cpp:2356
+#: port/frontend/shell/settings.cpp:2412
 msgid "Restoring the saves of {0}…"
 msgstr "正在恢复{0}的存档…"
 
-#: port/frontend/shell/settings.cpp:2364
+#: port/frontend/shell/settings.cpp:2420
 msgid "Signed out of RetroAchievements"
 msgstr "已退出RetroAchievements登录"
 
-#: port/frontend/shell/settings.cpp:2373
+#: port/frontend/shell/settings.cpp:2429
 msgid "Restoring {0}'s saves of {1}…"
 msgstr "正在从{1}的备份恢复{0}的存档…"
 
 #. one of a game's saves moved out of the way ({0}: which, as its row names it)
-#: port/frontend/shell/settings.cpp:2387
+#: port/frontend/shell/settings.cpp:2443
 msgid "{0}: moved to saves-before"
 msgstr "{0}：已移到saves-before"
 
-#: port/frontend/shell/settings.cpp:2398
+#: port/frontend/shell/settings.cpp:2454
 msgid "Done: back to its side's settings"
 msgstr "完成：已恢复使用其平台的设置"
 
-#: port/frontend/shell/settings.cpp:2559
+#: port/frontend/shell/settings.cpp:2615
 msgid "Scan it, or open"
 msgstr "扫描，或打开"
 
-#: port/frontend/shell/settings.cpp:2565
+#: port/frontend/shell/settings.cpp:2621
 msgid "Same network as the PS5. Nothing to install: the browser is enough. Sound stays on the PS5. Any browser on the network can see it and touch."
 msgstr "与PS5处于同一网络。无需安装：浏览器即可。声音仍从PS5输出。网络中的任何浏览器都能看到并触控。"
 
-#: port/frontend/shell/settings.cpp:2597
+#: port/frontend/shell/settings.cpp:2653
 msgid "Support PS5-ECAM"
 msgstr "支持PS5-ECAM"
 
-#: port/frontend/shell/settings.cpp:2608
+#: port/frontend/shell/settings.cpp:2664
 msgid "PS5-ECAM is free. If it brings your games back, you can support its work here."
 msgstr "PS5-ECAM是免费的。如果它让您重新玩上了自己的游戏，可以在这里支持它的开发。"
 
 #. above Settings' pages: whose settings they are ({0}: Wii U, Nintendo 3DS or Nintendo DS)
-#: port/frontend/shell/settings.cpp:2648
+#: port/frontend/shell/settings.cpp:2704
 msgid "{0} settings"
 msgstr "{0}设置"
 
@@ -6874,367 +6912,389 @@ msgstr "在电脑或NAS上为文件夹开启文件共享，然后在此添加。
 msgid "Nothing is ever written to it."
 msgstr "不会向其写入任何内容。"
 
-#: port/frontend/shell/shell.cpp:213
+#: port/frontend/shell/shell.cpp:214
 msgid "Saved your place in the library"
 msgstr "已保存在游戏库中的位置"
 
-#: port/frontend/shell/shell.cpp:216 port/frontend/shell/shell.cpp:952 port/frontend/shell/shell.cpp:967 port/frontend/shell/shell.cpp:1035
+#: port/frontend/shell/shell.cpp:217 port/frontend/shell/shell.cpp:993 port/frontend/shell/shell.cpp:1008 port/frontend/shell/shell.cpp:1076
 msgid "The game could not start"
 msgstr "游戏未能启动"
 
-#: port/frontend/shell/shell.cpp:221
+#: port/frontend/shell/shell.cpp:222
 msgid "Your settings could not be read"
 msgstr "无法读取设置"
 
 #. {0} is where the unreadable settings file is kept: /data/ps5cemu/ps5cemu.json.broken
-#: port/frontend/shell/shell.cpp:223
+#: port/frontend/shell/shell.cpp:224
 msgid "The launcher's settings file, ps5cemu.json, has a mistake in it, so every setting is back to its default. The file as it was is kept as {0}: mend it on a computer and put it back as ps5cemu.json, or leave it."
 msgstr "启动器的设置文件 ps5cemu.json 有错误，因此所有设置都已恢复为默认。原文件已保留为 {0}：可以在电脑上修正后放回为 ps5cemu.json，也可以不管它。"
 
-#: port/frontend/shell/shell.cpp:230
+#: port/frontend/shell/shell.cpp:231
 msgid "PS5-ECAM closed after a crash"
 msgstr "PS5-ECAM因崩溃而关闭"
 
 #. {0} is the crash report's first line in the log, as it is: "signal 11 at 0x7f3a..."
-#: port/frontend/shell/shell.cpp:232
+#: port/frontend/shell/shell.cpp:233
 msgid "The last time, PS5-ECAM stopped with a crash: {0}. Its log is kept: Settings > Diagnostics > Copy logs to USB puts it on a drive, with the sessions before it, to attach to a report on GitHub."
 msgstr "上次PS5-ECAM因崩溃而停止：{0}。日志已保留：设置 > 诊断 > 复制日志到USB会把它连同之前的会话日志复制到存储设备上，以便附在GitHub上的报告中。"
 
-#: port/frontend/shell/shell.cpp:746
+#: port/frontend/shell/shell.cpp:247
+msgid "Some files could not move"
+msgstr "部分文件无法移动"
+
+#. {0} names the systems whose files did not move into folders of their own: "Wii U, Nintendo 3DS"
+#: port/frontend/shell/shell.cpp:249
+msgid "{0}: their files stayed where they were, with nothing lost. The boot log says why: Settings > Diagnostics > Copy logs to USB."
+msgstr "{0}：其文件留在原处，没有丢失任何内容。原因见启动日志：设置 > 诊断 > 复制日志到USB。"
+
+#: port/frontend/shell/shell.cpp:257
+msgid "The folders have moved"
+msgstr "文件夹已移动"
+
+#: port/frontend/shell/shell.cpp:787
 msgid "Cemu did not start: {0}"
 msgstr "Cemu未能启动：{0}"
 
-#: port/frontend/shell/shell.cpp:875
+#: port/frontend/shell/shell.cpp:916
 msgid "{0} min played"
 msgid_plural "{0} min played"
 msgstr[0] "已玩{0}分钟"
 
-#: port/frontend/shell/shell.cpp:876
+#: port/frontend/shell/shell.cpp:917
 msgid "{0} h played"
 msgid_plural "{0} h played"
 msgstr[0] "已玩{0}小时"
 
-#: port/frontend/shell/shell.cpp:891
+#: port/frontend/shell/shell.cpp:932
 msgid "today"
 msgstr "今天"
 
-#: port/frontend/shell/shell.cpp:893
+#: port/frontend/shell/shell.cpp:934
 msgid "yesterday"
 msgstr "昨天"
 
-#: port/frontend/shell/shell.cpp:895
+#: port/frontend/shell/shell.cpp:936
 msgid "{0} day ago"
 msgid_plural "{0} days ago"
 msgstr[0] "{0}天前"
 
-#: port/frontend/shell/shell.cpp:897
+#: port/frontend/shell/shell.cpp:938
 msgid "{0} week ago"
 msgid_plural "{0} weeks ago"
 msgstr[0] "{0}周前"
 
-#: port/frontend/shell/shell.cpp:898
+#: port/frontend/shell/shell.cpp:939
 msgid "{0} month ago"
 msgid_plural "{0} months ago"
 msgstr[0] "{0}个月前"
 
-#: port/frontend/shell/shell.cpp:944
+#: port/frontend/shell/shell.cpp:985
 msgid "Cemu is still starting"
 msgstr "Cemu仍在启动"
 
-#: port/frontend/shell/shell.cpp:953
+#: port/frontend/shell/shell.cpp:994
 msgid "Eden needs your Switch's keys to read its games: prod.keys (and title.keys), dumped from your own Switch, in {0}/keys. The Setup check says what else is missing."
 msgstr "Eden需要您Switch的密钥才能读取游戏：从您自己的Switch导出的prod.keys（和title.keys），放在{0}/keys。配置检查会告诉您还缺少什么。"
 
-#: port/frontend/shell/shell.cpp:989
+#: port/frontend/shell/shell.cpp:1030
 msgid "Starting melonDS"
 msgstr "正在启动melonDS"
 
-#: port/frontend/shell/shell.cpp:990 port/frontend/shell/shell.cpp:2385
+#: port/frontend/shell/shell.cpp:1031 port/frontend/shell/shell.cpp:2511
 msgid "Starting Azahar"
 msgstr "正在启动Azahar"
 
-#: port/frontend/shell/shell.cpp:991
+#: port/frontend/shell/shell.cpp:1032
 msgid "Starting Eden"
 msgstr "正在启动Eden"
 
-#: port/frontend/shell/shell.cpp:1078
+#: port/frontend/shell/shell.cpp:1119
 msgid "Making {0}'s home screen tile…"
 msgstr "正在制作{0}的主页图标…"
 
-#: port/frontend/shell/shell.cpp:1085
+#: port/frontend/shell/shell.cpp:1126
 msgid "Removing {0}'s home screen tile…"
 msgstr "正在移除{0}的主页图标…"
 
-#: port/frontend/shell/shell.cpp:1097
+#: port/frontend/shell/shell.cpp:1138
 msgid "The tile could not be removed"
 msgstr "无法移除图标"
 
-#: port/frontend/shell/shell.cpp:1097
+#: port/frontend/shell/shell.cpp:1138
 msgid "The tile could not be made"
 msgstr "无法制作图标"
 
-#: port/frontend/shell/shell.cpp:1103
+#: port/frontend/shell/shell.cpp:1144
 msgid "The tile is removed"
 msgstr "图标已移除"
 
-#: port/frontend/shell/shell.cpp:1104
+#: port/frontend/shell/shell.cpp:1145
 msgid "Its folder is gone from /data/homebrew. If its picture stays on the home screen, delete it there (Options, then Delete), or restart ShadowMount Plus."
 msgstr "其文件夹已从/data/homebrew移除。如果图片仍留在主页上，请在那里删除（OPTIONS键，然后选择“删除”），或重启ShadowMount Plus。"
 
 #. {0} is the tile's folder, /data/homebrew/PPSA99xxx
-#: port/frontend/shell/shell.cpp:1109
+#: port/frontend/shell/shell.cpp:1150
 msgid "The tile is made again"
 msgstr "已重新制作图标"
 
 #. {0} is the tile's folder, /data/homebrew/PPSA99xxx
-#: port/frontend/shell/shell.cpp:1109
+#: port/frontend/shell/shell.cpp:1150
 msgid "The tile is made"
 msgstr "图标已制作"
 
-#: port/frontend/shell/shell.cpp:1110
+#: port/frontend/shell/shell.cpp:1151
 msgid "It is in {0}. ShadowMount Plus puts it on the PS5's home screen as it does any homebrew: if it does not show, restart ShadowMount Plus or the console. The tile starts the game in PS5-ECAM, and closing the game closes the app."
 msgstr "它位于{0}。ShadowMount Plus会像对待其他自制软件一样，将它添加到PS5的主页：如果没有显示，请重启ShadowMount Plus或主机。该图标会在PS5-ECAM中启动游戏，关闭游戏即关闭应用。"
 
-#: port/frontend/shell/shell.cpp:1123
+#: port/frontend/shell/shell.cpp:1164
 msgid "The tile's game could not start"
 msgstr "无法启动图标的游戏"
 
-#: port/frontend/shell/shell.cpp:1151
+#: port/frontend/shell/shell.cpp:1192
 msgid "It is not in the library: {0}"
 msgstr "不在游戏库中：{0}"
 
 #. the launcher's tabs
-#: port/frontend/shell/shell.cpp:1328
+#: port/frontend/shell/shell.cpp:1369
 msgctxt "tab"
 msgid "Settings"
 msgstr "设置"
 
-#: port/frontend/shell/shell.cpp:1381 port/frontend/shell/shell.cpp:1429 port/frontend/shell/shell.cpp:2278
+#: port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:1482 port/frontend/shell/shell.cpp:2365
 msgid "Done"
 msgstr "完成"
 
-#: port/frontend/shell/shell.cpp:1383 port/frontend/shell/shell.cpp:1445 port/frontend/shell/shell.cpp:1449 port/frontend/shell/shell.cpp:2368 port/frontend/shell/shell.cpp:2399
+#: port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1498 port/frontend/shell/shell.cpp:1502 port/frontend/shell/shell.cpp:2455 port/frontend/shell/shell.cpp:2525
 msgid "Cancel"
 msgstr "取消"
 
-#: port/frontend/shell/shell.cpp:1385 port/frontend/shell/shell.cpp:1387 port/frontend/shell/shell.cpp:1435
+#: port/frontend/shell/shell.cpp:1438 port/frontend/shell/shell.cpp:1440 port/frontend/shell/shell.cpp:1488
 msgid "Close"
 msgstr "关闭"
 
-#: port/frontend/shell/shell.cpp:1389 port/frontend/shell/shell.cpp:1420
+#: port/frontend/shell/shell.cpp:1442 port/frontend/shell/shell.cpp:1473
 msgid "Move"
 msgstr "移动"
 
-#: port/frontend/shell/shell.cpp:1389
+#: port/frontend/shell/shell.cpp:1442
 msgid "Switch"
 msgstr "切换"
 
-#: port/frontend/shell/shell.cpp:1394
+#: port/frontend/shell/shell.cpp:1447
 msgid "Continue"
 msgstr "继续"
 
-#: port/frontend/shell/shell.cpp:1396 port/frontend/shell/shell.cpp:1431 port/frontend/shell/shell.cpp:1432 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1442
+#: port/frontend/shell/shell.cpp:1449 port/frontend/shell/shell.cpp:1484 port/frontend/shell/shell.cpp:1485 port/frontend/shell/shell.cpp:1489 port/frontend/shell/shell.cpp:1495
 msgid "More about it"
 msgstr "详细说明"
 
-#: port/frontend/shell/shell.cpp:1397 port/frontend/shell/welcome.cpp:104
+#: port/frontend/shell/shell.cpp:1450 port/frontend/shell/welcome.cpp:104
 msgid "Continue to the Setup check"
 msgstr "继续进行配置检查"
 
-#: port/frontend/shell/shell.cpp:1397 port/frontend/shell/shell.cpp:1406 port/frontend/shell/welcome.cpp:104
+#: port/frontend/shell/shell.cpp:1450 port/frontend/shell/shell.cpp:1459 port/frontend/shell/welcome.cpp:104
 msgid "Continue to the Library"
 msgstr "前往游戏库"
 
-#: port/frontend/shell/shell.cpp:1402
+#: port/frontend/shell/shell.cpp:1455
 msgid "Change the language"
 msgstr "更改语言"
 
-#: port/frontend/shell/shell.cpp:1405
+#: port/frontend/shell/shell.cpp:1458
 msgid "Check again"
 msgstr "重新检查"
 
-#: port/frontend/shell/shell.cpp:1416
+#: port/frontend/shell/shell.cpp:1469
 msgid "Filters"
 msgstr "筛选"
 
-#: port/frontend/shell/shell.cpp:1420 port/frontend/shell/shell.cpp:1421 port/frontend/shell/shell.cpp:1423
+#: port/frontend/shell/shell.cpp:1473 port/frontend/shell/shell.cpp:1474 port/frontend/shell/shell.cpp:1476
 msgid "Options"
 msgstr "选项"
 
-#: port/frontend/shell/shell.cpp:1421
+#: port/frontend/shell/shell.cpp:1474
 msgid "Jump by letter"
 msgstr "按首字母跳转"
 
-#: port/frontend/shell/shell.cpp:1423
+#: port/frontend/shell/shell.cpp:1476
 msgid "Back to the buttons"
 msgstr "返回按钮"
 
-#: port/frontend/shell/shell.cpp:1424
+#: port/frontend/shell/shell.cpp:1477
 msgid "Scroll"
 msgstr "滚动"
 
-#: port/frontend/shell/shell.cpp:1429 port/frontend/shell/shell.cpp:1435
+#: port/frontend/shell/shell.cpp:1482 port/frontend/shell/shell.cpp:1488
 msgid "Pages"
 msgstr "页面"
 
-#: port/frontend/shell/shell.cpp:1432 port/frontend/shell/widgets.cpp:349
+#: port/frontend/shell/shell.cpp:1485 port/frontend/shell/widgets.cpp:349
 msgid "Default"
 msgstr "默认"
 
-#: port/frontend/shell/shell.cpp:1439
+#: port/frontend/shell/shell.cpp:1492
 msgid "Back to the packs"
 msgstr "返回图形包"
 
-#: port/frontend/shell/shell.cpp:1440
+#: port/frontend/shell/shell.cpp:1493
 msgid "On / off"
 msgstr "开/关"
 
-#: port/frontend/shell/shell.cpp:1446
+#: port/frontend/shell/shell.cpp:1499
 msgid "Assign"
 msgstr "分配"
 
-#: port/frontend/shell/shell.cpp:1446
+#: port/frontend/shell/shell.cpp:1499
 msgid "Clear"
 msgstr "清除"
 
-#: port/frontend/shell/shell.cpp:1450
+#: port/frontend/shell/shell.cpp:1503
 msgid "Use this folder"
 msgstr "使用此文件夹"
 
-#: port/frontend/shell/shell.cpp:1453
+#: port/frontend/shell/shell.cpp:1506
 msgid "Number"
 msgstr "数位"
 
-#: port/frontend/shell/shell.cpp:1453
+#: port/frontend/shell/shell.cpp:1506
 msgid "Keep"
 msgstr "确定"
 
-#: port/frontend/shell/shell.cpp:1454
+#: port/frontend/shell/shell.cpp:1507
 msgid "Edit"
 msgstr "编辑"
 
-#: port/frontend/shell/shell.cpp:1454
+#: port/frontend/shell/shell.cpp:1507
 msgid "Connect"
 msgstr "连接"
 
-#: port/frontend/shell/shell.cpp:1454
+#: port/frontend/shell/shell.cpp:1507
 msgid "Hold to set up"
 msgstr "按住以导入"
 
-#: port/frontend/shell/shell.cpp:1732
+#: port/frontend/shell/shell.cpp:1785
 msgid "Resume where you left off"
 msgstr "从上次离开处继续"
 
-#: port/frontend/shell/shell.cpp:1735
+#: port/frontend/shell/shell.cpp:1788
 msgid "Game hub"
 msgstr "游戏中心"
 
-#: port/frontend/shell/shell.cpp:1738
+#: port/frontend/shell/shell.cpp:1791
 msgid "Game settings: custom"
 msgstr "游戏设置：自定义"
 
-#: port/frontend/shell/shell.cpp:1744
+#: port/frontend/shell/shell.cpp:1797
 msgid "Add mods from USB"
 msgstr "从USB添加模组"
 
-#: port/frontend/shell/shell.cpp:1747
+#: port/frontend/shell/shell.cpp:1800
 msgid "Not a favourite"
 msgstr "取消收藏"
 
-#: port/frontend/shell/shell.cpp:1749
+#: port/frontend/shell/shell.cpp:1802
 msgid "Remove from home screen"
 msgstr "从主页移除"
 
-#: port/frontend/shell/shell.cpp:1751
+#: port/frontend/shell/shell.cpp:1804
 msgid "Add to home screen"
 msgstr "添加到主页"
 
-#: port/frontend/shell/shell.cpp:2095
+#: port/frontend/shell/shell.cpp:2182
 msgid "Added to Favourites"
 msgstr "已加入收藏"
 
-#: port/frontend/shell/shell.cpp:2095
+#: port/frontend/shell/shell.cpp:2182
 msgid "Taken out of Favourites"
 msgstr "已取消收藏"
 
-#: port/frontend/shell/shell.cpp:2300
+#: port/frontend/shell/shell.cpp:2387
 msgid "PS5-ECAM {0} is out"
 msgstr "PS5-ECAM {0}已发布"
 
-#: port/frontend/shell/shell.cpp:2301
+#: port/frontend/shell/shell.cpp:2388
 msgid "This is {0}. Download and install it now? Your games, saves and settings stay as they are."
 msgstr "这是{0}。立即下载并安装吗？游戏、存档和设置保持不变。"
 
-#: port/frontend/shell/shell.cpp:2302
+#: port/frontend/shell/shell.cpp:2389
 msgid "Update now"
 msgstr "立即更新"
 
-#: port/frontend/shell/shell.cpp:2302 port/frontend/shell/shell.cpp:2326 port/frontend/shell/shell.cpp:2365
+#: port/frontend/shell/shell.cpp:2389 port/frontend/shell/shell.cpp:2413 port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2475 port/frontend/shell/shell.cpp:2492
 msgid "Later"
 msgstr "稍后"
 
-#: port/frontend/shell/shell.cpp:2302
+#: port/frontend/shell/shell.cpp:2389
 msgid "Skip this version"
 msgstr "跳过此版本"
 
-#: port/frontend/shell/shell.cpp:2305 port/frontend/shell/shell.cpp:2310 port/frontend/shell/shell.cpp:2315
+#: port/frontend/shell/shell.cpp:2392 port/frontend/shell/shell.cpp:2397 port/frontend/shell/shell.cpp:2402
 msgid "Updating to {0}"
 msgstr "正在更新到{0}"
 
-#: port/frontend/shell/shell.cpp:2306
+#: port/frontend/shell/shell.cpp:2393
 msgid "Downloading: {0} of {1} MB"
 msgstr "正在下载：{0}/{1} MB"
 
-#: port/frontend/shell/shell.cpp:2311
+#: port/frontend/shell/shell.cpp:2398
 msgid "Checking the download"
 msgstr "正在校验下载内容"
 
-#: port/frontend/shell/shell.cpp:2316
+#: port/frontend/shell/shell.cpp:2403
 msgid "Installing"
 msgstr "正在安装"
 
-#: port/frontend/shell/shell.cpp:2320
+#: port/frontend/shell/shell.cpp:2407
 msgid "{0} is installed"
 msgstr "已安装{0}"
 
-#: port/frontend/shell/shell.cpp:2322
+#: port/frontend/shell/shell.cpp:2409 port/frontend/shell/shell.cpp:2466
 msgid "Starting PS5-ECAM again…"
 msgstr "正在重新启动PS5-ECAM…"
 
-#: port/frontend/shell/shell.cpp:2326 port/frontend/shell/shell.cpp:2331
+#: port/frontend/shell/shell.cpp:2413 port/frontend/shell/shell.cpp:2418
 msgid "Restart now"
 msgstr "立即重启"
 
-#: port/frontend/shell/shell.cpp:2330
+#: port/frontend/shell/shell.cpp:2417
 msgid "PS5-ECAM starts again to finish the update."
 msgstr "PS5-ECAM会重新启动以完成更新。"
 
-#: port/frontend/shell/shell.cpp:2335
+#: port/frontend/shell/shell.cpp:2422
 msgid "The update did not finish"
 msgstr "更新未完成"
 
-#: port/frontend/shell/shell.cpp:2336
+#: port/frontend/shell/shell.cpp:2423
 msgid "PS5-ECAM is still {0}."
 msgstr "PS5-ECAM仍为{0}。"
 
-#: port/frontend/shell/shell.cpp:2339
+#: port/frontend/shell/shell.cpp:2426
 msgid "Checking for updates"
 msgstr "正在检查更新"
 
-#: port/frontend/shell/shell.cpp:2345
+#: port/frontend/shell/shell.cpp:2432
 msgid "PS5-ECAM update"
 msgstr "PS5-ECAM更新"
 
-#: port/frontend/shell/shell.cpp:2365
+#: port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2492
 msgid "Select"
 msgstr "确定"
 
-#: port/frontend/shell/shell.cpp:2366
+#: port/frontend/shell/shell.cpp:2453
 msgid "Restart"
 msgstr "重启"
 
+#. {0} lists the four folders: /data/cemu, /data/azahar, /data/melonds, /data/eden
+#: port/frontend/shell/shell.cpp:2469
+msgid "Your Wii U, 3DS, DS and Switch files go into folders of their own: {0}. They are moved on the same drive, never copied, so it takes a moment whatever their size. PS5-ECAM starts again to do it."
+msgstr "Wii U、3DS、DS和Switch的文件将放入各自的文件夹：{0}。它们在同一存储设备上移动，从不复制，因此无论多大都只需片刻。PS5-ECAM会为此重新启动。"
+
+#: port/frontend/shell/shell.cpp:2475
+msgid "Reorganize"
+msgstr "整理"
+
 #. under an archived game's name while it is unpacked, the first time it starts
-#: port/frontend/shell/shell.cpp:2388
+#: port/frontend/shell/shell.cpp:2514
 msgid "Unpacking the game from its archive. This is done once: the copy is kept for the next start."
 msgstr "正在从压缩包解压游戏。只需解压一次：副本会保留以供下次启动。"
 
@@ -7359,49 +7419,49 @@ msgstr "有史以来最大的更新，一览无余。GitHub上的发行说明包
 msgid "This game"
 msgstr "此游戏"
 
-#: port/main_ps5.cpp:151
+#: port/main_ps5.cpp:152
 msgid "Firmware {0}"
 msgstr "固件{0}"
 
-#: port/main_ps5.cpp:153
+#: port/main_ps5.cpp:154
 msgid "Logs: {0}, {1}/log.txt"
 msgstr "日志：{0}，{1}/log.txt"
 
-#: port/main_ps5.cpp:154
+#: port/main_ps5.cpp:155
 msgid "Boot log not written (/data is unreachable)"
 msgstr "未写入启动日志（无法访问/data）"
 
-#: port/main_ps5.cpp:536
+#: port/main_ps5.cpp:564
 msgid "PS5-ECAM cannot reach /data. Load a HEN with PPSA99360 in its app jailbreak list, or elfldr, then restart PS5-ECAM."
 msgstr "PS5-ECAM无法访问/data。加载应用越狱列表中有PPSA99360的HEN或elfldr，然后重新启动PS5-ECAM。"
 
-#: port/main_ps5.cpp:618
+#: port/main_ps5.cpp:646
 msgid "This session: Azahar (3DS); Cemu's emulated Wii U is not started"
 msgstr "本次运行：Azahar（3DS）；Cemu的模拟Wii U未启动"
 
-#: port/main_ps5.cpp:628
+#: port/main_ps5.cpp:656
 msgid "This session: Eden (Switch), in a program of its own; Cemu's emulated Wii U is not started"
 msgstr "本次运行：Eden（Switch），在独立的程序中运行；Cemu的模拟Wii U未启动"
 
-#: port/main_ps5.cpp:638
+#: port/main_ps5.cpp:666
 msgid "This session: melonDS (DS); Cemu's emulated Wii U is not started"
 msgstr "本次运行：melonDS（DS）；Cemu的模拟Wii U未启动"
 
-#: port/main_ps5.cpp:645
+#: port/main_ps5.cpp:673
 msgid "This session: Cemu (Wii U); Azahar's core is not started"
 msgstr "本次运行：Cemu（Wii U）；Azahar的核心未启动"
 
-#: port/main_ps5.cpp:655
+#: port/main_ps5.cpp:683
 msgid "No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "无JIT内存：Wii U游戏使用解释器运行，慢得多。PPSA99360是否在HEN的应用越狱列表中？"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/main_ps5.cpp:697
+#: port/main_ps5.cpp:725
 msgid "The launcher could not start. The boot log in {0}/logs says why."
 msgstr "启动器未能启动。{0}/logs中的启动日志说明了原因。"
 
 #. {0} is why; {1} the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the app's drive
-#: port/main_ps5.cpp:699
+#: port/main_ps5.cpp:727
 msgid "The launcher could not start: {0}. The boot log in {1}/logs has more."
 msgstr "启动器未能启动：{0}。{1}/logs中的启动日志有更多信息。"
 
