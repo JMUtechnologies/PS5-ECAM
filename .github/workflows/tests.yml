@@ -33,7 +33,9 @@ jobs:
         run: python3 -B tools/lang.py check
 
       - name: Performance comparison tools
-        run: python3 -B tools/tests/test-performance.py
+        run: |
+          python3 -B tools/tests/test-performance.py
+          python3 -B tools/tests/test-performance-suite.py
 
       - name: Keyboards
         run: bash tools/tests/test-keyboard.sh
