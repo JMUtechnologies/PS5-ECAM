@@ -100,7 +100,7 @@ msgstr "Starter ikke"
 msgid "the PS5 Vulkan driver did not start"
 msgstr "PS5-ens Vulkan-driver startet ikke"
 
-#: port/app/emulator.cpp:529 port/frontend/shell/settings.cpp:2350 port/frontend/shell/shell.cpp:1884
+#: port/app/emulator.cpp:529 port/frontend/shell/settings.cpp:2350 port/frontend/shell/shell.cpp:1887
 msgid "PS5-ECAM cannot write to {0}. Is the HEN loaded?"
 msgstr "PS5-ECAM kan ikke skrive til {0}. Er HEN lastet inn?"
 
@@ -1271,7 +1271,7 @@ msgstr "Ikke skannet (feil {0})"
 msgid "Running"
 msgstr "Kjører"
 
-#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1440 port/frontend/shell/shell.cpp:1467 port/frontend/shell/shell.cpp:1476 port/frontend/shell/shell.cpp:1484 port/frontend/shell/shell.cpp:1492 port/frontend/shell/shell.cpp:1495 port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2492
+#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1440 port/frontend/shell/shell.cpp:1467 port/frontend/shell/shell.cpp:1476 port/frontend/shell/shell.cpp:1484 port/frontend/shell/shell.cpp:1492 port/frontend/shell/shell.cpp:1495 port/frontend/shell/shell.cpp:2490 port/frontend/shell/shell.cpp:2530
 #, menu
 msgid "Choose"
 msgstr "Velg"
@@ -1589,7 +1589,7 @@ msgstr "{0} av {1} på"
 msgid "Achievements"
 msgstr "Prestasjoner"
 
-#: port/app/ingame3ds.cpp:569 port/frontend/shell/installs.cpp:377 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:841 port/frontend/shell/pages.cpp:1224 port/frontend/shell/shell.cpp:2521
+#: port/app/ingame3ds.cpp:569 port/frontend/shell/installs.cpp:377 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:841 port/frontend/shell/pages.cpp:1224 port/frontend/shell/shell.cpp:2559
 #, menu
 msgid "{0} of {1}"
 msgstr "{0} av {1}"
@@ -1884,7 +1884,7 @@ msgstr "Den er allerede installert her."
 msgid "An install is already running."
 msgstr "En installasjon pågår allerede."
 
-#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2424 port/frontend/shell/shell.cpp:2453 port/frontend/shell/shell.cpp:2475 port/frontend/shell/shell.cpp:2494
+#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2462 port/frontend/shell/shell.cpp:2491 port/frontend/shell/shell.cpp:2513 port/frontend/shell/shell.cpp:2532
 #, menu
 msgid "OK"
 msgstr "OK"
@@ -1900,31 +1900,31 @@ msgstr "Spillet ber om"
 msgid "Some text"
 msgstr "Litt tekst"
 
-#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2342
+#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2380
 #, menu
 msgid "L1 R1: {0}"
 msgstr "L1 R1: {0}"
 
 #. the in-game keyboard's keys
-#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2365
+#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2403
 #, menu
 msgid "Shift: on"
 msgstr "Shift: på"
 
 #. the in-game keyboard's keys
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2365
+#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2403
 #, menu
 msgid "Shift"
 msgstr "Shift"
 
-#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2365
+#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2403
 #, menu
 msgid "Space"
 msgstr "Mellomrom"
 
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2365
+#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2403
 #, menu
 msgid "Delete"
 msgstr "Slett"
@@ -3309,7 +3309,7 @@ msgstr "Spol tilbake"
 msgid "Update v{0}"
 msgstr "Oppdatering v{0}"
 
-#: port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1800
+#: port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1803
 msgid "Favourite"
 msgstr "Favoritt"
 
@@ -3433,7 +3433,7 @@ msgstr[1] "{0} installert"
 msgid "Everything found is installed already"
 msgstr "Alt som ble funnet, er allerede installert"
 
-#: port/frontend/shell/installs.cpp:319 port/frontend/shell/shell.cpp:2521
+#: port/frontend/shell/installs.cpp:319 port/frontend/shell/shell.cpp:2559
 msgid "Stopping…"
 msgstr "Stopper …"
 
@@ -3477,7 +3477,7 @@ msgstr[1] "{0} nye å installere."
 msgid "Everything found is installed."
 msgstr "Alt som ble funnet, er installert."
 
-#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:230 port/frontend/shell/shares.cpp:535 port/frontend/shell/shell.cpp:2480
+#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:230 port/frontend/shell/shares.cpp:535 port/frontend/shell/shell.cpp:2518
 msgid "Game files"
 msgstr "Spillfiler"
 
@@ -3599,7 +3599,7 @@ msgstr "Oppsettsjekk"
 msgid "Diagnostics"
 msgstr "Diagnostikk"
 
-#: port/frontend/shell/library.cpp:132 port/frontend/shell/shell.cpp:1033 port/frontend/shell/shell.cpp:2511
+#: port/frontend/shell/library.cpp:132 port/frontend/shell/shell.cpp:1033 port/frontend/shell/shell.cpp:2549
 msgid "Starting Cemu"
 msgstr "Starter Cemu"
 
@@ -3692,7 +3692,7 @@ msgstr "Ser etter nye spill…"
 msgid "As found last time"
 msgstr "Slik de ble funnet sist"
 
-#: port/frontend/shell/library.cpp:639 port/frontend/shell/shell.cpp:1469 port/frontend/shell/shell.cpp:2336
+#: port/frontend/shell/library.cpp:639 port/frontend/shell/shell.cpp:1469 port/frontend/shell/shell.cpp:2374
 msgid "Search"
 msgstr "Søk"
 
@@ -4213,7 +4213,7 @@ msgstr "Funnet i {0}"
 msgid "Missing (only .wud/.wux need it)"
 msgstr "Mangler (bare .wud/.wux trenger den)"
 
-#: port/frontend/shell/pages.cpp:1314 port/frontend/shell/shell.cpp:2225 port/frontend/shell/shell.cpp:2252
+#: port/frontend/shell/pages.cpp:1314 port/frontend/shell/shell.cpp:2263 port/frontend/shell/shell.cpp:2290
 msgid "In use"
 msgstr "I bruk"
 
@@ -4645,7 +4645,7 @@ msgstr "Kryss for å laste ned"
 msgid "{0}: Cross to install"
 msgstr "{0}: Kryss for å installere"
 
-#: port/frontend/shell/settings.cpp:314 port/frontend/shell/settings.cpp:1162 port/frontend/shell/shell.cpp:2393
+#: port/frontend/shell/settings.cpp:314 port/frontend/shell/settings.cpp:1162 port/frontend/shell/shell.cpp:2431
 msgid "Downloading…"
 msgstr "Laster ned…"
 
@@ -5518,7 +5518,7 @@ msgstr "Et spill, en oppdatering eller et DLC."
 msgid "Installs a CIA into the 3DS's storage, as Azahar's Install CIA does: an update or DLC goes with its game, and a game joins the library. Circle cancels while it runs."
 msgstr "Installerer en CIA i 3DS-ens lagring, slik Azahars Install CIA gjør: en oppdatering eller et DLC havner hos spillet sitt, og et spill legges til i biblioteket. Sirkel avbryter mens det pågår."
 
-#: port/frontend/shell/settings.cpp:1004 port/frontend/shell/shell.cpp:2481
+#: port/frontend/shell/settings.cpp:1004 port/frontend/shell/shell.cpp:2519
 msgid "A folder for each system"
 msgstr "En mappe for hvert system"
 
@@ -7041,7 +7041,7 @@ msgstr "Eden trenger nøklene til Switchen din for å lese spillene: prod.keys (
 msgid "Starting melonDS"
 msgstr "Starter melonDS"
 
-#: port/frontend/shell/shell.cpp:1031 port/frontend/shell/shell.cpp:2511
+#: port/frontend/shell/shell.cpp:1031 port/frontend/shell/shell.cpp:2549
 msgid "Starting Azahar"
 msgstr "Starter Azahar"
 
@@ -7101,11 +7101,11 @@ msgctxt "tab"
 msgid "Settings"
 msgstr "Innstillinger"
 
-#: port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:1482 port/frontend/shell/shell.cpp:2365
+#: port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:1482 port/frontend/shell/shell.cpp:2403
 msgid "Done"
 msgstr "Ferdig"
 
-#: port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1498 port/frontend/shell/shell.cpp:1502 port/frontend/shell/shell.cpp:2455 port/frontend/shell/shell.cpp:2525
+#: port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1498 port/frontend/shell/shell.cpp:1502 port/frontend/shell/shell.cpp:2493 port/frontend/shell/shell.cpp:2563
 msgid "Cancel"
 msgstr "Avbryt"
 
@@ -7229,113 +7229,138 @@ msgstr "Spillinnstillinger: egne"
 msgid "Add mods from USB"
 msgstr "Legg til modder fra USB"
 
-#: port/frontend/shell/shell.cpp:1800
+#: port/frontend/shell/shell.cpp:1802 port/frontend/shell/shell.cpp:2188 port/frontend/shell/shell.cpp:2196
+msgid "Remove its update or DLC"
+msgstr "Fjern oppdateringen eller DLC-en"
+
+#: port/frontend/shell/shell.cpp:1803
 msgid "Not a favourite"
 msgstr "Fjern fra favoritter"
 
-#: port/frontend/shell/shell.cpp:1802
+#: port/frontend/shell/shell.cpp:1805
 msgid "Remove from home screen"
 msgstr "Fjern fra startskjermen"
 
-#: port/frontend/shell/shell.cpp:1804
+#: port/frontend/shell/shell.cpp:1807
 msgid "Add to home screen"
 msgstr "Legg til på startskjermen"
 
-#: port/frontend/shell/shell.cpp:2182
+#: port/frontend/shell/shell.cpp:2174
+msgid "The update"
+msgstr "Oppdateringen"
+
+#: port/frontend/shell/shell.cpp:2179
+msgid "The DLC"
+msgstr "DLC-en"
+
+#: port/frontend/shell/shell.cpp:2184
+msgid "The update and the DLC"
+msgstr "Oppdateringen og DLC-en"
+
+#: port/frontend/shell/shell.cpp:2191
+msgid "Removed. Install a CIA file puts it back."
+msgstr "Fjernet. Installer en CIA-fil legger det tilbake."
+
+#. {0} is the system's reason, as it gives it
+#: port/frontend/shell/shell.cpp:2195
+msgid "It could not all be removed: {0}"
+msgstr "Ikke alt kunne fjernes: {0}"
+
+#: port/frontend/shell/shell.cpp:2220
 msgid "Added to Favourites"
 msgstr "Lagt til i favoritter"
 
-#: port/frontend/shell/shell.cpp:2182
+#: port/frontend/shell/shell.cpp:2220
 msgid "Taken out of Favourites"
 msgstr "Fjernet fra favoritter"
 
-#: port/frontend/shell/shell.cpp:2387
+#: port/frontend/shell/shell.cpp:2425
 msgid "PS5-ECAM {0} is out"
 msgstr "PS5-ECAM {0} er ute"
 
-#: port/frontend/shell/shell.cpp:2388
+#: port/frontend/shell/shell.cpp:2426
 msgid "This is {0}. Download and install it now? Your games, saves and settings stay as they are."
 msgstr "Dette er {0}. Laste ned og installere nå? Spillene, lagringene og innstillingene dine forblir som de er."
 
-#: port/frontend/shell/shell.cpp:2389
+#: port/frontend/shell/shell.cpp:2427
 msgid "Update now"
 msgstr "Oppdater nå"
 
-#: port/frontend/shell/shell.cpp:2389 port/frontend/shell/shell.cpp:2413 port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2475 port/frontend/shell/shell.cpp:2492
+#: port/frontend/shell/shell.cpp:2427 port/frontend/shell/shell.cpp:2451 port/frontend/shell/shell.cpp:2490 port/frontend/shell/shell.cpp:2513 port/frontend/shell/shell.cpp:2530
 msgid "Later"
 msgstr "Senere"
 
-#: port/frontend/shell/shell.cpp:2389
+#: port/frontend/shell/shell.cpp:2427
 msgid "Skip this version"
 msgstr "Hopp over denne versjonen"
 
-#: port/frontend/shell/shell.cpp:2392 port/frontend/shell/shell.cpp:2397 port/frontend/shell/shell.cpp:2402
+#: port/frontend/shell/shell.cpp:2430 port/frontend/shell/shell.cpp:2435 port/frontend/shell/shell.cpp:2440
 msgid "Updating to {0}"
 msgstr "Oppdaterer til {0}"
 
-#: port/frontend/shell/shell.cpp:2393
+#: port/frontend/shell/shell.cpp:2431
 msgid "Downloading: {0} of {1} MB"
 msgstr "Laster ned: {0} av {1} MB"
 
-#: port/frontend/shell/shell.cpp:2398
+#: port/frontend/shell/shell.cpp:2436
 msgid "Checking the download"
 msgstr "Sjekker nedlastingen"
 
-#: port/frontend/shell/shell.cpp:2403
+#: port/frontend/shell/shell.cpp:2441
 msgid "Installing"
 msgstr "Installerer"
 
-#: port/frontend/shell/shell.cpp:2407
+#: port/frontend/shell/shell.cpp:2445
 msgid "{0} is installed"
 msgstr "{0} er installert"
 
-#: port/frontend/shell/shell.cpp:2409 port/frontend/shell/shell.cpp:2466
+#: port/frontend/shell/shell.cpp:2447 port/frontend/shell/shell.cpp:2504
 msgid "Starting PS5-ECAM again…"
 msgstr "Starter PS5-ECAM på nytt…"
 
-#: port/frontend/shell/shell.cpp:2413 port/frontend/shell/shell.cpp:2418
+#: port/frontend/shell/shell.cpp:2451 port/frontend/shell/shell.cpp:2456
 msgid "Restart now"
 msgstr "Start på nytt nå"
 
-#: port/frontend/shell/shell.cpp:2417
+#: port/frontend/shell/shell.cpp:2455
 msgid "PS5-ECAM starts again to finish the update."
 msgstr "PS5-ECAM starter på nytt for å fullføre oppdateringen."
 
-#: port/frontend/shell/shell.cpp:2422
+#: port/frontend/shell/shell.cpp:2460
 msgid "The update did not finish"
 msgstr "Oppdateringen ble ikke ferdig"
 
-#: port/frontend/shell/shell.cpp:2423
+#: port/frontend/shell/shell.cpp:2461
 msgid "PS5-ECAM is still {0}."
 msgstr "PS5-ECAM er fortsatt {0}."
 
-#: port/frontend/shell/shell.cpp:2426
+#: port/frontend/shell/shell.cpp:2464
 msgid "Checking for updates"
 msgstr "Ser etter oppdateringer"
 
-#: port/frontend/shell/shell.cpp:2432
+#: port/frontend/shell/shell.cpp:2470
 msgid "PS5-ECAM update"
 msgstr "PS5-ECAM-oppdatering"
 
-#: port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2492
+#: port/frontend/shell/shell.cpp:2490 port/frontend/shell/shell.cpp:2530
 msgid "Select"
 msgstr "Velg"
 
-#: port/frontend/shell/shell.cpp:2453
+#: port/frontend/shell/shell.cpp:2491
 msgid "Restart"
 msgstr "Start på nytt"
 
 #. {0} lists the four folders: /data/cemu, /data/azahar, /data/melonds, /data/eden
-#: port/frontend/shell/shell.cpp:2469
+#: port/frontend/shell/shell.cpp:2507
 msgid "Your Wii U, 3DS, DS and Switch files go into folders of their own: {0}. They are moved on the same drive, never copied, so it takes a moment whatever their size. PS5-ECAM starts again to do it."
 msgstr "Wii U-, 3DS-, DS- og Switch-filene dine får egne mapper: {0}. De flyttes på samme stasjon og kopieres aldri, så det tar et øyeblikk uansett størrelse. PS5-ECAM starter på nytt for å gjøre det."
 
-#: port/frontend/shell/shell.cpp:2475
+#: port/frontend/shell/shell.cpp:2513
 msgid "Reorganize"
 msgstr "Omorganiser"
 
 #. under an archived game's name while it is unpacked, the first time it starts
-#: port/frontend/shell/shell.cpp:2514
+#: port/frontend/shell/shell.cpp:2552
 msgid "Unpacking the game from its archive. This is done once: the copy is kept for the next start."
 msgstr "Spillet pakkes ut av arkivet sitt. Det gjøres bare én gang: kopien lagres til neste start."
 

@@ -99,7 +99,7 @@ msgstr "無法啟動"
 msgid "the PS5 Vulkan driver did not start"
 msgstr "PS5 Vulkan驅動程式未能啟動"
 
-#: port/app/emulator.cpp:529 port/frontend/shell/settings.cpp:2350 port/frontend/shell/shell.cpp:1884
+#: port/app/emulator.cpp:529 port/frontend/shell/settings.cpp:2350 port/frontend/shell/shell.cpp:1887
 msgid "PS5-ECAM cannot write to {0}. Is the HEN loaded?"
 msgstr "PS5-ECAM無法寫入{0}。HEN是否已載入？"
 
@@ -1269,7 +1269,7 @@ msgstr "未能掃描（錯誤{0}）"
 msgid "Running"
 msgstr "執行中"
 
-#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1440 port/frontend/shell/shell.cpp:1467 port/frontend/shell/shell.cpp:1476 port/frontend/shell/shell.cpp:1484 port/frontend/shell/shell.cpp:1492 port/frontend/shell/shell.cpp:1495 port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2492
+#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1440 port/frontend/shell/shell.cpp:1467 port/frontend/shell/shell.cpp:1476 port/frontend/shell/shell.cpp:1484 port/frontend/shell/shell.cpp:1492 port/frontend/shell/shell.cpp:1495 port/frontend/shell/shell.cpp:2490 port/frontend/shell/shell.cpp:2530
 #, menu
 msgid "Choose"
 msgstr "選擇"
@@ -1587,7 +1587,7 @@ msgstr "已啟用{0}/{1}個"
 msgid "Achievements"
 msgstr "成就"
 
-#: port/app/ingame3ds.cpp:569 port/frontend/shell/installs.cpp:377 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:841 port/frontend/shell/pages.cpp:1224 port/frontend/shell/shell.cpp:2521
+#: port/app/ingame3ds.cpp:569 port/frontend/shell/installs.cpp:377 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:841 port/frontend/shell/pages.cpp:1224 port/frontend/shell/shell.cpp:2559
 #, menu
 msgid "{0} of {1}"
 msgstr "{0}/{1}"
@@ -1881,7 +1881,7 @@ msgstr "已安裝在此處。"
 msgid "An install is already running."
 msgstr "已有安裝正在進行。"
 
-#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2424 port/frontend/shell/shell.cpp:2453 port/frontend/shell/shell.cpp:2475 port/frontend/shell/shell.cpp:2494
+#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2462 port/frontend/shell/shell.cpp:2491 port/frontend/shell/shell.cpp:2513 port/frontend/shell/shell.cpp:2532
 #, menu
 msgid "OK"
 msgstr "確定"
@@ -1897,31 +1897,31 @@ msgstr "遊戲要求輸入"
 msgid "Some text"
 msgstr "文字"
 
-#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2342
+#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2380
 #, menu
 msgid "L1 R1: {0}"
 msgstr "L1 R1：{0}"
 
 #. the in-game keyboard's keys
-#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2365
+#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2403
 #, menu
 msgid "Shift: on"
 msgstr "Shift：開啟"
 
 #. the in-game keyboard's keys
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2365
+#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2403
 #, menu
 msgid "Shift"
 msgstr "Shift"
 
-#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2365
+#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2403
 #, menu
 msgid "Space"
 msgstr "空格"
 
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2365
+#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2403
 #, menu
 msgid "Delete"
 msgstr "刪除"
@@ -3303,7 +3303,7 @@ msgstr "倒轉"
 msgid "Update v{0}"
 msgstr "更新v{0}"
 
-#: port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1800
+#: port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1803
 msgid "Favourite"
 msgstr "最愛"
 
@@ -3425,7 +3425,7 @@ msgstr[0] "已安裝{0}個"
 msgid "Everything found is installed already"
 msgstr "找到的項目都已安裝"
 
-#: port/frontend/shell/installs.cpp:319 port/frontend/shell/shell.cpp:2521
+#: port/frontend/shell/installs.cpp:319 port/frontend/shell/shell.cpp:2559
 msgid "Stopping…"
 msgstr "正在停止…"
 
@@ -3468,7 +3468,7 @@ msgstr[0] "{0}個可安裝的新項目。"
 msgid "Everything found is installed."
 msgstr "找到的項目都已安裝。"
 
-#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:230 port/frontend/shell/shares.cpp:535 port/frontend/shell/shell.cpp:2480
+#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:230 port/frontend/shell/shares.cpp:535 port/frontend/shell/shell.cpp:2518
 msgid "Game files"
 msgstr "遊戲檔案"
 
@@ -3588,7 +3588,7 @@ msgstr "環境檢查"
 msgid "Diagnostics"
 msgstr "診斷"
 
-#: port/frontend/shell/library.cpp:132 port/frontend/shell/shell.cpp:1033 port/frontend/shell/shell.cpp:2511
+#: port/frontend/shell/library.cpp:132 port/frontend/shell/shell.cpp:1033 port/frontend/shell/shell.cpp:2549
 msgid "Starting Cemu"
 msgstr "正在啟動Cemu"
 
@@ -3679,7 +3679,7 @@ msgstr "正在尋找新遊戲…"
 msgid "As found last time"
 msgstr "上次找到的清單"
 
-#: port/frontend/shell/library.cpp:639 port/frontend/shell/shell.cpp:1469 port/frontend/shell/shell.cpp:2336
+#: port/frontend/shell/library.cpp:639 port/frontend/shell/shell.cpp:1469 port/frontend/shell/shell.cpp:2374
 msgid "Search"
 msgstr "搜尋"
 
@@ -4197,7 +4197,7 @@ msgstr "已在{0}中找到"
 msgid "Missing (only .wud/.wux need it)"
 msgstr "缺少（只有.wud/.wux需要）"
 
-#: port/frontend/shell/pages.cpp:1314 port/frontend/shell/shell.cpp:2225 port/frontend/shell/shell.cpp:2252
+#: port/frontend/shell/pages.cpp:1314 port/frontend/shell/shell.cpp:2263 port/frontend/shell/shell.cpp:2290
 msgid "In use"
 msgstr "使用中"
 
@@ -4629,7 +4629,7 @@ msgstr "按交叉按鈕下載"
 msgid "{0}: Cross to install"
 msgstr "{0}：按交叉按鈕安裝"
 
-#: port/frontend/shell/settings.cpp:314 port/frontend/shell/settings.cpp:1162 port/frontend/shell/shell.cpp:2393
+#: port/frontend/shell/settings.cpp:314 port/frontend/shell/settings.cpp:1162 port/frontend/shell/shell.cpp:2431
 msgid "Downloading…"
 msgstr "下載中…"
 
@@ -5497,7 +5497,7 @@ msgstr "遊戲、更新或DLC。"
 msgid "Installs a CIA into the 3DS's storage, as Azahar's Install CIA does: an update or DLC goes with its game, and a game joins the library. Circle cancels while it runs."
 msgstr "將CIA安裝到3DS的儲存空間，與Azahar的「安裝CIA」相同：更新或DLC會歸入對應的遊戲，遊戲會加入遊戲庫。執行中按圓圈按鈕可取消。"
 
-#: port/frontend/shell/settings.cpp:1004 port/frontend/shell/shell.cpp:2481
+#: port/frontend/shell/settings.cpp:1004 port/frontend/shell/shell.cpp:2519
 msgid "A folder for each system"
 msgstr "每個系統一個資料夾"
 
@@ -7000,7 +7000,7 @@ msgstr "Eden需要你Switch的金鑰才能讀取遊戲：從你自己的Switch�
 msgid "Starting melonDS"
 msgstr "正在啟動melonDS"
 
-#: port/frontend/shell/shell.cpp:1031 port/frontend/shell/shell.cpp:2511
+#: port/frontend/shell/shell.cpp:1031 port/frontend/shell/shell.cpp:2549
 msgid "Starting Azahar"
 msgstr "正在啟動Azahar"
 
@@ -7060,11 +7060,11 @@ msgctxt "tab"
 msgid "Settings"
 msgstr "設定"
 
-#: port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:1482 port/frontend/shell/shell.cpp:2365
+#: port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:1482 port/frontend/shell/shell.cpp:2403
 msgid "Done"
 msgstr "完成"
 
-#: port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1498 port/frontend/shell/shell.cpp:1502 port/frontend/shell/shell.cpp:2455 port/frontend/shell/shell.cpp:2525
+#: port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1498 port/frontend/shell/shell.cpp:1502 port/frontend/shell/shell.cpp:2493 port/frontend/shell/shell.cpp:2563
 msgid "Cancel"
 msgstr "取消"
 
@@ -7188,113 +7188,138 @@ msgstr "遊戲設定：自訂"
 msgid "Add mods from USB"
 msgstr "從USB新增模組"
 
-#: port/frontend/shell/shell.cpp:1800
+#: port/frontend/shell/shell.cpp:1802 port/frontend/shell/shell.cpp:2188 port/frontend/shell/shell.cpp:2196
+msgid "Remove its update or DLC"
+msgstr "移除其更新或DLC"
+
+#: port/frontend/shell/shell.cpp:1803
 msgid "Not a favourite"
 msgstr "從最愛移除"
 
-#: port/frontend/shell/shell.cpp:1802
+#: port/frontend/shell/shell.cpp:1805
 msgid "Remove from home screen"
 msgstr "從主頁移除"
 
-#: port/frontend/shell/shell.cpp:1804
+#: port/frontend/shell/shell.cpp:1807
 msgid "Add to home screen"
 msgstr "加入主頁"
 
-#: port/frontend/shell/shell.cpp:2182
+#: port/frontend/shell/shell.cpp:2174
+msgid "The update"
+msgstr "更新"
+
+#: port/frontend/shell/shell.cpp:2179
+msgid "The DLC"
+msgstr "DLC"
+
+#: port/frontend/shell/shell.cpp:2184
+msgid "The update and the DLC"
+msgstr "更新與DLC"
+
+#: port/frontend/shell/shell.cpp:2191
+msgid "Removed. Install a CIA file puts it back."
+msgstr "已移除。「安裝CIA檔案」可重新裝回。"
+
+#. {0} is the system's reason, as it gives it
+#: port/frontend/shell/shell.cpp:2195
+msgid "It could not all be removed: {0}"
+msgstr "無法全部移除：{0}"
+
+#: port/frontend/shell/shell.cpp:2220
 msgid "Added to Favourites"
 msgstr "已加入最愛"
 
-#: port/frontend/shell/shell.cpp:2182
+#: port/frontend/shell/shell.cpp:2220
 msgid "Taken out of Favourites"
 msgstr "已從最愛移除"
 
-#: port/frontend/shell/shell.cpp:2387
+#: port/frontend/shell/shell.cpp:2425
 msgid "PS5-ECAM {0} is out"
 msgstr "PS5-ECAM {0}已推出"
 
-#: port/frontend/shell/shell.cpp:2388
+#: port/frontend/shell/shell.cpp:2426
 msgid "This is {0}. Download and install it now? Your games, saves and settings stay as they are."
 msgstr "這是{0}。要立即下載並安裝嗎？你的遊戲、存檔與設定都會維持原樣。"
 
-#: port/frontend/shell/shell.cpp:2389
+#: port/frontend/shell/shell.cpp:2427
 msgid "Update now"
 msgstr "立即更新"
 
-#: port/frontend/shell/shell.cpp:2389 port/frontend/shell/shell.cpp:2413 port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2475 port/frontend/shell/shell.cpp:2492
+#: port/frontend/shell/shell.cpp:2427 port/frontend/shell/shell.cpp:2451 port/frontend/shell/shell.cpp:2490 port/frontend/shell/shell.cpp:2513 port/frontend/shell/shell.cpp:2530
 msgid "Later"
 msgstr "稍後"
 
-#: port/frontend/shell/shell.cpp:2389
+#: port/frontend/shell/shell.cpp:2427
 msgid "Skip this version"
 msgstr "略過此版本"
 
-#: port/frontend/shell/shell.cpp:2392 port/frontend/shell/shell.cpp:2397 port/frontend/shell/shell.cpp:2402
+#: port/frontend/shell/shell.cpp:2430 port/frontend/shell/shell.cpp:2435 port/frontend/shell/shell.cpp:2440
 msgid "Updating to {0}"
 msgstr "正在更新至{0}"
 
-#: port/frontend/shell/shell.cpp:2393
+#: port/frontend/shell/shell.cpp:2431
 msgid "Downloading: {0} of {1} MB"
 msgstr "下載中：{0}/{1} MB"
 
-#: port/frontend/shell/shell.cpp:2398
+#: port/frontend/shell/shell.cpp:2436
 msgid "Checking the download"
 msgstr "正在檢查下載的檔案"
 
-#: port/frontend/shell/shell.cpp:2403
+#: port/frontend/shell/shell.cpp:2441
 msgid "Installing"
 msgstr "安裝中"
 
-#: port/frontend/shell/shell.cpp:2407
+#: port/frontend/shell/shell.cpp:2445
 msgid "{0} is installed"
 msgstr "已安裝{0}"
 
-#: port/frontend/shell/shell.cpp:2409 port/frontend/shell/shell.cpp:2466
+#: port/frontend/shell/shell.cpp:2447 port/frontend/shell/shell.cpp:2504
 msgid "Starting PS5-ECAM again…"
 msgstr "正在重新啟動PS5-ECAM…"
 
-#: port/frontend/shell/shell.cpp:2413 port/frontend/shell/shell.cpp:2418
+#: port/frontend/shell/shell.cpp:2451 port/frontend/shell/shell.cpp:2456
 msgid "Restart now"
 msgstr "立即重新啟動"
 
-#: port/frontend/shell/shell.cpp:2417
+#: port/frontend/shell/shell.cpp:2455
 msgid "PS5-ECAM starts again to finish the update."
 msgstr "PS5-ECAM會重新啟動以完成更新。"
 
-#: port/frontend/shell/shell.cpp:2422
+#: port/frontend/shell/shell.cpp:2460
 msgid "The update did not finish"
 msgstr "更新未完成"
 
-#: port/frontend/shell/shell.cpp:2423
+#: port/frontend/shell/shell.cpp:2461
 msgid "PS5-ECAM is still {0}."
 msgstr "PS5-ECAM仍為{0}。"
 
-#: port/frontend/shell/shell.cpp:2426
+#: port/frontend/shell/shell.cpp:2464
 msgid "Checking for updates"
 msgstr "正在檢查更新"
 
-#: port/frontend/shell/shell.cpp:2432
+#: port/frontend/shell/shell.cpp:2470
 msgid "PS5-ECAM update"
 msgstr "PS5-ECAM更新"
 
-#: port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2492
+#: port/frontend/shell/shell.cpp:2490 port/frontend/shell/shell.cpp:2530
 msgid "Select"
 msgstr "確定"
 
-#: port/frontend/shell/shell.cpp:2453
+#: port/frontend/shell/shell.cpp:2491
 msgid "Restart"
 msgstr "重新啟動"
 
 #. {0} lists the four folders: /data/cemu, /data/azahar, /data/melonds, /data/eden
-#: port/frontend/shell/shell.cpp:2469
+#: port/frontend/shell/shell.cpp:2507
 msgid "Your Wii U, 3DS, DS and Switch files go into folders of their own: {0}. They are moved on the same drive, never copied, so it takes a moment whatever their size. PS5-ECAM starts again to do it."
 msgstr "Wii U、3DS、DS和Switch的檔案將放入各自的資料夾：{0}。它們在同一儲存裝置上移動，從不複製，因此無論多大都只需片刻。PS5-ECAM會為此重新啟動。"
 
-#: port/frontend/shell/shell.cpp:2475
+#: port/frontend/shell/shell.cpp:2513
 msgid "Reorganize"
 msgstr "整理"
 
 #. under an archived game's name while it is unpacked, the first time it starts
-#: port/frontend/shell/shell.cpp:2514
+#: port/frontend/shell/shell.cpp:2552
 msgid "Unpacking the game from its archive. This is done once: the copy is kept for the next start."
 msgstr "正在從壓縮檔解壓縮遊戲。只需解壓縮一次：副本會保留以供下次啟動。"
 

@@ -100,7 +100,7 @@ msgstr "Başlamıyor"
 msgid "the PS5 Vulkan driver did not start"
 msgstr "PS5’in Vulkan sürücüsü başlamadı"
 
-#: port/app/emulator.cpp:529 port/frontend/shell/settings.cpp:2350 port/frontend/shell/shell.cpp:1884
+#: port/app/emulator.cpp:529 port/frontend/shell/settings.cpp:2350 port/frontend/shell/shell.cpp:1887
 msgid "PS5-ECAM cannot write to {0}. Is the HEN loaded?"
 msgstr "PS5-ECAM şuraya yazamıyor: {0}. HEN yüklü mü?"
 
@@ -1271,7 +1271,7 @@ msgstr "Taranmadı (hata {0})"
 msgid "Running"
 msgstr "Çalışıyor"
 
-#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1440 port/frontend/shell/shell.cpp:1467 port/frontend/shell/shell.cpp:1476 port/frontend/shell/shell.cpp:1484 port/frontend/shell/shell.cpp:1492 port/frontend/shell/shell.cpp:1495 port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2492
+#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1440 port/frontend/shell/shell.cpp:1467 port/frontend/shell/shell.cpp:1476 port/frontend/shell/shell.cpp:1484 port/frontend/shell/shell.cpp:1492 port/frontend/shell/shell.cpp:1495 port/frontend/shell/shell.cpp:2490 port/frontend/shell/shell.cpp:2530
 #, menu
 msgid "Choose"
 msgstr "Seç"
@@ -1589,7 +1589,7 @@ msgstr "Açık: {0} / {1}"
 msgid "Achievements"
 msgstr "Başarımlar"
 
-#: port/app/ingame3ds.cpp:569 port/frontend/shell/installs.cpp:377 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:841 port/frontend/shell/pages.cpp:1224 port/frontend/shell/shell.cpp:2521
+#: port/app/ingame3ds.cpp:569 port/frontend/shell/installs.cpp:377 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:841 port/frontend/shell/pages.cpp:1224 port/frontend/shell/shell.cpp:2559
 #, menu
 msgid "{0} of {1}"
 msgstr "{0} / {1}"
@@ -1884,7 +1884,7 @@ msgstr "Zaten buraya kurulu."
 msgid "An install is already running."
 msgstr "Bir kurulum zaten sürüyor."
 
-#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2424 port/frontend/shell/shell.cpp:2453 port/frontend/shell/shell.cpp:2475 port/frontend/shell/shell.cpp:2494
+#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2462 port/frontend/shell/shell.cpp:2491 port/frontend/shell/shell.cpp:2513 port/frontend/shell/shell.cpp:2532
 #, menu
 msgid "OK"
 msgstr "Tamam"
@@ -1900,31 +1900,31 @@ msgstr "Oyunun istediği"
 msgid "Some text"
 msgstr "Bir metin"
 
-#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2342
+#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2380
 #, menu
 msgid "L1 R1: {0}"
 msgstr "L1 R1: {0}"
 
 #. the in-game keyboard's keys
-#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2365
+#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2403
 #, menu
 msgid "Shift: on"
 msgstr "Shift: açık"
 
 #. the in-game keyboard's keys
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2365
+#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2403
 #, menu
 msgid "Shift"
 msgstr "Shift"
 
-#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2365
+#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2403
 #, menu
 msgid "Space"
 msgstr "Boşluk"
 
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2365
+#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2403
 #, menu
 msgid "Delete"
 msgstr "Sil"
@@ -3309,7 +3309,7 @@ msgstr "Geri sar"
 msgid "Update v{0}"
 msgstr "Güncelleme v{0}"
 
-#: port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1800
+#: port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1803
 msgid "Favourite"
 msgstr "Favori"
 
@@ -3433,7 +3433,7 @@ msgstr[1] "{0} kuruldu"
 msgid "Everything found is installed already"
 msgstr "Bulunan her şey zaten kurulu"
 
-#: port/frontend/shell/installs.cpp:319 port/frontend/shell/shell.cpp:2521
+#: port/frontend/shell/installs.cpp:319 port/frontend/shell/shell.cpp:2559
 msgid "Stopping…"
 msgstr "Durduruluyor…"
 
@@ -3477,7 +3477,7 @@ msgstr[1] "Kurulacak {0} yeni öğe."
 msgid "Everything found is installed."
 msgstr "Bulunan her şey kurulu."
 
-#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:230 port/frontend/shell/shares.cpp:535 port/frontend/shell/shell.cpp:2480
+#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:230 port/frontend/shell/shares.cpp:535 port/frontend/shell/shell.cpp:2518
 msgid "Game files"
 msgstr "Oyun dosyaları"
 
@@ -3599,7 +3599,7 @@ msgstr "Kurulum denetimi"
 msgid "Diagnostics"
 msgstr "Tanılama"
 
-#: port/frontend/shell/library.cpp:132 port/frontend/shell/shell.cpp:1033 port/frontend/shell/shell.cpp:2511
+#: port/frontend/shell/library.cpp:132 port/frontend/shell/shell.cpp:1033 port/frontend/shell/shell.cpp:2549
 msgid "Starting Cemu"
 msgstr "Cemu başlatılıyor"
 
@@ -3692,7 +3692,7 @@ msgstr "Yeni oyunlar aranıyor…"
 msgid "As found last time"
 msgstr "Son bulunduğu gibi"
 
-#: port/frontend/shell/library.cpp:639 port/frontend/shell/shell.cpp:1469 port/frontend/shell/shell.cpp:2336
+#: port/frontend/shell/library.cpp:639 port/frontend/shell/shell.cpp:1469 port/frontend/shell/shell.cpp:2374
 msgid "Search"
 msgstr "Ara"
 
@@ -4213,7 +4213,7 @@ msgstr "{0} içinde bulundu"
 msgid "Missing (only .wud/.wux need it)"
 msgstr "Eksik (yalnızca .wud/.wux gerektirir)"
 
-#: port/frontend/shell/pages.cpp:1314 port/frontend/shell/shell.cpp:2225 port/frontend/shell/shell.cpp:2252
+#: port/frontend/shell/pages.cpp:1314 port/frontend/shell/shell.cpp:2263 port/frontend/shell/shell.cpp:2290
 msgid "In use"
 msgstr "Kullanımda"
 
@@ -4645,7 +4645,7 @@ msgstr "İndirmek için Çarpı"
 msgid "{0}: Cross to install"
 msgstr "{0}: kurmak için Çarpı"
 
-#: port/frontend/shell/settings.cpp:314 port/frontend/shell/settings.cpp:1162 port/frontend/shell/shell.cpp:2393
+#: port/frontend/shell/settings.cpp:314 port/frontend/shell/settings.cpp:1162 port/frontend/shell/shell.cpp:2431
 msgid "Downloading…"
 msgstr "İndiriliyor…"
 
@@ -5518,7 +5518,7 @@ msgstr "Oyun, güncelleme veya DLC."
 msgid "Installs a CIA into the 3DS's storage, as Azahar's Install CIA does: an update or DLC goes with its game, and a game joins the library. Circle cancels while it runs."
 msgstr "Azahar’ın Install CIA özelliği gibi bir CIA’yı 3DS’in depolama alanına kurar: güncelleme veya DLC oyununa eklenir, oyun ise kütüphaneye katılır. Çalışırken Daire iptal eder."
 
-#: port/frontend/shell/settings.cpp:1004 port/frontend/shell/shell.cpp:2481
+#: port/frontend/shell/settings.cpp:1004 port/frontend/shell/shell.cpp:2519
 msgid "A folder for each system"
 msgstr "Her sistem için bir klasör"
 
@@ -7041,7 +7041,7 @@ msgstr "Eden’in Switch oyunlarını okumak için Switch’inizin anahtarların
 msgid "Starting melonDS"
 msgstr "melonDS başlatılıyor"
 
-#: port/frontend/shell/shell.cpp:1031 port/frontend/shell/shell.cpp:2511
+#: port/frontend/shell/shell.cpp:1031 port/frontend/shell/shell.cpp:2549
 msgid "Starting Azahar"
 msgstr "Azahar başlatılıyor"
 
@@ -7101,11 +7101,11 @@ msgctxt "tab"
 msgid "Settings"
 msgstr "Ayarlar"
 
-#: port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:1482 port/frontend/shell/shell.cpp:2365
+#: port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:1482 port/frontend/shell/shell.cpp:2403
 msgid "Done"
 msgstr "Bitti"
 
-#: port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1498 port/frontend/shell/shell.cpp:1502 port/frontend/shell/shell.cpp:2455 port/frontend/shell/shell.cpp:2525
+#: port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1498 port/frontend/shell/shell.cpp:1502 port/frontend/shell/shell.cpp:2493 port/frontend/shell/shell.cpp:2563
 msgid "Cancel"
 msgstr "İptal"
 
@@ -7229,113 +7229,138 @@ msgstr "Oyun ayarları: özel"
 msgid "Add mods from USB"
 msgstr "USB’den mod ekle"
 
-#: port/frontend/shell/shell.cpp:1800
+#: port/frontend/shell/shell.cpp:1802 port/frontend/shell/shell.cpp:2188 port/frontend/shell/shell.cpp:2196
+msgid "Remove its update or DLC"
+msgstr "Güncellemesini veya DLC'sini kaldır"
+
+#: port/frontend/shell/shell.cpp:1803
 msgid "Not a favourite"
 msgstr "Favorilerden çıkar"
 
-#: port/frontend/shell/shell.cpp:1802
+#: port/frontend/shell/shell.cpp:1805
 msgid "Remove from home screen"
 msgstr "Ana ekrandan kaldır"
 
-#: port/frontend/shell/shell.cpp:1804
+#: port/frontend/shell/shell.cpp:1807
 msgid "Add to home screen"
 msgstr "Ana ekrana ekle"
 
-#: port/frontend/shell/shell.cpp:2182
+#: port/frontend/shell/shell.cpp:2174
+msgid "The update"
+msgstr "Güncelleme"
+
+#: port/frontend/shell/shell.cpp:2179
+msgid "The DLC"
+msgstr "DLC"
+
+#: port/frontend/shell/shell.cpp:2184
+msgid "The update and the DLC"
+msgstr "Güncelleme ve DLC"
+
+#: port/frontend/shell/shell.cpp:2191
+msgid "Removed. Install a CIA file puts it back."
+msgstr "Kaldırıldı. CIA dosyası kur onu geri koyar."
+
+#. {0} is the system's reason, as it gives it
+#: port/frontend/shell/shell.cpp:2195
+msgid "It could not all be removed: {0}"
+msgstr "Hepsi kaldırılamadı: {0}"
+
+#: port/frontend/shell/shell.cpp:2220
 msgid "Added to Favourites"
 msgstr "Favorilere eklendi"
 
-#: port/frontend/shell/shell.cpp:2182
+#: port/frontend/shell/shell.cpp:2220
 msgid "Taken out of Favourites"
 msgstr "Favorilerden çıkarıldı"
 
-#: port/frontend/shell/shell.cpp:2387
+#: port/frontend/shell/shell.cpp:2425
 msgid "PS5-ECAM {0} is out"
 msgstr "PS5-ECAM {0} çıktı"
 
-#: port/frontend/shell/shell.cpp:2388
+#: port/frontend/shell/shell.cpp:2426
 msgid "This is {0}. Download and install it now? Your games, saves and settings stay as they are."
 msgstr "Bu sürüm {0}. Şimdi indirip kurulsun mu? Oyunlarınız, kayıtlarınız ve ayarlarınız olduğu gibi kalır."
 
-#: port/frontend/shell/shell.cpp:2389
+#: port/frontend/shell/shell.cpp:2427
 msgid "Update now"
 msgstr "Şimdi güncelle"
 
-#: port/frontend/shell/shell.cpp:2389 port/frontend/shell/shell.cpp:2413 port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2475 port/frontend/shell/shell.cpp:2492
+#: port/frontend/shell/shell.cpp:2427 port/frontend/shell/shell.cpp:2451 port/frontend/shell/shell.cpp:2490 port/frontend/shell/shell.cpp:2513 port/frontend/shell/shell.cpp:2530
 msgid "Later"
 msgstr "Daha sonra"
 
-#: port/frontend/shell/shell.cpp:2389
+#: port/frontend/shell/shell.cpp:2427
 msgid "Skip this version"
 msgstr "Bu sürümü atla"
 
-#: port/frontend/shell/shell.cpp:2392 port/frontend/shell/shell.cpp:2397 port/frontend/shell/shell.cpp:2402
+#: port/frontend/shell/shell.cpp:2430 port/frontend/shell/shell.cpp:2435 port/frontend/shell/shell.cpp:2440
 msgid "Updating to {0}"
 msgstr "Güncelleniyor: {0}"
 
-#: port/frontend/shell/shell.cpp:2393
+#: port/frontend/shell/shell.cpp:2431
 msgid "Downloading: {0} of {1} MB"
 msgstr "İndiriliyor: {0} / {1} MB"
 
-#: port/frontend/shell/shell.cpp:2398
+#: port/frontend/shell/shell.cpp:2436
 msgid "Checking the download"
 msgstr "İndirilen dosya denetleniyor"
 
-#: port/frontend/shell/shell.cpp:2403
+#: port/frontend/shell/shell.cpp:2441
 msgid "Installing"
 msgstr "Kuruluyor"
 
-#: port/frontend/shell/shell.cpp:2407
+#: port/frontend/shell/shell.cpp:2445
 msgid "{0} is installed"
 msgstr "Kuruldu: {0}"
 
-#: port/frontend/shell/shell.cpp:2409 port/frontend/shell/shell.cpp:2466
+#: port/frontend/shell/shell.cpp:2447 port/frontend/shell/shell.cpp:2504
 msgid "Starting PS5-ECAM again…"
 msgstr "PS5-ECAM yeniden başlatılıyor…"
 
-#: port/frontend/shell/shell.cpp:2413 port/frontend/shell/shell.cpp:2418
+#: port/frontend/shell/shell.cpp:2451 port/frontend/shell/shell.cpp:2456
 msgid "Restart now"
 msgstr "Şimdi yeniden başlat"
 
-#: port/frontend/shell/shell.cpp:2417
+#: port/frontend/shell/shell.cpp:2455
 msgid "PS5-ECAM starts again to finish the update."
 msgstr "PS5-ECAM güncellemeyi bitirmek için yeniden başlar."
 
-#: port/frontend/shell/shell.cpp:2422
+#: port/frontend/shell/shell.cpp:2460
 msgid "The update did not finish"
 msgstr "Güncelleme tamamlanmadı"
 
-#: port/frontend/shell/shell.cpp:2423
+#: port/frontend/shell/shell.cpp:2461
 msgid "PS5-ECAM is still {0}."
 msgstr "PS5-ECAM hâlâ {0} sürümünde."
 
-#: port/frontend/shell/shell.cpp:2426
+#: port/frontend/shell/shell.cpp:2464
 msgid "Checking for updates"
 msgstr "Güncellemeler denetleniyor"
 
-#: port/frontend/shell/shell.cpp:2432
+#: port/frontend/shell/shell.cpp:2470
 msgid "PS5-ECAM update"
 msgstr "PS5-ECAM güncellemesi"
 
-#: port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2492
+#: port/frontend/shell/shell.cpp:2490 port/frontend/shell/shell.cpp:2530
 msgid "Select"
 msgstr "Seç"
 
-#: port/frontend/shell/shell.cpp:2453
+#: port/frontend/shell/shell.cpp:2491
 msgid "Restart"
 msgstr "Yeniden başlat"
 
 #. {0} lists the four folders: /data/cemu, /data/azahar, /data/melonds, /data/eden
-#: port/frontend/shell/shell.cpp:2469
+#: port/frontend/shell/shell.cpp:2507
 msgid "Your Wii U, 3DS, DS and Switch files go into folders of their own: {0}. They are moved on the same drive, never copied, so it takes a moment whatever their size. PS5-ECAM starts again to do it."
 msgstr "Wii U, 3DS, DS ve Switch dosyalarınız kendi klasörlerine gider: {0}. Aynı sürücüde taşınırlar, asla kopyalanmazlar; bu yüzden boyutları ne olursa olsun bir an sürer. PS5-ECAM bunu yapmak için yeniden başlar."
 
-#: port/frontend/shell/shell.cpp:2475
+#: port/frontend/shell/shell.cpp:2513
 msgid "Reorganize"
 msgstr "Yeniden düzenle"
 
 #. under an archived game's name while it is unpacked, the first time it starts
-#: port/frontend/shell/shell.cpp:2514
+#: port/frontend/shell/shell.cpp:2552
 msgid "Unpacking the game from its archive. This is done once: the copy is kept for the next start."
 msgstr "Oyun arşivinden açılıyor. Bu yalnızca bir kez yapılır: kopya bir sonraki başlatma için saklanır."
 

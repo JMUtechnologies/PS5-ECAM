@@ -100,7 +100,7 @@ msgstr "Não inicia"
 msgid "the PS5 Vulkan driver did not start"
 msgstr "o driver Vulkan do PS5 não iniciou"
 
-#: port/app/emulator.cpp:529 port/frontend/shell/settings.cpp:2350 port/frontend/shell/shell.cpp:1884
+#: port/app/emulator.cpp:529 port/frontend/shell/settings.cpp:2350 port/frontend/shell/shell.cpp:1887
 msgid "PS5-ECAM cannot write to {0}. Is the HEN loaded?"
 msgstr "O PS5-ECAM não consegue gravar em {0}. O HEN está carregado?"
 
@@ -1271,7 +1271,7 @@ msgstr "Não escaneado (erro {0})"
 msgid "Running"
 msgstr "Em execução"
 
-#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1440 port/frontend/shell/shell.cpp:1467 port/frontend/shell/shell.cpp:1476 port/frontend/shell/shell.cpp:1484 port/frontend/shell/shell.cpp:1492 port/frontend/shell/shell.cpp:1495 port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2492
+#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1440 port/frontend/shell/shell.cpp:1467 port/frontend/shell/shell.cpp:1476 port/frontend/shell/shell.cpp:1484 port/frontend/shell/shell.cpp:1492 port/frontend/shell/shell.cpp:1495 port/frontend/shell/shell.cpp:2490 port/frontend/shell/shell.cpp:2530
 #, menu
 msgid "Choose"
 msgstr "Escolher"
@@ -1589,7 +1589,7 @@ msgstr "{0} de {1} ativadas"
 msgid "Achievements"
 msgstr "Conquistas"
 
-#: port/app/ingame3ds.cpp:569 port/frontend/shell/installs.cpp:377 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:841 port/frontend/shell/pages.cpp:1224 port/frontend/shell/shell.cpp:2521
+#: port/app/ingame3ds.cpp:569 port/frontend/shell/installs.cpp:377 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:841 port/frontend/shell/pages.cpp:1224 port/frontend/shell/shell.cpp:2559
 #, menu
 msgid "{0} of {1}"
 msgstr "{0} de {1}"
@@ -1884,7 +1884,7 @@ msgstr "Ele já está instalado aqui."
 msgid "An install is already running."
 msgstr "Já há uma instalação em andamento."
 
-#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2424 port/frontend/shell/shell.cpp:2453 port/frontend/shell/shell.cpp:2475 port/frontend/shell/shell.cpp:2494
+#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2462 port/frontend/shell/shell.cpp:2491 port/frontend/shell/shell.cpp:2513 port/frontend/shell/shell.cpp:2532
 #, menu
 msgid "OK"
 msgstr "OK"
@@ -1900,31 +1900,31 @@ msgstr "O jogo pede"
 msgid "Some text"
 msgstr "Um texto"
 
-#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2342
+#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2380
 #, menu
 msgid "L1 R1: {0}"
 msgstr "L1 R1: {0}"
 
 #. the in-game keyboard's keys
-#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2365
+#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2403
 #, menu
 msgid "Shift: on"
 msgstr "Shift: ativado"
 
 #. the in-game keyboard's keys
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2365
+#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2403
 #, menu
 msgid "Shift"
 msgstr "Shift"
 
-#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2365
+#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2403
 #, menu
 msgid "Space"
 msgstr "Espaço"
 
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2365
+#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2403
 #, menu
 msgid "Delete"
 msgstr "Apagar"
@@ -3309,7 +3309,7 @@ msgstr "Retroceder"
 msgid "Update v{0}"
 msgstr "Atualização v{0}"
 
-#: port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1800
+#: port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1803
 msgid "Favourite"
 msgstr "Favorito"
 
@@ -3433,7 +3433,7 @@ msgstr[1] "{0} instalados"
 msgid "Everything found is installed already"
 msgstr "Tudo o que foi encontrado já está instalado"
 
-#: port/frontend/shell/installs.cpp:319 port/frontend/shell/shell.cpp:2521
+#: port/frontend/shell/installs.cpp:319 port/frontend/shell/shell.cpp:2559
 msgid "Stopping…"
 msgstr "Interrompendo…"
 
@@ -3477,7 +3477,7 @@ msgstr[1] "{0} novos para instalar."
 msgid "Everything found is installed."
 msgstr "Tudo o que foi encontrado está instalado."
 
-#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:230 port/frontend/shell/shares.cpp:535 port/frontend/shell/shell.cpp:2480
+#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:230 port/frontend/shell/shares.cpp:535 port/frontend/shell/shell.cpp:2518
 msgid "Game files"
 msgstr "Arquivos de jogo"
 
@@ -3599,7 +3599,7 @@ msgstr "Verificação da configuração"
 msgid "Diagnostics"
 msgstr "Diagnóstico"
 
-#: port/frontend/shell/library.cpp:132 port/frontend/shell/shell.cpp:1033 port/frontend/shell/shell.cpp:2511
+#: port/frontend/shell/library.cpp:132 port/frontend/shell/shell.cpp:1033 port/frontend/shell/shell.cpp:2549
 msgid "Starting Cemu"
 msgstr "Iniciando o Cemu"
 
@@ -3692,7 +3692,7 @@ msgstr "Procurando jogos novos…"
 msgid "As found last time"
 msgstr "Como da última vez"
 
-#: port/frontend/shell/library.cpp:639 port/frontend/shell/shell.cpp:1469 port/frontend/shell/shell.cpp:2336
+#: port/frontend/shell/library.cpp:639 port/frontend/shell/shell.cpp:1469 port/frontend/shell/shell.cpp:2374
 msgid "Search"
 msgstr "Buscar"
 
@@ -4213,7 +4213,7 @@ msgstr "Encontrado em {0}"
 msgid "Missing (only .wud/.wux need it)"
 msgstr "Faltando (só .wud/.wux precisam)"
 
-#: port/frontend/shell/pages.cpp:1314 port/frontend/shell/shell.cpp:2225 port/frontend/shell/shell.cpp:2252
+#: port/frontend/shell/pages.cpp:1314 port/frontend/shell/shell.cpp:2263 port/frontend/shell/shell.cpp:2290
 msgid "In use"
 msgstr "Em uso"
 
@@ -4645,7 +4645,7 @@ msgstr "Cruz para baixar"
 msgid "{0}: Cross to install"
 msgstr "{0}: Cruz para instalar"
 
-#: port/frontend/shell/settings.cpp:314 port/frontend/shell/settings.cpp:1162 port/frontend/shell/shell.cpp:2393
+#: port/frontend/shell/settings.cpp:314 port/frontend/shell/settings.cpp:1162 port/frontend/shell/shell.cpp:2431
 msgid "Downloading…"
 msgstr "Baixando…"
 
@@ -5518,7 +5518,7 @@ msgstr "Um jogo, uma atualização ou DLC."
 msgid "Installs a CIA into the 3DS's storage, as Azahar's Install CIA does: an update or DLC goes with its game, and a game joins the library. Circle cancels while it runs."
 msgstr "Instala um CIA no armazenamento do 3DS, como o Install CIA do Azahar: uma atualização ou DLC vai com o jogo dela, e um jogo entra na biblioteca. Círculo cancela durante a instalação."
 
-#: port/frontend/shell/settings.cpp:1004 port/frontend/shell/shell.cpp:2481
+#: port/frontend/shell/settings.cpp:1004 port/frontend/shell/shell.cpp:2519
 msgid "A folder for each system"
 msgstr "Uma pasta para cada sistema"
 
@@ -7041,7 +7041,7 @@ msgstr "O Eden precisa das chaves do seu Switch para ler os jogos dele: prod.key
 msgid "Starting melonDS"
 msgstr "Iniciando o melonDS"
 
-#: port/frontend/shell/shell.cpp:1031 port/frontend/shell/shell.cpp:2511
+#: port/frontend/shell/shell.cpp:1031 port/frontend/shell/shell.cpp:2549
 msgid "Starting Azahar"
 msgstr "Iniciando o Azahar"
 
@@ -7101,11 +7101,11 @@ msgctxt "tab"
 msgid "Settings"
 msgstr "Configurações"
 
-#: port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:1482 port/frontend/shell/shell.cpp:2365
+#: port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:1482 port/frontend/shell/shell.cpp:2403
 msgid "Done"
 msgstr "Concluído"
 
-#: port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1498 port/frontend/shell/shell.cpp:1502 port/frontend/shell/shell.cpp:2455 port/frontend/shell/shell.cpp:2525
+#: port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1498 port/frontend/shell/shell.cpp:1502 port/frontend/shell/shell.cpp:2493 port/frontend/shell/shell.cpp:2563
 msgid "Cancel"
 msgstr "Cancelar"
 
@@ -7229,113 +7229,138 @@ msgstr "Configurações do jogo: personalizadas"
 msgid "Add mods from USB"
 msgstr "Adicionar mods por USB"
 
-#: port/frontend/shell/shell.cpp:1800
+#: port/frontend/shell/shell.cpp:1802 port/frontend/shell/shell.cpp:2188 port/frontend/shell/shell.cpp:2196
+msgid "Remove its update or DLC"
+msgstr "Remover a atualização ou o DLC"
+
+#: port/frontend/shell/shell.cpp:1803
 msgid "Not a favourite"
 msgstr "Tirar dos favoritos"
 
-#: port/frontend/shell/shell.cpp:1802
+#: port/frontend/shell/shell.cpp:1805
 msgid "Remove from home screen"
 msgstr "Remover da tela inicial"
 
-#: port/frontend/shell/shell.cpp:1804
+#: port/frontend/shell/shell.cpp:1807
 msgid "Add to home screen"
 msgstr "Adicionar à tela inicial"
 
-#: port/frontend/shell/shell.cpp:2182
+#: port/frontend/shell/shell.cpp:2174
+msgid "The update"
+msgstr "A atualização"
+
+#: port/frontend/shell/shell.cpp:2179
+msgid "The DLC"
+msgstr "O DLC"
+
+#: port/frontend/shell/shell.cpp:2184
+msgid "The update and the DLC"
+msgstr "A atualização e o DLC"
+
+#: port/frontend/shell/shell.cpp:2191
+msgid "Removed. Install a CIA file puts it back."
+msgstr "Removido. Instalar um arquivo CIA o devolve."
+
+#. {0} is the system's reason, as it gives it
+#: port/frontend/shell/shell.cpp:2195
+msgid "It could not all be removed: {0}"
+msgstr "Não foi possível remover tudo: {0}"
+
+#: port/frontend/shell/shell.cpp:2220
 msgid "Added to Favourites"
 msgstr "Adicionado aos favoritos"
 
-#: port/frontend/shell/shell.cpp:2182
+#: port/frontend/shell/shell.cpp:2220
 msgid "Taken out of Favourites"
 msgstr "Tirado dos favoritos"
 
-#: port/frontend/shell/shell.cpp:2387
+#: port/frontend/shell/shell.cpp:2425
 msgid "PS5-ECAM {0} is out"
 msgstr "O PS5-ECAM {0} saiu"
 
-#: port/frontend/shell/shell.cpp:2388
+#: port/frontend/shell/shell.cpp:2426
 msgid "This is {0}. Download and install it now? Your games, saves and settings stay as they are."
 msgstr "Esta é a {0}. Baixar e instalar agora? Seus jogos, saves e configurações continuam como estão."
 
-#: port/frontend/shell/shell.cpp:2389
+#: port/frontend/shell/shell.cpp:2427
 msgid "Update now"
 msgstr "Atualizar agora"
 
-#: port/frontend/shell/shell.cpp:2389 port/frontend/shell/shell.cpp:2413 port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2475 port/frontend/shell/shell.cpp:2492
+#: port/frontend/shell/shell.cpp:2427 port/frontend/shell/shell.cpp:2451 port/frontend/shell/shell.cpp:2490 port/frontend/shell/shell.cpp:2513 port/frontend/shell/shell.cpp:2530
 msgid "Later"
 msgstr "Mais tarde"
 
-#: port/frontend/shell/shell.cpp:2389
+#: port/frontend/shell/shell.cpp:2427
 msgid "Skip this version"
 msgstr "Pular esta versão"
 
-#: port/frontend/shell/shell.cpp:2392 port/frontend/shell/shell.cpp:2397 port/frontend/shell/shell.cpp:2402
+#: port/frontend/shell/shell.cpp:2430 port/frontend/shell/shell.cpp:2435 port/frontend/shell/shell.cpp:2440
 msgid "Updating to {0}"
 msgstr "Atualizando para {0}"
 
-#: port/frontend/shell/shell.cpp:2393
+#: port/frontend/shell/shell.cpp:2431
 msgid "Downloading: {0} of {1} MB"
 msgstr "Baixando: {0} de {1} MB"
 
-#: port/frontend/shell/shell.cpp:2398
+#: port/frontend/shell/shell.cpp:2436
 msgid "Checking the download"
 msgstr "Verificando o download"
 
-#: port/frontend/shell/shell.cpp:2403
+#: port/frontend/shell/shell.cpp:2441
 msgid "Installing"
 msgstr "Instalando"
 
-#: port/frontend/shell/shell.cpp:2407
+#: port/frontend/shell/shell.cpp:2445
 msgid "{0} is installed"
 msgstr "{0} está instalada"
 
-#: port/frontend/shell/shell.cpp:2409 port/frontend/shell/shell.cpp:2466
+#: port/frontend/shell/shell.cpp:2447 port/frontend/shell/shell.cpp:2504
 msgid "Starting PS5-ECAM again…"
 msgstr "Reiniciando o PS5-ECAM…"
 
-#: port/frontend/shell/shell.cpp:2413 port/frontend/shell/shell.cpp:2418
+#: port/frontend/shell/shell.cpp:2451 port/frontend/shell/shell.cpp:2456
 msgid "Restart now"
 msgstr "Reiniciar agora"
 
-#: port/frontend/shell/shell.cpp:2417
+#: port/frontend/shell/shell.cpp:2455
 msgid "PS5-ECAM starts again to finish the update."
 msgstr "O PS5-ECAM reinicia para concluir a atualização."
 
-#: port/frontend/shell/shell.cpp:2422
+#: port/frontend/shell/shell.cpp:2460
 msgid "The update did not finish"
 msgstr "A atualização não terminou"
 
-#: port/frontend/shell/shell.cpp:2423
+#: port/frontend/shell/shell.cpp:2461
 msgid "PS5-ECAM is still {0}."
 msgstr "O PS5-ECAM continua na {0}."
 
-#: port/frontend/shell/shell.cpp:2426
+#: port/frontend/shell/shell.cpp:2464
 msgid "Checking for updates"
 msgstr "Procurando atualizações"
 
-#: port/frontend/shell/shell.cpp:2432
+#: port/frontend/shell/shell.cpp:2470
 msgid "PS5-ECAM update"
 msgstr "Atualização do PS5-ECAM"
 
-#: port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2492
+#: port/frontend/shell/shell.cpp:2490 port/frontend/shell/shell.cpp:2530
 msgid "Select"
 msgstr "Selecionar"
 
-#: port/frontend/shell/shell.cpp:2453
+#: port/frontend/shell/shell.cpp:2491
 msgid "Restart"
 msgstr "Reiniciar"
 
 #. {0} lists the four folders: /data/cemu, /data/azahar, /data/melonds, /data/eden
-#: port/frontend/shell/shell.cpp:2469
+#: port/frontend/shell/shell.cpp:2507
 msgid "Your Wii U, 3DS, DS and Switch files go into folders of their own: {0}. They are moved on the same drive, never copied, so it takes a moment whatever their size. PS5-ECAM starts again to do it."
 msgstr "Seus arquivos de Wii U, 3DS, DS e Switch vão para pastas próprias: {0}. Eles são movidos no mesmo dispositivo, nunca copiados, então leva um instante seja qual for o tamanho. O PS5-ECAM reinicia para fazer isso."
 
-#: port/frontend/shell/shell.cpp:2475
+#: port/frontend/shell/shell.cpp:2513
 msgid "Reorganize"
 msgstr "Reorganizar"
 
 #. under an archived game's name while it is unpacked, the first time it starts
-#: port/frontend/shell/shell.cpp:2514
+#: port/frontend/shell/shell.cpp:2552
 msgid "Unpacking the game from its archive. This is done once: the copy is kept for the next start."
 msgstr "Descompactando o jogo do arquivo compactado. Isso é feito uma vez só: a cópia fica guardada para a próxima vez."
 

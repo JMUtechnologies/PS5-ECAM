@@ -99,7 +99,7 @@ msgstr "เริ่ม​ไม่ได้"
 msgid "the PS5 Vulkan driver did not start"
 msgstr "ไดรเวอร์ Vulkan ของ PS5 ไม่​เริ่ม​ทำงาน"
 
-#: port/app/emulator.cpp:529 port/frontend/shell/settings.cpp:2350 port/frontend/shell/shell.cpp:1884
+#: port/app/emulator.cpp:529 port/frontend/shell/settings.cpp:2350 port/frontend/shell/shell.cpp:1887
 msgid "PS5-ECAM cannot write to {0}. Is the HEN loaded?"
 msgstr "PS5-ECAM เขียน​ลง {0} ไม่ได้ โหลด HEN แล้ว​หรือยัง"
 
@@ -1269,7 +1269,7 @@ msgstr "สแกน​ไม่ได้ (ข้อผิดพลาด {0})"
 msgid "Running"
 msgstr "กำลัง​ทำงาน"
 
-#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1440 port/frontend/shell/shell.cpp:1467 port/frontend/shell/shell.cpp:1476 port/frontend/shell/shell.cpp:1484 port/frontend/shell/shell.cpp:1492 port/frontend/shell/shell.cpp:1495 port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2492
+#: port/app/ingame.cpp:595 port/app/ingame3ds.cpp:821 port/eden/ingame.cpp:799 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1440 port/frontend/shell/shell.cpp:1467 port/frontend/shell/shell.cpp:1476 port/frontend/shell/shell.cpp:1484 port/frontend/shell/shell.cpp:1492 port/frontend/shell/shell.cpp:1495 port/frontend/shell/shell.cpp:2490 port/frontend/shell/shell.cpp:2530
 #, menu
 msgid "Choose"
 msgstr "เลือก"
@@ -1587,7 +1587,7 @@ msgstr "เปิด {0} จาก {1}"
 msgid "Achievements"
 msgstr "ความสำเร็จ"
 
-#: port/app/ingame3ds.cpp:569 port/frontend/shell/installs.cpp:377 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:841 port/frontend/shell/pages.cpp:1224 port/frontend/shell/shell.cpp:2521
+#: port/app/ingame3ds.cpp:569 port/frontend/shell/installs.cpp:377 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:841 port/frontend/shell/pages.cpp:1224 port/frontend/shell/shell.cpp:2559
 #, menu
 msgid "{0} of {1}"
 msgstr "{0} จาก {1}"
@@ -1881,7 +1881,7 @@ msgstr "ติดตั้ง​อยู่​ที่นี่​แล้ว
 msgid "An install is already running."
 msgstr "มี​การ​ติดตั้ง​ทำงาน​อยู่​แล้ว"
 
-#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2424 port/frontend/shell/shell.cpp:2453 port/frontend/shell/shell.cpp:2475 port/frontend/shell/shell.cpp:2494
+#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2462 port/frontend/shell/shell.cpp:2491 port/frontend/shell/shell.cpp:2513 port/frontend/shell/shell.cpp:2532
 #, menu
 msgid "OK"
 msgstr "ตกลง"
@@ -1897,31 +1897,31 @@ msgstr "เกม​ขอ​ให้​พิมพ์"
 msgid "Some text"
 msgstr "ข้อความ"
 
-#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2342
+#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2380
 #, menu
 msgid "L1 R1: {0}"
 msgstr "L1 R1: {0}"
 
 #. the in-game keyboard's keys
-#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2365
+#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2403
 #, menu
 msgid "Shift: on"
 msgstr "Shift: เปิด"
 
 #. the in-game keyboard's keys
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2365
+#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2403
 #, menu
 msgid "Shift"
 msgstr "Shift"
 
-#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2365
+#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2403
 #, menu
 msgid "Space"
 msgstr "เว้น​วรรค"
 
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2365
+#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:2403
 #, menu
 msgid "Delete"
 msgstr "ลบ"
@@ -3303,7 +3303,7 @@ msgstr "ย้อนกลับ"
 msgid "Update v{0}"
 msgstr "อัปเดต v{0}"
 
-#: port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1800
+#: port/frontend/shell/hub.cpp:218 port/frontend/shell/shell.cpp:1803
 msgid "Favourite"
 msgstr "รายการ​โปรด"
 
@@ -3425,7 +3425,7 @@ msgstr[0] "ติดตั้ง {0} รายการ​แล้ว"
 msgid "Everything found is installed already"
 msgstr "ทุก​รายการ​ที่​พบ​ติดตั้ง​แล้ว"
 
-#: port/frontend/shell/installs.cpp:319 port/frontend/shell/shell.cpp:2521
+#: port/frontend/shell/installs.cpp:319 port/frontend/shell/shell.cpp:2559
 msgid "Stopping…"
 msgstr "กำลัง​หยุด…"
 
@@ -3468,7 +3468,7 @@ msgstr[0] "มี {0} รายการ​ใหม่​ที่​ติด�
 msgid "Everything found is installed."
 msgstr "ทุก​รายการ​ที่​พบ​ติดตั้ง​แล้ว"
 
-#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:230 port/frontend/shell/shares.cpp:535 port/frontend/shell/shell.cpp:2480
+#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:230 port/frontend/shell/shares.cpp:535 port/frontend/shell/shell.cpp:2518
 msgid "Game files"
 msgstr "ไฟล์​เกม"
 
@@ -3588,7 +3588,7 @@ msgstr "ตรวจ​ความ​พร้อม"
 msgid "Diagnostics"
 msgstr "การ​วินิจฉัย"
 
-#: port/frontend/shell/library.cpp:132 port/frontend/shell/shell.cpp:1033 port/frontend/shell/shell.cpp:2511
+#: port/frontend/shell/library.cpp:132 port/frontend/shell/shell.cpp:1033 port/frontend/shell/shell.cpp:2549
 msgid "Starting Cemu"
 msgstr "กำลัง​เริ่ม Cemu"
 
@@ -3679,7 +3679,7 @@ msgstr "กำลัง​ค้นหา​เกม​ใหม่…"
 msgid "As found last time"
 msgstr "ตาม​ที่​พบ​ครั้ง​ก่อน"
 
-#: port/frontend/shell/library.cpp:639 port/frontend/shell/shell.cpp:1469 port/frontend/shell/shell.cpp:2336
+#: port/frontend/shell/library.cpp:639 port/frontend/shell/shell.cpp:1469 port/frontend/shell/shell.cpp:2374
 msgid "Search"
 msgstr "ค้นหา"
 
@@ -4197,7 +4197,7 @@ msgstr "พบ​ใน {0}"
 msgid "Missing (only .wud/.wux need it)"
 msgstr "ไม่มี (ต้อง​ใช้​เฉพาะ .wud/.wux)"
 
-#: port/frontend/shell/pages.cpp:1314 port/frontend/shell/shell.cpp:2225 port/frontend/shell/shell.cpp:2252
+#: port/frontend/shell/pages.cpp:1314 port/frontend/shell/shell.cpp:2263 port/frontend/shell/shell.cpp:2290
 msgid "In use"
 msgstr "ใช้​งาน​อยู่"
 
@@ -4629,7 +4629,7 @@ msgstr "ปุ่มกากบาท​เพื่อ​ดาวน์โห
 msgid "{0}: Cross to install"
 msgstr "{0}: ปุ่มกากบาท​เพื่อ​ติดตั้ง"
 
-#: port/frontend/shell/settings.cpp:314 port/frontend/shell/settings.cpp:1162 port/frontend/shell/shell.cpp:2393
+#: port/frontend/shell/settings.cpp:314 port/frontend/shell/settings.cpp:1162 port/frontend/shell/shell.cpp:2431
 msgid "Downloading…"
 msgstr "กำลัง​ดาวน์โหลด…"
 
@@ -5497,7 +5497,7 @@ msgstr "เกม อัปเดต หรือ DLC"
 msgid "Installs a CIA into the 3DS's storage, as Azahar's Install CIA does: an update or DLC goes with its game, and a game joins the library. Circle cancels while it runs."
 msgstr "ติดตั้ง CIA ลง​พื้นที่​จัดเก็บ​ของ 3DS เหมือน Install CIA ของ Azahar: อัปเดต​หรือ DLC จะ​ไป​กับ​เกม​ของ​มัน และ​เกม​จะ​เข้า​คลัง​เกม ปุ่มวงกลม​ยกเลิก​ขณะ​ทำงาน"
 
-#: port/frontend/shell/settings.cpp:1004 port/frontend/shell/shell.cpp:2481
+#: port/frontend/shell/settings.cpp:1004 port/frontend/shell/shell.cpp:2519
 msgid "A folder for each system"
 msgstr "โฟลเดอร์​แยก​สำหรับ​แต่ละ​ระบบ"
 
@@ -7000,7 +7000,7 @@ msgstr "Eden ต้อง​ใช้​คีย์​ของ Switch ขอ�
 msgid "Starting melonDS"
 msgstr "กำลัง​เริ่ม melonDS"
 
-#: port/frontend/shell/shell.cpp:1031 port/frontend/shell/shell.cpp:2511
+#: port/frontend/shell/shell.cpp:1031 port/frontend/shell/shell.cpp:2549
 msgid "Starting Azahar"
 msgstr "กำลัง​เริ่ม Azahar"
 
@@ -7060,11 +7060,11 @@ msgctxt "tab"
 msgid "Settings"
 msgstr "การ​ตั้งค่า"
 
-#: port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:1482 port/frontend/shell/shell.cpp:2365
+#: port/frontend/shell/shell.cpp:1434 port/frontend/shell/shell.cpp:1482 port/frontend/shell/shell.cpp:2403
 msgid "Done"
 msgstr "เสร็จ"
 
-#: port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1498 port/frontend/shell/shell.cpp:1502 port/frontend/shell/shell.cpp:2455 port/frontend/shell/shell.cpp:2525
+#: port/frontend/shell/shell.cpp:1436 port/frontend/shell/shell.cpp:1498 port/frontend/shell/shell.cpp:1502 port/frontend/shell/shell.cpp:2493 port/frontend/shell/shell.cpp:2563
 msgid "Cancel"
 msgstr "ยกเลิก"
 
@@ -7188,113 +7188,138 @@ msgstr "การ​ตั้งค่า​เกม: กำหนดเอง"
 msgid "Add mods from USB"
 msgstr "เพิ่ม​ม็อด​จาก USB"
 
-#: port/frontend/shell/shell.cpp:1800
+#: port/frontend/shell/shell.cpp:1802 port/frontend/shell/shell.cpp:2188 port/frontend/shell/shell.cpp:2196
+msgid "Remove its update or DLC"
+msgstr "ลบ​อัปเดต​หรือ DLC"
+
+#: port/frontend/shell/shell.cpp:1803
 msgid "Not a favourite"
 msgstr "นำ​ออก​จาก​รายการ​โปรด"
 
-#: port/frontend/shell/shell.cpp:1802
+#: port/frontend/shell/shell.cpp:1805
 msgid "Remove from home screen"
 msgstr "ลบ​ออก​จาก​หน้า​จอ​หลัก"
 
-#: port/frontend/shell/shell.cpp:1804
+#: port/frontend/shell/shell.cpp:1807
 msgid "Add to home screen"
 msgstr "เพิ่ม​ไป​ที่​หน้า​จอ​หลัก"
 
-#: port/frontend/shell/shell.cpp:2182
+#: port/frontend/shell/shell.cpp:2174
+msgid "The update"
+msgstr "อัปเดต"
+
+#: port/frontend/shell/shell.cpp:2179
+msgid "The DLC"
+msgstr "DLC"
+
+#: port/frontend/shell/shell.cpp:2184
+msgid "The update and the DLC"
+msgstr "อัปเดต​และ DLC"
+
+#: port/frontend/shell/shell.cpp:2191
+msgid "Removed. Install a CIA file puts it back."
+msgstr "ลบ​แล้ว ติดตั้ง​ไฟล์ CIA เพื่อ​ใส่​กลับ​ได้"
+
+#. {0} is the system's reason, as it gives it
+#: port/frontend/shell/shell.cpp:2195
+msgid "It could not all be removed: {0}"
+msgstr "ลบ​ไม่​ได้​ทั้งหมด: {0}"
+
+#: port/frontend/shell/shell.cpp:2220
 msgid "Added to Favourites"
 msgstr "เพิ่ม​ใน​รายการ​โปรด​แล้ว"
 
-#: port/frontend/shell/shell.cpp:2182
+#: port/frontend/shell/shell.cpp:2220
 msgid "Taken out of Favourites"
 msgstr "นำ​ออก​จาก​รายการ​โปรด​แล้ว"
 
-#: port/frontend/shell/shell.cpp:2387
+#: port/frontend/shell/shell.cpp:2425
 msgid "PS5-ECAM {0} is out"
 msgstr "PS5-ECAM {0} ออก​แล้ว"
 
-#: port/frontend/shell/shell.cpp:2388
+#: port/frontend/shell/shell.cpp:2426
 msgid "This is {0}. Download and install it now? Your games, saves and settings stay as they are."
 msgstr "นี่​คือ {0} ดาวน์โหลด​และ​ติดตั้ง​ตอนนี้​หรือไม่ เกม เซฟ และ​การ​ตั้งค่า​คง​เดิม"
 
-#: port/frontend/shell/shell.cpp:2389
+#: port/frontend/shell/shell.cpp:2427
 msgid "Update now"
 msgstr "อัปเดต​ตอนนี้"
 
-#: port/frontend/shell/shell.cpp:2389 port/frontend/shell/shell.cpp:2413 port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2475 port/frontend/shell/shell.cpp:2492
+#: port/frontend/shell/shell.cpp:2427 port/frontend/shell/shell.cpp:2451 port/frontend/shell/shell.cpp:2490 port/frontend/shell/shell.cpp:2513 port/frontend/shell/shell.cpp:2530
 msgid "Later"
 msgstr "ภายหลัง"
 
-#: port/frontend/shell/shell.cpp:2389
+#: port/frontend/shell/shell.cpp:2427
 msgid "Skip this version"
 msgstr "ข้าม​เวอร์ชัน​นี้"
 
-#: port/frontend/shell/shell.cpp:2392 port/frontend/shell/shell.cpp:2397 port/frontend/shell/shell.cpp:2402
+#: port/frontend/shell/shell.cpp:2430 port/frontend/shell/shell.cpp:2435 port/frontend/shell/shell.cpp:2440
 msgid "Updating to {0}"
 msgstr "กำลัง​อัปเดต​เป็น {0}"
 
-#: port/frontend/shell/shell.cpp:2393
+#: port/frontend/shell/shell.cpp:2431
 msgid "Downloading: {0} of {1} MB"
 msgstr "กำลัง​ดาวน์โหลด: {0} จาก {1} MB"
 
-#: port/frontend/shell/shell.cpp:2398
+#: port/frontend/shell/shell.cpp:2436
 msgid "Checking the download"
 msgstr "กำลัง​ตรวจสอบ​ไฟล์​ที่​ดาวน์โหลด"
 
-#: port/frontend/shell/shell.cpp:2403
+#: port/frontend/shell/shell.cpp:2441
 msgid "Installing"
 msgstr "กำลัง​ติดตั้ง"
 
-#: port/frontend/shell/shell.cpp:2407
+#: port/frontend/shell/shell.cpp:2445
 msgid "{0} is installed"
 msgstr "ติดตั้ง {0} แล้ว"
 
-#: port/frontend/shell/shell.cpp:2409 port/frontend/shell/shell.cpp:2466
+#: port/frontend/shell/shell.cpp:2447 port/frontend/shell/shell.cpp:2504
 msgid "Starting PS5-ECAM again…"
 msgstr "กำลัง​เริ่ม PS5-ECAM ใหม่…"
 
-#: port/frontend/shell/shell.cpp:2413 port/frontend/shell/shell.cpp:2418
+#: port/frontend/shell/shell.cpp:2451 port/frontend/shell/shell.cpp:2456
 msgid "Restart now"
 msgstr "รีสตาร์ต​ตอนนี้"
 
-#: port/frontend/shell/shell.cpp:2417
+#: port/frontend/shell/shell.cpp:2455
 msgid "PS5-ECAM starts again to finish the update."
 msgstr "PS5-ECAM จะ​เริ่ม​ใหม่​เพื่อ​ให้​อัปเดต​เสร็จ"
 
-#: port/frontend/shell/shell.cpp:2422
+#: port/frontend/shell/shell.cpp:2460
 msgid "The update did not finish"
 msgstr "อัปเดต​ไม่​เสร็จ"
 
-#: port/frontend/shell/shell.cpp:2423
+#: port/frontend/shell/shell.cpp:2461
 msgid "PS5-ECAM is still {0}."
 msgstr "PS5-ECAM ยัง​เป็น {0}"
 
-#: port/frontend/shell/shell.cpp:2426
+#: port/frontend/shell/shell.cpp:2464
 msgid "Checking for updates"
 msgstr "กำลัง​ตรวจสอบ​อัปเดต"
 
-#: port/frontend/shell/shell.cpp:2432
+#: port/frontend/shell/shell.cpp:2470
 msgid "PS5-ECAM update"
 msgstr "อัปเดต PS5-ECAM"
 
-#: port/frontend/shell/shell.cpp:2452 port/frontend/shell/shell.cpp:2492
+#: port/frontend/shell/shell.cpp:2490 port/frontend/shell/shell.cpp:2530
 msgid "Select"
 msgstr "ตกลง"
 
-#: port/frontend/shell/shell.cpp:2453
+#: port/frontend/shell/shell.cpp:2491
 msgid "Restart"
 msgstr "รีสตาร์ต"
 
 #. {0} lists the four folders: /data/cemu, /data/azahar, /data/melonds, /data/eden
-#: port/frontend/shell/shell.cpp:2469
+#: port/frontend/shell/shell.cpp:2507
 msgid "Your Wii U, 3DS, DS and Switch files go into folders of their own: {0}. They are moved on the same drive, never copied, so it takes a moment whatever their size. PS5-ECAM starts again to do it."
 msgstr "ไฟล์ Wii U, 3DS, DS และ Switch ของ​คุณ​จะ​ไป​อยู่​ใน​โฟลเดอร์​ของ​ตัวเอง: {0} ไฟล์​จะ​ถูก​ย้าย​บน​ไดรฟ์​เดียว​กัน ไม่​มี​การ​คัดลอก จึง​ใช้​เวลา​เพียง​ครู่​เดียว​ไม่​ว่า​ไฟล์​จะ​ใหญ่​แค่​ไหน PS5-ECAM จะ​เริ่ม​ใหม่​เพื่อ​ทำ​สิ่ง​นี้"
 
-#: port/frontend/shell/shell.cpp:2475
+#: port/frontend/shell/shell.cpp:2513
 msgid "Reorganize"
 msgstr "จัด​ระเบียบ"
 
 #. under an archived game's name while it is unpacked, the first time it starts
-#: port/frontend/shell/shell.cpp:2514
+#: port/frontend/shell/shell.cpp:2552
 msgid "Unpacking the game from its archive. This is done once: the copy is kept for the next start."
 msgstr "กำลัง​แตก​ไฟล์​เกม​จาก​ไฟล์​บีบอัด ทำ​เพียง​ครั้ง​เดียว: สำเนา​จะ​ถูก​เก็บ​ไว้​สำหรับ​การ​เริ่ม​ครั้ง​ถัดไป"
 
