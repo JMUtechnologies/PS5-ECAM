@@ -238,6 +238,11 @@ namespace ps5shell
 		// ProsperoEden's Settings > Performance, as its launcher has it
 		if (IsSwitch())
 			pages.push_back({"performance", Tr("Performance"), Tr("Speed against accuracy, and the emulated Switch's memory."), Icon::Pulse});
+		if (IsSwitch())
+		{
+			pages.push_back({"nxpost", Tr("Post-processing"), Tr("Eden's ReShade presets."), Icon::Monitor});
+			pages.push_back({"nxprofiles", Tr("Player profiles"), Tr("Choose an existing Switch player and their saves."), Icon::Pad});
+		}
 		pages.push_back({"files", Tr("Game files"), IsWiiU() ? Tr("Where your Wii U games are, and installs into the Wii U's storage.") :
 										Is3ds()		 ? Tr("Where your 3DS games are, and installs into the 3DS's storage.") :
 										IsSwitch()	 ? Tr("Where your Switch games are, with its keys and firmware.") :
@@ -245,8 +250,7 @@ namespace ps5shell
 			Icon::Folder});
 		// the Wii U's accounts and every side's saves (6.13); a handheld has one player, so its page is saves alone.
 		// A Switch game's saves are Eden's, in its own folder
-		if (!IsSwitch())
-			pages.push_back({"saves", IsWiiU() ? Tr("Accounts and saves") : Tr("Saves"),
+		pages.push_back({"saves", IsWiiU() ? Tr("Accounts and saves") : Tr("Saves"),
 				IsWiiU() ? Tr("Each account has its own saves for every game. Backups hold every side's saves.") : Tr("Backups hold every side's saves."),
 				Icon::Save});
 		if (Is3ds())
@@ -269,16 +273,21 @@ namespace ps5shell
 		// with a setting: Graphics, Screens, Audio, System and the Switch's Performance)
 		std::vector<SettingsPage> game;
 		for (const SettingsPage& page : pages)
-			if (page.id == "graphics" || page.id == "screens" || page.id == "audio" || page.id == "system" || page.id == "performance")
+			if (page.id == "graphics" || page.id == "screens" || page.id == "audio" || page.id == "system" || page.id == "performance" || page.id == "nxpost")
 				game.push_back({page.id, page.title, TrF("For {0} only. Its other settings follow its side's.", m_gameName), page.icon});
 		// its saves alone (6.15), whatever settings it has of its own (a Switch game's are Eden's)
-		if (!IsSwitch())
-			game.push_back({"gamesaves", Tr("Saves"), TrF("{0}'s saves only. Settings has every side's.", m_gameName), Icon::Save});
+		game.push_back({"gamesaves", Tr("Saves"), TrF("{0}'s saves only. Settings has every side's.", m_gameName), Icon::Save});
+		if (IsSwitch())
+		{
+			game.push_back({"nxmods", Tr("Mods"), Tr("Choose the installed mods this game uses."), Icon::Folder});
+			game.push_back({"nxcheats", Tr("Cheats"), Tr("Choose individual installed cheats."), Icon::Folder});
+		}
 		return game;
 	}
 
 	void Shell::SettingsOpen(const std::string& page, bool onRows, int row)
 	{
+		m_switchExtrasKey.clear();
 		if (InGameSettings())
 			GameSettingsClose();
 		m_page = page;
@@ -1324,6 +1333,8 @@ namespace ps5shell
 
 	std::vector<Row> Shell::SettingRows(const std::string& page)
 	{
+		if (IsSwitch() && (page == "nxmods" || page == "nxcheats" || page == "nxpost" || page == "nxprofiles"))
+			return SwitchExtrasRows(page);
 		if (!InGameSettings())
 			return SideRows(page, m_settings);
 		if (page == "gamesaves")
@@ -1901,6 +1912,7 @@ namespace ps5shell
 
 	void Shell::GameSettingsOpen(int game)
 	{
+		m_switchExtrasKey.clear();
 		if (game < 0 || game >= (int)m_games.size())
 			return;
 		const ps5emu::Game& g = m_games[game].entry.game;
@@ -1945,6 +1957,11 @@ namespace ps5shell
 	void Shell::ChangeSetting(const Row& row, int step, bool cross)
 	{
 		const std::string& id = row.id;
+		if (id.starts_with("nxextra:"))
+		{
+			ChangeSwitchExtra(row, step, cross);
+			return;
+		}
 		if (row.dimmed && (row.needsCore || id == "homemenu"))
 		{
 			m_feedback.Play(ui::Cue::Denied);
@@ -2734,3 +2751,4 @@ namespace ps5shell
 		canvas.PopAlpha();
 	}
 }
+
