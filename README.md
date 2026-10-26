@@ -166,6 +166,8 @@ Big thanks to the people who sent code and fixes to PS5-ECAM itself:
 - **[Mafiacoding](https://github.com/Mafiacoding)** for archived games: the ZIP support for the Wii U,
   3DS and DS sides that 5.0.0's archives build on ([#53](https://github.com/premohq/PS5-ECAM/pull/53), [#50](https://github.com/premohq/PS5-ECAM/issues/50))
 - **[3lmerx503](https://github.com/3lmerx503)** for finding and testing the rumble fix ([#41](https://github.com/premohq/PS5-ECAM/issues/41))
+- **[yeager](https://github.com/yeager)** (Daniel Nylander) for his review of the Swedish translation
+  ([#85](https://github.com/premohq/PS5-ECAM/pull/85))
 
 ### Built on
 
