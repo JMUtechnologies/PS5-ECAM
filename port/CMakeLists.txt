@@ -164,6 +164,8 @@ add_library(CemuPS5 STATIC
 	azahar/library.h
 	eden/controls.cpp
 	eden/eden.h
+	eden/extras.cpp
+	eden/extras.h
 	eden/launch.cpp
 	eden/library.cpp
 	eden/library.h
@@ -195,6 +197,7 @@ add_library(CemuPS5 STATIC
 	frontend/shell/pages.cpp
 	frontend/shell/recent.cpp
 	frontend/shell/settings.cpp
+	frontend/shell/switch_extras.cpp
 	frontend/shell/setup.cpp
 	frontend/shell/shares.cpp
 	frontend/shell/shell.cpp
@@ -285,6 +288,7 @@ set_source_files_properties(
 	azahar/unavailable.cpp
 	eden/controls.cpp
 	eden/launch.cpp
+	eden/extras.cpp
 	eden/library.cpp
 	eden/nx_files.cpp
 	eden/rooms.cpp
@@ -304,6 +308,7 @@ set_source_files_properties(
 	frontend/shell/pages.cpp
 	frontend/shell/recent.cpp
 	frontend/shell/settings.cpp
+	frontend/shell/switch_extras.cpp
 	frontend/shell/setup.cpp
 	frontend/shell/shares.cpp
 	frontend/shell/shell.cpp
@@ -412,3 +417,4 @@ else()
 	target_sources(CemuPS5 PRIVATE melonds/unavailable.cpp)
 	message(STATUS "PS5-ECAM: no melonDS build; DS games will not start")
 endif()
+
