@@ -20,7 +20,8 @@ static int failures = 0;
 static void Check(bool ok, const char* what) { std::printf("%s  %s\n", ok ? "PASS" : "FAIL", what); failures += !ok; }
 static ps5saves::Status Wait() { for (;;) { auto s = ps5saves::Current(); if (s.state != ps5saves::Status::State::Running) return s; std::this_thread::sleep_for(std::chrono::milliseconds(10)); } }
 int main() {
-	const fs::path root = PS5CEMU_DATA, usb = "/mnt/usb0";
+	const fs::path root = PS5CEMU_DATA, usb = std::string(PS5CEMU_USB_ROOT) + "/usb0";
+	fs::create_directories(usb);
 	Put(root / "ps5cemu.json", "{\"theme\": \"midnight\"}");
 	Put(root / "settings.xml", "<content/>");
 	Put(root / "controllerProfiles/player1.xml", "<p1/>");
@@ -35,6 +36,7 @@ int main() {
 	Check(status.state == ps5saves::Status::State::Done && !status.settingsRestored, "a backup: done, no settings restored");
 	auto backups = ps5saves::FindBackups();
 	Check(backups.size() == 1, "the backup is found");
+	if (backups.empty()) { ps5saves::Finish(); return 1; }
 	const fs::path folder = backups.front().folder;
 	Check(Get(folder / "settings/ps5cemu.json").find("midnight") != std::string::npos, "ps5cemu.json in it");
 	Check(fs::exists(folder / "settings/controllerProfiles/player1.xml") && fs::exists(folder / "settings/themes/mine.json") &&
@@ -70,5 +72,45 @@ int main() {
 	Check(ps5saves::ResumeState(tar) == (root / "melonds/states/Mario.ml11").string(), "the DS's, an archive's by its name");
 	ps5saves::GameRef wiiu; wiiu.side = 0;
 	Check(ps5saves::ResumeState(wiiu).empty(), "none for the Wii U");
+	// Switch per-game exports select exact titles across profiles, never other games or profiles.dat.
+	const std::string profile(32, 'A'), profile2(32, 'B');
+	const fs::path nxroot = root / "eden/user/nand/user/save/0000000000000000";
+	const fs::path nxsave = nxroot / profile / "0100abcdef123000/data.bin";
+	const fs::path nxsave2 = nxroot / profile2 / "0100ABCDEF123000/data.bin";
+	const fs::path other = nxroot / profile / "0100ABCDEF124000/data.bin";
+	Put(nxsave, "first"); Put(nxsave2, "second"); Put(other, "unrelated");
+	fs::create_symlink(other, nxsave.parent_path() / "linked.bin");
+	ps5saves::GameRef nx; nx.side = 3; nx.titleId = 0x0100abcdef123000;
+	const auto nxFound = ps5saves::FindGameSaves(nx);
+	Check(nxFound.size() == 1 && nxFound[0].files == 2, "Switch save discovery across users and hex case");
+	Check(ps5saves::StartGameBackup(nx, error), "Switch game backup starts");
+	status = Wait();
+	Check(status.state == ps5saves::Status::State::Done && status.files == 2, "only selected Switch title exported");
+	Check(!fs::exists(fs::path(status.where) / "switch/save/0000000000000000" / profile / "0100abcdef123000/linked.bin"), "symlinked files excluded from save exports");
+	const fs::path nxbackup = status.where;
+	Check(!fs::exists(nxbackup / "switch/profiles") && !fs::exists(nxbackup / "settings") &&
+		!fs::exists(nxbackup / "switch/save/0000000000000000" / profile / "0100ABCDEF124000"), "no unrelated saves, accounts or settings exported");
+	Check(ps5saves::StartGameBackup(nx, error), "second same-second backup starts");
+	status = Wait();
+	Check(fs::path(status.where) != nxbackup && fs::exists(nxbackup / "backup.json"), "backup folders never reused");
+	auto nxbackups = ps5saves::FindGameBackups(nx);
+	Check(!nxbackups.empty(), "Switch game backup discovery");
+	if (nxbackups.empty()) { ps5saves::Finish(); return 1; }
+	Put(nxsave, "new first"); Put(nxsave2, "new second");
+	Check(ps5saves::StartGameRestore(nxbackups.front(), nx, error), "Switch game restore starts");
+	status = Wait();
+	Check(status.state == ps5saves::Status::State::Done && !status.settingsRestored, "Switch restore does not restore global settings");
+	Check(Get(nxsave) == "first" && Get(nxsave2) == "second" && Get(other) == "unrelated", "Switch restore isolates requested title");
+	bool nxKept = false;
+	for (const auto& entry : fs::recursive_directory_iterator(root / "saves-before"))
+		if (entry.is_regular_file() && Get(entry.path()) == "new first") nxKept = true;
+	Check(nxKept, "previous Switch save retained before replacement");
+	ps5saves::GameRef made; made.side = 3; made.titleId = 0x5A12345678901234;
+	Check(ps5saves::FindGameSaves(made).empty() && !ps5saves::StartGameBackup(made, error), "synthetic Switch IDs refused");
+	ps5saves::GameRef unknown; unknown.side = 9; unknown.file = "/games/Mario.nds";
+	Check(ps5saves::FindGameSaves(unknown).empty() && !ps5saves::StartGameBackup(unknown, error), "unknown systems cannot fall through to DS saves");
+	Check(ps5saves::ResumeState(nx).empty(), "Switch has no fabricated resume state");
+	ps5saves::Finish();
 	return failures != 0;
 }
+
