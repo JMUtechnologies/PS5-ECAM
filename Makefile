@@ -14,7 +14,10 @@ APP := build/app/PPSA99360
 JOBS ?= $(shell nproc)
 export JOBS
 
-.PHONY: help deps deps-status radv azahar melonds eden build check package release clean distclean
+.PHONY: help deps deps-status radv azahar melonds eden build check package release clean distclean test-performance
+
+test-performance: ## Test the offline performance comparison tool (no SDK or console needed)
+	python3 -B tools/tests/test-performance.py
 
 help: ## List the targets
 	@echo 'PS5-ECAM build - make [target] [VARIABLE=value]'
@@ -80,3 +83,4 @@ clean: ## Remove build outputs (build/, dist/); dependencies stay
 
 distclean: clean ## Also remove the fetched dependencies in .deps
 	python3 -B tools/deps.py clean
+
