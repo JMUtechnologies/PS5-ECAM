@@ -65,7 +65,7 @@ namespace ps5saves
 	void Finish(); // waits for the thread (before a game)
 
 	// -- one game's saves ------------------------------------------------
-	// The game whose saves these are: its side (0 Wii U, 1 3DS, 2 DS, as the launcher numbers them), its
+	// The game whose saves these are: its side (0 Wii U, 1 3DS, 2 DS, 3 Switch), its
 	// title ID (the Wii U's and the 3DS's), and its file (the DS's saves and states are named by it)
 	struct GameRef
 	{
@@ -109,3 +109,4 @@ namespace ps5saves
 	// Its file for a game (side 1 the 3DS, 2 the DS, as GameRef has them), or empty for another side
 	std::string ResumeState(const GameRef& game);
 }
+
