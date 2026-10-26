@@ -92,6 +92,31 @@ A release of its own, once the rebuild has shipped and run on consoles, so that 
 is there underneath it. **Effort:** M, most of it the paths saved in files and testing on each kind of
 drive.
 
+### Where it stands
+
+The paths are in the code now, on this branch, with a layout that differs from the plan below: the
+four folders sit beside `/data/ps5cemu` rather than inside a new `/data/PS5-ECAM`, and the
+launcher's own files stay in `/data/ps5cemu`.
+
+- **Done:** `/data/cemu`, `/data/azahar`, `/data/melonds` and `/data/eden` for a new install, each with
+  its own games, updates, DLC, keys and firmware or BIOS folders (`port/app/system_layout.h`,
+  `ps5paths::DecideSystemRoots`, the `[paths]` line in the boot log). An install from before is found
+  where it is and nothing moves. Eden's program picks its folder with the same code
+  (`patches/eden/0010`), so the launch request, menu and saves agree. Cemu's saved MLC path, the old
+  default game folders and Eden's `game_files` follow the folder in use. Backups keep their format.
+  On an app drive, `cemu`, `azahar` and `melonds` go beside `PS5CEMU-HAR-data`.
+- **How an install from before is separated, for now:** `tools/separate-systems.py`, run on a computer
+  against a copy of the console's data: a full backup checked by hashes, the copies checked, then a
+  marker in each new folder that the app and Eden take as the go-ahead. Nothing is deleted. It needs a
+  computer and the room for a backup and a copy, so it is a stopgap.
+- **Still to do:** the in-app **Reorganize** or **Not now** below (renames, a journal for a power cut,
+  Go back), which would replace the computer step; home screen tiles that name a game in the old place
+  (they work while the originals are kept); the `PS5-ECAM` names. Whether the folders end up beside
+  `ps5cemu` or inside `/data/PS5-ECAM` is still the owner's choice.
+- **Checked on a PC only:** host tests (`test-paths.sh`, `test-saves-paths.sh`, `test-eden-paths.sh`,
+  `test-separate-systems.py`) and a compile of every port source and Eden's changed files with the PS5
+  build's flags. Nothing of it has run on a console.
+
 ### What changes
 
 The data folder is named after the app, and each emulator's files are in a folder named after it.

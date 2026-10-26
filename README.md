@@ -45,7 +45,7 @@ The details are in the [release notes](https://github.com/premohq/PS5-ECAM/relea
   last load*; *Quit to the library* saves a state and *Resume* goes on from it. A fast forward that
   turns on and off with a press.
 - **ReShade on the Wii U** (**Settings > Graphics** or the in-game menu): your PC presets and effects
-  in `/data/cemu/reshade` (legacy installs keep `ps5cemu/reshade`). **Frame generation** with MihawkGen on the Wii U and 3DS
+  in `/data/ps5cemu/reshade`. **Frame generation** with MihawkGen on the Wii U and 3DS
   ([#66](https://github.com/premohq/PS5-ECAM/issues/66)), off by default.
 - **3DS:** Artic Setup works, from dolphin78 ([#45](https://github.com/premohq/PS5-ECAM/issues/45), [#70](https://github.com/premohq/PS5-ECAM/pull/70)); 3D for red and cyan
   glasses; the cameras see a picture from `azahar/camera` (QR codes); screen rotation.
@@ -84,14 +84,17 @@ Changes in earlier versions are in their [release notes](https://github.com/prem
 4. **Add your games** (below), and start PS5-ECAM from the home screen. The Setup check shows
    what's ready and what to do about the rest.
 
-Updating, from PS5CEMU-HAR too: the app offers new releases itself. Everything in `/data/ps5cemu` is
-kept, and the title ID stays `PPSA99360`.
+Each system keeps its files in a folder of its own: `/data/cemu`, `/data/azahar`, `/data/melonds`
+and `/data/eden`, with the launcher's settings, covers and logs in `/data/ps5cemu`.
 
-New installs use four separate top-level folders: `/data/cemu`, `/data/azahar`, `/data/melonds`
-and `/data/eden`. Shared launcher files stay in `/data/ps5cemu`. Existing installs are discovered
-in place; the [backup-and-copy migration tool](docs/SYSTEM-FOLDERS.md) separates their content
-without deleting originals. On an app drive, Cemu, Azahar and melonDS use sibling folders beside
-`PS5CEMU-HAR-data`; Eden stays on the console.
+Updating, from PS5CEMU-HAR too: the app offers new releases itself, and the title ID stays
+`PPSA99360`. An install from before keeps everything where it is, in `/data/ps5cemu`, and goes on
+working; [System folders](docs/SYSTEM-FOLDERS.md) says how to separate it, with nothing deleted.
+
+Installed on a USB drive or the extended storage? A `PS5CEMU-HAR-data` folder at the top of that drive
+(its name from before 5.0.0, kept so nothing moves) keeps the launcher's files there instead of in
+`/data`, with `cemu`, `azahar` and `melonds` beside it; the Switch's stay in `/data/eden`.
+[The guide](docs/GUIDE.md#everything-on-the-apps-drive) says how.
 
 ## Your games
 
@@ -102,9 +105,8 @@ without deleting originals. On an app drive, Cemu, Azahar and melonDS use siblin
 | **DS** | `/data/melonds/games` | nothing: your own BIOS and firmware in `/data/melonds/bios` are optional |
 | **Switch** | `/data/eden/roms` | your Switch's `prod.keys` (and `title.keys`) in `/data/eden/keys`, and its firmware in `/data/eden/firmware` |
 
-Each system gets its native games, add-on sources and keys/firmware locations. See
-[System folders and migration](docs/SYSTEM-FOLDERS.md) for the complete tree and the verified
-backup/copy procedure for existing installations.
+An install from before has these in `/data/ps5cemu` (`games`, `keys.txt`, `azahar/games`, and so on)
+until it is separated. [System folders](docs/SYSTEM-FOLDERS.md) has each system's whole folder.
 
 Any other folder, a USB drive or a network share (not for Switch games) works too: **Settings > Game
 files** on each system. No games, keys or firmware are included. Use dumps of games and hardware you own.
