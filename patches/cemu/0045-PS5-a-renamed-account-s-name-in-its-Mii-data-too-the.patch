@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Mon, 26 Oct 2026 23:28:12 +0000
+Subject: [PATCH] PS5: a renamed account's name in its Mii data too, the one
+ games show
+
+Games read an account's name from its Mii data (nn_act GetMiiName), which the constructor fills once.
+SetMiiName now writes the new name there as well, and makes the data's last two bytes its CRC again,
+so the 96 bytes still check to zero and the Mii's ID stays as it was.
+---
+ src/Cafe/Account/Account.cpp | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/src/Cafe/Account/Account.cpp b/src/Cafe/Account/Account.cpp
+index 6f576ae..b3e1915 100644
+--- a/src/Cafe/Account/Account.cpp
++++ b/src/Cafe/Account/Account.cpp
+@@ -296,6 +296,20 @@ void Account::SetMiiName(std::wstring_view name)
+ {
+ 	m_mii_name = {};
+ 	std::copy(name.data(), name.data() + std::min(name.size(), m_mii_name.size() - 1), m_mii_name.begin());
++	// PS5: games read the Mii's name from its data (nn_act GetMiiName), not this one, and an account's
++	// data is made once (the constructor), so a renamed account kept its first name in games. The new
++	// one goes there too, and the data's last two bytes are made its CRC again, as a Mii's are: the
++	// whole 96 bytes check to zero, and the Mii's ID stays as it was
++	if (m_mii_data == decltype(m_mii_data){})
++		return;
++	FFLData_t* fflData = (FFLData_t*)m_mii_data.data();
++	const auto tmp_name = GetMiiName();
++	memset(fflData->miiName, 0, sizeof(fflData->miiName));
++	std::copy(tmp_name.begin(), tmp_name.end(), fflData->miiName);
++	m_mii_data[94] = m_mii_data[95] = 0;
++	const uint16 crc = FFLCalculateCRC16(m_mii_data.data(), 96);
++	m_mii_data[94] = (uint8)(crc >> 8);
++	m_mii_data[95] = (uint8)(crc & 0xFF);
+ }
+ 
+ const std::vector<Account>& Account::RefreshAccounts()
