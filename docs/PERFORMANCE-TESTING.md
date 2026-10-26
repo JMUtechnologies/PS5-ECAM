@@ -114,3 +114,69 @@ python3 -B tools/tests/test-performance.py
 
 The tests use synthetic traces to check arithmetic and failure handling. They are not PS5
 measurements and must never be presented as an emulator speedup or console acceptance.
+
+## Batch comparisons and repeated trials
+
+`tools/performance-suite.py` groups matched pairs by game/scene, checks repeated trials and
+produces a single report. It imports the same capture validation and arithmetic as the
+single-pair tool. No console connection, emulator change or additional dependency is needed.
+
+Generate a starting manifest covering all four systems and three trials per case:
+
+```sh
+python3 tools/performance-suite.py --template > suite.json
+```
+
+The generated paths are placeholders, not supplied measurements. Edit the case names and
+paths for real captures. Each case contains `name`, `system`, `console_checks` and `pairs`.
+Each pair names `baseline_csv`, `candidate_csv`, `baseline_meta` and `candidate_meta`.
+Paths are relative to the manifest's directory. Absolute paths, `..` escapes and symlinks
+outside that directory are refused. Put the manifest above its capture directories.
+
+The default requires at least three pairs per case; `--min-repeats` changes that explicitly.
+Repeats must use the same context and baseline/candidate builds. Reusing a byte-identical
+capture on the same side, including under another filename, is rejected: copying a trace
+does not create another independent trial. If an exactly deterministic capture is legitimate,
+inspect it separately with the single-pair tool and explain why the repeated evidence matches.
+
+```sh
+python3 tools/performance-suite.py suite.json --require-all-systems --format json > suite-report.json
+python3 tools/performance-suite.py suite.json --require-all-systems --format markdown > suite-report.md
+python3 tools/performance-suite.py suite.json --require-all-systems --format html > suite-report.html
+```
+
+The HTML report opens locally, has no scripts or network requests, and includes expandable
+input metadata, metrics and hashes. Supplied strings are escaped; there is no remote dashboard
+service or upload. The JSON is the complete machine-readable evidence, including every pair.
+The suite accepts the same window/threshold/minimum-sample options as the single-pair tool.
+
+For each case the summary includes baseline and candidate metric medians, and the median and
+range of paired percentage changes. A single regressed pair fails the performance check even
+when the medians look good; the tool does not hide variability or average away failures.
+Invalid cases remain visible alongside valid cases. `--require-all-systems` requires at least
+one valid case for DS, 3DS, Wii U and Switch. This is coverage of supplied evidence, not a
+claim that all games were tested.
+
+### Record console acceptance separately
+
+Every case has six checks: `launch`, `audio`, `controls`, `save_load`, `quit_to_library` and
+`relaunch`. Set each to `pass`, `fail` or `untested` based on actual candidate-console testing.
+Missing checks default to `untested`. Add any system-specific save-state, touch, multiplayer,
+graphics or long-session findings to the PR; these six checks are only the common minimum.
+These values are tester attestations, not independently verified console telemetry.
+
+Acceptance is `failed` for a regression or a failed console check, `incomplete` for missing
+evidence or an untested console check, and `passed` only when all cases pass. A displayed
+failure is retained even if another case has invalid evidence. Exit codes are **0** accepted,
+**1** regression/failed/untested checks, and **2** invalid evidence or missing required systems.
+A case with invalid evidence cannot establish acceptance even if its entered console checks
+say pass. Keep the output for all exit codes.
+
+Run both host suites with:
+
+```sh
+make test-performance
+```
+
+No PS5 frame capture exporter is included. These tools make captured evidence reviewable;
+they do not replace runtime capture, full builds or console qualification.
