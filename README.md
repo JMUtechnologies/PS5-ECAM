@@ -89,7 +89,9 @@ and `/data/eden`, with the launcher's settings, covers and logs in `/data/ps5cem
 
 Updating, from PS5CEMU-HAR too: the app offers new releases itself, and the title ID stays
 `PPSA99360`. An install from before keeps everything where it is, in `/data/ps5cemu`, and goes on
-working; [System folders](docs/SYSTEM-FOLDERS.md) says how to separate it, with nothing deleted.
+working. The app offers to give each system its folder (**Reorganize**, or later from **Settings >
+Game files**): the files are moved in a moment, never copied or deleted, and can be put back.
+[System folders](docs/SYSTEM-FOLDERS.md) has the details.
 
 Installed on a USB drive or the extended storage? A `PS5CEMU-HAR-data` folder at the top of that drive
 (its name from before 5.0.0, kept so nothing moves) keeps the launcher's files there instead of in

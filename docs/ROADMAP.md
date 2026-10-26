@@ -105,17 +105,24 @@ launcher's own files stay in `/data/ps5cemu`.
   (`patches/eden/0010`), so the launch request, menu and saves agree. Cemu's saved MLC path, the old
   default game folders and Eden's `game_files` follow the folder in use. Backups keep their format.
   On an app drive, `cemu`, `azahar` and `melonds` go beside `PS5CEMU-HAR-data`.
-- **How an install from before is separated, for now:** `tools/separate-systems.py`, run on a computer
-  against a copy of the console's data: a full backup checked by hashes, the copies checked, then a
-  marker in each new folder that the app and Eden take as the go-ahead. Nothing is deleted. It needs a
-  computer and the room for a backup and a copy, so it is a stopgap.
-- **Still to do:** the in-app **Reorganize** or **Not now** below (renames, a journal for a power cut,
-  Go back), which would replace the computer step; home screen tiles that name a game in the old place
-  (they work while the originals are kept); the `PS5-ECAM` names. Whether the folders end up beside
-  `ps5cemu` or inside `/data/PS5-ECAM` is still the owner's choice.
-- **Checked on a PC only:** host tests (`test-paths.sh`, `test-saves-paths.sh`, `test-eden-paths.sh`,
-  `test-separate-systems.py`) and a compile of every port source and Eden's changed files with the PS5
-  build's flags. Nothing of it has run on a console.
+- **Done: Reorganize, in the app** (`port/app/reorganize.h`), as planned below but into the folders
+  beside `ps5cemu`: a prompt at a fresh start (**Reorganize** or **Later**, asked again a week on) and
+  **Settings > Game files > A folder for each system**. The moves are renames made as the app starts
+  again, before anything opens the files; everything is checked first (a file in the way, another
+  drive), `reorganize.txt` lets the start after a power cut finish, and a system whose move fails goes
+  back whole. The same row puts them back, and **Go back** waits for that. Old paths follow: the games
+  folder settings, Cemu's game folders and MLC, and home screen tiles (`ps5paths::Moved`).
+- **Also there:** `tools/separate-systems.py`, which copies instead, on a computer, with a full backup
+  checked by hashes first; the app takes its copies by the same markers.
+- **Still to do:** the `PS5-ECAM` names below (the data folder, `PS5CEMU-HAR-data`, `ps5cemu.json`,
+  the macros). **Go back** is held back after Reorganize even to a version that has the folders too:
+  once one is out, compare versions there. Whether the folders stay beside `ps5cemu` or move inside a
+  `/data/PS5-ECAM` is still the owner's choice.
+- **Checked on a PC only:** host tests (`test-reorganize.sh`, `test-paths.sh`, `test-saves-paths.sh`,
+  `test-eden-paths.sh`, `test-separate-systems.py`), the launcher preview's prompt and row, and a
+  compile of every port source and Eden's changed files with the PS5 build's flags. To check on a
+  console: Reorganize on `/data`, on a USB drive and on extended storage; Later, then the Settings row;
+  a tile made before; Put back, then Go back; a power cut halfway (pull the plug during the start).
 
 ### What changes
 

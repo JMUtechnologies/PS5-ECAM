@@ -995,6 +995,28 @@ namespace ps5shell
 				action(Kind::Link, "installcia", Tr("Install a CIA file"), "", Tr("A game, an update or DLC."),
 					Tr("Installs a CIA into the 3DS's storage, as Azahar's Install CIA does: an update or DLC goes with its game, and a game joins "
 					"the library. Circle cancels while it runs."));
+			// an install from before: a folder for each system (app/reorganize.h), and back as before, which
+			// Go back to an earlier version needs
+			if (!m_layout.separate.empty() || !m_layout.separated.empty())
+			{
+				const bool back = m_layout.separate.empty();
+				const bool blocked = !m_layout.blocked.empty();
+				Row* row = action(Kind::Hold, back ? "putback" : "separate", Tr("A folder for each system"),
+					blocked ? std::string(Tr("Cannot move")) : m_message.empty() ? std::string(Tr("Hold Cross")) : m_message,
+					// tr: {0} is a file or folder already where one would be moved to
+					blocked ? TrF("In the way: {0}", m_layout.blocked) :
+					back	? Tr("Each system's files are in a folder of their own.") :
+							  Tr("Your files from before into a folder for each system."),
+					back ? TrF("Puts each system's files back into {0}, where they were before. Going back to an earlier version needs them "
+							   "there, as it looks for them there. PS5-ECAM starts again to do it.",
+							   ps5paths::Root()) :
+						   // tr: {0} is the app's data folder, /data/ps5cemu; {1} lists the four folders: /data/cemu, /data/azahar, ...
+						   TrF("Moves each system's files from {0} into a folder of its own: {1}. They are renamed on the same drive, never "
+							   "copied, so it takes a moment whatever their size, and nothing is deleted. PS5-ECAM starts again to do it; a "
+							   "system that cannot move stays as it was. This row puts them back.",
+							   ps5paths::Root(), SystemFolders()));
+				row->dimmed = blocked;
+			}
 		}
 		else if (page == "saves")
 		{
@@ -1222,12 +1244,20 @@ namespace ps5shell
 				   "settings stay as they are."));
 			// the release the last update replaced, kept until the next (ps5update::PreviousVersion)
 			if (const std::string previous = ps5update::PreviousVersion(); !previous.empty())
+			{
 				// tr: {0} is the version the last update replaced, as in 5.0.0
-				action(Kind::Hold, "goback", TrF("Go back to {0}", ps5update::Readable(previous)), m_message.empty() ? Tr("Hold Cross") : m_message,
+				Row* goback = action(Kind::Hold, "goback", TrF("Go back to {0}", ps5update::Readable(previous)), m_message.empty() ? Tr("Hold Cross") : m_message,
 					Tr("The version before the last update, kept as it was."),
 					Tr("The last update kept the version it replaced. Holding Cross puts its files back in place of these, and PS5-ECAM starts "
 					   "again as that version. Your games, saves and settings stay as they are. The newer version is not offered at start "
 					   "again; this page still finds it."));
+				// a version from before a folder for each system looks for the files where they were (app/reorganize.h)
+				if (!m_layout.separated.empty())
+				{
+					goback->dimmed = true;
+					goback->description = Tr("Put each system's files back first: Settings > Game files > A folder for each system.");
+				}
+			}
 		}
 		else if (page == "launcher")
 		{
@@ -2306,9 +2336,35 @@ namespace ps5shell
 			// tr: a held row's result: the covers are on their way
 			m_message = Tr("Downloading in the background");
 		}
+		else if (id == "separate" || id == "putback")
+		{
+			// a folder for each system, or back as before: written down, and made as the app starts again
+			if (!m_layout.blocked.empty())
+			{
+				m_feedback.Play(ui::Cue::Denied);
+				return;
+			}
+			const auto request = id == "separate" ? ps5reorganize::Request::Separate : ps5reorganize::Request::PutBack;
+			if (!ps5reorganize::Ask(ps5paths::Root(), request))
+			{
+				m_message = TrF("PS5-ECAM cannot write to {0}. Is the HEN loaded?", ps5paths::Root());
+				return;
+			}
+			ps5log::Line("[reorganize] {} asked for in Settings: as the app starts again", id == "separate" ? "a folder for each system" : "putting back");
+			ps5update::Restart();
+			m_message = ps5update::GetStatus().message; // back only when the PS5 did not start it again
+			if (m_message.empty())
+				m_message = Tr("Close PS5-ECAM and start it again from the home screen: the folders move as it starts.");
+		}
 		else if (id == "goback")
 		{
-			// the release the last update replaced back in place, and not offered again at start
+			// the release the last update replaced back in place, and not offered again at start; not while
+			// the systems are in folders of their own, which a version from before would not find
+			if (!m_layout.separated.empty())
+			{
+				m_feedback.Play(ui::Cue::Denied);
+				return;
+			}
 			std::string error;
 			if (ps5update::GoBack(error))
 			{

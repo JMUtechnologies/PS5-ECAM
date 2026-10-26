@@ -263,8 +263,9 @@ namespace ps5emu
 			if (config.mlc_path.GetValue() == ps5paths::Root() + "/mlc01" ||
 				config.mlc_path.GetValue() == ps5paths::Root() + "/cemu/mlc01")
 				config.mlc_path = ps5paths::Mlc();
+			// and one in the data folder before the Wii U had a folder of its own (app/reorganize.h)
 			for (std::string& path : config.game_paths)
-				path = ps5paths::Relocated(path);
+				path = ps5paths::Moved(ps5paths::Relocated(path));
 			config.game_paths = ps5paths::GameFolders(config.game_paths);
 		}
 

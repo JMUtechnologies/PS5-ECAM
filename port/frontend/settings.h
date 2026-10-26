@@ -148,6 +148,8 @@ namespace ps5settings
 		// a release the start does not offer (the update's Skip this version, or one gone back from), as
 		// ps5update::Readable writes it; Settings > Online still finds it
 		std::string skipVersion;
+		// the day (since 1970) A folder for each system was put off (Not now): asked again a week later
+		int reorganizeAsked = 0;
 		std::string theme;			 // the launcher's look (ui/theme.h): a built-in theme's id, or user:<file> in themes/; empty: the default
 		bool libraryFilters = false;		 // the Library's filter row (Settings > Launcher); off: every game, as All
 		int libraryFilter[4] = {0, 0, 0, 0}; // per side (Wii U, 3DS, DS, Switch): All, Recently added, Favourites, Graphic packs on (Wii U)

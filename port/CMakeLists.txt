@@ -139,6 +139,8 @@ add_library(CemuPS5 STATIC
 	app/update_files.h
 	app/updates.cpp
 	app/updates.h
+	app/reorganize.cpp
+	app/reorganize.h
 	app/usb_devices.cpp
 	app/usb_devices.h
 	app/wiiu_archives.cpp
@@ -278,6 +280,7 @@ set_source_files_properties(
 	app/netfs.cpp
 	app/boxart.cpp
 	app/saves.cpp
+	app/reorganize.cpp
 	app/catalog.cpp
 	app/compatibility.cpp
 	app/gameinfo.cpp

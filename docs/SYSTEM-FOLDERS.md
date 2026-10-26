@@ -75,9 +75,34 @@ selection code as the launcher, resolving after elevation, so its launch request
 firmware, saves, settings and diagnostics agree on `/data/eden` or the discovered legacy root.
 The launcher no longer points at one folder while Eden uses another.
 
-## Back up, verify, copy, then activate
+## Separating an install from before, on the PS5
 
-`tools/separate-systems.py` defaults to a **read-only plan**. Run it on a computer with a mounted
+At a start of the app, an install from before is asked once: **A folder for each system**,
+**Reorganize** or **Later**. **Later** asks again a week on; **Settings > Game files > A folder for
+each system** (hold Cross) does the same at any time. PS5-ECAM then starts again, and moves the files
+as it starts, before anything opens them (`port/app/reorganize.h`):
+
+- Each system's files are **renamed** into its folder: Cemu's files at the top of `/data/ps5cemu`
+  (`settings.xml`, `mlc01`, `games`, `keys.txt`, `graphicPacks`, its shader cache and the rest), and
+  the `azahar`, `melonds` and `eden` folders whole. On the same drive a rename moves a folder whatever
+  its size, so it takes a moment, needs no free space, and nothing is copied or deleted.
+- Before anything moves, every file is checked: if one is already where it would go, or the folder
+  would be on another drive, nothing moves and the row says what is in the way.
+- `reorganize.txt` in the launcher's folder says what is under way, so the start after a power cut
+  finishes it. A system whose move fails part way is put back whole where it was, and keeps working
+  there; the next start says which, and `boot.log`'s `[reorganize]` lines say why.
+- Each system moved gets its `.ecam-separated-v2` marker. Paths saved before follow: the games
+  folders in the settings, Cemu's game folders and MLC, home screen tiles made before (a tile's game
+  is looked for where it moved).
+
+The same row then puts them back (hold Cross), with the same checks: **Go back** to a version from
+before (Settings > Online) needs that first, as that version looks for the files in `/data/ps5cemu`,
+and is not offered until then.
+
+## Or: back up, verify and copy, on a computer
+
+For a full verified backup and copies instead of moves, `tools/separate-systems.py` defaults to a
+**read-only plan**. Run it on a computer with a mounted
 or copied console data tree. Python does not need to run on the PS5. Close the launcher and
 Eden before taking the source snapshot and keep them closed through transfer and verification.
 
@@ -134,7 +159,8 @@ launcher folder stays `/mnt/usb0/PS5CEMU-HAR-data`. Eden's separate program stay
 at `/data/eden` (or its discovered `/data/ps5cemu/eden` legacy directory). Its existing custom
 game-files setting and standalone ProsperoEden discovery continue to work.
 
-For migration in this arrangement, provide `--eden-legacy` pointing to a mounted/copied
+**Reorganize** works the same there: the three move within the app's drive, and the Switch's within
+`/data`. For the copying tool in this arrangement, provide `--eden-legacy` pointing to a mounted/copied
 `/data/ps5cemu/eden` tree in addition to `--legacy-root` for the app-drive launcher tree. The
 Eden target is a sibling of that console tree's `ps5cemu` directory. Back up and transfer each
 volume to its corresponding location; do not copy an entire `/data/ps5cemu` and delete it on

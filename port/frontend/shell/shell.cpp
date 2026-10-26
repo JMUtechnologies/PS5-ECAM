@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <ctime>
 #include <filesystem>
 #include <utility>
 
@@ -234,6 +235,29 @@ namespace ps5shell
 					m_status.lastCrash));
 			m_status.lastCrash.clear();
 		}
+		// a folder for each system that this start could not give every system (main_ps5.cpp): said once
+		else if (const auto& failed = m_status.reorganized.failed; !failed.empty())
+		{
+			std::string names;
+			for (const std::string& name : failed)
+			{
+				const System side = name == "azahar" ? System::N3ds : name == "melonds" ? System::Nds : name == "eden" ? System::Switch : System::WiiU;
+				names += (names.empty() ? "" : ", ") + std::string(SystemName(side));
+			}
+			OpenHelp(Tr("Some files could not move"),
+				// tr: {0} names the systems whose files did not move into folders of their own: "Wii U, Nintendo 3DS"
+				TrF("{0}: their files stayed where they were, with nothing lost. The boot log says why: Settings > Diagnostics > Copy logs "
+					"to USB.",
+					names));
+		}
+		// a folder for each system: what this start did, said once, or else offered to an install from
+		// before at a fresh start, unless Later was chosen less than a week ago (Settings > Game files has it)
+		m_layout = ps5reorganize::Look(ps5paths::Root(), ps5paths::kDefaultRoot);
+		if (!m_status.reorganized.moved.empty())
+			Toast(Tr("The folders have moved"));
+		else if (!returning && !firstStart && m_status.autoLaunch.empty() && !m_layout.separate.empty() && m_layout.blocked.empty() &&
+				 Today() >= m_settings.ui.reorganizeAsked + 7)
+			m_reorganize.offer = true;
 		ps5log::Line("[ui] the new launcher is up in {:.0f} ms", (host.clock() - started) * 1000);
 
 		while (!m_done && !m_failed)
@@ -363,6 +387,14 @@ namespace ps5shell
 			m_update.at = m_now;
 			m_update.choice = 0;
 		}
+		// a folder for each system, offered once a side's library is up and nothing else is asking
+		if (m_reorganize.offer && m_screen == ScreenId::Library && !m_update.open && !m_help.open && !m_picker.open && !m_menu.open &&
+			!m_keyboard.open && !m_unpack.open && !m_launch.active)
+		{
+			m_reorganize = {};
+			m_reorganize.open = true;
+			m_reorganize.at = m_now;
+		}
 
 		m_images->SetUploads(!m_launch.active);
 		m_images->Update();
@@ -392,6 +424,14 @@ namespace ps5shell
 		{
 			m_update.restartAt = -1;
 			ps5update::Restart();
+		}
+		// and a folder for each system's, made as the app starts (app/reorganize.h)
+		if (m_reorganize.restartAt >= 0 && m_now - m_reorganize.restartAt > 0.15)
+		{
+			m_reorganize.restartAt = -1;
+			ps5update::Restart();
+			// back here only when the PS5 did not start the app again
+			m_reorganize.message = Tr("Close PS5-ECAM and start it again from the home screen: the folders move as it starts.");
 		}
 		if (m_frames == 1)
 			ps5log::Line("[ui] first frame: {} instances, {} draws", m_list.instances.size(), m_list.runs.size());
@@ -456,7 +496,8 @@ namespace ps5shell
 			}
 		}
 		// what is held to confirm goes on without presses
-		if (actions.presses.empty() && !m_picker.open && !m_help.open && !m_menu.open && !m_keyboard.open && !m_update.open && !m_unpack.open)
+		if (actions.presses.empty() && !m_picker.open && !m_help.open && !m_menu.open && !m_keyboard.open && !m_update.open && !m_unpack.open &&
+			!m_reorganize.open)
 		{
 			const ui::Press none{Button::Count, false};
 			if (m_screen == ScreenId::Settings)
@@ -492,7 +533,7 @@ namespace ps5shell
 		case ScreenId::Updates: UpdatesDraw(canvas); break;
 		case ScreenId::Shares: SharesDraw(canvas); break;
 		}
-		const bool overlay = m_picker.open || m_help.open || m_menu.open || m_keyboard.open || m_update.open || m_unpack.open;
+		const bool overlay = m_picker.open || m_help.open || m_menu.open || m_keyboard.open || m_update.open || m_unpack.open || m_reorganize.open;
 		if (overlay)
 			m_ringAsked = false; // the overlay's own focus is drawn with it
 		if (!m_launch.active)
@@ -1370,11 +1411,23 @@ namespace ps5shell
 		canvas.PopAlpha();
 	}
 
+	std::string Shell::SystemFolders()
+	{
+		const std::string& root = ps5paths::Root();
+		return ecam_layout::Sibling(root, "cemu") + ", " + ecam_layout::Sibling(root, "azahar") + ", " + ecam_layout::Sibling(root, "melonds") + ", " +
+			ecam_layout::Sibling(ps5paths::kDefaultRoot, "eden");
+	}
+
+	int Shell::Today()
+	{
+		return (int)(std::time(nullptr) / 86400);
+	}
+
 	std::vector<Hint> Shell::Hints() const
 	{
 		// the touchpad's next side; none when one side is shown (its hint goes: DrawHints leaves out an empty one)
 		const std::string other = SidesShown() > 1 ? SystemName(NextShownSide(m_side)) : "";
-		if (m_update.open || m_unpack.open)
+		if (m_update.open || m_unpack.open || m_reorganize.open)
 			return {}; // their sheets' own
 		// tr: the hints along the bottom: what a button does on this screen, a word or two
 		if (m_keyboard.open)
@@ -1796,6 +1849,40 @@ namespace ps5shell
 			{
 				m_unpack.progress.cancel = true;
 				m_feedback.Play(ui::Cue::Back);
+			}
+			return true;
+		}
+		if (m_reorganize.open)
+		{
+			// Reorganize or Later; once it could not, OK
+			const int choices = m_reorganize.restartAt >= 0 ? 0 : m_reorganize.message.empty() ? 2 : 1;
+			if ((b == Button::Left || b == Button::Right) && choices > 1)
+			{
+				m_reorganize.choice = 1 - m_reorganize.choice;
+				m_feedback.Play(ui::Cue::Focus);
+			}
+			else if (choices > 0 && (b == Button::Circle || (b == Button::Cross && (m_reorganize.choice == 1 || choices == 1))))
+			{
+				// Later: asked again in a week, and Settings > Game files has it meanwhile
+				if (choices == 2)
+				{
+					m_settings.ui.reorganizeAsked = Today();
+					SaveSettings();
+					ps5log::Line("[reorganize] put off: asked again in a week");
+				}
+				m_reorganize.open = false;
+				m_feedback.Play(b == Button::Circle ? ui::Cue::Back : ui::Cue::Select);
+			}
+			else if (b == Button::Cross && choices == 2)
+			{
+				if (ps5reorganize::Ask(ps5paths::Root(), ps5reorganize::Request::Separate))
+				{
+					ps5log::Line("[reorganize] asked for: the folders move as the app starts again");
+					m_reorganize.restartAt = m_now; // once a frame has said so (Frame)
+				}
+				else
+					m_reorganize.message = TrF("PS5-ECAM cannot write to {0}. Is the HEN loaded?", ps5paths::Root());
+				m_feedback.Play(ui::Cue::Select);
 			}
 			return true;
 		}
@@ -2366,6 +2453,45 @@ namespace ps5shell
 													   std::vector<Hint>{{Icon::Cross, status.state == State::Failed ? Tr("OK") : Tr("Restart")}});
 			else if (status.state == State::Downloading || status.state == State::Verifying)
 				DrawHints(canvas, {{Icon::Circle, Tr("Cancel")}}); // (a download that stalls fails by itself too)
+			canvas.PopOffset();
+			canvas.PopAlpha();
+		}
+
+		// a folder for each system, offered to an install from before (app/reorganize.h)
+		if (m_reorganize.open)
+		{
+			const float a = appear(m_reorganize.at);
+			Scrim(canvas, 0.8f * a);
+			const bool restarting = m_reorganize.restartAt >= 0;
+			const std::string text = restarting					 ? std::string(Tr("Starting PS5-ECAM again…")) :
+				!m_reorganize.message.empty() ? m_reorganize.message :
+												// tr: {0} lists the four folders: /data/cemu, /data/azahar, /data/melonds, /data/eden
+												TrF("Your Wii U, 3DS, DS and Switch files go into folders of their own: {0}. They are moved on "
+													"the same drive, never copied, so it takes a moment whatever their size. PS5-ECAM starts "
+													"again to do it.",
+													SystemFolders());
+			std::vector<std::string> choices;
+			if (!restarting)
+				choices = m_reorganize.message.empty() ? std::vector<std::string>{Tr("Reorganize"), Tr("Later")} : std::vector<std::string>{Tr("OK")};
+			const Box sheet{960 - 520, 280, 1040, 480};
+			canvas.PushAlpha(a);
+			canvas.PushOffset(0, (1 - a) * 40);
+			DrawSheet(canvas, sheet, a);
+			canvas.Text(Style(kOverlineStyle), sheet.x + 48, sheet.y + 44, Tr("Game files"), Secondary(), sheet.w - 96, 1);
+			canvas.Text(Style(kTitleStyle), sheet.x + 48, sheet.y + 72, Tr("A folder for each system"), kText, sheet.w - 96, 1);
+			canvas.Text(Style(kBodyStyle), sheet.x + 48, sheet.y + 140, text, Secondary(), sheet.w - 96, 6);
+			m_reorganize.choice = std::min<int>(m_reorganize.choice, std::max<int>(0, (int)choices.size() - 1));
+			float x = sheet.x + 48;
+			for (int i = 0; i < (int)choices.size(); i++)
+			{
+				const Box b = PillButton(canvas, x, sheet.Bottom() - 48 - 72, choices[i], i == 0, i == m_reorganize.choice);
+				x += b.w + 20;
+			}
+			DrawFocusRing(canvas);
+			if (choices.size() > 1)
+				DrawHints(canvas, {{Icon::LeftRight, Tr("Choose")}, {Icon::Cross, Tr("Select")}, {Icon::Circle, Tr("Later")}});
+			else if (!choices.empty())
+				DrawHints(canvas, {{Icon::Cross, Tr("OK")}});
 			canvas.PopOffset();
 			canvas.PopAlpha();
 		}

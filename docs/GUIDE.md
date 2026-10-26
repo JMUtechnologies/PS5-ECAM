@@ -626,9 +626,13 @@ drive: [below](#everything-on-the-apps-drive)). Your game files are wherever you
 
 **An install from before** keeps everything where it was, all in `/data/ps5cemu`: Cemu's files at
 its top, the 3DS's, DS's and Switch's in its `azahar`, `melonds` and `eden` folders. The app finds
-them there and moves nothing; `boot.log`'s `[paths]` line says which folder each system uses.
-[System folders](SYSTEM-FOLDERS.md) says how to separate such an install, with a full backup first and
-the originals kept.
+them there and moves nothing; `boot.log`'s `[paths]` line says which folder each system uses. At a
+start it offers to give each system its folder (**Reorganize** or **Later**), and **Settings > Game
+files > A folder for each system** does the same at any time (hold Cross): PS5-ECAM starts again and
+renames the files into the folders as it starts, so it takes a moment, copies nothing and deletes
+nothing. The same row puts them back, which **Go back** to a version from before needs first.
+[System folders](SYSTEM-FOLDERS.md) has the details, and a way to copy them on a computer instead,
+with a full backup first.
 
 **FTP and file managers:** every file and folder the app makes is open to every user (folders 0777,
 files 0666), so an FTP client or a file manager can change or delete it, installed CIAs included.

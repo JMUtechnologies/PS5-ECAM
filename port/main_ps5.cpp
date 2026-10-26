@@ -22,6 +22,7 @@
 #include "app/netfs.h"
 #include "app/pack_updates.h"
 #include "app/paths.h"
+#include "app/reorganize.h"
 #include "app/updates.h"
 #include "azahar/azahar.h"
 #include "azahar/library.h"
@@ -206,7 +207,7 @@ namespace
 		{
 			const std::string arg = argv[i] ? argv[i] : "";
 			if (arg == "--rom" && i + 1 < argc && argv[i + 1])
-				tile.rom = argv[++i];
+				tile.rom = ps5paths::Moved(argv[++i]); // a tile made before its side had a folder of its own (app/reorganize.h)
 			else if (arg == "--exit-after-game")
 				tile.exitAfterGame = true;
 			else if (arg == "--resume")
@@ -286,6 +287,7 @@ int main(int argc, char* argv[])
 	const ps5privilege::Result privileges =
 		ps5privilege::Acquire({early.gamesFolder, early.n3ds.gamesFolder, early.nds.gamesFolder}, early.alwaysAskHen);
 	const uint64_t acquired = sceKernelGetProcessTime();
+	ps5reorganize::Outcome reorganized;
 	if (privileges.filesystem)
 	{
 		// the drives the HEN left out opened first (below for the game folders the settings name):
@@ -293,8 +295,15 @@ int main(int argc, char* argv[])
 		// log goes in it
 		ps5privilege::ReachFolders({early.gamesFolder, early.n3ds.gamesFolder, early.nds.gamesFolder});
 		ps5paths::DecideRoot();
+		// a folder for each system, asked for at the last start (or left unfinished by a power cut):
+		// moved before any system's folder is decided or a file of theirs opened (the log's rotation
+		// opens Cemu's log.txt), and said in the log once it is open
+		std::vector<std::string> reorganizing;
+		reorganized = ps5reorganize::Run(ps5paths::Root(), ps5paths::kDefaultRoot, reorganizing);
 		ps5paths::DecideSystemRoots();
 		ps5log::Open(ps5paths::Logs().c_str());
+		for (const std::string& line : reorganizing)
+			ps5log::Line("[reorganize] {}", line);
 	}
 	ps5log::Line("[main] firmware {}", Firmware());
 	// (how long the HEN, the probes and the elevation helper took: a start's first wait)
@@ -519,6 +528,7 @@ int main(int argc, char* argv[])
 	status.autoLaunch = tile.rom;
 	status.autoLaunchSide = tile.side;
 	status.autoLaunchResume = tile.resume;
+	status.reorganized = reorganized;
 	// after the game: the library, or for a tile's game (--exit-after-game) the PS5's home screen, as
 	// the in-game menus say (SetExitAfterGame, below)
 	auto afterGame = [&](const char* side) {

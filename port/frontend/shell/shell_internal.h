@@ -774,6 +774,21 @@ namespace ps5shell
 			double at = 0;
 			double restartAt = -1; // Restart now was chosen then: the app starts again a few frames after
 		} m_update;
+		// a folder for each system (app/reorganize.h): what can be done, looked at as the launcher starts
+		// (Settings > Game files' row), and the sheet that offers it to an install from before, once a start
+		ps5reorganize::Layout m_layout;
+		struct ReorganizeSheet
+		{
+			bool offer = false; // to open once a side's library is up and nothing else asks
+			bool open = false;
+			int choice = 0;
+			double at = 0;
+			double restartAt = -1; // Reorganize chosen: the app starts again a few frames after
+			std::string message;   // why it did not: the request not written, or the PS5 not starting the app again
+		} m_reorganize;
+		// the four systems' own folders, for the texts that name them
+		static std::string SystemFolders();
+		static int Today(); // days since 1970
 		struct Unpacking
 		{
 			bool open = false;

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../app/emulator.h"
+#include "../app/reorganize.h"
 #include "settings.h"
 
 #include <functional>
@@ -62,6 +63,8 @@ namespace ps5launcher
 		// per side (Wii U, 3DS, DS, Switch): its list is its last look's, its games folder a network share's
 		// that this session has not looked through (Settings > Game files, #75)
 		bool lastLook[4] = {};
+		// what this start did of a folder for each system (app/reorganize.h): said once, as the launcher starts
+		ps5reorganize::Outcome reorganized;
 	};
 
 	struct Choice

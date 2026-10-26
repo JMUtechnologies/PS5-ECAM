@@ -8,8 +8,9 @@
 //   /data/melonds/                   DS games, BIOS/firmware, saves and cheats
 //   /data/eden/                      Switch games, keys, firmware, add-ons and user storage
 //   /data/ps5cemu/                   shared launcher settings, logs, covers and downloads
-// Existing installs under ps5cemu are discovered without moving data. tools/separate-systems.py
-// backs up and verifies copies before activating the separate folders.
+// An install from before keeps all of them in /data/ps5cemu, used there with nothing moved, until it is
+// given a folder for each system: renamed into them as the app starts (app/reorganize.h), or copied
+// into them on a computer (tools/separate-systems.py).
 
 #pragma once
 
@@ -162,6 +163,39 @@ namespace ps5paths
 		if (Root() == kDefaultRoot || path.compare(0, length, kDefaultRoot) != 0 || (path.size() > length && path[length] != '/'))
 			return path;
 		return Root() + path.substr(length);
+	}
+
+	// Cemu's own files and folders, at the top of the data folder in an install from before: what
+	// app/reorganize.h moves into CemuFolder(). (title_list_cache.xml stays: Cemu makes it again from
+	// where the games are now.)
+	inline constexpr const char* kCemuItems[] = {"settings.xml", "network_services.xml", "controllerProfiles", "gameProfiles",
+		"graphicPacks", "reshade", "mlc01", "keys.txt", "otp.bin", "seeprom.bin", "shareddata.bin", "sdcard", "games", "updates", "dlc",
+		"log.txt", "screenshots", "dump", "crashdump", "icons", "cafeLibs", "memorySearcher", "debugger", "resources", "cache/shaderCache"};
+
+	// A path saved before the systems had folders of their own (a home screen tile's game, a games
+	// folder setting), where app/reorganize.h moved it; as it is while it is still there
+	inline std::string Moved(const std::string& path)
+	{
+		if (path.empty() || path[0] != '/' || Present(path))
+			return path;
+		std::string moved;
+		auto under = [&](const std::string& old, const std::string& now) {
+			if (path != old && !path.starts_with(old + "/"))
+				return false;
+			moved = now + path.substr(old.size());
+			return true;
+		};
+		if (ecam_layout::Activated(CemuFolder()))
+			for (const char* item : kCemuItems)
+				if (under(Root() + "/" + item, CemuFolder() + "/" + item))
+					return moved;
+		for (const char* system : {"azahar", "melonds"})
+			if (ecam_layout::Activated(ecam_layout::Sibling(Root(), system)) && under(Root() + "/" + system, ecam_layout::Sibling(Root(), system)))
+				return moved;
+		const std::string eden = ecam_layout::Sibling(kDefaultRoot, "eden");
+		if (ecam_layout::Activated(eden) && under(std::string(kDefaultRoot) + "/eden", eden))
+			return moved;
+		return path;
 	}
 
 	// The folder ShadowMountPlus mounted the running app from, by its record (kMountRecord), when it

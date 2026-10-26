@@ -75,6 +75,7 @@ namespace ps5settings
 			ReadString(json, "gamesFolder", n3ds.gamesFolder);
 			if (relocate)
 				n3ds.gamesFolder = ps5paths::Relocated(n3ds.gamesFolder); // saved before the data moved to a drive (#52)
+			n3ds.gamesFolder = ps5paths::Moved(n3ds.gamesFolder); // or before the side had a folder of its own (app/reorganize.h)
 			ReadInt(json, "resolution", n3ds.resolution, 1, 10);
 			ReadInt(json, "layout", n3ds.layout, 0, 3);
 			ReadInt(json, "textureFilter", n3ds.textureFilter, 0, 5);
@@ -286,6 +287,7 @@ namespace ps5settings
 		}
 		ReadString(json, "gamesFolder", settings.gamesFolder);
 		settings.gamesFolder = ps5paths::Relocated(settings.gamesFolder); // saved before the data moved to a drive (#52)
+		settings.gamesFolder = ps5paths::Moved(settings.gamesFolder); // or before the Wii U had a folder of its own (app/reorganize.h)
 		ReadInt(json, "upscaleFilter", settings.upscaleFilter, 0, 4);
 		ReadBool(json, "highFrameRate", settings.highFrameRate);
 		ReadInt(json, "framePacing", settings.framePacing, 1, 3);
@@ -403,6 +405,7 @@ namespace ps5settings
 				out.sides |= 8;
 			ReadString(ui, "lastVersion", out.lastVersion);
 			ReadString(ui, "skipVersion", out.skipVersion);
+			ReadInt(ui, "reorganizeAsked", out.reorganizeAsked, 0, 10000000);
 			ReadString(ui, "theme", out.theme);
 			// each side's filter and sort (3.5.0 kept two of each under names of their own; its sort, A to
 			// Z by default, is not taken: the Library opens on the games played last now that it is
@@ -589,6 +592,8 @@ namespace ps5settings
 		writer.String(settings.ui.lastVersion.c_str());
 		writer.Key("skipVersion");
 		writer.String(settings.ui.skipVersion.c_str());
+		writer.Key("reorganizeAsked");
+		writer.Int(settings.ui.reorganizeAsked);
 		writer.Key("theme");
 		writer.String(settings.ui.theme.c_str());
 		writer.Key("libraryFilters");
