@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cctype>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
@@ -30,6 +31,25 @@ namespace ps5saves
 		// the backups' folder on a USB drive: the app's name before 5.0.0, kept, so the backups made
 		// before are found and new ones go beside them
 		constexpr const char* kFolder = "PS5CEMU-HAR-saves";
+		// The host tests use a disposable mount root; production keeps the console's /mnt paths.
+#ifndef PS5CEMU_USB_ROOT
+#define PS5CEMU_USB_ROOT "/mnt"
+#endif
+		std::string UsbDrive(int index) { return fmt::format("{}/usb{}", PS5CEMU_USB_ROOT, index); }
+		bool SwitchTitle(const GameRef& game) { return game.titleId && (game.titleId >> 56) == 1; }
+		bool SwitchSave(const GameRef& game, const std::string& relative)
+		{
+			if (!SwitchTitle(game)) return false;
+			const fs::path path(relative);
+			std::vector<std::string> parts;
+			for (const auto& part : path) parts.push_back(part.string());
+			if (parts.size() < 4 || parts[0] != "0000000000000000" || parts[1].size() != 32) return false;
+			if (parts[1].find_first_not_of("0123456789abcdefABCDEF") != std::string::npos) return false;
+			const std::string wanted = fmt::format("{:016x}", game.titleId);
+			std::string title = parts[2];
+			std::transform(title.begin(), title.end(), title.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+			return title == wanted;
+		}
 
 		// What a backup holds: its folder in the backup, where it comes from, and which of the files
 		// there are saves (empty: all)
@@ -192,6 +212,8 @@ namespace ps5saves
 		// Whether a file of a set (by its path in the set) is one of this game's saves
 		bool OfGame(const GameRef& game, const std::string& set, const std::string& relative)
 		{
+			if (game.side == 3) return set == "switch/save" && SwitchSave(game, relative);
+			if (game.side < 0 || game.side > 2) return false;
 			const std::vector<std::string> parts = Parts(relative);
 			const std::string high = Hex8((uint32_t)(game.titleId >> 32)), low = Hex8((uint32_t)game.titleId);
 			if (game.side == 0)
@@ -234,7 +256,7 @@ namespace ps5saves
 					continue;
 				for (auto it = fs::recursive_directory_iterator(from, ec); !ec && it != fs::recursive_directory_iterator(); it.increment(ec))
 				{
-					if (!it->is_regular_file(ec))
+					if (it->is_symlink(ec) || !it->is_regular_file(ec))
 						continue;
 					const std::string relative = it->path().lexically_relative(from).generic_string();
 					if (set.keep && !set.keep(relative))
@@ -272,6 +294,11 @@ namespace ps5saves
 				if (restoring && fs::exists(file.to, ec))
 				{
 					const fs::path kept = KeptPath(stamp, file.to);
+					if (fs::exists(kept, ec))
+					{
+						SetState(Status::State::Failed, ps5lang::Tr("A kept save already exists; try again after a moment."));
+						return;
+					}
 					fs::create_directories(kept.parent_path(), ec);
 					fs::rename(file.to, kept, ec);
 					if (ec)
@@ -305,6 +332,11 @@ namespace ps5saves
 
 		bool Begin(const fs::path& backup, bool restoring, std::string& error, std::optional<GameRef> game = std::nullopt)
 		{
+			if (game && (game->side < 0 || game->side > 3 || (game->side == 3 && !SwitchTitle(*game))))
+			{
+				error = ps5lang::Tr("A real title ID and a supported system are required for this backup.");
+				return false;
+			}
 			if (Current().state == Status::State::Running)
 			{
 				error = ps5lang::Tr("A backup is already running.");
@@ -331,13 +363,18 @@ namespace ps5saves
 			for (int drive = 0; drive < 8; drive++)
 			{
 				std::error_code ec;
-				const fs::path root = fmt::format("/mnt/usb{}", drive);
+				const fs::path root = UsbDrive(drive);
 				if (!fs::is_directory(root, ec))
 					continue;
-				folder = root / kFolder / stamp;
-				fs::create_directories(folder, ec);
-				if (!ec)
-					return true;
+				fs::create_directories(root / kFolder, ec);
+				if (ec) continue;
+				for (int suffix = 0; suffix < 1000; suffix++)
+				{
+					folder = root / kFolder / (stamp + (suffix ? fmt::format("-{:03d}", suffix) : ""));
+					if (fs::create_directory(folder, ec)) return true;
+					if (ec && ec != std::errc::file_exists) break;
+					ec.clear();
+				}
 			}
 			error = ps5lang::Tr("No USB drive found: plug one in, formatted exFAT or FAT32.");
 			return false;
@@ -348,7 +385,7 @@ namespace ps5saves
 		{
 			std::error_code ec;
 			auto add = [&](const fs::directory_entry& entry) {
-				if (!entry.is_regular_file(ec))
+				if (entry.is_symlink(ec) || !entry.is_regular_file(ec))
 					return;
 				save.files++;
 				save.bytes += entry.file_size(ec);
@@ -451,7 +488,23 @@ namespace ps5saves
 					states.paths.push_back(it->path().string());
 			keep(std::move(states));
 		}
-		else
+		else if (game.side == 3 && SwitchTitle(game))
+		{
+			const fs::path base = fs::path(ps5eden::DataFolder()) / "user/nand/user/save";
+			GameSave save;
+			for (auto user = fs::directory_iterator(base / "0000000000000000", ec); !ec && user != fs::directory_iterator(); user.increment(ec))
+			{
+				std::error_code inner;
+				if (!user->is_directory(inner) || user->is_symlink(inner)) continue;
+				for (auto title = fs::directory_iterator(user->path(), inner); !inner && title != fs::directory_iterator(); title.increment(inner))
+				{
+					const std::string relative = title->path().lexically_relative(base).generic_string() + "/save";
+					if (title->is_directory(inner) && !title->is_symlink(inner) && SwitchSave(game, relative)) save.paths.push_back(title->path().string());
+				}
+			}
+			keep(std::move(save));
+		}
+		else if (game.side == 2)
 		{
 			// melonds/saves/<the game's file>.sav, and melonds/states/<the game's file>.ml<slot>
 			const std::string stem = DsStem(game);
@@ -474,11 +527,28 @@ namespace ps5saves
 
 	std::string MoveAside(const GameSave& save, std::string& error)
 	{
+		if (Current().state == Status::State::Running)
+		{
+			error = ps5lang::Tr("A backup is already running.");
+			return {};
+		}
 		std::error_code ec;
-		const fs::path aside = fs::path(ps5paths::Root()) / "saves-before" / Stamp();
+		const std::string stamp = Stamp();
+		fs::path aside = fs::path(ps5paths::Root()) / "saves-before" / stamp;
+		if (!save.paths.empty())
+			for (const std::string& root : {ps5paths::Root(), std::string(ps5paths::kDefaultRoot)})
+			{
+				const fs::path relative = fs::path(save.paths.front()).lexically_relative(root);
+				if (!relative.empty() && *relative.begin() != "..") { aside = fs::path(root) / "saves-before" / stamp; break; }
+			}
 		for (const std::string& path : save.paths)
 		{
-			const fs::path kept = aside / fs::path(path).lexically_relative(ps5paths::Root());
+			const fs::path kept = KeptPath(stamp, path);
+			if (fs::exists(kept, ec))
+			{
+				error = ps5lang::Tr("A kept save already exists; try again after a moment.");
+				return {};
+			}
 			fs::create_directories(kept.parent_path(), ec);
 			fs::rename(path, kept, ec);
 			if (ec)
@@ -526,7 +596,14 @@ namespace ps5saves
 					}
 				}
 			}
-			else
+			else if (game.side == 3)
+			{
+				const fs::path saves = folder / "switch/save";
+				for (auto it = fs::recursive_directory_iterator(saves, ec); !has && !ec && it != fs::recursive_directory_iterator(); it.increment(ec))
+					if (it->is_regular_file(ec) && !it->is_symlink(ec))
+						has = SwitchSave(game, it->path().lexically_relative(saves).generic_string());
+			}
+			else if (game.side == 2)
 			{
 				const std::string stem = DsStem(game);
 				has = fs::exists(folder / "ds/saves" / (stem + ".sav"), ec);
@@ -556,9 +633,9 @@ namespace ps5saves
 		std::error_code ec;
 		std::vector<std::string> drives;
 		for (int i = 0; i < 8; i++)
-			drives.push_back(fmt::format("/mnt/usb{}", i));
-		drives.push_back("/mnt/ext0");
-		drives.push_back("/mnt/ext1");
+			drives.push_back(UsbDrive(i));
+		drives.push_back(std::string(PS5CEMU_USB_ROOT) + "/ext0");
+		drives.push_back(std::string(PS5CEMU_USB_ROOT) + "/ext1");
 		for (const std::string& drive : drives)
 		{
 			const fs::path folder = fs::path(drive) / kFolder;
@@ -584,27 +661,16 @@ namespace ps5saves
 				backups.push_back(backup);
 			}
 		}
-		std::sort(backups.begin(), backups.end(), [](const Backup& a, const Backup& b) { return a.when > b.when; });
+		std::sort(backups.begin(), backups.end(), [](const Backup& a, const Backup& b) {
+			return fs::path(a.folder).filename().string() > fs::path(b.folder).filename().string();
+		});
 		return backups;
 	}
 
 	bool StartBackup(std::string& error)
 	{
-		const std::string stamp = Stamp();
-		for (int drive = 0; drive < 8; drive++)
-		{
-			std::error_code ec;
-			const fs::path root = fmt::format("/mnt/usb{}", drive);
-			if (!fs::is_directory(root, ec))
-				continue;
-			const fs::path backup = root / kFolder / stamp;
-			fs::create_directories(backup, ec);
-			if (ec)
-				continue;
-			return Begin(backup, false, error);
-		}
-		error = ps5lang::Tr("No USB drive found: plug one in, formatted exFAT or FAT32.");
-		return false;
+		fs::path folder;
+		return NewBackupFolder(folder, error) && Begin(folder, false, error);
 	}
 
 	bool StartRestore(const Backup& backup, std::string& error)
@@ -630,3 +696,4 @@ namespace ps5saves
 			s_thread.join();
 	}
 }
+
