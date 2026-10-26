@@ -54,11 +54,27 @@ checked by reading and compiling. Before a release:
   time) is now shared out among four threads, as `port/app/install.cpp` copies a game, with
   `eboot.bin` still moved last; there are fewer files too, with no graphic packs.
 - **Switch games with a mods folder do not start** ([#77](https://github.com/premohq/PS5-ECAM/issues/77)):
-  nothing of the launcher's reaches Eden's mods, so it is in Eden's program. Needs the reporter's boot
-  log; compare ProsperoEdenX's mod loading with upstream ProsperoEden's newest (its new folder
-  structure), port the fix and move the pin.
+  **done**, `patches/eden/0011`: upstream ProsperoEden's PR #288 (Oliv3rmoon), confirmed on a PS5 by
+  its reporter. A game folder's mods were laid over the game's DLC and update too; Mario Kart 8 Deluxe
+  with its DLC crashed as it booted. Also the likely cause of the Discord's MK8 Deluxe loop after its
+  title screen: check with Teaz's and meundies' logs.
+- **Upstream Switch fixes not taken yet** (open PRs on Swordpdf/ProsperoEden, none tested on a PS5):
+  #287 (several updates of one game: the newest's version and control data), #289 (a full audio ring
+  drops its oldest sound instead of stopping the game), #285 (NSZ and XCZ games), #290 (a forwarded game
+  moved into a game folder). Take each once it is merged or tested on a console.
 - **Switch games on 8.60** ([#72](https://github.com/premohq/PS5-ECAM/issues/72)): one report that
   they did not start on an earlier version; no log yet.
+- **Wii U unpacked games found but not listed** (Discord: meundies 5 games in the folder, 2 listed;
+  Sanji, Sx): no log yet. `patches/cemu/0046` makes Cemu's log say why each title it leaves out was
+  refused; a likely cause is `Code`/`Content`/`Meta` named with capitals, which the scan accepts and
+  the PS5's storage then does not find.
+- **Wii U account names in games** (Discord, Lycnus): Rename now writes the name into the Mii data
+  games read (`patches/cemu/0045`). Tekken Tag Tournament 2 showed `player1:default`, Cemu's first
+  account's name, even with a new account: check on a console which account it ran on.
+- **The theme launchers are gone** (`bbe6a68`): Classic's 2.0 layout, Eden's rail, Phantom and
+  Terminal were whole launchers of their own in 4.0.0 to 5.0.1, at the owner's request (October 13);
+  the rebuild made one layout with colour skins and dropped Phantom and Terminal. The owner's call:
+  keep one layout, or bring them back over it.
 
 ### On GitHub
 
@@ -69,6 +85,12 @@ checked by reading and compiling. Before a release:
   `baf9f71`; this branch also gives each list's labels one size. Close it with the release.
 - **#74, #75**: done on this branch (packs downloaded when missing; a share's games kept between
   looks). Close them with the release.
+- **#77** (Switch mods folder, `patches/eden/0011`) and **#80** (3DS: Remove its update or DLC, in a
+  game's Options): done on this branch; close them with the release. **#79** (Cyrillic labels of
+  different sizes) is #76's: the labels' one size; check on a console, then close it with #76.
+- **PR #83 and PR #85** (yeager, the Swedish review; #85 is #83 again with his GitHub address): taken
+  as `fedc5a7`, his commit. Close both with the release, thanking him; he is in the README's
+  contributors.
 
 ### Lighter
 
