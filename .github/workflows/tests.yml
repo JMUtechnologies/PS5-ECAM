@@ -18,7 +18,7 @@ jobs:
       - name: Packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends clang-18 pkg-config libarchive-dev libzip-dev libssl-dev libfmt-dev p7zip-full ffmpeg
+          sudo apt-get install -y --no-install-recommends clang-18 pkg-config libarchive-dev libzip-dev libssl-dev libfmt-dev libvulkan-dev p7zip-full ffmpeg
 
       - name: Downloads kept between runs
         uses: actions/cache@v4
@@ -27,7 +27,7 @@ jobs:
           key: deps-${{ hashFiles('tools/deps.json') }}
 
       - name: What the tests need
-        run: python3 -B tools/deps.py fetch pacbrew pugixml dr_mp3
+        run: python3 -B tools/deps.py fetch pacbrew pugixml dr_mp3 rapidjson
 
       - name: String tables
         run: python3 -B tools/lang.py check
@@ -45,10 +45,15 @@ jobs:
         run: bash tools/tests/test-music.sh
 
       - name: Backups
+        run: bash tools/tests/test-saves.sh
+
+      - name: Switch standalone features
+        run: bash tools/tests/test-eden-extras.sh
+
+      - name: Switch settings integration syntax
         run: |
-          sudo mkdir -p /mnt/usb0
-          sudo chmod 777 /mnt/usb0
-          bash tools/tests/test-saves.sh
+          clang++-18 -std=c++20 -Wno-deprecated-declarations -DFMT_HEADER_ONLY -DPS5CEMU_VERSION='"5.0.1"' \
+            -Iport -fsyntax-only port/frontend/shell/settings.cpp port/frontend/shell/switch_extras.cpp
 
       - name: Remote touch screen
         run: |
@@ -59,3 +64,4 @@ jobs:
           python3 -B tools/tests/test-stream.py build/tests/stream-host
           python3 -B tools/tests/test-upload.py build/tests/stream-host
           node tools/tests/test-stream-browser.js
+
