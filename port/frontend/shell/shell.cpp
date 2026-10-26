@@ -1797,6 +1797,9 @@ namespace ps5shell
 			m_menu.items.push_back({"mods", Tr("Add mods from USB")});
 			m_menu.items.push_back({"updates", Tr("Updates and DLC")});
 		}
+		// a 3DS game's update or DLC installed from a CIA, which can keep it from starting (#80)
+		if (Is3ds() && (g.entry.game.hasUpdate || g.entry.game.dlcCount > 0))
+			m_menu.items.push_back({"removeaddons", Tr("Remove its update or DLC")});
 		m_menu.items.push_back({"favourite", g.entry.favourite ? Tr("Not a favourite") : Tr("Favourite")});
 		if (ps5forwarders::HasTile(g.entry.game.path.string()))
 			m_menu.items.push_back({"untile", Tr("Remove from home screen")});
@@ -2160,6 +2163,41 @@ namespace ps5shell
 					AddTile(g);
 				else if (id == "untile")
 					RemoveTile(g);
+				else if (id == "removeaddons")
+				{
+					// which of them: the picker is the confirmation, and Circle leaves both
+					const bool update = g.entry.game.hasUpdate, dlc = g.entry.game.dlcCount > 0;
+					std::vector<std::string> options;
+					std::vector<std::pair<bool, bool>> choices;
+					if (update)
+					{
+						options.push_back(Tr("The update"));
+						choices.push_back({true, false});
+					}
+					if (dlc)
+					{
+						options.push_back(Tr("The DLC"));
+						choices.push_back({false, true});
+					}
+					if (update && dlc)
+					{
+						options.push_back(Tr("The update and the DLC"));
+						choices.push_back({true, true});
+					}
+					const uint64_t titleId = g.entry.game.titleId;
+					OpenPicker(g.entry.game.name, Tr("Remove its update or DLC"), options, -1, [this, titleId, choices](int choice) {
+						std::string error;
+						if (ps5azahar::RemoveInstalled(titleId, choices[choice].first, choices[choice].second, error))
+							Toast(Tr("Removed. Install a CIA file puts it back."));
+						else
+						{
+							// tr: {0} is the system's reason, as it gives it
+							const std::string why = TrF("It could not all be removed: {0}", error);
+							OpenHelp(Tr("Remove its update or DLC"), why);
+						}
+						LookForGames();
+					});
+				}
 				else if (id == "settings")
 				{
 					m_feedback.Play(ui::Cue::Select);

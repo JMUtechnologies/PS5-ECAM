@@ -46,4 +46,9 @@ namespace ps5azahar
 		std::vector<uint8_t> smdh; // the SMDH the name and icon are read from, as it is in the file
 	};
 	Title Inspect(const std::string& path);
+
+	// A game's installed update or DLC taken out of the 3DS's storage (sdmc), as Azahar's own Remove
+	// does: a CIA installed wrong can keep its game from starting (#80). Its CIA file installs it again.
+	// False, with why, when one of them could not be removed.
+	bool RemoveInstalled(uint64_t titleId, bool update, bool dlc, std::string& error);
 }

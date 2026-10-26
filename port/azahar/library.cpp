@@ -888,4 +888,33 @@ namespace ps5azahar
 		std::error_code ec;
 		return fs::exists(path, ec) ? path : std::string();
 	}
+
+	bool RemoveInstalled(uint64_t titleId, bool update, bool dlc, std::string& error)
+	{
+		std::error_code ec;
+		const fs::path root = fs::path(Root()) / "sdmc" / "Nintendo 3DS";
+		const std::string low = fmt::format("{:08x}", (uint32_t)titleId);
+		bool ok = true;
+		// in each <ID0>/<ID1>/title of the SD card, as AddInstalledUpdates finds them
+		for (const auto& id0 : fs::directory_iterator(root, ec))
+			for (const auto& id1 : fs::directory_iterator(id0.path(), ec))
+				for (const char* kind : {"0004000e", "0004008c"})
+				{
+					if (std::strcmp(kind, "0004000e") == 0 ? !update : !dlc)
+						continue;
+					const fs::path folder = id1.path() / "title" / kind / low;
+					std::error_code removing;
+					if (!fs::exists(folder, removing))
+						continue;
+					const auto removed = fs::remove_all(folder, removing);
+					ps5log::Line("[3ds] {} removed ({} files){}", folder.string(), removing ? 0 : removed,
+						removing ? ": " + removing.message() : std::string());
+					if (removing)
+					{
+						error = removing.message();
+						ok = false;
+					}
+				}
+		return ok;
+	}
 }
