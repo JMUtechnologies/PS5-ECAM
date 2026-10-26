@@ -1,0 +1,171 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Oliv3rmoon <165517657+Oliv3rmoon@users.noreply.github.com>
+Date: Tue, 20 Oct 2026 23:11:10 -0700
+Subject: [PATCH] Give a game folder's mods to the game's own title only
+
+Eden asks for the mods of every title it patches, the game's DLC and update among them. A game
+folder's mods (roms/<Game>/mods) were given for all of them, while the mods switched off in the
+launcher are on the game's own title's disabled list. A mod switched off for the game still
+applied to its DLC's data: Mario Kart 8 Deluxe with its Booster Course DLC and a mod in its
+game folder did not start, switched off or not (issue 281). The game folder's mods and cheats
+now go to the game's own title alone, as mods/<title ID>/ always did.
+
+tools/check-game-folder-mods.py (in the release build's source checks) compiles mods.h, makes
+a game folder with a mod and a cheat file, and checks that the game's title gets them and its
+DLC, its update and other titles do not.
+---
+ headless/game_folder_vfs.h      |  3 +-
+ headless/main.cpp               |  6 ++-
+ headless/mods.h                 | 15 ++++++++
+ tools/build-headless-native.sh  |  1 +
+ tools/check-game-folder-mods.py | 67 +++++++++++++++++++++++++++++++++
+ 5 files changed, 90 insertions(+), 2 deletions(-)
+ create mode 100644 tools/check-game-folder-mods.py
+
+diff --git a/headless/game_folder_vfs.h b/headless/game_folder_vfs.h
+index 1eec8bf..62c64ea 100755
+--- a/headless/game_folder_vfs.h
++++ b/headless/game_folder_vfs.h
+@@ -18,7 +18,8 @@ namespace Eden::GameFolderMods {
+ 
+ // shared: the game's folder in mods/, or null.
+ inline FileSys::VirtualDir Root(FileSys::VirtualDir shared, std::uint64_t title_id, std::string name) {
+-    const Mods::Places places{Eden::AssetsPath("mods"), Eden::AssetsPath("cheats"), Mods::SessionGameFolder()};
++    // The game folder's mods and cheats for the game's own title only (Mods::GameFolderFor).
++    const Mods::Places places{Eden::AssetsPath("mods"), Eden::AssetsPath("cheats"), Mods::GameFolderFor(title_id)};
+     // Its files keep a reference to the filesystem they came from: one for the whole run.
+     static FileSys::RealVfsFilesystem vfs;
+     std::vector<FileSys::VirtualDir> layers;
+diff --git a/headless/main.cpp b/headless/main.cpp
+index bdd0c18..445b33d 100644
+--- a/headless/main.cpp
++++ b/headless/main.cpp
+@@ -1384,12 +1384,16 @@ int main(int argc, char** argv) {
+             // and its own post-processing (reshade_folder.h): its presets and effects are read
+             // again when the folder is another than the last game's.
+             Eden::Mods::SessionGameFolder().clear();
++            Eden::Mods::SessionTitle() = 0;
+             if (guest) {
+                 const std::string roms = Eden::AssetsPath("roms/");
+                 const std::string_view path{guest};
+                 if (path.starts_with(roms))
+-                    if (const auto slash = path.find('/', roms.size()); slash != std::string_view::npos)
++                    if (const auto slash = path.find('/', roms.size()); slash != std::string_view::npos) {
+                         Eden::Mods::SessionGameFolder() = std::string{path.substr(0, slash)};
++                        // Its mods and cheats are this title's alone (Mods::GameFolderFor).
++                        Eden::Mods::SessionTitle() = game_title;
++                    }
+             }
+             if (Eden::Reshade::SetGameFolder(Eden::Mods::SessionGameFolder())) {
+                 VideoCore::ReloadFxPresetCatalog();
+diff --git a/headless/mods.h b/headless/mods.h
+index d25b29f..6c7457f 100644
+--- a/headless/mods.h
++++ b/headless/mods.h
+@@ -69,6 +69,21 @@ inline std::string& SessionGameFolder() {
+     return folder;
+ }
+ 
++// That game's title ID; main.cpp sets it with the folder.
++inline std::uint64_t& SessionTitle() {
++    static std::uint64_t title = 0;
++    return title;
++}
++
++// The game folder whose mods and cheats apply to `title_id`: the session's, for its own title
++// alone. Eden asks for the mods of every title it patches, the game's DLC and update among them,
++// and a game folder's mods are the game's: given for its DLC too, a mod switched off for the game
++// (its title's disabled list) still applied to the DLC's data, and the game did not start
++// (issue 281). Mods for one of those titles go in mods/<its title ID>/.
++inline std::string GameFolderFor(std::uint64_t title_id) {
++    return title_id != 0 && title_id == SessionTitle() ? SessionGameFolder() : std::string{};
++}
++
+ enum : unsigned {
+     kCode = 1,    // exefs: patches or replacement code
+     kFiles = 2,   // romfs: replacement game files
+diff --git a/tools/build-headless-native.sh b/tools/build-headless-native.sh
+index d756047..750ec0d 100644
+--- a/tools/build-headless-native.sh
++++ b/tools/build-headless-native.sh
+@@ -74,6 +74,7 @@ python3 -B "$root/tools/check-multiplayer-headers.py" "$scratch/native-local"
+ [[ ${EDEN_SKIP_SOURCE_CHECKS:-0} == 1 ]] && exit 0
+ python3 -B "$root/headless/check_audio_shutdown.py" "$scratch/native-local/headless/core.cpp" "$scratch/source/src/core/core.cpp"
+ python3 -B "$root/tools/check-load-failure.py"
++python3 -B "$root/tools/check-game-folder-mods.py"
+ python3 -B "$root/tools/check-nso-memory.py"
+ python3 -B "$root/tools/check-performance.py"
+ python3 -B "$root/tools/check-performance-settings.py"
+diff --git a/tools/check-game-folder-mods.py b/tools/check-game-folder-mods.py
+new file mode 100644
+index 0000000..af5174e
+--- /dev/null
++++ b/tools/check-game-folder-mods.py
+@@ -0,0 +1,67 @@
++#!/usr/bin/env python3
++# SPDX-FileCopyrightText: Copyright 2026 Oliv3rmoon
++# SPDX-License-Identifier: GPL-3.0-or-later
++"""Check that a game folder's mods and cheats apply to the game's own title alone (issue 281).
++
++Eden asks for the mods of every title it patches, the game's DLC and update among them. A game
++folder's mods were given for all of them, and the game's disabled list (its title's) does not
++cover its DLC: a mod switched off for the game still applied to its DLC's data. This compiles
++headless/mods.h, makes a game folder with a mod and a cheat file, and checks which titles get
++them; and that the patch manager's mod folder (game_folder_vfs.h) and the frontend (main.cpp)
++go by it.
++"""
++from pathlib import Path
++import os, subprocess, tempfile
++
++root = Path(__file__).resolve().parents[1]
++vfs = (root / 'headless/game_folder_vfs.h').read_text()
++assert 'Mods::GameFolderFor(title_id)}' in vfs and 'Mods::SessionGameFolder()}' not in vfs, \
++    'game_folder_vfs.h must take the game folder for the asked title only'
++main = (root / 'headless/main.cpp').read_text()
++assert main.count('Eden::Mods::SessionTitle() = 0;') == 1 and main.count('Eden::Mods::SessionTitle() = game_title;') == 1
++
++code = r'''
++#include "mods.h"
++#include <cassert>
++#include <cstdio>
++#include <fstream>
++namespace fs = std::filesystem;
++using namespace Eden::Mods;
++int main(int, char** argv) {
++    const fs::path game = fs::path(argv[1]) / "roms" / "Mario Kart 8 Deluxe";
++    fs::create_directories(game / "mods" / "Some Mod" / "romfs" / "Data");
++    std::ofstream(game / "mods" / "Some Mod" / "romfs" / "Data" / "file.bin") << "x";
++    fs::create_directories(game / "cheats");
++    std::ofstream(game / "cheats" / "6A85262F21B90364.txt") << "[Cheat]\n04000000 00000000 00000000\n";
++    constexpr std::uint64_t base = 0x0100152000022000, update = 0x0100152000022800, dlc = 0x0100152000023001;
++    SessionGameFolder() = game.string();
++    SessionTitle() = base;
++    // The game's own title: its folder, and its mod.
++    assert(GameFolderFor(base) == game.string());
++    const Places own{"", "", GameFolderFor(base)};
++    const auto mods = List(own, base);
++    const bool has_mod = std::any_of(mods.begin(), mods.end(), [](const Mod& m) { return m.name == "Some Mod"; });
++    assert(has_mod);
++    assert(!CheatFolderFiles(own, base).empty());
++    // Its DLC and its update: no game folder, so neither its mods nor its cheats.
++    for (const auto title : {dlc, update, std::uint64_t{0x0100000000010000}}) {
++        assert(GameFolderFor(title).empty());
++        const Places other{"", "", GameFolderFor(title)};
++        assert(List(other, title).empty());
++        assert(CheatFolderFiles(other, title).empty());
++    }
++    // No game being started (or a game directly in roms/): nothing, also for title 0.
++    SessionTitle() = 0;
++    assert(GameFolderFor(0).empty() && GameFolderFor(base).empty());
++    SessionGameFolder().clear();
++    SessionTitle() = base;
++    assert(GameFolderFor(base).empty());
++    std::puts("game folder mods: PASS");
++}
++'''
++with tempfile.TemporaryDirectory() as tmp:
++    exe = Path(tmp) / 'game-folder-mods'
++    subprocess.run([os.environ.get('CXX', 'c++'), '-std=c++20', '-Wall', '-Wextra', '-Werror',
++                    '-I' + str(root / 'headless'), '-x', 'c++', '-', '-o', str(exe)], input=code, text=True, check=True)
++    subprocess.run([str(exe), tmp], check=True)
++print("Game folder mods: PASS a game folder's mods and cheats apply to its own title, not its DLC or update")
