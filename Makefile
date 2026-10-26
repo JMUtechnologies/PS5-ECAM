@@ -18,6 +18,7 @@ export JOBS
 
 test-performance: ## Test the offline performance comparison tool (no SDK or console needed)
 	python3 -B tools/tests/test-performance.py
+	python3 -B tools/tests/test-performance-suite.py
 
 help: ## List the targets
 	@echo 'PS5-ECAM build - make [target] [VARIABLE=value]'
