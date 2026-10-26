@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Oliv3rmoon <165517657+Oliv3rmoon@users.noreply.github.com>
+Date: Tue, 20 Oct 2026 18:25:11 -0700
+Subject: [PATCH] Take all of a game's update from the newest of several
+
+With several updates of a game beside it (in updates/ or its game folder), the patch manager
+takes the game's code and data from the newest (ListUpdateVersions, newest first). Eden's
+external content provider kept the rest of the update, and the version it reports, from the
+file it scanned last, which the folder's order decides. A game could then run the newest code
+with an older update's control data (its save data sizes, its DLC base, its version string)
+and an older version. Now an older update than one already found stays listed but is not the
+update (issue 281).
+
+tools/check-update-versions.py (in the release build's source checks) compiles the built
+callback and feeds it three updates in every order: the newest is the update each time, all
+stay listed, and DLC is taken as before.
+
+PS5-ECAM: taken from its pull request without the check script and the build-script line that runs it, which PS5-ECAM's build would run untested against its own patches.
+---
+ headless/CMakeLists.txt | 30 ++++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
+
+diff --git a/headless/CMakeLists.txt b/headless/CMakeLists.txt
+index 879f8f8..c466f65 100644
+--- a/headless/CMakeLists.txt
++++ b/headless/CMakeLists.txt
+@@ -1521,6 +1521,36 @@ function(eden_patch source old new)
+     set(${source} "${patched}" PARENT_SCOPE)
+ endfunction()
+ 
++# A game with several updates beside it (in updates/ or in its game folder) runs the newest: the
++# patch manager takes its code and data by version (ListUpdateVersions, newest first). Eden kept
++# the rest of the update by the file it scanned last, which the folder's order decides: the game's
++# version and its control data (its save data sizes, its DLC, its version string) could come from
++# an older update than its code. They come from the newest too (issue 281).
++get_target_property(core_sources core SOURCES)
++file(READ "${PROJECT_SOURCE_DIR}/src/core/file_sys/registered_cache.cpp" content_source)
++eden_patch(content_source [=[            entries[{title_id, content_type, title_type}] = file;
++
++            if (title_type == TitleType::Update) {
++                versions[title_id] = version;
++                UpsertExternalVersionEntry(multi_version_entries, title_id, version, version_string,
++                                           content_type, file);
++            }
++]=] [=[            if (title_type == TitleType::Update) {
++                UpsertExternalVersionEntry(multi_version_entries, title_id, version, version_string,
++                                           content_type, file);
++                // An older update than one already found stays listed, but is not the update.
++                if (const auto known = versions.find(title_id); known != versions.end() && known->second > version)
++                    return;
++                versions[title_id] = version;
++            }
++
++            entries[{title_id, content_type, title_type}] = file;
++]=])
++write_derived("${PORT_BUILD_DIR}/registered_cache.cpp" "${content_source}")
++list(REMOVE_ITEM core_sources file_sys/registered_cache.cpp)
++list(APPEND core_sources "${PORT_BUILD_DIR}/registered_cache.cpp")
++set_property(TARGET core PROPERTY SOURCES "${core_sources}")
++
+ # Mods (headless/mods.h). Eden's .pchtxt reader takes every line as a record or a flag: the
+ # credits at the end of a real patch file then wrote over the start of the game's code. Only
+ # records and known flags are read here (headless/mods_check.cpp checks all of it).

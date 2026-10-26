@@ -1,0 +1,121 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Oliv3rmoon <165517657+Oliv3rmoon@users.noreply.github.com>
+Date: Wed, 21 Oct 2026 00:37:25 -0700
+Subject: [PATCH] Drop the oldest audio when a stream's PCM ring is full
+ instead of stopping the game
+
+A sink stream the renderer does not wait on (a second renderer session's, or
+AudioOut's) can be given PCM faster than the PS5 plays it. Its 64 Ki-sample ring
+then filled and the build threw "Audio PCM queue capacity exceeded", which ended
+the game (issue 270, If My Heart Had Wings a few minutes in).
+
+Make room by dropping the oldest audio instead, whole buffers at a time so the
+buffer queue and the ring stay in step: first what is left of the buffer being
+played, then the oldest queued ones. Dropped frames count as played, so AudioOut
+releases its buffers on time. A rate-limited EDEN_AUDIO_QUEUE_FULL warning notes it.
+
+tools/check-audio-queue.py checks the built sink_stream.cpp and runs the helper
+with Eden's own ring and queue; it runs with the release source checks.
+
+PS5-ECAM: taken from its pull request without the check script and the build-script line that runs it, which PS5-ECAM's build would run untested against its own patches.
+---
+ headless/CMakeLists.txt    | 15 ++++++++++----
+ headless/audio_queue.h     | 40 ++++++++++++++++++++++++++++++++++++++
+ headless/devices_check.cpp |  3 ++-
+ 3 files changed, 53 insertions(+), 5 deletions(-)
+ create mode 100644 headless/audio_queue.h
+
+diff --git a/headless/CMakeLists.txt b/headless/CMakeLists.txt
+index c466f65..0096515 100644
+--- a/headless/CMakeLists.txt
++++ b/headless/CMakeLists.txt
+@@ -2324,17 +2324,24 @@ file(READ "${PROJECT_SOURCE_DIR}/src/audio_core/sink/sink_details.cpp" sink_sour
+ string(REPLACE "    return GetOutputSinkDetails(sink_id).factory(device_id);"
+     "    if (device_id == \"ps5\") return std::make_unique<Eden::AudioSink>();\n    return GetOutputSinkDetails(sink_id).factory(device_id);" sink_source "${sink_source}")
+ write_derived("${PORT_BUILD_DIR}/sink_details.cpp" "#include \"devices.h\"\n${sink_source}")
+-# Mirror mono PCM into both hardware channels in the existing upmix path.
+ file(READ "${PROJECT_SOURCE_DIR}/src/audio_core/sink/sink_stream.cpp" stream_source)
+-string(REPLACE "    if (type == StreamType::In)\n        return;"
+-    "    if (type == StreamType::In)\n        return;\n    static_assert(std::is_same_v<decltype(samples_buffer), Common::RingBuffer<s16, 0x10000>>);\n    if (buffer.frames * device_channels > 0x10000 - samples_buffer.Size())\n        throw std::overflow_error(\"Audio PCM queue capacity exceeded\");" stream_source "${stream_source}")
++# A full PCM ring drops its oldest audio (headless/audio_queue.h) instead of stopping the game
++# (issue 270); upstream's ring would cut the new buffer short and leave the queue out of step.
++set(old_stream_append "    if (type == StreamType::In)\n        return;\n\n    constexpr s32 min")
++string(FIND "${stream_source}" "${old_stream_append}" stream_append_offset)
++if(stream_append_offset LESS 0)
++    message(FATAL_ERROR "Pinned SinkStream::AppendBuffer changed; review the full queue handling.")
++endif()
++string(REPLACE "${old_stream_append}"
++    "    if (type == StreamType::In)\n        return;\n    static_assert(std::is_same_v<decltype(samples_buffer), Common::RingBuffer<s16, 0x10000>>);\n    if (buffer.frames * device_channels > 0x10000)\n        throw std::invalid_argument(\"Audio PCM buffer larger than the queue\");\n    if (buffer.frames * device_channels > 0x10000 - samples_buffer.Size()) {\n        std::unique_lock release_lk{release_mutex};\n        const u64 dropped = Eden::AudioQueue::DropOldest(samples_buffer, 0x10000, queue, playing_buffer, queued_buffers, device_channels, buffer.frames * device_channels);\n        release_lk.unlock();\n        release_cv.notify_one();\n        {\n            std::scoped_lock count_lk{sample_count_lock};\n            min_played_sample_count += dropped;\n            max_played_sample_count += dropped;\n        }\n        static std::atomic<u32> full_count{};\n        const u32 times = ++full_count;\n        if (times <= 8 || times % 256 == 0)\n            LOG_WARNING(Audio_Sink, \"EDEN_AUDIO_QUEUE_FULL stream={} dropped_frames={} times={}\", name, dropped, times);\n    }\n\n    constexpr s32 min" stream_source "${stream_source}")
++# Mirror mono PCM into both hardware channels in the existing upmix path.
+ string(REPLACE "        samples_buffer.Push(new_samples);"
+     "        if (system_channels == 1 && device_channels == 2) {\n            for (std::size_t i = 0; i < new_samples.size(); i += 2) new_samples[i + 1] = new_samples[i];\n        }\n        samples_buffer.Push(new_samples);" stream_source "${stream_source}")
+ # Refresh the held frame before a partial hardware block underruns.
+ string(REPLACE "    std::memcpy(last_frame.data(), &output_buffer[(frames_written - 1) * frame_size], frame_size_bytes);" "" stream_source "${stream_source}")
+ string(REPLACE "        samples_buffer.Pop(&output_buffer[frames_written * frame_size], frames_available * frame_size);"
+     "        samples_buffer.Pop(&output_buffer[frames_written * frame_size], frames_available * frame_size);\n        if (frames_available) std::memcpy(last_frame.data(), &output_buffer[(frames_written + frames_available - 1) * frame_size], frame_size_bytes);" stream_source "${stream_source}")
+-write_derived("${PORT_BUILD_DIR}/sink_stream.cpp" "#include <stdexcept>\n${stream_source}")
++write_derived("${PORT_BUILD_DIR}/sink_stream.cpp" "#include <stdexcept>\n#include \"audio_queue.h\"\n#include \"common/logging.h\"\n${stream_source}")
+ # A bitfield expression yields 0/1, so explicitly restore the SRC flag's bit position.
+ file(READ "${PROJECT_SOURCE_DIR}/src/audio_core/renderer/voice/voice_info.cpp" voice_source)
+ set(old_voice_flag "flags |= u16(params.flags.IsVoicePitchAndSrcSkippedSupported);")
+diff --git a/headless/audio_queue.h b/headless/audio_queue.h
+new file mode 100644
+index 0000000..52e834e
+--- /dev/null
++++ b/headless/audio_queue.h
+@@ -0,0 +1,40 @@
++// SPDX-FileCopyrightText: Copyright 2026 Oliv3rmoon
++// SPDX-License-Identifier: GPL-3.0-or-later
++#pragma once
++#include <atomic>
++#include <cstdint>
++
++namespace Eden::AudioQueue {
++// A sink stream keeps its PCM in one ring (64 Ki samples, about 0.68 s of stereo) and the
++// buffers it came in as in a queue beside it. A stream the renderer does not wait on (its
++// second session's, and AudioOut's) can be given PCM faster than the hardware plays it, and
++// the ring fills: the build stopped the game there (issue 270). Make room for `needed`
++// samples by dropping the oldest audio, whole buffers at a time so the queue and the ring stay
++// in step: first what is left of the buffer being played, then the oldest queued buffers.
++// The caller excludes the consumer. Returns the frames dropped.
++template <typename Ring, typename Queue, typename Buffer, typename Count>
++std::uint64_t DropOldest(Ring& ring, std::uint64_t capacity, Queue& queue, Buffer& playing,
++                         std::atomic<Count>& queued, std::uint64_t channels, std::uint64_t needed) {
++    std::uint64_t dropped = 0;
++    while (capacity - ring.Size() < needed) {
++        if (!playing.consumed && playing.frames > playing.frames_played) {
++            const std::uint64_t rest = playing.frames - playing.frames_played;
++            ring.Pop(rest * channels);
++            playing.frames_played = playing.frames;
++            playing.consumed = true;
++            dropped += rest;
++            continue;
++        }
++        Buffer oldest{};
++        if (!queue.TryPop(oldest)) {
++            // No buffer accounts for what is left: the ring is out of step, so start it over.
++            ring.Pop();
++            break;
++        }
++        if (queued > 0) --queued;
++        ring.Pop(oldest.frames * channels);
++        dropped += oldest.frames;
++    }
++    return dropped;
++}
++} // namespace Eden::AudioQueue
+diff --git a/headless/devices_check.cpp b/headless/devices_check.cpp
+index bec372b..65e9c46 100644
+--- a/headless/devices_check.cpp
++++ b/headless/devices_check.cpp
+@@ -871,8 +871,9 @@ void CheckAudio() {
+         stream->ClearQueue();
+         std::vector<s16> full(65536, 1234); SinkBuffer large{32768, 0, 10, false};
+         stream->AppendBuffer(large, full);
++        // A full ring drops its oldest audio for the new buffer instead of stopping the game.
+         std::array<s16, 2> extra{}; SinkBuffer one{1, 0, 11, false};
+-        Reject([&] { stream->AppendBuffer(one, extra); });
++        stream->AppendBuffer(one, extra);
+         CHECK(stream->GetQueueSize() == 1); stream->ClearQueue();
+         CHECK(stream->GetQueueSize() == 0); sink.CloseStream(stream);
+     }
