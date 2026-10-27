@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Optional DS Slot-2 input. This attaches a GBA cartridge to a DS; it is not a GBA emulator.
 #pragma once
+#include "../app/own_status.h"
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -17,7 +18,7 @@ namespace ps5melonds::slot2
 	inline bool Read(const std::filesystem::path& path, size_t minimum, size_t maximum, std::vector<uint8_t>& bytes, std::string& error)
 	{
 		std::error_code ec;
-		if (std::filesystem::is_symlink(std::filesystem::symlink_status(path, ec)) || ec || !std::filesystem::is_regular_file(path, ec))
+		if (std::filesystem::is_symlink(ps5files::OwnStatus(path, ec)) || ec || !std::filesystem::is_regular_file(path, ec))
 		{ error = "Slot-2 file is missing or not a regular file: " + path.string(); return false; }
 		const auto size = std::filesystem::file_size(path, ec);
 		if (ec || size < minimum || size > maximum) { error = "Slot-2 file has an unsupported size: " + path.string(); return false; }
@@ -36,7 +37,7 @@ namespace ps5melonds::slot2
 		const auto rom = std::filesystem::path(root) / "slot2" / (stem + ".gba");
 		// no cartridge for this game: the slot stays empty, which is no error (Slot-2 is on for a side)
 		std::error_code missing;
-		if (std::filesystem::symlink_status(rom, missing).type() == std::filesystem::file_type::not_found) return result;
+		if (ps5files::OwnStatus(rom, missing).type() == std::filesystem::file_type::not_found) return result;
 		if (!Read(rom, 0xC0, 32u << 20, result.rom, result.error)) return result;
 		result.savePath = (std::filesystem::path(root) / "slot2-saves" / (stem + ".sav")).string();
 		std::error_code ec;

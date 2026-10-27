@@ -994,7 +994,7 @@ namespace ps5melonds
 			s_jit ? "the JIT" : settings.dsJit ? "the interpreter (no executable memory)" : "the interpreter (dsJit off)");
 
 		const auto gameMic = fs::path(Root()) / "microphone" / (s_stem + ".wav");
-		const auto micStatus = settings.dsMicSource == 2 ? fs::symlink_status(gameMic, ec) : fs::file_status{};
+		const auto micStatus = settings.dsMicSource == 2 ? ps5files::OwnStatus(gameMic, ec) : fs::file_status{};
 		const auto micFile = micStatus.type() != fs::file_type::not_found && micStatus.type() != fs::file_type::none ? gameMic : fs::path(Root()) / "microphone.wav";
 		// a recorded WAV that is missing or cannot be read: blowing makes noise as before, rather than the
 		// game not starting

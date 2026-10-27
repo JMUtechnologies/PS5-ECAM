@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "extras.h"
 #include "standalone/mods.h"
+#include "../app/own_status.h"
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
@@ -43,7 +44,8 @@ namespace ps5eden::extras
 		bool Load(const Context& context, Document& document, std::string& error)
 		{
 			std::error_code ec;
-			const auto status = fs::symlink_status(context.settings, ec);
+			// stat's where lstat is refused, as on the console's /data (app/own_status.h)
+			const auto status = ps5files::OwnStatus(context.settings, ec);
 			if (ec == std::errc::no_such_file_or_directory || (!ec && status.type() == fs::file_type::not_found))
 			{
 				document.SetObject();
@@ -246,7 +248,7 @@ namespace ps5eden::extras
 		{
 			std::error_code ec;
 			const auto file = ProfileFile(context);
-			const auto status = fs::symlink_status(file, ec);
+			const auto status = ps5files::OwnStatus(file, ec);
 			if (ec == std::errc::no_such_file_or_directory || (!ec && status.type() == fs::file_type::not_found))
 			{
 				if (missingOK) return true;

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "save_transfer.h"
 #include "standalone/ryujinx_saves.h"
+#include "../app/own_status.h"
 #include <algorithm>
 #include <chrono>
 #include <filesystem>
@@ -22,11 +23,24 @@ namespace ps5eden::transfer
 			for (auto at = fs::absolute(path).lexically_normal(); !at.empty(); at = at.parent_path())
 			{
 				std::error_code error;
-				const auto status = fs::symlink_status(at, error);
+				// stat's where lstat is refused, as on the console's /data (app/own_status.h)
+				const auto status = ps5files::OwnStatus(at, error);
 				if (!error && fs::is_symlink(status)) throw std::runtime_error("A save path contains a symbolic link: " + path.string());
 				if (error && error != std::errc::no_such_file_or_directory) throw fs::filesystem_error("Cannot inspect save path", at, error);
 				if (at == at.root_path()) break;
 			}
+		}
+		// fs::remove_all without its lstat, which the console's /data refuses: what is in a folder, then it
+		void RemoveAll(const fs::path& path, std::error_code& error)
+		{
+			const auto status = ps5files::OwnStatus(path, error);
+			if (error == std::errc::no_such_file_or_directory) { error.clear(); return; }
+			if (!error && fs::is_directory(status))
+			{
+				const auto entries = Eden::RyujinxSaves::ListFolder(path, error);
+				for (size_t i = 0; i < entries.size() && !error; i++) RemoveAll(entries[i].path(), error);
+			}
+			if (!error) fs::remove(path, error);
 		}
 		bool Within(const fs::path& child, const fs::path& parent)
 		{
@@ -44,7 +58,8 @@ namespace ps5eden::transfer
 			if (error) throw fs::filesystem_error("Cannot list save", from, error);
 			for (const auto& entry : entries)
 			{
-				const auto status = entry.symlink_status();
+				const auto status = ps5files::OwnStatus(entry.path(), error);
+				if (error) throw fs::filesystem_error("Cannot inspect save", entry.path(), error);
 				if (fs::is_symlink(status)) throw std::runtime_error("Symbolic links are not imported/exported.");
 				const auto target = to / entry.path().filename();
 				if (fs::is_directory(status)) Copy(entry.path(), target, budget, depth + 1);
@@ -226,13 +241,13 @@ namespace ps5eden::transfer
 			for (auto it = moves.rbegin(); it != moves.rend(); ++it)
 			{
 				std::error_code ec;
-				if (it->installed) fs::remove_all(it->target, ec);
+				if (it->installed) RemoveAll(it->target, ec);
 				if (ec) rollback = false;
 				if (it->old) { ec.clear(); fs::rename(it->before, it->target, ec); if (ec) rollback = false; }
 			}
 			if (!work.empty())
 			{
-				if (rollback) { std::error_code ec; fs::remove_all(work, ec); }
+				if (rollback) { std::error_code ec; RemoveAll(work, ec); }
 				else { kept = work.string(); error += " Recovery is incomplete; retain " + kept; }
 			}
 			return false;
@@ -259,7 +274,7 @@ namespace ps5eden::transfer
 		catch (const std::exception& failure)
 		{
 			error = failure.what();
-			if (!work.empty()) { std::error_code ec; fs::remove_all(work, ec); }
+			if (!work.empty()) { std::error_code ec; RemoveAll(work, ec); }
 			return false;
 		}
 	}

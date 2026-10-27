@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Optional recorded input; melonDS Platform.h requests signed mono PCM at 47.6 kHz.
 #pragma once
+#include "../app/own_status.h"
 #include <algorithm>
 #include <cstdint>
 #include <filesystem>
@@ -24,7 +25,8 @@ namespace ps5melonds::microphone
 				namespace fs = std::filesystem;
 				for (auto at = fs::absolute(file).lexically_normal(); !at.empty(); at = at.parent_path())
 				{
-					if (fs::is_symlink(fs::symlink_status(at))) { error = "Microphone WAV paths must not contain symbolic links."; return false; }
+					std::error_code ec;
+					if (fs::is_symlink(ps5files::OwnStatus(at, ec))) { error = "Microphone WAV paths must not contain symbolic links."; return false; }
 					if (at == at.root_path()) break;
 				}
 				const auto size = fs::file_size(file);
