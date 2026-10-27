@@ -522,7 +522,7 @@ namespace ps5saves
 			keep(std::move(save));
 			GameSave slot2;
 			slot2.kind = GameSave::Kind::Slot2;
-			slot2.paths = {(fs::path(root) / "melonds/slot2-saves" / (stem + ".sav")).string()};
+			slot2.paths = {(fs::path(ps5paths::MelonDs()) / "slot2-saves" / (stem + ".sav")).string()};
 			keep(std::move(slot2));
 			GameSave states;
 			states.kind = GameSave::Kind::States;

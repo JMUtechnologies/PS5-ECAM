@@ -63,6 +63,12 @@ static void Scenario(const fs::path& base, bool legacy, bool retained = false)
     ps5saves::GameRef game; game.side = 0; game.titleId = 0x0005000012345678;
     auto saves = ps5saves::FindGameSaves(game);
     Check(saves.size() == 1 && saves[0].files == 1 && saves[0].paths[0] == save.parent_path().string(), "individual Wii U saves use the selected MLC");
+    // a Switch game's own save (#86), in the Eden folder in use, and in a game's backup
+    const fs::path nxsave = eden / "user/nand/user/save/0000000000000000" / std::string(32, 'A') / "0100ABCDEF123000";
+    Put(nxsave / "data.bin", "Switch game save");
+    ps5saves::GameRef nx; nx.side = 3; nx.titleId = 0x0100ABCDEF123000;
+    saves = ps5saves::FindGameSaves(nx);
+    Check(saves.size() == 1 && saves[0].files == 1 && saves[0].paths == std::vector<std::string>{nxsave.string()}, "a Switch game's saves are found in the selected Eden folder");
     Put(save, "newer save");
     Put(cemu / "settings.xml", "newer settings");
     ps5saves::Backup restore; restore.folder = backup.string();
