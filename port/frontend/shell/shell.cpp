@@ -1360,30 +1360,6 @@ namespace ps5shell
 				Focus(segment, segment.h / 2);
 			sx += widths[i] + 4;
 		}
-		x = pill.Right() + 26;
-		if (tabs)
-		{
-			canvas.Draw(Icon::L1, {x, y + 12, 36, 32}, Tertiary());
-			x += 36 + 14;
-			// tr: the launcher's tabs
-			const char* labels[2] = {TrC("tab", "Library"), TrC("tab", "Settings")};
-			for (int i = 0; i < 2; i++)
-			{
-				const bool selected = (i == 0 && m_tab == ScreenId::Library) || (i == 1 && m_tab == ScreenId::Settings);
-				const ui::TextStyle style = Style({26, selected ? ui::Weight::SemiBold : ui::Weight::Medium, 1.0f});
-				const float w = m_fonts.Width(style, labels[i]) + 52;
-				const Box tab{x, y, w, h};
-				if (selected)
-					canvas.Rect(tab, h / 2, ui::SetAlpha(kText, 0.94f));
-				const ui::TextBlock text = m_fonts.Layout(style, labels[i]);
-				canvas.Text(text, x + 26, tab.CentreY() - text.height * 0.5f, selected ? kInk1 : Secondary());
-				if (m_onBar && m_barFocus == i + kSides)
-					Focus(tab, h / 2);
-				x += w + 6;
-			}
-			x += 8;
-			canvas.Draw(Icon::R1, {x, y + 12, 36, 32}, Tertiary());
-		}
 		// the controllers and the clock, at the right
 		char clock[16] = "";
 		const std::time_t now = std::time(nullptr);
@@ -1395,6 +1371,7 @@ namespace ps5shell
 		float right = 1920 - kSafeX;
 		canvas.Text(clockText, right - clockText.width, y + h / 2 - clockText.height * 0.5f, Secondary());
 		right -= clockText.width + 28;
+		bool pads = false;
 		for (int player = ps5pad::kMaxPlayers - 1; player >= 0; player--)
 		{
 			if (!ps5pad::IsConnected(player))
@@ -1407,6 +1384,40 @@ namespace ps5shell
 			const ui::TextBlock text = m_fonts.Layout({14, ui::Weight::Bold, 1.0f}, fmt::format("P{}", player + 1));
 			canvas.Text(text, pad.CentreX() - text.width * 0.5f, pad.CentreY() - text.height * 0.5f, player == 0 ? kInk1 : Secondary());
 			right -= 44;
+			pads = true;
+		}
+		// the tabs, L1 Library Settings R1, just left of them (28 from the controllers, as from the clock)
+		if (tabs)
+		{
+			// tr: the launcher's tabs
+			const char* labels[2] = {TrC("tab", "Library"), TrC("tab", "Settings")};
+			bool selected[2];
+			ui::TextStyle styles[2];
+			float tabWidths[2];
+			float total = 36 + 14 + 8 + 36;
+			for (int i = 0; i < 2; i++)
+			{
+				selected[i] = (i == 0 && m_tab == ScreenId::Library) || (i == 1 && m_tab == ScreenId::Settings);
+				styles[i] = Style({26, selected[i] ? ui::Weight::SemiBold : ui::Weight::Medium, 1.0f});
+				tabWidths[i] = m_fonts.Width(styles[i], labels[i]) + 52;
+				total += tabWidths[i] + 6;
+			}
+			x = std::max(pill.Right() + 26, right - (pads ? 20 : 0) - total);
+			canvas.Draw(Icon::L1, {x, y + 12, 36, 32}, Tertiary());
+			x += 36 + 14;
+			for (int i = 0; i < 2; i++)
+			{
+				const Box tab{x, y, tabWidths[i], h};
+				if (selected[i])
+					canvas.Rect(tab, h / 2, ui::SetAlpha(kText, 0.94f));
+				const ui::TextBlock text = m_fonts.Layout(styles[i], labels[i]);
+				canvas.Text(text, x + 26, tab.CentreY() - text.height * 0.5f, selected[i] ? kInk1 : Secondary());
+				if (m_onBar && m_barFocus == i + kSides)
+					Focus(tab, h / 2);
+				x += tabWidths[i] + 6;
+			}
+			x += 8;
+			canvas.Draw(Icon::R1, {x, y + 12, 36, 32}, Tertiary());
 		}
 		canvas.PopAlpha();
 	}
