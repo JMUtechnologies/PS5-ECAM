@@ -21,6 +21,7 @@
 #include "microphone.h"
 #include "../app/achievements.h"
 #include "../app/frame_capture.h"
+#include "../app/capture_session.h"
 #include "../app/saves.h"
 #include "../app/boxart.h"
 #include "../app/gameinfo.h"
@@ -96,6 +97,8 @@ namespace ps5melonds
 		// producer; the game loop writes only after joining it, so gameplay never writes capture files.
 		ps5capture::Frames s_capture;
 		bool s_captureEnabled = false;
+		std::map<std::string, int> s_captureSettings;
+		std::string s_captureGame;
 
 		// What the emulation reads before each frame; the game's loop changes it
 		struct View
@@ -679,7 +682,10 @@ namespace ps5melonds
 			while (!s_stop)
 			{
 				if (const int request = s_stateRequest.exchange(0))
+				{
+					if (s_captureEnabled) s_capture.Discontinuity();
 					MakeState(nds, request);
+				}
 				ToggleCheats(nds);
 				View view;
 				{
@@ -798,7 +804,7 @@ namespace ps5melonds
 				}
 				if (s_captureEnabled)
 				{
-					if (held || s_rewinding) s_capture.Discontinuity();
+					if (held || s_rewinding || input::FastForward() || s_stateRequest.load()) s_capture.Discontinuity();
 					else s_capture.Record(sceKernelGetProcessTime());
 				}
 				s_framesShown++;
@@ -976,6 +982,15 @@ namespace ps5melonds
 		const auto micFile = micStatus.type() != fs::file_type::not_found && micStatus.type() != fs::file_type::none ? gameMic : fs::path(Root()) / "microphone.wav";
 		if (!microphone::source.Configure(settings.dsMicSource, micFile.string(), error)) return false;
 
+		if (s_captureEnabled)
+		{
+			s_captureGame = game.gameId.empty() ? s_stem : game.gameId;
+			s_captureSettings = {{"jit_active", s_jit}, {"own_bios_active", ownBios},
+				{"slot2", settings.dsSlot2}, {"microphone_source", settings.dsMicSource},
+				{"touch_x", settings.dsTouchX}, {"touch_y", settings.dsTouchY}, {"touch_scale", settings.dsTouchScale},
+				{"layout", settings.layout}, {"filter", settings.dsFilter}, {"rotation", settings.dsRotation},
+				{"volume", settings.volume}, {"language_requested", settings.language}};
+		}
 		s_nds = new melonDS::NDS(std::move(args), nullptr);
 		s_nds->Reset();
 		s_nds->SPI.GetPowerMan()->SetBatteryLevelOkay(true);
@@ -1215,7 +1230,24 @@ namespace ps5melonds
 			const fs::path captures = fs::path(Root()) / "captures";
 			fs::create_directories(captures, ec);
 			const std::string captureFile = (captures / fmt::format("{}-{}.csv", s_stem, sceKernelGetProcessTime())).string();
-			if (!ec && s_capture.WriteCsv(captureFile)) ps5log::Line("[ds] {} consecutive CPU present-return intervals captured in {}", s_capture.Samples().size(), captureFile);
+			if (!ec && s_capture.WriteCsv(captureFile))
+			{
+#ifndef PS5CEMU_VERSION
+#define PS5CEMU_VERSION "unknown"
+#endif
+#ifndef PS5CEMU_MELONDS_COMMIT
+#define PS5CEMU_MELONDS_COMMIT "unknown"
+#endif
+				try
+				{
+					const auto metadata = fs::path(captureFile).replace_extension(".json").string();
+					const auto json = ps5capture::Session(s_capture, "ds", s_captureGame, PS5CEMU_VERSION,
+						PS5CEMU_MELONDS_COMMIT, s_captureSettings);
+					if (!ps5capture::WriteSession(metadata, json)) ps5log::Line("[ds] capture metadata could not be written: {}", metadata);
+				}
+				catch (const std::exception& failure) { ps5log::Line("[ds] capture metadata failed: {}", failure.what()); }
+				ps5log::Line("[ds] {} CPU present-return intervals captured in {}; stopped: {}", s_capture.Samples().size(), captureFile, s_capture.Reason());
+			}
 			else ps5log::Line("[ds] frame capture could not be exported");
 		}
 		ps5log::Line("[ds] emulation stopped in {} ms", elapsed());
