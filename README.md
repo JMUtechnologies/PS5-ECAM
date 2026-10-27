@@ -39,7 +39,7 @@ The details are in the [release notes](https://github.com/premohq/PS5-ECAM/relea
   Options** (upscaling, FSR sharpening, anti-aliasing, frame generation, speed, volume, docked or
   handheld, controller type, deadzone, amiibo). The library reads each game's own files, with
   GameTDB box art. **Controls > Buttons** remaps the Switch's buttons, a **Performance** page has
-  ProsperoEden's switches and memory sizes, and **Settings > Multiplayer** joins ProsperoEden's public
+  ProsperoEden's switches and memory sizes, and **Settings > Online > Multiplayer** joins ProsperoEden's public
   rooms.
 - **Save states on the 3DS and DS:** touchpad click + Square saves, + Triangle held loads; *Undo the
   last load*; *Quit to the library* saves a state and *Resume* goes on from it. A fast forward that

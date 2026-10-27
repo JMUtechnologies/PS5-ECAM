@@ -38,7 +38,7 @@ checked by reading and compiling. Before a release:
 9. **Hide a game and Surprise me:** hide a game from its Options menu, start the app again: still
    hidden, found by Search and (with Settings > Launcher > Library filters on) the Hidden filter; Back
    in the Library. Surprise me from Sort, on a side with a filter in use.
-10. **The DS's stylus stick:** Settings > System > The right stick as the stylus, then Metroid Prime
+10. **The DS's stylus stick:** Settings > Screens > Touch > The right stick as the stylus, then Metroid Prime
    Hunters: the aim follows the stick, and lets go with it. Off, the right stick's buttons work again.
 11. **Light bars:** a Wii U game with two to four players, each DualSense in its own colour, and
    again after one is turned off and on. For L8, the boot log's `[pad] P1: device data` lines, with

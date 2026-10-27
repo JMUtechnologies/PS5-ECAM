@@ -34,14 +34,17 @@ work stops before a game starts.
   rating from GameTDB, and how it runs from the [compatibility list](COMPATIBILITY.md); a Wii U
   game's graphic packs
 - **Settings:** opens over the Library, for the side you're on and nothing else: one short list of
-  pages with icons (Language, Graphics, Audio, Controls, Remote touch screen, Game files, Accounts and
-  saves, Online, Launcher, Play time, Diagnostics, About, and the side's own: Screens, System, USB devices or
-  Artic Base), a line under each setting saying what it does, and Triangle for more.
+  pages with icons, twelve at most so the list never scrolls (Language, Graphics, Controls, System,
+  Game files, Saves, Online, Launcher, Play time, Diagnostics, About, and the side's own: Screens on
+  the 3DS and the DS, Performance on the Switch), a line under each setting saying what it does, and
+  Triangle for more. Related settings sit behind one row with a ›: the sound is on System; the remote
+  touch screen on Controls (the Wii U's System, with its USB devices); the Switch's rooms
+  (Multiplayer) and the 3DS's Artic Base on Online; the Switch's players on Players and saves.
 - **Game settings:** Options on a game, then **Game settings**: the same pages for that game alone.
   Each value shows **Default** (its side's) until you change it, Square puts it back, and the in-game
   menu saves its changes to the game's settings when it has some.
 - **Music and menu sounds:** an original setup theme, or your own: put MP3 or WAV files in
-  `/data/ps5cemu/music` and choose one, or *Shuffle your music*, in **Settings > Audio > Launcher
+  `/data/ps5cemu/music` and choose one, or *Shuffle your music*, in **Settings > System > Launcher
   sound**, which also sets its volume or turns it off
 - **The Library:** your recently played games first, then every game on the side as a list, with
   Sort (Square), Search (Triangle) and L2 and R2 to jump by letter. **Settings > Launcher > Library
@@ -137,7 +140,7 @@ work stops before a game starts.
   ([how](#games-in-archives)).
 - Install CIA files (games, updates and DLC) from **Settings > Game files > Install a CIA file**.
 - **Artic Base:** play a game straight from your own 3DS over the network. Start Artic Base on the
-  3DS, open **Settings > Artic Base** and enter the address the 3DS shows. The same page runs the Artic Setup Tool, which copies your 3DS's system files.
+  3DS, open **Settings > Online > Artic Base** and enter the address the 3DS shows. The same page runs the Artic Setup Tool, which copies your 3DS's system files.
   The setup needs no keys from you: Azahar's own are built in, as in its official builds. An
   `aes_keys.txt` in `/data/azahar/sysdata` takes the place of all of them, so leave it out
   unless it is complete; when it lacks what the setup needs, the 3DS's screen says so.
@@ -174,10 +177,10 @@ New in 4.0.0: a side of its own, in melonDS's green, to the right of the 3DS.
   48,000 Hz, up to 16 MB) in `/data/melonds/microphone/<the game's file name>.wav`, or
   `/data/melonds/microphone.wav` for every game, played over and over while R3 is held. Nothing is
   recorded from a real microphone. A recording that cannot be read gives noise, and a notification.
-- **Touch calibration** (**Settings > System > Touch**): moves the touchpad's cursor left, right, up or down
+- **Touch calibration** (**Settings > Screens > Touch**): moves the touchpad's cursor left, right, up or down
   (up to 20%) and scales it (50% to 150%), for a game where touches land off the mark. The remote
   touch screen is not changed.
-- **The right stick as the stylus** (**Settings > System > Touch**, for the side or a game, off by default):
+- **The right stick as the stylus** (**Settings > Screens > Touch**, for the side or a game, off by default):
   pushed, it touches the bottom screen in its middle and drags the touch as far and as long as it is
   pushed; let go, the touch lifts. Metroid Prime Hunters aims that way. The stick's directions then do
   nothing else.
@@ -216,7 +219,7 @@ New in 5.0.0: a side of its own, in the Switch's red, to the right of the DS.
   as on the Wii U side), the room and who is in it, and Quit to the library. Each changes at once,
   and what you change is kept for the next games. The game runs on behind the menu with its
   controller still, as a Wii U game does.
-- **Multiplayer** (**Settings > Multiplayer** on the Switch side): ProsperoEden's rooms, in the app.
+- **Multiplayer** (**Settings > Online > Multiplayer** on the Switch side): ProsperoEden's rooms, in the app.
   Choose one of the public rooms (ProsperoEden's own featured rooms first) or a private one by its
   address, port and password, and a nickname; each Switch game then joins it as it starts, and you
   choose Local Wireless (or local play) in the game to play with the others in it. A room that
@@ -234,10 +237,11 @@ New in 5.0.0: a side of its own, in the Switch's red, to the right of the DS.
   the game's `mods` and `cheats` folders (see [Game files](#nintendo-switch)) and in its game folder,
   listed and grouped as Eden applies them, with a switch for all of them. Choices apply from the
   game's next start; the files are never moved.
-- **Picture effects** (**Settings > Picture effects**, or a game's): Eden's ReShade looks over the
+- **Picture effects** (**Settings > Graphics > Picture effects**, or a game's): FSR sharpening,
+  anti-aliasing, and Eden's ReShade looks over the
   picture (Anime, Cinematic, Clean, Dreamy, Retro, Vivid, or Off), or your own: `.fxp` presets in
   the game's `reshade` folder or in `/data/eden/user/post_presets`.
-- **Players** (**Settings > Players**): Eden's players, each with saves of their own. Choose who plays
+- **Players** (**Settings > Players and saves > Players**): Eden's players, each with saves of their own. Choose who plays
   (remembered for each PS5 user), make a new one, rename one, or remove one from the list (their
   saves and settings stay; the list from before is kept as `profiles.dat.ecam-before`).
 - Saves are Eden's, in `/data/eden/user/nand/user/save`. **Back up to USB** takes them, with
@@ -405,7 +409,8 @@ Your phone, tablet or computer can be the game's touch screen: the Wii U GamePad
 bottom screen or the DS's touch screen, in its browser, with touch. Nothing to install. (dolphin78's
 idea and prototype, #38.)
 
-1. Turn on **Settings > Remote touch screen** (on any side), or **Remote touch screen** in a game's
+1. Turn on **Settings > Controls > Remote touch screen** (on the Wii U side, **Settings > System >
+   Remote touch screen**), or **Remote touch screen** in a game's
    menu (touchpad click + Options). It stays on for your next games.
 2. Put the phone on the same network as the PS5 and scan the QR code shown there, or type the address
    under it (`http://<the PS5's address>:8080/`; the first free port from 8080).
@@ -448,7 +453,7 @@ WUD or WUX files, or an unpacked game in an archive; a 3DS CIA sent this way is 
   the 3DS, **Save states, cheats, amiibo > Amiibo**, then **Take the amiibo away** when the game is
   done. 3DS games can only write to an amiibo with your console's `aes_keys.txt`. No amiibo files
   are included.
-- **Skylanders, Disney Infinity and LEGO Dimensions (Wii U).** **Settings > USB devices** switches on
+- **Skylanders, Disney Infinity and LEGO Dimensions (Wii U).** **Settings > System > USB devices** switches on
   Cemu's emulated Skylanders Portal of Power, Disney Infinity Base or LEGO Dimensions Toypad; it is
   plugged in when a game starts. Put your figure dumps in `/data/ps5cemu/figures/skylanders`,
   `infinity` or `dimensions`, then in the game open the in-game menu's **USB devices**: Left and Right
