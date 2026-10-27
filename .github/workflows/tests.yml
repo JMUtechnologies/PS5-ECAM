@@ -64,6 +64,9 @@ jobs:
       - name: DS Slot-2 input files
         run: bash tools/tests/test-slot2.sh
 
+      - name: DS recorded microphone input
+        run: bash tools/tests/test-microphone.sh
+
       - name: Frame capture buffer
         run: bash tools/tests/test-frame-capture.sh
 
@@ -75,7 +78,7 @@ jobs:
       - name: DS Slot-2 and capture integration syntax
         run: |
           clang++-18 -std=c++20 -Wno-deprecated-declarations -DFMT_HEADER_ONLY \
-            -I.deps/melonDS/src -Iport -fsyntax-only port/melonds/core.cpp port/melonds/platform.cpp
+            -I.deps/melonDS/src -Iport -fsyntax-only port/melonds/core.cpp port/melonds/platform.cpp port/melonds/input.cpp
 
       - name: Remote touch screen
         run: |
