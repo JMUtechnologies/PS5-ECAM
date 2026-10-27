@@ -81,7 +81,7 @@ namespace ps5shell
 		}
 		else if (page == "nxprofiles")
 		{
-			if (view.profiles.empty()) action("nxextra:noprofiles", Tr("No profiles found"), Tr("Start a Switch game once to create Eden's first profile."));
+			if (view.profiles.empty()) action("nxextra:noprofiles", Tr("No profiles found"), Tr("Create a player below, or start a Switch game once."));
 			else
 			{
 				Row row; row.id = "nxextra:profile"; row.kind = Row::Kind::Choice; row.label = Tr("Player profile");
@@ -90,6 +90,21 @@ namespace ps5shell
 				row.description = Tr("The Switch player used the next time a game starts.");
 				row.help = Tr("Selects an existing Eden player and remembers the choice for this PS5 user. Save files are not moved or deleted.");
 				rows.push_back(std::move(row));
+			}
+			Row create;
+			create.id = "nxextra:createprofile"; create.kind = Row::Kind::Action; create.label = Tr("Create player");
+			create.description = Tr("A new Switch player with separate saves and default settings.");
+			create.dimmed = view.profiles.size() >= 8; rows.push_back(std::move(create));
+			if (!view.profiles.empty())
+			{
+				Row rename;
+				rename.id = "nxextra:renameprofile"; rename.kind = Row::Kind::Action; rename.label = Tr("Rename selected player");
+				rename.description = view.profiles[view.profile].name; rows.push_back(std::move(rename));
+				Row remove;
+				remove.id = "nxextra:removeprofile"; remove.kind = Row::Kind::Hold; remove.label = Tr("Remove selected player");
+				remove.value = Tr("Hold Cross"); remove.description = Tr("Removes the player from the list. Saves and settings are kept.");
+				remove.help = Tr("At least one player must remain. The previous player list is retained in profiles.dat.ecam-before; save directories and settings are not deleted.");
+				remove.dimmed = view.profiles.size() <= 1; rows.push_back(std::move(remove));
 			}
 		}
 		Row refresh;
@@ -106,6 +121,27 @@ namespace ps5shell
 		{
 			if (cross) { m_switchExtrasKey.clear(); m_feedback.Play(ui::Cue::Focus); }
 			return cross;
+		}
+		if (row.id == "nxextra:createprofile" || row.id == "nxextra:renameprofile")
+		{
+			if (!cross || row.dimmed) return false;
+			const bool create = row.id == "nxextra:createprofile";
+			const auto context = SwitchExtrasContext();
+			const auto view = ps5eden::extras::Read(context);
+			if (!view.error.empty()) { Toast(view.error); return false; }
+			if (!create && view.profiles.empty()) return false;
+			const std::string id = create ? "" : view.profiles[view.profile].id;
+			const std::string name = create ? "" : view.profiles[view.profile].name;
+			OpenNameKeyboard(create ? Tr("A name for the new player") : Tr("A new player name"), name, 31,
+				[this, context, id, create](const std::string& value) {
+					if (value.empty()) return;
+					std::string error;
+					const bool ok = create ? ps5eden::extras::CreateProfile(context, value, error) : ps5eden::extras::RenameProfile(context, id, value, error);
+					if (!ok) Toast(error);
+					else Toast(create ? Tr("Player created: select them from the list") : Tr("Player renamed"));
+					m_switchExtrasKey.clear();
+				});
+			return true;
 		}
 		if (row.dimmed || (row.kind != Row::Kind::Toggle && row.kind != Row::Kind::Choice)) return false;
 		if (row.kind == Row::Kind::Toggle && !cross && step && ((step > 0) == row.on)) return false;
