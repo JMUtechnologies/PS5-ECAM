@@ -166,6 +166,8 @@ add_library(CemuPS5 STATIC
 	eden/eden.h
 	eden/extras.cpp
 	eden/extras.h
+	eden/save_transfer.cpp
+	eden/save_transfer.h
 	eden/launch.cpp
 	eden/library.cpp
 	eden/library.h
@@ -290,6 +292,7 @@ set_source_files_properties(
 	eden/launch.cpp
 	eden/extras.cpp
 	eden/library.cpp
+	eden/save_transfer.cpp
 	eden/nx_files.cpp
 	eden/rooms.cpp
 	melonds/archive.cpp
@@ -417,4 +420,3 @@ else()
 	target_sources(CemuPS5 PRIVATE melonds/unavailable.cpp)
 	message(STATUS "PS5-ECAM: no melonDS build; DS games will not start")
 endif()
-
