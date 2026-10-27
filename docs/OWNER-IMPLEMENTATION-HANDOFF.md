@@ -6,7 +6,7 @@ document as all discussed features being implemented.
 
 | Stage | Implemented source in this branch | Still absent |
 |---|---|---|
-| 1: evidence | Single/repeated-run comparisons, JSON/Markdown/HTML reports, console-check manifest, bounded frame buffer, opt-in DS CPU frame-interval CSV export | Capture hooks for other systems, automatic hardware/effective-settings sidecars, actual console data |
+| 1: evidence | Single/repeated-run comparisons, JSON/Markdown/HTML reports, console-check manifest, bounded frame buffer, opt-in DS CPU frame-interval CSV and partial session JSON export | Capture hooks for other systems, hardware metadata and complete effective-settings coverage, actual console data |
 | 2: Switch controls | Mods/cheats/master switches, preset discovery and inheritance, profile selection/create/rename/remove, per-game ECAM backups | Full ECAM profile separation, translations for new strings |
 | 3: integration | Plain-folder transfer and indexed Ryujinx import with account-save selection, staged directory replacement/recovery, shared worker/UI integration | RomM browsing/download/sync, QR pairing, multiplayer changes |
 | 4: system features | Optional DS Slot-2 cartridge attachment and separate working saves, backup support, silence/recorded microphone sources, per-game touchpad calibration | DSi boot/NAND/DSP, DS/3DS wireless, live camera/microphone, unverified core backports |
@@ -49,7 +49,7 @@ relaunch and backup/restore with copies of inputs. Review the actual GBA save ca
 Create an empty `melonds/capture-frames` marker before starting a session. After the emulation
 thread stops, a new CSV is written under `melonds/captures`. Remove the marker to disable.
 There are at most 12000 intervals, allocated only when enabled; Record performs no allocation
-or file I/O. A pause, rewind or invalid clock ordering ends the uninterrupted capture segment.
+or file I/O. A pause, rewind, fast-forward, pending state request or invalid clock ordering ends the uninterrupted capture segment.
 Quitting through a paused menu still exports samples already collected. Abrupt crashes/watchdog
 restarts can lose the capture; this is not a crash recorder.
 
@@ -57,8 +57,11 @@ These are CPU timestamps after the DS frontend's Present returns, not GPU timest
 display flips, input latency or proof of emulated speed. For the comparison tools use
 `frame_kind: presented`, describe `capture_method` accurately, and supply real metadata with
 the exact build, scene, effective settings and device setup. Do not infer 1% lows from periodic
-FPS logs or label synthetic host-test samples as console measurements. There is no automatic
-metadata sidecar yet.
+FPS logs or label synthetic host-test samples as console measurements. A matching JSON sidecar now contains known launch settings, build/core revision, sample count
+and termination reason. It deliberately leaves unknown context empty: game version, scene,
+console model, firmware, HEN and cache state. Complete those fields and verify the exact build
+and effective settings before using it in the comparison tools; incomplete context is refused.
+The settings snapshot is partial and captures launch-time facts only, not complete core state.
 
 ## Remaining research
 
