@@ -5,6 +5,7 @@
 <p align="center">
   <a href="https://github.com/premohq/PS5-ECAM/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/premohq/PS5-ECAM?label=release&color=3b8cff"></a>
   <a href="https://discord.gg/grrqkv4xWw"><img alt="Discord: join the server" src="https://img.shields.io/badge/discord-join%20the%20server-5865F2?logo=discord&logoColor=white"></a>
+  <a href="https://ko-fi.com/premohq"><img alt="Ko-fi: support PS5-ECAM" src="https://img.shields.io/badge/ko--fi-support%20PS5--ECAM-FF5E5B?logo=kofi&logoColor=white"></a>
   <img alt="Platform: PS5 homebrew" src="https://img.shields.io/badge/platform-PS5%20homebrew-1f5fd6">
   <img alt="Emulation: Cemu, Azahar, melonDS and Eden" src="https://img.shields.io/badge/emulation-Cemu%20%C2%B7%20Azahar%20%C2%B7%20melonDS%20%C2%B7%20Eden-5cd3ff">
   <img alt="Languages: 31" src="https://img.shields.io/badge/languages-31-62c454">
@@ -24,7 +25,8 @@
   <a href="#install">Install</a> ·
   <a href="docs/GUIDE.md">Guide</a> ·
   <a href="docs/COMPATIBILITY.md">Compatibility</a> ·
-  <a href="#credits">Credits</a>
+  <a href="#credits">Credits</a> ·
+  <a href="#support">Support</a>
 </p>
 
 ---
@@ -57,6 +59,18 @@ The details are in the [release notes](https://github.com/premohq/PS5-ECAM/relea
   Wii U account's name is the one games show; the Swedish menus reviewed by yeager ([#83](https://github.com/premohq/PS5-ECAM/pull/83)).
 
 Changes in earlier versions are in their [release notes](https://github.com/premohq/PS5-ECAM/releases).
+
+## Support
+
+PS5-ECAM is free. If it brings your games back, you can support it:
+
+- **Ko-fi:** [ko-fi.com/premohq](https://ko-fi.com/premohq), for a one-off tip or the
+  [$3 a month Early Access tier](https://ko-fi.com/premohq/tiers): highly experimental builds, builds of
+  ECAM for other platforms, and new features before anyone else.
+- **PayPal:** [paypal.me/empthe](https://www.paypal.com/paypalme/empthe), or scan the code (the same one
+  as in the app's **Settings > About**):
+
+<a href="https://www.paypal.com/paypalme/empthe"><img src="docs/support-qr.svg" width="120" alt="QR code for paypal.me/empthe"></a>
 
 ## Features
 
@@ -228,11 +242,3 @@ Entertainment, Nintendo, or the Cemu, Azahar, melonDS, Eden or ProsperoEden proj
 and "PS5" are trademarks of Sony Interactive Entertainment Inc.; "Wii U", "Nintendo 3DS", "Nintendo
 DS" and "Nintendo Switch" are trademarks of Nintendo. No firmware, keys, games or SDK material is included. It is provided as is,
 without warranty, for use with hardware and games you own.
-
-## Support
-
-PS5-ECAM is free. If it brings your games back, you can support it at
-[paypal.me/empthe](https://www.paypal.com/paypalme/empthe), or scan the code (the same one as in the
-app's **Settings > About**):
-
-<a href="https://www.paypal.com/paypalme/empthe"><img src="docs/support-qr.svg" width="120" alt="QR code for paypal.me/empthe"></a>
