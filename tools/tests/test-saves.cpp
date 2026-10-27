@@ -27,6 +27,7 @@ int main() {
 	Put(root / "controllerProfiles/player1.xml", "<p1/>");
 	Put(root / "themes/mine.json", "{}");
 	Put(root / "melonds/saves/Mario.sav", "save");
+	Put(root / "melonds/slot2-saves/Mario.sav", "slot2 save");
 	Put(root / "eden/user/nand/user/save/0000000000000000/ABCD/0100000000010000/data.bin", "switch");
 	Put(root / "eden/user/nand/system/save/8000000000000010/su/avators/profiles.dat", "profiles");
 	Put(root / "games/Big Game.wua", "not backed up");
@@ -44,6 +45,7 @@ int main() {
 	Check(fs::exists(folder / "switch/save/0000000000000000/ABCD/0100000000010000/data.bin") &&
 		fs::exists(folder / "switch/profiles/su/avators/profiles.dat"), "the Switch's saves and profiles in it");
 	Check(!fs::exists(folder / "games"), "never the games");
+	Check(Get(folder / "ds/slot2-saves/Mario.sav") == "slot2 save", "whole backups include Slot-2 working saves");
 	// changed since, then restored
 	Put(root / "ps5cemu.json", "{\"theme\": \"terminal\"}");
 	Put(root / "melonds/saves/Mario.sav", "newer");
@@ -70,6 +72,10 @@ int main() {
 	Check(ps5saves::ResumeState(n3ds) == (root / "azahar/states/0004000000055D00.11.cst").string(), "the 3DS's resume state");
 	ps5saves::GameRef tar; tar.side = 2; tar.file = "/games/Mario.tar.gz";
 	Check(ps5saves::ResumeState(tar) == (root / "melonds/states/Mario.ml11").string(), "the DS's, an archive's by its name");
+	const auto tarSaves = ps5saves::FindGameSaves(tar);
+	bool tarSlot2 = false;
+	for (const auto& save : tarSaves) tarSlot2 = tarSlot2 || save.kind == ps5saves::GameSave::Kind::Slot2;
+	Check(tarSlot2, "compressed DS archive uses the same Slot-2 save key as runtime");
 	ps5saves::GameRef wiiu; wiiu.side = 0;
 	Check(ps5saves::ResumeState(wiiu).empty(), "none for the Wii U");
 	// Switch per-game exports select exact titles across profiles, never other games or profiles.dat.
@@ -111,6 +117,17 @@ int main() {
 	Check(ps5saves::FindGameSaves(unknown).empty() && !ps5saves::StartGameBackup(unknown, error), "unknown systems cannot fall through to DS saves");
 	Check(ps5saves::ResumeState(nx).empty(), "Switch has no fabricated resume state");
 	ps5saves::Finish();
+	// Transfer operations share the backup worker and are awaited by Finish before game launch.
+	ps5saves::GameRef transferGame; transferGame.side = 3; transferGame.titleId = 0x0100123412340000;
+	const fs::path imported = usb / "PS5-ECAM-imports/0100123412340000/account/main";
+	Put(imported, "portable save");
+	Check(ps5saves::StartSwitchImport(transferGame, profile, (usb / "PS5-ECAM-imports").string(), error), "save import starts on backup worker");
+	ps5saves::Finish(); status = ps5saves::Current();
+	Check(status.state == ps5saves::Status::State::Done && !status.settingsRestored, "Finish awaits import without restoring settings");
+	Check(Get(nxroot / profile / "0100123412340000/main") == "portable save", "worker import targets selected profile and title");
+	Check(ps5saves::StartSwitchExport(transferGame, profile, error), "plain-folder export starts on worker");
+	ps5saves::Finish(); status = ps5saves::Current();
+	Check(status.state == ps5saves::Status::State::Done && Get(fs::path(status.where) / "account/main") == "portable save", "worker export returns portable account folder");
+	Check(!ps5saves::StartSwitchImport(transferGame, "bad-profile", (usb / "PS5-ECAM-imports").string(), error), "malformed profile rejected before worker starts");
 	return failures != 0;
 }
-
