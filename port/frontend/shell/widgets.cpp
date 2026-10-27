@@ -344,8 +344,8 @@ namespace ps5shell
 		const ui::TextBlock labelBlock = m_fonts.Layout(label, row.label, layout.labelWidth, 1);
 		const float labelY = described ? box.y + 16 : box.CentreY() - labelBlock.height * 0.5f;
 		canvas.Text(labelBlock, box.x + 28, labelY, kText);
-		// game settings: whether the value is the side's (Default) or the game's own
-		if (InGameSettings() && !row.setting.empty())
+		// game settings: whether the value is the side's (Default) or the game's own (a › row: any of its page's)
+		if (InGameSettings() && (!row.setting.empty() || !row.opens.empty()))
 			Chip(canvas, box.x + 28 + labelBlock.width + 14, labelY + labelBlock.height * 0.5f - 15, row.fromSide ? Tr("Default") : Tr("This game"),
 				row.fromSide ? "" : "good", 30);
 		if (described)

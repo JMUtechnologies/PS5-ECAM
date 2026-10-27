@@ -126,6 +126,8 @@ namespace ps5shell
 		bool needsCore = false;	 // a Wii U row Cemu's core must be up for
 		std::string setting;	 // a game can have its own of it: its name in ps5cemu.json (game settings)
 		bool fromSide = false;	 // game settings: the side's value, the game has none of its own
+		std::string group;		 // Settings: the › page it is on, behind its row (empty: the page itself)
+		std::string opens;		 // Settings: a › row's page, whose rows it stands for
 	};
 
 	struct SettingsPage
@@ -384,6 +386,10 @@ namespace ps5shell
 		std::vector<SettingsPage> SettingsPages() const; // the side's (or the game's, in game settings)
 		std::vector<Row> SettingRows(const std::string& page);
 		std::vector<Row> SideRows(const std::string& page, const ps5settings::Launcher& settings);
+		// a page's rows as shown: a › page's behind its row, or that › page's own while it is open
+		std::vector<Row> SubPageRows(const std::vector<Row>& rows) const;
+		void OpenSubPage(const Row& row);
+		void CloseSubPage();
 		std::string PanelText(const std::string& page) const;
 		std::string PlayTimeText() const; // Settings > Play time
 		void ChangeSetting(const Row& row, int step, bool cross);
@@ -608,6 +614,11 @@ namespace ps5shell
 		std::string m_page = "graphics";
 		bool m_onRows = false;
 		int m_settingRow = 0;
+		// a › page open over the page's rows (empty: none): its row on the page, where Circle goes back
+		// to, and that row's label and line, its title
+		std::string m_subPage;
+		int m_subFrom = 0;
+		std::string m_subTitle, m_subLine;
 		ui::Spring m_railScroll;
 		std::string m_diagnosticsDone[3]; // Diagnostics' rows: the logs, Cemu's caches, Azahar's
 		std::string m_unpackedDone;	 // Diagnostics: what clearing the unpacked games did
