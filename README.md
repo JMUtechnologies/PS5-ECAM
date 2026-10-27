@@ -15,7 +15,7 @@
   <b>PS5-ECAM</b> plays your Wii U, Nintendo 3DS, Nintendo DS and Nintendo Switch games on a jailbroken PS5,<br>
   with <a href="https://github.com/cemu-project/Cemu">Cemu</a>, <a href="https://github.com/azahar-emu/azahar">Azahar</a>,
   <a href="https://github.com/melonDS-emu/melonDS">melonDS</a> and <a href="https://github.com/eden-emu/mirror">Eden</a> in one launcher made for the TV and the DualSense.<br>
-  It was called PS5CEMU-HAR until 5.0.0.
+  Made by its co-founders, <a href="https://github.com/premohq">premohq</a> and <a href="https://github.com/JMUtechnologies">JMUtechnologies</a>. It was called PS5CEMU-HAR until 5.0.0.
 </p>
 
 <p align="center">
@@ -154,6 +154,16 @@ Bugs still go in [GitHub issues](https://github.com/premohq/PS5-ECAM/issues/new/
 
 ## Credits
 
+### Founders
+
+- **[premohq](https://github.com/premohq)**, co-founder, who started the app as PS5CEMU-HAR
+- **[JMUtechnologies](https://github.com/JMUtechnologies)**, co-founder: a folder for each system (the
+  Wii U's, 3DS's, DS's and Switch's files in folders of their own, Eden's side of it, an install from
+  before still found, and the PC tool that separates one); the Switch side's mods, cheats, ReShade
+  presets and players, and its saves to and from a USB drive, Ryujinx's too; the DS's GBA cartridge in
+  Slot-2, its recorded microphone and touch screen calibration; and the tools that compare
+  performance captures ([#86](https://github.com/premohq/PS5-ECAM/pull/86), [#84](https://github.com/premohq/PS5-ECAM/pull/84))
+
 ### Contributors
 
 Big thanks to the people who sent code and fixes to PS5-ECAM itself:
@@ -168,9 +178,6 @@ Big thanks to the people who sent code and fixes to PS5-ECAM itself:
 - **[3lmerx503](https://github.com/3lmerx503)** for finding and testing the rumble fix ([#41](https://github.com/premohq/PS5-ECAM/issues/41))
 - **[yeager](https://github.com/yeager)** (Daniel Nylander) for his review of the Swedish translation
   ([#85](https://github.com/premohq/PS5-ECAM/pull/85))
-- **[JMUtechnologies](https://github.com/JMUtechnologies)** for a folder for each system: the Wii U's,
-  3DS's, DS's and Switch's files in folders of their own, Eden's side of it, an install from before
-  still found, and the PC tool that separates one
 
 ### Built on
 
