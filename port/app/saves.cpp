@@ -305,7 +305,7 @@ namespace ps5saves
 					const fs::path kept = KeptPath(stamp, file.to);
 					if (fs::exists(kept, ec))
 					{
-						SetState(Status::State::Failed, ps5lang::Tr("A kept save already exists; try again after a moment."));
+						SetState(Status::State::Failed, ps5lang::Tr("A save moved aside a moment ago is in the way: try again in a moment."));
 						return;
 					}
 					fs::create_directories(kept.parent_path(), ec);
@@ -343,7 +343,7 @@ namespace ps5saves
 		{
 			if (game && (game->side < 0 || game->side > 3 || (game->side == 3 && !SwitchTitle(*game))))
 			{
-				error = ps5lang::Tr("A real title ID and a supported system are required for this backup.");
+				error = ps5lang::Tr("This game has no title ID to find its saves by.");
 				return false;
 			}
 			if (Current().state == Status::State::Running)
@@ -552,7 +552,7 @@ namespace ps5saves
 			const fs::path kept = KeptPath(stamp, path);
 			if (fs::exists(kept, ec))
 			{
-				error = ps5lang::Tr("A kept save already exists; try again after a moment.");
+				error = ps5lang::Tr("A save moved aside a moment ago is in the way: try again in a moment.");
 				return {};
 			}
 			fs::create_directories(kept.parent_path(), ec);
@@ -696,7 +696,7 @@ namespace ps5saves
 		{
 			if (game.side != 3 || !SwitchTitle(game) || profile.size() != 32 ||
 				profile.find_first_not_of("0123456789abcdefABCDEF") != std::string::npos)
-			{ error = ps5lang::Tr("Choose an existing Switch player and a real title ID first."); return false; }
+			{ error = ps5lang::Tr("Choose a player first, for a game with a title ID."); return false; }
 			if (Current().state == Status::State::Running) { error = ps5lang::Tr("A backup is already running."); return false; }
 			if (s_thread.joinable()) s_thread.join();
 			{
@@ -738,7 +738,7 @@ namespace ps5saves
 								break;
 							}
 						}
-						if (!done && why.empty()) why = ps5lang::Tr("No writable USB drive found.");
+						if (!done && why.empty()) why = ps5lang::Tr("No USB drive found: plug one in, formatted exFAT or FAT32.");
 					}
 					{
 						std::lock_guard lock(s_mutex); s_status.where = where;

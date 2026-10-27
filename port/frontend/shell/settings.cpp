@@ -230,8 +230,9 @@ namespace ps5shell
 			pages.push_back({"performance", Tr("Performance"), Tr("Speed against accuracy, and the emulated Switch's memory."), Icon::Pulse});
 		if (IsSwitch())
 		{
-			pages.push_back({"nxpost", Tr("Post-processing"), Tr("Eden's ReShade presets."), Icon::Monitor});
-			pages.push_back({"nxprofiles", Tr("Player profiles"), Tr("Choose an existing Switch player and their saves."), Icon::Pad});
+			pages.push_back({"nxpost", Tr("Picture effects"), Tr("Eden's ReShade looks over the picture."), Icon::Monitor});
+			// tr: the Switch side's players, the people (Eden's user profiles), each with saves of their own; not a number of players
+			pages.push_back({"nxprofiles", TrC("switch", "Players"), Tr("Who plays, each with saves of their own."), Icon::Pad});
 		}
 		pages.push_back({"files", Tr("Game files"), IsWiiU() ? Tr("Where your Wii U games are, and installs into the Wii U's storage.") :
 										Is3ds()		 ? Tr("Where your 3DS games are, and installs into the 3DS's storage.") :
@@ -269,8 +270,8 @@ namespace ps5shell
 		game.push_back({"gamesaves", Tr("Saves"), TrF("{0}'s saves only. Settings has every side's.", m_gameName), Icon::Save});
 		if (IsSwitch())
 		{
-			game.push_back({"nxmods", Tr("Mods"), Tr("Choose the installed mods this game uses."), Icon::Folder});
-			game.push_back({"nxcheats", Tr("Cheats"), Tr("Choose individual installed cheats."), Icon::Folder});
+			game.push_back({"nxmods", Tr("Mods"), Tr("Its mods, each on or off."), Icon::Folder});
+			game.push_back({"nxcheats", Tr("Cheats"), Tr("Its cheats, each on or off."), Icon::Folder});
 		}
 		return game;
 	}
@@ -934,16 +935,18 @@ namespace ps5shell
 			std::vector<std::string> touchOffsets, touchScales;
 			for (int value = -20; value <= 20; value++) touchOffsets.push_back(fmt::format("{}%", value));
 			for (int value = 50; value <= 150; value++) touchScales.push_back(fmt::format("{}%", value));
-			const auto touchHelp = Tr("Adjusts the touchpad cursor across the displayed screen, before rotation. Defaults: offsets 0%, scale 100%. Applies on next launch; remote touch is unchanged.");
-			own(choice("dstouchx", Tr("Touch horizontal offset"), touchOffsets, hand.dsTouchX + 20, touchHelp, touchHelp), "dsTouchX");
-			own(choice("dstouchy", Tr("Touch vertical offset"), touchOffsets, hand.dsTouchY + 20, touchHelp, touchHelp), "dsTouchY");
-			own(choice("dstouchscale", Tr("Touch sensitivity"), touchScales, hand.dsTouchScale - 50, touchHelp, touchHelp), "dsTouchScale");
-			own(choice("dsmic", Tr("Microphone source"), {Tr("Blow noise"), Tr("Silence"), Tr("Recorded WAV")}, hand.dsMicSource,
-				Tr("Hold R3 to send the selected input. Applies on next launch."),
-				TrF("Use 16-bit mono PCM WAV, 8000 to 48000 Hz, up to 16 MiB: {0}/microphone/<DS filename>.wav or microphone.wav. Recorded input loops while held and restarts after release. This does not record a live microphone.", ps5melonds::Root())), "dsMicSource");
+			const auto touchHelp = Tr("Moves and scales where the touchpad's cursor lands on the DS's screens, for a game where it is off: 0% and 100% leave it as it is. The remote touch screen is not changed. Applies to the next game.");
+			own(choice("dstouchx", Tr("Touch, left or right"), touchOffsets, hand.dsTouchX + 20, touchHelp, touchHelp), "dsTouchX");
+			own(choice("dstouchy", Tr("Touch, up or down"), touchOffsets, hand.dsTouchY + 20, touchHelp, touchHelp), "dsTouchY");
+			own(choice("dstouchscale", Tr("Touch, scale"), touchScales, hand.dsTouchScale - 50, touchHelp, touchHelp), "dsTouchScale");
+			own(choice("dsmic", Tr("Microphone"), {Tr("Noise"), Tr("Silence"), Tr("A recording")}, hand.dsMicSource,
+				Tr("What the DS hears while R3 is held. Applies to the next game."),
+				// tr: {0} is melonDS's folder, /data/melonds or where the DS's files are; keep <the game's file name> as a placeholder
+				TrF("A recording is a WAV file, 16-bit mono PCM at 8,000 to 48,000 Hz and up to 16 MB: {0}/microphone/<the game's file name>.wav for one game, {0}/microphone.wav for the others. It plays over and over while R3 is held, from its start each time. Nothing is recorded from a microphone.", ps5melonds::Root())), "dsMicSource");
 			own(toggle("dsslot2", Tr("GBA cartridge in Slot-2"), hand.dsSlot2,
-				Tr("Optional cartridge interactions in DS games; not GBA game execution."),
-				TrF("Put <DS game filename>.gba and an optional matching .sav in {0}/slot2. Working copies of its saves go to slot2-saves; original cartridge files are not changed. Applies on next launch.", ps5melonds::Root())), "dsSlot2");
+				Tr("For the DS games that read a GBA game in their second slot, as Pokémon's Pal Park does. It does not play GBA games."),
+				// tr: {0} is melonDS's folder, /data/melonds or where the DS's files are
+				TrF("Put the GBA game in {0}/slot2 with the DS game's file name, ending .gba, and its .sav beside it if it has one. The cartridge's save is then kept in {0}/slot2-saves, and the files you put there are never changed. A DS game without a cartridge there starts with the slot empty. Applies to the next game.", ps5melonds::Root())), "dsSlot2");
 		}
 		else if (page == "files")
 		{
@@ -1429,7 +1432,7 @@ namespace ps5shell
 		// tr: a 3DS game's extra data (its extdata), which some games keep beside their saves
 		case Kind::ExtData: return Tr("Extra data");
 		case Kind::States: return TrP((int)save.paths.size(), "{0} save state", "{0} save states");
-		case Kind::Slot2: return Tr("Slot-2 cartridge save");
+		case Kind::Slot2: return Tr("The GBA cartridge's save");
 		}
 		return {};
 	}
@@ -1534,19 +1537,19 @@ namespace ps5shell
 		if (IsSwitch() && !ps5eden::IsMadeId(m_gameTitle))
 		{
 			Row exportSave;
-			exportSave.kind = Kind::Action; exportSave.id = "nxexport"; exportSave.label = Tr("Export selected player's save");
-			exportSave.description = Tr("Plain account/device folders on USB, for transfer to another emulator.");
+			exportSave.kind = Kind::Action; exportSave.id = "nxexport"; exportSave.label = Tr("Copy the save to USB");
+			exportSave.description = Tr("The chosen player's save, in USB/PS5-ECAM-exports, as folders another emulator can take.");
 			exportSave.value = m_savesMessage; exportSave.dimmed = running;
 			rows.push_back(std::move(exportSave));
 			Row importSave;
-			importSave.kind = Kind::Hold; importSave.id = "nximport"; importSave.label = Tr("Import selected player's save");
+			importSave.kind = Kind::Hold; importSave.id = "nximport"; importSave.label = Tr("Take a save from USB");
 			for (const auto& source : m_switchImports) importSave.options.push_back(source.label);
 			int& chosen = m_holdChoice["nximport"];
 			chosen = importSave.options.empty() ? 0 : std::clamp(chosen, 0, (int)importSave.options.size() - 1);
 			importSave.index = chosen;
-			importSave.value = importSave.options.empty() ? Tr("No import found") : importSave.options[chosen] + " · " + Tr("Hold Cross");
-			importSave.description = Tr("From USB/PS5-ECAM-imports/<title ID> or USB/Ryujinx. Replaced saves are retained first.");
-			importSave.help = Tr("Choose the player in Switch Settings before importing. Both account and device files are staged before replacement. The original directories are retained under Eden's save-transfer-recovery folder.");
+			importSave.value = importSave.options.empty() ? Tr("None on a USB drive") : importSave.options[chosen] + " · " + Tr("Hold Cross");
+			importSave.description = Tr("From USB/PS5-ECAM-imports/<title ID>, or a copy of Ryujinx's folder in USB/Ryujinx, as the chosen player's save. The save it replaces is kept.");
+			importSave.help = Tr("Choose the player in Settings > Players first. Every file is copied and checked before the save is replaced, and the save it replaces is kept in Eden's save-transfer-recovery folder.");
 			importSave.dimmed = running || importSave.options.empty(); rows.push_back(std::move(importSave));
 		}
 		return rows;
@@ -1579,7 +1582,7 @@ namespace ps5shell
 		if (page == "files" && IsDs())
 			// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
 			return TrF("Saves: {0}/melonds/saves (a .sav beside the game is taken the first time). Save states: melonds/states. Cheats: "
-					   "melonds/cheats/<game file>.mch, melonDS's format. DSi games, the DS's wireless and its GBA slot are not there.",
+					   "melonds/cheats/<game file>.mch, melonDS's format. A GBA game for Slot-2: melonds/slot2/<game file>.gba. DSi games and the DS's wireless are not there.",
 				ecam_layout::Parent(ps5paths::MelonDs()));
 		if (page == "remote" && !m_settings.remoteScreen)
 			return Tr("On, a QR code here opens the game's second screen in a phone's browser. Nothing to install; the phone must be on the "
@@ -2133,8 +2136,8 @@ namespace ps5shell
 			const auto view = ps5eden::extras::Read(SwitchExtrasContext());
 			std::string error;
 			if (!view.error.empty()) error = view.error;
-			else if (view.profiles.empty()) error = Tr("Choose an existing Switch player first.");
-			else if (ps5saves::StartSwitchExport(m_gameRef, view.profiles[view.profile].id, error)) m_savesMessage = Tr("Exporting…");
+			else if (view.profiles.empty()) error = Tr("Choose a player first, in Settings > Players.");
+			else if (ps5saves::StartSwitchExport(m_gameRef, view.profiles[view.profile].id, error)) m_savesMessage = Tr("Copying to USB…");
 			if (!error.empty()) Toast(error);
 			return;
 		}
@@ -2408,7 +2411,7 @@ namespace ps5shell
 			if (!view.error.empty()) Toast(view.error);
 			else if (!view.profiles.empty())
 			{
-				if (ps5eden::extras::RemoveProfile(context, view.profiles[view.profile].id, error)) Toast(Tr("Player removed; saves and settings are kept"));
+				if (ps5eden::extras::RemoveProfile(context, view.profiles[view.profile].id, error)) Toast(Tr("Player removed: their saves and settings are kept"));
 				else Toast(error);
 			}
 			m_switchExtrasKey.clear();
@@ -2520,9 +2523,9 @@ namespace ps5shell
 			const int selected = m_holdChoice["nximport"];
 			std::string error;
 			if (!view.error.empty()) error = view.error;
-			else if (view.profiles.empty()) error = Tr("Choose an existing Switch player first.");
+			else if (view.profiles.empty()) error = Tr("Choose a player first, in Settings > Players.");
 			else if (selected >= 0 && selected < (int)m_switchImports.size() &&
-				ps5saves::StartSwitchImport(m_gameRef, view.profiles[view.profile].id, m_switchImports[selected].folder, error, m_switchImports[selected].accountSaveId)) m_savesMessage = Tr("Importing…");
+				ps5saves::StartSwitchImport(m_gameRef, view.profiles[view.profile].id, m_switchImports[selected].folder, error, m_switchImports[selected].accountSaveId)) m_savesMessage = Tr("Taking the save…");
 			if (!error.empty()) Toast(error);
 		}
 		else if (id == "gamerestore")
