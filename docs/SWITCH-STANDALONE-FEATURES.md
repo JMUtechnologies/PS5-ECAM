@@ -16,7 +16,11 @@ not been built for or tested on a PS5. Host tests and syntax checks cannot estab
   root and 64 KiB per preset. An already configured custom name is preserved. Refresh reloads
   installed files and settings without continuous filesystem scanning in the launcher loop.
 - Player profiles lists existing Eden players and remembers selection for the signed-in PS5
-  user. It never creates, renames or deletes a profile and never rewrites profiles.dat.
+  user. Create and rename use a UTF-8 name of at most 31 bytes and the standalone's eight-player
+  binary layout. New players start with default settings and must be selected explicitly.
+  Hold Remove to remove a player from the list; their save folders and settings remain.
+  At least one player must remain. The first original profiles.dat is retained as
+  profiles.dat.ecam-before; malformed files and an existing staging file block writes.
 - Switch Settings exposes the existing whole-save USB backup page. Per-game Saves supports
   title-specific discovery, backup, restore and move-aside across account save directories.
 - Per-game ECAM backup excludes other games, profile system data and launcher settings. Restoring
@@ -105,3 +109,10 @@ keys, firmware, save decryption or filesystem conversion is included.
 Host test: `bash tools/tests/test-save-transfer.sh`. Owner qualification must additionally
 check actual PS5 mount semantics, errors, selected profile IDs, data equality, recovery and
 portable export compatibility on copies of saves.
+
+Player management owner checks: create a disposable player, select it, launch a game, rename
+it and confirm its save remains accessible. Remove it and confirm the save directory and
+settings remain on disk, and selection falls back to a valid player. Check the eight-player
+limit and the retained original profile list. Host tests cover binary field preservation,
+invalid names, duplicate identity protection, stale staging and symlink rejection; PS5 UI
+and native Eden interoperability still require owner validation.
