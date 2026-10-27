@@ -100,6 +100,10 @@ namespace ps5settings
 			ReadBool(json, "dsJit", n3ds.dsJit);
 			ReadBool(json, "dsOwnBios", n3ds.dsOwnBios);
 			ReadBool(json, "dsSlot2", n3ds.dsSlot2);
+			ReadInt(json, "dsMicSource", n3ds.dsMicSource, 0, 2);
+			ReadInt(json, "dsTouchX", n3ds.dsTouchX, -20, 20);
+			ReadInt(json, "dsTouchY", n3ds.dsTouchY, -20, 20);
+			ReadInt(json, "dsTouchScale", n3ds.dsTouchScale, 50, 150);
 			ReadInt(json, "nxResolution", n3ds.nxResolution, 0, 6);
 			ReadInt(json, "nxFilter", n3ds.nxFilter, 0, 3);
 			ReadInt(json, "nxAstc", n3ds.nxAstc, 0, 1);
@@ -190,6 +194,10 @@ namespace ps5settings
 			writer.Bool(n3ds.dsJit);
 			writer.Key("dsOwnBios");
 			writer.Bool(n3ds.dsOwnBios);
+			writer.Key("dsTouchX"); writer.Int(n3ds.dsTouchX);
+			writer.Key("dsTouchY"); writer.Int(n3ds.dsTouchY);
+			writer.Key("dsTouchScale"); writer.Int(n3ds.dsTouchScale);
+			writer.Key("dsMicSource"); writer.Int(n3ds.dsMicSource);
 			writer.Key("dsSlot2");
 			writer.Bool(n3ds.dsSlot2);
 			writer.Key("nxResolution");
@@ -666,6 +674,10 @@ namespace ps5settings
 				{"dsJit", nullptr, nullptr, nullptr, &N3ds::dsJit},
 				{"dsOwnBios", nullptr, nullptr, nullptr, &N3ds::dsOwnBios},
 				{"dsSlot2", nullptr, nullptr, nullptr, &N3ds::dsSlot2},
+				{"dsMicSource", nullptr, nullptr, &N3ds::dsMicSource, nullptr, 0, 2},
+				{"dsTouchX", nullptr, nullptr, &N3ds::dsTouchX, nullptr, -20, 20},
+				{"dsTouchY", nullptr, nullptr, &N3ds::dsTouchY, nullptr, -20, 20},
+				{"dsTouchScale", nullptr, nullptr, &N3ds::dsTouchScale, nullptr, 50, 150},
 				{"invariantPosition", nullptr, nullptr, nullptr, &N3ds::invariantPosition},
 				{"hwShaders", nullptr, nullptr, nullptr, &N3ds::hwShaders},
 				{"anaglyph", nullptr, nullptr, nullptr, &N3ds::anaglyph},
@@ -724,7 +736,7 @@ namespace ps5settings
 			"volume"};
 		static const std::vector<std::string> n3ds = {"resolution", "textureFilter", "customTextures", "asyncShaderCompilation", "invariantPosition", "hwShaders", "layout", "border",
 			"volume", "region", "language", "cpuClock", "frameGeneration", "dsRotation", "hiddenTouch", "anaglyph"};
-		static const std::vector<std::string> nds = {"dsFilter", "dsRotation", "hiddenTouch", "dsJit", "layout", "border", "volume", "language", "dsOwnBios", "dsSlot2"};
+		static const std::vector<std::string> nds = {"dsFilter", "dsRotation", "hiddenTouch", "dsJit", "layout", "border", "volume", "language", "dsOwnBios", "dsSlot2", "dsMicSource", "dsTouchX", "dsTouchY", "dsTouchScale"};
 		static const std::vector<std::string> nx = {"nxResolution", "nxFilter", "nxAstc", "nxFrameGeneration", "nxDocked", "nxSpeedLimit", "volume",
 			"nxAntiAliasing", "nxSharpening", "nxController", "nxOutput", "nxHighRefresh", "nxLanguage", "nxMemory", "nxAsyncShaders", "nxFastGpu",
 			"nxUnsafeCpu", "nxUnsafeDma", "nxReactiveFlushing", "nxSkipInvalidation", "nxBlockList", "nxCompactMemory"};
