@@ -2,6 +2,9 @@
 # as after earlier sessions, on the Wii U side's Library, the game played last in focus
 # (shell-first.txt has the first start).
 wait 90
+shot reorganize               # A folder for each system, asked at a start with the old layout
+press circle                  # Later
+wait 30
 shot library                  # the Library: where every side opens
 press right                   # the next game
 wait 25
@@ -70,7 +73,7 @@ shot player-rows
 press circle                  # back on Controls' rows
 wait 20
 press circle
-press down down down down down down # Diagnostics
+press down down down down down down down down # Diagnostics, after Launcher and Play time
 press right cross             # the Setup check
 wait 45
 shot setup

@@ -254,6 +254,7 @@ namespace ps5shell
 													   Tr("Box art and PS5-ECAM's updates."),
 			Icon::Globe});
 		pages.push_back({"launcher", Tr("Launcher"), Tr("Theme, sides, language and text."), Icon::Sparkle});
+		pages.push_back({"playtime", Tr("Play time"), Tr("How long you have played, each side and the most played games."), Icon::Play});
 		pages.push_back({"diagnostics", Tr("Diagnostics"), Tr("The Setup check, logs, caches and this session's details."), Icon::Pulse});
 		// the version always in sight, whatever the credits' length in a language
 		pages.push_back({"about", TrC("app", "About"), std::string(Tr("Who made what.")) + " · " + Tr("Version") + " " + ps5update::Readable(PS5CEMU_VERSION),
@@ -1555,10 +1556,65 @@ namespace ps5shell
 		return rows;
 	}
 
+	namespace
+	{
+		// a play time as hours and minutes
+		std::string Duration(uint64_t minutes)
+		{
+			// tr: a play time under an hour
+			if (minutes < 60)
+				return TrF("{0} min", minutes);
+			// tr: a play time: hours, then minutes
+			return TrF("{0} h {1} min", minutes / 60, minutes % 60);
+		}
+	}
+
+	// Settings > Play time: each side's minutes and how many of its games were played, all sides',
+	// and the most played games (the catalogue's counts: ps5catalog::Ended)
+	std::string Shell::PlayTimeText() const
+	{
+		struct Played
+		{
+			std::string name;
+			const char* side;
+			uint32_t minutes;
+		};
+		const char* sides[4] = {"Wii U", "3DS", "DS", "Switch"};
+		std::vector<Played> games;
+		std::string text;
+		uint64_t all = 0;
+		for (int side = 0; side < 4; side++)
+		{
+			uint64_t minutes = 0;
+			int played = 0;
+			for (const ps5catalog::Entry& entry : ps5catalog::Games((ps5catalog::System)side))
+				if (entry.minutesPlayed > 0)
+				{
+					minutes += entry.minutesPlayed;
+					played++;
+					games.push_back({entry.game.name, sides[side], entry.minutesPlayed});
+				}
+			all += minutes;
+			if (played > 0)
+				// tr: Settings > Play time, a side's line: {1} the side (Wii U, 3DS, DS, Switch), {2} its play time, {0} how many games
+				text += TrP(played, "{1}: {2}, {0} game", "{1}: {2}, {0} games", sides[side], Duration(minutes)) + "\n";
+		}
+		if (games.empty())
+			return Tr("Nothing played yet. A game's time counts from its start to its end, and shows here and on its page.");
+		std::stable_sort(games.begin(), games.end(), [](const Played& a, const Played& b) { return a.minutes > b.minutes; });
+		// tr: Settings > Play time: every side's play time added up
+		text += TrF("In all: {0}", Duration(all)) + "\n\n" + Tr("Most played") + "\n";
+		for (size_t i = 0; i < games.size() && i < 10; i++)
+			text += fmt::format("{}. {}  ·  {}  ·  {}\n", i + 1, games[i].name, Duration(games[i].minutes), games[i].side);
+		return text;
+	}
+
 	std::string Shell::PanelText(const std::string& page) const
 	{
 		if (InGameSettings())
 			return {};
+		if (page == "playtime")
+			return PlayTimeText();
 		if (page == "diagnostics")
 		{
 			std::string text;

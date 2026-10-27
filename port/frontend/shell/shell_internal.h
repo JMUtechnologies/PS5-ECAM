@@ -385,6 +385,7 @@ namespace ps5shell
 		std::vector<Row> SettingRows(const std::string& page);
 		std::vector<Row> SideRows(const std::string& page, const ps5settings::Launcher& settings);
 		std::string PanelText(const std::string& page) const;
+		std::string PlayTimeText() const; // Settings > Play time
 		void ChangeSetting(const Row& row, int step, bool cross);
 		// a row's value changed: in the settings given (the side's, or a game's view of them)
 		bool ApplyRow(ps5settings::Launcher& settings, const Row& row, int step, bool cross);
