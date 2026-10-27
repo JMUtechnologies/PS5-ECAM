@@ -9,7 +9,7 @@ document as all discussed features being implemented.
 | 1: evidence | Single/repeated-run comparisons, JSON/Markdown/HTML reports, console-check manifest, bounded frame buffer, opt-in DS CPU frame-interval CSV export | Capture hooks for other systems, automatic hardware/effective-settings sidecars, actual console data |
 | 2: Switch controls | Mods/cheats/master switches, preset discovery and inheritance, profile selection/create/rename/remove, per-game ECAM backups | Full ECAM profile separation, translations for new strings |
 | 3: integration | Plain-folder transfer and indexed Ryujinx import with account-save selection, staged directory replacement/recovery, shared worker/UI integration | RomM browsing/download/sync, QR pairing, multiplayer changes |
-| 4: system features | Optional DS Slot-2 cartridge attachment and separate working saves, backup support | DSi boot/NAND/DSP, DS/3DS wireless, live camera/microphone, unverified core backports |
+| 4: system features | Optional DS Slot-2 cartridge attachment and separate working saves, backup support, silence/recorded microphone sources, per-game touchpad calibration | DSi boot/NAND/DSP, DS/3DS wireless, live camera/microphone, unverified core backports |
 
 ## Host checks
 
@@ -72,3 +72,32 @@ than making this branch appear to support them.
 For the performance audit and exact implemented/pending items see
 [STANDALONE-PORTING-STATUS.md](STANDALONE-PORTING-STATUS.md). For Switch operations see
 [SWITCH-STANDALONE-FEATURES.md](SWITCH-STANDALONE-FEATURES.md).
+
+## DS recorded microphone
+
+DS System settings exposes Blow noise (the unchanged default), Silence and Recorded WAV, globally
+or per game. This applies on next launch. Hold the existing microphone input (R3 when unassigned)
+to send noise or loop recorded input. Release sends silence and restarts WAV playback next time.
+No live audio capture or recording is added.
+
+Recorded input uses `melonds/microphone/<DS save stem>.wav`, falling back to
+`melonds/microphone.wav` only when the game-specific file is absent. Files must be RIFF WAVE,
+uncompressed signed 16-bit mono PCM, 8000–48000 Hz, no more than 16 MiB. Samples are converted
+with deterministic nearest-neighbor resampling to the 47.6 kHz stream requested by pinned
+melonDS Platform.h. This is functional input, not a high-quality audio resampler. Invalid or
+symlinked inputs abort before constructing the core; files are not changed. All loading happens
+before emulation. The microphone callback only fills the supplied buffer from preloaded samples.
+
+Owner checks: verify default blow games still behave as before; silence stays silent while R3
+is held; a disposable recorded sample is heard by a game that records input; release/repress
+restarts it; each game can override the global source; malformed/missing WAV gives a launch error.
+
+## DS touchpad calibration
+
+DS System settings adds horizontal/vertical offsets (-20% to +20%) and touch sensitivity
+(50% to 150%, centered). Values are global or per game and apply on next launch. Defaults
+0%, 0%, 100% preserve the existing mapping. Calibration affects display-space pad coordinates
+before screen unrotation, so the visible cursor and game receive the same position, including
+rotated layouts. The remote-screen input path stays independent. Owner checks should compare
+center/corners at defaults, positive/negative offsets, limits, 90/180/270-degree rotations,
+hidden-bottom-screen behavior and reopening another game with no overrides.
