@@ -12,6 +12,10 @@ namespace
 	// The Wii Remote pointer's reach: how far the DualSense turns (radians) to cross the screen
 	constexpr float kAimAcross = 0.70f, kAimDown = 0.42f;
 	std::array<std::atomic<bool>, ps5pad::kMaxPlayers> s_wiiRemote{};
+	// Each player's light bar in a colour of its own, as the PS5 lights them (1 blue, 2 red, 3 green, 4 pink), so
+	// four players see who is who: set when the DualSense first answers, again after it comes back
+	constexpr uint8_t kPlayerLight[ps5pad::kMaxPlayers][3] = {{0, 70, 255}, {255, 30, 40}, {30, 210, 70}, {255, 70, 190}};
+	std::array<std::atomic<bool>, ps5pad::kMaxPlayers> s_lit{};
 
 	float StickAxis(uint8 raw)
 	{
@@ -42,8 +46,11 @@ ControllerState PS5PadController::raw_state()
 	if (!ps5pad::Read(m_player, data))
 	{
 		m_touching = false;
+		s_lit[m_player] = false;
 		return result;
 	}
+	if (!s_lit[m_player].exchange(true))
+		ps5pad::SetLightBar(m_player, kPlayerLight[m_player][0], kPlayerLight[m_player][1], kPlayerLight[m_player][2]);
 
 	const ps5pad::Filtered filtered = ps5pad::FilterShortcuts(m_player, data.buttons);
 
