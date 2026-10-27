@@ -58,10 +58,12 @@ checked by reading and compiling. Before a release:
   its reporter. A game folder's mods were laid over the game's DLC and update too; Mario Kart 8 Deluxe
   with its DLC crashed as it booted. Also the likely cause of the Discord's MK8 Deluxe loop after its
   title screen: check with Teaz's and meundies' logs.
-- **Upstream Switch fixes not taken yet** (open PRs on Swordpdf/ProsperoEden, none tested on a PS5):
-  #287 (several updates of one game: the newest's version and control data), #289 (a full audio ring
-  drops its oldest sound instead of stopping the game), #285 (NSZ and XCZ games), #290 (a forwarded game
-  moved into a game folder). Take each once it is merged or tested on a console.
+- **Upstream Switch fixes** (open PRs on Swordpdf/ProsperoEden, none tested on a PS5 by its author):
+  taken as `patches/eden/0012` to `0014` (`a66be65`): #287 (several updates of one game: the newest's
+  version and control data), #289 (a full audio ring drops its oldest sound instead of stopping the
+  game) and #298 (ExecuteProgram, for Metal Gear Solid: Master Collection's launcher). Check each on a
+  console. Not taken yet: #285 (NSZ and XCZ games), #290 (a forwarded game moved into a game folder);
+  take each once it is merged or tested on a console.
 - **Switch games on 8.60** ([#72](https://github.com/premohq/PS5-ECAM/issues/72)): one report that
   they did not start on an earlier version; no log yet.
 - **Wii U unpacked games found but not listed** (Discord: meundies 5 games in the folder, 2 listed;
