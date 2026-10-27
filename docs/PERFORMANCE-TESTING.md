@@ -183,3 +183,13 @@ make test-performance
 The DS diagnostic exporter is opt-in and measures CPU present-return intervals only. These tools
 make captured evidence reviewable; they do not replace full builds or console qualification.
 
+
+### DS session sidecar
+
+Opt-in DS captures now export a matching `.json` with sample count, stop reason, known launch
+settings and build/core revision (or `unknown` if unavailable at compile time). It is a partial
+context template, not an automatically qualified measurement. Fill `game_version`, `scene`,
+`console_model`, `firmware`, `hen` and `cache_state` with actual values. Verify exact build identity
+and augment the partial settings snapshot before comparison. Unknown firmware/HEN/cache values
+are intentionally empty, and the comparison tool rejects the uncompleted sidecar. Capture stops
+at pause/rewind/fast-forward or pending state request to avoid mixing operating conditions.
