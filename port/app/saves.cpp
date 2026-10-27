@@ -697,7 +697,7 @@ namespace ps5saves
 
 	namespace
 	{
-		bool StartTransfer(const GameRef& game, const std::string& profile, const std::string& source, bool importing, std::string& error)
+		bool StartTransfer(const GameRef& game, const std::string& profile, const std::string& source, bool importing, std::string& error, uint64_t accountSaveId = 0)
 		{
 			if (game.side != 3 || !SwitchTitle(game) || profile.size() != 32 ||
 				profile.find_first_not_of("0123456789abcdefABCDEF") != std::string::npos)
@@ -709,7 +709,7 @@ namespace ps5saves
 				s_status = {}; s_status.finished = s_finished;
 				s_status.state = Status::State::Running; s_status.restoring = importing;
 			}
-			s_thread = std::thread([game, profile, source, importing] {
+			s_thread = std::thread([game, profile, source, importing, accountSaveId] {
 				try
 				{
 					const std::string title = fmt::format("{:016X}", game.titleId);
@@ -720,7 +720,7 @@ namespace ps5saves
 					bool done = false;
 					if (importing)
 					{
-						const auto sources = ps5eden::transfer::Discover(source, game.titleId, why);
+						const auto sources = ps5eden::transfer::Discover(source, game.titleId, why, accountSaveId);
 						if (!sources.empty()) done = ps5eden::transfer::Import(sources, account, device,
 							ps5eden::DataFolder() + "/save-transfer-recovery", where, why);
 					}
@@ -755,9 +755,9 @@ namespace ps5saves
 			return true;
 		}
 	}
-	bool StartSwitchImport(const GameRef& game, const std::string& profile, const std::string& sourceRoot, std::string& error)
+	bool StartSwitchImport(const GameRef& game, const std::string& profile, const std::string& sourceRoot, std::string& error, uint64_t accountSaveId)
 	{
-		return StartTransfer(game, profile, sourceRoot, true, error);
+		return StartTransfer(game, profile, sourceRoot, true, error, accountSaveId);
 	}
 	bool StartSwitchExport(const GameRef& game, const std::string& profile, std::string& error)
 	{
