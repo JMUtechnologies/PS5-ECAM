@@ -20,6 +20,7 @@ test-contribution: ## Host checks for standalone integrations, transfers, Slot-2
 	python3 -B tools/tests/test-performance.py
 	python3 -B tools/tests/test-performance-suite.py
 	bash tools/tests/test-eden-extras.sh
+	bash tools/tests/test-profile-management.sh
 	bash tools/tests/test-save-transfer.sh
 	bash tools/tests/test-saves.sh
 	bash tools/tests/test-slot2.sh
