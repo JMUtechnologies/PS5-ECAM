@@ -13,20 +13,21 @@ namespace ps5capture
 	public:
 		struct Sample { uint64_t elapsedUs, intervalUs; };
 		explicit Frames(size_t capacity = 12000) : m_capacity(capacity) {}
-		void Begin() { m_samples.clear(); m_samples.reserve(m_capacity); m_first = m_previous = 0; m_hasPrevious = false; m_active = true; m_complete = false; }
-		void Stop() { m_active = false; }
+		void Begin() { m_samples.clear(); m_samples.reserve(m_capacity); m_first = m_previous = 0; m_hasPrevious = false; m_active = true; m_complete = false; m_reason = "running"; }
+		void Stop() { if (m_active) m_reason = "stopped"; m_active = false; }
 		// Stop at the first pause/rewind rather than inventing frames across a discontinuity.
-		void Discontinuity() { m_active = false; }
+		void Discontinuity() { if (m_active) m_reason = "discontinuity"; m_active = false; }
 		void Record(uint64_t nowUs)
 		{
 			if (!m_active) return;
 			if (!m_hasPrevious) { m_first = m_previous = nowUs; m_hasPrevious = true; return; }
-			if (nowUs <= m_previous) { m_active = false; return; }
-			if (m_samples.size() == m_capacity) { m_complete = true; m_active = false; return; }
+			if (nowUs <= m_previous) { m_reason = "clock"; m_active = false; return; }
+			if (m_samples.size() == m_capacity) { m_complete = true; m_reason = "capacity"; m_active = false; return; }
 			m_samples.push_back({nowUs - m_first, nowUs - m_previous}); m_previous = nowUs;
 		}
 		const std::vector<Sample>& Samples() const { return m_samples; }
 		bool Full() const { return m_complete; }
+		const char* Reason() const { return m_reason; }
 		bool WriteCsv(const std::string& file) const
 		{
 			FILE* out = std::fopen(file.c_str(), "wx");
@@ -44,5 +45,6 @@ namespace ps5capture
 		uint64_t m_first = 0, m_previous = 0;
 		bool m_active = false, m_complete = false;
 		bool m_hasPrevious = false;
+		const char* m_reason = "disabled";
 	};
 }
