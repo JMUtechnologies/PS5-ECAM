@@ -7,7 +7,7 @@ document as all discussed features being implemented.
 | Stage | Implemented source in this branch | Still absent |
 |---|---|---|
 | 1: evidence | Single/repeated-run comparisons, JSON/Markdown/HTML reports, console-check manifest, bounded frame buffer, opt-in DS CPU frame-interval CSV export | Capture hooks for other systems, automatic hardware/effective-settings sidecars, actual console data |
-| 2: Switch controls | Mods/cheats/master switches, preset discovery and inheritance, existing profile selection, per-game ECAM backups | Profile create/rename/delete, full ECAM profile separation, translations for new strings |
+| 2: Switch controls | Mods/cheats/master switches, preset discovery and inheritance, profile selection/create/rename/remove, per-game ECAM backups | Full ECAM profile separation, translations for new strings |
 | 3: integration | Plain-folder and indexed Ryujinx import/export, staged directory replacement/recovery, shared worker/UI integration | RomM browsing/download/sync, QR pairing, multiplayer changes |
 | 4: system features | Optional DS Slot-2 cartridge attachment and separate working saves, backup support | DSi boot/NAND/DSP, DS/3DS wireless, live camera/microphone, unverified core backports |
 
