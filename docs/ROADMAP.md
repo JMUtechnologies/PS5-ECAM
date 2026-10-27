@@ -93,6 +93,15 @@ checked by reading and compiling. Before a release:
 - **PR #83 and PR #85** (yeager, the Swedish review; #85 is #83 again with his GitHub address): taken
   as `8e309cf`, his commit. Close both with the release, thanking him; he is in the README's
   contributors.
+- **PR #86 and PR #84** (JMUtechnologies, co-founder): #86's 102 commits taken as `0c9cb02`, his
+  commit, which has #84's tools too; then `e90f912` (a DS game starts without its Slot-2 cartridge
+  or recorded microphone), `8a71a18` (Eden's mod readers as patched), `02ae046` (the system
+  folders), `3048d1f` (its texts in every language). Close both with the release, thanking him. To
+  check on a console: a Switch game's Mods and Cheats (one off, a 30/60 FPS group), Picture effects
+  for the side and a game, Players (choose, new, rename, remove, then a game on each), a game's save
+  to USB and back, a Ryujinx save; on the DS, Pal Park with a GBA game in `slot2`, Slot-2 on with a
+  game that has none, the microphone's three choices (a missing WAV too), touch calibration, and a
+  capture with `capture-frames`.
 
 ### Lighter
 
@@ -246,6 +255,9 @@ Each idea done is marked **Done** where it is listed below, with its commit.
 | [S8](#s8) | [`b436783`](https://github.com/premohq/PS5-ECAM/commit/b436783) | An update keeps the version it replaces; **Go back to** in Settings > Online; **Skip this version** on the prompt |
 | [I4](#i4) | [`759f8e3`](https://github.com/premohq/PS5-ECAM/commit/759f8e3) | **3D for red and cyan glasses** in the 3DS side's Graphics (and each game's) |
 | [G3](#g3) | [`1d54168`](https://github.com/premohq/PS5-ECAM/commit/1d54168) | Quit to the library saves a state; **Resume where you left off** in the game's Options menu (3DS and DS) |
+| [N2](#n2) | `0c9cb02` | A Switch game's **Mods** and **Cheats**, each on or off, and **Picture effects** (JMUtechnologies, #86) |
+| [N4](#n4) | `0c9cb02` | A Switch game's **Saves**: its backup and restore, to a USB drive and back, Ryujinx's too; **Players** (JMUtechnologies, #86) |
+| [D1](#d1) | `0c9cb02`, `e90f912` | **A GBA cartridge in Slot-2** for the DS, off by default; the DS's microphone from a recording, and touch calibration (JMUtechnologies, #86) |
 
 Being worked on separately (not here): the Switch side's in-game menu, its settings and button
 remapping ([N1](#n1)), its rooms ([I2](#i2)), ReShade on the Wii U side ([I1](#i1)), and the box art
@@ -430,7 +442,7 @@ The Switch side's **Controls** page has only Vibration (`port/frontend/shell/set
 `!IsSwitch()` checks). Needed: the button map, A/B on Circle or Cross like the other sides, the
 controller type (Pro Controller, Joy-Con pair, handheld), and players 2 to 4.
 
-<a id="n2"></a>**N2. Mods and cheats** (M)
+<a id="n2"></a>**N2. Mods and cheats** (M) · **Done:** `0c9cb02` (JMUtechnologies, #86), with Eden's ReShade looks
 `/data/ps5cemu/eden/mods` is there, but nothing in the app lists or turns on a mod or a cheat now. A
 game's menu could list them with a switch each, as the Add-ons tab of Eden on a PC does.
 
@@ -438,7 +450,7 @@ game's menu could list them with a switch each, as the Add-ons tab of Eden on a 
 The library pairs a game with the update and DLC beside it, but does not show it. Show which version
 will run and which DLC is there, on the game's page.
 
-<a id="n4"></a>**N4. Saves on the Switch side** (S)
+<a id="n4"></a>**N4. Saves on the Switch side** (S) · **Done:** `0c9cb02` (JMUtechnologies, #86), but for JKSV's and Checkpoint's layouts
 The game menu leaves **Saves** out for Switch games (`OpenGameMenu`, `!IsSwitch()`). Back up and restore
 one game's save, and take one from a JKSV or Checkpoint dump made on a real Switch.
 
@@ -458,7 +470,7 @@ The guide explains how to copy saves from Cemu or Citra on a PC by FTP, path by 
 could import them from a USB drive itself, in the PC emulators' layouts, SaveMii's for the Wii U and
 Checkpoint's for the 3DS. Apollo Save Tool does this on the PS4.
 
-<a id="d1"></a>**D1. The GBA slot** (M)
+<a id="d1"></a>**D1. The GBA slot** (M) · **Done:** `0c9cb02`, `e90f912` (JMUtechnologies, #86)
 melonDS can put a GBA game and its save in the DS's slot 2: Pokémon's Pal Park, and the DS games that
 read a GBA cartridge for extras. The guide lists the GBA slot as not there.
 

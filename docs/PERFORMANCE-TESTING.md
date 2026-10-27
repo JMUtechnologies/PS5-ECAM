@@ -10,9 +10,12 @@ from standalone emulator ports. It is not a performance optimization itself.
 ## Capture contract
 
 Use an instrumented build or an external frame-time capture source that exports consecutive
-frame intervals. This branch includes an opt-in DS CPU present-return interval exporter, described
-in [OWNER-IMPLEMENTATION-HANDOFF.md](OWNER-IMPLEMENTATION-HANDOFF.md); it does not automatically
-produce metadata or capture the other systems. Ordinary periodic
+frame intervals. The DS side has one: an empty `melonds/capture-frames` file in its folder makes
+each DS game record the time each frame's Present returns (12,000 at most, in memory), and write
+them when the game ends as `melonds/captures/<game>-<time>.csv`, with a `.json` beside it holding
+what the app knows (build, settings, why the capture stopped) and empty fields for the rest. A
+pause, rewind, fast forward or save state ends a capture early. It does not capture the other
+systems. Ordinary periodic
 FPS log lines and the sampling profiler's `profile.bin` are not compatible inputs. Do not
 convert their averages into invented frame samples.
 

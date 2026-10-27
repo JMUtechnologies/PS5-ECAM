@@ -159,7 +159,21 @@ New in 4.0.0: a side of its own, in melonDS's green, to the right of the 3DS.
 - No BIOS needed: melonDS's own replacements run most games. Your own DS's `bios7.bin`, `bios9.bin`
   and `firmware.bin` in `/data/melonds/bios` are used when they are there
   (**Settings > System**).
-- Not there: DSi games, the DS's wireless and its GBA slot.
+- **The microphone** (**Settings > System**, for the side or a game): what the DS hears while R3 is
+  held. **Noise** (as before), **Silence**, or **A recording**: a WAV file (16-bit mono PCM, 8,000 to
+  48,000 Hz, up to 16 MB) in `/data/melonds/microphone/<the game's file name>.wav`, or
+  `/data/melonds/microphone.wav` for every game, played over and over while R3 is held. Nothing is
+  recorded from a real microphone. A recording that cannot be read gives noise, and a notification.
+- **Touch calibration** (**Settings > System**): moves the touchpad's cursor left, right, up or down
+  (up to 20%) and scales it (50% to 150%), for a game where touches land off the mark. The remote
+  touch screen is not changed.
+- **A GBA cartridge in Slot-2** (**Settings > System**, off by default): for the DS games that read a
+  GBA game in their second slot, as Pokémon Diamond and Pearl's Pal Park does. Put the GBA game in
+  `/data/melonds/slot2` named as the DS game's file, ending `.gba`, with its `.sav` beside it if it
+  has one; the cartridge's save is then kept in `/data/melonds/slot2-saves` (and in backups), and the
+  files you put in `slot2` are never written. A DS game with no cartridge there starts with the slot
+  empty. It does not play GBA games.
+- Not there: DSi games and the DS's wireless.
 
 ## Nintendo Switch (Eden)
 
@@ -202,8 +216,22 @@ New in 5.0.0: a side of its own, in the Switch's red, to the right of the DS.
 - Eden reaches `/data` as PS5-ECAM does: through etaHEN with `PPSA99360` in its app jailbreak list
   (or OnionHEN's `exact_title_ids`), else through its own helper and the console's ELF loader on port
   9021. Without it Eden reads no keys or games, and its launcher says so.
+- **Mods and cheats**, each on or off (a game's **Game settings > Mods** and **Cheats**): the ones in
+  the game's `mods` and `cheats` folders (see [Game files](#nintendo-switch)) and in its game folder,
+  listed and grouped as Eden applies them, with a switch for all of them. Choices apply from the
+  game's next start; the files are never moved.
+- **Picture effects** (**Settings > Picture effects**, or a game's): Eden's ReShade looks over the
+  picture (Anime, Cinematic, Clean, Dreamy, Retro, Vivid, or Off), or your own: `.fxp` presets in
+  the game's `reshade` folder or in `/data/eden/user/post_presets`.
+- **Players** (**Settings > Players**): Eden's players, each with saves of their own. Choose who plays
+  (remembered for each PS5 user), make a new one, rename one, or remove one from the list (their
+  saves and settings stay; the list from before is kept as `profiles.dat.ecam-before`).
 - Saves are Eden's, in `/data/eden/user/nand/user/save`. **Back up to USB** takes them, with
-  Eden's user profiles, as it does every side's saves.
+  Eden's user profiles, as it does every side's saves. A game's **Saves** backs up and restores that
+  game's alone, and copies the chosen player's save to a USB drive (`PS5-ECAM-exports`, as folders
+  another emulator can take) or takes one from it: `PS5-ECAM-imports/<title ID>` with the same
+  folders, or a copy of Ryujinx's folder in `Ryujinx` on the drive. Every file is copied and checked
+  before the save is replaced, and the save it replaces is kept in `/data/eden/save-transfer-recovery`.
 
 ## Game files
 
@@ -599,15 +627,18 @@ drive: [below](#everything-on-the-apps-drive)). Your game files are wherever you
 │   ├── states/                     DS save states
 │   ├── cheats/                     DS cheats, <game file>.mch
 │   ├── archives.bin                what the library read of DS games in archives
+│   ├── slot2/, slot2-saves/        GBA games for Slot-2, <game file>.gba (and .sav); their saves
+│   ├── microphone/                 recordings for the microphone, <game file>.wav (or microphone.wav)
 │   └── bios/                       your DS's bios7.bin, bios9.bin and firmware.bin, if you add them
 ├── eden/                           the Switch's, always in /data (Eden's program keeps it there)
 │   ├── keys/                       your Switch's prod.keys and title.keys
 │   ├── firmware/                   your Switch's firmware
 │   ├── roms/                       default Switch game folder
 │   ├── updates/, mods/             updates and DLC, mods and cheats
-│   ├── user/                       Eden's storage: saves in user/nand/user/save
+│   ├── user/                       Eden's storage: saves in user/nand/user/save, your looks in user/post_presets
+│   ├── save-transfer-recovery/     saves a save taken from USB replaced
 │   ├── covers/                     games' icons and names, once Eden has read them
-│   ├── config/prosperoeden.json    ProsperoEden's own settings
+│   ├── config/prosperoeden.json    ProsperoEden's own settings (mods, cheats, looks and players chosen)
 │   └── logs/                       Eden's logs (Copy logs to USB takes them)
 └── ps5cemu/                        the launcher's
     ├── ps5cemu.json                launcher settings
