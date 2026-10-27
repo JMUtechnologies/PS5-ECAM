@@ -84,6 +84,7 @@ namespace ps5saves
 			Data,	  // the 3DS's save data, or the DS's save
 			ExtData,  // the 3DS's extra data
 			States,	  // save states
+			Slot2,    // optional DS Slot-2 cartridge's working save
 		} kind = Kind::Data;
 		uint32_t account = 0;
 		std::vector<std::string> paths; // the files or folders it is
@@ -101,6 +102,10 @@ namespace ps5saves
 	std::vector<Backup> FindGameBackups(const GameRef& game);
 	// This game's saves alone from a backup, what is there now moved aside first
 	bool StartGameRestore(const Backup& backup, const GameRef& game, std::string& error);
+	// Plain-folder/Ryujinx transfer for one Switch title and the explicitly selected existing
+	// player. Runs on the same worker as backups; Finish() waits before a game can start.
+	bool StartSwitchImport(const GameRef& game, const std::string& profile, const std::string& sourceRoot, std::string& error);
+	bool StartSwitchExport(const GameRef& game, const std::string& profile, std::string& error);
 
 	// Resume where you left off: the state a 3DS or DS game saves as it is quit to the library, in a
 	// slot the menus do not show (kResumeSlot: Azahar's azahar/states/<title ID>.11.cst, melonDS's
@@ -109,4 +114,3 @@ namespace ps5saves
 	// Its file for a game (side 1 the 3DS, 2 the DS, as GameRef has them), or empty for another side
 	std::string ResumeState(const GameRef& game);
 }
-
