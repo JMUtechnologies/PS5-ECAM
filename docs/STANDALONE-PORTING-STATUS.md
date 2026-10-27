@@ -11,7 +11,7 @@ ProsperoEdenX pin `a26ba788222465ec7fb94dc813958fc749734e07`.
 | 1–2 | Individual Switch cheats/mods exposed using the pinned standalone readers |
 | 3–4 | Global/per-game bundled ReShade preset controls with Off/Default |
 | 5 | Custom .fxp names discovered in global/game folders; existing selections retained |
-| 6 | Select existing players; profile creation/editing not implemented |
+| 6 | Select, create, rename and remove players; removal retains saves/settings |
 | 7–8 | Existing standalone per-profile storage is reused for these controls; no separate ECAM history or full settings isolation added |
 | 9–10 | Per-game ECAM USB backup/restore and selected-player plain-folder import/export |
 | 11 | Indexed Ryujinx import through USB/Ryujinx; first matching account/device, no Ryujinx-user selector |
