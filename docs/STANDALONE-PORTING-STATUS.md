@@ -14,7 +14,7 @@ ProsperoEdenX pin `a26ba788222465ec7fb94dc813958fc749734e07`.
 | 6 | Select, create, rename and remove players; removal retains saves/settings |
 | 7–8 | Existing standalone per-profile storage is reused for these controls; no separate ECAM history or full settings isolation added |
 | 9–10 | Per-game ECAM USB backup/restore and selected-player plain-folder import/export |
-| 11 | Indexed Ryujinx import through USB/Ryujinx; first matching account/device, no Ryujinx-user selector |
+| 11 | Indexed Ryujinx import through USB/Ryujinx; explicit account-save selector by save ID, shared device save included |
 | 12–16 | RomM browsing/queue/sync/conflicts/QR pairing pending |
 | 17 | Audio haptics audit/console validation pending |
 
