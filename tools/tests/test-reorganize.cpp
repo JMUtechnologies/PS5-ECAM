@@ -16,6 +16,16 @@
 
 namespace fs = std::filesystem;
 
+#ifdef REFUSED_LSTAT
+// /data as ShadowMountPlus 1.7 mounts it into an app without a HEN: every lstat refused with EPERM, stat
+// answered. Linked with --wrap=lstat, so the code under test gets this one (test-reorganize.sh)
+extern "C" int __wrap_lstat(const char*, struct stat*)
+{
+	errno = EPERM;
+	return -1;
+}
+#endif
+
 static void Check(bool ok, const std::string& what)
 {
 	if (!ok)

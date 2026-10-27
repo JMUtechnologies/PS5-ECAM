@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Tue, 27 Oct 2026 03:51:06 +0000
+Subject: [PATCH] Find the Switch side's folders where /data refuses lstat
+
+ShadowMountPlus 1.7 mounts /data into an app without a HEN with lstat refused (EPERM) and stat
+answered. ecam_layout's Present took every refused path for one that is there: an install without
+/data/ps5cemu/eden still looked for its files there, and PS5-ECAM's Reorganize could move nothing.
+Status takes stat's answer there, as nothing on /data is a link. The same header as PS5-ECAM's
+port/app/system_layout.h.
+---
+ headless/ecam_layout.h | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/headless/ecam_layout.h b/headless/ecam_layout.h
+index 7b30290..bbe88b2 100644
+--- a/headless/ecam_layout.h
++++ b/headless/ecam_layout.h
+@@ -22,10 +22,18 @@ namespace ecam_layout
+         const std::string parent = Parent(shared);
+         return parent + (parent == "/" ? "" : "/") + system;
+     }
++    // A path's own status, a link's rather than its target's. ShadowMountPlus 1.7 mounts /data into an
++    // app without a HEN with lstat refused (EPERM) and stat answered: there, stat's, as nothing on /data
++    // is a link
++    inline int Status(const std::string& path, struct stat& info)
++    {
++        if (lstat(path.c_str(), &info) == 0) return 0;
++        return errno == EPERM ? stat(path.c_str(), &info) : -1;
++    }
+     inline bool Present(const std::string& path)
+     {
+         struct stat info{};
+-        return lstat(path.c_str(), &info) == 0 || (errno != ENOENT && errno != ENOTDIR);
++        return Status(path, info) == 0 || (errno != ENOENT && errno != ENOTDIR);
+     }
+     inline bool Activated(const std::string& directory)
+     {

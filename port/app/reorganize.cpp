@@ -84,9 +84,9 @@ namespace ps5reorganize
 		bool Check(const std::string& from, const std::string& to, Layout& layout)
 		{
 			struct stat source{}, target{};
-			if (lstat(from.c_str(), &source) != 0)
+			if (ecam_layout::Status(from, source) != 0)
 				return true;
-			if (lstat(to.c_str(), &target) != 0)
+			if (ecam_layout::Status(to, target) != 0)
 			{
 				std::string parent = ecam_layout::Parent(to);
 				struct stat there{};
@@ -135,14 +135,14 @@ namespace ps5reorganize
 		bool MoveInto(const std::string& from, const std::string& to, std::string& error)
 		{
 			struct stat source{}, target{};
-			if (lstat(from.c_str(), &source) != 0)
+			if (ecam_layout::Status(from, source) != 0)
 			{
 				if (errno == ENOENT)
 					return true;
 				error = from + ": " + std::strerror(errno);
 				return false;
 			}
-			if (lstat(to.c_str(), &target) != 0)
+			if (ecam_layout::Status(to, target) != 0)
 			{
 				MakeFolders(ecam_layout::Parent(to));
 				if (rename(from.c_str(), to.c_str()) == 0)

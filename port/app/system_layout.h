@@ -22,10 +22,18 @@ namespace ecam_layout
         const std::string parent = Parent(shared);
         return parent + (parent == "/" ? "" : "/") + system;
     }
+    // A path's own status, a link's rather than its target's. ShadowMountPlus 1.7 mounts /data into an
+    // app without a HEN with lstat refused (EPERM) and stat answered: there, stat's, as nothing on /data
+    // is a link
+    inline int Status(const std::string& path, struct stat& info)
+    {
+        if (lstat(path.c_str(), &info) == 0) return 0;
+        return errno == EPERM ? stat(path.c_str(), &info) : -1;
+    }
     inline bool Present(const std::string& path)
     {
         struct stat info{};
-        return lstat(path.c_str(), &info) == 0 || (errno != ENOENT && errno != ENOTDIR);
+        return Status(path, info) == 0 || (errno != ENOENT && errno != ENOTDIR);
     }
     inline bool Activated(const std::string& directory)
     {
