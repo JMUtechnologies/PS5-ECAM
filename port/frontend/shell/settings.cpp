@@ -937,6 +937,16 @@ namespace ps5shell
 						"and this is on. Without them, its own replacements (FreeBIOS) run most games as well. Applies to the next game.",
 						ps5melonds::Root() + "/bios")),
 				"dsOwnBios");
+			std::vector<std::string> touchOffsets, touchScales;
+			for (int value = -20; value <= 20; value++) touchOffsets.push_back(fmt::format("{}%", value));
+			for (int value = 50; value <= 150; value++) touchScales.push_back(fmt::format("{}%", value));
+			const auto touchHelp = Tr("Adjusts the touchpad cursor across the displayed screen, before rotation. Defaults: offsets 0%, scale 100%. Applies on next launch; remote touch is unchanged.");
+			own(choice("dstouchx", Tr("Touch horizontal offset"), touchOffsets, hand.dsTouchX + 20, touchHelp, touchHelp), "dsTouchX");
+			own(choice("dstouchy", Tr("Touch vertical offset"), touchOffsets, hand.dsTouchY + 20, touchHelp, touchHelp), "dsTouchY");
+			own(choice("dstouchscale", Tr("Touch sensitivity"), touchScales, hand.dsTouchScale - 50, touchHelp, touchHelp), "dsTouchScale");
+			own(choice("dsmic", Tr("Microphone source"), {Tr("Blow noise"), Tr("Silence"), Tr("Recorded WAV")}, hand.dsMicSource,
+				Tr("Hold R3 to send the selected input. Applies on next launch."),
+				TrF("Use 16-bit mono PCM WAV, 8000 to 48000 Hz, up to 16 MiB: {0}/microphone/<DS filename>.wav or microphone.wav. Recorded input loops while held and restarts after release. This does not record a live microphone.", ps5melonds::Root())), "dsMicSource");
 			own(toggle("dsslot2", Tr("GBA cartridge in Slot-2"), hand.dsSlot2,
 				Tr("Optional cartridge interactions in DS games; not GBA game execution."),
 				TrF("Put <DS game filename>.gba and an optional matching .sav in {0}/slot2. Working copies of its saves go to slot2-saves; original cartridge files are not changed. Applies on next launch.", ps5melonds::Root())), "dsSlot2");
@@ -1624,6 +1634,11 @@ namespace ps5shell
 			hand.language = std::clamp(index - 1, -1, 11);
 		else if (id == "cpuclock")
 			hand.cpuClock = kClocks[std::clamp(index, 0, (int)std::size(kClocks) - 1)];
+		else if (id == "dstouchx") hand.dsTouchX = std::clamp(index - 20, -20, 20);
+		else if (id == "dstouchy") hand.dsTouchY = std::clamp(index - 20, -20, 20);
+		else if (id == "dstouchscale") hand.dsTouchScale = std::clamp(index + 50, 50, 150);
+		else if (id == "dsmic")
+			hand.dsMicSource = std::clamp(index, 0, 2);
 		else if (id == "dsfilter")
 			hand.dsFilter = std::clamp(index, 0, 2);
 		else if (id == "dsrotation")
