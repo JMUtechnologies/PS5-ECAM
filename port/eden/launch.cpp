@@ -60,15 +60,19 @@ namespace ps5eden
 		std::vector<std::string> args = {"--rom", game.path.string()};
 		if (exitAfterGame)
 			args.push_back("--exit-after-game");
+		// where the side lists its games from: a game in a folder of its own there brings that folder's
+		// update, DLC and mods, as one in Eden's roms/ does (patches/eden 0018)
+		Set(args, "games_folder=" + ScanFolder(nx.gamesFolder));
 		Set(args, std::string("resolution=") + kResolutions[std::clamp(nx.nxResolution, 0, 6)]);
 		Set(args, std::string("upscaling_filter=") + kFilters[std::clamp(nx.nxFilter, 0, 3)]);
 		Set(args, std::string("astc_textures=") + kAstc[std::clamp(nx.nxAstc, 0, 1)]);
 		Set(args, std::string("console_mode=") + (nx.nxDocked ? "docked" : "handheld"));
-		// ProsperoEden's frame generation with MihawkGen, whose network it ships (Lossless Scaling would
-		// need the player's own copy), and Eden's speed limit (patches/eden 0006)
+		// ProsperoEden's frame generation: Lossless Scaling's when the player's own Lossless.dll is where
+		// Eden loads it (#81: steadier than MihawkGen, with fewer artefacts on grass and water), else
+		// MihawkGen, whose network it ships; and Eden's speed limit (patches/eden 0006)
 		Set(args, std::string("frame_gen=") + (nx.nxFrameGeneration ? "1" : "0"));
 		if (nx.nxFrameGeneration)
-			Set(args, "frame_gen_method=mihawkgen");
+			Set(args, std::string("frame_gen_method=") + (LosslessFound() ? "lsfg" : "mihawkgen"));
 		Set(args, std::string("speed_limit=") + kSpeedLimits[std::clamp(nx.nxSpeedLimit, 0, 4)]);
 		Set(args, "volume=" + std::to_string(std::clamp(nx.volume, 0, 100)));
 		Set(args, std::string("fps_overlay=") + (nx.performance ? "1" : "0"));
@@ -113,6 +117,8 @@ namespace ps5eden
 			return;
 		}
 		ps5log::Line("[switch] starting {} in Eden ({})", game.name, game.path.string());
+		if (forGame.nx.nxFrameGeneration)
+			ps5log::Line("[switch] frame generation: {} {}", LosslessFound() ? "Lossless Scaling, from" : "MihawkGen, no Lossless.dll at", LosslessFile());
 		ps5emu::LoadExecApp(kProgram, GameArguments(game, forGame, exitAfterGame), true, RequestFile());
 		error = ps5lang::Tr("The console did not start Eden. The boot log says what it answered.");
 	}

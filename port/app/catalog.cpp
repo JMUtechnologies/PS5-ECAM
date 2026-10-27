@@ -78,6 +78,7 @@ namespace ps5catalog
 				entry.game.version = (uint16_t)Int(item, "version");
 				entry.game.hasUpdate = item.HasMember("hasUpdate") && item["hasUpdate"].IsBool() && item["hasUpdate"].GetBool();
 				entry.game.dlcCount = (uint32_t)Int(item, "dlc");
+				entry.game.versionName = String(item, "versionName");
 				entry.game.format = String(item, "format");
 				entry.game.publisher = String(item, "publisher");
 				entry.game.gameId = String(item, "gameId");
@@ -130,6 +131,11 @@ namespace ps5catalog
 				writer.Bool(entry.game.hasUpdate);
 				writer.Key("dlc");
 				writer.Int((int)entry.game.dlcCount);
+				if (!entry.game.versionName.empty())
+				{
+					writer.Key("versionName"); // a Switch game's update's version, as the game shows it
+					writer.String(entry.game.versionName.c_str());
+				}
 				writer.Key("format");
 				writer.String(entry.game.format.c_str());
 				writer.Key("publisher");

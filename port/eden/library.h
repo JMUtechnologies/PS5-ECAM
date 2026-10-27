@@ -38,6 +38,10 @@ namespace ps5eden
 	std::string ScanFolder(const std::string& folder);
 	bool KeysFound();	  // prod.keys in Eden's keys/
 	bool FirmwareFound(); // anything in Eden's firmware/
+	// Where Eden loads Lossless Scaling's frame generation from, the player's own copy of the
+	// program's Lossless.dll (its user/lossless/, #81); and whether it is there
+	std::string LosslessFile();
+	bool LosslessFound();
 	// Whether the app has the Switch side's program (eden/eboot.bin in its folder)
 	bool Available();
 

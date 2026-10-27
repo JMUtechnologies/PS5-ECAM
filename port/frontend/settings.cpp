@@ -361,7 +361,10 @@ namespace ps5settings
 			settings.nds.gamesFolder = ps5paths::MelonDs() + "/games";
 		if (json.HasMember("switch") && json["switch"].IsObject())
 			ReadN3ds(json["switch"], settings.nx, false);
-		if (settings.nx.gamesFolder == std::string(ps5paths::kDefaultRoot) + "/eden/roms")
+		// the Switch's default games folder, saved while Eden's folder was another (/data/ps5cemu/eden,
+		// or /data/eden before it went beside the others on the app's drive): where Eden's folder is now
+		if (settings.nx.gamesFolder == std::string(ps5paths::kDefaultRoot) + "/eden/roms" ||
+			settings.nx.gamesFolder == ecam_layout::Sibling(ps5paths::kDefaultRoot, "eden") + "/roms")
 			settings.nx.gamesFolder = ps5paths::Eden() + "/roms";
 		if (json.HasMember("games") && json["games"].IsObject())
 			for (const auto& game : json["games"].GetObject())

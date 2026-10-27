@@ -48,11 +48,13 @@ namespace ps5eden::nx
 		uint64_t titleId = 0;
 		Kind kind = Kind::Unknown;
 		std::string name;		   // the game's own, from its control data; empty when not read
+		std::string version;	   // its version as the game shows it ("1.2.0"), from its control data
 		std::vector<uint8_t> icon; // its icon (JPEG), when asked for and read
 	};
-	// What a file is: its title ID and kind from its NCAs' headers, and its name (and, with icon, its
-	// icon) from its control NCA. False, with why, when it cannot be read as a package at all; a package
-	// whose control NCA cannot be read (no key for it) is still true, without a name.
+	// What a file is: its title ID and kind from its NCAs' headers, and a game's or an update's name and
+	// version (and, with icon, a game's icon) from its control NCA. False, with why, when it cannot be
+	// read as a package at all; a package whose control NCA cannot be read (no key for it) is still true,
+	// without a name.
 	bool Read(const std::string& path, const Keys& keys, bool icon, Info& info, std::string& why);
 
 	// An icon (JPEG) as the cover TGA Eden keeps and the launcher draws (32-bit, top-down), written

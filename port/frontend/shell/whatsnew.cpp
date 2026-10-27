@@ -24,16 +24,24 @@ namespace ps5shell
 
 		// the release notes' highlights: changed with each release that has something to say
 		const News kNews[] = {
-			// tr: What's new: the Switch side, Eden in ProsperoEden's PS5 port
-			{Icon::Play, TrMark("Nintendo Switch"), TrMark("Switch games on Eden, a fourth system, with the app's own loading screen and in-game menu.")},
-			// tr: What's new: the app's new name, PS5-ECAM (left as it is)
-			{Icon::Sparkle, TrMark("A new name: PS5-ECAM"), TrMark("Four consoles in one app, and a new icon to match.")},
-			{Icon::Drive, TrMark("Games in archives"), TrMark("Wii U, 3DS and DS games in .zip, .7z and .rar files, unpacked as they start.")},
-			{Icon::Screens, TrMark("Nintendo DS"), TrMark("DS games on melonDS, a third system beside the Wii U and the 3DS.")},
-			{Icon::Home, TrMark("Games on your home screen"), TrMark("Add to home screen gives a game a tile of its own that starts it at once.")},
-			{Icon::Drive, TrMark("Network shares"), TrMark("Play games from your PC or NAS, over SMB or NFS.")},
-			{Icon::Star, TrMark("RetroAchievements"), TrMark("Achievements in DS games: sign in from Settings > Online.")},
-			{Icon::Pulse, TrMark("Faster Wii U games"), TrMark("Breath of the Wild near 60 fps at 1440p, and steadier at 4K.")},
+			// tr: What's new: each system's files in a folder of its own (/data/cemu, /data/azahar...), which Reorganize moves an install from before into
+			{Icon::Folder, TrMark("A folder for each system"), TrMark("Wii U, 3DS, DS and Switch files each in a folder of their own, moved there in a moment by Reorganize.")},
+			// tr: What's new: the app installed on a USB drive keeps every system's files on that drive
+			{Icon::Usb, TrMark("Everything on your USB drive"), TrMark("With the app on a USB drive, every system's files can go beside it, the Switch's too.")},
+			// tr: What's new: a Switch game's update and DLC files are found next to it, and its page shows them
+			{Icon::Download, TrMark("Updates and DLC"), TrMark("A Switch game's update and DLC are found beside it, in any games folder, and its page shows them.")},
+			// tr: What's new: the Switch side's Mods and Cheats pages, its players, and its saves to a USB drive and back
+			{Icon::Gear, TrMark("Switch mods and cheats"), TrMark("Choose a game's mods and cheats, add players, and take saves to USB and back.")},
+			// tr: What's new: Lossless Scaling's frame generation for Switch games; Lossless.dll and MihawkGen are names, left as they are
+			{Icon::Sparkle, TrMark("Frame generation"), TrMark("Switch games use Lossless Scaling with your own Lossless.dll: steadier than MihawkGen.")},
+			// tr: What's new: an update of PS5-ECAM itself installs fast
+			{Icon::Pulse, TrMark("Updates in a minute"), TrMark("A new version installs in about a minute instead of half an hour, and can be stopped.")},
+			// tr: What's new: leaving a 3DS or DS game shows the library without the app starting again
+			{Icon::Screens, TrMark("Straight back to the library"), TrMark("Leaving a 3DS or DS game shows the library at once, without the app starting over.")},
+			// tr: What's new: each game's play time is counted and shown
+			{Icon::Play, TrMark("Play time"), TrMark("How long you've played each game, in the library and on its page.")},
+			// tr: What's new: an installed update or DLC can be taken out again from a game's Options menu
+			{Icon::Check, TrMark("Remove its update or DLC"), TrMark("In a Wii U or 3DS game's Options, for one that keeps it from starting.")},
 		};
 
 		constexpr int kColumns = 3;

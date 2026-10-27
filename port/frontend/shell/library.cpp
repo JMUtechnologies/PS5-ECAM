@@ -668,6 +668,8 @@ namespace ps5shell
 			if (IsWiiU() && entry.hasUpdate)
 				// tr: the update a Wii U game has installed ({0}: its version, as 208)
 				facts.push_back(TrF("Update v{0}", entry.version));
+			else if (IsSwitch() && entry.hasUpdate && !entry.versionName.empty())
+				facts.push_back(TrF("Update v{0}", entry.versionName)); // a Switch game's, as it shows it (1.2.0)
 			if (entry.dlcCount)
 				facts.push_back(TrP(entry.dlcCount, "{0} DLC", "{0} DLC"));
 			canvas.Text(Style({22, ui::Weight::Regular, 1.0f}), kSafeX + name.width + 16, 548, Facts(facts), Secondary(), 1920 - 2 * kSafeX - name.width - 16, 1);

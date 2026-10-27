@@ -848,6 +848,19 @@ namespace ps5emu
 	}
 
 	void CancelInstall() { s_install.state = InstallStatus::State::Cancelled; }
+	// the samples' installed update and DLC, which Remove its update or DLC takes out until the preview ends
+	static bool s_installedUpdate = true, s_installedDlc = true;
+	void InstalledAddOns(uint64_t, bool& update, bool& dlc)
+	{
+		update = s_installedUpdate;
+		dlc = s_installedDlc;
+	}
+	bool RemoveInstalled(uint64_t, bool update, bool dlc, std::string&)
+	{
+		s_installedUpdate = s_installedUpdate && !update;
+		s_installedDlc = s_installedDlc && !dlc;
+		return true;
+	}
 	void ReloadGraphicPacks() {}
 
 	// Wii U accounts: two to begin with, as Cemu keeps them

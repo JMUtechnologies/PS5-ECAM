@@ -95,6 +95,8 @@ work stops before a game starts.
   storage, the games folder and `/data`, lists what it finds by game with what is installed now, and
   installs one with Cross or every new one with Square (Triangle picks a folder by hand). A game's own
   are in its Options menu too. Unpacked updates in your game folder and WUAs are picked up as they are.
+  **Remove its update or DLC**, in a game's Options menu, takes an installed one out of `mlc01` again
+  (one that keeps the game from starting, say); Updates and DLC puts it back.
 - **Accounts** (**Settings > Accounts and saves**): up to twelve Wii U accounts, each with its own
   saves, or one for each PS5 user, so everyone who signs in to the PS5 plays on their own saves.
 - **AMD FSR 1** as the fifth *Upscaling to 4K* filter, in Settings, a game's settings and the in-game
@@ -204,8 +206,10 @@ New in 5.0.0: a side of its own, in the Switch's red, to the right of the DS.
 - **Settings** on the Switch side: the internal resolution (0.5x to 4x of the game's own 720p
   handheld or 1080p docked), upscaling to 4K (FSR 1 among them), ASTC textures (compressed, or full
   quality for a game whose textures look blocky), FSR 1's sharpening, **anti-aliasing** (FXAA or
-  SMAA; off by default), **frame generation** (ProsperoEden's own, with MihawkGen: a game at 30 fps
-  shown at 60; off by default), the performance overlay, the volume, the sticks' deadzone, and in
+  SMAA; off by default), **frame generation** (ProsperoEden's own: a game at 30 fps shown at 60; off
+  by default. It is Lossless Scaling's when your own copy of its `Lossless.dll`, from the Lossless
+  Scaling you bought, is in `/data/eden/user/lossless`, steadier and with fewer artefacts on grass and
+  water; else MihawkGen's, which needs nothing. `boot.log` says which), the performance overlay, the volume, the sticks' deadzone, and in
   **System** docked or handheld, the **controller type** (automatic, Pro Controller, handheld, a
   Joy-Con pair or a single Joy-Con) and the **speed limit** (100% to 300%, or none: a game held to 30
   fps can reach 60 where the PS5 has the time to spare). A game can have its own of each (**Game
@@ -315,7 +319,9 @@ extracted. Its saves are named by the archive, as a game's are by its file.
 ### Nintendo Switch
 
 Put games in `/data/eden/roms`, or pick another folder in **Settings > Game files** on the
-Switch side (not a network share: Eden cannot read those).
+Switch side (not a network share: Eden cannot read those). With the app installed on a USB drive or
+the extended storage, `eden` is at the top of that drive instead (see
+[Everything on the app's drive](#everything-on-the-apps-drive)); the Setup check names the folder.
 
 ```text
 /data/eden/
@@ -330,8 +336,12 @@ Switch side (not a network share: Eden cannot read those).
         └── Another Game [Update].nsp
 ```
 
-- `.nsp` and `.xci` play directly. An update or DLC in a game's folder goes with that game; ones in
-  `/data/eden/updates` are found too.
+- `.nsp` and `.xci` play directly. An update or DLC goes with its game when it is in the game's
+  folder, beside the game, or in `/data/eden/updates` (or a `/data/eden/dlc` you make). This holds in
+  any games folder, a USB drive's too: the title ID in a dump's name (`[0100...800]` for an update)
+  says whose it is, and a file without one is read to tell. Eden's log says `Update and DLC beside the
+  game` for the ones it took from beside a game. A game's page shows its update's version and how
+  many DLC it has (`Update v1.2.0`, `2 DLC`), as Eden will run it.
 - With your keys the library reads each game's own name and icon from its file (without them, it
   names a game by its file). Its box art and description come from GameTDB, which knows a Switch
   game by its name: the app looks it up by the game's own name, else its file's. A picture beside a
@@ -649,7 +659,7 @@ drive: [below](#everything-on-the-apps-drive)). Your game files are wherever you
 │   ├── slot2/, slot2-saves/        GBA games for Slot-2, <game file>.gba (and .sav); their saves
 │   ├── microphone/                 recordings for the microphone, <game file>.wav (or microphone.wav)
 │   └── bios/                       your DS's bios7.bin, bios9.bin and firmware.bin, if you add them
-├── eden/                           the Switch's, always in /data (Eden's program keeps it there)
+├── eden/                           the Switch's (on the app's drive with the rest, below, when it has none here)
 │   ├── keys/                       your Switch's prod.keys and title.keys
 │   ├── firmware/                   your Switch's firmware
 │   ├── roms/                       default Switch game folder
@@ -695,9 +705,14 @@ setting `/data/ps5cemu` to 777 from a file manager opens them.
 
 With the app installed on a USB drive or the extended storage (ShadowMountPlus mounting it from
 there), a `PS5CEMU-HAR-data` folder at the top of that drive takes the place of `/data/ps5cemu`, and
-`cemu`, `azahar` and `melonds` folders beside it take the place of `/data`'s. The Switch's files stay
-in `/data/eden` (Eden's program keeps them there). A first start on a drive makes that folder itself
-when there is no `/data/ps5cemu` yet.
+`cemu`, `azahar`, `melonds` and `eden` folders beside it take the place of `/data`'s: the Switch's
+keys, firmware, games, updates, saves and shader cache too. A first start on a drive makes that
+folder itself when there is no `/data/ps5cemu` yet.
+
+The Switch's files stay in `/data/eden` (or `/data/ps5cemu/eden`) while they are there: keys or saves
+already on the console are never left behind. Only its empty folders, which earlier versions made
+at every start, do not count. Once the Switch's folder is on the drive it stays there (its
+`.ecam-separated-v2` file marks it). `boot.log`'s `[paths]` line names the folder in use.
 
 To move an install from before that keeps its data in `/data/ps5cemu`: with the app closed, copy
 everything in `/data/ps5cemu` but its `eden` folder into a new `PS5CEMU-HAR-data` folder at the top
@@ -705,6 +720,13 @@ of the app's drive (FTP or a file manager), start the app, check your games and 
 delete what you copied from `/data/ps5cemu`, leaving `eden`. Game folders inside `/data/ps5cemu`
 follow the data to the drive. The Setup check's **Storage** shows the folder in use, as `boot.log`'s
 `[main] data folder` line does. An app installed in `/data`, or mounted from an image, keeps `/data`.
+To bring the Switch's files too: copy `/data/eden` (or `/data/ps5cemu/eden`) to an `eden` folder at
+the top of the drive, then rename the one on the console (`eden-old`, say); start the app and check
+a Switch game and its save before deleting it.
+
+**An older copy of the app left in `/data/homebrew`** beside one on a drive is not started again
+after a game or an update, nor updated in place of the one you run: the app tells the copies apart
+by their `eboot.bin`.
 The drive's `ps5cemu/mods` folder is still where Wii U mods are added from. To separate the systems of
 an install on a drive, see [System folders](SYSTEM-FOLDERS.md#launcher-data-on-an-app-drive).
 

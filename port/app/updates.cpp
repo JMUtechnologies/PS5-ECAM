@@ -373,8 +373,10 @@ namespace ps5update
 		}
 
 		// The folder the app runs from, which the update replaces the files of: the one ShadowMountPlus
-		// mounted it from (on a USB drive, say, with an older copy left in /data/homebrew), else the
-		// usual install folder, else where the app was found. Empty for an app mounted from an image.
+		// mounted it from (on a USB drive, say, with an older copy left in /data/homebrew), else of the
+		// usual install folder and the drives' the one holding the copy running, else where the app was
+		// found. Empty for an app mounted from an image, and for one whose copy is in none of those while
+		// /data/homebrew holds another: that older copy is not updated in its place.
 		fs::path AppFolder()
 		{
 			bool image = false;
@@ -384,7 +386,10 @@ namespace ps5update
 			if (image)
 				return {};
 			std::error_code ec;
-			return fs::exists(ps5paths::kMountedEboot, ec) ? fs::path(ps5paths::kInstallDir) : fs::path(ps5paths::AppDir());
+			for (const std::string& folder : ps5paths::InstallFolders())
+				if (fs::exists(folder + "/eboot.bin", ec) && ps5paths::RunsFrom(folder))
+					return folder;
+			return fs::exists(ps5paths::kMountedEboot, ec) ? fs::path() : fs::path(ps5paths::AppDir());
 		}
 
 		double Seconds(std::chrono::steady_clock::time_point since)

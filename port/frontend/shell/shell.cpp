@@ -1809,8 +1809,12 @@ namespace ps5shell
 			m_menu.items.push_back({"mods", Tr("Add mods from USB")});
 			m_menu.items.push_back({"updates", Tr("Updates and DLC")});
 		}
-		// a 3DS game's update or DLC installed from a CIA, which can keep it from starting (#80)
-		if (Is3ds() && (g.entry.game.hasUpdate || g.entry.game.dlcCount > 0))
+		// a 3DS game's update or DLC installed from a CIA, which can keep it from starting (#80); a Wii U
+		// game's installed in mlc01, which only FTP took out before (#58)
+		bool installedUpdate = false, installedDlc = false;
+		if (IsWiiU() && m_status.coreReady && g.entry.game.titleId)
+			ps5emu::InstalledAddOns(g.entry.game.titleId, installedUpdate, installedDlc);
+		if ((Is3ds() && (g.entry.game.hasUpdate || g.entry.game.dlcCount > 0)) || installedUpdate || installedDlc)
 			m_menu.items.push_back({"removeaddons", Tr("Remove its update or DLC")});
 		m_menu.items.push_back({"favourite", g.entry.favourite ? Tr("Not a favourite") : Tr("Favourite")});
 		// tr: the game menu: a game left out of the Library's list (for demos and clutter), or put back
@@ -2179,8 +2183,12 @@ namespace ps5shell
 					RemoveTile(g);
 				else if (id == "removeaddons")
 				{
-					// which of them: the picker is the confirmation, and Circle leaves both
-					const bool update = g.entry.game.hasUpdate, dlc = g.entry.game.dlcCount > 0;
+					// which of them: the picker is the confirmation, and Circle leaves both. A Wii U game's are
+					// those installed in mlc01, not those Cemu reads in the games folder
+					const bool wiiu = IsWiiU();
+					bool update = g.entry.game.hasUpdate, dlc = g.entry.game.dlcCount > 0;
+					if (wiiu)
+						ps5emu::InstalledAddOns(g.entry.game.titleId, update, dlc);
 					std::vector<std::string> options;
 					std::vector<std::pair<bool, bool>> choices;
 					if (update)
@@ -2199,10 +2207,17 @@ namespace ps5shell
 						choices.push_back({true, true});
 					}
 					const uint64_t titleId = g.entry.game.titleId;
-					OpenPicker(g.entry.game.name, Tr("Remove its update or DLC"), options, -1, [this, titleId, choices](int choice) {
+					OpenPicker(g.entry.game.name, Tr("Remove its update or DLC"), options, -1, [this, titleId, choices, wiiu](int choice) {
 						std::string error;
-						if (ps5azahar::RemoveInstalled(titleId, choices[choice].first, choices[choice].second, error))
-							Toast(Tr("Removed. Install a CIA file puts it back."));
+						const auto& [update, dlc] = choices[choice];
+						if (wiiu ? ps5emu::RemoveInstalled(titleId, update, dlc, error) : ps5azahar::RemoveInstalled(titleId, update, dlc, error))
+						{
+							if (wiiu)
+								// tr: after a Wii U game's update or DLC is removed: Updates and DLC (the game's Options) installs it again
+								Toast(Tr("Removed. Updates and DLC puts it back."));
+							else
+								Toast(Tr("Removed. Install a CIA file puts it back."));
+						}
 						else
 						{
 							// tr: {0} is the system's reason, as it gives it

@@ -35,7 +35,7 @@ namespace ps5paths
 	constexpr const char* kSystemMount = "/system_ex/app/PPSA99360";
 	// ShadowMountPlus's record of that source: mount.lnk holds the folder's path, mount_img.lnk is
 	// there for an image
-	constexpr const char* kMountRecord = "/user/app/PPSA99360/mount.lnk";
+	constexpr const char* kMountRecord = ECAM_MOUNT_RECORD;
 	constexpr const char* kImageMountRecord = "/user/app/PPSA99360/mount_img.lnk";
 
 // where PS5-ECAM writes everything, unless DecideRoot finds a folder of its own on the app's
@@ -47,7 +47,7 @@ namespace ps5paths
 	constexpr const char* kDefaultRoot = PS5CEMU_DATA;
 	// the data folder's name at the top of the app's drive (DecideRoot): the app's name before 5.0.0,
 	// kept, as /data/ps5cemu is, so the data people have there stays theirs
-	constexpr const char* kDriveRoot = "PS5CEMU-HAR-data";
+	constexpr const char* kDriveRoot = ecam_layout::kDriveData;
 
 	namespace detail
 	{
@@ -73,7 +73,8 @@ namespace ps5paths
 	inline std::string CemuFolder() { return ecam_layout::Sibling(Root(), "cemu"); }
 	inline std::string Azahar() { const auto& s = detail::SelectedSystems(); return s.decided ? s.azahar : ecam_layout::System(Root(), "azahar"); }
 	inline std::string MelonDs() { const auto& s = detail::SelectedSystems(); return s.decided ? s.melonds : ecam_layout::System(Root(), "melonds"); }
-	// Eden's separate process shares this exact selection algorithm; its storage stays on /data.
+	// Eden's separate process shares this exact selection algorithm (ecam_layout::Eden): on /data,
+	// or beside the data folder on the drive the app is installed on. Before DecideSystemRoots, /data's.
 	inline std::string Eden() { const auto& s = detail::SelectedSystems(); return s.decided ? s.eden : ecam_layout::System(kDefaultRoot, "eden"); }
 	inline std::string EdenRequestFile() { return Eden() + "/launch-request.txt"; }
 	inline std::string EdenSessionFile() { return Eden() + "/ecam-session.txt"; }
@@ -97,7 +98,13 @@ namespace ps5paths
 		if (s.decided) return;
 		s.azahar = ecam_layout::System(Root(), "azahar");
 		s.melonds = ecam_layout::System(Root(), "melonds");
-		s.eden = ecam_layout::System(kDefaultRoot, "eden");
+		// the Switch's beside the others on the app's drive, unless the console's has its files already;
+		// chosen there, it is marked, so a file put in the console's later does not take the Switch
+		// side, and its saves, back to it
+		const std::string drive = ecam_layout::DriveData(kMountRecord);
+		s.eden = ecam_layout::Eden(kDefaultRoot, drive);
+		if (!drive.empty() && s.eden == ecam_layout::Sibling(drive, "eden"))
+			ecam_layout::Activate(s.eden);
 		(void)CemuRoot();
 		s.decided = true;
 	}
@@ -213,18 +220,42 @@ namespace ps5paths
 		struct stat info{};
 		if (image)
 			*image = stat(kImageMountRecord, &info) == 0;
-		std::string path;
-		if (FILE* file = std::fopen(kMountRecord, "rb"))
-		{
-			char text[512] = {};
-			path.assign(text, std::fread(text, 1, sizeof(text) - 1, file));
-			std::fclose(file);
-		}
-		while (!path.empty() && (path.back() == '\n' || path.back() == '\r' || path.back() == ' ' || path.back() == '\0' || path.back() == '/'))
-			path.pop_back();
-		if (path.size() < 2 || path[0] != '/' || stat((path + "/eboot.bin").c_str(), &info) != 0 || !S_ISREG(info.st_mode))
-			return {};
-		return path;
+		return ecam_layout::MountSource(kMountRecord); // as Eden's program reads it
+	}
+
+	// The drives whose homebrew folders the app is installed in (#40 tried /mnt/ext1/homebrew)
+	inline constexpr const char* kInstallDrives[] = {"/mnt/ext0", "/mnt/ext1", "/mnt/usb0", "/mnt/usb1", "/mnt/usb2", "/mnt/usb3"};
+
+	// The folders the app may be installed in, the usual one first: /data/homebrew's and the drives'
+	inline std::vector<std::string> InstallFolders()
+	{
+		std::vector<std::string> folders{kInstallDir};
+		for (const char* drive : kInstallDrives)
+			folders.push_back(std::string(drive) + "/homebrew/" + kTitleId);
+		return folders;
+	}
+
+	// The running app's eboot.bin as this process sees it: /app0's while it is there, else the PS5's
+	// mount of the app; empty when it sees neither
+	inline std::string RunningEboot()
+	{
+		struct stat info{};
+		for (const std::string& eboot : {std::string("/app0/eboot.bin"), std::string(kSystemMount) + "/eboot.bin"})
+			if (stat(eboot.c_str(), &info) == 0 && S_ISREG(info.st_mode))
+				return eboot;
+		return {};
+	}
+
+	// Whether folder holds the copy of the app that is running: its eboot.bin the same as running's,
+	// by size and time. True when running cannot be read, as nothing then tells two copies apart. An
+	// older copy left in /data/homebrew beside an app on a drive is not it: a restart or an update
+	// there started or updated that old copy instead (#72, "the PS5 started the old one").
+	inline bool RunsFrom(const std::string& folder, const std::string& running = RunningEboot())
+	{
+		struct stat mine{}, there{};
+		if (running.empty() || stat(running.c_str(), &mine) != 0)
+			return true;
+		return stat((folder + "/eboot.bin").c_str(), &there) == 0 && there.st_size == mine.st_size && there.st_mtime == mine.st_mtime;
 	}
 
 	// The app's own folder. The sandbox mounts it as /app0, but a process the HEN has jailbroken
@@ -242,10 +273,10 @@ namespace ps5paths
 			if (holdsApp(candidate))
 				return std::string(candidate);
 		// none of those: the folder ShadowMountPlus recorded (MountSource checks it holds the app),
-		// then the homebrew folders on the drives people install to (#40 tried /mnt/ext1/homebrew)
+		// then the homebrew folders on the drives people install to
 		if (std::string source = MountSource(); !source.empty())
 			return source;
-		for (const char* drive : {"/mnt/ext0", "/mnt/ext1", "/mnt/usb0", "/mnt/usb1", "/mnt/usb2", "/mnt/usb3"})
+		for (const char* drive : kInstallDrives)
 			if (std::string folder = std::string(drive) + "/homebrew/" + kTitleId; holdsApp(folder))
 				return folder;
 		return std::string(kInstallDir);
@@ -300,16 +331,7 @@ namespace ps5paths
 	// empty for any other place
 	inline std::string DriveOf(const std::string& path)
 	{
-		for (const char* prefix : {"/mnt/usb", "/mnt/ext"})
-		{
-			const size_t length = std::strlen(prefix);
-			size_t end = length;
-			while (end < path.size() && path[end] >= '0' && path[end] <= '9')
-				end++;
-			if (path.compare(0, length, prefix) == 0 && end > length && (end == path.size() || path[end] == '/'))
-				return path.substr(0, end);
-		}
-		return {};
+		return ecam_layout::DriveOf(path); // as Eden's program finds the app's drive
 	}
 
 	// The data folder, decided once by main, when the process sees the console's drives (after the

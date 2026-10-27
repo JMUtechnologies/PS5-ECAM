@@ -44,8 +44,9 @@ comment only if it does not exist. No keys, games, BIOS or firmware are supplied
 Each backend keeps its required formats. Wii U system files belong in the MLC; 3DS titles and
 system files use `sdmc`, `nand` and `sysdata`; DS firmware belongs in `bios`; Switch firmware
 belongs in `firmware`. The current DS backend has no update/DLC installer and needs no key
-folder. Switch DLC uses Eden's existing `updates` or per-game layout, rather than an ignored
-new `dlc` folder. Staging folders do not automatically install content: use the existing
+folder. Switch updates and DLC need no install: Eden reads them where they are, in `updates`, in a
+`dlc` folder if you make one, in a game's own folder, or beside the game, in any games folder
+(`patches/eden/0018`). Staging folders do not automatically install content: use the existing
 Wii U installer or 3DS CIA installer.
 
 ## Existing installations are preserved
@@ -72,7 +73,8 @@ system's `saves-before/<time>` on the same filesystem.
 
 Eden's separate executable is updated too (`patches/eden/0010-...`). It uses exactly the same
 selection code as the launcher, resolving after elevation, so its launch requests, keys,
-firmware, saves, settings and diagnostics agree on `/data/eden` or the discovered legacy root.
+firmware, saves, settings and diagnostics agree on `/data/eden` or the discovered legacy root
+(or, with the app's data on its drive, that drive's `eden`, `patches/eden/0019`).
 The launcher no longer points at one folder while Eden uses another.
 
 ## Separating an install from before, on the PS5
@@ -155,12 +157,17 @@ Do not merge or overwrite them automatically.
 
 When `PS5CEMU-HAR-data` is used on a USB or extended-storage drive, the three in-process systems
 use **siblings** such as `/mnt/usb0/cemu`, `/mnt/usb0/azahar` and `/mnt/usb0/melonds`. The shared
-launcher folder stays `/mnt/usb0/PS5CEMU-HAR-data`. Eden's separate program stays on the console
-at `/data/eden` (or its discovered `/data/ps5cemu/eden` legacy directory). Its existing custom
-game-files setting and standalone ProsperoEden discovery continue to work.
+launcher folder stays `/mnt/usb0/PS5CEMU-HAR-data`. The Switch's is `/mnt/usb0/eden` too
+(`patches/eden/0019`), unless the console's `/data/eden` (or the discovered `/data/ps5cemu/eden`
+legacy directory) holds files: Switch keys and saves already there stay in use, and only the empty
+folders earlier versions made at every start do not count. Both programs choose with the same code
+(`ecam_layout::Eden`), from ShadowMountPlus's record of where the app is mounted from, and the
+launcher marks the drive's `eden` with `.ecam-separated-v2` when it chooses it, so a file put on the
+console later does not take the Switch side back. Its existing custom game-files setting and
+standalone ProsperoEden discovery continue to work.
 
 **Reorganize** works the same there: the three move within the app's drive, and the Switch's within
-`/data`. For the copying tool in this arrangement, provide `--eden-legacy` pointing to a mounted/copied
+`/data` when it is there. For the copying tool in this arrangement, provide `--eden-legacy` pointing to a mounted/copied
 `/data/ps5cemu/eden` tree in addition to `--legacy-root` for the app-drive launcher tree. The
 Eden target is a sibling of that console tree's `ps5cemu` directory. Back up and transfer each
 volume to its corresponding location; do not copy an entire `/data/ps5cemu` and delete it on

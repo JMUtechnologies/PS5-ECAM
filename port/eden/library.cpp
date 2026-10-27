@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "library.h"
+#include "addons.h"
 #include "nx_files.h"
 #include "../app/gameinfo.h"
 #include "../app/paths.h"
@@ -134,18 +135,21 @@ namespace ps5eden
 		}
 
 		// What an earlier scan read of a file, so each is read once (until it changes): the lines of
-		// cache/switch-games.txt, "<size> <time> <title ID> <kind> <path>"
+		// cache/switch-files.txt, "<size> <time> <title ID> <kind> <version, - for none> <path>" (a game's or
+		// an update's version as it shows it). switch-games.txt, from before versions were read, goes once
+		// this is written.
 		struct Known
 		{
 			uint64_t size = 0;
 			int64_t time = 0;
 			uint64_t titleId = 0;
 			nx::Kind kind = nx::Kind::Unknown;
+			std::string version;
 		};
 
 		std::string KnownFile()
 		{
-			return ps5paths::Cache() + "/switch-games.txt";
+			return ps5paths::Cache() + "/switch-files.txt";
 		}
 
 		std::map<std::string, Known> LoadKnown()
@@ -154,13 +158,13 @@ namespace ps5eden
 			std::ifstream in(KnownFile());
 			for (std::string line; std::getline(in, line);)
 			{
-				Known file;
 				unsigned long long size = 0, id = 0;
 				long long time = 0;
 				int kind = 0, read = 0;
-				if (std::sscanf(line.c_str(), "%llu %lld %llx %d %n", &size, &time, &id, &kind, &read) == 4 && read > 0 &&
+				char version[32] = {};
+				if (std::sscanf(line.c_str(), "%llu %lld %llx %d %31s %n", &size, &time, &id, &kind, version, &read) == 5 && read > 0 &&
 					(size_t)read < line.size() && kind > 0 && kind <= (int)nx::Kind::Dlc)
-					known[line.substr(read)] = {size, time, id, (nx::Kind)kind};
+					known[line.substr(read)] = {size, time, id, (nx::Kind)kind, std::strcmp(version, "-") == 0 ? std::string() : version};
 			}
 			return known;
 		}
@@ -173,11 +177,13 @@ namespace ps5eden
 			{
 				std::ofstream out(staged, std::ios::trunc);
 				for (const auto& [path, file] : known)
-					out << file.size << ' ' << file.time << ' ' << fmt::format("{:016x}", file.titleId) << ' ' << (int)file.kind << ' ' << path << '\n';
+					out << file.size << ' ' << file.time << ' ' << fmt::format("{:016x}", file.titleId) << ' ' << (int)file.kind << ' '
+						<< (file.version.empty() ? std::string("-") : file.version) << ' ' << path << '\n';
 				if (!out)
 					return;
 			}
 			std::rename(staged.c_str(), KnownFile().c_str());
+			std::remove((ps5paths::Cache() + "/switch-games.txt").c_str()); // the one from before versions were read
 		}
 
 		bool Stamp(const fs::path& path, uint64_t& size, int64_t& time)
@@ -246,6 +252,29 @@ namespace ps5eden
 			}
 		}
 
+		// The Switch files in a folder and the folders in it, at any depth: Eden's updates/ and dlc/, which it
+		// reads so (patches/eden 0016)
+		void CollectAll(const std::string& folder, std::vector<fs::path>& files)
+		{
+			std::error_code ec;
+			const auto options = fs::directory_options::skip_permission_denied;
+			for (auto it = fs::recursive_directory_iterator(folder, options, ec); !ec && it != fs::recursive_directory_iterator(); it.increment(ec))
+			{
+				const std::string name = it->path().filename().string();
+				std::error_code type; // its own: the walk's ends it
+				if (!name.empty() && name[0] == '.')
+				{
+					if (it->is_directory(type))
+						it.disable_recursion_pending();
+					continue;
+				}
+				if (it.depth() > 8)
+					it.disable_recursion_pending();
+				if (it->is_regular_file(type) && IsSwitchFile(name))
+					files.push_back(it->path());
+			}
+		}
+
 		// The games in a folder, by their names alone (a game named like an update is taken for one)
 		void Scan(const std::string& folder, std::vector<ps5emu::Game>& games)
 		{
@@ -259,17 +288,32 @@ namespace ps5eden
 		// The games in a folder as their files say with the keys: an update or DLC left out whatever its
 		// name, a game listed whatever its name, its own title ID (the same game in an NSP and an XCI listed
 		// once) and name. Without keys, or for a file they do not open, its name says. covers: the games
-		// whose icons are to be read after (no cover yet).
+		// whose icons are to be read after (no cover yet). The updates and DLC there and in Eden's updates/
+		// and dlc/ go with their games (addons.h): the update's version and how many DLC, on its page.
 		void ScanWithKeys(const std::string& folder, std::vector<ps5emu::Game>& games, std::vector<fs::path>& covers)
 		{
 			std::vector<fs::path> files;
 			Collect(folder, files);
+			const size_t inFolder = files.size();
+			{
+				std::set<std::string> seen;
+				for (const fs::path& path : files)
+					seen.insert(path.lexically_normal().string());
+				std::vector<fs::path> more;
+				for (const char* sub : {"/updates", "/dlc"})
+					CollectAll(GameFilesFolder() + sub, more);
+				for (fs::path& path : more)
+					if (seen.insert(path.lexically_normal().string()).second)
+						files.push_back(std::move(path));
+			}
+			std::vector<addons::File> found;
 			nx::Keys keys;
 			const bool keyed = nx::LoadKeys(GameFilesFolder() + "/keys", keys);
 			std::map<std::string, Known> known = LoadKnown();
 			size_t read = 0, failed = 0, addOns = 0;
-			for (const fs::path& path : files)
+			for (size_t i = 0; i < files.size(); i++)
 			{
+				const fs::path& path = files[i];
 				Known file;
 				const bool stamped = Stamp(path, file.size, file.time);
 				if (const auto earlier = known.find(path.string());
@@ -283,8 +327,10 @@ namespace ps5eden
 					{
 						file.titleId = info.titleId;
 						file.kind = info.kind;
+						file.version = info.version;
 						known[path.string()] = file;
-						KeepName(path, info.name);
+						if (info.kind == nx::Kind::Game)
+							KeepName(path, info.name);
 						read++;
 					}
 					else
@@ -296,16 +342,28 @@ namespace ps5eden
 				if (addOn)
 				{
 					addOns++;
+					// whose: as read with the keys, else as its name says
+					if (file.kind == nx::Kind::Update || file.kind == nx::Kind::Dlc)
+						found.push_back({file.titleId, file.kind == nx::Kind::Update, file.version});
+					else if (const uint64_t tagged = TaggedId(path.filename().string()); addons::IsUpdateId(tagged) || addons::IsDlcId(tagged))
+						found.push_back({tagged, addons::IsUpdateId(tagged), {}});
 					continue;
 				}
+				// a game in Eden's updates/ or dlc/ is not one of the side's
+				if (i >= inFolder)
+					continue;
 				Add(path, games, file.kind == nx::Kind::Game ? file.titleId : 0);
 				if (keyed && CoverPath(games.back()).empty())
 					covers.push_back(path);
 			}
 			if (read)
 				SaveKnown(known);
-			ps5log::Line("[switch] {} files: {} read with the keys now{}, {} updates and DLC left out{}", files.size(), read,
-				failed ? fmt::format(", {} that could not be", failed) : std::string(), addOns, keyed ? "" : " (no keys: by their names)");
+			addons::Pair(games, found, IsMadeId);
+			const size_t paired = (size_t)std::count_if(games.begin(), games.end(), [](const ps5emu::Game& game) { return game.hasUpdate || game.dlcCount; });
+			ps5log::Line("[switch] {} files ({} in Eden's updates/ and dlc/): {} read with the keys now{}, {} updates and DLC left out of the list, "
+						 "{} games with theirs{}",
+				files.size(), files.size() - inFolder, read, failed ? fmt::format(", {} that could not be", failed) : std::string(), addOns, paired,
+				keyed ? "" : " (no keys: by their names)");
 		}
 
 		// The icons of the games that have no cover yet, from their files, as covers Eden keeps
@@ -384,6 +442,16 @@ namespace ps5eden
 		std::error_code ec;
 		const fs::path firmware = GameFilesFolder() + "/firmware";
 		return fs::is_directory(firmware, ec) && !fs::is_empty(firmware, ec) && !ec;
+	}
+
+	std::string LosslessFile()
+	{
+		return DataFolder() + "/user/lossless/Lossless.dll";
+	}
+
+	bool LosslessFound()
+	{
+		return Exists(LosslessFile());
 	}
 
 	bool Available()

@@ -51,7 +51,11 @@ static void Write()
 	ps5emu::Game mario = Make(kMario, "New Super Mario Bros.", "/data/ps5cemu/melonds/roms/nsmb.nds");
 	mario.nds = true;
 	Replace(System::Nds, {mario});
-	Replace(System::Switch, {Make(kKirby, "Kirby", "/data/ps5cemu/eden/roms/kirby.nsp")});
+	ps5emu::Game kirby = Make(kKirby, "Kirby", "/data/ps5cemu/eden/roms/kirby.nsp");
+	kirby.hasUpdate = true;
+	kirby.versionName = "1.1.0";
+	kirby.dlcCount = 1;
+	Replace(System::Switch, {kirby});
 
 	SetFavourite(System::N3ds, kPokemon, true);
 	SetHidden(System::Nds, kMario, true);
@@ -89,7 +93,10 @@ static void Read()
 	const Entry* mario = Find(System::Nds, kMario);
 	Check(mario && mario->game.nds && !mario->game.Archived(), "a DS game");
 	Check(mario && mario->hidden && pokemon && !pokemon->hidden, "a hidden game stays hidden, the others not");
-	Check(Find(System::Switch, kKirby) && Games(System::Switch).size() == 1, "a Switch game");
+	const Entry* kirby = Find(System::Switch, kKirby);
+	Check(kirby && Games(System::Switch).size() == 1 && kirby->game.hasUpdate && kirby->game.versionName == "1.1.0" && kirby->game.dlcCount == 1,
+		"a Switch game, its update's version as the game shows it and its DLC");
+	Check(zelda && zelda->game.versionName.empty(), "no version name for a game that has none");
 	Check(!Find(System::Nds, kPokemon), "each side its own");
 
 	// a new scan: what is known of each game kept by title ID, a game first found now dated now

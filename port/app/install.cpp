@@ -346,7 +346,8 @@ namespace ps5emu
 
 		bool Skipped(const std::string& name)
 		{
-			static const char* const kSkipped[] = {"mlc01", "covers", "logs", "shaderCache", "cache", "graphicPacks", "azahar", "melonds",
+			// the other systems' folders too: the Switch's eden is on the app's drive with the rest now
+			static const char* const kSkipped[] = {"mlc01", "covers", "logs", "shaderCache", "cache", "graphicPacks", "azahar", "melonds", "eden",
 				"controllerProfiles", "gameProfiles", "themes", "figures", "amiibo", "saves-before", "PS5CEMU-HAR-saves", "PS5-ECAM-logs", "PS5CEMU-HAR-logs",
 				"System Volume Information", "$RECYCLE.BIN", "homebrew", "etaHEN"};
 			if (name.empty() || name[0] == '.')
@@ -540,6 +541,62 @@ namespace ps5emu
 	void CancelInstall()
 	{
 		s_cancel = true;
+	}
+
+	namespace
+	{
+		// Where a title of kind (0005000e an update, 0005000c DLC) is installed in mlc01: as Cemu installs
+		// it (TitleInfo::GetInstallPath, small letters), or in capitals as some tools copy it in
+		std::vector<fs::path> InstalledFolders(uint64_t titleId, uint32_t kind)
+		{
+			std::vector<fs::path> folders;
+			std::error_code ec;
+			const uint32_t low = (uint32_t)titleId;
+			for (const std::string& path : {fmt::format("usr/title/{:08x}/{:08x}", kind, low), fmt::format("usr/title/{:08X}/{:08X}", kind, low)})
+			{
+				const fs::path folder = ActiveSettings::GetMlcPath(path);
+				if (fs::is_directory(folder, ec) && std::none_of(folders.begin(), folders.end(), [&](const fs::path& found) { return fs::equivalent(found, folder, ec); }))
+					folders.push_back(folder);
+			}
+			return folders;
+		}
+
+		constexpr uint32_t kUpdateKind = 0x0005000E, kDlcKind = 0x0005000C;
+	}
+
+	void InstalledAddOns(uint64_t titleId, bool& update, bool& dlc)
+	{
+		update = !InstalledFolders(titleId, kUpdateKind).empty();
+		dlc = !InstalledFolders(titleId, kDlcKind).empty();
+	}
+
+	bool RemoveInstalled(uint64_t titleId, bool update, bool dlc, std::string& error)
+	{
+		if (GetInstallStatus().state == InstallStatus::State::Running)
+		{
+			error = ps5lang::Tr("An install is already running.");
+			return false;
+		}
+		bool ok = true;
+		for (const uint32_t kind : {kUpdateKind, kDlcKind})
+		{
+			if (kind == kUpdateKind ? !update : !dlc)
+				continue;
+			for (const fs::path& folder : InstalledFolders(titleId, kind))
+			{
+				// out of the way at once (a rename within mlc01), its thousands of files deleted after
+				DropLater(folder);
+				std::error_code ec;
+				const bool stayed = fs::exists(folder, ec);
+				ps5log::Line("[install] {:016x}: {} {}", titleId, _pathToUtf8(folder), stayed ? "could not be removed" : "removed");
+				if (stayed)
+				{
+					error = _pathToUtf8(folder);
+					ok = false;
+				}
+			}
+		}
+		return ok;
 	}
 
 	void Rescan()

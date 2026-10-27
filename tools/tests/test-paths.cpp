@@ -5,6 +5,8 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <algorithm>
+#include <chrono>
 namespace fs = std::filesystem;
 static void Check(bool ok, const char* what) {
     if (!ok) throw std::runtime_error(what);
@@ -66,6 +68,22 @@ int main(int argc, char** argv) {
     Check(ps5paths::Relocated(ecam_layout::Sibling(ps5paths::kDefaultRoot, "azahar") + "/games") == ecam_layout::Sibling(drive, "azahar") + "/games", "new 3DS default paths follow the app drive");
     Check(ps5paths::Relocated(ecam_layout::Sibling(ps5paths::kDefaultRoot, "melonds") + "/games") == ecam_layout::Sibling(drive, "melonds") + "/games", "new DS default paths follow the app drive");
     const auto edenDefault = ecam_layout::Sibling(ps5paths::kDefaultRoot, "eden") + "/roms";
-    Check(ps5paths::Relocated(edenDefault) == edenDefault, "Eden's separate process keeps its console root when the launcher moves to USB");
+    Check(ps5paths::Relocated(edenDefault) == edenDefault, "relocation leaves the Switch's paths to its own choice (ecam_layout::Eden), which both programs make");
     Check(ps5paths::Relocated(std::string(ps5paths::kDefaultRoot) + "-other/games") == std::string(ps5paths::kDefaultRoot) + "-other/games", "root relocation respects path boundaries");
+
+    // the copy of the app that runs, told from an older one left in /data/homebrew beside it
+    const fs::path running = base / "usb0/homebrew/PPSA99360", stale = base / "homebrew/PPSA99360", same = base / "ext0/homebrew/PPSA99360";
+    Put(running / "eboot.bin", "release 5.1.0");
+    Put(stale / "eboot.bin", "release 5.0");
+    fs::create_directories(same);
+    fs::copy_file(running / "eboot.bin", same / "eboot.bin");
+    fs::last_write_time(same / "eboot.bin", fs::last_write_time(running / "eboot.bin"));
+    fs::last_write_time(stale / "eboot.bin", fs::last_write_time(running / "eboot.bin") - std::chrono::hours(48));
+    const std::string eboot = (running / "eboot.bin").string();
+    Check(ps5paths::RunsFrom(running.string(), eboot) && ps5paths::RunsFrom(same.string(), eboot), "the running copy, and a copy of the same files, are the app's");
+    Check(!ps5paths::RunsFrom(stale.string(), eboot) && !ps5paths::RunsFrom((base / "missing").string(), eboot), "an older copy, or none, is not the running app's");
+    Check(ps5paths::RunsFrom(stale.string(), "") && ps5paths::RunsFrom(stale.string(), (base / "unreadable/eboot.bin").string()), "without the running app's eboot, nothing tells the copies apart");
+    const auto installs = ps5paths::InstallFolders();
+    Check(installs.front() == ps5paths::kInstallDir && std::find(installs.begin(), installs.end(), "/mnt/usb0/homebrew/PPSA99360") != installs.end() &&
+              std::find(installs.begin(), installs.end(), "/mnt/ext1/homebrew/PPSA99360") != installs.end(), "the usual install folder first, then the drives'");
 }

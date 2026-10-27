@@ -688,10 +688,13 @@ namespace ps5shell
 			own(toggle("nx-120hz", Tr("120 Hz"), hand.nxHighRefresh, Tr("For a TV that takes 120 Hz. Applies to the next game."),
 					Tr("For a TV that takes 120 Hz. Applies to the next game.")),
 				"nxHighRefresh");
-			// ProsperoEden's own, with the method that needs nothing of the player's (Lossless Scaling would)
+			// ProsperoEden's own: Lossless Scaling's with the player's own Lossless.dll, else MihawkGen (#81)
 			own(toggle("nx-framegeneration", Tr("Frame generation"), hand.nxFrameGeneration, Tr("A game held to 30 fps shown at 60."),
-					Tr("ProsperoEden's own frame generation, with MihawkGen: a picture made between each two frames, so a game at 30 fps is shown "
-					   "at 60. It asks more of the GPU and adds a little delay. Applies to the next game.")),
+					// tr: {0} is where Lossless.dll goes: /data/eden/user/lossless/Lossless.dll, or the same on the app's drive
+					TrF("ProsperoEden's own frame generation: a picture made between each two frames, so a game at 30 fps is shown at 60. "
+						"It is Lossless Scaling's when your own copy of its Lossless.dll is at {0}, else MihawkGen's. It asks more of the "
+						"GPU and adds a little delay. Applies to the next game.",
+						ps5eden::LosslessFile())),
 				"nxFrameGeneration");
 			endSub();
 			toggle("performance-hand", Tr("Performance overlay"), hand.performance, Tr("The frame rate and the emulation's speed, in the top left corner."),

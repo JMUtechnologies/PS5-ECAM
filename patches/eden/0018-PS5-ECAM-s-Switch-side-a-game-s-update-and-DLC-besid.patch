@@ -1,0 +1,296 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Tue, 27 Oct 2026 15:03:31 +0000
+Subject: [PATCH] PS5-ECAM's Switch side: a game's update and DLC beside it,
+ wherever its games folder is
+
+Eden took a game's update and DLC from the game files folder's updates/, and from the game's own
+folder only when that folder was in roms/. PS5-ECAM's Switch side lists games from any folder (a USB
+drive's, one chosen in Settings > Game files), each "alone or in a folder of its own with its update
+and DLC", and leaves the update and DLC files it finds there out of the library as the game's: those
+games ran without them, at their first version and with no DLC. Update and DLC files beside a game
+directly in roms/ were never read either.
+
+- PS5-ECAM says where it lists its games from (--set games_folder): a game in a folder of its own
+  there brings that folder's update, DLC, mods, cheats and post-processing, as roms/<folder>/ does.
+  Of roms/ and that folder, the one closer to the game decides, so a games folder above roms/ never
+  makes all of roms/ one game's folder.
+- A game with no folder of its own: the NSP and XCI files beside it that hold its update or DLC, by
+  the title ID in their names, else by what they hold (eden_rom_holds_addon). Another game's files
+  are neither handed to Eden nor kept open.
+- dlc/ in the game files folder is read as updates/ is, as the other systems' folders have one.
+
+headless/game_addons.h has the rules; PS5-ECAM's tools/tests/test-eden-addons.sh checks them.
+---
+ headless/game_addons.h       | 91 ++++++++++++++++++++++++++++++++++++
+ headless/main.cpp            | 51 +++++++++++++++-----
+ headless/metadata_bridge.cpp | 30 ++++++++++++
+ headless/metadata_bridge.h   |  3 ++
+ headless/settings_store.h    |  4 ++
+ 5 files changed, 167 insertions(+), 12 deletions(-)
+ create mode 100644 headless/game_addons.h
+
+diff --git a/headless/game_addons.h b/headless/game_addons.h
+new file mode 100644
+index 0000000..18db0f1
+--- /dev/null
++++ b/headless/game_addons.h
+@@ -0,0 +1,91 @@
++// SPDX-License-Identifier: GPL-3.0-or-later
++// Where a game's update and DLC files are, besides the game files folder's updates/ (main.cpp hands
++// them to Eden's ExternalContentProvider, which the patch manager and the add-on service read):
++//   - a game in a folder of its own: that folder, at any depth, as roms/<folder>/ has been since
++//     issue 168. Its folder is the first under roms/, or under the folder PS5-ECAM's Switch side
++//     lists its games from (--set games_folder), whichever is closer to the game: the launcher says
++//     "each in a folder of its own with its update and DLC" for any folder it is given, a USB
++//     drive's too, and lists that folder's mods and cheats for the game.
++//   - a game directly in such a folder, or anywhere else: the NSP and XCI files beside it that hold
++//     its update or DLC. A dump's name usually gives its title ID ("Game [0100ABCD12340800].nsp"),
++//     which decides without opening the file; one whose name gives none is opened to read what it
++//     holds (main.cpp). Another game's files are neither handed to Eden nor kept open.
++// dlc/ in the game files folder is read as updates/ is: the other systems' folders have one.
++#pragma once
++#include <algorithm>
++#include <cctype>
++#include <cstdint>
++#include <cstdlib>
++#include <filesystem>
++#include <string>
++#include <string_view>
++#include <system_error>
++#include <vector>
++
++namespace Eden::AddOns {
++
++// A title's game, as Eden's FileSys::GetBaseTitleID has it: its update (base + 0x800) and its DLC
++// (base + 0x1000 + n) have the game's base title ID
++inline constexpr std::uint64_t BaseOf(std::uint64_t title) { return title & 0xFFFFFFFFFFFFE000ull; }
++// Whether a title is the game's update or one of its DLC, not the game (or another of its programs)
++inline constexpr bool IsAddOnOf(std::uint64_t title, std::uint64_t base) { return BaseOf(title) == base && (title & 0x1FFF) >= 0x800; }
++
++// The title ID in a dump's name ("[0100ABCD12345000]"), else 0
++inline std::uint64_t TaggedTitle(std::string_view name) {
++    for (size_t open = name.find('['); open != std::string_view::npos; open = name.find('[', open + 1)) {
++        if (open + 17 >= name.size() || name[open + 17] != ']' || name.substr(open + 1, 2) != "01") continue;
++        const std::string_view digits = name.substr(open + 1, 16);
++        if (std::all_of(digits.begin(), digits.end(), [](char c) { return std::isxdigit(static_cast<unsigned char>(c)) != 0; }))
++            return std::strtoull(std::string{digits}.c_str(), nullptr, 16);
++    }
++    return 0;
++}
++
++inline bool IsSwitchFile(const std::filesystem::path& path) {
++    std::string extension = path.extension().string();
++    std::transform(extension.begin(), extension.end(), extension.begin(),
++                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
++    return extension == ".nsp" || extension == ".xci";
++}
++
++// The game's own folder ("<root>/<folder>"): of the roots the game is in, the closest to it, and the
++// first folder under that root. Empty for a game directly in it, or in none of them.
++inline std::string GameFolder(std::string_view rom, const std::vector<std::string>& roots) {
++    std::string closest;
++    for (std::string root : roots) {
++        while (root.size() > 1 && root.back() == '/') root.pop_back();
++        if (root.size() < 2 || root.front() != '/') continue;
++        root += '/';
++        if (rom.starts_with(root) && root.size() > closest.size()) closest = std::move(root);
++    }
++    if (closest.empty()) return {};
++    const size_t slash = rom.find('/', closest.size());
++    return slash == std::string_view::npos || slash == closest.size() ? std::string{} : std::string{rom.substr(0, slash)};
++}
++
++// The NSP and XCI files beside a game (in its folder, not the folders in it), the game's own file
++// left out: those whose names give one of the game's update and DLC titles go in named, those whose
++// names give no title in unnamed (what they hold decides). Files named for another title, the game's
++// own included (another copy of it), are left out. base: the game's base title ID.
++inline void Beside(const std::filesystem::path& rom, std::uint64_t base, std::vector<std::filesystem::path>& named,
++                   std::vector<std::filesystem::path>& unnamed) {
++    if (!base) return;
++    std::error_code ec;
++    const std::filesystem::path folder = rom.parent_path();
++    std::vector<std::filesystem::path> files;
++    for (std::filesystem::directory_iterator it(folder, ec), end; !ec && it != end; it.increment(ec)) {
++        std::error_code type;
++        if (it->is_regular_file(type) && IsSwitchFile(it->path()) && it->path().filename() != rom.filename())
++            files.push_back(it->path());
++    }
++    std::sort(files.begin(), files.end());
++    for (std::filesystem::path& file : files) {
++        const std::string name = file.filename().string();
++        if (name.empty() || name.front() == '.') continue;
++        const std::uint64_t title = TaggedTitle(name);
++        if (!title) unnamed.push_back(std::move(file));
++        else if (IsAddOnOf(title, base)) named.push_back(std::move(file));
++    }
++}
++
++}  // namespace Eden::AddOns
+diff --git a/headless/main.cpp b/headless/main.cpp
+index 4295cd5..c203183 100644
+--- a/headless/main.cpp
++++ b/headless/main.cpp
+@@ -45,6 +45,7 @@ extern "C" void eden_stay_closed(void);
+ #include "log_flusher.h"
+ #include "multiplayer_logging.h"
+ #include "mods.h"
++#include "game_addons.h"
+ #include "controller_applet.h"
+ #include "error_applet.h"
+ #include "keyboard_applet.h"
+@@ -85,6 +86,7 @@ extern "C" std::int32_t sceKernelAvailableFlexibleMemorySize(std::size_t*);
+ #include "core/hle/service/am/frontend/applets.h"
+ #include "core/file_sys/common_funcs.h"
+ #include "core/file_sys/registered_cache.h"
++#include "core/file_sys/vfs/vfs_vector.h"
+ #include "core/hle/service/filesystem/filesystem.h"
+ #include "core/hle/service/set/settings_types.h"
+ #include "hid_core/frontend/emulated_controller.h"
+@@ -1392,20 +1394,17 @@ int main(int argc, char** argv) {
+             Settings::values.post_shader_enabled.SetValue(false);
+             Settings::values.post_shader_chain.SetValue(std::string{});
+             Settings::values.post_shader_preset.SetValue(std::string{});
+-            // A game in its own folder in roms/ (issue 168) brings its update, DLC, mods, cheats
+-            // and its own post-processing (reshade_folder.h): its presets and effects are read
+-            // again when the folder is another than the last game's.
++            // A game in its own folder in roms/ (issue 168), or in the folder PS5-ECAM's Switch side
++            // lists its games from (game_addons.h), brings its update, DLC, mods, cheats and its own
++            // post-processing (reshade_folder.h): its presets and effects are read again when the
++            // folder is another than the last game's.
+             Eden::Mods::SessionGameFolder().clear();
+             Eden::Mods::SessionTitle() = 0;
+             if (guest) {
+-                const std::string roms = Eden::AssetsPath("roms/");
+-                const std::string_view path{guest};
+-                if (path.starts_with(roms))
+-                    if (const auto slash = path.find('/', roms.size()); slash != std::string_view::npos) {
+-                        Eden::Mods::SessionGameFolder() = std::string{path.substr(0, slash)};
+-                        // Its mods and cheats are this title's alone (Mods::GameFolderFor).
+-                        Eden::Mods::SessionTitle() = game_title;
+-                    }
++                Eden::Mods::SessionGameFolder() =
++                    Eden::AddOns::GameFolder(guest, {Eden::AssetsPath("roms"), Eden::Session().games_folder});
++                // Its mods and cheats are this title's alone (Mods::GameFolderFor).
++                if (!Eden::Mods::SessionGameFolder().empty()) Eden::Mods::SessionTitle() = game_title;
+             }
+             if (Eden::Reshade::SetGameFolder(Eden::Mods::SessionGameFolder())) {
+                 VideoCore::ReloadFxPresetCatalog();
+@@ -1809,11 +1808,39 @@ int main(int argc, char** argv) {
+                 system.SetShuttingDown(false);
+                 // Update and DLC files (NSP or XCI) in the game files' updates folder apply to their
+                 // base game: Eden's ExternalContentProvider, which the patch manager checks first.
+-                // So do those in the game's own folder, when it has one (roms/<folder>/, issue 168).
++                // So do those in its dlc folder, when there is one, and in the game's own folder,
++                // when it has one (roms/<folder>/, issue 168, or the launcher's games folder's).
+                 Settings::values.external_content_dirs = {Eden::AssetsPath("updates")};
++                if (Eden::DirectoryExists(Eden::AssetsPath("dlc")))
++                    Settings::values.external_content_dirs.push_back(Eden::AssetsPath("dlc"));
+                 if (const std::string& folder = Eden::Mods::SessionGameFolder(); !folder.empty())
+                     Settings::values.external_content_dirs.push_back(folder);
+                 system.GetFileSystemController().CreateFactories(*system.GetFilesystem());
++#ifdef PS5_NATIVE
++                // A game with no folder of its own (directly in roms/ or a folder chosen in the
++                // launcher, a USB drive's): its update and DLC files beside it, and only those, by
++                // their names' title IDs or else what they hold (game_addons.h). They were left out:
++                // the launcher hid them from the library as the game's, and the game ran without them.
++                if (game && guest && game_title && Eden::Mods::SessionGameFolder().empty()) {
++                    const u64 base = FileSys::GetBaseTitleID(game_title);
++                    std::vector<std::filesystem::path> named, unnamed;
++                    Eden::AddOns::Beside(guest, base, named, unnamed);
++                    const std::string keys = Eden::AssetsPath("keys");
++                    for (std::filesystem::path& path : unnamed)
++                        if (eden_rom_holds_addon(path.c_str(), base, keys.c_str())) named.push_back(std::move(path));
++                    std::vector<FileSys::VirtualFile> beside;
++                    for (const std::filesystem::path& path : named)
++                        if (auto file = system.GetFilesystem()->OpenFile(path.string(), FileSys::OpenMode::Read))
++                            beside.push_back(std::move(file));
++                    if (auto* external = system.GetFileSystemController().GetExternalContentProvider();
++                        external && !beside.empty()) {
++                        Eden::Report("launch", ("Update and DLC beside the game: " + std::to_string(beside.size()) +
++                                                " files (" + std::to_string(unnamed.size()) + " read to tell)").c_str());
++                        external->AddDirectory(std::make_shared<FileSys::VectorVfsDirectory>(
++                            std::move(beside), std::vector<FileSys::VirtualDir>{}, "beside the game"));
++                    }
++                }
++#endif
+                 // The game's own contents, registered as Eden's desktop frontends do before booting a
+                 // game (ConfigureFilesystemProvider). An update's data is a patch on the base game's:
+                 // the patch manager looks the base up here, and without it applied only the update's
+diff --git a/headless/metadata_bridge.cpp b/headless/metadata_bridge.cpp
+index eeefb57..a5fe8c9 100644
+--- a/headless/metadata_bridge.cpp
++++ b/headless/metadata_bridge.cpp
+@@ -428,6 +428,36 @@ int eden_game_addon_files(uint64_t title_id, const char* updates_dir, const char
+     }
+ }
+ 
++int eden_rom_holds_addon(const char* rom_path, uint64_t base_title_id, const char* keys_dir) {
++    if (!rom_path || !base_title_id || !keys_dir) return 0;
++    try {
++        Common::FS::SetEdenPath(Common::FS::EdenPath::KeysDir, keys_dir);
++        FileSys::RealVfsFilesystem vfs;
++        const auto file = vfs.OpenFile(rom_path, FileSys::OpenMode::Read);
++        if (!file) return 0;
++        std::string name = file->GetName();
++        std::transform(name.begin(), name.end(), name.begin(),
++                       [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
++        std::shared_ptr<FileSys::NSP> package;
++        if (name.ends_with(".nsp")) {
++            package = std::make_shared<FileSys::NSP>(file);
++        } else if (name.ends_with(".xci")) {
++            FileSys::XCI image(file);
++            if (image.GetStatus() == Loader::ResultStatus::Success) package = image.GetSecurePartitionNSP();
++        }
++        if (!package || package->GetStatus() != Loader::ResultStatus::Success) return 0;
++        for (const auto& [title_id, contents] : package->GetNCAs()) {
++            if (FileSys::GetBaseTitleID(title_id) != base_title_id) continue;
++            for (const auto& [key, nca] : contents)
++                if (key.first == FileSys::TitleType::Update || key.first == FileSys::TitleType::AOC) return 1;
++        }
++        return 0;
++    } catch (const std::exception& error) {
++        std::fprintf(stderr, "[ProsperoEden] updates: %s\n", error.what());
++        return 0;
++    }
++}
++
+ int eden_game_language(const char* rom_path, const char* keys_dir, uint64_t title_id, int chosen) {
+     const auto& codes = Service::Set::available_language_codes;
+     if (chosen < 0 || chosen >= static_cast<int>(codes.size())) return chosen;
+diff --git a/headless/metadata_bridge.h b/headless/metadata_bridge.h
+index 6b8fcfb..a0ed0a8 100644
+--- a/headless/metadata_bridge.h
++++ b/headless/metadata_bridge.h
+@@ -54,6 +54,9 @@ void eden_scan_addons(const char* updates_dir, const char* roms_dir, const char*
+ typedef void (*eden_found_file)(void* user, const char* path);
+ int eden_game_addon_files(uint64_t title_id, const char* updates_dir, const char* game_dir, const char* keys_dir,
+                           eden_found_file found, void* user);
++// Whether an NSP or XCI holds the update or a DLC of the game whose base title ID is given; 0 when it
++// holds neither (another game's, the game itself) or cannot be read.
++int eden_rom_holds_addon(const char* rom_path, uint64_t base_title_id, const char* keys_dir);
+ // For a base game: the newest update's display version (empty without one) and its DLC count.
+ // Returns nonzero when either exists.
+ int eden_game_addons(uint64_t title_id, char* update_version, size_t capacity, unsigned* dlc_count);
+diff --git a/headless/settings_store.h b/headless/settings_store.h
+index 9181303..8bc503e 100644
+--- a/headless/settings_store.h
++++ b/headless/settings_store.h
+@@ -580,6 +580,9 @@ struct SessionSettings {
+     int memory_layout = -1, output = -1, refresh = -1, language = -1;
+     bool has_mapping = false;
+     ButtonMapping mapping = kDefaultMapping;
++    // The folder PS5-ECAM's Switch side lists its games from (its roms/ or one chosen, a USB drive's):
++    // a game in a folder of its own there brings that folder's update and DLC (game_addons.h)
++    std::string games_folder;
+ };
+ inline SessionSettings& Session() {
+     static SessionSettings settings;
+@@ -644,6 +647,7 @@ inline bool SetSessionSetting(std::string_view key, std::string_view value) {
+     else if (key == "room_nickname") session.room_nickname = text.substr(0, 20);
+     else if (key == "room_password") session.room_password = text.size() <= 128 ? text : std::string{};
+     else if (key == "room_name") session.room_name = text.substr(0, 512);
++    else if (key == "games_folder") session.games_folder = text.size() > 1 && text.size() <= 1024 && text.front() == '/' ? text : std::string{};
+     else if (key == "output_resolution") session.output = index(kOutputKeys, int(std::size(kOutputKeys)));
+     else if (key == "refresh_rate") session.refresh = index(kRefreshKeys, int(std::size(kRefreshKeys)));
+     else if (key == "language") session.language = index(kLanguageKeys, int(std::size(kLanguageKeys)));

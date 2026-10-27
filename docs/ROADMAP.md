@@ -44,6 +44,17 @@ checked by reading and compiling. Before a release:
    again after one is turned off and on. For L8, the boot log's `[pad] P1: device data` lines, with
    the battery's level as the PS5's menu shows it, to find which byte it is.
 12. **The bar:** Library and Settings beside P1 and the clock, on every side and with four players.
+13. **Switch updates and DLC** (`patches/eden/0018`): a game with its update and a DLC in a folder of
+   its own on a USB drive chosen as the games folder; one loose in `roms/` with them beside it; one
+   whose update has no title ID in its name. Each shows the update's version on its title screen and
+   has its DLC, and Eden's log says `Update and DLC beside the game` for the loose ones.
+14. **Everything on a USB drive** (`patches/eden/0019`): a first start of the app installed on a drive,
+    with no `/data/ps5cemu` and no Switch files on the console: `boot.log`'s `[paths]` line names
+    `<drive>/eden`, a Switch game starts with keys, firmware and its update there, its save is kept
+    there, and it is still there after the app starts again. Then an install from before on a drive
+    whose Switch files are in `/data/eden`: they stay in use.
+15. **An older copy left in `/data/homebrew`** with the app mounted from a USB drive (an image too):
+    leaving a Wii U game, and an update, start and update the copy on the drive.
 
 ### Stability
 
@@ -68,6 +79,25 @@ checked by reading and compiling. Before a release:
   its reporter. A game folder's mods were laid over the game's DLC and update too; Mario Kart 8 Deluxe
   with its DLC crashed as it booted. Also the likely cause of the Discord's MK8 Deluxe loop after its
   title screen: check with Teaz's and meundies' logs.
+- **Switch updates and DLC not taken:** Eden read a game's update and DLC from `updates/` and from
+  the game's own folder only when that folder was in its `roms/`. A games folder chosen in Settings >
+  Game files (a USB drive's), and update and DLC files beside a game, were left out, though the
+  library hid them as the game's and the guide said a game's folder brings them. **Done**,
+  `patches/eden/0018`: the launcher says where it lists its games from (`--set games_folder`), a game
+  in a folder of its own there brings that folder's update, DLC and mods as `roms/<folder>/` does, a
+  game without one takes the files beside it that are its own (by the title ID in their names, else
+  by what they hold), and `dlc/` is read as `updates/` is. `tools/tests/test-eden-addons.sh` checks
+  the rules; check on a console (above).
+- **The Switch's files never on the app's drive:** with the app on a USB drive or the extended
+  storage, the Wii U's, 3DS's and DS's folders went beside the launcher's data there, but the
+  Switch's keys, firmware, updates, saves and shader cache stayed in `/data/eden`, and an `eden`
+  folder made on the drive was never read. **Done**, `patches/eden/0019`: both programs choose the
+  Switch's folder with the same code (`ecam_layout::Eden`), on the drive unless the console's holds
+  files already, and the launcher marks it there. `test-eden-paths.sh` checks both agree on a drive.
+- **An older copy in `/data/homebrew` started or updated instead of the one on a drive:** with no
+  ShadowMountPlus record of the app's folder (an image), a restart tried `/data/homebrew` first and
+  an update replaced its files. **Done**: both take a copy only when its `eboot.bin` is the running
+  app's (`ps5paths::RunsFrom`); an update with none found says to install by hand.
 - **Upstream Switch fixes** (open PRs on Swordpdf/ProsperoEden, none tested on a PS5 by its author):
   taken as `patches/eden/0012` to `0014` (`21b8d87`): #287 (several updates of one game: the newest's
   version and control data), #289 (a full audio ring drops its oldest sound instead of stopping the
@@ -95,6 +125,9 @@ checked by reading and compiling. Before a release:
   the code: close both, thanking dolphin78.
 - **#76**: dolphin78 traced the stripes on empty screens to the grain's float hash, the cause fixed in
   `4f9b6f9`; this branch also gives each list's labels one size. Close it with the release.
+- **#81** (Lossless Scaling frame generation on the Switch, with the player's own `Lossless.dll`): done
+  on this branch; close it with the release (5.1.0, `Makefile`). What closed #58 asked for, a Wii U update
+  or DLC removed from the game's Options, is done too.
 - **#74, #75**: done on this branch (packs downloaded when missing; a share's games kept between
   looks). Close them with the release.
 - **#77** (Switch mods folder, `patches/eden/0011`) and **#80** (3DS: Remove its update or DLC, in a
@@ -378,7 +411,7 @@ The app carries GameTDB's English databases only (`port/app/gameinfo.h`). GameTD
 Spanish, Italian, Japanese and others. Download the one for the menus' language when it is chosen, to
 keep the app's ZIP small.
 
-<a id="l6"></a>**L6. Delete and uninstall from the game menu** (S to M)
+<a id="l6"></a>**L6. Delete and uninstall from the game menu** (S to M) · **Done** for installed updates and DLC: the 3DS's (#80) and the Wii U's (`ps5emu::RemoveInstalled`); deleting a game not yet
 The game menu has no delete. An installed 3DS CIA (and its update and DLC), or a Wii U update in
 `mlc01`, can only be removed by FTP today (#58 was about that). Hold Cross to delete, with the saves kept
 unless asked.
@@ -461,7 +494,7 @@ controller type (Pro Controller, Joy-Con pair, handheld), and players 2 to 4.
 `/data/ps5cemu/eden/mods` is there, but nothing in the app lists or turns on a mod or a cheat now. A
 game's menu could list them with a switch each, as the Add-ons tab of Eden on a PC does.
 
-<a id="n3"></a>**N3. Updates and DLC, shown** (S to M)
+<a id="n3"></a>**N3. Updates and DLC, shown** (S to M) · **Done** for the Switch (`port/eden/addons.h`): the update's version as the game shows it and the DLC count, on its page and in Recently played
 The library pairs a game with the update and DLC beside it, but does not show it. Show which version
 will run and which DLC is there, on the game's page.
 

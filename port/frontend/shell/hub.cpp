@@ -208,6 +208,15 @@ namespace ps5shell
 			if (g.dlcCount)
 				cx += Chip(canvas, cx, cy, Tr("DLC")) + 10;
 		}
+		else if (IsSwitch() && (g.hasUpdate || g.dlcCount))
+		{
+			// a Switch game's update, by the version it shows ("Update v1.2.0"), and its DLC: those Eden
+			// will take with it (addons.h)
+			if (g.hasUpdate && !g.versionName.empty())
+				cx += Chip(canvas, cx, cy, TrF("Update v{0}", g.versionName)) + 10;
+			if (g.dlcCount)
+				cx += Chip(canvas, cx, cy, TrP(g.dlcCount, "{0} DLC", "{0} DLC")) + 10;
+		}
 		else if (!g.publisher.empty() && !game.known)
 			cx += Chip(canvas, cx, cy, g.publisher) + 10;
 		if (!g.format.empty())

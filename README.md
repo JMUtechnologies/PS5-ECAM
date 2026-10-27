@@ -19,8 +19,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/premohq/PS5-ECAM/raw/releases/PS5-ECAM-v5.0.1.zip"><b>Download 5.0.1</b></a> (ZIP, 84.9 MB) ·
-  <a href="https://github.com/premohq/PS5-ECAM/releases/tag/v5.0.1">Release notes</a> ·
+  <a href="https://github.com/premohq/PS5-ECAM/raw/releases/PS5-ECAM-v5.1.0.zip"><b>Download 5.1.0</b></a> (ZIP) ·
+  <a href="https://github.com/premohq/PS5-ECAM/releases/tag/v5.1.0">Release notes</a> ·
   <a href="#install">Install</a> ·
   <a href="docs/GUIDE.md">Guide</a> ·
   <a href="docs/COMPATIBILITY.md">Compatibility</a> ·
@@ -29,31 +29,32 @@
 
 ---
 
-## What's new in 5.0.1
+## What's new in 5.1.0
 
-The Switch side now works like the others, save states come to the 3DS and DS, and ReShade to the Wii U.
-The details are in the [release notes](https://github.com/premohq/PS5-ECAM/releases/tag/v5.0.1).
+A folder for each system, everything on a USB drive, and the Switch's updates and DLC wherever they are.
+The details are in the [release notes](https://github.com/premohq/PS5-ECAM/releases/tag/v5.1.0).
 
-- **Switch games start, in the app's own look** ([#67](https://github.com/premohq/PS5-ECAM/issues/67), [#64](https://github.com/premohq/PS5-ECAM/issues/64)):
-  PS5-ECAM's loading screen, and the same in-game menu as the other sides on **touchpad click +
-  Options** (upscaling, FSR sharpening, anti-aliasing, frame generation, speed, volume, docked or
-  handheld, controller type, deadzone, amiibo). The library reads each game's own files, with
-  GameTDB box art. **Controls > Buttons** remaps the Switch's buttons, a **Performance** page has
-  ProsperoEden's switches and memory sizes, and **Settings > Online > Multiplayer** joins ProsperoEden's public
-  rooms.
-- **Save states on the 3DS and DS:** touchpad click + Square saves, + Triangle held loads; *Undo the
-  last load*; *Quit to the library* saves a state and *Resume* goes on from it. A fast forward that
-  turns on and off with a press.
-- **ReShade on the Wii U** (**Settings > Graphics** or the in-game menu): your PC presets and effects
-  in `/data/ps5cemu/reshade`. **Frame generation** with MihawkGen on the Wii U and 3DS
-  ([#66](https://github.com/premohq/PS5-ECAM/issues/66)), off by default.
-- **3DS:** Artic Setup works, from dolphin78 ([#45](https://github.com/premohq/PS5-ECAM/issues/45), [#70](https://github.com/premohq/PS5-ECAM/pull/70)); 3D for red and cyan
-  glasses; the cameras see a picture from `azahar/camera` (QR codes); screen rotation.
-- **Amiibo by series** on the Wii U and Switch: folders of dumps in `/data/ps5cemu/amiibo`.
-- **Fixes:** leaving a game no longer closes the app ([#68](https://github.com/premohq/PS5-ECAM/issues/68)); Wii Party U's minigames
-  ([#65](https://github.com/premohq/PS5-ECAM/issues/65)); Russian, Ukrainian and Greek letters ([#69](https://github.com/premohq/PS5-ECAM/issues/69)); downloads that hung; graphic packs copied in
-  by hand are kept. Also: an update can be undone, backups carry the settings and the Switch's saves,
-  a phone sends files into the app's folders, and the launcher dims after five idle minutes.
+- **A folder for each system:** `/data/cemu`, `/data/azahar`, `/data/melonds` and `/data/eden`. An install
+  from before keeps working where it is, and **Reorganize** moves it in a moment, and back
+  ([System folders](docs/SYSTEM-FOLDERS.md)).
+- **Everything on your USB drive:** with the app on a drive, every system's files go beside it there, the
+  Switch's too (its keys and saves on the console stay in use). An older copy of the app left in
+  `/data/homebrew` is no longer started or updated in place of the one you run.
+- **Switch:** updates and DLC are found beside a game in any games folder, a USB drive's too, and its page
+  shows the update's version and DLC; frame generation with Lossless Scaling and your own `Lossless.dll`
+  ([#81](https://github.com/premohq/PS5-ECAM/issues/81)); mods, cheats, players, and saves to USB and back (Ryujinx's too), from JMUtechnologies
+  ([#86](https://github.com/premohq/PS5-ECAM/pull/86)); a game with a mods folder starts ([#77](https://github.com/premohq/PS5-ECAM/issues/77)); fixes from ProsperoEden's open pull
+  requests (several updates of one game, a full audio buffer, Metal Gear Solid: Master Collection).
+- **Updates in a minute** ([#78](https://github.com/premohq/PS5-ECAM/issues/78), [#73](https://github.com/premohq/PS5-ECAM/issues/73), [#72](https://github.com/premohq/PS5-ECAM/issues/72)): Check for updates answers at once, and
+  an update installs in about a minute and can be cancelled.
+- **Library:** 3DS and DS games come back to it without the app starting over; each game's play time; one
+  layout, Light by default; graphic packs downloaded when Cemu first needs them, so the app is smaller
+  ([#74](https://github.com/premohq/PS5-ECAM/issues/74)); network shares looked through only when you ask ([#75](https://github.com/premohq/PS5-ECAM/issues/75)); Azahar's compressed 3DS
+  files with their names and box art.
+- **Remove its update or DLC** from a Wii U ([#58](https://github.com/premohq/PS5-ECAM/issues/58)) or 3DS ([#80](https://github.com/premohq/PS5-ECAM/issues/80)) game's Options menu.
+- **DS** (from [#86](https://github.com/premohq/PS5-ECAM/pull/86)): a GBA game in Slot-2 for Pal Park, a recorded microphone, touch calibration.
+- **Fixes:** stripes on empty screens ([#76](https://github.com/premohq/PS5-ECAM/issues/76)); one label size in Cyrillic ([#79](https://github.com/premohq/PS5-ECAM/issues/79)); a renamed
+  Wii U account's name is the one games show; the Swedish menus reviewed by yeager ([#83](https://github.com/premohq/PS5-ECAM/pull/83)).
 
 Changes in earlier versions are in their [release notes](https://github.com/premohq/PS5-ECAM/releases).
 
@@ -76,7 +77,7 @@ Changes in earlier versions are in their [release notes](https://github.com/prem
 
 1. **A PS5 that runs homebrew.** Any firmware up to 13.60, with etaHEN, OnionHEN, or an ELF loader on
    port 9021. See the [firmware and setup guide](docs/HEN-SETUP.md).
-2. **Copy the app.** Download the [5.0.1 ZIP](https://github.com/premohq/PS5-ECAM/raw/releases/PS5-ECAM-v5.0.1.zip) ([release notes](https://github.com/premohq/PS5-ECAM/releases/tag/v5.0.1)),
+2. **Copy the app.** Download the [5.1.0 ZIP](https://github.com/premohq/PS5-ECAM/raw/releases/PS5-ECAM-v5.1.0.zip) ([release notes](https://github.com/premohq/PS5-ECAM/releases/tag/v5.1.0)),
    extract it and copy the `PPSA99360` folder to `/data/homebrew/PPSA99360`.
 3. **Let your HEN in.** etaHEN: add `PPSA99360` to its app jailbreak list. OnionHEN: add `PPSA99360`
    at the end of `exact_title_ids` in `config.ini`, with no comma after it. Any other: have an ELF
@@ -95,7 +96,8 @@ Game files**): the files are moved in a moment, never copied or deleted, and can
 
 Installed on a USB drive or the extended storage? A `PS5CEMU-HAR-data` folder at the top of that drive
 (its name from before 5.0.0, kept so nothing moves) keeps the launcher's files there instead of in
-`/data`, with `cemu`, `azahar` and `melonds` beside it; the Switch's stay in `/data/eden`.
+`/data`, with `cemu`, `azahar`, `melonds` and `eden` beside it (the Switch's stay in `/data/eden` when
+they are there already).
 [The guide](docs/GUIDE.md#everything-on-the-apps-drive) says how.
 
 ## Your games

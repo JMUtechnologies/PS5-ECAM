@@ -27,6 +27,7 @@ namespace ps5eden::nx
 		constexpr uint64_t kLargestMeta = 4 << 20;	 // a RomFS's file table
 		constexpr uint64_t kLargestIcon = 4 << 20;
 		constexpr size_t kNacpNames = 16 * 0x300; // a name (0x200) and a publisher (0x100) a language
+		constexpr size_t kNacpVersion = 0x3060, kNacpVersionSize = 0x10; // the version the game shows ("1.2.0")
 		// the icons a control RomFS can have, in the order Eden takes them (the languages' order in NACP)
 		constexpr const char* kLanguages[] = {"AmericanEnglish", "BritishEnglish", "Japanese", "French", "German",
 			"LatinAmericanSpanish", "Spanish", "Italian", "Dutch", "CanadianFrench", "Portuguese", "Russian", "Korean",
@@ -335,8 +336,12 @@ namespace ps5eden::nx
 				auto nacp = files.find("control.nacp");
 				if (nacp == files.end())
 					nacp = files.find("Control.nacp");
+				// the names, and the version after them when control.nacp is whole
 				std::vector<uint8_t> names;
-				if (nacp != files.end() && nacp->second.second >= kNacpNames && read(romfs + dataOffset + nacp->second.first, kNacpNames, names))
+				const uint64_t nacpSize = nacp == files.end() ? 0 : nacp->second.second;
+				const size_t wanted = nacpSize >= kNacpVersion + kNacpVersionSize ? kNacpVersion + kNacpVersionSize : kNacpNames;
+				if (nacpSize >= kNacpNames && read(romfs + dataOffset + nacp->second.first, wanted, names))
+				{
 					for (size_t language = 0; language < 16 && info.name.empty(); language++)
 					{
 						const char* text = (const char*)names.data() + language * 0x300;
@@ -344,6 +349,14 @@ namespace ps5eden::nx
 						if (UsableName(name))
 							info.name = name;
 					}
+					if (names.size() >= kNacpVersion + kNacpVersionSize)
+					{
+						const char* text = (const char*)names.data() + kNacpVersion;
+						const std::string version(text, strnlen(text, kNacpVersionSize));
+						if (UsableName(version) && version.find_first_of(" \t") == std::string::npos)
+							info.version = version;
+					}
+				}
 				if (icon)
 					for (const char* language : kLanguages)
 						if (const auto found = files.find(std::string("icon_") + language + ".dat"); found != files.end())
@@ -502,15 +515,16 @@ namespace ps5eden::nx
 			why = "it holds no game, update or DLC";
 			return false;
 		}
-		// its own name (and icon): from the control NCA of that title, else any
+		// a game's own name (and icon), and its version or its update's: from the control NCA of that
+		// title, else any. DLC has none.
 		const Nca* control = nullptr;
 		for (const Nca& nca : ncas)
 			if (nca.contentType == 2 && (!control || nca.programId == info.titleId))
 				control = &nca;
-		if (control && info.kind == Kind::Game)
+		if (control && (info.kind == Kind::Game || info.kind == Kind::Update))
 		{
 			std::string controlWhy;
-			if (!ReadControl(file, *control, keys, tickets, icon, info, controlWhy))
+			if (!ReadControl(file, *control, keys, tickets, icon && info.kind == Kind::Game, info, controlWhy))
 				why = controlWhy;
 		}
 		return true;

@@ -195,8 +195,10 @@ with names fetches only those items): `tools/lang.py check`, `tools/tests/test-k
 `test-paths.sh` (the four systems' folders, new and from before, with nothing else needed),
 `test-reorganize.sh` (an install from before given a folder for each system and put back: a file in the
 way, a move that fails, a power cut),
-`test-eden-paths.sh` (the launcher and the patched Eden program pick the same folder; after fetching
-`prosperoedenx` and `tools/eden-patches.sh apply`), `python3 -B tools/tests/test-separate-systems.py`
+`test-eden-paths.sh` (the launcher and the patched Eden program pick the same folder, on the console
+and with the app on a drive; after fetching `prosperoedenx` and `tools/eden-patches.sh apply`), `test-eden-addons.sh` (where the patched Eden program
+finds a game's update and DLC: its own folder in any games folder, else the files beside it, by their
+names), `python3 -B tools/tests/test-separate-systems.py`
 (the copying tool, and the ways it refuses), `test-saves-paths.sh` (backup and restore in both layouts,
 with `pkg-config` and `libfmt-dev`),
 `test-music.sh` (with `ffmpeg`), `test-update.sh` (an update's ZIP unpacked four files at a time, with

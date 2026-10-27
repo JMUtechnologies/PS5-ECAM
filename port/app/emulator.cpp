@@ -1019,7 +1019,10 @@ namespace ps5emu
 		};
 		consider("/app0");
 		consider(ps5paths::MountSource());
-		consider(ps5paths::kInstallDir);
+		// the usual install folder when it holds the copy running: an older one left there beside an app
+		// on a drive started instead of it
+		if (ps5paths::RunsFrom(ps5paths::kInstallDir))
+			consider(ps5paths::kInstallDir);
 		consider(ps5paths::AppDir());
 		consider(ps5paths::kSystemMount);
 		if (folders.empty())
