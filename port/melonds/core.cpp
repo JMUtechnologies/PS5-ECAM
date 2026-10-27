@@ -946,19 +946,31 @@ namespace ps5melonds
 			return false;
 		}
 
-		// the console: a DS's own BIOS and firmware, or melonDS's
+		// a GBA cartridge in Slot-2, when it is on and the game has one (melonds/slot2/<game>.gba): a game
+		// without one starts with the slot empty, and so does one whose cartridge cannot be read, saying why
 		auto slot = slot2::Load(Root(), s_stem, settings.dsSlot2);
-		if (!slot.error.empty()) { error = slot.error; return false; }
 		std::unique_ptr<melonDS::GBACart::CartCommon> gba;
 		if (!slot.rom.empty())
 		{
 			gba = melonDS::GBACart::ParseROM(slot.rom.data(), (u32)slot.rom.size(), slot.save.empty() ? nullptr : slot.save.data(), (u32)slot.save.size(), nullptr);
-			if (!gba) { error = ps5lang::Tr("The Slot-2 cartridge could not be read."); return false; }
+			if (!gba)
+				slot.error = "melonDS could not read the cartridge";
 		}
+		if (!slot.error.empty())
+		{
+			ps5log::Line("[ds] Slot-2 left empty: {}", slot.error);
+			ps5notify::Send(ps5lang::Tr("The GBA cartridge for Slot-2 could not be read: the game starts without it (the boot log says why)."));
+			gba.reset();
+			slot = {};
+		}
+		else if (gba)
+			ps5log::Line("[ds] Slot-2: {} ({} bytes), its save {}", s_stem + ".gba", slot.rom.size(), slot.save.empty() ? "new" : "found");
 		{
 			std::lock_guard lock(s_gbaSaveMutex);
 			s_gbaSavePath = slot.savePath; s_gbaSave = slot.save; s_gbaDirty = false;
 		}
+
+		// the console: a DS's own BIOS and firmware, or melonDS's
 		melonDS::NDSArgs args;
 		auto bios9 = settings.dsOwnBios ? ReadBios<melonDS::ARM9BIOSSize>("bios9.bin") : nullptr;
 		auto bios7 = settings.dsOwnBios ? ReadBios<melonDS::ARM7BIOSSize>("bios7.bin") : nullptr;
@@ -984,7 +996,14 @@ namespace ps5melonds
 		const auto gameMic = fs::path(Root()) / "microphone" / (s_stem + ".wav");
 		const auto micStatus = settings.dsMicSource == 2 ? fs::symlink_status(gameMic, ec) : fs::file_status{};
 		const auto micFile = micStatus.type() != fs::file_type::not_found && micStatus.type() != fs::file_type::none ? gameMic : fs::path(Root()) / "microphone.wav";
-		if (!microphone::source.Configure(settings.dsMicSource, micFile.string(), error)) return false;
+		// a recorded WAV that is missing or cannot be read: blowing makes noise as before, rather than the
+		// game not starting
+		if (std::string why; !microphone::source.Configure(settings.dsMicSource, micFile.string(), why))
+		{
+			ps5log::Line("[ds] the recorded microphone ({}): {}; noise instead", micFile.string(), why);
+			ps5notify::Send(ps5lang::Tr("The recorded microphone could not be read: blowing makes noise instead (the boot log says why)."));
+			microphone::source.Configure(0, {}, why);
+		}
 
 		if (s_captureEnabled)
 		{

@@ -13,7 +13,8 @@ int main(int argc, char** argv)
 	const fs::path root = argv[1];
 	using ps5melonds::slot2::Load;
 	Check(Load(root.string(), "Game", false).error.empty() && Load(root.string(), "Game", false).rom.empty(), "disabled default reads no cartridge");
-	Check(!Load(root.string(), "Game", true).error.empty(), "enabled missing cartridge reports error");
+	const auto none = Load(root.string(), "Game", true);
+	Check(none.error.empty() && none.rom.empty() && none.savePath.empty(), "enabled, a game without its cartridge has the slot empty, no error");
 	Put(root / "slot2/Game.gba", std::string(0xC0, 'R'));
 	Put(root / "slot2/Game.sav", "supplied");
 	auto cart = Load(root.string(), "Game", true);
