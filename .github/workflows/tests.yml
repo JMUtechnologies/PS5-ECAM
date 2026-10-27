@@ -79,7 +79,12 @@ jobs:
         run: bash tools/tests/test-saves.sh
 
       - name: Switch standalone features
-        run: bash tools/tests/test-eden-extras.sh
+        run: |
+          # the launcher's copies of Eden's readers are Eden's, patches/eden applied (port/eden/standalone)
+          for f in mods cheats patch_library native_directory ryujinx_saves; do
+            cmp port/eden/standalone/$f.h .deps/ProsperoEdenX/headless/$f.h
+          done
+          bash tools/tests/test-eden-extras.sh
 
       - name: Switch player management
         run: bash tools/tests/test-profile-management.sh

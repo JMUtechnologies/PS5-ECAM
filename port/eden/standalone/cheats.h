@@ -50,4 +50,3 @@ void Append(Entries& out, const Entries& list, std::string_view mod) {
     }
 }
 } // namespace Eden::Cheats
-

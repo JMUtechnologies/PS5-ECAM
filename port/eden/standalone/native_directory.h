@@ -75,4 +75,3 @@ inline std::vector<std::filesystem::directory_entry> ReadNativeDirectory(
     }
 }
 }
-

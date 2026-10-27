@@ -112,4 +112,3 @@ inline void Toggle(const std::vector<Entry>& entries, std::set<std::string>& cho
     chosen.insert(entry.id);
 }
 } // namespace Eden::Patches
-

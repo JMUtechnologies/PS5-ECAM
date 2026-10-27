@@ -257,4 +257,3 @@ inline bool Export(const fs::path& account_folder, const fs::path& device_folder
     return copied;
 }
 } // namespace Eden::RyujinxSaves
-
