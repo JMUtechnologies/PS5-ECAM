@@ -19,9 +19,10 @@ not been built for or tested on a PS5. Host tests and syntax checks cannot estab
   user. It never creates, renames or deletes a profile and never rewrites profiles.dat.
 - Switch Settings exposes the existing whole-save USB backup page. Per-game Saves supports
   title-specific discovery, backup, restore and move-aside across account save directories.
-- Per-game export excludes other games, profile system data and launcher settings. Restoring
+- Per-game ECAM backup excludes other games, profile system data and launcher settings. Restoring
   uses ECAM's existing file-based restore semantics, retaining replaced files first. It does
-  not provide a raw-folder or Ryujinx import wizard or cloud synchronization.
+  is separate from the new staged plain-folder/Ryujinx transfer described below. Cloud synchronization
+  remains unimplemented.
 - Unknown systems no longer fall through to DS save handling. Synthetic Switch library IDs
   cannot be used to select saves. Same-second backup requests use separate directories.
 - Save tests use a temporary mount root and no longer require root or delete /mnt/usb0 content.
@@ -60,6 +61,9 @@ New user-facing strings currently use the launcher's normal English fallback pen
 
 ## Console qualification still required
 
+The contributor is providing source; the ECAM owner will build and test the console implementation.
+Owner testing is not a prerequisite for submitting this draft code and does not imply it has passed.
+
 Use copies of saves/settings and keep the known-good release. On a PS5, confirm:
 
 1. Existing profiles and per-game choices match standalone behavior; unknown JSON keys survive.
@@ -75,3 +79,29 @@ Use copies of saves/settings and keep the known-good release. On a PS5, confirm:
 7. Launch DS, 3DS, Wii U and Switch; check audio, controls, save/load and return to library.
 
 No merge or installation is implied by the host checks.
+
+## Plain-folder and Ryujinx save transfers
+
+In a Switch game's Saves page, Export selected player's save writes a new
+`USB/PS5-ECAM-exports/<timestamp>/<TITLE>/account` and/or `device` tree. Choose an existing
+player in Switch Settings first. These files can be transferred to another emulator's save folder.
+
+For imports, put either `<TITLE>/account` and/or `<TITLE>/device` under
+`USB/PS5-ECAM-imports`, or copy a Ryujinx data folder (with bis/ and its save index) to
+`USB/Ryujinx`. The selected title's entries are detected; hold the Import row to copy them.
+Raw `<TITLE>/<save files>` is accepted as an account save. The Ryujinx reader uses the indexed
+account/device saves, selecting the first account for the requested title, as the donor does.
+It does not offer a Ryujinx-user selector.
+
+The transfer runs on the backup worker and Finish() waits before a game can launch. Every source
+is staged before either destination changes; previous directories are retained in
+`eden/save-transfer-recovery/<unique>/account.before` and/or `device.before`. A commit failure
+attempts rollback and reports any incomplete recovery. This is exception/error handling, not
+crash/power-loss atomicity across two directories. Do not run an emulator or edit saves externally
+during a transfer. Symlinks, overlapping trees, duplicate kinds and empty saves are refused;
+limits are 100000 files / 4 GiB / 32 directory levels, and a 16 MiB Ryujinx index. No games,
+keys, firmware, save decryption or filesystem conversion is included.
+
+Host test: `bash tools/tests/test-save-transfer.sh`. Owner qualification must additionally
+check actual PS5 mount semantics, errors, selected profile IDs, data equality, recovery and
+portable export compatibility on copies of saves.
