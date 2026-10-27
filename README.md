@@ -168,6 +168,9 @@ Big thanks to the people who sent code and fixes to PS5-ECAM itself:
 - **[3lmerx503](https://github.com/3lmerx503)** for finding and testing the rumble fix ([#41](https://github.com/premohq/PS5-ECAM/issues/41))
 - **[yeager](https://github.com/yeager)** (Daniel Nylander) for his review of the Swedish translation
   ([#85](https://github.com/premohq/PS5-ECAM/pull/85))
+- **[JMUtechnologies](https://github.com/JMUtechnologies)** for a folder for each system: the Wii U's,
+  3DS's, DS's and Switch's files in folders of their own, Eden's side of it, an install from before
+  still found, and the PC tool that separates one
 
 ### Built on
 

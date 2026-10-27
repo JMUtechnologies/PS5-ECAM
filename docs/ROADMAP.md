@@ -89,7 +89,7 @@ checked by reading and compiling. Before a release:
   game's Options): done on this branch; close them with the release. **#79** (Cyrillic labels of
   different sizes) is #76's: the labels' one size; check on a console, then close it with #76.
 - **PR #83 and PR #85** (yeager, the Swedish review; #85 is #83 again with his GitHub address): taken
-  as `fedc5a7`, his commit. Close both with the release, thanking him; he is in the README's
+  as `8e309cf`, his commit. Close both with the release, thanking him; he is in the README's
   contributors.
 
 ### Lighter
@@ -128,7 +128,8 @@ The paths are in the code now, on this branch, with a layout that differs from t
 four folders sit beside `/data/ps5cemu` rather than inside a new `/data/PS5-ECAM`, and the
 launcher's own files stay in `/data/ps5cemu`.
 
-- **Done:** `/data/cemu`, `/data/azahar`, `/data/melonds` and `/data/eden` for a new install, each with
+- **Done**, by JMUtechnologies (`1d95209`, his patch; he is in the README's contributors):
+  `/data/cemu`, `/data/azahar`, `/data/melonds` and `/data/eden` for a new install, each with
   its own games, updates, DLC, keys and firmware or BIOS folders (`port/app/system_layout.h`,
   `ps5paths::DecideSystemRoots`, the `[paths]` line in the boot log). An install from before is found
   where it is and nothing moves. Eden's program picks its folder with the same code
