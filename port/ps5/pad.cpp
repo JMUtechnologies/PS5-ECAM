@@ -190,6 +190,19 @@ namespace ps5pad
 		}
 		if (scePadReadState(handle, &out) < 0 || !out.connected)
 			return false;
+		// once for each controller, the bytes the state has that no header describes (its device data and
+		// extension): where the DualSense's battery is, for a corner of the launcher to show it (roadmap L8)
+		static std::atomic<bool> s_described[kMaxPlayers]{};
+		if (!s_described[player].exchange(true))
+		{
+			std::string device, extension;
+			for (int i = 0; i < std::min<int>(out.deviceUniqueDataLength, sizeof(out.deviceUniqueData)); i++)
+				device += fmt::format("{:02x}", out.deviceUniqueData[i]);
+			for (uint8_t byte : out.extension)
+				extension += fmt::format("{:02x}", byte);
+			ps5log::Line("[pad] P{}: device data ({} bytes) {}, extension {}", player + 1, (int)out.deviceUniqueDataLength,
+				device.empty() ? "none" : device, extension);
+		}
 		if (out.buttons & kIntercepted)
 		{
 			// the system menu has the controller: report it at rest
