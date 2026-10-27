@@ -93,6 +93,7 @@ namespace ps5catalog
 				entry.ambient[1] = (uint32_t)std::strtoul(String(item, "ambient1").c_str(), nullptr, 16);
 				entry.added = Int(item, "added");
 				entry.favourite = item.HasMember("favourite") && item["favourite"].IsBool() && item["favourite"].GetBool();
+				entry.hidden = item.HasMember("hidden") && item["hidden"].IsBool() && item["hidden"].GetBool();
 				entry.lastPlayed = Int(item, "lastPlayed");
 				entry.minutesPlayed = (uint32_t)Int(item, "minutes");
 				if (!entry.game.name.empty())
@@ -162,6 +163,11 @@ namespace ps5catalog
 				writer.Int64(entry.added);
 				writer.Key("favourite");
 				writer.Bool(entry.favourite);
+				if (entry.hidden)
+				{
+					writer.Key("hidden");
+					writer.Bool(true);
+				}
 				writer.Key("lastPlayed");
 				writer.Int64(entry.lastPlayed);
 				writer.Key("minutes");
@@ -222,6 +228,12 @@ namespace ps5catalog
 	{
 		if (Entry* entry = Find(side, titleId))
 			entry->favourite = favourite;
+	}
+
+	void SetHidden(System side, uint64_t titleId, bool hidden)
+	{
+		if (Entry* entry = Find(side, titleId))
+			entry->hidden = hidden;
 	}
 
 	void SetAmbient(System side, uint64_t titleId, const uint32_t ambient[2])

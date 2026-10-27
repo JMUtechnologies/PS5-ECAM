@@ -54,6 +54,7 @@ static void Write()
 	Replace(System::Switch, {Make(kKirby, "Kirby", "/data/ps5cemu/eden/roms/kirby.nsp")});
 
 	SetFavourite(System::N3ds, kPokemon, true);
+	SetHidden(System::Nds, kMario, true);
 	const uint32_t ambient[2] = {0x11223344, 0xaabbccdd};
 	SetAmbient(System::WiiU, kZelda, ambient);
 	Check(Ended(System::N3ds, kPokemon, kStarted) == 0, "play time: nothing for a game never started");
@@ -87,6 +88,7 @@ static void Read()
 	Check(pokemon && pokemon->favourite && pokemon->lastPlayed == kStarted && pokemon->minutesPlayed == 62, "favourite, last played, 62 minutes");
 	const Entry* mario = Find(System::Nds, kMario);
 	Check(mario && mario->game.nds && !mario->game.Archived(), "a DS game");
+	Check(mario && mario->hidden && pokemon && !pokemon->hidden, "a hidden game stays hidden, the others not");
 	Check(Find(System::Switch, kKirby) && Games(System::Switch).size() == 1, "a Switch game");
 	Check(!Find(System::Nds, kPokemon), "each side its own");
 

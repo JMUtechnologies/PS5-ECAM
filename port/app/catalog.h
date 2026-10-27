@@ -2,7 +2,7 @@
 // PS5-ECAM: each side's game list as last seen, /data/ps5cemu/library.json.
 // The launcher draws a side from it at once while that side's scan runs, and the scan's list
 // replaces it when it finishes, keeping what the catalogue knows of each game by title ID: when a scan
-// first found it (Recently added), whether it is a favourite, when it was last played and for how
+// first found it (Recently added), whether it is a favourite or hidden, when it was last played and for how
 // long, and its two ambient colours. Deleting the file only costs one full scan of each side.
 
 #pragma once
@@ -28,6 +28,7 @@ namespace ps5catalog
 		uint32_t ambient[2] = {}; // RGBA, from the cover (0: not known yet)
 		int64_t added = 0;		  // seconds since 1970 a scan first found it; 0: in the first scan
 		bool favourite = false;
+		bool hidden = false;	  // left out of the Library's list (its Hidden filter, and Search, still find it)
 		int64_t lastPlayed = 0;	  // seconds since 1970; 0: never
 		uint32_t minutesPlayed = 0;
 	};
@@ -41,6 +42,7 @@ namespace ps5catalog
 	// After a side's scan: its list replaced, what is known of each game kept by title ID
 	void Replace(System side, const std::vector<ps5emu::Game>& scanned);
 	void SetFavourite(System side, uint64_t titleId, bool favourite);
+	void SetHidden(System side, uint64_t titleId, bool hidden);
 	void SetAmbient(System side, uint64_t titleId, const uint32_t ambient[2]);
 	// A game started (when: now, as the launcher starts it)
 	void Played(System side, uint64_t titleId, int64_t when);

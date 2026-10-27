@@ -1801,6 +1801,8 @@ namespace ps5shell
 		if (Is3ds() && (g.entry.game.hasUpdate || g.entry.game.dlcCount > 0))
 			m_menu.items.push_back({"removeaddons", Tr("Remove its update or DLC")});
 		m_menu.items.push_back({"favourite", g.entry.favourite ? Tr("Not a favourite") : Tr("Favourite")});
+		// tr: the game menu: a game left out of the Library's list (for demos and clutter), or put back
+		m_menu.items.push_back({"hide", g.entry.hidden ? Tr("Back in the Library") : Tr("Hide from the Library")});
 		if (ps5forwarders::HasTile(g.entry.game.path.string()))
 			m_menu.items.push_back({"untile", Tr("Remove from home screen")});
 		else
@@ -2220,6 +2222,22 @@ namespace ps5shell
 					Toast(g.entry.favourite ? Tr("Added to Favourites") : Tr("Taken out of Favourites"));
 					LibraryRefresh();
 				}
+				else if (id == "hide")
+				{
+					g.entry.hidden = !g.entry.hidden;
+					ps5catalog::SetHidden(CatalogSide(), g.entry.game.titleId, g.entry.hidden);
+					ps5catalog::Save();
+					m_feedback.Play(ui::Cue::Toggle);
+					// where it is found again: the Hidden filter only while the filters' row is shown (Settings > Launcher)
+					if (!g.entry.hidden)
+						Toast(Tr("Back in the Library"));
+					else if (m_settings.ui.libraryFilters)
+						Toast(Tr("Hidden. The Library's Hidden filter has it, and Search finds it."));
+					else
+						// tr: a game just hidden from the Library while its filters' row is off: Search still lists it
+						Toast(Tr("Hidden. Search finds it."));
+					LibraryRefresh();
+				}
 			}
 			return true;
 		}
@@ -2328,7 +2346,7 @@ namespace ps5shell
 			canvas.Text(Style(kHeadingStyle), sheet.x + 36, sheet.y + 78, game.entry.game.name, kText, sheet.w - 72, 1);
 			static const std::map<std::string, Icon> kIcons = {{"play", Icon::Play}, {"hub", Icon::ChevronRight}, {"settings", Icon::Sparkle},
 				{"saves", Icon::Save}, {"packs", Icon::Gear}, {"mods", Icon::Usb}, {"updates", Icon::Download}, {"favourite", Icon::Star},
-				{"tile", Icon::Home}, {"untile", Icon::Home}, {"resume", Icon::Play}};
+				{"hide", Icon::Dash}, {"tile", Icon::Home}, {"untile", Icon::Home}, {"resume", Icon::Play}};
 			for (int i = 0; i < count; i++)
 			{
 				const Box row{sheet.x + 20, sheet.y + 136 + i * rowH, sheet.w - 40, rowH - 6};

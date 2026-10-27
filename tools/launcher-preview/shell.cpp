@@ -29,7 +29,8 @@
 // started. PREVIEW_LANGUAGE names the menus' language ("de"; "qps", tools/lang.py pseudo's, for text
 // that does not fit), PREVIEW_SYSTEM_LANGUAGE the PS5's (its number: 4 is German, 0 Japanese).
 // PREVIEW_WHATSNEW starts as after an update (Make it yours, with what the version brings); PREVIEW_THEME
-// names a theme (ui/theme.h's id: link-jack, midnight...); PREVIEW_SIDES the sides shown (1 Wii U, 2 3DS, 4 DS).
+// names a theme (ui/theme.h's id: link-jack, midnight...); PREVIEW_SIDES the sides shown (1 Wii U, 2 3DS, 4 DS);
+// PREVIEW_FILTERS turns the Library's filters' row on.
 
 #include "console.h"
 
@@ -119,6 +120,8 @@ int main(int argc, char* argv[])
 	}
 	if (std::getenv("PREVIEW_REMOTE"))
 		settings.remoteScreen = true;
+	if (std::getenv("PREVIEW_FILTERS"))
+		settings.ui.libraryFilters = true;
 	if (const char* theme = std::getenv("PREVIEW_THEME"))
 		settings.ui.theme = theme;
 	// the side it opens on: wiiu, 3ds, ds or switch

@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <cmath>
 #include <ctime>
+#include <random>
 
 namespace ps5shell
 {
@@ -74,7 +75,16 @@ namespace ps5shell
 
 	int Shell::LibraryFilters() const
 	{
-		return IsWiiU() && m_status.coreReady ? 4 : 3;
+		return (IsWiiU() && m_status.coreReady ? 4 : 3) + (HiddenFilter() >= 0 ? 1 : 0);
+	}
+
+	// Hidden, after the others while the side has a game hidden (from the game menu); -1 when it has none
+	int Shell::HiddenFilter() const
+	{
+		for (const Game& game : m_games)
+			if (game.entry.hidden)
+				return IsWiiU() && m_status.coreReady ? 4 : 3;
+		return -1;
 	}
 
 	int Shell::LibraryFilter() const
@@ -243,15 +253,19 @@ namespace ps5shell
 			m_libraryFocusTitle = m_games[focused].entry.game.titleId;
 		const int64_t recent = std::time(nullptr) - 30 * 86400;
 		const std::string search = Lower(m_search);
+		const int hidden = HiddenFilter();
 		m_shelf.clear();
 		for (int i = 0; i < (int)m_games.size(); i++)
 		{
 			Game& game = m_games[i];
+			// a hidden game in the Hidden filter alone, and found by a search
+			if (hidden >= 0 && filter == hidden ? !game.entry.hidden : game.entry.hidden && search.empty())
+				continue;
 			if (filter == 1 && game.entry.added < recent)
 				continue;
 			if (filter == 2 && !game.entry.favourite)
 				continue;
-			if (filter == 3 && IsWiiU())
+			if (filter == 3 && IsWiiU() && filter != hidden)
 			{
 				if (game.packsOn < 0) // none known while Cemu's library loads; asked again once it has
 					game.packsOn = m_status.coreReady ? ps5emu::EnabledGraphicPackCount(game.entry.game.titleId) : 0;
@@ -297,7 +311,7 @@ namespace ps5shell
 		// Recently played: the games last played, the last first; the focus on its game, else on the one asked for
 		m_recent.clear();
 		for (int i = 0; i < (int)m_games.size(); i++)
-			if (m_games[i].entry.lastPlayed > 0)
+			if (m_games[i].entry.lastPlayed > 0 && !m_games[i].entry.hidden)
 				m_recent.push_back(i);
 		std::stable_sort(m_recent.begin(), m_recent.end(), [&](int a, int b) { return m_games[a].entry.lastPlayed > m_games[b].entry.lastPlayed; });
 		if ((int)m_recent.size() > kRecentMost)
@@ -309,6 +323,29 @@ namespace ps5shell
 		m_libraryZone = std::max(m_libraryZone, LibraryTop());
 		if (m_libraryZone == 1 && !m_settings.ui.libraryFilters)
 			m_libraryZone = 2;
+	}
+
+	// Surprise me: the focus on a game of the list as it is (its filter and search, no hidden game), by
+	// chance, never the one it is on when there are others
+	void Shell::SurpriseMe()
+	{
+		if (m_shelf.empty())
+		{
+			m_feedback.Play(ui::Cue::Denied);
+			return;
+		}
+		static std::mt19937 chance{std::random_device{}()};
+		const int offset = ArticTiles();
+		int pick = (int)(chance() % m_shelf.size());
+		if (m_shelf.size() > 1 && m_libraryZone == 2 && pick + offset == m_libraryIndex)
+			pick = (pick + 1) % (int)m_shelf.size();
+		m_libraryZone = 2;
+		m_libraryIndex = pick + offset;
+		const Game& game = m_games[m_shelf[pick]];
+		m_libraryFocusTitle = game.entry.game.titleId;
+		m_feedback.Play(ui::Cue::Select);
+		// tr: Surprise me's answer: {0} is the game it picked, now in focus in the Library
+		Toast(TrF("How about {0}?", game.entry.game.name));
 	}
 
 	void Shell::LibraryUpdate(const ui::Press& press)
@@ -338,12 +375,23 @@ namespace ps5shell
 		switch (b)
 		{
 		case Button::Square:
-			OpenPicker(TrC("tab", "Library"), Tr("Sort"), SortNames(), m_settings.ui.librarySort[side], [this, side](int choice) {
+		{
+			// the orders, then Surprise me, which goes to a game of the list by chance and keeps the order
+			std::vector<std::string> choices = SortNames();
+			// tr: the last choice of the Library's Sort list: a game of the list picked by chance, the order kept
+			choices.push_back(Tr("Surprise me"));
+			OpenPicker(TrC("tab", "Library"), Tr("Sort"), choices, m_settings.ui.librarySort[side], [this, side](int choice) {
+				if (choice == (int)std::size(kSorts))
+				{
+					SurpriseMe();
+					return;
+				}
 				m_settings.ui.librarySort[side] = choice;
 				SaveSettings();
 				LibraryRefresh();
 			});
 			return;
+		}
 		case Button::Triangle: OpenKeyboard(); return;
 		case Button::Circle:
 			// the search let go, then up to the top, then the bar: the Library is where a side opens
@@ -627,8 +675,9 @@ namespace ps5shell
 
 		// the Library: its heading and count, Sort and Search at the right
 		const ui::TextBlock title = canvas.Text(heading, kSafeX, headTop, TrC("tab", "Library"), kText, 600, 1);
+		const int listed = (int)std::count_if(m_games.begin(), m_games.end(), [](const Game& g) { return !g.entry.hidden; }); // as All counts them
 		// tr: how many games the Library has
-		const ui::TextBlock count = canvas.Text(tool, kSafeX + title.width + 24, headTop + 9, TrP((int)m_games.size(), "{0} game", "{0} games"), Tertiary(), 300, 1);
+		const ui::TextBlock count = canvas.Text(tool, kSafeX + title.width + 24, headTop + 9, TrP(listed, "{0} game", "{0} games"), Tertiary(), 300, 1);
 		if (m_scanning)
 			canvas.Text(Style(kCaptionStyle), kSafeX + title.width + 24 + count.width + 24, headTop + 11, Tr("Looking for new games…"), Tertiary(), 360, 1);
 		else if (m_status.lastLook[side])
@@ -651,15 +700,30 @@ namespace ps5shell
 		if (filters)
 		{
 			const int64_t added = std::time(nullptr) - 30 * 86400;
-			int counts[4] = {(int)m_games.size(), 0, 0, 0};
+			const int hidden = HiddenFilter();
+			int counts[5] = {0, 0, 0, 0, 0};
 			for (Game& g : m_games)
 			{
+				if (g.entry.hidden)
+				{
+					counts[4]++;
+					continue;
+				}
+				counts[0]++;
 				counts[1] += g.entry.added >= added;
 				counts[2] += g.entry.favourite;
 				counts[3] += g.packsOn > 0;
 			}
 			// tr: the Library's filters, each with its count after it
-			const char* names[4] = {TrC("filter", "All"), Tr("Recently added"), Tr("Favourites"), Tr("Graphic packs on")};
+			const char* names[5] = {TrC("filter", "All"), Tr("Recently added"), Tr("Favourites"), Tr("Graphic packs on"),
+				// tr: the Library's filter of the games hidden from its list (the game menu's Hide from the Library)
+				TrC("filter", "Hidden")};
+			if (hidden >= 0)
+			{
+				// Hidden in the place after the others (the Wii U's Graphic packs on, or Favourites)
+				names[hidden] = names[4];
+				counts[hidden] = counts[4];
+			}
 			const int count = LibraryFilters();
 			const int filter = LibraryFilter();
 			ui::TextStyle pillStyle = Style({24, ui::Weight::Medium, 1.0f});
@@ -680,7 +744,7 @@ namespace ps5shell
 			for (int i = 0; i < count; i++)
 			{
 				const bool on = i == filter;
-				const std::string number = i == 3 && counts[3] == 0 ? "" : std::to_string(counts[i]);
+				const std::string number = i == 3 && i != hidden && counts[3] == 0 ? "" : std::to_string(counts[i]);
 				const float w = 24 + m_fonts.Width(pillStyle, names[i]) + (number.empty() ? 0 : 12 + m_fonts.Width(countStyle, number)) + 24;
 				const Box pill{x, filterTop, w, 48};
 				canvas.Rect(pill, 24, on ? ui::SetAlpha(Accent(), 0.22f) : Surface());

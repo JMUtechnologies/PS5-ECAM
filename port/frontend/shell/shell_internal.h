@@ -359,9 +359,11 @@ namespace ps5shell
 		void LibraryUpdate(const ui::Press& press);
 		void LibraryDraw(Canvas& canvas);
 		void LibraryRefresh(); // the filter, the sort and Recently played again
+		void SurpriseMe();	   // Sort's last choice: the focus on a game of the list, by chance
 		int LibraryGame() const;
 		Box CoverBox(Game& game, float x, float bottom, float height, float maxWidth); // the whole box art at its own shape
-		int LibraryFilters() const; // All, Recently added, Favourites, and Graphic packs on (Wii U)
+		int LibraryFilters() const; // All, Recently added, Favourites, and Graphic packs on (Wii U), then Hidden
+		int HiddenFilter() const;	// Hidden's place among them, -1 while the side hides no game
 		int LibraryFilter() const;	// the one in use: All while Settings > Launcher has the filters off
 		int LibraryTop() const;		// the first zone: Recently played, else the filters, else the list
 		int ArticTiles() const { return Is3ds() ? 1 : 0; } // the 3DS side's shelf starts with Artic Base
