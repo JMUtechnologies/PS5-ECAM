@@ -24,6 +24,7 @@ test-contribution: ## Host checks for standalone integrations, transfers, Slot-2
 	bash tools/tests/test-save-transfer.sh
 	bash tools/tests/test-saves.sh
 	bash tools/tests/test-slot2.sh
+	bash tools/tests/test-microphone.sh
 	bash tools/tests/test-frame-capture.sh
 
 help: ## List the targets
