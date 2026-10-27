@@ -94,8 +94,8 @@ For imports, put either `<TITLE>/account` and/or `<TITLE>/device` under
 `USB/PS5-ECAM-imports`, or copy a Ryujinx data folder (with bis/ and its save index) to
 `USB/Ryujinx`. The selected title's entries are detected; hold the Import row to copy them.
 Raw `<TITLE>/<save files>` is accepted as an account save. The Ryujinx reader uses the indexed
-account/device saves, selecting the first account for the requested title, as the donor does.
-It does not offer a Ryujinx-user selector.
+account/device saves. Choose the source account save by its save ID when several exist;
+the selected ECAM player remains the destination.
 
 The transfer runs on the backup worker and Finish() waits before a game can launch. Every source
 is staged before either destination changes; previous directories are retained in
@@ -116,3 +116,18 @@ settings remain on disk, and selection falls back to a valid player. Check the e
 limit and the retained original profile list. Host tests cover binary field preservation,
 invalid names, duplicate identity protection, stale staging and symlink rejection; PS5 UI
 and native Eden interoperability still require owner validation.
+
+### Multiple Ryujinx account saves
+
+The import source choice lists each indexed account save for the selected game, labelled with
+its 16-digit save ID. This is a source save ID, not a player name or ECAM player ID. Select the
+destination ECAM player separately in Switch Settings. The shared device save, when present,
+is imported alongside the chosen account. A device-only index remains importable.
+
+The worker re-reads the index using the selected save ID; a missing selected entry fails rather
+than importing another account. Calls without a source ID refuse multiple accounts. Plain-folder
+imports retain their existing layout. Duplicate save IDs, multiple device entries, zero save IDs,
+malformed indexes and symlinked paths are refused. Index reads are bounded to 16 MiB even if the
+file changes during reading. Concurrent external edits are unsupported; disconnect external
+writers before importing. Owner checks should use two disposable source accounts with different
+save contents and verify that each choice reaches the intended destination with recovery intact.
