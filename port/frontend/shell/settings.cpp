@@ -22,6 +22,7 @@
 #include "../../eden/eden.h"
 #include "../../eden/library.h"
 #include "../../eden/rooms.h"
+#include "../../eden/save_transfer.h"
 #include "../../melonds/library.h"
 #include "../../melonds/melonds.h"
 #include "../../ps5/privilege.h"
@@ -936,6 +937,9 @@ namespace ps5shell
 						"and this is on. Without them, its own replacements (FreeBIOS) run most games as well. Applies to the next game.",
 						ps5melonds::Root() + "/bios")),
 				"dsOwnBios");
+			own(toggle("dsslot2", Tr("GBA cartridge in Slot-2"), hand.dsSlot2,
+				Tr("Optional cartridge interactions in DS games; not GBA game execution."),
+				TrF("Put <DS game filename>.gba and an optional matching .sav in {0}/slot2. Working copies of its saves go to slot2-saves; original cartridge files are not changed. Applies on next launch.", ps5melonds::Root())), "dsSlot2");
 		}
 		else if (page == "files")
 		{
@@ -1382,6 +1386,7 @@ namespace ps5shell
 		// tr: a 3DS game's extra data (its extdata), which some games keep beside their saves
 		case Kind::ExtData: return Tr("Extra data");
 		case Kind::States: return TrP((int)save.paths.size(), "{0} save state", "{0} save states");
+		case Kind::Slot2: return Tr("Slot-2 cartridge save");
 		}
 		return {};
 	}
@@ -1395,6 +1400,15 @@ namespace ps5shell
 		{
 			m_gameSaves = ps5saves::FindGameSaves(m_gameRef);
 			m_gameBackups = ps5saves::FindGameBackups(m_gameRef);
+			m_switchImports.clear();
+			if (IsSwitch() && !ps5eden::IsMadeId(m_gameTitle))
+				for (int drive = 0; drive < 8; drive++)
+					for (const char* name : {"PS5-ECAM-imports", "Ryujinx"})
+					{
+						const std::string folder = fmt::format("/mnt/usb{}/{}", drive, name);
+						std::string why;
+						if (!ps5eden::transfer::Discover(folder, m_gameTitle, why).empty()) m_switchImports.push_back({folder, fmt::format("USB {} · {}", drive, name)});
+					}
 			m_gameSavesAt = m_now;
 		}
 		const ps5saves::Status status = ps5saves::Current();
@@ -1403,7 +1417,8 @@ namespace ps5shell
 		{
 			m_savesFinished = status.finished;
 			m_gameSavesAt = -100;
-			m_savesMessage = status.state == ps5saves::Status::State::Done ? TrP(status.files, "Done: {0} file", "Done: {0} files") : status.message;
+			m_savesMessage = status.state == ps5saves::Status::State::Done ?
+				(status.message.empty() ? TrP(status.files, "Done: {0} file", "Done: {0} files") : status.message) : status.message;
 		}
 		std::vector<Row> rows;
 		for (size_t i = 0; i < m_gameSaves.size(); i++)
@@ -1472,6 +1487,24 @@ namespace ps5shell
 		if (backups.empty())
 			restore.dimmed = true;
 		rows.push_back(std::move(restore));
+		if (IsSwitch() && !ps5eden::IsMadeId(m_gameTitle))
+		{
+			Row exportSave;
+			exportSave.kind = Kind::Action; exportSave.id = "nxexport"; exportSave.label = Tr("Export selected player's save");
+			exportSave.description = Tr("Plain account/device folders on USB, for transfer to another emulator.");
+			exportSave.value = m_savesMessage; exportSave.dimmed = running;
+			rows.push_back(std::move(exportSave));
+			Row importSave;
+			importSave.kind = Kind::Hold; importSave.id = "nximport"; importSave.label = Tr("Import selected player's save");
+			for (const auto& source : m_switchImports) importSave.options.push_back(source.second);
+			int& chosen = m_holdChoice["nximport"];
+			chosen = importSave.options.empty() ? 0 : std::clamp(chosen, 0, (int)importSave.options.size() - 1);
+			importSave.index = chosen;
+			importSave.value = importSave.options.empty() ? Tr("No import found") : importSave.options[chosen] + " · " + Tr("Hold Cross");
+			importSave.description = Tr("From USB/PS5-ECAM-imports/<title ID> or USB/Ryujinx. Replaced saves are retained first.");
+			importSave.help = Tr("Choose the player in Switch Settings before importing. Both account and device files are staged before replacement. The original directories are retained under Eden's save-transfer-recovery folder.");
+			importSave.dimmed = running || importSave.options.empty(); rows.push_back(std::move(importSave));
+		}
 		return rows;
 	}
 
@@ -1729,6 +1762,8 @@ namespace ps5shell
 				hand.motion = on;
 			else if (id == "dsjit")
 				hand.dsJit = on;
+			else if (id == "dsslot2")
+				hand.dsSlot2 = on;
 			else if (id == "performance-hand")
 				hand.performance = on;
 			else if (id == "nx-framegeneration")
@@ -2029,6 +2064,17 @@ namespace ps5shell
 				m_savesMessage = error;
 				m_feedback.Play(ui::Cue::Denied);
 			}
+			return;
+		}
+		if (InGameSettings() && IsSwitch() && id == "nxexport")
+		{
+			if (!cross || row.dimmed) return;
+			const auto view = ps5eden::extras::Read(SwitchExtrasContext());
+			std::string error;
+			if (!view.error.empty()) error = view.error;
+			else if (view.profiles.empty()) error = Tr("Choose an existing Switch player first.");
+			else if (ps5saves::StartSwitchExport(m_gameRef, view.profiles[view.profile].id, error)) m_savesMessage = Tr("Exporting…");
+			if (!error.empty()) Toast(error);
 			return;
 		}
 		if (InGameSettings() && row.setting.empty())
@@ -2375,6 +2421,17 @@ namespace ps5shell
 		{
 			ps5cheevos::SignOut();
 			Toast(Tr("Signed out of RetroAchievements"));
+		}
+		else if (id == "nximport" && IsSwitch())
+		{
+			const auto view = ps5eden::extras::Read(SwitchExtrasContext());
+			const int selected = m_holdChoice["nximport"];
+			std::string error;
+			if (!view.error.empty()) error = view.error;
+			else if (view.profiles.empty()) error = Tr("Choose an existing Switch player first.");
+			else if (selected >= 0 && selected < (int)m_switchImports.size() &&
+				ps5saves::StartSwitchImport(m_gameRef, view.profiles[view.profile].id, m_switchImports[selected].first, error)) m_savesMessage = Tr("Importing…");
+			if (!error.empty()) Toast(error);
 		}
 		else if (id == "gamerestore")
 		{
@@ -2751,4 +2808,3 @@ namespace ps5shell
 		canvas.PopAlpha();
 	}
 }
-
