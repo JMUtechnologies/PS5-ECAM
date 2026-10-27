@@ -2349,6 +2349,20 @@ namespace ps5shell
 
 	void Shell::HoldDone(const std::string& id)
 	{
+		if (id == "nxextra:removeprofile" && IsSwitch())
+		{
+			const auto context = SwitchExtrasContext();
+			const auto view = ps5eden::extras::Read(context);
+			std::string error;
+			if (!view.error.empty()) Toast(view.error);
+			else if (!view.profiles.empty())
+			{
+				if (ps5eden::extras::RemoveProfile(context, view.profiles[view.profile].id, error)) Toast(Tr("Player removed; saves and settings are kept"));
+				else Toast(error);
+			}
+			m_switchExtrasKey.clear();
+			return;
+		}
 		m_feedback.Play(ui::Cue::Hold);
 		if (id == "clearcaches")
 			m_diagnosticsDone[Is3ds() ? 2 : 1] = ClearShaderCaches(Is3ds());
