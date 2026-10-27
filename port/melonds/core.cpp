@@ -17,7 +17,9 @@
 #include "archive.h"
 #include "library.h"
 #include "screens.h"
+#include "slot2.h"
 #include "../app/achievements.h"
+#include "../app/frame_capture.h"
 #include "../app/saves.h"
 #include "../app/boxart.h"
 #include "../app/gameinfo.h"
@@ -37,6 +39,7 @@
 #include "GPU3D_Soft.h"
 #include "NDS.h"
 #include "NDSCart.h"
+#include "GBACart.h"
 #include "Platform.h"
 #include "SPI.h"
 #include "SPI_Firmware.h"
@@ -88,6 +91,10 @@ namespace ps5melonds
 		std::string s_folder;	  // the folder the game's file is in
 		uint64_t s_titleId = 0;
 		bool s_jit = false;
+		// Opt-in diagnostic: an existing melonds/capture-frames marker. Single emulation-thread
+		// producer; the game loop writes only after joining it, so gameplay never writes capture files.
+		ps5capture::Frames s_capture;
+		bool s_captureEnabled = false;
 
 		// What the emulation reads before each frame; the game's loop changes it
 		struct View
@@ -140,6 +147,11 @@ namespace ps5melonds
 		std::vector<u8> s_save;
 		bool s_saveDirty = false;
 		uint64_t s_saveChangedAt = 0; // sceKernelGetProcessTime
+		std::mutex s_gbaSaveMutex;
+		std::vector<u8> s_gbaSave;
+		std::string s_gbaSavePath;
+		bool s_gbaDirty = false;
+		uint64_t s_gbaChangedAt = 0;
 
 		// the emulation's frames, for the overlay's numbers
 		std::atomic<uint32_t> s_framesEmulated{0}, s_framesShown{0};
@@ -305,6 +317,16 @@ namespace ps5melonds
 
 		void FlushSave(bool now)
 		{
+			{
+				std::lock_guard lock(s_gbaSaveMutex);
+				if (s_gbaDirty && !s_gbaSavePath.empty() && (now || sceKernelGetProcessTime() - s_gbaChangedAt >= 1000000))
+				{
+					std::error_code ec;
+					fs::create_directories(fs::path(s_gbaSavePath).parent_path(), ec);
+					if (!ec && WriteFile(s_gbaSavePath, s_gbaSave.data(), s_gbaSave.size())) s_gbaDirty = false;
+					else ps5log::Line("[ds] Slot-2 save could not be written: {}", s_gbaSavePath);
+				}
+			}
 			std::vector<u8> data;
 			{
 				std::lock_guard lock(s_saveMutex);
@@ -773,6 +795,11 @@ namespace ps5melonds
 					ps5notify::Send(ps5lang::Tr("The DS game's screens stopped (the GPU's device was lost)."));
 					break;
 				}
+				if (s_captureEnabled)
+				{
+					if (held || s_rewinding) s_capture.Discontinuity();
+					else s_capture.Record(sceKernelGetProcessTime());
+				}
 				s_framesShown++;
 			}
 			// the rewind's memory given back
@@ -796,6 +823,14 @@ namespace ps5melonds
 		s_saveDirty = true;
 		s_saveChangedAt = sceKernelGetProcessTime();
 	}
+	void GbaSaveChanged(const u8* data, u32 length)
+	{
+		if (!data || !length || length > (1u << 20)) return;
+		std::lock_guard lock(s_gbaSaveMutex);
+		if (s_gbaSavePath.empty()) return;
+		s_gbaSave.assign(data, data + length); s_gbaDirty = true;
+		s_gbaChangedAt = sceKernelGetProcessTime();
+	}
 
 	bool Available()
 	{
@@ -813,6 +848,13 @@ namespace ps5melonds
 		for (const char* name : {"saves", "states", "cheats", "bios"})
 			fs::create_directories(Folder(name), ec);
 		const std::string path = game.path.string();
+		{
+			std::error_code ec;
+			s_captureEnabled = fs::is_regular_file(fs::path(Root()) / "capture-frames", ec);
+			if (s_captureEnabled)
+				try { s_capture.Begin(); }
+				catch (const std::exception& failure) { s_captureEnabled = false; ps5log::Line("[ds] frame capture disabled: {}", failure.what()); }
+		}
 		s_stem = game.path.stem().string();
 		// an archive's game is named by the archive, as a ROM by its own file: a .tar.gz's without its .tar
 		std::string inner = fs::path(s_stem).extension().string();
@@ -894,6 +936,18 @@ namespace ps5melonds
 		}
 
 		// the console: a DS's own BIOS and firmware, or melonDS's
+		auto slot = slot2::Load(Root(), s_stem, settings.dsSlot2);
+		if (!slot.error.empty()) { error = slot.error; return false; }
+		std::unique_ptr<melonDS::GBACart::CartCommon> gba;
+		if (!slot.rom.empty())
+		{
+			gba = melonDS::GBACart::ParseROM(slot.rom.data(), (u32)slot.rom.size(), slot.save.empty() ? nullptr : slot.save.data(), (u32)slot.save.size(), nullptr);
+			if (!gba) { error = ps5lang::Tr("The Slot-2 cartridge could not be read."); return false; }
+		}
+		{
+			std::lock_guard lock(s_gbaSaveMutex);
+			s_gbaSavePath = slot.savePath; s_gbaSave = slot.save; s_gbaDirty = false;
+		}
 		melonDS::NDSArgs args;
 		auto bios9 = settings.dsOwnBios ? ReadBios<melonDS::ARM9BIOSSize>("bios9.bin") : nullptr;
 		auto bios7 = settings.dsOwnBios ? ReadBios<melonDS::ARM7BIOSSize>("bios7.bin") : nullptr;
@@ -926,6 +980,7 @@ namespace ps5melonds
 				s_nds->RTC.SetDateTime(local->tm_year + 1900, local->tm_mon + 1, local->tm_mday, local->tm_hour, local->tm_min, local->tm_sec);
 		}
 		s_nds->SetNDSCart(std::move(cart));
+		if (gba) s_nds->SetGBACart(std::move(gba));
 		// straight into the game, past the DS's menu (melonDS's BIOS needs it)
 		s_nds->SetupDirectBoot(game.path.filename().string());
 		static_cast<melonDS::SoftRenderer&>(s_nds->GetRenderer3D()).SetThreaded(true, s_nds->GPU);
@@ -1147,6 +1202,16 @@ namespace ps5melonds
 		}).detach();
 		if (s_emulation.joinable())
 			s_emulation.join();
+		if (s_captureEnabled)
+		{
+			s_capture.Stop();
+			std::error_code ec;
+			const fs::path captures = fs::path(Root()) / "captures";
+			fs::create_directories(captures, ec);
+			const std::string captureFile = (captures / fmt::format("{}-{}.csv", s_stem, sceKernelGetProcessTime())).string();
+			if (!ec && s_capture.WriteCsv(captureFile)) ps5log::Line("[ds] {} consecutive CPU present-return intervals captured in {}", s_capture.Samples().size(), captureFile);
+			else ps5log::Line("[ds] frame capture could not be exported");
+		}
 		ps5log::Line("[ds] emulation stopped in {} ms", elapsed());
 		FlushSave(true);
 		if (s_cheevos)
