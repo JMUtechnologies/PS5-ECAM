@@ -18,6 +18,7 @@
 #include "library.h"
 #include "screens.h"
 #include "slot2.h"
+#include "microphone.h"
 #include "../app/achievements.h"
 #include "../app/frame_capture.h"
 #include "../app/saves.h"
@@ -969,6 +970,11 @@ namespace ps5melonds
 		args.Renderer3D = std::make_unique<melonDS::SoftRenderer>();
 		ps5log::Line("[ds] {} and {}; the CPUs on {}", ownBios ? "the DS's own BIOS" : "melonDS's BIOS (FreeBIOS)", firmwareAbout,
 			s_jit ? "the JIT" : settings.dsJit ? "the interpreter (no executable memory)" : "the interpreter (dsJit off)");
+
+		const auto gameMic = fs::path(Root()) / "microphone" / (s_stem + ".wav");
+		const auto micStatus = settings.dsMicSource == 2 ? fs::symlink_status(gameMic, ec) : fs::file_status{};
+		const auto micFile = micStatus.type() != fs::file_type::not_found && micStatus.type() != fs::file_type::none ? gameMic : fs::path(Root()) / "microphone.wav";
+		if (!microphone::source.Configure(settings.dsMicSource, micFile.string(), error)) return false;
 
 		s_nds = new melonDS::NDS(std::move(args), nullptr);
 		s_nds->Reset();
