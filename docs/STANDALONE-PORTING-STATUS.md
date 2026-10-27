@@ -13,8 +13,8 @@ ProsperoEdenX pin `a26ba788222465ec7fb94dc813958fc749734e07`.
 | 5 | Custom .fxp names discovered in global/game folders; existing selections retained |
 | 6 | Select existing players; profile creation/editing not implemented |
 | 7–8 | Existing standalone per-profile storage is reused for these controls; no separate ECAM history or full settings isolation added |
-| 9–10 | Per-game ECAM USB backup/restore; generic save-folder import/export still pending |
-| 11 | Ryujinx import wizard pending |
+| 9–10 | Per-game ECAM USB backup/restore and selected-player plain-folder import/export |
+| 11 | Indexed Ryujinx import through USB/Ryujinx; first matching account/device, no Ryujinx-user selector |
 | 12–16 | RomM browsing/queue/sync/conflicts/QR pairing pending |
 | 17 | Audio haptics audit/console validation pending |
 
@@ -47,10 +47,18 @@ or core just to add an already included changelog feature.
 
 ## DS items 35–43: pending development
 
-DSi and its firmware checks, local wireless, GBA-slot/save selection, microphone options,
-touch calibration, state-version handling and separate DS/DSi configuration are not implemented
-by this batch. ECAM's working DS implementation stays unchanged. No separately verified PS5
-standalone implementation was found that could simply be copied to fulfill all these items.
+Items 38–39 now have an optional Slot-2 cartridge attachment path using melonDS's existing API,
+with a supplied starting save and separately persisted working save, plus whole/per-game backup
+coverage. It defaults off and does not add GBA execution. The input loader/settings adapter have
+host tests; the core/platform changes pass host syntax checks against the pinned melonDS headers.
+
+DSi and its firmware checks, local wireless, additional microphone options, touch calibration,
+state-version handling and separate DS/DSi configuration remain unimplemented. No separately
+verified PS5 standalone implementation was found that could simply be copied for all of them.
+
+The branch also includes a bounded opt-in DS CPU present-return interval exporter for the
+stage-1 performance tools. It supplies no automatic hardware metadata or captures for other
+systems. See OWNER-IMPLEMENTATION-HANDOFF.md for exact limits and owner test steps.
 
 ## 3DS items 44–52: pending development/audit
 
