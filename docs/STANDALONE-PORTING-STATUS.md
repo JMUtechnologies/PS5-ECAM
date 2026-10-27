@@ -64,8 +64,9 @@ state-version handling and separate DS/DSi configuration remain unimplemented. N
 verified PS5 standalone implementation was found that could simply be copied for all of them.
 
 The branch also includes a bounded opt-in DS CPU present-return interval exporter for the
-stage-1 performance tools. It supplies no automatic hardware metadata or captures for other
-systems. See OWNER-IMPLEMENTATION-HANDOFF.md for exact limits and owner test steps.
+stage-1 performance tools. A partial JSON sidecar records known launch settings, build/core
+revision, sample count and termination reason; unknown context stays empty and cannot qualify
+a comparison. It supplies no automatic hardware metadata or captures for other systems. See OWNER-IMPLEMENTATION-HANDOFF.md for exact limits and owner test steps.
 
 ## 3DS items 44–52: pending development/audit
 
