@@ -336,9 +336,9 @@ namespace melonDS::Platform
 		ps5melonds::SaveChanged(savedata, savelen);
 	}
 
-	void WriteGBASave(const u8*, u32, u32, u32, void*)
+	void WriteGBASave(const u8* savedata, u32 savelen, u32, u32, void*)
 	{
-		// no GBA cartridge in Slot-2
+		ps5melonds::GbaSaveChanged(savedata, savelen);
 	}
 
 	void WriteFirmware(const Firmware&, u32, u32, void*)
