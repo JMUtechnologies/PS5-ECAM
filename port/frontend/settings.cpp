@@ -99,6 +99,7 @@ namespace ps5settings
 			ReadBool(json, "frameGeneration", n3ds.frameGeneration);
 			ReadBool(json, "dsJit", n3ds.dsJit);
 			ReadBool(json, "dsOwnBios", n3ds.dsOwnBios);
+			ReadBool(json, "dsSlot2", n3ds.dsSlot2);
 			ReadInt(json, "nxResolution", n3ds.nxResolution, 0, 6);
 			ReadInt(json, "nxFilter", n3ds.nxFilter, 0, 3);
 			ReadInt(json, "nxAstc", n3ds.nxAstc, 0, 1);
@@ -189,6 +190,8 @@ namespace ps5settings
 			writer.Bool(n3ds.dsJit);
 			writer.Key("dsOwnBios");
 			writer.Bool(n3ds.dsOwnBios);
+			writer.Key("dsSlot2");
+			writer.Bool(n3ds.dsSlot2);
 			writer.Key("nxResolution");
 			writer.Int(n3ds.nxResolution);
 			writer.Key("nxFilter");
@@ -662,6 +665,7 @@ namespace ps5settings
 				{"frameGeneration", nullptr, nullptr, nullptr, &N3ds::frameGeneration},
 				{"dsJit", nullptr, nullptr, nullptr, &N3ds::dsJit},
 				{"dsOwnBios", nullptr, nullptr, nullptr, &N3ds::dsOwnBios},
+				{"dsSlot2", nullptr, nullptr, nullptr, &N3ds::dsSlot2},
 				{"invariantPosition", nullptr, nullptr, nullptr, &N3ds::invariantPosition},
 				{"hwShaders", nullptr, nullptr, nullptr, &N3ds::hwShaders},
 				{"anaglyph", nullptr, nullptr, nullptr, &N3ds::anaglyph},
@@ -720,7 +724,7 @@ namespace ps5settings
 			"volume"};
 		static const std::vector<std::string> n3ds = {"resolution", "textureFilter", "customTextures", "asyncShaderCompilation", "invariantPosition", "hwShaders", "layout", "border",
 			"volume", "region", "language", "cpuClock", "frameGeneration", "dsRotation", "hiddenTouch", "anaglyph"};
-		static const std::vector<std::string> nds = {"dsFilter", "dsRotation", "hiddenTouch", "dsJit", "layout", "border", "volume", "language", "dsOwnBios"};
+		static const std::vector<std::string> nds = {"dsFilter", "dsRotation", "hiddenTouch", "dsJit", "layout", "border", "volume", "language", "dsOwnBios", "dsSlot2"};
 		static const std::vector<std::string> nx = {"nxResolution", "nxFilter", "nxAstc", "nxFrameGeneration", "nxDocked", "nxSpeedLimit", "volume",
 			"nxAntiAliasing", "nxSharpening", "nxController", "nxOutput", "nxHighRefresh", "nxLanguage", "nxMemory", "nxAsyncShaders", "nxFastGpu",
 			"nxUnsafeCpu", "nxUnsafeDma", "nxReactiveFlushing", "nxSkipInvalidation", "nxBlockList", "nxCompactMemory"};
