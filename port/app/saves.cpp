@@ -5,6 +5,7 @@
 #include "lang.h"
 #include "paths.h"
 #include "../eden/library.h"
+#include "../eden/save_transfer.h"
 #include "../ps5/log.h"
 
 #include <fmt/format.h>
@@ -78,6 +79,7 @@ namespace ps5saves
 				{"3ds/nand", root + "/azahar/nand/data", nullptr},
 				{"3ds/states", root + "/azahar/states", nullptr},
 				{"ds/saves", root + "/melonds/saves", nullptr},
+				{"ds/slot2-saves", root + "/melonds/slot2-saves", nullptr},
 				{"ds/states", root + "/melonds/states", nullptr},
 				// Eden's, in /data/ps5cemu/eden whatever the data folder (its program keeps them there):
 				// the games' saves, and the system save with its user profiles, whose IDs name the saves'
@@ -206,7 +208,12 @@ namespace ps5saves
 
 		std::string DsStem(const GameRef& game)
 		{
-			return fs::path(game.file).stem().string();
+			std::string stem = fs::path(game.file).stem().string();
+			std::string extension = fs::path(game.file).extension().string();
+			std::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+			if ((extension == ".gz" || extension == ".bz2" || extension == ".xz" || extension == ".zst") && fs::path(stem).extension() == ".tar")
+				stem = fs::path(stem).stem().string();
+			return stem;
 		}
 
 		// Whether a file of a set (by its path in the set) is one of this game's saves
@@ -229,7 +236,7 @@ namespace ps5saves
 					(parts[2] == "extdata" && parts[3] == "00000000" && parts[4] == ExtDataId(game.titleId));
 			}
 			const std::string stem = DsStem(game);
-			if (set == "ds/saves")
+			if (set == "ds/saves" || set == "ds/slot2-saves")
 				return relative == stem + ".sav";
 			if (set == "ds/states")
 				return relative.rfind(stem + ".ml", 0) == 0 && relative.size() == stem.size() + 4;
@@ -512,6 +519,10 @@ namespace ps5saves
 			save.kind = GameSave::Kind::Data;
 			save.paths = {(fs::path(root) / "melonds/saves" / (stem + ".sav")).string()};
 			keep(std::move(save));
+			GameSave slot2;
+			slot2.kind = GameSave::Kind::Slot2;
+			slot2.paths = {(fs::path(root) / "melonds/slot2-saves" / (stem + ".sav")).string()};
+			keep(std::move(slot2));
 			GameSave states;
 			states.kind = GameSave::Kind::States;
 			for (auto it = fs::directory_iterator(fs::path(root) / "melonds/states", ec); !ec && it != fs::directory_iterator(); it.increment(ec))
@@ -606,7 +617,7 @@ namespace ps5saves
 			else if (game.side == 2)
 			{
 				const std::string stem = DsStem(game);
-				has = fs::exists(folder / "ds/saves" / (stem + ".sav"), ec);
+				has = fs::exists(folder / "ds/saves" / (stem + ".sav"), ec) || fs::exists(folder / "ds/slot2-saves" / (stem + ".sav"), ec);
 				for (int slot = 1; !has && slot <= 9; slot++)
 					has = fs::exists(folder / "ds/states" / fmt::format("{}.ml{}", stem, slot), ec);
 			}
@@ -684,6 +695,75 @@ namespace ps5saves
 		return Begin(backup.folder, true, error);
 	}
 
+	namespace
+	{
+		bool StartTransfer(const GameRef& game, const std::string& profile, const std::string& source, bool importing, std::string& error)
+		{
+			if (game.side != 3 || !SwitchTitle(game) || profile.size() != 32 ||
+				profile.find_first_not_of("0123456789abcdefABCDEF") != std::string::npos)
+			{ error = ps5lang::Tr("Choose an existing Switch player and a real title ID first."); return false; }
+			if (Current().state == Status::State::Running) { error = ps5lang::Tr("A backup is already running."); return false; }
+			if (s_thread.joinable()) s_thread.join();
+			{
+				std::lock_guard lock(s_mutex);
+				s_status = {}; s_status.finished = s_finished;
+				s_status.state = Status::State::Running; s_status.restoring = importing;
+			}
+			s_thread = std::thread([game, profile, source, importing] {
+				try
+				{
+					const std::string title = fmt::format("{:016X}", game.titleId);
+					const fs::path base = fs::path(ps5eden::DataFolder()) / "user/nand/user/save/0000000000000000";
+					const std::string account = (base / profile / title).string();
+					const std::string device = (base / std::string(32, '0') / title).string();
+					std::string why, where;
+					bool done = false;
+					if (importing)
+					{
+						const auto sources = ps5eden::transfer::Discover(source, game.titleId, why);
+						if (!sources.empty()) done = ps5eden::transfer::Import(sources, account, device,
+							ps5eden::DataFolder() + "/save-transfer-recovery", where, why);
+					}
+					else
+					{
+						for (int drive = 0; drive < 8 && !done; drive++)
+						{
+							std::error_code ec;
+							const fs::path usb = UsbDrive(drive);
+							if (!fs::is_directory(usb, ec)) continue;
+							const fs::path exports = usb / "PS5-ECAM-exports";
+							fs::create_directories(exports, ec);
+							if (ec) continue;
+							for (int suffix = 0; suffix < 1000; suffix++)
+							{
+								const fs::path folder = exports / fmt::format("{}-{:03d}", Stamp(), suffix);
+								if (!fs::create_directory(folder, ec)) { if (ec && ec != std::errc::file_exists) break; ec.clear(); continue; }
+								where = (folder / title).string();
+								done = ps5eden::transfer::Export(account, device, where, why);
+								break;
+							}
+						}
+						if (!done && why.empty()) why = ps5lang::Tr("No writable USB drive found.");
+					}
+					{
+						std::lock_guard lock(s_mutex); s_status.where = where;
+					}
+					SetState(done ? Status::State::Done : Status::State::Failed, done ? where : why);
+				}
+				catch (const std::exception& failure) { SetState(Status::State::Failed, failure.what()); }
+			});
+			return true;
+		}
+	}
+	bool StartSwitchImport(const GameRef& game, const std::string& profile, const std::string& sourceRoot, std::string& error)
+	{
+		return StartTransfer(game, profile, sourceRoot, true, error);
+	}
+	bool StartSwitchExport(const GameRef& game, const std::string& profile, std::string& error)
+	{
+		return StartTransfer(game, profile, {}, false, error);
+	}
+
 	Status Current()
 	{
 		std::lock_guard lock(s_mutex);
@@ -696,4 +776,3 @@ namespace ps5saves
 			s_thread.join();
 	}
 }
-
