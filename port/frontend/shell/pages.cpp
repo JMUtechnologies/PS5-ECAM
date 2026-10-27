@@ -1456,8 +1456,15 @@ namespace ps5shell
 		{
 		case Button::Circle:
 			ClosePage(m_pageFrom);
+			// back to its row on Online
 			if (m_pageFrom == ScreenId::Settings)
-				SettingsOpen("artic", true);
+			{
+				SettingsOpen("online", true);
+				const std::vector<Row> rows = SettingRows("online");
+				for (int i = 0; i < (int)rows.size(); i++)
+					if (rows[i].id == "artic")
+						m_settingRow = i;
+			}
 			return;
 		case Button::Up:
 		case Button::Down:

@@ -99,7 +99,7 @@ namespace ps5settings
 		bool nxSkipInvalidation = false; // fewer CPU cache invalidations
 		bool nxBlockList = false;	  // the blocks of earlier sessions compiled ahead
 		bool nxCompactMemory = false; // the game's memory in 16 KiB pages where it is mostly zeroes
-		// ProsperoEden's rooms (Settings > Multiplayer): the one a Switch game joins as it starts, none
+		// ProsperoEden's rooms (Settings > Online > Multiplayer): the one a Switch game joins as it starts, none
 		// when nxRoomHost is empty, and the nickname shown in it
 		std::string nxRoomHost, nxRoomName, nxRoomPassword, nxNickname;
 		int nxRoomPort = 24872;
@@ -177,7 +177,7 @@ namespace ps5settings
 		bool overlay = false;		  // Cemu's performance overlay from the start
 		bool asyncShaders = true;	  // Cemu's async_compile (Settings > Graphics, and the in-game menu's Graphics)
 		bool shaderNotices = true;	  // Cemu's "compiled shaders/pipelines" notices over a game (its notification.shader_compiling, #37)
-		bool gamePadSpeaker = false;  // the GamePad's sound on player 1's DualSense speaker (Settings > Audio)
+		bool gamePadSpeaker = false;  // the GamePad's sound on player 1's DualSense speaker (Settings > System)
 		bool remoteScreen = false;	  // the remote touch screen (stream/stream.h), every side's: Settings and the in-game menus
 		bool rumble = true;
 		std::string turbo;			  // the Wii U's turbo button: a DualSense input that presses again and again while held; empty: none

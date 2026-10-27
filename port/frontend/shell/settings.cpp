@@ -209,49 +209,44 @@ namespace ps5shell
 		pages.push_back({"graphics", Tr("Graphics"), every, Icon::Monitor});
 		if (Is3ds() || IsDs())
 			pages.push_back({"screens", Tr("Screens"), every, Icon::Screens});
-		pages.push_back({"audio", Tr("Audio"), Tr("The games' sound, and the launcher's."), Icon::Speaker});
+		// the remote touch screen is on the 3DS's and the DS's Controls, behind a row (on the Wii U's System; a
+		// Switch game runs in Eden's program, which has none)
 		pages.push_back({"controls", Tr("Controls"), IsWiiU() ? Tr("What each player's DualSense is to the Wii U.") :
-				Is3ds()										  ? Tr("The DualSense as the 3DS.") :
+				Is3ds()										  ? Tr("The DualSense as the 3DS, and the remote touch screen.") :
 				IsSwitch()									  ? Tr("The DualSense as the Switch.") :
-																Tr("The DualSense as the DS."),
+																Tr("The DualSense as the DS, and the remote touch screen."),
 			Icon::Pad});
-		// the remote touch screen is this program's: a Switch game runs in Eden's
-		if (!IsSwitch())
-			pages.push_back({"remote", Tr("Remote touch screen"), Tr("For every side. From dolphin78's idea and prototype."), Icon::Phone});
-		if (IsWiiU())
-			pages.push_back({"usb", Tr("USB devices"), Tr("Cemu's emulated portals."), Icon::Usb});
-		if (!IsWiiU())
-			pages.push_back({"system", Tr("System"), Is3ds() ? Tr("The emulated 3DS's region, language and speed.") :
-														   IsSwitch() ? Tr("The emulated Switch: docked or handheld.") :
-																		Tr("The emulated DS's language and BIOS."),
-				Icon::Chip});
+		// the emulated console and the sound, one page (the owner's, 2026-10-27: fewer pages down the left); the
+		// Wii U's has its USB portals and the remote touch screen behind rows
+		pages.push_back({"system", Tr("System"), IsWiiU() ? Tr("The sound, Cemu's USB portals and the remote touch screen.") :
+													Is3ds() ? Tr("The emulated 3DS's region, language and speed, and the sound.") :
+													IsSwitch() ? Tr("The emulated Switch, docked or handheld, its speed and language, and the sound.") :
+																 Tr("The emulated DS's language, BIOS, microphone and Slot-2, and the sound."),
+			Icon::Chip});
 		// ProsperoEden's Settings > Performance, as its launcher has it
 		if (IsSwitch())
 			pages.push_back({"performance", Tr("Performance"), Tr("Speed against accuracy, and the emulated Switch's memory."), Icon::Pulse});
-		if (IsSwitch())
-		{
-			pages.push_back({"nxpost", Tr("Picture effects"), Tr("Eden's ReShade looks over the picture."), Icon::Monitor});
-			// tr: the Switch side's players, the people (Eden's user profiles), each with saves of their own; not a number of players
-			pages.push_back({"nxprofiles", TrC("switch", "Players"), Tr("Who plays, each with saves of their own."), Icon::Pad});
-		}
 		pages.push_back({"files", Tr("Game files"), IsWiiU() ? Tr("Where your Wii U games are, and installs into the Wii U's storage.") :
 										Is3ds()		 ? Tr("Where your 3DS games are, and installs into the 3DS's storage.") :
 										IsSwitch()	 ? Tr("Where your Switch games are, with its keys and firmware.") :
 													   Tr("Where your DS games are, and where their saves go."),
 			Icon::Folder});
 		// the Wii U's accounts and every side's saves (6.13); a handheld has one player, so its page is saves alone.
-		// A Switch game's saves are Eden's, in its own folder
-		pages.push_back({"saves", IsWiiU() ? Tr("Accounts and saves") : Tr("Saves"),
-				IsWiiU() ? Tr("Each account has its own saves for every game. Backups hold every side's saves.") : Tr("Backups hold every side's saves."),
-				Icon::Save});
-		if (Is3ds())
-			pages.push_back({"artic", Tr("Artic Base"), Tr("Play from your 3DS, over your network."), Icon::Artic});
-		// ProsperoEden's rooms (port/eden/rooms.h), the Switch side's own page
-		if (IsSwitch())
-			pages.push_back({"rooms", Tr("Multiplayer"), Tr("Rooms for the games' local wireless play, online."), Icon::Globe});
+		// A Switch game's saves are Eden's, in its own folder, each of Eden's players with their own
+		pages.push_back({"saves",
+			IsWiiU() ? Tr("Accounts and saves") :
+				// tr: Settings' page of the Switch side's players (Eden's user profiles, the people) and every side's saves
+				IsSwitch() ? Tr("Players and saves") :
+							 Tr("Saves"),
+			IsWiiU()	 ? Tr("Each account has its own saves for every game. Backups hold every side's saves.") :
+				IsSwitch() ? std::string(Tr("Who plays, each with saves of their own.")) + " " + Tr("Backups hold every side's saves.") :
+							 Tr("Backups hold every side's saves."),
+			Icon::Save});
+		// with the Switch's rooms (port/eden/rooms.h) and the 3DS's Artic Base, what goes over the network
 		pages.push_back({"online", Tr("Online"), IsWiiU() ? Tr("Box art, graphic packs and PS5-ECAM's updates.") :
 										   IsDs()	 ? Tr("Box art, RetroAchievements and PS5-ECAM's updates.") :
-													   Tr("Box art and PS5-ECAM's updates."),
+										   Is3ds()	 ? Tr("Box art, Artic Base and PS5-ECAM's updates.") :
+													   Tr("Box art, multiplayer rooms and PS5-ECAM's updates."),
 			Icon::Globe});
 		pages.push_back({"launcher", Tr("Launcher"), Tr("Theme, sides, language and text."), Icon::Sparkle});
 		pages.push_back({"playtime", Tr("Play time"), Tr("How long you have played, each side and the most played games."), Icon::Play});
@@ -262,10 +257,11 @@ namespace ps5shell
 		if (!InGameSettings())
 			return pages;
 		// a game's settings: only the pages with something a game can have its own of (SideRows' rows
-		// with a setting: Graphics, Screens, Audio, System and the Switch's Performance)
+		// with a setting: Graphics, Screens, System and the Switch's Performance; the Switch's Picture effects,
+		// Eden's own, are behind a row on its Graphics)
 		std::vector<SettingsPage> game;
 		for (const SettingsPage& page : pages)
-			if (page.id == "graphics" || page.id == "screens" || page.id == "audio" || page.id == "system" || page.id == "performance" || page.id == "nxpost")
+			if (page.id == "graphics" || page.id == "screens" || page.id == "system" || page.id == "performance")
 				game.push_back({page.id, page.title, TrF("For {0} only. Its other settings follow its side's.", m_gameName), page.icon});
 		// its saves alone (6.15), whatever settings it has of its own (a Switch game's are Eden's)
 		game.push_back({"gamesaves", Tr("Saves"), TrF("{0}'s saves only. Settings has every side's.", m_gameName), Icon::Save});
@@ -644,6 +640,13 @@ namespace ps5shell
 					Tr("Bilinear is soft, Bicubic sharper; Nearest neighbour keeps pixels square. AMD FSR 1 keeps edges clean for a game drawn "
 					   "below 4K, for a little more work by the GPU.")),
 				"nxFilter");
+			// FSR's sharpening, anti-aliasing and Eden's ReShade looks (switch_extras.cpp's, which SettingRows adds
+			// behind this row), what is done over the picture
+			const std::vector<std::string> antiAliasing{Tr("Off"), "FXAA", "SMAA"};
+			// tr: Settings > Graphics on the Switch side: a row that opens FSR sharpening, anti-aliasing and Eden's ReShade looks
+			sub("nxpost", Tr("Picture effects"), antiAliasing[std::clamp(hand.nxAntiAliasing, 0, 2)], Tr("Sharpening, anti-aliasing and ReShade's looks."),
+				Tr("FSR sharpening, while AMD FSR 1 scales the picture; Eden's anti-aliasing; and a ReShade look over the picture, Eden's own "
+				   "or one of yours. Triangle on each says more."));
 			// FSR 1's own setting, while it is the filter
 			if (hand.nxFilter == 1)
 			{
@@ -656,11 +659,12 @@ namespace ps5shell
 						   "Also in the in-game menu, where it changes at once.")),
 					"nxSharpening");
 			}
-			own(choice("nx-aa", Tr("Anti-aliasing"), {Tr("Off"), "FXAA", "SMAA"}, hand.nxAntiAliasing, Tr("Smooths the jagged edges of the picture."),
+			own(choice("nx-aa", Tr("Anti-aliasing"), antiAliasing, hand.nxAntiAliasing, Tr("Smooths the jagged edges of the picture."),
 					Tr("Eden's anti-aliasing, over the game's picture: FXAA smooths edges lightly, SMAA more cleanly, each for a little more "
 					   "work by the GPU. Off, as Eden has it. Also in the in-game menu, where it changes at once."),
 					Kind::Segmented),
 				"nxAntiAliasing");
+			endSub();
 			own(choice("nx-astc", Tr("ASTC textures"), {Tr("Compressed"), Tr("Full quality")}, hand.nxAstc,
 					Tr("Compressed saves graphics memory; full quality looks best."),
 					Tr("Many Switch games keep their textures in ASTC, which the PS5's GPU cannot read: Eden converts them. Compressed keeps them "
@@ -743,33 +747,35 @@ namespace ps5shell
 					Tr("Artwork around the screens, never over them. It follows every layout, and the in-game menu changes it too."),
 					Kind::Swatches),
 				"border");
-		}
-		else if (page == "audio")
-		{
-			own(slider("volume", IsWiiU() ? Tr("Wii U games' volume") : Is3ds() ? Tr("3DS games' volume") : IsSwitch() ? Tr("Switch games' volume") : Tr("DS games' volume"),
-					IsWiiU() ? settings.volume : hand.volume, 100, Tr("The games' sound."), Tr("The games' sound on this side. Left and Right change it by 10%.")),
-				"volume");
-			if (IsWiiU())
-				toggle("gamepadspeaker", Tr("GamePad speaker"), settings.gamePadSpeaker, Tr("The Wii U GamePad's own sound, on the DualSense."),
-					Tr("The sounds games play on the Wii U GamePad's speaker, from player 1's DualSense speaker. Many games send their whole sound "
-					"there too, so it is off unless you want it. Applies to the next game."));
-			std::vector<std::string> musicNames;
-			const std::vector<std::string> musicValues = MusicValues(&musicNames);
-			const auto chosen = std::find(musicValues.begin(), musicValues.end(), settings.music);
-			// a file no longer there plays the launcher's own piece: the row says so too
-			const int music = chosen == musicValues.end() ? 0 : (int)(chosen - musicValues.begin());
-			// tr: Settings > Audio: a row that opens the launcher's music and menu sounds
-			sub("launchersound", Tr("Launcher sound"), musicNames[music], Tr("The menus' music and sounds."),
-				Tr("The music that plays in the menus, how loud it is, and the sounds of moving and choosing. Every side has the same."));
-			choice("music", Tr("Launcher music"), musicNames, music, Tr("Music that plays in the menus."),
-				TrF("The launcher's own music, one of yours, or none. To use your own, put MP3 or WAV files in {0}; they appear here. Every "
-					"side plays the same.",
-					ps5sound::MusicFolder()));
-			slider("musicvolume", Tr("Music volume"), settings.musicVolume, 100, Tr("How loud the menus' music is."),
-				Tr("How loud the launcher's music is. Left and Right change it by 10%."));
-			toggle("menusounds", Tr("Menu sounds"), settings.menuSounds, Tr("The sounds of moving and choosing."),
-				Tr("The launcher's sounds as you move, choose and go back."));
-			endSub();
+			// the DS's touch, where its cursor lands and the right stick as the stylus (on System's page before
+			// System took the sound)
+			if (IsDs())
+			{
+				std::vector<std::string> touchOffsets, touchScales;
+				for (int value = -20; value <= 20; value++) touchOffsets.push_back(fmt::format("{}%", value));
+				for (int value = 50; value <= 150; value++) touchScales.push_back(fmt::format("{}%", value));
+				const auto touchHelp = Tr("Moves and scales where the touchpad's cursor lands on the DS's screens, for a game where it is off: 0% and 100% leave it as it is. The remote touch screen is not changed. Applies to the next game.");
+				std::string touch;
+				if (hand.dsTouchX != 0 || hand.dsTouchY != 0 || hand.dsTouchScale != 100)
+					touch = fmt::format("{}% · {}% · {}%", hand.dsTouchX, hand.dsTouchY, hand.dsTouchScale);
+				if (hand.dsStylus)
+					// tr: Settings > Screens' Touch row, its value: the right stick is the stylus
+					touch += (touch.empty() ? "" : " · ") + std::string(Tr("Stick as stylus"));
+				// tr: Settings > Screens: a row that opens the touch screen's settings (where the touchpad's cursor lands, the right stick as the stylus)
+				sub("touch", Tr("Touch"), touch.empty() ? std::string(Tr("Default")) : touch,
+					Tr("Where the touchpad's cursor lands, and the right stick as the stylus."),
+					Tr("Moves and scales where the touchpad's cursor lands on the DS's screens, for a game where it is off, and lets the right "
+					   "stick drag a touch on the bottom screen. Triangle on each says more."));
+				own(choice("dstouchx", Tr("Touch, left or right"), touchOffsets, hand.dsTouchX + 20, touchHelp, touchHelp), "dsTouchX");
+				own(choice("dstouchy", Tr("Touch, up or down"), touchOffsets, hand.dsTouchY + 20, touchHelp, touchHelp), "dsTouchY");
+				own(choice("dstouchscale", Tr("Touch, scale"), touchScales, hand.dsTouchScale - 50, touchHelp, touchHelp), "dsTouchScale");
+				// tr: a DS setting: the right stick as the touch screen's stylus (DraStic has it), for Metroid Prime Hunters' aiming
+				own(toggle("dsstylus", Tr("The right stick as the stylus"), hand.dsStylus, Tr("Pushed, it drags a touch on the bottom screen."),
+					Tr("Push the right stick and the bottom screen is touched in its middle, the touch dragged as you push and lifted when you let "
+					   "go: Metroid Prime Hunters aims that way. The stick's directions do nothing else then. Applies to the next game.")),
+					"dsStylus");
+				endSub();
+			}
 		}
 		else if (page == "controls")
 		{
@@ -858,33 +864,6 @@ namespace ps5shell
 				action(Kind::Hold, "resetcontrols", Tr("Reset to defaults"), m_message.empty() ? Tr("Hold Cross") : m_message,
 					Is3ds() ? Tr("Default buttons, motion and deadzone.") : Tr("Default buttons and deadzone."), Tr("The default buttons, motion and deadzone."));
 				endSub();
-			}
-		}
-		else if (page == "remote")
-		{
-			const char* screen = IsWiiU() ? Tr("The GamePad's screen") : Is3ds() ? Tr("The bottom screen") : Tr("The touch screen");
-			toggle("remote", Tr("Remote touch screen"), settings.remoteScreen, TrF("{0} in a phone's or tablet's browser, with touch.", screen),
-				TrF("{0} in any browser on the PS5's network, a phone's, a tablet's or a computer's, with nothing to install, and its "
-							"touches sent back to the game. Scan the code shown here, or open the address. The DualSense stays the buttons, "
-							"and the sound stays on the PS5.\nWhile a browser shows it, the PS5 copies that screen up to 30 times a second, so "
-							"a game can run a little slower; with no browser, it costs nothing. Any device on your network can open the page, "
-							"so turn it off on a network you share.\nOne switch for every side (the GamePad's screen is player 1's), also in "
-							"a game's menu (touchpad click + Options). From dolphin78's idea and prototype (#38).",
-					screen));
-		}
-		else if (page == "usb")
-		{
-			for (ps5usb::Device device : ps5usb::kDevices)
-			{
-				Row* row = toggle("usb", ps5usb::Name(device), m_status.coreReady && ps5usb::Enabled(device),
-					device == ps5usb::Device::Skylanders ? Tr("For the Skylanders games.") :
-					device == ps5usb::Device::Infinity	 ? Tr("For Disney Infinity 3.0.") :
-														   Tr("For LEGO Dimensions."),
-					TrF("Cemu's emulated portal, plugged in as a game starts. In the game, the menu's USB devices category puts figures on it: dumps "
-						"in {0}. A real portal plugged into the PS5 is not supported.",
-						ps5usb::Folder(device)));
-				row->index = (int)device;
-				cemu(row);
 			}
 		}
 		else if (page == "system" && Is3ds())
@@ -998,7 +977,7 @@ namespace ps5shell
 				own(toggle(switches[i].id, Tr(switches[i].label), hand.*(switches[i].value), Tr(switches[i].about), Tr(switches[i].about)), switches[i].field);
 			endSub();
 		}
-		else if (page == "system")
+		else if (page == "system" && IsDs())
 		{
 			own(choice("language", Tr("Language"), Options(kLanguages), hand.language + 1, Tr("The emulated DS's language."),
 					Tr("The DS's own language, which many games follow. The DS has Japanese, English, French, German, Italian, Spanish and "
@@ -1011,30 +990,6 @@ namespace ps5shell
 						"and this is on. Without them, its own replacements (FreeBIOS) run most games as well. Applies to the next game.",
 						ps5melonds::Root() + "/bios")),
 				"dsOwnBios");
-			std::vector<std::string> touchOffsets, touchScales;
-			for (int value = -20; value <= 20; value++) touchOffsets.push_back(fmt::format("{}%", value));
-			for (int value = 50; value <= 150; value++) touchScales.push_back(fmt::format("{}%", value));
-			const auto touchHelp = Tr("Moves and scales where the touchpad's cursor lands on the DS's screens, for a game where it is off: 0% and 100% leave it as it is. The remote touch screen is not changed. Applies to the next game.");
-			std::string touch;
-			if (hand.dsTouchX != 0 || hand.dsTouchY != 0 || hand.dsTouchScale != 100)
-				touch = fmt::format("{}% · {}% · {}%", hand.dsTouchX, hand.dsTouchY, hand.dsTouchScale);
-			if (hand.dsStylus)
-				// tr: Settings > System's Touch row, its value: the right stick is the stylus
-				touch += (touch.empty() ? "" : " · ") + std::string(Tr("Stick as stylus"));
-			// tr: Settings > System: a row that opens the touch screen's settings (where the touchpad's cursor lands, the right stick as the stylus)
-			sub("touch", Tr("Touch"), touch.empty() ? std::string(Tr("Default")) : touch,
-				Tr("Where the touchpad's cursor lands, and the right stick as the stylus."),
-				Tr("Moves and scales where the touchpad's cursor lands on the DS's screens, for a game where it is off, and lets the right "
-				   "stick drag a touch on the bottom screen. Triangle on each says more."));
-			own(choice("dstouchx", Tr("Touch, left or right"), touchOffsets, hand.dsTouchX + 20, touchHelp, touchHelp), "dsTouchX");
-			own(choice("dstouchy", Tr("Touch, up or down"), touchOffsets, hand.dsTouchY + 20, touchHelp, touchHelp), "dsTouchY");
-			own(choice("dstouchscale", Tr("Touch, scale"), touchScales, hand.dsTouchScale - 50, touchHelp, touchHelp), "dsTouchScale");
-			// tr: a DS setting: the right stick as the touch screen's stylus (DraStic has it), for Metroid Prime Hunters' aiming
-			own(toggle("dsstylus", Tr("The right stick as the stylus"), hand.dsStylus, Tr("Pushed, it drags a touch on the bottom screen."),
-				Tr("Push the right stick and the bottom screen is touched in its middle, the touch dragged as you push and lifted when you let "
-				   "go: Metroid Prime Hunters aims that way. The stick's directions do nothing else then. Applies to the next game.")),
-				"dsStylus");
-			endSub();
 			own(choice("dsmic", Tr("Microphone"), {Tr("Noise"), Tr("Silence"), Tr("A recording")}, hand.dsMicSource,
 				Tr("What the DS hears while R3 is held. Applies to the next game."),
 				// tr: {0} is melonDS's folder, /data/melonds or where the DS's files are; keep <the game's file name> as a placeholder
@@ -1272,58 +1227,6 @@ namespace ps5shell
 			if (backups.empty())
 				restore->dimmed = true;
 		}
-		else if (page == "artic")
-			action(Kind::Link, "artic", Tr("Artic Base"), settings.n3ds.articAddress, Tr("Play a game from your 3DS, and set up from it."),
-				Tr("Artic Base plays a game from a 3DS on your network, its saves staying on the 3DS; Artic Setup copies a 3DS's system files "
-				"into Azahar, for the Home Menu and the games that need them."));
-		else if (page == "rooms")
-		{
-			// the public list, downloaded once as the page first opens; Cross on its row again
-			if (!ps5rooms::Asked())
-				ps5rooms::Refresh();
-			const ps5rooms::Status rooms = ps5rooms::Get();
-			const bool joined = !hand.nxRoomHost.empty();
-			const std::string about = Tr("A room is a server where Switch games find each other for their local wireless play, as in desktop "
-										 "Eden and ProsperoEden. The room chosen here is joined as each Switch game starts: then choose Local "
-										 "Wireless (or local play) in the game. A room that cannot be joined brings you back here with why.");
-			Row* room = action(Kind::Action, "nx-room", Tr("Room"), joined ? hand.nxRoomName : std::string(Tr("None: games play offline")),
-				joined ? Tr("Joined as a Switch game starts. Cross plays offline again.") : Tr("Choose a public room below, or a private one."),
-				about);
-			room->dimmed = !joined;
-			action(Kind::Action, "nx-nickname", Tr("Nickname"), ps5eden::Nickname(hand), Tr("Your name in the room."),
-				Tr("What the others in a room see of you: 4 to 20 letters, digits, spaces, dots, dashes or underscores, as Eden takes them."));
-			const bool privateRoom = joined && hand.nxRoomName == hand.nxRoomHost;
-			action(Kind::Action, "nx-private", Tr("Private room"),
-				privateRoom ? fmt::format("{}:{}", hand.nxRoomHost, hand.nxRoomPort) : std::string(Tr("Cross to enter one")),
-				Tr("A room by its address, port and password."),
-				Tr("A room someone gave you the address of: its address (a name or an IPv4 address), its UDP port (24872 unless they "
-				   "say otherwise) and its password, if it has one."));
-			const std::string status = rooms.busy ? std::string(Tr("Downloading…")) :
-				!rooms.error.empty()				? rooms.error :
-				rooms.rooms.empty()				? std::string(Tr("No public rooms right now")) :
-													  TrP((long long)rooms.rooms.size(), "{0} room", "{0} rooms");
-			action(Kind::Action, "nx-refresh", Tr("Public rooms"), status, Tr("Cross downloads the list again."),
-				Tr("ProsperoEden's list of public rooms: its own featured rooms first, then the others, the fullest first. A room for "
-				   "another version of Eden cannot be joined.") + std::string("\n\n") + about);
-			// the rooms themselves, ProsperoEden's own first (the most a page lists)
-			for (size_t i = 0; i < rooms.rooms.size() && i < 80; i++)
-			{
-				const ps5rooms::Room& r = rooms.rooms[i];
-				std::string value = fmt::format("{}/{}", r.players, r.capacity);
-				if (r.password)
-					value += std::string(" \u00b7 ") + Tr("Password");
-				if (r.featured)
-					// tr: one of ProsperoEden's own rooms, which its list puts first
-					value = std::string(Tr("Featured")) + " \u00b7 " + value;
-				if (!r.compatible)
-					value = Tr("Another version");
-				const bool chosen = joined && hand.nxRoomHost == r.address && hand.nxRoomPort == r.port;
-				Row* row = action(Kind::Action, "nx-public", chosen ? TrF("{0} (chosen)", r.name) : r.name, value,
-					r.game.empty() ? std::string(Tr("Any game")) : r.game, about);
-				row->index = (int)i;
-				row->dimmed = !r.compatible;
-			}
-		}
 		else if (page == "online")
 		{
 			// downloading the covers now: the missing ones, or every one again
@@ -1356,6 +1259,64 @@ namespace ps5shell
 				Tr("Downloads the cover of every game on this side again, replacing the ones you have. Useful when a cover is wrong or "
 				   "looks broken."));
 			endSub();
+			// Artic Base's page (pages.cpp): a game played from a 3DS on the network
+			if (Is3ds())
+				action(Kind::Link, "artic", Tr("Artic Base"), settings.n3ds.articAddress, Tr("Play a game from your 3DS, and set up from it."),
+					Tr("Artic Base plays a game from a 3DS on your network, its saves staying on the 3DS; Artic Setup copies a 3DS's system files "
+					"into Azahar, for the Home Menu and the games that need them."));
+			// ProsperoEden's rooms (port/eden/rooms.h), behind a row; the public list downloaded once, as their page
+			// first shows, and again by Cross on its row
+			if (IsSwitch())
+			{
+				const bool joined = !hand.nxRoomHost.empty();
+				const std::string about = Tr("A room is a server where Switch games find each other for their local wireless play, as in desktop "
+											 "Eden and ProsperoEden. The room chosen here is joined as each Switch game starts: then choose Local "
+											 "Wireless (or local play) in the game. A room that cannot be joined brings you back here with why.");
+				// tr: Settings > Online on the Switch side: a row that opens the rooms for the games' local wireless play
+				sub("rooms", Tr("Multiplayer"), joined ? hand.nxRoomName : std::string(Tr("None: games play offline")),
+					Tr("Rooms for the games' local wireless play, online."), about);
+				if (m_subPage == "rooms" && !ps5rooms::Asked())
+					ps5rooms::Refresh();
+				const ps5rooms::Status rooms = ps5rooms::Get();
+				Row* room = action(Kind::Action, "nx-room", Tr("Room"), joined ? hand.nxRoomName : std::string(Tr("None: games play offline")),
+					joined ? Tr("Joined as a Switch game starts. Cross plays offline again.") : Tr("Choose a public room below, or a private one."),
+					about);
+				room->dimmed = !joined;
+				action(Kind::Action, "nx-nickname", Tr("Nickname"), ps5eden::Nickname(hand), Tr("Your name in the room."),
+					Tr("What the others in a room see of you: 4 to 20 letters, digits, spaces, dots, dashes or underscores, as Eden takes them."));
+				const bool privateRoom = joined && hand.nxRoomName == hand.nxRoomHost;
+				action(Kind::Action, "nx-private", Tr("Private room"),
+					privateRoom ? fmt::format("{}:{}", hand.nxRoomHost, hand.nxRoomPort) : std::string(Tr("Cross to enter one")),
+					Tr("A room by its address, port and password."),
+					Tr("A room someone gave you the address of: its address (a name or an IPv4 address), its UDP port (24872 unless they "
+					   "say otherwise) and its password, if it has one."));
+				const std::string listed = rooms.busy ? std::string(Tr("Downloading…")) :
+					!rooms.error.empty()			   ? rooms.error :
+					rooms.rooms.empty()				   ? std::string(Tr("No public rooms right now")) :
+														 TrP((long long)rooms.rooms.size(), "{0} room", "{0} rooms");
+				action(Kind::Action, "nx-refresh", Tr("Public rooms"), listed, Tr("Cross downloads the list again."),
+					Tr("ProsperoEden's list of public rooms: its own featured rooms first, then the others, the fullest first. A room for "
+					   "another version of Eden cannot be joined.") + std::string("\n\n") + about);
+				// the rooms themselves, ProsperoEden's own first (the most a page lists)
+				for (size_t i = 0; i < rooms.rooms.size() && i < 80; i++)
+				{
+					const ps5rooms::Room& r = rooms.rooms[i];
+					std::string value = fmt::format("{}/{}", r.players, r.capacity);
+					if (r.password)
+						value += std::string(" · ") + Tr("Password");
+					if (r.featured)
+						// tr: one of ProsperoEden's own rooms, which its list puts first
+						value = std::string(Tr("Featured")) + " · " + value;
+					if (!r.compatible)
+						value = Tr("Another version");
+					const bool chosen = joined && hand.nxRoomHost == r.address && hand.nxRoomPort == r.port;
+					Row* row = action(Kind::Action, "nx-public", chosen ? TrF("{0} (chosen)", r.name) : r.name, value,
+						r.game.empty() ? std::string(Tr("Any game")) : r.game, about);
+					row->index = (int)i;
+					row->dimmed = !r.compatible;
+				}
+				endSub();
+			}
 			if (IsWiiU())
 				action(Kind::Action, "packs", Tr("Community graphic packs"), PacksStatus(), Tr("Cross checks GitHub for newer ones."),
 					Tr("Cemu's community graphic packs, from GitHub's latest release when it is newer than the ones installed. They are not "
@@ -1518,16 +1479,128 @@ namespace ps5shell
 						ps5archive::UnpackedRoot()));
 			}
 		}
+		// the rows of the pages that went into others (the owner's, 2026-10-27: fewer pages down the left), each
+		// after the rows of the page it is on: the sound on System, after the emulated console's; the Wii U's
+		// USB portals there too; and the remote touch screen on the 3DS's and the DS's Controls, the Wii U's
+		// System
+		if (page == "system")
+		{
+			own(slider("volume", IsWiiU() ? Tr("Wii U games' volume") : Is3ds() ? Tr("3DS games' volume") : IsSwitch() ? Tr("Switch games' volume") : Tr("DS games' volume"),
+					IsWiiU() ? settings.volume : hand.volume, 100, Tr("The games' sound."), Tr("The games' sound on this side. Left and Right change it by 10%.")),
+				"volume");
+			if (IsWiiU())
+				toggle("gamepadspeaker", Tr("GamePad speaker"), settings.gamePadSpeaker, Tr("The Wii U GamePad's own sound, on the DualSense."),
+					Tr("The sounds games play on the Wii U GamePad's speaker, from player 1's DualSense speaker. Many games send their whole sound "
+					"there too, so it is off unless you want it. Applies to the next game."));
+			std::vector<std::string> musicNames;
+			const std::vector<std::string> musicValues = MusicValues(&musicNames);
+			const auto chosen = std::find(musicValues.begin(), musicValues.end(), settings.music);
+			// a file no longer there plays the launcher's own piece: the row says so too
+			const int music = chosen == musicValues.end() ? 0 : (int)(chosen - musicValues.begin());
+			// tr: Settings > System: a row that opens the launcher's music and menu sounds
+			sub("launchersound", Tr("Launcher sound"), musicNames[music], Tr("The menus' music and sounds."),
+				Tr("The music that plays in the menus, how loud it is, and the sounds of moving and choosing. Every side has the same."));
+			choice("music", Tr("Launcher music"), musicNames, music, Tr("Music that plays in the menus."),
+				TrF("The launcher's own music, one of yours, or none. To use your own, put MP3 or WAV files in {0}; they appear here. Every "
+					"side plays the same.",
+					ps5sound::MusicFolder()));
+			slider("musicvolume", Tr("Music volume"), settings.musicVolume, 100, Tr("How loud the menus' music is."),
+				Tr("How loud the launcher's music is. Left and Right change it by 10%."));
+			toggle("menusounds", Tr("Menu sounds"), settings.menuSounds, Tr("The sounds of moving and choosing."),
+				Tr("The launcher's sounds as you move, choose and go back."));
+			endSub();
+		}
+		if (page == "system" && IsWiiU())
+		{
+			int plugged = 0;
+			for (ps5usb::Device device : ps5usb::kDevices)
+				plugged += m_status.coreReady && ps5usb::Enabled(device);
+			// tr: Settings > System on the Wii U side: a row that opens Cemu's emulated portals (Skylanders, Disney Infinity, LEGO Dimensions)
+			sub("usb", Tr("USB devices"), plugged ? TrP(plugged, "{0} on", "{0} on") : std::string(Tr("Off")), Tr("Cemu's emulated portals."),
+				PanelText("usb"));
+			for (ps5usb::Device device : ps5usb::kDevices)
+			{
+				Row* row = toggle("usb", ps5usb::Name(device), m_status.coreReady && ps5usb::Enabled(device),
+					device == ps5usb::Device::Skylanders ? Tr("For the Skylanders games.") :
+					device == ps5usb::Device::Infinity	 ? Tr("For Disney Infinity 3.0.") :
+														   Tr("For LEGO Dimensions."),
+					TrF("Cemu's emulated portal, plugged in as a game starts. In the game, the menu's USB devices category puts figures on it: dumps "
+						"in {0}. A real portal plugged into the PS5 is not supported.",
+						ps5usb::Folder(device)));
+				row->index = (int)device;
+				cemu(row);
+			}
+			endSub();
+		}
+		// the remote touch screen is this program's: a Switch game runs in Eden's
+		if ((page == "system" && IsWiiU()) || (page == "controls" && (Is3ds() || IsDs())))
+		{
+			const char* screen = IsWiiU() ? Tr("The GamePad's screen") : Is3ds() ? Tr("The bottom screen") : Tr("The touch screen");
+			const std::string about = TrF("{0} in any browser on the PS5's network, a phone's, a tablet's or a computer's, with nothing to install, and its "
+										  "touches sent back to the game. Scan the code shown here, or open the address. The DualSense stays the buttons, "
+										  "and the sound stays on the PS5.\nWhile a browser shows it, the PS5 copies that screen up to 30 times a second, so "
+										  "a game can run a little slower; with no browser, it costs nothing. Any device on your network can open the page, "
+										  "so turn it off on a network you share.\nOne switch for every side (the GamePad's screen is player 1's), also in "
+										  "a game's menu (touchpad click + Options). From dolphin78's idea and prototype (#38).",
+				screen);
+			// tr: a row that opens the remote touch screen's page: the game's second screen in a phone's browser, and its code to scan
+			sub("remote", Tr("Remote touch screen"), settings.remoteScreen ? Tr("On") : Tr("Off"), TrF("{0} in a phone's or tablet's browser, with touch.", screen),
+				about);
+			toggle("remote", Tr("Remote touch screen"), settings.remoteScreen, TrF("{0} in a phone's or tablet's browser, with touch.", screen), about);
+			endSub();
+		}
 		(void)side;
 		return rows;
 	}
 
 	std::vector<Row> Shell::SettingRows(const std::string& page)
 	{
-		if (IsSwitch() && (page == "nxmods" || page == "nxcheats" || page == "nxpost" || page == "nxprofiles"))
+		if (IsSwitch() && (page == "nxmods" || page == "nxcheats"))
 			return SwitchExtrasRows(page);
+		// the Switch's rows from Eden's own files (switch_extras.cpp), behind a row of the page they are on: its
+		// ReShade looks behind Graphics' Picture effects, after FSR sharpening and anti-aliasing; its players
+		// behind a row of their own, first on Players and saves
+		auto withExtras = [&](std::vector<Row> rows) {
+			if (!IsSwitch() || (page != "graphics" && (page != "saves" || InGameSettings())))
+				return rows;
+			const std::string group = page == "graphics" ? "nxpost" : "nxprofiles";
+			std::vector<Row> added = SwitchExtrasRows(group);
+			std::string look;
+			for (Row& row : added)
+			{
+				row.group = group;
+				// a game's own look is its own (game settings' chip on the row it is behind)
+				row.fromSide = row.id != "nxextra:preset" || !(InGameSettings() && m_switchExtras.ownPreset);
+				// (not Default, the side's, nor Off)
+				if (row.id == "nxextra:preset" && row.index > 0 && row.value != Tr("Off"))
+					look = row.value;
+			}
+			if (group == "nxpost")
+			{
+				// the look chosen, then the anti-aliasing
+				for (Row& row : rows)
+					if (row.opens == group && !look.empty())
+						row.value = row.value == Tr("Off") ? look : look + " · " + row.value;
+			}
+			else
+			{
+				const auto& view = m_switchExtras;
+				Row players;
+				players.kind = Row::Kind::Link;
+				players.id = "sub";
+				players.opens = group;
+				// tr: the Switch side's players, the people (Eden's user profiles), each with saves of their own; not a number of players
+				players.label = TrC("switch", "Players");
+				players.value = view.error.empty() && view.profile >= 0 && view.profile < (int)view.profiles.size() ? view.profiles[view.profile].name : "";
+				players.description = Tr("Who plays, each with saves of their own.");
+				players.help = Tr("Remembered for this PS5 user. Each player has saves of their own; none are moved or deleted.");
+				rows.insert(rows.begin(), std::move(players));
+			}
+			rows.insert(rows.end(), std::make_move_iterator(added.begin()), std::make_move_iterator(added.end()));
+			return rows;
+		};
 		if (!InGameSettings())
-			return SubPageRows(SideRows(page, m_settings));
+			return SubPageRows(withExtras(SideRows(page, m_settings)));
 		if (page == "gamesaves")
 			return GameSaveRows();
 		// a game's: its rows only, each its own value or the side's (Default), and the › rows they are behind
@@ -1541,7 +1614,7 @@ namespace ps5shell
 			row.fromSide = found == m_settings.games.end() || !found->second.count(row.setting);
 			rows.push_back(std::move(row));
 		}
-		rows = SubPageRows(rows);
+		rows = SubPageRows(withExtras(std::move(rows)));
 		if (!rows.empty() && m_subPage.empty())
 		{
 			Row reset;
@@ -1739,7 +1812,7 @@ namespace ps5shell
 			importSave.index = chosen;
 			importSave.value = importSave.options.empty() ? Tr("None on a USB drive") : importSave.options[chosen] + " · " + Tr("Hold Cross");
 			importSave.description = Tr("From USB/PS5-ECAM-imports/<title ID>, or a copy of Ryujinx's folder in USB/Ryujinx, as the chosen player's save. The save it replaces is kept.");
-			importSave.help = Tr("Choose the player in Settings > Players first. Every file is copied and checked before the save is replaced, and the save it replaces is kept in Eden's save-transfer-recovery folder.");
+			importSave.help = Tr("Choose the player in Settings > Players and saves > Players first. Every file is copied and checked before the save is replaced, and the save it replaces is kept in Eden's save-transfer-recovery folder.");
 			importSave.dimmed = running || importSave.options.empty(); rows.push_back(std::move(importSave));
 		}
 		return rows;
@@ -2385,7 +2458,7 @@ namespace ps5shell
 			const auto view = ps5eden::extras::Read(SwitchExtrasContext());
 			std::string error;
 			if (!view.error.empty()) error = view.error;
-			else if (view.profiles.empty()) error = Tr("Choose a player first, in Settings > Players.");
+			else if (view.profiles.empty()) error = Tr("Choose a player first, in Settings > Players and saves.");
 			else if (ps5saves::StartSwitchExport(m_gameRef, view.profiles[view.profile].id, error)) m_savesMessage = Tr("Copying to USB…");
 			if (!error.empty()) Toast(error);
 			return;
@@ -2772,7 +2845,7 @@ namespace ps5shell
 			const int selected = m_holdChoice["nximport"];
 			std::string error;
 			if (!view.error.empty()) error = view.error;
-			else if (view.profiles.empty()) error = Tr("Choose a player first, in Settings > Players.");
+			else if (view.profiles.empty()) error = Tr("Choose a player first, in Settings > Players and saves.");
 			else if (selected >= 0 && selected < (int)m_switchImports.size() &&
 				ps5saves::StartSwitchImport(m_gameRef, view.profiles[view.profile].id, m_switchImports[selected].folder, error, m_switchImports[selected].accountSaveId)) m_savesMessage = Tr("Taking the save…");
 			if (!error.empty()) Toast(error);
@@ -3140,15 +3213,17 @@ namespace ps5shell
 			if (focused && rows[i].kind == Row::Kind::Hold)
 				HoldRing(canvas, box, m_holdProgress);
 		}
-		// the remote touch screen, while it is on: the code to scan, the address, what is happening
+		// the remote touch screen, while it is on: the code to scan, the address, what is happening (its › page's,
+		// on Controls or the Wii U's System)
 		const float under = ry + rows.size() * (rowH + 12) - scroll;
-		if (m_page == "remote" && m_settings.remoteScreen && !InGameSettings())
+		const std::string& shown = sub ? m_subPage : m_page;
+		if (shown == "remote" && m_settings.remoteScreen && !InGameSettings())
 			DrawRemoteScreen(canvas, {px, under + 18, pw, 372});
 		else
 		{
-			// what the page says under its rows, in as many lines as the dialog has room for; About's beside
-			// its support card
-			const std::string panel = sub ? std::string() : PanelText(m_page);
+			// what the page (or the › page: the Wii U's USB devices, the remote touch screen) says under its rows,
+			// in as many lines as the dialog has room for; About's beside its support card
+			const std::string panel = PanelText(shown);
 			float textW = pw;
 			if (m_page == "about")
 			{

@@ -92,7 +92,7 @@ namespace ps5eden
 			performance += fmt::format(",{}:{}", name, on ? 1 : 0);
 		Set(args, "performance=" + performance);
 		Set(args, "mapping=" + MappingValue(nx));
-		// the room Settings > Multiplayer chose, joined before the game starts (ProsperoEden's rooms)
+		// the room Settings > Online > Multiplayer chose, joined before the game starts (ProsperoEden's rooms)
 		if (!nx.nxRoomHost.empty())
 		{
 			Set(args, "room_host=" + nx.nxRoomHost);
@@ -227,8 +227,8 @@ namespace ps5eden
 			const size_t tab = result.error.find('\t');
 			const std::string name = result.error.substr(5, tab == std::string::npos ? std::string::npos : tab - 5);
 			const std::string why = tab == std::string::npos ? std::string() : result.error.substr(tab + 1);
-			// tr: a Switch game's room (Settings > Multiplayer) could not be joined: its name ({0}) and why ({1}, in English)
-			return TrF("The room {0} could not be joined: {1} Choose another in Settings > Multiplayer, or play offline.", name, why);
+			// tr: a Switch game's room (Settings > Online > Multiplayer) could not be joined: its name ({0}) and why ({1}, in English)
+			return TrF("The room {0} could not be joined: {1} Choose another in Settings > Online > Multiplayer, or play offline.", name, why);
 		}
 		if (result.error.rfind("Forwarded game not found", 0) == 0)
 			return Tr("Eden could not find the game's file. Is the drive with it plugged in?");

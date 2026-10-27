@@ -2,7 +2,7 @@
 // PS5-ECAM: what every curl handle needs on the console, as ProsperoEden's console_curl.c found it on
 // hardware. The C library refuses curl's fcntl(O_NONBLOCK) on a socket (ps5/fcntl.cpp answers only
 // F_SETFD), so its sockets stayed blocking: after an answer, curl then waited for the server to close
-// the connection, its own timeouts unread. Settings > Multiplayer's public rooms stayed "Downloading…"
+// the connection, its own timeouts unread. Settings > Online > Multiplayer's public rooms stayed "Downloading…"
 // for good that way, and the community graphic packs' download could fail. Each socket curl opens
 // gets the console's own non-blocking option, SO_NBIO, instead.
 //

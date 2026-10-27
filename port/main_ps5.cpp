@@ -513,7 +513,7 @@ int main(int argc, char* argv[])
 			{"3ds-camera", "3DS camera",
 				"A picture (PNG or JPEG) the 3DS's cameras see, the newest sent: a QR code for a game to scan.",
 				ps5paths::Azahar() + "/camera"},
-			{"music", "Launcher music", "MP3 and WAV files, for Settings > Audio > Launcher music.", ps5paths::Root() + "/music"},
+			{"music", "Launcher music", "MP3 and WAV files, for Settings > System > Launcher sound.", ps5paths::Root() + "/music"},
 		};
 		std::erase_if(folders, [](const ps5stream::Folder& folder) { return folder.path.empty() || ps5netfs::is_net(folder.path); });
 		return folders;

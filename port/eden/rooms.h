@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5-ECAM: ProsperoEden's rooms on the Switch side, in the app's own Settings > Multiplayer, never in
+// PS5-ECAM: ProsperoEden's rooms on the Switch side, in the app's own Settings > Online > Multiplayer, never in
 // ProsperoEden's launcher. A room is a server where Switch games played in Eden find each other for
 // their local wireless play, as on desktop Eden. The public ones are listed by the same directory
 // ProsperoEden's Multiplayer page reads (its headless/multiplayer_directory.cpp: the project's own
@@ -42,7 +42,7 @@ namespace ps5rooms
 
 	// The public list downloaded again, on a thread of its own; nothing when one is under way
 	void Refresh();
-	// Whether the list was asked for since the app started (Settings > Multiplayer asks as it opens)
+	// Whether the list was asked for since the app started (Settings > Online > Multiplayer asks as it opens)
 	bool Asked();
 	Status Get();
 

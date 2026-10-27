@@ -69,7 +69,7 @@ namespace ps5shell
 		}
 		else if (page == "nxpost")
 		{
-			Row row; row.id = "nxextra:preset"; row.kind = Row::Kind::Choice; row.label = Tr("Picture effects");
+			Row row; row.id = "nxextra:preset"; row.kind = Row::Kind::Choice; row.label = Tr("ReShade");
 			if (context.title) row.options.push_back(Tr("Default"));
 			for (const auto& preset : view.presets) row.options.push_back(preset.empty() ? Tr("Off") : preset);
 			const auto found = std::find(view.presets.begin(), view.presets.end(), view.preset);

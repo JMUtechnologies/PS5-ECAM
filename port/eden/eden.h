@@ -59,7 +59,7 @@ namespace ps5eden
 	std::string ResultMessage(const Result& result);
 	// What the in-game menu changed, kept as the other sides' menus keep theirs (ps5settings::SaveChanges)
 	void KeepMenuChanges(const Result& result);
-	// The nickname shown in a room: Settings > Multiplayer's, else ProsperoEden's own
+	// The nickname shown in a room: Settings > Online > Multiplayer's, else ProsperoEden's own
 	std::string Nickname(const ps5settings::N3ds& nx);
 
 	// The Switch's twelve buttons on the DualSense, as Eden maps them (its button_mapping.h): each on
