@@ -33,7 +33,17 @@ checked by reading and compiling. Before a release:
    Online still puts the release before back. Box art, the graphic packs, RetroAchievements and the
    Switch rooms still download.
 8. **Play time:** a game played a few minutes shows them in the library and on its page, on each
-   side; for the Switch, after the app comes back from Eden (`played for` in the boot log).
+   side; for the Switch, after the app comes back from Eden (`played for` in the boot log). Then
+   **Settings > Play time** adds them up.
+9. **Hide a game and Surprise me:** hide a game from its Options menu, start the app again: still
+   hidden, found by Search and (with Settings > Launcher > Library filters on) the Hidden filter; Back
+   in the Library. Surprise me from Sort, on a side with a filter in use.
+10. **The DS's stylus stick:** Settings > System > The right stick as the stylus, then Metroid Prime
+   Hunters: the aim follows the stick, and lets go with it. Off, the right stick's buttons work again.
+11. **Light bars:** a Wii U game with two to four players, each DualSense in its own colour, and
+   again after one is turned off and on. For L8, the boot log's `[pad] P1: device data` lines, with
+   the battery's level as the PS5's menu shows it, to find which byte it is.
+12. **The bar:** Library and Settings beside P1 and the clock, on every side and with four players.
 
 ### Stability
 
@@ -258,6 +268,11 @@ Each idea done is marked **Done** where it is listed below, with its commit.
 | [N2](#n2) | `2aef5d4` | A Switch game's **Mods** and **Cheats**, each on or off, and **Picture effects** (JMUtechnologies, #86) |
 | [N4](#n4) | `2aef5d4` | A Switch game's **Saves**: its backup and restore, to a USB drive and back, Ryujinx's too; **Players** (JMUtechnologies, #86) |
 | [D1](#d1) | `2aef5d4`, `9f7fb68` | **A GBA cartridge in Slot-2** for the DS, off by default; the DS's microphone from a recording, and touch calibration (JMUtechnologies, #86) |
+| [L2](#l2) | [`7d7a7ca`](https://github.com/premohq/PS5-ECAM/commit/7d7a7ca) | **Hide from the Library** in a game's Options menu; Search and a **Hidden** filter still find it |
+| [L3](#l3) | [`7d7a7ca`](https://github.com/premohq/PS5-ECAM/commit/7d7a7ca) | **Surprise me**, Sort's last choice: a game of the list in focus, by chance |
+| [L9](#l9) | [`d40e252`](https://github.com/premohq/PS5-ECAM/commit/d40e252) | **Settings > Play time**: each side's time, all of them together, and the ten most played games |
+| [G6](#g6) | [`76ec5d8`](https://github.com/premohq/PS5-ECAM/commit/76ec5d8) | **The right stick as the stylus** on the DS (Settings > System), off by default, for Metroid Prime Hunters |
+| [H3](#h3) | [`5226870`](https://github.com/premohq/PS5-ECAM/commit/5226870) | In a Wii U game, each player's light bar in the PS5's colour for their number |
 
 Being worked on separately (not here): the Switch side's in-game menu, its settings and button
 remapping ([N1](#n1)), its rooms ([I2](#i2)), ReShade on the Wii U side ([I1](#i1)), and the box art
@@ -347,11 +362,11 @@ The Library's filters are All, Recently added, Favourites and Graphic packs on. 
 ("Couch co-op", "Finish next") and ones made from GameTDB's genre and players, which the app already has
 (`port/app/gameinfo.h`). ES-DE has custom collections and Daijishou has playlists.
 
-<a id="l2"></a>**L2. Hide a game** (S)
+<a id="l2"></a>**L2. Hide a game** (S) · **Done:** [`7d7a7ca`](https://github.com/premohq/PS5-ECAM/commit/7d7a7ca)
 For demos, homebrew and the clutter of a big folder. The game menu has no way to hide one. ES-DE has a
 hidden flag.
 
-<a id="l3"></a>**L3. Surprise me** (S)
+<a id="l3"></a>**L3. Surprise me** (S) · **Done:** [`7d7a7ca`](https://github.com/premohq/PS5-ECAM/commit/7d7a7ca), from the list in view (no collections yet)
 A random game from the side (or a collection). ES-DE and Daijishou both have one.
 
 <a id="l4"></a>**L4. More cover styles** (S to M)
@@ -373,10 +388,10 @@ Nothing happens when the launcher sits idle. After a few minutes, dim it or show
 is made for OLED screens, but a still launcher burns in all the same. ES-DE has dim, slideshow and video
 screensavers.
 
-<a id="l8"></a>**L8. The time and the DualSense's battery in a corner** (S)
+<a id="l8"></a>**L8. The time and the DualSense's battery in a corner** (S) · **Half done:** the time is in the bar's corner; for the battery, [`821a6e3`](https://github.com/premohq/PS5-ECAM/commit/821a6e3) logs the pad state's undescribed bytes, to find it on a console
 As the PS5's home screen and Daijishou show them.
 
-<a id="l9"></a>**L9. Play time you can look at** (S)
+<a id="l9"></a>**L9. Play time you can look at** (S) · **Done:** [`d40e252`](https://github.com/premohq/PS5-ECAM/commit/d40e252), without this week's (the catalogue keeps totals only)
 Each game's minutes are counted already (`port/app/catalog.h`). A page with totals by side, the most
 played, and this week's, as Playnite and Steam have.
 
@@ -417,7 +432,7 @@ and DuckStation have "Undo load state".
 A DualSense button that touches one fixed point of the touch screen: a game's map, its item menu, its
 "Y" button on the bottom screen. Citra and Azahar call it "touch from button".
 
-<a id="g6"></a>**G6. The right stick as the stylus** (S to M)
+<a id="g6"></a>**G6. The right stick as the stylus** (S to M) · **Done:** [`76ec5d8`](https://github.com/premohq/PS5-ECAM/commit/76ec5d8), on the DS (not the 3DS yet)
 On the DS the right stick can only be given to buttons (`port/melonds/input.cpp`). As a stylus it makes
 Metroid Prime Hunters playable, and on the 3DS it does the same for Kid Icarus: Uprising. DraStic does
 this.
@@ -507,7 +522,7 @@ flute, and the 3DS's and GamePad's microphones. First check that a HEN lets home
 A light stop halfway down, or resistance, set for each side or game, for racing games and shooters.
 Check first that the payload SDK reaches `scePadSetTriggerEffect`.
 
-<a id="h3"></a>**H3. A light bar that says something** (S)
+<a id="h3"></a>**H3. A light bar that says something** (S) · **Done:** [`5226870`](https://github.com/premohq/PS5-ECAM/commit/5226870), as the player's number on the Wii U (no achievement flash or cover colour yet)
 `ui/feedback.cpp` lights it in the side's colour. In a game it could show the player's number (Wii U,
 players 1 to 4), flash on an achievement, or take the cover's colour.
 

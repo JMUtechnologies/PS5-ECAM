@@ -16,7 +16,7 @@ wrong.
 | L1 / R1 | Library and Settings |
 | Touchpad click | The next side: Wii U, 3DS, DS (in the Library and Settings) |
 | Cross | Play the game, or open what's focused |
-| Options | A game's options: its hub, its game settings, favourite |
+| Options | A game's options: its hub, its game settings, favourite, hide |
 | Square / Triangle | Sort and search (Library); a setting's help (Settings), and Square back to Default (game settings) |
 | R2 | Jump by letter (Library) |
 | Circle | Back |
@@ -35,7 +35,7 @@ work stops before a game starts.
   game's graphic packs
 - **Settings:** opens over the Library, for the side you're on and nothing else: one short list of
   pages with icons (Language, Graphics, Audio, Controls, Remote touch screen, Game files, Accounts and
-  saves, Online, Launcher, Diagnostics, About, and the side's own: Screens, System, USB devices or
+  saves, Online, Launcher, Play time, Diagnostics, About, and the side's own: Screens, System, USB devices or
   Artic Base), a line under each setting saying what it does, and Triangle for more.
 - **Game settings:** Options on a game, then **Game settings**: the same pages for that game alone.
   Each value shows **Default** (its side's) until you change it, Square puts it back, and the in-game
@@ -46,6 +46,15 @@ work stops before a game starts.
 - **The Library:** your recently played games first, then every game on the side as a list, with
   Sort (Square), Search (Triangle) and L2 and R2 to jump by letter. **Settings > Launcher > Library
   filters** adds a row of filters over the list (All, Recently added, Favourites, Graphic packs on).
+  Sort's last choice, **Surprise me**, puts the focus on a game of the list by chance, and keeps the
+  order.
+- **Hide a game:** **Hide from the Library** in a game's Options menu leaves it out of the list and
+  Recently played, for demos, homebrew and clutter. Search still finds it, and so does a **Hidden**
+  filter, after the others while the side hides a game (with the filters' row on). **Back in the
+  Library**, in the same menu, puts it back.
+- **Play time** (**Settings > Play time**): each side's hours and how many of its games were played,
+  all the sides' together, and the ten most played games. A game's own time shows in the list and on
+  its page.
 - **Themes** (**Settings > Launcher > Theme**) change how the launcher looks, never what it does:
   Light (the default), Link Jack (frosted glass over each side's colours), Classic (3.0)'s deep blue,
   Eden (after ProsperoEden's look) and Midnight (true black, for OLED screens). Your own: a JSON file in
@@ -75,7 +84,8 @@ work stops before a game starts.
   **Settings > Online > Community graphic packs** brings them up to date.
 - Player 1's DualSense is the GamePad and other signed-in players get Pro Controllers, up to four
   players. Each player can be a GamePad, Pro Controller, Classic Controller, or Wii Remote with or
-  without a Nunchuk, with motion controls, rumble, stick deadzones and button mapping.
+  without a Nunchuk, with motion controls, rumble, stick deadzones and button mapping. In a game, each
+  player's light bar has a colour of its own, as the PS5 lights them: 1 blue, 2 red, 3 green, 4 pink.
 - The TV or the GamePad screen as the main picture, with the other one in a corner if you want; the
   touchpad works as the GamePad's touch screen.
 - Updates and DLC: **Settings > Game files > Updates and DLC** looks on every USB drive, extended
@@ -167,6 +177,10 @@ New in 4.0.0: a side of its own, in melonDS's green, to the right of the 3DS.
 - **Touch calibration** (**Settings > System**): moves the touchpad's cursor left, right, up or down
   (up to 20%) and scales it (50% to 150%), for a game where touches land off the mark. The remote
   touch screen is not changed.
+- **The right stick as the stylus** (**Settings > System**, for the side or a game, off by default):
+  pushed, it touches the bottom screen in its middle and drags the touch as far and as long as it is
+  pushed; let go, the touch lifts. Metroid Prime Hunters aims that way. The stick's directions then do
+  nothing else.
 - **A GBA cartridge in Slot-2** (**Settings > System**, off by default): for the DS games that read a
   GBA game in their second slot, as Pokémon Diamond and Pearl's Pal Park does. Put the GBA game in
   `/data/melonds/slot2` named as the DS game's file, ending `.gba`, with its `.sav` beside it if it
