@@ -42,7 +42,7 @@ work stops before a game starts.
   menu saves its changes to the game's settings when it has some.
 - **Music and menu sounds:** an original setup theme, or your own: put MP3 or WAV files in
   `/data/ps5cemu/music` and choose one, or *Shuffle your music*, in **Settings > Audio > Launcher
-  music**, which also sets its volume or turns it off
+  sound**, which also sets its volume or turns it off
 - **The Library:** your recently played games first, then every game on the side as a list, with
   Sort (Square), Search (Triangle) and L2 and R2 to jump by letter. **Settings > Launcher > Library
   filters** adds a row of filters over the list (All, Recently added, Favourites, Graphic packs on).
@@ -58,8 +58,8 @@ work stops before a game starts.
 - **Themes** (**Settings > Launcher > Theme**) change how the launcher looks, never what it does:
   Light (the default), Link Jack (frosted glass over each side's colours), Classic (3.0)'s deep blue,
   Eden (after ProsperoEden's look) and Midnight (true black, for OLED screens). Your own: a JSON file in
-  `/data/ps5cemu/themes`; the Theme row's help (Triangle) shows the format. **Settings > Launcher**
-  also hides any side you don't use.
+  `/data/ps5cemu/themes`; the Theme row's help (Triangle) shows the format. **Settings > Launcher >
+  Sides** hides any side you don't use.
 - **What's new:** on the first start and after an update, the app opens once on what the version
   brings.
 - **Screensaver:** after five minutes with no button pressed, the launcher dims, so a still menu does
@@ -74,8 +74,8 @@ work stops before a game starts.
 ## Wii U (Cemu)
 
 - Cemu's x64 recompiler, at the PS5's 3840x2160 output, with a choice of upscaling filter (Bicubic
-  by default), 120 Hz on displays that support it, and frame pacing (**Settings > Graphics**, or the
-  in-game menu's Graphics) that holds a game to an even 60 fps at 120 Hz or 30 fps at 60 Hz.
+  by default), 120 Hz on displays that support it, and frame pacing (**Settings > Graphics > Frame rate**, or
+  the in-game menu's Graphics) that holds a game to an even 60 fps at 120 Hz or 30 fps at 60 Hz.
 - Plays WUA, WUD/WUX and unpacked games from any folder the PS5 can read, unpacked games in `.zip`,
   `.7z`, `.rar` and tar archives too ([how](#games-in-archives)).
 - The Cemu community graphic packs, organized by folder like Cemu's Graphic Packs window, with a
@@ -88,7 +88,7 @@ work stops before a game starts.
   player's light bar has a colour of its own, as the PS5 lights them: 1 blue, 2 red, 3 green, 4 pink.
 - The TV or the GamePad screen as the main picture, with the other one in a corner if you want; the
   touchpad works as the GamePad's touch screen.
-- Updates and DLC: **Settings > Game files > Updates and DLC** looks on every USB drive, extended
+- Updates and DLC: **Settings > Game files > Updates, DLC and mods** looks on every USB drive, extended
   storage, the games folder and `/data`, lists what it finds by game with what is installed now, and
   installs one with Cross or every new one with Square (Triangle picks a folder by hand). A game's own
   are in its Options menu too. Unpacked updates in your game folder and WUAs are picked up as they are.
@@ -96,8 +96,8 @@ work stops before a game starts.
   saves, or one for each PS5 user, so everyone who signs in to the PS5 plays on their own saves.
 - **AMD FSR 1** as the fifth *Upscaling to 4K* filter, in Settings, a game's settings and the in-game
   menu: a sharper picture for a game drawn below 4K.
-- **Frame generation** (**Settings > Graphics**, a game's settings or the in-game menu; off by
-  default): while a game takes two refreshes a frame or more,
+- **Frame generation** (**Settings > Graphics > Frame rate**, a game's settings or the in-game menu;
+  off by default): while a game takes two refreshes a frame or more,
   [MihawkGen](https://github.com/mihawk-99/PS5_MihawkGen), the frame generation Eden uses, makes a
   picture between each two frames, so a game at 30 fps is shown at 60 (at 60 on a 120 Hz TV). A
   faster game is shown as it is. It costs the GPU about 2 ms a picture at 4K and adds a little delay.
@@ -130,7 +130,7 @@ work stops before a game starts.
   can have its own.
 - DualSense: A on Circle and B on Cross like a real 3DS (or swapped), circle pad and C-stick on the
   sticks, ZL/ZR on L2/R2, motion from the gyro and accelerometer, and every button remappable in
-  **Settings > Controls**. The touchpad is the bottom screen.
+  **Settings > Controls > Buttons**. The touchpad is the bottom screen.
 - Save states, cheats and amiibo in the in-game menu, plus custom textures and mods.
 - System region, language and CPU clock in **Settings > System**, with the 3DS Home Menu.
 - Games in `.zip`, `.7z`, `.rar` and tar archives, unpacked once, the first time they start
@@ -162,7 +162,7 @@ New in 4.0.0: a side of its own, in melonDS's green, to the right of the 3DS.
 - **Touch without the bottom screen**, as on the 3DS side: the touchpad touches the bottom screen
   while only the top one is shown.
 - DualSense: A on Circle and B on Cross like a real DS, the left stick as a second D-pad, every
-  button remappable (**Settings > Controls**), the touchpad as the touch screen, and R3 held to blow
+  button remappable (**Settings > Controls > Buttons**), the touchpad as the touch screen, and R3 held to blow
   into the microphone.
 - Save states (five slots), melonDS's `.mch` cheats and the same in-game menu as the 3DS side's.
 - Games in `.zip`, `.7z`, `.rar` and tar archives play as they are, as in melonDS's own frontend.
@@ -174,10 +174,10 @@ New in 4.0.0: a side of its own, in melonDS's green, to the right of the 3DS.
   48,000 Hz, up to 16 MB) in `/data/melonds/microphone/<the game's file name>.wav`, or
   `/data/melonds/microphone.wav` for every game, played over and over while R3 is held. Nothing is
   recorded from a real microphone. A recording that cannot be read gives noise, and a notification.
-- **Touch calibration** (**Settings > System**): moves the touchpad's cursor left, right, up or down
+- **Touch calibration** (**Settings > System > Touch**): moves the touchpad's cursor left, right, up or down
   (up to 20%) and scales it (50% to 150%), for a game where touches land off the mark. The remote
   touch screen is not changed.
-- **The right stick as the stylus** (**Settings > System**, for the side or a game, off by default):
+- **The right stick as the stylus** (**Settings > System > Touch**, for the side or a game, off by default):
   pushed, it touches the bottom screen in its middle and drags the touch as far and as long as it is
   pushed; let go, the touch lifts. Metroid Prime Hunters aims that way. The stick's directions then do
   nothing else.
@@ -224,7 +224,7 @@ New in 5.0.0: a side of its own, in the Switch's red, to the right of the DS.
 - **ProsperoEden's own screens never show**: its launcher is not opened from the app. A game that
   does not start, stops with an error or crashes comes back to PS5-ECAM's library, which says why,
   a home screen tile's game too.
-- **Covers**: GameTDB's box art, or each game's own icon (**Settings > Online > Switch covers**).
+- **Covers**: GameTDB's box art, or each game's own icon (**Settings > Online > Box art > Switch covers**).
 - Your Switch's **keys** and **firmware** are needed, dumped from your own console: see
   [Game files](#nintendo-switch).
 - Eden reaches `/data` as PS5-ECAM does: through etaHEN with `PPSA99360` in its app jailbreak list
@@ -279,7 +279,7 @@ existing install. Unpacked update and DLC sources can go in `/data/cemu/updates`
 An unpacked game can also stay in a `.zip`, `.7z` or `.rar` archive, or a `.tar` (`.tar.gz`,
 `.tar.xz` and the like), one game to an archive: its first folder by name with `code`, `content` and
 `meta` in it is the game ([how it starts](#games-in-archives)). Updates and DLC are not read from
-archives: unpack them, then install them from **Settings > Game files > Updates and DLC**. In a `.7z`
+archives: unpack them, then install them from **Settings > Game files > Updates, DLC and mods**. In a `.7z`
 or `.rar`, give the game's folder a name without accents or symbols such as ™: the app may not read
 those names there. A `.zip` has no such limit.
 
@@ -372,7 +372,7 @@ software you own, and don't download or share them.
 | Touchpad click + Square | Save state, to the slot chosen in the in-game menu (slot 1 at first) |
 | Touchpad click + Triangle, held | Load state, from that slot |
 
-**Settings > Controls > Buttons** on the 3DS and DS sides can also give a DualSense button one of
+**Settings > Controls > Buttons > Each button** on the 3DS and DS sides can also give a DualSense button one of
 these, held (none has a button until you give it one):
 
 - **Touch at the cursor:** touches the touch screen where the touchpad's cursor is, as a click of
@@ -466,7 +466,7 @@ WUD or WUX files, or an unpacked game in an archive; a 3DS CIA sent this way is 
 - **Cheats (3DS).** Put a game's cheats in `/data/azahar/cheats/<title ID>.txt` (16 hex
   digits, shown in the in-game menu), in the Gateway format desktop Azahar uses, and turn them on and
   off from the menu.
-- **Custom textures (3DS).** Turn on **Settings > Graphics > Custom textures** (3DS) and put a pack in
+- **Custom textures (3DS).** Turn on **Settings > Graphics > Textures > Custom textures** (3DS) and put a pack in
   `/data/azahar/load/textures/<title ID>/`.
 - **Mods:** [below](#mods).
 
@@ -505,7 +505,7 @@ plugins) don't: look for the Cemu version of a mod.
 4. Either:
    - press **Options** on the game and choose **Add mods from USB**: a mod without a `rules.txt`
      and outside a title ID folder is given that game; or
-   - open **Settings > Game files > Mods from USB**: every mod on every drive is copied, and a mod
+   - open **Settings > Game files > Updates, DLC and mods > Mods from USB**: every mod on every drive is copied, and a mod
      without a `rules.txt` needs its title ID folder.
 5. Turn the mod on: **Options** on the game, then **Graphic packs**, and press **Cross** on the mod
    (its folder there is *Mods*). Mods start **off**. A mod can also be turned on from the in-game menu
@@ -566,7 +566,7 @@ describes the rest (presets, patches, shaders).
 
 3DS games take LayeredFS mods, as Azahar on a PC does: put a mod's `romfs/` and `exefs/` folders in
 `/data/azahar/load/mods/<title ID>/`. Texture packs go in
-`/data/azahar/load/textures/<title ID>/`, with **Settings > Graphics > Custom textures** on.
+`/data/azahar/load/textures/<title ID>/`, with **Settings > Graphics > Textures > Custom textures** on.
 With the data on the app's drive, these folders are in the `azahar` folder beside its
 `PS5CEMU-HAR-data` folder instead.
 
@@ -584,8 +584,8 @@ With the data on the app's drive, these folders are in the `azahar` folder besid
 - **Box art:** the first time a game shows up, the app downloads its cover from GameTDB
   (`art.gametdb.com`) by the ID on the game's box (a Switch game's is found by its name), in the
   background, into `/data/ps5cemu/covers/boxart`. A failed download is tried again a few seconds
-  later; a cover GameTDB doesn't have is asked for again after two weeks. **Settings > Online** turns
-  the downloads off, and has *Download missing box art* and *Download all box art again*.
+  later; a cover GameTDB doesn't have is asked for again after two weeks. **Settings > Online > Box art**
+  turns the downloads off, and has *Download missing box art* and *Download all box art again*.
 - **Updates:** when the app starts fresh, it asks GitHub for the latest release. When a newer
   PS5-ECAM is out, it asks whether to install it: **Update now** downloads the release, checks it
   against the release's SHA-256, puts its files in place of the old ones and starts the app again.
