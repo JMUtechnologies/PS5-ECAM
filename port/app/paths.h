@@ -148,6 +148,13 @@ namespace ps5paths
 	inline std::string LauncherSettings() { return Root() + "/ps5cemu.json"; }
 	inline std::string Covers() { return Root() + "/covers"; }
 
+	// Whether path is folder or inside it. (No starts_with: melonDS's own build, whose frontend has this
+	// header, is C++17.)
+	inline bool Within(const std::string& path, const std::string& folder)
+	{
+		return path.compare(0, folder.size(), folder) == 0 && (path.size() == folder.size() || path[folder.size()] == '/');
+	}
+
 	// A path in kDefaultRoot, in Root() instead when the data is elsewhere: a folder setting saved
 	// while the data was in /data follows the data to the drive it was moved to (#52)
 	inline std::string Relocated(const std::string& path)
@@ -156,7 +163,7 @@ namespace ps5paths
 			for (const char* system : {"cemu", "azahar", "melonds"})
 			{
 				const std::string old = ecam_layout::Sibling(kDefaultRoot, system);
-				if (path == old || path.starts_with(old + "/"))
+				if (Within(path, old))
 					return ecam_layout::Sibling(Root(), system) + path.substr(old.size());
 			}
 		const size_t length = std::strlen(kDefaultRoot);
@@ -180,7 +187,7 @@ namespace ps5paths
 			return path;
 		std::string moved;
 		auto under = [&](const std::string& old, const std::string& now) {
-			if (path != old && !path.starts_with(old + "/"))
+			if (!Within(path, old))
 				return false;
 			moved = now + path.substr(old.size());
 			return true;
