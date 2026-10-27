@@ -94,8 +94,16 @@ checked by reading and compiling. Before a release:
 
 ### Lighter
 
-- **Eden's `ui/` folder** (about 25 MB) goes into the app whole: find which of its files Eden's
-  program still reads now that PS5-ECAM's launcher and menus replace its own, and package only those.
+- **Eden's `ui/` folder** (about 26 MB, 62 files in 5.0.1's ZIP): **done**, none of it is packaged now.
+  Only ProsperoEden's own launcher reads it (`frontend.cpp`: its font, art, sounds and translations);
+  PS5-ECAM's loading screen and in-game menu take PS5-ECAM's fonts, Eden's own overlay text is baked
+  into its shaders, and the keyboard is the PS5's. That launcher was still reached by a start of
+  `eden/eboot.bin` without PS5-ECAM's launch request (unreadable without filesystem access, or the
+  crash restart when PS5-ECAM's eboot is refused): it goes back to PS5-ECAM now, which says why
+  (`patches/eden/0015`), rather than to a launcher with no font. An update from 5.0.1 moves `eden/ui`
+  into the kept release, for Go back. To check on a console: a Switch game, its in-game menu and its
+  keyboard; a game whose file is gone (back to PS5-ECAM, as before); an update from 5.0.1 (`eden/ui is
+  no longer the app's` in the boot log), then Go back to 5.0.1.
 - **`sce_sys/pic1.dds`** is a copy of `pic0.dds` (8 MB): check whether the console needs it.
 - **Package size in the README** for the next release, and its notes.
 

@@ -20,9 +20,10 @@
 #                                     without the comments that say where each string is from)
 #     assets/borders/                 the 3DS side's border pictures (PNG)
 #     eden/                           the Switch side's program, ProsperoEdenX (tools/build-eden.sh): its
-#                                     eboot.bin, which the launcher starts with LoadExec, its launcher's
-#                                     ui/, its frame generation's network, its Lapy helper (lapy.elf, its
-#                                     way to /data where no HEN answers), its licence and notices
+#                                     eboot.bin, which the launcher starts with LoadExec, its frame
+#                                     generation's network, its Lapy helper (lapy.elf, its way to /data
+#                                     where no HEN answers), its licence and notices; not its own
+#                                     launcher's ui/, which the Switch side never opens
 #
 #   tools/package.sh          the app; the ELF must be linked with RADV (tools/link.sh)
 #   tools/package.sh --check  the same steps for a link check's ELF, into build/app-check: not an app

@@ -342,9 +342,11 @@ namespace ps5update
 
 		// Files and folders earlier releases put in the app that this one does not have: the community
 		// graphic packs (pack_updates.h downloads them, #74), the opening picture of the launcher's Eden
-		// layout, the 3DS borders as TGA (PNG now)
+		// layout, the 3DS borders as TGA (PNG now), ProsperoEden's launcher's files in eden/ui (the Switch side
+		// never opens that launcher, tools/build-eden.sh)
 		constexpr const char* kRetired[] = {"assets/graphicPacks", "assets/ui/opening.jpg", "assets/borders/aurora.tga",
-			"assets/borders/midnight.tga", "assets/borders/ps5cemu-har.tga", "assets/borders/shell.tga", "assets/borders/waves.tga"};
+			"assets/borders/midnight.tga", "assets/borders/ps5cemu-har.tga", "assets/borders/shell.tga", "assets/borders/waves.tga",
+			"eden/ui"};
 
 		// path (in app) moved under keep, as it was, or deleted when keep is empty
 		void Retire(const fs::path& app, const fs::path& path, const fs::path& keep)
