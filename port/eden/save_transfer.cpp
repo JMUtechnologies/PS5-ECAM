@@ -7,6 +7,7 @@
 #include <fstream>
 #include <functional>
 #include <stdexcept>
+#include <set>
 
 namespace ps5eden::transfer
 {
@@ -75,28 +76,100 @@ namespace ps5eden::transfer
 		}
 	}
 
-	std::vector<Source> Discover(const std::string& root, uint64_t title, std::string& error)
+	namespace
 	{
-		try
+		struct Indexed { Kind kind; uint64_t id; std::string folder; };
+		std::vector<Indexed> IndexedSaves(const std::string& root, uint64_t title)
 		{
 			if ((title >> 56) != 1) throw std::runtime_error("A real Switch title ID is required.");
 			CheckPath(root);
-			std::vector<Eden::RyujinxSaves::Save> saves;
-			if (const auto data = Eden::RyujinxSaves::DataRoot(root); !data.empty())
+			const auto data = Eden::RyujinxSaves::DataRoot(root);
+			if (data.empty()) return {};
+			const auto path = Eden::RyujinxSaves::IndexPath(data);
+			CheckPath(path);
+			// Read at most the declared bound, even if a removable file grows during the read.
+			constexpr size_t limit = 16u << 20, header = 12, entrySize = 0x8C;
+			const auto size = fs::file_size(path);
+			if (size > limit) throw std::runtime_error("Ryujinx save index is too large.");
+			std::vector<char> bytes((size_t)size);
+			std::ifstream input(path, std::ios::binary);
+			if (!input.read(bytes.data(), bytes.size()) || input.peek() != EOF || bytes.size() < header ||
+				std::memcmp(bytes.data(), "IMKV", 4) || (bytes.size() - header) % entrySize)
+				throw std::runtime_error("Ryujinx save index is unreadable.");
+			std::vector<Indexed> result;
+			std::set<uint64_t> seen;
+			bool deviceSeen = false;
+			for (size_t at = header; at < bytes.size(); at += entrySize)
 			{
-				const auto index = Eden::RyujinxSaves::IndexPath(data);
-				CheckPath(index);
-				if (fs::file_size(index) > (16u << 20)) throw std::runtime_error("Ryujinx save index is too large.");
-				saves = Eden::RyujinxSaves::FindSaves(root, title, error);
+				const char* entry = bytes.data() + at;
+				if (std::memcmp(entry, "IMEN", 4)) throw std::runtime_error("Ryujinx save index is unreadable.");
+				uint64_t program = 0, id = 0;
+				std::memcpy(&program, entry + 0x0C, 8); std::memcpy(&id, entry + 0x4C, 8);
+				const auto kind = (unsigned char)entry[0x2C];
+				if (program != title || (kind != 1 && kind != 3)) continue;
+				if (!id) throw std::runtime_error("Ryujinx save index contains an unsupported zero save ID.");
+				char name[17]; std::snprintf(name, sizeof(name), "%016llx", (unsigned long long)id);
+				const auto folder = data / "bis/user/save" / name / "0";
+				CheckPath(folder);
+				if (!fs::is_directory(folder)) continue;
+				if (!seen.insert(id).second || (kind == 3 && deviceSeen))
+					throw std::runtime_error("Ryujinx save index has ambiguous duplicate saves.");
+				deviceSeen = deviceSeen || kind == 3;
+				result.push_back({kind == 1 ? Kind::Account : Kind::Device, id, folder.string()});
 			}
-			else saves = Eden::RyujinxSaves::FindFolderSaves(root, title, error);
+			return result;
+		}
+	}
+
+	std::vector<Choice> Choices(const std::string& root, uint64_t title, std::string& error)
+	{
+		try
+		{
+			const auto indexed = IndexedSaves(root, title);
+			std::vector<Choice> choices;
+			for (const auto& save : indexed)
+				if (save.kind == Kind::Account)
+				{
+					char label[48]; std::snprintf(label, sizeof(label), "Account save %016llX", (unsigned long long)save.id);
+					choices.push_back({save.id, label});
+				}
+			if (choices.empty() && !indexed.empty()) choices.push_back({0, "Device save"});
+			if (choices.empty() && !Eden::RyujinxSaves::DataRoot(root).empty())
+			{ error = "No Ryujinx saves found for this game."; return {}; }
+			if (choices.empty() && !Discover(root, title, error).empty()) choices.push_back({0, "Plain folder"});
+			if (!choices.empty()) error.clear();
+			return choices;
+		}
+		catch (const std::exception& failure) { error = failure.what(); return {}; }
+	}
+
+	std::vector<Source> Discover(const std::string& root, uint64_t title, std::string& error, uint64_t accountSaveId)
+	{
+		try
+		{
+			const auto indexed = IndexedSaves(root, title);
 			std::vector<Source> result;
-			for (const auto& save : saves)
+			if (!Eden::RyujinxSaves::DataRoot(root).empty())
 			{
-				CheckPath(save.folder);
-				result.push_back({save.kind == Eden::RyujinxSaves::Kind::Account ? Kind::Account : Kind::Device, save.folder.string()});
+				size_t accounts = 0; bool found = false;
+				for (const auto& save : indexed) if (save.kind == Kind::Account) accounts++;
+				if (!accountSaveId && accounts > 1) throw std::runtime_error("Choose a Ryujinx account save before importing.");
+				for (const auto& save : indexed)
+					if (save.kind == Kind::Device || !accountSaveId || save.id == accountSaveId)
+					{ result.push_back({save.kind, save.folder}); if (save.kind == Kind::Account) found = true; }
+				if (accountSaveId && !found) throw std::runtime_error("The selected Ryujinx account save is no longer available.");
+			}
+			else
+			{
+				if (accountSaveId) throw std::runtime_error("The selected Ryujinx index is no longer available.");
+				for (const auto& save : Eden::RyujinxSaves::FindFolderSaves(root, title, error))
+				{
+					CheckPath(save.folder);
+					result.push_back({save.kind == Eden::RyujinxSaves::Kind::Account ? Kind::Account : Kind::Device, save.folder.string()});
+				}
 			}
 			if (!result.empty()) error.clear();
+			else if (error.empty()) error = "No saves found for this game.";
 			return result;
 		}
 		catch (const std::exception& failure) { error = failure.what(); return {}; }
