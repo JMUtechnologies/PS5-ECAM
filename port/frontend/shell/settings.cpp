@@ -940,6 +940,11 @@ namespace ps5shell
 			own(choice("dstouchx", Tr("Touch, left or right"), touchOffsets, hand.dsTouchX + 20, touchHelp, touchHelp), "dsTouchX");
 			own(choice("dstouchy", Tr("Touch, up or down"), touchOffsets, hand.dsTouchY + 20, touchHelp, touchHelp), "dsTouchY");
 			own(choice("dstouchscale", Tr("Touch, scale"), touchScales, hand.dsTouchScale - 50, touchHelp, touchHelp), "dsTouchScale");
+			// tr: a DS setting: the right stick as the touch screen's stylus (DraStic has it), for Metroid Prime Hunters' aiming
+			own(toggle("dsstylus", Tr("The right stick as the stylus"), hand.dsStylus, Tr("Pushed, it drags a touch on the bottom screen."),
+				Tr("Push the right stick and the bottom screen is touched in its middle, the touch dragged as you push and lifted when you let "
+				   "go: Metroid Prime Hunters aims that way. The stick's directions do nothing else then. Applies to the next game.")),
+				"dsStylus");
 			own(choice("dsmic", Tr("Microphone"), {Tr("Noise"), Tr("Silence"), Tr("A recording")}, hand.dsMicSource,
 				Tr("What the DS hears while R3 is held. Applies to the next game."),
 				// tr: {0} is melonDS's folder, /data/melonds or where the DS's files are; keep <the game's file name> as a placeholder
@@ -1878,6 +1883,8 @@ namespace ps5shell
 				hand.dsJit = on;
 			else if (id == "dsslot2")
 				hand.dsSlot2 = on;
+			else if (id == "dsstylus")
+				hand.dsStylus = on;
 			else if (id == "performance-hand")
 				hand.performance = on;
 			else if (id == "nx-framegeneration")

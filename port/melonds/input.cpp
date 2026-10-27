@@ -4,7 +4,8 @@
 // pad's inputs too: the left stick, past the deadzone. The touch screen is the touchpad, as on the 3DS
 // side: a finger moves a cursor over the bottom screen, and clicking the touchpad touches it there. R3
 // held blows into the microphone, unless it is mapped to a button. The app's own actions (controls.h)
-// are read here too: a touch where the cursor is (#59), fast forward and rewind (#54), held.
+// are read here too: a touch where the cursor is (#59), fast forward and rewind (#54), held. With The
+// right stick as the stylus on, the right stick drags a touch over the bottom screen instead (dsStylus).
 
 #include "frontend.h"
 #include "touch_calibration.h"
@@ -15,6 +16,7 @@
 #include <algorithm>
 #include <array>
 #include <atomic>
+#include <chrono>
 #include <cmath>
 #include <mutex>
 
@@ -46,6 +48,11 @@ namespace ps5melonds::input
 		float s_threshold = 0.4f; // how far a stick goes before the D-pad does
 		int s_touchX = 0, s_touchY = 0, s_touchScale = 100;
 		bool s_micFree = true;	  // R3 is no button's
+		bool s_stylus = false;	  // the right stick drags a touch (dsStylus)
+		// the stylus's drag: whether the stick holds a touch, and when it last moved it (the game's loop's)
+		bool s_stylusDown = false;
+		std::chrono::steady_clock::time_point s_stylusAt{};
+		constexpr float kStylusSpeed = 1.5f; // the bottom screen's width a second, at the stick's full travel
 
 		melonDS::u32 s_mask = 0xFFF; // under s_mutex, with the five below
 		bool s_touching = false;
@@ -123,6 +130,8 @@ namespace ps5melonds::input
 	{
 		std::lock_guard lock(s_mutex);
 		s_touchX = settings.dsTouchX; s_touchY = settings.dsTouchY; s_touchScale = settings.dsTouchScale;
+		s_stylus = settings.dsStylus;
+		s_stylusDown = false;
 		s_micFree = true;
 		for (int key = 0; key < 12; key++)
 		{
@@ -152,6 +161,7 @@ namespace ps5melonds::input
 		Sample sample;
 		bool touch = false, fingerDown = false, fast = false, rewind = false;
 		float fingerX = 0, fingerY = 0;
+		float stylusX = 0, stylusY = 0; // the right stick, when it is the stylus (past its rest)
 		if (ps5pad::Read(0, data) && !(data.buttons & ps5pad::kIntercepted))
 		{
 			const ps5pad::Filtered filtered = ps5pad::FilterShortcuts(0, data.buttons);
@@ -184,6 +194,16 @@ namespace ps5melonds::input
 				s_touchHeldOver = s_touchHeldOver && touch;
 				if (s_touchHeldOver)
 					touch = false;
+				// the right stick as the stylus: its push for the drag below, and nothing for the buttons
+				if (s_stylus)
+				{
+					if (std::hypot(sample.rightX, sample.rightY) > kStickRest)
+					{
+						stylusX = sample.rightX;
+						stylusY = sample.rightY;
+					}
+					sample.rightX = sample.rightY = 0;
+				}
 				// the app's own actions, from what is left for the game: a touch where the cursor is, as
 				// the touchpad's click, fast forward and rewind
 				touch = touch || Amount(sample, s_touchInput) > 0.5f;
@@ -212,6 +232,28 @@ namespace ps5melonds::input
 			s_cursorX = Calibrate(fingerX, s_touchX, s_touchScale);
 			s_cursorY = Calibrate(fingerY, s_touchY, s_touchScale);
 		}
+		// the stylus: pushed, a touch from the bottom screen's middle, dragged as far as the stick is
+		// pushed for as long as it is; let go, lifted (Metroid Prime Hunters aims by such drags)
+		const auto now = std::chrono::steady_clock::now();
+		if (stylusX != 0 || stylusY != 0)
+		{
+			if (!s_stylusDown)
+			{
+				s_stylusDown = true;
+				s_cursorX = s_cursorY = 0.5f;
+			}
+			else
+			{
+				const float seconds = std::min(std::chrono::duration<float>(now - s_stylusAt).count(), 0.1f);
+				s_cursorX = std::clamp(s_cursorX + stylusX * kStylusSpeed * seconds, 0.0f, 1.0f);
+				s_cursorY = std::clamp(s_cursorY - stylusY * kStylusSpeed * seconds * (4.0f / 3.0f), 0.0f, 1.0f);
+			}
+			s_cursorVisible = true;
+			touch = true;
+		}
+		else
+			s_stylusDown = false;
+		s_stylusAt = now;
 		// the click touches only a bottom screen that is shown, unless it is touched all the same (the
 		// cursor then over the top screen)
 		s_touching = touch && (bottomShown || s_hiddenTouch);
