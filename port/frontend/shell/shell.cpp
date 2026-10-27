@@ -1800,8 +1800,9 @@ namespace ps5shell
 		// a game with settings of its own says so
 		const bool own = m_settings.games.count(ps5settings::GameKey(ps5launcher::SideName(m_side), g.entry.game.titleId)) > 0;
 		m_menu.items.push_back({"settings", own ? Tr("Game settings: custom") : Tr("Game settings")});
-		if (g.entry.game.titleId != 0 && !IsSwitch())
-			m_menu.items.push_back({"saves", Tr("Saves")}); // its own, by account (6.15)
+		// its own, by account (6.15); a Switch game's too, by its real title ID (not one the library made up)
+		if (g.entry.game.titleId != 0 && (!IsSwitch() || !ps5eden::IsMadeId(g.entry.game.titleId)))
+			m_menu.items.push_back({"saves", Tr("Saves")});
 		if (IsWiiU() && m_status.coreReady)
 		{
 			m_menu.items.push_back({"packs", Tr("Graphic packs")});
