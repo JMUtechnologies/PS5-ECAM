@@ -516,6 +516,7 @@ namespace ps5shell
 		bool ChangeSwitchExtra(const Row& row, int step, bool cross);
 		ps5eden::extras::View m_switchExtras;
 		std::string m_switchExtrasKey;
+		std::vector<std::pair<std::string, std::string>> m_switchImports;
 		void GameSettingsClose();
 		bool InGameSettings() const { return m_gameTitle != 0; }
 		void ResetGameSetting(const Row& row);
@@ -926,4 +927,3 @@ namespace ps5shell
 		std::unordered_map<std::string, std::string> m_folderCounts;
 	};
 }
-
