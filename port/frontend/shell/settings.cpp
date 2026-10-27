@@ -1407,7 +1407,8 @@ namespace ps5shell
 					{
 						const std::string folder = fmt::format("/mnt/usb{}/{}", drive, name);
 						std::string why;
-						if (!ps5eden::transfer::Discover(folder, m_gameTitle, why).empty()) m_switchImports.push_back({folder, fmt::format("USB {} · {}", drive, name)});
+						for (const auto& choice : ps5eden::transfer::Choices(folder, m_gameTitle, why))
+							m_switchImports.push_back({folder, fmt::format("USB {} · {} · {}", drive, name, choice.label), choice.accountSaveId});
 					}
 			m_gameSavesAt = m_now;
 		}
@@ -1496,7 +1497,7 @@ namespace ps5shell
 			rows.push_back(std::move(exportSave));
 			Row importSave;
 			importSave.kind = Kind::Hold; importSave.id = "nximport"; importSave.label = Tr("Import selected player's save");
-			for (const auto& source : m_switchImports) importSave.options.push_back(source.second);
+			for (const auto& source : m_switchImports) importSave.options.push_back(source.label);
 			int& chosen = m_holdChoice["nximport"];
 			chosen = importSave.options.empty() ? 0 : std::clamp(chosen, 0, (int)importSave.options.size() - 1);
 			importSave.index = chosen;
@@ -2444,7 +2445,7 @@ namespace ps5shell
 			if (!view.error.empty()) error = view.error;
 			else if (view.profiles.empty()) error = Tr("Choose an existing Switch player first.");
 			else if (selected >= 0 && selected < (int)m_switchImports.size() &&
-				ps5saves::StartSwitchImport(m_gameRef, view.profiles[view.profile].id, m_switchImports[selected].first, error)) m_savesMessage = Tr("Importing…");
+				ps5saves::StartSwitchImport(m_gameRef, view.profiles[view.profile].id, m_switchImports[selected].folder, error, m_switchImports[selected].accountSaveId)) m_savesMessage = Tr("Importing…");
 			if (!error.empty()) Toast(error);
 		}
 		else if (id == "gamerestore")
