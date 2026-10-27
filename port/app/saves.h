@@ -104,7 +104,7 @@ namespace ps5saves
 	bool StartGameRestore(const Backup& backup, const GameRef& game, std::string& error);
 	// Plain-folder/Ryujinx transfer for one Switch title and the explicitly selected existing
 	// player. Runs on the same worker as backups; Finish() waits before a game can start.
-	bool StartSwitchImport(const GameRef& game, const std::string& profile, const std::string& sourceRoot, std::string& error);
+	bool StartSwitchImport(const GameRef& game, const std::string& profile, const std::string& sourceRoot, std::string& error, uint64_t accountSaveId = 0);
 	bool StartSwitchExport(const GameRef& game, const std::string& profile, std::string& error);
 
 	// Resume where you left off: the state a 3DS or DS game saves as it is quit to the library, in a
