@@ -12,6 +12,9 @@ int main()
 	Check(!settings.nds.dsSlot2, "new Slot-2 feature defaults off");
 	const uint64_t title = 0x1234;
 	settings.games[GameKey("ds", title)]["dsSlot2"] = 1;
+	settings.games[GameKey("ds", title)]["dsMicSource"] = 2;
+	settings.games[GameKey("ds", title)]["dsTouchX"] = 10;
+	settings.games[GameKey("ds", title)]["dsTouchScale"] = 75;
 	Check(Save(settings), "settings serialize");
 	auto loaded = Load();
 	Check(!loaded.nds.dsSlot2 && ForGame(loaded, "ds", title).nds.dsSlot2, "game-specific opt-in survives save/load");
@@ -19,5 +22,9 @@ int main()
 	Check(!ForGame(loaded, "3ds", title).n3ds.dsSlot2 && !ForGame(loaded, "switch", title).nx.dsSlot2, "other systems do not inherit DS opt-in");
 	int value = 0;
 	Check(Value(ForGame(loaded, "ds", title), "ds", "dsSlot2", value) && value == 1, "per-game setting adapter resolves Slot-2");
+	Check(loaded.nds.dsMicSource == 0 && ForGame(loaded, "ds", title).nds.dsMicSource == 2, "recorded microphone is opt-in per DS game and persists");
+	Check(Value(ForGame(loaded, "ds", title), "ds", "dsMicSource", value) && value == 2, "microphone setting adapter resolves recorded source");
+	Check(ForGame(loaded, "3ds", title).n3ds.dsMicSource == 0, "3DS does not inherit DS microphone source");
+	Check(ForGame(loaded, "ds", title).nds.dsTouchX == 10 && ForGame(loaded, "ds", title).nds.dsTouchScale == 75 && loaded.nds.dsTouchScale == 100, "touch calibration persists per game with identity defaults elsewhere");
 	return failures ? 1 : 0;
 }
