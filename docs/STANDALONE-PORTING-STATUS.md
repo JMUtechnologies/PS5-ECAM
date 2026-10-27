@@ -52,7 +52,14 @@ with a supplied starting save and separately persisted working save, plus whole/
 coverage. It defaults off and does not add GBA execution. The input loader/settings adapter have
 host tests; the core/platform changes pass host syntax checks against the pinned melonDS headers.
 
-DSi and its firmware checks, local wireless, additional microphone options, touch calibration,
+DS microphone now offers default noise, silence and bounded preloaded WAV input, globally or
+per game, through the existing held-input gesture. Host tests cover PCM decoding, resampling,
+loop/release behavior, invalid formats and settings isolation. This is not live capture.
+
+DS touchpad calibration now has per-game display-space horizontal/vertical offsets and centered
+sensitivity, with identity defaults and cursor/game alignment. Remote touch input is unchanged.
+
+DSi and its firmware checks, local wireless,
 state-version handling and separate DS/DSi configuration remain unimplemented. No separately
 verified PS5 standalone implementation was found that could simply be copied for all of them.
 
