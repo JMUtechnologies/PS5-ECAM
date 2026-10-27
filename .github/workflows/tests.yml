@@ -55,6 +55,9 @@ jobs:
       - name: Switch standalone features
         run: bash tools/tests/test-eden-extras.sh
 
+      - name: Switch player management
+        run: bash tools/tests/test-profile-management.sh
+
       - name: Switch save transfers
         run: bash tools/tests/test-save-transfer.sh
 
