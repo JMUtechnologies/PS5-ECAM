@@ -13,6 +13,8 @@
 #include <filesystem>
 #include <fstream>
 #include <functional>
+#include <random>
+#include <set>
 #include <unistd.h>
 
 namespace ps5eden::extras
@@ -234,6 +236,97 @@ namespace ps5eden::extras
 			}
 			return result;
 		}
+		constexpr size_t kProfileHeader = 0x10, kProfileEntry = 0xC8, kProfileCount = 8;
+		using ProfileBytes = std::array<unsigned char, kProfileHeader + kProfileEntry * kProfileCount>;
+		std::string ProfileFile(const Context& context)
+		{
+			return context.user + "/nand/system/save/8000000000000010/su/avators/profiles.dat";
+		}
+		bool ReadProfileBytes(const Context& context, ProfileBytes& bytes, bool missingOK, std::string& error)
+		{
+			std::error_code ec;
+			const auto file = ProfileFile(context);
+			const auto status = fs::symlink_status(file, ec);
+			if (ec == std::errc::no_such_file_or_directory || (!ec && status.type() == fs::file_type::not_found))
+			{
+				if (missingOK) return true;
+				error = "The player list is missing."; return false;
+			}
+			if (ec || status.type() != fs::file_type::regular || fs::file_size(file, ec) != bytes.size() || ec)
+			{ error = "The player list has an unsupported format; it was left unchanged."; return false; }
+			std::ifstream in(file, std::ios::binary);
+			if (!in.read((char*)bytes.data(), bytes.size())) { error = "The player list could not be read."; return false; }
+			std::set<std::array<unsigned char, 16>> known;
+			for (size_t i = 0; i < kProfileCount; i++)
+			{
+				const auto* entry = bytes.data() + kProfileHeader + i * kProfileEntry;
+				std::array<unsigned char, 16> id{};
+				std::copy(entry, entry + 16, id.begin());
+				if (std::all_of(id.begin(), id.end(), [](auto value) { return value == 0; })) continue;
+				if (std::memcmp(entry, entry + 16, 16) != 0 || !known.insert(id).second)
+				{ error = "The player list has inconsistent IDs; it was left unchanged."; return false; }
+			}
+			return true;
+		}
+		std::string ProfileKey(const unsigned char* entry)
+		{
+			uint64_t low = 0, high = 0;
+			std::memcpy(&low, entry, 8); std::memcpy(&high, entry + 8, 8);
+			if (!low && !high) return {};
+			char key[33];
+			std::snprintf(key, sizeof(key), "%016llX%016llX", (unsigned long long)high, (unsigned long long)low);
+			return key;
+		}
+		bool ProfileName(const std::string& name, std::string& fitted, std::string& error)
+		{
+			// Validate UTF-8 and cut only at a whole character, fitting Eden's 31-byte name field.
+			bool visible = false;
+			for (size_t i = 0; i < name.size();)
+			{
+				const auto first = (unsigned char)name[i];
+				size_t length = first < 0x80 ? 1 : first >= 0xC2 && first <= 0xDF ? 2 : first >= 0xE0 && first <= 0xEF ? 3 : first >= 0xF0 && first <= 0xF4 ? 4 : 0;
+				if (!length || i + length > name.size() || first < 32 || first == 127)
+				{ error = "Enter a player name without control characters."; return false; }
+				for (size_t j = 1; j < length; j++)
+					if (((unsigned char)name[i + j] & 0xC0) != 0x80) { error = "The player name is not valid UTF-8."; return false; }
+				if ((first == 0xE0 && (unsigned char)name[i + 1] < 0xA0) || (first == 0xED && (unsigned char)name[i + 1] >= 0xA0) ||
+					(first == 0xF0 && (unsigned char)name[i + 1] < 0x90) || (first == 0xF4 && (unsigned char)name[i + 1] >= 0x90))
+				{ error = "The player name is not valid UTF-8."; return false; }
+				if (i + length <= 31) { fitted.append(name, i, length); visible = visible || first != ' '; }
+				i += length;
+			}
+			if (!visible) { error = "Enter a nonempty player name."; return false; }
+			return true;
+		}
+		bool WriteProfileBytes(const Context& context, const ProfileBytes& bytes, std::string& error)
+		{
+			const std::string file = ProfileFile(context), staged = file + ".ecam-new";
+			std::error_code ec;
+			fs::create_directories(fs::path(file).parent_path(), ec);
+			if (ec) { error = "The player folder could not be created."; return false; }
+			const int fd = open(staged.c_str(), O_WRONLY | O_CREAT | O_EXCL, 0600);
+			if (fd < 0) { error = "The player list could not be staged; inspect any existing .ecam-new file."; return false; }
+			size_t at = 0;
+			while (at < bytes.size())
+			{
+				const ssize_t written = write(fd, bytes.data() + at, bytes.size() - at);
+				if (written < 0 && errno == EINTR) continue;
+				if (written <= 0) break;
+				at += (size_t)written;
+			}
+			bool ok = at == bytes.size();
+			if (close(fd) != 0) ok = false;
+			if (ok && fs::exists(file, ec))
+			{
+				const std::string before = file + ".ecam-before";
+				if (!fs::exists(before, ec)) fs::copy_file(file, before, fs::copy_options::none, ec);
+				ok = !ec;
+			}
+			if (ok) { fs::rename(staged, file, ec); ok = !ec; }
+			if (!ok) { fs::remove(staged, ec); error = "The player list was not replaced."; }
+			else error.clear();
+			return ok;
+		}
 	}
 
 	View Read(const Context& context)
@@ -336,5 +429,73 @@ namespace ps5eden::extras
 			Put(*users, std::to_string(ps5User).c_str(), Json(id.c_str(), document.GetAllocator()), document.GetAllocator());
 		}
 		return Save(context, document, error);
+	}
+	bool CreateProfile(const Context& context, const std::string& name, std::string& error)
+	{
+		std::string fitted;
+		if (!ProfileName(name, fitted, error)) return false;
+		ProfileBytes bytes{};
+		if (!ReadProfileBytes(context, bytes, true, error)) return false;
+		size_t slot = kProfileCount;
+		std::set<std::string> known;
+		for (size_t i = 0; i < kProfileCount; i++)
+		{
+			const auto key = ProfileKey(bytes.data() + kProfileHeader + i * kProfileEntry);
+			if (key.empty() && slot == kProfileCount) slot = i;
+			else if (!key.empty()) known.insert(key);
+		}
+		if (slot == kProfileCount) { error = "Eden supports at most eight players."; return false; }
+		auto* entry = bytes.data() + kProfileHeader + slot * kProfileEntry;
+		std::fill(entry, entry + kProfileEntry, 0);
+		try
+		{
+			std::random_device random;
+			bool unique = false;
+			for (int attempt = 0; attempt < 32 && !unique; attempt++)
+			{
+				for (size_t at = 0; at < 16; at += 4) { const uint32_t value = random(); std::memcpy(entry + at, &value, 4); }
+				const auto key = ProfileKey(entry);
+				unique = !key.empty() && !known.count(key);
+			}
+			if (!unique) { error = "A unique player ID could not be generated."; return false; }
+		}
+		catch (const std::exception& failure) { error = std::string("Player ID generation failed: ") + failure.what(); return false; }
+		std::copy(entry, entry + 16, entry + 16);
+		std::copy(fitted.begin(), fitted.end(), entry + 40);
+		return WriteProfileBytes(context, bytes, error);
+	}
+	bool RenameProfile(const Context& context, const std::string& id, const std::string& name, std::string& error)
+	{
+		if (id.empty()) { error = "Choose an existing player first."; return false; }
+		std::string fitted;
+		if (!ProfileName(name, fitted, error)) return false;
+		ProfileBytes bytes{};
+		if (!ReadProfileBytes(context, bytes, false, error)) return false;
+		for (size_t i = 0; i < kProfileCount; i++)
+		{
+			auto* entry = bytes.data() + kProfileHeader + i * kProfileEntry;
+			if (ProfileKey(entry) != id) continue;
+			std::fill(entry + 40, entry + 72, 0); std::copy(fitted.begin(), fitted.end(), entry + 40);
+			return WriteProfileBytes(context, bytes, error);
+		}
+		error = "That player is no longer present."; return false;
+	}
+	bool RemoveProfile(const Context& context, const std::string& id, std::string& error)
+	{
+		ProfileBytes bytes{}, next{};
+		if (!ReadProfileBytes(context, bytes, false, error)) return false;
+		std::copy(bytes.begin(), bytes.begin() + kProfileHeader, next.begin());
+		size_t count = 0; bool found = false;
+		for (size_t i = 0; i < kProfileCount; i++)
+		{
+			const auto* entry = bytes.data() + kProfileHeader + i * kProfileEntry;
+			const auto key = ProfileKey(entry);
+			if (key.empty()) continue;
+			if (key == id) { found = true; continue; }
+			std::copy(entry, entry + kProfileEntry, next.begin() + kProfileHeader + count++ * kProfileEntry);
+		}
+		if (!found) { error = "That player is no longer present."; return false; }
+		if (!count) { error = "At least one player must remain."; return false; }
+		return WriteProfileBytes(context, next, error);
 	}
 }
