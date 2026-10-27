@@ -31,6 +31,7 @@ namespace ps5melonds
 	// The game's save, as melonDS changes it (Platform::WriteNDSSave): written to its file by the game's
 	// loop once the game has stopped writing for a moment, and when the game ends (core.cpp)
 	void SaveChanged(const melonDS::u8* data, melonDS::u32 length);
+	void GbaSaveChanged(const melonDS::u8* data, melonDS::u32 length);
 
 	namespace input
 	{
