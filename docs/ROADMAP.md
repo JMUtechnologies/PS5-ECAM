@@ -59,7 +59,7 @@ checked by reading and compiling. Before a release:
   with its DLC crashed as it booted. Also the likely cause of the Discord's MK8 Deluxe loop after its
   title screen: check with Teaz's and meundies' logs.
 - **Upstream Switch fixes** (open PRs on Swordpdf/ProsperoEden, none tested on a PS5 by its author):
-  taken as `patches/eden/0012` to `0014` (`a66be65`): #287 (several updates of one game: the newest's
+  taken as `patches/eden/0012` to `0014` (`21b8d87`): #287 (several updates of one game: the newest's
   version and control data), #289 (a full audio ring drops its oldest sound instead of stopping the
   game) and #298 (ExecuteProgram, for Metal Gear Solid: Master Collection's launcher). Check each on a
   console. Not taken yet: #285 (NSZ and XCZ games), #290 (a forwarded game moved into a game folder);
@@ -73,7 +73,7 @@ checked by reading and compiling. Before a release:
 - **Wii U account names in games** (Discord, Lycnus): Rename now writes the name into the Mii data
   games read (`patches/cemu/0045`). Tekken Tag Tournament 2 showed `player1:default`, Cemu's first
   account's name, even with a new account: check on a console which account it ran on.
-- **The theme launchers are gone** (`bbe6a68`): Classic's 2.0 layout, Eden's rail, Phantom and
+- **The theme launchers are gone** (`d079b49`): Classic's 2.0 layout, Eden's rail, Phantom and
   Terminal were whole launchers of their own in 4.0.0 to 5.0.1, at the owner's request (October 13);
   the rebuild made one layout with colour skins and dropped Phantom and Terminal. The owner's call:
   keep one layout, or bring them back over it.
@@ -84,19 +84,19 @@ checked by reading and compiling. Before a release:
   `symbolize-crash.py --ps5`) and **PR #71** (Cyrillic and Greek from SST-Roman, #69) are already in
   the code: close both, thanking dolphin78.
 - **#76**: dolphin78 traced the stripes on empty screens to the grain's float hash, the cause fixed in
-  `baf9f71`; this branch also gives each list's labels one size. Close it with the release.
+  `4f9b6f9`; this branch also gives each list's labels one size. Close it with the release.
 - **#74, #75**: done on this branch (packs downloaded when missing; a share's games kept between
   looks). Close them with the release.
 - **#77** (Switch mods folder, `patches/eden/0011`) and **#80** (3DS: Remove its update or DLC, in a
   game's Options): done on this branch; close them with the release. **#79** (Cyrillic labels of
   different sizes) is #76's: the labels' one size; check on a console, then close it with #76.
 - **PR #83 and PR #85** (yeager, the Swedish review; #85 is #83 again with his GitHub address): taken
-  as `8e309cf`, his commit. Close both with the release, thanking him; he is in the README's
+  as `4ee7ff1`, his commit. Close both with the release, thanking him; he is in the README's
   contributors.
-- **PR #86 and PR #84** (JMUtechnologies, co-founder): #86's 102 commits taken as `0c9cb02`, his
-  commit, which has #84's tools too; then `e90f912` (a DS game starts without its Slot-2 cartridge
-  or recorded microphone), `8a71a18` (Eden's mod readers as patched), `02ae046` (the system
-  folders), `3048d1f` (its texts in every language). Close both with the release, thanking him. To
+- **PR #86 and PR #84** (JMUtechnologies, co-founder): #86's 102 commits taken as `2aef5d4`, his
+  commit, which has #84's tools too; then `9f7fb68` (a DS game starts without its Slot-2 cartridge
+  or recorded microphone), `ba89451` (Eden's mod readers as patched), `855b9ea` (the system
+  folders), `550808f` (its texts in every language). Close both with the release, thanking him. To
   check on a console: a Switch game's Mods and Cheats (one off, a 30/60 FPS group), Picture effects
   for the side and a game, Players (choose, new, rename, remove, then a game on each), a game's save
   to USB and back, a Ryujinx save; on the DS, Pal Park with a GBA game in `slot2`, Slot-2 on with a
@@ -139,7 +139,7 @@ The paths are in the code now, on this branch, with a layout that differs from t
 four folders sit beside `/data/ps5cemu` rather than inside a new `/data/PS5-ECAM`, and the
 launcher's own files stay in `/data/ps5cemu`.
 
-- **Done**, by JMUtechnologies (`1d95209`, his patch; he is in the README's contributors):
+- **Done**, by JMUtechnologies (`3cb8349`, his patch; he is in the README's contributors):
   `/data/cemu`, `/data/azahar`, `/data/melonds` and `/data/eden` for a new install, each with
   its own games, updates, DLC, keys and firmware or BIOS folders (`port/app/system_layout.h`,
   `ps5paths::DecideSystemRoots`, the `[paths]` line in the boot log). An install from before is found
@@ -241,23 +241,23 @@ Each idea done is marked **Done** where it is listed below, with its commit.
 
 | Idea | Commit | What it changed |
 |---|---|---|
-| [S1](#s1) | [`1b497d3`](https://github.com/premohq/PS5-ECAM/commit/1b497d3) | An unreadable `ps5cemu.json` is kept as `ps5cemu.json.broken`, and the launcher says so once |
-| [S6](#s6) | [`6536915`](https://github.com/premohq/PS5-ECAM/commit/6536915) | **Back up to USB** takes the Switch's saves and Eden's user profiles, and restores them |
-| [S5](#s5) | [`a7c6115`](https://github.com/premohq/PS5-ECAM/commit/a7c6115) | GitHub Actions runs the string table check and the PC tests at every push and pull request |
-| [G1](#g1) | [`6f8dcd8`](https://github.com/premohq/PS5-ECAM/commit/6f8dcd8) | Touchpad click + Square saves a state, + Triangle held loads it (3DS and DS) |
-| [P1](#p1) | [`86fff8a`](https://github.com/premohq/PS5-ECAM/commit/86fff8a) | **Add files to the PS5** on the remote touch screen's page: games, Switch keys and firmware, amiibo and music from a phone's browser |
-| [S2](#s2) | [`b482092`](https://github.com/premohq/PS5-ECAM/commit/b482092) | The start after a crash says so once, with the crash's first line and Copy logs to USB |
-| [G9](#g9) | [`8777160`](https://github.com/premohq/PS5-ECAM/commit/8777160) | **Fast forward, on and off** in Controls > Buttons (3DS and DS) |
-| [G4](#g4) | [`4f0a5af`](https://github.com/premohq/PS5-ECAM/commit/4f0a5af) | **Undo the last load** in the in-game menu's Save states (3DS and DS) |
-| [T1](#t1) | [`0f30424`](https://github.com/premohq/PS5-ECAM/commit/0f30424) | The 3DS's cameras see the newest picture in `azahar/camera` (or sent from a phone), for QR codes |
-| [L7](#l7) | [`6d374e0`](https://github.com/premohq/PS5-ECAM/commit/6d374e0) | The launcher dims after five minutes with no button pressed; the waking press does nothing else |
-| [S7](#s7) | [`0891a28`](https://github.com/premohq/PS5-ECAM/commit/0891a28) | Backups hold the settings too (each game's own, Cemu's, controller profiles, themes); a restore starts the app again to use them |
-| [S8](#s8) | [`b436783`](https://github.com/premohq/PS5-ECAM/commit/b436783) | An update keeps the version it replaces; **Go back to** in Settings > Online; **Skip this version** on the prompt |
-| [I4](#i4) | [`759f8e3`](https://github.com/premohq/PS5-ECAM/commit/759f8e3) | **3D for red and cyan glasses** in the 3DS side's Graphics (and each game's) |
-| [G3](#g3) | [`1d54168`](https://github.com/premohq/PS5-ECAM/commit/1d54168) | Quit to the library saves a state; **Resume where you left off** in the game's Options menu (3DS and DS) |
-| [N2](#n2) | `0c9cb02` | A Switch game's **Mods** and **Cheats**, each on or off, and **Picture effects** (JMUtechnologies, #86) |
-| [N4](#n4) | `0c9cb02` | A Switch game's **Saves**: its backup and restore, to a USB drive and back, Ryujinx's too; **Players** (JMUtechnologies, #86) |
-| [D1](#d1) | `0c9cb02`, `e90f912` | **A GBA cartridge in Slot-2** for the DS, off by default; the DS's microphone from a recording, and touch calibration (JMUtechnologies, #86) |
+| [S1](#s1) | [`bfb579e`](https://github.com/premohq/PS5-ECAM/commit/bfb579e) | An unreadable `ps5cemu.json` is kept as `ps5cemu.json.broken`, and the launcher says so once |
+| [S6](#s6) | [`5b870ea`](https://github.com/premohq/PS5-ECAM/commit/5b870ea) | **Back up to USB** takes the Switch's saves and Eden's user profiles, and restores them |
+| [S5](#s5) | [`f5fe945`](https://github.com/premohq/PS5-ECAM/commit/f5fe945) | GitHub Actions runs the string table check and the PC tests at every push and pull request |
+| [G1](#g1) | [`d70b44a`](https://github.com/premohq/PS5-ECAM/commit/d70b44a) | Touchpad click + Square saves a state, + Triangle held loads it (3DS and DS) |
+| [P1](#p1) | [`fdec151`](https://github.com/premohq/PS5-ECAM/commit/fdec151) | **Add files to the PS5** on the remote touch screen's page: games, Switch keys and firmware, amiibo and music from a phone's browser |
+| [S2](#s2) | [`431f28c`](https://github.com/premohq/PS5-ECAM/commit/431f28c) | The start after a crash says so once, with the crash's first line and Copy logs to USB |
+| [G9](#g9) | [`7224443`](https://github.com/premohq/PS5-ECAM/commit/7224443) | **Fast forward, on and off** in Controls > Buttons (3DS and DS) |
+| [G4](#g4) | [`18838c8`](https://github.com/premohq/PS5-ECAM/commit/18838c8) | **Undo the last load** in the in-game menu's Save states (3DS and DS) |
+| [T1](#t1) | [`f76c8ca`](https://github.com/premohq/PS5-ECAM/commit/f76c8ca) | The 3DS's cameras see the newest picture in `azahar/camera` (or sent from a phone), for QR codes |
+| [L7](#l7) | [`1e1515c`](https://github.com/premohq/PS5-ECAM/commit/1e1515c) | The launcher dims after five minutes with no button pressed; the waking press does nothing else |
+| [S7](#s7) | [`25e7f57`](https://github.com/premohq/PS5-ECAM/commit/25e7f57) | Backups hold the settings too (each game's own, Cemu's, controller profiles, themes); a restore starts the app again to use them |
+| [S8](#s8) | [`39c2657`](https://github.com/premohq/PS5-ECAM/commit/39c2657) | An update keeps the version it replaces; **Go back to** in Settings > Online; **Skip this version** on the prompt |
+| [I4](#i4) | [`507f825`](https://github.com/premohq/PS5-ECAM/commit/507f825) | **3D for red and cyan glasses** in the 3DS side's Graphics (and each game's) |
+| [G3](#g3) | [`074a280`](https://github.com/premohq/PS5-ECAM/commit/074a280) | Quit to the library saves a state; **Resume where you left off** in the game's Options menu (3DS and DS) |
+| [N2](#n2) | `2aef5d4` | A Switch game's **Mods** and **Cheats**, each on or off, and **Picture effects** (JMUtechnologies, #86) |
+| [N4](#n4) | `2aef5d4` | A Switch game's **Saves**: its backup and restore, to a USB drive and back, Ryujinx's too; **Players** (JMUtechnologies, #86) |
+| [D1](#d1) | `2aef5d4`, `9f7fb68` | **A GBA cartridge in Slot-2** for the DS, off by default; the DS's microphone from a recording, and touch calibration (JMUtechnologies, #86) |
 
 Being worked on separately (not here): the Switch side's in-game menu, its settings and button
 remapping ([N1](#n1)), its rooms ([I2](#i2)), ReShade on the Wii U side ([I1](#i1)), and the box art
@@ -280,13 +280,13 @@ The ten with the most value for the work, in order:
 
 ### Stability and fixes
 
-<a id="s1"></a>**S1. A broken `ps5cemu.json` is kept, not wiped** (S) · **Done:** [`1b497d3`](https://github.com/premohq/PS5-ECAM/commit/1b497d3)
+<a id="s1"></a>**S1. A broken `ps5cemu.json` is kept, not wiped** (S) · **Done:** [`bfb579e`](https://github.com/premohq/PS5-ECAM/commit/bfb579e)
 `ps5settings::Load` returns the defaults when the file does not parse (`port/frontend/settings.cpp:200`),
 and the next `Save` writes over it. Many settings are "only in ps5cemu.json", so people do edit it by
 hand, and one missing comma then loses every game's own settings, the accounts by PS5 user, the theme
 and the rest. Move it to `ps5cemu.json.broken`, start on the defaults, and say so once.
 
-<a id="s2"></a>**S2. Say so when the last session crashed** (S to M) · **Done:** [`b482092`](https://github.com/premohq/PS5-ECAM/commit/b482092), without the QR code for now
+<a id="s2"></a>**S2. Say so when the last session crashed** (S to M) · **Done:** [`431f28c`](https://github.com/premohq/PS5-ECAM/commit/431f28c), without the QR code for now
 `ps5/crash.cpp` writes `[crash]` lines to the boot log, but the next start says nothing. When
 `boot.prev.log` ends in a crash, offer **Copy logs to USB** and a QR code (`ui/qr.cpp` makes them already)
 for a GitHub issue filled in with the version, firmware, HEN, game and the crash's first lines. Dolphin
@@ -305,20 +305,20 @@ this: #15 (Batman's 60 FPS pack), #20 (3DS cheats), #24 (a graphic pack with `co
 write a `[bench]` summary from the `[perf]` lines, so Discord testers can send numbers. Then settle the
 defaults and delete the paths that lost.
 
-<a id="s5"></a>**S5. CI on every push** (S to M) · **Done:** [`a7c6115`](https://github.com/premohq/PS5-ECAM/commit/a7c6115)
+<a id="s5"></a>**S5. CI on every push** (S to M) · **Done:** [`f5fe945`](https://github.com/premohq/PS5-ECAM/commit/f5fe945)
 `.github` has only the issue templates. A GitHub Actions job on Ubuntu 24.04 could run what already runs
 on a PC: `tools/tests` (archives, keyboard, music, netfs, stream), `tools/reshade-check.sh`,
 `tools/lang.py check` and the launcher preview's screenshots. The PS5 build itself can stay manual.
 
-<a id="s6"></a>**S6. Switch saves in the USB backups** (S) · **Done:** [`6536915`](https://github.com/premohq/PS5-ECAM/commit/6536915)
+<a id="s6"></a>**S6. Switch saves in the USB backups** (S) · **Done:** [`5b870ea`](https://github.com/premohq/PS5-ECAM/commit/5b870ea)
 **Back up to USB** (`port/app/saves.cpp`) takes the Wii U's, 3DS's and DS's saves, but not Eden's
 (`eden/user/nand/user/save`). The guide says it does not "yet".
 
-<a id="s7"></a>**S7. Settings in the backups too** (S) · **Done:** [`0891a28`](https://github.com/premohq/PS5-ECAM/commit/0891a28)
+<a id="s7"></a>**S7. Settings in the backups too** (S) · **Done:** [`25e7f57`](https://github.com/premohq/PS5-ECAM/commit/25e7f57)
 Add `ps5cemu.json` (each game's own settings), Cemu's `controllerProfiles/` and `themes/` to a backup, so
 a reinstall or a second PS5 starts where you were. They are small.
 
-<a id="s8"></a>**S8. Updates you can undo** (M) · **Done:** [`b436783`](https://github.com/premohq/PS5-ECAM/commit/b436783), all but the release notes before installing
+<a id="s8"></a>**S8. Updates you can undo** (M) · **Done:** [`39c2657`](https://github.com/premohq/PS5-ECAM/commit/39c2657), all but the release notes before installing
 `port/app/updates.cpp` moves the new files over the old ones. Keep what it replaces in a `previous/`
 folder and offer **Settings > Online > Go back to 5.0.0**. While there: **Skip this version**, and the
 release notes shown before **Update now** (What's new only shows after). Dolphin has update tracks for
@@ -368,7 +368,7 @@ The game menu has no delete. An installed 3DS CIA (and its update and DLC), or a
 `mlc01`, can only be removed by FTP today (#58 was about that). Hold Cross to delete, with the saves kept
 unless asked.
 
-<a id="l7"></a>**L7. A screensaver for OLED TVs** (S) · **Done:** [`6d374e0`](https://github.com/premohq/PS5-ECAM/commit/6d374e0), as a dim (no slideshow yet)
+<a id="l7"></a>**L7. A screensaver for OLED TVs** (S) · **Done:** [`1e1515c`](https://github.com/premohq/PS5-ECAM/commit/1e1515c), as a dim (no slideshow yet)
 Nothing happens when the launcher sits idle. After a few minutes, dim it or show covers slowly. Midnight
 is made for OLED screens, but a still launcher burns in all the same. ES-DE has dim, slideshow and video
 screensavers.
@@ -396,7 +396,7 @@ GitHub and downloads one, as ES-DE's theme downloader does.
 
 ### Quality of life: in a game
 
-<a id="g1"></a>**G1. Quick save and quick load hotkeys** (S) · **Done:** [`6f8dcd8`](https://github.com/premohq/PS5-ECAM/commit/6f8dcd8)
+<a id="g1"></a>**G1. Quick save and quick load hotkeys** (S) · **Done:** [`d70b44a`](https://github.com/premohq/PS5-ECAM/commit/d70b44a)
 The guide's shortcuts are touchpad click + Options, L1 and R1; Square and Triangle look free. Touchpad click + Square
 saves to the current slot and + Triangle loads it (held, as loading in the menu is), on the 3DS and DS.
 RetroArch, DuckStation and DraStic all have this.
@@ -405,11 +405,11 @@ RetroArch, DuckStation and DraStic all have this.
 The slots show a number and whether they are empty. A small picture of the game and when it was made, as
 RetroArch, Delta and DuckStation show them. The frame can be read as the remote screen reads it.
 
-<a id="g3"></a>**G3. Resume where you left off** (M) · **Done:** [`1d54168`](https://github.com/premohq/PS5-ECAM/commit/1d54168)
+<a id="g3"></a>**G3. Resume where you left off** (M) · **Done:** [`074a280`](https://github.com/premohq/PS5-ECAM/commit/074a280)
 On **Quit to the library**, a 3DS or DS game makes an automatic save state, and its page offers
 **Resume** beside **Play**. RetroArch's auto save state and Delta's resume work this way.
 
-<a id="g4"></a>**G4. Undo the last load** (S) · **Done:** [`4f0a5af`](https://github.com/premohq/PS5-ECAM/commit/4f0a5af)
+<a id="g4"></a>**G4. Undo the last load** (S) · **Done:** [`18838c8`](https://github.com/premohq/PS5-ECAM/commit/18838c8)
 Keep the state from just before a load, so loading the wrong slot is not the end of an hour. RetroArch
 and DuckStation have "Undo load state".
 
@@ -430,7 +430,7 @@ A/B. Dolphin and Cemu on a PC both have per-game controller profiles.
 A quick action or a hotkey that saves a PNG to `/data/ps5cemu/screenshots/<game>/`, a gallery on the
 game's page, and one picked as the game's background.
 
-<a id="g9"></a>**G9. Fast forward as a toggle** (S) · **Done:** [`8777160`](https://github.com/premohq/PS5-ECAM/commit/8777160)
+<a id="g9"></a>**G9. Fast forward as a toggle** (S) · **Done:** [`7224443`](https://github.com/premohq/PS5-ECAM/commit/7224443)
 Today it works only while held. An option to press once for on and again for off, as RetroArch offers.
 
 ### The Switch side
@@ -442,7 +442,7 @@ The Switch side's **Controls** page has only Vibration (`port/frontend/shell/set
 `!IsSwitch()` checks). Needed: the button map, A/B on Circle or Cross like the other sides, the
 controller type (Pro Controller, Joy-Con pair, handheld), and players 2 to 4.
 
-<a id="n2"></a>**N2. Mods and cheats** (M) · **Done:** `0c9cb02` (JMUtechnologies, #86), with Eden's ReShade looks
+<a id="n2"></a>**N2. Mods and cheats** (M) · **Done:** `2aef5d4` (JMUtechnologies, #86), with Eden's ReShade looks
 `/data/ps5cemu/eden/mods` is there, but nothing in the app lists or turns on a mod or a cheat now. A
 game's menu could list them with a switch each, as the Add-ons tab of Eden on a PC does.
 
@@ -450,7 +450,7 @@ game's menu could list them with a switch each, as the Add-ons tab of Eden on a 
 The library pairs a game with the update and DLC beside it, but does not show it. Show which version
 will run and which DLC is there, on the game's page.
 
-<a id="n4"></a>**N4. Saves on the Switch side** (S) · **Done:** `0c9cb02` (JMUtechnologies, #86), but for JKSV's and Checkpoint's layouts
+<a id="n4"></a>**N4. Saves on the Switch side** (S) · **Done:** `2aef5d4` (JMUtechnologies, #86), but for JKSV's and Checkpoint's layouts
 The game menu leaves **Saves** out for Switch games (`OpenGameMenu`, `!IsSwitch()`). Back up and restore
 one game's save, and take one from a JKSV or Checkpoint dump made on a real Switch.
 
@@ -470,7 +470,7 @@ The guide explains how to copy saves from Cemu or Citra on a PC by FTP, path by 
 could import them from a USB drive itself, in the PC emulators' layouts, SaveMii's for the Wii U and
 Checkpoint's for the 3DS. Apollo Save Tool does this on the PS4.
 
-<a id="d1"></a>**D1. The GBA slot** (M) · **Done:** `0c9cb02`, `e90f912` (JMUtechnologies, #86)
+<a id="d1"></a>**D1. The GBA slot** (M) · **Done:** `2aef5d4`, `9f7fb68` (JMUtechnologies, #86)
 melonDS can put a GBA game and its save in the DS's slot 2: Pokémon's Pal Park, and the DS games that
 read a GBA cartridge for extras. The guide lists the GBA slot as not there.
 
@@ -487,7 +487,7 @@ The DS's screen filters are Sharp, Smooth and Square pixels. Add an LCD grid, th
 colours, and frame blending for games that flicker sprites to fake transparency, as RetroArch's handheld
 shaders do.
 
-<a id="t1"></a>**T1. The 3DS camera from a picture** (M) · **Done:** [`0f30424`](https://github.com/premohq/PS5-ECAM/commit/0f30424)
+<a id="t1"></a>**T1. The 3DS camera from a picture** (M) · **Done:** [`f76c8ca`](https://github.com/premohq/PS5-ECAM/commit/f76c8ca)
 Azahar's cameras are set to `blank` (`port/azahar/core.cpp:429`). Azahar can show a still image as the
 camera instead: a picture from USB, or one sent from the phone page ([P1](#p1)), for the QR codes
 of Pokémon Sun and Moon, Miis, and Animal Crossing's designs.
@@ -516,7 +516,7 @@ players 1 to 4), flash on an achievement, or take the cover's colour.
 The remote touch screen's HTTP server (`port/stream`) already reaches every phone on the network. It can
 do more.
 
-<a id="p1"></a>**P1. Add games, keys and saves from a browser** (M) · **Done:** [`86fff8a`](https://github.com/premohq/PS5-ECAM/commit/86fff8a), without the PIN or saves: the same network switch as the touch screen, and fixed folders
+<a id="p1"></a>**P1. Add games, keys and saves from a browser** (M) · **Done:** [`fdec151`](https://github.com/premohq/PS5-ECAM/commit/fdec151), without the PIN or saves: the same network switch as the touch screen, and fixed folders
 An upload page, behind a PIN shown on the TV, that puts each file where it goes: a game in its side's
 folder, `prod.keys` in `eden/keys`, a CIA to install. No FTP client and no USB drive. Provenance on iOS
 has a built-in web server for the same thing.
@@ -550,7 +550,7 @@ or a PS5 and a PC, play local wireless games together.
 melonDS 1.0 has local multiplayer over a LAN. Two PS5s on one network as two DSes: Mario Kart DS,
 Pokémon trades and battles.
 
-<a id="i4"></a>**I4. The 3DS's 3D** (S to M) · **Done:** [`759f8e3`](https://github.com/premohq/PS5-ECAM/commit/759f8e3), red and cyan only (side by side for 3D TVs not yet)
+<a id="i4"></a>**I4. The 3DS's 3D** (S to M) · **Done:** [`507f825`](https://github.com/premohq/PS5-ECAM/commit/507f825), red and cyan only (side by side for 3D TVs not yet)
 Azahar can draw the 3DS's stereo picture as red and cyan anaglyph, or side by side for a 3D TV. Cheap
 glasses, and the 3D slider back.
 
