@@ -43,4 +43,9 @@ namespace ps5eden::extras
 	bool SetCheat(const Context& context, const std::string& source, const std::string& name, bool on, std::string& error);
 	bool SetPreset(const Context& context, const std::string& name, bool inherit, std::string& error);
 	bool SelectProfile(const Context& context, const std::string& id, int ps5User, std::string& error);
+	// Add/rename/remove entries in the standalone's binary player list. Creation starts with
+	// default settings; removal keeps saves and settings, and cannot remove the last player.
+	bool CreateProfile(const Context& context, const std::string& name, std::string& error);
+	bool RenameProfile(const Context& context, const std::string& id, const std::string& name, std::string& error);
+	bool RemoveProfile(const Context& context, const std::string& id, std::string& error);
 }
