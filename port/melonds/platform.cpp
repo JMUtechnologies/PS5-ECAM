@@ -7,6 +7,7 @@
 // are not there: what they read comes back empty.
 
 #include "frontend.h"
+#include "microphone.h"
 #include "melonds.h"
 #include "../ps5/log.h"
 
@@ -336,9 +337,9 @@ namespace melonDS::Platform
 		ps5melonds::SaveChanged(savedata, savelen);
 	}
 
-	void WriteGBASave(const u8*, u32, u32, u32, void*)
+	void WriteGBASave(const u8* savedata, u32 savelen, u32, u32, void*)
 	{
-		// no GBA cartridge in Slot-2
+		ps5melonds::GbaSaveChanged(savedata, savelen);
 	}
 
 	void WriteFirmware(const Firmware&, u32, u32, void*)
@@ -385,11 +386,7 @@ namespace melonDS::Platform
 	void Mic_Stop(void*) {}
 	int Mic_ReadInput(s16* data, int maxlength, void*)
 	{
-		static std::minstd_rand noise(0x5D5);
-		const bool blowing = ps5melonds::input::Blowing();
-		for (int i = 0; i < maxlength; i++)
-			data[i] = blowing ? (s16)((int)(noise() % 0x6000) - 0x3000) : 0;
-		return maxlength;
+		return ps5melonds::microphone::source.Read(data, maxlength, ps5melonds::input::Blowing());
 	}
 
 	// The DSi's AAC decoder (its DSP's, in HLE): none, as DS games never ask

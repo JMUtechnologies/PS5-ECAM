@@ -22,6 +22,7 @@
 #include "../../eden/eden.h"
 #include "../../eden/library.h"
 #include "../../eden/rooms.h"
+#include "../../eden/save_transfer.h"
 #include "../../melonds/library.h"
 #include "../../melonds/melonds.h"
 #include "../../ps5/privilege.h"
@@ -227,6 +228,11 @@ namespace ps5shell
 		// ProsperoEden's Settings > Performance, as its launcher has it
 		if (IsSwitch())
 			pages.push_back({"performance", Tr("Performance"), Tr("Speed against accuracy, and the emulated Switch's memory."), Icon::Pulse});
+		if (IsSwitch())
+		{
+			pages.push_back({"nxpost", Tr("Post-processing"), Tr("Eden's ReShade presets."), Icon::Monitor});
+			pages.push_back({"nxprofiles", Tr("Player profiles"), Tr("Choose an existing Switch player and their saves."), Icon::Pad});
+		}
 		pages.push_back({"files", Tr("Game files"), IsWiiU() ? Tr("Where your Wii U games are, and installs into the Wii U's storage.") :
 										Is3ds()		 ? Tr("Where your 3DS games are, and installs into the 3DS's storage.") :
 										IsSwitch()	 ? Tr("Where your Switch games are, with its keys and firmware.") :
@@ -234,8 +240,7 @@ namespace ps5shell
 			Icon::Folder});
 		// the Wii U's accounts and every side's saves (6.13); a handheld has one player, so its page is saves alone.
 		// A Switch game's saves are Eden's, in its own folder
-		if (!IsSwitch())
-			pages.push_back({"saves", IsWiiU() ? Tr("Accounts and saves") : Tr("Saves"),
+		pages.push_back({"saves", IsWiiU() ? Tr("Accounts and saves") : Tr("Saves"),
 				IsWiiU() ? Tr("Each account has its own saves for every game. Backups hold every side's saves.") : Tr("Backups hold every side's saves."),
 				Icon::Save});
 		if (Is3ds())
@@ -258,16 +263,21 @@ namespace ps5shell
 		// with a setting: Graphics, Screens, Audio, System and the Switch's Performance)
 		std::vector<SettingsPage> game;
 		for (const SettingsPage& page : pages)
-			if (page.id == "graphics" || page.id == "screens" || page.id == "audio" || page.id == "system" || page.id == "performance")
+			if (page.id == "graphics" || page.id == "screens" || page.id == "audio" || page.id == "system" || page.id == "performance" || page.id == "nxpost")
 				game.push_back({page.id, page.title, TrF("For {0} only. Its other settings follow its side's.", m_gameName), page.icon});
 		// its saves alone (6.15), whatever settings it has of its own (a Switch game's are Eden's)
-		if (!IsSwitch())
-			game.push_back({"gamesaves", Tr("Saves"), TrF("{0}'s saves only. Settings has every side's.", m_gameName), Icon::Save});
+		game.push_back({"gamesaves", Tr("Saves"), TrF("{0}'s saves only. Settings has every side's.", m_gameName), Icon::Save});
+		if (IsSwitch())
+		{
+			game.push_back({"nxmods", Tr("Mods"), Tr("Choose the installed mods this game uses."), Icon::Folder});
+			game.push_back({"nxcheats", Tr("Cheats"), Tr("Choose individual installed cheats."), Icon::Folder});
+		}
 		return game;
 	}
 
 	void Shell::SettingsOpen(const std::string& page, bool onRows, int row)
 	{
+		m_switchExtrasKey.clear();
 		if (InGameSettings())
 			GameSettingsClose();
 		m_page = page;
@@ -921,6 +931,19 @@ namespace ps5shell
 						"and this is on. Without them, its own replacements (FreeBIOS) run most games as well. Applies to the next game.",
 						ps5melonds::Root() + "/bios")),
 				"dsOwnBios");
+			std::vector<std::string> touchOffsets, touchScales;
+			for (int value = -20; value <= 20; value++) touchOffsets.push_back(fmt::format("{}%", value));
+			for (int value = 50; value <= 150; value++) touchScales.push_back(fmt::format("{}%", value));
+			const auto touchHelp = Tr("Adjusts the touchpad cursor across the displayed screen, before rotation. Defaults: offsets 0%, scale 100%. Applies on next launch; remote touch is unchanged.");
+			own(choice("dstouchx", Tr("Touch horizontal offset"), touchOffsets, hand.dsTouchX + 20, touchHelp, touchHelp), "dsTouchX");
+			own(choice("dstouchy", Tr("Touch vertical offset"), touchOffsets, hand.dsTouchY + 20, touchHelp, touchHelp), "dsTouchY");
+			own(choice("dstouchscale", Tr("Touch sensitivity"), touchScales, hand.dsTouchScale - 50, touchHelp, touchHelp), "dsTouchScale");
+			own(choice("dsmic", Tr("Microphone source"), {Tr("Blow noise"), Tr("Silence"), Tr("Recorded WAV")}, hand.dsMicSource,
+				Tr("Hold R3 to send the selected input. Applies on next launch."),
+				TrF("Use 16-bit mono PCM WAV, 8000 to 48000 Hz, up to 16 MiB: {0}/microphone/<DS filename>.wav or microphone.wav. Recorded input loops while held and restarts after release. This does not record a live microphone.", ps5melonds::Root())), "dsMicSource");
+			own(toggle("dsslot2", Tr("GBA cartridge in Slot-2"), hand.dsSlot2,
+				Tr("Optional cartridge interactions in DS games; not GBA game execution."),
+				TrF("Put <DS game filename>.gba and an optional matching .sav in {0}/slot2. Working copies of its saves go to slot2-saves; original cartridge files are not changed. Applies on next launch.", ps5melonds::Root())), "dsSlot2");
 		}
 		else if (page == "files")
 		{
@@ -1357,6 +1380,8 @@ namespace ps5shell
 
 	std::vector<Row> Shell::SettingRows(const std::string& page)
 	{
+		if (IsSwitch() && (page == "nxmods" || page == "nxcheats" || page == "nxpost" || page == "nxprofiles"))
+			return SwitchExtrasRows(page);
 		if (!InGameSettings())
 			return SideRows(page, m_settings);
 		if (page == "gamesaves")
@@ -1404,6 +1429,7 @@ namespace ps5shell
 		// tr: a 3DS game's extra data (its extdata), which some games keep beside their saves
 		case Kind::ExtData: return Tr("Extra data");
 		case Kind::States: return TrP((int)save.paths.size(), "{0} save state", "{0} save states");
+		case Kind::Slot2: return Tr("Slot-2 cartridge save");
 		}
 		return {};
 	}
@@ -1417,6 +1443,16 @@ namespace ps5shell
 		{
 			m_gameSaves = ps5saves::FindGameSaves(m_gameRef);
 			m_gameBackups = ps5saves::FindGameBackups(m_gameRef);
+			m_switchImports.clear();
+			if (IsSwitch() && !ps5eden::IsMadeId(m_gameTitle))
+				for (int drive = 0; drive < 8; drive++)
+					for (const char* name : {"PS5-ECAM-imports", "Ryujinx"})
+					{
+						const std::string folder = fmt::format("/mnt/usb{}/{}", drive, name);
+						std::string why;
+						for (const auto& choice : ps5eden::transfer::Choices(folder, m_gameTitle, why))
+							m_switchImports.push_back({folder, fmt::format("USB {} · {} · {}", drive, name, choice.label), choice.accountSaveId});
+					}
 			m_gameSavesAt = m_now;
 		}
 		const ps5saves::Status status = ps5saves::Current();
@@ -1425,7 +1461,8 @@ namespace ps5shell
 		{
 			m_savesFinished = status.finished;
 			m_gameSavesAt = -100;
-			m_savesMessage = status.state == ps5saves::Status::State::Done ? TrP(status.files, "Done: {0} file", "Done: {0} files") : status.message;
+			m_savesMessage = status.state == ps5saves::Status::State::Done ?
+				(status.message.empty() ? TrP(status.files, "Done: {0} file", "Done: {0} files") : status.message) : status.message;
 		}
 		std::vector<Row> rows;
 		for (size_t i = 0; i < m_gameSaves.size(); i++)
@@ -1494,6 +1531,24 @@ namespace ps5shell
 		if (backups.empty())
 			restore.dimmed = true;
 		rows.push_back(std::move(restore));
+		if (IsSwitch() && !ps5eden::IsMadeId(m_gameTitle))
+		{
+			Row exportSave;
+			exportSave.kind = Kind::Action; exportSave.id = "nxexport"; exportSave.label = Tr("Export selected player's save");
+			exportSave.description = Tr("Plain account/device folders on USB, for transfer to another emulator.");
+			exportSave.value = m_savesMessage; exportSave.dimmed = running;
+			rows.push_back(std::move(exportSave));
+			Row importSave;
+			importSave.kind = Kind::Hold; importSave.id = "nximport"; importSave.label = Tr("Import selected player's save");
+			for (const auto& source : m_switchImports) importSave.options.push_back(source.label);
+			int& chosen = m_holdChoice["nximport"];
+			chosen = importSave.options.empty() ? 0 : std::clamp(chosen, 0, (int)importSave.options.size() - 1);
+			importSave.index = chosen;
+			importSave.value = importSave.options.empty() ? Tr("No import found") : importSave.options[chosen] + " · " + Tr("Hold Cross");
+			importSave.description = Tr("From USB/PS5-ECAM-imports/<title ID> or USB/Ryujinx. Replaced saves are retained first.");
+			importSave.help = Tr("Choose the player in Switch Settings before importing. Both account and device files are staged before replacement. The original directories are retained under Eden's save-transfer-recovery folder.");
+			importSave.dimmed = running || importSave.options.empty(); rows.push_back(std::move(importSave));
+		}
 		return rows;
 	}
 
@@ -1612,6 +1667,11 @@ namespace ps5shell
 			hand.language = std::clamp(index - 1, -1, 11);
 		else if (id == "cpuclock")
 			hand.cpuClock = kClocks[std::clamp(index, 0, (int)std::size(kClocks) - 1)];
+		else if (id == "dstouchx") hand.dsTouchX = std::clamp(index - 20, -20, 20);
+		else if (id == "dstouchy") hand.dsTouchY = std::clamp(index - 20, -20, 20);
+		else if (id == "dstouchscale") hand.dsTouchScale = std::clamp(index + 50, 50, 150);
+		else if (id == "dsmic")
+			hand.dsMicSource = std::clamp(index, 0, 2);
 		else if (id == "dsfilter")
 			hand.dsFilter = std::clamp(index, 0, 2);
 		else if (id == "dsrotation")
@@ -1755,6 +1815,8 @@ namespace ps5shell
 				hand.motion = on;
 			else if (id == "dsjit")
 				hand.dsJit = on;
+			else if (id == "dsslot2")
+				hand.dsSlot2 = on;
 			else if (id == "performance-hand")
 				hand.performance = on;
 			else if (id == "nx-framegeneration")
@@ -1944,6 +2006,7 @@ namespace ps5shell
 
 	void Shell::GameSettingsOpen(int game)
 	{
+		m_switchExtrasKey.clear();
 		if (game < 0 || game >= (int)m_games.size())
 			return;
 		const ps5emu::Game& g = m_games[game].entry.game;
@@ -1988,6 +2051,11 @@ namespace ps5shell
 	void Shell::ChangeSetting(const Row& row, int step, bool cross)
 	{
 		const std::string& id = row.id;
+		if (id.starts_with("nxextra:"))
+		{
+			ChangeSwitchExtra(row, step, cross);
+			return;
+		}
 		if (row.dimmed && (row.needsCore || id == "homemenu"))
 		{
 			m_feedback.Play(ui::Cue::Denied);
@@ -2055,6 +2123,17 @@ namespace ps5shell
 				m_savesMessage = error;
 				m_feedback.Play(ui::Cue::Denied);
 			}
+			return;
+		}
+		if (InGameSettings() && IsSwitch() && id == "nxexport")
+		{
+			if (!cross || row.dimmed) return;
+			const auto view = ps5eden::extras::Read(SwitchExtrasContext());
+			std::string error;
+			if (!view.error.empty()) error = view.error;
+			else if (view.profiles.empty()) error = Tr("Choose an existing Switch player first.");
+			else if (ps5saves::StartSwitchExport(m_gameRef, view.profiles[view.profile].id, error)) m_savesMessage = Tr("Exporting…");
+			if (!error.empty()) Toast(error);
 			return;
 		}
 		if (InGameSettings() && row.setting.empty())
@@ -2319,6 +2398,20 @@ namespace ps5shell
 
 	void Shell::HoldDone(const std::string& id)
 	{
+		if (id == "nxextra:removeprofile" && IsSwitch())
+		{
+			const auto context = SwitchExtrasContext();
+			const auto view = ps5eden::extras::Read(context);
+			std::string error;
+			if (!view.error.empty()) Toast(view.error);
+			else if (!view.profiles.empty())
+			{
+				if (ps5eden::extras::RemoveProfile(context, view.profiles[view.profile].id, error)) Toast(Tr("Player removed; saves and settings are kept"));
+				else Toast(error);
+			}
+			m_switchExtrasKey.clear();
+			return;
+		}
 		m_feedback.Play(ui::Cue::Hold);
 		if (id == "clearcaches")
 			m_diagnosticsDone[Is3ds() ? 2 : 1] = ClearShaderCaches(Is3ds());
@@ -2418,6 +2511,17 @@ namespace ps5shell
 		{
 			ps5cheevos::SignOut();
 			Toast(Tr("Signed out of RetroAchievements"));
+		}
+		else if (id == "nximport" && IsSwitch())
+		{
+			const auto view = ps5eden::extras::Read(SwitchExtrasContext());
+			const int selected = m_holdChoice["nximport"];
+			std::string error;
+			if (!view.error.empty()) error = view.error;
+			else if (view.profiles.empty()) error = Tr("Choose an existing Switch player first.");
+			else if (selected >= 0 && selected < (int)m_switchImports.size() &&
+				ps5saves::StartSwitchImport(m_gameRef, view.profiles[view.profile].id, m_switchImports[selected].folder, error, m_switchImports[selected].accountSaveId)) m_savesMessage = Tr("Importing…");
+			if (!error.empty()) Toast(error);
 		}
 		else if (id == "gamerestore")
 		{

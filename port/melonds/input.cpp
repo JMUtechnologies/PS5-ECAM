@@ -7,6 +7,7 @@
 // are read here too: a touch where the cursor is (#59), fast forward and rewind (#54), held.
 
 #include "frontend.h"
+#include "touch_calibration.h"
 #include "screens.h"
 #include "../azahar/controls.h"
 #include "../ps5/pad.h"
@@ -43,6 +44,7 @@ namespace ps5melonds::input
 		PadInput s_fastToggleInput = PadInput::None;
 		bool s_fastLatched = false, s_fastTogglePressed = false; // Fast forward, on and off: on, and its button down
 		float s_threshold = 0.4f; // how far a stick goes before the D-pad does
+		int s_touchX = 0, s_touchY = 0, s_touchScale = 100;
 		bool s_micFree = true;	  // R3 is no button's
 
 		melonDS::u32 s_mask = 0xFFF; // under s_mutex, with the five below
@@ -120,6 +122,7 @@ namespace ps5melonds::input
 	void Configure(const ps5settings::N3ds& settings)
 	{
 		std::lock_guard lock(s_mutex);
+		s_touchX = settings.dsTouchX; s_touchY = settings.dsTouchY; s_touchScale = settings.dsTouchScale;
 		s_micFree = true;
 		for (int key = 0; key < 12; key++)
 		{
@@ -206,8 +209,8 @@ namespace ps5melonds::input
 		s_cursorVisible = fingerDown;
 		if (fingerDown)
 		{
-			s_cursorX = fingerX;
-			s_cursorY = fingerY;
+			s_cursorX = Calibrate(fingerX, s_touchX, s_touchScale);
+			s_cursorY = Calibrate(fingerY, s_touchY, s_touchScale);
 		}
 		// the click touches only a bottom screen that is shown, unless it is touched all the same (the
 		// cursor then over the top screen)

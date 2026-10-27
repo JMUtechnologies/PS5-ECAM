@@ -18,6 +18,7 @@
 #include "../../app/lang.h"
 #include "../../app/netfs.h"
 #include "../../app/saves.h"
+#include "../../eden/extras.h"
 #include "../../ui/canvas.h"
 #include "../../ui/feedback.h"
 #include "../../ui/images.h"
@@ -393,6 +394,13 @@ namespace ps5shell
 		void KeepGameSetting(const std::string& setting, const ps5settings::Launcher& view);
 		// game settings (6.5): the same pages, scoped to one game
 		void GameSettingsOpen(int game);
+		ps5eden::extras::Context SwitchExtrasContext() const;
+		std::vector<Row> SwitchExtrasRows(const std::string& page);
+		bool ChangeSwitchExtra(const Row& row, int step, bool cross);
+		ps5eden::extras::View m_switchExtras;
+		std::string m_switchExtrasKey;
+		struct SwitchImport { std::string folder, label; uint64_t accountSaveId = 0; };
+		std::vector<SwitchImport> m_switchImports;
 		void GameSettingsClose();
 		bool InGameSettings() const { return m_gameTitle != 0; }
 		void ResetGameSetting(const Row& row);

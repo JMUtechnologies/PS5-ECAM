@@ -70,6 +70,9 @@ namespace ps5settings
 		bool frameGeneration = false;
 		bool dsJit = true;			  // melonDS's recompiler where the console gives executable memory; off: its interpreter, slower
 		bool dsOwnBios = true;		  // the DS's own BIOS and firmware when they are in melonds/bios; off (or missing): melonDS's FreeBIOS
+		int dsTouchX = 0, dsTouchY = 0, dsTouchScale = 100; // Display-space calibration; defaults preserve mapping.
+		int dsMicSource = 0; // 0: existing R3 noise, 1: silence, 2: recorded WAV; next launch.
+		bool dsSlot2 = false; // Optional GBA cartridge for DS interactions; no GBA execution, off by default.
 		// the Switch's games (Eden: port/eden), handed to its program as a game starts
 		int nxResolution = 2;		  // Eden's internal resolution: 0.5x, 0.75x, 1x (the game's own), 1.5x, 2x, 3x, 4x
 		int nxFilter = 0;			  // how its picture is scaled to the TV: bilinear, AMD FSR 1, bicubic, nearest

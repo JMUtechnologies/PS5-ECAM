@@ -14,7 +14,18 @@ APP := build/app/PPSA99360
 JOBS ?= $(shell nproc)
 export JOBS
 
-.PHONY: help deps deps-status radv azahar melonds eden build check package release clean distclean
+.PHONY: help deps deps-status radv azahar melonds eden build check package release clean distclean test-contribution
+
+test-contribution: ## Host checks for standalone integrations, transfers, Slot-2 and capture (no console)
+	python3 -B tools/tests/test-performance.py
+	python3 -B tools/tests/test-performance-suite.py
+	bash tools/tests/test-eden-extras.sh
+	bash tools/tests/test-profile-management.sh
+	bash tools/tests/test-save-transfer.sh
+	bash tools/tests/test-saves.sh
+	bash tools/tests/test-slot2.sh
+	bash tools/tests/test-microphone.sh
+	bash tools/tests/test-frame-capture.sh
 
 help: ## List the targets
 	@echo 'PS5-ECAM build - make [target] [VARIABLE=value]'

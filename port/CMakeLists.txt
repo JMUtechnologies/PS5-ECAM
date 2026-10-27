@@ -168,6 +168,10 @@ add_library(CemuPS5 STATIC
 	azahar/library.h
 	eden/controls.cpp
 	eden/eden.h
+	eden/extras.cpp
+	eden/extras.h
+	eden/save_transfer.cpp
+	eden/save_transfer.h
 	eden/launch.cpp
 	eden/library.cpp
 	eden/library.h
@@ -196,6 +200,7 @@ add_library(CemuPS5 STATIC
 	frontend/shell/library.cpp
 	frontend/shell/pages.cpp
 	frontend/shell/settings.cpp
+	frontend/shell/switch_extras.cpp
 	frontend/shell/setup.cpp
 	frontend/shell/shares.cpp
 	frontend/shell/shell.cpp
@@ -289,7 +294,9 @@ set_source_files_properties(
 	azahar/unavailable.cpp
 	eden/controls.cpp
 	eden/launch.cpp
+	eden/extras.cpp
 	eden/library.cpp
+	eden/save_transfer.cpp
 	eden/nx_files.cpp
 	eden/rooms.cpp
 	melonds/archive.cpp
@@ -305,6 +312,7 @@ set_source_files_properties(
 	frontend/shell/library.cpp
 	frontend/shell/pages.cpp
 	frontend/shell/settings.cpp
+	frontend/shell/switch_extras.cpp
 	frontend/shell/setup.cpp
 	frontend/shell/shares.cpp
 	frontend/shell/shell.cpp

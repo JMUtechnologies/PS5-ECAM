@@ -18,7 +18,7 @@ jobs:
       - name: Packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends clang-18 pkg-config libarchive-dev libzip-dev libzstd-dev libssl-dev libfmt-dev p7zip-full ffmpeg
+          sudo apt-get install -y --no-install-recommends clang-18 pkg-config libarchive-dev libzip-dev libzstd-dev libssl-dev libfmt-dev libvulkan-dev p7zip-full ffmpeg
 
       - name: Downloads kept between runs
         uses: actions/cache@v4
@@ -27,7 +27,7 @@ jobs:
           key: deps-${{ hashFiles('tools/deps.json') }}
 
       - name: What the tests need
-        run: python3 -B tools/deps.py fetch pacbrew pugixml dr_mp3 rapidjson prosperoedenx
+        run: python3 -B tools/deps.py fetch pacbrew pugixml dr_mp3 rapidjson prosperoedenx melonds
 
       - name: String tables
         run: python3 -B tools/lang.py check
@@ -48,6 +48,11 @@ jobs:
 
       - name: Saves in both data layouts
         run: bash tools/tests/test-saves-paths.sh
+
+      - name: Performance regression tools
+        run: |
+          python3 -B tools/tests/test-performance.py
+          python3 -B tools/tests/test-performance-suite.py
 
       - name: Keyboards
         run: bash tools/tests/test-keyboard.sh
@@ -71,10 +76,35 @@ jobs:
         run: bash tools/tests/test-screens.sh
 
       - name: Backups
+        run: bash tools/tests/test-saves.sh
+
+      - name: Switch standalone features
+        run: bash tools/tests/test-eden-extras.sh
+
+      - name: Switch player management
+        run: bash tools/tests/test-profile-management.sh
+
+      - name: Switch save transfers
+        run: bash tools/tests/test-save-transfer.sh
+
+      - name: DS Slot-2 input files
+        run: bash tools/tests/test-slot2.sh
+
+      - name: DS recorded microphone input
+        run: bash tools/tests/test-microphone.sh
+
+      - name: Frame capture buffer
+        run: bash tools/tests/test-frame-capture.sh
+
+      - name: Switch settings integration syntax
         run: |
-          sudo mkdir -p /mnt/usb0
-          sudo chmod 777 /mnt/usb0
-          bash tools/tests/test-saves.sh
+          clang++-18 -std=c++20 -Wno-deprecated-declarations -DFMT_HEADER_ONLY -DPS5CEMU_VERSION='"5.0.1"' \
+            -Iport -fsyntax-only port/frontend/shell/settings.cpp port/frontend/shell/switch_extras.cpp
+
+      - name: DS Slot-2 and capture integration syntax
+        run: |
+          clang++-18 -std=c++20 -Wno-deprecated-declarations -DFMT_HEADER_ONLY \
+            -I.deps/melonDS/src -Iport -fsyntax-only port/melonds/core.cpp port/melonds/platform.cpp port/melonds/input.cpp
 
       - name: Remote touch screen
         run: |

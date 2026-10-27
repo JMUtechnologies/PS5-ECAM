@@ -65,7 +65,7 @@ namespace ps5saves
 	void Finish(); // waits for the thread (before a game)
 
 	// -- one game's saves ------------------------------------------------
-	// The game whose saves these are: its side (0 Wii U, 1 3DS, 2 DS, as the launcher numbers them), its
+	// The game whose saves these are: its side (0 Wii U, 1 3DS, 2 DS, 3 Switch), its
 	// title ID (the Wii U's and the 3DS's), and its file (the DS's saves and states are named by it)
 	struct GameRef
 	{
@@ -84,6 +84,7 @@ namespace ps5saves
 			Data,	  // the 3DS's save data, or the DS's save
 			ExtData,  // the 3DS's extra data
 			States,	  // save states
+			Slot2,    // optional DS Slot-2 cartridge's working save
 		} kind = Kind::Data;
 		uint32_t account = 0;
 		std::vector<std::string> paths; // the files or folders it is
@@ -101,6 +102,10 @@ namespace ps5saves
 	std::vector<Backup> FindGameBackups(const GameRef& game);
 	// This game's saves alone from a backup, what is there now moved aside first
 	bool StartGameRestore(const Backup& backup, const GameRef& game, std::string& error);
+	// Plain-folder/Ryujinx transfer for one Switch title and the explicitly selected existing
+	// player. Runs on the same worker as backups; Finish() waits before a game can start.
+	bool StartSwitchImport(const GameRef& game, const std::string& profile, const std::string& sourceRoot, std::string& error, uint64_t accountSaveId = 0);
+	bool StartSwitchExport(const GameRef& game, const std::string& profile, std::string& error);
 
 	// Resume where you left off: the state a 3DS or DS game saves as it is quit to the library, in a
 	// slot the menus do not show (kResumeSlot: Azahar's azahar/states/<title ID>.11.cst, melonDS's
