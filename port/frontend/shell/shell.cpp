@@ -2363,7 +2363,10 @@ namespace ps5shell
 			const float a = appear(m_menu.at);
 			Scrim(canvas, 0.6f * a);
 			const int count = (int)m_menu.items.size();
-			const float rowH = 66;
+			// rows of 66, closer when that many would reach the button hints (a Wii U game's eleven): the
+			// sheet ends 24 above them
+			const float rowsRoom = 1080 - kHintsBottom - 30 - 24 - 150 - 150;
+			const float rowH = std::min(66.0f, rowsRoom / (float)std::max(count, 1));
 			const Box sheet{1920 - kSafeX - 560, 150, 560, 150 + count * rowH};
 			canvas.PushAlpha(a);
 			canvas.PushOffset((1 - a) * 40, 0);
