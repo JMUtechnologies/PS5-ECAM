@@ -22,6 +22,7 @@
 <p align="center">
   <a href="https://github.com/premohq/PS5-ECAM/raw/releases/PS5-ECAM-v5.1.0.zip"><b>Download 5.1.0</b></a> (ZIP) ·
   <a href="https://github.com/premohq/PS5-ECAM/releases/tag/v5.1.0">Release notes</a> ·
+  <a href="https://premohq.github.io/PS5-ECAM/">Website</a> ·
   <a href="#install">Install</a> ·
   <a href="docs/GUIDE.md">Guide</a> ·
   <a href="docs/COMPATIBILITY.md">Compatibility</a> ·
