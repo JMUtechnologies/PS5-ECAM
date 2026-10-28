@@ -49,14 +49,19 @@ The details are in the [release notes](https://github.com/premohq/PS5-ECAM/relea
   requests (several updates of one game, a full audio buffer, Metal Gear Solid: Master Collection).
 - **Updates in a minute** ([#78](https://github.com/premohq/PS5-ECAM/issues/78), [#73](https://github.com/premohq/PS5-ECAM/issues/73), [#72](https://github.com/premohq/PS5-ECAM/issues/72)): Check for updates answers at once, and
   an update installs in about a minute and can be cancelled.
-- **Library:** 3DS and DS games come back to it without the app starting over; each game's play time; one
+- **Library:** 3DS and DS games come back to it without the app starting over; each game's play time, and
+  **Settings > Play time** with each side's time and the most played games; **Hide from the Library** and
+  **Surprise me** in a game's Options and Sort; Library and Settings beside the players and the clock; one
   layout, Light by default; graphic packs downloaded when Cemu first needs them, so the app is smaller
   ([#74](https://github.com/premohq/PS5-ECAM/issues/74)); network shares looked through only when you ask ([#75](https://github.com/premohq/PS5-ECAM/issues/75)); Azahar's compressed 3DS
   files with their names and box art.
+- **Settings:** fewer pages down the left, and related rows behind one row (›), every setting kept.
 - **Remove its update or DLC** from a Wii U ([#58](https://github.com/premohq/PS5-ECAM/issues/58)) or 3DS ([#80](https://github.com/premohq/PS5-ECAM/issues/80)) game's Options menu.
-- **DS** (from [#86](https://github.com/premohq/PS5-ECAM/pull/86)): a GBA game in Slot-2 for Pal Park, a recorded microphone, touch calibration.
+- **DS:** the right stick as the stylus; from [#86](https://github.com/premohq/PS5-ECAM/pull/86), a GBA game in Slot-2 for Pal Park, a recorded microphone, touch calibration.
+- **Wii U:** each player's DualSense light bar in a colour of its own. **Switch:** Saves in a game's Options.
 - **Fixes:** stripes on empty screens ([#76](https://github.com/premohq/PS5-ECAM/issues/76)); one label size in Cyrillic ([#79](https://github.com/premohq/PS5-ECAM/issues/79)); a renamed
-  Wii U account's name is the one games show; the Swedish menus reviewed by yeager ([#83](https://github.com/premohq/PS5-ECAM/pull/83)).
+  Wii U account's name is the one games show; a Switch shader the driver refuses no longer crashes the game
+  (This War of Mine); the Swedish menus reviewed by yeager ([#83](https://github.com/premohq/PS5-ECAM/pull/83)).
 
 Changes in earlier versions are in their [release notes](https://github.com/premohq/PS5-ECAM/releases).
 
