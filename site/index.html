@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PS5-ECAM</title>
+<meta name="description" content="PS5-ECAM plays your Wii U, Nintendo 3DS, Nintendo DS and Nintendo Switch games on a jailbroken PS5, with Cemu, Azahar, melonDS and Eden in one launcher made for the TV and the DualSense.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' data: https:; font-src 'self'; connect-src https://api.github.com; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f6f8fc" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#05070d" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="mark.svg" type="image/svg+xml">
+<link rel="icon" href="icon.png" type="image/png" sizes="512x512">
+<link rel="apple-touch-icon" href="icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PS5-ECAM">
+<meta property="og:title" content="PS5-ECAM: Wii U, 3DS, DS and Switch on PlayStation 5">
+<meta property="og:description" content="Cemu, Azahar, melonDS and Eden in one launcher made for the TV and the DualSense, on a jailbroken PS5.">
+<meta property="og:image" content="https://premohq.github.io/PS5-ECAM/banner.png">
+<meta property="og:url" content="https://premohq.github.io/PS5-ECAM/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preload" href="fonts/Lexend-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="preload" href="fonts/Lexend-SemiBold.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="style.css">
+<script src="theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@18.1.1/lib/marked.umd.js" integrity="sha384-rATToyt6602Jnq8c7w8HZwmyOUgPL7mzxX01FBWoV48ns/EgkakGozpES+PnaYOI" crossorigin="anonymous" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.17/dist/purify.min.js" integrity="sha384-P0JNneQf81HOl9VwNXK76cQ9VMD6Nfsnepxb0cCOg8+UzEdzgPHAPV4wVQrvYQSx" crossorigin="anonymous" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+
+<!-- The logo's four squares, from tools/render-icons.py's FLAT, GLYPHS and CORNER -->
+<svg class="sprite" aria-hidden="true" focusable="false"><defs><linearGradient id="g-wiiu" x1="0" y1="0" x2="0" y2="104" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5aa9ff"/><stop offset="1" stop-color="#2f7fe8"/></linearGradient><linearGradient id="g-3ds" x1="0" y1="0" x2="0" y2="104" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#f4b63f"/><stop offset="1" stop-color="#d9961b"/></linearGradient><linearGradient id="g-ds" x1="0" y1="0" x2="0" y2="104" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#7ed957"/><stop offset="1" stop-color="#4caf38"/></linearGradient><linearGradient id="g-switch" x1="0" y1="0" x2="0" y2="104" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#f2434f"/><stop offset="1" stop-color="#c81f2c"/></linearGradient>
+<symbol id="pane-wiiu" viewBox="0 0 104 104"><rect width="104" height="104" rx="16.64" fill="url(#g-wiiu)"/><rect x="12.48" y="34.32" width="79.04" height="35.36" rx="10.4" fill="#f5f7fb"/><rect x="32.24" y="40.56" width="39.52" height="22.88" rx="2.6" fill="url(#g-wiiu)"/><circle cx="21.32" cy="44.72" r="3.328" fill="url(#g-wiiu)"/><circle cx="82.68" cy="44.72" r="3.328" fill="url(#g-wiiu)"/><rect x="18.72" y="57.72" width="5.2" height="3.12" rx="0.624" fill="url(#g-wiiu)"/><rect x="19.76" y="56.68" width="3.12" height="5.2" rx="0.624" fill="url(#g-wiiu)"/><circle cx="82.68" cy="59.28" r="2.288" fill="url(#g-wiiu)"/></symbol>
+<symbol id="pane-3ds" viewBox="0 0 104 104"><rect width="104" height="104" rx="16.64" fill="url(#g-3ds)"/><rect x="19.76" y="15.6" width="64.48" height="34.32" rx="5.2" fill="#f5f7fb"/><rect x="28.08" y="21.84" width="47.84" height="22.88" rx="2.08" fill="url(#g-3ds)"/><rect x="19.76" y="54.08" width="64.48" height="34.32" rx="5.2" fill="#f5f7fb"/><rect x="37.44" y="59.28" width="29.12" height="20.8" rx="2.08" fill="url(#g-3ds)"/><circle cx="28.08" cy="64.48" r="2.912" fill="url(#g-3ds)"/></symbol>
+<symbol id="pane-ds" viewBox="0 0 104 104"><rect width="104" height="104" rx="16.64" fill="url(#g-ds)"/><rect x="22.88" y="15.6" width="58.24" height="34.32" rx="5.2" fill="#f5f7fb"/><rect x="36.4" y="21.84" width="31.2" height="22.88" rx="2.08" fill="url(#g-ds)"/><rect x="22.88" y="54.08" width="58.24" height="34.32" rx="5.2" fill="#f5f7fb"/><rect x="36.4" y="59.28" width="31.2" height="22.88" rx="2.08" fill="url(#g-ds)"/></symbol>
+<symbol id="pane-switch" viewBox="0 0 104 104"><rect width="104" height="104" rx="16.64" fill="url(#g-switch)"/><rect x="8.32" y="33.28" width="22.88" height="37.44" rx="7.8" fill="#f5f7fb"/><rect x="72.8" y="33.28" width="22.88" height="37.44" rx="7.8" fill="#f5f7fb"/><rect x="22.88" y="33.28" width="58.24" height="37.44" rx="2.08" fill="#f5f7fb"/><rect x="22.36" y="33.28" width="1.768" height="37.44" fill="url(#g-switch)"/><rect x="79.872" y="33.28" width="1.768" height="37.44" fill="url(#g-switch)"/><rect x="29.12" y="39" width="45.76" height="26" rx="1.56" fill="url(#g-switch)"/><circle cx="16.12" cy="43.68" r="3.12" fill="url(#g-switch)"/><circle cx="87.88" cy="60.32" r="3.12" fill="url(#g-switch)"/></symbol>
+<symbol id="mark" viewBox="0 0 218 218"><use href="#pane-wiiu" x="0" y="0" width="104" height="104"/><use href="#pane-3ds" x="114" y="0" width="104" height="104"/><use href="#pane-ds" x="0" y="114" width="104" height="104"/><use href="#pane-switch" x="114" y="114" width="104" height="104"/></symbol>
+<symbol id="i-github" viewBox="0 0 16 16"><path fill="currentColor" d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></symbol>
+<symbol id="i-discord" viewBox="0 0 24 24"><path fill="currentColor" d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.865-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.74 19.74 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .078-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03ZM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418Zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418Z"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></symbol>
+<symbol id="i-cup" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8Z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M10 15.5s-2.5-1.4-2.5-3a1.25 1.25 0 0 1 2.5-.3 1.25 1.25 0 0 1 2.5.3c0 1.6-2.5 3-2.5 3Z"/></g></symbol>
+</defs></svg>
+
+<header class="nav" id="top">
+  <div class="wrap nav-row">
+    <a class="brand" href="#top"><svg class="brand-mark" aria-hidden="true"><use href="#mark"/></svg><span>PS5-ECAM</span></a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#systems">Systems</a>
+      <a href="#release">Latest release</a>
+      <a href="#install">Install</a>
+      <a href="#controls">Controls</a>
+      <a href="#community">Discord</a>
+      <a href="#credits">Credits</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="icon-btn" href="https://github.com/premohq/PS5-ECAM" aria-label="PS5-ECAM on GitHub" title="GitHub"><svg aria-hidden="true"><use href="#i-github"/></svg></a>
+      <a class="icon-btn" href="https://discord.gg/grrqkv4xWw" aria-label="Join the PS5-ECAM Discord" title="Discord"><svg aria-hidden="true"><use href="#i-discord"/></svg></a>
+      <button class="icon-btn" id="theme-toggle" type="button" hidden><svg aria-hidden="true"><use href="#i-moon"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<section class="hero">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="wrap hero-inner">
+    <div class="lockup">
+      <svg class="hero-mark" role="img" aria-label="PS5-ECAM's logo: the Wii U, the 3DS, the DS and the Switch, one in each square"><use href="#mark"/></svg>
+      <div class="lockup-text">
+        <h1 class="wordmark"><span class="sr">PS5-ECAM</span></h1>
+        <p class="tagline">Wii U, 3DS, DS and Switch on PlayStation 5</p>
+      </div>
+    </div>
+    <p class="lede">PS5-ECAM plays your Wii U, Nintendo 3DS, Nintendo DS and Nintendo Switch games on a jailbroken PS5, with <a href="https://github.com/cemu-project/Cemu">Cemu</a>, <a href="https://github.com/azahar-emu/azahar">Azahar</a>, <a href="https://github.com/melonDS-emu/melonDS">melonDS</a> and <a href="https://github.com/eden-emu/mirror">Eden</a> in one launcher made for the TV and the DualSense.</p>
+    <div class="cta">
+      <a class="btn primary" href="%ZIP_URL%" data-zip><svg aria-hidden="true"><use href="#i-download"/></svg><span>Download <span data-version>%VERSION%</span></span></a>
+      <a class="btn" href="#release">What's new</a>
+      <a class="btn" href="https://discord.gg/grrqkv4xWw"><svg aria-hidden="true"><use href="#i-discord"/></svg><span>Join the Discord</span></a>
+    </div>
+    <p class="hero-meta"><span data-size-line>%SIZE_LINE%</span><span>Free, GPL-3.0-or-later</span><span>Firmware up to 13.60</span></p>
+  </div>
+</section>
+
+<section class="section" id="systems">
+  <div class="wrap">
+    <header class="section-head reveal">
+      <p class="eyebrow">Four systems, one launcher</p>
+      <h2>Every side in its own colour, all of them one app</h2>
+      <p class="section-lede">Box art and game info from GameTDB, search, sorting and favourites, a page for each game, settings for each game, and an in-game menu on every system.</p>
+    </header>
+    <div class="systems">
+      <article class="system wiiu reveal">
+        <header><svg class="pane" aria-hidden="true"><use href="#pane-wiiu"/></svg><div><h3>Wii U</h3><p class="emu"><a href="https://github.com/cemu-project/Cemu">Cemu</a>, x64 recompiler, Vulkan</p></div></header>
+        <dl>
+          <dt>Plays</dt><dd><code>.wua</code> <code>.wud</code> <code>.wux</code>, unpacked games, also in <code>.zip</code>, <code>.7z</code> and <code>.rar</code> archives</dd>
+          <dt>Picture</dt><dd>4K output, 120 Hz, FSR 1, graphic packs, ReShade, frame generation</dd>
+          <dt>Extras</dt><dd>Mods, accounts, amiibo, Skylanders portals, updates and DLC</dd>
+        </dl>
+      </article>
+      <article class="system n3ds reveal">
+        <header><svg class="pane" aria-hidden="true"><use href="#pane-3ds"/></svg><div><h3>Nintendo 3DS</h3><p class="emu"><a href="https://github.com/azahar-emu/azahar">Azahar</a>, dynarmic recompiler, Vulkan</p></div></header>
+        <dl>
+          <dt>Plays</dt><dd><code>.3ds</code> <code>.cci</code> <code>.cxi</code> <code>.app</code> <code>.3dsx</code> <code>.elf</code>, compressed <code>.z*</code>, also in archives; installed <code>.cia</code></dd>
+          <dt>Picture</dt><dd>Up to 10x resolution, texture filters, layouts, borders, red-cyan 3D, frame generation</dd>
+          <dt>Extras</dt><dd>Save states, cheats, amiibo, mods, cameras, Artic Base</dd>
+        </dl>
+      </article>
+      <article class="system nds reveal">
+        <header><svg class="pane" aria-hidden="true"><use href="#pane-ds"/></svg><div><h3>Nintendo DS</h3><p class="emu"><a href="https://github.com/melonDS-emu/melonDS">melonDS</a>, ARM recompiler</p></div></header>
+        <dl>
+          <dt>Plays</dt><dd><code>.nds</code>, also in <code>.zip</code>, <code>.7z</code> and <code>.rar</code> archives</dd>
+          <dt>Picture</dt><dd>Sharp, smooth or square pixels, layouts, borders</dd>
+          <dt>Extras</dt><dd>Save states, cheats, RetroAchievements</dd>
+        </dl>
+      </article>
+      <article class="system nx reveal">
+        <header><svg class="pane" aria-hidden="true"><use href="#pane-switch"/></svg><div><h3>Nintendo Switch</h3><p class="emu"><a href="https://github.com/eden-emu/mirror">Eden</a> (<a href="https://github.com/Swordpdf/ProsperoEden">ProsperoEden</a>), dynarmic, Vulkan</p></div></header>
+        <dl>
+          <dt>Plays</dt><dd><code>.nsp</code> <code>.xci</code>, each alone or in a folder with its update and DLC</dd>
+          <dt>Picture</dt><dd>Up to 4x resolution, FSR 1, anti-aliasing, docked or handheld, frame generation</dd>
+          <dt>Extras</dt><dd>Amiibo, online rooms, mods, cheats, updates and DLC (from their folders)</dd>
+        </dl>
+      </article>
+    </div>
+    <ul class="perks">
+      <li class="reveal"><h3>One launcher for all four</h3><p>Box art and game info, a page and settings for each game, and the same in-game menu on every system.</p></li>
+      <li class="reveal"><h3>Made for the DualSense</h3><p>Every button remappable, motion controls, rumble, the touchpad as the touch screen, and up to four players on the Wii U.</p></li>
+      <li class="reveal"><h3>Updates itself</h3><p>A new release installs from inside the app, in about a minute, and can be cancelled.</p></li>
+      <li class="reveal"><h3>In 31 languages</h3><p>Every menu of the launcher, on every system.</p></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section release-section" id="release" aria-labelledby="release-title">
+  <div class="wrap">
+    <header class="section-head reveal">
+      <p class="eyebrow">Latest release</p>
+      <h2 id="release-title">%RELEASE_NAME%</h2>
+      <p class="release-sub"><time id="release-date" datetime="%PUBLISHED%">%PUBLISHED_TEXT%</time><span class="source" id="release-source">From GitHub Releases</span></p>
+    </header>
+    <div class="release-card reveal">
+      <aside class="release-side"><div class="release-side-inner">
+        <a class="btn primary wide" href="%ZIP_URL%" data-zip><svg aria-hidden="true"><use href="#i-download"/></svg><span id="release-file">%ZIP_NAME%</span></a>
+        <dl class="facts">
+          <div><dt>Size</dt><dd data-size>%SIZE%</dd></div>
+          <div class="sha"><dt>SHA-256</dt><dd><code id="release-sha">%SHA%</code><button class="copy" id="copy-sha" type="button">Copy</button></dd></div>
+        </dl>
+        <div class="update-note" id="release-note"></div>
+        <p class="side-links"><a href="%NOTES_URL%" data-notes>On GitHub</a><a href="https://github.com/premohq/PS5-ECAM/releases">Every release</a></p>
+      </div></aside>
+      <div class="notes-wrap">
+        <article class="notes prose" id="release-notes">
+          <noscript><p>The notes need JavaScript here: <a href="%NOTES_URL%">read them on GitHub</a>.</p></noscript>
+        </article>
+        <div class="notes-more" id="notes-more" hidden><button class="btn small" id="notes-toggle" type="button" aria-expanded="false" aria-controls="release-notes">Show all the notes</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="install">
+  <div class="wrap">
+    <header class="section-head reveal">
+      <p class="eyebrow">Install</p>
+      <h2>On your PS5 in four steps</h2>
+    </header>
+    <ol class="steps">
+      <li class="reveal"><h3>A PS5 that runs homebrew</h3><p>Any firmware up to 13.60, with etaHEN, OnionHEN, or an ELF loader on port 9021. See the <a href="https://github.com/premohq/PS5-ECAM/blob/PS5-ECAM/docs/HEN-SETUP.md">firmware and setup guide</a>.</p></li>
+      <li class="reveal"><h3>Copy the app</h3><p>Download the <a href="%ZIP_URL%" data-zip><span data-version>%VERSION%</span> ZIP</a>, extract it and copy the <code>PPSA99360</code> folder to <code>/data/homebrew/PPSA99360</code>.</p></li>
+      <li class="reveal"><h3>Let your HEN in</h3><p>etaHEN: add <code>PPSA99360</code> to its app jailbreak list. OnionHEN: add <code>PPSA99360</code> at the end of <code>exact_title_ids</code> in <code>config.ini</code>, with no comma after it. Any other: have an ELF loader on port 9021.</p></li>
+      <li class="reveal"><h3>Add your games</h3><p>Put them in each system's folder (below) and start PS5-ECAM from the home screen. The Setup check shows what's ready and what to do about the rest.</p></li>
+    </ol>
+
+    <h3 class="sub-head reveal" id="games">Your games</h3>
+    <div class="games reveal" role="table" aria-label="Where each system's games go">
+      <div class="games-row games-head" role="row"><span role="columnheader">System</span><span role="columnheader">Games folder</span><span role="columnheader">Also needs</span></div>
+      <div class="games-row" role="row"><span class="sys wiiu" role="rowheader"><svg aria-hidden="true"><use href="#pane-wiiu"/></svg>Wii U</span><span role="cell"><code>/data/cemu/games</code></span><span role="cell">Disc keys in <code>/data/cemu/keys.txt</code> for encrypted <code>.wud</code> and <code>.wux</code></span></div>
+      <div class="games-row" role="row"><span class="sys n3ds" role="rowheader"><svg aria-hidden="true"><use href="#pane-3ds"/></svg>3DS</span><span role="cell"><code>/data/azahar/games</code></span><span role="cell">Nothing: games must be decrypted dumps; <code>.cia</code> files install from Settings</span></div>
+      <div class="games-row" role="row"><span class="sys nds" role="rowheader"><svg aria-hidden="true"><use href="#pane-ds"/></svg>DS</span><span role="cell"><code>/data/melonds/games</code></span><span role="cell">Nothing: your own BIOS and firmware in <code>/data/melonds/bios</code> are optional</span></div>
+      <div class="games-row" role="row"><span class="sys nx" role="rowheader"><svg aria-hidden="true"><use href="#pane-switch"/></svg>Switch</span><span role="cell"><code>/data/eden/roms</code></span><span role="cell">Your Switch's <code>prod.keys</code> (and <code>title.keys</code>) in <code>/data/eden/keys</code>, and its firmware in <code>/data/eden/firmware</code></span></div>
+    </div>
+    <p class="fine reveal">Any other folder, a USB drive or a network share (not for Switch games) works too: <b>Settings &gt; Game files</b> on each system. No games, keys or firmware are included. Use dumps of games and hardware you own.</p>
+
+    <div class="callouts">
+      <div class="callout reveal">
+        <h3>Updating, from PS5CEMU-HAR too</h3>
+        <p>The app offers new releases itself, and the title ID stays <code>PPSA99360</code>. An install from before keeps everything where it is, in <code>/data/ps5cemu</code>, and goes on working. <b>Reorganize</b> (or later <b>Settings &gt; Game files</b>) gives each system its folder: the files are moved in a moment, never copied or deleted, and can be put back. <a href="https://github.com/premohq/PS5-ECAM/blob/PS5-ECAM/docs/SYSTEM-FOLDERS.md">System folders</a> has the details.</p>
+      </div>
+      <div class="callout reveal">
+        <h3>On a USB drive or the extended storage</h3>
+        <p>A <code>PS5CEMU-HAR-data</code> folder at the top of that drive (its name from before 5.0.0, kept so nothing moves) keeps the launcher's files there instead of in <code>/data</code>, with <code>cemu</code>, <code>azahar</code>, <code>melonds</code> and <code>eden</code> beside it. <a href="https://github.com/premohq/PS5-ECAM/blob/PS5-ECAM/docs/GUIDE.md#everything-on-the-apps-drive">The guide</a> says how.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="controls">
+  <div class="wrap">
+    <header class="section-head reveal">
+      <p class="eyebrow">Controls</p>
+      <h2>Made for the DualSense</h2>
+      <p class="section-lede">Every shortcut, the in-game menu and the rest are in the <a href="https://github.com/premohq/PS5-ECAM/blob/PS5-ECAM/docs/GUIDE.md">guide</a>.</p>
+    </header>
+    <ul class="controls">
+      <li class="reveal"><span class="keys"><kbd class="key shoulder">L1</kbd><kbd class="key shoulder">R1</kbd></span><span>Library and Settings</span></li>
+      <li class="reveal"><span class="keys"><kbd class="key pad">Touchpad click</kbd></span><span>The next system</span></li>
+      <li class="reveal"><span class="keys"><kbd class="key face cross" aria-label="Cross"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"/></svg></kbd><kbd class="key face circle" aria-label="Circle"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="5.5"/></svg></kbd></span><span>Play or open, and back</span></li>
+      <li class="reveal"><span class="keys"><kbd class="key options">Options</kbd></span><span>A game's menu: game settings, saves, graphic packs, mods, home screen tile</span></li>
+      <li class="reveal"><span class="keys"><kbd class="key pad">Touchpad click</kbd><span class="plus">+</span><kbd class="key options">Options</kbd></span><span>The in-game menu</span></li>
+      <li class="reveal"><span class="keys"><kbd class="key pad">Touchpad</kbd></span><span>The touch screen (GamePad, 3DS and DS)</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section" id="community">
+  <div class="wrap community">
+    <div class="discord reveal">
+      <p class="eyebrow">Join the Discord</p>
+      <h2>Help, tested games, and new versions first</h2>
+      <ul>
+        <li><b>Help with your setup:</b> ask in the support forum, one post per problem, tagged by system.</li>
+        <li><b>What runs, and how well:</b> tested-games has a post per game with its speed, its glitches and the settings that work.</li>
+        <li><b>New versions first:</b> every release is posted in announcements the moment it's published.</li>
+        <li><b>The developer and other players:</b> suggest features, share your setup and hear what's coming.</li>
+      </ul>
+      <a class="btn on-color" href="https://discord.gg/grrqkv4xWw"><svg aria-hidden="true"><use href="#i-discord"/></svg><span>discord.gg/grrqkv4xWw</span></a>
+      <p class="fine">Bugs still go in <a href="https://github.com/premohq/PS5-ECAM/issues/new/choose">GitHub issues</a>, with the log from <b>Settings &gt; Diagnostics &gt; Copy logs to USB</b>.</p>
+    </div>
+    <div class="support reveal" id="support">
+      <p class="eyebrow">Support</p>
+      <h2>PS5-ECAM is free</h2>
+      <p>If it brings your games back, you can support it.</p>
+      <a class="btn kofi" href="https://ko-fi.com/premohq"><svg aria-hidden="true"><use href="#i-cup"/></svg><span>Support on Ko-fi</span></a>
+      <p class="fine">A one-off tip, or the <a href="https://ko-fi.com/premohq/tiers">$3 a month Early Access tier</a>: highly experimental builds, builds of ECAM for other platforms, and new features before anyone else.</p>
+      <div class="paypal">
+        <a class="qr" href="https://www.paypal.com/paypalme/empthe"><img src="support-qr.svg" width="104" height="104" alt="QR code for paypal.me/empthe"></a>
+        <p><b>PayPal:</b> <a href="https://www.paypal.com/paypalme/empthe">paypal.me/empthe</a>, or scan the code, the same one as in the app's <b>Settings &gt; About</b>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="docs">
+  <div class="wrap">
+    <header class="section-head reveal">
+      <p class="eyebrow">Documentation</p>
+      <h2>Everything else, in the repository</h2>
+    </header>
+    <div class="doc-grid">
+      <a class="doc reveal" href="https://github.com/premohq/PS5-ECAM/blob/PS5-ECAM/docs/GUIDE.md"><b>Guide</b><span>The launcher, each system, controls, saves, mods, the remote touch screen and where files are kept</span></a>
+      <a class="doc reveal" href="https://github.com/premohq/PS5-ECAM/blob/PS5-ECAM/docs/HEN-SETUP.md"><b>Firmware and setup</b><span>Which firmware, which HEN, and how to let the app in</span></a>
+      <a class="doc reveal" href="https://github.com/premohq/PS5-ECAM/blob/PS5-ECAM/docs/COMPATIBILITY.md"><b>Compatibility</b><span>What runs, and how well</span></a>
+      <a class="doc reveal" href="https://github.com/premohq/PS5-ECAM/blob/PS5-ECAM/docs/SYSTEM-FOLDERS.md"><b>System folders</b><span>Each system's whole folder, and Reorganize</span></a>
+      <a class="doc reveal" href="https://github.com/premohq/PS5-ECAM/blob/PS5-ECAM/docs/GUIDE.md#mods"><b>Mods</b><span>Where mods go on each system</span></a>
+      <a class="doc reveal" href="https://github.com/premohq/PS5-ECAM/blob/PS5-ECAM/docs/BUILDING.md"><b>Building from source</b><span><code>make release</code> on Ubuntu 24.04 (WSL works) builds the four emulators and the launcher</span></a>
+      <a class="doc reveal" href="https://github.com/premohq/PS5-ECAM/blob/PS5-ECAM/docs/DRIVER-PERFORMANCE.md"><b>Driver performance</b><span>How the GPU driver is measured and tuned</span></a>
+      <a class="doc reveal" href="https://github.com/premohq/PS5-ECAM/blob/PS5-ECAM/docs/ROADMAP.md"><b>Roadmap</b><span>What's coming</span></a>
+      <a class="doc reveal" href="https://github.com/premohq/PS5-ECAM/issues/new/choose"><b>Problems</b><span><b>Settings &gt; Diagnostics &gt; Copy logs to USB</b>, then open an issue</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="credits">
+  <div class="wrap">
+    <header class="section-head reveal">
+      <p class="eyebrow">Credits</p>
+      <h2>The people behind it</h2>
+    </header>
+    <div class="founders">
+      <article class="person founder reveal">
+        <img src="https://github.com/premohq.png?size=128" width="64" height="64" alt="" loading="lazy">
+        <div><h3><a href="https://github.com/premohq">premohq</a></h3><p class="role">Creator</p><p>Started the app as PS5CEMU-HAR.</p></div>
+      </article>
+      <article class="person founder reveal">
+        <img src="https://github.com/JMUtechnologies.png?size=128" width="64" height="64" alt="" loading="lazy">
+        <div><h3><a href="https://github.com/JMUtechnologies">JMUtechnologies</a></h3><p class="role">Co-founder</p><p>Gave every system a folder of its own, and built much of the Switch and DS sides.</p>
+          <ul class="bio">
+            <li>A folder for each system, Eden's included, and the PC tool that separates an older install</li>
+            <li>Switch mods, cheats, ReShade presets and players</li>
+            <li>Switch saves to and from a USB drive, Ryujinx's too</li>
+            <li>DS: a GBA cartridge in Slot-2, a recorded microphone and touch screen calibration</li>
+            <li>Tools that compare performance captures (<a href="https://github.com/premohq/PS5-ECAM/pull/86">#86</a>, <a href="https://github.com/premohq/PS5-ECAM/pull/84">#84</a>)</li>
+          </ul></div>
+      </article>
+    </div>
+
+    <h3 class="sub-head reveal">Contributors</h3>
+    <p class="fine reveal">Big thanks to the people who sent code and fixes to PS5-ECAM itself.</p>
+    <div class="people">
+      <article class="person reveal">
+        <img src="https://github.com/dolphin78.png?size=96" width="48" height="48" alt="" loading="lazy">
+        <div><h4><a href="https://github.com/dolphin78">dolphin78</a></h4><p>With a massive shoutout: Artic Setup works on the PS5 because of him (<a href="https://github.com/premohq/PS5-ECAM/pull/70">#70</a>). He found and fixed why the 3DS's system update failed and why a New 3DS's setup crashed, and tested it all on his own PS5 with a New 3DS XL. He also made crash reports survive a crash on the 3DS side (<a href="https://github.com/premohq/PS5-ECAM/pull/70">#70</a>), fixed Artic Base's connections (<a href="https://github.com/premohq/PS5-ECAM/issues/45">#45</a>), and came up with the remote touch screen and its first prototype (<a href="https://github.com/premohq/PS5-ECAM/issues/38">#38</a>).</p></div>
+      </article>
+      <article class="person reveal">
+        <img src="https://github.com/Mafiacoding.png?size=96" width="48" height="48" alt="" loading="lazy">
+        <div><h4><a href="https://github.com/Mafiacoding">Mafiacoding</a></h4><p>For archived games: the ZIP support for the Wii U, 3DS and DS sides that 5.0.0's archives build on (<a href="https://github.com/premohq/PS5-ECAM/pull/53">#53</a>, <a href="https://github.com/premohq/PS5-ECAM/issues/50">#50</a>).</p></div>
+      </article>
+      <article class="person reveal">
+        <img src="https://github.com/3lmerx503.png?size=96" width="48" height="48" alt="" loading="lazy">
+        <div><h4><a href="https://github.com/3lmerx503">3lmerx503</a></h4><p>For finding and testing the rumble fix (<a href="https://github.com/premohq/PS5-ECAM/issues/41">#41</a>).</p></div>
+      </article>
+      <article class="person reveal">
+        <img src="https://github.com/yeager.png?size=96" width="48" height="48" alt="" loading="lazy">
+        <div><h4><a href="https://github.com/yeager">yeager</a></h4><p>Daniel Nylander, for his review of the Swedish translation (<a href="https://github.com/premohq/PS5-ECAM/pull/85">#85</a>).</p></div>
+      </article>
+    </div>
+
+    <h3 class="sub-head reveal">Built on</h3>
+    <ul class="built-on reveal">
+      <li><a href="https://github.com/cemu-project/Cemu">Cemu</a> by the Cemu team and contributors (MPL-2.0)</li>
+      <li><a href="https://github.com/azahar-emu/azahar">Azahar</a> by the Azahar team and the Citra contributors before them (GPL-2.0-or-later), with dynarmic by MerryMage and contributors</li>
+      <li><a href="https://github.com/melonDS-emu/melonDS">melonDS</a> by Arisotura and the melonDS team (GPL-3.0), with its FreeBIOS replacements</li>
+      <li><a href="https://github.com/eden-emu/mirror">Eden</a>, the Switch emulator, by the Eden team (GPL-3.0-or-later), and <a href="https://github.com/Swordpdf/ProsperoEden">ProsperoEden</a>, its PS5 port and launcher, by <b>Sword</b> (<a href="https://github.com/Swordpdf">Swordpdf</a>), <b>BlackBearReloaded</b>, <b>bawsdeep</b>, <b>Rockiu0</b> and its contributors (GPL-3.0-or-later; the Switch side runs it with <code>patches/eden</code>)</li>
+      <li><b>Mihawk</b> for RADV on PS5 (<a href="https://github.com/mihawk-99/PS5_Mesa">PS5_Mesa</a>, <a href="https://github.com/mihawk-99/PS5_Vulkan">PS5_Vulkan</a>, the payload SDK fork and its platform layer) and the PS5 ports of Azahar and dynarmic (<a href="https://github.com/mihawk-99/PS5_Azahar">PS5_Azahar</a>), with contributions from <b>mpereiraesaa</b></li>
+      <li><b>BlackBearReloaded</b> for ProsperoEden, which the launcher's layout, artwork, Eden theme and software renderer build on, and the PS5 Native App Boilerplate for the app runtime, packaging and sandbox elevation (its repository went with their account: <a href="https://github.com/drakmor/ps5-native-app-boilerplate">drakmor's copy</a> is the one the build fetches)</li>
+      <li><b>heydemoura</b> for the <a href="https://github.com/heydemoura/ps5-forwarder-format">PS5 Forwarder Format</a> the home screen tiles use</li>
+      <li><b>John Törnblom</b> for the <a href="https://github.com/ps5-payload-dev/sdk">PS5 Payload SDK</a>, and <b>pacbrew</b> for their PS5 libraries</li>
+      <li><a href="https://github.com/sahlberg/libsmb2">libsmb2</a> and <a href="https://github.com/sahlberg/libnfs">libnfs</a> by Ronnie Sahlberg for the network shares, and <a href="https://github.com/RetroAchievements/rcheevos">rcheevos</a> by RetroAchievements</li>
+      <li><b>Swordpdf</b> for the etaHEN jailbreak request from PS5SX2</li>
+      <li><b>Dimok</b> for the Wii U Homebrew Launcher's background, and the authors of the 3DS Homebrew Launcher, which inspired the 3DS side's</li>
+      <li>The <a href="https://github.com/googlefonts/lexend">Lexend</a> authors for the launcher's font, which this page uses too (SIL OFL 1.1)</li>
+      <li><a href="https://www.gametdb.com/">GameTDB</a> for box art and game information, and the authors of the <a href="https://github.com/cemu-project/cemu_graphic_packs">Cemu community graphic packs</a></li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <a class="brand" href="#top"><svg class="brand-mark" aria-hidden="true"><use href="#mark"/></svg><span>PS5-ECAM</span></a>
+      <p>Made by <a href="https://github.com/premohq">premohq</a>, its creator, and <a href="https://github.com/JMUtechnologies">JMUtechnologies</a>, its co-founder. It was called PS5CEMU-HAR until 5.0.0.</p>
+      <nav class="footer-links" aria-label="Links">
+        <a href="https://github.com/premohq/PS5-ECAM">GitHub</a>
+        <a href="https://github.com/premohq/PS5-ECAM/releases">Releases</a>
+        <a href="https://discord.gg/grrqkv4xWw">Discord</a>
+        <a href="https://ko-fi.com/premohq">Ko-fi</a>
+        <a href="https://github.com/premohq/PS5-ECAM/blob/PS5-ECAM/LICENSE">License</a>
+      </nav>
+    </div>
+    <div class="license" id="license">
+      <h2>License</h2>
+      <p>The app's own code is GPL-3.0-or-later (see <a href="https://github.com/premohq/PS5-ECAM/blob/PS5-ECAM/LICENSE">LICENSE</a>). Files derived from Cemu keep Cemu's MPL-2.0, as their headers say; Azahar is GPL-2.0-or-later, melonDS GPL-3.0, and Eden and ProsperoEden GPL-3.0-or-later (their notices are in the app's <code>eden/</code> folder), and the app that includes them is distributed under GPL-3.0-or-later. Other third-party components keep their own licenses.</p>
+      <p>PS5-ECAM is an independent homebrew project, not affiliated with or endorsed by Sony Interactive Entertainment, Nintendo, or the Cemu, Azahar, melonDS, Eden or ProsperoEden projects. "PlayStation" and "PS5" are trademarks of Sony Interactive Entertainment Inc.; "Wii U", "Nintendo 3DS", "Nintendo DS" and "Nintendo Switch" are trademarks of Nintendo. No firmware, keys, games or SDK material is included. It is provided as is, without warranty, for use with hardware and games you own.</p>
+      <p>This page sets no cookies and has no analytics. It asks GitHub for the latest release as it opens.</p>
+    </div>
+  </div>
+</footer>
+
+<script type="application/json" id="release-data">%RELEASE_JSON%</script>
+</body>
+</html>
