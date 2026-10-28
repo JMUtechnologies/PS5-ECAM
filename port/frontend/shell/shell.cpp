@@ -2371,16 +2371,18 @@ namespace ps5shell
 			Game& game = m_games[m_menu.game];
 			Badge(canvas, sheet.x + 36, sheet.y + 32, m_side);
 			canvas.Text(Style(kHeadingStyle), sheet.x + 36, sheet.y + 78, game.entry.game.name, kText, sheet.w - 72, 1);
+			// an item with no icon here gets More: map::at threw for one (Remove its update or DLC) and ended the app
 			static const std::map<std::string, Icon> kIcons = {{"play", Icon::Play}, {"hub", Icon::ChevronRight}, {"settings", Icon::Sparkle},
-				{"saves", Icon::Save}, {"packs", Icon::Gear}, {"mods", Icon::Usb}, {"updates", Icon::Download}, {"favourite", Icon::Star},
-				{"hide", Icon::Dash}, {"tile", Icon::Home}, {"untile", Icon::Home}, {"resume", Icon::Play}};
+				{"saves", Icon::Save}, {"packs", Icon::Gear}, {"mods", Icon::Usb}, {"updates", Icon::Download}, {"removeaddons", Icon::Dash},
+				{"favourite", Icon::Star}, {"hide", Icon::Dash}, {"tile", Icon::Home}, {"untile", Icon::Home}, {"resume", Icon::Play}};
 			for (int i = 0; i < count; i++)
 			{
 				const Box row{sheet.x + 20, sheet.y + 136 + i * rowH, sheet.w - 40, rowH - 6};
 				const bool focused = i == m_menu.selected;
 				if (focused)
 					canvas.Rect(row, 14, Surface2());
-				canvas.Draw(kIcons.at(m_menu.items[i].first), {row.x + 18, row.CentreY() - 14, 28, 28}, focused ? kText : Secondary());
+				const auto icon = kIcons.find(m_menu.items[i].first);
+				canvas.Draw(icon != kIcons.end() ? icon->second : Icon::More, {row.x + 18, row.CentreY() - 14, 28, 28}, focused ? kText : Secondary());
 				canvas.Text(Style(kBodyStyle), row.x + 62, row.CentreY() - 19, m_menu.items[i].second, focused ? kText : Secondary());
 				if (focused)
 				{
