@@ -1,0 +1,54 @@
+name: Added runtime PS5 builds
+on:
+  push:
+    branches: [workstation/retro-qualification]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  runtime:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 355
+    strategy:
+      fail-fast: false
+      matrix:
+        system: [porpoise, mupen64plus, fceumm]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Native x86 toolchain
+        run: |
+          test "$(uname -m)" = x86_64
+          docker build -t ecam-native tools/docker
+          docker run --rm -v "$PWD:/src" ecam-native python3 tools/docker/check-jit-host.py
+      - name: Build pinned runtime with ECAM overlay
+        env:
+          SYSTEM: ${{ matrix.system }}
+        run: |
+          mkdir -p build/logs
+          set -o pipefail
+          docker run --rm -v "$PWD:/src" -e SYSTEM \
+            -e JOBS=2 -e BUILD_JOBS=2 -e MAKEFLAGS=-j2 \
+            ecam-native bash -euo pipefail -c '
+              if [[ "$SYSTEM" == fceumm ]]; then
+                python3 -B tools/deps.py fetch boilerplate
+              else
+                make radv
+              fi
+              export PS5_PAYLOAD_SDK=/src/.deps/ps5-native-app-boilerplate/.deps/native/ps5-payload-sdk
+              export PS5_PAYLOAD_SDK_FORK=/src/.deps/PS5_PayloadSDK
+              export PS5_VULKAN=/src/.deps/PS5_Vulkan
+              export PS5_VULKAN_DIR="$PS5_VULKAN"
+              python3 tools/build-retro.py "$SYSTEM"
+              test -s "build/retro/$SYSTEM/eboot.bin"
+              test -s "build/retro/$SYSTEM/ECAM-SOURCE.json"
+            ' 2>&1 | tee "build/logs/$SYSTEM-native.log"
+      - name: Save runtime or failure diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ecam-${{ matrix.system }}-native-${{ github.sha }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            build/logs
+            build/retro/${{ matrix.system }}
