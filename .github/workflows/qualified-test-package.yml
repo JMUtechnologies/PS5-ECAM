@@ -21,18 +21,21 @@ permissions:
   actions: read
 jobs:
   package:
-    # Register the workflow on the branch; assembly is dispatched only after all builds pass.
-    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
+    timeout-minutes: 180
+    env:
+      BASE_RUN: ${{ inputs.base_run || '40809571816' }}
+      RETRO_RUN: ${{ inputs.retro_run || '40813540451' }}
+      SHELF_RUN: ${{ inputs.shelf_run || '40810161928' }}
     steps:
       - uses: actions/checkout@v4
+      - name: Wait for selected native qualification builds
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/docker/wait-for-builds.py "$BASE_RUN" "$RETRO_RUN" "$SHELF_RUN"
       - name: Collect successful source-compatible build artifacts
         env:
           GH_TOKEN: ${{ github.token }}
-          BASE_RUN: ${{ inputs.base_run }}
-          RETRO_RUN: ${{ inputs.retro_run }}
-          SHELF_RUN: ${{ inputs.shelf_run }}
         run: python3 tools/docker/collect-qualified-builds.py --base "$BASE_RUN" --retro "$RETRO_RUN" --shelf "$SHELF_RUN"
       - name: Build packaging toolchain
         run: docker build -t ecam-native tools/docker
