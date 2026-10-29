@@ -17,6 +17,7 @@
 // other FILE.
 
 #include "../app/netfs.h"
+#include "directory_entry.h"
 
 #include <algorithm>
 #include <atomic>
@@ -397,7 +398,10 @@ extern "C"
 	}
 	static struct dirent* RealReaddir(DIR* dir)
 	{
-		return ps5_readdir ? ps5_readdir(dir) : __real_readdir(dir);
+		if (!ps5_readdir) return __real_readdir(dir);
+		auto* entry = ps5_readdir(dir);
+		ps5cemu_complete_dirent(entry);
+		return entry;
 	}
 	static int RealClosedir(DIR* dir)
 	{

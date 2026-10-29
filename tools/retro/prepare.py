@@ -4,6 +4,7 @@
 import argparse
 from pathlib import Path
 import shutil
+import subprocess
 
 
 def replace(path, before, after):
@@ -85,6 +86,10 @@ def prepare(source, kind, project):
         replace(main, '    g_app.init(&g_gfx, &g_library, &g_settings, g_settings_path, g_options_path, g_saves_path);',
                 '    if (ecam_bridge::request.valid && !ecam_bridge::request.library && !forwarded_game) leave(2);\n    g_app.init(&g_gfx, &g_library, &g_settings, g_settings_path, g_options_path, g_saves_path);')
         replace(folder / 'porpoise_paths.hpp', '#define PORPOISE_APP "/app0"', '#define PORPOISE_APP "/app0/retro/porpoise"')
+        # Keep the forwarded Wii controller and Kirby performance fixes in the
+        # reproducible pinned-source overlay used for ECAM runtime builds.
+        subprocess.run(['git', 'apply', str(project / 'tools/retro/porpoise-wii-fixes.patch')],
+                       cwd=source, check=True)
     else:
         folder = source / kind / 'src'
         shutil.copyfile(project / 'port/retro/runtime/ecam_bridge.h', folder / 'ecam_bridge.h')

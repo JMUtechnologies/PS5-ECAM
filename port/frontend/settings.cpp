@@ -73,6 +73,7 @@ namespace ps5settings
 		void ReadN3ds(const rapidjson::Value& json, N3ds& n3ds, bool relocate = true)
 		{
 			ReadInt(json, "retroBackend", n3ds.retroBackend, 0, 1);
+			ReadBool(json, "autoGameFolders", n3ds.autoGameFolders);
 			ReadString(json, "gamesFolder", n3ds.gamesFolder);
 			if (relocate)
 				n3ds.gamesFolder = ps5paths::Relocated(n3ds.gamesFolder); // saved before the data moved to a drive (#52)
@@ -149,6 +150,7 @@ namespace ps5settings
 		{
 			writer.StartObject();
 			writer.Key("retroBackend"); writer.Int(n3ds.retroBackend);
+			writer.Key("autoGameFolders"); writer.Bool(n3ds.autoGameFolders);
 			writer.Key("gamesFolder");
 			writer.String(n3ds.gamesFolder.c_str());
 			writer.Key("resolution");

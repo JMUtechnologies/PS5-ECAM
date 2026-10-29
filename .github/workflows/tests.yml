@@ -65,6 +65,11 @@ jobs:
       - name: Network shares
         run: bash tools/tests/test-netfs.sh
 
+      - name: Platform directory record metadata
+        run: |
+          clang++-18 -std=c++20 -Wall -Wextra -Werror -Iport tools/tests/test-directory-entry.cpp -o /tmp/test-directory-entry
+          /tmp/test-directory-entry
+
       - name: Games in archives
         run: bash tools/tests/test-archives.sh
 
@@ -96,7 +101,8 @@ jobs:
           clang++-18 -std=c++20 -Wno-deprecated-declarations -DFMT_HEADER_ONLY -DPS5CEMU_VERSION='"dev"' \
             -I.deps/rapidjson/include -Iport -fsyntax-only port/frontend/settings.cpp port/app/catalog.cpp \
             port/frontend/shell/shell.cpp port/frontend/shell/pages.cpp port/frontend/shell/settings.cpp \
-            port/frontend/shell/library.cpp port/frontend/shell/hub.cpp port/retro/library.cpp port/retro/launch.cpp
+            port/frontend/shell/library.cpp port/frontend/shell/hub.cpp port/frontend/shell/setup.cpp \
+            port/retro/library.cpp port/retro/launch.cpp
 
       - name: Switch standalone features
         run: |

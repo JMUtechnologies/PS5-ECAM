@@ -156,7 +156,9 @@ namespace ps5shell
 		kicker = Tr("Welcome");
 		title = Tr("Your games go here");
 		// tr: {0} is the games folder
-		text = IsRetro() ? TrF("Put this system's supported game files in {0}, or choose a local or USB folder. Subfolders are searched to four levels. GameCube and Wii use separately selected folders.", folder) : Is3ds() ? TrF("Put your 3DS games (.3ds, .cci, .cxi, .3dsx, decrypted, alone or in .zip, .7z or .rar archives) in {0}, or "
+		text = IsRetro() ? (Handheld(m_side).autoGameFolders ?
+			TrF("Games are detected in {0}, existing standalone emulator libraries, and standard ROM folders on internal and connected storage. For archives, use this system's own folder. Games stay where they are.", folder) :
+			TrF("Put this system's supported game files in {0}, or choose a local or USB folder. Subfolders are searched to four levels. GameCube and Wii use separately selected folders.", folder)) : Is3ds() ? TrF("Put your 3DS games (.3ds, .cci, .cxi, .3dsx, decrypted, alone or in .zip, .7z or .rar archives) in {0}, or "
 							 "choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are searched too.",
 							 folder) :
 			IsDs()	   ? TrF("Put your DS games (.nds, alone or in .zip, .7z or .rar archives) in {0}, or choose any folder the PS5 can read, "

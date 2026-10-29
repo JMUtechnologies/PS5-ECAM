@@ -535,6 +535,7 @@ namespace ps5shell
 		double m_lastInput = -1; // the last press or held button, for the screensaver's dimming (-1: none yet)
 		float m_dt = 0;
 		uint64_t m_frames = 0;
+		std::string m_storageSignature;
 		bool m_failed = false;	 // the device was lost
 		bool m_videoOut = false; // VideoOut was taken (a failure from here needs a fresh process)
 

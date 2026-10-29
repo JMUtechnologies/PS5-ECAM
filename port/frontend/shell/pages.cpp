@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 15897)
+Total output lines: 1565
+
 // SPDX-License-Identifier: GPL-3.0-or-later
 // PS5-ECAM: the pages kept from the classic launcher, rebuilt, each a
 // list on the left and its detail on the right: a game's graphic packs (Cemu's folder tree, on and
@@ -617,364 +620,7 @@ namespace ps5shell
 			rows[kRowLayout] = {Row::Kind::Segmented, "", Tr("A and B"), "", wiiRemote ? Tr("The Wii Remote's buttons are under Buttons.") :
 				Tr("Where A is: on Circle, as on the Wii U, or on Cross.")};
 			rows[kRowLayout].options = {Tr("A on Circle"), Tr("A on Cross")};
-			rows[kRowLayout].index = layout == ps5emu::FaceLayout::PlayStation ? 1 : 0;
-			rows[kRowLayout].value = layout == ps5emu::FaceLayout::None ? std::string(Tr("Your own")) : rows[kRowLayout].options[rows[kRowLayout].index];
-			if (wiiRemote || layout == ps5emu::FaceLayout::None)
-				rows[kRowLayout].kind = Row::Kind::Action;
-			rows[kRowLayout].dimmed = wiiRemote;
-			const int click = std::clamp(m_settings.touchpadClick[m_player], 0, 2);
-			const bool button = ps5pad::TouchpadButton(m_player);
-			rows[kRowTouchpad] = {Row::Kind::Choice, "", Tr("Touchpad click"),
-				click == 0 ? TrF("{0}: {1}", Tr(kTouchpadClicks[0]), button ? Tr("a button") : Tr("a touch")) : std::string(Tr(kTouchpadClicks[click])),
-				button ? Tr("The click presses the button set to Touchpad click.") : Tr("The click touches the GamePad's screen.")};
-			rows[kRowTouchpad].options = {Tr(kTouchpadClicks[0]), Tr(kTouchpadClicks[1]), Tr(kTouchpadClicks[2])};
-			rows[kRowTouchpad].index = click;
-		}
-		rows[kRowButtons] = {Row::Kind::Link, "", Tr("Buttons"), TrP(mapped, "{0} button set", "{0} buttons set"), Tr("Which DualSense button presses each button.")};
-		rows[kRowReset] = {Row::Kind::Hold, "", Tr("Reset to defaults"), m_message.empty() ? std::string(Tr("Hold Cross")) : m_message,
-			Tr("The default buttons, vibration, motion and deadzones.")};
-		canvas.PushAlpha(Enter(1));
-		// rows past the page's foot scroll with the focus
-		const float scroll = std::max(0.0f, (m_playerRow + 1) * kPlayerRowStep - (kListBottom - kListTop));
-		canvas.PushClip({kListX - 20, kListTop - 12, kListWidth + 40, kListBottom - kListTop + 24});
-		const float labelScale = LabelScale(rows, kListWidth);
-		for (int i = 0; i < kPlayerRows; i++)
-		{
-			const Box box{kListX, kListTop + i * kPlayerRowStep - scroll, kListWidth, kPlayerRowHeight};
-			DrawRow(canvas, rows[i], box, i == m_playerRow, labelScale);
-			if (i == kRowReset && i == m_playerRow)
-				HoldRing(canvas, box, m_holdProgress);
-		}
-		canvas.PopClip();
-		canvas.PopAlpha();
-		// the DualSense's players, as they are connected
-		canvas.PushAlpha(Enter(2));
-		const Box panel{kDetailX, kListTop, kDetailWidth, 420};
-		Panel(canvas, panel, kRadiusSheet);
-		canvas.Text(Style(kOverlineStyle), panel.x + 36, panel.y + 32, Tr("Players"), Tertiary(), panel.w - 72, 1);
-		for (int player = 0; player < ps5pad::kMaxPlayers; player++)
-		{
-			const auto other = ps5emu::GetPlayerControls(player);
-			const float y = panel.y + 80 + player * 80;
-			const Box pad{panel.x + 36, y, 56, 40};
-			if (player == m_player)
-				canvas.Rect(pad, 10, Accent());
-			else
-				canvas.Ring(pad, 10, 2, other.connected ? Wash(0.5f) : Wash(0.2f));
-			canvas.Text(Style({18, ui::Weight::Bold, 1.0f}), pad.CentreX(), pad.y + 10, fmt::format("P{}", player + 1),
-				player == m_player ? kInk1 : Secondary(), 0, 0, ui::Align::Centre);
-			canvas.Text(Style(kBodyStyle), panel.x + 116, y + 2, TypeName(other.type), other.connected ? kText : Tertiary(), 420, 1);
-			canvas.Text(Style(kCaptionStyle), panel.x + 552, y + 8, other.connected ? Tr("Connected") : Tr("No DualSense"), Tertiary(), panel.w - 552 - 36, 1);
-		}
-		canvas.PopAlpha();
-	}
-
-	// -- a controller's buttons ------------------------------------------------------------------------
-
-	void Shell::MappingOpen()
-	{
-		// from Settings: a handheld side's buttons; from a player's page: that Wii U player's
-		m_mappingSide = m_screen == ScreenId::Settings ? m_side : System::WiiU;
-		m_mapSelected = 0;
-		m_capture = {};
-		m_mapMessage.clear();
-		m_listScroll.Snap(0);
-		Show(ScreenId::Mapping);
-	}
-
-	std::vector<ps5emu::ButtonMapping> Shell::Mappings() const
-	{
-		if (m_mappingSide == System::WiiU)
-			return ps5emu::ListMappings(m_player);
-		if (m_mappingSide == System::N3ds)
-			return ps5azahar::ListMappings(m_settings.n3ds);
-		if (m_mappingSide == System::Switch)
-			return ps5eden::ListMappings(m_settings.nx);
-		std::vector<ps5emu::ButtonMapping> mappings;
-		for (ps5azahar::Button button : ps5azahar::DsButtons())
-			mappings.push_back(ps5azahar::Mapping(m_settings.nds, button, true));
-		return mappings;
-	}
-
-	// a handheld's mapping changed: the row in the list is a 3DS button, or one of the DS's
-	void Shell::SetHandheldMapping(int index, ps5emu::PadInput input)
-	{
-		// a Switch button: Eden's mapping, where None is its default again (port/eden/eden.h)
-		if (m_mappingSide == System::Switch)
-		{
-			ps5eden::SetMapping(m_settings.nx, (size_t)std::max(index, 0), input);
-			SaveSettings();
-			return;
-		}
-		const bool ds = m_mappingSide == System::Nds;
-		if (ds && (index < 0 || index >= (int)ps5azahar::DsButtons().size()))
-			return;
-		const size_t button = ds ? (size_t)ps5azahar::DsButtons()[index] : (size_t)index;
-		ps5azahar::SetMapping(Handheld(m_mappingSide), button, input, ds);
-		SaveSettings();
-	}
-
-	void Shell::MappingUpdate(const ui::Press& press)
-	{
-		const int count = (int)Mappings().size();
-		switch (press.button)
-		{
-		case Button::Circle:
-			if (m_mappingSide != System::WiiU)
-				ClosePage(ScreenId::Settings);
-			else
-			{
-				m_feedback.Play(ui::Cue::Back);
-				Show(ScreenId::Player);
-			}
-			break;
-		case Button::Cross:
-			if (count)
-			{
-				m_capture = {true, false, m_now + kCaptureSeconds};
-				m_mapMessage.clear();
-				m_feedback.Play(ui::Cue::Select);
-			}
-			break;
-		case Button::Square:
-			if (count)
-			{
-				if (m_mappingSide != System::WiiU)
-					SetHandheldMapping(m_mapSelected, ps5emu::PadInput::None);
-				else
-					ps5emu::SetMapping(m_player, m_mapSelected, ps5emu::PadInput::None);
-				// every Switch button is on a DualSense button: Square puts its default back
-				m_mapMessage = m_mappingSide == System::Switch ? Tr("Done.") : Tr("Cleared: no DualSense button is this one now.");
-				m_feedback.Play(ui::Cue::Back);
-			}
-			break;
-		case Button::Up:
-		case Button::Down:
-		case Button::L2:
-		case Button::R2:
-		{
-			const int step = press.button == Button::Up ? -1 : press.button == Button::Down ? 1 : press.button == Button::L2 ? -7 : 7;
-			const int next = std::clamp(m_mapSelected + step, 0, std::max(0, count - 1));
-			if (next == m_mapSelected)
-				m_feedback.Play(ui::Cue::Edge, press.repeat);
-			else
-			{
-				m_mapSelected = next;
-				m_mapMessage.clear();
-				m_feedback.Play(ui::Cue::Focus);
-			}
-			break;
-		}
-		default: break;
-		}
-	}
-
-	// Waits for everything to be let go (the Cross that started it), then takes the next press. On the Wii U
-	// the touchpad's click is a press like any other, for any button (- included, #37): taking it makes
-	// that player's click a button, not a touch of the GamePad's screen. A handheld's touchpad is its
-	// touch screen, so there it cancels.
-	void Shell::PollCapture()
-	{
-		ps5pad::Data data{};
-		const int player = m_mappingSide != System::WiiU ? 0 : m_player;
-		const bool touchpadButton = m_mappingSide == System::WiiU && ps5pad::TouchpadButton(player);
-		if (!ps5pad::Read(player, data) && !ps5pad::Read(0, data))
-			return;
-		const bool idle = Pressed(data) == ps5emu::PadInput::None && !(data.buttons & ps5pad::kTouchPad) && data.l2 < 60 && data.r2 < 60;
-		if (m_now > m_capture.until)
-		{
-			m_capture.active = false;
-			m_mapMessage = Tr("No button was pressed, so it stays as it was.");
-		}
-		else if (!m_capture.released)
-			m_capture.released = idle;
-		else if ((data.buttons & ps5pad::kTouchPad) && m_mappingSide != System::WiiU && m_mappingSide != System::Switch)
-		{
-			m_capture.active = false;
-			m_mapMessage = Tr("Cancelled: it stays as it was.");
-		}
-		else if (const auto input = data.buttons & ps5pad::kTouchPad ? ps5emu::PadInput::TouchPad : Pressed(data);
-				 m_mappingSide == System::Switch && input != ps5emu::PadInput::None && !ps5eden::Mappable(input))
-		{
-			// the Switch's buttons go on the DualSense's buttons: its D-pad and sticks stay the Switch's own
-			m_capture.active = false;
-			m_mapMessage = Tr("Cancelled: it stays as it was.");
-		}
-		else if (input != ps5emu::PadInput::None)
-		{
-			m_capture.active = false;
-			if (m_mappingSide != System::WiiU)
-				SetHandheldMapping(m_mapSelected, input);
-			else
-				ps5emu::SetMapping(m_player, m_mapSelected, input);
-			m_mapMessage = Tr("Done.");
-			if (input == ps5emu::PadInput::TouchPad && !touchpadButton && m_mappingSide == System::WiiU)
-			{
-				// the click becomes this player's button: Touchpad click on their page says so, and changes it back
-				m_settings.touchpadClick[m_player] = 2;
-				ps5emu::ApplyTouchpadClick(m_player, 2, false);
-				SaveSettings();
-				m_mapMessage = Tr("Done. The touchpad's click is now a button for this player, not a touch of the GamePad's screen: their Touchpad "
-								  "click setting changes it back.");
-			}
-			m_feedback.Play(ui::Cue::Select);
-		}
-	}
-
-	void Shell::MappingDraw(Canvas& canvas)
-	{
-		const auto mappings = Mappings();
-		const int count = (int)mappings.size();
-		m_mapSelected = std::clamp(m_mapSelected, 0, std::max(0, count - 1));
-		if (m_mappingSide != System::WiiU)
-			DrawPageHeader(canvas, std::string(SystemName(m_mappingSide)) + " · " + Tr("Controls"), Tr("Buttons"),
-				TrF("Which DualSense button presses each {0} button", SideTitle(m_mappingSide)));
-		else
-		{
-			const auto controls = ps5emu::GetPlayerControls(m_player);
-			// tr: {0} is the player's number, {1} an emulated controller (Wii U GamePad)
-			DrawPageHeader(canvas, std::string("Wii U · ") + TypeName(controls.type), Tr("Buttons"),
-				TrF("Player {0}: the DualSense's buttons for the {1}", m_player + 1, TypeName(controls.type)));
-		}
-		canvas.PushAlpha(Enter(1));
-		canvas.Text(Style({20, ui::Weight::Medium, 1.0f, 0, false, true}), kListX + kListWidth, kListTop - 40,
-			TrF("{0} of {1}", count ? m_mapSelected + 1 : 0, count), Tertiary(), 0, 0, ui::Align::Right);
-		DrawList(canvas, {kListX, kListTop, kListWidth, kListBottom - kListTop}, count, m_mapSelected, m_listScroll.value, 72,
-			[&](int i, const Box& box, bool focused) {
-				canvas.Rect(box, 16, focused ? Surface2() : Surface());
-				canvas.Text(Style(kBodyStyle), box.x + 24, box.CentreY() - 19, ButtonName(mappings[i].button), kText, box.w * 0.55f, 1);
-				const bool unset = mappings[i].input.empty();
-				canvas.Text(Style(kLabelStyle), box.Right() - 24 - box.w * 0.4f, box.CentreY() - 16,
-					unset ? std::string(Tr("Not set")) : InputName(mappings[i].input), unset ? Tertiary() : Accent(), box.w * 0.4f, 1, ui::Align::Right);
-				if (focused)
-					Focus(box, 16);
-			});
-		canvas.PopAlpha();
-		if (count == 0)
-			return;
-		const auto& mapping = mappings[m_mapSelected];
-		canvas.PushAlpha(Enter(2));
-		const Box panel{kDetailX, kListTop - 10, kDetailWidth, 520};
-		Panel(canvas, panel, kRadiusSheet);
-		canvas.Text(Style(kOverlineStyle), panel.x + 40, panel.y + 36, Tr("This button"), Tertiary(), panel.w - 80, 1);
-		canvas.Text(Style(kTitleStyle), panel.x + 40, panel.y + 66, ButtonName(mapping.button), kText, panel.w - 80, 1);
-		const Box input{panel.x + 40, panel.y + 140, panel.w - 80, 110};
-		canvas.Rect(input, kRadiusCard, m_capture.active ? ui::SetAlpha(Accent(), 0.18f) : Wash(0.07f));
-		if (m_capture.active)
-			canvas.Ring(input, kRadiusCard, 2, Accent());
-		canvas.Text(Style({40, ui::Weight::SemiBold, 1.0f}), input.x + 20, input.CentreY() - 20,
-			m_capture.active ? std::string(Tr("Press a button")) : mapping.input.empty() ? std::string(Tr("Not set")) : InputName(mapping.input),
-			m_capture.active ? kText : Accent(), input.w - 40, 1, ui::Align::Centre);
-		std::string message;
-		if (m_capture.active)
-		{
-			const int seconds = (int)std::max(0.0, m_capture.until - m_now) + 1;
-			// tr: {0} is a button of the Wii U's or the 3DS's controller
-			message = TrF("Press the DualSense button, trigger or stick direction for {0} now.", ButtonName(mapping.button)) + "\n" +
-				(m_mappingSide == System::WiiU || m_mappingSide == System::Switch ?
-						TrP(seconds, "{0} second left; then it stays as it was. The touchpad's click counts too.",
-							"{0} seconds left; then it stays as it was. The touchpad's click counts too.") :
-						TrP(seconds, "{0} second left. A touchpad click cancels.", "{0} seconds left. A touchpad click cancels."));
-		}
-		else
-			message = (m_mapMessage.empty() ? "" : m_mapMessage + "\n\n") +
-				(m_mappingSide == System::Switch ?
-						// tr: a Switch button's mapping: each is on a DualSense button (the touchpad's click too), never on none
-						Tr("Cross, then a DualSense button or the touchpad's click: it becomes this one. If another button already had it, the "
-						   "two swap.\nSquare puts its default back.") :
-						Tr("Cross, then a DualSense button, trigger or stick direction: it becomes this one. If another button already had it, the "
-						   "two swap.\nSquare clears it."));
-		ui::TextStyle body = Style({24, ui::Weight::Regular, 1.45f});
-		body.tabular = true;
-		canvas.Text(body, panel.x + 40, panel.y + 280, message, Secondary(), panel.w - 80, 7);
-		canvas.PopAlpha();
-	}
-
-	// -- the folder browser: a side's games folder, and installs ---------------------------------------
-
-	void Shell::FilesOpen(int mode)
-	{
-		m_filesMode = mode;
-		if (mode == 1)
-			m_filesSide = System::WiiU;
-		else if (mode == 2)
-			m_filesSide = System::N3ds;
-		if (m_screen == ScreenId::Updates)
-			m_pageFrom = ScreenId::Updates; // Triangle there: Circle comes back to it
-		else if (m_screen != ScreenId::Files && m_screen != ScreenId::Settings && m_screen != ScreenId::Setup)
-			m_pageFrom = ScreenId::Library;
-		else if (m_screen == ScreenId::Setup)
-			m_pageFrom = ScreenId::Setup;
-		const std::string& games = GamesFolder(m_filesSide);
-		std::string start = mode != 0 && !m_installFolder.empty() ? m_installFolder : games.empty() ? ps5paths::Games() : games;
-		while (!BrowseTo(start) && start != "/")
-			start = ParentPath(start);
-		m_filesMessage.clear();
-		m_listScroll.Snap(0);
-		Show(ScreenId::Files);
-	}
-
-	bool Shell::BrowseTo(const std::string& folder)
-	{
-		bool ok = false;
-		auto folders = ListEntries(folder, true, ok);
-		if (!ok)
-			return false;
-		m_browseFolder = folder;
-		m_browseEntries.clear();
-		if (folder != "/")
-			m_browseEntries.push_back("..");
-		// the drives are tabs across the top now (6.6), not rows
-		m_browseEntries.insert(m_browseEntries.end(), folders.begin(), folders.end());
-		const std::vector<std::string> tabs = BrowseTabs();
-		m_tabFolders[tabs[BrowseTab()]] = folder;
-		m_browseFiles = 0;
-		if (m_filesMode == 2)
-			for (const auto& file : ListEntries(folder, false, ok))
-				if (Lower(file).ends_with(".cia") || Lower(file).ends_with(".zcia")) // (Azahar installs a compressed one too)
-				{
-					m_browseEntries.push_back(file);
-					m_browseFiles++;
-				}
-		m_browseSelected = 0;
-		m_folderCounts.clear();
-		return true;
-	}
-
-	std::vector<std::string> Shell::BrowseTabs() const
-	{
-		std::vector<std::string> tabs{"/data"};
-		for (const std::string& drive : ConnectedDrives())
-			tabs.push_back(drive);
-		// each network share after the drives (6.14), as /net/<its name>
-		for (const ps5netfs::Share& share : ps5netfs::shares())
-			tabs.push_back(ps5netfs::root_of(share));
-		return tabs;
-	}
-
-	int Shell::BrowseTab() const
-	{
-		const std::vector<std::string> tabs = BrowseTabs();
-		for (int i = 1; i < (int)tabs.size(); i++)
-			if (m_browseFolder == tabs[i] || m_browseFolder.starts_with(tabs[i] + "/"))
-				return i;
-		return 0; // anywhere else is the PS5's
-	}
-
-	bool Shell::IsFileEntry(int index) const
-	{
-		return index >= (int)m_browseEntries.size() - m_browseFiles && index < (int)m_browseEntries.size();
-	}
-
-	const ps5emu::InstallCandidate& Shell::Inspect(const std::string& folder)
-	{
-		auto it = m_inspected.find(folder);
-		if (it == m_inspected.end())
-			it = m_inspected.emplace(folder, ps5emu::InspectInstall(folder)).first;
-		return it->second;
-	}
-
-	void Shell::FilesUpdate(const ui::Press& press)
+			rows[kRowLayout].index = layout == ps5emu::FaceLayout::Pla…3897 tokens truncated…ate(const ui::Press& press)
 	{
 		const Button b = press.button;
 		const int count = (int)m_browseEntries.size();
@@ -1087,7 +733,7 @@ namespace ps5shell
 				m_status.lastLook[SideIndex(m_filesSide)] = false; // the new folder's games replace the list
 			if (here && ps5retro::IsRetro((int)m_filesSide))
 			{
-				ps5retro::StartScan((int)m_filesSide, m_browseFolder);
+				ps5retro::StartScan((int)m_filesSide, m_browseFolder, Handheld(m_filesSide).autoGameFolders);
 				m_scanning = true;
 			}
 			else if (here && m_filesSide == System::N3ds)
@@ -1185,8 +831,10 @@ namespace ps5shell
 	{
 		const bool install = m_filesMode == 1, cia = m_filesMode == 2;
 		const bool n3ds = m_filesSide == System::N3ds, nds = m_filesSide == System::Nds, nx = m_filesSide == System::Switch;
+		const bool retro = ps5retro::IsRetro((int)m_filesSide);
 		DrawPageHeader(canvas,
 			install || cia ? std::string(SystemName(m_filesSide)) + " · " + Tr("Install") :
+			retro          ? TrF("{0} games", SystemName(m_filesSide)) :
 			n3ds		   ? Tr("3DS games") :
 			nds			   ? Tr("DS games") :
 			nx			   ? Tr("Switch games") :
@@ -1194,6 +842,7 @@ namespace ps5shell
 			cia ? Tr("Install CIA files") : install ? Tr("Install updates and DLC") : Tr("Choose a folder"),
 			cia		? std::string(Tr("Choose a CIA file: a game, an update or DLC")) :
 			install ? std::string(Tr("Choose a folder with an update, DLC or game (code, content and meta)")) :
+			retro   ? TrF("Choose the folder that holds your {0} games", SystemName(m_filesSide)) :
 			n3ds	? std::string(Tr("Choose the folder that holds your 3DS games")) :
 			nds		? std::string(Tr("Choose the folder that holds your DS games")) :
 			nx		? std::string(Tr("Choose the folder that holds your Switch games")) :
