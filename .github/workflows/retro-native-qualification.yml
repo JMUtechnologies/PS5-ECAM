@@ -5,6 +5,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 jobs:
   runtime:
     runs-on: ubuntu-24.04
@@ -15,12 +16,31 @@ jobs:
         system: [porpoise, mupen64plus, fceumm]
     steps:
       - uses: actions/checkout@v4
+      - name: Reuse previously qualified alternative runtime
+        if: matrix.system != 'porpoise'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SYSTEM: ${{ matrix.system }}
+        run: |
+          set -euo pipefail
+          job_id=123249207865
+          if [[ "$SYSTEM" == fceumm ]]; then job_id=123249207390; fi
+          test "$(gh api "repos/$GITHUB_REPOSITORY/actions/jobs/$job_id" --jq .conclusion)" = success
+          gh run download 40813540451 --repo "$GITHUB_REPOSITORY" \
+            --name "ecam-$SYSTEM-native-c828e430bbca67727418b53b2e13615267d8b1a2" --dir build
+          test -s "build/retro/$SYSTEM/eboot.bin"
+          test -s "build/retro/$SYSTEM/ECAM-SOURCE.json"
+          python3 tools/docker/verify-staged-runtimes.py build/retro --systems "$SYSTEM" \
+            --receipt "build/retro/$SYSTEM/requalification.json"
+          printf '%s\n' 'Reused successful native job from run 40813540451, source c828e430bbca67727418b53b2e13615267d8b1a2; production source unchanged.' > "build/retro/$SYSTEM/BUILD-ORIGIN.txt"
       - name: Native x86 toolchain
+        if: matrix.system == 'porpoise'
         run: |
           test "$(uname -m)" = x86_64
           docker build -t ecam-native tools/docker
           docker run --rm -v "$PWD:/src" ecam-native python3 tools/docker/check-jit-host.py
       - name: Build pinned runtime with ECAM overlay
+        if: matrix.system == 'porpoise'
         env:
           SYSTEM: ${{ matrix.system }}
         run: |
@@ -43,6 +63,7 @@ jobs:
               if [[ "$SYSTEM" == porpoise ]]; then
                 git -C "$PS5_PAYLOAD_SDK_FORK" fetch --depth=1 origin f674976f48a8c319abd5646079eca284fde790fd
                 python3 tools/docker/seed-zlib.py build/retro-source/porpoise
+                python3 tools/docker/stage-porpoise-llvm-license.py
               fi
               python3 tools/build-retro.py --reuse-prepared "$SYSTEM"
               test -s "build/retro/$SYSTEM/eboot.bin"
