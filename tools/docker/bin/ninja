@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# The RADV recipes invoke Ninja directly without passing the Make JOBS setting.
+exec /usr/bin/ninja -j "${JOBS:-4}" "$@"

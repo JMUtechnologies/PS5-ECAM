@@ -1,0 +1,28 @@
+name: ps5-ecam
+services:
+  builder:
+    image: ps5-ecam-clang18:local
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /src
+    init: true
+    volumes:
+      - ../..:/src
+      - radv-work:/src/.deps/PS5_Vulkan/.deps/work
+      - eden-cache:/root/.cache
+    environment:
+      JOBS: ${JOBS:-4}
+      BUILD_JOBS: ${JOBS:-4}
+      EDEN_JOBS: ${JOBS:-4}
+      EDEN_BUILD_JOBS: ${JOBS:-4}
+      RADV_BUILD_JOBS: ${JOBS:-4}
+      EDEN_CMAKE_DIR: /usr/local/bin
+      EDEN_GL_SDK_ARCHIVE: /src/.deps/archives/ps5-opengl-sdk-1.0.2.tar.gz
+      PATH: /src/tools/docker/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    stdin_open: true
+    tty: true
+volumes:
+  radv-work:
+  eden-cache:

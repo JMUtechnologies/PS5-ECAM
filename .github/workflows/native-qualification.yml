@@ -1,0 +1,69 @@
+name: Native x86 PS5 qualification
+on:
+  push:
+    branches: [workstation/native-qualification]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: native-qualification-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build toolchain container on native x86-64
+        run: |
+          test "$(uname -m)" = x86_64
+          docker build -t ecam-native tools/docker
+      - name: Check executable alias behavior before long builds
+        run: docker run --rm -v "$PWD:/src" ecam-native python3 tools/docker/check-jit-host.py
+      - name: Restore compiler and Eden download cache
+        uses: actions/cache@v4
+        with:
+          path: .runner-cache
+          key: ecam-native-v1-${{ hashFiles('tools/deps.json', 'tools/docker/Dockerfile') }}-${{ github.run_id }}
+          restore-keys: ecam-native-v1-${{ hashFiles('tools/deps.json', 'tools/docker/Dockerfile') }}-
+      - name: Build ECAM and Eden with all production checks
+        run: |
+          mkdir -p build/logs .runner-cache
+          set -o pipefail
+          docker run --rm -v "$PWD:/src" -v "$PWD/.runner-cache:/root/.cache" \
+            -e JOBS=2 -e BUILD_JOBS=2 -e EDEN_JOBS=2 -e EDEN_BUILD_JOBS=2 \
+            -e RADV_BUILD_JOBS=2 -e EDEN_CMAKE_DIR=/usr/local/bin \
+            -e EDEN_GL_SDK_ARCHIVE=/src/.deps/archives/ps5-opengl-sdk-1.0.2.tar.gz \
+            ecam-native bash -euo pipefail -c '
+              python3 -B tools/deps.py fetch
+              python3 tools/docker/restore-eden-inputs.py
+              make build eden
+            ' 2>&1 | tee build/logs/native-build.log
+      - name: Collect diagnostics even on failure
+        if: always()
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import shutil
+          out=Path('build/logs/collected')
+          for root in (Path('.runner-cache'), Path('.deps/ProsperoEdenX/build'), Path('build/deps')):
+              if not root.exists(): continue
+              for p in root.rglob('*.log'):
+                  if not p.is_file() or p.stat().st_size > 20*1024*1024: continue
+                  dest=out/root.name/p.relative_to(root)
+                  dest.parent.mkdir(parents=True,exist_ok=True)
+                  shutil.copyfile(p,dest)
+          PY
+      - name: Save review artifacts, never release or deploy
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ecam-native-qualification-${{ github.sha }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            build/logs
+            build/cemu/ps5cemu.elf
+            build/eden/app
+            build/eden/commit
+            build/eden/eden.elf
