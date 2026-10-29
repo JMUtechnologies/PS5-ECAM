@@ -12,8 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Focused retry; the original Porpoise/Mupen jobs continue on their pinned run.
-        system: [fceumm]
+        system: [porpoise, mupen64plus, fceumm]
     steps:
       - uses: actions/checkout@v4
       - name: Native x86 toolchain

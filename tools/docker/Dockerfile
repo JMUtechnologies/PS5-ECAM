@@ -22,6 +22,8 @@ RUN python3 -m venv --system-site-packages /opt/ecam-tools \
     && cmake --version \
     && ctest --version \
     && cpack --version
+RUN ln -s /usr/bin/clang-18 /usr/bin/clang \
+    && ln -s /usr/bin/clang++-18 /usr/bin/clang++
 ENV CC=clang-18 CXX=clang++-18
 WORKDIR /src
 CMD ["bash"]
