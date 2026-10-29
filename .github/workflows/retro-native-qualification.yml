@@ -39,7 +39,12 @@ jobs:
               export PS5_PAYLOAD_SDK_FORK=/src/.deps/PS5_PayloadSDK
               export PS5_VULKAN=/src/.deps/PS5_Vulkan
               export PS5_VULKAN_DIR="$PS5_VULKAN"
-              python3 tools/build-retro.py "$SYSTEM"
+              python3 tools/build-retro.py --prepare-only "$SYSTEM"
+              if [[ "$SYSTEM" == porpoise ]]; then
+                git -C "$PS5_PAYLOAD_SDK_FORK" fetch --depth=1 origin f674976f48a8c319abd5646079eca284fde790fd
+                python3 tools/docker/seed-zlib.py build/retro-source/porpoise
+              fi
+              python3 tools/build-retro.py --reuse-prepared "$SYSTEM"
               test -s "build/retro/$SYSTEM/eboot.bin"
               test -s "build/retro/$SYSTEM/ECAM-SOURCE.json"
             ' 2>&1 | tee "build/logs/$SYSTEM-native.log"
