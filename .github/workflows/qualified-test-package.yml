@@ -1,0 +1,64 @@
+name: Assemble qualified PS5 test bundle
+on:
+  push:
+    branches: [workstation/combined]
+  workflow_dispatch:
+    inputs:
+      base_run:
+        description: Successful native ECAM and Eden run ID
+        required: true
+        type: string
+      retro_run:
+        description: Successful Porpoise Mupen FCEUmm run ID
+        required: true
+        type: string
+      shelf_run:
+        description: Successful N64 NES GB-GBC GBA run ID
+        required: true
+        type: string
+permissions:
+  contents: read
+  actions: read
+jobs:
+  package:
+    # Register the workflow on the branch; assembly is dispatched only after all builds pass.
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Collect successful source-compatible build artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_RUN: ${{ inputs.base_run }}
+          RETRO_RUN: ${{ inputs.retro_run }}
+          SHELF_RUN: ${{ inputs.shelf_run }}
+        run: python3 tools/docker/collect-qualified-builds.py --base "$BASE_RUN" --retro "$RETRO_RUN" --shelf "$SHELF_RUN"
+      - name: Build packaging toolchain
+        run: docker build -t ecam-native tools/docker
+      - name: Validate staging and assemble test ZIP
+        run: |
+          mkdir -p build/logs
+          set -o pipefail
+          docker run --rm -v "$PWD:/src" -e JOBS=2 -e BUILD_JOBS=2 \
+            ecam-native bash -euo pipefail -c '
+              python3 tools/docker/verify-staged-runtimes.py build/retro
+              bash tools/docker/prepare-package-inputs.sh
+              bash tools/docker/package-qualified.sh
+            ' 2>&1 | tee build/logs/qualified-package.log
+      - name: Save complete test bundle only after checks pass
+        uses: actions/upload-artifact@v4
+        with:
+          name: PS5-ECAM-complete-test-bundle-${{ github.run_id }}
+          retention-days: 14
+          path: |
+            build/qualification
+          if-no-files-found: error
+      - name: Save diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qualified-package-failure-${{ github.run_id }}
+          retention-days: 14
+          path: build/logs
+          if-no-files-found: warn

@@ -7,10 +7,13 @@ emulated executable-alias test observes new RX bytes but executes old code.
 The independent diagnostic must pass before compilation; production Eden
 checks remain enabled. A failed or incomplete job is not a qualified build.
 
-This first job qualifies ECAM/Cemu, Azahar, melonDS, RADV, and Eden. Additional
-Porpoise/N64/NES/GB/GBC/GBA runtime toolchains and builds remain separate pending
-work. Its uploaded output is a build artifact, not a complete integrated app or
-a release. There is no deployment, merge, publishing, or PS5 hardware test step.
+The base workflow builds ECAM/Cemu, Azahar, melonDS, RADV, and Eden. Separate
+workflows build Porpoise/Mupen64Plus/FCEUmm and N64/NES/GB-GBC/GBA using the ECAM
+source overlays. Their output is a build artifact, not a complete integrated app
+or a release. All seven runtime jobs and the base job must pass before complete
+bundle assembly. There is no deployment, merge, publishing, or PS5 hardware test
+step. The combined workstation branch collects the build tools without moving
+the PR branches or resetting the Mac's existing build directory.
 
 Deleted-source recovery preserves the pinned UI file SHA-256 values and license.
 Those exact UI files are retained in recovery/ui from the user's local archive.

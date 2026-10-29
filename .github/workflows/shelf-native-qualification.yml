@@ -1,0 +1,42 @@
+name: N64 NES Game Boy PS5 builds
+on:
+  push:
+    branches: [workstation/shelf-qualification]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  runtime:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 355
+    strategy:
+      fail-fast: false
+      matrix:
+        system: [n64, nes, gbc, gba]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Native x86 compiler and donor prerequisites
+        run: |
+          test "$(uname -m)" = x86_64
+          docker build -t ecam-native tools/docker
+          docker run --rm ecam-native bash -c 'gcc --version; clang-18 --version; meson --version'
+      - name: Compile donor runtime with ECAM handoff
+        env:
+          SYSTEM: ${{ matrix.system }}
+        run: |
+          mkdir -p build/logs
+          set -o pipefail
+          docker run --rm -v "$PWD:/src" -e SYSTEM -e JOBS=2 -e BUILD_JOBS=2 \
+            -e MAKEFLAGS=-j2 -e USE_CCACHE=0 -e PS5_CLANG=clang-18 \
+            ecam-native python3 tools/docker/build-shelf-runtime.py "$SYSTEM" \
+            2>&1 | tee "build/logs/$SYSTEM-native.log"
+      - name: Save runtime and diagnostics without releasing
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ecam-${{ matrix.system }}-native-${{ github.sha }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            build/logs
+            build/retro/${{ matrix.system }}

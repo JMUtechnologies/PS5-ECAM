@@ -2,8 +2,8 @@
 
 Ubuntu 24.04 / clang-18, based on the earlier Store workstation recipe and
 ECAM's docs/BUILDING.md. Uses linux/amd64 for the existing x86-64 toolchain inputs
-and pins Meson 1.7.2 because Mesa requires at least 1.4.0.
-on Apple Silicon. The source checkout is mounted at /src; build outputs persist
+on Apple Silicon, with Meson 1.9.2 and CMake 3.31.10. The source checkout is mounted
+at /src; build outputs persist
 in that checkout. No privileged mode or Docker socket mount is needed inside it.
 
 RADV's extraction and compilation work directory uses the persistent Docker
@@ -28,7 +28,25 @@ Additional runtimes require their documented donor toolchain preparation before
 `make retro`, `make retro-upgrades`, or `make gameboy` (Game Boy branch only).
 See docs/RETRO-INTEGRATION.md and docs/GAMEBOY-INTEGRATION.md where present.
 Packaging Eden also requires its pinned OpenGL SDK archive; see tools/build-eden.sh.
-This image recipe is prepared but has not yet been built or qualified on PS5.
+The workflows build on native x86-64 Linux. Mac x86 emulation failed the
+executable-alias diagnostic, so it cannot qualify Eden's JIT checks. Native
+compilation does not establish PS5 hardware compatibility.
+
+Live status (requires the authenticated GitHub CLI):
+
+```sh
+python3 tools/docker/status.py
+python3 tools/docker/status.py --watch
+```
+
+The viewer refreshes every 30 seconds; Ctrl+C stops only the viewer. It does not
+cancel builds. It reports completed jobs, not an estimated percentage of time.
+
+`verify-staged-runtimes.py` checks pinned source receipts, bridge hashes, notices,
+and executable headers. `package-qualified.sh` refuses incomplete staging and
+creates a test ZIP with checksum and an explicit hardware-unvalidated receipt.
+It requires the base native build and its prepared SDK/link inputs as well as
+all seven runtime folders. It never installs the test app.
 
 The host must allow the Docker CLI to access Docker Desktop's daemon. Creating
 this project cannot grant host session socket permission. This setup never
