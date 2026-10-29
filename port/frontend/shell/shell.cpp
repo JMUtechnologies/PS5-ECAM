@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 25968)
-Total output lines: 2651
-
 // SPDX-License-Identifier: GPL-3.0-or-later
 // PS5-ECAM: the new launcher (shell.h): its loop, the sides and their games, the bar along the top,
 // the hints, the backdrop, the overlays and the launch. The screens are in their own files
@@ -634,7 +631,1470 @@ namespace ps5shell
 		if (changed)
 			m_sideMix.Go(1, m_now, m_settings.ui.reduceMotion ? kReducedSeconds : kAmbientSeconds), m_sideMix.from = 0;
 		// the Library, on the game this side had in focus, else the one played last (6.1): in Recently
-		// played, where that game is first (the list, when nothing was pl…13968 tokens truncated…;
+		// played, where that game is first (the list, when nothing was played yet)
+		m_libraryZone = 0;
+		m_libraryIndex = -1; // no game in focus, so the refresh finds the one asked for
+		m_libraryFocusTitle = m_sideFocus[SideIndex()] ? m_sideFocus[SideIndex()] : LastGame(side);
+		m_search.clear();
+		m_stateButton = 0;
+		LibraryRefresh();
+		m_tab = ScreenId::Library;
+		Show(m_tab);
+	}
+
+	System Shell::NextShownSide(System side) const
+	{
+		for (int i = 1; i <= kSides; i++)
+		{
+			const System next = BarSide(BarIndex(side) + i);
+			if (SideShown(next))
+				return next;
+		}
+		return side;
+	}
+
+	System Shell::FirstShownSide() const
+	{
+		for (System side : kBarOrder)
+			if (SideShown(side))
+				return side;
+		return System::WiiU;
+	}
+
+	void Shell::SidesChanged()
+	{
+		if (SideShown(m_side))
+			return;
+		// the side open was hidden: the first one shown, opened where a side is (Settings stays Settings)
+		if (m_prepared && m_screen != ScreenId::Welcome && m_screen != ScreenId::Setup && m_screen != ScreenId::WhatsNew)
+			SwitchSide(FirstShownSide());
+		else
+			m_side = FirstShownSide();
+	}
+
+	void Shell::ApplyTheme()
+	{
+		const std::string folder = ps5paths::Root() + "/themes";
+		std::error_code ec;
+		std::filesystem::create_directories(folder, ec); // where your own go, there to be found over FTP
+		m_themes = ui::AllThemes(folder);
+		const ui::Theme theme = ui::FindTheme(m_settings.ui.theme, folder);
+		ui::ApplyTheme(theme);
+		ps5log::Line("[ui] theme: {}", theme.id.empty() ? std::string("Light (the default)") : theme.id);
+	}
+
+	void Shell::SwitchSide(System side)
+	{
+		if (side == m_side)
+			return;
+		m_feedback.Play(ui::Cue::Select);
+		// where the side being left was, for coming back to it
+		m_sideFocus[SideIndex()] = LibraryGame() >= 0 ? m_games[LibraryGame()].entry.game.titleId : 0;
+		// the same tab on the other side
+		const ScreenId tab = m_screen == ScreenId::Settings ? ScreenId::Settings : ScreenId::Library;
+		OpenSide(side, false);
+		ShowTab(tab);
+		if (tab == ScreenId::Settings)
+		{
+			// the same page where the side has it
+			const auto pages = SettingsPages();
+			if (std::none_of(pages.begin(), pages.end(), [this](const SettingsPage& page) { return page.id == m_page; }))
+				m_page = pages.front().id;
+		}
+		// the focus on the side's games (or pages)
+		m_onBar = false;
+		m_barFocus = BarIndex(m_side);
+	}
+
+	void Shell::MakeGame(Game& game, const ps5catalog::Entry& entry)
+	{
+		game.entry = entry;
+		game.boxArt = IsRetro() ? ps5retro::CoverPath(SideIndex(), entry.game) : IsSwitch() ? SwitchCover(entry.game) : ps5boxart::Path(BoxOf(entry.game), entry.game.gameId);
+		game.known = !IsRetro() && ps5gameinfo::Find(BoxOf(entry.game), entry.game.gameId, game.info);
+		// the list names games in English: GameTDB's title finds one whose own name is in the menus'
+		// language (7.7). It has no DS or Switch games yet.
+		const bool reported = IsWiiU() || Is3ds();
+		game.report = !reported ? nullptr : ps5compat::Find(Is3ds(), entry.game.name);
+		if (!game.report && game.known && reported)
+			game.report = ps5compat::Find(Is3ds(), game.info.title);
+		game.year = game.known && game.info.released.size() >= 4 ? std::atoi(game.info.released.substr(0, 4).c_str()) : 0;
+		std::string name = Lower(entry.game.name);
+		if (name.rfind("the ", 0) == 0)
+			name = name.substr(4);
+		game.sortName = name;
+	}
+
+	std::string Shell::SwitchCover(const ps5emu::Game& game) const
+	{
+		// a picture of the player's own beside the game first; then GameTDB's box art, or the game's own icon
+		// as Settings > Online chooses (empty until it is there: the card with the icon, or the name)
+		if (std::string own = ps5eden::BoxArt(game); !own.empty())
+			return own;
+		return Handheld(System::Switch).nxCovers == 1 ? ps5eden::CoverPath(game) : ps5boxart::Path(ps5boxart::System::Switch, game.gameId);
+	}
+
+	void Shell::LoadGames()
+	{
+		if (IsRetro()) m_status.noticeRetro[SideIndex() - 4] = ps5retro::Available(SideIndex(), m_settings.retro[SideIndex() - 4].retroBackend) ? ps5retro::ScanError(SideIndex()) : Tr("The selected emulator runtime is missing from this ECAM package.");
+		m_scanning = CoreReady() && SystemScanning();
+		// a side not looked through this session (a network share's folder, #75) keeps the list of its last look
+		if (CoreReady() && !m_scanning && !m_status.lastLook[SideIndex()])
+		{
+			ps5catalog::Replace(CatalogSide(), IsRetro() ? ps5retro::ListGames(SideIndex()) : Is3ds() ? ps5azahar::ListGames() : IsDs() ? ps5melonds::ListGames() : IsSwitch() ? ps5eden::ListGames() : ps5emu::ListGames());
+			ps5catalog::Migrate(CatalogSide(), RecentOf(m_side));
+			ps5catalog::Save();
+		}
+		// what is on screen keeps its place
+		if (LibraryGame() >= 0)
+			m_libraryFocusTitle = m_games[LibraryGame()].entry.game.titleId;
+		const bool first = m_games.empty(); // the side's first games: the Library opens on Recently played
+		m_games.clear();
+		for (const ps5catalog::Entry& entry : ps5catalog::Games(CatalogSide()))
+		{
+			if (entry.game.nds != IsDs())
+				continue; // a DS game the 3DS side listed before the DS had a side, until its scan replaces it
+			m_games.emplace_back();
+			MakeGame(m_games.back(), entry);
+		}
+		m_boxArrivals = ps5boxart::Arrivals();
+		if (!m_scanning && CoreReady())
+		{
+			m_listed = true;
+			ps5log::Line("[launcher] {} games", m_games.size());
+			FetchBoxArt();
+			RememberCount();
+		}
+		m_libraryIndex = -1;
+		if (first)
+			m_libraryZone = 0;
+		LibraryRefresh();
+	}
+
+	void Shell::LookForGames()
+	{
+		m_status.lastLook[SideIndex()] = false;
+		const std::string& folder = GamesFolder(m_side);
+		if (IsRetro())
+			ps5retro::StartScan(SideIndex(), folder, Handheld(m_side).autoGameFolders);
+		else if (Is3ds())
+			ps5azahar::StartScan(folder);
+		else if (IsDs())
+			ps5melonds::StartScan(folder);
+		else if (IsSwitch())
+			ps5eden::StartScan(folder);
+		else if (m_status.coreReady)
+			ps5emu::Rescan();
+		m_scanning = CoreReady();
+	}
+
+	void Shell::PollCore()
+	{
+		bool ok = false;
+		std::string error;
+		if (!ps5emu::CoreStarted(ok, error))
+			return;
+		m_status.coreStarting = false;
+		if (!ok)
+		{
+			m_status.notice = TrF("Cemu did not start: {0}", error);
+			ps5log::Line("[launcher] {}", m_status.notice);
+		}
+		else
+		{
+			m_status.coreReady = true;
+			// a list kept only when Cemu had one: else it looked, and what it found is the list
+			m_status.lastLook[SideIndex(System::WiiU)] = m_status.lastLook[SideIndex(System::WiiU)] && ps5emu::KeptGameList();
+			ps5emu::LogMemory(); // Cemu's start, against the 3DS side's
+			// A and B chosen for every side before Cemu was up (Make it yours): the Wii U players' now
+			if (m_settings.wiiuFaceLayout)
+			{
+				for (int player = 0; player < ps5pad::kMaxPlayers; player++)
+					ps5emu::SetFaceLayout(player, m_settings.wiiuFaceLayout == 1 ? ps5emu::FaceLayout::Nintendo : ps5emu::FaceLayout::PlayStation);
+				m_settings.wiiuFaceLayout = 0;
+				SaveSettings();
+			}
+			UseOwnAccount(); // One account for each PS5 user: whoever started the app plays on theirs
+		}
+		// the side's games, now from Cemu's own scan (the catalogue's were shown meanwhile)
+		if (IsWiiU())
+			LoadGames();
+	}
+
+	void Shell::PollGames()
+	{
+		if (m_scanning && !SystemScanning())
+			LoadGames();
+		// a Switch game's cover read from its file after the list was shown: its game looks again
+		if (IsSwitch() && ps5eden::CoverArrivals() != m_switchCoverArrivals)
+		{
+			m_switchCoverArrivals = ps5eden::CoverArrivals();
+			for (Game& game : m_games)
+			{
+				if (game.icon.empty())
+					game.iconLooked = false;
+				if (game.boxArt.empty())
+					game.boxArt = SwitchCover(game.entry.game); // the icon, when it is the cover
+			}
+		}
+		if (ps5boxart::Arrivals() != m_boxArrivals)
+		{
+			m_boxArrivals = ps5boxart::Arrivals();
+			// a cover downloaded again (Settings > Online) is read again; a new one is shown
+			for (const std::string& arrived : ps5boxart::TakeArrived())
+			{
+				const size_t slash = arrived.find('/');
+				const std::string id = slash == std::string::npos ? arrived : arrived.substr(slash + 1);
+				for (Game& game : m_games)
+					if (game.entry.game.gameId == id)
+					{
+						// (a Switch game's own picture beside it stays)
+						const std::string path = ps5boxart::Path(BoxOf(game.entry.game), id);
+						if (game.boxArt.empty() || game.boxArt == path)
+						{
+							game.boxArt = path;
+							m_images->Forget(game.boxArt);
+						}
+					}
+			}
+			for (Game& game : m_games)
+				if (game.boxArt.empty())
+					game.boxArt = IsRetro() ? ps5retro::CoverPath(SideIndex(), game.entry.game) : IsSwitch() ? SwitchCover(game.entry.game) : ps5boxart::Path(BoxOf(game.entry.game), game.entry.game.gameId);
+		}
+	}
+
+	std::string Shell::IconOf(Game& game)
+	{
+		if (!game.iconLooked && !m_iconLookedThisFrame)
+		{
+			// reading a Wii U game's icon mounts the game: one a frame
+			game.iconLooked = true;
+			m_iconLookedThisFrame = true;
+			game.icon = IsRetro() ? ps5retro::CoverPath(SideIndex(), game.entry.game) : Is3ds()				? ps5azahar::CoverPath(game.entry.game.titleId) :
+				IsDs()						? ps5melonds::CoverPath(game.entry.game.titleId) :
+				IsSwitch()					? ps5eden::CoverPath(game.entry.game) :
+				m_status.coreReady			? ps5emu::CoverPath(game.entry.game.titleId) :
+											  std::string();
+		}
+		return game.icon;
+	}
+
+	std::string Shell::BackdropOf(Game& game)
+	{
+		if (IsWiiU() && !game.bootScreenLooked && !m_iconLookedThisFrame && m_status.coreReady)
+		{
+			game.bootScreenLooked = true;
+			m_iconLookedThisFrame = true;
+			game.bootScreen = ps5emu::BootScreenPath(game.entry.game.titleId);
+		}
+		return !game.bootScreen.empty() ? game.bootScreen : game.boxArt;
+	}
+
+	const ui::Picture& Shell::Cover(Game& game, bool blurred)
+	{
+		const ui::Picture& picture = m_images->Get(game.boxArt, blurred);
+		if (picture.ambient[0] && picture.ambient[0] != game.entry.ambient[0])
+		{
+			game.entry.ambient[0] = picture.ambient[0];
+			game.entry.ambient[1] = picture.ambient[1];
+			ps5catalog::SetAmbient(CatalogSide(), game.entry.game.titleId, picture.ambient);
+		}
+		return picture;
+	}
+
+	int Shell::FindGame(uint64_t titleId) const
+	{
+		for (int i = 0; i < (int)m_games.size(); i++)
+			if (m_games[i].entry.game.titleId == titleId)
+				return i;
+		return -1;
+	}
+
+	std::string Shell::Byline(const Game& game) const
+	{
+		const auto& g = game.entry.game;
+		if (game.known && (!game.info.publisher.empty() || !game.info.released.empty()))
+			return Join({game.info.publisher, ps5gameinfo::Year(game.info.released)}, "  ·  ");
+		if (!IsWiiU())
+			return Join({g.publisher, g.format}, "  ·  ");
+		return Join({fmt::format("v{}", g.version), g.dlcCount ? Tr("DLC") : "", g.format}, "  ·  ");
+	}
+
+	std::string Shell::Played(const Game& game) const
+	{
+		const uint32_t minutes = game.entry.minutesPlayed;
+		if (minutes == 0)
+			return {};
+		if (minutes < 60)
+			return TrP(minutes, "{0} min played", "{0} min played");
+		return TrP(minutes / 60, "{0} h played", "{0} h played");
+	}
+
+	std::string Shell::LastPlayedWords(int64_t when) const
+	{
+		if (when <= 0)
+			return {};
+		const int64_t now = std::time(nullptr);
+		std::tm today{}, then{};
+		const std::time_t t0 = now, t1 = when;
+		if (!localtime_r(&t0, &today) || !localtime_r(&t1, &then))
+			return {};
+		const int64_t days = (now - when) / 86400;
+		// tr: how long ago a game was last played, as Home's kicker says it ("Last played {0}")
+		if (today.tm_yday == then.tm_yday && today.tm_year == then.tm_year)
+			return Tr("today");
+		if (days <= 1)
+			return Tr("yesterday");
+		if (days < 7)
+			return TrP(days, "{0} day ago", "{0} days ago");
+		if (days < 60)
+			return TrP(days / 7, "{0} week ago", "{0} weeks ago");
+		return TrP(days / 30, "{0} month ago", "{0} months ago");
+	}
+
+	void Shell::ApplyLanguage()
+	{
+		ps5lang::Load(m_settings.ui.language);
+		m_fonts.SetLanguage(ps5lang::Current());
+		if (m_screen == ScreenId::Setup)
+			RunChecks();
+	}
+
+	void Shell::SaveSettings()
+	{
+		if (!ps5settings::Save(m_settings))
+			ps5log::Line("[launcher] could not save {}", ps5paths::LauncherSettings());
+	}
+
+	void Shell::FetchBoxArt()
+	{
+		if (IsRetro()) return;
+		// the side's covers, from GameTDB's covers of its system (none for a Switch side showing the games' icons)
+		if (IsSwitch() && Handheld(System::Switch).nxCovers == 1)
+			return;
+		std::vector<std::string> ids;
+		for (const Game& game : m_games)
+			if (!game.entry.game.gameId.empty())
+				ids.push_back(game.entry.game.gameId);
+		ps5boxart::Fetch(BoxSide(m_side), ids);
+	}
+
+	void Shell::RememberCount()
+	{
+		int& count = IsWiiU() ? m_settings.gameCount : Handheld(m_side).gameCount;
+		if (count == (int)m_games.size())
+			return;
+		count = (int)m_games.size();
+		SaveSettings();
+	}
+
+	void Shell::Launch(int index, bool resume)
+	{
+		m_resumeNext = resume;
+		if (index < 0 || index >= (int)m_games.size())
+			return;
+		if (!CoreReady() || !Notice().empty())
+		{
+			m_feedback.Play(ui::Cue::Denied);
+			Toast(Notice().empty() ? Tr("Cemu is still starting") : Notice());
+			return;
+		}
+		const ps5emu::Game& game = m_games[index].entry.game;
+		// a Switch game: Eden reads none without the keys of the player's own Switch
+		if (IsSwitch() && !ps5eden::KeysFound())
+		{
+			m_feedback.Play(ui::Cue::Denied);
+			OpenHelp(Tr("The game could not start"),
+				TrF("Eden needs your Switch's keys to read its games: prod.keys (and title.keys), dumped from your own Switch, in {0}/keys. "
+					"The Setup check says what else is missing.",
+					ps5eden::GameFilesFolder()));
+			return;
+		}
+		if (!game.Archived())
+		{
+			LaunchChosen(index, {});
+			return;
+		}
+		// a 3DS dump the library found encrypted, as Azahar says it (azahar/core.cpp): not unpacked for nothing
+		if (game.format == "ENCRYPTED")
+		{
+			m_feedback.Play(ui::Cue::Denied);
+			OpenHelp(Tr("The game could not start"), Tr("The game is encrypted, and Azahar plays only decrypted games, with keys or without: decrypt it on your "
+														 "3DS first (GodMode9)."));
+			return;
+		}
+		// the copy unpacked from its archive before, else the archive unpacked now
+		const std::string copy = ps5archive::Unpacked({game.path.string(), game.archiveMember, game.archiveIndex, game.archiveSize, game.archiveFolder});
+		if (copy.empty())
+			StartUnpacking(index);
+		else
+			LaunchChosen(index, copy);
+	}
+
+	void Shell::LaunchChosen(int index, const std::string& launchPath)
+	{
+		Game& game = m_games[index];
+		ps5settings::AddRecent(LastGame(m_side), RecentOf(m_side), game.entry.game.titleId);
+		SaveSettings();
+		ps5catalog::Played(CatalogSide(), game.entry.game.titleId, std::time(nullptr));
+		game.entry.lastPlayed = std::time(nullptr);
+		ps5catalog::Save();
+		const Box from{760, 240, 400, 560};
+		LaunchGame(game.entry.game,
+			IsRetro() ? Tr("Starting emulator") : IsDs()		 ? Tr("Starting melonDS") :
+			Is3ds()		 ? Tr("Starting Azahar") :
+			IsSwitch()	 ? Tr("Starting Eden") :
+						   Tr("Starting Cemu"),
+			from);
+		m_launch.game = index;
+		m_choice->launchPath = launchPath;
+		m_choice->resume = std::exchange(m_resumeNext, false);
+	}
+
+	void Shell::StartUnpacking(int index)
+	{
+		const ps5emu::Game& game = m_games[index].entry.game;
+		StopUnpacking();
+		m_unpack.open = true;
+		m_unpack.at = m_now;
+		m_unpack.titleId = game.titleId;
+		m_unpack.name = game.name;
+		m_unpack.finished = false;
+		m_unpack.progress.done = 0;
+		m_unpack.progress.total = game.archiveSize;
+		m_unpack.progress.cancel = false;
+		const ps5archive::Source source{game.path.string(), game.archiveMember, game.archiveIndex, game.archiveSize, game.archiveFolder};
+		m_unpack.thread = std::thread([this, source] {
+			m_unpack.ok = ps5archive::Unpack(source, &m_unpack.progress, m_unpack.path, m_unpack.error);
+			m_unpack.finished = true;
+		});
+		m_feedback.Play(ui::Cue::Select);
+		ps5log::Line("[launcher] {} is in an archive: unpacked first", game.name);
+	}
+
+	void Shell::PollUnpacking()
+	{
+		if (!m_unpack.open || !m_unpack.finished)
+			return;
+		m_unpack.thread.join();
+		m_unpack.open = false;
+		if (m_unpack.ok)
+		{
+			// the game by its title: the list may have been read again meanwhile
+			if (const int index = FindGame(m_unpack.titleId); index >= 0)
+				LaunchChosen(index, m_unpack.path);
+		}
+		else if (!m_unpack.error.empty())
+		{
+			m_feedback.Play(ui::Cue::Denied);
+			OpenHelp(Tr("The game could not start"), m_unpack.error);
+		}
+	}
+
+	void Shell::StopUnpacking()
+	{
+		if (!m_unpack.thread.joinable())
+			return;
+		m_unpack.progress.cancel = true;
+		m_unpack.thread.join();
+		m_unpack.open = false;
+	}
+
+	void Shell::LaunchGame(const ps5emu::Game& game, const std::string& caption, const Box& from)
+	{
+		m_launch.active = true;
+		m_launch.at = m_now;
+		m_launch.from = from;
+		m_launch.caption = caption;
+		m_launch.title = game.name;
+		m_launch.aspect = from.h > 0 ? from.w / from.h : 0.714f;
+		m_launch.game = -1;
+		m_choice = ps5launcher::Choice{m_side, game};
+		m_feedback.Play(ui::Cue::Launch);
+		ps5log::Line("[launcher] {} chosen on the {} side", game.name, SideTitle(m_side));
+	}
+
+	void Shell::Toast(const std::string& text)
+	{
+		m_toasts.push_back({text, m_now});
+		if (m_toasts.size() > 3)
+			m_toasts.erase(m_toasts.begin());
+		m_feedback.Play(ui::Cue::Notify);
+	}
+
+	void Shell::AddTile(Game& game)
+	{
+		// the box art, else the icon: made square for the tile
+		std::string cover = game.boxArt;
+		if (cover.empty() || !IsFile(cover))
+			cover = IconOf(game);
+		ps5forwarders::Start({game.entry.game.name, game.entry.game.path.string(), cover});
+		m_feedback.Play(ui::Cue::Select);
+		Toast(TrF("Making {0}'s home screen tile…", game.entry.game.name));
+	}
+
+	void Shell::RemoveTile(Game& game)
+	{
+		ps5forwarders::StartRemove({game.entry.game.name, game.entry.game.path.string(), {}});
+		m_feedback.Play(ui::Cue::Select);
+		Toast(TrF("Removing {0}'s home screen tile…", game.entry.game.name));
+	}
+
+	void Shell::PollTiles()
+	{
+		const ps5forwarders::Status status = ps5forwarders::GetStatus();
+		if (status.finished == m_tilesFinished)
+			return;
+		m_tilesFinished = status.finished;
+		if (status.state == ps5forwarders::Status::State::Failed)
+		{
+			m_feedback.Play(ui::Cue::Denied);
+			OpenHelp(status.removed ? Tr("The tile could not be removed") : Tr("The tile could not be made"), status.message);
+			return;
+		}
+		if (status.removed)
+		{
+			m_feedback.Play(ui::Cue::Notify);
+			OpenHelp(Tr("The tile is removed"),
+				Tr("Its folder is gone from /data/homebrew. If its picture stays on the home screen, delete it there (Options, then "
+				   "Delete), or restart ShadowMount Plus."));
+			return;
+		}
+		// tr: {0} is the tile's folder, /data/homebrew/PPSA99xxx
+		OpenHelp(status.replaced ? Tr("The tile is made again") : Tr("The tile is made"),
+			TrF("It is in {0}. ShadowMount Plus puts it on the PS5's home screen as it does any homebrew: if it does not show, "
+				"restart ShadowMount Plus or the console. The tile starts the game in PS5-ECAM, and closing the game closes the app.",
+				status.folder));
+	}
+
+	void Shell::PollAutoLaunch()
+	{
+		if (m_status.autoLaunch.empty() || m_launch.active || m_done)
+			return;
+		const std::string rom = m_status.autoLaunch;
+		auto give = [&](const std::string& why) {
+			m_status.autoLaunch.clear();
+			ps5log::Line("[launcher] the tile's game did not start: {}", why);
+			OpenHelp(Tr("The tile's game could not start"), why);
+		};
+		if (m_side != m_status.autoLaunchSide)
+		{
+			m_status.autoLaunch.clear(); // another side chosen meanwhile
+			return;
+		}
+		if (!Notice().empty())
+		{
+			give(Notice());
+			return;
+		}
+		if (!CoreReady())
+			return; // Cemu still starting
+		// by its path, or by its file's name in this side's library (the format's --rom allows either)
+		const bool named = rom.find('/') == std::string::npos;
+		for (int i = 0; i < (int)m_games.size(); i++)
+		{
+			const std::filesystem::path& path = m_games[i].entry.game.path;
+			if (named ? path.filename().string() == rom : path.string() == rom)
+			{
+				m_status.autoLaunch.clear();
+				ps5log::Line("[launcher] starting the tile's game: {}", m_games[i].entry.game.name);
+				Launch(i, std::exchange(m_status.autoLaunchResume, false));
+				return;
+			}
+		}
+		if (m_listed && !m_scanning && !SystemScanning())
+			give(TrF("It is not in the library: {0}", rom));
+	}
+
+	// -- screens and the bar ------------------------------------------------------------------------
+
+	void Shell::Show(ScreenId screen)
+	{
+		// Settings' dialog closing onto the screen it was over (6.5): that screen was there all along
+		const bool under = m_screen == ScreenId::Settings && (screen == ScreenId::Library || screen == ScreenId::Hub);
+		if (screen != m_screen)
+			m_screenAt = under ? m_now - 10 : m_now;
+		m_screen = screen;
+	}
+
+	void Shell::ShowTab(ScreenId tab)
+	{
+		m_tab = tab;
+		if (tab == ScreenId::Library)
+			LibraryRefresh();
+		if (tab == ScreenId::Settings && m_screen != ScreenId::Settings)
+		{
+			m_onRows = false;
+			m_settingRow = 0;
+		}
+		if (tab == ScreenId::Settings)
+			m_onBar = false; // the dialog has the focus: the bar is under its dim
+		Show(tab);
+	}
+
+	void Shell::NextTab(int direction)
+	{
+		// two tabs, Library and Settings: either way goes to the other
+		(void)direction;
+		ShowTab(m_tab == ScreenId::Library ? ScreenId::Settings : ScreenId::Library);
+		m_barFocus = m_tab == ScreenId::Library ? kSides : kSides + 1;
+		m_feedback.Play(ui::Cue::Focus);
+	}
+
+	void Shell::FocusBar()
+	{
+		m_onBar = true;
+		m_barFocus = m_tab == ScreenId::Library ? kSides : kSides + 1;
+		m_feedback.Play(ui::Cue::Focus);
+	}
+
+	// The bar: the four sides (m_barFocus 0 to 3), then the Library and Settings tabs (4 and 5)
+	bool Shell::BarUpdate(const ui::Press& press)
+	{
+		if (InGameSettings())
+			return false; // a game's settings have no tabs, nor sides
+		if (press.button == Button::L1 || press.button == Button::R1)
+		{
+			NextTab(press.button == Button::R1 ? 1 : -1);
+			return true;
+		}
+		if (press.button == Button::Touchpad)
+		{
+			if (SidesShown() > 1)
+				SwitchSide(NextShownSide(m_side));
+			else
+				m_feedback.Play(ui::Cue::Denied);
+			return true;
+		}
+		if (!m_onBar)
+			return false;
+		switch (press.button)
+		{
+		case Button::Left:
+		case Button::Right:
+		{
+			const int step = press.button == Button::Right ? 1 : -1;
+			int next = m_barFocus + step;
+			while (next >= 0 && next < kSides && !SideShown(BarSide(next))) // past the sides not shown
+				next += step;
+			if (next < 0 || next > kSides + 1)
+			{
+				m_feedback.Play(ui::Cue::Edge, press.repeat);
+				break;
+			}
+			m_barFocus = next;
+			// onto a tab opens it, as the PS5's bar does
+			if (next == kSides && m_tab != ScreenId::Library)
+				ShowTab(ScreenId::Library);
+			else if (next == kSides + 1 && m_tab != ScreenId::Settings)
+				ShowTab(ScreenId::Settings);
+			m_feedback.Play(ui::Cue::Focus);
+			break;
+		}
+		case Button::Cross:
+			if (m_barFocus < kSides && BarSide(m_barFocus) != m_side)
+				SwitchSide(BarSide(m_barFocus));
+			else
+			{
+				m_onBar = false;
+				m_feedback.Play(ui::Cue::Select);
+			}
+			break;
+		case Button::Down:
+			m_onBar = false;
+			m_feedback.Play(ui::Cue::Focus);
+			break;
+		case Button::Circle:
+			if (m_tab != ScreenId::Library)
+			{
+				ShowTab(ScreenId::Library);
+				m_barFocus = kSides;
+				m_feedback.Play(ui::Cue::Back);
+			}
+			break;
+		case Button::Up: m_feedback.Play(ui::Cue::Edge, press.repeat); break;
+		default: break;
+		}
+		return true;
+	}
+
+	void Shell::DrawBar(Canvas& canvas, bool tabs)
+	{
+		const float y = kBarTop, h = kBarHeight;
+		const float appear = Enter(0);
+		canvas.PushAlpha(appear);
+		// each side's square with its console's glyph in it: the GamePad on blue, the 3DS on gold, the DS
+		// on green, the Switch on red (the app's own tiles, tools/render-icons.py), plain colour until the
+		// picture has loaded
+		static const std::string kTiles[kSides] = {ps5paths::Assets() + "/ui/icons/ps5cemu-72.tga", ps5paths::Assets() + "/ui/icons/azahar-72.tga",
+			ps5paths::Assets() + "/ui/icons/melonds-72.tga", ps5paths::Assets() + "/ui/icons/eden-72.tga", "", "", "", ""};
+		auto tile = [&](int side, const Box& box, float radius, uint32_t tint) {
+			const ui::Picture& picture = m_images->Get(kTiles[side]);
+			if (picture.texture)
+				canvas.Image(picture.texture, box, radius, tint);
+			else
+				canvas.Rect(box, radius, ui::SetAlpha(AccentOf((System)side), ((tint >> 24) & 0xff) / 255.0f));
+		};
+		// the mark: the four sides' squares
+		tile(0, {88, y + 2, 26, 26}, 7, 0xffffffff);
+		tile(1, {116, y + 2, 26, 26}, 7, 0xebffffff);
+		tile(2, {88, y + 30, 26, 26}, 7, 0xebffffff);
+		tile(3, {116, y + 30, 26, 26}, 7, 0xebffffff);
+		// the side switch, in the bar's order: Wii U | Switch | DS | 3DS
+		float x = 160;
+		const ui::TextStyle sideStyle = Style({22, ui::Weight::SemiBold, 1.0f});
+		constexpr float kTile = 34;
+		float widths[kSides];
+		float pillWidth = 8;
+		int shown = 0;
+		for (int i = 0; i < kSides; i++)
+		{
+			widths[i] = 12 + kTile + 10 + m_fonts.Width(sideStyle, SideTitle(BarSide(i))) + 20;
+			if (SideShown(BarSide(i)))
+				pillWidth += widths[i] + (shown++ ? 4 : 0);
+		}
+		const Box pill{x, y, pillWidth, h};
+		canvas.Rect(pill, h / 2, Wash(0.06f));
+		canvas.Ring(pill, h / 2, 1.5f, kGlassEdge);
+		float sx = x + 4;
+		for (int i = 0; i < kSides; i++)
+		{
+			const System side = BarSide(i);
+			if (!SideShown(side))
+				continue;
+			const bool on = side == m_side;
+			const uint32_t colour = AccentOf(side);
+			const Box segment{sx, y + 5, widths[i], h - 10};
+			if (on)
+				canvas.Rect(segment, segment.h / 2, ui::SetAlpha(colour, 0.24f));
+			tile(SideIndex(side), {sx + 12, segment.CentreY() - kTile / 2, kTile, kTile}, 9, on ? 0xffffffff : 0x73ffffff);
+			const ui::TextBlock text = m_fonts.Layout(sideStyle, SideTitle(side));
+			canvas.Text(text, sx + 12 + kTile + 10, segment.CentreY() - text.height * 0.5f, on ? kText : Tertiary());
+			if (m_onBar && m_barFocus == i)
+				Focus(segment, segment.h / 2);
+			sx += widths[i] + 4;
+		}
+		// the controllers and the clock, at the right
+		char clock[16] = "";
+		const std::time_t now = std::time(nullptr);
+		std::tm local{};
+		if (localtime_r(&now, &local))
+			std::strftime(clock, sizeof(clock), "%H:%M", &local);
+		const ui::TextStyle clockStyle = Style({24, ui::Weight::Medium, 1.0f, 0, false, true});
+		const ui::TextBlock clockText = m_fonts.Layout(clockStyle, clock);
+		float right = 1920 - kSafeX;
+		canvas.Text(clockText, right - clockText.width, y + h / 2 - clockText.height * 0.5f, Secondary());
+		right -= clockText.width + 28;
+		bool pads = false;
+		for (int player = ps5pad::kMaxPlayers - 1; player >= 0; player--)
+		{
+			if (!ps5pad::IsConnected(player))
+				continue;
+			const Box pad{right - 36, y + h / 2 - 13, 36, 26};
+			if (player == 0)
+				canvas.Rect(pad, 7, kText);
+			else
+				canvas.Ring(pad, 7, 2, Wash(0.35f));
+			const ui::TextBlock text = m_fonts.Layout({14, ui::Weight::Bold, 1.0f}, fmt::format("P{}", player + 1));
+			canvas.Text(text, pad.CentreX() - text.width * 0.5f, pad.CentreY() - text.height * 0.5f, player == 0 ? kInk1 : Secondary());
+			right -= 44;
+			pads = true;
+		}
+		// the tabs, L1 Library Settings R1, just left of them (28 from the controllers, as from the clock)
+		if (tabs)
+		{
+			// tr: the launcher's tabs
+			const char* labels[2] = {TrC("tab", "Library"), TrC("tab", "Settings")};
+			bool selected[2];
+			ui::TextStyle styles[2];
+			float tabWidths[2];
+			float total = 36 + 14 + 8 + 36;
+			for (int i = 0; i < 2; i++)
+			{
+				selected[i] = (i == 0 && m_tab == ScreenId::Library) || (i == 1 && m_tab == ScreenId::Settings);
+				styles[i] = Style({26, selected[i] ? ui::Weight::SemiBold : ui::Weight::Medium, 1.0f});
+				tabWidths[i] = m_fonts.Width(styles[i], labels[i]) + 52;
+				total += tabWidths[i] + 6;
+			}
+			x = std::max(pill.Right() + 26, right - (pads ? 20 : 0) - total);
+			canvas.Draw(Icon::L1, {x, y + 12, 36, 32}, Tertiary());
+			x += 36 + 14;
+			for (int i = 0; i < 2; i++)
+			{
+				const Box tab{x, y, tabWidths[i], h};
+				if (selected[i])
+					canvas.Rect(tab, h / 2, ui::SetAlpha(kText, 0.94f));
+				const ui::TextBlock text = m_fonts.Layout(styles[i], labels[i]);
+				canvas.Text(text, x + 26, tab.CentreY() - text.height * 0.5f, selected[i] ? kInk1 : Secondary());
+				if (m_onBar && m_barFocus == i + kSides)
+					Focus(tab, h / 2);
+				x += tabWidths[i] + 6;
+			}
+			x += 8;
+			canvas.Draw(Icon::R1, {x, y + 12, 36, 32}, Tertiary());
+		}
+		canvas.PopAlpha();
+	}
+
+	std::string Shell::SystemFolders()
+	{
+		const std::string& root = ps5paths::Root();
+		return ecam_layout::Sibling(root, "cemu") + ", " + ecam_layout::Sibling(root, "azahar") + ", " + ecam_layout::Sibling(root, "melonds") + ", " +
+			ecam_layout::Sibling(ps5paths::kDefaultRoot, "eden");
+	}
+
+	int Shell::Today()
+	{
+		return (int)(std::time(nullptr) / 86400);
+	}
+
+	std::vector<Hint> Shell::Hints() const
+	{
+		// the touchpad's next side; none when one side is shown (its hint goes: DrawHints leaves out an empty one)
+		const std::string other = SidesShown() > 1 ? SystemName(NextShownSide(m_side)) : "";
+		if (m_update.open || m_unpack.open || m_reorganize.open)
+			return {}; // their sheets' own
+		// tr: the hints along the bottom: what a button does on this screen, a word or two
+		if (m_keyboard.open)
+			return {{Icon::Cross, Tr("Type")}, {Icon::Circle, Tr("Delete")}, {Icon::Triangle, Tr("Shift")}, {Icon::Options, Tr("Done")}};
+		if (m_picker.open)
+			return {{Icon::Cross, Tr("Choose")}, {Icon::Circle, Tr("Cancel")}};
+		if (m_help.open)
+			return {{Icon::Circle, Tr("Close")}};
+		if (m_menu.open)
+			return {{Icon::Cross, Tr("Choose")}, {Icon::Circle, Tr("Close")}};
+		if (m_onBar && (m_screen == ScreenId::Library || m_screen == ScreenId::Settings) && !InGameSettings())
+			return {{Icon::LeftRight, Tr("Move")}, {Icon::Cross, m_barFocus < kSides && BarSide(m_barFocus) != m_side ? Tr("Switch") : Tr("Open")},
+				{Icon::Touchpad, other}};
+		switch (m_screen)
+		{
+		case ScreenId::WhatsNew:
+			return {{Icon::Cross, Tr("Continue")}};
+		case ScreenId::Welcome:
+			return {{Icon::LeftRight, Tr("Change")}, {Icon::Triangle, Tr("More about it")},
+				{Icon::Circle, m_welcomeThenSetup ? Tr("Continue to the Setup check") : m_welcomeFromSettings ? Tr("Back") : Tr("Continue to the Library")}};
+		case ScreenId::Setup:
+		{
+			std::vector<Hint> hints;
+			if (m_setupOnLanguage)
+				hints.push_back({Icon::Cross, Tr("Change the language")});
+			else if (m_setupRow < (int)m_checks.size() && !m_checks[m_setupRow].action.empty())
+				hints.push_back({Icon::Cross, m_checks[m_setupRow].action});
+			hints.push_back({Icon::Triangle, Tr("Check again")});
+			hints.push_back({Icon::Circle, !m_setupFirst ? Tr("Back") : Tr("Continue to the Library")});
+			return hints;
+		}
+		case ScreenId::Library:
+		{
+			std::string kicker, title, text;
+			std::vector<std::string> buttons;
+			if (LibraryState(kicker, title, text, buttons))
+				return buttons.empty() ? std::vector<Hint>{{Icon::Touchpad, other}} : std::vector<Hint>{{Icon::Cross, Tr("Choose")}, {Icon::Touchpad, other}};
+			if (m_libraryZone == 1)
+				return {{Icon::LeftRight, Tr("Filters")}, {Icon::Square, Tr("Sort")}, {Icon::Triangle, Tr("Search")}, {Icon::Touchpad, other}};
+			if (m_libraryZone == 2 && m_libraryIndex < ArticTiles())
+				return {{Icon::Cross, Tr("Open")}, {Icon::Touchpad, other}};
+			if (m_libraryZone == 0)
+				return {{Icon::Cross, Tr("Play")}, {Icon::Options, Tr("Options")}, {Icon::LeftRight, Tr("Move")}, {Icon::Touchpad, other}};
+			return {{Icon::Cross, Tr("Play")}, {Icon::Options, Tr("Options")}, {Icon::R2, Tr("Jump by letter")}, {Icon::Touchpad, other}};
+		}
+		case ScreenId::Hub: return {{Icon::Cross, m_hubAbout ? Tr("Back to the buttons") : Tr("Choose")}, {Icon::Options, Tr("Options")},
+			{Icon::UpDown, Tr("Scroll")}, {Icon::Circle, Tr("Back")}};
+		case ScreenId::Settings:
+			if (InGameSettings())
+			{
+				if (!m_onRows)
+					return {{Icon::UpDown, Tr("Pages")}, {Icon::Cross, Tr("Open")}, {Icon::Circle, Tr("Done")}};
+				if (m_page == "gamesaves") // a game's saves: held to move one aside, no defaults
+					return {{Icon::Cross, Tr("Choose")}, {Icon::Triangle, Tr("More about it")}, {Icon::Circle, Tr("Back")}};
+				return {{Icon::LeftRight, Tr("Change")}, {Icon::Square, Tr("Default")}, {Icon::Triangle, Tr("More about it")}, {Icon::Circle, Tr("Back")}};
+			}
+			if (!m_onRows)
+				return {{Icon::UpDown, Tr("Pages")}, {Icon::Cross, Tr("Open")}, {Icon::Circle, Tr("Close")}, {Icon::Touchpad, other}};
+			return {{Icon::LeftRight, Tr("Change")}, {Icon::Triangle, Tr("More about it")}, {Icon::Circle, Tr("Back")}};
+		case ScreenId::Packs:
+			return m_presetsFocus ?
+				std::vector<Hint>{{Icon::Cross, Tr("Choose")}, {Icon::LeftRight, Tr("Change")}, {Icon::Circle, Tr("Back to the packs")}} :
+				std::vector<Hint>{{Icon::Cross, Tr("On / off")}, {Icon::LeftRight, Tr("Presets")}, {Icon::Circle, Tr("Back")}};
+		case ScreenId::Player:
+			return {{Icon::Cross, Tr("Choose")}, {Icon::LeftRight, Tr("Change")}, {Icon::Triangle, Tr("More about it")}, {Icon::Circle, Tr("Back")}};
+		case ScreenId::Mapping:
+			if (m_capture.active) // the Wii U takes the touchpad's click as a press; a handheld's cancels
+				return m_mappingSide == System::WiiU ? std::vector<Hint>{} : std::vector<Hint>{{Icon::Touchpad, Tr("Cancel")}};
+			return {{Icon::Cross, Tr("Assign")}, {Icon::Square, Tr("Clear")}, {Icon::Circle, Tr("Back")}};
+		case ScreenId::Files:
+			if (m_installing)
+				return {{Icon::Circle, Tr("Cancel")}};
+			return {{Icon::Cross, Tr("Open")}, {Icon::Triangle, m_filesMode == 0 ? Tr("Use this folder") : Tr("Install")}, {Icon::Circle, Tr("Back")}};
+		case ScreenId::Artic:
+			if (m_articEditing)
+				return {{Icon::LeftRight, Tr("Number")}, {Icon::UpDown, Tr("Change")}, {Icon::Cross, Tr("Keep")}};
+			return {{Icon::Cross, m_articRow == 0 ? Tr("Edit") : m_articRow == 1 ? Tr("Connect") : Tr("Hold to set up")}, {Icon::Circle, Tr("Back")}};
+		case ScreenId::Updates: return UpdatesHints();
+		case ScreenId::Shares: return SharesHints();
+		}
+		return {};
+	}
+
+	void Shell::DrawHints(Canvas& canvas, const std::vector<Hint>& hints)
+	{
+		const ui::TextStyle style = Style({22, ui::Weight::Medium, 1.0f});
+		float x = 1920 - kSafeX;
+		const float y = 1080 - kHintsBottom - 30;
+		for (auto it = hints.rbegin(); it != hints.rend(); ++it)
+		{
+			if (it->text.empty())
+				continue; // a hint with nothing to say (the touchpad's, with one side shown)
+			const ui::TextBlock text = m_fonts.Layout(style, it->text);
+			x -= text.width;
+			canvas.Text(text, x, y + 15 - text.height * 0.5f, Secondary());
+			x -= 10 + 30;
+			if (it->icon == Icon::R2)
+			{
+				canvas.Draw(Icon::R2, {x, y, 30, 30}, Secondary());
+				x -= 34;
+				canvas.Draw(Icon::L2, {x, y, 30, 30}, Secondary());
+			}
+			else
+				canvas.Draw(it->icon, {x, y, 30, 30}, Secondary());
+			x -= 34;
+		}
+	}
+
+	// -- the backdrop (7.4): the focused game's colours and picture, the side's motif, grain ----------
+
+	void Shell::DrawBackdrop(Canvas& canvas)
+	{
+		// the Setup check belongs to no side: the sides' colours, and the seam
+		if (m_screen == ScreenId::Setup || m_screen == ScreenId::Welcome || m_screen == ScreenId::WhatsNew)
+		{
+			// What's new's seam between its second and third columns of cards, never through one
+			DrawBrandBackdrop(canvas, m_screen == ScreenId::WhatsNew ? 1252.0f : 1140.0f);
+			return;
+		}
+		// the colours glide to the focused game's
+		const float mix = m_ambientMix.Value(m_now);
+		for (int i = 0; i < 2; i++)
+			m_ambient[i] = ui::Mix(m_ambientFrom[i], m_ambientTo[i], mix);
+		// the picture changes once the focus has rested
+		if (m_backdropWanted != m_backdrop && m_now - m_wantedAt > kRestSeconds)
+		{
+			m_backdropOld = m_backdrop;
+			m_backdrop = m_backdropWanted;
+			m_backdropMix.Snap(0);
+			m_backdropMix.Go(1, m_now, m_settings.ui.reduceMotion ? kReducedSeconds : kAmbientSeconds, ui::ease::InOut);
+			for (int i = 0; i < 2; i++)
+			{
+				m_ambientFrom[i] = m_ambient[i];
+				m_ambientTo[i] = m_wantedAmbient[i];
+			}
+			m_ambientMix.Snap(0);
+			m_ambientMix.Go(1, m_now, m_settings.ui.reduceMotion ? kReducedSeconds : kAmbientSeconds, ui::ease::InOut);
+		}
+		const float side = m_sideMix.Value(m_now);
+		const Box screen{0, 0, 1920, 1080};
+		canvas.PushAlpha(side);
+		// a light theme keeps the game's colours faint: its ground stays light under dark text
+		const bool light = ui::LightTheme();
+		const uint32_t base = ui::Mix(Accent(), kInk0, 0.86f);
+		uint32_t glow = m_ambient[0] ? m_ambient[0] : ui::Mix(Accent(), kInk0, 0.55f);
+		uint32_t deep = m_ambient[1] ? m_ambient[1] : kInk0;
+		if (light)
+		{
+			glow = ui::Mix(glow, kInk0, 0.7f);
+			deep = ui::Mix(deep, kInk0, 0.9f);
+		}
+		canvas.LinearGradient(screen, 0, base, deep | 0xff000000, 0, 0, 0, 1080);
+		canvas.RadialGradient(screen, 0, ui::SetAlpha(glow, 0.75f), ui::SetAlpha(glow, 0), 1380, 260, 1250, 900);
+		// the focused game's picture, softened
+		if (m_settings.ui.gamePictures && !m_settings.ui.highContrast)
+		{
+			const float pictureMix = m_backdropMix.Value(m_now);
+			auto picture = [&](const std::string& path, float alpha) {
+				if (path.empty() || alpha <= 0)
+					return;
+				const ui::Picture& p = m_images->Get(path, true);
+				if (p.texture)
+					canvas.ImageCover(p.texture, p.width, p.height, screen, 0, ui::SetAlpha(0xffffffff, alpha * (light ? 0.3f : 0.42f)));
+			};
+			picture(m_backdropOld, 1 - pictureMix);
+			picture(m_backdrop, pictureMix);
+		}
+		// the motif: bubbles rising on the Wii U side, waves rolling on the 3DS side, pixels rising on the
+		// DS side, bars drifting in pairs on the Switch side
+		// (the theme's own instead, or none: theme.h)
+		switch (ui::CurrentMotif())
+		{
+		case ui::Motif::Side: DrawSideMotif(canvas, 1); break;
+		case ui::Motif::Eden: DrawEden(canvas, 1); break;
+		case ui::Motif::None: break;
+		}
+		// scrims, grain and a vignette
+		canvas.LinearGradient(screen, 0, ui::SetAlpha(kInk0, 0.7f), ui::SetAlpha(kInk0, 0), 0, 0, 1300, 0);
+		canvas.LinearGradient(screen, 0, ui::SetAlpha(kInk0, 0), ui::SetAlpha(kInk0, 0.8f), 0, 640, 0, 1080);
+		if (!m_settings.ui.highContrast)
+			canvas.Grain(screen, Wash(0.05f));
+		canvas.RadialGradient(screen, 0, 0x00000000, light ? 0x1f000000 : 0x8c000000, 960, 432, 1248, 1026, 0.55f);
+		// Eden's motes of light, over the shade so they show
+		if (ui::CurrentMotif() == ui::Motif::Eden)
+			DrawMotes(canvas, 1);
+		canvas.PopAlpha();
+	}
+
+	void Shell::DrawBubbles(Canvas& canvas, float alpha)
+	{
+		const bool still = m_settings.ui.reduceMotion;
+		for (Bubble& bubble : m_bubbles)
+		{
+			if (!still)
+			{
+				bubble.y -= bubble.speed * m_dt;
+				bubble.x += bubble.drift * m_dt;
+				if (bubble.y < -bubble.radius)
+					bubble.y = 1080 + bubble.radius;
+			}
+			const Box disc{bubble.x - bubble.radius, bubble.y - bubble.radius, bubble.radius * 2, bubble.radius * 2};
+			canvas.Rect(disc, bubble.radius, ui::SetAlpha(0xfff4e9de, bubble.alpha * 0.5f * alpha));
+		}
+	}
+
+	void Shell::DrawPixels(Canvas& canvas, float alpha)
+	{
+		// the bubbles' places and speeds, as squares with rounded corners in melonDS's green, rising
+		// straight, a third of them (fewer and larger than bubbles: a DS's pixels)
+		const bool still = m_settings.ui.reduceMotion;
+		for (size_t i = 0; i < m_bubbles.size(); i += 3)
+		{
+			Bubble& pixel = m_bubbles[i];
+			if (!still)
+			{
+				pixel.y -= pixel.speed * 0.7f * m_dt;
+				if (pixel.y < -pixel.radius * 2)
+					pixel.y = 1080 + pixel.radius * 2;
+			}
+			const float size = 8 + pixel.radius * 0.9f;
+			const Box square{pixel.x - size / 2, pixel.y - size / 2, size, size};
+			canvas.Rect(square, size * 0.22f, ui::SetAlpha(kNds, std::min(1.0f, pixel.alpha * 1.6f) * 0.5f * alpha));
+		}
+	}
+
+	// the Switch side's: pairs of tall rounded bars, as a Switch's two controllers either side of it (one
+	// in the side's red, its partner in neon blue), rising slowly, a quarter of the bubbles' places
+	void Shell::DrawJoyCons(Canvas& canvas, float alpha)
+	{
+		const bool still = m_settings.ui.reduceMotion;
+		constexpr uint32_t kPartner = 0xfff5b800; // #00b8f5, the Switch's neon blue
+		for (size_t i = 1; i < m_bubbles.size(); i += 4)
+		{
+			Bubble& pair = m_bubbles[i];
+			if (!still)
+			{
+				pair.y -= pair.speed * 0.45f * m_dt;
+				if (pair.y < -pair.radius * 4)
+					pair.y = 1080 + pair.radius * 4;
+			}
+			const float width = 10 + pair.radius * 0.55f, height = width * 2.3f, gap = width * 0.35f;
+			const float a = std::min(1.0f, pair.alpha * 1.6f) * 0.5f * alpha;
+			const Box left{pair.x - gap / 2 - width, pair.y - height / 2, width, height};
+			const Box right{pair.x + gap / 2, pair.y - height / 2, width, height};
+			canvas.Rect(left, width * 0.48f, ui::SetAlpha(i % 8 == 1 ? kPartner : kNx, a));
+			canvas.Rect(right, width * 0.48f, ui::SetAlpha(kNx, a));
+		}
+	}
+
+	void Shell::DrawSideMotif(Canvas& canvas, float alpha)
+	{
+		if (IsWiiU())
+			DrawBubbles(canvas, alpha);
+		else if (Is3ds())
+			DrawWaves(canvas, alpha);
+		else if (IsSwitch())
+			DrawJoyCons(canvas, alpha);
+		else
+			DrawPixels(canvas, alpha);
+	}
+
+	void Shell::DrawWaves(Canvas& canvas, float alpha)
+	{
+		static constexpr float kTop[3] = {580, 670, 770}, kWave[3] = {1280, 960, 720}, kAmplitude[3] = {36, 28, 22}, kSpeed[3] = {24, -36, 50};
+		static constexpr uint32_t kColour[3] = {0xff8ce4ff, 0xffa6ecff, 0xffc4f4ff};
+		for (int layer = 0; layer < 3; layer++)
+		{
+			if (!m_settings.ui.reduceMotion)
+				m_wavePhase[layer] -= kSpeed[layer] * m_dt / kWave[layer] * 6.2831853f;
+			canvas.Wave({0, kTop[layer] - 4, 1920, 1080 - kTop[layer] + 4}, kTop[layer] + kAmplitude[layer], kAmplitude[layer],
+				kWave[layer] / 6.2831853f, m_wavePhase[layer], ui::SetAlpha(kColour[layer], (0.05f + 0.015f * layer) * alpha));
+		}
+	}
+
+	// Eden's motif, after ProsperoEden 1.001's Canopy (its backdrop's light, drift and motes): the side's
+	// light drifting slowly where Canopy's sun is, and the side's own bubbles, waves or pixels faint behind
+	// the glass; DrawMotes adds its motes of light over the shade
+	void Shell::DrawEden(Canvas& canvas, float alpha)
+	{
+		const Box screen{0, 0, 1920, 1080};
+		const bool still = m_settings.ui.reduceMotion;
+		const float t = still ? 0.0f : (float)(m_now - m_start);
+		const uint32_t light = ui::Mix(Accent(), 0xffffffff, 0.45f);
+		// the light: at Canopy's sun (0.71, 0.39 of the screen), wandering a little
+		const float lx = 1363 + std::sin(t * 0.05f) * 60, ly = 422 + std::cos(t * 0.04f) * 30;
+		canvas.RadialGradient(screen, 0, ui::SetAlpha(light, 0.34f * alpha), ui::SetAlpha(light, 0), lx, ly, 960, 640);
+		canvas.RadialGradient(screen, 0, ui::SetAlpha(0xffffffff, 0.12f * alpha), ui::SetAlpha(0xffffffff, 0), lx, ly, 280, 210);
+		// the side's own, faint behind the glass
+		DrawSideMotif(canvas, (Is3ds() ? 0.5f : 0.45f) * alpha);
+	}
+
+	// 26 motes of light rising, each from its own seed, 14 to 36 pixels a second, swaying and glowing on its
+	// own, fading out near the top
+	void Shell::DrawMotes(Canvas& canvas, float alpha)
+	{
+		const bool still = m_settings.ui.reduceMotion;
+		const float t = still ? 0.0f : (float)(m_now - m_start);
+		const uint32_t light = ui::Mix(Accent(), 0xffffffff, 0.45f);
+		auto fraction = [](float x) { return x - std::floor(x); };
+		for (int i = 0; i < 26; i++)
+		{
+			const float a = fraction(std::sin(i * 12.9898f) * 43758.5453f), b = fraction(std::sin(i * 78.233f) * 12543.21f);
+			const float speed = 14 + b * 22, size = 3 + a * 5;
+			const float y = 1120 - std::fmod(t * speed + b * 1200, 1240.0f);
+			const float x = a * 1920 + std::sin(t * 0.6f + i) * 18;
+			const float glow = (0.45f + 0.35f * std::sin(t * 1.3f + i * 1.7f)) * std::clamp(y / 540.0f, 0.0f, 1.0f) * alpha;
+			// its light, fading out from it, then the mote
+			const float reach = size * 4;
+			canvas.RadialGradient({x - reach, y - reach, reach * 2, reach * 2}, 0, ui::SetAlpha(light, 0.4f * glow), ui::SetAlpha(light, 0), x, y, reach, reach);
+			canvas.Rect({x - size / 2, y - size / 2, size, size}, size / 2, ui::SetAlpha(0xffffffff, 0.85f * glow));
+		}
+	}
+
+	// -- overlays: the dropdown, help, the Game menu, the keyboard, the update sheet, toasts, the launch --
+
+	void Shell::OpenPicker(const std::string& kicker, const std::string& title, std::vector<std::string> options, int active,
+		std::function<void(int)> choose)
+	{
+		if (options.empty())
+			return;
+		m_picker.open = true;
+		m_picker.kicker = kicker;
+		m_picker.title = title;
+		m_picker.options = std::move(options);
+		m_picker.active = active;
+		m_picker.selected = std::max(active, 0);
+		m_picker.choose = std::move(choose);
+		m_picker.scroll.Snap(0);
+		m_picker.at = m_now;
+		m_feedback.Play(ui::Cue::Sheet);
+	}
+
+	void Shell::OpenHelp(const std::string& title, const std::string& text)
+	{
+		m_help = {true, title, text, m_now};
+		m_feedback.Play(ui::Cue::Sheet);
+	}
+
+	void Shell::OpenGameMenu(int game)
+	{
+		if (game < 0 || game >= (int)m_games.size())
+			return;
+		m_menu.open = true;
+		m_menu.game = game;
+		m_menu.selected = 0;
+		m_menu.at = m_now;
+		const Game& g = m_games[game];
+		m_menu.items = {{"play", Tr("Play")}};
+		// a 3DS or DS game quit to the library left a state to go on from (ps5saves::ResumeState)
+		if (Is3ds() || IsDs())
+		{
+			const std::string state = ps5saves::ResumeState({Is3ds() ? 1 : 2, g.entry.game.titleId, g.entry.game.path.string()});
+			std::error_code ec;
+			if (!state.empty() && std::filesystem::exists(state, ec))
+				m_menu.items.push_back({"resume", Tr("Resume where you left off")});
+		}
+		if (m_screen != ScreenId::Hub)
+			m_menu.items.push_back({"hub", Tr("Game hub")});
+		// a game with settings of its own says so
+		const bool own = m_settings.games.count(ps5settings::GameKey(ps5launcher::SideName(m_side), g.entry.game.titleId)) > 0;
+		m_menu.items.push_back({"settings", own ? Tr("Game settings: custom") : Tr("Game settings")});
+		// its own, by account (6.15); a Switch game's too, by its real title ID (not one the library made up)
+		if (!IsRetro() && g.entry.game.titleId != 0 && (!IsSwitch() || !ps5eden::IsMadeId(g.entry.game.titleId)))
+			m_menu.items.push_back({"saves", Tr("Saves")});
+		if (IsWiiU() && m_status.coreReady)
+		{
+			m_menu.items.push_back({"packs", Tr("Graphic packs")});
+			m_menu.items.push_back({"mods", Tr("Add mods from USB")});
+			m_menu.items.push_back({"updates", Tr("Updates and DLC")});
+		}
+		// a 3DS game's update or DLC installed from a CIA, which can keep it from starting (#80); a Wii U
+		// game's installed in mlc01, which only FTP took out before (#58)
+		bool installedUpdate = false, installedDlc = false;
+		if (IsWiiU() && m_status.coreReady && g.entry.game.titleId)
+			ps5emu::InstalledAddOns(g.entry.game.titleId, installedUpdate, installedDlc);
+		if ((Is3ds() && (g.entry.game.hasUpdate || g.entry.game.dlcCount > 0)) || installedUpdate || installedDlc)
+			m_menu.items.push_back({"removeaddons", Tr("Remove its update or DLC")});
+		m_menu.items.push_back({"favourite", g.entry.favourite ? Tr("Not a favourite") : Tr("Favourite")});
+		// tr: the game menu: a game left out of the Library's list (for demos and clutter), or put back
+		m_menu.items.push_back({"hide", g.entry.hidden ? Tr("Back in the Library") : Tr("Hide from the Library")});
+		if (!IsRetro() && ps5forwarders::HasTile(g.entry.game.path.string()))
+			m_menu.items.push_back({"untile", Tr("Remove from home screen")});
+		else if (!IsRetro())
+			m_menu.items.push_back({"tile", Tr("Add to home screen")});
+		m_feedback.Play(ui::Cue::Sheet);
+	}
+
+	void Shell::OpenNameKeyboard(const std::string& title, const std::string& text, size_t limit, std::function<void(const std::string&)> done)
+	{
+		OpenKeyboard();
+		m_keyboard.naming = true;
+		m_keyboard.title = title;
+		m_keyboard.text = text;
+		m_keyboard.limit = limit;
+		m_keyboard.done = std::move(done);
+	}
+
+	void Shell::OpenTextKeyboard(const std::string& title, const std::string& text, size_t limit, bool secret,
+		std::function<void(const std::string&)> done)
+	{
+		OpenNameKeyboard(title, text, limit, std::move(done));
+		m_keyboard.raw = true;
+		m_keyboard.secret = secret;
+		m_keyboard.page = ps5keyboard::FirstPage(ps5lang::Current(), true); // an address, a user name, a password
+	}
+
+	void Shell::OpenKeyboard()
+	{
+		m_keyboard.naming = false;
+		m_keyboard.raw = false;
+		m_keyboard.secret = false;
+		m_keyboard.shift = false;
+		m_keyboard.page = ps5keyboard::FirstPage(ps5lang::Current(), false);
+		m_keyboard.done = nullptr;
+		m_keyboard.open = true;
+		m_keyboard.row = 1;
+		m_keyboard.column = 0;
+		m_keyboard.at = m_now;
+		m_feedback.Play(ui::Cue::Sheet);
+	}
+
+	bool Shell::OverlayUpdate(const ui::Press& press)
+	{
+		const Button b = press.button;
+		if (m_unpack.open)
+		{
+			// Circle stops it, and what it unpacked goes
+			if (b == Button::Circle && !m_unpack.progress.cancel)
+			{
+				m_unpack.progress.cancel = true;
+				m_feedback.Play(ui::Cue::Back);
+			}
+			return true;
+		}
+		if (m_reorganize.open)
+		{
+			// Reorganize or Later; once it could not, OK
+			const int choices = m_reorganize.restartAt >= 0 ? 0 : m_reorganize.message.empty() ? 2 : 1;
+			if ((b == Button::Left || b == Button::Right) && choices > 1)
+			{
+				m_reorganize.choice = 1 - m_reorganize.choice;
+				m_feedback.Play(ui::Cue::Focus);
+			}
+			else if (choices > 0 && (b == Button::Circle || (b == Button::Cross && (m_reorganize.choice == 1 || choices == 1))))
+			{
+				// Later: asked again in a week, and Settings > Game files has it meanwhile
+				if (choices == 2)
+				{
+					m_settings.ui.reorganizeAsked = Today();
+					SaveSettings();
+					ps5log::Line("[reorganize] put off: asked again in a week");
+				}
+				m_reorganize.open = false;
+				m_feedback.Play(b == Button::Circle ? ui::Cue::Back : ui::Cue::Select);
+			}
+			else if (b == Button::Cross && choices == 2)
+			{
+				if (ps5reorganize::Ask(ps5paths::Root(), ps5reorganize::Request::Separate))
+				{
+					ps5log::Line("[reorganize] asked for: the folders move as the app starts again");
+					m_reorganize.restartAt = m_now; // once a frame has said so (Frame)
+				}
+				else
+					m_reorganize.message = TrF("PS5-ECAM cannot write to {0}. Is the HEN loaded?", ps5paths::Root());
+				m_feedback.Play(ui::Cue::Select);
+			}
+			return true;
+		}
+		if (m_update.open)
+		{
+			const auto status = ps5update::GetStatus();
+			using State = ps5update::Status::State;
+			// Ready: Restart now, and Later too once the PS5 would not start the app again (its message)
+			const int choices = m_update.restartAt >= 0 ? 0 :
+				status.state == State::Available		? 3 :
+				status.state == State::Ready			? (status.message.empty() ? 1 : 2) :
+				status.state == State::Failed			? 1 :
+														  0;
+			if ((b == Button::Left || b == Button::Right) && choices > 1)
+			{
+				m_update.choice = (m_update.choice + (b == Button::Right ? 1 : choices - 1)) % choices;
+				m_feedback.Play(ui::Cue::Focus);
+			}
+			else if (b == Button::Circle && m_update.restartAt < 0)
+			{
+				// a download stops (the release is offered again later); anything else is put off
+				if (!ps5update::Cancel())
+					ps5update::Dismiss();
+				m_feedback.Play(ui::Cue::Back);
+			}
+			else if (b == Button::Cross && choices > 0)
+			{
+				// Available: Update now, Later, Skip this version; Ready: Restart now (Later); Failed: OK
+				if (status.state == State::Available && m_update.choice == 0)
+					ps5update::Install();
+				else if (status.state == State::Available && m_update.choice == 2)
+				{
+					m_settings.ui.skipVersion = ps5update::Readable(status.latest);
+					SaveSettings();
+					ps5log::Line("[update] {} skipped: not offered at start", m_settings.ui.skipVersion);
+					ps5update::Dismiss();
+				}
+				else if (status.state == State::Ready && m_update.choice == 0)
+					m_update.restartAt = m_now; // once a frame has said so (Frame)
+				else
+					ps5update::Dismiss();
+				m_update.choice = 0;
+				m_feedback.Play(ui::Cue::Select);
+			}
+			return true;
+		}
+		if (m_picker.open)
+		{
+			const int count = (int)m_picker.options.size();
+			if (b == Button::Circle)
+			{
+				m_picker.open = false;
+				m_feedback.Play(ui::Cue::Back);
+			}
+			else if (b == Button::Cross)
+			{
+				m_picker.open = false;
+				m_feedback.Play(ui::Cue::Select);
+				auto choose = m_picker.choose;
+				choose(m_picker.selected);
+			}
+			else if (b == Button::Up || b == Button::Down)
+			{
+				const int next = m_picker.selected + (b == Button::Down ? 1 : -1);
+				if (next < 0 || next >= count)
+					m_feedback.Play(ui::Cue::Edge, press.repeat);
+				else
+				{
+					m_picker.selected = next;
+					m_feedback.Play(ui::Cue::Focus);
+				}
+			}
+			else if (b == Button::L2 || b == Button::R2 || b == Button::L1 || b == Button::R1)
+			{
+				m_picker.selected = std::clamp(m_picker.selected + (b == Button::R2 || b == Button::R1 ? 6 : -6), 0, count - 1);
+				m_feedback.Play(ui::Cue::Focus);
+			}
+			return true;
+		}
+		if (m_help.open)
+		{
+			if (b == Button::Circle || b == Button::Cross || b == Button::Triangle)
+			{
+				m_help.open = false;
+				m_feedback.Play(ui::Cue::Back);
+			}
+			return true;
+		}
+		if (m_keyboard.open)
+		{
+			const std::vector<ps5keyboard::Page>& pages = KeyboardPages();
+			m_keyboard.page = std::clamp(m_keyboard.page, 0, (int)pages.size() - 1);
+			const ps5keyboard::Page& page = pages[m_keyboard.page];
+			// the page's rows, then Shift, Space, Delete and Done
+			const int actionRow = (int)page.rows.size();
+			auto rowLength = [&page, actionRow](int row) { return row < actionRow ? (int)page.rows[row].size() : 4; };
+			// what was typed, its spaces at the ends left out, to the one who asked (who may open the
+			// keyboard again for the next field: the call is made from a copy)
+			auto finish = [this] {
+				m_keyboard.open = false;
+				if (m_keyboard.naming && m_keyboard.done)
+				{
+					const std::string& text = m_keyboard.text;
+					const size_t first = text.find_first_not_of(' '), last = text.find_last_not_of(' ');
+					const std::string typed = m_keyboard.raw ? text : first == std::string::npos ? std::string() : text.substr(first, last - first + 1);
+					auto done = std::move(m_keyboard.done);
+					m_keyboard.done = nullptr;
+					done(typed);
+				}
+			};
+			switch (b)
+			{
+			case Button::R1:
+			case Button::L1:
+			{
+				// the next page, or the one before; the focus where it was, on the keys Shift and the
+				// others stay under
+				const int count = (int)pages.size();
+				m_keyboard.page = (m_keyboard.page + (b == Button::R1 ? 1 : count - 1)) % count;
+				const ps5keyboard::Page& next = pages[m_keyboard.page];
+				const int rows = (int)next.rows.size();
+				m_keyboard.row = m_keyboard.row >= actionRow ? rows : std::min(m_keyboard.row, rows - 1);
+				const int length = m_keyboard.row < rows ? (int)next.rows[m_keyboard.row].size() : 4;
+				m_keyboard.column = std::min(m_keyboard.column, length - 1);
+				m_feedback.Play(ui::Cue::Focus);
+				break;
+			}
+			case Button::Up:
+			case Button::Down:
+			{
+				const int row = m_keyboard.row + (b == Button::Down ? 1 : -1);
+				if (row < 0 || row > actionRow)
+					m_feedback.Play(ui::Cue::Edge, press.repeat);
+				else
+				{
+					m_keyboard.row = row;
+					m_keyboard.column = std::min(m_keyboard.column, rowLength(row) - 1);
+					m_feedback.Play(ui::Cue::Focus);
+				}
+				break;
+			}
+			case Button::Left:
+			case Button::Right:
+			{
+				const int length = rowLength(m_keyboard.row);
+				m_keyboard.column = (m_keyboard.column + (b == Button::Right ? 1 : length - 1)) % length;
+				m_feedback.Play(ui::Cue::Focus);
+				break;
+			}
+			case Button::Cross:
+			{
+				std::string& text = m_keyboard.naming ? m_keyboard.text : m_search;
+				// a name's limit is in characters, however many bytes they take
+				auto fits = [this](const std::string& typed) { return !m_keyboard.naming || ps5keyboard::Length(typed) <= m_keyboard.limit; };
+				const bool last = m_keyboard.row == actionRow;
+				if (!last)
+				{
+					// a key types what it shows; some change the character before (a kana's marks, a
+					// Korean syllable, a Vietnamese tone), and one that changes nothing says so
+					const std::string typed =
+						ps5keyboard::Typed(text, page, page.rows[m_keyboard.row][m_keyboard.column], m_keyboard.shift);
+					if (typed == text || !fits(typed))
+					{
+						m_feedback.Play(ui::Cue::Denied);
+						break;
+					}
+					text = typed;
+				}
+				else if (m_keyboard.column == 0)
+					m_keyboard.shift = !m_keyboard.shift;
+				else if (m_keyboard.column == 1)
+				{
+					if (!fits(text + ' '))
+					{
+						m_feedback.Play(ui::Cue::Denied);
+						break;
+					}
+					text += ' ';
 				}
 				else if (m_keyboard.column == 2)
 					text = ps5keyboard::Deleted(text);
