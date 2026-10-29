@@ -229,18 +229,23 @@ namespace
 		for (const char* nx : {".nsp", ".xci"})
 			if (extension == nx)
 				tile.side = ps5launcher::System::Switch;
+		if (const int retro = ps5retro::IdentifySystem(tile.rom); retro >= 4)
+			tile.side = (ps5launcher::System)retro;
 		// an archive's game is any side's (app/game_archives.h): the side whose library listed it last (the
 		// catalogue), else the side whose game files folder holds it (the deepest of those that do), else
 		// the DS side's, whose tiles were its only ones
 		if (ps5archive::IsArchive(tile.rom))
 		{
-			for (const ps5catalog::System side : {ps5catalog::System::WiiU, ps5catalog::System::N3ds, ps5catalog::System::Nds})
+			for (int index = 0; index < ps5launcher::kSideCount; ++index)
+			{
+				const auto side = (ps5catalog::System)index;
 				for (const ps5catalog::Entry& entry : ps5catalog::Games(side))
 					if (entry.game.path.string() == tile.rom)
 					{
 						tile.side = (ps5launcher::System)side;
 						return tile;
 					}
+			}
 			tile.side = ps5launcher::System::Nds;
 			size_t deepest = 0;
 			for (const auto& [side, setting] : {std::pair{ps5launcher::System::WiiU, &settings.gamesFolder},
@@ -645,8 +650,9 @@ int main(int argc, char* argv[])
 		if (ps5retro::IsRetro((int)system))
 		{
 			const int index = (int)system;
+			ps5log::Line("[main] preparing {} library: {}; automatic discovery {}", ps5launcher::SideTitle(system), settings.retro[index - 4].gamesFolder, settings.retro[index - 4].autoGameFolders);
 			status.noticeRetro[index - 4] = ps5retro::Available(index, settings.retro[index - 4].retroBackend) ? std::string() : ps5lang::Tr("The selected emulator runtime is missing from this ECAM package.");
-			if (!keepList(system, settings.retro[index - 4].gamesFolder)) ps5retro::StartScan(index, settings.retro[index - 4].gamesFolder);
+			if (!keepList(system, settings.retro[index - 4].gamesFolder)) ps5retro::StartScan(index, settings.retro[index - 4].gamesFolder, settings.retro[index - 4].autoGameFolders);
 			return;
 		}
 		if (system == ps5launcher::System::N3ds)

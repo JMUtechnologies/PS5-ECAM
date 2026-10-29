@@ -15,20 +15,26 @@ static std::vector<std::string> handed;
 namespace ps5emu { void LoadExecApp(const std::string& program, const std::vector<std::string>& args, bool, const std::string&) { called = program; handed = args; } }
 static void Check(bool ok, const char* text) { std::cout << (ok ? "PASS " : "FAIL ") << text << '\n'; failures += !ok; }
 static void Put(const fs::path& file, const std::string& text = "fixture") { fs::create_directories(file.parent_path()); std::ofstream(file, std::ios::binary) << text; }
+static std::string DiscHeader(bool wii)
+{
+	std::string header(0x20, '\0');
+	header.replace(wii ? 0x18 : 0x1c, 4, wii ? std::string("\x5d\x1c\x9e\xa3", 4) : std::string("\xc2\x33\x9f\x3d", 4));
+	return header;
+}
 int main(int argc, char** argv)
 {
 	if (argc != 2) return 2;
 	fs::create_directories(argv[1]); const auto root = fs::canonical(argv[1]);
 	std::string error;
-	Check(ps5launcher::kSideCount == 8, "eight stable side indices");
-	for (int i = 0; i < 8; i++) Check((int)ps5launcher::SideNamed(ps5launcher::SideName((ps5launcher::System)i)) == i, "side names round-trip without changing existing indices");
-	Put(root / "roms/A.NES", std::string("NES\x1a", 4) + std::string(12, '\0')); Put(root / "roms/B.z64"); Put(root / "roms/C.iso"); Put(root / "roms/D.wad"); Put(root / "roms/not-a-game.txt");
+	Check(ps5launcher::kSideCount == 11, "eleven stable side indices");
+	for (int i = 0; i < 11; i++) Check((int)ps5launcher::SideNamed(ps5launcher::SideName((ps5launcher::System)i)) == i, "side names round-trip without changing existing indices");
+	Put(root / "roms/A.NES", std::string("NES\x1a", 4) + std::string(12, '\0')); Put(root / "roms/B.z64"); Put(root / "roms/C.iso", DiscHeader(false)); Put(root / "roms/D.wad"); Put(root / "roms/not-a-game.txt");
 	Put(root / "roms/nested/E.unif"); Put(root / "roms/one/two/three/four/five/too-deep.nes"); fs::create_directory_symlink(root / "roms", root / "roms/loop");
 	const auto nes = ps5retro::Scan("nes", (root / "roms").string(), error);
 	Check(nes.size() == 2 && error.empty(), "NES scan accepts upper-case/nested formats and ignores symlinks");
 	Check(ps5retro::Scan("n64", (root / "roms").string(), error).size() == 1, "N64 scan isolates its ROM formats");
 	Check(ps5retro::Scan("gamecube", (root / "roms").string(), error).size() == 1, "GameCube scan excludes Wii channels");
-	Check(ps5retro::Scan("wii", (root / "roms").string(), error).size() == 2, "Wii scan includes channels");
+	Check(ps5retro::Scan("wii", (root / "roms").string(), error).size() == 1, "Wii scan excludes GameCube discs and includes channels");
 	Check(ps5retro::Scan("invalid", (root / "roms").string(), error).empty() && !error.empty(), "unknown systems are refused");
 	const auto again = ps5retro::Scan("nes", (root / "roms").string(), error);
 	Check(nes[0].titleId == again[0].titleId && (nes[0].titleId >> 56) == 0x60, "stable IDs use a separate synthetic namespace");
@@ -44,6 +50,8 @@ int main(int argc, char** argv)
 	Check(called == "retro/nes/eboot.bin" && handed[0] == "--ecam-library", "native settings frontend has an explicit return handoff");
 	Check(ecam_bridge::Parse({"--ecam-library", "--return", "/app/eboot.bin"}).valid, "library-only request does not require a fake ROM");
 	Check(ps5retro::LaunchArguments(7, "/game.nes", "/app/eboot.bin\n--rom").empty(), "return-path line injection refused");
+	Check(ps5retro::LaunchArguments(7, "/game.nes", "relative/eboot.bin").empty(), "relative return path refused before handoff");
+	Check(ps5retro::LaunchArguments(7, "/game.nes", "/app/not-eboot.bin").empty(), "return path must name the ECAM executable");
 	ecam_bridge::request = ecam_bridge::Parse({"--ecam-library", "--return", "/app/eboot.bin"});
 	const char* retained = ecam_bridge::ReturnProgram(); ecam_bridge::request.returnProgram.clear();
 	Check(std::string(retained) == "/app/eboot.bin", "return path survives runtime allocator cleanup");
@@ -52,6 +60,10 @@ int main(int argc, char** argv)
 	Check(!ecam_bridge::Parse({"--rom", "relative.nes", "--return", "/app/eboot.bin"}).valid, "bridge requires explicit absolute paths");
 	Put(root / "request", "--rom\n/games/a game.nes\n--return\n/app/eboot.bin\n");
 	Check(ecam_bridge::Read((root / "request").string()).valid && !fs::exists(root / "request"), "argc-loss request is consumed once");
+	Check(!ecam_bridge::Read((root / "request").string()).valid, "consumed request cannot be replayed");
+	Put(root / "linked-request-target", "--rom\n/games/a game.nes\n--return\n/app/eboot.bin\n");
+	fs::create_symlink(root / "linked-request-target", root / "linked-request");
+	Check(!ecam_bridge::Read((root / "linked-request").string()).valid && fs::exists(root / "linked-request-target"), "request symlink is refused and its target is preserved");
 	Put(root / "request", "--rom\nrelative.nes\n");
 	Check(!ecam_bridge::Read((root / "request").string()).valid, "incomplete request does not start another game");
 	ps5settings::Launcher settings;
@@ -100,5 +112,118 @@ int main(int argc, char** argv)
 	ecam_bridge::Init(4, args, "test-no-runtime");
 	Check(std::getenv("PS5ECAM_ROM") == nullptr, "library-only handoff clears stale forwarded-game environment");
 	Check(ps5retro::Diagnostics(6, 1).find("/data/mupen64plus") != std::string::npos, "diagnostics identify backend-specific data");
+	Check((int)ps5launcher::System::Nes == 7 && (int)ps5launcher::System::Gb == 8 && (int)ps5launcher::System::Gba == 10, "handheld sides append without renumbering existing systems");
+	Put(root / "handhelds/Pocket.GB", std::string(0x150, '\0')); Put(root / "handhelds/Color.gbc", std::string(0x150, '\0')); Put(root / "handhelds/Advance.gba", std::string(0xc0, '\0'));
+	Put(root / "handhelds/collection.zip", "fixture");
+	const auto gb = ps5retro::Scan("gb", (root / "handhelds").string(), error);
+	const auto gbc = ps5retro::Scan("gbc", (root / "handhelds").string(), error);
+	const auto gba = ps5retro::Scan("gba", (root / "handhelds").string(), error);
+	Check(gb.size() == 1 && gb[0].path.extension() == ".GB", "GB list accepts case-insensitive loose GB ROMs only");
+	Check(gbc.size() == 1 && gbc[0].path.extension() == ".gbc", "GBC list isolates color games without guessing ZIP contents");
+	Check(gba.size() == 2, "GBA list accepts GBA and dedicated archives");
+	Check(gb[0].titleId != gbc[0].titleId, "shared GB/GBC data root has distinct catalogue identities");
+	Check(ps5retro::ValidateRom(8, gb[0].path.string(), error) && ps5retro::ValidateRom(9, gbc[0].path.string(), error), "basic complete GB/GBC headers pass preflight");
+	Check(ps5retro::ValidateRom(10, (root / "handhelds/Advance.gba").string(), error), "basic complete GBA header passes preflight");
+	Put(root / "short.gb", "short"); Check(!ps5retro::ValidateRom(8, (root / "short.gb").string(), error), "truncated handheld header refused");
+	Put(root / "oversized.gba", "x"); fs::resize_file(root / "oversized.gba", 32ull * 1024 * 1024 + 1);
+	Check(!ps5retro::ValidateRom(10, (root / "oversized.gba").string(), error), "oversized GBA ROM refused before handoff");
+	ps5retro::StartScan(8, (root / "handhelds").string()); ps5retro::StartScan(9, (root / "handhelds").string()); ps5retro::StartScan(10, (root / "handhelds").string()); ps5retro::FinishScans();
+	Check(ps5retro::ListGames(8).size() == 1 && ps5retro::ListGames(9).size() == 1 && ps5retro::ListGames(10).size() == 2, "three independent handheld scanner slots join cleanly");
+	Put(root / "app/retro/gbc/eboot.bin"); Put(root / "app/retro/gba/eboot.bin");
+	ps5retro::Launch(8, gb[0].path.string(), error); Check(called == "retro/gbc/eboot.bin" && handed[1] == gb[0].path.string(), "GB forwards exact ROM to bundled GBCXY");
+	ps5retro::Launch(9, gbc[0].path.string(), error); Check(called == "retro/gbc/eboot.bin" && handed[1] == gbc[0].path.string(), "GBC forwards exact ROM to shared GBCXY");
+	ps5retro::Launch(10, (root / "handhelds/Advance.gba").string(), error); Check(called == "retro/gba/eboot.bin", "GBA selects its own bundled GBAXY");
+	ps5retro::LaunchLibrary(10, error); Check(called == "retro/gba/eboot.bin" && handed[0] == "--ecam-library", "GBA native settings retain ECAM return handoff");
+	settings.ui.sides = 2047; settings.ui.librarySort[10] = 2; settings.retro[6].gamesFolder = "/games/gba"; settings.retro[4].gamesFolder = "/games/gb"; ps5settings::Save(settings);
+	const auto eleven = ps5settings::Load();
+	Check(eleven.ui.sides == 2047 && eleven.ui.librarySort[10] == 2 && eleven.retro[6].gamesFolder == "/games/gba" && eleven.retro[4].gamesFolder == "/games/gb", "eleven-side visibility and independent handheld settings persist");
+	Put(ps5paths::LauncherSettings(), "{\"ui\":{\"sides\":255,\"librarySort\":[1,2,3,0,1,2,3,1]},\"n64\":{\"retroBackend\":1}}");
+	const auto eight = ps5settings::Load();
+	Check(eight.ui.sides == 255 && eight.ui.librarySort[7] == 1 && eight.ui.librarySort[10] == 0 && eight.retro[2].retroBackend == 1, "eight-side PR87 settings retain values and leave new sides hidden");
+	ps5catalog::Replace(ps5catalog::System::Gb, gb); ps5catalog::Replace(ps5catalog::System::Gbc, gbc);
+	Check(ps5catalog::Save() && ps5catalog::Games(ps5catalog::System::Gb).size() == 1 && ps5catalog::Games(ps5catalog::System::Gbc).size() == 1, "GB and GBC catalogues persist separately");
+	Put(root / "mixed-discs/GameCube.ISO", DiscHeader(false));
+	Put(root / "mixed-discs/Wii.iso", DiscHeader(true));
+	Put(root / "mixed-discs/Other.iso", std::string(0x20, '\0'));
+	Put(root / "mixed-discs/Truncated.gcm", "short");
+	Put(root / "mixed-discs/Wii.wbfs");
+	const auto gcDiscs = ps5retro::Scan("gamecube", (root / "mixed-discs").string(), error);
+	const auto wiiDiscs = ps5retro::Scan("wii", (root / "mixed-discs").string(), error);
+	Check(gcDiscs.size() == 1 && gcDiscs.front().path.filename() == "GameCube.ISO", "shared folder isolates GameCube ISOs by header and excludes WBFS");
+	Check(wiiDiscs.size() == 2, "shared folder isolates Wii ISOs and retains Wii WBFS");
+	Check(ps5retro::ValidateRom(4, (root / "mixed-discs/GameCube.ISO").string(), error) && ps5retro::ValidateRom(5, (root / "mixed-discs/Wii.iso").string(), error), "matching disc headers pass preflight");
+	Check(!ps5retro::ValidateRom(4, (root / "mixed-discs/Wii.iso").string(), error) && !ps5retro::ValidateRom(5, (root / "mixed-discs/GameCube.ISO").string(), error), "wrong-system disc fails before runtime handoff");
+	Check(!ps5retro::ValidateRom(4, (root / "mixed-discs/Other.iso").string(), error) && !ps5retro::ValidateRom(5, (root / "mixed-discs/Truncated.gcm").string(), error), "foreign and truncated raw discs fail preflight");
+	Check(fs::file_size(root / "mixed-discs/GameCube.ISO") == 0x20 && fs::file_size(root / "mixed-discs/Wii.iso") == 0x20, "disc discovery does not modify the original files");
+	const auto internal = root / "storage/internal", usb = root / "storage/usb0", ssd = root / "storage/ext1";
+	const std::string n64Header = std::string("\x80\x37\x12\x40", 4) + std::string(60, '\0');
+	Put(internal / "PS5N64/games/Internal.z64", n64Header);
+	Put(usb / "ROMs/N64/USB.z64", n64Header);
+	Put(usb / "ROMs/N64/nested/Another.z64", n64Header);
+	Put(usb / "Loose.z64", n64Header);
+	Put(usb / "Loose.nes", std::string("NES\x1a", 4) + std::string(12, '\0'));
+	Put(usb / "Ambiguous.zip", "archive must not be guessed across systems");
+	Put(ssd / "homebrew/PPSA99206/roms/Standalone.z64", n64Header);
+	Put(ssd / "mupen64plus/roms/Alternative.z64", n64Header);
+	Put(usb / "ROMs/N64/saves/Hidden.z64", n64Header);
+	Put(usb / "keys/Hidden.z64", n64Header);
+	Put(ssd / "user/app/Protected.z64", n64Header);
+	Put(root / "outside-library/Outside.z64", n64Header);
+	fs::create_directory_symlink(root / "outside-library", usb / "N64");
+	const std::vector<std::string> storage{internal.string(), usb.string(), ssd.string()};
+	const auto discovered = ps5retro::ScanLibraries(6, (internal / "PS5N64/games").string(), storage, error);
+	Check(error.empty() && discovered.size() == 6, "automatic discovery combines internal, USB and SSD standalone libraries without duplicates");
+	const auto existingInternal = ps5retro::Scan("n64", (internal / "PS5N64/games").string(), error);
+	bool identityKept = false;
+	for (const auto& game : discovered) if (game.path == existingInternal.front().path) identityKept = game.titleId == existingInternal.front().titleId;
+	Check(identityKept, "automatic discovery preserves existing game IDs and configured-path priority");
+	fs::create_hard_link(internal / "PS5N64/games/Internal.z64", usb / "ROMs/N64/Internal alias.z64");
+	Check(ps5retro::ScanLibraries(6, (internal / "PS5N64/games").string(), storage, error).size() == 6,
+		"stat identities suppress aliases without relying on canonical path results");
+	Check(ps5retro::ScanLibraries(7, (root / "missing-nes-folder").string(), storage, error).size() == 1 && error.empty(), "missing saved folder falls back to supported loose games without guessing shared archives");
+	Put(internal / "porpoise/games/GC.iso", DiscHeader(false));
+	Put(internal / "porpoise/games/Wii.iso", DiscHeader(true));
+	Put(usb / "Custom Discs/Second GC.iso", DiscHeader(false));
+	const std::string nativeSettings = "folder = " + (usb / "Custom Discs").string() + "\nfolder = /\nfolder = " + (root / "outside-library").string() + "\nfolder = " + (usb / "keys").string() + "\n";
+	Put(internal / "porpoise/settings.ini", nativeSettings);
+	Check(ps5retro::ScanLibraries(4, (root / "missing-gc-folder").string(), storage, error).size() == 2 && error.empty(), "Porpoise default and saved custom folders are reused read-only");
+	Check(ps5retro::ScanLibraries(5, (root / "missing-wii-folder").string(), storage, error).size() == 1 && error.empty(), "shared standalone disc folder keeps Wii and GameCube separate");
+	std::ifstream nativeIn(internal / "porpoise/settings.ini"); const std::string nativeAfter((std::istreambuf_iterator<char>(nativeIn)), {});
+	Check(nativeAfter == nativeSettings && fs::exists(usb / "keys/Hidden.z64") && fs::exists(ssd / "user/app/Protected.z64"), "discovery leaves standalone settings and protected data untouched");
+	Put(usb / "Custom Cartridges/Remembered.z64", n64Header);
+	Put(internal / "mupen64plus/mupen64plus-ps5.ini", "last_dir=" + (usb / "Custom Cartridges").string() + "\n");
+	Check(ps5retro::ScanLibraries(6, (internal / "PS5N64/games").string(), storage, error).size() == 7, "Mupen64Plus remembered local folder is reused without changing backend settings");
+	const auto connectedSignature = ps5retro::StorageSignature(storage);
+	fs::rename(usb, root / "storage/disconnected-usb");
+	Check(ps5retro::StorageSignature(storage) != connectedSignature, "drive signatures change on disconnect so the open library can refresh");
+	Check(ps5retro::ScanLibraries(6, (internal / "PS5N64/games").string(), storage, error).size() == 3 && error.empty(), "disconnected drive is omitted on the next scan while internal and SSD games remain");
+	Check(!fs::exists(root / "missing-gc-folder") && !fs::exists(root / "missing-nes-folder"), "automatic detection never creates or relocates game folders");
+	Check(ps5retro::IdentifySystem("/games/Game.Z64") == 6 && ps5retro::IdentifySystem("/games/Game.nes") == 7 &&
+		ps5retro::IdentifySystem("/games/Game.gb") == 8 && ps5retro::IdentifySystem("/games/Game.gbc") == 9 && ps5retro::IdentifySystem("/games/Game.gba") == 10,
+		"direct launch identifies loose retro ROM systems instead of routing them to Wii U");
+	Check(ps5retro::IdentifySystem((internal / "porpoise/games/GC.iso").string()) == 4 && ps5retro::IdentifySystem((internal / "porpoise/games/Wii.iso").string()) == 5,
+		"direct disc launch identifies GameCube and Wii from headers");
+	Check(ps5retro::IdentifySystem("/games/Unknown.zip") == -1 && ps5retro::IdentifySystem("/games/Unknown.elf") == -1,
+		"ambiguous archives and ELF files are left to existing explicit routing");
+	settings.retro[2].autoGameFolders = false; settings.retro[3].autoGameFolders = true;
+	Check(ps5settings::Save(settings) && !ps5settings::Load().retro[2].autoGameFolders && ps5settings::Load().retro[3].autoGameFolders, "automatic detection can be disabled independently per emulator and persists");
+	Put(internal / "porpoise/bios/ipl.bin", "owned BIOS fixture");
+	Put(internal / "porpoise/cheats/GAME01.ini", "owned cheats fixture");
+	Put(ssd / "porpoise/firmware/external.bin", "owned firmware fixture");
+	Put(ssd / "porpoise/updates/update.bin", "owned update fixture");
+	Put(ssd / "porpoise/dlc/addon.bin", "owned DLC fixture");
+	Put(ssd / "porpoise/keys/protected.keys", "not an asset to inspect");
+	const auto assetFiles = ps5retro::FindExistingFiles((internal / "porpoise").string(), {"porpoise"}, storage);
+	size_t activeFiles = 0, externalFiles = 0;
+	for (const auto& item : assetFiles) { if (item.active) ++activeFiles; else ++externalFiles; }
+	Check(activeFiles == 2 && externalFiles == 3, "existing emulator assets are found on internal and external storage with active locations distinguished");
+	Check(fs::file_size(internal / "porpoise/bios/ipl.bin") == 18 && fs::exists(ssd / "porpoise/keys/protected.keys"), "asset inventory does not alter BIOS, firmware, add-ons, cheats or keys");
+	for (int i = 0; i < 200; ++i) Put(root / "busy-scan" / (std::to_string(i) + ".nes"));
+	Put(root / "latest-scan/Latest.nes");
+	ps5retro::StartScan(7, (root / "busy-scan").string(), false);
+	ps5retro::StartScan(7, (root / "latest-scan").string(), false);
+	ps5retro::FinishScans();
+	const auto latest = ps5retro::ListGames(7);
+	Check(latest.size() == 1 && latest.front().name == "Latest", "a folder change during scanning queues the newest request instead of dropping it");
 	return failures ? 1 : 0;
 }

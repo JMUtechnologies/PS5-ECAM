@@ -170,7 +170,7 @@ namespace ps5shell
 		static int SideIndex(System side) { return (int)side; } // 0 Wii U, 1 3DS, 2 DS, 3 Switch: its bit in ui.sides, its catalogue
 		int SideIndex() const { return SideIndex(m_side); }
 		// the bar's order (the owner's, 2026-10-22): Wii U, Switch, DS, 3DS; m_barFocus counts in it
-		static constexpr System kBarOrder[kSides] = {System::WiiU, System::Switch, System::Nds, System::N3ds, System::GameCube, System::Wii, System::N64, System::Nes};
+		static constexpr System kBarOrder[kSides] = {System::WiiU, System::Switch, System::Nds, System::N3ds, System::GameCube, System::Wii, System::N64, System::Nes, System::Gb, System::Gbc, System::Gba};
 		static int BarIndex(System side)
 		{
 			for (int i = 0; i < kSides; i++)
@@ -535,6 +535,7 @@ namespace ps5shell
 		double m_lastInput = -1; // the last press or held button, for the screensaver's dimming (-1: none yet)
 		float m_dt = 0;
 		uint64_t m_frames = 0;
+		std::string m_storageSignature;
 		bool m_failed = false;	 // the device was lost
 		bool m_videoOut = false; // VideoOut was taken (a failure from here needs a fresh process)
 

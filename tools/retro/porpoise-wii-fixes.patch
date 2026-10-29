@@ -1,0 +1,197 @@
+diff --git a/src/porpoise_main.cpp b/src/porpoise_main.cpp
+index 364478f..1007eda 100644
+--- a/src/porpoise_main.cpp
++++ b/src/porpoise_main.cpp
+@@ -2567,12 +2567,21 @@ int main(int argc, char **argv)
+         {
+             if (forwarded_game)
+             {
+-                /* The forwarder's game, straight away (no Resume or Wii
+-                 * setup question: its own settings and quick resume apply). */
+-                launch = std::exchange(forwarded_game, nullptr);
++                /* Forwarded Wii games use Porpoise's controller setup too:
++                 * known game profiles are preselected; unknown ones ask rather
++                 * than inheriting an unsupported extension silently. */
++                auto *candidate = std::exchange(forwarded_game, nullptr);
+                 forwarded_session = true;
+                 ps5::debug::mark("main: starting the forwarded game");
+-                break;
++                if (candidate->platform == "Wii")
++                {
++                    if (g_app.start_forwarded_game(candidate) == porpoise::ui::App::Action::Launch)
++                        launch = g_app.launch_game();
++                }
++                else
++                    launch = candidate;
++                if (launch)
++                    break;
+             }
+             const porpoise::pad::State &pad = porpoise::pad::poll();
+ #ifdef PORPOISE_DESKTOP
+@@ -2781,6 +2790,40 @@ int main(int argc, char **argv)
+         /* Widescreen: the game's own code or 16:9 option where it has one; the
+          * emulated hack only when asked for (ui_widescreen.hpp). */
+         const bool ws_wii = g_play.console == 2 || (g_play.console == 0 && launch->platform == "Wii");
++        const std::string game_settings_path = g_app.game_settings_path(*launch);
++        const auto game_setting_keys = porpoise::Settings::keys_in(game_settings_path);
++        const auto has_game_setting = [&](const char *key) {
++            return std::find(game_setting_keys.begin(), game_setting_keys.end(), key) != game_setting_keys.end();
++        };
++        if (ws_wii && !has_game_setting("wii_controller"))
++        {
++            const int controller = g_app.recommended_wii_controller(launch);
++            if (controller >= 0)
++            {
++                g_play.wii_controller = controller;
++                ps5::debug::mark_value("main: automatically selected the recommended Wii controller", controller);
++            }
++        }
++        /* Kirby's Return to Dream Land was reported choppy on PS5 at the
++         * default 720p internal resolution with Accurate Audio enabled.
++         * Keep the user's global settings; use 480p and Dolphin's fast DSP-HLE
++         * only where this game's profile has no explicit override. */
++        if (ws_wii && launch->id.compare(0, 3, "SUK") == 0)
++        {
++            bool performance_profile = false;
++            if (!has_game_setting("resolution"))
++            {
++                g_play.resolution = 1; /* 480p internal rendering */
++                performance_profile = true;
++            }
++            if (!has_game_setting("dsp_accurate"))
++            {
++                g_play.dsp_accurate = false; /* HLE needs less CPU than accurate LLE */
++                performance_profile = true;
++            }
++            if (performance_profile)
++                ps5::debug::mark("main: Kirby PS5 performance profile: 480p internal resolution, DSP-HLE");
++        }
+         /* A game whose widescreen code Dolphin keeps per disc revision: the
+          * revision from the disc's header (byte 7). */
+         int ws_revision = -1;
+diff --git a/src/ui_app.hpp b/src/ui_app.hpp
+index ae50a7d..2d29b0d 100644
+--- a/src/ui_app.hpp
++++ b/src/ui_app.hpp
+@@ -136,6 +136,12 @@ public:
+     Action update(const Input &in, double dt);
+     void draw(double time);
+ 
++    /* ECAM's forwarded Wii games use the same controller setup page as games
++     * started from Porpoise. A missing profile can request setup instead of
++     * silently attaching the global default extension. */
++    Action start_forwarded_game(Game *game);
++    int recommended_wii_controller(const Game *game) const;
++
+     Game *launch_game() { return launch_; }
+     void launch_cover_now(); /* the launching game's cover, loaded now (after the display changed hands) */
+     /* The launch screen's entrance (0..1, about half a second): the library
+@@ -1247,7 +1253,7 @@ private:
+     void draw_wii_guide(double time);
+     /* The Wii Remote setup (before a Wii game, from Settings, or from the
+      * pause menu). */
+-    Action start_game(Game *g, const std::string &state, bool resume_asked = false);
++    Action start_game(Game *g, const std::string &state, bool resume_asked = false, bool forwarded = false);
+     Game *resume_game_ = nullptr; /* the game the quick-resume question is about */
+     void close_dialog();
+     void draw_check_mark(float cx, float cy, float size, bool ok);
+diff --git a/src/ui_app_controls.cpp b/src/ui_app_controls.cpp
+index ae3031f..efc1205 100644
+--- a/src/ui_app_controls.cpp
++++ b/src/ui_app_controls.cpp
+@@ -1247,7 +1247,18 @@ bool points(int controller)
+ }
+ } // namespace
+ 
+-App::Action App::start_game(Game *g, const std::string &state, bool resume_asked)
++int App::recommended_wii_controller(const Game *g) const
++{
++    const Advice *advice = advice_for(g);
++    return advice ? advice->controller : -1;
++}
++
++App::Action App::start_forwarded_game(Game *g)
++{
++    return start_game(g, "", false, true);
++}
++
++App::Action App::start_game(Game *g, const std::string &state, bool resume_asked, bool forwarded)
+ {
+     /* Another console's image (found before this version, or read wrongly
+      * once): an error, not a crash in the emulator. */
+@@ -1261,8 +1272,18 @@ App::Action App::start_game(Game *g, const std::string &state, bool resume_asked
+     }
+     /* The game's own choice, else the global one. */
+     Settings eff = *settings_;
++    std::string game_settings;
++    bool has_game_controller = false;
+     if (g)
+-        eff.load(game_settings_path(*g), true);
++    {
++        game_settings = game_settings_path(*g);
++        eff.load(game_settings, true);
++        const auto keys = Settings::keys_in(game_settings);
++        has_game_controller = std::find(keys.begin(), keys.end(), "wii_controller") != keys.end();
++    }
++    const bool wii_game = g && g->platform == "Wii";
++    const bool unknown_forwarded_wii = forwarded && wii_game && !has_game_controller &&
++                                       recommended_wii_controller(g) < 0;
+     /* Quick resume (beta): where the game was left, if it was; ask first. */
+     if (g && state.empty() && eff.quick_resume && !resume_asked)
+     {
+@@ -1282,7 +1303,7 @@ App::Action App::start_game(Game *g, const std::string &state, bool resume_asked
+             return Action::None;
+         }
+     }
+-    if (g && g->platform == "Wii" && eff.wii_setup_ask)
++    if (wii_game && (eff.wii_setup_ask || unknown_forwarded_wii))
+     {
+         open_wii_setup(g, true, state);
+         return Action::None;
+@@ -1348,6 +1369,14 @@ void App::open_wii_setup(Game *g, bool launch, const std::string &state)
+     if (g)
+         eff.load(game_settings_path(*g), true);
+     ws_controller_ = std::clamp(eff.wii_controller, 0, int(WiiControllerCount) - 1);
++    if (g && g->platform == "Wii")
++    {
++        const auto keys = Settings::keys_in(game_settings_path(*g));
++        const bool chosen = std::find(keys.begin(), keys.end(), "wii_controller") != keys.end();
++        const int recommendation = recommended_wii_controller(g);
++        if (!chosen && recommendation >= 0)
++            ws_controller_ = recommendation;
++    }
+     ws_ask_ = eff.wii_setup_ask;
+     ws_step_ = kWsController;
+     ws_row_ = 0;
+@@ -1409,6 +1438,21 @@ App::Action App::update_wii_setup(bool up, bool down, bool left, bool right)
+     auto finish = [&]() -> Action {
+         sfx(Sound::LaunchGame);
+         const bool launch = ws_launch_ && ws_game_ && !ws_in_game_;
++        if (launch)
++        {
++            /* Triangle skips calibration, but the selected controller still
++             * has to reach Dolphin. Keep it in this game's profile so the
++             * next forwarded launch uses the same layout. */
++            const std::string path = game_settings_path(*ws_game_);
++            Settings eff = *settings_;
++            eff.load(path, true);
++            eff.wii_controller = ws_controller_;
++            std::vector<std::string> keys = Settings::keys_in(path);
++            if (std::find(keys.begin(), keys.end(), "wii_controller") == keys.end())
++                keys.push_back("wii_controller");
++            mkdir((data_dir_ + "/game-settings").c_str(), 0777);
++            eff.save_keys(path, keys);
++        }
+         close_wii_setup();
+         if (launch)
+         {
+@@ -1823,6 +1867,9 @@ void App::draw_wii_setup(double time)
+                      tr(a->note),
+                  match ? rgba(0x6BE3A8) : rgba(0xFFC85C));
+         }
++        else if (ws_game_ && ws_game_->platform == "Wii")
++            para(tr("No controller profile is known for this game. Choose the Wii controller it requires; this choice is saved for this game."),
++                 rgba(0xFFC85C));
+         if (ws_controller_ == WiiTwoControllers)
+             para(tr("Alpha: still rough. Two DualSenses, one for each hand."), rgba(0xFF8A5C));
+         if (ws_row_ == 1)

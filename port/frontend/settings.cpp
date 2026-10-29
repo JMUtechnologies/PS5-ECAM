@@ -73,6 +73,7 @@ namespace ps5settings
 		void ReadN3ds(const rapidjson::Value& json, N3ds& n3ds, bool relocate = true)
 		{
 			ReadInt(json, "retroBackend", n3ds.retroBackend, 0, 1);
+			ReadBool(json, "autoGameFolders", n3ds.autoGameFolders);
 			ReadString(json, "gamesFolder", n3ds.gamesFolder);
 			if (relocate)
 				n3ds.gamesFolder = ps5paths::Relocated(n3ds.gamesFolder); // saved before the data moved to a drive (#52)
@@ -149,6 +150,7 @@ namespace ps5settings
 		{
 			writer.StartObject();
 			writer.Key("retroBackend"); writer.Int(n3ds.retroBackend);
+			writer.Key("autoGameFolders"); writer.Bool(n3ds.autoGameFolders);
 			writer.Key("gamesFolder");
 			writer.String(n3ds.gamesFolder.c_str());
 			writer.Key("resolution");
@@ -363,8 +365,8 @@ namespace ps5settings
 			settings.nds.gamesFolder = ps5paths::MelonDs() + "/games";
 		if (json.HasMember("switch") && json["switch"].IsObject())
 			ReadN3ds(json["switch"], settings.nx, false);
-		const char* retroKeys[] = {"gamecube", "wii", "n64", "nes"};
-		for (size_t i = 0; i < 4; i++)
+		const char* retroKeys[] = {"gamecube", "wii", "n64", "nes", "gb", "gbc", "gba"};
+		for (size_t i = 0; i < 7; i++)
 			if (json.HasMember(retroKeys[i]) && json[retroKeys[i]].IsObject()) ReadN3ds(json[retroKeys[i]], settings.retro[i], false);
 
 		// the Switch's default games folder, saved while Eden's folder was another (/data/ps5cemu/eden,
@@ -420,7 +422,7 @@ namespace ps5settings
 			ReadInt(ui, "holdMs", out.holdMs, 400, 1500);
 			ReadBool(ui, "gamePictures", out.gamePictures);
 			ReadBool(ui, "setupDone", out.setupDone);
-			ReadInt(ui, "sides", out.sides, 1, 255);
+			ReadInt(ui, "sides", out.sides, 1, 2047);
 			// sides chosen before the Switch had one (4.0.1 and earlier): it is shown once, as a new side
 			bool switchOffered = false;
 			ReadBool(ui, "switchOffered", switchOffered);
@@ -438,9 +440,9 @@ namespace ps5settings
 			if (out.libraryFilter[1] == 3)
 				out.libraryFilter[1] = 0; // the 4.0.0 beta's DS games, which have a side of their own now
 			// filters: the Wii U's four (Graphic packs on), the handhelds' three; sorts: four on every side
-			auto readSides = [&](const char* key, int (&values)[8], int wiiuMost, int handheldMost) {
+			auto readSides = [&](const char* key, int (&values)[11], int wiiuMost, int handheldMost) {
 				if (ui.HasMember(key) && ui[key].IsArray())
-					for (rapidjson::SizeType i = 0; i < ui[key].Size() && i < 8; i++)
+					for (rapidjson::SizeType i = 0; i < ui[key].Size() && i < 11; i++)
 						if (ui[key][i].IsInt())
 							values[i] = std::clamp(ui[key][i].GetInt(), 0, i == 0 ? wiiuMost : handheldMost);
 			};
@@ -553,8 +555,8 @@ namespace ps5settings
 		WriteN3ds(writer, settings.nds);
 		writer.Key("switch");
 		WriteN3ds(writer, settings.nx);
-		const char* retroKeys[] = {"gamecube", "wii", "n64", "nes"};
-		for (size_t i = 0; i < 4; i++) { writer.Key(retroKeys[i]); WriteN3ds(writer, settings.retro[i]); }
+		const char* retroKeys[] = {"gamecube", "wii", "n64", "nes", "gb", "gbc", "gba"};
+		for (size_t i = 0; i < 7; i++) { writer.Key(retroKeys[i]); WriteN3ds(writer, settings.retro[i]); }
 		writer.Key("games");
 		writer.StartObject();
 		for (const auto& [key, values] : settings.games)
