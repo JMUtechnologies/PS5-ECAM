@@ -1,6 +1,6 @@
 # Upstream references for the local console fixes
 
-Reviewed 2026-10-29 against the PR discussions, open issue reports and this checkout. This is a local review; no upstream PR is merged, edited or published by this work. Preserve the owner's 5.0.1 theme/layout and existing saved theme selection.
+Reviewed 2026-10-29 against the PR discussions, open issue reports and this checkout. The descriptions for draft PRs #87 and #91 were later replaced with updated implementation and PS5 status reports. Neither PR was merged, and no release was published. Preserve the owner's 5.0.1 theme/layout and existing saved theme selection.
 
 | Reference | Local evidence and action |
 |---|---|
@@ -39,6 +39,8 @@ Cemu references include [PR 2061](https://github.com/cemu-project/Cemu/pull/2061
 
 The first direct Super Mario 64 launch correctly selected the N64 side, but stopped at “It is not in the library”; the native N64 runtime did not start. Payload probes independently enumerated all 301 files in its game folder. These are filesystem/launch observations, not gameplay passes. The existing four N64 saves were backed up locally before testing.
 
-The second console attempt, after the `lstat` fix, found all 296 N64 ROMs, but successful canonical-path results collapsed the merged library to one game. The next build uses stat device/inode identities, with lexical path fallback, for deduplication and lexical containment after no-link checks. It avoids canonical-path resolution for discovery and asset inventory. Tests cover refused `lstat`, collapsed `realpath`, hard-link aliases and ordinary storage. The corrected build is prepared under `build/discovery-pathfix`; installation and N64/NES retries require closing the currently running ECAM app. Record results in `build/discovery-app/hardware-results.json`; leave untested video/audio/input/save/return checks pending.
+The second console attempt, after the `lstat` fix, found all 296 N64 ROMs, but successful canonical-path results collapsed the merged library to one game. The corrected build uses stat device/inode identities, with lexical path fallback, for deduplication and lexical containment after no-link checks. It avoids canonical-path resolution for discovery and asset inventory. Tests cover refused `lstat`, collapsed `realpath`, hard-link aliases and ordinary storage.
+
+Follow-up PS5 results on 2026-10-29: the owner confirmed Super Mario 64 (N64) and Super Mario Bros. (NES) running. Kirby's Return to Dream Land (Wii) previously launched but was choppy and showed an unsupported external extension controller warning. A new Porpoise executable was installed with a Kirby 1x/480p and DSP-HLE fallback profile, plus forwarded-game Wii controller setup and per-game selection persistence. The post-update Wii behavior still needs owner retesting; no FPS gain is claimed. GameCube, Wii U, 3DS, DS, Switch, GB, GBC and GBA gameplay remain unconfirmed. The current status is summarized in PR #87.
 
 The shared MIT request bridge also uses the same fallback and directly unlinks a successfully consumed request, avoiding a second `lstat`. This source fix passes replay/symlink checks and refused-`lstat` tests. It requires rebuilding each bundled native runtime to update its embedded copy; a launcher-only upload does not install that bridge change.

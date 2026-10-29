@@ -6,6 +6,16 @@ in Settings > Runtime > Emulator runtime. A missing selected runtime produces an
 not silently select another emulator or convert saves. All five runtime overlays need PS5 build
 and hardware qualification before this draft is merge-ready.
 
+## Owner PS5 results — 2026-10-29
+
+- N64: Super Mario 64 was discovered and confirmed running.
+- NES: Super Mario Bros. was confirmed running.
+- Wii: Kirby's Return to Dream Land previously launched but was choppy and reported an
+  unsupported external extension controller. A Porpoise update with a per-game 480p/DSP-HLE
+  fallback and controller setup was installed; post-update testing is pending.
+- GameCube launch and all other system checks remain unconfirmed. No measured FPS improvement is
+  claimed. PR #87 carries the current system-by-system status.
+
 ## What is implemented in ECAM
 
 - Persistent, independent N64/NES backend selection, without renumbering the existing eight sides.
