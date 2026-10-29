@@ -31,7 +31,10 @@ if not target.exists():
     target.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(['git', 'clone', '--no-checkout',
                     'https://github.com/mpereiraesaa/PS5-Lapy-JB-Daemon.git', str(target)], check=True)
-    subprocess.run(['git', '-C', str(target), 'checkout', '--detach', helper['commit']], check=True)
+if subprocess.run(['git', '-C', str(target), 'cat-file', '-e', helper['commit']],
+                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode:
+    subprocess.run(['git', '-C', str(target), 'fetch', '--depth=1', 'origin', helper['commit']], check=True)
+subprocess.run(['git', '-C', str(target), 'checkout', '--detach', helper['commit']], check=True)
 actual = subprocess.check_output(['git', '-C', str(target), 'rev-parse', 'HEAD'], text=True).strip()
 if actual != helper['commit']:
     raise SystemExit('Daemon recovery differs from pinned commit')
