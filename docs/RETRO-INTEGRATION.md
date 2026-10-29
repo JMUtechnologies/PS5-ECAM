@@ -7,8 +7,10 @@ app is required. Existing standalone data folders are used, without moving or co
 
 See [RETRO-UPGRADES.md](RETRO-UPGRADES.md) for the optional Mupen64Plus/FCEUmm runtimes, artwork/metadata, validation, diagnostics and USB backup upgrades.
 
-Status: implementation submitted for source review. Host tests and source-overlay checks are
-available. A full PS5 cross-build and console launch/return qualification are still outstanding.
+Status: the PS5 package and Porpoise runtime build passed structural and signed SELF checks. The
+owner confirmed N64 and NES game launches. A Wii tuning/controller update is installed and awaits
+retest; GameCube and the remaining systems are unconfirmed. This is partial console validation,
+not an eleven-system compatibility or performance certification.
 
 ## Architecture
 
@@ -141,7 +143,8 @@ Host checks do not boot the PS5 runtimes or validate emulated audio/video/contro
 
 ## Current boundaries
 
-- Source integration is implemented; a complete cross-build and PS5 runtime testing are pending.
+- N64 and NES game launches are owner-confirmed. Wii post-update testing and the remaining
+  system-by-system console checks are pending; no all-systems compatibility claim is made.
 - Existing standalone data is reused directly. There is no automatic migration or save conversion.
   Use copies for qualification; compatibility with an unknown installed standalone version is not
   established by matching its data-folder name.
