@@ -8,12 +8,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 python3-pip python3-venv python3-mako python3-packaging meson \
     rsync flex bison glslang-tools zip unzip p7zip-full xz-utils patch \
     libarchive-dev libzip-dev libzstd-dev libssl-dev libfmt-dev libvulkan-dev \
-    libcurl4-openssl-dev zlib1g-dev ffmpeg \
+    libcurl4-openssl-dev zlib1g-dev ffmpeg libx11-dev libgl1-mesa-dev libclc-18 llvm-18-tools python3-dev python3-numpy python3-pil zstd \
     && rm -rf /var/lib/apt/lists/*
 # Ubuntu's Meson 1.3.2 is older than the pinned Mesa source requires (>=1.4).
 # Keep distro Python modules visible for Mesa's Mako/packaging imports.
 RUN python3 -m venv --system-site-packages /opt/ecam-tools \
-    && /opt/ecam-tools/bin/python -m pip install --no-cache-dir meson==1.7.2 cmake==3.31.10 \
+    && /opt/ecam-tools/bin/python -m pip install --no-cache-dir meson==1.9.2 cmake==3.31.10 \
     && ln -s /opt/ecam-tools/bin/meson /usr/local/bin/meson \
     && ln -s /opt/ecam-tools/bin/cmake /usr/local/bin/cmake \
     && ln -s /opt/ecam-tools/bin/ctest /usr/local/bin/ctest \
