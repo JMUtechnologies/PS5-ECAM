@@ -12,7 +12,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        system: [porpoise, mupen64plus, fceumm]
+        # Focused retry; the original Porpoise/Mupen jobs continue on their pinned run.
+        system: [fceumm]
     steps:
       - uses: actions/checkout@v4
       - name: Native x86 toolchain
@@ -29,6 +30,7 @@ jobs:
           docker run --rm -v "$PWD:/src" -e SYSTEM \
             -e JOBS=2 -e BUILD_JOBS=2 -e MAKEFLAGS=-j2 \
             ecam-native bash -euo pipefail -c '
+              python3 tools/docker/seed-zlib.py .deps/ps5-native-app-boilerplate
               if [[ "$SYSTEM" == fceumm ]]; then
                 python3 -B tools/deps.py fetch boilerplate
               else
