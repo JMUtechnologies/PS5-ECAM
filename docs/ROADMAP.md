@@ -1,5 +1,90 @@
 # Roadmap
 
+## Release roadmap: 11 systems, 5.1 theme, graphics and stability
+
+**Updated 30 October 2026.** This section is the current member-facing roadmap. The detailed notes
+below were written on 23 October and are retained as a historical engineering work log; re-check
+their status against the current source, open issues and release before treating an item as open or
+complete.
+
+PS5-ECAM's released app currently documents Wii U, Nintendo 3DS, Nintendo DS and Nintendo Switch.
+The two open integration PRs add five more targets: Game Boy, Game Boy Color and Game Boy Advance
+in [PR #91](https://github.com/premohq/PS5-ECAM/pull/91), and Nintendo 64 and NES in
+[PR #87](https://github.com/premohq/PS5-ECAM/pull/87). Wii and GameCube are a further requested
+Dolphin integration in [issue #82](https://github.com/premohq/PS5-ECAM/issues/82). These make the
+11-system target; open PRs and feature requests are not claims that those systems are already in a
+released build.
+
+### 1. Stabilize and retest the current app
+
+- Reproduce and resolve the Switch long-session crash report ([#97](https://github.com/premohq/PS5-ECAM/issues/97)); validate the proposed cause before changing code.
+- Fix Wii U game, update and DLC installs reported stuck at 0% ([#96](https://github.com/premohq/PS5-ECAM/issues/96)); exercise cancellation, low space and recovery too.
+- Recheck 3DS frame generation ([#98](https://github.com/premohq/PS5-ECAM/issues/98)) and Wii U frame generation over menus and secondary screens ([#94](https://github.com/premohq/PS5-ECAM/issues/94)). Confirm which build the #98 report calls "5.10".
+- Resolve the Wii U Pro Controller menu shortcut report ([#93](https://github.com/premohq/PS5-ECAM/issues/93)), investigate the Zelda crash ([#92](https://github.com/premohq/PS5-ECAM/issues/92)), and reproduce the Spanish loading report ([#90](https://github.com/premohq/PS5-ECAM/issues/90)).
+- Test Wii Remote / DolphinBar and supported extensions; improve setup messaging ([#88](https://github.com/premohq/PS5-ECAM/issues/88)).
+- Triage the remaining reports in [the issue tracker](https://github.com/premohq/PS5-ECAM/issues); close only when fixed or clearly superseded, with a release/version reference.
+
+### 2. Integrate and qualify all 11 systems
+
+For each system, verify runtime build and packaging, game discovery, launch and clean return to ECAM, controller mapping, save paths and backup/restore, supported add-ons and firmware, diagnostics, and upgrades from the prior release. Test a known-good and a demanding title on the actual PS5. Mark each outcome separately as **builds**, **launches**, **short-session tested**, or **long-session tested**.
+
+| System | Source / integration scope | Graphics and test focus |
+|---|---|---|
+| Wii U | Cemu, in released app | Vulkan/RADV, FSR 1, 4K output, frame generation, secondary screen and menu composition |
+| Nintendo 3DS | Azahar, in released app | Vulkan/RADV, resolution scaling, frame generation, layouts and reported frame-generation regression |
+| Nintendo DS | melonDS, in released app | Screen layouts/filters, touch, stylus, Slot-2 and microphone; establish the actual renderer before claiming Vulkan support |
+| Nintendo Switch | Eden / ProsperoEden, in released app | Vulkan/RADV, internal resolution, FSR 1, frame generation, updates/DLC/mods, and long-session stability |
+| Game Boy | PR #91 | Runtime integration, library, controls, save compatibility, scaling/filtering and real-console test |
+| Game Boy Color | PR #91 | Runtime integration, library, controls, save compatibility, scaling/filtering and real-console test |
+| Game Boy Advance | PR #91 | Runtime integration, library, controls, save compatibility, scaling/filtering and real-console test |
+| Nintendo 64 | PR #87 | Runtime integration, game-specific compatibility, controls, saves, renderer/upscaling capability and real-console test |
+| NES | PR #87 | Runtime integration, game discovery, controls, saves, renderer/filter capability and real-console test |
+| Wii | Dolphin request #82 | Decide bundled backend vs handoff; Wii Remote/extensions, saves, Vulkan/render path and performance |
+| GameCube | Dolphin request #82 | Decide backend; library, controls, saves, renderer, scaling and performance |
+
+### 3. Graphics, Vulkan and 4K
+
+Vulkan is already used by parts of PS5-ECAM. The task is to validate and document it per emulator, not to imply that every system shares the same renderer. Keep PS5 RADV/Mesa, its PS5 winsys and platform layer, SDK, compiler and patches as a compatible pinned set. Test graphics correctness, shader behavior, synchronization, memory lifetime, video output, frame pacing and recovery from GPU faults. Provide and test fallback settings where available.
+
+Document these separately for every system:
+
+- **4K output:** whether the app presents at 3840×2160.
+- **Internal resolution scaling:** supported ratios, maximum tested ratio, memory and performance cost.
+- **Upscaling filter:** FSR or other filters only where the emulator implements them.
+- **Frame generation:** a distinct optional feature; test latency, stutter, visual artifacts and UI composition.
+
+Test native and intermediate resolutions, the maximum advertised scale, 4K output, and combined settings. Compare the same game scenes and record image quality, frame pacing, latency, game version, app commit, settings, console environment, duration and logs. Don't promise "4K upscaling" or 4× scaling for every system unless each system's implementation has evidence.
+
+### 4. Bring the 5.1 theme and system logos across the app
+
+- Apply the PS5-ECAM 5.1 visual design consistently in the launcher, library, settings, game pages, dialogs, loading screens and in-game menus.
+- Give each of the 11 systems a recognizable icon/logo in system selection, library headings, settings, loading states and relevant messages.
+- Check TV-distance legibility, contrast, focus states, localization and both light and dark themes.
+- Update the app tile, home-screen artwork, screenshots and release images together; retest navigation and rendering performance after visual changes.
+
+### 5. Library, data safety and usability
+
+- Verify each backend's supported formats and game discovery from internal storage, USB/external drives, supported standalone-emulator folders and network shares where applicable.
+- Find system-specific saves, updates, DLC, firmware, BIOS, keys, cheats and mods where that backend supports them; show clear reasons for missing or unreadable content.
+- Keep library scans read-only. Test duplicate titles, case and Unicode paths, disconnected drives, large libraries and unreadable files.
+- Test interrupted/cancelled installs, low disk space, power loss, saves backup/restore, folder migration, update, rollback and downgrade behavior without data loss.
+- Confirm existing settings, games, saves and user-provided system files survive upgrades.
+
+### 6. Diagnostics, performance and release gate
+
+- Make setup checks explain missing permissions, files, paths and unsupported configurations.
+- Ensure crash/launch diagnostics include ECAM version, system, game, renderer and failure stage without exposing private keys or user content.
+- Run repeatable A/B performance captures; test long sessions for frame pacing, audio, memory growth, crashes and return to the library.
+- Verify translations, controller prompts, focus visibility, text size and accessibility.
+- Build from a known commit; pass automated checks; verify ZIP contents, version strings and checksums.
+- Test both fresh install and upgrade from the previous release, including updater failure recovery and user-data preservation.
+- Review licenses, notices, credits and user-supplied game/firmware/key requirements.
+- Publish a per-system compatibility and graphics matrix with evidence, known limitations and genuinely observed PS5 results. A build or launch alone is not proof of gameplay compatibility.
+
+Current issue reports include Switch long-session stability, Wii U installs and graphics/controller behavior; track their resolution against the exact release candidate. See [open issues](https://github.com/premohq/PS5-ECAM/issues), [open PRs](https://github.com/premohq/PS5-ECAM/pulls), and the [5.1.0 release notes](https://github.com/premohq/PS5-ECAM/releases/tag/v5.1.0).
+
+---
+
 What PS5-ECAM is working towards: first the rebuild and stability work still open (the launcher
 rewrite of October 2026 and the issues around it), then a release that gives each emulator a folder of
 its own, then the longer list of ideas to pick from. Written 23 October 2026.
