@@ -116,6 +116,13 @@ namespace ui
 		Add(instance);
 	}
 
+	void Canvas::EllipseGradient(const Box& box, uint32_t centre, uint32_t edge)
+	{
+		Instance instance = Make(box, box, 0, kEllipse, centre);
+		instance.colour1 = WithAlpha(edge, Alpha());
+		Add(instance);
+	}
+
 	void Canvas::Ring(const Box& box, float radius, float width, uint32_t colour)
 	{
 		Instance instance = Make(box, box, radius, kRing, colour);
@@ -169,6 +176,21 @@ namespace ui
 			v1 = v0 + used;
 		}
 		Image(texture, box, radius, tint, u0, v0, u1, v1);
+	}
+
+	void Canvas::ImageQuad(TextureId texture, const std::array<Point, 4>& corners, uint32_t tint)
+	{
+		float left = corners[0].x, right = left, top = corners[0].y, bottom = top;
+		for (const Point& point : corners)
+		{
+			left = std::min(left, point.x); right = std::max(right, point.x);
+			top = std::min(top, point.y); bottom = std::max(bottom, point.y);
+		}
+		Instance instance = Make({left, top, right - left, bottom - top}, {corners[0].x, corners[0].y, corners[1].x, corners[1].y}, 0, kImageQuad, tint);
+		instance.gradient[0] = corners[2].x + m_dx; instance.gradient[1] = corners[2].y + m_dy;
+		instance.gradient[2] = corners[3].x + m_dx; instance.gradient[3] = corners[3].y + m_dy;
+		instance.box[2] += m_dx; instance.box[3] += m_dy;
+		Add(instance, texture);
 	}
 
 	void Canvas::Line(float x0, float y0, float x1, float y1, float width, uint32_t colour)

@@ -6,7 +6,7 @@
 // ends (from gradient.xy to gradient.zw, the ring width wide), 7 a triangle (gradient.xy,
 // gradient.zw and uv.xy; outlined when the ring width is set, its corners rounded by the radius),
 // 8 a wave: everything below base + amplitude * sin(x / wavelength + phase) (gradient: base,
-// amplitude, wavelength, phase). Kinds 6 to 8 take one colour. Colours are straight RGBA, in the
+// amplitude, wavelength, phase), 9 a picture on a projected quadrilateral, 10 an ellipse. Kinds 6 to 8 take one colour. Colours are straight RGBA, in the
 // same sRGB values the design's tokens name; the output is premultiplied.
 
 layout(location = 0) in vec2 vPos;
@@ -55,6 +55,15 @@ float Triangle(vec2 p, vec2 a, vec2 b, vec2 c)
 	vec2 d = min(min(vec2(dot(pq0, pq0), s * (v0.x * e0.y - v0.y * e0.x)), vec2(dot(pq1, pq1), s * (v1.x * e1.y - v1.y * e1.x))),
 		vec2(dot(pq2, pq2), s * (v2.x * e2.y - v2.y * e2.x)));
 	return -sqrt(d.x) * sign(d.y);
+}
+
+vec3 Barycentric(vec2 p, vec2 a, vec2 b, vec2 c)
+{
+	float area = (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y);
+	if (abs(area) < 1e-4) return vec3(-1.0);
+	float u = ((b.x - p.x) * (c.y - p.y) - (c.x - p.x) * (b.y - p.y)) / area;
+	float v = ((c.x - p.x) * (a.y - p.y) - (a.x - p.x) * (c.y - p.y)) / area;
+	return vec3(u, v, 1.0 - u - v);
 }
 
 // A pixel's noise, 0 to 1, from its whole coordinates: integer hashing (PCG's output step), the same
@@ -151,6 +160,26 @@ void main()
 	{
 		float surface = vGradient.x + vGradient.y * sin(vPos.x / max(vGradient.z, 1e-3) + vGradient.w);
 		coverage = clamp(0.5 + (vPos.y - surface) / pixel, 0.0, 1.0) * clamp(0.5 - d / pixel, 0.0, 1.0);
+	}
+	else if (kind == 9)
+	{
+		vec2 a = vBox.xy, b = vBox.zw, c = vGradient.xy, e = vGradient.zw;
+		vec3 weights = Barycentric(vPos, a, b, c);
+		vec2 uv = vec2(weights.y + weights.z, weights.z);
+		if (min(min(weights.x, weights.y), weights.z) < -0.001)
+		{
+			weights = Barycentric(vPos, a, c, e);
+			uv = vec2(weights.y, weights.y + weights.z);
+		}
+		coverage = min(min(weights.x, weights.y), weights.z) >= -0.001 ? 1.0 : 0.0;
+		colour *= texture(uImage, uv);
+	}
+	else if (kind == 10)
+	{
+		vec2 radii = max(vBox.zw * 0.5, vec2(1e-3));
+		float r = length((vPos - vBox.xy - radii) / radii);
+		colour = mix(vColour0, vColour1, clamp(r, 0.0, 1.0));
+		coverage = 1.0 - smoothstep(1.0 - pixel / min(radii.x, radii.y), 1.0, r);
 	}
 
 	// the clip: a rounded rectangle everything is kept inside

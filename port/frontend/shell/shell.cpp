@@ -1645,8 +1645,12 @@ namespace ps5shell
 				return {{Icon::Cross, Tr("Play")}, {Icon::Options, Tr("Options")}, {Icon::LeftRight, Tr("Move")}, {Icon::Touchpad, other}};
 			return {{Icon::Cross, Tr("Play")}, {Icon::Options, Tr("Options")}, {Icon::R2, Tr("Jump by letter")}, {Icon::Touchpad, other}};
 		}
-		case ScreenId::Hub: return {{Icon::Cross, m_hubAbout ? Tr("Back to the buttons") : Tr("Choose")}, {Icon::Options, Tr("Options")},
-			{Icon::UpDown, Tr("Scroll")}, {Icon::Circle, Tr("Back")}};
+		case ScreenId::Hub:
+			if (m_caseInspect)
+				return {{Icon::LeftRight, Tr("Change")}, {Icon::UpDown, Tr("Change")},
+					{Icon::Cross, m_caseOpen ? Tr("Close") : Tr("Open")}, {Icon::Circle, Tr("Back")}};
+			return {{Icon::Cross, m_hubAbout ? Tr("Back to the buttons") : Tr("Choose")}, {Icon::Triangle, Tr("More about it")},
+				{Icon::Options, Tr("Options")}, {Icon::UpDown, Tr("Scroll")}, {Icon::Circle, Tr("Back")}};
 		case ScreenId::Settings:
 			if (InGameSettings())
 			{
@@ -1686,6 +1690,7 @@ namespace ps5shell
 	void Shell::DrawHints(Canvas& canvas, const std::vector<Hint>& hints)
 	{
 		const ui::TextStyle style = Style({22, ui::Weight::Medium, 1.0f});
+		const uint32_t ink = m_caseInspect ? 0xffe5e5e5 : Secondary();
 		float x = 1920 - kSafeX;
 		const float y = 1080 - kHintsBottom - 30;
 		for (auto it = hints.rbegin(); it != hints.rend(); ++it)
@@ -1694,16 +1699,16 @@ namespace ps5shell
 				continue; // a hint with nothing to say (the touchpad's, with one side shown)
 			const ui::TextBlock text = m_fonts.Layout(style, it->text);
 			x -= text.width;
-			canvas.Text(text, x, y + 15 - text.height * 0.5f, Secondary());
+			canvas.Text(text, x, y + 15 - text.height * 0.5f, ink);
 			x -= 10 + 30;
 			if (it->icon == Icon::R2)
 			{
-				canvas.Draw(Icon::R2, {x, y, 30, 30}, Secondary());
+				canvas.Draw(Icon::R2, {x, y, 30, 30}, ink);
 				x -= 34;
-				canvas.Draw(Icon::L2, {x, y, 30, 30}, Secondary());
+				canvas.Draw(Icon::L2, {x, y, 30, 30}, ink);
 			}
 			else
-				canvas.Draw(it->icon, {x, y, 30, 30}, Secondary());
+				canvas.Draw(it->icon, {x, y, 30, 30}, ink);
 			x -= 34;
 		}
 	}

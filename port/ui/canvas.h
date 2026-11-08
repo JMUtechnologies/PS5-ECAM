@@ -9,6 +9,7 @@
 #include "gfx.h"
 #include "text.h"
 
+#include <array>
 #include <string_view>
 #include <vector>
 
@@ -28,6 +29,7 @@ namespace ui
 		// grown about its centre by a factor
 		Box Scaled(float factor) const { return {x - w * (factor - 1) * 0.5f, y - h * (factor - 1) * 0.5f, w * factor, h * factor}; }
 	};
+	struct Point { float x, y; };
 
 	// Colours: RGBA, R in the lowest byte (tokens.h)
 	uint32_t Rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
@@ -103,6 +105,7 @@ namespace ui
 		void LinearGradient(const Box& box, float radius, uint32_t from, uint32_t to, float x0, float y0, float x1, float y1, float start = 0);
 		// from at the centre to `to` at the ellipse's edge (radii rx, ry)
 		void RadialGradient(const Box& box, float radius, uint32_t from, uint32_t to, float cx, float cy, float rx, float ry, float start = 0);
+		void EllipseGradient(const Box& box, uint32_t centre, uint32_t edge);
 		void Ring(const Box& box, float radius, float width, uint32_t colour);
 		void Shadow(const Box& box, float radius, float offsetY, float softness, uint32_t colour);
 		// light around the box, none over it (a focused element's glow, drawn after it)
@@ -111,6 +114,8 @@ namespace ui
 		void Image(TextureId texture, const Box& box, float radius, uint32_t tint = 0xffffffff, float u0 = 0, float v0 = 0, float u1 = 1, float v1 = 1);
 		// a picture filling the box, cut to its shape (width x height: the picture's)
 		void ImageCover(TextureId texture, int width, int height, const Box& box, float radius, uint32_t tint = 0xffffffff, float alignY = 0.5f);
+		// Four projected corners in top-left, top-right, bottom-right, bottom-left order.
+		void ImageQuad(TextureId texture, const std::array<Point, 4>& corners, uint32_t tint = 0xffffffff);
 		void Line(float x0, float y0, float x1, float y1, float width, uint32_t colour);
 		void Triangle(float x0, float y0, float x1, float y1, float x2, float y2, uint32_t colour, float outline = 0, float round = 0);
 		void Wave(const Box& box, float base, float amplitude, float wavelength, float phase, uint32_t colour);

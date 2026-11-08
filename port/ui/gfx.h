@@ -66,6 +66,8 @@ namespace ui
 		kLine = 6,
 		kTriangle = 7,
 		kWave = 8,
+		kImageQuad = 9, // a picture on a projected case face
+		kEllipse = 10, // the disc's projected ellipse
 	};
 
 	using TextureId = uint32_t; // 0: none (a white pixel)

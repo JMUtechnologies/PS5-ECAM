@@ -454,6 +454,7 @@ namespace ps5shell
 		void LibraryStateDraw(Canvas& canvas);
 
 		void HubOpen(int game, ScreenId from);
+		void CaseDraw(Canvas& canvas, Game& game);
 		void HubUpdate(const ui::Press& press);
 		void HubDraw(Canvas& canvas);
 
@@ -773,6 +774,10 @@ namespace ps5shell
 		ScreenId m_hubFrom = ScreenId::Library;
 		int m_hubAction = 0;
 		bool m_hubAbout = false;
+		bool m_caseInspect = false;
+		bool m_caseOpen = false;
+		float m_caseAngle = 0;
+		float m_caseZoom = 1;
 		ui::Spring m_hubScroll;
 		float m_hubAboutHeight = 0;
 
