@@ -1648,7 +1648,7 @@ namespace ps5shell
 		case ScreenId::Hub:
 			if (m_caseInspect)
 				return {{Icon::LeftRight, Tr("Change")}, {Icon::UpDown, Tr("Change")},
-					{Icon::Cross, m_caseOpen ? Tr("Close") : Tr("Open")}, {Icon::Circle, Tr("Back")}};
+					{Icon::Cross, m_caseOpen ? Tr("Close") : Tr("Open")}, {Icon::Square, Tr("Select")}, {Icon::Circle, Tr("Back")}};
 			return {{Icon::Cross, m_hubAbout ? Tr("Back to the buttons") : Tr("Choose")}, {Icon::Triangle, Tr("More about it")},
 				{Icon::Options, Tr("Options")}, {Icon::UpDown, Tr("Scroll")}, {Icon::Circle, Tr("Back")}};
 		case ScreenId::Settings:

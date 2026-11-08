@@ -32,6 +32,7 @@ namespace ps5shell
 		m_hubAbout = false;
 		m_caseInspect = false;
 		m_caseOpen = false;
+		m_caseDisc = false;
 		m_caseAngle = 0;
 		m_caseZoom = 1;
 		m_hubScroll.Snap(0);
@@ -53,11 +54,20 @@ namespace ps5shell
 			switch (b)
 			{
 			case Button::Circle:
+				if (m_caseDisc) { m_caseDisc = false; m_feedback.Play(ui::Cue::Back); break; }
+				[[fallthrough]];
 			case Button::Triangle: m_caseInspect = false; m_feedback.Play(ui::Cue::Back); break;
 			case Button::Left: m_caseAngle -= 0.22f; m_feedback.Play(ui::Cue::Focus); break;
 			case Button::Right: m_caseAngle += 0.22f; m_feedback.Play(ui::Cue::Focus); break;
 			case Button::Up: m_caseZoom = std::min(1.5f, m_caseZoom + 0.12f); m_feedback.Play(ui::Cue::Focus); break;
 			case Button::Down: m_caseZoom = std::max(0.65f, m_caseZoom - 0.12f); m_feedback.Play(ui::Cue::Focus); break;
+			case Button::Square:
+				m_caseDisc = !m_caseDisc;
+				m_caseOpen = true;
+				m_caseAngle = 0;
+				m_caseZoom = 1;
+				m_feedback.Play(ui::Cue::Select);
+				break;
 			case Button::Cross: m_caseOpen = !m_caseOpen; m_feedback.Play(ui::Cue::Select); break;
 			default: break;
 			}
@@ -71,6 +81,7 @@ namespace ps5shell
 		case Button::Triangle:
 			m_caseInspect = true;
 			m_caseOpen = false;
+			m_caseDisc = false;
 			m_caseAngle = 0;
 			m_caseZoom = 1;
 			m_feedback.Play(ui::Cue::Select);
@@ -191,6 +202,20 @@ namespace ps5shell
 			return std::array<ui::Point, 4>{project(-w / 2, -h / 2, z), project(w / 2, -h / 2, z),
 				project(w / 2, h / 2, z), project(-w / 2, h / 2, z)};
 		};
+		if (m_caseDisc)
+		{
+			// Lift the disc out of its tray for an unobstructed view of either face.
+			const float radius = 250 * m_caseZoom;
+			const float width = std::max(3.0f, radius * std::fabs(cs));
+			const Box disc{960 - width, 530 - radius, width * 2, radius * 2};
+			canvas.EllipseGradient(disc, cs >= 0 ? Accent() : 0xffe8ebef, cs >= 0 ? 0xff344052 : 0xff8c99ac);
+			const Box hub{960 - width * 0.14f, 530 - radius * 0.14f, width * 0.28f, radius * 0.28f};
+			canvas.EllipseGradient(hub, 0xff0d0f18, 0xff0d0f18);
+			if (cs > 0.6f)
+				canvas.Text(Style({22, ui::Weight::SemiBold, 1.0f}), 960 - width * 0.7f,
+					530 - radius * 0.5f, game.entry.game.name, 0xffffffff, width * 1.4f, 2);
+			return;
+		}
 		const auto back = plane(-24), rim = plane(12);
 		canvas.Shadow({700, 850, 520, 80}, 36, 12, 45, 0x99000000);
 		canvas.ImageQuad(0, back, 0xff30333d);

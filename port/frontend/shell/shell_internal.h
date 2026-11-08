@@ -776,6 +776,7 @@ namespace ps5shell
 		bool m_hubAbout = false;
 		bool m_caseInspect = false;
 		bool m_caseOpen = false;
+		bool m_caseDisc = false;
 		float m_caseAngle = 0;
 		float m_caseZoom = 1;
 		ui::Spring m_hubScroll;
