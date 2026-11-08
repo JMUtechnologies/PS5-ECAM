@@ -374,13 +374,13 @@ namespace ps5pad
 
 namespace ps5boxart
 {
-	std::string Path(System system, const std::string& id)
+	std::string Path(System system, const std::string& id, Art art)
 	{
 		const std::string path =
-			output + "/boxart/" + (system == System::WiiU ? "wiiu/" : system == System::Switch ? "switch/" : "3ds/") + id + ".tga";
+			output + "/boxart/" + (system == System::WiiU ? "wiiu/" : system == System::Switch ? "switch/" : "3ds/") + id + (art == Art::Back ? "-back" : art == Art::Disc ? "-disc" : "") + ".tga";
 		return !id.empty() && std::ifstream(path).good() ? path : std::string();
 	}
-	void Fetch(System, const std::vector<std::string>&) {}
+	void Fetch(System, const std::vector<std::string>&, Art) {}
 	void Refetch(System, const std::vector<std::string>&, bool) {}
 	size_t Pending() { return 0; }
 	std::vector<std::string> TakeArrived() { return {}; }

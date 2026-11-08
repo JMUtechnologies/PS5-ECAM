@@ -39,7 +39,8 @@ namespace ps5boxart
 
 		std::mutex s_mutex;
 		std::condition_variable s_wake;
-		std::deque<std::pair<System, std::string>> s_queue; // under s_mutex
+		struct Request { System first; std::string second; Art art; };
+		std::deque<Request> s_queue; // under s_mutex
 		std::set<std::string> s_queued;						 // folder/ID, under s_mutex
 		bool s_started = false;
 		std::atomic<uint32_t> s_arrivals{0};
@@ -55,9 +56,9 @@ namespace ps5boxart
 			return system == System::GameCubeWii ? "wii" : system == System::WiiU ? "wiiu" : system == System::Nds ? "ds" : system == System::Switch ? "switch" : "3ds";
 		}
 
-		std::string Base(System system, const std::string& id)
+		std::string Base(System system, const std::string& id, Art art = Art::Front)
 		{
-			return fmt::format("{}/boxart/{}/{}", ps5paths::Covers(), Folder(system), id);
+			return fmt::format("{}/boxart/{}/{}", ps5paths::Covers(), Folder(system), id + (art == Art::Back ? "-back" : art == Art::Disc ? "-disc" : ""));
 		}
 
 		bool Valid(const std::string& id)
@@ -239,20 +240,21 @@ namespace ps5boxart
 		};
 
 		// One game's cover: GameTDB's large one in each region, then its small one
-		Outcome FetchOne(CURL* curl, System system, const std::string& id)
+		Outcome FetchOne(CURL* curl, System system, const std::string& id, Art art)
 		{
-			const std::string base = Base(system, id);
+			const std::string base = Base(system, id, art);
 			std::error_code ec;
 			fs::create_directories(fs::path(base).parent_path(), ec);
 			std::vector<uint8_t> data;
-			// (GameTDB's Wii and GameCube covers are PNGs, at one size)
 			const bool wii = system == System::GameCubeWii;
-			for (const char* size : {"coverHQ", "cover"})
+			const std::vector<const char*> types = art == Art::Back ? std::vector<const char*>{"coverfullHQ", "coverfull"} :
+				art == Art::Disc ? std::vector<const char*>{"disc"} : std::vector<const char*>{"coverHQ", "cover"};
+			for (const char* size : types)
 				for (const std::string& region : Regions(id))
 				{
-					if (wii && std::string_view(size) == "coverHQ")
-						continue;
-					const std::string url = fmt::format("http://art.gametdb.com/{}/{}/{}/{}.{}", Folder(system), size, region, id, wii ? "png" : "jpg");
+					if (wii && std::string_view(size) == "coverHQ") continue;
+					const std::string url = fmt::format("http://art.gametdb.com/{}/{}/{}/{}.{}", Folder(system), size, region, id,
+						wii || art == Art::Disc ? "png" : "jpg");
 					const long status = Get(curl, url, data);
 					if (status < 0)
 						return Outcome::Later;
@@ -273,18 +275,28 @@ namespace ps5boxart
 						ps5log::Line("[boxart] {} is not an image GameTDB's cover should be", url);
 						continue;
 					}
+					if (art == Art::Back)
+					{
+						// GameTDB full jackets run back, spine, front from left to right.
+						if (width <= height) continue;
+						const int panel = (width - std::max(1, height / 24)) / 2;
+						std::vector<uint8_t> back((size_t)panel * height * 4);
+						for (int y = 0; y < height; y++)
+							std::memcpy(back.data() + (size_t)y * panel * 4, rgba.data() + (size_t)y * width * 4, (size_t)panel * 4);
+						rgba.swap(back);
+						width = panel;
+					}
 					int fitWidth, fitHeight;
 					const std::vector<uint8_t> fitted = Fit(rgba, width, height, fitWidth, fitHeight);
-					if (WriteTga(base + ".tga", fitted, fitWidth, fitHeight))
+					if (!WriteTga(base + ".tga", fitted, fitWidth, fitHeight)) return Outcome::Later;
+
+					fs::remove(base + ".none", ec);
 					{
-						fs::remove(base + ".none", ec);
-						{
-							std::lock_guard lock(s_mutex);
-							s_arrived.push_back(fmt::format("{}/{}", Folder(system), id));
-						}
-						s_arrivals++;
-						ps5log::Line("[boxart] {} {}: {}x{} from {}", Folder(system), id, fitWidth, fitHeight, url);
+						std::lock_guard lock(s_mutex);
+						s_arrived.push_back(fmt::format("{}/{}", Folder(system), id));
 					}
+					s_arrivals++;
+					ps5log::Line("[boxart] {} {}: {}x{} from {}", Folder(system), id, fitWidth, fitHeight, url);
 					return Outcome::Fetched;
 				}
 			// GameTDB has none: asked for again in two weeks, or when Settings asks
@@ -294,10 +306,10 @@ namespace ps5boxart
 		}
 
 		// A cover GameTDB had none of, lately: not asked for again yet
-		bool RecentlyNone(System system, const std::string& id)
+		bool RecentlyNone(System system, const std::string& id, Art art)
 		{
 			std::error_code ec;
-			const fs::path none = Base(system, id) + ".none";
+			const fs::path none = Base(system, id, art) + ".none";
 			const auto when = fs::last_write_time(none, ec);
 			return !ec && fs::file_time_type::clock::now() - when < kNoneAgain;
 		}
@@ -332,14 +344,14 @@ namespace ps5boxart
 			auto seconds = std::chrono::seconds(15);
 			for (;;)
 			{
-				std::pair<System, std::string> item;
+				Request item;
 				{
 					std::unique_lock lock(s_mutex);
 					s_wake.wait(lock, [] { return !s_queue.empty(); });
 					item = std::move(s_queue.front());
 					s_queue.pop_front();
 				}
-				const std::string key = fmt::format("{}/{}", Folder(item.first), item.second);
+				const std::string key = fmt::format("{}/{}", Folder(item.first), item.second + std::to_string((int)item.art));
 				auto forget = [&] {
 					// let go of: a later Fetch (box art turned on again, the next scan) asks for it again
 					std::lock_guard lock(s_mutex);
@@ -350,10 +362,10 @@ namespace ps5boxart
 					forget();
 					continue;
 				}
-				if (!Path(item.first, item.second).empty() || RecentlyNone(item.first, item.second))
+				if (!Path(item.first, item.second, item.art).empty() || RecentlyNone(item.first, item.second, item.art))
 					continue;
 				s_busy = true;
-				const Outcome outcome = FetchOne(curl, item.first, item.second);
+				const Outcome outcome = FetchOne(curl, item.first, item.second, item.art);
 				s_busy = false;
 				if (outcome != Outcome::Later)
 				{
@@ -381,11 +393,11 @@ namespace ps5boxart
 		}
 	}
 
-	std::string Path(System system, const std::string& id)
+	std::string Path(System system, const std::string& id, Art art)
 	{
 		if (!Valid(id))
 			return {};
-		const std::string path = Base(system, id) + ".tga";
+		const std::string path = Base(system, id, art) + ".tga";
 		std::error_code ec;
 		return fs::exists(path, ec) ? path : std::string();
 	}
@@ -611,7 +623,8 @@ namespace ps5boxart
 		}
 	}
 
-	void Fetch(System system, const std::vector<std::string>& ids)
+	void Fetch(System system, const std::vector<std::string>& ids, Art art)
+
 	{
 		if (!s_enabled || s_stopped)
 			return;
@@ -619,9 +632,9 @@ namespace ps5boxart
 		size_t queued = 0;
 		for (const std::string& id : ids)
 		{
-			if (!Valid(id) || !s_queued.insert(fmt::format("{}/{}", Folder(system), id)).second)
+			if (!Valid(id) || !s_queued.insert(fmt::format("{}/{}{}", Folder(system), id, (int)art)).second)
 				continue;
-			s_queue.emplace_back(system, id);
+			s_queue.push_back({system, id, art});
 			queued++;
 		}
 		ps5log::Line("[boxart] {}: {} games have a box ID, {} new to look for", Folder(system), ids.size(), queued);
@@ -646,7 +659,7 @@ namespace ps5boxart
 				fs::remove(Base(system, id) + ".none", ec);
 				if (replace)
 					fs::remove(Base(system, id) + ".tga", ec); // the launcher keeps showing its copy until the new one arrives
-				const std::string key = fmt::format("{}/{}", Folder(system), id);
+				const std::string key = fmt::format("{}/{}0", Folder(system), id);
 				if (std::none_of(s_queue.begin(), s_queue.end(), [&](const auto& item) { return item.first == system && item.second == id; }))
 					s_queued.erase(key);
 				again.push_back(id);

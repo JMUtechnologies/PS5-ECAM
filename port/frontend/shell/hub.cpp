@@ -6,6 +6,7 @@
 
 #include "shell_internal.h"
 #include "../actions.h"
+#include "../../app/boxart.h"
 #include "../../app/emulator.h"
 
 #include <algorithm>
@@ -191,6 +192,15 @@ namespace ps5shell
 		// tray, spine and disc are drawn by the same Vulkan UI kit as the rest of the shell.
 		canvas.Rect({0, 0, 1920, 1080}, 0, 0xe80d0f18);
 		canvas.Text(Style({28, ui::Weight::SemiBold, 1.0f}), kSafeX, 74, game.entry.game.name, 0xffffffff, 1700, 1);
+		const auto system = BoxOf(game.entry.game);
+		const std::string& id = game.entry.game.gameId;
+		if (!IsRetro())
+		{
+			ps5boxart::Fetch(system, {id}, ps5boxart::Art::Back);
+			if (IsWiiU()) ps5boxart::Fetch(system, {id}, ps5boxart::Art::Disc);
+		}
+		const ui::Picture& backArt = m_images->Get(IsRetro() ? std::string() : ps5boxart::Path(system, id, ps5boxart::Art::Back));
+		const ui::Picture& discArt = m_images->Get(IsRetro() ? std::string() : ps5boxart::Path(system, id, ps5boxart::Art::Disc));
 		const float w = IsWiiU() ? 420.0f : 490.0f, h = IsWiiU() ? 610.0f : 500.0f;
 		const float angle = m_caseAngle, cs = std::cos(angle), sn = std::sin(angle);
 		auto project = [&](float x, float y, float z) -> ui::Point {
@@ -211,13 +221,21 @@ namespace ps5shell
 			canvas.EllipseGradient(disc, cs >= 0 ? Accent() : 0xffe8ebef, cs >= 0 ? 0xff344052 : 0xff8c99ac);
 			const Box hub{960 - width * 0.14f, 530 - radius * 0.14f, width * 0.28f, radius * 0.28f};
 			canvas.EllipseGradient(hub, 0xff0d0f18, 0xff0d0f18);
-			if (cs > 0.6f)
+			if (cs > 0 && discArt.texture)
+				canvas.Image(discArt.texture, disc, 0);
+			if (!discArt.texture && cs > 0.6f)
 				canvas.Text(Style({22, ui::Weight::SemiBold, 1.0f}), 960 - width * 0.7f,
 					530 - radius * 0.5f, game.entry.game.name, 0xffffffff, width * 1.4f, 2);
 			return;
 		}
 		const auto back = plane(-24), rim = plane(12);
 		canvas.Shadow({700, 850, 520, 80}, 36, 12, 45, 0x99000000);
+		if (cs < 0 && backArt.texture)
+		{
+			const std::array<ui::Point, 4> reverse{back[1], back[0], back[3], back[2]};
+			canvas.ImageQuad(backArt.texture, reverse);
+			return;
+		}
 		canvas.ImageQuad(0, back, 0xff30333d);
 		// The tray edge has depth when the case turns.
 		const int edge = sn >= 0 ? 1 : 0;
@@ -233,6 +251,7 @@ namespace ps5shell
 			const Box disc{centre.x - width, centre.y - radius, width * 2, radius * 2};
 			canvas.EllipseGradient(disc, 0xffe8ebef, 0xfff7f7f4);
 			canvas.EllipseGradient(disc.Inset(width * 0.04f, radius * 0.04f), 0xffeceef2, 0xff8c99ac);
+			if (cs > 0 && discArt.texture) canvas.Image(discArt.texture, disc, 0);
 			const Box hub{centre.x - width * 0.14f, centre.y - radius * 0.14f, width * 0.28f, radius * 0.28f};
 			canvas.EllipseGradient(hub, 0xff252b39, 0xff252b39);
 		}

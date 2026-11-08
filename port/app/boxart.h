@@ -26,6 +26,9 @@ namespace ps5boxart
 		GameCubeWii, // the GameCube's and the Wii's: GameTDB keeps both as "wii"
 	};
 
+	// Back is cropped from a full jacket; Disc preserves the PNG alpha channel.
+	enum class Art { Front, Back, Disc };
+
 	// The largest a cover is kept: the launcher's cover area at 4K
 	constexpr int kMaxWidth = 576, kMaxHeight = 704;
 
@@ -41,9 +44,9 @@ namespace ps5boxart
 	void SetSteamGridKey(const std::string& key); // empty: the player's is forgotten
 
 	// The cover's TGA when it has been fetched, else empty.
-	std::string Path(System system, const std::string& id);
+	std::string Path(System system, const std::string& id, Art art = Art::Front);
 	// Fetches the covers not fetched yet, one at a time, on a thread of its own.
-	void Fetch(System system, const std::vector<std::string>& ids);
+	void Fetch(System system, const std::vector<std::string>& ids, Art art = Art::Front);
 	// Settings > Online: the covers of these IDs asked for again now, those GameTDB had none for too;
 	// replace: the ones already here downloaded again as well.
 	void Refetch(System system, const std::vector<std::string>& ids, bool replace);
