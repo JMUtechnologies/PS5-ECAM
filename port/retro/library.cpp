@@ -41,61 +41,12 @@ namespace ps5retro
 			return ext;
 		}
 
-		// Read the Wii banner (opening.bnr) from a disc image.
-		// Returns true if banner was read successfully into the output vector.
-		// This is a simplified implementation that works for raw ISO/GCM.
-		// For compressed formats, it would require full partition parsing.
-		bool ReadWiiBanner(const fs::path& path, std::string_view ext, std::vector<std::uint8_t>& out)
-		{
-			std::ifstream in(path, std::ios::binary);
-			if (!in) return false;
-
-			// Helper to read the disc header and check if it's a Wii disc
-			auto read_wii_header = [&](std::uint64_t header_offset) -> bool {
-				unsigned char header[0x100]{};
-				in.seekg(header_offset);
-				if (!in.read(reinterpret_cast<char*>(header), 0x100) || in.gcount() != 0x100) return false;
-				const bool wii = header[0x18] == 0x5d && header[0x19] == 0x1c && header[0x1a] == 0x9e && header[0x1b] == 0xa3;
-				const bool gc = header[0x1c] == 0xc2 && header[0x1d] == 0x33 && header[0x1e] == 0x9f && header[0x1f] == 0x3d;
-				if (!wii && !gc) return false;
-				if (!wii) return false; // Only Wii discs have opening.bnr in the data partition
-				return true;
-			};
-
-			// For Wii discs, we need to read the opening.bnr from the data partition.
-			// This is complex for compressed formats. For now, we'll support raw ISO/GCM.
-			// The banner is in the first data partition at a known offset.
-
-			if (ext == ".iso" || ext == ".gcm")
-			{
-				// Raw ISO/GCM: read header at offset 0, then find data partition
-				if (!read_wii_header(0)) return false;
-				// For raw ISO, the Wii banner is at a fixed location in the data partition.
-				// This is complex without full partition parsing. For now, skip and let the
-				// existing cover art system handle it.
-				return false;
-			}
-			else if (ext == ".rvz" || ext == ".wia")
-			{
-				// RVZ/WIA: disc header at offset 0x58
-				if (!read_wii_header(0x58)) return false;
-				// The banner reading would require full partition parsing which is too complex here.
-				return false;
-			}
-			else if (ext == ".ciso")
-			{
-				// CISO: disc header at virtual offset 0x8000
-				if (!read_wii_header(0x8000)) return false;
-				return false;
-			}
-
-			return false;
-		}
-
 		namespace
 		{
 			// Read the disc header (0x100 bytes) from various container formats at their known offsets.
 			// Returns true if header was read successfully.
+			// the Wii's and the GameCube's magic words end at 0x20: all of the header that is read
+			constexpr std::streamsize kDiscMagics = 0x20;
 			bool ReadDiscHeader(const fs::path& path, std::string_view ext, unsigned char header[0x100])
 			{
 				std::ifstream in(path, std::ios::binary);
@@ -105,19 +56,19 @@ namespace ps5retro
 				{
 					// Raw ISO/GCM: header at offset 0
 					in.seekg(0);
-					return in.read(reinterpret_cast<char*>(header), 0x100) && in.gcount() == 0x100;
+					return in.read(reinterpret_cast<char*>(header), kDiscMagics) && in.gcount() == kDiscMagics;
 				}
 				else if (ext == ".rvz" || ext == ".wia")
 				{
 					// RVZ/WIA: disc header stored at file offset 0x58 (0x48 header + 0x10 into h2)
 					in.seekg(0x58);
-					return in.read(reinterpret_cast<char*>(header), 0x100) && in.gcount() == 0x100;
+					return in.read(reinterpret_cast<char*>(header), kDiscMagics) && in.gcount() == kDiscMagics;
 				}
 				else if (ext == ".ciso")
 				{
 					// CISO: disc header at virtual offset 0x8000, which is file offset 0x8000 (after CISO header)
 					in.seekg(0x8000);
-					return in.read(reinterpret_cast<char*>(header), 0x100) && in.gcount() == 0x100;
+					return in.read(reinterpret_cast<char*>(header), kDiscMagics) && in.gcount() == kDiscMagics;
 				}
 				else if (ext == ".gcz")
 				{
@@ -173,7 +124,8 @@ namespace ps5retro
 			// For formats where we can't easily read the disc header (GCZ, WBFS, WAD),
 			// fall back to extension-based filtering as a best effort.
 			// RVZ/WIA/CISO are the main compressed formats used; they're handled above.
-			if (ext == ".rvz" || ext == ".wia" || ext == ".ciso")
+			// A raw disc too short to hold its header is no disc of either side, as before.
+			if (ext == ".iso" || ext == ".gcm" || ext == ".rvz" || ext == ".wia" || ext == ".ciso")
 			{
 				// If we couldn't read the header, assume it doesn't match (safer than matching both)
 				return false;

@@ -14,6 +14,8 @@ static std::string called;
 static std::vector<std::string> handed;
 namespace ps5emu { void LoadExecApp(const std::string& program, const std::vector<std::string>& args, bool, const std::string&) { called = program; handed = args; } }
 namespace ps5lang { const char* Tr(const char* english) { return english; } std::string Tr(const std::string& english) { return english; } }
+// a Wii disc's banner (retro/porpoise_banner.cpp) is not read here: none, so a game keeps the cover it had
+namespace ps5porpoise { bool ExtractWiiBanner(const std::string&, const std::string&, std::string& error) { error = "not in this test"; return false; } }
 static void Check(bool ok, const char* text) { std::cout << (ok ? "PASS " : "FAIL ") << text << '\n'; failures += !ok; }
 static void Put(const fs::path& file, const std::string& text = "fixture") { fs::create_directories(file.parent_path()); std::ofstream(file, std::ios::binary) << text; }
 static std::string DiscHeader(bool wii)
