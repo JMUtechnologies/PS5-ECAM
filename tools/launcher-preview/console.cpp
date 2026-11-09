@@ -388,6 +388,13 @@ namespace ps5boxart
 	void SetEnabled(bool) {}
 	void Stop() {}
 	int Answered() { return -1; } // nothing asked of GameTDB
+	// the GameCube and Wii games' loading pictures and SteamGridDB's key: none without a network
+	std::string TitleArtPath(const std::string&) { return {}; }
+	void FetchTitleArt(const std::vector<std::pair<bool, std::string>>&) {}
+	bool HasSteamGridKey() { return false; }
+	bool PlayerSteamGridKey() { return false; }
+	std::string PlayerSteamGridKeyText() { return {}; }
+	void SetSteamGridKey(const std::string&) {}
 	bool ImageSize(const std::string& path, int& width, int& height)
 	{
 		unsigned char header[18];
@@ -1048,6 +1055,7 @@ namespace ps5cheevos
 	}();
 	void Load() {}
 	Account Get() { return s_account; }
+	std::string Token() { return {}; }
 	bool BeginSignIn(const std::string& user, const std::string&)
 	{
 		s_account.signedIn = true;
