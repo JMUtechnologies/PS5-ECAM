@@ -26,7 +26,8 @@ in it (EDEN_ECAM_CHILD, set by PS5-ECAM's tools/build-eglantine.sh):
  headless/graphics.h                |   1 +
  headless/main.cpp                  | 198 +++++++++++++++++++++++++++--
  headless/pad.cpp                   |  26 ++++
- headless/settings_store.h          |  89 ++++++++++---
+ headless/preferences_check.cpp     |   9 ++
+ headless/settings_store.h          | 106 ++++++++++++---
  headless/storage_paths.h           |   5 +
  headless/vulkan.cmake              |   3 +-
  headless/vulkan_ecam_composite.inc |   4 +
@@ -36,7 +37,7 @@ in it (EDEN_ECAM_CHILD, set by PS5-ECAM's tools/build-eglantine.sh):
  tools/build-lapy-helper.py         |   2 +-
  tools/build-package.sh             |   1 +
  tools/prepare-vulkan-port.py       |  18 ++-
- 20 files changed, 477 insertions(+), 37 deletions(-)
+ 21 files changed, 503 insertions(+), 37 deletions(-)
  create mode 100644 headless/ecam.cmake
  create mode 100644 headless/ecam_bridge.h
  create mode 100644 headless/vulkan_ecam_composite.inc
@@ -743,11 +744,31 @@ index 9d0f3eb..756ac43 100644
          // The touchpad on its own: see kSelectTapPolls.
          const bool touch = (pressed & kButtonTouchPad) != 0;
          const bool touched = (last_buttons & kButtonTouchPad) != 0;
+diff --git a/headless/preferences_check.cpp b/headless/preferences_check.cpp
+index 4fd0933..bb0acbf 100644
+--- a/headless/preferences_check.cpp
++++ b/headless/preferences_check.cpp
+@@ -421,6 +421,15 @@ int main() {
+                plain.performance[2] < 0 && Eden::PreferencesFor(quest, file).volume == general.volume);
+     }
+ 
++    // Playtendoh's child-session performance values override saved defaults without rewriting them.
++    Eden::SetSessionPreferenceOverrides({"block_list=1", "async_shaders=1", "fast_gpu=1",
++                                         "unsafe_cpu=1", "unsafe_dma=1", "reactive_flushing=0",
++                                         "skip_invalidation=1"});
++    const auto session = Eden::LoadPerformance(quest, file);
++    assert(session.block_list && session.async_shaders && session.fast_gpu && session.unsafe_cpu &&
++           session.unsafe_dma && !session.reactive_flushing && session.skip_invalidation);
++    Eden::SetSessionPreferenceOverrides({});
++
+     // Game files folder.
+     assert(Eden::LoadSavedAssetsDir(file).empty());
+     assert(Eden::SaveAssetsDir("/mnt/ext1/eden", file));
 diff --git a/headless/settings_store.h b/headless/settings_store.h
-index f8732db..f1743bc 100644
+index f8732db..a8ca328 100644
 --- a/headless/settings_store.h
 +++ b/headless/settings_store.h
-@@ -135,6 +135,49 @@ struct Preferences {
+@@ -135,6 +135,58 @@ struct Preferences {
      bool immediate_logs = false;         // Settings > Diagnostics: log lines written as they come
  };
  
@@ -757,6 +778,8 @@ index f8732db..f1743bc 100644
 +struct SessionPreferenceOverrides {
 +    int hud = -1, volume = -1, vibration = -1, language = -1;
 +    int resolution = -1, filter = -1, output = -1, refresh = -1, frame_gen = -1;
++    int block_list = -1, async_shaders = -1, fast_gpu = -1, unsafe_cpu = -1;
++    int unsafe_dma = -1, reactive_flushing = -1, skip_invalidation = -1;
 +    int controller = -2;
 +};
 +
@@ -789,6 +812,13 @@ index f8732db..f1743bc 100644
 +        else if (key == "output" && number < int(std::size(kOutputKeys))) value.output = number;
 +        else if (key == "refresh" && number <= 1) value.refresh = number;
 +        else if (key == "frame_gen" && number <= 1) value.frame_gen = number;
++        else if (key == "block_list" && number <= 1) value.block_list = number;
++        else if (key == "async_shaders" && number <= 1) value.async_shaders = number;
++        else if (key == "fast_gpu" && number <= 1) value.fast_gpu = number;
++        else if (key == "unsafe_cpu" && number <= 1) value.unsafe_cpu = number;
++        else if (key == "unsafe_dma" && number <= 1) value.unsafe_dma = number;
++        else if (key == "reactive_flushing" && number <= 1) value.reactive_flushing = number;
++        else if (key == "skip_invalidation" && number <= 1) value.skip_invalidation = number;
 +        else if (key == "controller" && number <= int(std::size(kControllerKeys))) value.controller = number - 1;
 +    }
 +    ActiveSessionPreferenceOverrides() = value;
@@ -797,7 +827,7 @@ index f8732db..f1743bc 100644
  inline int KeyIndex(const std::string& value, const char* const* keys, int count, int fallback) {
      for (int i = 0; i < count; ++i)
          if (value == keys[i]) return i;
-@@ -575,23 +618,35 @@ inline bool SaveGameSettings(uint64_t title_id, const GameSettings& value, const
+@@ -575,23 +627,35 @@ inline bool SaveGameSettings(uint64_t title_id, const GameSettings& value, const
  // The settings a session of a game uses: Settings, with what the game does differently.
  inline Preferences PreferencesFor(uint64_t title_id, const std::string& file = SettingsFile()) {
      Preferences result = LoadPreferences(file);
@@ -847,6 +877,21 @@ index f8732db..f1743bc 100644
 +    if (session.refresh >= 0) result.refresh = session.refresh;
 +    if (session.frame_gen >= 0) result.frame_gen = session.frame_gen != 0;
 +    if (session.controller != -2) result.controller = session.controller;
+     return result;
+ }
+ 
+@@ -631,6 +695,14 @@ inline PerformanceSettings LoadPerformance(uint64_t title_id, const std::string&
+     };
+     read("");
+     if (title_id) read("/games/" + Settings::TitleKey(title_id));
++    const auto& session = ActiveSessionPreferenceOverrides();
++    if (session.block_list >= 0) result.block_list = session.block_list != 0;
++    if (session.async_shaders >= 0) result.async_shaders = session.async_shaders != 0;
++    if (session.fast_gpu >= 0) result.fast_gpu = session.fast_gpu != 0;
++    if (session.unsafe_cpu >= 0) result.unsafe_cpu = session.unsafe_cpu != 0;
++    if (session.unsafe_dma >= 0) result.unsafe_dma = session.unsafe_dma != 0;
++    if (session.reactive_flushing >= 0) result.reactive_flushing = session.reactive_flushing != 0;
++    if (session.skip_invalidation >= 0) result.skip_invalidation = session.skip_invalidation != 0;
      return result;
  }
  

@@ -18,7 +18,7 @@ jobs:
       - name: Packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends clang-18 pkg-config libarchive-dev libzip-dev libzstd-dev libssl-dev libfmt-dev libvulkan-dev p7zip-full ffmpeg
+          sudo apt-get install -y --no-install-recommends clang-18 pkg-config libarchive-dev libzip-dev libzstd-dev libssl-dev libfmt-dev libvulkan-dev nlohmann-json3-dev p7zip-full ffmpeg
 
       - name: Downloads kept between runs
         uses: actions/cache@v4
@@ -141,6 +141,11 @@ jobs:
 
       - name: Frame capture buffer
         run: bash tools/tests/test-frame-capture.sh
+
+      - name: Switch 2 child runtime settings
+        run: |
+          python3 -B tools/deps.py fetch eglantineps5
+          bash tools/tests/test-eglantine-child-settings.sh
 
       - name: Switch settings integration syntax
         run: |
