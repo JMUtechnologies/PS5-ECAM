@@ -168,6 +168,7 @@ namespace ps5shell
 							  TrF("Put your own prod.keys in {0}/keys. Playtendoh and EglantinePS5 do not include keys.", ps5eglantine::DataFolder()) + " " +
 							  TrF("Put your own Switch firmware files in {0}/firmware. No firmware comes with Playtendoh or EglantinePS5.", ps5eglantine::DataFolder()) :
 			// tr: {1} is Eden's game files folder, which has keys/ and firmware/ in it
+			IsSwitch2() ? TrF("Put this system's games in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are searched too, four deep.", folder) :
 			IsSwitch() ? TrF("Put your Switch games (.nsp or .xci, alone or each in a folder of its own with its update and DLC) in {0}. "
 							 "Eden needs your Switch's keys in {1}/keys and its firmware in {1}/firmware too.",
 							 ps5eden::ScanFolder(folder), ps5eden::GameFilesFolder()) :

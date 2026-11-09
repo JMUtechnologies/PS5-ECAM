@@ -529,6 +529,7 @@ int main(int argc, char* argv[])
 	ps5stream::SetUploadFolders([] {
 		const ps5settings::Launcher now = ps5settings::Load();
 		const std::string eden = ps5eden::GameFilesFolder();
+		const std::string eglantine = ps5eglantine::DataFolder();
 		std::vector<ps5stream::Folder> folders = {
 			{"wiiu", "Wii U games", "WUA, WUD and WUX files, or an unpacked game in a .zip, .7z or .rar.", now.gamesFolder},
 			{"3ds", "3DS games",
@@ -539,6 +540,15 @@ int main(int argc, char* argv[])
 			{"switch", "Switch games", ".nsp and .xci files: a game, its update or its DLC.", ps5eden::ScanFolder(now.nx.gamesFolder)},
 			{"switch-keys", "Switch keys", "prod.keys and title.keys, dumped from your own Switch.", eden + "/keys"},
 			{"switch-firmware", "Switch firmware", "The firmware's .nca files, dumped from your own Switch.", eden + "/firmware"},
+			{"switch2", ps5lang::Tr("Switch 2 games"),
+				std::string(".nup · ") + ps5lang::Tr("Switch 2 game folders need ExeFS and RomFS. Put each game in its own folder; keep updates and DLC where EglantinePS5 expects them."),
+				ps5eden::ScanFolder(now.nx2.gamesFolder, true)},
+			{"switch2-updates", std::string(ps5lang::Tr("Switch 2 games")) + " / " + ps5lang::Tr("Update"), {}, eglantine + "/updates"},
+			{"switch2-dlc", std::string(ps5lang::Tr("Switch 2 games")) + " / " + ps5lang::Tr("DLC"), {}, eglantine + "/dlc"},
+			{"switch2-keys", ps5lang::Tr("Switch 2 keys"),
+				ps5lang::TrF("Put your own prod.keys in {0}/keys. Playtendoh and EglantinePS5 do not include keys.", eglantine), eglantine + "/keys"},
+			{"switch2-firmware", ps5lang::Tr("Switch 2 firmware"),
+				ps5lang::TrF("Put your own Switch firmware files in {0}/firmware. No firmware comes with Playtendoh or EglantinePS5.", eglantine), eglantine + "/firmware"},
 			{"amiibo", "Amiibo", "Your amiibo dumps (.bin), for the Wii U and the 3DS.", ps5paths::Root() + "/amiibo"},
 			{"3ds-camera", "3DS camera",
 				"A picture (PNG or JPEG) the 3DS's cameras see, the newest sent: a QR code for a game to scan.",
@@ -731,7 +741,7 @@ int main(int argc, char* argv[])
 					"This build has no Switch emulator: eden/eboot.bin is not in the app's folder.");
 			const std::string& folder = switch2 ? settings.nx2.gamesFolder : settings.nx.gamesFolder;
 			if (!keepList(system, folder))
-				ps5eden::StartScan(folder);
+				ps5eden::StartScan(folder, switch2);
 			return;
 		}
 		if (system == ps5launcher::System::Nds)
