@@ -233,6 +233,21 @@ namespace ps5eden
 				s.vibration = number != 0;
 			else if (key == "deadzone")
 				s.deadzone = number;
+			else if (key == "buttons")
+			{
+				// twelve numbers, a comma between them; fewer, and the buttons stay as they were
+				size_t at = 0;
+				int count = 0;
+				while (count < (int)std::size(s.buttons) && at < value.size())
+				{
+					s.buttons[count++] = std::atoi(value.c_str() + at);
+					const size_t comma = value.find(',', at);
+					if (comma == std::string::npos)
+						break;
+					at = comma + 1;
+				}
+				s.hasButtons = count == (int)std::size(s.buttons);
+			}
 		}
 		in.close();
 		std::remove(file.c_str());
@@ -310,6 +325,8 @@ namespace ps5eden
 		nx.nxDocked = s.docked;
 		nx.nxController = std::clamp(s.controller, -1, 4);
 		nx.nxDeadzone = std::clamp(s.deadzone, 0, 30);
+		if (s.hasButtons && !SetPadButtons(nx, s.buttons))
+			ps5log::Line("[switch] the in-game menu's buttons were not a whole mapping: left as they were");
 		after.rumble = s.vibration;
 		ps5settings::SaveChanges(side, result.titleId, before, after);
 		ps5log::Line("[switch] the in-game menu's changes kept");

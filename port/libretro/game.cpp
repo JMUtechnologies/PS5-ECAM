@@ -327,6 +327,7 @@ namespace ps5libretro
 			menu.performance = s_settings.performance;
 			menu.deadzone = s_settings.deadzone;
 			menu.aOnCircle = ps5azahar::MappedInput(s_settings, Button::A) == PadInput::Circle;
+			menu.buttons = s_settings.buttons;
 			menu.border = s_settings.border;
 			menu.screenFilter = s_settings.dsFilter;
 			std::lock_guard lock(s_mutex);
@@ -374,6 +375,8 @@ namespace ps5libretro
 		// the game's own when it has some
 		void ApplyMenu(const ps5ingame3ds::Settings& menu)
 		{
+			// the menu's Buttons, the A and B row's swap already in them (app/buttons_menu.h)
+			s_settings.buttons = menu.buttons;
 			const bool aOnCircle = ps5azahar::MappedInput(s_settings, Button::A) == PadInput::Circle;
 			s_settings.volume = menu.volume;
 			s_settings.performance = menu.performance;

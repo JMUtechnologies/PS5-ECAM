@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "ingame3ds.h"
+#include "buttons_menu.h"
 #include "emulator.h"
 #include "keyboard_menu.h"
 #include "lang.h"
@@ -7,6 +8,7 @@
 #include "remote_menu.h"
 #include "side_menu.h"
 #include "tga.h"
+#include "../azahar/controls.h"
 #include "../ps5/kernel.h"
 #include "../ui/text.h"
 #include "../ps5/log.h"
@@ -130,6 +132,51 @@ namespace ps5ingame3ds
 		Gpu g;
 		uint32_t s_buttons = 0, s_pressed = 0;
 		uint32_t s_menuButtons = 0; // the same, with the left stick's directions as the D-pad's
+
+		// The menu's Buttons (buttons_menu.h): the wait for a press, the input held now for its test's row, and
+		// the console's buttons as the side's settings name them (ps5azahar's): the 3DS's, or the DS's, which
+		// the libretro sides share
+		ps5menu::ButtonsMenu s_buttonsMenu;
+		int s_heldInput = ps5menu::kInputNone;
+		static_assert((int)ps5emu::PadInput::TouchPad == ps5menu::kInputTouchPad && (int)ps5emu::PadInput::Options == ps5menu::kInputOptions &&
+					  (int)ps5emu::PadInput::RightStickUp == ps5menu::kInputRightStickUp);
+
+		ps5settings::N3ds Mapped(const Settings& settings)
+		{
+			ps5settings::N3ds mapped;
+			mapped.buttons = settings.buttons;
+			return mapped;
+		}
+
+		std::vector<ps5menu::ButtonRow> ButtonRows(const Settings& settings)
+		{
+			const ps5settings::N3ds mapped = Mapped(settings);
+			std::vector<ps5menu::ButtonRow> rows;
+			if (s_console == Console::N3ds)
+				for (const auto& mapping : ps5azahar::ListMappings(mapped))
+					rows.push_back({mapping.button, mapping.input});
+			else
+				for (const ps5azahar::Button button : ps5azahar::DsButtons())
+				{
+					const auto mapping = ps5azahar::Mapping(mapped, button, true);
+					rows.push_back({mapping.button, mapping.input});
+				}
+			return rows;
+		}
+
+		// A button of the list given a DualSense input (the one that had it takes this one's), or every
+		// button back: the A and B row says what came of it
+		void SetButton(Settings& settings, int index, ps5emu::PadInput input, bool reset)
+		{
+			ps5settings::N3ds mapped = Mapped(settings);
+			const bool ds = s_console != Console::N3ds;
+			if (reset)
+				mapped.buttons.clear();
+			else if (index >= 0 && (!ds || index < (int)ps5azahar::DsButtons().size()))
+				ps5azahar::SetMapping(mapped, ds ? (size_t)ps5azahar::DsButtons()[index] : (size_t)index, input, ds);
+			settings.buttons = mapped.buttons;
+			settings.aOnCircle = ps5azahar::MappedInput(mapped, ps5azahar::Button::A) == ps5emu::PadInput::Circle;
+		}
 		// the menu's panel: its place in the list and the open category (the renderer's), and a new
 		// opening, asked for by ToggleMenu on the game's loop
 		ps5menu::SideMenu s_side;
@@ -641,6 +688,10 @@ namespace ps5ingame3ds
 						Tr("A on Circle and B on Cross, where the 3DS has them, or the other way round, with X and Y swapped to match.")},
 				}});
 			}
+			// every button, as Settings > Controls > Buttons has them, set here without leaving the game; the
+			// touchpad is the touch screen, so its click cancels
+			rows.push_back(s_buttonsMenu.Category(ButtonRows(settings), s_heldInput, sceKernelGetProcessTime(), true,
+				Tr("Every button back where the console has it. Held to confirm.")));
 			// a home screen tile's game closes the app instead, as the row says (#48)
 			Row library = ps5emu::ExitAfterGame() ?
 				Row{"library", Tr("Quit to the home screen"), "", false,
@@ -710,7 +761,13 @@ namespace ps5ingame3ds
 			const int resolution = std::clamp(settings.resolution, 1, 10);
 			Settings next = settings;
 			bool changed = true; // a setting's row; the others set it false
-			if (id == "resume")
+			if (ps5menu::ButtonsMenu::Asked asked; s_buttonsMenu.Act(action, sceKernelGetProcessTime(), asked))
+			{
+				changed = asked.reset;
+				if (asked.reset)
+					SetButton(next, -1, ps5emu::PadInput::None, true);
+			}
+			else if (id == "resume")
 			{
 				CloseMenu();
 				changed = false;
@@ -756,7 +813,20 @@ namespace ps5ingame3ds
 			else if (id == "deadzone")
 				next.deadzone = chosen && settings.deadzone >= 50 ? 0 : std::clamp(settings.deadzone + change * 5, 0, 50);
 			else if (id == "ab")
-				next.aOnCircle = !settings.aOnCircle;
+			{
+				// A, B, X and Y: on Circle, Cross, Triangle and Square, or on Cross, Circle, Square and Triangle
+				using ps5azahar::Button;
+				using ps5emu::PadInput;
+				const bool circle = !settings.aOnCircle;
+				ps5settings::N3ds mapped = Mapped(settings);
+				const bool ds = s_console != Console::N3ds;
+				ps5azahar::SetMapping(mapped, (size_t)Button::A, circle ? PadInput::Circle : PadInput::Cross, ds);
+				ps5azahar::SetMapping(mapped, (size_t)Button::B, circle ? PadInput::Cross : PadInput::Circle, ds);
+				ps5azahar::SetMapping(mapped, (size_t)Button::X, circle ? PadInput::Triangle : PadInput::Square, ds);
+				ps5azahar::SetMapping(mapped, (size_t)Button::Y, circle ? PadInput::Square : PadInput::Triangle, ds);
+				next.buttons = mapped.buttons;
+				next.aOnCircle = circle;
+			}
 			else if (id == ps5menu::kRemoteRow)
 			{
 				ps5menu::ToggleRemote(); // the app's setting, not the game's
@@ -818,10 +888,31 @@ namespace ps5ingame3ds
 			{
 				// opened: on its first row, every category closed, the shortcut's buttons not counted
 				s_side.Reset();
+				s_buttonsMenu.Reset();
 				s_stateAction.clear();
 			}
+			// Buttons: player 1's DualSense for the test's row and, while a button waits for its press, for
+			// that; the sheet's controller is still meanwhile
+			uint32_t menuButtons = s_menuButtons;
+			{
+				ps5pad::Data data{};
+				const bool read = ps5pad::Read(0, data) && !(data.buttons & ps5pad::kIntercepted);
+				const bool touchpad = read && (data.buttons & ps5pad::kTouchPad);
+				s_heldInput = !read ? ps5menu::kInputNone : touchpad ? ps5menu::kInputTouchPad : ps5menu::HeldInput(data);
+				if (s_buttonsMenu.Busy())
+				{
+					menuButtons = 0;
+					const auto asked = read ? s_buttonsMenu.Capture(ps5menu::HeldInput(data), ps5menu::PadIdle(data), touchpad, true, true,
+												  sceKernelGetProcessTime()) : ps5menu::ButtonsMenu::Asked{};
+					if (asked.index >= 0)
+					{
+						SetButton(settings, asked.index, (ps5emu::PadInput)asked.input, false);
+						Change(settings);
+					}
+				}
+			}
 			bool close = false;
-			const ps5menu::Action action = s_side.Update(MenuRows(settings), Tiles(settings), s_menuButtons, sceKernelGetProcessTime(), close);
+			const ps5menu::Action action = s_side.Update(MenuRows(settings), Tiles(settings), menuButtons, sceKernelGetProcessTime(), close);
 			if (close)
 			{
 				CloseMenu();

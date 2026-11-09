@@ -20,6 +20,7 @@
 
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -47,6 +48,9 @@ namespace ps5ingame3ds
 		bool screenGap = false;	  // a gap between the two screens, as the console's hinge makes (the 3DS's too)
 		bool hiddenTouch = false; // the touchpad touches the bottom screen while only the top one shows
 		bool lidClosed = false;	  // the DS closed, for the games that ask (for this game only)
+		// the console's buttons on the DualSense where not the default (ps5settings::N3ds::buttons): the menu's
+		// Buttons change them, and the A and B row's swap is in them
+		std::map<std::string, std::string> buttons;
 	};
 
 	// Which console the game is, whose rows the menu shows

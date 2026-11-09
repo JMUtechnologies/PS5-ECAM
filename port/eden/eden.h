@@ -52,6 +52,9 @@ namespace ps5eden
 		{
 			int filter = 0, antiAliasing = 0, sharpening = 25, speedLimit = 0, volume = 100, controller = -1, deadzone = 8;
 			bool frameGeneration = false, overlay = false, docked = true, vibration = true;
+			// the menu's Buttons: each Switch button's DualSense button, by Eden's numbers (ps5ingamenx::Settings)
+			bool hasButtons = false;
+			int buttons[12] = {1, 0, 3, 2, 4, 5, 6, 7, 10, 12, 8, 9};
 		} settings;
 	};
 	Result TakeResult();
@@ -73,6 +76,11 @@ namespace ps5eden
 	bool Mappable(ps5emu::PadInput input);
 	// Every button's, as the game's --set mapping= hands them to Eden ("a:circle,b:cross,...")
 	std::string MappingValue(const ps5settings::N3ds& nx);
+	// The same by Eden's numbers, as the in-game menu has them (ps5ingamenx::Settings::buttons): each Switch
+	// button's DualSense button, of its button_mapping.h's thirteen. Set: only a whole mapping, none twice.
+	constexpr int kSwitchButtons = 12;
+	void PadButtons(const ps5settings::N3ds& nx, int pads[kSwitchButtons]);
+	bool SetPadButtons(ps5settings::N3ds& nx, const int pads[kSwitchButtons]);
 
 	// The Switch's system languages, as Eden names them (its settings_store.h's kLanguageKeys), each in
 	// its own language

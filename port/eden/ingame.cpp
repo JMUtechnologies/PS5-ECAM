@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "ingame.h"
 #include "../app/amiibo_list.h"
+#include "../app/buttons_menu.h"
 #include "../app/lang.h"
 #include "../app/menu_canvas.h"
 #include "../app/side_menu.h"
@@ -159,6 +160,46 @@ namespace ps5ingamenx
 		Gpu g;
 		ps5menu::SideMenu s_side;
 		uint32_t s_menuButtons = 0;
+
+		// The menu's Buttons (app/buttons_menu.h): the Switch's buttons and the DualSense's, as Settings'
+		// buttons number them, in English as the launcher's list has them (port/eden/controls.cpp)
+		ps5menu::ButtonsMenu s_buttonsMenu;
+		constexpr const char* kSwitchButtons[Settings::kButtons] = {"A", "B", "X", "Y", "L", "R", "ZL", "ZR", "+ (Start)", "- (Select)",
+			"Left stick click", "Right stick click"};
+		constexpr int kPadInputs[Settings::kPadButtons] = {ps5menu::kInputCross, ps5menu::kInputCircle, ps5menu::kInputSquare,
+			ps5menu::kInputTriangle, ps5menu::kInputL1, ps5menu::kInputR1, ps5menu::kInputL2, ps5menu::kInputR2, ps5menu::kInputL3,
+			ps5menu::kInputR3, ps5menu::kInputOptions, ps5menu::kInputCreate, ps5menu::kInputTouchPad};
+
+		// Eden's number for a DualSense input, or -1 for one it gives no button (the D-pad, the sticks)
+		int PadButton(int input)
+		{
+			for (int pad = 0; pad < Settings::kPadButtons; pad++)
+				if (kPadInputs[pad] == input)
+					return pad;
+			return -1;
+		}
+
+		std::vector<ps5menu::ButtonRow> ButtonRows(const Settings& settings)
+		{
+			std::vector<ps5menu::ButtonRow> rows;
+			for (int game = 0; game < Settings::kButtons; game++)
+			{
+				const int pad = settings.buttons[game];
+				rows.push_back({kSwitchButtons[game], pad >= 0 && pad < Settings::kPadButtons ? ps5menu::kInputNames[kPadInputs[pad]] : ""});
+			}
+			return rows;
+		}
+
+		// The Switch's button takes the DualSense's; the one that had it gets this one's (Eden's Assign)
+		void SetButton(Settings& settings, int game, int pad)
+		{
+			if (game < 0 || game >= Settings::kButtons || pad < 0 || pad >= Settings::kPadButtons)
+				return;
+			for (int other = 0; other < Settings::kButtons; other++)
+				if (other != game && settings.buttons[other] == pad)
+					settings.buttons[other] = settings.buttons[game];
+			settings.buttons[game] = pad;
+		}
 
 		template<typename F>
 		bool Load(F& to, const char* name, bool device)
@@ -600,6 +641,9 @@ namespace ps5ingamenx
 				{"deadzone", Tr("Stick deadzone"), Percent(settings.deadzone), true,
 					Tr("How far a stick moves before the game sees it. Raise it if a character or the camera drifts.")},
 			}});
+			// every button, as Settings > Controls > Buttons has them, set here without leaving the game
+			rows.push_back(s_buttonsMenu.Category(ButtonRows(settings), ps5menu::HeldInput(s_buttons.load()), Now(), false,
+				Tr("Every button back where the console has it. Held to confirm.")));
 			// tr: amiibo is Nintendo's name for its figures, as it writes it in the language
 			Row amiibo{"amiibo", Tr("Amiibo"), AmiiboValue(), true,
 				// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
@@ -683,6 +727,18 @@ namespace ps5ingamenx
 			{
 				s_leave = true; // held to here
 				CloseMenu();
+				return;
+			}
+			if (ps5menu::ButtonsMenu::Asked asked; s_buttonsMenu.Act(action, Now(), asked))
+			{
+				if (!asked.reset)
+					return;
+				const Settings defaults;
+				std::copy(std::begin(defaults.buttons), std::end(defaults.buttons), std::begin(next.buttons));
+				std::lock_guard lock(s_mutex);
+				s_settings = next;
+				s_changed = true;
+				s_everChanged = true;
 				return;
 			}
 			if (id == "amiibo-series")
@@ -769,10 +825,31 @@ namespace ps5ingamenx
 			if (s_menuFresh.exchange(false))
 			{
 				s_side.Reset();
+				s_buttonsMenu.Reset();
 				FindAmiibo();
 			}
+			// Buttons: while one waits for its press, the controller is that wait's and the sheet's is still.
+			// The touchpad's click counts, as - has it; the D-pad and the sticks stay the Switch's own.
+			uint32_t menuButtons = s_menuButtons;
+			if (s_buttonsMenu.Busy())
+			{
+				menuButtons = 0;
+				const uint32_t buttons = s_buttons;
+				const bool touchpad = buttons & ps5pad::kTouchPad;
+				const int held = ps5menu::HeldInput(buttons);
+				const auto asked = s_buttonsMenu.Capture(held, held == ps5menu::kInputNone && !touchpad, touchpad, false,
+					PadButton(touchpad ? ps5menu::kInputTouchPad : held) >= 0, Now());
+				if (asked.index >= 0)
+				{
+					SetButton(settings, asked.index, PadButton(asked.input));
+					std::lock_guard lock(s_mutex);
+					s_settings = settings;
+					s_changed = true;
+					s_everChanged = true;
+				}
+			}
 			bool close = false;
-			const ps5menu::Action action = s_side.Update(MenuRows(settings, s_exitAfterGame), Tiles(settings), s_menuButtons, Now(), close);
+			const ps5menu::Action action = s_side.Update(MenuRows(settings, s_exitAfterGame), Tiles(settings), menuButtons, Now(), close);
 			if (close)
 			{
 				CloseMenu();
@@ -902,6 +979,14 @@ namespace ps5ingamenx
 					<< "\nspeedLimit=" << settings.speedLimit << "\nvolume=" << settings.volume << "\ndocked=" << settings.docked
 					<< "\ncontroller=" << settings.controller << "\nvibration=" << settings.vibration << "\ndeadzone=" << settings.deadzone
 					<< '\n';
+			if (changed)
+			{
+				// each Switch button's DualSense button, by Eden's numbers (Settings' buttons)
+				out << "buttons=";
+				for (int game = 0; game < Settings::kButtons; game++)
+					out << (game ? "," : "") << settings.buttons[game];
+				out << '\n';
+			}
 			if (!out)
 			{
 				ps5log::Line("[ingamenx] {} could not be written", staged);

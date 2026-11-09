@@ -39,6 +39,7 @@ MENU_FILES = {
     "port/app/ingame3ds.cpp",
     "port/eden/ingame.cpp",
     "port/app/side_menu.h",
+    "port/app/buttons_menu.h",
     "port/app/remote_menu.h",
     "port/app/ingame3ds.h",
     "port/app/menu_canvas.h",

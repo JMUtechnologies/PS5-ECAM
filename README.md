@@ -56,6 +56,14 @@ release, until 6.0 is out. What it brings:
 - **Switch 2 (experimental):** a side of its own on [EglantinePS5](https://github.com/heydemoura/EglantinePS5),
   with Playtendoh's in-game menu, from JMUtechnologies ([#109](https://github.com/premohq/PlayTendoh/pull/109)),
   on [Lichii](https://github.com/zortos293/Lichii)'s core as the port runs it; NUP games are found too.
+- **Buttons in every in-game menu:** which DualSense button presses each of the console's buttons, changed
+  without leaving the game, on the Wii U, 3DS, DS, Switch, Switch 2 and every libretro side, as Porpoise's
+  Customize Buttons does on the GameCube and the Wii: Cross on a button, then the one for it, with a live
+  controller test above the list.
+- **GameCube and Wii, Phononenom's beta** ([#114](https://github.com/premohq/PlayTendoh/pull/114)): Porpoise's
+  in-game menu as Playtendoh's sheet, controls by player with the button layouts, any player in any port and
+  each GBA's own page, memory cards and saves per game, a game's setups, cheats and patches, Auto Boost, and a
+  Wii game's banner and title screen in the launcher.
 - **Real Wii Remotes on the Wii U side:** an original Wii Remote or Wii Remote Plus through a Mayflash
   DolphinBar (mode 4), with its own pointer, motion and Nunchuk: choose **Real Wii Remote** as a player's
   controller. It runs on Project Porpoise's USB layer, by CroCop86, as the Wii side does.

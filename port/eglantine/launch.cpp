@@ -4,6 +4,7 @@
 #include "../app/netfs.h"
 #include "../app/own_status.h"
 #include "../app/paths.h"
+#include "../eden/eden.h"
 #include "../eden/ingame.h"
 #include "../ps5/log.h"
 
@@ -61,7 +62,7 @@ namespace ps5eglantine
 			return;
 		}
 		// This is a child runtime, so end its one-game session and return to ECAM after every game.
-		const std::vector<std::string> args{
+		std::vector<std::string> args{
 			"--rom", path, "--exit-after-game",
 			"--ecam-session", ps5ingamenx::SessionFile(),
 			"--ecam-setting", "resolution=" + std::to_string(settings.nx.nxResolution),
@@ -84,6 +85,15 @@ namespace ps5eglantine
 			"--ecam-setting", "reactive_flushing=" + std::to_string(settings.nx.nxReactiveFlushing ? 1 : 0),
 			"--ecam-setting", "skip_invalidation=" + std::to_string(settings.nx.nxSkipInvalidation ? 1 : 0),
 		};
+		// Settings > Controls > Buttons: each Switch button's DualSense button, by the child's numbers
+		// (ps5eden::PadButtons), a setting each: button0 (A) to button11 (the right stick's click)
+		int pads[ps5eden::kSwitchButtons];
+		ps5eden::PadButtons(settings.nx, pads);
+		for (int i = 0; i < ps5eden::kSwitchButtons; i++)
+		{
+			args.push_back("--ecam-setting");
+			args.push_back("button" + std::to_string(i) + "=" + std::to_string(pads[i]));
+		}
 		ps5log::Line("[switch2] starting {} in EglantinePS5 ({})", game.name, path);
 		// The child reads the staged request if PS5 LoadExec drops argv. On exit it starts this app's
 		// /app0/eboot.bin again; the selected side was saved before this call.

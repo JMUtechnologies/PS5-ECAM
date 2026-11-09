@@ -63,6 +63,11 @@ namespace ps5ingamenx
 		int controller = -1;		  // -1 automatic (a Pro Controller), else Pro, handheld, Joy-Con pair, left, right
 		bool vibration = true;
 		int deadzone = 8;			  // the sticks', percent
+		// The Switch's twelve buttons (A, B, X, Y, L, R, ZL, ZR, +, -, the left and right sticks' clicks), each
+		// the DualSense button that presses it, as Eden numbers them (its button_mapping.h: Cross, Circle,
+		// Square, Triangle, L1, R1, L2, R2, L3, R3, Options, Create, the touchpad's click). Its defaults here.
+		static constexpr int kButtons = 12, kPadButtons = 13;
+		int buttons[kButtons] = {1, 0, 3, 2, 4, 5, 6, 7, 10, 12, 8, 9};
 	};
 
 	// The room the session joined before the game (Eden's multiplayer.h), as the menu shows it

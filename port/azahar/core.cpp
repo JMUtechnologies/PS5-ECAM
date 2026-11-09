@@ -495,6 +495,7 @@ namespace ps5azahar
 			menu.motion = settings.motion;
 			menu.deadzone = settings.deadzone;
 			menu.aOnCircle = MappedInput(settings, Button::A) == ps5emu::PadInput::Circle;
+			menu.buttons = settings.buttons;
 			menu.border = settings.border;
 			menu.frameGeneration = settings.frameGeneration;
 			menu.rotation = settings.dsRotation;
@@ -532,7 +533,10 @@ namespace ps5azahar
 		void ApplyMenu(const ps5ingame3ds::Settings& menu)
 		{
 			auto& values = Settings::values;
-			const bool controls = menu.motion != s_settings.motion || menu.deadzone != s_settings.deadzone ||
+			// the menu's Buttons, the A and B row's swap already in them (app/buttons_menu.h)
+			const bool buttons = menu.buttons != s_settings.buttons;
+			s_settings.buttons = menu.buttons;
+			const bool controls = buttons || menu.motion != s_settings.motion || menu.deadzone != s_settings.deadzone ||
 				menu.aOnCircle != (MappedInput(s_settings, Button::A) == ps5emu::PadInput::Circle);
 			s_settings.layout = menu.layout;
 			s_settings.resolution = menu.resolution;

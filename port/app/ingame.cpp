@@ -2,6 +2,7 @@
 #include "ingame.h"
 #include "amiibo_list.h"
 #include "boxart.h"
+#include "buttons_menu.h"
 #include "emulator.h"
 #include "gameinfo.h"
 #include "keyboard_menu.h"
@@ -69,6 +70,11 @@ namespace
 	Area s_gamePadArea; // where the GamePad's picture is this frame
 	uint32_t s_buttons = 0, s_pressed = 0; // player 1's buttons, and those pressed since the last frame
 	uint32_t s_menuButtons = 0;			   // the same, with the left stick's directions as the D-pad's
+	// The menu's Buttons (buttons_menu.h): the wait for a press, and the input the Controls' player holds now
+	ps5menu::ButtonsMenu s_buttonsMenu;
+	int s_heldInput = ps5menu::kInputNone;
+	static_assert((int)ps5emu::PadInput::TouchPad == ps5menu::kInputTouchPad && (int)ps5emu::PadInput::Options == ps5menu::kInputOptions &&
+				  (int)ps5emu::PadInput::RightStickUp == ps5menu::kInputRightStickUp);
 	// Cemu's keyboard, drawn as the 3DS's is (PS5Cemu_DrawKeyboard): the appearance it shows, and the
 	// text it last gave Cemu
 	ps5menu::KeyboardSheet s_keyboard;
@@ -342,6 +348,15 @@ namespace
 					row.setting = false;
 					row.help = Tr("A real Wii Remote has its own buttons, pointer, motion and rumble: this setting is for the DualSense.");
 				}
+		if (!realRemote)
+		{
+			// every button, as Settings > Controls > Buttons has them, set here without leaving the game
+			std::vector<ps5menu::ButtonRow> buttons;
+			for (const auto& mapping : mappings)
+				buttons.push_back({mapping.button, mapping.input});
+			rows.push_back(s_buttonsMenu.Category(buttons, s_heldInput, sceKernelGetProcessTime(), false,
+				Tr("The default buttons, vibration, motion and deadzones for this controller. Held to confirm.")));
+		}
 		// tr: the remote touch screen's row: which screen a phone or a tablet shows
 		rows.push_back(ps5menu::RemoteRow(Tr("The GamePad's screen")));
 		// a home screen tile's game closes the app instead, as the row says (#48)
@@ -376,6 +391,15 @@ namespace
 		const auto controls = ps5emu::GetPlayerControls(player);
 		if (ps5emu::IsRealWiiRemote(controls.type) && RealRemoteOwn(id))
 			return;
+		if (ps5menu::ButtonsMenu::Asked asked; s_buttonsMenu.Act(action, sceKernelGetProcessTime(), asked))
+		{
+			if (asked.reset)
+			{
+				ps5emu::ResetControls(player);
+				ps5log::Line("[ingame] player {}'s controls: the defaults", player + 1);
+			}
+			return;
+		}
 		if (id == "resume")
 			CloseMenu();
 		else if (id == "main")
@@ -581,6 +605,7 @@ namespace
 		{
 			// opened: on its first row, every category closed, the shortcut's buttons not counted
 			s_side.Reset();
+			s_buttonsMenu.Reset();
 			FindAmiibo();
 			ps5emu::RequestGraphicPackList(); // the main thread lists them for the menu
 			ps5usb::Refresh();				  // the figures in their folders
@@ -588,9 +613,34 @@ namespace
 			if (s_gameName.empty())
 				s_gameName = CafeSystem::GetForegroundTitleName();
 		}
+		// Buttons: the Controls' player's DualSense (player 1's when theirs is away), for the test's row and,
+		// while a button waits for its press, for that; the sheet's controller is still meanwhile
+		uint32_t menuButtons = s_menuButtons;
+		{
+			const int player = s_controlsPlayer;
+			ps5pad::Data data{};
+			const bool read = ps5pad::Read(player, data) || ps5pad::Read(0, data);
+			const bool touchpad = read && (data.buttons & ps5pad::kTouchPad);
+			s_heldInput = !read ? ps5menu::kInputNone : touchpad ? ps5menu::kInputTouchPad : ps5menu::HeldInput(data);
+			if (s_buttonsMenu.Busy())
+			{
+				menuButtons = 0;
+				// the touchpad's click is a press like any other here, for any button (- included, #37)
+				const auto asked = read ? s_buttonsMenu.Capture(ps5menu::HeldInput(data), ps5menu::PadIdle(data), touchpad, false, true,
+											  sceKernelGetProcessTime()) : ps5menu::ButtonsMenu::Asked{};
+				if (asked.index >= 0)
+				{
+					ps5emu::SetMapping(player, (size_t)asked.index, (ps5emu::PadInput)asked.input);
+					// taking the click makes it this player's button, not a touch of the GamePad's screen
+					if (asked.input == ps5menu::kInputTouchPad && !ps5pad::TouchpadButton(player))
+						ps5emu::ApplyTouchpadClick(player, 2, false);
+					ps5log::Line("[ingame] player {}'s button {}: {}", player + 1, asked.index, ps5menu::kInputNames[asked.input]);
+				}
+			}
+		}
 		bool close = false;
 		const std::vector<ps5menu::Tile> tiles = Tiles();
-		const ps5menu::Action action = s_side.Update(MenuRows(), tiles, s_menuButtons, sceKernelGetProcessTime(), close);
+		const ps5menu::Action action = s_side.Update(MenuRows(), tiles, menuButtons, sceKernelGetProcessTime(), close);
 		if (close)
 		{
 			CloseMenu();

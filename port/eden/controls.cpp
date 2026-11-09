@@ -119,6 +119,38 @@ namespace ps5eden
 		return value;
 	}
 
+	namespace
+	{
+		// Eden's DualSense buttons in its order (button_mapping.h's PadButton)
+		constexpr PadInput kPadOrder[] = {PadInput::Cross, PadInput::Circle, PadInput::Square, PadInput::Triangle, PadInput::L1, PadInput::R1,
+			PadInput::L2, PadInput::R2, PadInput::L3, PadInput::R3, PadInput::Options, PadInput::Create, PadInput::TouchPad};
+		static_assert(kButtonCount == (size_t)kSwitchButtons);
+	}
+
+	void PadButtons(const ps5settings::N3ds& nx, int pads[kSwitchButtons])
+	{
+		for (size_t i = 0; i < kButtonCount; i++)
+		{
+			const PadInput input = MappedInput(nx, i);
+			pads[i] = (int)(std::find(std::begin(kPadOrder), std::end(kPadOrder), input) - std::begin(kPadOrder));
+		}
+	}
+
+	bool SetPadButtons(ps5settings::N3ds& nx, const int pads[kSwitchButtons])
+	{
+		bool used[std::size(kPadOrder)] = {};
+		for (size_t i = 0; i < kButtonCount; i++)
+		{
+			if (pads[i] < 0 || pads[i] >= (int)std::size(kPadOrder) || used[pads[i]])
+				return false;
+			used[pads[i]] = true;
+		}
+		// one at a time, each swap leaving the ones before it where they were put
+		for (size_t i = 0; i < kButtonCount; i++)
+			SetMapping(nx, i, kPadOrder[pads[i]]);
+		return true;
+	}
+
 	const Language kLanguages[18] = {{"en-US", "English (US)"}, {"en-GB", "English (UK)"}, {"fr", "Français"},
 		{"fr-CA", "Français (Canada)"}, {"de", "Deutsch"}, {"it", "Italiano"}, {"es", "Español"}, {"es-419", "Español (Latinoamérica)"},
 		{"pt", "Português"}, {"pt-BR", "Português (Brasil)"}, {"nl", "Nederlands"}, {"ru", "Русский"}, {"pl", "Polski"}, {"ja", "日本語"},

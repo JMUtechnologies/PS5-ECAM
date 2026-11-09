@@ -1,0 +1,49 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Mon, 9 Nov 2026 15:32:54 -0500
+Subject: [PATCH] PS5-ECAM's Switch side: the in-game menu's Buttons, each game
+ button's DualSense button changed while the game runs
+
+---
+ headless/devices.h | 2 ++
+ headless/main.cpp  | 7 +++++++
+ 2 files changed, 9 insertions(+)
+
+diff --git a/headless/devices.h b/headless/devices.h
+index 309d920..7be3b26 100644
+--- a/headless/devices.h
++++ b/headless/devices.h
+@@ -89,6 +89,8 @@ public:
+     // Which DualSense button presses each of the game's buttons (button_mapping.h), for every
+     // controller. Set before the first poll of a session.
+     void SetMapping(const ButtonMapping& value) { mapping = ValidMapping(value) ? value : kDefaultMapping; }
++    // As it is now: PS5-ECAM's in-game menu shows it, and changes it while the game runs (its Buttons).
++    const ButtonMapping& Mapping() const { return mapping; }
+     // How a player's controller is used: as usual, or in place of a single left or right Joy-Con.
+     // A single Joy-Con has one stick and one cluster of four buttons, and its game reads nothing
+     // else. Held upright, Consume makes the whole DualSense that Joy-Con: the shapes are its four
+diff --git a/headless/main.cpp b/headless/main.cpp
+index 6c21094..470f720 100644
+--- a/headless/main.cpp
++++ b/headless/main.cpp
+@@ -168,6 +168,9 @@ static ps5ingamenx::Settings EcamSettings(const Eden::Pad* pad) {
+     settings.controller = Eden::session_controller.load();
+     settings.vibration = Settings::values.vibration_enabled.GetValue();
+     if (pad) settings.deadzone = static_cast<int>(std::lround(pad->Deadzone() * 100.0f));
++    // its Buttons: each game button's DualSense button (button_mapping.h's numbers are the menu's)
++    static_assert(Eden::kGameButtons == ps5ingamenx::Settings::kButtons && Eden::kPadButtons == ps5ingamenx::Settings::kPadButtons);
++    if (pad) std::copy(pad->Mapping().begin(), pad->Mapping().end(), std::begin(settings.buttons));
+     return settings;
+ }
+ 
+@@ -223,6 +226,10 @@ static void EcamApply(ps5ingamenx::Settings settings, Core::System& system, Eden
+     if (settings.overlay != was.overlay) Eden::ShowHud(settings.overlay);
+     Settings::values.vibration_enabled.SetValue(settings.vibration);
+     pad.SetDeadzone(std::clamp(settings.deadzone, 0, 50) / 100.0f);
++    // The menu's Buttons, read at the controllers' next poll; one that is not a whole mapping changes nothing.
++    Eden::ButtonMapping mapping;
++    std::copy(std::begin(settings.buttons), std::end(settings.buttons), mapping.begin());
++    if (Eden::ValidMapping(mapping) && mapping != pad.Mapping()) pad.SetMapping(mapping);
+     constexpr int kHandheld = 1;  // kControllerKeys
+     if (settings.controller != was.controller && settings.controller == kHandheld) settings.docked = false;
+     if (settings.docked != was.docked && settings.docked && settings.controller == kHandheld) settings.controller = -1;

@@ -432,6 +432,7 @@ namespace ps5melonds
 			menu.motion = s_settings.motion;
 			menu.deadzone = s_settings.deadzone;
 			menu.aOnCircle = ps5azahar::MappedInput(s_settings, ps5azahar::Button::A) == ps5emu::PadInput::Circle;
+			menu.buttons = s_settings.buttons;
 			menu.border = s_settings.border;
 			menu.screenFilter = s_settings.dsFilter;
 			menu.rotation = s_settings.dsRotation;
@@ -471,8 +472,11 @@ namespace ps5melonds
 		{
 			using ps5azahar::Button;
 			using ps5emu::PadInput;
+			// the menu's Buttons, the A and B row's swap already in them (app/buttons_menu.h)
+			const bool buttons = menu.buttons != s_settings.buttons;
+			s_settings.buttons = menu.buttons;
 			const bool aOnCircle = ps5azahar::MappedInput(s_settings, Button::A) == PadInput::Circle;
-			const bool controls = menu.deadzone != s_settings.deadzone || menu.aOnCircle != aOnCircle;
+			const bool controls = buttons || menu.deadzone != s_settings.deadzone || menu.aOnCircle != aOnCircle;
 			s_settings.layout = menu.layout;
 			s_settings.volume = menu.volume;
 			s_settings.performance = menu.performance;
