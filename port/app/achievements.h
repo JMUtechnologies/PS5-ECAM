@@ -33,6 +33,8 @@ namespace ps5cheevos
 	// Reads the saved account (as the app starts); cheap when there is none.
 	void Load();
 	Account Get();
+	// The signed-in account's token, for a program of the app's own that signs in with it (Porpoise's)
+	std::string Token();
 	// Starts signing in on a thread; false when one is already running.
 	bool BeginSignIn(const std::string& user, const std::string& password);
 	void SignOut();

@@ -20,6 +20,8 @@
 #include "../../app/saves.h"
 #include "../../retro/library.h"
 #include "../../retro/launch.h"
+#include "../../retro/porpoise_game.h"
+#include "../../retro/porpoise_saves.h"
 #include "../../retro/porpoise_settings.h"
 #include "../../libretro/plays.h"
 #include "../../eden/extras.h"
@@ -136,6 +138,9 @@ namespace ps5shell
 		bool fromSide = false;	 // game settings: the side's value, the game has none of its own
 		std::string group;		 // Settings: the › page it is on, behind its row (empty: the page itself)
 		std::string opens;		 // Settings: a › row's page, whose rows it stands for
+		ui::TextureId icon = 0;	  // a save's: before its label
+		ui::TextureId banner = 0; // and before its value
+		float bannerAspect = 3;
 	};
 
 	// A console's controller (or the handheld that is its controller), in a few rounded shapes centred on
@@ -224,7 +229,7 @@ namespace ps5shell
 				side == System::Switch	? ps5boxart::System::Switch :
 										  ps5boxart::System::WiiU;
 		}
-		ps5boxart::System BoxOf(const ps5emu::Game&) const { return BoxSide(m_side); }
+		ps5boxart::System BoxOf(const ps5emu::Game&) const { return IsPorpoise() ? ps5boxart::System::GameCubeWii : BoxSide(m_side); }
 		bool CoreReady() const { return !IsWiiU() || m_status.coreReady; }
 		// what a game's ID shows as: its title ID, a DS game's game code (the ID it is given stays out of
 		// sight), a Switch game's title ID when its file's name has one (not the one made from its path,
@@ -479,6 +484,7 @@ namespace ps5shell
 		std::vector<Row> PorpoiseRows(const std::string& page);
 		bool ChangePorpoise(const Row& row, int step, bool cross);
 		bool SetPorpoise(const std::string& id, int value); // where the row's value lives: every game's, or the game's
+		void ResetAllPorpoise();			// every game's settings back to Porpoise's own
 		bool ResetPorpoise(const Row& row);					// the game's own value gone: every game's again
 		void ForgetPorpoiseGame();							// every value of the game's own gone
 		void ReadPorpoise();
@@ -489,6 +495,51 @@ namespace ps5shell
 			std::map<std::string, std::string> side, own;
 		};
 		PorpoiseFiles m_porpoise;
+		// the GameCube's cards or the Wii's saves, a game at a time (Memory cards and saves)
+		std::vector<Row> PorpoiseSavesRows();
+		// a game's own: saved setups, cheats and patches, Auto Boost
+		std::vector<Row> PorpoiseSetupRows();
+		std::vector<Row> PorpoiseCheatRows();
+		std::vector<Row> PorpoiseBoostRows();
+		void ChangePorpoiseGame(const Row& row, bool cross);
+		void ReadPorpoiseGame();
+		struct PorpoiseGame
+		{
+			std::string file, id;
+			std::vector<ps5porpoise::Cheat> cheats;
+			std::vector<ps5porpoise::Fix> fixes;
+			ps5porpoise::Pick pick;
+			bool hasPick = false, ownDolphinFile = false;
+		};
+		PorpoiseGame m_porpoiseGame;
+		std::vector<Row> PorpoiseOnlineRows(const ps5settings::Launcher& settings);
+		std::string PorpoiseCover(const ps5emu::Game& game) const;
+		void ChoosePorpoiseSave(const Row& row);
+		void ImportPorpoiseSaves();
+		std::vector<ps5titlesaves::Container> m_porpoiseSaves;
+		bool m_porpoiseSavesRead = false, m_porpoiseSavesWii = false;
+		std::vector<ui::TextureId> m_porpoiseSaveTextures; // freed with the reading they came from
+		void CopyPorpoiseCard(const Row& row);
+		void PorpoiseCardAction(const std::string& id);
+		// a button set of Porpoise's on the Buttons page (MappingDraw): its key, empty for the app's own
+		std::string m_porpoiseButtons;
+		std::vector<ps5emu::ButtonMapping> PorpoiseMappings();
+		int PorpoiseLayout();
+		std::vector<std::string> PorpoiseLayoutNames() const;
+		bool PorpoiseLayoutIsOwn();
+		void SetPorpoiseLayout(int layout);
+		std::vector<Row> PorpoisePlayerRows();
+		void PorpoisePlayerUpdate(const ui::Press& press, const ui::Actions& actions);
+		void PorpoisePadTestDraw(Canvas& canvas);
+		bool m_porpoisePadTest = false; // the Player screen shows the controller's live test
+		void PorpoisePlayerDraw(Canvas& canvas);
+		const std::map<std::string, std::string>& PorpoiseButtonValues(const std::string& key);
+		std::string PorpoiseButtonFile() const;
+		bool PorpoiseRowIsControl(int index);
+		int PorpoiseExtraRow(int index);
+		void ClearPorpoiseButtons();
+		void ChoosePorpoiseButton(int index);
+		bool SetPorpoiseButton(int control, int input);
 		struct SwitchImport { std::string folder, label; uint64_t accountSaveId = 0; };
 		std::vector<SwitchImport> m_switchImports;
 		void GameSettingsClose();
@@ -723,6 +774,8 @@ namespace ps5shell
 		// a › page open over the page's rows (empty: none): its row on the page, where Circle goes back
 		// to, and that row's label and line, its title
 		std::string m_subPage;
+		struct SubParent { std::string page, title, line; int from; };
+		std::vector<SubParent> m_subParents; // the › pages a › page was opened from
 		int m_subFrom = 0;
 		std::string m_subTitle, m_subLine;
 		ui::Spring m_railScroll;
@@ -889,7 +942,7 @@ namespace ps5shell
 			std::function<void(const std::string&)> done;
 			// text typed as it is (a user name, a password, a computer's name): its spaces at the ends
 			// kept; secret: shown as dots
-			bool raw = false, secret = false;
+			bool raw = false, secret = false, secretShown = false;
 			// the keys shown: capitals (Shift, its key or Triangle), and which of the language's pages (L1,
 			// R1: app/keyboard.h), as on the in-game keyboards
 			bool shift = false;

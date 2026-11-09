@@ -100,7 +100,7 @@ jobs:
         run: bash tools/tests/test-retro.sh
 
       - name: Porpoise's settings files, as the GameCube and Wii sides write them
-        run: bash tools/tests/test-porpoise-settings.sh
+        run: bash tools/tests/test-porpoise-settings.sh && bash tools/tests/test-porpoise-saves.sh && bash tools/tests/test-porpoise-game.sh && bash tools/tests/test-banner-compose.sh
 
       - name: The libretro frontend, with a core of the test's own
         run: bash tools/tests/test-libretro.sh
@@ -117,7 +117,7 @@ jobs:
             port/frontend/shell/shell.cpp port/frontend/shell/pages.cpp port/frontend/shell/settings.cpp \
             port/frontend/shell/library.cpp port/frontend/shell/hub.cpp port/frontend/shell/setup.cpp \
             port/frontend/shell/consoles.cpp port/frontend/shell/porpoise_rows.cpp port/retro/library.cpp port/retro/launch.cpp \
-            port/retro/porpoise_settings.cpp
+            port/retro/porpoise_settings.cpp port/retro/porpoise_saves.cpp port/retro/porpoise_game.cpp
 
       - name: Switch standalone features
         run: |

@@ -4,6 +4,7 @@
 // (shell_internal.h).
 
 #include "shell_internal.h"
+#include "../../app/achievements.h"
 #include "../../app/shots.h"
 #include "../actions.h"
 #include "../sound.h"
@@ -308,6 +309,31 @@ namespace ps5shell
 			// what they show
 			// of the game, as the other sides' menus have it (its name, GameTDB's publisher and year, its
 			// cover), left for it
+			// a GameCube or Wii game's: Porpoise's program draws its loading screen from the same words
+			if (IsPorpoise())
+			{
+				std::string details, cover;
+				for (const Game& game : m_games)
+					if (game.entry.game.path == m_choice->game.path)
+					{
+						cover = game.boxArt;
+						for (const std::string& part : {game.info.publisher, ps5gameinfo::Year(game.info.released)})
+							if (!part.empty())
+								details += (details.empty() ? "" : "  /  ") + part;
+						if (details.empty())
+							details = game.entry.game.publisher; // (no GameTDB entry on a retro side: the library's)
+					}
+				ps5porpoise::WriteSession(SystemName(m_side), m_choice->game.name, details, cover, ps5boxart::TitleArtPath(std::filesystem::path(m_choice->game.path).stem().string()));
+				{
+					// every game's Auto Boost: this one's, the first time
+					ps5porpoise::Pick pick;
+					const std::string data = ps5porpoise::Data();
+					if (ps5porpoise::PickFor(data + "/recommended.ini", "/app0/retro/porpoise/assets/recommended.ini", ps5porpoise::GameKey(m_choice->game.path), pick))
+						ps5porpoise::ApplyAutoBoost(ps5porpoise::SettingsFile(), ps5porpoise::GameFile(m_choice->game.path), pick);
+				}
+				if (const ps5cheevos::Account account = ps5cheevos::Get(); account.signedIn)
+					ps5porpoise::WriteAchievementsAccount(account.user, ps5cheevos::Token(), (int)account.points);
+			}
 			if (m_choice->system == ps5launcher::System::Switch || m_choice->system == ps5launcher::System::Switch2)
 			{
 				ps5eden::Session session{m_choice->game.name};
@@ -713,7 +739,14 @@ namespace ps5shell
 	void Shell::MakeGame(Game& game, const ps5catalog::Entry& entry)
 	{
 		game.entry = entry;
-		game.boxArt = IsRetro() ? ps5retro::CoverPath(SideIndex(), entry.game) : IsSwitch() ? SwitchCover(entry.game) : ps5boxart::Path(BoxOf(entry.game), entry.game.gameId);
+		// a GameCube or Wii game's ID, from its disc: its cover's name
+		if (IsPorpoise())
+		{
+			const std::string key = ps5porpoise::GameKey(entry.game.path.string());
+			if (key.size() == 6 && std::all_of(key.begin(), key.end(), [](char c) { return (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'); }))
+				game.entry.game.gameId = key;
+		}
+		game.boxArt = IsPorpoise() ? PorpoiseCover(game.entry.game) : IsRetro() ? ps5retro::CoverPath(SideIndex(), entry.game) : IsSwitch() ? SwitchCover(entry.game) : ps5boxart::Path(BoxOf(entry.game), entry.game.gameId);
 		game.known = !IsRetro() && ps5gameinfo::Find(BoxOf(entry.game), entry.game.gameId, game.info);
 		// the list names games in English: GameTDB's title finds one whose own name is in the menus'
 		// language (7.7). It has no DS or Switch games yet.
@@ -862,7 +895,7 @@ namespace ps5shell
 			}
 			for (Game& game : m_games)
 				if (game.boxArt.empty())
-					game.boxArt = IsRetro() ? ps5retro::CoverPath(SideIndex(), game.entry.game) : IsSwitch() ? SwitchCover(game.entry.game) : ps5boxart::Path(BoxOf(game.entry.game), game.entry.game.gameId);
+					game.boxArt = IsPorpoise() ? PorpoiseCover(game.entry.game) : IsRetro() ? ps5retro::CoverPath(SideIndex(), game.entry.game) : IsSwitch() ? SwitchCover(game.entry.game) : ps5boxart::Path(BoxOf(game.entry.game), game.entry.game.gameId);
 		}
 	}
 
@@ -985,7 +1018,7 @@ namespace ps5shell
 
 	void Shell::FetchBoxArt()
 	{
-		if (IsRetro()) return;
+		if (IsRetro() && !IsPorpoise()) return;
 		// the side's covers, from GameTDB's covers of its system (none for a Switch side showing the games' icons)
 		if (IsSwitch() && Handheld(m_side).nxCovers == 1)
 			return;
@@ -993,7 +1026,14 @@ namespace ps5shell
 		for (const Game& game : m_games)
 			if (!game.entry.game.gameId.empty())
 				ids.push_back(game.entry.game.gameId);
-		ps5boxart::Fetch(BoxSide(m_side), ids);
+		ps5boxart::Fetch(IsPorpoise() ? ps5boxart::System::GameCubeWii : BoxSide(m_side), ids);
+		if (IsPorpoise())
+		{
+			std::vector<std::pair<bool, std::string>> titles;
+			for (const Game& game : m_games)
+				titles.emplace_back(SystemName(m_side) == std::string("Wii"), std::filesystem::path(game.entry.game.path).stem().string());
+			ps5boxart::FetchTitleArt(titles);
+		}
 	}
 
 	void Shell::RememberCount()
@@ -1514,6 +1554,9 @@ namespace ps5shell
 		if (m_update.open || m_unpack.open || m_reorganize.open)
 			return {}; // their sheets' own
 		// tr: the hints along the bottom: what a button does on this screen, a word or two
+		if (m_keyboard.open && m_keyboard.secret)
+			return {{Icon::Cross, Tr("Type")}, {Icon::Circle, Tr("Delete")}, {Icon::Triangle, Tr("Shift")},
+				{Icon::Square, m_keyboard.secretShown ? Tr("Hide") : Tr("Show")}, {Icon::Options, Tr("Done")}};
 		if (m_keyboard.open)
 			return {{Icon::Cross, Tr("Type")}, {Icon::Circle, Tr("Delete")}, {Icon::Triangle, Tr("Shift")}, {Icon::Options, Tr("Done")}};
 		if (m_picker.open)
@@ -1944,6 +1987,7 @@ namespace ps5shell
 		OpenNameKeyboard(title, text, limit, std::move(done));
 		m_keyboard.raw = true;
 		m_keyboard.secret = secret;
+		m_keyboard.secretShown = false;
 		m_keyboard.page = ps5keyboard::FirstPage(ps5lang::Current(), true); // an address, a user name, a password
 	}
 
@@ -2116,6 +2160,13 @@ namespace ps5shell
 					done(typed);
 				}
 			};
+			if (b == Button::Square && m_keyboard.secret)
+			{
+				// what was typed in the open, to check it, until pressed again
+				m_keyboard.secretShown = !m_keyboard.secretShown;
+				m_feedback.Play(ui::Cue::Toggle);
+				return true;
+			}
 			switch (b)
 			{
 			case Button::R1:
@@ -2515,7 +2566,7 @@ namespace ps5shell
 			canvas.PushOffset(0, (1 - a) * 60);
 			DrawSheet(canvas, sheet, a);
 			std::string typed = m_keyboard.naming ? m_keyboard.text : m_search;
-			if (m_keyboard.secret)
+			if (m_keyboard.secret && !m_keyboard.secretShown)
 			{
 				// a password: a dot for each character
 				std::string dots;

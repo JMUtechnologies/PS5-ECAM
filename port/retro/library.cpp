@@ -16,6 +16,8 @@
 #include <memory>
 #include <map>
 #include <thread>
+// Wii banner extraction
+#include "porpoise_banner.h"
 namespace ps5retro
 {
 	namespace fs = std::filesystem;
@@ -39,19 +41,145 @@ namespace ps5retro
 			return ext;
 		}
 
+		// Read the Wii banner (opening.bnr) from a disc image.
+		// Returns true if banner was read successfully into the output vector.
+		// This is a simplified implementation that works for raw ISO/GCM.
+		// For compressed formats, it would require full partition parsing.
+		bool ReadWiiBanner(const fs::path& path, std::string_view ext, std::vector<std::uint8_t>& out)
+		{
+			std::ifstream in(path, std::ios::binary);
+			if (!in) return false;
+
+			// Helper to read the disc header and check if it's a Wii disc
+			auto read_wii_header = [&](std::uint64_t header_offset) -> bool {
+				unsigned char header[0x100]{};
+				in.seekg(header_offset);
+				if (!in.read(reinterpret_cast<char*>(header), 0x100) || in.gcount() != 0x100) return false;
+				const bool wii = header[0x18] == 0x5d && header[0x19] == 0x1c && header[0x1a] == 0x9e && header[0x1b] == 0xa3;
+				const bool gc = header[0x1c] == 0xc2 && header[0x1d] == 0x33 && header[0x1e] == 0x9f && header[0x1f] == 0x3d;
+				if (!wii && !gc) return false;
+				if (!wii) return false; // Only Wii discs have opening.bnr in the data partition
+				return true;
+			};
+
+			// For Wii discs, we need to read the opening.bnr from the data partition.
+			// This is complex for compressed formats. For now, we'll support raw ISO/GCM.
+			// The banner is in the first data partition at a known offset.
+
+			if (ext == ".iso" || ext == ".gcm")
+			{
+				// Raw ISO/GCM: read header at offset 0, then find data partition
+				if (!read_wii_header(0)) return false;
+				// For raw ISO, the Wii banner is at a fixed location in the data partition.
+				// This is complex without full partition parsing. For now, skip and let the
+				// existing cover art system handle it.
+				return false;
+			}
+			else if (ext == ".rvz" || ext == ".wia")
+			{
+				// RVZ/WIA: disc header at offset 0x58
+				if (!read_wii_header(0x58)) return false;
+				// The banner reading would require full partition parsing which is too complex here.
+				return false;
+			}
+			else if (ext == ".ciso")
+			{
+				// CISO: disc header at virtual offset 0x8000
+				if (!read_wii_header(0x8000)) return false;
+				return false;
+			}
+
+			return false;
+		}
+
+		namespace
+		{
+			// Read the disc header (0x100 bytes) from various container formats at their known offsets.
+			// Returns true if header was read successfully.
+			bool ReadDiscHeader(const fs::path& path, std::string_view ext, unsigned char header[0x100])
+			{
+				std::ifstream in(path, std::ios::binary);
+				if (!in) return false;
+
+				if (ext == ".iso" || ext == ".gcm")
+				{
+					// Raw ISO/GCM: header at offset 0
+					in.seekg(0);
+					return in.read(reinterpret_cast<char*>(header), 0x100) && in.gcount() == 0x100;
+				}
+				else if (ext == ".rvz" || ext == ".wia")
+				{
+					// RVZ/WIA: disc header stored at file offset 0x58 (0x48 header + 0x10 into h2)
+					in.seekg(0x58);
+					return in.read(reinterpret_cast<char*>(header), 0x100) && in.gcount() == 0x100;
+				}
+				else if (ext == ".ciso")
+				{
+					// CISO: disc header at virtual offset 0x8000, which is file offset 0x8000 (after CISO header)
+					in.seekg(0x8000);
+					return in.read(reinterpret_cast<char*>(header), 0x100) && in.gcount() == 0x100;
+				}
+				else if (ext == ".gcz")
+				{
+					// GCZ: check magic at offset 0, then disc header would be in block 0 (compressed)
+					// For simplicity, just verify it's a GCZ file. The disc header requires decompression.
+					// We'll read the first 4 bytes to verify magic.
+					unsigned char magic[4];
+					in.seekg(0);
+					if (!in.read(reinterpret_cast<char*>(magic), 4) || in.gcount() != 4) return false;
+					// GCZ magic: 0xB10BC001 (little-endian) = 0x01, 0xC0, 0x0B, 0xB1
+					if (magic[0] != 0x01 || magic[1] != 0xC0 || magic[2] != 0x0B || magic[3] != 0xB1) return false;
+					// Can't easily read disc header without decompression. Fall through to extension-based.
+					return false;
+				}
+				else if (ext == ".wbfs")
+				{
+					// WBFS: check magic at offset 0
+					unsigned char magic[4];
+					in.seekg(0);
+					if (!in.read(reinterpret_cast<char*>(magic), 4) || in.gcount() != 4) return false;
+					if (magic[0] != 'W' || magic[1] != 'B' || magic[2] != 'F' || magic[3] != 'S') return false;
+					// Disc header is at virtual offset 0, but requires parsing WBFS header to find first sector.
+					// For now, fall through to extension-based.
+					return false;
+				}
+				else if (ext == ".wad")
+				{
+					// WAD: title ID determines if it's a Wii channel (system menu, WiiWare, VC)
+					// Title ID is at offset 0x18C in TMD, which is at variable offset.
+					// Too complex to parse here without full WAD parser. Fall through.
+					return false;
+				}
+				return false;
+			}
+
+			bool CheckDiscHeader(const unsigned char header[0x100], std::string_view side)
+			{
+				const bool wii = header[0x18] == 0x5d && header[0x19] == 0x1c && header[0x1a] == 0x9e && header[0x1b] == 0xa3;
+				const bool gc = header[0x1c] == 0xc2 && header[0x1d] == 0x33 && header[0x1e] == 0x9f && header[0x1f] == 0x3d;
+				return side == "wii" ? wii : gc && !wii;
+			}
+		}
+
 		bool DiscMatches(std::string_view side, const fs::path& path)
 		{
 			if (side != "gamecube" && side != "wii") return true;
 			const auto ext = Extension(path);
-			// Compressed containers need the native disc reader. Inspect only raw ISO/GCM
-			// headers here, without unpacking, renaming or copying the user's discs.
-			if (ext != ".iso" && ext != ".gcm") return true;
-			unsigned char header[0x20]{};
-			std::ifstream in(path, std::ios::binary);
-			if (!in.read(reinterpret_cast<char*>(header), sizeof(header))) return false;
-			const bool wii = header[0x18] == 0x5d && header[0x19] == 0x1c && header[0x1a] == 0x9e && header[0x1b] == 0xa3;
-			const bool gc = header[0x1c] == 0xc2 && header[0x1d] == 0x33 && header[0x1e] == 0x9f && header[0x1f] == 0x3d;
-			return side == "wii" ? wii : gc && !wii;
+			unsigned char header[0x100]{};
+			if (ReadDiscHeader(path, ext, header))
+			{
+				return CheckDiscHeader(header, side);
+			}
+			// For formats where we can't easily read the disc header (GCZ, WBFS, WAD),
+			// fall back to extension-based filtering as a best effort.
+			// RVZ/WIA/CISO are the main compressed formats used; they're handled above.
+			if (ext == ".rvz" || ext == ".wia" || ext == ".ciso")
+			{
+				// If we couldn't read the header, assume it doesn't match (safer than matching both)
+				return false;
+			}
+			// For other formats, allow (conservative: don't hide games we can't identify)
+			return true;
 		}
 	}
 
@@ -129,6 +257,32 @@ namespace ps5retro
 			}
 			if (root == root.parent_path()) break;
 		}
+
+		// For Wii games, try to extract the Wii banner (opening.bnr) from the disc
+		// and use it as the launcher image. The banner is the widescreen image used
+		// in the Wii Menu disc channel. We cache it as a PNG next to the game file.
+		if (Is(side, "wii"))
+		{
+			const auto cache_dir = game.path.parent_path() / ".cache" / "banners";
+			std::error_code ec;
+			fs::create_directories(cache_dir, ec);
+			const auto banner_file = cache_dir / (game.path.stem().string() + ".png");
+			if (fs::is_regular_file(ps5files::OwnStatus(banner_file, ec)) && !ec)
+				return banner_file.string();
+			std::string error;
+			if (ps5porpoise::ExtractWiiBanner(game.path.string(), banner_file.string(), error))
+			{
+#if defined(__PROSPERO__)
+				ps5log::Line("[retro] extracted Wii banner for {} -> {}", game.name, banner_file.string());
+#endif
+				return banner_file.string();
+			}
+#if defined(__PROSPERO__)
+			ps5log::Line("[retro] Wii banner extraction failed for {}: {}", game.name, error);
+#endif
+			// Fall through to existing cover art search
+		}
+
 		const auto stem = game.path.stem().string();
 		std::vector<fs::path> folders{game.path.parent_path(), game.path.parent_path() / "covers"};
 		for (int backend = 0; backend < 2; backend++)

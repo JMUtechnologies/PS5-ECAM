@@ -383,6 +383,12 @@ namespace ps5cheevos
 		return true;
 	}
 
+	std::string Token()
+	{
+		std::lock_guard lock(s_mutex);
+		return s_token;
+	}
+
 	void SignOut()
 	{
 		{

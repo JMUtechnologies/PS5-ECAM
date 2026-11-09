@@ -29,4 +29,8 @@ namespace ps5melonds
 	{
 		return false;
 	}
+
+	void SetResume(bool)
+	{
+	}
 }

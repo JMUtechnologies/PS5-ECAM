@@ -29,6 +29,13 @@ namespace ps5porpoise
 	// (.iso, .gcm), a WBFS's, a WIA's or RVZ's, a CISO's; else the file's name
 	std::string GameKey(const std::string& gamePath);
 
+	// What Porpoise's loading screen says of the game about to start: <data>/playtendoh-session.txt, a line each
+	void ClearAchievementsAccount(); // signed out: Porpoise's copy goes too
+	void WriteSession(const std::string& side, const std::string& title, const std::string& details, const std::string& cover, const std::string& banner = {});
+
+	// The app's RetroAchievements account, in Porpoise's own file (<data>/retroachievements.ini), so it signs in with it
+	void WriteAchievementsAccount(const std::string& user, const std::string& token, int points);
+
 	// The file's "key = value" settings (empty when there is none)
 	std::map<std::string, std::string> Read(const std::string& file);
 	// values over the file's (made with Porpoise's header when new), the rest kept

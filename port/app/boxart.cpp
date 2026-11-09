@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "boxart.h"
+#include "banner_compose.h"
 #include "paths.h"
 #include "../ps5/log.h"
 #include "../ps5/curl_socket.h"
 #include "../ps5/net.h"
 
 #include <curl/curl.h>
+#include <rapidjson/document.h>
 #include <png.h>
 #include <turbojpeg.h>
 
@@ -50,7 +52,7 @@ namespace ps5boxart
 
 		const char* Folder(System system)
 		{
-			return system == System::WiiU ? "wiiu" : system == System::Nds ? "ds" : system == System::Switch ? "switch" : "3ds";
+			return system == System::GameCubeWii ? "wii" : system == System::WiiU ? "wiiu" : system == System::Nds ? "ds" : system == System::Switch ? "switch" : "3ds";
 		}
 
 		std::string Base(System system, const std::string& id)
@@ -243,10 +245,14 @@ namespace ps5boxart
 			std::error_code ec;
 			fs::create_directories(fs::path(base).parent_path(), ec);
 			std::vector<uint8_t> data;
+			// (GameTDB's Wii and GameCube covers are PNGs, at one size)
+			const bool wii = system == System::GameCubeWii;
 			for (const char* size : {"coverHQ", "cover"})
 				for (const std::string& region : Regions(id))
 				{
-					const std::string url = fmt::format("http://art.gametdb.com/{}/{}/{}/{}.jpg", Folder(system), size, region, id);
+					if (wii && std::string_view(size) == "coverHQ")
+						continue;
+					const std::string url = fmt::format("http://art.gametdb.com/{}/{}/{}/{}.{}", Folder(system), size, region, id, wii ? "png" : "jpg");
 					const long status = Get(curl, url, data);
 					if (status < 0)
 						return Outcome::Later;
@@ -382,6 +388,227 @@ namespace ps5boxart
 		const std::string path = Base(system, id) + ".tga";
 		std::error_code ec;
 		return fs::exists(path, ec) ? path : std::string();
+	}
+
+	namespace
+	{
+		constexpr const char* kTitlesHost = "thumbnails.libretro.com";
+		std::mutex s_titleMutex;
+		std::deque<std::pair<bool, std::string>> s_titleQueue; // under s_titleMutex
+		std::set<std::string> s_titleSeen;					   // under s_titleMutex: asked for in this run
+		bool s_titleRunning = false;						   // under s_titleMutex
+
+		// A "none here" marker younger than the wait (no marker: not recent)
+		bool RecentMarker(const std::string& path)
+		{
+			std::error_code ec;
+			const auto when = fs::last_write_time(path, ec);
+			return !ec && fs::file_time_type::clock::now() - when < kNoneAgain;
+		}
+
+		// As libretro's thumbnails name theirs
+		std::string TitleFileName(std::string name)
+		{
+			for (char& c : name)
+				if (std::strchr("&*/:`<>?\\|\"", c))
+					c = '_';
+			return name;
+		}
+		std::string TitleBase(const std::string& name) { return fmt::format("{}/boxart/titles/{}", ps5paths::Covers(), TitleFileName(name)); }
+
+#ifndef PS5ECAM_STEAMGRIDDB_KEY
+#define PS5ECAM_STEAMGRIDDB_KEY ""
+#endif
+		std::string SteamGridKeyFile() { return ps5paths::Covers() + "/boxart/steamgriddb-key.txt"; }
+		std::string SteamGridKey()
+		{
+			std::string key;
+			std::ifstream(SteamGridKeyFile()) >> key;
+			return key.empty() ? std::string(PS5ECAM_STEAMGRIDDB_KEY) : key;
+		}
+
+		// A game file's name as a search: its tags gone, "Legend of Zelda, The - X" as "The Legend of Zelda - X"
+		std::string SteamGridSearch(std::string name)
+		{
+			if (const size_t tag = name.find(" ("); tag != std::string::npos)
+				name.resize(tag);
+			if (const size_t the = name.find(", The"); the != std::string::npos)
+				name = "The " + name.substr(0, the) + name.substr(the + 5);
+			return name;
+		}
+
+		// Wide art for the game: true when it's here. later: no answer, or a refusal, so nothing is remembered
+		bool FetchSteamGrid(CURL* curl, curl_slist* plain, const std::string& key, const std::string& name, const std::string& base, bool& later)
+		{
+			curl_slist* authorised = ps5curl::Headers(curl_slist_append(nullptr, ("Authorization: Bearer " + key).c_str()));
+			const auto api = [&](const std::string& url, rapidjson::Document& json) {
+				std::vector<uint8_t> data;
+				curl_easy_setopt(curl, CURLOPT_HTTPHEADER, authorised);
+				const long status = Get(curl, url, data);
+				curl_easy_setopt(curl, CURLOPT_HTTPHEADER, plain);
+				if (status != 200)
+				{
+					if (status != 404)
+					{
+						later = true;
+						ps5log::Line("[boxart] SteamGridDB: HTTP {}", status);
+					}
+					return false;
+				}
+				json.Parse((const char*)data.data(), data.size());
+				return !json.HasParseError() && json.IsObject() && json.HasMember("data") && json["data"].IsArray() && !json["data"].Empty();
+			};
+			bool found = false;
+			char* const term = curl_easy_escape(curl, SteamGridSearch(name).c_str(), 0);
+			rapidjson::Document games, heroes;
+			if (term && api(fmt::format("https://www.steamgriddb.com/api/v2/search/autocomplete/{}", term), games) && games["data"][0].IsObject() &&
+				games["data"][0].HasMember("id") && games["data"][0]["id"].IsInt())
+			{
+				const int id = games["data"][0]["id"].GetInt();
+				if (api(fmt::format("https://www.steamgriddb.com/api/v2/heroes/game/{}?types=static&nsfw=false&humor=false", id), heroes))
+					for (const auto& hero : heroes["data"].GetArray())
+					{
+						if (!hero.IsObject() || !hero.HasMember("url") || !hero["url"].IsString())
+							continue;
+						std::vector<uint8_t> data, rgba;
+						int width = 0, height = 0;
+						if (Get(curl, hero["url"].GetString(), data) != 200 || data.size() < 8)
+							continue;
+						const bool png = std::memcmp(data.data(), "\x89PNG", 4) == 0;
+						if (!(png ? DecodePng(data, rgba, width, height) : DecodeJpeg(data, rgba, width, height)) || width <= 0 || height <= 0)
+							continue;
+						found = WriteTga(base + ".hero.tga", ComposeBanner(rgba, width, height), kBannerWidth, kBannerHeight);
+						if (found)
+							ps5log::Line("[boxart] SteamGridDB art {}: {}x{}", name, width, height);
+						break;
+					}
+			}
+			if (term)
+				curl_free(term);
+			curl_slist_free_all(authorised);
+			return found;
+		}
+
+		void TitleWorker()
+		{
+			curl_global_init(CURL_GLOBAL_DEFAULT);
+			curl_slist* const resolved = ps5net::AddResolve(ps5net::AddResolve(ps5net::AddResolve(ps5net::AddResolve(nullptr, kTitlesHost, 80), kTitlesHost, 443),
+				"www.steamgriddb.com", 443), "cdn2.steamgriddb.com", 443);
+			static curl_slist* const headers = ps5curl::Headers();
+			CURL* const curl = curl_easy_init();
+			if (curl)
+			{
+				ps5curl::Setup(curl);
+				curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+				if (resolved)
+					curl_easy_setopt(curl, CURLOPT_RESOLVE, resolved);
+			}
+			for (;;)
+			{
+				std::pair<bool, std::string> item;
+				{
+					std::lock_guard lock(s_titleMutex);
+					if (s_titleQueue.empty() || s_stopped || !curl)
+					{
+						s_titleRunning = false;
+						break;
+					}
+					item = std::move(s_titleQueue.front());
+					s_titleQueue.pop_front();
+				}
+				const std::string base = TitleBase(item.second);
+				{
+					std::error_code dirs;
+					fs::create_directories(fs::path(base).parent_path(), dirs);
+					const std::string key = SteamGridKey();
+					bool later = false;
+					if (!key.empty() && !fs::exists(base + ".hero.tga", dirs) && !RecentMarker(base + ".hero.none"))
+					{
+						if (FetchSteamGrid(curl, headers, key, item.second, base, later))
+							continue;
+						if (!later)
+							std::ofstream(base + ".hero.none").put('\n');
+					}
+					if (fs::exists(base + ".hero.tga", dirs) || fs::exists(base + ".tga", dirs))
+						continue;
+				}
+				char* const escaped = curl_easy_escape(curl, TitleFileName(item.second).c_str(), 0);
+				if (!escaped)
+					continue;
+				const std::string url = fmt::format("http://{}/Nintendo%20-%20{}/Named_Titles/{}.png", kTitlesHost, item.first ? "Wii" : "GameCube", escaped);
+				curl_free(escaped);
+				std::error_code ec;
+				fs::create_directories(fs::path(base).parent_path(), ec);
+				std::vector<uint8_t> data, rgba;
+				int width = 0, height = 0;
+				const long status = Get(curl, url, data);
+				if (status == 404 || status == 410)
+					std::ofstream(base + ".none").put('\n'); // asked for again after a while, as a cover is
+				else if (status == 200 && DecodePng(data, rgba, width, height) && width > 0 && height > 0)
+				{
+					if (WriteTga(base + ".tga", ComposeBanner(rgba, width, height), kBannerWidth, kBannerHeight))
+						ps5log::Line("[boxart] title art {}: {}x{}", item.second, width, height);
+				}
+				else
+					ps5log::Line("[boxart] title art {}: HTTP {}; next start", item.second, status);
+			}
+			if (curl)
+				curl_easy_cleanup(curl);
+		}
+	}
+
+	bool HasSteamGridKey() { return !SteamGridKey().empty(); }
+	std::string PlayerSteamGridKeyText()
+	{
+		std::string key;
+		std::ifstream(SteamGridKeyFile()) >> key;
+		return key;
+	}
+	bool PlayerSteamGridKey()
+	{
+		std::error_code ec;
+		return fs::exists(SteamGridKeyFile(), ec);
+	}
+	void SetSteamGridKey(const std::string& key)
+	{
+		std::error_code ec;
+		fs::create_directories(fs::path(SteamGridKeyFile()).parent_path(), ec);
+		if (key.empty())
+			fs::remove(SteamGridKeyFile(), ec);
+		else
+			std::ofstream(SteamGridKeyFile(), std::ios::trunc) << key << '\n';
+		std::lock_guard lock(s_titleMutex);
+		s_titleSeen.clear(); // asked for again, with it
+	}
+
+	std::string TitleArtPath(const std::string& name)
+	{
+		std::error_code ec;
+		const std::string hero = TitleBase(name) + ".hero.tga", path = TitleBase(name) + ".tga";
+		return fs::exists(hero, ec) ? hero : fs::exists(path, ec) ? path : std::string();
+	}
+
+	void FetchTitleArt(const std::vector<std::pair<bool, std::string>>& wiiAndNames)
+	{
+		if (!s_enabled || s_stopped)
+			return;
+		std::lock_guard lock(s_titleMutex);
+		for (const auto& item : wiiAndNames)
+		{
+			std::error_code ec;
+			const std::string base = TitleBase(item.second);
+			if (!s_titleSeen.insert(item.second).second || fs::exists(base + ".hero.tga", ec))
+				continue;
+			const bool noTitle = fs::exists(base + ".tga", ec) || RecentMarker(base + ".none");
+			if (noTitle && SteamGridKey().empty())
+				continue;
+			s_titleQueue.push_back(item);
+		}
+		if (!s_titleRunning && !s_titleQueue.empty())
+		{
+			s_titleRunning = true;
+			std::thread(TitleWorker).detach();
+		}
 	}
 
 	void Fetch(System system, const std::vector<std::string>& ids)

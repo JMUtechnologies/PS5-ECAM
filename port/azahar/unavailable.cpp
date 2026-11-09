@@ -59,4 +59,8 @@ namespace ps5azahar
 	void CancelInstall()
 	{
 	}
+
+	void SetResume(bool)
+	{
+	}
 }

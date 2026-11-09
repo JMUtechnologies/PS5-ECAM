@@ -378,6 +378,7 @@ namespace ps5shell
 
 	void Shell::PlayerOpen(int player)
 	{
+		m_porpoisePadTest = false;
 		m_player = std::clamp(player, 0, ps5pad::kMaxPlayers - 1);
 		m_playerRow = 0;
 		m_holdProgress = 0;
@@ -387,6 +388,11 @@ namespace ps5shell
 
 	void Shell::PlayerUpdate(const ui::Press& press, const ui::Actions& actions)
 	{
+		if (IsPorpoise())
+		{
+			PorpoisePlayerUpdate(press, actions);
+			return;
+		}
 		if (m_playerRow == kRowReset)
 		{
 			const float seconds = m_settings.ui.holdMs / 1000.0f;
@@ -597,6 +603,11 @@ namespace ps5shell
 
 	void Shell::PlayerDraw(Canvas& canvas)
 	{
+		if (IsPorpoise())
+		{
+			PorpoisePlayerDraw(canvas);
+			return;
+		}
 		const auto controls = ps5emu::GetPlayerControls(m_player);
 		const auto mappings = ps5emu::ListMappings(m_player);
 		const int mapped = (int)std::count_if(mappings.begin(), mappings.end(), [](const ps5emu::ButtonMapping& m) { return !m.input.empty(); });
@@ -697,7 +708,7 @@ namespace ps5shell
 	void Shell::MappingOpen()
 	{
 		// from Settings: a handheld side's buttons; from a player's page: that Wii U player's
-		m_mappingSide = m_screen == ScreenId::Settings ? m_side : System::WiiU;
+		m_mappingSide = m_screen == ScreenId::Settings || !m_porpoiseButtons.empty() ? m_side : System::WiiU;
 		m_mapSelected = 0;
 		m_capture = {};
 		m_mapMessage.clear();
@@ -707,6 +718,8 @@ namespace ps5shell
 
 	std::vector<ps5emu::ButtonMapping> Shell::Mappings() const
 	{
+		if (!m_porpoiseButtons.empty())
+			return const_cast<Shell*>(this)->PorpoiseMappings();
 		if (m_mappingSide == System::WiiU)
 			return ps5emu::ListMappings(m_player);
 		if (m_mappingSide == System::N3ds)
@@ -743,15 +756,78 @@ namespace ps5shell
 		switch (press.button)
 		{
 		case Button::Circle:
-			if (m_mappingSide != System::WiiU)
+			if (m_porpoiseButtons == "gba")
+			{
+				// back to the GameCube's Buttons it came from
+				m_porpoiseButtons = "gc";
+				m_mapSelected = 0;
+				m_mapMessage.clear();
+				m_feedback.Play(ui::Cue::Back);
+			}
+			else if (m_porpoiseButtons == "gc")
+			{
+				// back to the player's page it came from
+				m_porpoiseButtons.clear();
+				m_feedback.Play(ui::Cue::Back);
+				Show(ScreenId::Player);
+			}
+			else if (m_mappingSide != System::WiiU)
+			{
+				m_porpoiseButtons.clear();
 				ClosePage(ScreenId::Settings);
+			}
 			else
 			{
 				m_feedback.Play(ui::Cue::Back);
 				Show(ScreenId::Player);
 			}
 			break;
+		case Button::Left:
+		case Button::Right:
+			// the layout's row: the one before or after
+			if (!m_porpoiseButtons.empty() && m_mapSelected == 0)
+			{
+				const int layouts = (int)PorpoiseLayoutNames().size();
+				SetPorpoiseLayout((PorpoiseLayout() + (press.button == Button::Right ? 1 : layouts - 1)) % layouts);
+			}
+			break;
 		case Button::Cross:
+			if (!m_porpoiseButtons.empty() && m_mapSelected == 0)
+			{
+				OpenPicker(SystemName(m_side), Tr("Layout"), PorpoiseLayoutNames(), PorpoiseLayout(), [this](int layout) { SetPorpoiseLayout(layout); });
+				break;
+			}
+			if (!m_porpoiseButtons.empty())
+			{
+				if (PorpoiseExtraRow(m_mapSelected) == 2)
+				{
+					if (!PorpoiseLayoutIsOwn())
+					{
+						m_mapMessage = Tr("This one is built in: choose one of your own at the top to change it.");
+						m_feedback.Play(ui::Cue::Denied);
+						break;
+					}
+					OpenPicker(SystemName(m_side), Tr("Clear all"), {Tr("Keep them"), Tr("Clear all")}, -1, [this](int choice) {
+						if (choice == 1)
+							ClearPorpoiseButtons();
+					});
+				}
+				else if (PorpoiseExtraRow(m_mapSelected) == 1)
+				{
+					m_porpoiseButtons = "gba";
+					m_mapSelected = 0;
+					m_mapMessage.clear();
+					m_feedback.Play(ui::Cue::Select);
+				}
+				else if ((m_porpoiseButtons == "gba" && (m_mapSelected == 1 || m_mapSelected == 2)) || PorpoiseLayoutIsOwn())
+					ChoosePorpoiseButton(m_mapSelected);
+				else
+				{
+					m_mapMessage = Tr("This one is built in: choose one of your own at the top to change it.");
+					m_feedback.Play(ui::Cue::Denied);
+				}
+				break;
+			}
 			if (count)
 			{
 				m_capture = {true, false, m_now + kCaptureSeconds};
@@ -760,6 +836,20 @@ namespace ps5shell
 			}
 			break;
 		case Button::Square:
+			if (!m_porpoiseButtons.empty())
+			{
+				// this button does nothing now
+				if (PorpoiseRowIsControl(m_mapSelected) && PorpoiseLayoutIsOwn())
+				{
+					const int first = m_porpoiseButtons == "gba" ? 3 : 1;
+					static constexpr int kControls[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15};
+					SetPorpoiseButton(kControls[m_mapSelected - first], -1);
+					m_feedback.Play(ui::Cue::Back);
+				}
+				else
+					m_feedback.Play(ui::Cue::Edge);
+				break;
+			}
 			if (count)
 			{
 				if (m_mappingSide != System::WiiU)
@@ -767,7 +857,7 @@ namespace ps5shell
 				else
 					ps5emu::SetMapping(m_player, m_mapSelected, ps5emu::PadInput::None);
 				// every Switch button is on a DualSense button: Square puts its default back
-				m_mapMessage = m_mappingSide == System::Switch ? Tr("Done.") : Tr("Cleared: no DualSense button is this one now.");
+				m_mapMessage = m_mappingSide == System::Switch || !m_porpoiseButtons.empty() ? Tr("Done.") : Tr("Cleared: no DualSense button is this one now.");
 				m_feedback.Play(ui::Cue::Back);
 			}
 			break;
@@ -893,7 +983,8 @@ namespace ps5shell
 		{
 			const int seconds = (int)std::max(0.0, m_capture.until - m_now) + 1;
 			// tr: {0} is a button of the Wii U's or the 3DS's controller
-			message = TrF("Press the DualSense button, trigger or stick direction for {0} now.", ButtonName(mapping.button)) + "\n" +
+			message = (m_porpoiseButtons.empty() ? TrF("Press the DualSense button, trigger or stick direction for {0} now.", ButtonName(mapping.button)) :
+							TrF("Press the DualSense button or trigger for {0} now.", ButtonName(mapping.button))) + "\n" +
 				(m_mappingSide == System::WiiU || m_mappingSide == System::Switch ?
 						TrP(seconds, "{0} second left; then it stays as it was. The touchpad's click counts too.",
 							"{0} seconds left; then it stays as it was. The touchpad's click counts too.") :
@@ -901,7 +992,12 @@ namespace ps5shell
 		}
 		else
 			message = (m_mapMessage.empty() ? "" : m_mapMessage + "\n\n") +
-				(m_mappingSide == System::Switch ?
+				(!m_porpoiseButtons.empty() ?
+						// tr: a GameCube or GBA button's mapping: a DualSense button, never a stick's direction or the touchpad
+						(m_mapSelected == 0 ? Tr("Left and Right, or Cross, choose the layout the game uses. The built-in ones can't be changed: choose one of your own to set its buttons.") :
+							m_porpoiseButtons == "gba" ? Tr("Cross chooses what this DualSense button does. If another button already did that, the two swap.\nSquare makes it do nothing.") :
+							Tr("Cross chooses what this DualSense button does. If another button already did that, the two swap.\nSquare makes it do nothing.")) :
+				m_mappingSide == System::Switch ?
 						// tr: a Switch button's mapping: each is on a DualSense button (the touchpad's click too), never on none
 						Tr("Cross, then a DualSense button or the touchpad's click: it becomes this one. If another button already had it, the "
 						   "two swap.\nSquare puts its default back.") :

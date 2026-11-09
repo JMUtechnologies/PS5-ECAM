@@ -88,6 +88,44 @@ namespace ps5porpoise
 	bool Plays(int side, int backend) { return ps5retro::IsRetro(side) && std::strcmp(ps5retro::BackendFor(side, backend).runtime, "retro/porpoise/eboot.bin") == 0; }
 	std::string Data() { return ps5retro::Find("gamecube")->data; }
 	std::string SettingsFile() { return Data() + "/settings.ini"; }
+
+	void WriteAchievementsAccount(const std::string& user, const std::string& token, int points)
+	{
+		const std::string file = Data() + "/retroachievements.ini", staged = file + ".new";
+		{
+			std::ofstream out(staged, std::ios::trunc);
+			out << "# RetroAchievements: the account, from Playtendoh (a token, not the password)\nuser=" << user << "\ntoken=" << token << "\npoints=" << points << '\n';
+			if (!out)
+				return;
+		}
+		std::rename(staged.c_str(), file.c_str());
+	}
+
+	void ClearAchievementsAccount()
+	{
+		std::error_code ec;
+		fs::remove(Data() + "/retroachievements.ini", ec);
+	}
+
+	void WriteSession(const std::string& side, const std::string& title, const std::string& details, const std::string& cover, const std::string& banner)
+	{
+		const std::string file = Data() + "/playtendoh-session.txt", staged = file + ".new";
+		{
+			std::ofstream out(staged, std::ios::trunc);
+			const auto line = [&](const char* key, std::string value) {
+				std::replace(value.begin(), value.end(), '\n', ' ');
+				out << key << '=' << value << '\n';
+			};
+			line("side", side);
+			line("title", title);
+			line("details", details);
+			line("cover", cover);
+			line("banner", banner);
+			if (!out)
+				return;
+		}
+		std::rename(staged.c_str(), file.c_str());
+	}
 	std::string GameFile(const std::string& gamePath) { return Data() + "/game-settings/" + GameKey(gamePath) + ".ini"; }
 
 	std::string GameKey(const std::string& gamePath)

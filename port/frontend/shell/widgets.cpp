@@ -341,15 +341,21 @@ namespace ps5shell
 		const RowControl layout = RowControlOf(row, box.w, focused);
 		const float fixed = layout.fixed, valueMost = layout.valueMost, segmentShare = layout.segmentShare;
 		const ui::TextStyle segment = layout.segment;
-		const ui::TextBlock labelBlock = m_fonts.Layout(label, row.label, layout.labelWidth, 1);
+		// a save's pictures: its icon before the label, its banner before the value
+		const float pictureSize = 44;
+		const float textX = box.x + 28 + (row.icon ? pictureSize + 14 : 0);
+		const float bannerWidth = row.banner ? pictureSize * row.bannerAspect + 20 : 0;
+		const ui::TextBlock labelBlock = m_fonts.Layout(label, row.label, layout.labelWidth - (textX - box.x - 28) - bannerWidth, 1);
 		const float labelY = described ? box.y + 16 : box.CentreY() - labelBlock.height * 0.5f;
-		canvas.Text(labelBlock, box.x + 28, labelY, kText);
+		canvas.Text(labelBlock, textX, labelY, kText);
+		if (row.icon)
+			canvas.Image(row.icon, {box.x + 28, box.CentreY() - pictureSize * 0.5f, pictureSize, pictureSize}, 6);
 		// game settings: whether the value is the side's (Default) or the game's own (a › row: any of its page's)
 		if (InGameSettings() && (!row.setting.empty() || !row.opens.empty()))
 			Chip(canvas, box.x + 28 + labelBlock.width + 14, labelY + labelBlock.height * 0.5f - 15, row.fromSide ? Tr("Default") : Tr("This game"),
 				row.fromSide ? "" : "good", 30);
 		if (described)
-			canvas.Text(caption, box.x + 28, labelY + labelBlock.height + 4, row.description, Secondary(), inner, 1);
+			canvas.Text(caption, textX, labelY + labelBlock.height + 4, row.description, Secondary(), inner - (textX - box.x - 28) - bannerWidth, 1);
 		// the control, on the right
 		const float centre = described ? labelY + labelBlock.height * 0.5f : box.CentreY();
 		// the value's text: as wide as it may be, and no wider than the label leaves it
@@ -447,7 +453,10 @@ namespace ps5shell
 			{
 				const ui::TextBlock text = m_fonts.Layout(value, row.value, valueRoom, 1);
 				canvas.Text(text, x - text.width, centre - text.height * 0.5f, focused ? kText : Secondary());
+				x -= text.width + 20;
 			}
+			if (row.banner)
+				canvas.Image(row.banner, {x - pictureSize * row.bannerAspect, box.CentreY() - pictureSize * 0.5f, pictureSize * row.bannerAspect, pictureSize}, 4);
 			break;
 		}
 		}

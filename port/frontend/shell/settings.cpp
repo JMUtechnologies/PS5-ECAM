@@ -271,12 +271,24 @@ namespace ps5shell
 						ps5retro::Is(SideIndex(), "wii") ? Tr("The DualSense as the Wii Remote, or as the GameCube controller.") :
 														   Tr("The DualSense as the GameCube controller."),
 					Icon::Pad});
-				selected.push_back({"system", Tr("System"), InGameSettings() ? game : Tr("The emulated console's language, and the sound."), Icon::Chip});
+				selected.push_back({"sound", Tr("Sound"), InGameSettings() ? game : Tr("The game's sound, and how it copes when a game runs slow."), Icon::Chip});
+				if (InGameSettings() && !ps5retro::Is(SideIndex(), "wii"))
+					selected.push_back({"gba", Tr("GBA"), game, Icon::Pad});
+				selected.push_back({"system", Tr("System"), InGameSettings() ? game : Tr("The emulated console, and how it runs."), Icon::Chip});
 				if (InGameSettings())
+				{
+					selected.push_back({"porpoisesetups", Tr("Setups"), game, Icon::Monitor});
+					selected.push_back({"porpoisecheats", Tr("Cheats and patches"), game, Icon::Chip});
+					selected.push_back({"porpoiseboost", Tr("Auto Boost"), game, Icon::Chip});
 					return selected;
+				}
+				const bool wiiSide = ps5retro::Is(SideIndex(), "wii");
+				selected.push_back({"online", Tr("Online"), Tr("Box art for the library."), Icon::Info});
+				selected.push_back({"porpoisesaves", wiiSide ? Tr("Saves") : Tr("Memory cards and saves"),
+					wiiSide ? Tr("Each game's save: copy it to a USB drive, or move it aside.") : Tr("Each game's save on your cards: copy it to a USB drive, or move it aside."), Icon::Save});
 			}
-			if (InGameSettings()) return {{"runtime", Tr("Emulator settings"), Tr("The emulator bundled for this side keeps its own controls, settings and saves."), Icon::Info}};
-			selected.push_back({"runtime", Tr("Emulator settings"), Tr("The emulator bundled for this side keeps its own controls, settings and saves."), Icon::Info});
+			if (IsPorpoise() && !ps5retro::Is(SideIndex(), "wii"))
+				selected.push_back({"gba", Tr("GBA"), Tr("A Game Boy Advance on a GameCube port: set one in Controls, under Ports."), Icon::Pad});
 			for (const auto& page : pages) if (page.id == "files" || page.id == "launcher" || page.id == "playtime" || page.id == "diagnostics" || page.id == "about") selected.push_back(page);
 			return selected;
 		}
@@ -303,10 +315,12 @@ namespace ps5shell
 	{
 		m_switchExtrasKey.clear();
 		m_porpoise.read = false; // Porpoise may have changed its files since (its game, its own menus)
+		m_porpoiseSavesRead = false;
 		if (InGameSettings())
 			GameSettingsClose();
 		m_page = page;
 		m_subPage.clear();
+		m_subParents.clear();
 		m_onRows = onRows;
 		m_settingRow = row;
 		m_onBar = false;
@@ -451,8 +465,32 @@ namespace ps5shell
 	std::vector<Row> Shell::SideRows(const std::string& page, const ps5settings::Launcher& settings)
 	{
 		using Kind = Row::Kind;
-		if (IsPorpoise() && (page == "graphics" || page == "controls" || page == "system"))
-			return PorpoiseRows(page);
+		if (IsPorpoise() && (page == "graphics" || page == "controls" || page == "sound" || page == "gba" || page == "system"))
+		{
+			std::vector<Row> rows = PorpoiseRows(page);
+			if (page == "system" && !InGameSettings() && m_subPage.empty())
+			{
+				Row reset;
+				reset.kind = Row::Kind::Hold;
+				reset.id = "porpoiseresetall";
+				reset.label = Tr("Reset all settings");
+				reset.value = Tr("Hold Cross");
+				reset.description = Tr("Every setting back to how Porpoise ships. Games, folders and saves stay.");
+				reset.help = reset.description;
+				rows.push_back(std::move(reset));
+			}
+			return rows;
+		}
+		if (IsPorpoise() && page == "porpoisesaves")
+			return PorpoiseSavesRows();
+		if (IsPorpoise() && page == "porpoisesetups")
+			return PorpoiseSetupRows();
+		if (IsPorpoise() && page == "porpoisecheats")
+			return PorpoiseCheatRows();
+		if (IsPorpoise() && page == "porpoiseboost")
+			return PorpoiseBoostRows();
+		if (IsPorpoise() && page == "online")
+			return PorpoiseOnlineRows(settings);
 		if (IsRetro() && (page == "files" || page == "runtime" || page == "graphics" || page == "system" || page == "screens" || page == "gamesaves"))
 		{
 			std::vector<Row> rows;
@@ -479,7 +517,7 @@ namespace ps5shell
 				info.description = Tr("This side's emulator keeps its own settings, controls and saves: this opens its menus to change them, and quitting them comes back here. What it already had stays where it is.");
 				// the GameCube and Wii sides: what is not on their pages yet (porpoise_rows.cpp)
 				if (IsPorpoise())
-					info.description = Tr("Porpoise's other settings, your button layouts, the Wii Remote's setup and the memory cards, in its own menus. Quitting them comes back here.");
+					info.description = Tr("Porpoise's other settings, your button layouts and the Wii Remote's setup, in its own menus. Circle at their top comes back here.");
 				rows.push_back(info);
 			}
 			if (page == "gamesaves") { Row backup; backup.id = "backup"; backup.kind = Kind::Action; backup.label = Tr("Back up to USB"); backup.description = Tr("Every side's saves, each emulator's. A save state loads only in the emulator that made it."); rows.push_back(backup); }
@@ -891,11 +929,13 @@ namespace ps5shell
 				{
 					const auto controls = m_status.coreReady ? ps5emu::GetPlayerControls(player) : ps5emu::PlayerControls{};
 					Row* row = action(Kind::Link, "player", TrF("Player {0}", player + 1), m_status.coreReady ? TypeName(controls.type) : "",
-						controls.connected ? Tr("Cross: this player's controller, motion and buttons.") : Tr("No DualSense for this player yet."),
+						controls.connected ? Tr("Cross: this player's controller, motion and buttons.") :
+							ps5emu::IsRealWiiRemote(controls.type) ? Tr("Set to a real Wii Remote, none found yet. Cross to change it.") : Tr("No DualSense for this player yet."),
 						Tr("What the game sees in this player's hands, and its motion, vibration, deadzones and buttons. Player 1 is the signed-in "
 						"user who started the app; the other signed-in users' DualSenses are players 2 to 4."));
 					row->index = player;
-					row->dimmed = m_status.coreReady && !controls.connected;
+					// a real Wii Remote not found yet still opens: its page is where it's changed back
+					row->dimmed = m_status.coreReady && !controls.connected && !ps5emu::IsRealWiiRemote(controls.type);
 					cemu(row);
 				}
 			}
@@ -1768,6 +1808,9 @@ namespace ps5shell
 
 	void Shell::OpenSubPage(const Row& row)
 	{
+		// a › row on a › page: Back comes to this one, not all the way out
+		if (!m_subPage.empty())
+			m_subParents.push_back({m_subPage, m_subTitle, m_subLine, m_subFrom});
 		m_subPage = row.opens;
 		m_subFrom = m_settingRow;
 		m_subTitle = row.label;
@@ -1781,6 +1824,14 @@ namespace ps5shell
 	{
 		m_subPage.clear();
 		m_settingRow = m_subFrom;
+		if (!m_subParents.empty())
+		{
+			m_subPage = m_subParents.back().page;
+			m_subTitle = m_subParents.back().title;
+			m_subLine = m_subParents.back().line;
+			m_subFrom = m_subParents.back().from;
+			m_subParents.pop_back();
+		}
 		m_message.clear();
 		m_feedback.Play(ui::Cue::Back);
 	}
@@ -2493,6 +2544,7 @@ namespace ps5shell
 		const auto pages = SettingsPages();
 		m_page = pages.empty() ? "graphics" : pages.front().id;
 		m_subPage.clear();
+		m_subParents.clear();
 		m_onRows = false;
 		m_settingRow = 0;
 		m_onBar = false;
@@ -2507,6 +2559,7 @@ namespace ps5shell
 		m_gameName.clear();
 		m_page = m_sidePage;
 		m_subPage.clear();
+		m_subParents.clear();
 		m_onRows = false;
 		m_message.clear();
 		if (m_gameFrom == ScreenId::Hub)
@@ -2527,6 +2580,45 @@ namespace ps5shell
 		if (id.starts_with("porpoise:"))
 		{
 			ChangePorpoise(row, step, cross);
+			return;
+		}
+		if (id.starts_with("porpoisesave:"))
+		{
+			if (cross)
+				ChoosePorpoiseSave(row);
+			return;
+		}
+		if (id.starts_with("porpoisegame:"))
+		{
+			ChangePorpoiseGame(row, cross);
+			return;
+		}
+		if (id.starts_with("porpoisebuttons:"))
+		{
+			if (cross)
+			{
+				m_porpoiseButtons = id.substr(std::strlen("porpoisebuttons:"));
+				m_feedback.Play(ui::Cue::Select);
+				MappingOpen();
+			}
+			return;
+		}
+		if (id.starts_with("porpoisecardsave:") || id.starts_with("porpoisecardload:") || id.starts_with("porpoisecarddelete:"))
+		{
+			if (cross)
+				PorpoiseCardAction(id);
+			return;
+		}
+		if (id.starts_with("porpoisecard:"))
+		{
+			if (cross)
+				CopyPorpoiseCard(row);
+			return;
+		}
+		if (id == "porpoisesaves-import")
+		{
+			if (cross)
+				ImportPorpoiseSaves();
 			return;
 		}
 		if (row.dimmed && (row.needsCore || id == "homemenu"))
@@ -2714,7 +2806,7 @@ namespace ps5shell
 				ps5boxart::SetEnabled(true);
 				SaveSettings();
 			}
-			ps5boxart::Refetch(BoxSide(m_side), ids, id == "boxartall");
+			ps5boxart::Refetch(IsPorpoise() ? ps5boxart::System::GameCubeWii : BoxSide(m_side), ids, id == "boxartall");
 			if (ids.empty())
 				m_feedback.Play(ui::Cue::Denied);
 		}
@@ -2733,7 +2825,7 @@ namespace ps5shell
 			else
 				ps5update::Check();
 		}
-		else if (id == "player")
+		else if (id == "player" || id == "porpoiseplayer")
 			PlayerOpen(row.index);
 		else if (id == "nxkeys" || id == "nxfirmware")
 			OpenHelp(row.label, row.help);
@@ -2869,6 +2961,12 @@ namespace ps5shell
 				});
 			});
 		}
+		else if (id == "steamgriddb")
+			OpenTextKeyboard(Tr("Your SteamGridDB key"), ps5boxart::PlayerSteamGridKeyText(), 64, true, [this](const std::string& key) {
+				ps5boxart::SetSteamGridKey(key);
+				m_porpoise.read = false;
+				Toast(key.empty() ? Tr("Your SteamGridDB key is removed") : Tr("Used from the next start"));
+			});
 		else if (id == "makeityours")
 			WelcomeOpen(true);
 		else if (id == "copylogs")
@@ -2991,6 +3089,7 @@ namespace ps5shell
 		else if (id == "cheevos")
 		{
 			ps5cheevos::SignOut();
+			ps5porpoise::ClearAchievementsAccount();
 			Toast(Tr("Signed out of RetroAchievements"));
 		}
 		else if (id == "nximport" && IsSwitch())
@@ -3031,6 +3130,8 @@ namespace ps5shell
 				m_gameSavesAt = -100;
 			}
 		}
+		else if (id == "porpoiseresetall")
+			ResetAllPorpoise();
 		else if (id == "resetgame")
 		{
 			if (IsPorpoise())
@@ -3058,11 +3159,12 @@ namespace ps5shell
 		m_page = pages[page].id;
 		// a › page is open only while its page's rows have the focus, and while it has rows
 		if (!m_onRows)
-			m_subPage.clear();
+			m_subPage.clear(), m_subParents.clear();
 		auto rows = SettingRows(m_page);
 		if (!m_subPage.empty() && rows.empty())
 		{
 			m_subPage.clear();
+			m_subParents.clear();
 			m_settingRow = m_subFrom;
 			rows = SettingRows(m_page);
 		}

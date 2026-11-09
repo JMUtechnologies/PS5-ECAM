@@ -176,8 +176,16 @@ add_library(CemuPS5 STATIC
 	eden/save_transfer.h
 	retro/launch.cpp
 	retro/library.cpp
+	retro/porpoise_game.cpp
+	retro/porpoise_saves.cpp
+	retro/porpoise_game.h
+	retro/porpoise_saves.h
 	retro/porpoise_settings.cpp
 	retro/porpoise_settings.h
+	retro/porpoise_banner.cpp
+	retro/porpoise_banner.h
+	retro/porpoise_disc.cpp
+	retro/porpoise_disc.h
 	libretro/core.h
 	libretro/cores.cpp
 	libretro/game.cpp
@@ -323,6 +331,8 @@ set_source_files_properties(
 	eden/controls.cpp
 	retro/launch.cpp
 	retro/library.cpp
+	retro/porpoise_game.cpp
+	retro/porpoise_saves.cpp
 	retro/porpoise_settings.cpp
 	libretro/cores.cpp
 	libretro/game.cpp
@@ -407,6 +417,10 @@ target_include_directories(CemuPS5 PRIVATE
 	"${PS5CEMU_DEPS}/ps5-forwarder-format/include"
 )
 # the version the launcher and the boot log show (the app's param.json has it as 02.000.004)
+# SteamGridDB's key for this build (boxart.h): from the environment, a secret in CI, never in the source
+if(PS5ECAM_STEAMGRIDDB_KEY)
+	target_compile_definitions(CemuPS5 PRIVATE PS5ECAM_STEAMGRIDDB_KEY="${PS5ECAM_STEAMGRIDDB_KEY}")
+endif()
 target_compile_definitions(CemuPS5 PUBLIC PS5CEMU_VERSION="${PS5CEMU_VERSION}"
 	PS5CEMU_CEMU_COMMIT="${PS5CEMU_CEMU_COMMIT}" PS5CEMU_AZAHAR_COMMIT="${PS5CEMU_AZAHAR_COMMIT}"
 	PS5CEMU_MELONDS_COMMIT="${PS5CEMU_MELONDS_COMMIT}" PS5CEMU_EDEN_COMMIT="${PS5CEMU_PROSPEROEDENX_COMMIT}")

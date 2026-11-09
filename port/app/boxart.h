@@ -23,10 +23,22 @@ namespace ps5boxart
 		N3ds,
 		Nds, // a DS game, on the 3DS side
 		Switch,
+		GameCubeWii, // the GameCube's and the Wii's: GameTDB keeps both as "wii"
 	};
 
 	// The largest a cover is kept: the launcher's cover area at 4K
 	constexpr int kMaxWidth = 576, kMaxHeight = 704;
+
+	// A GameCube or Wii game's loading picture: its title screen, from libretro's thumbnails by the game file's
+	// name, made full-screen (banner_compose.h) and kept in covers/boxart/titles. Empty until it has come.
+	std::string TitleArtPath(const std::string& name);
+	void FetchTitleArt(const std::vector<std::pair<bool, std::string>>& wiiAndNames);
+	// SteamGridDB's wide art is asked for first, with the player's key (kept beside the covers), else the one
+	// this build was given (PS5ECAM_STEAMGRIDDB_KEY, never in the source). A game with none has libretro's.
+	bool HasSteamGridKey();
+	bool PlayerSteamGridKey();
+	std::string PlayerSteamGridKeyText(); // what the player entered, to check and change it
+	void SetSteamGridKey(const std::string& key); // empty: the player's is forgotten
 
 	// The cover's TGA when it has been fetched, else empty.
 	std::string Path(System system, const std::string& id);
