@@ -55,7 +55,7 @@ release, until 6.0 is out. What it brings:
   its own with its colour, its controller and its backdrop.
 - **Switch 2 (experimental):** a side of its own on [EglantinePS5](https://github.com/heydemoura/EglantinePS5),
   with Playtendoh's in-game menu, from JMUtechnologies ([#109](https://github.com/premohq/PlayTendoh/pull/109)),
-  on [Lichii](https://github.com/zortos293/Lichii)'s all-in-one core.
+  on [Lichii](https://github.com/zortos293/Lichii)'s core as the port runs it; NUP games are found too.
 - **Real Wii Remotes on the Wii U side:** an original Wii Remote or Wii Remote Plus through a Mayflash
   DolphinBar (mode 4), with its own pointer, motion and Nunchuk: choose **Real Wii Remote** as a player's
   controller. It runs on Project Porpoise's USB layer, by CroCop86, as the Wii side does.
@@ -87,7 +87,7 @@ Playtendoh is free. If it brings your games back, you can support it:
 | **Nintendo 3DS** | Azahar: dynarmic recompiler, Vulkan | `.3ds`, `.cci`, `.cxi`, `.app`, `.3dsx`, `.elf`, compressed `.z*`, archives; installed `.cia` |
 | **Nintendo DS** | melonDS: ARM recompiler | `.nds`, also in archives |
 | **Nintendo Switch** | Eden (ProsperoEden), its own program | `.nsp`, `.xci`, each alone or with its update and DLC |
-| **Switch 2** (experimental) | EglantinePS5 on Lichii, its own program | game folders with ExeFS and RomFS |
+| **Switch 2** (experimental) | EglantinePS5 on Lichii, its own program | game folders with ExeFS and RomFS, NUP |
 | **GameCube**, **Wii** | Dolphin (Porpoise X), its own program | `.iso`, `.gcm`, `.rvz`, `.ciso`, `.gcz`, `.wia`; Wii `.wbfs`, `.wad` |
 | **Nintendo 64** | ParaLLEl-N64 core | `.z64`, `.n64`, `.v64` |
 | **NES**, **Famicom Disk System**, **VS. System** | Mesen core | `.nes`, `.unf`, `.fds` |

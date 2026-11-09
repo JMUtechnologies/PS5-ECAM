@@ -13,11 +13,11 @@ changes.
  1 file changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/headless/settings_store.h b/headless/settings_store.h
-index f1743bc..7cc965f 100644
+index ecbbfb6..0bddfb7 100644
 --- a/headless/settings_store.h
 +++ b/headless/settings_store.h
-@@ -135,6 +135,11 @@ struct Preferences {
-     bool immediate_logs = false;         // Settings > Diagnostics: log lines written as they come
+@@ -169,6 +169,11 @@ struct Preferences {
+     bool skip_game_aa = true;
  };
  
 +// Library > Game settings > Controls > Controller type: the controller every player of the game
@@ -28,7 +28,7 @@ index f1743bc..7cc965f 100644
  // Settings passed by PS5-ECAM override Eglantine's saved defaults for this child session only.
  // Audio, graphics, language and controls all read PreferencesFor(), so keeping the overlay here
  // makes every subsystem see the same effective values without writing the user's config file.
-@@ -511,10 +516,6 @@ inline int64_t RngSeedFromText(std::string_view text) {
+@@ -582,10 +587,6 @@ inline int64_t RngSeedFromText(std::string_view text) {
      return seed <= 0xffffffffULL ? static_cast<int64_t>(seed) : -1;
  }
  inline constexpr const char* kRendererKeys[] = {"opengl", "vulkan"};

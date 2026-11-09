@@ -215,10 +215,10 @@ index c829ac2..ac8f234 100644
      request.pid = 4242;
      const std::array<std::uint8_t, 24> golden{'E', 'L', 'V', '1', 1, 0, 24, 0, 1, 0, 0, 0,
 diff --git a/headless/main.cpp b/headless/main.cpp
-index 2deb66d..dfb6caa 100644
+index 5340eb6..bb9f8a4 100644
 --- a/headless/main.cpp
 +++ b/headless/main.cpp
-@@ -326,9 +326,14 @@ int main(int argc, char** argv) {
+@@ -359,9 +359,14 @@ int main(int argc, char** argv) {
          // The PS5 keyboard's module, for a game's text entry: asked for before anything else
          // changes what the app may load (system_keyboard.h).
          Eden::BootTrace::Line("PS5 keyboard module: %#x", static_cast<unsigned>(Eden::PrepareSystemKeyboard()));
@@ -235,7 +235,7 @@ index 2deb66d..dfb6caa 100644
          // the packaged exact-title upstream helper is sent to the local elfldr. EglantinePS5
          // contains no locally implemented kernel mutation code. If neither path works, the app
          // keeps its sandbox paths.
-@@ -337,7 +342,7 @@ int main(int argc, char** argv) {
+@@ -370,7 +375,7 @@ int main(int argc, char** argv) {
          if (access("/app0/no-filesystem-access.txt", F_OK) == 0) Eden::FilesystemAccessStatus() = 99;
          else
  #endif

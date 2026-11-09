@@ -43,16 +43,18 @@ in it (EDEN_ECAM_CHILD, set by PS5-ECAM's tools/build-eglantine.sh):
  create mode 100644 headless/vulkan_ecam_composite.inc
 
 diff --git a/headless/CMakeLists.txt b/headless/CMakeLists.txt
-index 24aee55..ff77a66 100644
+index e310d5d..812c981 100644
 --- a/headless/CMakeLists.txt
 +++ b/headless/CMakeLists.txt
-@@ -1,4 +1,5 @@
+@@ -1,6 +1,7 @@
+ option(EDEN_MKW_DIAGNOSTICS "Enable Mario Kart development controls and capture instrumentation" OFF)
+ option(EDEN_SCRIPTED_INPUT "Enable file-driven input for console qualification" OFF)
  option(EDEN_PS5_VULKAN "Build the native Vulkan renderer alongside OpenGL" OFF)
 +option(EDEN_ECAM_CHILD "Build EglantinePS5 as PS5-ECAM's child runtime" OFF)
  set(EDEN_VULKAN_DRIVER "CUSTOM" CACHE STRING "Native Vulkan driver: CUSTOM or RADV")
  set_property(CACHE EDEN_VULKAN_DRIVER PROPERTY STRINGS CUSTOM RADV)
  if(NOT EDEN_VULKAN_DRIVER MATCHES "^(CUSTOM|RADV)$")
-@@ -1973,6 +1974,7 @@ if(NOT EDEN_PS5_VULKAN)
+@@ -2191,6 +2192,7 @@ if(NOT EDEN_PS5_VULKAN)
      list(FILTER video_sources EXCLUDE REGEX "^(renderer_vulkan|vulkan_common)/")
  else()
      include("${EDEN_PORT_DIR}/vulkan.cmake")
@@ -60,16 +62,16 @@ index 24aee55..ff77a66 100644
  endif()
  list(REMOVE_ITEM video_sources video_core.cpp gpu.cpp)
  list(APPEND video_sources "${PORT_BUILD_DIR}/video_core.cpp")
-@@ -2527,7 +2529,7 @@ void Initialize() {
+@@ -2965,7 +2967,7 @@ void Initialize() {
          "${EDEN_PORT_DIR}/elevation/elevation.cpp"
          "${eden_app_crt}" "${PORT_ROOT}/src/lifecycle.c" "${PORT_ROOT}/src/direct_memory.c"
          "${PORT_BUILD_DIR}/app_heap.c")
--    target_compile_definitions(eden-headless PRIVATE PS5_NATIVE=1)
-+    target_compile_definitions(eden-headless PRIVATE PS5_NATIVE=1 EDEN_ECAM_CHILD=$<BOOL:${EDEN_ECAM_CHILD}>)
+-    target_compile_definitions(eden-headless PRIVATE PS5_NATIVE=1
++    target_compile_definitions(eden-headless PRIVATE PS5_NATIVE=1 EDEN_ECAM_CHILD=$<BOOL:${EDEN_ECAM_CHILD}>
+         $<$<BOOL:${EDEN_MKW_DIAGNOSTICS}>:EDEN_MKW_DIAGNOSTICS=1>
+         $<$<BOOL:${EDEN_SCRIPTED_INPUT}>:MKW_DIAGNOSTIC_INPUT=1>)
      set_property(TARGET eden-headless APPEND PROPERTY LINK_DEPENDS
-         "${PORT_ROOT}/tools/link-headless-native.sh" "${PORT_ROOT}/tools/unwind.ld"
-         "${PORT_ROOT}/tools/app-symbols.map")
-@@ -2602,6 +2604,10 @@ write_derived("${PORT_BUILD_DIR}/version/app_version.h"
+@@ -3046,6 +3048,10 @@ write_derived("${PORT_BUILD_DIR}/version/app_version.h"
      "// Generated from sce_sys/param.json (contentVersion).\n#pragma once\n#define EDEN_APP_VERSION \"${app_version}\"\n")
  target_include_directories(eden-headless PRIVATE "${PORT_BUILD_DIR}/version")
  target_link_libraries(eden-headless PRIVATE core eden-pad)
@@ -81,7 +83,7 @@ index 24aee55..ff77a66 100644
  target_sources(eden-headless PRIVATE "${EDEN_PORT_DIR}/system_keyboard.cpp")
  target_sources(eden-headless PRIVATE "${EDEN_PORT_DIR}/multiplayer.cpp")
 diff --git a/headless/check_package.py b/headless/check_package.py
-index e74aa07..43b6811 100644
+index a2537ac..afebf9d 100644
 --- a/headless/check_package.py
 +++ b/headless/check_package.py
 @@ -56,7 +56,7 @@ def check():
@@ -94,7 +96,7 @@ index e74aa07..43b6811 100644
      assert lapy['features'] == ['root_layout_probe_retry']
      assert lapy['protocol_sha256'] == LAPY_PROTOCOL_SHA256
 diff --git a/headless/devices.h b/headless/devices.h
-index 154cd85..725aa52 100644
+index b167089..6c77e66 100644
 --- a/headless/devices.h
 +++ b/headless/devices.h
 @@ -1,7 +1,9 @@
@@ -107,7 +109,7 @@ index 154cd85..725aa52 100644
  #include <condition_variable>
  #include <memory>
  #include <mutex>
-@@ -72,6 +74,9 @@ public:
+@@ -78,6 +80,9 @@ public:
      bool Poll();
      bool TakeReturnToMenu() { return return_to_menu.exchange(false); }
      bool TakeHudToggle() { return hud_toggle.exchange(false); }
@@ -117,7 +119,7 @@ index 154cd85..725aa52 100644
      // Players with a controller (bit per player), and those whose controller came or went.
      unsigned ConnectedPlayers() const { return connected_players.load(); }
      unsigned TakeConnectionChanges() { return connection_changes.exchange(0); }
-@@ -79,6 +84,7 @@ public:
+@@ -85,6 +90,7 @@ public:
      // Which DualSense button presses each of the game's buttons (button_mapping.h), for every
      // controller. Set before the first poll of a session.
      void SetMapping(const ButtonMapping& value) { mapping = ValidMapping(value) ? value : kDefaultMapping; }
@@ -125,7 +127,7 @@ index 154cd85..725aa52 100644
      // How a player's controller is used: as usual, or in place of a single left or right Joy-Con.
      // A single Joy-Con has one stick and one cluster of four buttons, and its game reads nothing
      // else. Held upright, Consume makes the whole DualSense that Joy-Con: the shapes are its four
-@@ -117,6 +123,9 @@ private:
+@@ -126,6 +132,9 @@ private:
      bool owns_user_service = false;
      std::atomic<bool> return_to_menu = false;
      std::atomic<bool> hud_toggle = false;
@@ -279,10 +281,10 @@ index bce0587..e5635e3 100644
      while (!rom.empty() && (rom.back() == ' ' || rom.back() == '\r' || rom.back() == '\n')) rom.remove_suffix(1);
      if (rom.empty()) return {};
 diff --git a/headless/graphics.cpp b/headless/graphics.cpp
-index 0cf72c0..070631a 100644
+index 4aa400e..fc76c5a 100644
 --- a/headless/graphics.cpp
 +++ b/headless/graphics.cpp
-@@ -35,6 +35,9 @@ extern "C" void eden_glapi_tls_context_init() {}
+@@ -38,6 +38,9 @@ extern "C" void eden_glapi_tls_context_init() {}
  #ifdef PS5_NATIVE
  extern "C" int sceSystemServiceHideSplashScreen(void);
  #endif
@@ -292,15 +294,26 @@ index 0cf72c0..070631a 100644
  
  namespace Eden {
  #ifdef EDEN_PS5_VULKAN
-@@ -52,6 +55,7 @@ double LoadingCalm() {
+@@ -55,6 +58,7 @@ double LoadingCalm() {
      return calm;
  }
  std::atomic<bool> hud_enabled{true};
 +std::atomic<int> session_hud_override{-1};
- HudClock vulkan_hud_clock;
- // What the display is actually given: the guest's frames plus the ones frame generation
- // adds (CountPresentedFrame(), hud.h).
-@@ -499,6 +503,10 @@ void ToggleHud() {
+ // What the overlay shows and where (hud.h; Settings > Video): its fields, its size and its corner.
+ // Read by the renderer thread, so they are set with the session's preferences as hud_enabled is.
+ std::atomic<uint32_t> hud_fields{kHudFieldDefault};
+@@ -67,7 +71,9 @@ void WantGpuTime() {
+ }
+ void LoadHudPreferences() {
+     const auto preferences = PreferencesFor(session_title.load());
+-    hud_enabled.store(preferences.hud, std::memory_order_relaxed);
++    // PS5-ECAM's request for this session (forwarded_launch.h) goes before the saved choice.
++    const int session_hud = session_hud_override.load(std::memory_order_relaxed);
++    hud_enabled.store(session_hud < 0 ? preferences.hud : session_hud != 0, std::memory_order_relaxed);
+     hud_fields.store(static_cast<uint32_t>(preferences.hud_fields), std::memory_order_relaxed);
+     hud_size.store(preferences.hud_size, std::memory_order_relaxed);
+     hud_corner.store(preferences.hud_corner, std::memory_order_relaxed);
+@@ -572,6 +578,10 @@ void ToggleHud() {
      preferences.hud = enabled;
      if (!SavePreferences(preferences)) Report("settings", "Could not save HUD preference");
  }
@@ -311,18 +324,7 @@ index 0cf72c0..070631a 100644
  HudSnapshot GetVulkanHud() {
      return vulkan_loading || hud_enabled.load(std::memory_order_relaxed) ? vulkan_hud : HudSnapshot{};
  }
-@@ -526,7 +534,9 @@ GraphicsWindow::GraphicsWindow(bool use_vulkan) : vulkan(use_vulkan) {
-     vulkan_loading_start = -1;
-     vulkan_loading_frames = 0;
-     vulkan_loading_pace = {};
--    hud_enabled.store(PreferencesFor(session_title.load()).hud, std::memory_order_relaxed);
-+    const int override = session_hud_override.load(std::memory_order_relaxed);
-+    hud_enabled.store(override < 0 ? PreferencesFor(session_title.load()).hud : override != 0,
-+                      std::memory_order_relaxed);
- #ifdef EDEN_PS5_VULKAN
-     if (vulkan) {
-         vulkan_hud_clock = {};
-@@ -637,6 +647,9 @@ void GraphicsWindow::OnFrameDisplayed() {
+@@ -723,6 +733,9 @@ void GraphicsWindow::OnFrameDisplayed() {
              std::printf("EDEN_LOADING_DONE frames=%u seconds=%.2f\n", vulkan_loading_frames,
                          now - vulkan_loading_start);
          vulkan_loading = false;
@@ -345,10 +347,10 @@ index e958ae8..2dc5039 100644
  public:
      explicit GraphicsWindow(bool use_vulkan = false);
 diff --git a/headless/main.cpp b/headless/main.cpp
-index c62dd75..2deb66d 100644
+index 858ed90..5340eb6 100644
 --- a/headless/main.cpp
 +++ b/headless/main.cpp
-@@ -8,6 +8,9 @@
+@@ -15,6 +15,9 @@
  #include <exception>
  #include "assets_dir.h"
  #include "forwarded_launch.h"
@@ -358,10 +360,10 @@ index c62dd75..2deb66d 100644
  #include "gpu_failure.h"
  #include "guest_fault.h"
  #include "jit_list.h"
-@@ -113,6 +116,83 @@ extern "C" bool eden_jit_shared;  // headless/dynarmic/jit_group_support.inc
- #endif
- #include "profiles.h"
- #include "stop_limit.h"
+@@ -136,6 +139,83 @@ extern "C" bool eden_jit_shared;  // headless/dynarmic/jit_group_support.inc
+ #include "core/hle/kernel/k_memory_layout.h"
+ #include "core/hle/kernel/k_memory_manager.h"
+ #include "core/hle/kernel/kernel.h"
 +#ifdef EDEN_ECAM
 +#include "ingame.h"
 +
@@ -441,8 +443,8 @@ index c62dd75..2deb66d 100644
 +#endif
  namespace Common {
  bool SparseTablesAvailable() noexcept; // src/memory_pages.cpp
- }
-@@ -418,7 +498,16 @@ int main(int argc, char** argv) {
+ void GuestMemoryUsage(std::size_t* span, std::size_t* held) noexcept;
+@@ -463,7 +543,16 @@ int main(int argc, char** argv) {
          std::string launch_error;
          // The previous run crashed: the launcher says where its report is.
          if (!last_crash.report.empty()) launch_error = std::string{Eden::Crash::kNotice} + last_crash.report;
@@ -460,7 +462,7 @@ index c62dd75..2deb66d 100644
          std::string forwarded_game;
          bool forwarded_session = false;
          if (!forwarded.rom.empty() && last_crash.report.empty()) {
-@@ -513,7 +602,16 @@ int main(int argc, char** argv) {
+@@ -625,7 +714,16 @@ int main(int argc, char** argv) {
              Eden::BootTrace::Line("starting the forwarded game");
          } else if (forwarded_session && forwarded.exit_after_game && launch_error.empty()) {
              Eden::Report("exit", "Forwarded game ended");
@@ -477,7 +479,7 @@ index c62dd75..2deb66d 100644
          } else {
          guest_fault_retries = 0;
          forwarded_session = false;
-@@ -596,7 +694,7 @@ int main(int argc, char** argv) {
+@@ -714,7 +812,7 @@ int main(int argc, char** argv) {
          std::printf("EDEN_VULKAN_MEASUREMENT quiet=%d captures=%d\n",
                      performance_run, !performance_run);
          const auto game_video = Eden::LoadGameSettings(eden_game_title_id(selected_game.c_str()));
@@ -486,7 +488,7 @@ index c62dd75..2deb66d 100644
              (recovery_opengl ? Eden::GraphicsBackend::OpenGL : Eden::GraphicsBackend::Vulkan) :
              game_video.renderer >= 0 ?
              (game_video.renderer == 0 ? Eden::GraphicsBackend::OpenGL : Eden::GraphicsBackend::Vulkan) :
-@@ -604,7 +702,7 @@ int main(int argc, char** argv) {
+@@ -722,7 +820,7 @@ int main(int argc, char** argv) {
  #else
          // Library > Game settings take precedence over Settings > Video.
          const auto game_video = Eden::LoadGameSettings(eden_game_title_id(selected_game.c_str()));
@@ -495,7 +497,7 @@ index c62dd75..2deb66d 100644
              (game_video.renderer == 0 ? Eden::GraphicsBackend::OpenGL : Eden::GraphicsBackend::Vulkan) :
              Eden::LoadPreferences().backend;
  #ifdef EDEN_PS5_VULKAN
-@@ -613,6 +711,10 @@ int main(int argc, char** argv) {
+@@ -731,6 +829,10 @@ int main(int argc, char** argv) {
          setenv("PS5VK_QUIET_LOG", "1", 1);
  #endif
  #endif
@@ -506,7 +508,7 @@ index c62dd75..2deb66d 100644
  #ifndef EDEN_PS5_VULKAN
          if (backend == Eden::GraphicsBackend::Vulkan)
              throw std::runtime_error("Vulkan is not available in this build yet. Select OpenGL in Settings > Video to play.");
-@@ -919,12 +1021,17 @@ int main(int argc, char** argv) {
+@@ -1103,12 +1205,17 @@ int main(int argc, char** argv) {
  #else
          Settings::values.use_docked_mode.SetValue(Settings::ConsoleMode::Handheld);
  #if defined(PS5_NATIVE) && defined(EDEN_PS5_OPENGL)
@@ -525,7 +527,7 @@ index c62dd75..2deb66d 100644
  #if defined(PS5_NATIVE) && defined(EDEN_PS5_OPENGL)
          {
              // Settings > Video: internal resolution and the filter scaling it to the output.
-@@ -938,7 +1045,28 @@ int main(int argc, char** argv) {
+@@ -1122,7 +1229,28 @@ int main(int argc, char** argv) {
                  Settings::ScalingFilter::NearestNeighbor, Settings::ScalingFilter::Fsr3};
              static_assert(std::size(filters) == std::size(Eden::kUpscalingFilterKeys));
              // Settings > Video, with what the game does differently (Library > Game settings > Video).
@@ -552,10 +554,10 @@ index c62dd75..2deb66d 100644
 +            if (controller >= 0 && controller <= 5) video.controller = controller - 1;
 +            const int language = Eden::EcamSetting(forwarded, "language");
 +            if (language >= 1 && language <= int(std::size(Eden::kLanguageKeys))) video.language = language - 1;
-             const int resolution = video.resolution;
-             const int filter = video.upscaling_filter;
-             Settings::values.resolution_setup.SetValue(resolutions[resolution]);
-@@ -1033,7 +1161,17 @@ int main(int argc, char** argv) {
+             // Settings > Video > Skip game anti-aliasing (video_core/oot_network.h): read by the core
+             // at each dispatch of a game's network.
+             setenv("EDEN_OOT_ANTI_ALIASING", video.skip_game_aa ? "skip" : "game", 1);
+@@ -1239,7 +1367,17 @@ int main(int argc, char** argv) {
              // Speed against accuracy ("performance" in the settings file, settings_store.h): each
              // one is off unless chosen there, for every game or for this one. The levels start
              // every session at their exact values (above), so one that is not chosen is off.
@@ -574,7 +576,7 @@ index c62dd75..2deb66d 100644
              Settings::values.use_asynchronous_shaders = speed.async_shaders;
              if (speed.fast_gpu) {
                  // Nothing calls UpdateGPUAccuracy() here; set the live value too.
-@@ -1150,7 +1288,8 @@ int main(int argc, char** argv) {
+@@ -1356,7 +1494,8 @@ int main(int argc, char** argv) {
          bool return_to_menu = false;
          if (devices || game) {
              Eden::BootTrace::Line("opening the controllers");
@@ -584,13 +586,13 @@ index c62dd75..2deb66d 100644
              if (!pad->Open()) throw std::runtime_error("PS5 controller initialization failed");
              Eden::BootTrace::Line("controllers open");
              Settings::values.audio_output_device_id = "ps5";
-@@ -1175,14 +1314,14 @@ int main(int argc, char** argv) {
-                 player.controller_type = handheld ? Settings::ControllerType::ProController :
+@@ -1383,14 +1522,14 @@ int main(int argc, char** argv) {
                                                      Eden::ControllerSetting(controls.controller);
-                 // DualSense rumble (headless/pad.cpp) at Eden's full strength.
+                 // DualSense rumble (headless/pad.cpp) at the strength of Settings > Controls: Eden
+                 // scales what the game asks for by it (emulated_controller.cpp).
 -                player.vibration_enabled = true;
 +                player.vibration_enabled = controls.vibration;
-                 player.vibration_strength = 100;
+                 player.vibration_strength = controls.vibration_strength;
              }
              {
                  auto& player = Settings::values.players.GetValue()[8];  // Eden's handheld controller
@@ -598,10 +600,10 @@ index c62dd75..2deb66d 100644
                  player.controller_type = Settings::ControllerType::Handheld;
 -                player.vibration_enabled = true;
 +                player.vibration_enabled = controls.vibration;
-                 player.vibration_strength = 100;
+                 player.vibration_strength = controls.vibration_strength;
              }
              if (controls.controller >= 0)
-@@ -1318,6 +1457,10 @@ int main(int argc, char** argv) {
+@@ -1526,6 +1665,10 @@ int main(int argc, char** argv) {
                          std::this_thread::sleep_for(std::chrono::milliseconds(8));
                      }
                  });
@@ -612,7 +614,7 @@ index c62dd75..2deb66d 100644
  #endif
                  Eden::Loading::Set(Eden::Loading::Step::game);
                  Eden::BootTrace::Line("loading the game");
-@@ -1358,6 +1501,9 @@ int main(int argc, char** argv) {
+@@ -1566,6 +1709,9 @@ int main(int argc, char** argv) {
                  Eden::BootTrace::Line("game loaded (status %u)", static_cast<unsigned>(loaded));
                  Eden::Report("loader", "Game loaded; initializing renderer");
                  Eden::Loading::Set(Eden::Loading::Step::graphics);
@@ -622,7 +624,7 @@ index c62dd75..2deb66d 100644
  #ifdef EDEN_PS5_OPENGL
                  // Retain the failure, then release CPU readiness and complete normal
                  // shutdown before reporting it. Unwinding before OnGpuReady can hang.
-@@ -1394,6 +1540,9 @@ int main(int argc, char** argv) {
+@@ -1602,6 +1748,9 @@ int main(int argc, char** argv) {
                      std::atomic<size_t> built{0}, total{0};
                      std::atomic<bool> counted{false};
                      Eden::Loading::Set(Eden::Loading::Step::shaders);
@@ -632,7 +634,7 @@ index c62dd75..2deb66d 100644
                      const auto load_start = std::chrono::steady_clock::now();
                      std::jthread reporter([&](std::stop_token stop) {
  #if defined(EDEN_DEV_PROFILE) && defined(PS5_NATIVE)
-@@ -1418,6 +1567,9 @@ int main(int argc, char** argv) {
+@@ -1626,6 +1775,9 @@ int main(int argc, char** argv) {
                              if (stage != VideoCore::LoadCallbackStage::Build) return;
                              built = value;
                              Eden::Loading::Shaders(value, count);
@@ -642,17 +644,17 @@ index c62dd75..2deb66d 100644
                              total = count;
                              counted = true;
  #if defined(EDEN_DEV_PROFILE) && defined(PS5_NATIVE)
-@@ -1496,6 +1648,9 @@ int main(int argc, char** argv) {
-                 }
-                 Eden::TakeGuestFault(); // Nothing from an earlier session belongs to this one.
-                 Eden::Loading::Set(Eden::Loading::Step::starting);
+@@ -1766,6 +1918,9 @@ int main(int argc, char** argv) {
+                                       (guest_held > outside ? guest_held - outside : 0) >> 20);
+                     std::fputs(line, stderr);
+                 });
 +#ifdef EDEN_ECAM
 +                ps5ingamenx::SetLoading(ps5ingamenx::Step::Starting);
 +#endif
                  system.Run();
  #if defined(EDEN_DEV_PROFILE) && defined(PS5_NATIVE)
                  Eden::Stall::Trace("main running");
-@@ -1621,7 +1776,15 @@ int main(int argc, char** argv) {
+@@ -1986,7 +2141,15 @@ int main(int argc, char** argv) {
  #ifdef PS5_NATIVE
                          room_lost = rooms.GameConnectionLost();
  #endif
@@ -669,7 +671,7 @@ index c62dd75..2deb66d 100644
                              // From here the player is waiting to leave (stop_limit.h).
                              Eden::StopLimit::Begin();
                              std::lock_guard lock(completion->mutex);
-@@ -1837,7 +2000,20 @@ int main(int argc, char** argv) {
+@@ -2208,7 +2371,20 @@ int main(int argc, char** argv) {
              LOG_INFO(Frontend, "EDEN_DEVICE_FRONTEND_PASS");
          }
  #ifdef PS5_NATIVE
@@ -692,7 +694,7 @@ index c62dd75..2deb66d 100644
          passed("HEADLESS_COMPLETE");
  #ifdef EDEN_DEV_PROFILE
 diff --git a/headless/pad.cpp b/headless/pad.cpp
-index 9d0f3eb..756ac43 100644
+index 11b2f26..ad957d5 100644
 --- a/headless/pad.cpp
 +++ b/headless/pad.cpp
 @@ -1,5 +1,8 @@
@@ -704,7 +706,7 @@ index 9d0f3eb..756ac43 100644
  #include <algorithm>
  #include <cmath>
  #include <numbers>
-@@ -327,16 +330,39 @@ void Pad::Consume(std::size_t player, std::span<const ps5::pad::Data> samples) {
+@@ -374,16 +377,39 @@ void Pad::Consume(std::size_t player, std::span<const ps5::pad::Data> samples) {
          auto sample = is_usable(raw) ? raw : neutral_data(raw.timestamp_us);
          // The shortcuts work from every controller.
          constexpr ButtonMask menu_chord = kButtonTouchPad | kButtonL1;
@@ -745,10 +747,10 @@ index 9d0f3eb..756ac43 100644
          const bool touch = (pressed & kButtonTouchPad) != 0;
          const bool touched = (last_buttons & kButtonTouchPad) != 0;
 diff --git a/headless/preferences_check.cpp b/headless/preferences_check.cpp
-index 4fd0933..bb0acbf 100644
+index 38b1ca9..c1d38e4 100644
 --- a/headless/preferences_check.cpp
 +++ b/headless/preferences_check.cpp
-@@ -421,6 +421,15 @@ int main() {
+@@ -501,6 +501,15 @@ int main() {
                 plain.performance[2] < 0 && Eden::PreferencesFor(quest, file).volume == general.volume);
      }
  
@@ -765,11 +767,11 @@ index 4fd0933..bb0acbf 100644
      assert(Eden::LoadSavedAssetsDir(file).empty());
      assert(Eden::SaveAssetsDir("/mnt/ext1/eden", file));
 diff --git a/headless/settings_store.h b/headless/settings_store.h
-index f8732db..a8ca328 100644
+index 072c741..ecbbfb6 100644
 --- a/headless/settings_store.h
 +++ b/headless/settings_store.h
-@@ -135,6 +135,58 @@ struct Preferences {
-     bool immediate_logs = false;         // Settings > Diagnostics: log lines written as they come
+@@ -169,6 +169,58 @@ struct Preferences {
+     bool skip_game_aa = true;
  };
  
 +// Settings passed by PS5-ECAM override Eglantine's saved defaults for this child session only.
@@ -827,7 +829,7 @@ index f8732db..a8ca328 100644
  inline int KeyIndex(const std::string& value, const char* const* keys, int count, int fallback) {
      for (int i = 0; i < count; ++i)
          if (value == keys[i]) return i;
-@@ -575,23 +627,35 @@ inline bool SaveGameSettings(uint64_t title_id, const GameSettings& value, const
+@@ -637,23 +689,35 @@ inline bool SaveGameSettings(uint64_t title_id, const GameSettings& value, const
  // The settings a session of a game uses: Settings, with what the game does differently.
  inline Preferences PreferencesFor(uint64_t title_id, const std::string& file = SettingsFile()) {
      Preferences result = LoadPreferences(file);
@@ -880,9 +882,9 @@ index f8732db..a8ca328 100644
      return result;
  }
  
-@@ -631,6 +695,14 @@ inline PerformanceSettings LoadPerformance(uint64_t title_id, const std::string&
-     };
-     read("");
+@@ -701,6 +765,14 @@ inline PerformanceSettings LoadPerformance(uint64_t title_id, const std::string&
+         result.reactive_flushing = false;
+     }
      if (title_id) read("/games/" + Settings::TitleKey(title_id));
 +    const auto& session = ActiveSessionPreferenceOverrides();
 +    if (session.block_list >= 0) result.block_list = session.block_list != 0;
@@ -919,11 +921,11 @@ index e524715..e66c054 100644
  inline std::string AppFile(std::string_view name) { return AppDir() + "/" + std::string(name); }
  
 diff --git a/headless/vulkan.cmake b/headless/vulkan.cmake
-index 7008a5a..3d8839e 100644
+index e054e80..11ce168 100644
 --- a/headless/vulkan.cmake
 +++ b/headless/vulkan.cmake
-@@ -15,7 +15,8 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
-     "${PORT_ROOT}/tools/prepare-vulkan-port.py"
+@@ -17,7 +17,8 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+     "${EDEN_PORT_DIR}/gpu_time_probe.inc" "${EDEN_PORT_DIR}/hud_gpu_time.h"
      "${EDEN_PORT_DIR}/vulkan_hud.vert" "${EDEN_PORT_DIR}/vulkan_hud.frag"
      "${EDEN_PORT_DIR}/vulkan_hud_prepare.inc" "${EDEN_PORT_DIR}/vulkan_hud_draw.inc"
 -    "${EDEN_PORT_DIR}/vulkan_loading.inc")
@@ -943,22 +945,23 @@ index 0000000..b1be75f
 +Eden::EcamVulkan::gipa = dld.vkGetInstanceProcAddr;
 +#endif
 diff --git a/headless/vulkan_hud_draw.inc b/headless/vulkan_hud_draw.inc
-index 794563c..eb5b731 100644
+index 98ff186..c11a55e 100644
 --- a/headless/vulkan_hud_draw.inc
 +++ b/headless/vulkan_hud_draw.inc
-@@ -1,6 +1,11 @@
-         // The overlay is laid out for a picture 1080 rows high and scaled to this one.
-         const auto hud_units = [rows = render_area.height](uint32_t value) { return value * rows / 1080u; };
--        if (hud.width && (hud.loading || (render_area.width >= hud_units(hud.width + 16) &&
+@@ -1,7 +1,12 @@
+         // The overlay's box, against the corner and at the size the settings name, laid out for a
+         // picture 1080 rows high and scaled to this one (hud.h, PlaceHud).
+         const auto hud_place = Eden::PlaceHud(hud, render_area.width, render_area.height);
+-        if (hud.width && (hud.loading || hud_place.shown)) {
 +#ifdef EDEN_ECAM
 +        const bool ecam_loading = ecam && ps5ingamenx::DrawsLoading();
 +#else
 +        const bool ecam_loading = false;
 +#endif
-+        if (hud.width && !(hud.loading && ecam_loading) && (hud.loading || (render_area.width >= hud_units(hud.width + 16) &&
-                                           render_area.height >= hud_units(64)))) {
++        if (hud.width && !(hud.loading && ecam_loading) && (hud.loading || hud_place.shown)) {
              const VkRect2D scissor = hud.loading ? VkRect2D{{0, 0}, render_area} :
-                 VkRect2D{{static_cast<int32_t>(hud_units(16)), static_cast<int32_t>(hud_units(16))},
+                 VkRect2D{{static_cast<int32_t>(hud_place.box_x), static_cast<int32_t>(hud_place.box_y)},
+                          {hud_place.box_w, hud_place.box_h}};
 @@ -24,3 +29,11 @@
              cmdbuf.PushConstants(hud_pipeline_layout, VK_SHADER_STAGE_FRAGMENT_BIT, constants);
              cmdbuf.Draw(4, 1, 0, 0);
@@ -1000,10 +1003,10 @@ index 36c585e..f35e779 100644
 +    }
 +#endif
 diff --git a/tools/build-headless-native.sh b/tools/build-headless-native.sh
-index 321f234..78a4714 100644
+index 7c714a6..c8201ab 100644
 --- a/tools/build-headless-native.sh
 +++ b/tools/build-headless-native.sh
-@@ -43,6 +43,7 @@ cmake -S "$scratch/source" -B "$scratch/native-local" -G Ninja \
+@@ -49,6 +49,7 @@ cmake -S "$scratch/source" -B "$scratch/native-local" -G Ninja \
      -DCMAKE_TOOLCHAIN_FILE="$root/headless/ps5.cmake" -DPS5_NATIVE=ON -DEDEN_DEVICE_FRONTEND="$devices" \
      -DCMAKE_BUILD_TYPE=Release -DENABLE_LTO=OFF \
      -DEDEN_PS5_VULKAN="${EDEN_PS5_VULKAN:-OFF}" \
@@ -1037,10 +1040,10 @@ index fcfe66d..6671072 100644
  release)
      export EDEN_DEV_VULKAN=OFF EDEN_DEV_ROM_ID= EDEN_DEV_PROFILE=OFF EDEN_DEV_WAIT_CALLERS=OFF
 diff --git a/tools/prepare-vulkan-port.py b/tools/prepare-vulkan-port.py
-index e683812..9d113c0 100644
+index a02ad63..ee09dbe 100644
 --- a/tools/prepare-vulkan-port.py
 +++ b/tools/prepare-vulkan-port.py
-@@ -776,7 +776,10 @@ adapt('src/video_core/renderer_vulkan/renderer_vulkan.h',
+@@ -992,7 +992,10 @@ adapt('src/video_core/renderer_vulkan/renderer_vulkan.h',
  adapt('src/video_core/renderer_vulkan/renderer_vulkan.cpp', 'vulkan_renderer.cpp', [
      ('#include "video_core/renderer_vulkan/renderer_vulkan.h"',
       '#include "video_core/renderer_vulkan/renderer_vulkan.h"\n#include "display_refresh.h"\n'
@@ -1052,7 +1055,7 @@ index e683812..9d113c0 100644
      # The HUD counted the guest rate only: OnFrameDisplayed() runs once per Composite(), while the
      # frames frame generation adds are presented through PresentManager::Present() (hud.h). Count
      # every frame handed to the present manager.
-@@ -822,13 +825,24 @@ adapt('src/video_core/renderer_vulkan/present/window_adapt_pass.h',
+@@ -1038,13 +1041,24 @@ adapt('src/video_core/renderer_vulkan/present/window_adapt_pass.h',
  ])
  adapt('src/video_core/renderer_vulkan/present/window_adapt_pass.cpp', 'vulkan_window_adapt_pass.cpp', [
      ('#include "core/frontend/framebuffer_layout.h"',

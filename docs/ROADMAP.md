@@ -378,11 +378,15 @@ both patches applying to ES-DE 3.5.0, the glue compiling. Next:
 
 ### Switch 2
 
-**The core is Lichii's all-in-one (the owner, 5 November 2026):** zortos293/Lichii at 9b1a32dbb1
-(`test/all-in-one-mt`, the build on the owner's PC), Eglantine's continuation by the same author, 956 commits
-on the core EglantinePS5 pinned (patches/eglantine 0010, tools/build-eglantine.sh). That commit is on a test
-branch: if it goes, the pin wants a copy premohq owns. Multithreaded recording (`EDEN_NX2_PARALLEL_RECORD`)
-stays off until measured on a console.
+**The core is Lichii, as its PS5 port runs it (9 November 2026):** EglantinePS5 at its v1.000.110 line
+(`c8a5c2a`), whose core is zortos293/Lichii at `3140648a` with the port's 59 core patches over it (its
+`tools/eglantine-patches`): NUP containers, Ocarina of Time, Mario Kart World's memory work on a PS5 without
+Pro memory, and the JIT's code cache in pieces. The owner asked on 5 November for Lichii's all-in-one
+(`9b1a32dbb1`, 956 commits on); that move was written (patches/eglantine 0010, in the history at 04c38d3) and
+did not configure: the port patches the core by text anchors, and Lichii's rewritten sockets and GPU thread
+moved more than fifteen of them, the multiplayer hardening's thirteen among them. Lichii gains about 200 commits a day, so a newer core comes by moving the port's pin when
+its author moves his, or by a port of our own made on this base and proved on a console first. Multithreaded
+recording (`EDEN_NX2_PARALLEL_RECORD`) stays off until measured on a console.
 
 **Experimental; source integration wired, build and console verification pending.** The first Switch 2
 experiment used Takoroka's
