@@ -57,6 +57,11 @@ float Triangle(vec2 p, vec2 a, vec2 b, vec2 c)
 	return -sqrt(d.x) * sign(d.y);
 }
 
+float Cross2(vec2 a, vec2 b)
+{
+	return a.x * b.y - a.y * b.x;
+}
+
 vec3 Barycentric(vec2 p, vec2 a, vec2 b, vec2 c)
 {
 	float area = (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y);
@@ -165,14 +170,24 @@ void main()
 	{
 		vec2 a = vBox.xy, b = vBox.zw, c = vGradient.xy, e = vGradient.zw;
 		vec3 weights = Barycentric(vPos, a, b, c);
-		vec2 uv = vec2(weights.y + weights.z, weights.z);
-		if (min(min(weights.x, weights.y), weights.z) < -0.001)
-		{
+		bool first = min(min(weights.x, weights.y), weights.z) >= -0.001;
+		if (!first)
 			weights = Barycentric(vPos, a, c, e);
-			uv = vec2(weights.y, weights.y + weights.z);
+		vec2 ac = c - a, be = e - b;
+		float area = Cross2(ac, be);
+		coverage = 0.0;
+		if (abs(area) >= 1e-4 && min(min(weights.x, weights.y), weights.z) >= -0.001)
+		{
+			// Both projected diagonals meet at the texture's centre. Their division
+			// gives the relative inverse depths, shared by both triangles.
+			vec2 split = vec2(Cross2(b - a, be), Cross2(b - a, ac)) / area;
+			vec4 inverseDepth = 1.0 / max(vec4(1.0 - split, split), vec4(1e-4));
+			weights *= first ? inverseDepth.xyz : inverseDepth.xzw;
+			weights /= dot(weights, vec3(1.0));
+			vec2 uv = first ? vec2(weights.y + weights.z, weights.z) : vec2(weights.y, weights.y + weights.z);
+			colour *= texture(uImage, uv);
+			coverage = 1.0;
 		}
-		coverage = min(min(weights.x, weights.y), weights.z) >= -0.001 ? 1.0 : 0.0;
-		colour *= texture(uImage, uv);
 	}
 	else if (kind == 10)
 	{

@@ -660,7 +660,7 @@ namespace ps5boxart
 				if (replace)
 					fs::remove(Base(system, id) + ".tga", ec); // the launcher keeps showing its copy until the new one arrives
 				const std::string key = fmt::format("{}/{}0", Folder(system), id);
-				if (std::none_of(s_queue.begin(), s_queue.end(), [&](const auto& item) { return item.first == system && item.second == id; }))
+				if (std::none_of(s_queue.begin(), s_queue.end(), [&](const auto& item) { return item.first == system && item.second == id && item.art == Art::Front; }))
 					s_queued.erase(key);
 				again.push_back(id);
 			}

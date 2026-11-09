@@ -80,6 +80,13 @@ namespace ps5shell
 		switch (b)
 		{
 		case Button::Triangle:
+			if (!IsRetro())
+			{
+				const auto& game = m_games[m_hubGame].entry.game;
+				const auto system = BoxOf(game);
+				ps5boxart::Fetch(system, {game.gameId}, ps5boxart::Art::Back);
+				if (IsWiiU()) ps5boxart::Fetch(system, {game.gameId}, ps5boxart::Art::Disc);
+			}
 			m_caseInspect = true;
 			m_caseOpen = false;
 			m_caseDisc = false;
@@ -194,11 +201,6 @@ namespace ps5shell
 		canvas.Text(Style({28, ui::Weight::SemiBold, 1.0f}), kSafeX, 74, game.entry.game.name, 0xffffffff, 1700, 1);
 		const auto system = BoxOf(game.entry.game);
 		const std::string& id = game.entry.game.gameId;
-		if (!IsRetro())
-		{
-			ps5boxart::Fetch(system, {id}, ps5boxart::Art::Back);
-			if (IsWiiU()) ps5boxart::Fetch(system, {id}, ps5boxart::Art::Disc);
-		}
 		const ui::Picture& backArt = m_images->Get(IsRetro() ? std::string() : ps5boxart::Path(system, id, ps5boxart::Art::Back));
 		const ui::Picture& discArt = m_images->Get(IsRetro() ? std::string() : ps5boxart::Path(system, id, ps5boxart::Art::Disc));
 		const float w = IsWiiU() ? 420.0f : 490.0f, h = IsWiiU() ? 610.0f : 500.0f;
@@ -263,7 +265,7 @@ namespace ps5shell
 		};
 		const std::array<ui::Point, 4> front{lid(-w / 2, -h / 2), lid(w / 2, -h / 2), lid(w / 2, h / 2), lid(-w / 2, h / 2)};
 		const ui::Picture& art = Cover(game);
-		const bool pictureFacesUs = std::cos(angle + opened) > 0;
+		const bool pictureFacesUs = front[1].x > front[0].x; // the hinge is vertical, so this is the projected winding
 		canvas.ImageQuad(pictureFacesUs ? art.texture : 0, front,
 			pictureFacesUs && art.texture ? 0xffffffff : ui::Mix(Accent(), 0xff1a1c27, 0.75f));
 		canvas.Line(front[0].x, front[0].y, front[3].x, front[3].y, 5, 0xffd8dbe2);
