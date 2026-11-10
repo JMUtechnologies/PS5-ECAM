@@ -4,7 +4,7 @@ Where Playtendoh's reports go (`docs/REPORTS.md` says what a report holds). A Cl
 D1 database:
 
 - `POST /v1/report`: one report from the app (64 KB at most). Checked against schema 1 (`src/report.js`), limited to
-  30 an hour per install ID and 60 per network address, scrubbed again, and kept in D1. The address
+  20 a minute per install ID and 30 per network address, scrubbed again, and kept in D1. The address
   is only the rate limiter's key; nothing about the sender is stored.
 - `GET /v1/compatibility.json`: one row a game, no install ID, no log. GitHub Pages fetches it every
   day (`.github/workflows/pages.yml`) and shows it at `compatibility.html`.
