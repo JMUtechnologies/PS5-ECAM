@@ -418,10 +418,16 @@ def update():
 
 
 PLACEHOLDER = re.compile(r"\{[0-9]*(?::[^{}]*)?\}")
+# These are literal app directories in help, unlike labels such as On/Off.
+DIRECTORY = re.compile(r"(?<![\w/])(?:games|saves)/[A-Za-z0-9_./-]+")
 
 
 def placeholders(text):
     return sorted(PLACEHOLDER.findall(text))
+
+
+def directories(text):
+    return {path.rstrip('.') for path in DIRECTORY.findall(text)}
 
 
 def check(codes):
@@ -452,6 +458,7 @@ def check(codes):
                 problems += 1
             english = [e.msgid] if e.plural is None else [e.msgid, e.plural]
             want = placeholders(e.plural if e.plural is not None else e.msgid)
+            paths_wanted = directories(english[-1])
             forms = e.forms if e.plural is not None else e.forms[:1]
             if e.plural is not None and (len(forms) != n or not all(forms)):
                 print(f"{where}: {n} plural forms wanted, {sum(1 for f in forms if f)} given")
@@ -460,6 +467,9 @@ def check(codes):
                 if not form:
                     continue
                 got = placeholders(form)
+                if not paths_wanted <= directories(form):
+                    print(f"{where}: literal directories changed: {sorted(paths_wanted - directories(form))}")
+                    problems += 1
                 # a singular form may say "one" in words where the language's one form is only ever 1
                 if got != want and not (e.plural is not None and set(got) <= set(want) and n > 1 and form is forms[0] and code not in ("ru", "uk", "pl", "cs", "ro", "ar")):
                     print(f"{where}: {{}} differ: {got} for {want}: {form[:70]}")
