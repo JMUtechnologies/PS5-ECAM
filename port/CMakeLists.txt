@@ -429,12 +429,13 @@ set(PLAYTENDOH_REPORT_URL "$ENV{PLAYTENDOH_REPORT_URL}" CACHE STRING "the report
 if(PLAYTENDOH_REPORT_URL)
 	target_compile_definitions(CemuPS5 PRIVATE PLAYTENDOH_REPORT_URL="${PLAYTENDOH_REPORT_URL}")
 endif()
+# the commit a report names; PUBLIC, for main_ps5.cpp (CemuBin) sends it
 execute_process(COMMAND git -C "${CMAKE_CURRENT_LIST_DIR}/.." rev-parse --short=7 HEAD OUTPUT_VARIABLE PLAYTENDOH_COMMIT
 	OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
 if(NOT PLAYTENDOH_COMMIT)
 	set(PLAYTENDOH_COMMIT "unknown")
 endif()
-target_compile_definitions(CemuPS5 PRIVATE PLAYTENDOH_COMMIT="${PLAYTENDOH_COMMIT}")
+target_compile_definitions(CemuPS5 PUBLIC PLAYTENDOH_COMMIT="${PLAYTENDOH_COMMIT}")
 # SteamGridDB's key for this build (boxart.h): from the environment, a secret in CI, never in the source
 if(PS5ECAM_STEAMGRIDDB_KEY)
 	target_compile_definitions(CemuPS5 PRIVATE PS5ECAM_STEAMGRIDDB_KEY="${PS5ECAM_STEAMGRIDDB_KEY}")
