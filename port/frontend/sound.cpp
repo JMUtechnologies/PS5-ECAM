@@ -216,7 +216,9 @@ namespace ps5sound
 			{
 				const Clip* clip;
 				size_t at;
+				int fading = 0; // frames left of its fade out (0: playing on)
 			};
+			constexpr int kVoiceFade = 128; // 2.7 ms: a sound cut short fades, rather than clicking
 			std::vector<Voice> voices;
 			float level = 0; // the music's level now, gliding to the wanted one
 			std::string playing; // what the player was given ("setup", "file:<name>", "shuffle", "off")
@@ -260,8 +262,20 @@ namespace ps5sound
 				if (closing)
 					target = 0;
 				for (Effect effect : starts)
-					if (voices.size() < kVoices && !effects[(size_t)effect].empty())
-						voices.push_back({&effects[(size_t)effect], 0});
+				{
+					const Clip* clip = &effects[(size_t)effect];
+					if (clip->empty())
+						continue;
+					// the same sound again (the focus stepping while a direction is held) starts again as the
+					// one playing fades out, so each step is heard, the same, and the ticks do not stack up into a
+					// louder smear; with every voice busy, the oldest gives way
+					for (Voice& voice : voices)
+						if (voice.clip == clip && !voice.fading)
+							voice.fading = kVoiceFade;
+					if (voices.size() >= kVoices)
+						voices.erase(voices.begin());
+					voices.push_back({clip, 0});
+				}
 
 				mix.fill(0);
 				const float fade = closing ? kCloseFade : kFade;
@@ -277,13 +291,20 @@ namespace ps5sound
 					level = 0;
 				for (Voice& voice : voices)
 				{
-					const size_t count = std::min<size_t>(kGrain, voice.clip->size() / 2 - voice.at);
+					size_t count = std::min<size_t>(kGrain, voice.clip->size() / 2 - voice.at);
+					if (voice.fading)
+						count = std::min<size_t>(count, (size_t)voice.fading);
 					for (size_t frame = 0; frame < count; frame++)
 					{
-						mix[frame * 2] += (*voice.clip)[(voice.at + frame) * 2];
-						mix[frame * 2 + 1] += (*voice.clip)[(voice.at + frame) * 2 + 1];
+						const float gain = voice.fading ? (float)(voice.fading - (int)frame) / kVoiceFade : 1.0f;
+						mix[frame * 2] += (*voice.clip)[(voice.at + frame) * 2] * gain;
+						mix[frame * 2 + 1] += (*voice.clip)[(voice.at + frame) * 2 + 1] * gain;
 					}
 					voice.at += count;
+					if (voice.fading)
+						voice.fading = std::max(1, voice.fading - (int)count);
+					if (voice.fading == 1 || (voice.fading && count == 0))
+						voice.at = voice.clip->size() / 2; // faded out: done
 				}
 				std::erase_if(voices, [](const Voice& voice) { return voice.at * 2 >= voice.clip->size(); });
 				for (size_t i = 0; i < grain.size(); i++)
@@ -357,7 +378,9 @@ namespace ps5sound
 	{
 		std::lock_guard lock(s_wanted.mutex);
 		// (a thread that has stopped on an error takes none)
-		if (s_wanted.menuSounds && s_thread.joinable() && s_wanted.effects.size() < kVoices)
+		// (twice in a frame is once: a press that both stepped and opened something)
+		if (s_wanted.menuSounds && s_thread.joinable() && s_wanted.effects.size() < kVoices &&
+			std::find(s_wanted.effects.begin(), s_wanted.effects.end(), effect) == s_wanted.effects.end())
 			s_wanted.effects.push_back(effect);
 	}
 
