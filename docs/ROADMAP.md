@@ -23,7 +23,7 @@ has run on a PS5 yet.
    its 16 MiB VMA blocks, its renamed pipeline cache writes). Left: the configure-time files
    (`headless/*.cmake`), the 54 of the 59 core fixes that conflict (the PS5 memory work first), a
    compile, the port's own checks, then the pin in `tools/deps.json` and `patches/eglantine` remade.
-   The proven core (`c8a5c2a`, built and checked on 9 November) stays pinned until then.
+   The port's own core stays pinned until then: EglantinePS5 `972abeb` (10 November, Ocarina of Time into gameplay).
 2. **Translations:** the new strings in all 27 languages; 12 are done (`tools/lang.py check` lists the
    rest).
 3. **One full build**, every step of `.github/workflows/tests.yml`, and the PC preview.
@@ -310,8 +310,8 @@ both patches applying to ES-DE 3.5.0, the glue compiling. Next:
 
 **Moving to Lichii's newest (the owner, 9 November 2026):** see *6.0: Before it ships*, step 1.
 
-**The core is Lichii, as its PS5 port runs it (9 November 2026):** EglantinePS5 at its v1.000.110 line
-(`c8a5c2a`), whose core is zortos293/Lichii at `3140648a` with the port's 59 core patches over it (its
+**The core is Lichii, as its PS5 port runs it (9 November 2026):** EglantinePS5 at its main of 10 November
+(`972abeb`, past v1.000.110), whose core is zortos293/Lichii at `3140648a` with the port's 71 core patches over it (its
 `tools/eglantine-patches`): NUP containers, Ocarina of Time, Mario Kart World's memory work on a PS5 without
 Pro memory, and the JIT's code cache in pieces. The owner asked on 5 November for Lichii's all-in-one
 (`9b1a32dbb1`, 956 commits on); that move was written (patches/eglantine 0010, in the history at 04c38d3) and
