@@ -1,4 +1,4 @@
-# PS5-ECAM's site on GitHub Pages (Settings > Pages > Source: GitHub Actions), from site/.
+# Playtendoh's site on GitHub Pages (Settings > Pages > Source: GitHub Actions), from site/.
 #
 # It is built again when site/ changes, by hand, when a release is published, with the latest
 # release's notes in the page (site/build.py) for readers GitHub's API turns away, and every day, with
@@ -9,7 +9,7 @@ name: Pages
 
 on:
   push:
-    branches: [PS5-ECAM]
+    branches: [Playtendoh] # the github-pages environment allows it (Settings > Environments)
     paths:
       - 'site/**'
       - '.github/workflows/pages.yml'
