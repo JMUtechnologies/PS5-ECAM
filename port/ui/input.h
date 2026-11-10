@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // PS5-ECAM's UI kit: the DualSense as actions. Any connected
 // controller drives the UI; the left stick moves as the D-pad does; the directions, the shoulders
-// and the triggers repeat while held (400 ms, then every 90 ms, as the classic launcher's); every
+// and the triggers repeat while held (400 ms, then every 90 ms on a steady beat, as the classic launcher's); every
 // button's hold is timed, for what is held to confirm. Nothing counts as pressed until it has been
 // let go once, and while the system has the controller (its menu) the UI sees nothing.
 
@@ -66,6 +66,10 @@ namespace ui
 		void Reset() { m_armed.fill(false); }
 
 	private:
+		// the left stick's direction for a player, held with some give (input.cpp)
+		uint32_t Stick(int player, int x, int y);
+
+		std::array<uint32_t, 8> m_stick{};
 		std::array<bool, (size_t)Button::Count> m_down{}, m_armed{};
 		std::array<double, (size_t)Button::Count> m_since{};
 		std::array<double, (size_t)Button::Count> m_repeatAt{};

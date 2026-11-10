@@ -4,11 +4,18 @@
 #include "input.h"
 #include "../ps5/pad.h"
 
+#include <algorithm>
+#include <cstdlib>
+
 namespace ui
 {
 	namespace
 	{
 		constexpr double kRepeatDelay = 0.4, kRepeatRate = 0.09;
+		// the left stick as a direction: pushed past 0.55 of the way, let go below 0.35, so a thumb resting
+		// near the edge does not flicker in and out of it (each flicker was a step of its own); and only
+		// its stronger axis, so a push a little off straight does not move both ways at once
+		constexpr int kStickOn = 70, kStickOff = 45; // of 128, from the middle
 
 		struct Mapping
 		{
@@ -35,6 +42,23 @@ namespace ui
 		};
 	}
 
+	uint32_t Input::Stick(int player, int x, int y)
+	{
+		uint32_t& held = m_stick[player];
+		const int ax = std::abs(x), ay = std::abs(y);
+		const bool vertical = held & (ps5pad::kUp | ps5pad::kDown), horizontal = held & (ps5pad::kLeft | ps5pad::kRight);
+		uint32_t now = 0;
+		// a direction held stays until the stick comes back past the lower mark; a new one needs the higher
+		if (vertical && ay >= kStickOff && ay >= ax / 2)
+			now = y < 0 ? ps5pad::kUp : ps5pad::kDown;
+		else if (horizontal && ax >= kStickOff && ax >= ay / 2)
+			now = x < 0 ? ps5pad::kLeft : ps5pad::kRight;
+		else if (std::max(ax, ay) >= kStickOn)
+			now = ay > ax ? (y < 0 ? ps5pad::kUp : ps5pad::kDown) : (x < 0 ? ps5pad::kLeft : ps5pad::kRight);
+		held = now;
+		return now;
+	}
+
 	Actions Input::Poll(double now)
 	{
 		uint32_t buttons = 0;
@@ -50,14 +74,7 @@ namespace ui
 				continue;
 			}
 			buttons |= data.buttons;
-			if (data.leftY < 64)
-				buttons |= ps5pad::kUp;
-			else if (data.leftY > 192)
-				buttons |= ps5pad::kDown;
-			if (data.leftX < 64)
-				buttons |= ps5pad::kLeft;
-			else if (data.leftX > 192)
-				buttons |= ps5pad::kRight;
+			buttons |= Stick(player, data.leftX - 128, data.leftY - 128);
 		}
 		Actions actions;
 		if (intercepted)
@@ -90,7 +107,9 @@ namespace ui
 			else if (mapping.repeats && now >= m_repeatAt[slot])
 			{
 				actions.presses.push_back({mapping.button, true});
-				m_repeatAt[slot] = now + kRepeatRate;
+				// on a steady beat from the first press, not from the frame that saw it, so the steps come
+				// evenly; a late frame catches up with one step, not a burst
+				m_repeatAt[slot] = std::max(m_repeatAt[slot] + kRepeatRate, now + kRepeatRate * 0.5);
 			}
 			m_down[slot] = true;
 			actions.held |= 1u << slot;
