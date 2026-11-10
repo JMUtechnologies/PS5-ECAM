@@ -116,6 +116,25 @@ namespace ui
 		void Wave(const Box& box, float base, float amplitude, float wavelength, float phase, uint32_t colour);
 		void Grain(const Box& box, uint32_t colour);
 		void Draw(Icon icon, const Box& box, uint32_t colour);
+		// Liquid glass. Backdrop marks what is drawn so far as what the glass drawn after it shows, blurred:
+		// layer 0 the screen's, layer 1 an overlay's over it (whose backdrop has the screen's glass in it); a
+		// later mark of a layer moves it. Frost draws a pane: the backdrop under the box, darkened (or with a
+		// negative shade lightened) toward legibility, its colours lifted by the vibrancy (1: as they are),
+		// bent and split into its colours over the rim's width as a thick lens would, light caught on the
+		// edge facing the top left, the tint laid over by the tint's alpha, the pane as opaque as the
+		// opacities pushed. Frost with no Backdrop marked shows the tint over white.
+		struct GlassLook
+		{
+			float vibrancy = 1.4f;
+			float rim = 0;		  // how far in from the edge the glass bends, in layout units
+			float bend = 0;		  // how far it bends what is behind at the edge, in layout units
+			float light = 0;	  // the edge's light, 0 to 1
+			float dispersion = 0; // the colours' split at the edge, a fraction of the bend
+			float shade = 0;	  // -1 to 1: what is behind toward white, or black, before the tint
+		};
+		void Backdrop(int layer = 0);
+		bool HasBackdrop() const { return m_list.backdrops[m_layer] != UINT32_MAX; }
+		void Frost(const Box& box, float radius, uint32_t tint, const GlassLook& look);
 
 		// text from its block's top left; Draw returns the block laid out
 		void Text(const TextBlock& block, float x, float y, uint32_t colour, Align align = Align::Left, float alignWidth = 0);
@@ -147,6 +166,7 @@ namespace ui
 		std::vector<float> m_alpha;
 		std::vector<std::pair<float, float>> m_offsets;
 		float m_dx = 0, m_dy = 0;
+		int m_layer = 0; // the backdrop layer glass is drawn on (Backdrop)
 		bool m_exactCorners = false; // an icon's shapes: their radii as drawn, not the theme's (theme.h)
 	};
 }

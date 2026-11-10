@@ -395,28 +395,34 @@ namespace ps5shell
 				DrawCover(canvas, m_games[m_shelf[i - offset]], box, focused, 0);
 		};
 		canvas.PushClip({640, 690, 1280, 390});
+		// each tile's lift glides: the one gaining the focus grows and makes room as the one losing it settles
+		// back, rather than both jumping (6.0)
+		auto tileKey = [&](int i) {
+			if (m_orbitHome)
+				return FocusKey(m_homeGames[i].game.entry.game.path.string(), (uint64_t)m_homeGames[i].side + 1);
+			return i < offset ? FocusKey("artic") : FocusKey(m_games[m_shelf[i - offset]].entry.game.path.string(), (uint64_t)m_side + 1);
+		};
+		const float scale = m_settings.ui.reduceMotion ? 1.0f : kFocusScale;
+		std::vector<std::pair<float, int>> lifted; // (how far lifted, which), drawn last, the most lifted on top
+		std::vector<Box> boxes(total);
 		float along = kRailLeft - m_orbitRail.value;
-		Box focused{};
 		for (int i = 0; i < total; i++)
 		{
 			const float w = tileWidth(i);
-			const Box box{along + (i == at ? kFocusRoom : 0), kRailBottom - kCoverHeight, w, kCoverHeight};
-			const float step = w + kRailGap + (i == at ? kFocusRoom * 2 : 0);
 			if (along > 1920 + w)
 				break;
-			if (i == at)
-				focused = box;
-			else if (box.Right() > 640)
-				drawTile(i, box, false);
-			along += step;
+			const float mix = FocusMix(tileKey(i), i == at);
+			const float grow = 1 + (scale - 1) * mix;
+			boxes[i] = {along + kFocusRoom * mix, kRailBottom - kCoverHeight * grow - 8 * mix, w * grow, kCoverHeight * grow};
+			if (mix > 0.002f || i == at)
+				lifted.push_back({mix + (i == at ? 1 : 0), i});
+			else if (boxes[i].Right() > 640)
+				drawTile(i, boxes[i], false);
+			along += w + kRailGap + kFocusRoom * 2 * mix;
 		}
-		// lifted, and over its neighbours
-		if (focused.w > 0 && total > 0)
-		{
-			const float scale = m_settings.ui.reduceMotion ? 1.0f : kFocusScale;
-			const Box lifted{focused.x, focused.Bottom() - focused.h * scale - 8, focused.w * scale, focused.h * scale};
-			drawTile(at, lifted, !m_onBar);
-		}
+		std::sort(lifted.begin(), lifted.end());
+		for (const auto& [mix, i] : lifted)
+			drawTile(i, boxes[i], i == at && !m_onBar);
 		canvas.PopClip();
 		canvas.PopAlpha();
 		OrbitHintsDraw(canvas, false);

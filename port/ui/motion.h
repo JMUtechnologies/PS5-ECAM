@@ -10,19 +10,32 @@
 
 namespace ui
 {
-	// Critically damped by default; retargeting keeps the velocity, so a held direction stays smooth.
+	// Critically damped by default; retargeting keeps the velocity, so a held direction stays smooth. A
+	// damping ratio under 1 lets it overshoot a little and settle, as a drop of liquid does (6.0's highlights).
 	struct Spring
 	{
-		float value = 0, velocity = 0, target = 0, omega = 20;
+		float value = 0, velocity = 0, target = 0, omega = 20, damping = 1;
 
 		void Update(float dt)
 		{
-			// x(t) = target + (x0 + c t) e^(-wt), c = v0 + w x0, with x0 the distance from the target
 			const float x0 = value - target;
-			const float c = velocity + omega * x0;
-			const float decay = std::exp(-omega * dt);
-			value = target + (x0 + c * dt) * decay;
-			velocity = (c - omega * (x0 + c * dt)) * decay;
+			if (damping >= 1)
+			{
+				// x(t) = target + (x0 + c t) e^(-wt), c = v0 + w x0, with x0 the distance from the target
+				const float c = velocity + omega * x0;
+				const float decay = std::exp(-omega * dt);
+				value = target + (x0 + c * dt) * decay;
+				velocity = (c - omega * (x0 + c * dt)) * decay;
+			}
+			else
+			{
+				// x(t) = target + e^(-zwt) (x0 cos(wd t) + (v0 + zw x0) / wd sin(wd t)), wd = w sqrt(1 - z^2)
+				const float zw = damping * omega, wd = omega * std::sqrt(1 - damping * damping);
+				const float b = (velocity + zw * x0) / wd;
+				const float decay = std::exp(-zw * dt), cosine = std::cos(wd * dt), sine = std::sin(wd * dt);
+				value = target + decay * (x0 * cosine + b * sine);
+				velocity = decay * ((b * wd - zw * x0) * cosine - (x0 * wd + zw * b) * sine);
+			}
 			if (std::fabs(value - target) < 1e-3f && std::fabs(velocity) < 1e-2f)
 			{
 				value = target;

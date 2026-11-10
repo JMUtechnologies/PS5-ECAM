@@ -71,10 +71,14 @@ def main():
                      f"{tracking}f, {upper}, false}};")
     lines.append("")
     for name, value in tokens["motion"].items():
-        if name.endswith("omega"):
+        if name.endswith("omega") or name.endswith("damping"):
             lines.append(f"\tinline constexpr float k{camel(name)[1:]} = {float(value)}f;")
         else:
             lines.append(f"\tinline constexpr float k{camel(name)[1:]}Seconds = {value / 1000:.3f}f;")
+    lines.append("")
+    for name, value in tokens.get("material", {}).items():
+        if name != "comment":
+            lines.append(f"\tinline constexpr float k{camel(name)[1:]} = {float(value)}f;")
     lines.append("}")
     OUT.write_text("\n".join(lines) + "\n")
     print(f"{OUT.relative_to(ROOT)}: {len(tokens['colour'])} colours, {len(tokens['type'])} type styles")

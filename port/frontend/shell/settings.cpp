@@ -3495,17 +3495,26 @@ namespace ps5shell
 		const uint32_t accent = Accent();
 		const auto pages = SettingsPages();
 		{
+			// 6.0: the side's backdrop stays, dimmed only so far that its picture, shapes and colours show
+			// through the glass; high contrast covers it, as before
 			const Box screen{0, 0, 1920, 1080};
-			canvas.Rect(screen, 0, ui::WithAlpha(light ? ui::SetAlpha(ui::Mix(kInk1, 0xffffffff, 0.15f), 0.97f) : ui::SetAlpha(kInk0, 0.97f), appear));
+			const float dim = contrast ? 0.97f : light ? 0.55f : 0.50f;
+			canvas.Rect(screen, 0, ui::WithAlpha(light ? ui::SetAlpha(ui::Mix(kInk1, 0xffffffff, 0.15f), dim) : ui::SetAlpha(kInk0, dim), appear));
 			if (!contrast)
 			{
 				const float t = m_settings.ui.reduceMotion ? 0.0f : (float)m_now;
 				const float ax = 1500 + 160 * std::sin(t * 0.11f), ay = 260 + 90 * std::cos(t * 0.13f);
 				const float bx = 380 + 140 * std::cos(t * 0.09f), by = 900 + 70 * std::sin(t * 0.12f);
+				const float cx = 1100 + 260 * std::sin(t * 0.07f + 1.3f), cy = 640 + 120 * std::cos(t * 0.08f);
 				const uint32_t second = ui::Mix(accent, light ? 0xffffd28c : 0xffd27a5a, 0.55f);
-				canvas.RadialGradient(screen, 0, ui::SetAlpha(accent, (light ? 0.26f : 0.30f) * appear), ui::SetAlpha(accent, 0), ax, ay, 900, 620);
-				canvas.RadialGradient(screen, 0, ui::SetAlpha(second, (light ? 0.20f : 0.22f) * appear), ui::SetAlpha(second, 0), bx, by, 820, 560);
+				const uint32_t third = ui::Mix(accent, 0xffffffff, 0.35f);
+				canvas.RadialGradient(screen, 0, ui::SetAlpha(accent, (light ? 0.30f : 0.40f) * appear), ui::SetAlpha(accent, 0), ax, ay, 900, 620);
+				canvas.RadialGradient(screen, 0, ui::SetAlpha(second, (light ? 0.24f : 0.30f) * appear), ui::SetAlpha(second, 0), bx, by, 820, 560);
+				// a third, slower, drifting under the rows, so the glass has light moving behind it
+				canvas.RadialGradient(screen, 0, ui::SetAlpha(third, (light ? 0.16f : 0.22f) * appear), ui::SetAlpha(third, 0), cx, cy, 560, 380);
 				canvas.Grain(screen, ui::SetAlpha(kText, 0.02f));
+				// what the glass below shows, blurred: the backdrop with its light
+				GlassBackdrop(canvas, 0);
 			}
 		}
 		if (!InGameSettings())
@@ -3523,7 +3532,13 @@ namespace ps5shell
 		// -- the rail: whose settings, then the pages, a liquid blob under the one open ---------------------
 		const float railX = kSafeX - 8, railW = 360, top = 140, bottom = 1080 - 104;
 		const Box rail{railX, top, railW, bottom - top};
-		Glass(canvas, rail, 34, contrast ? kInk2 : ui::SetAlpha(light ? 0xffffffff : kInk1, light ? 0.55f : 0.50f), 0.9f);
+		// a pane of glass (Glass: the backdrop under it blurred, bent and lit at its rim), on its shadow
+		auto pane = [&](const Box& box, float radius, float tint, float shine) {
+			if (!contrast)
+				canvas.Shadow(box, radius, 22, 56, light ? 0x1c000000 : 0x4d000000);
+			Glass(canvas, box, radius, contrast ? kInk2 : light ? ui::SetAlpha(0xffffffff, tint) : ui::SetAlpha(kInk1, tint), shine);
+		};
+		pane(rail, 34, light ? 0.46f : 0.34f, 0.9f);
 		// tr: above Settings' pages: whose settings they are ({0}: Wii U, Nintendo 3DS or Nintendo DS)
 		const std::string head = InGameSettings() ? m_gameName : TrF("{0} settings", SystemName(m_side));
 		canvas.Text(Style(kOverlineStyle), rail.x + 30, rail.y + 28, head, Tertiary(), railW - 60, 1);
@@ -3534,6 +3549,7 @@ namespace ps5shell
 		m_railScroll.Update(m_dt);
 		m_railBlob.target = railTop + page * step - m_railScroll.value;
 		m_railBlob.omega = m_settings.ui.reduceMotion ? 60.0f : 17.0f;
+		m_railBlob.damping = m_settings.ui.reduceMotion ? 1.0f : kLiquidDamping;
 		if (m_railBlob.value == 0)
 			m_railBlob.Snap(m_railBlob.target);
 		m_railBlob.Update(m_dt);
@@ -3594,14 +3610,17 @@ namespace ps5shell
 		const Box sheet{px, ry, pw, std::min(available, std::max(rowH, content + 8))};
 		if (!rows.empty())
 		{
-			canvas.Shadow(sheet, 30, 24, 60, light ? 0x22000000 : 0x55000000);
-			Glass(canvas, sheet, 30, contrast ? kInk2 : ui::SetAlpha(light ? 0xffffffff : kInk1, light ? 0.72f : 0.62f));
+			// the rows' sheet on a stack: a second pane peeking out under its foot, where there is room
+			if (!contrast && sheet.Bottom() + 18 <= bottom + 12)
+				pane({sheet.x + 30, sheet.y + 18, sheet.w - 60, sheet.h}, 30, light ? 0.30f : 0.24f, 0.5f);
+			pane(sheet, 30, light ? 0.52f : 0.40f, 1.0f);
 		}
 		canvas.PushClip(sheet, 30);
 		const float labelScale = LabelScale(rows, pw);
 		// the highlight: gliding to the focused row, stretched while it moves
 		m_rowBlob.target = m_settingRow * rowH;
 		m_rowBlob.omega = m_settings.ui.reduceMotion ? 60.0f : 18.0f;
+		m_rowBlob.damping = m_settings.ui.reduceMotion ? 1.0f : kLiquidDamping;
 		m_rowBlob.Update(m_dt);
 		if (m_onRows && !rows.empty())
 		{

@@ -6,7 +6,10 @@
 // ends (from gradient.xy to gradient.zw, the ring width wide), 7 a triangle (gradient.xy,
 // gradient.zw and uv.xy; outlined when the ring width is set, its corners rounded by the radius),
 // 8 a wave: everything below base + amplitude * sin(x / wavelength + phase) (gradient: base,
-// amplitude, wavelength, phase). Kinds 6 to 8 take one colour. Colours are straight RGBA, in the
+// amplitude, wavelength, phase), 9 liquid glass: the backdrop under it, blurred (gfx.cpp), bent and lit
+// at its rim (gradient: the rim's width, the bend, the light, the colours' split), its colours lifted by
+// shape.y, darkened by extra.z (lightened below 0), the first colour laid over it by that colour's alpha, the whole as opaque as the second
+// colour's alpha. Kinds 6 to 9 take no gradient. Colours are straight RGBA, in the
 // same sRGB values the design's tokens name; the output is premultiplied.
 
 layout(location = 0) in vec2 vPos;
@@ -151,6 +154,37 @@ void main()
 	{
 		float surface = vGradient.x + vGradient.y * sin(vPos.x / max(vGradient.z, 1e-3) + vGradient.w);
 		coverage = clamp(0.5 + (vPos.y - surface) / pixel, 0.0, 1.0) * clamp(0.5 - d / pixel, 0.0, 1.0);
+	}
+	else if (kind == 9)
+	{
+		// Liquid glass: what is behind, as the blur left it, bent at the rim as a thick lens bends it, split a
+		// little into its colours there, its colours lifted, the tint over it, and light caught along its edge
+		// (gradient: the rim's width, how far it bends, the light's strength, the split)
+		vec2 p = vPos - centre;
+		vec2 e = vec2(0.75, 0.0);
+		vec2 n = vec2(RoundBox(p + e.xy, halfSize, radius) - RoundBox(p - e.xy, halfSize, radius),
+			RoundBox(p + e.yx, halfSize, radius) - RoundBox(p - e.yx, halfSize, radius));
+		n = length(n) > 1e-5 ? normalize(n) : vec2(0.0, -1.0);
+		float depth = max(-d, 0.0);
+		float rim = vGradient.x > 0.0 ? clamp(1.0 - depth / vGradient.x, 0.0, 1.0) : 0.0;
+		float bend = rim * rim * rim * vGradient.y;
+		vec2 uv = vPos / pc.layoutSize;
+		vec2 shift = n * bend / pc.layoutSize;
+		vec3 behind = vec3(texture(uImage, uv + shift * (1.0 + vGradient.w)).r, texture(uImage, uv + shift).g,
+			texture(uImage, uv + shift * (1.0 - vGradient.w)).b);
+		float grey = dot(behind, vec3(0.2126, 0.7152, 0.0722));
+		behind = clamp(mix(vec3(grey), behind, vShape.y), 0.0, 1.0);
+		// toward legibility: darker under light text, lighter under dark (extra.z, -1 to 1)
+		behind = vExtra.z >= 0.0 ? behind * (1.0 - vExtra.z) : mix(behind, vec3(1.0), -vExtra.z);
+		vec3 glass = mix(behind, vColour0.rgb, vColour0.a);
+		// the light: from the top left, strongest on the edge facing it, a fainter echo on the edge across
+		vec2 light = normalize(vec2(-0.55, -1.0));
+		float facing = pow(max(dot(n, light), 0.0), 1.5) + 0.45 * pow(max(dot(n, -light), 0.0), 2.0);
+		float edge = clamp(1.0 - depth / 2.2, 0.0, 1.0);
+		float sheen = rim * rim * 0.35 + edge;
+		glass += vec3(1.0) * vGradient.z * facing * sheen;
+		colour = vec4(clamp(glass, 0.0, 1.0), vColour1.a);
+		coverage = clamp(0.5 - d / pixel, 0.0, 1.0);
 	}
 
 	// the clip: a rounded rectangle everything is kept inside

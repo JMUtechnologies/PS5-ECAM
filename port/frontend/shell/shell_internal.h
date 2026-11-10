@@ -44,6 +44,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <thread>
 #include <unordered_map>
 #include <vector>
@@ -324,10 +325,18 @@ namespace ps5shell
 		uint32_t Wash(float alpha) const;
 		void Focus(const Box& box, float radius, uint32_t glow = 0);
 		void DrawFocusRing(Canvas& canvas);
+		// how far a part is into its focused look, 0 to 1, gliding as the focus comes and goes, so what grows
+		// or lifts with the focus does not jump (widgets.cpp); key: what the part is, the same every frame
+		float FocusMix(uint64_t key, bool focused);
+		static uint64_t FocusKey(std::string_view what, uint64_t salt = 0);
 		void Panel(Canvas& canvas, const Box& box, float radius);
 		// 6.0's liquid glass (widgets.cpp): fill, then light caught across its top, a bright edge above and a
 		// shade below, as a lens of glass over what is behind; high contrast: the fill and a plain edge
 		void Glass(Canvas& canvas, const Box& box, float radius, uint32_t fill, float shine = 1.0f);
+		// what the glass drawn from here shows, blurred: everything drawn so far (layer 0 a screen's, layer 1
+		// an overlay's, over the screen and its glass)
+		void GlassBackdrop(Canvas& canvas, int layer);
+		std::vector<Box> m_panes; // the glass drawn since the last backdrop: glass on it is not glass again
 		bool LightGround() const; // dark text on a light ground (the Light theme and its like)
 		// maxWidth: the button's widest, its label smaller (then cut) in a language that needs more (0: as wide as the label)
 		Box PillButton(Canvas& canvas, float x, float y, const std::string& label, bool primary, bool focused, Icon icon = Icon::Play, bool withIcon = false,
@@ -712,6 +721,17 @@ namespace ps5shell
 		uint32_t m_ringGlow = 0;
 		float m_ringAlpha = 0;
 		float m_ringPulse = 0; // the focus lens's settle as it lands somewhere new (widgets.cpp)
+		// frames since a direction or a button was pressed: the focus moving then is a step the lens glides
+		// to; moving any other time it is the page under it moving (a scroll, a screen arriving), carried
+		int m_sincePress = 1000;
+		bool m_pressRepeat = false; // and that press a held button's repeat
+		ui::Spring m_ringPress;		// the lens pressed in by Cross, springing back (widgets.cpp)
+		struct FocusLook
+		{
+			ui::Spring mix;
+			uint64_t frame = 0;
+		};
+		std::unordered_map<uint64_t, FocusLook> m_focusLooks; // FocusMix's
 
 		// the backdrop: the focused game's colours and picture, changed once the focus rests
 		uint32_t m_ambient[2] = {};

@@ -535,7 +535,7 @@ namespace ps5shell
 			const float textWidth = std::min(m_fonts.Width(style, name), 520.0f);
 			const float width = 28 + 30 + 14 + textWidth + 14 + 24 + 26;
 			const Box pill{1920 - kSafeX - width, 132, width, 64};
-			const Box drawn = m_setupOnLanguage ? pill.Scaled(1.03f) : pill;
+			const Box drawn = pill.Scaled(1.0f + 0.03f * FocusMix(FocusKey("setup-language"), m_setupOnLanguage));
 			Glass(canvas, drawn, drawn.h / 2, m_setupOnLanguage ? Surface2() : Surface());
 			canvas.Draw(Icon::Globe, {drawn.x + 28, drawn.CentreY() - 15, 30, 30}, kText);
 			canvas.Text(style, drawn.x + 28 + 30 + 14, drawn.CentreY() - 13, name, kText, textWidth + 1, 1);

@@ -89,6 +89,8 @@ namespace ui::tokens
 	inline constexpr TextStyle kOverlineStyle{18.0f, Weight::SemiBold, 1.0f, 3.5f, true, false};
 
 	inline constexpr float kFocusOmega = 20.0f;
+	inline constexpr float kFocusDamping = 0.82f;
+	inline constexpr float kLiquidDamping = 0.72f;
 	inline constexpr float kScrollOmega = 16.0f;
 	inline constexpr float kSheetOmega = 13.0f;
 	inline constexpr float kSheetOutSeconds = 0.180f;
@@ -102,4 +104,12 @@ namespace ui::tokens
 	inline constexpr float kLaunchSeconds = 0.420f;
 	inline constexpr float kReducedSeconds = 0.150f;
 	inline constexpr float kBreathSeconds = 2.400f;
+
+	inline constexpr float kGlassRim = 22.0f;
+	inline constexpr float kGlassBend = 14.0f;
+	inline constexpr float kGlassLight = 0.55f;
+	inline constexpr float kGlassDispersion = 0.18f;
+	inline constexpr float kGlassVibrancy = 1.5f;
+	inline constexpr float kGlassShadeDark = 0.22f;
+	inline constexpr float kGlassShadeLight = -0.3f;
 }
