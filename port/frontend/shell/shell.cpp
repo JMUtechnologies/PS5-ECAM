@@ -4,6 +4,7 @@
 // (shell_internal.h).
 
 #include "shell_internal.h"
+#include "../collections.h"
 #include "../../app/achievements.h"
 #include "../../app/shots.h"
 #include "../actions.h"
@@ -2032,7 +2033,7 @@ namespace ps5shell
 			if (!ps5catalog::SetCollection(catalog, title, name, member)) { Toast(Tr("Could not save the collection")); return; }
 			if (catalog == CatalogSide())
 				for (auto& item : m_games)
-					if (item.entry.game.titleId == title) item.entry = *ps5catalog::Find(catalog, title);
+					if (item.entry.game.titleId == title) ps5collections::SyncMembership(item.entry, *ps5catalog::Find(catalog, title));
 			LibraryRefresh();
 		};
 		OpenPicker(TrC("tab", "Library"), Tr("Collections"), options, -1, [this, side, catalog, title, game, names, set](int choice) {

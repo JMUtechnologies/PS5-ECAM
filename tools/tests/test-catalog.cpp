@@ -5,6 +5,7 @@
 // reads a file that is not JSON as an empty catalogue. The data folder is PS5CEMU_DATA, a folder of the
 // test's.
 #include "app/catalog.h"
+#include "frontend/collections.h"
 #include "app/paths.h"
 #include "retro/registry.h"
 #include <filesystem>
@@ -136,6 +137,17 @@ static void Read()
 
 int main(int argc, char** argv)
 {
+	Entry frontend, stored;
+	frontend.game.gameId = "GZLE01";
+	frontend.game.name = "Frontend enriched";
+	frontend.ambient[0] = 0x12345678;
+	frontend.hidden = true;
+	stored.collections = {"Co-op"};
+	ps5collections::SyncMembership(frontend, stored);
+	Check(frontend.game.gameId == "GZLE01" && frontend.game.name == "Frontend enriched" && frontend.ambient[0] == 0x12345678 && frontend.hidden,
+		"membership sync preserves enriched frontend game and display data");
+	Check(ps5collections::Matches(frontend, "Co-op") && !ps5collections::Matches(frontend, "Other") && ps5collections::Matches(frontend, ""),
+		"shelf and pill counts share the same membership predicate");
 	const std::string_view mode = argc > 1 ? argv[1] : "";
 	if (mode == "write")
 		Write();
