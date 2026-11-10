@@ -104,6 +104,7 @@ int main(int argc, char* argv[])
 	{
 		// earlier sessions: the side last used, the games last played, the counts their scans saved
 		settings.ui.setupDone = true;
+		settings.ui.reportsAsked = std::getenv("PREVIEW_REPORTS_PROMPT") == nullptr;
 		// the version run last: this one, unless the preview is of what an update brings
 		settings.ui.lastVersion = std::getenv("PREVIEW_WHATSNEW") ? "3.5.0" : PS5CEMU_VERSION;
 		settings.ui.lastSide = "wiiu";
