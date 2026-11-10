@@ -23,8 +23,8 @@ namespace ui
 			Rumble(0, 90, 0.05);
 			break;
 		case Cue::Edge:
-			if (!repeat)
-				ps5sound::Play(Effect::Denied);
+			// the end of a list says nothing: a sound each time it is reached was heard as nagging (6.0)
+			(void)repeat;
 			break;
 		case Cue::Launch:
 			ps5sound::Play(Effect::Launch);

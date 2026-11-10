@@ -189,8 +189,8 @@ namespace ps5sound
 		std::thread s_thread;
 
 		// The music's level for its volume setting: background music under the menu's sounds, so its
-		// full level is -9 dB, and the setting follows the ear (squared): 50% is about -21 dB
-		constexpr float kMusicHeadroom = 0.35f;
+		// full level is -12 dB, and the setting follows the ear (squared): 50% is about -24 dB
+		constexpr float kMusicHeadroom = 0.25f;
 
 		float LevelOf(const std::string& music, int volume)
 		{

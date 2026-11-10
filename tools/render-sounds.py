@@ -4,8 +4,9 @@
 
     render-sounds.py OUTPUT_DIR
 
-writes OUTPUT_DIR/music-setup.wav, a loop of PS5-ECAM's own music in the spirit of a Nintendo
-console's setup screen (light, swinging jazz), written for the launcher and taken from no game; and
+writes OUTPUT_DIR/music-setup.wav, a loop of PS5-ECAM's own music, 'Drift' (slow and quiet, since
+6.0; 'Setup', the swinging piece before it, is still here as setup()), written for the launcher and
+taken from no game; and
 move.wav, select.wav, back.wav, denied.wav and launch.wav, the menu's sounds. The music is IMA ADPCM
 in stereo at 48 kHz (a quarter of 16-bit PCM's size), and the menu sounds 16-bit PCM in mono at 48
 kHz: what port/frontend/sound.cpp reads. The piece ends where it starts, its last notes' ring
@@ -478,6 +479,38 @@ def setup():
     }, reverb_time=2.0, wet=0.55)
 
 
+def drift():
+    """'Drift': a slow, quiet piece in D flat, 66 beats a minute, 32 bars, to sit under the launcher
+    without asking for attention (6.0: the owner found 'Setup' too loud and busy). No drums: a warm
+    pad and soft electric-piano chords, a chord each two bars; the kalimba's slow arpeggios over them,
+    a few notes a bar; a round bass on the roots. Little reverb, and its top end kept low."""
+    DB, GB, BBM, AB = (37, (60, 63, 65, 68)), (42, (58, 61, 65, 68)), (46, (58, 61, 65, 68)), (44, (60, 63, 67, 70))
+    EBM, FM, GBMAJ, ABSUS = (39, (58, 61, 65, 70)), (41, (56, 60, 63, 67)), (42, (61, 65, 68, 72)), (44, (61, 63, 66, 68))
+    chords = [DB, GB, BBM, AB, EBM, FM, GBMAJ, ABSUS] * 2
+    piece = Piece(66, len(chords) * 2, seed=600, tail=6.0)
+    band = piece.band
+    # the kalimba's notes over each chord: chord tones an octave up, a few at a time, a slow figure
+    figures = [(0.0, 0, 0.5), (1.5, 2, 0.4), (3.0, 1, 0.35), (4.5, 3, 0.4), (6.0, 2, 0.3)]
+    for index, (root, voicing) in enumerate(chords):
+        start = index * 8
+        piece.add("pad", start, band.pad(hz(root + 12), 8 * piece.beat, 0.5), steady=True)
+        for note in voicing:
+            piece.add("pad", start, band.pad(hz(note), 8 * piece.beat, 0.35), steady=True)
+            piece.add("piano", start + 0.02 * (note % 3), band.epiano(hz(note), 3.5 * piece.beat, piece.velocity(0.35)))
+        piece.add("bass", start, band.bass(hz(root), 6 * piece.beat, piece.velocity(0.5)))
+        # every other chord, the figure turned around, so the two statements differ a little
+        for beat, degree, velocity in figures if index % 2 == 0 else figures[::-1][:4]:
+            note = voicing[degree % len(voicing)] + 12
+            piece.add("kalimba", start + beat, band.kalimba(hz(note), piece.velocity(velocity)))
+    return piece.mix({
+        # gain, pan, reverb send, auto-pan (depth, rate)
+        "pad": (0.05, 0.0, 0.3, (0.2, 0.05)),
+        "piano": (0.12, 0.0, 0.2, (0.15, 0.09)),
+        "kalimba": (0.16, 0.25, 0.3, (0.35, 0.07)),
+        "bass": (0.22, 0.0, 0.0, None),
+    }, reverb_time=2.4, wet=0.25)
+
+
 # -- the menu's sounds ----------------------------------------------------------------------------
 
 def chime(f, length, tau, harmonics=(1.0, 0.3, 0.1)):
@@ -507,35 +540,29 @@ def room(x, band):
     return x + 0.18 * convolve(x, response)
 
 
+def pluck(f, tau, harmonics=(1.0, 0.12)):
+    """a soft, dry pluck: a short sine with a little of its octave, its attack rounded"""
+    t = seconds(max(0.06, tau * 6))
+    tone = sum(level * np.sin(2 * np.pi * f * n * t) * np.exp(-t * n / tau) for n, level in enumerate(harmonics, 1))
+    return bandpass(tone * rise(t, 0.004), high=5000)
+
+
 def effects():
-    band = Band(7)
+    """6.0: the menu's sounds short, dry (no room) and quiet, under the music; the old ones were
+    bright chimes in a room, heard as loud, wet beeps (the owner, 2026-11-10)."""
     sounds = {}
-    # moving: a soft rising blip
-    t = seconds(0.09)
-    phase = 2 * np.pi * np.cumsum(1100 * (1 + 0.35 * (1 - np.exp(-t / 0.012)))) / SR
-    blip = (np.sin(phase) + 0.25 * np.sin(2 * phase) * np.exp(-t / 0.01)) * rise(t, 0.0015) * np.exp(-t / 0.022)
-    sounds["move"] = (blip, 0.16)
-    # choosing: two bright notes up a fifth
-    sounds["select"] = (place([(0, chime(hz(88), 0.5, 0.12)), (0.06, 0.9 * chime(hz(95), 0.5, 0.16))], 0.6), 0.26)
-    # going back: two rounder notes down a fifth
-    sounds["back"] = (place([(0, chime(hz(83), 0.35, 0.07, (1.0, 0.15))), (0.055, chime(hz(76), 0.35, 0.1, (1.0, 0.15)))], 0.45), 0.2)
-    # nothing to choose there (yet): two low, muffled bumps
-    def bump(f):
-        t = seconds(0.09)
-        tone = sum(np.sin(2 * np.pi * f * n * t) / n for n in (1, 3, 5))
-        return bandpass(tone, high=1200) * rise(t, 0.003) * np.exp(-t / 0.035)
-    sounds["denied"] = (place([(0, bump(196)), (0.1, bump(185))], 0.3), 0.24)
-    # a game starting: a rising arpeggio and a sparkle
-    arpeggio = [(i * 0.05, chime(hz(note), 1.0, 0.25)) for i, note in enumerate((84, 88, 91, 96))]
-    t = seconds(0.8)
-    sparkle = sum(np.sin(2 * np.pi * f * t) * np.exp(-t / 0.18) * 0.12 for f in (4186, 5274, 6272))
-    sparkle *= rise(t, 0.03)
-    sounds["launch"] = (place(arpeggio + [(0.2, sparkle)], 1.1), 0.28)
-    out = {}
-    for name, (sound, peak) in sounds.items():
-        sound = room(sound, band)
-        out[name] = sound * (peak / np.max(np.abs(sound)))
-    return out
+    # moving: a faint, short tick
+    sounds["move"] = (pluck(1320, 0.006, (1.0,)), 0.05)
+    # choosing: one soft pluck
+    sounds["select"] = (pluck(hz(81), 0.035), 0.09)
+    # going back: a softer, lower one
+    sounds["back"] = (pluck(hz(74), 0.03), 0.07)
+    # nothing to choose there: a low, muffled tap
+    t = seconds(0.07)
+    sounds["denied"] = (bandpass(np.sin(2 * np.pi * 150 * t) * rise(t, 0.004) * np.exp(-t / 0.025), high=600), 0.09)
+    # a game starting: three soft plucks rising
+    sounds["launch"] = (place([(i * 0.07, pluck(hz(note), 0.12)) for i, note in enumerate((73, 77, 80, 85))], 0.8), 0.12)
+    return {name: sound * (peak / np.max(np.abs(sound))) for name, (sound, peak) in sounds.items()}
 
 
 # -- files ----------------------------------------------------------------------------------------
@@ -629,7 +656,7 @@ def main():
     os.makedirs(folder, exist_ok=True)
     for name, sound in effects().items():
         write_pcm(os.path.join(folder, f"{name}.wav"), sound)
-    stereo = master(setup(), loudness_db=-20)
+    stereo = master(drift(), loudness_db=-26)
     write_adpcm(os.path.join(folder, "music-setup.wav"), stereo)
     print(f"music-setup.wav: {stereo.shape[1] / SR:.1f} s, peak {20 * np.log10(np.max(np.abs(stereo))):.1f} dBFS")
     if os.environ.get("PREVIEW"):
