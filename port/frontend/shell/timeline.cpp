@@ -352,7 +352,15 @@ namespace ps5shell
 				const ui::Picture& picture = Cover(game);
 				if (picture.texture)
 				{
-					canvas.ImageCover(picture.texture, picture.width, picture.height, label, labelRadius, 0xffffffff, 0.0f);
+					// the whole cover on the label, never cut: as wide or as tall as the label lets it, on its dark ground
+					Box fitted = label;
+					const float aspect = picture.height > 0 ? (float)picture.width / picture.height : 1.0f;
+					if (label.w > label.h * aspect)
+						fitted = {label.CentreX() - label.h * aspect * 0.5f, label.y, label.h * aspect, label.h};
+					else
+						fitted = {label.x, label.CentreY() - label.w / aspect * 0.5f, label.w, label.w / aspect};
+					canvas.Rect(label, labelRadius, 0xff121212);
+					canvas.Image(picture.texture, fitted, std::min(labelRadius, 3 * scale));
 					art = true;
 				}
 			});

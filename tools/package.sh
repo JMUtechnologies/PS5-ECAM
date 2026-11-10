@@ -136,6 +136,9 @@ make -s -C "$PS5CEMU_ROOT/port/payloads" PS5_PAYLOAD_SDK="$PS5_PAYLOAD_SDK" OUTP
 ui=$app/assets/ui
 mkdir -p "$ui/fonts" "$ui/sounds" "$ui/icons"
 cp "$PS5CEMU_ROOT/port/ui/wordmark.png" "$ui/"
+# the in-game menus' DualSense on their Buttons page: Zacksly's drawing (CC BY 3.0, its licence beside it)
+python3 -B "$PS5CEMU_ROOT/tools/render-pad-art.py" "$PS5CEMU_ROOT/port/ui/dualsense.png" "$ui/dualsense.tga"
+cp "$PS5CEMU_ROOT/port/ui/CC-BY-3.0-Zacksly.txt" "$ui/"
 cp "$PS5CEMU_ROOT/port/ui/fonts/lexend.sdf" "$PS5CEMU_ROOT"/port/ui/fonts/Lexend-*.ttf "$PS5CEMU_ROOT/tools/fonts/OFL.txt" "$ui/fonts/"
 cp "$PS5CEMU_ROOT"/port/frontend/ui/sounds/*.wav "$ui/sounds/"
 cp "$work/icons/ui/icons/ps5cemu-72.tga" "$work/icons/ui/icons/azahar-72.tga" "$work/icons/ui/icons/melonds-72.tga" \

@@ -227,7 +227,7 @@ namespace ps5shell
 		static ps5boxart::System BoxSide(System side)
 		{
 			return side == System::N3ds ? ps5boxart::System::N3ds : side == System::Nds ? ps5boxart::System::Nds :
-				side == System::Switch	? ps5boxart::System::Switch :
+				side == System::Switch || side == System::Switch2 ? ps5boxart::System::Switch :
 										  ps5boxart::System::WiiU;
 		}
 		ps5boxart::System BoxOf(const ps5emu::Game&) const { return IsPorpoise() ? ps5boxart::System::GameCubeWii : BoxSide(m_side); }
@@ -355,6 +355,7 @@ namespace ps5shell
 		// needs, at most the step text takes before an ellipsis, so a longer language's rows are not
 		// each a size of their own
 		float LabelScale(const std::vector<Row>& rows, float boxWidth);
+		void DrawBox3d(Canvas& canvas, const ui::Picture& picture, const Box& box, bool focused, uint32_t ambient);
 		void DrawToggle(Canvas& canvas, float x, float y, bool on, bool focused);
 		void HoldRing(Canvas& canvas, const Box& box, float progress);
 		float Enter(int part) const; // a screen's part, arriving: 0 to 1, 40 ms apart

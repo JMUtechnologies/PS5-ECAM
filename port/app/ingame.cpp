@@ -22,10 +22,12 @@
 #include "Cafe/CafeSystem.h"
 #include "Cafe/HW/Latte/Core/Latte.h"
 #include "Cafe/HW/Latte/Renderer/Renderer.h"
+#include "Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.h"
 #include "Cafe/OS/libs/nfc/nfc.h"
 #include "Cafe/OS/libs/swkbd/swkbd.h"
 #include "config/CemuConfig.h"
 #include "imgui/imgui_extension.h"
+#include "imgui/imgui_impl_vulkan.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -110,6 +112,7 @@ namespace
 	// the picture, made by the render thread the first time the menu opens
 	bool s_coverTried = false;
 	ImTextureID s_cover = nullptr;
+	ImTextureID s_pad = nullptr; // the Buttons page's DualSense (assets/ui/dualsense.tga), made with the cover
 	int s_coverWidth = 0, s_coverHeight = 0;
 
 	float UiScale()
@@ -663,6 +666,7 @@ namespace
 		header.cover = s_cover;
 		header.coverWidth = (float)s_coverWidth;
 		header.coverHeight = (float)s_coverHeight;
+		header.pad = s_pad;
 		s_side.Draw(canvas, fonts, header, MenuRows(), Tiles(),
 			{{"cross", Tr("Choose")}, {"leftright", Tr("Change")}, {"circle", s_side.Open().empty() ? Tr("Back to the game") : Tr("Back")}});
 		ps5menu::DrawRemoteCard(canvas, fonts, s_side.Focus());
@@ -833,6 +837,15 @@ void PS5Cemu_ImguiUploads()
 	if (!s_menuOpen || s_coverTried || !g_renderer)
 		return;
 	s_coverTried = true;
+	// the DualSense's drawing keeps its transparency: made by ImGui's Vulkan backend itself, as Cemu's
+	// GenerateTexture makes every picture opaque
+	{
+		std::vector<uint8_t> rgba;
+		int width = 0, height = 0;
+		if (VulkanRenderer* vulkan = VulkanRenderer::GetInstance();
+			vulkan && ps5tga::Load(ps5paths::Assets() + "/ui/dualsense.tga", 1000, 700, rgba, width, height))
+			s_pad = ImGui_ImplVulkan_GenerateTexture(vulkan->getCurrentCommandBuffer(), rgba, {width, height});
+	}
 	std::string path;
 	{
 		std::lock_guard lock(s_gameMutex);

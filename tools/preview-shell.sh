@@ -7,7 +7,7 @@
 #
 # PREVIEW_FIRST=1 starts it as on a first start, PREVIEW_REMOTE=1 with the remote touch screen on,
 # PREVIEW_UPDATE=1 with a newer release found, PREVIEW_NO_DATA=1 with /data out of reach,
-# PREVIEW_LAYOUT=1 in Orbit, PREVIEW_LAUNCH_ERROR=1 after a game that did not start; PREVIEW_LANGUAGE=de (a code of app/lang.cpp's, or
+# PREVIEW_LAYOUT=1 in Orbit, PREVIEW_BOXART3D=1 with 3D box art, PREVIEW_LAUNCH_ERROR=1 after a game that did not start; PREVIEW_LANGUAGE=de (a code of app/lang.cpp's, or
 # qps, tools/lang.py pseudo's longer text) in that language, PREVIEW_SYSTEM_LANGUAGE=4 with the PS5 set to
 # its language number.
 #

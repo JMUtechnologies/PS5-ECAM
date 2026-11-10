@@ -515,6 +515,12 @@ namespace ps5shell
 			}
 			break;
 		}
+		case Button::Triangle:
+			// the covers flat or as boxes, for either launcher (Settings > Launcher > 3D box art)
+			m_settings.ui.boxArt3d = !m_settings.ui.boxArt3d;
+			SaveSettings();
+			m_feedback.Play(ui::Cue::Select);
+			break;
 		case Button::Cross:
 		case Button::Circle:
 		{
@@ -747,15 +753,27 @@ namespace ps5shell
 		canvas.PopAlpha();
 
 		canvas.PushAlpha(Enter(2));
-		canvas.Text(Style({19, ui::Weight::Regular, 1.3f}), left, 926,
-			m_layoutFocus == 2 ? std::string(Tr("Hold L1 while Playtendoh starts to use its own launcher. Switch back any time in Settings > Launcher > Layout."))
-							   : std::string(Tr("Both have Timeline, every console on one shelf. Press the touchpad to open it.")),
-			kInk2, 1180, 2);
 		// tr: the button of the first start's question: {0} is the layout in focus, Classic or Orbit
 		const std::string use = TrF("Use {0}", cards[m_layoutFocus].name);
 		const ui::TextStyle useStyle = Style({22, ui::Weight::SemiBold, 1.0f});
 		const float useWidth = m_fonts.Width(useStyle, use) + 72 + 36;
 		const Box button{1920 - 140 - useWidth, 912, useWidth, 68};
+		// the covers flat or as boxes (Triangle), beside the button, for Classic and Orbit alike
+		// tr: the first start's layout question: Triangle turns the covers flat or into 3D boxes
+		const std::string boxes = m_settings.ui.boxArt3d ? Tr("Box art: 3D") : Tr("Box art: flat");
+		const float boxesWidth = m_fonts.Width(useStyle, boxes) + 72 + 36;
+		const Box boxesChip{button.x - 24 - boxesWidth, 912, boxesWidth, 68};
+		if (m_layoutFocus < 2)
+		{
+			canvas.Ring(boxesChip, 34, 2, kInk2);
+			canvas.Draw(Icon::Triangle, {boxesChip.x + 32, boxesChip.CentreY() - 13, 26, 26}, kInk);
+			const ui::TextBlock boxesLabel = m_fonts.Layout(useStyle, boxes);
+			canvas.Text(boxesLabel, boxesChip.x + 68, boxesChip.CentreY() - boxesLabel.height * 0.5f, kInk);
+		}
+		canvas.Text(Style({19, ui::Weight::Regular, 1.3f}), left, 926,
+			m_layoutFocus == 2 ? std::string(Tr("Hold L1 while Playtendoh starts to use its own launcher. Switch back any time in Settings > Launcher > Layout."))
+							   : std::string(Tr("Both have Timeline, every console on one shelf. Press the touchpad to open it.")),
+			kInk2, (m_layoutFocus < 2 ? boxesChip.x : button.x) - 24 - left, 2);
 		canvas.Rect(button, 34, kInk);
 		canvas.Draw(Icon::Cross, {button.x + 32, button.CentreY() - 13, 26, 26}, 0xff1b0f0a);
 		const ui::TextBlock label = m_fonts.Layout(useStyle, use);

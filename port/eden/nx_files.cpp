@@ -14,6 +14,7 @@
 #include <cstdio>
 #include <cstring>
 #include <fstream>
+#include <map>
 #include <memory>
 
 namespace ps5eden::nx
@@ -529,6 +530,58 @@ namespace ps5eden::nx
 		}
 		return true;
 #endif
+	}
+
+	bool ReadNup(const std::string& path, std::string& title, std::vector<uint8_t>& icon)
+	{
+		title.clear();
+		icon.clear();
+		std::ifstream file(path, std::ios::binary);
+		uint8_t super[0x80] = {};
+		if (!file.read((char*)super, sizeof(super)) || std::memcmp(super, "NUP\x01", 4) != 0)
+			return false;
+		const auto u32 = [](const uint8_t* at) { uint32_t v; std::memcpy(&v, at, 4); return v; };
+		const auto u64 = [](const uint8_t* at) { uint64_t v; std::memcpy(&v, at, 8); return v; };
+		const uint64_t tocOffset = u64(super + 0x08), fileSize = u64(super + 0x40);
+		const uint32_t packages = u32(super + 0x48);
+		// the TOC's header (0x30), then a record of 0x40 for each package
+		if (packages == 0 || packages > 4096)
+			return false;
+		std::vector<uint8_t> toc(0x30 + (size_t)packages * 0x40);
+		if (!file.seekg((std::streamoff)tocOffset) || !file.read((char*)toc.data(), (std::streamsize)toc.size()) || u32(toc.data()) != 0x01434F54)
+			return false;
+		for (uint32_t i = 0; i < packages; i++)
+		{
+			const uint8_t* p = toc.data() + 0x30 + (size_t)i * 0x40;
+			const uint64_t metaOffset = u64(p + 0x20);
+			const uint32_t metaSize = u32(p + 0x28);
+			// the base game's (kind 0); its meta block is records of a type (u16), a size (u32 at +4) and the data
+			if (p[0x18] != 0 || !metaSize || metaSize > (16u << 20) || metaOffset > fileSize || metaSize > fileSize - metaOffset)
+				continue;
+			std::vector<uint8_t> block(metaSize);
+			file.clear();
+			if (!file.seekg((std::streamoff)metaOffset) || !file.read((char*)block.data(), (std::streamsize)block.size()))
+				return false;
+			std::map<uint16_t, std::vector<uint8_t>> meta;
+			for (size_t at = 0; at + 8 <= block.size();)
+			{
+				uint16_t type;
+				std::memcpy(&type, &block[at], 2);
+				const uint32_t size = u32(&block[at + 4]);
+				if (size > block.size() - at - 8)
+					break;
+				meta.try_emplace(type, block.begin() + (std::ptrdiff_t)at + 8, block.begin() + (std::ptrdiff_t)(at + 8 + size));
+				at += 8 + (size_t)size;
+			}
+			// some containers number the types from 0 (NPDM 0, NACP 1, icon 2, ..., title 4): as Lichii does, one on
+			const int shift = meta.count(0) ? 1 : 0;
+			if (const auto found = meta.find((uint16_t)(3 - shift)); found != meta.end())
+				icon = found->second;
+			if (const auto found = meta.find((uint16_t)(5 - shift)); found != meta.end())
+				title.assign(found->second.begin(), std::find(found->second.begin(), found->second.end(), uint8_t(0)));
+			return !icon.empty() || !title.empty();
+		}
+		return false;
 	}
 
 	bool WriteIconTga(const std::vector<uint8_t>& jpeg, const std::string& path)

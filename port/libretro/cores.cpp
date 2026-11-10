@@ -96,8 +96,7 @@ namespace ps5libretro
 		if (!ps5retro::IsRetro(side))
 			return false;
 		const ps5retro::System& system = ps5retro::Of(side);
-		// a program of its own that is not built here (the NES's, the Game Boys', the Nintendo 64's)
-		// gives way to the core; one that is stays the side's until the core is measured against it
+		// a side with a program of its own (the GameCube's and the Wii's Porpoise X) is that program's
 		return *system.core && Find(system.core) && !Packaged(system.runtime);
 	}
 

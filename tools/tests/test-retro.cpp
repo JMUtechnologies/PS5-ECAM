@@ -46,13 +46,18 @@ int main(int argc, char** argv)
 	ps5retro::StartScan(7, (root / "roms").string()); ps5retro::FinishScans();
 	Check(ps5retro::ListGames(7).size() == 2 && !ps5retro::Scanning(7), "background scanner joins before handoff");
 	ps5paths::detail::AppDirSlot() = (root / "app").string();
-	Check(!ps5retro::Available(7) && !ps5retro::Launch(7, nes[0].path.string(), error), "missing runtime fails before handoff");
+	Check(!ps5retro::Available(7) && !ps5retro::Launch(7, nes[0].path.string(), error), "no core linked: the NES refused before any handoff");
+	// an old copy's NES program beside the app is never started: the side is its core's
 	Put(root / "app/retro/nes/eboot.bin");
-	ps5retro::Launch(7, nes[0].path.string(), error);
-	Check(called == "retro/nes/eboot.bin" && handed[0] == "--rom" && handed[1] == nes[0].path.string(), "handoff selects bundled runtime and exact ROM path");
+	called.clear();
+	Check(!ps5retro::Available(7) && !ps5retro::Launch(7, nes[0].path.string(), error) && called.empty(), "a stale NES program is never the side's");
+	Check(!ps5retro::Launch(7, nes[0].path.string(), error, 1) && called.empty(), "the second emulator missing fails before handoff");
+	Put(root / "app/retro/fceumm/eboot.bin");
+	ps5retro::Launch(7, nes[0].path.string(), error, 1);
+	Check(called == "retro/fceumm/eboot.bin" && handed[0] == "--rom" && handed[1] == nes[0].path.string(), "handoff selects the second emulator and the exact ROM path");
 	Check(ps5retro::LaunchArguments(7, "/game\n--return", "/app/eboot.bin").empty(), "line-injection ROM paths refused");
-	ps5retro::LaunchLibrary(7, error);
-	Check(called == "retro/nes/eboot.bin" && handed[0] == "--ecam-library", "native settings frontend has an explicit return handoff");
+	ps5retro::LaunchLibrary(7, error, 1);
+	Check(called == "retro/fceumm/eboot.bin" && handed[0] == "--ecam-library", "native settings frontend has an explicit return handoff");
 	Check(ecam_bridge::Parse({"--ecam-library", "--return", "/app/eboot.bin"}).valid, "library-only request does not require a fake ROM");
 	Check(ps5retro::LaunchArguments(7, "/game.nes", "/app/eboot.bin\n--rom").empty(), "return-path line injection refused");
 	Check(ps5retro::LaunchArguments(7, "/game.nes", "relative/eboot.bin").empty(), "relative return path refused before handoff");
@@ -136,11 +141,12 @@ int main(int argc, char** argv)
 	Check(!ps5retro::ValidateRom(10, (root / "oversized.gba").string(), error), "oversized GBA ROM refused before handoff");
 	ps5retro::StartScan(8, (root / "handhelds").string()); ps5retro::StartScan(9, (root / "handhelds").string()); ps5retro::StartScan(10, (root / "handhelds").string()); ps5retro::FinishScans();
 	Check(ps5retro::ListGames(8).size() == 1 && ps5retro::ListGames(9).size() == 1 && ps5retro::ListGames(10).size() == 2, "three independent handheld scanner slots join cleanly");
+	// the Game Boys are mGBA's in the app: an old copy's GBCXY or GBAXY beside it is never started
 	Put(root / "app/retro/gbc/eboot.bin"); Put(root / "app/retro/gba/eboot.bin");
-	ps5retro::Launch(8, gb[0].path.string(), error); Check(called == "retro/gbc/eboot.bin" && handed[1] == gb[0].path.string(), "GB forwards exact ROM to bundled GBCXY");
-	ps5retro::Launch(9, gbc[0].path.string(), error); Check(called == "retro/gbc/eboot.bin" && handed[1] == gbc[0].path.string(), "GBC forwards exact ROM to shared GBCXY");
-	ps5retro::Launch(10, (root / "handhelds/Advance.gba").string(), error); Check(called == "retro/gba/eboot.bin", "GBA selects its own bundled GBAXY");
-	ps5retro::LaunchLibrary(10, error); Check(called == "retro/gba/eboot.bin" && handed[0] == "--ecam-library", "GBA native settings retain ECAM return handoff");
+	called.clear();
+	Check(!ps5retro::Launch(8, gb[0].path.string(), error) && !ps5retro::Launch(9, gbc[0].path.string(), error) &&
+			  !ps5retro::Launch(10, (root / "handhelds/Advance.gba").string(), error) && !ps5retro::LaunchLibrary(10, error) && called.empty(),
+		"stale Game Boy programs are never the sides' (no core linked here: refused before any handoff)");
 	settings.ui.sides = 2047; settings.ui.librarySort[10] = 2; settings.retro[6].gamesFolder = "/games/gba"; settings.retro[4].gamesFolder = "/games/gb"; ps5settings::Save(settings);
 	const auto eleven = ps5settings::Load();
 	Check(eleven.ui.sides == 2047 && eleven.ui.librarySort[10] == 2 && eleven.retro[6].gamesFolder == "/games/gba" && eleven.retro[4].gamesFolder == "/games/gb", "eleven-side visibility and independent handheld settings persist");
@@ -216,7 +222,7 @@ int main(int argc, char** argv)
 	Check(ps5retro::ValidateRom(snes, (root / "carts/Game.sfc").string(), error) && ps5retro::ValidateRom((int)ps5launcher::System::VirtualBoy, (root / "carts/Game.vb").string(), error) &&
 		ps5retro::ValidateRom((int)ps5launcher::System::PokemonMini, (root / "carts/Game.min").string(), error), "SNES, Virtual Boy and Pokemon mini games pass preflight");
 	Put(root / "carts/huge.sfc", "x"); fs::resize_file(root / "carts/huge.sfc", 32ull * 1024 * 1024 + 1);
-	Check(!ps5retro::ValidateRom(snes, (root / "carts/huge.sfc").string(), error) && error.find("larger") != std::string::npos, "an oversized SNES game is refused, saying why");
+	Check(!ps5retro::ValidateRom(snes, (root / "carts/huge.sfc").string(), error) && error.find("too large") != std::string::npos, "an oversized SNES game is refused, saying why");
 	Check(!ps5retro::ValidateRom(nesSide, (root / "roms/fake.zip").string(), error) && error == "This ZIP archive is damaged or too large.", "a refused game's reason is the app's words");
 	Check(!ps5retro::Available(snes) && !ps5retro::Launch(snes, (root / "carts/Game.sfc").string(), error) && !ps5retro::LaunchLibrary(snes, error),
 		"a side with no program and no core linked is not offered, and nothing is started for it");

@@ -775,10 +775,14 @@ namespace ps5shell
 	std::string Shell::SwitchCover(const ps5emu::Game& game) const
 	{
 		// a picture of the player's own beside the game first; then GameTDB's box art, or the game's own icon
-		// as Settings > Online chooses (empty until it is there: the card with the icon, or the name)
+		// as Settings > Online chooses; the icon too for a game GameTDB has none of (every Switch 2 game's: its
+		// NUP's own). Empty until one is there: the card with the name
 		if (std::string own = ps5eden::BoxArt(game); !own.empty())
 			return own;
-		return Handheld(m_side).nxCovers == 1 ? ps5eden::CoverPath(game) : ps5boxart::Path(ps5boxart::System::Switch, game.gameId);
+		if (Handheld(m_side).nxCovers != 1)
+			if (std::string box = ps5boxart::Path(ps5boxart::System::Switch, game.gameId); !box.empty())
+				return box;
+		return ps5eden::CoverPath(game);
 	}
 
 	void Shell::LoadGames()
@@ -1028,23 +1032,7 @@ namespace ps5shell
 	}
 
 	// A libretro side's console as libretro's thumbnails name its folder (their covers, by the game file's name)
-	const char* Shell::RetroThumbnails(int side)
-	{
-		if (!ps5retro::IsRetro(side))
-			return "";
-		const std::string_view key = ps5retro::Of(side).key;
-		return key == "nes" || key == "vs"		? "Nintendo - Nintendo Entertainment System" :
-			key == "fds"						? "Nintendo - Family Computer Disk System" :
-			key == "snes"						? "Nintendo - Super Nintendo Entertainment System" :
-			key == "satellaview"				? "Nintendo - Satellaview" :
-			key == "gb" || key == "sgb"			? "Nintendo - Game Boy" :
-			key == "gbc"						? "Nintendo - Game Boy Color" :
-			key == "gba"						? "Nintendo - Game Boy Advance" :
-			key == "n64" || key == "ique"		? "Nintendo - Nintendo 64" :
-			key == "vb"							? "Nintendo - Virtual Boy" :
-			key == "pokemini"					? "Nintendo - Pokemon Mini" :
-			key == "gw"							? "Handheld Electronic Game" : "";
-	}
+	const char* Shell::RetroThumbnails(int side) { return ps5retro::Thumbnails(side); }
 
 	std::string Shell::RetroCover(const ps5emu::Game& game)
 	{

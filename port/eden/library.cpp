@@ -387,7 +387,8 @@ namespace ps5eden
 				if (i >= inFolder)
 					continue;
 				Add(path, games, file.kind == nx::Kind::Game ? file.titleId : 0);
-				if (keyed && !IsSwitch2PackageName(path.filename().string()) && CoverPath(games.back()).empty())
+				// a game's icon as its cover: with the keys, or a Switch 2 NUP's own, which needs none
+				if ((keyed || IsSwitch2PackageName(path.filename().string())) && CoverPath(games.back()).empty())
 					covers.push_back(path);
 			}
 			if (read)
@@ -407,8 +408,7 @@ namespace ps5eden
 			if (!lock.owns_lock() || paths.empty())
 				return;
 			nx::Keys keys;
-			if (!nx::LoadKeys(GameFilesFolder() + "/keys", keys))
-				return;
+			const bool keyed = nx::LoadKeys(GameFilesFolder() + "/keys", keys);
 			std::error_code ec;
 			fs::create_directories(DataFolder() + "/covers", ec);
 			size_t made = 0;
@@ -417,7 +417,13 @@ namespace ps5eden
 				nx::Info info;
 				std::string why;
 				const std::string cover = CoverFile(path, "tga");
-				if (Exists(cover) || !nx::Read(path.string(), keys, true, info, why) || info.icon.empty() || !nx::WriteIconTga(info.icon, cover))
+				if (Exists(cover))
+					continue;
+				// a Switch 2 NUP keeps its icon and title in the clear; any other package needs the keys
+				const bool nup = IsSwitch2PackageName(path.filename().string());
+				if (nup ? !nx::ReadNup(path.string(), info.name, info.icon) : (!keyed || !nx::Read(path.string(), keys, true, info, why)))
+					continue;
+				if (info.icon.empty() || !nx::WriteIconTga(info.icon, cover))
 					continue;
 				KeepName(path, info.name);
 				made++;

@@ -64,8 +64,11 @@ namespace ps5ingame3ds
 		Retro, // a libretro core's (port/libretro): one screen, the DS's rows that apply to it, no cheats
 	};
 	// tr: how the DS's screens are scaled to the TV: the filters' names
-	constexpr const char* kScreenFilters[] = {ps5lang::TrMark("Sharp"), ps5lang::TrMark("Smooth"), ps5lang::TrMark("Square pixels")};
+	// the last two, a tube TV's, for the libretro consoles only (port/melonds/shaders/screens.frag)
+	constexpr const char* kScreenFilters[] = {ps5lang::TrMark("Sharp"), ps5lang::TrMark("Smooth"), ps5lang::TrMark("Square pixels"),
+		ps5lang::TrMark("CRT"), ps5lang::TrMark("Curved CRT")};
 	constexpr int kScreenFilterCount = (int)std::size(kScreenFilters);
+	constexpr int kDsScreenFilterCount = 3;
 	// tr: the DS's (and the 3DS's) two screens turned together, a quarter turn at a time, for the games held on their side:
 	// upright, a quarter turn clockwise, upside down, a quarter turn counterclockwise
 	constexpr const char* kRotations[] = {ps5lang::TrMark("Upright"), ps5lang::TrMark("90° right"), ps5lang::TrMark("Upside down"),

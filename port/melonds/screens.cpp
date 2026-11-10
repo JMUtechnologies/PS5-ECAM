@@ -879,9 +879,9 @@ namespace ps5melonds::screens
 					std::min(r.bottom, bottom.bottom)};
 			};
 			vk.CmdBindPipeline(commands, VK_PIPELINE_BIND_POINT_GRAPHICS, s.cursorPipeline);
-			Draw(commands, clip({x - thick, y - arm, x + thick, y + arm}), 3.0f);
-			Draw(commands, clip({x - arm, y - thick, x - thick, y + thick}), 3.0f);
-			Draw(commands, clip({x + thick, y - thick, x + arm, y + thick}), 3.0f);
+			Draw(commands, clip({x - thick, y - arm, x + thick, y + arm}), 9.0f);
+			Draw(commands, clip({x - arm, y - thick, x - thick, y + thick}), 9.0f);
+			Draw(commands, clip({x + thick, y - thick, x + arm, y + thick}), 9.0f);
 		}
 		Overlay(commands, true);
 		vk.CmdEndRenderPass(commands);

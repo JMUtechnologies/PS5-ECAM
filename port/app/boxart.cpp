@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cctype>
 #include <condition_variable>
 #include <cstdio>
 #include <cstring>
@@ -626,6 +627,168 @@ namespace ps5boxart
 			return fmt::format("{}/boxart/retro/{}/{}", ps5paths::Covers(), TitleFileName(system), TitleFileName(name));
 		}
 
+		// A title as names are matched: lower case, what is in brackets left out (regions, revisions), letters
+		// and digits only, in words, without the words names add or leave out ("the", "version")
+		std::vector<std::string> Words(std::string name)
+		{
+			for (const auto& [from, to] : {std::pair<const char*, const char*>{"\xc3\xa9", "e"}, {"\xc3\x89", "e"}, {"&", " and "}})
+				for (size_t at = 0; (at = name.find(from, at)) != std::string::npos; at += std::strlen(to))
+					name.replace(at, std::strlen(from), to);
+			static const std::set<std::string> kLeftOut = {"the", "version", "edition", "a", "and", "of"};
+			std::vector<std::string> words;
+			std::string word;
+			int depth = 0;
+			const auto flush = [&] {
+				if (!word.empty() && !kLeftOut.count(word))
+					words.push_back(word);
+				word.clear();
+			};
+			for (const char c : name)
+			{
+				if (c == '(' || c == '[')
+					flush(), depth++;
+				else if ((c == ')' || c == ']') && depth)
+					depth--;
+				else if (!depth && std::isalnum((unsigned char)c))
+					word += (char)std::tolower((unsigned char)c);
+				else
+					flush();
+			}
+			flush();
+			return words;
+		}
+
+		std::string Joined(const std::vector<std::string>& words, size_t count = std::string::npos)
+		{
+			std::string out;
+			for (size_t i = 0; i < words.size() && i < count; i++)
+				out += words[i];
+			return out;
+		}
+
+		// How well one of libretro's names fits a game file's: 3 the same title, 2 the file's title and then a
+		// subtitle ("Super Mario Land 2" for "Super Mario Land 2 - 6 Golden Coins"), 1 so without the file's last
+		// word (a hack's "DX"); 0 none. Words are compared run together ("FireRed" is "Fire Red")
+		int NameFit(const std::vector<std::string>& file, const std::vector<std::string>& theirs)
+		{
+			const std::string mine = Joined(file), their = Joined(theirs);
+			if (mine.size() < 4)
+				return mine == their ? 3 : 0;
+			if (mine == their)
+				return 3;
+			const auto startsWith = [&](const std::string& head) {
+				for (size_t n = 1; n <= theirs.size(); n++)
+					if (Joined(theirs, n) == head)
+						return true;
+				return false;
+			};
+			if (file.size() >= 2 && startsWith(mine))
+				return 2;
+			if (file.size() >= 3)
+				if (const std::string shorter = Joined(file, file.size() - 1); shorter == their || startsWith(shorter))
+					return 1;
+			return 0;
+		}
+
+		// Among names that fit as well: an American or worldwide release first, then Europe's, never a beta's
+		// or a demo's before a release; then the shortest
+		int Preference(const std::string& name)
+		{
+			int score = 0;
+			if (name.find("(USA") != std::string::npos || name.find("(World") != std::string::npos)
+				score += 4;
+			else if (name.find("Europe") != std::string::npos)
+				score += 2;
+			for (const char* worse : {"(Beta", "(Proto", "(Demo", "(Sample", "(Kiosk", "(Pirate", "(Unl", "[b]", "(Aftermarket"})
+				if (name.find(worse) != std::string::npos)
+					score -= 8;
+			return score;
+		}
+
+		// libretro's names in a console's folder (its Named_Boxarts listing), kept beside its covers for two
+		// weeks. Read on the worker's thread only
+		std::map<std::string, std::vector<std::string>> s_retroIndex;
+		const std::vector<std::string>& RetroIndex(CURL* curl, const std::string& system)
+		{
+			auto [entry, added] = s_retroIndex.try_emplace(system);
+			std::vector<std::string>& names = entry->second;
+			if (!added)
+				return names;
+			const std::string file = fmt::format("{}/boxart/retro/{}/index.txt", ps5paths::Covers(), TitleFileName(system));
+			if (RecentMarker(file))
+			{
+				std::ifstream in(file);
+				for (std::string line; std::getline(in, line);)
+					if (!line.empty())
+						names.push_back(line);
+				if (!names.empty())
+					return names;
+			}
+			char* const folder = curl_easy_escape(curl, system.c_str(), 0);
+			std::vector<uint8_t> page;
+			const long status = folder ? Get(curl, fmt::format("http://{}/{}/Named_Boxarts/", kTitlesHost, folder), page) : -1;
+			curl_free(folder);
+			if (status != 200)
+				return names;
+			// an index page: each picture a link to "<its name>.png", escaped
+			const std::string text(page.begin(), page.end());
+			for (size_t at = 0; (at = text.find("href=\"", at)) != std::string::npos;)
+			{
+				at += 6;
+				const size_t end = text.find('"', at);
+				if (end == std::string::npos)
+					break;
+				const std::string link = text.substr(at, end - at);
+				if (link.size() > 4 && link.ends_with(".png") && link.find('/') == std::string::npos)
+				{
+					int length = 0;
+					if (char* plain = curl_easy_unescape(curl, link.c_str(), (int)link.size() - 4, &length))
+					{
+						names.emplace_back(plain, (size_t)length);
+						curl_free(plain);
+					}
+				}
+				at = end;
+			}
+			std::error_code ec;
+			fs::create_directories(fs::path(file).parent_path(), ec);
+			std::ofstream out(file, std::ios::trunc);
+			for (const std::string& name : names)
+				out << name << '\n';
+			ps5log::Line("[boxart] {}: {} names in libretro's thumbnails", system, names.size());
+			return names;
+		}
+
+		// The name in libretro's thumbnails that fits a game file's best (its console's folder, then the one
+		// whose games it plays too: a Game Boy's and a Game Boy Color's), as {folder, name}; empty when none fits
+		std::pair<std::string, std::string> RetroMatch(CURL* curl, const std::string& system, const std::string& name)
+		{
+			std::vector<std::string> folders = {system};
+			if (system == "Nintendo - Game Boy Color")
+				folders.push_back("Nintendo - Game Boy");
+			else if (system == "Nintendo - Game Boy")
+				folders.push_back("Nintendo - Game Boy Color");
+			const std::vector<std::string> file = Words(name);
+			std::pair<std::string, std::string> best;
+			int bestFit = 0, bestPreference = 0;
+			for (const std::string& folder : folders)
+			{
+				for (const std::string& theirs : RetroIndex(curl, folder))
+				{
+					const int fit = NameFit(file, Words(theirs));
+					if (!fit)
+						continue;
+					const int preference = Preference(theirs);
+					if (fit > bestFit || (fit == bestFit && (preference > bestPreference ||
+						(preference == bestPreference && theirs.size() < best.second.size()))))
+						best = {folder, theirs}, bestFit = fit, bestPreference = preference;
+				}
+				if (bestFit == 3)
+					break;
+			}
+			return best;
+		}
+
 		void RetroWorker()
 		{
 			curl_global_init(CURL_GLOBAL_DEFAULT);
@@ -669,7 +832,22 @@ namespace ps5boxart
 				curl_free(file);
 				std::vector<uint8_t> data, rgba;
 				int width = 0, height = 0;
-				const long status = Get(curl, url, data);
+				long status = Get(curl, url, data);
+				// no picture by the file's own name (a name of the player's: "Pokemon Fire Red"): the one whose
+				// name in libretro's list fits it ("Pokemon - FireRed Version (USA, Europe)")
+				if (status == 404 || status == 410)
+					if (const auto [matchFolder, match] = RetroMatch(curl, item.first, item.second); !match.empty())
+					{
+						char* const otherFolder = curl_easy_escape(curl, matchFolder.c_str(), 0);
+						char* const otherFile = curl_easy_escape(curl, TitleFileName(match).c_str(), 0);
+						if (otherFolder && otherFile)
+						{
+							status = Get(curl, fmt::format("http://{}/{}/Named_Boxarts/{}.png", kTitlesHost, otherFolder, otherFile), data);
+							ps5log::Line("[boxart] {}: {} for {}", matchFolder, match, item.second);
+						}
+						curl_free(otherFolder);
+						curl_free(otherFile);
+					}
 				if (status == 404 || status == 410)
 				{
 					std::ofstream(base + ".none").put('\n'); // asked for again after a while

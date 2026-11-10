@@ -77,7 +77,7 @@ namespace
 
 	// ImGui's triangles, each pixel's centre tested against them: colours and the atlas's alpha
 	// interpolated, blended over what is there
-	void Raster(Image& image, const ImDrawData* data, const Texture& atlas)
+	void Raster(Image& image, const ImDrawData* data, const Texture& atlas, const Texture& pad = {})
 	{
 		for (int l = 0; l < data->CmdListsCount; l++)
 		{
@@ -86,7 +86,8 @@ namespace
 			{
 				const int x0c = std::max(0, (int)cmd.ClipRect.x), y0c = std::max(0, (int)cmd.ClipRect.y);
 				const int x1c = std::min(kW, (int)std::ceil(cmd.ClipRect.z)), y1c = std::min(kH, (int)std::ceil(cmd.ClipRect.w));
-				const bool textured = cmd.TextureId == atlas.rgba;
+				const Texture& texture = pad.rgba && cmd.TextureId == (ImTextureID)pad.rgba ? pad : atlas;
+				const bool textured = cmd.TextureId == texture.rgba;
 				for (unsigned e = 0; e + 2 < cmd.ElemCount; e += 3)
 				{
 					const ImDrawVert* v[3];
@@ -120,8 +121,8 @@ namespace
 							{
 								const float u = w0 * v[0]->uv.x + w1 * v[1]->uv.x + w2 * v[2]->uv.x;
 								const float t = w0 * v[0]->uv.y + w1 * v[1]->uv.y + w2 * v[2]->uv.y;
-								const int tx = std::clamp((int)(u * atlas.w), 0, atlas.w - 1), ty = std::clamp((int)(t * atlas.h), 0, atlas.h - 1);
-								const unsigned char* texel = &atlas.rgba[(ty * atlas.w + tx) * 4];
+								const int tx = std::clamp((int)(u * texture.w), 0, texture.w - 1), ty = std::clamp((int)(t * texture.h), 0, texture.h - 1);
+								const unsigned char* texel = &texture.rgba[(ty * texture.w + tx) * 4];
 								for (int k = 0; k < 4; k++)
 									c[k] *= texel[k] / 255.0f;
 							}
@@ -218,7 +219,12 @@ int main(int argc, char* argv[])
 	io.Fonts->SetTexID((ImTextureID)pixels);
 	const Texture atlas{pixels, w, h};
 
+	// the Buttons page's DualSense, as the package makes it from port/ui/dualsense.png
+	int padW = 0, padH = 0, padN = 0;
+	unsigned char* padPixels = stbi_load((fonts + "/../dualsense.png").c_str(), &padW, &padH, &padN, 4);
+	const Texture pad{padPixels, padW, padH};
 	ps5menu::Header header;
+	header.pad = (ImTextureID)padPixels;
 	header.system = "3DS";
 	header.status = "Paused";
 	header.title = "Pokémon Ultra Sun";
@@ -261,7 +267,7 @@ int main(int argc, char* argv[])
 			{
 				Image image;
 				Backdrop(image, backdrop);
-				Raster(image, ImGui::GetDrawData(), atlas);
+				Raster(image, ImGui::GetDrawData(), atlas, pad);
 				Save(image, out + "/" + shot.name + ".png");
 			}
 		}

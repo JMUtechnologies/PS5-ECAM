@@ -57,6 +57,11 @@ namespace ps5eden::nx
 	// without a name.
 	bool Read(const std::string& path, const Keys& keys, bool icon, Info& info, std::string& why);
 
+	// A Switch 2 NUP container's own title and icon (JPEG), from its base package's meta block, which no key
+	// is needed for (Lichii's core/file_sys/nup.h reads the same records). False when it is no NUP v1 file
+	// or has neither
+	bool ReadNup(const std::string& path, std::string& title, std::vector<uint8_t>& icon);
+
 	// An icon (JPEG) as the cover TGA Eden keeps and the launcher draws (32-bit, top-down), written
 	// whole or not at all
 	bool WriteIconTga(const std::vector<uint8_t>& jpeg, const std::string& path);

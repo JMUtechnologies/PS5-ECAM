@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // PS5-ECAM: the systems after the first four sides (Wii U, 3DS, DS, Switch), the launcher's sides 4
 // on, in this order. Each runs on a libretro core linked into the app, with the app's in-game menu
-// (port/libretro; core: its name there), or on a program bundled beside it (runtime, started as Eden
-// is: port/retro/launch.cpp). Every count of sides comes from this list: a new system is a row here,
+// (port/libretro; core: its name there), or, the GameCube and the Wii, on Porpoise X bundled beside it
+// (runtime, started as Eden is: port/retro/launch.cpp). The N64's and the NES's second emulators
+// (kAlternatives) are programs too, chosen in the side's Settings. Every count of sides comes from this list: a new system is a row here,
 // a ps5launcher::System and its names (frontend/launcher.h), and its file types (HasExtension).
 #pragma once
 #include <array>
@@ -22,11 +23,11 @@ namespace ps5retro
 	inline constexpr std::array<System, 16> kSystems{{
 		{"gamecube", "GameCube", "retro/porpoise/eboot.bin", "/data/porpoise/games/GameCube", "/data/porpoise", "", 0x6f6cff}, // indigo
 		{"wii", "Wii", "retro/porpoise/eboot.bin", "/data/porpoise/games/Wii", "/data/porpoise", "", 0x3fcff0},                // the Wii Menu's sky
-		{"n64", "Nintendo 64", "retro/n64/eboot.bin", "/data/PS5N64/games", "/data/PS5N64", "paralleln64", 0x2bc994},          // jungle green
-		{"nes", "NES", "retro/nes/eboot.bin", "/data/PS5NES/games", "/data/PS5NES", "mesen", 0xff7043},                        // the pad's red
-		{"gb", "Game Boy", "retro/gbc/eboot.bin", "/data/PS5GBC/games", "/data/PS5GBC", "mgba", 0xa8bf3a},                     // the screen's pea green
-		{"gbc", "Game Boy Color", "retro/gbc/eboot.bin", "/data/PS5GBC/games", "/data/PS5GBC", "mgba", 0xff5ca8},              // berry
-		{"gba", "Game Boy Advance", "retro/gba/eboot.bin", "/data/PS5GBA/games", "/data/PS5GBA", "mgba", 0xb98fff},            // violet
+		{"n64", "Nintendo 64", "", "/data/PS5N64/games", "/data/PS5N64", "paralleln64", 0x2bc994},          // jungle green
+		{"nes", "NES", "", "/data/PS5NES/games", "/data/PS5NES", "mesen", 0xff7043},                        // the pad's red
+		{"gb", "Game Boy", "", "/data/PS5GBC/games", "/data/PS5GBC", "mgba", 0xa8bf3a},                     // the screen's pea green
+		{"gbc", "Game Boy Color", "", "/data/PS5GBC/games", "/data/PS5GBC", "mgba", 0xff5ca8},              // berry
+		{"gba", "Game Boy Advance", "", "/data/PS5GBA/games", "/data/PS5GBA", "mgba", 0xb98fff},            // violet
 		{"snes", "Super Nintendo", "", "/data/PS5SNES/games", "/data/PS5SNES", "mesens", 0xdb70f0},                            // the buttons' lavender
 		{"vb", "Virtual Boy", "", "/data/PS5VB/games", "/data/PS5VB", "beetlevb", 0xe02130},                                   // its red on black
 		{"pokemini", "Pokémon mini", "", "/data/PS5PokeMini/games", "/data/PS5PokeMini", "pokemini", 0xffe14d},                // electric yellow
@@ -37,7 +38,7 @@ namespace ps5retro
 		{"satellaview", "Satellaview", "", "/data/PS5Satellaview/games", "/data/PS5Satellaview", "mesens", 0xe05ad8},          // the broadcast's magenta
 		{"vs", "VS. System", "", "/data/PS5VS/games", "/data/PS5VS", "mesen", 0x22c2b3},                                       // the cabinets' teal
 		// the N64's core plays its decrypted games, as an N64's emulator can (its own folder, the N64's data)
-		{"ique", "iQue Player", "retro/n64/eboot.bin", "/data/PS5iQue/games", "/data/PS5N64", "paralleln64", 0xff6f91},                   // its logo's red
+		{"ique", "iQue Player", "", "/data/PS5iQue/games", "/data/PS5N64", "paralleln64", 0xff6f91},                   // its logo's red
 	}};
 	// the launcher's sides: the first four, then these
 	inline constexpr int kFirst = 4;
@@ -48,6 +49,25 @@ namespace ps5retro
 	inline size_t Slot(int side) { return size_t(side - kFirst); }
 	inline const System& Of(int side) { return kSystems.at(Slot(side)); }
 	inline bool Is(int side, std::string_view key) { return IsRetro(side) && Of(side).key == key; }
+	// A side's console as libretro's thumbnails name its folder (its covers, by each game file's name): the
+	// launcher's box art and the in-game menu's
+	inline const char* Thumbnails(int side)
+	{
+		if (!IsRetro(side))
+			return "";
+		const std::string_view key = Of(side).key;
+		return key == "nes" || key == "vs"	? "Nintendo - Nintendo Entertainment System" :
+			key == "fds"					? "Nintendo - Family Computer Disk System" :
+			key == "snes"					? "Nintendo - Super Nintendo Entertainment System" :
+			key == "satellaview"			? "Nintendo - Satellaview" :
+			key == "gb" || key == "sgb"		? "Nintendo - Game Boy" :
+			key == "gbc"					? "Nintendo - Game Boy Color" :
+			key == "gba"					? "Nintendo - Game Boy Advance" :
+			key == "n64" || key == "ique"	? "Nintendo - Nintendo 64" :
+			key == "vb"						? "Nintendo - Virtual Boy" :
+			key == "pokemini"				? "Nintendo - Pokemon Mini" :
+			key == "gw"						? "Handheld Electronic Game" : "";
+	}
 	struct Backend { const char* name; const char* runtime; const char* data; };
 	// the sides with a second emulator, chosen in the side's Settings (backend 1): a program bundled
 	// beside the app too, with its own settings and saves; first, the name of the side's own program

@@ -122,16 +122,60 @@ def pokemini():
     return bytes(rom)
 
 
+def n64():
+    """A Nintendo 64 image in its own byte order (.z64): the header's first word and entry point, then at 0x40, where
+    the console's boot runs from, a jump to itself. No boot code of a real cartridge is in it"""
+    rom = bytearray(1 << 20)
+    struct.pack_into(">IIII", rom, 0, 0x80371240, 0x0000000F, 0x80000400, 0x00001449)
+    rom[0x20:0x34] = b"PLAYTENDOH TEST     "
+    rom[0x3B:0x40] = b"NPTE\x00"
+    # the video interface set as a game sets it (a 525-line frame, 16-bit colour, 320 wide), so frames end; then a
+    # jump to itself (in the RSP's memory the boot code runs in, 0xA4000040 on)
+    code = [0x3C08A440,  # lui t0, 0xA440        the VI's registers
+            0x3409020D,  # ori t1, zero, 525
+            0xAD090018,  # sw t1, 0x18(t0)       VI_V_SYNC
+            0x340A3302,  # ori t2, zero, 0x3302
+            0xAD0A0000,  # sw t2, 0(t0)          VI_STATUS
+            0x340A0140,  # ori t2, zero, 320
+            0xAD0A0008,  # sw t2, 8(t0)          VI_WIDTH
+            0x09000017,  # j 0xA400005C          (here)
+            0x00000000]  # nop
+    struct.pack_into(">" + "I" * len(code), rom, 0x40, *code)
+    return bytes(rom)
+
+
+def png(width, height, rgba):
+    """An 8-bit RGBA PNG of one colour"""
+    import zlib
+
+    def chunk(kind, data):
+        return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xffffffff)
+    rows = b"".join(b"\x00" + bytes(rgba) * width for _ in range(height))
+    return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)) +
+            chunk(b"IDAT", zlib.compress(rows)) + chunk(b"IEND", b""))
+
+
+def hd_pack(out):
+    """A Mesen HD pack for test.nes (HdPacks/test/): its picture at twice the size, tile 0 replaced"""
+    folder = os.path.join(out, "hdpack")
+    os.makedirs(folder, exist_ok=True)
+    with open(os.path.join(folder, "tile.png"), "wb") as f:
+        f.write(png(16, 16, (255, 0, 255, 255)))
+    with open(os.path.join(folder, "hires.txt"), "w") as f:
+        f.write("<ver>100\n<scale>2\n<img>tile.png\n<tile>0,0,0F000000,0,0,1,N\n")
+
+
 def main():
     out = sys.argv[1]
     os.makedirs(out, exist_ok=True)
     games = {"test.nes": nes(), "test.sfc": snes(), "test.gb": gb(False), "test.gbc": gb(True), "test.gba": gba(),
-             "test.vb": vb(), "test.min": pokemini(), "input.sfc": snes_input(), "input.gba": gba_input(), "broken.z64": b"not a Nintendo 64 game" * 100,
+             "test.vb": vb(), "test.min": pokemini(), "input.sfc": snes_input(), "input.gba": gba_input(), "broken.z64": b"not a Nintendo 64 game" * 100, "test.z64": n64(),
              "broken.mgw": b"not a Game & Watch" * 10}
     for name, data in games.items():
         with open(os.path.join(out, name), "wb") as f:
             f.write(data)
-    print(f"{len(games)} test games in {out}")
+    hd_pack(out)
+    print(f"{len(games)} test games in {out}, and an HD pack")
 
 
 if __name__ == "__main__":

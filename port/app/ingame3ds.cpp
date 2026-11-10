@@ -4,6 +4,7 @@
 #include "emulator.h"
 #include "keyboard_menu.h"
 #include "lang.h"
+#include "paths.h"
 #include "menu_canvas.h"
 #include "remote_menu.h"
 #include "side_menu.h"
@@ -127,6 +128,7 @@ namespace ps5ingame3ds
 			bool pending = false;  // a frame's draw data waits for the render pass
 			ImTextureID border = nullptr;
 			ImTextureID cover = nullptr; // the game's box art, made the first time the menu opens
+			ImTextureID pad = nullptr;	 // the Buttons page's DualSense (assets/ui/dualsense.tga), made then too
 			bool coverTried = false;
 			int coverWidth = 0, coverHeight = 0;
 			std::vector<std::pair<ImTextureID, int>> retired; // textures and their age in frames, until the GPU is done with them
@@ -370,6 +372,7 @@ namespace ps5ingame3ds
 			ImGui_ImplVulkan_ForgetDeviceObjects();
 			g.border = nullptr;
 			g.cover = nullptr;
+			g.pad = nullptr;
 			g.coverTried = false;
 			g.retired.clear();
 			g.fontsUploaded = false;
@@ -585,7 +588,7 @@ namespace ps5ingame3ds
 			if (single)
 				rows.push_back({"graphics", Tr("Graphics"), Tr(filter), false, Tr("The screen filter and the performance overlay."), {
 					{"dsfilter", Tr("Screen filter"), Tr(filter), true,
-						Tr("Sharp keeps pixels crisp and even. Smooth blends them. Square pixels can look uneven at most sizes.")},
+						Tr("Sharp keeps pixels crisp and even. Smooth blends them. CRT draws the lines and colours of a tube TV, Curved CRT its rounded glass too.")},
 					{"performance", Tr("Performance overlay"), settings.performance ? on : off, true,
 						Tr("Shows frame rate and speed in the top-left corner.")},
 				}});
@@ -839,7 +842,10 @@ namespace ps5ingame3ds
 				while (next.textureFilter == 1);
 			}
 			else if (id == "dsfilter")
-				next.screenFilter = (std::clamp(settings.screenFilter, 0, kScreenFilterCount - 1) + change + kScreenFilterCount) % kScreenFilterCount;
+			{
+				const int count = s_console == Console::Retro ? kScreenFilterCount : kDsScreenFilterCount;
+				next.screenFilter = (std::clamp(settings.screenFilter, 0, count - 1) + change + count) % count;
+			}
 			else if (id == "rotation")
 				next.rotation = (std::clamp(settings.rotation, 0, kRotationCount - 1) + change + kRotationCount) % kRotationCount;
 			else if (id == "hiddentouch")
@@ -987,6 +993,7 @@ namespace ps5ingame3ds
 			header.cover = g.cover;
 			header.coverWidth = (float)g.coverWidth;
 			header.coverHeight = (float)g.coverHeight;
+			header.pad = g.pad;
 			s_side.Draw(canvas, {g.head, g.body, g.row, g.small, g.chip}, header, MenuRows(settings), Tiles(settings),
 				{{"cross", Tr("Choose")}, {"leftright", Tr("Change")}, {"circle", s_side.Open().empty() ? Tr("Back to the game") : Tr("Back")}});
 			ps5menu::DrawRemoteCard(canvas, {g.head, g.body, g.row, g.small, g.chip}, s_side.Focus());
@@ -1406,6 +1413,8 @@ namespace ps5ingame3ds
 				}
 				else
 					ps5log::Line("[ingame3ds] no box art for the menu ({})", path.empty() ? "none fetched" : path);
+				if (!g.pad && ps5tga::Load(ps5paths::Assets() + "/ui/dualsense.tga", 1000, 700, rgba, width, height))
+					g.pad = ImGui_ImplVulkan_GenerateTexture(target.commandBuffer, rgba, {width, height});
 			}
 			ImGuiIO& io = ImGui::GetIO();
 			io.DisplaySize = {(float)target.width, (float)target.height};

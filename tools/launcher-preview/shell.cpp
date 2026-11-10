@@ -124,6 +124,8 @@ int main(int argc, char* argv[])
 		settings.nx.recent = {0x0100000000010000, 0x0100152000022000};
 		settings.nx.gameCount = 5;
 	}
+	if (std::getenv("PREVIEW_BOXART3D"))
+		settings.ui.boxArt3d = true;
 	if (std::getenv("PREVIEW_REMOTE"))
 		settings.remoteScreen = true;
 	if (std::getenv("PREVIEW_FILTERS"))

@@ -157,6 +157,7 @@ namespace ps5settings
 		bool reduceMotion = false;
 		int holdMs = 800;			 // hold to confirm, 400 to 1500
 		bool gamePictures = true;	 // the focused game's picture behind the menus
+		bool boxArt3d = false;		 // covers as boxes, a spine and a turn (Make it yours, Settings > Launcher)
 		int layout = 0;				 // the Library's layout: 0 Classic, 1 Orbit (Make it yours, Settings > Launcher)
 		bool layoutChosen = false;	 // asked once, on a first start or the first start of 6.0
 		bool setupDone = false;		 // the Setup check was shown once

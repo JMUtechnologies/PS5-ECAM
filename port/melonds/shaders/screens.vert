@@ -6,7 +6,7 @@ layout(push_constant) uniform Constants
 {
 	vec4 rect;  // the quad: left, top, right, bottom, in clip space
 	vec2 size;  // the screen's pixels: 256 x 192
-	float mode; // 0 sharp, 1 smooth, 2 square pixels; 3 flat white (the cursor)
+	float mode; // 0 sharp, 1 smooth, 2 square pixels, 3 CRT, 4 curved CRT; 9 flat white (the cursor)
 	float rotation; // the screen's picture turned this many quarter turns clockwise (0 to 3)
 	vec2 uvScale;   // the part of the image the screen fills (screens.cpp)
 } pc;

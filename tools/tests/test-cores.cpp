@@ -34,6 +34,7 @@ namespace
 		unsigned cheevos; // rc_consoles.h's id, 0: none
 		bool runs = true; // false: a bad file it should refuse
 		bool states = true;
+		bool frames = true; // false: loaded and unloaded only (the N64's test image boots, but draws no frame)
 	};
 }
 
@@ -59,6 +60,7 @@ int main(int argc, char* argv[])
 		{"beetlevb", "test.vb", "Virtual Boy", 28},
 		{"pokemini", "test.min", "Pokémon mini", 24},
 		{"paralleln64", "broken.z64", "Nintendo 64", 2, false},
+		{"paralleln64", "test.z64", "Nintendo 64", 2, true, false, false},
 		{"gw", "broken.mgw", "Game & Watch", 0, false},
 	};
 	for (const Case& c : cases)
@@ -80,6 +82,10 @@ int main(int argc, char* argv[])
 		setup.system = (folder / "system").string();
 		setup.saves = (folder / "saves").string();
 		setup.states = (folder / "states").string();
+		// the options the app gives the N64's core on a console (port/libretro/game.cpp)
+		if (std::string(c.core) == "paralleln64")
+			setup.options = {{"parallel-n64-cpucore", "cached_interpreter"}, {"parallel-n64-gfxplugin", "angrylion"},
+				{"parallel-n64-angrylion-multithread", "6"}};
 		std::string error;
 		const bool loaded = ps5libretro::Load(*core, (games / c.game).string(), setup, error);
 		if (!c.runs)
@@ -92,6 +98,12 @@ int main(int argc, char* argv[])
 		Check(loaded, name + ": the game loads" + (loaded ? "" : " (" + error + ")"));
 		if (!loaded)
 			continue;
+		if (!c.frames)
+		{
+			ps5libretro::Unload();
+			Check(!ps5libretro::Loaded(), name + ": unloaded");
+			continue;
+		}
 		ps5libretro::Pad pads[ps5libretro::kPlayers] = {};
 		size_t sound = 0;
 		const int frames = (int)(ps5libretro::FrameRate() * 10);
@@ -125,6 +137,31 @@ int main(int argc, char* argv[])
 		}
 		ps5libretro::Unload();
 		Check(!ps5libretro::Loaded(), name + ": unloaded");
+	}
+	// Mesen's HD packs (the NES side's texture packs): a pack in the system folder's HdPacks/<the game file's
+	// name>/ (make-test-games.py's: one tile replaced, at twice the size) draws the game at twice its size
+	if (const ps5libretro::Core* mesen = ps5libretro::Find("mesen"))
+	{
+		const fs::path folder = work / "mesen-hdpack";
+		fs::create_directories(folder / "system/HdPacks");
+		fs::remove_all(folder / "system/HdPacks/test");
+		fs::copy(games / "hdpack", folder / "system/HdPacks/test", fs::copy_options::recursive);
+		ps5libretro::Setup setup;
+		setup.system = setup.saves = setup.states = (folder / "system").string();
+		setup.options["mesen_hdpacks"] = "enabled";
+		std::string error;
+		const bool loaded = ps5libretro::Load(*mesen, (games / "test.nes").string(), setup, error);
+		Check(loaded, "NES HD pack: the game loads with a pack" + (loaded ? "" : " (" + error + ")"));
+		if (loaded)
+		{
+			ps5libretro::Pad pads[ps5libretro::kPlayers] = {};
+			for (int i = 0; i < 10; i++)
+				ps5libretro::Run(pads);
+			const auto& picture = ps5libretro::LastPicture();
+			Check(picture.width == 512 && picture.height == 480,
+				"NES HD pack: the pack's scale (" + std::to_string(picture.width) + "x" + std::to_string(picture.height) + ", 512x480 wanted)");
+			ps5libretro::Unload();
+		}
 	}
 	// the DualSense's buttons reach the game: a program that copies its joypad register to RAM, read back
 	// through the memory RetroAchievements sees

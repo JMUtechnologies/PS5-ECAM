@@ -155,7 +155,7 @@ namespace ps5ingamenx
 			int uploadAge = -1;
 			bool pending = false; // a frame's draw data waits for the render pass
 			bool picturesTried = false;
-			Texture cover, blur;
+			Texture cover, blur, pad; // pad: the Buttons page's DualSense (assets/ui/dualsense.tga)
 		};
 		Gpu g;
 		ps5menu::SideMenu s_side;
@@ -343,6 +343,8 @@ namespace ps5ingamenx
 			}
 			std::vector<uint8_t> rgba;
 			int width = 0, height = 0;
+			if (ps5tga::Load(ps5paths::Assets() + "/ui/dualsense.tga", 1000, 700, rgba, width, height))
+				g.pad = MakeTexture(cmd, rgba, width, height);
 			if (path.empty() || !ps5tga::Load(path, 512, 704, rgba, width, height))
 			{
 				ps5log::Line("[ingamenx] no cover for the menu ({})", path.empty() ? "none given" : path);
@@ -876,6 +878,7 @@ namespace ps5ingamenx
 			header.cover = g.cover.id;
 			header.coverWidth = (float)g.cover.width;
 			header.coverHeight = (float)g.cover.height;
+			header.pad = g.pad.id;
 			s_side.Draw(canvas, {g.head, g.body, g.row, g.small, g.chip}, header, MenuRows(settings, s_exitAfterGame), Tiles(settings),
 				{{"cross", Tr("Choose")}, {"leftright", Tr("Change")}, {"circle", s_side.Open().empty() ? Tr("Back to the game") : Tr("Back")}});
 		}

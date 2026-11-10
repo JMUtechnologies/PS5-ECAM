@@ -5,9 +5,8 @@
 
 namespace ps5libretro
 {
-	// A side whose core (ps5retro::kSystems' core) this build links, and that has no program of its
-	// own in this copy of the app: its games play in the app, on the core. A side whose program (PR
-	// #87's or #91's) is packaged keeps it until its core is measured on a console (docs/ROADMAP.md).
+	// A side whose core (ps5retro::kSystems' core) this build links: its games play in the app, on the
+	// core (every side but the GameCube's and the Wii's, which are Porpoise X's)
 	bool Plays(int side);
 	// Its core's name as players read it ("Mesen", "ParaLLEl-N64"); empty for a side with none
 	const char* CoreTitle(int side);

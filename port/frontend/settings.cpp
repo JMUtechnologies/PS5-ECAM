@@ -444,6 +444,7 @@ namespace ps5settings
 			ReadBool(ui, "emulationStation", out.emulationStation);
 			ReadInt(ui, "holdMs", out.holdMs, 400, 1500);
 			ReadBool(ui, "gamePictures", out.gamePictures);
+			ReadBool(ui, "boxArt3d", out.boxArt3d);
 			ReadInt(ui, "layout", out.layout, 0, 1);
 			ReadBool(ui, "layoutChosen", out.layoutChosen);
 			ReadBool(ui, "reports", out.reports);
@@ -643,6 +644,8 @@ namespace ps5settings
 		writer.Int(settings.ui.holdMs);
 		writer.Key("gamePictures");
 		writer.Bool(settings.ui.gamePictures);
+		writer.Key("boxArt3d");
+		writer.Bool(settings.ui.boxArt3d);
 		writer.Key("layout");
 		writer.Int(settings.ui.layout);
 		writer.Key("layoutChosen");

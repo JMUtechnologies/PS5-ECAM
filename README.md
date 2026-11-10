@@ -171,6 +171,12 @@ they are there already).
 An install from before has these in `/data/ps5cemu` (`games`, `keys.txt`, `azahar/games`, and so on)
 until it is separated. [System folders](docs/SYSTEM-FOLDERS.md) has each system's whole folder.
 
+**NES HD packs** (Mesen's texture packs) work as in Mesen: unzip a pack into
+`/data/PS5NES/system/HdPacks/<the game file's name>/` (its `hires.txt` directly in there), for a game named
+`Super Mario Bros. (World).nes` that is `HdPacks/Super Mario Bros. (World)/hires.txt`. A pack's `.zip` (or
+`.hdn`) can also go in `HdPacks` as it is: Mesen finds it by the game's name or the pack's own list of games. The
+folder is made the first time an NES game starts; a Famicom Disk System pack goes in `/data/PS5FDS/system/HdPacks/`.
+
 Any other folder, a USB drive or a network share (not for Switch games) works too: **Settings > Game
 files** on each system. No games, keys or firmware are included. Use dumps of games and hardware you own.
 
@@ -312,6 +318,8 @@ says where the app is going and how to fit in.
 - **Dimok** for the Wii U Homebrew Launcher's background, and the authors of the 3DS Homebrew
   Launcher, which inspired the 3DS side's
 - The [Lexend](https://github.com/googlefonts/lexend) authors for the launcher's font (SIL OFL 1.1)
+- **Zacksly** for [PS5 Button Icons and Controls](https://zacksly.itch.io/ps5-button-icons-and-controls), the DualSense on the
+  in-game menus' Buttons page (CC BY 3.0; Porpoise X's rendering, its PlayStation logo removed and its lines thickened)
 - [GameTDB](https://www.gametdb.com/) for box art and game information, and the authors of the
   [Cemu community graphic packs](https://github.com/cemu-project/cemu_graphic_packs)
 

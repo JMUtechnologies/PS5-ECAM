@@ -182,7 +182,10 @@ def cores():
                          ["__LIBRETRO__", "_GNU_SOURCE", "COLOR_16_BIT", "COLOR_5_6_5", "DISABLE_THREADING", "MGBA_STANDALONE",
                           "ENABLE_VFS_FD", "HAVE_STRDUP", "HAVE_STRNDUP", "HAVE_LOCALTIME_R", "ENABLE_VFS", "ENABLE_DIRECTORIES",
                           "HAVE_LOCALE"] + ([] if HOST_BUILD else ["HAVE_XLOCALE"]) + [  # the SDK's locale_t, with port/libretro/compat/locale.c
-                          "MINIMAL_CORE=2", "M_PI=3.14159265358979323846", "M_CORE_GB", "M_CORE_GBA"])
+                          "MINIMAL_CORE=2", "M_PI=3.14159265358979323846", "M_CORE_GB", "M_CORE_GBA",
+                          # its memory (the ROM's copy, the consoles' RAM) from malloc, which the app puts on its
+                          # title heap, not from anonymous mmap: the PS5's flexible memory is small
+                          "DISABLE_ANON_MMAP"])
 
     # ParaLLEl-N64 (mupen64plus's, GPL-2.0-or-later): the Nintendo 64, on the CPU as PS5N64X builds it:
     # Angrylion's renderer on threads of its own, the cached interpreter, the HLE RSP. Its sources and
@@ -237,18 +240,23 @@ def compile_all(name, folder, sources, includes, defines, cxx_std, flags=()):
         obj = os.path.join(objdir, re.sub(r"\.(c|cpp|cc)$", ".o", source.replace("..", "__")))
         objects.append(obj)
         dep = obj[:-2] + ".d"
-        if not stale(obj, dep):
-            continue
-        os.makedirs(os.path.dirname(obj), exist_ok=True)
         command = (CXX_FLAGS + ["-std=" + cxx_std] if cxx else C_FLAGS + ["-std=gnu11"]) + list(flags)
         command += ["-I" + os.path.join(folder, i) for i in includes] + ["-D" + d for d in defines]
         command += ["-MMD", "-MF", dep, "-c", os.path.join(folder, source), "-o", obj]
+        # its command as last compiled beside it: a changed definition or flag compiles it again
+        recorded = obj[:-2] + ".cmd"
+        same = os.path.exists(recorded) and open(recorded).read() == "\0".join(command)
+        if same and not stale(obj, dep):
+            continue
+        os.makedirs(os.path.dirname(obj), exist_ok=True)
         jobs.append((source, command))
     failures = []
     with concurrent.futures.ThreadPoolExecutor(int(os.environ.get("JOBS", os.cpu_count() or 4))) as pool:
-        for (source, _), (code, errors) in zip(jobs, pool.map(lambda job: run(job[1], folder), jobs)):
+        for (source, command), (code, errors) in zip(jobs, pool.map(lambda job: run(job[1], folder), jobs)):
             if code:
                 failures.append((source, errors))
+            else:
+                open(command[-1][:-2] + ".cmd", "w").write("\0".join(command))
     for source, errors in failures[:6]:
         print(f"==> [libretro] {name}: {source} did not compile:\n{errors[-2500:]}", file=sys.stderr)
     if failures:
@@ -268,9 +276,14 @@ def isolate(name, objects):
     symbols = subprocess.run(["llvm-nm-18", "--defined-only", "--extern-only", partial], check=True, capture_output=True,
                              text=True).stdout
     api = sorted({line.split()[-1] for line in symbols.splitlines() if line.split()[-1].startswith("retro_")})
+    # C's tentative globals (ParaLLEl-N64's -fcommon ones, its rumble interface among them) get their room only in
+    # the final link, and lld's -r gives them none: made local, every use of one pointed at nothing (the N64 core
+    # ended in its own retro_init). They stay global, renamed <name>_<symbol> as the entry points are, so they
+    # meet nothing else's
+    commons = sorted({line.split()[-1] for line in symbols.splitlines() if len(line.split()) == 3 and line.split()[1] == "C"})
     keep, rename = os.path.join(work, "keep.txt"), os.path.join(work, "rename.txt")
-    open(keep, "w").write("\n".join(api) + "\n")
-    open(rename, "w").write("".join(f"{s} {name}_{s}\n" for s in api))
+    open(keep, "w").write("\n".join(api + commons) + "\n")
+    open(rename, "w").write("".join(f"{s} {name}_{s}\n" for s in api + commons))
     subprocess.run(["llvm-objcopy-18", "--remove-section=.group", "--keep-global-symbols=" + keep, partial, local], check=True)
     subprocess.run(["llvm-objcopy-18", "--redefine-syms=" + rename, local, out], check=True)
     os.remove(partial)

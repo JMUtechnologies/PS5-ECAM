@@ -1497,6 +1497,8 @@ namespace ps5shell
 			toggle("side-3ds", Tr("3DS"), SideShown(System::N3ds), Tr("3DS games, in the bar."),
 				Tr("Show the 3DS in the bar. Hidden systems keep their games and settings. At least one stays on."));
 			endSub();
+			toggle("boxart3d", Tr("3D box art"), settings.ui.boxArt3d, Tr("Covers as boxes, with a spine."),
+				Tr("Each cover drawn as its box, turned a little, with its spine. Off: flat covers."));
 			toggle("pictures", Tr("Game pictures behind menus"), settings.ui.gamePictures, Tr("The selected game's cover, blurred, behind the menus."),
 				Tr("The selected game's picture fills the background, blurred and dimmed. Off: just the game's colours."));
 			toggle("filters", Tr("Library filters"), settings.ui.libraryFilters, Tr("A row of filters above the list."),
@@ -2313,6 +2315,8 @@ namespace ps5shell
 			}
 			else if (id == "pictures")
 				settings.ui.gamePictures = on;
+			else if (id == "boxart3d")
+				settings.ui.boxArt3d = on;
 			else if (id == "filters")
 				settings.ui.libraryFilters = on;
 			else if (id == "emulationstation")

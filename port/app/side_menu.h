@@ -70,6 +70,8 @@ namespace ps5menu
 		std::string system;					   // the badge: WII U, 3DS
 		std::string status;					   // the second: RUNNING, PAUSED
 		std::string title, details;
+		// the Buttons page's DualSense: Zacksly's drawing (assets/ui/dualsense.tga, white lines), when the menu has it
+		ImTextureID pad = nullptr;
 	};
 
 	class SideMenu
@@ -470,91 +472,45 @@ namespace ps5menu
 			// presses, the focused one's lit (Porpoise X's Customize Buttons, in the sheet's look)
 			for (const Row& row : rows)
 				if (row.id == "buttons" && m_open == "buttons")
-					DrawPad(canvas, fonts, row, m_onTiles ? std::string() : m_focus);
+					DrawPad(canvas, fonts, header, row, m_onTiles ? std::string() : m_focus);
 		}
 
-		// The DualSense, drawn in lines on the game's side of the screen, its controls labelled
-		void DrawPad(const Canvas& canvas, const Fonts& fonts, const Row& category, const std::string& focus) const
+		// The DualSense on the game's side of the screen (Zacksly's drawing, as Porpoise X's Customize Buttons
+		// has it), each set control with a chip of the console's button it presses, in a column beside it
+		void DrawPad(const Canvas& canvas, const Fonts& fonts, const Header& header, const Row& category, const std::string& focus) const
 		{
 			const Palette& c = canvas.colours;
 			ImDrawList* draw = canvas.draw;
 			const float s = canvas.scale;
 			const float line = std::max(1.5f, 2.2f * s);
-			// where each input is, on a controller centred at (1310, 540), in the launcher's 1920x1080
-			struct Spot
-			{
-				float x, y;	  // the control
-				float cx, cy; // its chip
+			// each input's place on the drawing, in its own 1400x900 units (Porpoise X's ui_app_controls.cpp), in
+			// buttons_menu.h's kInput order
+			static constexpr ImVec2 kSpots[] = {
+				{0, 0},																	   // none
+				{1035, 399}, {1114, 319}, {955, 319}, {1035, 240},						   // Cross, Circle, Square, Triangle
+				{372, 140}, {1028, 140}, {366, 112}, {1034, 112},						   // L1, R1, L2, R2
+				{525, 468}, {873, 468},													   // L3, R3
+				{451, 198}, {949, 198},													   // Create, Options
+				{363, 250}, {363, 388}, {299, 319}, {428, 319},							   // the D-pad: up, down, left, right
+				{525, 415}, {525, 521}, {472, 468}, {578, 468},							   // the left stick's directions
+				{873, 415}, {873, 521}, {820, 468}, {926, 468},							   // the right stick's
+				{700, 233},																   // the touchpad
 			};
-			static constexpr Spot kSpots[] = {
-				{0, 0, 0, 0},						  // none
-				{1500, 600, 1640, 660},				  // Cross
-				{1550, 550, 1690, 560},				  // Circle
-				{1450, 550, 1600, 470},				  // Square
-				{1500, 500, 1640, 410},				  // Triangle
-				{1140, 392, 1040, 330},				  // L1
-				{1480, 392, 1580, 330},				  // R1
-				{1150, 358, 1040, 270},				  // L2
-				{1470, 358, 1580, 270},				  // R2
-				{1230, 650, 1150, 790},				  // L3
-				{1390, 650, 1470, 790},				  // R3
-				{1210, 448, 1150, 230},				  // Create
-				{1410, 448, 1470, 230},				  // Options
-				{1120, 505, 950, 440},				  // D-pad up
-				{1120, 595, 950, 640},				  // D-pad down
-				{1075, 550, 930, 540},				  // D-pad left
-				{1165, 550, 1000, 700},				  // D-pad right
-				{1230, 612, 1080, 720},				  // left stick up
-				{1230, 688, 1230, 840},				  // left stick down
-				{1192, 650, 1060, 790},				  // left stick left
-				{1268, 650, 1300, 790},				  // left stick right
-				{1390, 612, 1540, 720},				  // right stick up
-				{1390, 688, 1390, 840},				  // right stick down
-				{1352, 650, 1320, 840},				  // right stick left
-				{1428, 650, 1560, 790},				  // right stick right
-				{1310, 470, 1310, 230},				  // touchpad
-			};
-			const ImU32 body = Colour(0x121828, 0xff), edge = Fade(c.accent, 0.55f), soft = Colour(0xffffff, 0x30);
+			// the drawing, 640 wide, centred at x 1310 in the launcher's 1920x1080
+			constexpr float kArtX = 990, kArtY = 372, kArtScale = 640.0f / 1400.0f;
+			auto spot = [&](int input) { return ImVec2(kArtX + kSpots[input].x * kArtScale, kArtY + kSpots[input].y * kArtScale); };
 			auto at = [&](float x, float y) { return canvas.At(x, y); };
-			// the title
 			canvas.Text(fonts.heading, kHeading, 960, 140, c.title, ps5lang::Tr("Your controller"));
 			canvas.TextFit(fonts.caption, kCaption, 960, 186, c.faint,
 				ps5lang::Tr("Each button shows the console's button it presses."), 900);
-			// the body: its middle and its grips, then the touchpad, the shoulders, the sticks and the buttons
-			// the grips: each a long rounded shape reaching down and out, as the DualSense's handles
-			auto grip = [&](float x0, float x1, float tilt) {
-				const ImVec2 q[4] = {at(x0, 500), at(x1, 500), at(x1 + tilt, 760), at(x0 + tilt, 760)};
-				draw->AddQuadFilled(q[0], q[1], q[2], q[3], body);
-				draw->AddCircleFilled(at((x0 + x1) / 2 + tilt, 760), (x1 - x0) / 2 * s, body, 40);
-			};
-			grip(1065, 1235, -40);
-			grip(1385, 1555, 40);
-			draw->AddRectFilled(at(1060, 400), at(1560, 640), body, 90 * s);
-			// its outline: the body's top and sides, then each grip down and round
-			draw->PathArcTo(at(1150, 490), 90 * s, 3.14159f, 4.71239f, 16);
-			draw->PathLineTo(at(1470, 400));
-			draw->PathArcTo(at(1470, 490), 90 * s, 4.71239f, 6.28318f, 16);
-			draw->PathLineTo(at(1595, 760));
-			draw->PathArcTo(at(1510, 760), 85 * s, 0.0f, 3.14159f, 20);
-			draw->PathLineTo(at(1385, 640));
-			draw->PathLineTo(at(1235, 640));
-			draw->PathLineTo(at(1195, 760));
-			draw->PathArcTo(at(1110, 760), 85 * s, 0.0f, 3.14159f, 20);
-			draw->PathLineTo(at(1060, 490));
-			draw->PathStroke(edge, 0, line);
-			draw->AddRect(at(1215, 412), at(1405, 520), soft, 16 * s, 0, line);								   // touchpad
-			draw->AddRectFilled(at(1090, 382), at(1190, 400), Colour(0xffffff, 0x18), 8 * s);					   // L1
-			draw->AddRectFilled(at(1430, 382), at(1530, 400), Colour(0xffffff, 0x18), 8 * s);					   // R1
-			draw->AddRectFilled(at(1105, 346), at(1195, 372), Colour(0xffffff, 0x10), 10 * s);					   // L2
-			draw->AddRectFilled(at(1425, 346), at(1515, 372), Colour(0xffffff, 0x10), 10 * s);					   // R2
-			draw->AddCircle(at(1230, 650), 34 * s, soft, 32, line);												   // sticks
-			draw->AddCircle(at(1390, 650), 34 * s, soft, 32, line);
-			for (int i : {13, 14, 15, 16})
-				draw->AddRect(at(kSpots[i].x - 17, kSpots[i].y - 17), at(kSpots[i].x + 17, kSpots[i].y + 17), soft, 6 * s, 0, line);
-			for (int i : {1, 2, 3, 4})
-				draw->AddCircle(at(kSpots[i].x, kSpots[i].y), 20 * s, soft, 24, line);
-			draw->AddRectFilled(at(1200, 440), at(1220, 456), soft, 4 * s); // Create
-			draw->AddRectFilled(at(1400, 440), at(1420, 456), soft, 4 * s); // Options
+			if (header.pad)
+				draw->AddImage(header.pad, at(kArtX, kArtY), at(kArtX + 640, kArtY + 900 * kArtScale), {0, 0}, {1, 1}, Colour(0xffffff, 0xf0));
+			else
+			{
+				// no drawing in this copy: the controller's outline, so the chips still have a place
+				draw->AddRect(at(kArtX + 90, kArtY + 40), at(kArtX + 550, kArtY + 380), Fade(c.accent, 0.55f), 120 * s, 0, line);
+				draw->AddRect(at(kArtX + 215, kArtY + 45), at(kArtX + 425, kArtY + 160), Colour(0xffffff, 0x30), 16 * s, 0, line);
+			}
 
 			// which input the focused row is, and whether the menu waits for a press (every control lit)
 			int focused = -1;
@@ -565,31 +521,66 @@ namespace ps5menu
 					focused = row.pad;
 				listening = listening || row.value == ps5lang::Tr("Press a button");
 			}
-			const ImGuiIO& io = ImGui::GetIO();
 			const float pulse = 0.75f + 0.25f * std::sin((float)ImGui::GetTime() * 5.0f);
-			(void)io;
 			for (int i = 1; i < (int)std::size(kSpots); i++)
 				if (listening || i == focused)
 				{
-					const ImVec2 p = at(kSpots[i].x, kSpots[i].y);
-					draw->AddCircleFilled(p, (listening ? 26.0f : 34.0f) * s, Fade(c.accent, (listening ? 0.30f : 0.55f) * pulse), 32);
-					draw->AddCircle(p, (listening ? 26.0f : 34.0f) * s, Fade(c.accent, 0.9f), 32, line);
+					const ImVec2 p = spot(i);
+					const float r = listening ? 18.0f : 24.0f;
+					draw->AddCircleFilled(at(p.x, p.y), r * s, Fade(c.accent, (listening ? 0.30f : 0.55f) * pulse), 32);
+					draw->AddCircle(at(p.x, p.y), r * s, Fade(c.accent, 0.9f), 32, line);
 				}
-			// each set control's chip: the console's button, a line to the control
-			for (const Row& row : category.rows)
+			// each set control's chip: the left half's in a column left of the drawing, the right half's right of it,
+			// the touchpad's above; in the order of their controls from the top, as near level with them as they fit
+			struct Chip
 			{
-				if (row.pad <= 0 || row.pad >= (int)std::size(kSpots))
-					continue;
-				const Spot& spot = kSpots[row.pad];
-				const bool on = row.pad == focused;
-				const std::string& label = row.label;
+				const Row* row;
+				ImVec2 from;
+				float y;
+				int side; // -1 left, 1 right, 0 above
+			};
+			std::vector<Chip> chips;
+			for (const Row& row : category.rows)
+				if (row.pad > 0 && row.pad < (int)std::size(kSpots))
+				{
+					const ImVec2 p = spot(row.pad);
+					const int side = row.pad == (int)std::size(kSpots) - 1 ? 0 : kSpots[row.pad].x < 700 ? -1 : 1;
+					chips.push_back({&row, p, side == 0 ? kArtY - 46 : p.y, side});
+				}
+			std::stable_sort(chips.begin(), chips.end(), [](const Chip& a, const Chip& b) { return a.from.y < b.from.y; });
+			constexpr float kGap = 42, kTop = 300, kBottom = 860;
+			for (int side : {-1, 1})
+			{
+				std::vector<Chip*> column;
+				for (Chip& chip : chips)
+					if (chip.side == side)
+						column.push_back(&chip);
+				float next = kTop;
+				for (Chip* chip : column)
+					next = (chip->y = std::max(chip->y, next)) + kGap;
+				// past the bottom: the column moved up, as far as its top allows
+				if (!column.empty() && column.back()->y > kBottom)
+				{
+					float limit = kBottom;
+					for (auto it = column.rbegin(); it != column.rend(); ++it, limit -= kGap)
+						(*it)->y = std::min((*it)->y, limit);
+				}
+			}
+			for (const Chip& chip : chips)
+			{
+				const bool on = chip.row->pad == focused;
+				const std::string& label = chip.row->label;
 				const float h = on ? 38 : 32, size = on ? 20 : 17;
 				const float w = std::max(h, canvas.Measure(fonts.chip, size, label) + h * 0.8f);
-				draw->AddLine(at(spot.x, spot.y), at(spot.cx, spot.cy), Fade(on ? c.accent : 0xffffffff, on ? 0.9f : 0.25f), std::max(1.0f, 1.4f * s));
-				draw->AddRectFilled(at(spot.cx - w / 2, spot.cy - h / 2), at(spot.cx + w / 2, spot.cy + h / 2), on ? c.accent : Colour(0x1a2236, 0xf0), h / 2 * s);
-				draw->AddRect(at(spot.cx - w / 2, spot.cy - h / 2), at(spot.cx + w / 2, spot.cy + h / 2), on ? Colour(0xffffff, 0xff) : Fade(c.accent, 0.6f),
+				const float cx = chip.side < 0 ? kArtX - 30 - w / 2 : chip.side > 0 ? kArtX + 640 + 30 + w / 2 : chip.from.x;
+				const float edgeX = chip.side < 0 ? cx + w / 2 : chip.side > 0 ? cx - w / 2 : cx;
+				const float edgeY = chip.side == 0 ? chip.y + h / 2 : chip.y;
+				draw->AddLine(at(chip.from.x, chip.from.y), at(edgeX, edgeY), Fade(on ? c.accent : 0xffffffff, on ? 0.9f : 0.3f), std::max(1.0f, 1.4f * s));
+				draw->AddCircleFilled(at(chip.from.x, chip.from.y), 4 * s, Fade(on ? c.accent : 0xffffffff, on ? 1.0f : 0.6f), 12);
+				draw->AddRectFilled(at(cx - w / 2, chip.y - h / 2), at(cx + w / 2, chip.y + h / 2), on ? c.accent : Colour(0x1a2236, 0xf0), h / 2 * s);
+				draw->AddRect(at(cx - w / 2, chip.y - h / 2), at(cx + w / 2, chip.y + h / 2), on ? Colour(0xffffff, 0xff) : Fade(c.accent, 0.6f),
 					h / 2 * s, 0, std::max(1.0f, 1.4f * s));
-				canvas.Text(fonts.chip, size, spot.cx - canvas.Measure(fonts.chip, size, label) / 2, spot.cy - size * 0.62f, on ? Colour(0x06080f, 0xff) : c.title,
+				canvas.Text(fonts.chip, size, cx - canvas.Measure(fonts.chip, size, label) / 2, chip.y - size * 0.62f, on ? Colour(0x06080f, 0xff) : c.title,
 					label);
 			}
 		}

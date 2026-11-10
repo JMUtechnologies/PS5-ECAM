@@ -248,15 +248,38 @@ namespace ps5shell
 
 	void Shell::DrawCover(Canvas& canvas, Game& game, const Box& box, bool focused, float lift)
 	{
-		const Box drawn = box.Scaled(1.0f + lift);
 		const ui::Picture& picture = Cover(game);
+		Box drawn = box.Scaled(1.0f + lift);
+		// box art whole, never cut to the slot's shape: as wide or as tall as the slot lets it, on its floor
+		if (picture.texture && picture.width > 0 && picture.height > 0)
+		{
+			const float aspect = (float)picture.width / picture.height;
+			if (drawn.w > drawn.h * aspect)
+			{
+				const float w = drawn.h * aspect;
+				drawn.x += (drawn.w - w) * 0.5f;
+				drawn.w = w;
+			}
+			else
+			{
+				const float h = drawn.w / aspect;
+				drawn.y += drawn.h - h;
+				drawn.h = h;
+			}
+			// as a box from a shelf's size up (a list's small cover stays flat: its spine would be a hairline)
+			if (m_settings.ui.boxArt3d && box.w >= 100)
+			{
+				DrawBox3d(canvas, picture, drawn, focused, game.entry.ambient[0] ? game.entry.ambient[0] : picture.ambient[0]);
+				return;
+			}
+		}
 		uint32_t glow = game.entry.ambient[0] ? game.entry.ambient[0] : picture.ambient[0];
 		if (!glow)
 			glow = Accent();
 		glow = ui::Mix(glow, 0xffffffff, 0.25f) | 0xff000000;
 		canvas.Shadow(drawn, kRadiusCover, focused ? 26.0f : 12.0f, focused ? 60.0f : 30.0f, focused ? 0x99000000 : 0x73000000);
 		if (picture.texture)
-			canvas.ImageCover(picture.texture, picture.width, picture.height, drawn, kRadiusCover, 0xffffffff, 0.0f);
+			canvas.Image(picture.texture, drawn, kRadiusCover);
 		else
 		{
 			// no box art: a card in the game's colours (or the side's), the side's band, its icon and name;
@@ -287,6 +310,47 @@ namespace ps5shell
 		canvas.Ring(drawn, kRadiusCover, 1, 0x14ffffff);
 		if (focused)
 			Focus(drawn, kRadiusCover, glow);
+	}
+
+	void Shell::DrawBox3d(Canvas& canvas, const ui::Picture& picture, const Box& box, bool focused, uint32_t ambient)
+	{
+		// The cover as its box, turned a little to the right: a spine on the left (the cover's left edge, in
+		// shade), then the front, whose far edge is shorter. The canvas draws no perspective, so each face is
+		// thin upright slices of the picture, each a little shorter than the last
+		constexpr int kSlices = 40;
+		const float spine = box.w * 0.11f, front = box.w - spine;
+		const float near = box.h, far = box.h * 0.9f, back = box.h * 0.94f;
+		const float floor = box.Bottom();
+		// where a face's top and bottom are, across it: the floor rises half as much as the top falls
+		const auto slice = [&](float x, float w, float h, float u0, float u1, uint32_t tint) {
+			const float drop = box.h - h;
+			// each slice reaches 2 pixels into the next, so the soft edge of one lies on the next's picture, not on
+			// the ground behind: no seams
+			canvas.Image(picture.texture, {x, floor - h - drop * 0.35f, w + 2.0f, h}, 0, tint, u0, 0, u1 + (u1 - u0) * 2.0f / std::max(w, 0.5f), 1);
+		};
+		uint32_t edge = ambient ? ambient : Accent();
+		canvas.Shadow({box.x + spine * 0.5f, box.y + box.h * 0.04f, box.w - spine * 0.5f, box.h * 0.94f}, 6, focused ? 26.0f : 14.0f,
+			focused ? 60.0f : 30.0f, focused ? 0x99000000 : 0x73000000);
+		// the spine: the cover's first twentieth, darker toward the back
+		for (int i = 0; i < kSlices / 4; i++)
+		{
+			const float t0 = (float)i / (kSlices / 4), t1 = (float)(i + 1) / (kSlices / 4);
+			const float h = back + (near - back) * t0;
+			const uint32_t shade = ui::Mix(0xff5a5a5a, 0xff9a9a9a, t0);
+			slice(box.x + spine * t0, spine * (t1 - t0), h, 0.05f * t0, 0.05f * t1, shade);
+		}
+		// the front: the whole picture, its near edge full height, its far edge shorter
+		for (int i = 0; i < kSlices; i++)
+		{
+			const float t0 = (float)i / kSlices, t1 = (float)(i + 1) / kSlices;
+			const float h = near + (far - near) * t0;
+			slice(box.x + spine + front * t0, front * (t1 - t0), h, t0, t1, ui::Mix(0xffffffff, 0xffd6d6d6, t0));
+		}
+		// the fold between spine and front catches the light; the side's colour as a hairline there
+		const float foldTop = floor - near;
+		canvas.Line(box.x + spine, foldTop + 1, box.x + spine, floor - 1, 1.5f, ui::SetAlpha(ui::Mix(edge, 0xffffffff, 0.6f), 0.55f));
+		if (focused)
+			Focus({box.x + spine, foldTop, front, near}, 4, ui::Mix(edge, 0xffffffff, 0.25f) | 0xff000000);
 	}
 
 	void Shell::DrawToggle(Canvas& canvas, float x, float y, bool on, bool focused)

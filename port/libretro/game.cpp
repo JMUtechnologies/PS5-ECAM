@@ -14,6 +14,7 @@
 #include "core.h"
 #include "session.h"
 #include "../app/achievements.h"
+#include "../app/boxart.h"
 #include "../app/game_archives.h"
 #include "../app/ingame3ds.h"
 #include "../app/lang.h"
@@ -26,6 +27,7 @@
 #include "../ps5/log.h"
 #include "../ps5/notify.h"
 #include "../ps5/pad.h"
+#include "../retro/library.h"
 #include "../retro/registry.h"
 
 #include <archive.h>
@@ -759,6 +761,14 @@ namespace ps5libretro
 		const std::string coreName = system.core;
 		if (coreName == "beetlevb")
 			setup.options["vb_right_analog_to_digital"] = "enabled";
+		else if (coreName == "mesen")
+		{
+			// Mesen's HD packs (texture packs): each in the side's system/HdPacks/<the game file's name>/, its
+			// hires.txt there; the folder made so a player sees where they go
+			std::error_code made;
+			std::filesystem::create_directories(setup.system + "/HdPacks", made);
+			setup.options["mesen_hdpacks"] = "enabled";
+		}
 		else if (coreName == "paralleln64")
 			setup.options = {{"parallel-n64-cpucore", "cached_interpreter"}, {"parallel-n64-gfxplugin", "angrylion"},
 				{"parallel-n64-angrylion-multithread", "6"}};
@@ -787,6 +797,14 @@ namespace ps5libretro
 		}
 		StartSound();
 		ps5ingame3ds::Start(s_name, s_titleId, MenuSettings(), ps5ingame3ds::Console::Retro, system.name, system.colour);
+		// the menu's top: the core's name, and the box art the launcher shows (the folder's own picture, else
+		// libretro's thumbnail by the game file's name)
+		{
+			std::string cover = ps5retro::CoverPath(side, game);
+			if (cover.empty())
+				cover = ps5boxart::RetroPath(ps5retro::Thumbnails(side), game.path.stem().string());
+			ps5ingame3ds::SetGame(CoreName(), cover);
+		}
 		// RetroAchievements, signed in, for a console it has sets for: the game's file hashed as rcheevos
 		// hashes that console's, its memory as rcheevos addresses it
 		s_cheevos = false;
