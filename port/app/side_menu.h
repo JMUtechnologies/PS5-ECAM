@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // PS5-ECAM: the in-game menus' sheet, the Wii U's (ingame.cpp) and the 3DS's (ingame3ds.cpp), as the
-// launcher's Quick Menu. One sheet down the left of the screen over the
-// game, dimmed more on the left than on the right: the game's cover, name and badges at its top, a
-// row of quick actions, then the list. A row is a setting, an action, or a category that opens in
+// launcher's Quick Menu. One full-height glass sheet against the left edge of the screen over the
+// game (6.0), dimmed more on the left than on the right: the game's cover, badges and name at its top,
+// a row of round quick actions, then the list. A row is a setting, an action, or a category that opens in
 // place to show its own rows (one open at a time), its current value beside it so most visits need
 // no opening; the list scrolls when an open category makes it longer than the sheet. Under the list,
 // the focused row's help; at the bottom, the controller hints.
@@ -11,7 +11,9 @@
 // from the list's ends onto the quick actions; Left and Right move along the quick actions or change
 // a setting; Cross chooses, or opens and closes a category (Right opens it, Left closes it); Circle
 // closes the open category, else the menu. What cannot be undone (leaving the game, loading a state)
-// is held: a ring fills over 600 ms. The focus is the launcher's double ring, gliding between rows.
+// is held: a ring fills over 600 ms. The focus is a tint of the side's colour with a bar at its left,
+// gliding between rows; on the quick actions, the focused one is filled in that colour. An open
+// category's rows hang off a thin guide line. tools/preview-menu.sh draws it on the PC.
 
 #pragma once
 
@@ -73,11 +75,13 @@ namespace ps5menu
 	{
 	public:
 		// The sheet's place on the launcher's 1920x1080 layout
-		static constexpr float kX = 48, kY = 48, kWidth = 640, kHeight = 984;
-		static constexpr float kInsetX = 84, kInnerWidth = 568; // the content's column
-		static constexpr float kTilesTop = 224, kTileHeight = 120, kTileGap = 12;
-		static constexpr float kRowHeight = 56, kPitch = 62, kApart = 22;
-		static constexpr float kListBottom = kY + kHeight - 150;
+		// (6.0: a full-height glass sheet against the screen's left edge, as the PS5's own Control Center)
+		static constexpr float kX = 0, kY = 0, kWidth = 700, kHeight = 1080;
+		static constexpr float kInsetX = 64, kInnerWidth = 576; // the content's column
+		static constexpr float kTilesTop = 232, kTileHeight = 132, kTileGap = 0;
+		static constexpr float kRowHeight = 56, kPitch = 60, kApart = 26;
+		static constexpr float kListBottom = kY + kHeight - 164;
+		static constexpr float kFooter = kY + kHeight - 100; // the hairline over the hints
 		static constexpr uint64_t kHoldUs = 600000;
 
 		// The menu opened again: its first quick action in focus, every category closed, and the
@@ -234,16 +238,29 @@ namespace ps5menu
 			const Palette& c = canvas.colours;
 			ImDrawList* draw = canvas.draw;
 			const float s = canvas.scale;
+			const float line = std::max(1.0f, s);
 			const ImGuiIO& io = ImGui::GetIO();
-			const float time = (float)ImGui::GetTime();
 			const float dt = std::clamp(io.DeltaTime, 0.0f, 0.1f);
+			auto box = [&](float x, float y, float w, float h, ImU32 colour, float radius) {
+				draw->AddRectFilled(canvas.At(x, y), canvas.At(x + w, y + h), colour, radius * s);
+			};
+
 			// the game, dimmed by one quad: more on the left, under the sheet, than on the right
-			const ImU32 heavy = Colour(0x05070d, 0xd0), light = Colour(0x05070d, 0x58);
+			const ImU32 heavy = Colour(0x04060c, 0xc8), light = Colour(0x04060c, 0x30);
 			draw->AddRectFilledMultiColor({0, 0}, io.DisplaySize, heavy, light, light, heavy);
-			canvas.Panel(kX, kY, kWidth, kHeight);
+			// the sheet: glass, darker at its foot, the side's colour a glow in its top corner; its edge a
+			// hairline with a soft shadow beyond it
+			const ImVec2 sheetA = canvas.At(kX, kY), sheetB = canvas.At(kX + kWidth, kY + kHeight);
+			draw->AddRectFilledMultiColor({0, sheetA.y}, sheetB, Colour(0x0c1120, 0xee), Colour(0x0c1120, 0xee), Colour(0x06080f, 0xf6),
+				Colour(0x06080f, 0xf6));
+			draw->AddRectFilledMultiColor({0, sheetA.y}, canvas.At(kX + kWidth, kY + 420), Fade(c.accent, 0.11f), Fade(c.accent, 0.11f),
+				Fade(c.accent, 0.0f), Fade(c.accent, 0.0f));
+			draw->AddRectFilledMultiColor({sheetB.x, sheetA.y}, {sheetB.x + 36 * s, sheetB.y}, Colour(0x000000, 0x50), Colour(0x000000, 0),
+				Colour(0x000000, 0), Colour(0x000000, 0x50));
+			draw->AddLine({sheetB.x, sheetA.y}, {sheetB.x, sheetB.y}, Fade(c.accent, 0.35f), line);
 
 			// the game: its cover (or a place for it), its name, its badges and facts
-			constexpr float kCoverX = kInsetX, kCoverY = 84, kCoverBox = 112;
+			constexpr float kCoverX = kInsetX, kCoverY = 72, kCoverBox = 124;
 			float coverWidth = kCoverBox * 0.75f, coverHeight = kCoverBox;
 			if (header.cover && header.coverWidth > 0 && header.coverHeight > 0)
 			{
@@ -251,52 +268,54 @@ namespace ps5menu
 				coverWidth = header.coverWidth * fit;
 				coverHeight = header.coverHeight * fit;
 				const ImVec2 a = canvas.At(kCoverX, kCoverY), b = canvas.At(kCoverX + coverWidth, kCoverY + coverHeight);
-				draw->AddRectFilled({a.x, a.y + 10 * s}, {b.x, b.y + 14 * s}, IM_COL32(0, 0, 0, 80), 14 * s); // its shadow
-				draw->AddImageRounded(header.cover, a, b, {0, 0}, {1, 1}, IM_COL32_WHITE, 14 * s);
-				draw->AddRect(a, b, c.rowEdge, 14 * s, 0, std::max(1.0f, s));
+				for (int shadow = 3; shadow >= 1; shadow--) // a soft shadow under it
+					draw->AddRectFilled({a.x - shadow * 2 * s, a.y + (4 + shadow * 3) * s}, {b.x + shadow * 2 * s, b.y + (8 + shadow * 4) * s},
+						IM_COL32(0, 0, 0, 34), (12 + shadow * 4) * s);
+				draw->AddImageRounded(header.cover, a, b, {0, 0}, {1, 1}, IM_COL32_WHITE, 12 * s);
+				draw->AddRect(a, b, Colour(0xffffff, 0x26), 12 * s, 0, line);
 			}
 			else
 			{
-				draw->AddRectFilled(canvas.At(kCoverX, kCoverY), canvas.At(kCoverX + coverWidth, kCoverY + coverHeight), c.row, 14 * s);
-				draw->AddRect(canvas.At(kCoverX, kCoverY), canvas.At(kCoverX + coverWidth, kCoverY + coverHeight), c.rowEdge, 14 * s, 0, s);
+				box(kCoverX, kCoverY, coverWidth, coverHeight, Colour(0xffffff, 0x0c), 12);
+				canvas.Icon("resume", kCoverX + coverWidth / 2, kCoverY + coverHeight / 2, Colour(0xffffff, 0x30));
 			}
-			const float textX = kCoverX + coverWidth + 24, textWidth = kX + kWidth - 36 - textX;
-			canvas.TextFit(fonts.heading, kHeading, textX, kCoverY + 2, c.title, header.title, textWidth);
+			const float textX = kCoverX + coverWidth + 26, textWidth = kX + kWidth - 40 - textX;
 			float chipX = textX;
 			if (!header.system.empty())
-				chipX = canvas.Chip(fonts.chip, chipX, kCoverY + 50, header.system, c.accent, Fade(c.accent, 0.16f), true);
+				chipX = canvas.Chip(fonts.chip, chipX, kCoverY + 4, header.system, c.accent, Fade(c.accent, 0.16f), true);
 			if (!header.status.empty())
-				chipX = canvas.Chip(fonts.chip, chipX, kCoverY + 50, header.status, c.copy, c.focus);
-			canvas.TextFit(fonts.caption, kCaption, textX, kCoverY + 96 - 6, c.faint, header.details, textWidth);
+				chipX = canvas.Chip(fonts.chip, chipX, kCoverY + 4, header.status, c.copy, Colour(0xffffff, 0x10));
+			canvas.TextFit(fonts.heading, kHeading, textX, kCoverY + 46, c.title, header.title, textWidth);
+			canvas.TextFit(fonts.caption, kCaption, textX, kCoverY + 92, c.faint, header.details, textWidth);
 
-			// the ring's place this frame: where the focus is, reached on a spring
-			float ringX = 0, ringY = 0, ringWidth = 0, ringHeight = 0;
-
-			// the quick actions
+			// the quick actions: a round button each, its name and state under it; the focused one filled
+			// in the side's colour
 			const float listTop = tiles.empty() ? kTilesTop + 8 : kTilesTop + kTileHeight + 24;
 			if (!tiles.empty())
 			{
-				const float width = (kInnerWidth - kTileGap * (tiles.size() - 1)) / tiles.size();
+				const float width = kInnerWidth / tiles.size();
 				for (size_t i = 0; i < tiles.size(); i++)
 				{
 					const Tile& tile = tiles[i];
-					const float x = kInsetX + i * (width + kTileGap), y = kTilesTop;
+					const float cx = kInsetX + width * (i + 0.5f), cy = kTilesTop + 38, radius = 36;
 					const bool focused = m_onTiles && (int)i == m_tile;
-					draw->AddRectFilled(canvas.At(x, y), canvas.At(x + width, y + kTileHeight), focused ? c.focus : c.row, 20 * s);
-					if (!focused)
-						draw->AddRect(canvas.At(x, y), canvas.At(x + width, y + kTileHeight), c.rowEdge, 20 * s, 0, std::max(1.0f, s));
-					const ImU32 ink = focused ? c.title : c.copy;
-					canvas.Icon(tile.icon, x + width / 2, y + (tile.caption.empty() ? 42 : 36), ink);
-					canvas.TextFit(fonts.label, kLabel - 2, x + width / 2, y + (tile.caption.empty() ? 72 : 62), ink, tile.label, width - 16, Canvas::Align::Centre);
-					if (!tile.caption.empty())
-						canvas.TextFit(fonts.caption, kCaption - 2, x + width / 2, y + 90, c.faint, tile.caption, width - 16, Canvas::Align::Centre);
 					if (focused)
 					{
-						ringX = x, ringY = y, ringWidth = width, ringHeight = kTileHeight;
-						if (tile.hold && m_holdProgress > 0)
-							draw->AddRectFilled(canvas.At(x + 14, y + kTileHeight - 10), canvas.At(x + 14 + (width - 28) * std::min(m_holdProgress, 1.0f),
-								y + kTileHeight - 6), c.accent, 2 * s);
+						draw->AddCircleFilled(canvas.At(cx, cy), (radius + 9) * s, Fade(c.accent, 0.16f), 48);
+						draw->AddCircleFilled(canvas.At(cx, cy), radius * s, c.accent, 48);
 					}
+					else
+					{
+						draw->AddCircleFilled(canvas.At(cx, cy), radius * s, Colour(0xffffff, 0x10), 48);
+						draw->AddCircle(canvas.At(cx, cy), radius * s, Colour(0xffffff, 0x14), 48, line);
+					}
+					canvas.Icon(tile.icon, cx, cy, focused ? c.accentInk : c.text);
+					if (focused && tile.hold && m_holdProgress > 0)
+						canvas.HoldRing(cx, cy, radius + 6, m_holdProgress, c.title);
+					canvas.TextFit(fonts.caption, kCaption, cx, kTilesTop + 84, focused ? c.title : c.copy, tile.label, width - 8, Canvas::Align::Centre);
+					if (!tile.caption.empty())
+						canvas.TextFit(fonts.caption, kCaption - 3, cx, kTilesTop + 108, focused ? c.accent : c.faint, tile.caption, width - 8,
+							Canvas::Align::Centre);
 				}
 			}
 
@@ -305,34 +324,60 @@ namespace ps5menu
 			const int at = Focused(shown);
 			const float room = kListBottom - listTop;
 			m_scrollShown += (m_scroll - m_scrollShown) * (m_ringValid ? 1.0f - std::exp(-16.0f * dt) : 1.0f);
-			draw->PushClipRect(canvas.At(kX, listTop - 12), canvas.At(kX + kWidth, kListBottom + 12), true);
+			draw->PushClipRect(canvas.At(kX, listTop - 8), canvas.At(kX + kWidth, kListBottom + 8), true);
+
+			// the focus: a tint of the side's colour with a bar at its left, gliding to the focused row
+			if (!m_onTiles && !shown.empty())
+			{
+				const float indent = shown[at].depth > 0 ? 28.0f : 0.0f;
+				const float targetX = kInsetX - 16 + indent, targetY = listTop + shown[at].y - m_scrollShown;
+				const float targetWidth = kInnerWidth + 16 - indent;
+				const float k = m_ringValid ? 1.0f - std::exp(-22.0f * dt) : 1.0f;
+				m_ring[0] += (targetX - m_ring[0]) * k;
+				m_ring[1] += (targetY - m_ring[1]) * k;
+				m_ring[2] += (targetWidth - m_ring[2]) * k;
+				m_ring[3] = kRowHeight;
+				m_ringValid = true;
+				const ImU32 tint = shown[at].row->apart ? c.bad : c.accent;
+				box(m_ring[0], m_ring[1], m_ring[2], m_ring[3], Fade(tint, 0.17f), 14);
+				draw->AddRect(canvas.At(m_ring[0], m_ring[1]), canvas.At(m_ring[0] + m_ring[2], m_ring[1] + m_ring[3]), Fade(tint, 0.38f), 14 * s,
+					0, line);
+				box(m_ring[0] + 6, m_ring[1] + 14, 4, m_ring[3] - 28, tint, 2);
+			}
+			else
+				m_ringValid = false;
+
+			// an open category's rows: a thin guide down their left, in place of a box each
+			for (int i = 0; i < (int)shown.size(); i++)
+				if (shown[i].depth > 0 && (i == 0 || shown[i - 1].depth == 0))
+				{
+					int last = i;
+					while (last + 1 < (int)shown.size() && shown[last + 1].depth > 0)
+						last++;
+					const float top = listTop + shown[i].y - m_scrollShown + 8, bottom = listTop + shown[last].y - m_scrollShown + kRowHeight - 8;
+					box(kInsetX + 4, top, 2, bottom - top, Fade(c.accent, 0.45f), 1);
+				}
+
 			for (int i = 0; i < (int)shown.size(); i++)
 			{
 				const Row& row = *shown[i].row;
 				const float y = listTop + shown[i].y - m_scrollShown;
-				if (y + kRowHeight < listTop - 12 || y > kListBottom + 12)
+				if (y + kRowHeight < listTop - 8 || y > kListBottom + 8)
 					continue;
 				if (row.apart)
-					draw->AddLine(canvas.At(kInsetX + 8, y - kApart / 2 - 3), canvas.At(kInsetX + kInnerWidth - 8, y - kApart / 2 - 3), c.line, std::max(1.0f, s));
+					draw->AddLine(canvas.At(kInsetX, y - kApart / 2), canvas.At(kInsetX + kInnerWidth, y - kApart / 2), Colour(0xffffff, 0x14), line);
 				const bool focused = !m_onTiles && i == at;
 				const bool child = shown[i].depth > 0;
-				const float indent = child ? 24.0f : 0.0f;
+				const float indent = child ? 28.0f : 0.0f;
 				const float x = kInsetX + indent, width = kInnerWidth - indent;
-				if (focused)
-				{
-					draw->AddRectFilled(canvas.At(x, y), canvas.At(x + width, y + kRowHeight), c.focus, 20 * s);
-					ringX = x, ringY = y, ringWidth = width, ringHeight = kRowHeight;
-				}
-				else if (child)
-					draw->AddRectFilled(canvas.At(x, y), canvas.At(x + width, y + kRowHeight), c.row, 20 * s);
 				ImFont* labelFont = child ? fonts.label : fonts.body;
 				const float labelSize = child ? kLabel : kBody;
-				const ImU32 labelColour = row.apart ? c.bad : child && !focused ? c.copy : c.text;
+				const ImU32 labelColour = row.apart ? c.bad : focused ? c.title : child ? c.copy : c.text;
 				const bool category = !row.rows.empty();
-				float right = x + width - 20;
+				float right = x + width - 14;
 				if (category)
 				{
-					canvas.Chevron(right - 4, y + kRowHeight / 2, c.faint, m_open == row.id ? Canvas::Point::Down : Canvas::Point::Right);
+					canvas.Chevron(right - 4, y + kRowHeight / 2, focused ? c.text : c.faint, m_open == row.id ? Canvas::Point::Down : Canvas::Point::Right);
 					right -= 28;
 				}
 				// what goes right of the label: a hold's ring, a slider, the value
@@ -353,28 +398,28 @@ namespace ps5menu
 					const bool arrows = focused && row.setting;
 					if (arrows)
 					{
-						canvas.Chevron(right - 4, y + kRowHeight / 2, c.copy);
+						canvas.Chevron(right - 4, y + kRowHeight / 2, c.accent);
 						right -= 22;
 					}
 					const float labelRoom = canvas.Width(labelFont, labelSize, row.label) + 36;
 					const float sliderWidth = row.slider >= 0 ? 150 : 0;
 					// the value has what the label leaves it, and at least a third of the row
 					const float valueRoom = std::max(width * 0.34f, right - x - 20 - labelRoom - sliderWidth);
-					valueLeft = right - canvas.TextFit(fonts.label, kLabel, right, y + 14, row.slider >= 0 ? c.text : c.copy, row.value, valueRoom,
+					valueLeft = right - canvas.TextFit(fonts.label, kLabel, right, y + 14, focused ? c.text : c.faint, row.value, valueRoom,
 											Canvas::Align::Right);
 					if (row.slider >= 0)
 					{
-						// the slider: its track, filled in the side's colour to the knob
-						const float trackRight = valueLeft - 18, trackLeft = trackRight - 132, middle = y + kRowHeight / 2;
+						// the slider: a thin track, filled in the side's colour to a small knob
+						const float trackRight = valueLeft - 18, trackLeft = trackRight - 128, middle = y + kRowHeight / 2;
 						const float knob = trackLeft + (trackRight - trackLeft) * std::clamp(row.slider, 0.0f, 1.0f);
-						draw->AddRectFilled(canvas.At(trackLeft, middle - 3), canvas.At(trackRight, middle + 3), c.focus, 3 * s);
-						draw->AddRectFilled(canvas.At(trackLeft, middle - 3), canvas.At(knob, middle + 3), c.accent, 3 * s);
-						draw->AddCircleFilled(canvas.At(knob, middle), 9 * s, c.title);
+						box(trackLeft, middle - 2, trackRight - trackLeft, 4, Colour(0xffffff, 0x1c), 2);
+						box(trackLeft, middle - 2, knob - trackLeft, 4, focused ? c.accent : Fade(c.accent, 0.7f), 2);
+						draw->AddCircleFilled(canvas.At(knob, middle), (focused ? 8 : 6) * s, c.title, 24);
 						valueLeft = trackLeft - 12;
 					}
 					if (arrows)
 					{
-						canvas.Chevron(valueLeft - 14, y + kRowHeight / 2, c.copy, Canvas::Point::Left);
+						canvas.Chevron(valueLeft - 14, y + kRowHeight / 2, c.accent, Canvas::Point::Left);
 						valueLeft -= 26;
 					}
 				}
@@ -386,20 +431,7 @@ namespace ps5menu
 			if (total > room)
 			{
 				const float barTop = listTop + room * m_scrollShown / total, barHeight = room * room / total;
-				draw->AddRectFilled(canvas.At(kX + kWidth - 16, listTop), canvas.At(kX + kWidth - 12, kListBottom), c.row, 2 * s);
-				draw->AddRectFilled(canvas.At(kX + kWidth - 16, barTop), canvas.At(kX + kWidth - 12, barTop + barHeight), c.faint, 2 * s);
-			}
-
-			// the ring, gliding to the focus
-			if (ringWidth > 0)
-			{
-				const float k = m_ringValid ? 1.0f - std::exp(-20.0f * dt) : 1.0f;
-				m_ring[0] += (ringX - m_ring[0]) * k;
-				m_ring[1] += (ringY - m_ring[1]) * k;
-				m_ring[2] += (ringWidth - m_ring[2]) * k;
-				m_ring[3] += (ringHeight - m_ring[3]) * k;
-				m_ringValid = true;
-				canvas.Ring(m_ring[0], m_ring[1], m_ring[2], m_ring[3], 20, time);
+				box(kX + kWidth - 18, barTop, 3, barHeight, Colour(0xffffff, 0x40), 1.5f);
 			}
 
 			// the focused row's help: its first paragraph, on two lines at most
@@ -425,12 +457,14 @@ namespace ps5menu
 			{
 				const std::string first = help.substr(0, help.find('\n'));
 				// two lines under the list: a little smaller, then cut, never clipped mid-line
-				canvas.TextLines(fonts.caption, kCaption, kInsetX + 4, kListBottom + 18, c.faint, first, kInnerWidth - 8, 2);
+				canvas.TextLines(fonts.caption, kCaption, kInsetX, kListBottom + 14, c.faint, first, kInnerWidth, 2);
 			}
-			float x = kInsetX + 4;
-			const float hintSize = canvas.HintsSize(fonts.label, hints, kInnerWidth - 8);
+			// the hints, under a hairline
+			draw->AddLine(canvas.At(kInsetX, kFooter), canvas.At(kInsetX + kInnerWidth, kFooter), Colour(0xffffff, 0x14), line);
+			float x = kInsetX;
+			const float hintSize = canvas.HintsSize(fonts.label, hints, kInnerWidth);
 			for (const auto& [button, label] : hints)
-				x = canvas.Hint(fonts.label, x, kY + kHeight - 62, button, label, hintSize);
+				x = canvas.Hint(fonts.label, x, kFooter + 30, button, label, hintSize);
 		}
 
 	private:
