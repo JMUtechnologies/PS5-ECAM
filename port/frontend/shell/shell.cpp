@@ -1135,15 +1135,59 @@ namespace ps5shell
 	}
 
 	// The game about to start, noted for its report (app/reports.h) when the player said yes: its side,
-	// emulator, and its settings that change how it runs (not its volume, language, region or controls)
+	// emulator, where that emulator keeps logs of its own, and its settings that change how it runs (not
+	// its volume, language, region or controls). melonDS and the libretro cores log into the boot log.
 	void Shell::ReportBegin(const ps5emu::Game& game)
 	{
 		if (!ps5reports::Enabled())
 			return;
 		ps5reports::Session session;
 		session.side = SideName(m_side);
-		session.emulator = IsWiiU() ? "cemu" : Is3ds() ? "azahar" : m_side == System::Nds ? "melonds" : m_side == System::Switch2 ? "eglantine" :
-			IsSwitch() ? "eden" : IsPorpoise() ? "porpoise" : m_settings.retro[ps5retro::Slot(SideIndex())].retroBackend == 0 ? "libretro" : "program";
+		if (IsWiiU())
+		{
+			session.emulator = "cemu";
+			session.logs = {ps5paths::Logs() + "/cemu.prev.txt", ps5paths::CemuRoot() + "/log.txt"};
+		}
+		else if (Is3ds())
+		{
+			session.emulator = "azahar";
+			session.logs = {ps5paths::Azahar() + "/log"};
+		}
+		else if (m_side == System::Nds)
+			session.emulator = "melonds";
+		else if (m_side == System::Switch2)
+		{
+			session.emulator = "eglantine";
+			session.logs = {ps5eden::Switch2FilesFolder()};
+		}
+		else if (IsSwitch())
+		{
+			// Eden's program: its logs, and what it keeps in the app's sandbox until it reaches /data
+			session.emulator = "eden";
+			const std::string sandbox = ps5paths::SandboxDownload();
+			session.logs = {ps5eden::DataFolder() + "/logs", sandbox + "/boot-trace.txt", sandbox + "/eden-headless-g7"};
+		}
+		else if (IsPorpoise())
+		{
+			session.emulator = "porpoise";
+			session.logs = {std::string(ps5retro::Of(SideIndex()).data) + "/debug"}; // app, crash and each game's logs
+		}
+		else if (IsRetro())
+		{
+			// the side's libretro core in the app, or a program of its own (the side's, or its alternative),
+			// named by its folder ("retro/mupen64plus/eboot.bin": mupen64plus), which logs in its data folder
+			const int backend = m_settings.retro[ps5retro::Slot(SideIndex())].retroBackend;
+			if (backend == 0 && ps5libretro::Plays(SideIndex()))
+				session.emulator = ps5retro::Of(SideIndex()).core;
+			else
+			{
+				const ps5retro::Backend program = ps5retro::BackendFor(SideIndex(), backend);
+				const std::string runtime = program.runtime;
+				const size_t end = runtime.rfind('/'), start = end == std::string::npos ? std::string::npos : runtime.rfind('/', end - 1);
+				session.emulator = start == std::string::npos ? "program" : runtime.substr(start + 1, end - start - 1);
+				session.logs = {program.data};
+			}
+		}
 		session.titleId = game.titleId;
 		session.name = game.name;
 		session.started = std::time(nullptr);

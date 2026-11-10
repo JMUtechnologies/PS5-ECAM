@@ -35,6 +35,9 @@ options=(
     -DCMAKE_TOOLCHAIN_FILE="$PS5CEMU_TOOLCHAIN" -DCMAKE_BUILD_TYPE=Release
     -DCEMU_PS5=ON -DCEMU_PS5_PORT_DIR="$PS5CEMU_ROOT/port"
     -DPS5ECAM_STEAMGRIDDB_KEY="${PS5ECAM_STEAMGRIDDB_KEY:-}"
+    # the reports' intake (docs/REPORTS.md, tools/log-intake): here, so a new address configures again
+    # rather than the empty one the cache kept
+    -DPLAYTENDOH_REPORT_URL="${PLAYTENDOH_REPORT_URL:-}"
     -DENABLE_VCPKG=OFF -DENABLE_WXWIDGETS=OFF -DENABLE_OPENGL=OFF -DENABLE_METAL=OFF -DENABLE_VULKAN=ON
     -DENABLE_DISCORD_RPC=OFF -DENABLE_HIDAPI=OFF -DENABLE_SDL=OFF -DENABLE_LIBUSB=OFF -DENABLE_CUBEB=OFF
     -DALLOW_PORTABLE=OFF -DBoost_USE_STATIC_LIBS=ON -DBoost_ROOT="$PS5CEMU_SYSROOT"
@@ -46,6 +49,9 @@ options=(
     # the libretro cores, when tools/build-libretro.py has built them (port/CMakeLists.txt)
     -DPS5CEMU_LIBRETRO_OBJECTS="$PS5CEMU_BUILD/libretro/objects.txt"
 )
+if [[ ${PS5CEMU_RELEASE:-0} == 1 && -z ${PLAYTENDOH_REPORT_URL:-} ]]; then
+    echo "note: PLAYTENDOH_REPORT_URL is not set: this release asks for no reports and sends none (tools/log-intake/README.md)"
+fi
 # configured again when the options change (this script's), as CMake would not know
 if [[ ! -f $build/build.ninja || $(cat "$build/ps5-options" 2>/dev/null) != "${options[*]}" ]]; then
     mkdir -p "$build"

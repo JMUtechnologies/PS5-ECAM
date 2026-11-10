@@ -3,7 +3,8 @@
 // its text, and the compatibility table made from many reports. No Worker API in here, so test.mjs runs
 // it with node alone.
 
-export const MAX_BYTES = 32 * 1024;
+// the boot log's 16 KB, the emulator's own three logs at 8 KB each, and the rest
+export const MAX_BYTES = 64 * 1024;
 const RESULTS = ['ended', 'failed', 'crashed', 'closed'];
 const MODELS = ['base', 'slim', 'pro', 'unknown'];
 
@@ -27,6 +28,20 @@ export function scrub(text) {
 
 function text(value, most) {
 	return typeof value === 'string' ? value.replace(/[\u0000-\u0008\u000b-\u001f\u007f]/g, '').slice(0, most) : null;
+}
+
+// The emulator's own logs of the session (Cemu's, Porpoise's, Eden's...): [{file, text}], three at most,
+// a file's name and its last 8 KB, scrubbed again; JSON for the database, or null
+function emulatorLogs(logs) {
+	if (!Array.isArray(logs)) return null;
+	const kept = [];
+	for (const log of logs.slice(0, 3)) {
+		if (!log || typeof log !== 'object') continue;
+		const file = (text(log.file, 64) || '').replace(/[^\w .+-]/g, '');
+		const body = text(log.text, 8 * 1024);
+		if (file && body) kept.push({ file: scrub(file), text: scrub(body) });
+	}
+	return kept.length ? JSON.stringify(kept) : null;
 }
 
 // The report as the database keeps it, or a reason it is turned away
@@ -63,6 +78,7 @@ export function validate(report) {
 			hen: report.hen === true ? 1 : 0,
 			settings: JSON.stringify(settings),
 			log: report.log ? scrub(text(report.log, 16 * 1024)) : null,
+			emulator_logs: emulatorLogs(report.logs),
 		},
 	};
 }

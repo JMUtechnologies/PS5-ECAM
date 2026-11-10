@@ -23,7 +23,7 @@ scrubbed), `port/app/report_send.cpp` (sending) and `tools/log-intake` (where it
 | `schema` | `1` | this table's version |
 | `install` | `3f9c…` (32 hex digits) | a random number the app makes when you say yes, to count consoles. It is not your console's ID, and a new one is made if you turn reports off and on again |
 | `app`, `commit` | `6.0.0`, `76f7fd0` | Playtendoh's version and the commit it was built from (which pins every emulator's revision) |
-| `side`, `emulator` | `switch`, `eden` | the system and the emulator that ran the game |
+| `side`, `emulator` | `switch`, `eden` | the system and the emulator that ran the game: `cemu`, `azahar`, `melonds`, `eden`, `eglantine`, `porpoise`, a libretro core (`mgba`, `mesen`...) or a system's own program (`n64`, `mupen64plus`...) |
 | `titleId`, `name` | `0100f2c0115b6000`, `The Legend of Zelda: Tears of the Kingdom` | the game, as the library names it (80 characters at most) |
 | `started` | `1762700000` | when it started, in seconds |
 | `result` | `ended`, `failed`, `crashed`, `closed` | left from its menu; did not start; crashed; or the app or console was closed under it |
@@ -33,6 +33,7 @@ scrubbed), `port/app/report_send.cpp` (sending) and `tools/log-intake` (where it
 | `firmware`, `model` | `11.60`, `pro` | the PS5's firmware, and `base`, `slim`, `pro` or `unknown` |
 | `jit`, `hen` | `true`, `true` | whether the app got JIT memory and reached `/data` |
 | `log` | | the last 120 lines (16 KB at most) of Playtendoh's own boot log for that session, scrubbed |
+| `logs` | `[{"file": "core.log", "text": "…"}]` | the emulator's own logs of that session, for those that keep logs of their own (Cemu, Azahar, Eden, Lichii, Porpoise and the systems' own programs): at most three, a crash's first, each its last lines (8 KB at most), scrubbed as the boot log. Only files the emulator wrote while the game ran, and only their names, never their folders |
 
 ## What a report never holds
 

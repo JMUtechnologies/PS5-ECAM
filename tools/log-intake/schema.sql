@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS reports (
 	jit INTEGER NOT NULL,
 	hen INTEGER NOT NULL,
 	settings TEXT NOT NULL,      -- JSON: {"name": number}
-	log TEXT
+	log TEXT,                    -- the boot log's last lines
+	emulator_logs TEXT           -- JSON: [{"file": "core.log", "text": its last lines}], the emulator's own
 );
 CREATE INDEX IF NOT EXISTS reports_game ON reports (side, title_id);
 CREATE INDEX IF NOT EXISTS reports_received ON reports (received);
