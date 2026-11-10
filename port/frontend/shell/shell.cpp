@@ -4,6 +4,7 @@
 // (shell_internal.h).
 
 #include "shell_internal.h"
+#include "../collections.h"
 #include "../../app/achievements.h"
 #include "../../app/shots.h"
 #include "../actions.h"
@@ -2003,6 +2004,8 @@ namespace ps5shell
 		if ((Is3ds() && (g.entry.game.hasUpdate || g.entry.game.dlcCount > 0)) || installedUpdate || installedDlc)
 			m_menu.items.push_back({"removeaddons", Tr("Remove its update or DLC")});
 		m_menu.items.push_back({"favourite", g.entry.favourite ? Tr("Not a favourite") : Tr("Favourite")});
+		// tr: the game menu: named groups of games the player makes (Couch co-op, say), shown on the Library's filter row
+		m_menu.items.push_back({"collections", Tr("Collections")});
 		// tr: the game menu: a game left out of the Library's list (for demos and clutter), or put back
 		m_menu.items.push_back({"hide", g.entry.hidden ? Tr("Back in the Library") : Tr("Hide from the Library")});
 		if (!IsRetro() && ps5forwarders::HasTile(g.entry.game.path.string()))
@@ -2010,6 +2013,57 @@ namespace ps5shell
 		else if (!IsRetro())
 			m_menu.items.push_back({"tile", Tr("Add to home screen")});
 		m_feedback.Play(ui::Cue::Sheet);
+	}
+
+	void Shell::OpenCollections(int game)
+	{
+		const int side = SideIndex();
+		if (game < 0)
+		{
+			// browsing: All, then the collections this side's games are in
+			const std::vector<std::string> names = LibraryCollections();
+			std::vector<std::string> choices{TrC("filter", "All")};
+			choices.insert(choices.end(), names.begin(), names.end());
+			const auto at = std::find(names.begin(), names.end(), m_libraryCollection[side]);
+			OpenPicker(TrC("tab", "Library"), Tr("Collections"), choices, at != names.end() ? 1 + (int)(at - names.begin()) : 0,
+				[this, names](int choice) { ShowCollection(choice > 0 ? names[choice - 1] : std::string()); });
+			return;
+		}
+		// a game's: New collection, then every collection there is, a check on the ones it is in
+		const ps5catalog::System catalog = CatalogSide();
+		const uint64_t title = m_games[game].entry.game.titleId;
+		const std::vector<std::string> names = ps5catalog::Collections();
+		const ps5catalog::Entry* stored = ps5catalog::Find(catalog, title);
+		// tr: the first choice of a game's Collections: a collection named with the keyboard, the game put in it
+		std::vector<std::string> choices{Tr("New collection")};
+		for (const std::string& name : names)
+			choices.push_back((stored && ps5collections::Matches(*stored, name) ? "✓ " : "") + name);
+		auto set = [this, catalog, title](const std::string& name, bool member) {
+			if (!ps5catalog::SetCollection(catalog, title, name, member))
+			{
+				// tr: a game's collection could not be written to the console's storage
+				Toast(Tr("Could not save the collection"));
+				return;
+			}
+			if (const ps5catalog::Entry* now = ps5catalog::Find(catalog, title))
+				for (Game& item : m_games)
+					if (item.entry.game.titleId == title)
+						ps5collections::SyncMembership(item.entry, *now);
+			LibraryRefresh();
+		};
+		OpenPicker(m_games[game].entry.game.name, Tr("Collections"), choices, -1, [this, catalog, title, names, set](int choice) {
+			if (choice == 0)
+			{
+				OpenNameKeyboard(Tr("New collection"), "", 48, [set](const std::string& name) {
+					if (!name.empty())
+						set(name, true);
+				});
+				return;
+			}
+			const ps5catalog::Entry* entry = ps5catalog::Find(catalog, title);
+			const std::string& name = names[choice - 1];
+			set(name, !(entry && ps5collections::Matches(*entry, name)));
+		});
 	}
 
 	void Shell::OpenNameKeyboard(const std::string& title, const std::string& text, size_t limit, std::function<void(const std::string&)> done)
@@ -2434,6 +2488,8 @@ namespace ps5shell
 					if (InGameSettings())
 						m_page = "gamesaves";
 				}
+				else if (id == "collections")
+					OpenCollections(game);
 				else if (id == "favourite")
 				{
 					g.entry.favourite = !g.entry.favourite;

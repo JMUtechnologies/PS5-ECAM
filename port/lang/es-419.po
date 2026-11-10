@@ -130,9 +130,14 @@ msgstr "Un celular o una tableta en la red de la PS5. El sonido se queda en la P
 msgid "Your keys could not decrypt this game: prod.keys in {0}/keys has keys missing or wrong for it, or the game's file is damaged. Dump prod.keys again from your own Switch, and check the game's file on a computer."
 msgstr "Tus claves no pudieron descifrar este juego: a prod.keys en {0}/keys le faltan claves para él o son incorrectas, o el archivo del juego está dañado. Vuelve a extraer prod.keys de tu propia Switch y revisa el archivo del juego en una computadora."
 
-#: port/frontend/shell/library.cpp:144
+#: port/frontend/shell/library.cpp:168
 msgid "Its settings, graphic packs and controllers are loading, and then it looks for your games."
 msgstr "Se están cargando sus ajustes, paquetes gráficos y controles, y después buscará tus juegos."
+
+#. the game menu: named groups of games the player makes (Couch co-op, say), shown on the Library's filter row
+#: port/frontend/shell/library.cpp:428 port/frontend/shell/shell.cpp:2008 port/frontend/shell/shell.cpp:2028 port/frontend/shell/shell.cpp:2054
+msgid "Collections"
+msgstr "Colecciones"
 
 #: port/frontend/shell/pages.cpp:436
 msgid ""
@@ -331,6 +336,16 @@ msgstr "Agregar un recurso compartido"
 #: port/frontend/shell/shares.cpp:570
 msgid "Turn on file sharing for a folder on your computer or NAS, then add it here. The PS5 reads games from it; it never writes to it. A cable does better than Wi-Fi for Wii U games."
 msgstr "Activa el uso compartido de archivos para una carpeta de tu computadora o NAS y agrégala aquí. La PS5 lee los juegos de ella; nunca escribe en ella. Para los juegos de Wii U, un cable funciona mejor que el wifi."
+
+#. the first choice of a game's Collections: a collection named with the keyboard, the game put in it
+#: port/frontend/shell/shell.cpp:2038 port/frontend/shell/shell.cpp:2057
+msgid "New collection"
+msgstr "Nueva colección"
+
+#. a game's collection could not be written to the console's storage
+#: port/frontend/shell/shell.cpp:2045
+msgid "Could not save the collection"
+msgstr "No se pudo guardar la colección"
 
 #: port/frontend/shell/welcome.cpp:110
 msgid "What a click of the touchpad is for Wii U player 1: a touch of the GamePad's screen, or the button set to Touchpad click under Buttons (- (Select) when nothing is). Automatic: a touch with the GamePad, a button with the other controllers. Each player's own: Settings > Controls on the Wii U side."

@@ -6,6 +6,7 @@
 // played last, on every side. The same Library underneath: its order, its search, its game menu.
 
 #include "shell_internal.h"
+#include "../collections.h"
 
 #include "../../melonds/melonds.h"
 
@@ -218,8 +219,8 @@ namespace ps5shell
 		case Button::Up: FocusBar(); return true;
 		case Button::Down: m_feedback.Play(ui::Cue::Edge, press.repeat); return true;
 		case Button::Circle:
-			if (!m_search.empty())
-				return false; // the search let go first
+			if (!m_search.empty() || !m_libraryCollection[SideIndex()].empty())
+				return false; // the search, then a collection, let go first (LibraryUpdate)
 			OrbitHomeOpen(true);
 			return true;
 		default: return false;
@@ -306,11 +307,16 @@ namespace ps5shell
 			line = Tr("The games you played last, on every console");
 		else
 		{
-			const int listed = (int)std::count_if(m_games.begin(), m_games.end(), [](const Game& g) { return !g.entry.hidden; });
+			// a collection browsed (Square, Collections): its name, its games
+			const std::string& collection = m_libraryCollection[SideIndex()];
+			const int listed = (int)std::count_if(m_games.begin(), m_games.end(), [&](const Game& g) {
+				return !g.entry.hidden && ps5collections::Matches(g.entry, collection);
+			});
 			uint32_t minutes = 0;
 			for (const Game& g : m_games)
-				minutes += g.entry.minutesPlayed;
-			line = TrP(listed, "{0} game", "{0} games");
+				if (ps5collections::Matches(g.entry, collection))
+					minutes += g.entry.minutesPlayed;
+			line = (collection.empty() ? std::string() : collection + " · ") + TrP(listed, "{0} game", "{0} games");
 			if (minutes >= 60)
 				line += " · " + TrP(minutes / 60, "{0} h played", "{0} h played");
 		}

@@ -646,6 +646,11 @@ namespace ps5shell
 			std::function<void(int)> choose);
 		void OpenHelp(const std::string& title, const std::string& text);
 		void OpenGameMenu(int game);
+		// a game's collections from its menu (game >= 0), or one to browse (Orbit's Square)
+		void OpenCollections(int game = -1);
+		std::vector<std::string> LibraryCollections() const;
+		void ShowCollection(const std::string& name); // empty: every game again
+		std::array<std::string, kSides> m_libraryCollection{}; // browsed, per side, for this session
 		void OpenKeyboard();
 		void OpenNameKeyboard(const std::string& title, const std::string& text, size_t limit, std::function<void(const std::string&)> done);
 		// text as it is typed: no capitals put in, with capitals and symbols on R1 and L1; secret shows dots
