@@ -192,6 +192,6 @@ namespace ps5shots
 
 namespace ps5esde
 {
-	bool Available() { return false; }
+	bool Available() { return std::getenv("PREVIEW_ESDE") != nullptr; } // PREVIEW_ESDE=1: an app with ES-DE
 	void BackToFrontend(const ps5settings::Launcher&, const std::string&) {}
 }

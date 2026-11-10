@@ -375,6 +375,8 @@ namespace ps5shell
 		void ReportsAnswer(bool yes);
 		void ReportBegin(const ps5emu::Game& game); // a game starts: noted for its report
 		void LayoutOrbitPreview(Canvas& canvas, const Box& box);
+		void LayoutEsdePreview(Canvas& canvas, const Box& box);
+		float m_layoutShown = 0; // the cards of the setup's launcher question, turning to the focused one
 		void OrbitDraw(Canvas& canvas);
 		bool OrbitUpdate(const ui::Press& press); // true: it took the press
 		void OrbitHomeOpen(bool home);

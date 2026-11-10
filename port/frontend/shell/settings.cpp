@@ -1529,7 +1529,12 @@ namespace ps5shell
 						"Only the launcher changes: the in-game menus and the games stay as they are.",
 						ps5paths::Root()));
 			}
-			choice("layout", Tr("Layout"), {Tr("Classic"), Tr("Orbit")}, std::clamp(settings.ui.layout, 0, 1),
+			// EmulationStation the third, where the app has it (port/esde/esde.h)
+			std::vector<std::string> layouts{Tr("Classic"), Tr("Orbit")};
+			if (ps5esde::Available())
+				layouts.push_back(Tr("EmulationStation"));
+			choice("layout", Tr("Layout"), layouts,
+				settings.ui.emulationStation && ps5esde::Available() ? 2 : std::clamp(settings.ui.layout, 0, 1),
 				Tr("How the Library is laid out."),
 				Tr("Classic shows one console at a time, with Recently played on top and every game in a list. Orbit turns the logo into a dial "
 				   "that picks the console, with what you played lately in its middle. Switching moves nothing: your games, settings and saves "
@@ -1568,13 +1573,6 @@ namespace ps5shell
 			toggle("filters", Tr("Library filters"), settings.ui.libraryFilters, Tr("All, Recently added, Favourites: a row over the list."),
 				Tr("A row of filters over the Library's list: All, Recently added (the last 30 days), Favourites and, on the Wii U side, "
 				   "Graphic packs on, each with its count. Off: the list has every game, and Sort and Search are all it needs."));
-			// EmulationStation as the frontend, when the app has it (port/esde/esde.h)
-			if (ps5esde::Available())
-				toggle("emulationstation", Tr("Start in EmulationStation"), settings.ui.emulationStation,
-					Tr("ES-DE's menus and themes over the same games, played here."),
-					Tr("Playtendoh opens on EmulationStation (ES-DE) instead of its own launcher: the sides the bar shows, with the games "
-					   "their libraries list, and every game plays here with its settings, saves and in-game menu, then goes back to "
-					   "EmulationStation. Hold L1 as Playtendoh starts, or quit EmulationStation, for this launcher."));
 			int hold = 2;
 			for (int i = 0; i < 6; i++)
 				if (kHolds[i] <= settings.ui.holdMs)
@@ -2216,7 +2214,12 @@ namespace ps5shell
 			settings.ui.theme = index >= 0 && index < (int)m_themes.size() ? m_themes[index].id : "";
 		else if (id == "layout")
 		{
-			settings.ui.layout = std::clamp(index, 0, 1);
+			// EmulationStation from the app's next start; Classic or Orbit now
+			settings.ui.emulationStation = index == 2 && ps5esde::Available();
+			if (index < 2)
+				settings.ui.layout = std::clamp(index, 0, 1);
+			else
+				Toast(Tr("EmulationStation opens the next time Playtendoh starts. Hold L1 as it starts for this launcher."));
 			settings.ui.layoutChosen = true;
 		}
 		else if (id == "abeverywhere")

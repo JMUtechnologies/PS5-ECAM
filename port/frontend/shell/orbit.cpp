@@ -7,6 +7,7 @@
 
 #include "shell_internal.h"
 #include "../collections.h"
+#include "../../esde/esde.h"
 
 #include "../../melonds/melonds.h"
 
@@ -487,7 +488,9 @@ namespace ps5shell
 	void Shell::LayoutOpen(std::function<void()> then)
 	{
 		m_layoutThen = std::move(then);
-		m_layoutFocus = std::clamp(m_settings.ui.layout, 0, 1);
+		// EmulationStation, the third choice, where the app has it (port/esde/esde.h)
+		m_layoutFocus = m_settings.ui.emulationStation && ps5esde::Available() ? 2 : std::clamp(m_settings.ui.layout, 0, 1);
+		m_layoutShown = (float)m_layoutFocus;
 		m_onBar = false;
 		Show(ScreenId::Layout);
 		m_screenAt = m_now;
@@ -500,7 +503,8 @@ namespace ps5shell
 		case Button::Left:
 		case Button::Right:
 		{
-			const int next = press.button == Button::Right ? 1 : 0;
+			const int last = ps5esde::Available() ? 2 : 1;
+			const int next = std::clamp(m_layoutFocus + (press.button == Button::Right ? 1 : -1), 0, last);
 			if (next == m_layoutFocus)
 				m_feedback.Play(ui::Cue::Edge, press.repeat);
 			else
@@ -515,7 +519,16 @@ namespace ps5shell
 		{
 			// Circle leaves it as it is: nothing here has to be answered, as the rest of Make it yours
 			if (press.button == Button::Cross)
-				m_settings.ui.layout = m_layoutFocus;
+			{
+				// EmulationStation: the app opens on it from its next start (L1 held then: this launcher, in the
+				// layout it had); Classic or Orbit: this launcher
+				m_settings.ui.emulationStation = m_layoutFocus == 2;
+				if (m_layoutFocus < 2)
+					m_settings.ui.layout = m_layoutFocus;
+				else
+					// tr: after EmulationStation is picked as the launcher on the first start or in Settings
+					Toast(Tr("EmulationStation opens the next time Playtendoh starts. Hold L1 as it starts for this launcher."));
+			}
 			m_settings.ui.layoutChosen = true;
 			SaveSettings();
 			ApplyTheme();
@@ -622,6 +635,42 @@ namespace ps5shell
 		}
 	}
 
+	void Shell::LayoutEsdePreview(Canvas& canvas, const Box& box)
+	{
+		// ES-DE as its default theme has it, small: a system's art large in the middle, the systems either side,
+		// then a system's game list with the focused game's details
+		const float px = box.x, py = box.y;
+		const uint32_t line = 0x38fbf7f5, strong = 0xb3fbf7f5;
+		canvas.LinearGradient(box, 16, Rgb(0x1b1f2a), Rgb(0x0b0d12), px, py, px, box.Bottom());
+		canvas.Rect({px + 30, py + 24, 120, 10}, 5, strong);
+		canvas.Rect({px + 560, py + 24, 130, 8}, 4, line);
+		constexpr System kSystems[5] = {System::N64, System::Snes, System::WiiU, System::Switch, System::N3ds};
+		for (int i = 0; i < 5; i++)
+		{
+			const float away = std::abs(i - 2.0f);
+			const float size = away < 1 ? 84.0f : away < 2 ? 54.0f : 40.0f;
+			const Box tile{px + 360 + (i - 2) * 130 - size / 2, py + 120 - size / 2, size, size};
+			canvas.PushAlpha(1.0f - 0.25f * away);
+			DrawBareConsole(canvas, kSystems[i], tile, i == 2);
+			canvas.PopAlpha();
+		}
+		canvas.Rect({px + 300, py + 178, 120, 8}, 4, strong);
+		canvas.Rect({px + 320, py + 194, 80, 5}, 2.5f, line);
+		canvas.Rect({px + 24, py + 222, 672, 1}, 0, 0x1fffffff);
+		for (int i = 0; i < 5; i++)
+		{
+			const float y = py + 238 + i * 30;
+			if (i == 1)
+				canvas.Rect({px + 24, y - 6, 380, 26}, 6, 0x2effffff);
+			canvas.Rect({px + 36, y + 3, 150.0f + (i % 3) * 40, 7}, 3.5f, i == 1 ? strong : 0x73fbf7f5);
+		}
+		const Box cover{px + 430, py + 236, 92, 128};
+		canvas.LinearGradient(cover, 6, Rgb(0xdc2626), Rgb(0xf59e0b), cover.x, cover.y, cover.Right(), cover.Bottom());
+		canvas.Rect({px + 540, py + 240, 140, 8}, 4, strong);
+		for (int i = 0; i < 4; i++)
+			canvas.Rect({px + 540, py + 262 + i * 16, 150.0f - i * 18, 5}, 2.5f, line);
+	}
+
 	void Shell::LayoutDraw(Canvas& canvas)
 	{
 		// its own ground on every theme (DrawBackdrop), so its own ink
@@ -644,18 +693,28 @@ namespace ps5shell
 			const char* about;
 			const char* goodFor;
 		};
-		const Card cards[2] = {
+		const Card cards[3] = {
 			{Tr("Classic"), "", Tr("One console at a time, from the carousel; L1 and R1 turn it. Recently played on top, every game in a list below."),
 				Tr("Good for big libraries on a few consoles")},
 			{Tr("Orbit"), Tr("New in 6.0"),
 				Tr("Turn the dial to pick a console; its middle is what you played lately, on every console. The game you're on fills the background."),
 				Tr("Good for playing across many consoles")},
+			// tr: the third launcher of the first start's question, where the app has ES-DE
+			{Tr("EmulationStation"), "ES-DE",
+				Tr("ES-DE's menus and themes over the same games, every console in its own system. Games play here, with their settings, saves and in-game menu."),
+				Tr("Good if you know ES-DE from other devices")},
 		};
+		// two cards side by side; with EmulationStation, three in a row that turns, the focused one in the middle
+		const int count = ps5esde::Available() ? 3 : 2;
+		m_layoutShown += (m_layoutFocus - m_layoutShown) * std::min(1.0f, 12.0f * m_dt);
 		canvas.PushAlpha(Enter(1));
-		for (int i = 0; i < 2; i++)
+		for (int i = 0; i < count; i++)
 		{
 			const bool on = i == m_layoutFocus;
-			const Box card{i == 0 ? 140.0f : 1000.0f, on ? 286.0f : 296.0f, 780, 600};
+			const float cardX = count == 2 ? (i == 0 ? 140.0f : 1000.0f) : 570.0f + (i - m_layoutShown) * 840.0f;
+			if (cardX > 1920 || cardX + 780 < 0)
+				continue;
+			const Box card{cardX, on ? 286.0f : 296.0f, 780, 600};
 			canvas.PushAlpha(on ? 1.0f : 0.62f);
 			if (on)
 				canvas.Shadow(card, 28, 30, 70, 0x99000000);
@@ -665,8 +724,10 @@ namespace ps5shell
 			canvas.Rect(preview, 16, 0xff0d0705);
 			if (i == 0)
 				LayoutClassicPreview(canvas, preview);
-			else
+			else if (i == 1)
 				LayoutOrbitPreview(canvas, preview);
+			else
+				LayoutEsdePreview(canvas, preview);
 			canvas.Ring(preview, 16, 1, 0x14ffffff);
 			const float x = card.x + 36, textWidth = card.w - 72;
 			const ui::TextBlock name = canvas.Text(Style({36, ui::Weight::SemiBold, 1.0f}), x, card.y + 456, cards[i].name, kInk, textWidth, 1);
@@ -679,7 +740,10 @@ namespace ps5shell
 		canvas.PopAlpha();
 
 		canvas.PushAlpha(Enter(2));
-		canvas.Text(Style({19, ui::Weight::Regular, 1.3f}), left, 926, Tr("Both have the Timeline view: every console on one shelf. Press the touchpad from either."), kInk2, 1180, 2);
+		canvas.Text(Style({19, ui::Weight::Regular, 1.3f}), left, 926,
+			m_layoutFocus == 2 ? std::string(Tr("Hold L1 as Playtendoh starts for its own launcher. Settings > Launcher > Layout switches back any time."))
+							   : std::string(Tr("Both have the Timeline view: every console on one shelf. Press the touchpad from either.")),
+			kInk2, 1180, 2);
 		// tr: the button of the first start's question: {0} is the layout in focus, Classic or Orbit
 		const std::string use = TrF("Use {0}", cards[m_layoutFocus].name);
 		const ui::TextStyle useStyle = Style({22, ui::Weight::SemiBold, 1.0f});
