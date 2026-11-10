@@ -39,8 +39,8 @@
 
 ## Coming in 6.0
 
-Playtendoh 6.0 is being finished on the `PS5-ECAM` branch; the download above is still 5.1.0, the latest
-release, until 6.0 is out. What it brings:
+Playtendoh 6.0 is in the code on the `PS5-ECAM` branch and comes out once a build of it has been played on a
+console; until then the download above is 5.1.0, the latest release. What it brings:
 
 - **A new name and a new look:** Playtendoh, with a mark of every console's controller in a ring, on the
   PS5's home screen and at the launcher's top left.
@@ -68,9 +68,20 @@ release, until 6.0 is out. What it brings:
   DolphinBar (mode 4), with its own pointer, motion and Nunchuk: choose **Real Wii Remote** as a player's
   controller. It runs on Project Porpoise's USB layer, by CroCop86, as the Wii side does.
 - **EmulationStation (ES-DE)** as the other frontend, its games played here.
-- **Switch:** games no longer end after 6 to 10 minutes ([#97](https://github.com/premohq/PlayTendoh/issues/97));
+- **Reports, if you say yes:** asked once, Playtendoh sends a short report when a game ends (the game, how it
+  ran, the settings and the PS5's firmware and model, nothing about you), so what fails gets fixed and the
+  [compatibility list](docs/COMPATIBILITY.md) fills itself. Never while you play; **Settings > Online** turns
+  it off ([what a report holds](docs/REPORTS.md)).
+- **Fixes:** a fix for Switch games ending after 6 to 10 minutes ([#97](https://github.com/premohq/PlayTendoh/issues/97));
   Wii U installs no longer stop at 0 % ([#96](https://github.com/premohq/PlayTendoh/issues/96)); the touchpad's
-  shortcuts with a Pro Controller on the Wii U ([#93](https://github.com/premohq/PlayTendoh/issues/93)).
+  shortcuts with a Pro Controller on the Wii U ([#93](https://github.com/premohq/PlayTendoh/issues/93)); 120 Hz
+  kept while the display settles ([#103](https://github.com/premohq/PlayTendoh/issues/103)); a Switch save taken
+  from standalone ProsperoEden ([#104](https://github.com/premohq/PlayTendoh/issues/104)); leaving a Switch game
+  keeps its shaders ([#105](https://github.com/premohq/PlayTendoh/issues/105)); a Switch game's update and DLC
+  from any folder ([#106](https://github.com/premohq/PlayTendoh/issues/106)); the DS's RetroAchievements
+  ([#107](https://github.com/premohq/PlayTendoh/issues/107)); and a Switch game that cannot start for want of
+  newer keys says so ([#108](https://github.com/premohq/PlayTendoh/issues/108)).
+- **Switch 2 on Lichii's newest core** is being ported for 6.0 (the [roadmap](docs/ROADMAP.md) has where it stands).
 
 None of 6.0 has run on a console yet: the [roadmap](docs/ROADMAP.md) says what is being checked. Changes in
 earlier versions are in their [release notes](https://github.com/premohq/PlayTendoh/releases).
@@ -106,11 +117,13 @@ Playtendoh is free. If it brings your games back, you can support it:
 | **Game &amp; Watch** | gw-libretro core | `.mgw` |
 | **iQue Player** | the N64's program | decrypted iQue games |
 
-- **One launcher for all of them:** a side for each system, with box art, search, sorting, favourites, a page
-  and settings for each game, and Playtendoh's own in-game menu on every system (the GameCube's and Wii's
-  Porpoise still shows some of its own, which 6.0 is taking out).
-- **Made for the DualSense:** every button remappable, motion controls, rumble, the touchpad as the touch
-  screen, up to four players.
+- **One launcher for all of them:** a side for each system, with box art, search, sorting, favourites, play
+  time, a page and settings for each game, two layouts (Classic and Orbit) and the Timeline, and
+  Playtendoh's own in-game menu on every system, the GameCube and Wii included.
+- **Made for the DualSense:** every button remappable, in Settings or in a game's menu without leaving it,
+  motion controls, rumble, the touchpad as the touch screen, up to four players.
+- **Saves you can carry:** save states with undo and Resume where you left off, backups to a USB drive,
+  RetroAchievements, and the remote touch screen on a phone or computer to add games, keys and saves.
 - **Picture:** up to 4K and 120 Hz on the Wii U, up to 10x on the 3DS, FSR 1, anti-aliasing, borders and
   layouts, frame generation.
 - **Updates itself:** a new release installs from inside the app.
@@ -178,7 +191,8 @@ Every shortcut, the in-game menu and the rest are in the [guide](docs/GUIDE.md).
 
 - [Guide](docs/GUIDE.md): the launcher, each system, controls, saves, mods, the remote touch screen and where files are kept
 - [Firmware and setup](docs/HEN-SETUP.md) · [Mods](docs/GUIDE.md#mods) · [Compatibility](docs/COMPATIBILITY.md)
-- [Building from source](docs/BUILDING.md) · [Driver performance](docs/DRIVER-PERFORMANCE.md) · [Roadmap](docs/ROADMAP.md)
+- [Building from source](docs/BUILDING.md) · [Driver performance](docs/DRIVER-PERFORMANCE.md) · [Roadmap](docs/ROADMAP.md) · [Reports](docs/REPORTS.md)
+- [Contributing](CONTRIBUTING.md): where the app is going, its look and voice, and how to send a change
 - Problems: **Settings > Diagnostics > Copy logs to USB**, then [open an issue](https://github.com/premohq/PlayTendoh/issues/new/choose)
 
 ## Building
@@ -211,7 +225,9 @@ Bugs still go in [GitHub issues](https://github.com/premohq/PlayTendoh/issues/ne
   before still found, and the PC tool that separates one); the Switch side's mods, cheats, ReShade
   presets and players, and its saves to and from a USB drive, Ryujinx's too; the DS's GBA cartridge in
   Slot-2, its recorded microphone and touch screen calibration; and the tools that compare
-  performance captures ([#86](https://github.com/premohq/PlayTendoh/pull/86), [#84](https://github.com/premohq/PlayTendoh/pull/84))
+  performance captures ([#86](https://github.com/premohq/PlayTendoh/pull/86), [#84](https://github.com/premohq/PlayTendoh/pull/84));
+  the Switch 2 side on EglantinePS5 with the shared in-game menu, its NUP games and folders, and a game's own
+  performance switches ([#109](https://github.com/premohq/PlayTendoh/pull/109), [#112](https://github.com/premohq/PlayTendoh/pull/112))
 
 ### Contributors
 
@@ -219,6 +235,10 @@ Big thanks to the people who sent code and fixes to Playtendoh itself. Want to j
 says where the app is going and how to fit in.
 
 
+- **[Phononenom](https://github.com/Phononenom)** for the GameCube and Wii sides as they are in 6.0: Porpoise's
+  in-game menu as Playtendoh's, its settings, memory cards and saves per game, a game's setups, cheats and
+  patches, Wii banners and title screens in the launcher ([#114](https://github.com/premohq/PlayTendoh/pull/114)),
+  and the Game Boy Advance on the link cable
 - **[dolphin78](https://github.com/dolphin78)**, with a massive shoutout: Artic Setup works on the PS5
   because of him ([#70](https://github.com/premohq/PlayTendoh/pull/70)). He found and fixed why the 3DS's system update failed and why a
   New 3DS's setup crashed, and tested it all on his own PS5 with a New 3DS XL. He also made crash
@@ -251,7 +271,8 @@ says where the app is going and how to fit in.
   [Nightshade](https://github.com/Oliv3rmoon/Nightshade) by **Oliv3rmoon**, whose port of it to the PS5
   the Switch side's follows (`patches/eden` 0021 and 0022)
 - [Eglantine](https://github.com/Djihads80/Eglantine) by **Djihads80** and its contributors, Eden with
-  Switch 2 support (GPL-3.0-or-later), in [EglantinePS5](https://github.com/heydemoura/EglantinePS5), its
+  Switch 2 support, and [Lichii](https://github.com/zortos293/Lichii), its continuation by **zortos293** and
+  its contributors, the Switch 2 side's core (GPL-3.0-or-later), in [EglantinePS5](https://github.com/heydemoura/EglantinePS5), its
   PS5 port by **heydemoura** (**Heyde Moura**) with **darkxex** and **swizard** (GPL-3.0-or-later): the
   Switch 2 side's child runtime (`patches/eglantine`), brought in with the shared in-game menu by
   **JMUtechnologies** ([#109](https://github.com/premohq/PlayTendoh/pull/109))
