@@ -27,7 +27,6 @@
 #include "Cafe/OS/libs/swkbd/swkbd.h"
 #include "config/CemuConfig.h"
 #include "imgui/imgui_extension.h"
-#include "imgui/imgui_impl_vulkan.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -837,14 +836,14 @@ void PS5Cemu_ImguiUploads()
 	if (!s_menuOpen || s_coverTried || !g_renderer)
 		return;
 	s_coverTried = true;
-	// the DualSense's drawing keeps its transparency: made by ImGui's Vulkan backend itself, as Cemu's
-	// GenerateTexture makes every picture opaque
+	// the DualSense's drawing keeps its transparency (patches/cemu 0049: Cemu's GenerateTexture makes every
+	// picture opaque)
 	{
 		std::vector<uint8_t> rgba;
 		int width = 0, height = 0;
 		if (VulkanRenderer* vulkan = VulkanRenderer::GetInstance();
 			vulkan && ps5tga::Load(ps5paths::Assets() + "/ui/dualsense.tga", 1000, 700, rgba, width, height))
-			s_pad = ImGui_ImplVulkan_GenerateTexture(vulkan->getCurrentCommandBuffer(), rgba, {width, height});
+			s_pad = vulkan->GenerateTextureRGBA(rgba, {width, height});
 	}
 	std::string path;
 	{
