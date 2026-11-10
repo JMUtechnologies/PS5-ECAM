@@ -16,6 +16,7 @@
 #include "../../app/pack_updates.h"
 #include "../../app/paths.h"
 #include "../../app/updates.h"
+#include "../../app/esde_get.h"
 #include "../../app/usb_devices.h"
 #include "../../azahar/azahar.h"
 #include "../../azahar/controls.h"
@@ -26,6 +27,7 @@
 #include "../../eglantine/launch.h"
 #include "../../eden/save_transfer.h"
 #include "../../esde/esde.h"
+#include "../../libretro/game.h"
 #include "../../melonds/library.h"
 #include "../../melonds/melonds.h"
 #include "../../ps5/privilege.h"
@@ -163,11 +165,11 @@ namespace ps5shell
 		}
 
 		// the built-in themes' names and lines (ui/theme.cpp), for the translations
-		[[maybe_unused]] constexpr const char* kThemeWords[] = {TrMark("Light"), TrMark("Link Jack"), TrMark("Classic (3.0)"), TrMark("Midnight"),
-			TrMark("Eden"), TrMark("Frosted glass over each side's colours."),
-			TrMark("3.0.0's launcher: deep blue panels, flatter, a little squarer."),
-			TrMark("True black behind everything and nothing moving: for OLED screens."),
-			TrMark("Dark frosted glass and rounder corners, the side's light drifting and motes of light rising."),
+		[[maybe_unused]] constexpr const char* kThemeWords[] = {TrMark("Light"), TrMark("Link Jack"), TrMark("Deep blue"), TrMark("Midnight"),
+			TrMark("Eden"), TrMark("Frosted glass over each system's colours."),
+			TrMark("Deep blue panels, flatter and a little squarer."),
+			TrMark("True black and no motion, for OLED screens."),
+			TrMark("Dark frosted glass, rounder corners and drifting light."),
 			TrMark("A light background with dark text.")};
 
 		int ClockIndex(int clock)
@@ -204,7 +206,7 @@ namespace ps5shell
 		// the side's pages; the shared ones on every side
 		std::vector<SettingsPage> pages;
 		// the menus' language first, with a globe, which reads in any language
-		pages.push_back({"ui-language", Tr("Language"), Tr("The language of the menus: the PS5's own, unless you choose another."), Icon::Globe});
+		pages.push_back({"ui-language", Tr("Language"), Tr("The menu language. Uses the PS5's unless you choose another."), Icon::Globe});
 		const char* every = IsWiiU() ? Tr("For every Wii U game.") :
 			Is3ds()					 ? Tr("For every 3DS game.") :
 			IsSwitch()				 ? Tr("For every Switch game.") :
@@ -214,21 +216,21 @@ namespace ps5shell
 			pages.push_back({"screens", Tr("Screens"), every, Icon::Screens});
 		// the remote touch screen is on the 3DS's and the DS's Controls, behind a row (on the Wii U's System; a
 		// Switch game runs in Eden's program, which has none)
-		pages.push_back({"controls", Tr("Controls"), IsWiiU() ? Tr("What each player's DualSense is to the Wii U.") :
+		pages.push_back({"controls", Tr("Controls"), IsWiiU() ? Tr("Each player's controller for the Wii U.") :
 				Is3ds()										  ? Tr("The DualSense as the 3DS, and the remote touch screen.") :
 				IsSwitch()									  ? Tr("The DualSense as the Switch.") :
 																Tr("The DualSense as the DS, and the remote touch screen."),
 			Icon::Pad});
 		// the emulated console and the sound, one page (the owner's, 2026-10-27: fewer pages down the left); the
 		// Wii U's has its USB portals and the remote touch screen behind rows
-		pages.push_back({"system", Tr("System"), IsWiiU() ? Tr("The sound, Cemu's USB portals and the remote touch screen.") :
-													Is3ds() ? Tr("The emulated 3DS's region, language and speed, and the sound.") :
-													IsSwitch() ? Tr("The emulated Switch, docked or handheld, its speed and language, and the sound.") :
-																 Tr("The emulated DS's language, BIOS, microphone and Slot-2, and the sound."),
+		pages.push_back({"system", Tr("System"), IsWiiU() ? Tr("Sound, USB portals and the remote touch screen.") :
+													Is3ds() ? Tr("Region, language, speed and sound.") :
+													IsSwitch() ? Tr("Docked or handheld, speed, language and sound.") :
+																 Tr("Language, BIOS, microphone, Slot-2 and sound."),
 			Icon::Chip});
 		// ProsperoEden's Settings > Performance, as its launcher has it
 		if (IsSwitch())
-			pages.push_back({"performance", Tr("Performance"), Tr("Speed against accuracy, and the emulated Switch's memory."), Icon::Pulse});
+			pages.push_back({"performance", Tr("Performance"), Tr("Speed, accuracy and memory."), Icon::Pulse});
 		pages.push_back({"files", Tr("Game files"), IsWiiU() ? Tr("Where your Wii U games are, and installs into the Wii U's storage.") :
 										Is3ds()		 ? Tr("Where your 3DS games are, and installs into the 3DS's storage.") :
 										IsSwitch()	 ? Tr("Where your Switch games are, with its keys and firmware.") :
@@ -241,9 +243,9 @@ namespace ps5shell
 				// tr: Settings' page of the Switch side's players (Eden's user profiles, the people) and every side's saves
 				IsSwitch() ? Tr("Players and saves") :
 							 Tr("Saves"),
-			IsWiiU()	 ? Tr("Each account has its own saves for every game. Backups hold every side's saves.") :
-				IsSwitch() ? std::string(Tr("Who plays, each with saves of their own.")) + " " + Tr("Backups hold every side's saves.") :
-							 Tr("Backups hold every side's saves."),
+			IsWiiU()	 ? Tr("Each account has its own saves. Backups include every system's saves.") :
+				IsSwitch() ? std::string(Tr("Players, each with their own saves.")) + " " + Tr("Backups include every system's saves.") :
+							 Tr("Backups include every system's saves."),
 			Icon::Save});
 		// with the Switch's rooms (port/eden/rooms.h) and the 3DS's Artic Base, what goes over the network
 		pages.push_back({"online", Tr("Online"), IsWiiU() ? Tr("Box art, graphic packs and Playtendoh's updates.") :
@@ -251,9 +253,9 @@ namespace ps5shell
 										   Is3ds()	 ? Tr("Box art, Artic Base and Playtendoh's updates.") :
 													   Tr("Box art, multiplayer rooms and Playtendoh's updates."),
 			Icon::Globe});
-		pages.push_back({"launcher", Tr("Launcher"), Tr("Theme, sides, language and text."), Icon::Sparkle});
-		pages.push_back({"playtime", Tr("Play time"), Tr("How long you have played, each side and the most played games."), Icon::Play});
-		pages.push_back({"diagnostics", Tr("Diagnostics"), Tr("The Setup check, logs, caches and this session's details."), Icon::Pulse});
+		pages.push_back({"launcher", Tr("Launcher"), Tr("Theme, systems, language and text."), Icon::Sparkle});
+		pages.push_back({"playtime", Tr("Play time"), Tr("Time played per system, and your most played games."), Icon::Play});
+		pages.push_back({"diagnostics", Tr("Diagnostics"), Tr("Setup check, logs, caches and session details."), Icon::Pulse});
 		// the version always in sight, whatever the credits' length in a language
 		pages.push_back({"about", TrC("app", "About"), std::string(Tr("Who made what.")) + " · " + Tr("Version") + " " + ps5update::Readable(PS5CEMU_VERSION),
 			Icon::Info});
@@ -264,15 +266,15 @@ namespace ps5shell
 			// a game's, those it can have its own of
 			if (IsPorpoise())
 			{
-				const std::string game = TrF("For {0} only. Its other settings follow its side's.", m_gameName);
+				const std::string game = TrF("For {0} only. Other settings follow the system's.", m_gameName);
 				selected.push_back({"graphics", Tr("Graphics"),
-					InGameSettings() ? game : Tr("For every GameCube and Wii game: one emulator plays both, with the same settings."), Icon::Monitor});
+					InGameSettings() ? game : Tr("For every GameCube and Wii game."), Icon::Monitor});
 				selected.push_back({"controls", Tr("Controls"),
 					InGameSettings()						? game :
 						ps5retro::Is(SideIndex(), "wii") ? Tr("The DualSense as the Wii Remote, or as the GameCube controller.") :
 														   Tr("The DualSense as the GameCube controller."),
 					Icon::Pad});
-				selected.push_back({"sound", Tr("Sound"), InGameSettings() ? game : Tr("The game's sound, and how it copes when a game runs slow."), Icon::Chip});
+				selected.push_back({"sound", Tr("Sound"), InGameSettings() ? game : Tr("Game sound, and how it handles slowdowns."), Icon::Chip});
 				if (InGameSettings() && !ps5retro::Is(SideIndex(), "wii"))
 					selected.push_back({"gba", Tr("GBA"), game, Icon::Pad});
 				selected.push_back({"system", Tr("System"), InGameSettings() ? game : Tr("The emulated console, and how it runs."), Icon::Chip});
@@ -286,11 +288,21 @@ namespace ps5shell
 				const bool wiiSide = ps5retro::Is(SideIndex(), "wii");
 				selected.push_back({"online", Tr("Online"), Tr("Box art for the library."), Icon::Info});
 				selected.push_back({"porpoisesaves", wiiSide ? Tr("Saves") : Tr("Memory cards and saves"),
-					wiiSide ? Tr("Each game's save: copy it to a USB drive, or move it aside.") : Tr("Each game's save on your cards: copy it to a USB drive, or move it aside."), Icon::Save});
+					wiiSide ? Tr("Copy each game's save to a USB drive, or move it aside.") : Tr("Copy saves on your cards to a USB drive, or move them aside."), Icon::Save});
 			}
+			// a side on a core in the app: every option its core has, first, as the other sides' Graphics are
+			if (!IsPorpoise() && (ps5libretro::Plays(SideIndex()) || ps5retro::AlternativeOf(SideIndex())))
+				selected.insert(selected.begin(), {"core", Tr("Emulator"),
+					ps5libretro::Plays(SideIndex()) ? TrF("All of {0}'s options, for every game on this system.", ps5libretro::CoreTitle(SideIndex())) :
+													  std::string(Tr("Which emulator plays this system's games.")),
+					Icon::Chip});
 			if (IsPorpoise() && !ps5retro::Is(SideIndex(), "wii"))
 				selected.push_back({"gba", Tr("GBA"), Tr("A Game Boy Advance on a GameCube port: set one in Controls, under Ports."), Icon::Pad});
-			for (const auto& page : pages) if (page.id == "files" || page.id == "launcher" || page.id == "playtime" || page.id == "diagnostics" || page.id == "about") selected.push_back(page);
+			for (const auto& page : pages)
+				if (page.id == "files" || page.id == "launcher" || page.id == "playtime" || page.id == "diagnostics" || page.id == "about")
+					selected.push_back(page);
+				else if (page.id == "online" && !IsPorpoise())
+					selected.push_back({"online", Tr("Online"), Tr("RetroAchievements and Playtendoh's updates."), Icon::Globe});
 			return selected;
 		}
 		if (!InGameSettings())
@@ -301,13 +313,13 @@ namespace ps5shell
 		std::vector<SettingsPage> game;
 		for (const SettingsPage& page : pages)
 			if (page.id == "graphics" || page.id == "screens" || page.id == "system" || page.id == "performance")
-				game.push_back({page.id, page.title, TrF("For {0} only. Its other settings follow its side's.", m_gameName), page.icon});
+				game.push_back({page.id, page.title, TrF("For {0} only. Other settings follow the system's.", m_gameName), page.icon});
 		// its saves alone (6.15), whatever settings it has of its own (a Switch game's are Eden's)
-		game.push_back({"gamesaves", Tr("Saves"), TrF("{0}'s saves only. Settings has every side's.", m_gameName), Icon::Save});
+		game.push_back({"gamesaves", Tr("Saves"), TrF("{0}'s saves only. Settings has every system's.", m_gameName), Icon::Save});
 		if (IsSwitch())
 		{
-			game.push_back({"nxmods", Tr("Mods"), Tr("Its mods, each on or off."), Icon::Folder});
-			game.push_back({"nxcheats", Tr("Cheats"), Tr("Its cheats, each on or off."), Icon::Folder});
+			game.push_back({"nxmods", Tr("Mods"), Tr("Turn this game's mods on or off."), Icon::Folder});
+			game.push_back({"nxcheats", Tr("Cheats"), Tr("Turn this game's cheats on or off."), Icon::Folder});
 		}
 		return game;
 	}
@@ -405,9 +417,7 @@ namespace ps5shell
 		{
 			m_feedback.Play(ui::Cue::Denied);
 			OpenHelp(Tr("No mods on your drives"),
-				Tr("Copy each mod's folder into a ps5cemu/mods folder on a USB drive and plug it in. A mod is a Cemu graphic pack (a "
-				   "folder with a rules.txt), or a folder with content and aoc folders in it for the files it replaces. The guide on "
-				   "GitHub, docs/GUIDE.md, has more."));
+				Tr("Copy each mod's folder into ps5cemu/mods on a USB drive and plug it in. A mod is a graphic pack (a folder with rules.txt), or a folder with content and aoc folders. See docs/GUIDE.md on GitHub."));
 			return;
 		}
 		ps5mods::Start(drives, titleId, name);
@@ -436,10 +446,8 @@ namespace ps5shell
 		if (status.mods > 0 && m_status.coreReady)
 			ps5emu::ReloadGraphicPacks();
 		const std::string skipped = status.skipped ?
-			"\n\n" + TrP(status.skipped, "{0} folder had no rules.txt and no game: put a mod like that in a folder named by its game's title ID, "
-										 "or add it from its game's menu.",
-				"{0} folders had no rules.txt and no game: put a mod like that in a folder named by its game's title ID, or add it from "
-				"its game's menu.") :
+			"\n\n" + TrP(status.skipped, "{0} folder had no rules.txt and no game. Name the folder with its game's title ID, or add it from the game's menu.",
+				"{0} folders had no rules.txt and no game. Name each folder with its game's title ID, or add it from the game's menu.") :
 			std::string();
 		if (status.state == ps5mods::Status::State::Failed)
 		{
@@ -451,8 +459,7 @@ namespace ps5shell
 		if (status.mods == 0)
 		{
 			m_feedback.Play(ui::Cue::Denied);
-			OpenHelp(Tr("No mods found"), Tr("The ps5cemu/mods folders on your drives hold no folder with a rules.txt, nor with content, aoc "
-											 "or code folders.") + skipped);
+			OpenHelp(Tr("No mods found"), Tr("No mods found in ps5cemu/mods on your drives.") + skipped);
 			return;
 		}
 		if (!skipped.empty())
@@ -476,7 +483,7 @@ namespace ps5shell
 				reset.id = "porpoiseresetall";
 				reset.label = Tr("Reset all settings");
 				reset.value = Tr("Hold Cross");
-				reset.description = Tr("Every setting back to how Porpoise ships. Games, folders and saves stay.");
+				reset.description = Tr("Puts every setting back to default. Games, folders and saves are kept.");
 				reset.help = reset.description;
 				rows.push_back(std::move(reset));
 			}
@@ -492,6 +499,8 @@ namespace ps5shell
 			return PorpoiseBoostRows();
 		if (IsPorpoise() && page == "online")
 			return PorpoiseOnlineRows(settings);
+		if (IsRetro() && page == "core")
+			return CoreOptionRows(settings);
 		if (IsRetro() && (page == "files" || page == "runtime" || page == "graphics" || page == "system" || page == "screens" || page == "gamesaves"))
 		{
 			std::vector<Row> rows;
@@ -504,24 +513,24 @@ namespace ps5shell
 				runtime.options = {ps5libretro::Plays(SideIndex()) ? std::string(ps5libretro::CoreTitle(SideIndex())) : std::string(other->first),
 					other->backend.name};
 				runtime.index = backend; runtime.value = runtime.options[backend];
-				runtime.description = Tr("Which emulator plays this side's games, from the next one started. Each keeps its own settings and saves."); rows.push_back(runtime);
+				runtime.description = Tr("Which emulator plays this system's games, from the next game. Each keeps its own settings and saves."); rows.push_back(runtime);
 			}
 			if (page == "files")
 			{
-				Row folder; folder.id = "folder"; folder.kind = Kind::Link; folder.label = Tr("Games folder"); folder.value = GamesFolder(m_side); folder.description = Tr("The folder this side's games are in. Choosing another moves nothing: games and saves stay where they are."); rows.push_back(folder);
+				Row folder; folder.id = "folder"; folder.kind = Kind::Link; folder.label = Tr("Games folder"); folder.value = GamesFolder(m_side); folder.description = Tr("Where this system's games are. Changing it doesn't move any games or saves."); rows.push_back(folder);
 				Row scan; scan.id = "rescan"; scan.kind = Kind::Action; scan.label = Tr("Look for games now"); rows.push_back(scan);
 			}
 			// a side on its core in the app has no emulator of its own to open: the in-game menu is its
 			else if (!ps5libretro::Plays(SideIndex()))
 			{
 				Row info; info.id = "retro-library"; info.kind = Kind::Action; info.dimmed = !ps5retro::Available(SideIndex(), backend); info.label = Tr("Open emulator settings and saves");
-				info.description = Tr("This side's emulator keeps its own settings, controls and saves: this opens its menus to change them, and quitting them comes back here. What it already had stays where it is.");
+				info.description = Tr("Opens this emulator's own menus for its settings, controls and saves. Quit them to come back here.");
 				// the GameCube and Wii sides: what is not on their pages yet (porpoise_rows.cpp)
 				if (IsPorpoise())
-					info.description = Tr("Porpoise's other settings, your button layouts and the Wii Remote's setup, in its own menus. Circle at their top comes back here.");
+					info.description = Tr("Porpoise's other settings, your button layouts and Wii Remote setup. Circle at the top comes back here.");
 				rows.push_back(info);
 			}
-			if (page == "gamesaves") { Row backup; backup.id = "backup"; backup.kind = Kind::Action; backup.label = Tr("Back up to USB"); backup.description = Tr("Every side's saves, each emulator's. A save state loads only in the emulator that made it."); rows.push_back(backup); }
+			if (page == "gamesaves") { Row backup; backup.id = "backup"; backup.kind = Kind::Action; backup.label = Tr("Back up to USB"); backup.description = Tr("Every system's saves. A save state only loads in the emulator that made it."); rows.push_back(backup); }
 			Row diagnostic; diagnostic.id = "retro-diagnostics"; diagnostic.kind = Kind::Action; diagnostic.label = Tr("Emulator diagnostics"); rows.push_back(diagnostic);
 			return rows;
 		}
@@ -598,7 +607,7 @@ namespace ps5shell
 			if (!m_status.coreReady)
 			{
 				row->dimmed = true;
-				row->description = m_status.coreStarting ? Tr("Cemu is still starting. One moment.") : Tr("Cemu did not start, so this cannot be changed.");
+				row->description = m_status.coreStarting ? Tr("Still starting. One moment.") : Tr("The Wii U emulator did not start, so this can't be changed.");
 			}
 			return row;
 		};
@@ -609,16 +618,13 @@ namespace ps5shell
 		{
 			// Cross, Left or Right opens the list
 			int index = 0;
-			choice("ui-language", Tr("Language"), LanguageOptions(index), index, Tr("The menus' language, and the games' names where they have one in it."),
-				Tr("Playtendoh speaks the PS5's own language unless you choose another here; the first start's Setup check has the same "
-				   "choice. A game's name follows it where the game has one in that language, as on a console set to it; otherwise it is "
-				   "the English one. Descriptions come from GameTDB in English, and graphic packs from their authors, as they wrote them."));
+			choice("ui-language", Tr("Language"), LanguageOptions(index), index, Tr("The menu language, and game names where available."),
+				Tr("Playtendoh uses the PS5's language unless you choose another. Game names follow it where the game has one in that language, otherwise they are in English. Descriptions from GameTDB are in English."));
 		}
 		else if (page == "graphics" && IsWiiU())
 		{
 			own(choice("upscaling", Tr("Upscaling to 4K"), Options(kUpscaleFilters), settings.upscaleFilter, Tr("How the picture is scaled to the TV."),
-					Tr("Bicubic is sharp, Bicubic Hermite a little softer, Bilinear softer still; Nearest neighbour keeps pixels square. AMD FSR 1 keeps "
-					   "edges clean for a game drawn below 4K, for a little more work by the GPU than Bicubic.")),
+					Tr("Bicubic is sharp, Bicubic Hermite a little softer, Bilinear softest. Nearest neighbour keeps pixels square. AMD FSR 1 keeps edges clean for games below 4K, at a small GPU cost.")),
 				"upscaleFilter");
 			// the display's rate and what a game's frames do in it
 			std::string rate = settings.highFrameRate ? "120 Hz" : "60 Hz";
@@ -628,54 +634,43 @@ namespace ps5shell
 				rate += std::string(" · ") + Tr("Frame generation");
 			// tr: Settings > Graphics: a row that opens the frame rate's settings (120 Hz output, frame pacing, frame generation)
 			sub("framerate", Tr("Frame rate"), rate, Tr("120 Hz output, frame pacing and frame generation."),
-				Tr("The display's refresh rate, a game held to an even frame rate, and a picture made between each two frames. Triangle on "
-				   "each says more."));
+				Tr("Refresh rate, frame pacing and frame generation. Press Triangle on each for more."));
 			own(toggle("highframerate", Tr("120 Hz output"), settings.highFrameRate, Tr("For displays that take 120 Hz."),
-					Tr("The 119.88 Hz mode, on displays that support it. Games still run at their own speed, and a frame that misses a refresh "
-					"waits 8 ms for the next instead of 17.")),
+					Tr("Uses 120 Hz on displays that support it. Games run at normal speed, and late frames wait less.")),
 				"highFrameRate");
 			std::vector<std::string> pacing;
 			for (int i = 1; i <= 3; i++)
 				pacing.push_back(ps5display::FramePacingName(i, settings.highFrameRate));
 			own(choice("framepacing", Tr("Frame pacing"), pacing, settings.framePacing - 1, Tr("Holds a game to an even frame rate."),
-					Tr("Each frame stays on screen for at least two or three refreshes, so a game that cannot hold the display's rate runs at an "
-					"even one: 60 or 40 fps with 120 Hz output, 30 or 20 without. 60 fps with 120 Hz output suits a game at 4K that sometimes "
-					"drops under 60; 30 fps at 60 Hz suits one at 8K. Also in the in-game menu."),
+					Tr("Keeps each frame on screen for the same time, so a game that can't hold full speed runs evenly: 60 or 40 fps with 120 Hz output, 30 or 20 without. Also in the in-game menu."),
 					Kind::Segmented),
 				"framePacing");
-			own(toggle("framegeneration", Tr("Frame generation"), settings.frameGeneration, Tr("A game held to 30 fps shown at 60."),
-					Tr("MihawkGen makes a picture between each two frames of a game that takes two refreshes a frame or more, so a game at 30 fps "
-					   "is shown at 60, or at 60 with 120 Hz output. A game that runs faster is shown as it is. It costs the GPU about 2 ms a "
-					   "picture at 4K, and adds a little delay. Also in the in-game menu.")),
+			own(toggle("framegeneration", Tr("Frame generation"), settings.frameGeneration, Tr("Shows 30 fps games at 60."),
+					Tr("Adds a frame between each pair, so a 30 fps game shows at 60 (or 60 at 120 with 120 Hz output). Adds a little delay. Also in the in-game menu.")),
 				"frameGeneration");
 			endSub();
 			// ReShade's preset, as a PC's ReShade makes it (port/cemu/ReShadePS5.h)
 			own(toggle("reshade", Tr("ReShade"), settings.reshade, TrF("Your ReShade preset and effects, from {0}.", ps5paths::CemuRoot() + "/reshade"),
-					TrF("Runs a ReShade preset made on a PC over the game's picture, before the GamePad's screen and the menus. Put "
-						"ReShadePreset.ini (or presets/<title ID>.ini for one game) with the Shaders and Textures folders it uses in {0}. "
-						"Compiled as the game starts; the boot log says what runs. Also in the in-game menu.",
+					TrF("Runs a ReShade preset made on a PC over the game. Put ReShadePreset.ini (or presets/<title ID>.ini for one game) and its Shaders and Textures folders in {0}. Also in the in-game menu.",
 						ps5paths::CemuRoot() + "/reshade")),
 				"reshade");
 			own(toggle("overlay", Tr("Performance overlay"), settings.overlay, Tr("Frame rate, CPU and memory in a corner."),
-					Tr("Frames per second, CPU and memory use in the top left corner, as Cemu shows them. Also in the in-game menu.")),
+					Tr("Shows frame rate, CPU and memory use in the top-left corner. Also in the in-game menu.")),
 				"overlay");
 			// tr: Settings > Graphics: a row that opens the shaders' settings
-			sub("shaders", Tr("Shaders"), "", Tr("How new shaders are built, and Cemu's notes about them."),
-				Tr("Async shader compile, and the notes Cemu shows while a game builds its shaders. Triangle on each says more."));
+			sub("shaders", Tr("Shaders"), "", Tr("How new shaders are built, and shader notices."),
+				Tr("Async shader compile and shader notices. Press Triangle on each for more."));
 			own(toggle("async", Tr("Async shader compile"), settings.asyncShaders, Tr("No stutter while new shaders build."),
-					Tr("On, a new shader is built while the game carries on, so it does not stutter, but some things may be missing for a moment. "
-					"Off, the game waits for each one: stutter, but nothing drawn wrong.")),
+					Tr("On: shaders build in the background, so less stutter, but some things may appear late. Off: the game waits for each shader, which stutters but draws everything right.")),
 				"asyncShaders");
-			toggle("shadernotices", Tr("Shader notices"), settings.shaderNotices, Tr("Cemu's \"compiled shaders\" notes over a game."),
-				Tr("The notes Cemu shows in a corner while a game builds its shaders and pipelines (\"Loaded 1200 shaders\"). Off hides "
-				   "them; the shaders are built either way. Also in the in-game menu."));
+			toggle("shadernotices", Tr("Shader notices"), settings.shaderNotices, Tr("Shows a notice while shaders build."),
+				Tr("A notice in the corner while a game builds shaders. Off hides it; shaders are built either way. Also in the in-game menu."));
 			endSub();
 		}
 		else if (page == "graphics" && Is3ds())
 		{
-			own(choice("resolution", Tr("Internal resolution"), Options(kResolutions), hand.resolution - 1, Tr("Higher is sharper and asks more of the GPU."),
-					Tr("How large the 3DS's 3D scenes are drawn before they are scaled to the TV. Higher is sharper and asks more of the GPU, and "
-					"each time a game reads a picture back the wait grows with it."),
+			own(choice("resolution", Tr("Internal resolution"), Options(kResolutions), hand.resolution - 1, Tr("Higher is sharper but needs more power."),
+					Tr("How large 3D scenes are drawn before scaling to the TV. Higher is sharper but needs more power, and some games slow down more."),
 					Kind::Stepper),
 				"resolution");
 			std::string textures = TextureFilterNames()[FilterIndex(hand.textureFilter)];
@@ -683,56 +678,44 @@ namespace ps5shell
 				textures += std::string(" · ") + Tr("Custom textures");
 			// tr: Settings > Graphics: a row that opens the textures' settings (the texture filter, custom textures)
 			sub("textures", Tr("Textures"), textures, Tr("The texture filter, and texture packs."),
-				Tr("A filter that smooths the game's textures as they are scaled up, and texture packs of your own. Triangle on each says more."));
+				Tr("Texture filter and your own texture packs. Press Triangle on each for more."));
 			own(choice("filter", Tr("Texture filter"), TextureFilterNames(), FilterIndex(hand.textureFilter), Tr("Smooths textures as they are scaled up."),
-					Tr("Smooths the game's textures as they are scaled up; None keeps them as the 3DS draws them. A filter redraws every texture "
-					"at the internal resolution: at high resolutions it is the costliest setting. If a game stutters, try None first.")),
+					Tr("Smooths textures as they are scaled up. None keeps them as the 3DS draws them. At high resolutions this is the heaviest setting: if a game stutters, try None first.")),
 				"textureFilter");
 			own(toggle("customtextures", Tr("Custom textures"), hand.customTextures, Tr("Texture packs from azahar/load/textures."),
 					// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-					TrF("Texture packs in {0}/azahar/load/textures/<title ID>, as the desktop Azahar loads them.", ecam_layout::Parent(ps5paths::Azahar()))),
+					TrF("Texture packs in {0}/azahar/load/textures/<title ID>.", ecam_layout::Parent(ps5paths::Azahar()))),
 				"customTextures");
 			// tr: Settings > Graphics' Shaders row, its value: where the 3DS's vertex shaders run, on the GPU (Hardware) or on the CPU (Software)
 			sub("shaders", Tr("Shaders"), hand.hwShaders ? TrC("shaders", "Hardware") : TrC("shaders", "Software"),
 				Tr("Where the 3DS's shaders run, and how new ones are built."),
-				Tr("Hardware shaders, the outline fix for them, and async shader compile. Triangle on each says more."));
-			own(toggle("hwshaders", Tr("Hardware shaders"), hand.hwShaders, Tr("Off: 3D drawn exactly, on the CPU. Off for Pokémon."),
-					Tr("On, the 3DS's vertex shaders run on the PS5's GPU, the fastest way. Off, they run on the CPU as Azahar's software "
-					   "shaders: slower, but a model and the outline drawn around it are computed alike, and its lighting is corrected per "
-					   "triangle. Off by default for Pokémon X, Y, Omega Ruby, Alpha Sapphire, Sun, Moon, Ultra Sun and Ultra Moon, whose "
-					   "outlines, lighting and shadows glitch otherwise. Applies to the next game.")),
+				Tr("Hardware shaders, outline fix and async shader compile. Press Triangle on each for more."));
+			own(toggle("hwshaders", Tr("Hardware shaders"), hand.hwShaders, Tr("Off draws 3D exactly on the CPU. Off for Pokémon by default."),
+					Tr("On runs 3D on the PS5's GPU, the fastest way. Off runs it on the CPU: slower, but outlines and lighting are exact. Off by default for the 3DS Pokémon games, whose outlines, lighting and shadows glitch otherwise. Applies to the next game.")),
 				"hwShaders");
 			own(toggle("outlinefix", Tr("Outline fix"), hand.invariantPosition, Tr("Fixes moving black dots on outlined 3D models."),
-					Tr("Computes every 3D position the same way twice, as Azahar does on Apple's GPUs. For a game that shows moving black dots "
-					   "on its outlined models with hardware shaders on; the Pokémon games are drawn right with Hardware shaders off "
-					   "instead. Applies to the next game.")),
+					Tr("Fixes moving black dots on outlined 3D models with hardware shaders on. For the Pokémon games, turn Hardware shaders off instead. Applies to the next game.")),
 				"invariantPosition");
 			// off by default, as desktop Azahar: on, a draw whose shader is still building is skipped (Alpha
 			// Sapphire's first cutscene drew its Pokemon as their dark outlines alone)
 			own(toggle("async-3ds", Tr("Async shader compile"), hand.asyncShaders, Tr("No stutter while new shaders build."),
-					Tr("On, a new shader is built while the game carries on, so it does not stutter, but some things may be missing for a moment. "
-					"Off, the game waits for each one: stutter, but nothing drawn wrong.")),
+					Tr("On: shaders build in the background, so less stutter, but some things may appear late. Off: the game waits for each shader, which stutters but draws everything right.")),
 				"asyncShaderCompilation");
 			endSub();
-			own(toggle("framegeneration-3ds", Tr("Frame generation"), hand.frameGeneration, Tr("A game held to 30 fps shown at 60."),
-					Tr("MihawkGen makes a picture between each two frames of a game that takes two refreshes a frame or more, so a game at 30 fps "
-					   "is shown at 60, or at 60 with 120 Hz output. A game that runs faster is shown as it is. It costs the GPU about 2 ms a "
-					   "picture at 4K, and adds a little delay. Also in the in-game menu.")),
+			own(toggle("framegeneration-3ds", Tr("Frame generation"), hand.frameGeneration, Tr("Shows 30 fps games at 60."),
+					Tr("Adds a frame between each pair, so a 30 fps game shows at 60 (or 60 at 120 with 120 Hz output). Adds a little delay. Also in the in-game menu.")),
 				"frameGeneration");
 			own(toggle("anaglyph", Tr("3D for red and cyan glasses"), hand.anaglyph, Tr("The 3DS's 3D, in red and cyan."),
-					Tr("The 3DS's 3D screen as both eyes' pictures in one, red for the left and cyan for the right, to see in 3D with red and "
-					   "cyan glasses, as Azahar's anaglyph mode makes it, the 3D slider all the way up. Colours change with it. Applies to "
-					   "the next game.")),
+					Tr("Shows the 3DS's 3D for red and cyan glasses, with the 3D slider all the way up. Colours change with it. Applies to the next game.")),
 				"anaglyph");
-			toggle("performance-hand", Tr("Performance overlay"), hand.performance, Tr("The frame rate and the emulation's speed, in the top left corner."),
-				Tr("The frame rate and the emulation's speed, in the top left corner."));
+			toggle("performance-hand", Tr("Performance overlay"), hand.performance, Tr("Shows frame rate and speed in the top-left corner."),
+				Tr("Shows frame rate and speed in the top-left corner."));
 		}
 		else if (page == "graphics" && IsSwitch())
 		{
-			own(choice("nx-resolution", Tr("Internal resolution"), Options(kNxResolutions), hand.nxResolution, Tr("Higher is sharper and asks more of the GPU."),
-					IsSwitch2() ? Tr("How large EglantinePS5 draws a game before scaling it to the TV. Higher values are sharper and use more graphics memory.") :
-					Tr("How large Eden draws a game before it is scaled to the TV, against the game's own picture: 1x is 1080p docked and 720p "
-					   "handheld. Higher is sharper and asks more of the GPU; 3x and 4x need the graphics memory for it. Applies to the next game."),
+			own(choice("nx-resolution", Tr("Internal resolution"), Options(kNxResolutions), hand.nxResolution, Tr("Higher is sharper but needs more power."),
+					IsSwitch2() ? Tr("How large Lichii draws a game before scaling it to the TV. Higher values are sharper and use more graphics memory.") :
+					Tr("How large games are drawn before scaling to the TV. 1x is 1080p docked and 720p handheld. Higher is sharper but needs more power and graphics memory. Applies to the next game."),
 					Kind::Stepper),
 				"nxResolution");
 			std::vector<std::string> filters;
@@ -740,8 +723,7 @@ namespace ps5shell
 				filters.push_back(Tr(kUpscaleFilters[filter]));
 			own(choice("nx-filter", Tr("Upscaling to 4K"), filters, hand.nxFilter, Tr("How the picture is scaled to the TV."),
 					IsSwitch2() ? Tr("Choose Bilinear, AMD FSR 1, Bicubic or Nearest neighbour. Applies when the next game starts.") :
-					Tr("Bilinear is soft, Bicubic sharper; Nearest neighbour keeps pixels square. AMD FSR 1 keeps edges clean for a game drawn "
-					   "below 4K, for a little more work by the GPU.")),
+					Tr("Bilinear is soft, Bicubic sharper, Nearest neighbour keeps pixels square. AMD FSR 1 keeps edges clean for games below 4K, at a small GPU cost.")),
 				"nxFilter");
 			if (!IsSwitch2())
 			{
@@ -749,9 +731,8 @@ namespace ps5shell
 			// behind this row), what is done over the picture
 			const std::vector<std::string> antiAliasing{Tr("Off"), "FXAA", "SMAA"};
 			// tr: Settings > Graphics on the Switch side: a row that opens FSR sharpening, anti-aliasing and Eden's ReShade looks
-			sub("nxpost", Tr("Picture effects"), antiAliasing[std::clamp(hand.nxAntiAliasing, 0, 2)], Tr("Sharpening, anti-aliasing and ReShade's looks."),
-				Tr("FSR sharpening, while AMD FSR 1 scales the picture; Eden's anti-aliasing; and a ReShade look over the picture, Eden's own "
-				   "or one of yours. Triangle on each says more."));
+			sub("nxpost", Tr("Picture effects"), antiAliasing[std::clamp(hand.nxAntiAliasing, 0, 2)], Tr("Sharpening, anti-aliasing and ReShade."),
+				Tr("FSR sharpening, anti-aliasing and ReShade looks (built-in or your own). Press Triangle on each for more."));
 			// FSR 1's own setting, while it is the filter
 			if (hand.nxFilter == 1)
 			{
@@ -760,21 +741,17 @@ namespace ps5shell
 					levels.push_back(Percent((int)std::lround(100.0 * std::pow(2.0, -value / 100.0))));
 				own(choice("nx-sharpening", Tr("FSR sharpening"), levels, NxSharpeningIndex(hand.nxSharpening),
 						Tr("How much AMD FSR 1 sharpens the picture."),
-						Tr("How much AMD FSR 1 sharpens the picture as it scales it to the TV: 100% is the most, and each step down halves it. "
-						   "Also in the in-game menu, where it changes at once.")),
+						Tr("How much AMD FSR 1 sharpens the picture. 100% is the most; each step down halves it. Also in the in-game menu.")),
 					"nxSharpening");
 			}
 			own(choice("nx-aa", Tr("Anti-aliasing"), antiAliasing, hand.nxAntiAliasing, Tr("Smooths the jagged edges of the picture."),
-					Tr("Eden's anti-aliasing, over the game's picture: FXAA smooths edges lightly, SMAA more cleanly, each for a little more "
-					   "work by the GPU. Off, as Eden has it. Also in the in-game menu, where it changes at once."),
+					Tr("FXAA smooths edges lightly, SMAA more cleanly, each at a small GPU cost. Also in the in-game menu."),
 					Kind::Segmented),
 				"nxAntiAliasing");
 			endSub();
 			own(choice("nx-astc", Tr("ASTC textures"), {Tr("Compressed"), Tr("Full quality")}, hand.nxAstc,
 					Tr("Compressed saves graphics memory; full quality looks best."),
-					Tr("Many Switch games keep their textures in ASTC, which the PS5's GPU cannot read: Eden converts them. Compressed keeps them "
-					   "small, as BC3; full quality keeps them as they are, at four times the graphics memory, for a game whose textures look "
-					   "blocky. Applies to the next game."),
+					Tr("Many Switch games use ASTC textures, which must be converted for the PS5. Compressed saves memory; Full quality uses four times as much, for games whose textures look blocky. Applies to the next game."),
 					Kind::Segmented),
 				"nxAstc");
 			}
@@ -784,80 +761,65 @@ namespace ps5shell
 			if (hand.nxFrameGeneration)
 				output += std::string(" · ") + Tr("Frame generation");
 			// tr: Settings > Graphics: a row that opens the output resolution, refresh rate and frame generation
-			sub("output", Tr("Output to the TV"), output, Tr("The picture's size, 120 Hz and frame generation."),
-				IsSwitch2() ? Tr("Output size, refresh rate and frame generation for EglantinePS5; each applies to the next game.") :
-				Tr("The size of the picture Eden sends to the TV, whether it is sent at 120 Hz, and ProsperoEden's frame generation. Each "
-				   "applies to the next game."));
+			sub("output", Tr("Output to the TV"), output, Tr("Output size, 120 Hz and frame generation."),
+				IsSwitch2() ? Tr("Output size, refresh rate and frame generation. Each applies to the next game.") :
+				Tr("Output size, 120 Hz and frame generation. Each applies to the next game."));
 			own(choice("nx-output", Tr("Output resolution"), {"1080p", "1440p", "2160p"}, std::clamp(hand.nxOutput, 0, 2),
-					IsSwitch2() ? Tr("The size of the picture EglantinePS5 sends to the TV. Applies to the next game.") :
-					Tr("The size of the picture Eden sends to the TV. Applies to the next game."),
-					IsSwitch2() ? Tr("The size of the picture EglantinePS5 sends to the TV. Applies to the next game.") :
-					Tr("The size of the picture Eden sends to the TV. Applies to the next game."), Kind::Segmented),
+					IsSwitch2() ? Tr("The resolution sent to the TV. Applies to the next game.") :
+					Tr("The resolution sent to the TV. Applies to the next game."),
+					IsSwitch2() ? Tr("The resolution sent to the TV. Applies to the next game.") :
+					Tr("The resolution sent to the TV. Applies to the next game."), Kind::Segmented),
 				"nxOutput");
-			own(toggle("nx-120hz", Tr("120 Hz"), hand.nxHighRefresh, Tr("For a TV that takes 120 Hz. Applies to the next game."),
-					Tr("For a TV that takes 120 Hz. Applies to the next game.")),
+			own(toggle("nx-120hz", Tr("120 Hz"), hand.nxHighRefresh, Tr("For TVs that support 120 Hz. Applies to the next game."),
+					Tr("For TVs that support 120 Hz. Applies to the next game.")),
 				"nxHighRefresh");
 			// This runtime's own frame generation.
-			own(toggle("nx-framegeneration", Tr("Frame generation"), hand.nxFrameGeneration, Tr("A game held to 30 fps shown at 60."),
-					IsSwitch2() ? Tr("EglantinePS5's frame generation, when supported by this build and graphics backend. Applies to the next game.") :
+			own(toggle("nx-framegeneration", Tr("Frame generation"), hand.nxFrameGeneration, Tr("Shows 30 fps games at 60."),
+					IsSwitch2() ? Tr("Frame generation, where supported. Applies to the next game.") :
 					// tr: {0} is where Lossless.dll goes: /data/eden/user/lossless/Lossless.dll, or the same on the app's drive
-					TrF("ProsperoEden's own frame generation: a picture made between each two frames, so a game at 30 fps is shown at 60. "
-						"It is Lossless Scaling's when your own copy of its Lossless.dll is at {0}, else MihawkGen's. It asks more of the "
-						"GPU and adds a little delay. Applies to the next game.",
+					TrF("Adds a frame between each pair, so a 30 fps game shows at 60. Uses Lossless Scaling if your own Lossless.dll is at {0}. Adds a little delay. Applies to the next game.",
 						ps5eden::LosslessFile())),
 				"nxFrameGeneration");
 			endSub();
-			own(toggle("performance-hand", Tr("Performance overlay"), hand.performance, Tr("The frame rate and the emulation's speed, in the top left corner."),
-				Tr("The frame rate and the emulation's speed, in the top left corner.")), "performance");
+			own(toggle("performance-hand", Tr("Performance overlay"), hand.performance, Tr("Shows frame rate and speed in the top-left corner."),
+				Tr("Shows frame rate and speed in the top-left corner.")), "performance");
 		}
 		else if (page == "graphics")
 		{
 			own(choice("dsfilter", Tr("Screen filter"), Options(kDsFilters), hand.dsFilter, Tr("How the DS's screens are scaled."),
-					Tr("How the DS's 256 x 192 screens are scaled to the TV. Sharp keeps every pixel square and even at any size; Smooth blurs "
-					"them together; Square pixels takes the nearest, uneven where the size is not a whole number. The in-game menu changes it "
-					"too."),
+					Tr("Sharp keeps pixels crisp and even at any size. Smooth blends them. Square pixels can look uneven at some sizes. Also in the in-game menu."),
 					Kind::Segmented),
 				"dsFilter");
 			const bool executable = ps5privilege::Current().executable;
 			own(toggle("dsjit", Tr("Recompiler"), hand.dsJit,
-					executable ? Tr("melonDS's JIT: much faster than its interpreter.") : Tr("No executable memory: the slower interpreter runs."),
-					Tr("Runs the DS's two CPUs on melonDS's recompiler, in the executable memory the PS5 gives (Diagnostics says whether it "
-					"does), much faster than its interpreter. Off: the interpreter, slower, for a game the recompiler gets wrong. Applies to "
-					"the next game.")),
+					executable ? Tr("Much faster than the interpreter.") : Tr("Not available: games run in the slower mode."),
+					Tr("Runs games much faster, when the PS5 allows it (Diagnostics shows whether it does). Turn it off for a game that runs wrong. Applies to the next game.")),
 				"dsJit");
-			toggle("performance-hand", Tr("Performance overlay"), hand.performance, Tr("The frame rate and the emulation's speed, in the top left corner."),
-				Tr("The frame rate and the emulation's speed, in the top left corner."));
+			toggle("performance-hand", Tr("Performance overlay"), hand.performance, Tr("Shows frame rate and speed in the top-left corner."),
+				Tr("Shows frame rate and speed in the top-left corner."));
 		}
 		else if (page == "screens")
 		{
-			own(choice("layout", Tr("Screen layout"), Options(kLayouts), hand.layout, Tr("How the two screens share the TV."),
-					Tr("One above the other, the top one alone, the top one large with the bottom one beside it, or the two side by side. In a "
-					"game, touchpad click + R1 goes to the next.")),
+			own(choice("layout", Tr("Screen layout"), Options(kLayouts), hand.layout, Tr("How the two screens fit on the TV."),
+					Tr("Stacked, top only, large top with small bottom, or side by side. In a game, touchpad click + R1 changes it.")),
 				"layout");
 			if (IsDs() || Is3ds())
 				own(choice("dsrotation", Tr("Screen rotation"), Options(kDsRotations), hand.dsRotation,
-						Tr("For the games held on their side, like a book."),
-						IsDs() ? Tr("Turns the DS's two screens together, a quarter turn at a time, for the games played with the DS held on its side, "
-									"like a book (Hotel Dusk). The touchpad moves the cursor over the bottom screen as the TV shows it. The in-game menu "
-									"changes it too.") :
-								 Tr("Turns the 3DS's two screens together, a quarter turn at a time, for the games played with the 3DS held on its "
-									"side, like a book. The touchpad moves the cursor over the bottom screen as the TV shows it. The in-game menu "
-									"changes it too.")),
+						Tr("For games held sideways, like a book."),
+						IsDs() ? Tr("Turns both screens a quarter turn at a time, for games played with the DS held sideways. The touchpad follows the turned screen. Also in the in-game menu.") :
+								 Tr("Turns both screens a quarter turn at a time, for games played with the 3DS held sideways. The touchpad follows the turned screen. Also in the in-game menu.")),
 					"dsRotation");
 			if (IsDs() || Is3ds())
-				own(toggle("screengap", Tr("Screen gap"), hand.screenGap, Tr("The two screens held apart, as the hinge holds them."),
-						Tr("A gap between the two screens wherever both show: one above the other, side by side, or turned like a book. "
-						   "A game can have its own; the in-game menu's quick actions change it too.")),
+				own(toggle("screengap", Tr("Screen gap"), hand.screenGap, Tr("A gap between the screens, like the hinge."),
+						Tr("Adds a gap between the two screens in any layout. Can be set per game, and in the in-game menu.")),
 					"screenGap");
 			if (IsDs() || Is3ds())
 				own(toggle("hiddentouch", Tr("Touch without the bottom screen"), hand.hiddenTouch,
-						Tr("The touchpad touches it while only the top screen shows."),
-						Tr("With the top screen alone on the TV, the touchpad still touches the bottom screen: its cursor moves over the top "
-						   "screen as if the bottom one were there, for the games that ask for a touch now and then (Star Fox 64 3D). Off, "
-						   "the touchpad touches only a bottom screen that is shown. A game can have its own; the in-game menu changes it too.")),
+						Tr("Touch the bottom screen while only the top one shows."),
+						Tr("With only the top screen shown, the touchpad still touches the bottom screen, with a cursor on the top one. For games that ask for a touch now and then. Can be set per game, and in the in-game menu.")),
 					"hiddenTouch");
 			own(choice("border", Tr("Border"), Options(kBorderThemes), hand.border, Tr("Artwork around the screens."),
-					Tr("Artwork around the screens, never over them. It follows every layout, and the in-game menu changes it too."),
+					Tr("Artwork around the screens, in every layout. Also in the in-game menu."),
 					Kind::Swatches),
 				"border");
 			// the DS's touch, where its cursor lands and the right stick as the stylus (on System's page before
@@ -867,7 +829,7 @@ namespace ps5shell
 				std::vector<std::string> touchOffsets, touchScales;
 				for (int value = -20; value <= 20; value++) touchOffsets.push_back(fmt::format("{}%", value));
 				for (int value = 50; value <= 150; value++) touchScales.push_back(fmt::format("{}%", value));
-				const auto touchHelp = Tr("Moves and scales where the touchpad's cursor lands on the DS's screens, for a game where it is off: 0% and 100% leave it as it is. The remote touch screen is not changed. Applies to the next game.");
+				const auto touchHelp = Tr("Adjusts where touchpad touches land, for games where they're off. 0% and 100% leave it unchanged. Doesn't affect the remote touch screen. Applies to the next game.");
 				std::string touch;
 				if (hand.dsTouchX != 0 || hand.dsTouchY != 0 || hand.dsTouchScale != 100)
 					touch = fmt::format("{}% · {}% · {}%", hand.dsTouchX, hand.dsTouchY, hand.dsTouchScale);
@@ -876,29 +838,26 @@ namespace ps5shell
 					touch += (touch.empty() ? "" : " · ") + std::string(Tr("Stick as stylus"));
 				// tr: Settings > Screens: a row that opens the touch screen's settings (where the touchpad's cursor lands, the right stick as the stylus)
 				sub("touch", Tr("Touch"), touch.empty() ? std::string(Tr("Default")) : touch,
-					Tr("Where the touchpad's cursor lands, and the right stick as the stylus."),
-					Tr("Moves and scales where the touchpad's cursor lands on the DS's screens, for a game where it is off, and lets the right "
-					   "stick drag a touch on the bottom screen. Triangle on each says more."));
+					Tr("Touch position, and the right stick as stylus."),
+					Tr("Adjusts where touches land, and lets the right stick drag a touch on the bottom screen. Press Triangle on each for more."));
 				own(choice("dstouchx", Tr("Touch, left or right"), touchOffsets, hand.dsTouchX + 20, touchHelp, touchHelp), "dsTouchX");
 				own(choice("dstouchy", Tr("Touch, up or down"), touchOffsets, hand.dsTouchY + 20, touchHelp, touchHelp), "dsTouchY");
 				own(choice("dstouchscale", Tr("Touch, scale"), touchScales, hand.dsTouchScale - 50, touchHelp, touchHelp), "dsTouchScale");
 				// tr: a DS setting: the right stick as the touch screen's stylus (DraStic has it), for Metroid Prime Hunters' aiming
-				own(toggle("dsstylus", Tr("The right stick as the stylus"), hand.dsStylus, Tr("Pushed, it drags a touch on the bottom screen."),
-					Tr("Push the right stick and the bottom screen is touched in its middle, the touch dragged as you push and lifted when you let "
-					   "go: Metroid Prime Hunters aims that way. The stick's directions do nothing else then. Applies to the next game.")),
+				own(toggle("dsstylus", Tr("The right stick as the stylus"), hand.dsStylus, Tr("Push it to drag a touch on the bottom screen."),
+					Tr("Pushing the right stick touches the middle of the bottom screen and drags as you push, for games that aim by touch. Let go to lift. Applies to the next game.")),
 					"dsStylus");
 				endSub();
 			}
 		}
 		else if (page == "controls")
 		{
-			toggle("rumble", Tr("Vibration"), settings.rumble, Tr("The DualSense's rumble, in games and in the launcher."),
-				Tr("Off, the DualSense never rumbles, in games or in the launcher. The same on every side."));
+			toggle("rumble", Tr("Vibration"), settings.rumble, Tr("DualSense rumble, in games and the launcher."),
+				Tr("Off: no rumble in games or the launcher. Applies to every system."));
 			if (IsSwitch() || IsSwitch2())
 			{
 				Row* deadzone = slider("nx-deadzone", Tr("Stick deadzone"), hand.nxDeadzone, 30, Tr("How far a stick moves before it counts."),
-					Tr("How far a stick moves before the game sees it, for both sticks. Raise it if a character or the camera drifts when you "
-					   "let go of the stick; lower it for finer control. Also in the in-game menu."));
+					Tr("How far each stick moves before the game sees it. Raise it if there is drift; lower it for finer control. Also in the in-game menu."));
 				deadzone->value = Percent(hand.nxDeadzone);
 				own(deadzone, "nxDeadzone");
 			}
@@ -906,10 +865,8 @@ namespace ps5shell
 			auto turbo = [&] {
 				int index = 0;
 				auto options = TurboOptions(IsWiiU() ? settings.turbo : hand.turbo, index);
-				choice("turbo", Tr("Turbo button"), std::move(options), index, Tr("Hold it and it presses again and again by itself."),
-					Tr("Choose a DualSense button: while you hold it in a game, it presses and lets go by itself about fifteen times a second, "
-					   "for games that make you mash. The button keeps whatever it is mapped to. None turns it off. Every player on this side "
-					   "has it."));
+				choice("turbo", Tr("Turbo button"), std::move(options), index, Tr("Hold it to press repeatedly."),
+					Tr("Holding this button presses it about 15 times a second, for games that make you mash. None turns it off. Applies to every player."));
 			};
 			// a Switch game's buttons, as Eden maps them (port/eden/eden.h)
 			if (IsSwitch())
@@ -917,11 +874,10 @@ namespace ps5shell
 				const std::string set = TrP((int)ps5eden::ListMappings(hand).size(), "{0} button set", "{0} buttons set");
 				// tr: Settings > Controls: a row that opens the buttons' settings (each button, the defaults)
 				sub("buttons", Tr("Buttons"), set, Tr("Each button, and the defaults."),
-					Tr("Which DualSense button presses each of the Switch's buttons, and the buttons and deadzone back as they were."));
+					Tr("Choose the DualSense button for each Switch button, or reset to default."));
 				// tr: Settings > Controls > Buttons: the row that opens the list of every button and the DualSense button on it
-				action(Kind::Link, "buttons", Tr("Each button"), set, Tr("Which DualSense button presses each button."),
-					Tr("Which DualSense button presses each of the Switch's buttons. A is on Circle and B on Cross by default, where the Switch has "
-					   "them; + is Options and - the touchpad's click. The D-pad and the sticks stay the Switch's own."));
+				action(Kind::Link, "buttons", Tr("Each button"), set, Tr("Choose the DualSense button for each button."),
+					Tr("Choose the DualSense button for each Switch button. By default A is on Circle and B on Cross as on the Switch, + is Options and - is touchpad click."));
 				action(Kind::Hold, "resetcontrols", Tr("Reset to defaults"), m_message.empty() ? Tr("Hold Cross") : m_message,
 					Tr("Default buttons and deadzone."), Tr("Default buttons and deadzone."));
 				endSub();
@@ -933,10 +889,9 @@ namespace ps5shell
 				{
 					const auto controls = m_status.coreReady ? ps5emu::GetPlayerControls(player) : ps5emu::PlayerControls{};
 					Row* row = action(Kind::Link, "player", TrF("Player {0}", player + 1), m_status.coreReady ? TypeName(controls.type) : "",
-						controls.connected ? Tr("Cross: this player's controller, motion and buttons.") :
-							ps5emu::IsRealWiiRemote(controls.type) ? Tr("Set to a real Wii Remote, none found yet. Cross to change it.") : Tr("No DualSense for this player yet."),
-						Tr("What the game sees in this player's hands, and its motion, vibration, deadzones and buttons. Player 1 is the signed-in "
-						"user who started the app; the other signed-in users' DualSenses are players 2 to 4."));
+						controls.connected ? Tr("Cross sets this player's controller, motion and buttons.") :
+							ps5emu::IsRealWiiRemote(controls.type) ? Tr("Set to a real Wii Remote, but none found. Cross to change it.") : Tr("No DualSense for this player yet."),
+						Tr("This player's controller, motion, vibration, deadzones and buttons. Player 1 is the user who started Playtendoh; other signed-in users are players 2 to 4."));
 					row->index = player;
 					// a real Wii Remote not found yet still opens: its page is where it's changed back
 					row->dimmed = m_status.coreReady && !controls.connected && !ps5emu::IsRealWiiRemote(controls.type);
@@ -947,18 +902,15 @@ namespace ps5shell
 			{
 				const bool aOnCircle = ps5azahar::MappedInput(hand, ps5azahar::Button::A) == ps5emu::PadInput::Circle;
 				choice("abbuttons", Tr("A and B"), {Tr("A on Circle"), Tr("A on Cross")}, aOnCircle ? 0 : 1,
-					Tr("Where A is: on Circle, as on the console, or on Cross."),
-					Tr("A on Circle and B on Cross, where the console has them, or A on Cross and B on Circle, as PlayStation games confirm. X "
-					   "and Y swap to match. Also in the in-game menu."),
+					Tr("A on Circle as on the console, or on Cross."),
+					Tr("A on Circle and B on Cross as on the console, or A on Cross and B on Circle as on PlayStation. X and Y swap to match. Also in the in-game menu."),
 					Kind::Segmented);
 				if (Is3ds())
-					toggle("motion", Tr("Motion controls"), hand.motion, Tr("The DualSense's motion as the 3DS's."),
-						Tr("The DualSense's gyroscope and accelerometer as the 3DS's own, for the games that aim or steer by tilting it."));
+					toggle("motion", Tr("Motion controls"), hand.motion, Tr("Use DualSense motion."),
+						Tr("Use DualSense motion for games that aim or steer by tilting the 3DS."));
 				slider("deadzone", Tr("Stick deadzone"), hand.deadzone, 50, Tr("How far a stick moves before it counts."),
-					Is3ds() ? Tr("How far a stick moves before the game sees it, for the circle pad and the C-stick. Raise it if something drifts "
-							  "when you let go of the stick; lower it for finer control.") :
-							  Tr("How far the left stick moves before it presses the DS's D-pad. Raise it if a direction is pressed when you let go "
-							  "of the stick."))
+					Is3ds() ? Tr("How far a stick moves before the game sees it, for the circle pad and C-stick. Raise it if there is drift; lower it for finer control.") :
+							  Tr("How far the left stick moves before it presses the D-pad. Raise it if there is drift."))
 					->value = Percent(hand.deadzone);
 				int mapped = 0;
 				if (Is3ds())
@@ -971,13 +923,10 @@ namespace ps5shell
 						mapped += ps5azahar::MappedInput(hand, button) != ps5emu::PadInput::None;
 				const std::string set = TrP(mapped, "{0} button set", "{0} buttons set");
 				sub("buttons", Tr("Buttons"), set, Tr("Each button, the turbo button, and the defaults."),
-					Tr("Which DualSense button presses each button, a button that presses again and again while you hold it, and the controls "
-					   "back as they were."));
-				action(Kind::Link, "buttons", Tr("Each button"), set, Tr("Which DualSense button presses each button."),
-					Is3ds() ? Tr("Which DualSense button presses each of the 3DS's buttons. A is on Circle and B on Cross by default, where the 3DS has "
-							  "them; the circle pad is the left stick, the C-stick the right one, and the touchpad the touch screen.") :
-							  Tr("Which DualSense button presses each of the DS's buttons. A is on Circle and B on Cross by default, where the DS has "
-							  "them; the left stick is a second D-pad, the touchpad the touch screen, and holding R3 blows into the microphone."));
+					Tr("Choose the DualSense button for each button, set a turbo button, or reset to default."));
+				action(Kind::Link, "buttons", Tr("Each button"), set, Tr("Choose the DualSense button for each button."),
+					Is3ds() ? Tr("Choose the DualSense button for each 3DS button. By default A is on Circle and B on Cross as on the 3DS. The circle pad is the left stick, the C-stick the right stick, and the touchpad the touch screen.") :
+							  Tr("Choose the DualSense button for each DS button. By default A is on Circle and B on Cross as on the DS. The left stick is a second D-pad, the touchpad is the touch screen, and holding R3 blows into the mic."));
 				turbo();
 				action(Kind::Hold, "resetcontrols", Tr("Reset to defaults"), m_message.empty() ? Tr("Hold Cross") : m_message,
 					Is3ds() ? Tr("Default buttons, motion and deadzone.") : Tr("Default buttons and deadzone."), Tr("The default buttons, motion and deadzone."));
@@ -990,40 +939,35 @@ namespace ps5shell
 			ps5emu::Game home;
 			const bool homeMenu = m_prepared == System::N3ds && ps5azahar::HomeMenu(hand.region, home);
 			own(choice("region", Tr("Region"), Options(kRegions), hand.region + 1, Tr("The emulated 3DS's region."),
-					Tr("Automatic takes each game's own region. A game made for another region may refuse to start or show other languages. "
-					"Applies to the next game.")),
+					Tr("Automatic uses each game's region. A game from another region may not start. Applies to the next game.")),
 				"region");
 			own(choice("language", Tr("Language"), Options(kLanguages), hand.language + 1, Tr("The emulated 3DS's language."),
-					Tr("The language games that follow the console's show their text in. Applies to the next game.")),
+					Tr("The language games use if they follow the console. Applies to the next game.")),
 				"language");
 			std::vector<std::string> clocks;
 			for (int clock : kClocks)
 				clocks.push_back(fmt::format("{}%", clock));
 			own(choice("cpuclock", Tr("CPU clock"), clocks, ClockIndex(hand.cpuClock), Tr("The emulated 3DS's CPU speed."),
-					Tr("How fast the emulated CPU runs, against a 3DS's: higher can steady a game that slows down where a 3DS would not, and asks "
-					"more of the PS5; lower can speed up one held back by its own pacing. 100% is a 3DS. Also in the in-game menu.")),
+					Tr("Higher can smooth a game that slows down, but needs more power. Lower can speed up some games. 100% is a real 3DS. Also in the in-game menu.")),
 				"cpuClock");
 			Row* row = action(Kind::Action, "homemenu", Tr("Home Menu"), homeMenu ? Tr("Start") : Tr("Run Artic Setup first"),
 				Tr("The 3DS Home Menu, from your console's files."),
-				Tr("Starts the 3DS Home Menu, once Artic Base's setup has copied your own console's system files (Artic Base)."));
+				Tr("Starts the 3DS Home Menu. Needs your console's system files, copied with Artic Setup."));
 			row->dimmed = !homeMenu;
 		}
 		else if (page == "system" && IsSwitch())
 		{
 			// tr: the emulated Switch's console mode: in its dock, or handheld
 			own(choice("nx-docked", Tr("Console mode"), {TrC("switch mode", "Docked"), TrC("switch mode", "Handheld")}, hand.nxDocked ? 0 : 1,
-					Tr("Docked: the TV's picture. Handheld: the console's own screen's."),
-					Tr("Docked, games draw for a TV, at their sharpest (1080p for most); handheld, for the console's own screen (720p), which "
-					   "asks less of the GPU. A few games look or play differently in each. Applies to the next game."),
+					Tr("Docked looks sharpest. Handheld runs lighter."),
+					Tr("Docked draws for a TV (1080p for most games). Handheld draws for the console's screen (720p) and runs lighter. A few games differ between them. Applies to the next game."),
 					Kind::Segmented),
 				"nxDocked");
 			std::vector<std::string> controllers;
 			for (const char* name : kNxControllers)
 				controllers.push_back(Tr(name));
-			own(choice("nx-controller", Tr("Controller type"), controllers, hand.nxController + 1, Tr("What a game sees in your hands."),
-					Tr("Automatic gives each game the controller it takes: a Pro Controller for most. A game that does not work with one may "
-					   "with a Joy-Con pair; Handheld is player 1's alone, for games played on the console's own screen. Also in the in-game "
-					   "menu.")),
+			own(choice("nx-controller", Tr("Controller type"), controllers, hand.nxController + 1, Tr("The controller the game sees."),
+					Tr("Automatic gives each game the controller it expects, usually a Pro Controller. If a game doesn't work with it, try a Joy-Con pair. Handheld is player 1 only. Also in the in-game menu.")),
 				"nxController");
 			// Eden's speed limit, as ProsperoEden's Settings > Performance has it
 			std::vector<std::string> speeds;
@@ -1031,24 +975,23 @@ namespace ps5shell
 				speeds.push_back(Percent(percent));
 			speeds.push_back(TrC("speed limit", "None"));
 			if (!IsSwitch2()) own(choice("nx-speedlimit", Tr("Speed limit"), speeds, std::clamp(hand.nxSpeedLimit, 0, 4), Tr("How fast the game may run."),
-					Tr("As a share of the Switch's own speed. Above 100%, a game held to 30 fps can reach 60 where the PS5 has the time to spare, "
-					   "and a game that keeps time by its frames plays faster. None runs as fast as the PS5 can. Applies to the next game.")),
+					Tr("Compared to the Switch's speed. Above 100% can let a 30 fps game reach 60, but games that time by frames play faster. None runs as fast as possible. Applies to the next game.")),
 				"nxSpeedLimit");
 			// the system language games see, each named in its own language
 			std::vector<std::string> languages{Tr("Automatic")};
 			for (const auto& language : ps5eden::kLanguages)
 				languages.push_back(language.name);
 			own(choice("nx-language", Tr("Language"), languages, std::clamp(hand.nxLanguage + 1, 0, (int)languages.size() - 1),
-					Tr("The language Switch games see. Automatic: the menus' own."),
-					Tr("The language Switch games see. Automatic: the menus' own.")),
+					Tr("The language Switch games use. Automatic matches the menus."),
+					Tr("The language Switch games use. Automatic matches the menus.")),
 				"nxLanguage");
 		}
 		else if (page == "performance" && IsSwitch())
 		{
 			// ProsperoEden's Settings > Performance, each for every Switch game or one game's own
 			if (!IsSwitch2()) own(choice("nx-memory", Tr("Memory"), {"4 GB", "6 GB", "8 GB"}, std::clamp(hand.nxMemory, 0, 2),
-					Tr("4 GB is the Switch's own. More, for mods that ask for it. Applies to the next game."),
-					Tr("4 GB is the Switch's own. More, for mods that ask for it. Applies to the next game."), Kind::Segmented),
+					Tr("4 GB matches the Switch. More is for mods that need it. Applies to the next game."),
+					Tr("4 GB matches the Switch. More is for mods that need it. Applies to the next game."), Kind::Segmented),
 				"nxMemory");
 			const struct
 			{
@@ -1058,27 +1001,26 @@ namespace ps5shell
 				bool ps5settings::N3ds::* value;
 				const char* field;
 			} switches[] = {
-				{"nx-compactmemory", TrMark("Compact memory"), TrMark("Keeps the game's mostly empty memory small, for the biggest games."),
+				{"nx-compactmemory", TrMark("Compact memory"), TrMark("Saves memory for the biggest games."),
 					&ps5settings::N3ds::nxCompactMemory, "nxCompactMemory"},
-				{"nx-blocklist", TrMark("Precompile code"), TrMark("Compiles the code earlier sessions ran before the game needs it: fewer hitches."),
+				{"nx-blocklist", TrMark("Precompile code"), TrMark("Prepares code from past sessions ahead of time, for fewer hitches."),
 					&ps5settings::N3ds::nxBlockList, "nxBlockList"},
 				// the shortcuts, behind Accuracy
-				{"nx-fastgpu", TrMark("Fast GPU"), TrMark("Eden's lowest GPU accuracy: faster, and some effects may be drawn wrong."),
+				{"nx-fastgpu", TrMark("Fast GPU"), TrMark("Lowest GPU accuracy. Faster, but some effects may look wrong."),
 					&ps5settings::N3ds::nxFastGpu, "nxFastGpu"},
-				{"nx-unsafecpu", TrMark("Unsafe CPU"), TrMark("Quicker, inexact floating-point maths. Faster; a few games misbehave."),
+				{"nx-unsafecpu", TrMark("Unsafe CPU"), TrMark("Faster, less exact maths. A few games misbehave."),
 					&ps5settings::N3ds::nxUnsafeCpu, "nxUnsafeCpu"},
-				{"nx-unsafedma", TrMark("Unsafe DMA"), TrMark("Eden's unsafe DMA accuracy: faster, a few games show glitches."),
+				{"nx-unsafedma", TrMark("Unsafe DMA"), TrMark("Faster memory transfers. A few games show glitches."),
 					&ps5settings::N3ds::nxUnsafeDma, "nxUnsafeDma"},
-				{"nx-reactive", TrMark("Reactive flushing"), TrMark("Keeps effects that read back the GPU's work right. Off is faster; some break."),
+				{"nx-reactive", TrMark("Reactive flushing"), TrMark("Keeps some effects correct. Off is faster, but some effects break."),
 					&ps5settings::N3ds::nxReactiveFlushing, "nxReactiveFlushing"},
-				{"nx-skipinvalidation", TrMark("Skip cache invalidation"), TrMark("Fewer CPU cache invalidations: faster, rarely wrong."),
+				{"nx-skipinvalidation", TrMark("Skip cache invalidation"), TrMark("Faster, and rarely causes problems."),
 					&ps5settings::N3ds::nxSkipInvalidation, "nxSkipInvalidation"},
 			};
 			constexpr int kShortcuts = 2; // switches' first behind Accuracy
 			if (!IsSwitch2()) own(toggle(switches[0].id, Tr(switches[0].label), hand.*(switches[0].value), Tr(switches[0].about), Tr(switches[0].about)), switches[0].field);
 			own(toggle("nx-async", Tr("Async shader compile"), hand.nxAsyncShaders, Tr("No stutter while new shaders build."),
-					Tr("On, a new shader is built while the game carries on, so it does not stutter, but some things may be missing for a moment. "
-					"Off, the game waits for each one: stutter, but nothing drawn wrong.")),
+					Tr("On: shaders build in the background, so less stutter, but some things may appear late. Off: the game waits for each shader, which stutters but draws everything right.")),
 				"nxAsyncShaders");
 			own(toggle(switches[1].id, Tr(switches[1].label), hand.*(switches[1].value), Tr(switches[1].about), Tr(switches[1].about)),
 				switches[1].field);
@@ -1089,9 +1031,8 @@ namespace ps5shell
 				changed += hand.*(switches[i].value) != defaults.*(switches[i].value);
 			// tr: Settings > Performance: a row that opens Eden's accuracy shortcuts (Fast GPU, Unsafe CPU, ...); its value: how many are changed
 			sub("accuracy", Tr("Accuracy"), changed ? TrP(changed, "{0} changed", "{0} changed") : std::string(Tr("Default")),
-				Tr("Eden's shortcuts: faster, some less exact."),
-				Tr("Fast GPU, Unsafe CPU, Unsafe DMA, Reactive flushing and Skip cache invalidation trade exactness for speed, for every Switch "
-				   "game or one game's own. Triangle on each says more."));
+				Tr("Speed shortcuts. Faster, but less exact."),
+				Tr("These trade accuracy for speed, for every Switch game or just one. Press Triangle on each for more."));
 			for (int i = kShortcuts; i < (int)std::size(switches); i++)
 				own(toggle(switches[i].id, Tr(switches[i].label), hand.*(switches[i].value), Tr(switches[i].about), Tr(switches[i].about)), switches[i].field);
 			endSub();
@@ -1099,24 +1040,22 @@ namespace ps5shell
 		else if (page == "system" && IsDs())
 		{
 			own(choice("language", Tr("Language"), Options(kLanguages), hand.language + 1, Tr("The emulated DS's language."),
-					Tr("The DS's own language, which many games follow. The DS has Japanese, English, French, German, Italian, Spanish and "
-					"Chinese; any other language uses English. Applies to the next game.")),
+					Tr("The DS's language, used by many games. Japanese, English, French, German, Italian, Spanish and Chinese; others use English. Applies to the next game.")),
 				"language");
 			const bool found = ps5melonds::OwnBiosFound();
-			own(toggle("dsownbios", Tr("Your DS's BIOS"), hand.dsOwnBios, found ? Tr("Found in melonds/bios.") : Tr("Not found: melonDS's built-in BIOS runs the games."),
+			own(toggle("dsownbios", Tr("Your DS's BIOS"), hand.dsOwnBios, found ? Tr("Found in melonds/bios.") : Tr("Not found: the built-in BIOS is used."),
 					// tr: {0} is the folder for a DS's own BIOS and firmware dumps
-					TrF("bios7.bin, bios9.bin and firmware.bin, dumped from your own DS, in {0}: melonDS runs on them when they are there "
-						"and this is on. Without them, its own replacements (FreeBIOS) run most games as well. Applies to the next game.",
+					TrF("Uses bios7.bin, bios9.bin and firmware.bin from your own DS, in {0}. Without them, most games run fine on the built-in BIOS. Applies to the next game.",
 						ps5melonds::Root() + "/bios")),
 				"dsOwnBios");
 			own(choice("dsmic", Tr("Microphone"), {Tr("Noise"), Tr("Silence"), Tr("A recording")}, hand.dsMicSource,
 				Tr("What the DS hears while R3 is held. Applies to the next game."),
 				// tr: {0} is melonDS's folder, /data/melonds or where the DS's files are; keep <the game's file name> as a placeholder
-				TrF("A recording is a WAV file, 16-bit mono PCM at 8,000 to 48,000 Hz and up to 16 MB: {0}/microphone/<the game's file name>.wav for one game, {0}/microphone.wav for the others. It plays over and over while R3 is held, from its start each time. Nothing is recorded from a microphone.", ps5melonds::Root())), "dsMicSource");
+				TrF("A 16-bit mono WAV (8,000 to 48,000 Hz, up to 16 MB): {0}/microphone/<the game's file name>.wav for one game, or {0}/microphone.wav for all. It loops while R3 is held.", ps5melonds::Root())), "dsMicSource");
 			own(toggle("dsslot2", Tr("GBA cartridge in Slot-2"), hand.dsSlot2,
-				Tr("For the DS games that read a GBA game in their second slot, as Pokémon's Pal Park does. It does not play GBA games."),
+				Tr("For DS games that read a GBA game in the second slot. It does not play GBA games."),
 				// tr: {0} is melonDS's folder, /data/melonds or where the DS's files are
-				TrF("Put the GBA game in {0}/slot2 with the DS game's file name, ending .gba, and its .sav beside it if it has one. The cartridge's save is then kept in {0}/slot2-saves, and the files you put there are never changed. A DS game without a cartridge there starts with the slot empty. Applies to the next game.", ps5melonds::Root())), "dsSlot2");
+				TrF("Put the GBA game in {0}/slot2 named like the DS game, ending .gba, with its .sav if it has one. Its save is then kept in {0}/slot2-saves; your files are not changed. Applies to the next game.", ps5melonds::Root())), "dsSlot2");
 		}
 		else if (page == "files")
 		{
@@ -1125,24 +1064,18 @@ namespace ps5shell
 				ShortPath(IsSwitch() && !IsSwitch2() ? ps5eden::ScanFolder(folder) : folder, 34),
 				Tr("Where your games are. Cross picks another."),
 				// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-				IsWiiU() ? TrF("Your Wii U games: .wua, .wud, .wux, or folders with code, content and meta, alone or in .zip, .7z or .rar archives. "
-							"Encrypted .wud and .wux need their keys in {0}/keys.txt.", ps5paths::CemuRoot()) :
-				Is3ds()	 ? Tr("Your 3DS games: .3ds or .cci, .cxi, .3dsx and Azahar's compressed dumps, decrypted, alone or in .zip, .7z or .rar "
-						   "archives, here or in the folders in it. CIA files are installed (Install a CIA file). Encrypted dumps do not start, "
-						   "with keys or without: decrypt them on your 3DS first (GodMode9).") :
-				IsSwitch2() ? Tr("Switch 2 game folders need ExeFS and RomFS. Put each game in its own folder; keep updates and DLC where EglantinePS5 expects them.") :
-				IsSwitch() ? Tr("Your Switch games: .nsp and .xci files, alone or each in a folder of its own with its update and DLC.") :
-						   Tr("Your DS games: .nds files, alone or in .zip, .7z or .rar archives, here or in the folders in it."));
-			action(Kind::Action, "rescan", Tr("Look for games now"), m_scanning ? Tr("Looking…") : "", Tr("This side's folder, again."),
-				Tr("Looks through this side's folder again: games added since appear, and games taken away go."));
+				IsWiiU() ? TrF("Wii U games: .wua, .wud, .wux, folders with code, content and meta, or in .zip, .7z or .rar. Encrypted .wud and .wux need keys in {0}/keys.txt.", ps5paths::CemuRoot()) :
+				Is3ds()	 ? Tr("3DS games: decrypted .3ds, .cci, .cxi, .3dsx or compressed dumps, or in .zip, .7z or .rar. Install CIA files with Install a CIA file. Encrypted games won't start: decrypt them on your 3DS with GodMode9.") :
+				IsSwitch2() ? Tr("Switch 2 game folders need ExeFS and RomFS. Put each game in its own folder; keep updates and DLC where Lichii expects them.") :
+				IsSwitch() ? Tr("Switch games: .nsp and .xci files, each alone or in its own folder with its update and DLC.") :
+						   Tr("DS games: .nds files, or in .zip, .7z or .rar, here or in subfolders."));
+			action(Kind::Action, "rescan", Tr("Look for games now"), m_scanning ? Tr("Looking…") : "", Tr("Search this system's folder again."),
+				Tr("Searches this system's folder again for added or removed games."));
 			// #75: a large library on a share is a long look at every start
 			if (!ps5netfs::shares().empty())
 				toggle("lookonshares", Tr("Look on network shares at every start"), settings.lookOnShares,
-					Tr("Off: the games found last time, at once."),
-					Tr("A games folder on a network share is looked through each time its side opens, and the app starts again after "
-					   "every game: with a large library that is a long wait. Off, the side shows the games it found there last time at "
-					   "once; Look for games now looks again when you have added some. Folders on the PS5 or a USB drive are looked "
-					   "through every time either way."));
+					Tr("Off shows the games found last time, at once."),
+					Tr("Searching a network share each time can be slow with a large library. Off shows the games found last time right away; use Look for games now after adding some. Folders on the PS5 or USB are always searched."));
 			if (IsSwitch())
 			{
 				if (IsSwitch2())
@@ -1151,9 +1084,9 @@ namespace ps5shell
 					const std::string found = keys && firmware ? std::string(Tr("Found")) : keys ? std::string(Tr("Firmware missing")) :
 						firmware ? std::string(Tr("Keys missing")) : std::string(Tr("Missing"));
 					action(Kind::Action, "nxkeys", Tr("Keys and firmware"), found,
-						!keys ? Tr("prod.keys is missing: EglantinePS5 needs your own Switch keys") :
-						!firmware ? Tr("Firmware is missing: some games need it") : Tr("EglantinePS5 found keys and firmware."),
-						TrF("Put your own prod.keys in {0}/keys. Neither Playtendoh nor EglantinePS5 includes keys.", ps5eglantine::DataFolder()) +
+						!keys ? Tr("prod.keys is missing: Lichii needs your own Switch keys") :
+						!firmware ? Tr("Firmware is missing: some games need it") : Tr("Lichii found keys and firmware."),
+						TrF("Put your own prod.keys in {0}/keys. Neither Playtendoh nor Lichii includes keys.", ps5eglantine::DataFolder()) +
 						"\n\n" + TrF("Put your own Switch firmware files in {0}/firmware. Neither app includes firmware.", ps5eglantine::DataFolder()));
 				}
 				else
@@ -1168,15 +1101,13 @@ namespace ps5shell
 					firmware ? std::string(Tr("Keys missing")) : std::string(Tr("Missing"));
 				// tr: Settings > Game files: one row for the Switch's keys (prod.keys) and its firmware, which Eden needs
 				action(Kind::Action, "nxkeys", Tr("Keys and firmware"), found,
-					!keys			? Tr("prod.keys is missing: Eden cannot read Switch games without it") :
+					!keys			? Tr("prod.keys is missing: Switch games need it") :
 						!firmware	? Tr("No firmware yet: many games need it to start") :
-									  Tr("Eden can read your games."),
-					TrF("Eden reads Switch games with your own console's keys: prod.keys (and title.keys), dumped from your Switch, in "
-						"{0}/keys. No keys come with Playtendoh.",
+									  Tr("Your keys are ready."),
+					TrF("Switch games need your own console's keys: prod.keys (and title.keys) from your Switch, in {0}/keys. Playtendoh does not include keys.",
 						files) +
 						"\n\n" +
-						TrF("Many Switch games need the console's own system files: its firmware's .nca files, dumped from your Switch, "
-							"in {0}/firmware. No firmware comes with Playtendoh.",
+						TrF("Many Switch games need firmware: the .nca files from your Switch, in {0}/firmware. Playtendoh does not include firmware.",
 							files));
 				}
 			}
@@ -1186,9 +1117,7 @@ namespace ps5shell
 				const size_t shares = ps5netfs::shares().size();
 				action(Kind::Link, "shares", Tr("Network shares"), shares ? TrP((long long)shares, "{0} share", "{0} shares") : std::string(),
 					Tr("Games on a computer or a NAS, over SMB or NFS."),
-					Tr("A folder shared by a Windows, macOS or Linux computer or a NAS, read where it is: add it here, then choose a games folder "
-					   "on it with the folder browser, where each share is a tab. Nothing is ever written to it; saves and installs stay on "
-					   "the PS5. A cable does better than Wi-Fi for Wii U games."));
+					Tr("Add a folder shared by a computer or NAS, then choose a games folder on it in the folder browser. Nothing is written to it; saves and installs stay on the PS5. Wired is better than Wi-Fi."));
 			}
 			if (IsWiiU())
 			{
@@ -1196,49 +1125,68 @@ namespace ps5shell
 				action(Kind::Action, "keys", Tr("Wii U disc keys"), keys ? std::string(Tr("keys.txt found")) : std::string(),
 					keys ? Tr("Only encrypted .wud and .wux need them.") : Tr("keys.txt is missing: only encrypted .wud and .wux need it"),
 					// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-					TrF("Encrypted .wud and .wux dumps need their disc keys in {0}/keys.txt, one a line. Decrypted dumps, .wua and "
-						"folders need none.", ps5paths::CemuRoot()));
+					TrF("Encrypted .wud and .wux need their disc keys in {0}/keys.txt, one per line. Other formats need none.", ps5paths::CemuRoot()));
 				// tr: Settings > Game files: a row that opens Updates and DLC and Mods from USB
-				sub("installs", Tr("Updates, DLC and mods"), "", Tr("Installs from your drives, and Cemu mods."),
-					Tr("Updates and DLC found on your drives, each installed into the Wii U's storage with one press, and Cemu mods copied from a "
-					   "USB drive's ps5cemu/mods folder. Triangle on each says more."));
-				cemu(action(Kind::Link, "install", Tr("Updates and DLC"), "", Tr("Found on your drives, each installed with one press."),
-					Tr("Looks on every USB drive and extended storage plugged in, in the games folder and in /data for updates, DLC and games "
-					   "(folders with code, content and meta), and lists them by game with what is installed now. Cross installs one, Square "
-					   "every new one; each goes into the Wii U's storage (mlc01), as Cemu's Install game title, update or DLC does. Triangle "
-					   "there chooses a folder anywhere else.")));
-				cemu(action(Kind::Action, "mods", Tr("Mods from USB"), ModsStatus(), Tr("Cemu mods from the ps5cemu/mods folder on your drives."),
-					Tr("Copies the mods in a USB drive's ps5cemu/mods folder into the app's graphic packs, where each shows on its game's "
-					   "Graphic packs page, off until you turn it on. A mod is a Cemu graphic pack (a folder with a rules.txt), or, for one "
-					   "shared without it, a folder with content and aoc folders, in a folder named by its game's title ID. A game's menu "
-					   "has Add mods from USB as well, which gives such mods that game. The guide on GitHub, docs/GUIDE.md, has more.")));
+				sub("installs", Tr("Updates, DLC and mods"), "", Tr("Install from your drives, and add mods."),
+					Tr("Install updates and DLC found on your drives, and copy mods from ps5cemu/mods on a USB drive. Press Triangle on each for more."));
+				cemu(action(Kind::Link, "install", Tr("Updates and DLC"), "", Tr("Found on your drives. Install each with one press."),
+					Tr("Searches USB drives, extended storage, the games folder and /data for updates, DLC and games (folders with code, content and meta), listed by game. Cross installs one, Square installs all new ones. Triangle chooses another folder.")));
+				cemu(action(Kind::Action, "mods", Tr("Mods from USB"), ModsStatus(), Tr("Mods from ps5cemu/mods on your drives."),
+					Tr("Copies mods from ps5cemu/mods on a USB drive. Each appears, off, on its game's Graphic packs page. A mod is a graphic pack (a folder with rules.txt), or a folder with content and aoc folders inside a folder named with the game's title ID. You can also add mods from a game's menu. See docs/GUIDE.md on GitHub.")));
 				endSub();
 			}
 			else if (Is3ds())
 				action(Kind::Link, "installcia", Tr("Install a CIA file"), "", Tr("A game, an update or DLC."),
-					Tr("Installs a CIA into the 3DS's storage, as Azahar's Install CIA does: an update or DLC goes with its game, and a game joins "
-					"the library. Circle cancels while it runs."));
-			// an install from before: a folder for each system (app/reorganize.h), and back as before, which
-			// Go back to an earlier version needs
-			if (!m_layout.separate.empty() || !m_layout.separated.empty())
+					Tr("Installs a CIA file. Updates and DLC join their game; games join the library. Circle cancels."));
+			// every system's own folder, each of the 20-odd: where its saves, BIOS files and settings are. An
+			// install from before is moved into them as the app starts (app/reorganize.h, main_ps5.cpp); what
+			// could not be is offered again here, and putting the first four back, which Go back to an earlier
+			// version needs
 			{
-				const bool back = m_layout.separate.empty();
-				const bool blocked = !m_layout.blocked.empty();
-				Row* row = action(Kind::Hold, back ? "putback" : "separate", Tr("A folder for each system"),
-					blocked ? std::string(Tr("Cannot move")) : m_message.empty() ? std::string(Tr("Hold Cross")) : m_message,
+				struct Place
+				{
+					std::string name, folder;
+					const char* system = nullptr; // one the player can move: reorganize.h's name for it
+				};
+				const std::string& root = ps5paths::Root();
+				std::vector<Place> places{{SideTitle(System::WiiU), ps5paths::CemuRoot(), "cemu"}, {SideTitle(System::N3ds), ps5paths::Azahar(), "azahar"},
+					{SideTitle(System::Nds), ps5paths::MelonDs(), "melonds"}, {SideTitle(System::Switch), ps5paths::Eden(), "eden"},
+					{SideTitle(System::Switch2), ps5eglantine::DataFolder()}};
+				for (size_t i = 0; i < ps5retro::kSystems.size(); i++)
+					places.push_back({SideTitle((System)(ps5retro::kFirst + i)), ps5retro::kSystems[i].data});
+				std::vector<std::string> pending;
+				const ps5reorganize::Request asked = ps5reorganize::Asked(root, pending);
+				int own = 0;
+				for (const Place& place : places)
+					own += !place.system || std::find(m_layout.separated.begin(), m_layout.separated.end(), place.system) != m_layout.separated.end();
+				// tr: Settings > Game files: a row opening the list of every system's folder; {0} how many have a folder of their own, {1} how many systems
+				sub("systemfolders", Tr("A folder for each system"), TrF("{0} of {1} on their own", own, (int)places.size()),
+					Tr("Keep a system's files together with the rest, or in a folder of its own."),
+					TrF("Saves, BIOS files and settings for every system are kept together in {0}, unless you give a system its own folder. Moving is quick and nothing is deleted. Playtendoh restarts to do it. Some emulators always use their own folder.",
+						root));
+				for (const Place& place : places)
+				{
+					if (!place.system)
+					{
+						// tr: Settings > Game files: a system whose emulator always keeps a folder of its own
+						Row* row = action(Kind::Action, "systemfolder", place.name, place.folder, Tr("Its emulator always keeps its own folder."), "");
+						row->dimmed = true;
+						continue;
+					}
+					const bool on = std::find(m_layout.separated.begin(), m_layout.separated.end(), place.system) != m_layout.separated.end();
+					const bool moving = asked != ps5reorganize::Request::None && std::find(pending.begin(), pending.end(), place.system) != pending.end();
+					Row* row = toggle((std::string("ownfolder-") + place.system).c_str(), place.name, on,
+						moving ? std::string(Tr("Moves the next time Playtendoh starts.")) : place.folder,
+						Tr("On: this system's files get their own folder. Off: kept with the rest."));
+					row->value = on ? Tr("Own folder") : Tr("Together");
+				}
+				if (!m_layout.blocked.empty())
+				{
 					// tr: {0} is a file or folder already where one would be moved to
-					blocked ? TrF("In the way: {0}", m_layout.blocked) :
-					back	? Tr("Each system's files are in a folder of their own.") :
-							  Tr("Your files from before into a folder for each system."),
-					back ? TrF("Puts each system's files back into {0}, where they were before. Going back to an earlier version needs them "
-							   "there, as it looks for them there. Playtendoh starts again to do it.",
-							   ps5paths::Root()) :
-						   // tr: {0} is the app's data folder, /data/ps5cemu; {1} lists the four folders: /data/cemu, /data/azahar, ...
-						   TrF("Moves each system's files from {0} into a folder of its own: {1}. They are renamed on the same drive, never "
-							   "copied, so it takes a moment whatever their size, and nothing is deleted. Playtendoh starts again to do it; a "
-							   "system that cannot move stays as it was. This row puts them back.",
-							   ps5paths::Root(), SystemFolders()));
-				row->dimmed = blocked;
+					Row* row = action(Kind::Action, "systemfolder", Tr("Cannot move"), m_layout.blocked, TrF("In the way: {0}", m_layout.blocked), "");
+					row->dimmed = true;
+				}
+				endSub();
 			}
 		}
 		else if (page == "saves")
@@ -1262,25 +1210,22 @@ namespace ps5shell
 				if (names.empty())
 					names.push_back("-");
 				Row* account = cemu(choice("account", Tr("Account games start on"), names, index,
-					settings.accountPerUser ? Tr("Chosen by your PS5 user: One account for each PS5 user is on.") :
-											  Tr("The next game starts on these saves. A game already running keeps its own."),
-					Tr("Each Wii U account has its own saves of every game, as on a Wii U. The next game you start uses the one shown here; a game "
-					   "already running keeps the one it started with.")));
+					settings.accountPerUser ? Tr("Set by your PS5 user, because One account for each PS5 user is on.") :
+											  Tr("The next game uses these saves."),
+					Tr("Each Wii U account has its own saves, as on a Wii U. The next game you start uses this one.")));
 				if (settings.accountPerUser)
 					account->dimmed = true;
 				cemu(toggle("accountperuser", Tr("One account for each PS5 user"), settings.accountPerUser,
 					Tr("Whoever starts Playtendoh plays on their own saves."),
-					Tr("The PS5 user who starts the app plays on a Wii U account of their own, made the first time with their PS5 name, so "
-					   "brothers and sisters each keep their own saves just by starting the app from their own PS5 user.")));
+					Tr("Each PS5 user gets their own Wii U account, named after them, so everyone keeps their own saves.")));
 				// tr: Settings > Accounts and saves: a row that opens New account, Rename and Delete an account
-				sub("accounts", Tr("Manage accounts"), TrF("{0} of 12", (int)accounts.size()), Tr("New, renamed or deleted."),
-					Tr("A new account, a new name for the one games start on, or another account deleted. Saves always stay in the Wii U's "
-					   "storage."));
+				sub("accounts", Tr("Manage accounts"), TrF("{0} of 12", (int)accounts.size()), Tr("Add, rename or delete accounts."),
+					Tr("Add an account, rename the current one, or delete another. Saves always stay in the Wii U's storage."));
 				// tr: how many Wii U accounts there are, of the twelve a Wii U has at most
 				cemu(action(Kind::Link, "newaccount", Tr("New account"), TrF("{0} of 12", (int)accounts.size()),
-					Tr("A new account starts with no saves."), Tr("Name it with the keyboard, ten letters at most. Games start on it from then on.")));
+					Tr("A new account starts with no saves."), Tr("Up to ten letters. Games then start on it.")));
 				cemu(action(Kind::Link, "renameaccount", TrF("Rename {0}", currentName), "", Tr("The account games start on."),
-					Tr("The name games show for this account, ten letters at most. Its saves stay as they are.")));
+					Tr("The name games show, up to ten letters. Its saves are kept.")));
 				// deleting: Left and Right choose which, never the one games start on
 				std::vector<std::string> others;
 				for (const auto& a : accounts)
@@ -1291,8 +1236,7 @@ namespace ps5shell
 				Row* remove = cemu(action(Kind::Hold, "deleteaccount", Tr("Delete an account"),
 					others.empty() ? std::string(Tr("Only one")) : others[which] + "  ·  " + Tr("Hold Cross"),
 					others.empty() ? Tr("There is only one account, and games start on it.") : Tr("Left and Right choose which. Its saves stay in the Wii U's storage."),
-					Tr("The account is removed; its saves stay in the Wii U's storage (and in any backup), so nothing is lost. The account "
-					   "games start on cannot be deleted: choose another first.")));
+					Tr("Removes the account. Its saves stay in the Wii U's storage and backups. You can't delete the account games start on.")));
 				remove->options = others;
 				remove->index = which;
 				if (others.empty())
@@ -1336,11 +1280,8 @@ namespace ps5shell
 			else if (backupValue.empty() && !m_backups.empty())
 				// tr: the newest backup of the saves: when, and on which drive
 				backupValue = TrF("Last: {0} · {1}", m_backups.front().when, DriveName(m_backups.front().drive));
-			action(Kind::Action, "backup", Tr("Back up to USB"), backupValue, Tr("Every side's saves, save states and Wii U accounts."),
-				Tr("Copies the Wii U's saves (every account's, with the accounts), the 3DS's saves, extra data and save states, the DS's saves "
-				   "and save states, and the Switch's saves with its user profiles to PS5CEMU-HAR-saves on the first USB drive plugged in, in a "
-				   "folder named by the date and time. Never the games, so a backup stays small. The settings go with them: the launcher's, each "
-				   "game's own and the controllers'."));
+			action(Kind::Action, "backup", Tr("Back up to USB"), backupValue, Tr("Every system's saves, save states and Wii U accounts."),
+				Tr("Copies every system's saves, save states and Wii U accounts, plus your settings, to PS5CEMU-HAR-saves on the first USB drive, in a dated folder. Games are not copied, so backups stay small."));
 			std::vector<std::string> backups;
 			for (const auto& backup : m_backups)
 				backups.push_back(backup.when + " · " + DriveName(backup.drive));
@@ -1352,9 +1293,7 @@ namespace ps5shell
 			Row* restore = action(Kind::Hold, "restore", Tr("Restore from USB"), restoreValue,
 				backups.empty() ? Tr("Back up first, or plug in the drive with your backups.") : Tr("Left and Right choose which backup, the newest first."),
 				// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-				TrF("Puts the chosen backup's saves back where they came from. The saves there now are moved first to "
-					"{0}/saves-before, so nothing is lost; saves the backup does not have stay as they are. Its settings come back too, and "
-					"Playtendoh starts again to use them.",
+				TrF("Restores the chosen backup's saves and settings. Current saves are moved to {0}/saves-before first, so nothing is lost. Playtendoh then restarts.",
 					ps5paths::Root()));
 			restore->options = backups;
 			restore->index = chosen;
@@ -1364,83 +1303,72 @@ namespace ps5shell
 		else if (page == "online")
 		{
 			// downloading the covers now: the missing ones, or every one again
+			// (a libretro side's come by each game file's name, from libretro's thumbnails: every game can have one)
+			const bool byName = IsRetro() && !IsPorpoise();
 			int missing = 0;
 			for (const Game& game : m_games)
-				missing += !game.entry.game.gameId.empty() && game.boxArt.empty();
-			const size_t pending = ps5boxart::Pending();
+				missing += (byName || !game.entry.game.gameId.empty()) && game.boxArt.empty();
+			const size_t pending = byName ? ps5boxart::RetroPending() : ps5boxart::Pending();
 			const std::string status = pending ? TrP((long long)pending, "Downloading: {0} left", "Downloading: {0} left") :
-				ps5boxart::Answered() == 0 ? std::string(Tr("GameTDB did not answer: is the PS5 online?")) :
+				!byName && ps5boxart::Answered() == 0 ? std::string(Tr("GameTDB did not answer: is the PS5 online?")) :
 				missing				   ? TrP(missing, "{0} game without box art", "{0} games without box art") :
 										 std::string(Tr("Every game has box art"));
 			// tr: Settings > Online: a row that opens the box art's settings (GameTDB on or off, downloading the covers again)
-			sub("boxart", Tr("Box art"), settings.boxArt || pending ? status : std::string(Tr("Off")), Tr("Covers for the library, from GameTDB."),
-				Tr("Whether covers are downloaded from GameTDB (art.gametdb.com), and the missing ones or every one downloaded again. On the "
-				   "Switch side, also whether a game shows its box art or its own icon."));
+			sub("boxart", Tr("Box art"), settings.boxArt || pending ? status : std::string(Tr("Off")),
+				byName ? Tr("Covers for the library, from libretro's thumbnails.") : Tr("Covers for the library, from GameTDB."),
+				Tr("Download covers from GameTDB, or download missing or all covers again. For Switch, choose box art or game icons."));
 			// (a Switch game's ID is the game GameTDB has by its name: port/eden/library.h)
 			toggle("boxart", Tr("Box art from GameTDB"), settings.boxArt, Tr("Covers for the library, downloaded once."),
-				Tr("The first time a game shows up, its cover is downloaded from GameTDB (art.gametdb.com) by the ID on its box. Off: nothing "
-				"more is downloaded."));
+				Tr("Downloads each new game's cover from GameTDB. Off: no covers are downloaded."));
 			// the Switch side's covers: GameTDB's box art, or each game's own icon, as the Switch's home menu has them
 			if (IsSwitch())
 				choice("nx-covers", Tr("Switch covers"), {Tr("Box art"), Tr("Game icons")}, hand.nxCovers, Tr("GameTDB's box art, or each game's own icon."),
-					Tr("Box art is GameTDB's, found by each game's name. Game icons are the games' own, read from their files, as the Switch's "
-					   "home menu shows them. A picture beside a game (Game.png or Game.jpg) is its cover either way."));
+					Tr("Box art comes from GameTDB. Game icons come from the games, as on the Switch home menu. A Game.png or Game.jpg next to a game is always used."));
 			action(Kind::Action, "boxartmissing", Tr("Download missing box art"), status, Tr("Tries again for every game without a cover."),
-				Tr("Asks GameTDB again for the cover of every game on this side that has none, including games it had no cover for "
-				   "before. Covers are downloaded in the background while you use the launcher."));
+				Tr("Tries again for every game on this system without a cover. Covers download in the background."));
 			action(Kind::Hold, "boxartall", Tr("Download all box art again"), m_message.empty() ? Tr("Hold Cross") : m_message,
-				Tr("Replaces every cover on this side with a fresh download."),
-				Tr("Downloads the cover of every game on this side again, replacing the ones you have. Useful when a cover is wrong or "
-				   "looks broken."));
+				Tr("Downloads every cover for this system again."),
+				Tr("Downloads every cover on this system again. Useful if a cover is wrong or broken."));
 			endSub();
 			// reports to the project (app/reports.h): the first start's question, changed here
 			if (ps5reports::Available())
-				toggle("reports", Tr("Send reports"), settings.ui.reports, Tr("Which games run and how they end, with nothing about you."),
+				toggle("reports", Tr("Send reports"), settings.ui.reports, Tr("How games run, with nothing about you."),
 					// tr: {0} is the address of the page that lists every field a report has
-					TrF("When a game ends, a short report goes to the Playtendoh project: the game and its console, how it ended and for how "
-						"long, the settings it ran with, the PS5's firmware and model, and the end of Playtendoh's log with addresses and "
-						"folder names taken out. Never your PSN name, your console's serial, its addresses, your accounts or your saves. "
-						"Reports are sent from the menus, never while you play. Off deletes the reports waiting to be sent, at once. "
-						"Every field: {0}",
+					TrF("When a game ends, a short report is sent: the game, how it ended, its settings, the PS5's firmware and model, and the end of the log with addresses and folder names removed. Never your PSN name, serial, addresses, accounts or saves. Nothing is sent while you play. Off deletes reports waiting to be sent. Every field: {0}",
 						ps5reports::kExplained));
 			// Artic Base's page (pages.cpp): a game played from a 3DS on the network
 			if (Is3ds())
-				action(Kind::Link, "artic", Tr("Artic Base"), settings.n3ds.articAddress, Tr("Play a game from your 3DS, and set up from it."),
-					Tr("Artic Base plays a game from a 3DS on your network, its saves staying on the 3DS; Artic Setup copies a 3DS's system files "
-					"into Azahar, for the Home Menu and the games that need them."));
+				action(Kind::Link, "artic", Tr("Artic Base"), settings.n3ds.articAddress, Tr("Play from your 3DS, or copy its system files."),
+					Tr("Artic Base plays a game from your 3DS over the network; saves stay on the 3DS. Artic Setup copies your 3DS's system files, for the Home Menu and games that need them."));
 			// ProsperoEden's rooms (port/eden/rooms.h), behind a row; the public list downloaded once, as their page
 			// first shows, and again by Cross on its row
 			if (IsSwitch())
 			{
 				const bool joined = !hand.nxRoomHost.empty();
-				const std::string about = Tr("A room is a server where Switch games find each other for their local wireless play, as in desktop "
-											 "Eden and ProsperoEden. The room chosen here is joined as each Switch game starts: then choose Local "
-											 "Wireless (or local play) in the game. A room that cannot be joined brings you back here with why.");
+				const std::string about = Tr("A room lets Switch games play local wireless together online. The room chosen here is joined when a Switch game starts; then choose Local Wireless (or local play) in the game.");
 				// tr: Settings > Online on the Switch side: a row that opens the rooms for the games' local wireless play
 				sub("rooms", Tr("Multiplayer"), joined ? hand.nxRoomName : std::string(Tr("None: games play offline")),
-					Tr("Rooms for the games' local wireless play, online."), about);
+					Tr("Play local wireless games online."), about);
 				if (m_subPage == "rooms" && !ps5rooms::Asked())
 					ps5rooms::Refresh();
 				const ps5rooms::Status rooms = ps5rooms::Get();
 				Row* room = action(Kind::Action, "nx-room", Tr("Room"), joined ? hand.nxRoomName : std::string(Tr("None: games play offline")),
-					joined ? Tr("Joined as a Switch game starts. Cross plays offline again.") : Tr("Choose a public room below, or a private one."),
+					joined ? Tr("Joined when a Switch game starts. Cross goes back to offline.") : Tr("Choose a public room below, or a private one."),
 					about);
 				room->dimmed = !joined;
 				action(Kind::Action, "nx-nickname", Tr("Nickname"), ps5eden::Nickname(hand), Tr("Your name in the room."),
-					Tr("What the others in a room see of you: 4 to 20 letters, digits, spaces, dots, dashes or underscores, as Eden takes them."));
+					Tr("What others in the room see. 4 to 20 letters, digits, spaces, dots, dashes or underscores."));
 				const bool privateRoom = joined && hand.nxRoomName == hand.nxRoomHost;
 				action(Kind::Action, "nx-private", Tr("Private room"),
 					privateRoom ? fmt::format("{}:{}", hand.nxRoomHost, hand.nxRoomPort) : std::string(Tr("Cross to enter one")),
-					Tr("A room by its address, port and password."),
-					Tr("A room someone gave you the address of: its address (a name or an IPv4 address), its UDP port (24872 unless they "
-					   "say otherwise) and its password, if it has one."));
+					Tr("Join a room by address, port and password."),
+					Tr("For a room someone shared with you: its address (name or IPv4), UDP port (usually 24872) and password, if any."));
 				const std::string listed = rooms.busy ? std::string(Tr("Downloading…")) :
 					!rooms.error.empty()			   ? rooms.error :
 					rooms.rooms.empty()				   ? std::string(Tr("No public rooms right now")) :
 														 TrP((long long)rooms.rooms.size(), "{0} room", "{0} rooms");
 				action(Kind::Action, "nx-refresh", Tr("Public rooms"), listed, Tr("Cross downloads the list again."),
-					Tr("ProsperoEden's list of public rooms: its own featured rooms first, then the others, the fullest first. A room for "
-					   "another version of Eden cannot be joined.") + std::string("\n\n") + about);
+					Tr("Featured rooms first, then the busiest. Rooms for another version can't be joined.") + std::string("\n\n") + about);
 				// the rooms themselves, ProsperoEden's own first (the most a page lists)
 				for (size_t i = 0; i < rooms.rooms.size() && i < 80; i++)
 				{
@@ -1463,43 +1391,37 @@ namespace ps5shell
 			}
 			if (IsWiiU())
 				action(Kind::Action, "packs", Tr("Community graphic packs"), PacksStatus(), Tr("Cross checks GitHub for newer ones."),
-					Tr("Cemu's community graphic packs, from GitHub's latest release when it is newer than the ones installed. They are not "
-					   "in the app: the first time the Wii U side starts without them, they are downloaded in the background."));
-			if (IsDs())
+					Tr("Community graphic packs for Wii U games, downloaded from GitHub. They download in the background the first time the Wii U opens."));
+			// RetroAchievements: one account for every console with sets (the DS, the libretro sides, and
+			// Porpoise X's GameCube and Wii, which signs in with it); none for the Wii U, 3DS or Switch
+			if (!IsWiiU() && !Is3ds() && !IsSwitch() && !IsSwitch2())
 			{
-				// RetroAchievements (6.16): only the DS has sets
 				const ps5cheevos::Account account = ps5cheevos::Get();
-				const char* about = Tr("Earn RetroAchievements in DS games with your account, as RetroArch does. Cross signs in with your user name "
-									   "and password; only the sign-in's token is kept on the PS5, never the password. Softcore: save states, "
-									   "cheats and speed stay as they are. RetroAchievements has no sets for the Wii U or the 3DS.");
+				const char* about = Tr("Earn achievements in DS, GameCube, Wii, N64, SNES, NES, Game Boy, Virtual Boy and Pokémon mini games. "
+									   "Only a sign-in token is kept on the PS5, never your password. Save states, cheats and speed still work.");
 				if (account.signedIn)
 					// tr: the RetroAchievements account signed in: its name ({1}) and softcore points ({0})
 					action(Kind::Hold, "cheevos", Tr("RetroAchievements"),
 						TrP((long long)account.points, "{1} · {0} point", "{1} · {0} points", account.user) + "  ·  " + Tr("Hold Cross to sign out"),
-						Tr("Signed in: DS games with a set earn achievements."), about);
+						Tr("Signed in on every console that has achievements."), about);
 				else
 					action(Kind::Action, "cheevos", Tr("RetroAchievements"),
 						account.busy ? std::string(Tr("Signing in…")) : !account.message.empty() ? account.message : std::string(Tr("Cross to sign in")),
-						Tr("Achievements in DS games, with your RetroAchievements account."), about);
-				Row* notices = toggle("cheevosnotices", Tr("Unlock notices"), account.notices, Tr("Each unlock as the PS5's notification."),
-					Tr("An achievement earned, and the count as a game starts, shown as the PS5's own notifications. Off: they are only in the "
-					   "in-game menu's Achievements."));
+						Tr("Sign in once for every console that has achievements."), about);
+				Row* notices = toggle("cheevosnotices", Tr("Unlock notices"), account.notices, Tr("Show unlocks as PS5 notifications."),
+					Tr("Shows unlocks, and your progress when a game starts, as PS5 notifications. Off: see them in the in-game menu."));
 				if (!account.signedIn)
 					notices->dimmed = true;
 			}
 			action(Kind::Action, "appupdate", Tr("Playtendoh updates"), AppUpdateStatus(), Tr("Cross checks GitHub for a newer version."),
-				Tr("Playtendoh asks GitHub for its latest release each time it starts. Cross asks again, or installs the newer version it found: "
-				   "the release's files are downloaded, checked and put in place of these, and the app starts again. Your games, saves and "
-				   "settings stay as they are."));
+				Tr("Playtendoh checks for updates each time it starts. Cross checks again or installs the new version, then restarts. Your games, saves and settings are kept."));
 			// the release the last update replaced, kept until the next (ps5update::PreviousVersion)
 			if (const std::string previous = ps5update::PreviousVersion(); !previous.empty())
 			{
 				// tr: {0} is the version the last update replaced, as in 5.0.0
 				Row* goback = action(Kind::Hold, "goback", TrF("Go back to {0}", ps5update::Readable(previous)), m_message.empty() ? Tr("Hold Cross") : m_message,
-					Tr("The version before the last update, kept as it was."),
-					Tr("The last update kept the version it replaced. Holding Cross puts its files back in place of these, and Playtendoh starts "
-					   "again as that version. Your games, saves and settings stay as they are. The newer version is not offered at start "
-					   "again; this page still finds it."));
+					Tr("The version before the last update."),
+					Tr("Hold Cross to go back to the version before the last update. Playtendoh restarts. Your games, saves and settings are kept."));
 				// a version from before a folder for each system looks for the files where they were (app/reorganize.h)
 				if (!m_layout.separated.empty())
 				{
@@ -1524,55 +1446,61 @@ namespace ps5shell
 				const ui::Theme& current = m_themes.empty() ? ui::BuiltInThemes().front() : m_themes[std::min(index, (int)m_themes.size() - 1)];
 				choice("theme", Tr("Theme"), names, index,
 					current.id.rfind("user:", 0) == 0 ? current.description : std::string(Tr(current.description.c_str())),
-					TrF("How the launcher looks: its colours, its corners and what moves behind the menus. Every theme has the same screens and "
-						"buttons. Make your own as a JSON file in {0}/themes, starting from any of these: the text under this page says how. "
-						"Only the launcher changes: the in-game menus and the games stay as they are.",
+					TrF("The launcher's colours, corners and background. Make your own as a JSON file in {0}/themes; the text below this page says how. Games and in-game menus don't change.",
 						ps5paths::Root()));
 			}
-			// EmulationStation the third, where the app has it (port/esde/esde.h)
-			std::vector<std::string> layouts{Tr("Classic"), Tr("Orbit")};
-			if (ps5esde::Available())
-				layouts.push_back(Tr("EmulationStation"));
-			choice("layout", Tr("Layout"), layouts,
-				settings.ui.emulationStation && ps5esde::Available() ? 2 : std::clamp(settings.ui.layout, 0, 1),
+			// EmulationStation the third: a download until the app has it (app/esde_get.h)
+			std::vector<std::string> layouts{Tr("Classic"), Tr("Orbit"), Tr("EmulationStation")};
+			choice("launcher", Tr("Layout"), layouts, settings.ui.emulationStation ? 2 : std::clamp(settings.ui.layout, 0, 1),
 				Tr("How the Library is laid out."),
-				Tr("Classic shows one console at a time, with Recently played on top and every game in a list. Orbit turns the logo into a dial "
-				   "that picks the console, with what you played lately in its middle. Switching moves nothing: your games, settings and saves "
-				   "stay as they are."));
+				Tr("Classic shows one console at a time, with Recently played on top. Orbit is a dial for picking a console, with recent games in the centre. EmulationStation (ES-DE) is a separate launcher, downloaded the first time you choose it. Your games, settings and saves stay the same."));
+			{
+				// ES-DE in the app or not: its download, how it goes, and taking it out again
+				using State = ps5esdeget::Status::State;
+				const ps5esdeget::Status status = ps5esdeget::GetStatus();
+				const char* about = Tr("EmulationStation (ES-DE) shows the same games with its own themes. It's a separate download of about 850 MB and stays through updates. Games still play here with the same settings, saves and in-game menu. Hold L1 while Playtendoh starts to use this launcher instead.");
+				std::string value;
+				switch (status.state)
+				{
+				case State::Finding: value = Tr("Asking GitHub…"); break;
+				case State::Downloading:
+					value = status.total ? TrF("Downloading: {0}", Percent((int)(status.received * 100 / status.total))) : std::string(Tr("Downloading…"));
+					break;
+				case State::Verifying: value = Tr("Checking the download…"); break;
+				case State::Installing: value = Tr("Installing…"); break;
+				case State::Failed: value = status.message; break;
+				default: value = ps5esde::Available() ? std::string(Tr("Hold Cross to remove")) : TrF("Cross to download · {0} MB", ps5esdeget::kAboutBytes >> 20);
+				}
+				action(ps5esde::Available() && !ps5esdeget::Busy() ? Kind::Hold : Kind::Action, "esde-get", Tr("EmulationStation"), value,
+					ps5esde::Available() ? Tr("Installed. Choose it as the Layout above.") : Tr("A separate launcher, as a download."), about);
+			}
 			// the sides the bar offers: any mix, at least one, in its order
 			std::string shown;
 			for (System side : kBarOrder)
 				if (SideShown(side))
 					shown += (shown.empty() ? "" : " · ") + std::string(SideTitle(side));
 			// tr: Settings > Launcher: a row that opens which sides the bar shows (Wii U, Switch, DS, 3DS)
-			sub("sides", Tr("Sides"), shown, Tr("Which systems the bar shows."),
-				Tr("The sides the bar offers, any mix of the four. A hidden side keeps its games and settings, and they come back when it is "
-				   "turned on again. At least one side stays on."));
+			sub("sides", Tr("Systems"), shown, Tr("Which systems the bar shows."),
+				Tr("Choose which systems the bar shows. Hidden systems keep their games and settings. At least one stays on."));
 			for (int index = ps5retro::kFirst; index < kSides; index++)
 			{
 				const auto extra = (System)index;
-				toggle((std::string("side-") + ps5launcher::SideName(extra)).c_str(), SideTitle(extra), SideShown(extra), Tr("This system's games, in the bar."), Tr("Whether the bar shows this side. Hidden, its games and settings are kept and come back when it is turned on again. At least one side stays on."));
+				toggle((std::string("side-") + ps5launcher::SideName(extra)).c_str(), SideTitle(extra), SideShown(extra), Tr("This system's games, in the bar."), Tr("Show this system in the bar. Hidden systems keep their games and settings. At least one stays on."));
 			}
-			toggle("side-wiiu", Tr("Wii U side"), SideShown(System::WiiU), Tr("Cemu's games, in the bar."),
-				Tr("Whether the bar shows the Wii U side (Cemu). Hidden, its games and settings are kept and come back when it is turned on "
-				   "again. At least one side stays on."));
+			toggle("side-wiiu", Tr("Wii U"), SideShown(System::WiiU), Tr("Wii U games, in the bar."),
+				Tr("Show the Wii U in the bar. Hidden systems keep their games and settings. At least one stays on."));
 			// in the bar's order: Wii U, Switch, DS, 3DS
-			toggle("side-switch", Tr("Switch side"), SideShown(System::Switch), Tr("Eden's games, in the bar."),
-				Tr("Whether the bar shows the Switch side (Eden). Hidden, its games and settings are kept and come back when it is turned on "
-				   "again. At least one side stays on."));
-			toggle("side-ds", Tr("DS side"), SideShown(System::Nds), Tr("melonDS's games, in the bar."),
-				Tr("Whether the bar shows the DS side (melonDS). Hidden, its games and settings are kept and come back when it is turned on "
-				   "again. At least one side stays on."));
-			toggle("side-3ds", Tr("3DS side"), SideShown(System::N3ds), Tr("Azahar's games, in the bar."),
-				Tr("Whether the bar shows the 3DS side (Azahar). Hidden, its games and settings are kept and come back when it is turned on "
-				   "again. At least one side stays on."));
+			toggle("side-switch", Tr("Switch"), SideShown(System::Switch), Tr("Switch games, in the bar."),
+				Tr("Show the Switch in the bar. Hidden systems keep their games and settings. At least one stays on."));
+			toggle("side-ds", Tr("DS"), SideShown(System::Nds), Tr("DS games, in the bar."),
+				Tr("Show the DS in the bar. Hidden systems keep their games and settings. At least one stays on."));
+			toggle("side-3ds", Tr("3DS"), SideShown(System::N3ds), Tr("3DS games, in the bar."),
+				Tr("Show the 3DS in the bar. Hidden systems keep their games and settings. At least one stays on."));
 			endSub();
-			toggle("pictures", Tr("Game pictures behind menus"), settings.ui.gamePictures, Tr("The focused game's cover, softened, behind the screens."),
-				Tr("The focused game's picture fills the screen behind the menus, softened and dimmed, so moving the focus changes the whole "
-				"screen. Off: the game's colours only."));
-			toggle("filters", Tr("Library filters"), settings.ui.libraryFilters, Tr("All, Recently added, Favourites: a row over the list."),
-				Tr("A row of filters over the Library's list: All, Recently added (the last 30 days), Favourites and, on the Wii U side, "
-				   "Graphic packs on, each with its count. Off: the list has every game, and Sort and Search are all it needs."));
+			toggle("pictures", Tr("Game pictures behind menus"), settings.ui.gamePictures, Tr("The selected game's cover, blurred, behind the menus."),
+				Tr("The selected game's picture fills the background, blurred and dimmed. Off: just the game's colours."));
+			toggle("filters", Tr("Library filters"), settings.ui.libraryFilters, Tr("A row of filters above the list."),
+				Tr("Filters above the list: All, Recently added (last 30 days), Favourites, and for Wii U, Graphic packs on. Off: just Sort and Search."));
 			int hold = 2;
 			for (int i = 0; i < 6; i++)
 				if (kHolds[i] <= settings.ui.holdMs)
@@ -1588,36 +1516,33 @@ namespace ps5shell
 				easier += (easier.empty() ? "" : " · ") + holds[hold];
 			// tr: Settings > Launcher: a row that opens Larger text, High contrast, Reduce motion and Hold to confirm
 			sub("accessibility", Tr("Accessibility"), easier.empty() ? std::string(Tr("Default")) : easier,
-				Tr("Larger text, high contrast, less motion, the hold to confirm."),
-				Tr("Text a step larger, opaque panels with full-strength text, fades in place of movement, and how long Cross is held for what "
-				   "cannot be undone. Triangle on each says more."));
-			toggle("largertext", Tr("Larger text"), settings.ui.largerText, Tr("Every size of text a step up."),
-				Tr("Every style of text a step larger: captions from 20 to 23, reading text from 26 to 30."));
+				Tr("Larger text, high contrast, reduced motion and hold to confirm."),
+				Tr("Text size, contrast, motion, and how long to hold Cross to confirm. Press Triangle on each for more."));
+			toggle("largertext", Tr("Larger text"), settings.ui.largerText, Tr("Makes all text a step larger."),
+				Tr("Makes every text size one step larger."));
 			toggle("highcontrast", Tr("High contrast"), settings.ui.highContrast, Tr("Opaque panels, full-strength text, a thicker ring."),
 				Tr("Opaque panels instead of glass, all text at full strength, a thicker focus ring and no grain or pictures behind the menus."));
-			toggle("reducemotion", Tr("Reduce motion"), settings.ui.reduceMotion, Tr("Fades in place of movement."),
-				Tr("Springs become short fades; nothing drifts, breathes or rises behind the menus."));
-			choice("holdms", Tr("Hold to confirm"), holds, hold, Tr("How long Cross is held for what cannot be undone."),
-				Tr("Clearing caches, Artic Setup and resetting controls are held to confirm, never pressed twice. This is how long."), Kind::Stepper);
+			toggle("reducemotion", Tr("Reduce motion"), settings.ui.reduceMotion, Tr("Fades instead of motion."),
+				Tr("Animations become short fades, and the background stays still."));
+			choice("holdms", Tr("Hold to confirm"), holds, hold, Tr("How long to hold Cross for actions that can't be undone."),
+				Tr("Actions like clearing caches or resetting controls need Cross held to confirm. This sets how long."), Kind::Stepper);
 			endSub();
-			action(Kind::Link, "makeityours", Tr("Make it yours"), "", Tr("The first-start choices again: sides, theme, buttons."),
-				Tr("The page the first start opens on: the language, the sides, the theme, A and B, the music, vibration and the games' "
-				   "pictures, on one page."));
+			action(Kind::Link, "makeityours", Tr("Make it yours"), "", Tr("Run first-time setup again."),
+				Tr("Shows the first-time setup again: language, systems, theme, buttons, music, vibration and game pictures."));
 		}
 		else if (page == "diagnostics")
 		{
-			action(Kind::Link, "setupcheck", Tr("Setup check"), "", Tr("Storage, recompilers, games, keys and box art, checked."),
-				Tr("Each check has a status, what it means and what to do. It is also shown on the first start and whenever a check fails as "
-				"the app starts."));
-			action(Kind::Action, "copylogs", Tr("Copy logs to USB"), m_diagnosticsDone[0], Tr("The logs a report needs, onto a USB drive."),
+			action(Kind::Link, "setupcheck", Tr("Setup check"), "", Tr("Checks storage, performance, games, keys and box art."),
+				Tr("Each check shows its status and what to do. It also appears on first start, and when a check fails."));
+			action(Kind::Action, "copylogs", Tr("Copy logs to USB"), m_diagnosticsDone[0], Tr("Copy logs to a USB drive for a bug report."),
 				Tr("Copies the last five sessions' logs and the settings into a dated folder on a USB drive, to attach to a report."));
 			if (IsWiiU())
 				action(Kind::Hold, "clearcaches", Tr("Clear shader caches"), m_diagnosticsDone[1].empty() ? Tr("Hold Cross") : m_diagnosticsDone[1],
-					Tr("For a game that crashes on a bad cache."), Tr("Deletes Cemu's shader caches. Games build them again as they run: the first minutes stutter."));
+					Tr("Try this if a game crashes."), Tr("Deletes the Wii U shader caches. Games rebuild them, so the first few minutes may stutter."));
 			else if (Is3ds())
 				action(Kind::Hold, "clearcaches", Tr("Clear shader caches"), m_diagnosticsDone[2].empty() ? Tr("Hold Cross") : m_diagnosticsDone[2],
-					Tr("For a game that crashes on a bad cache."),
-					Tr("Deletes Azahar's shader caches. Games build them again as they run: the first minutes stutter."));
+					Tr("Try this if a game crashes."),
+					Tr("Deletes the 3DS shader caches. Games rebuild them, so the first few minutes may stutter."));
 			// the 3DS's and the Wii U's games unpacked from archives (app/game_archives.h): one cache for both
 			if (IsWiiU() || Is3ds())
 			{
@@ -1631,10 +1556,9 @@ namespace ps5shell
 					!m_unpackedDone.empty() ? m_unpackedDone :
 					m_unpackedBytes			? SizeWords(m_unpackedBytes) + "  ·  " + Tr("Hold Cross") :
 											  std::string(Tr("None to delete")),
-					Tr("Games from archives, kept unpacked for their next start."),
+					Tr("Games unpacked from archives, kept for faster starts."),
 					// tr: {0} is the folder they are kept in
-					TrF("Deletes the copies of games unpacked from their archives, kept in {0}. Each is unpacked again the next time it "
-						"starts; when room is needed, the copies used longest ago go by themselves.",
+					TrF("Deletes unpacked copies of archived games in {0}. They unpack again next time. Old copies are removed automatically when space runs low.",
 						ps5archive::UnpackedRoot()));
 			}
 		}
@@ -1645,12 +1569,11 @@ namespace ps5shell
 		if (page == "system")
 		{
 			own(slider("volume", IsWiiU() ? Tr("Wii U games' volume") : Is3ds() ? Tr("3DS games' volume") : IsSwitch() ? Tr("Switch games' volume") : Tr("DS games' volume"),
-					IsWiiU() ? settings.volume : hand.volume, 100, Tr("The games' sound."), Tr("The games' sound on this side. Left and Right change it by 10%.")),
+					IsWiiU() ? settings.volume : hand.volume, 100, Tr("The games' sound."), Tr("Game volume for this system. Left and Right change it by 10%.")),
 				"volume");
 			if (IsWiiU())
-				toggle("gamepadspeaker", Tr("GamePad speaker"), settings.gamePadSpeaker, Tr("The Wii U GamePad's own sound, on the DualSense."),
-					Tr("The sounds games play on the Wii U GamePad's speaker, from player 1's DualSense speaker. Many games send their whole sound "
-					"there too, so it is off unless you want it. Applies to the next game."));
+				toggle("gamepadspeaker", Tr("GamePad speaker"), settings.gamePadSpeaker, Tr("GamePad sound from the DualSense speaker."),
+					Tr("Plays GamePad speaker sounds from player 1's DualSense. Many games send all their sound there too, so it's off by default. Applies to the next game."));
 			std::vector<std::string> musicNames;
 			const std::vector<std::string> musicValues = MusicValues(&musicNames);
 			const auto chosen = std::find(musicValues.begin(), musicValues.end(), settings.music);
@@ -1658,12 +1581,11 @@ namespace ps5shell
 			const int music = chosen == musicValues.end() ? 0 : (int)(chosen - musicValues.begin());
 			// tr: Settings > System: a row that opens the launcher's music and menu sounds
 			sub("launchersound", Tr("Launcher sound"), musicNames[music], Tr("The menus' music and sounds."),
-				Tr("The music that plays in the menus, how loud it is, and the sounds of moving and choosing. Every side has the same."));
+				Tr("Menu music, its volume, and menu sounds. The same for every system."));
 			choice("music", Tr("Launcher music"), musicNames, music, Tr("Music that plays in the menus."),
-				TrF("The launcher's own music, one of yours, or none. To use your own, put MP3 or WAV files in {0}; they appear here. Every "
-					"side plays the same.",
+				TrF("Built-in music, your own, or none. For your own, put MP3 or WAV files in {0}.",
 					ps5sound::MusicFolder()));
-			slider("musicvolume", Tr("Music volume"), settings.musicVolume, 100, Tr("How loud the menus' music is."),
+			slider("musicvolume", Tr("Music volume"), settings.musicVolume, 100, Tr("Menu music volume."),
 				Tr("How loud the launcher's music is. Left and Right change it by 10%."));
 			toggle("menusounds", Tr("Menu sounds"), settings.menuSounds, Tr("The sounds of moving and choosing."),
 				Tr("The launcher's sounds as you move, choose and go back."));
@@ -1675,7 +1597,7 @@ namespace ps5shell
 			for (ps5usb::Device device : ps5usb::kDevices)
 				plugged += m_status.coreReady && ps5usb::Enabled(device);
 			// tr: Settings > System on the Wii U side: a row that opens Cemu's emulated portals (Skylanders, Disney Infinity, LEGO Dimensions)
-			sub("usb", Tr("USB devices"), plugged ? TrP(plugged, "{0} on", "{0} on") : std::string(Tr("Off")), Tr("Cemu's emulated portals."),
+			sub("usb", Tr("USB devices"), plugged ? TrP(plugged, "{0} on", "{0} on") : std::string(Tr("Off")), Tr("Emulated toy portals."),
 				PanelText("usb"));
 			for (ps5usb::Device device : ps5usb::kDevices)
 			{
@@ -1683,8 +1605,7 @@ namespace ps5shell
 					device == ps5usb::Device::Skylanders ? Tr("For the Skylanders games.") :
 					device == ps5usb::Device::Infinity	 ? Tr("For Disney Infinity 3.0.") :
 														   Tr("For LEGO Dimensions."),
-					TrF("Cemu's emulated portal, plugged in as a game starts. In the game, the menu's USB devices category puts figures on it: dumps "
-						"in {0}. A real portal plugged into the PS5 is not supported.",
+					TrF("An emulated portal, connected when a game starts. Place figures from the in-game menu under USB devices; dumps go in {0}. Real portals are not supported.",
 						ps5usb::Folder(device)));
 				row->index = (int)device;
 				cemu(row);
@@ -1695,17 +1616,12 @@ namespace ps5shell
 		if ((page == "system" && IsWiiU()) || (page == "controls" && (Is3ds() || IsDs())))
 		{
 			const char* screen = IsWiiU() ? Tr("The GamePad's screen") : Is3ds() ? Tr("The bottom screen") : Tr("The touch screen");
-			const std::string about = TrF("{0} in any browser on the PS5's network, a phone's, a tablet's or a computer's, with nothing to install, and its "
-										  "touches sent back to the game. Scan the code shown here, or open the address. The DualSense stays the buttons, "
-										  "and the sound stays on the PS5.\nWhile a browser shows it, the PS5 copies that screen up to 30 times a second, so "
-										  "a game can run a little slower; with no browser, it costs nothing. Any device on your network can open the page, "
-										  "so turn it off on a network you share.\nOne switch for every side (the GamePad's screen is player 1's), also in "
-										  "a game's menu (touchpad click + Options). From dolphin78's idea and prototype (#38).",
+			const std::string about = TrF("Shows {0} in a browser on a phone, tablet or computer on your network, with touch. Scan the code or open the address. Buttons and sound stay on the PS5.\nWhile a browser is open, games may run a little slower. Anyone on your network can open it, so turn it off on shared networks.\nApplies to every system, and is also in the in-game menu.",
 				screen);
 			// tr: a row that opens the remote touch screen's page: the game's second screen in a phone's browser, and its code to scan
-			sub("remote", Tr("Remote touch screen"), settings.remoteScreen ? Tr("On") : Tr("Off"), TrF("{0} in a phone's or tablet's browser, with touch.", screen),
+			sub("remote", Tr("Remote touch screen"), settings.remoteScreen ? Tr("On") : Tr("Off"), TrF("Show {0} on a phone or tablet, with touch.", screen),
 				about);
-			toggle("remote", Tr("Remote touch screen"), settings.remoteScreen, TrF("{0} in a phone's or tablet's browser, with touch.", screen), about);
+			toggle("remote", Tr("Remote touch screen"), settings.remoteScreen, TrF("Show {0} on a phone or tablet, with touch.", screen), about);
 			endSub();
 		}
 		(void)side;
@@ -1751,8 +1667,8 @@ namespace ps5shell
 				// tr: the Switch side's players, the people (Eden's user profiles), each with saves of their own; not a number of players
 				players.label = TrC("switch", "Players");
 				players.value = view.error.empty() && view.profile >= 0 && view.profile < (int)view.profiles.size() ? view.profiles[view.profile].name : "";
-				players.description = Tr("Who plays, each with saves of their own.");
-				players.help = Tr("Remembered for this PS5 user. Each player has saves of their own; none are moved or deleted.");
+				players.description = Tr("Players, each with their own saves.");
+				players.help = Tr("Remembered for this PS5 user. Each player has their own saves.");
 				rows.insert(rows.begin(), std::move(players));
 			}
 			rows.insert(rows.end(), std::make_move_iterator(added.begin()), std::make_move_iterator(added.end()));
@@ -1783,10 +1699,99 @@ namespace ps5shell
 			reset.id = "resetgame";
 			reset.label = Tr("Back to defaults");
 			reset.value = m_message.empty() ? Tr("Hold Cross") : m_message;
-			reset.description = Tr("This game goes back to its side's settings.");
-			reset.help = Tr("Clears this game's own settings, so it uses its side's settings again, like every other game.");
+			reset.description = Tr("This game goes back to the system's settings.");
+			reset.help = Tr("Clears this game's own settings so it uses the system's settings again.");
 			rows.push_back(reset);
 		}
+		return rows;
+	}
+
+	// Settings > Emulator on a side whose games a core in the app plays: which emulator (where the side has
+	// two), then each of its core's options as a choice, those the core groups behind a › row for each
+	// group, and a way back to the core's own values. A value the player picks is kept for the side
+	// (ps5settings::N3ds::coreOptions) and given to the core at every game's start (libretro/game.cpp).
+	std::vector<Row> Shell::CoreOptionRows(const ps5settings::Launcher& settings)
+	{
+		std::vector<Row> rows;
+		const int side = SideIndex();
+		const ps5settings::N3ds& own = settings.retro[ps5retro::Slot(side)];
+		if (const ps5retro::Alternative* other = ps5retro::AlternativeOf(side); other && !InGameSettings())
+		{
+			Row runtime; runtime.id = "retro-backend"; runtime.kind = Row::Kind::Segmented; runtime.label = Tr("Emulator");
+			runtime.options = {ps5libretro::Plays(side) ? std::string(ps5libretro::CoreTitle(side)) : std::string(other->first), other->backend.name};
+			runtime.index = std::clamp(own.retroBackend, 0, 1); runtime.value = runtime.options[runtime.index];
+			runtime.description = Tr("Which emulator plays this system's games, from the next game. Each keeps its own settings and saves.");
+			rows.push_back(runtime);
+		}
+		const std::vector<ps5libretro::CoreOption>& options = ps5libretro::CoreOptions(side);
+		if (options.empty() || own.retroBackend != 0)
+		{
+			if (!ps5libretro::Plays(side) || own.retroBackend != 0)
+			{
+				Row info; info.id = "retro-library"; info.kind = Row::Kind::Action; info.label = Tr("Open emulator settings and saves");
+				info.description = Tr("Opens this emulator's own menus for its settings, controls and saves. Quit them to come back here.");
+				rows.push_back(info);
+			}
+			return rows;
+		}
+		// one › row a group, in the order the core gives its first option; the rest on the page itself
+		std::vector<std::string> groups;
+		for (const auto& option : options)
+			if (!option.category.empty() && std::find(groups.begin(), groups.end(), option.category) == groups.end())
+				groups.push_back(option.category);
+		auto add = [&](const ps5libretro::CoreOption& option, const std::string& group) {
+			Row row;
+			row.kind = Row::Kind::Choice;
+			row.id = "core:" + option.key;
+			row.label = option.label;
+			row.group = group;
+			const auto chosen = own.coreOptions.find(option.key);
+			const std::string& value = chosen != own.coreOptions.end() ? chosen->second : option.defaultValue;
+			for (size_t i = 0; i < option.values.size(); i++)
+			{
+				row.options.push_back(option.values[i].second);
+				if (option.values[i].first == value)
+					row.index = (int)i;
+			}
+			row.value = row.options[std::clamp(row.index, 0, (int)row.options.size() - 1)];
+			// the core's words for it, its first sentence under the row and all of it on Triangle
+			const size_t stop = option.info.find(". ");
+			row.description = stop == std::string::npos ? option.info : option.info.substr(0, stop + 1);
+			row.help = option.info;
+			rows.push_back(std::move(row));
+		};
+		for (const auto& option : options)
+			if (option.category.empty())
+				add(option, "");
+		for (size_t g = 0; g < groups.size(); g++)
+		{
+			int count = 0, changed = 0;
+			for (const auto& option : options)
+				if (option.category == groups[g])
+				{
+					count++;
+					changed += own.coreOptions.count(option.key) ? 1 : 0;
+				}
+			Row link;
+			link.kind = Row::Kind::Link;
+			link.id = "sub";
+			link.label = groups[g];
+			link.opens = "core-group-" + std::to_string(g);
+			// tr: a group of an emulator's options in Settings: how many it holds, and how many are not the emulator's own values
+			link.value = changed ? TrP(changed, "{0} changed", "{0} changed") : TrP(count, "{0} option", "{0} options");
+			rows.push_back(link);
+			for (const auto& option : options)
+				if (option.category == groups[g])
+					add(option, link.opens);
+		}
+		Row reset;
+		reset.kind = Row::Kind::Hold;
+		reset.id = "core-reset";
+		reset.label = Tr("Back to the emulator's own values");
+		reset.value = own.coreOptions.empty() ? Tr("Nothing changed") : Tr("Hold Cross");
+		reset.dimmed = own.coreOptions.empty();
+		reset.description = TrF("Resets every option above to {0}'s default, for every game on this system.", ps5libretro::CoreTitle(side));
+		rows.push_back(reset);
 		return rows;
 	}
 
@@ -1927,10 +1932,9 @@ namespace ps5shell
 			if (save.changed > 0 && localtime_r(&changed, &local))
 				when = ps5lang::ShortDateTime(local.tm_mon + 1, local.tm_mday, local.tm_hour, local.tm_min);
 			row.value = SizeWords(save.bytes) + (when.empty() ? "" : " · " + when) + "  ·  " + Tr("Hold Cross");
-			row.description = Tr("Held: moved to saves-before on the PS5, so it can still come back.");
+			row.description = Tr("Hold to move to saves-before on the PS5. You can restore it later.");
 			// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-			row.help = TrF("Holding Cross moves these files to {0}/saves-before, in a folder named by the date and time, and the game "
-						   "starts without them next time. Nothing is deleted: copy them back from there (or restore a backup) to have them again.",
+			row.help = TrF("Hold Cross to move these files to {0}/saves-before, in a dated folder. The game starts without them next time. Nothing is deleted.",
 				ps5paths::Root());
 			rows.push_back(std::move(row));
 		}
@@ -1953,9 +1957,8 @@ namespace ps5shell
 			backup.value = TrF("Copying: {0}", Percent(status.total ? (int)(status.copied * 100 / status.total) : 0));
 		else if (backup.value.empty() && !m_gameBackups.empty())
 			backup.value = TrF("Last: {0} · {1}", m_gameBackups.front().when, DriveName(m_gameBackups.front().drive));
-		backup.description = Tr("This game's saves, to the first USB drive.");
-		backup.help = Tr("Copies this game's saves (every account's, on the Wii U) and its save states to PS5CEMU-HAR-saves on the first USB "
-						 "drive plugged in, in a folder named by the date and time, the same way a backup of every side's saves is made.");
+		backup.description = Tr("Copy this game's saves to a USB drive.");
+		backup.help = Tr("Copies this game's saves and save states to PS5CEMU-HAR-saves on the first USB drive, in a dated folder.");
 		if (m_gameSaves.empty())
 			backup.dimmed = true;
 		rows.push_back(std::move(backup));
@@ -1971,10 +1974,9 @@ namespace ps5shell
 		restore.value = backups.empty() ? std::string(Tr("No backups found")) : backups[chosen] + "  ·  " + Tr("Hold Cross");
 		if (running && status.restoring)
 			restore.value = TrF("Copying: {0}", Percent(status.total ? (int)(status.copied * 100 / status.total) : 0));
-		restore.description = backups.empty() ? Tr("No backup on the drives plugged in has this game's saves.") : Tr("Left and Right choose which backup, the newest first.");
+		restore.description = backups.empty() ? Tr("No backup with this game's saves was found.") : Tr("Left and Right choose which backup, the newest first.");
 		// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-		restore.help = TrF("Puts this game's saves from the chosen backup back where they came from, and nothing else. Its saves there now are "
-						   "moved first to {0}/saves-before, so nothing is lost.", ps5paths::Root());
+		restore.help = TrF("Restores only this game's saves from the chosen backup. Current saves are moved to {0}/saves-before first, so nothing is lost.", ps5paths::Root());
 		restore.options = backups;
 		restore.index = chosen;
 		if (backups.empty())
@@ -1984,21 +1986,20 @@ namespace ps5shell
 		{
 			Row exportSave;
 			exportSave.kind = Kind::Action; exportSave.id = "nxexport"; exportSave.label = Tr("Copy the save to USB");
-			exportSave.description = Tr("The chosen player's save, in USB/PS5-ECAM-exports, as folders another emulator can take.");
+			exportSave.description = Tr("Copies the chosen player's save to USB/PS5-ECAM-exports, for use in another emulator.");
 			exportSave.value = m_savesMessage; exportSave.dimmed = running;
 			rows.push_back(std::move(exportSave));
 			Row importSave;
 			// tr: a Switch game's save taken from standalone ProsperoEden on the PS5 or from a USB drive
-			importSave.kind = Kind::Hold; importSave.id = "nximport"; importSave.label = Tr("Take a save");
+			importSave.kind = Kind::Hold; importSave.id = "nximport"; importSave.label = Tr("Import a save");
 			for (const auto& source : m_switchImports) importSave.options.push_back(source.label);
 			int& chosen = m_holdChoice["nximport"];
 			chosen = importSave.options.empty() ? 0 : std::clamp(chosen, 0, (int)importSave.options.size() - 1);
 			importSave.index = chosen;
 			// tr: no save of this Switch game in standalone ProsperoEden or on a USB drive
-			importSave.value = importSave.options.empty() ? Tr("None in ProsperoEden or on a USB drive") : importSave.options[chosen] + " · " + Tr("Hold Cross");
-			importSave.description = Tr("From standalone ProsperoEden on this PS5 (each of its players' saves), USB/PS5-ECAM-imports/<title ID>, or a copy of "
-										"Ryujinx's folder in USB/Ryujinx, as the chosen player's save. The save it replaces is kept.");
-			importSave.help = Tr("Choose the player in Settings > Players and saves > Players first. Every file is copied and checked before the save is replaced, and the save it replaces is kept in Eden's save-transfer-recovery folder.");
+			importSave.value = importSave.options.empty() ? Tr("No saves found to import") : importSave.options[chosen] + " · " + Tr("Hold Cross");
+			importSave.description = Tr("Import from another Switch emulator on this PS5, USB/PS5-ECAM-imports/<title ID>, or a Ryujinx folder in USB/Ryujinx. The replaced save is kept.");
+			importSave.help = Tr("Choose the player first in Settings > Players and saves > Players. Files are checked before replacing, and the old save is kept in save-transfer-recovery.");
 			importSave.dimmed = running || importSave.options.empty(); rows.push_back(std::move(importSave));
 		}
 		return rows;
@@ -2048,7 +2049,7 @@ namespace ps5shell
 				text += TrP(played, "{1}: {2}, {0} game", "{1}: {2}, {0} games", sides[side], Duration(minutes)) + "\n";
 		}
 		if (games.empty())
-			return Tr("Nothing played yet. A game's time counts from its start to its end, and shows here and on its page.");
+			return Tr("Nothing played yet. Play time shows here and on each game's page.");
 		std::stable_sort(games.begin(), games.end(), [](const Played& a, const Played& b) { return a.minutes > b.minutes; });
 		// tr: Settings > Play time: every side's play time added up
 		text += TrF("In all: {0}", Duration(all)) + "\n\n" + Tr("Most played") + "\n";
@@ -2071,30 +2072,21 @@ namespace ps5shell
 			return text;
 		}
 		if (page == "launcher")
-			return TrF("Your own theme: a file such as sunset.json in {0}/themes, read as the app starts, then listed under Theme by its name:\n"
-					   "{{\"name\": \"Sunset\", \"base\": \"midnight\", \"colours\": {{\"wiiu\": \"#ff7a59\", \"ink-0\": \"#120806\"}}, "
-					   "\"corners\": 0.5, \"motif\": \"none\"}}\n"
-					   "base: a theme to start from (light, link-jack, classic, midnight, eden). colours: ink-0 to ink-2 (the background), text, "
-					   "wiiu, n3ds, nds and nx (each side's), glass, line, good, warn, bad and focus, as #rrggbb. corners: 0 square to 1.5 round. "
-					   "motif: side, none or eden.",
+			return TrF("Your own theme: put a file such as sunset.json in {0}/themes. It appears under Theme by its name:\n{{\"name\": \"Sunset\", \"base\": \"midnight\", \"colours\": {{\"wiiu\": \"#ff7a59\", \"ink-0\": \"#120806\"}}, \"corners\": 0.5, \"motif\": \"none\"}}\nbase: a theme to start from (light, link-jack, classic, midnight, eden). colours: ink-0 to ink-2 (the background), text, wiiu, n3ds, nds and nx (each system's), glass, line, good, warn, bad and focus, as #rrggbb. corners: 0 square to 1.5 round. motif: side, none or eden.",
 				ps5paths::Root());
 		if (page == "files" && IsSwitch())
 			// tr: {0} is Eden's data folder; {1} its game files folder (the same one unless another was chosen)
-			return TrF("Saves: {0}/user/nand/user/save. Updates and DLC: beside a game, in its own folder, or in {1}/updates. Mods and "
-					   "cheats: {1}/mods. Covers and names: {0}/covers, once Eden has read a game.",
+			return TrF("Saves: {0}/user/nand/user/save. Updates and DLC: beside a game, in its own folder, or in {1}/updates. Mods and cheats: {1}/mods. Covers and names: {0}/covers.",
 				ps5eden::DataFolder(), ps5eden::GameFilesFolder());
 		if (page == "files" && IsDs())
 			// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-			return TrF("Saves: {0}/melonds/saves (a .sav beside the game is taken the first time). Save states: melonds/states. Cheats: "
-					   "melonds/cheats/<game file>.mch, melonDS's format. A GBA game for Slot-2: melonds/slot2/<game file>.gba. DSi games and the DS's wireless are not there.",
+			return TrF("Saves: {0}/melonds/saves (a .sav next to the game is used the first time). Save states: melonds/states. Cheats: melonds/cheats/<game file>.mch. Slot-2 GBA games: melonds/slot2/<game file>.gba. DSi games and DS wireless are not supported.",
 				ecam_layout::Parent(ps5paths::MelonDs()));
 		if (page == "remote" && !m_settings.remoteScreen)
-			return Tr("On, a QR code here opens the game's second screen in a phone's browser. Nothing to install; the phone must be on the "
-				   "PS5's network.");
+			return Tr("On: scan the QR code here to open the second screen in a phone's browser. The phone must be on the PS5's network.");
 		if (page == "usb")
 			// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-			return TrF("Figure dumps go in {0}/figures: skylanders, infinity and dimensions. Switch a portal on here, start the game, then "
-					   "put figures on it from the in-game menu (touchpad click + Options > USB devices).",
+			return TrF("Put figure dumps in {0}/figures (skylanders, infinity and dimensions). Turn a portal on here, start the game, then place figures from the in-game menu (touchpad click + Options > USB devices).",
 				ps5paths::Root());
 		if (page == "about")
 			// tr: premohq and JMUtechnologies are GitHub names: keep them as they are
@@ -2152,6 +2144,20 @@ namespace ps5shell
 	{
 		ps5settings::N3ds& hand = m_side == System::Nds ? settings.nds : m_side == System::Switch ? settings.nx : settings.n3ds;
 		if (id == "retro-backend" && IsRetro()) settings.retro[ps5retro::Slot(SideIndex())].retroBackend = std::clamp(index, 0, 1);
+		else if (id.rfind("core:", 0) == 0 && IsRetro())
+		{
+			// a core option: kept only where it is not the core's own value, so a core's new default reaches it
+			const std::string key = id.substr(5);
+			auto& chosen = settings.retro[ps5retro::Slot(SideIndex())].coreOptions;
+			for (const auto& option : ps5libretro::CoreOptions(SideIndex()))
+				if (option.key == key && index >= 0 && index < (int)option.values.size())
+				{
+					if (option.values[index].first == option.defaultValue)
+						chosen.erase(key);
+					else
+						chosen[key] = option.values[index].first;
+				}
+		}
 		else if (id == "music")
 		{
 			const std::vector<std::string> values = MusicValues(nullptr);
@@ -2212,14 +2218,20 @@ namespace ps5shell
 			hand.nxMemory = std::clamp(index, 0, 2);
 		else if (id == "theme")
 			settings.ui.theme = index >= 0 && index < (int)m_themes.size() ? m_themes[index].id : "";
-		else if (id == "layout")
+		else if (id == "launcher")
 		{
-			// EmulationStation from the app's next start; Classic or Orbit now
-			settings.ui.emulationStation = index == 2 && ps5esde::Available();
+			// EmulationStation from the app's next start (downloaded first, where the app has not got it);
+			// Classic or Orbit now (the row is "launcher": "layout" is the handhelds' screen layout, caught above)
+			settings.ui.emulationStation = index == 2;
 			if (index < 2)
 				settings.ui.layout = std::clamp(index, 0, 1);
+			else if (ps5esde::Available())
+				Toast(Tr("EmulationStation opens next time Playtendoh starts. Hold L1 while it starts to use this launcher instead."));
 			else
-				Toast(Tr("EmulationStation opens the next time Playtendoh starts. Hold L1 as it starts for this launcher."));
+			{
+				ps5esdeget::Start();
+				Toast(Tr("Downloading EmulationStation. It opens next time Playtendoh starts."));
+			}
 			settings.ui.layoutChosen = true;
 		}
 		else if (id == "abeverywhere")
@@ -2273,6 +2285,20 @@ namespace ps5shell
 				return false;
 			}
 			const bool on = !row.on;
+			if (id.rfind("ownfolder-", 0) == 0)
+			{
+				// one system into a folder of its own, or back with the rest: written down, made as the app starts again
+				const std::string system = id.substr(10);
+				if (!ps5reorganize::Ask(ps5paths::Root(), on ? ps5reorganize::Request::Separate : ps5reorganize::Request::PutBack, {system}))
+				{
+					Toast(TrF("Playtendoh cannot write to {0}", ps5paths::Root()));
+					return false;
+				}
+				ps5log::Line("[reorganize] {} {} asked for in Settings", system, on ? "into its own folder" : "back with the rest");
+				Toast(Tr("Playtendoh restarts to move the files"));
+				m_reorganize.restartAt = m_now;
+				return true;
+			}
 			if (id.rfind("side-", 0) == 0)
 			{
 				const int bit = 1 << (int)ps5launcher::SideNamed(id.substr(5));
@@ -2280,7 +2306,7 @@ namespace ps5shell
 				if (sides == 0)
 				{
 					m_feedback.Play(ui::Cue::Denied);
-					Toast(Tr("One side at least stays on"));
+					Toast(Tr("At least one system must stay on"));
 					return false;
 				}
 				settings.ui.sides = sides;
@@ -2455,7 +2481,7 @@ namespace ps5shell
 		ps5sound::SetMusic(m_settings.music, m_settings.musicVolume);
 		ps5sound::SetMenuSounds(m_settings.menuSounds);
 		ps5pad::SetVibrationEnabled(m_settings.rumble);
-		if (id == "theme" || id == "layout")
+		if (id == "theme" || id == "launcher")
 		{
 			ApplyTheme();
 			m_feedback.SetLight(Accent());
@@ -2555,7 +2581,7 @@ namespace ps5shell
 		if (g.titleId == 0)
 		{
 			m_feedback.Play(ui::Cue::Denied);
-			Toast(Tr("This game has no ID to save settings under"));
+			Toast(Tr("Settings can't be saved for this game (no game ID)"));
 			return;
 		}
 		m_gameFrom = m_screen == ScreenId::Hub ? ScreenId::Hub : ScreenId::Library;
@@ -2800,12 +2826,25 @@ namespace ps5shell
 				m_feedback.Play(ui::Cue::Denied);
 			}
 		}
+		else if (id == "esde-get")
+		{
+			// Cross: the download, or stopping it
+			if (ps5esdeget::Busy())
+			{
+				if (ps5esdeget::Cancel())
+					Toast(Tr("EmulationStation's download stopped"));
+				else
+					m_feedback.Play(ui::Cue::Denied);
+			}
+			else if (!ps5esde::Available())
+				ps5esdeget::Start();
+		}
 		else if (id == "retro-diagnostics" && IsRetro())
 			OpenHelp(Tr("Emulator diagnostics"), ps5retro::Diagnostics(SideIndex(), m_settings.retro[ps5retro::Slot(SideIndex())].retroBackend));
 		else if (id == "retro-library" && IsRetro())
 		{
 			// tr: the loading screen's name for a retro side's own emulator menus: {0} is the side (Nintendo 64)
-			ps5emu::Game game; game.name = TrF("{0}: its emulator's settings", SideTitle(m_side));
+			ps5emu::Game game; game.name = TrF("{0}: emulator settings", SideTitle(m_side));
 			LaunchGame(game, Tr("Opening emulator settings"), {760, 240, 400, 560});
 		}
 		else if (id == "folder")
@@ -2818,6 +2857,22 @@ namespace ps5shell
 			SharesOpen(ScreenId::Settings);
 		else if (id == "rescan")
 			LookForGames();
+		else if ((id == "boxartmissing" || id == "boxartall") && IsRetro() && !IsPorpoise())
+		{
+			// a libretro side's: libretro's thumbnails, by name, those it had none for asked again
+			std::vector<std::string> names;
+			for (const Game& game : m_games)
+				if (id == "boxartall" || game.boxArt.empty())
+					names.push_back(std::filesystem::path(game.entry.game.path).stem().string());
+			if (!m_settings.boxArt)
+			{
+				m_settings.boxArt = true;
+				ps5boxart::SetEnabled(true);
+				SaveSettings();
+			}
+			ps5boxart::FetchRetro(RetroThumbnails(SideIndex()), names, true);
+			Toast(names.empty() ? std::string(Tr("Every game has its cover")) : TrP((long long)names.size(), "Looking for {0} cover", "Looking for {0} covers"));
+		}
 		else if (id == "boxartmissing" || id == "boxartall")
 		{
 			std::vector<std::string> ids;
@@ -2910,7 +2965,7 @@ namespace ps5shell
 			if (!room.compatible)
 			{
 				m_feedback.Play(ui::Cue::Denied);
-				Toast(Tr("This room is for another version of Eden."));
+				Toast(Tr("This room is for a different version."));
 				return;
 			}
 			auto choose = [this, room](const std::string& password) {
@@ -2921,7 +2976,7 @@ namespace ps5shell
 				nx.nxRoomPassword = password;
 				SaveSettings();
 				// tr: the room ({0}) Switch games join from now on
-				Toast(TrF("Switch games join {0} as they start", room.name));
+				Toast(TrF("Switch games will join {0}", room.name));
 			};
 			if (room.password)
 				// tr: the password of a room ({0}: its name)
@@ -2951,14 +3006,14 @@ namespace ps5shell
 						Toast(Tr("A port is a number from 1 to 65535."));
 						return;
 					}
-					OpenTextKeyboard(Tr("Its password (empty: none)"), "", 128, true, [this, host, number](const std::string& password) {
+					OpenTextKeyboard(Tr("Password (leave empty if none)"), "", 128, true, [this, host, number](const std::string& password) {
 						ps5settings::N3ds& nx = Handheld(System::Switch);
 						nx.nxRoomHost = host;
 						nx.nxRoomPort = number;
 						nx.nxRoomName = host;
 						nx.nxRoomPassword = password;
 						SaveSettings();
-						Toast(TrF("Switch games join {0} as they start", host));
+						Toast(TrF("Switch games will join {0}", host));
 					});
 				});
 			});
@@ -2990,7 +3045,7 @@ namespace ps5shell
 			OpenTextKeyboard(Tr("Your SteamGridDB key"), ps5boxart::PlayerSteamGridKeyText(), 64, true, [this](const std::string& key) {
 				ps5boxart::SetSteamGridKey(key);
 				m_porpoise.read = false;
-				Toast(key.empty() ? Tr("Your SteamGridDB key is removed") : Tr("Used from the next start"));
+				Toast(key.empty() ? Tr("Your SteamGridDB key is removed") : Tr("Used next time Playtendoh starts"));
 			});
 		else if (id == "makeityours")
 			WelcomeOpen(true);
@@ -3002,6 +3057,27 @@ namespace ps5shell
 
 	void Shell::HoldDone(const std::string& id)
 	{
+		if (id == "esde-get")
+		{
+			std::string error;
+			if (ps5esdeget::Remove(error))
+			{
+				if (m_settings.ui.emulationStation)
+					m_settings.ui.emulationStation = false;
+				SaveSettings();
+				Toast(Tr("EmulationStation removed. Its scraped data is kept."));
+			}
+			else
+				Toast(error);
+			return;
+		}
+		if (id == "core-reset" && IsRetro())
+		{
+			m_settings.retro[ps5retro::Slot(SideIndex())].coreOptions.clear();
+			SaveSettings();
+			Toast(TrF("{0} reset to defaults", ps5libretro::CoreTitle(SideIndex())));
+			return;
+		}
 		if (id == "nxextra:removeprofile" && IsSwitch())
 		{
 			const auto context = SwitchExtrasContext();
@@ -3051,7 +3127,7 @@ namespace ps5shell
 			ps5update::Restart();
 			m_message = ps5update::GetStatus().message; // back only when the PS5 did not start it again
 			if (m_message.empty())
-				m_message = Tr("Close Playtendoh and start it again from the home screen: the folders move as it starts.");
+				m_message = Tr("Close Playtendoh and start it again from the home screen to move the folders.");
 		}
 		else if (id == "goback")
 		{
@@ -3093,7 +3169,7 @@ namespace ps5shell
 			{
 				std::string error;
 				if (ps5emu::DeleteAccount(others[which].id, error))
-					Toast(TrF("{0} is deleted; its saves stay", others[which].name));
+					Toast(TrF("{0} deleted. Its saves are kept.", others[which].name));
 				else
 					Toast(error);
 				m_holdChoice["deleteaccount"] = 0;
@@ -3125,7 +3201,7 @@ namespace ps5shell
 			if (!view.error.empty()) error = view.error;
 			else if (view.profiles.empty()) error = Tr("Choose a player first, in Settings > Players and saves.");
 			else if (selected >= 0 && selected < (int)m_switchImports.size() &&
-				ps5saves::StartSwitchImport(m_gameRef, view.profiles[view.profile].id, m_switchImports[selected].folder, error, m_switchImports[selected].accountSaveId)) m_savesMessage = Tr("Taking the save…");
+				ps5saves::StartSwitchImport(m_gameRef, view.profiles[view.profile].id, m_switchImports[selected].folder, error, m_switchImports[selected].accountSaveId)) m_savesMessage = Tr("Importing the save…");
 			if (!error.empty()) Toast(error);
 		}
 		else if (id == "gamerestore")
@@ -3164,7 +3240,7 @@ namespace ps5shell
 			m_settings.games.erase(ps5settings::GameKey(ps5launcher::SideName(m_side), m_gameTitle));
 			SaveSettings();
 			m_gameView = ps5settings::ForGame(m_settings, ps5launcher::SideName(m_side), m_gameTitle);
-			m_message = Tr("Done: back to its side's settings");
+			m_message = Tr("Done. Using the system's settings again");
 		}
 	}
 
@@ -3340,8 +3416,7 @@ namespace ps5shell
 	void Shell::DrawRemoteScreen(Canvas& canvas, const Box& card)
 	{
 		const ps5stream::State state = ps5stream::Current();
-		canvas.Rect(card, kRadiusCard, Surface());
-		canvas.Ring(card, kRadiusCard, 1.5f, kGlassEdge);
+		Glass(canvas, card, kRadiusCard, Surface());
 		const float pad = 36, qr = 300;
 		float tx = card.x + pad;
 		if (!state.address.empty())
@@ -3360,8 +3435,7 @@ namespace ps5shell
 		const ui::TextStyle chipStyle = Style({22, ui::Weight::Medium, 1.0f});
 		const float chipW = m_fonts.Width(chipStyle, what) + 60, chipH = 44;
 		const ui::TextBlock note = m_fonts.Layout(Style({21, ui::Weight::Regular, 1.5f}),
-			working ? Tr("Same network as the PS5. Nothing to install: the browser is enough. Sound stays on the PS5. Any browser on the network can "
-					  "see it and touch.") :
+			working ? Tr("Use a device on the same network as the PS5. No app needed. Sound stays on the PS5. Anyone on the network can open it.") :
 					  Tr("Turn it off and on again once that is fixed."),
 			std::min(tw, 660.0f), 3);
 		const float height = overline.height + 14 + (address.lines.empty() ? 0 : address.height + 22) + chipH + 22 + note.height;
@@ -3388,8 +3462,7 @@ namespace ps5shell
 	void Shell::DrawSupport(Canvas& canvas, const Box& card)
 	{
 		static constexpr const char* kSupport = "https://www.paypal.com/paypalme/empthe";
-		canvas.Rect(card, kRadiusCard, Surface());
-		canvas.Ring(card, kRadiusCard, 1.5f, kGlassEdge);
+		Glass(canvas, card, kRadiusCard, Surface());
 		const float pad = 32, qr = std::min(card.w - 2 * pad, 260.0f);
 		float y = card.y + pad;
 		canvas.Text(Style(kOverlineStyle), card.x + pad, y, Tr("Support Playtendoh"), Accent(), card.w - 2 * pad, 1);
@@ -3403,23 +3476,36 @@ namespace ps5shell
 			ui::Align::Centre);
 		y += address.height + 14;
 		canvas.Text(Style({20, ui::Weight::Regular, 1.45f}), card.x + pad, y,
-			Tr("Playtendoh is free. If it brings your games back, you can support its work here."), Secondary(), card.w - 2 * pad, 4,
+			Tr("Playtendoh is free. If you enjoy it, you can support its work here."), Secondary(), card.w - 2 * pad, 4,
 			ui::Align::Centre);
 	}
 
 	void Shell::SettingsDraw(Canvas& canvas)
 	{
-		// a dialog over the screen it was opened from, on every side and in every theme (6.5): that screen as
-		// it was, dimmed, taking no input and asking for no focus
-		m_behind = true;
-		if (InGameSettings() && m_gameFrom == ScreenId::Hub)
-			HubDraw(canvas);
-		else
-			LibraryDraw(canvas);
-		m_behind = false;
+		// 6.0: Settings is a place of its own, not a box over the Library: the side's colour as a slow aurora
+		// behind glass, the pages on a floating rail with a liquid blob that
+		// slides and stretches between them, and every row of a page on one tall sheet of glass, a highlight
+		// gliding inside it to the focused row
 		const float appear = Enter(0);
-		Scrim(canvas, appear);
+		const bool light = LightGround(), contrast = m_settings.ui.highContrast;
+		const uint32_t accent = Accent();
 		const auto pages = SettingsPages();
+		{
+			const Box screen{0, 0, 1920, 1080};
+			canvas.Rect(screen, 0, ui::WithAlpha(light ? ui::SetAlpha(ui::Mix(kInk1, 0xffffffff, 0.15f), 0.97f) : ui::SetAlpha(kInk0, 0.97f), appear));
+			if (!contrast)
+			{
+				const float t = m_settings.ui.reduceMotion ? 0.0f : (float)m_now;
+				const float ax = 1500 + 160 * std::sin(t * 0.11f), ay = 260 + 90 * std::cos(t * 0.13f);
+				const float bx = 380 + 140 * std::cos(t * 0.09f), by = 900 + 70 * std::sin(t * 0.12f);
+				const uint32_t second = ui::Mix(accent, light ? 0xffffd28c : 0xffd27a5a, 0.55f);
+				canvas.RadialGradient(screen, 0, ui::SetAlpha(accent, (light ? 0.26f : 0.30f) * appear), ui::SetAlpha(accent, 0), ax, ay, 900, 620);
+				canvas.RadialGradient(screen, 0, ui::SetAlpha(second, (light ? 0.20f : 0.22f) * appear), ui::SetAlpha(second, 0), bx, by, 820, 560);
+				canvas.Grain(screen, ui::SetAlpha(kText, 0.02f));
+			}
+		}
+		if (!InGameSettings())
+			DrawBar(canvas, true);
 		if (pages.empty())
 			return;
 		int page = 0;
@@ -3427,102 +3513,138 @@ namespace ps5shell
 			if (pages[i].id == m_page)
 				page = i;
 		m_page = pages[page].id;
-
-		// the dialog: rising a little as it appears
-		const Box dialog = SettingsDialog().Offset(0, (1 - appear) * 24);
 		canvas.PushAlpha(appear);
-		canvas.Shadow(dialog, kRadiusSheet, 40, 120, 0xb3000000);
-		canvas.Rect(dialog, kRadiusSheet, m_settings.ui.highContrast ? kInk2 : ui::SetAlpha(ui::Mix(kInk1, kInk2, 0.5f), 0.97f));
-		canvas.Ring(dialog, kRadiusSheet, 1.5f, kGlassEdge);
-		const float navW = 380;
-		canvas.PushClip(dialog, kRadiusSheet);
-		canvas.Rect({dialog.x, dialog.y, navW, dialog.h}, 0, Wash(0.03f));
-		canvas.Rect({dialog.x + navW, dialog.y, 1.5f, dialog.h}, 0, kLine);
-		canvas.PopClip();
+		canvas.PushOffset(0, (1 - appear) * 30);
 
-		// the pages down its left: one short list, each with its icon; above them whose settings they are
-		const float navX = dialog.x + 20, navTop = dialog.y + 30;
+		// -- the rail: whose settings, then the pages, a liquid blob under the one open ---------------------
+		const float railX = kSafeX - 8, railW = 360, top = 140, bottom = 1080 - 104;
+		const Box rail{railX, top, railW, bottom - top};
+		Glass(canvas, rail, 34, contrast ? kInk2 : ui::SetAlpha(light ? 0xffffffff : kInk1, light ? 0.55f : 0.50f), 0.9f);
 		// tr: above Settings' pages: whose settings they are ({0}: Wii U, Nintendo 3DS or Nintendo DS)
 		const std::string head = InGameSettings() ? m_gameName : TrF("{0} settings", SystemName(m_side));
-		canvas.Text(Style(kOverlineStyle), navX + 22, navTop, head, Tertiary(), navW - 64, 1);
-		const float railTop = navTop + 40, railBottom = dialog.Bottom() - 20, step = 56;
+		canvas.Text(Style(kOverlineStyle), rail.x + 30, rail.y + 28, head, Tertiary(), railW - 60, 1);
+		const float railTop = rail.y + 66, railBottom = rail.Bottom() - 18, step = 58;
 		const float listHeight = pages.size() * step;
 		m_railScroll.target = std::clamp(page * step - (railBottom - railTop) * 0.5f, 0.0f, std::max(0.0f, listHeight - (railBottom - railTop)));
 		m_railScroll.omega = kScrollOmega;
 		m_railScroll.Update(m_dt);
-		canvas.PushClip({dialog.x, railTop - 6, navW, railBottom - railTop + 6});
+		m_railBlob.target = railTop + page * step - m_railScroll.value;
+		m_railBlob.omega = m_settings.ui.reduceMotion ? 60.0f : 17.0f;
+		if (m_railBlob.value == 0)
+			m_railBlob.Snap(m_railBlob.target);
+		m_railBlob.Update(m_dt);
+		canvas.PushClip({rail.x, railTop - 8, railW, railBottom - railTop + 8});
+		{
+			// the blob: stretched along its way while it moves, as a drop of liquid does
+			const float stretch = std::min(26.0f, std::fabs(m_railBlob.velocity) * 0.022f);
+			const Box blob{rail.x + 14, m_railBlob.value - stretch * 0.5f, railW - 28, step - 6 + stretch};
+			canvas.Glow(blob, blob.h * 0.5f, 26, ui::SetAlpha(accent, m_onRows ? 0.18f : 0.34f));
+			canvas.LinearGradient(blob, blob.h * 0.5f, ui::SetAlpha(accent, m_onRows ? 0.55f : 0.95f), ui::SetAlpha(ui::Mix(accent, 0xffffffff, 0.25f),
+				m_onRows ? 0.45f : 0.85f), blob.x, blob.y, blob.Right(), blob.Bottom());
+			canvas.LinearGradient(blob, blob.h * 0.5f, 0x40ffffff, 0x00ffffff, blob.x, blob.y, blob.x, blob.y + blob.h * 0.6f);
+			if (!m_onRows)
+				Focus(blob, blob.h * 0.5f);
+		}
 		for (int i = 0; i < (int)pages.size(); i++)
 		{
 			const float ry = railTop + i * step - m_railScroll.value;
 			const bool selected = i == page;
-			const Box item{navX, ry, navW - 40, step - 4};
-			if (selected)
-			{
-				canvas.Rect(item, 14, m_onRows ? Wash(0.06f) : Surface2());
-				if (!m_onRows)
-					Focus(item, 14);
-			}
-			canvas.Draw(pages[i].icon, {item.x + 22, item.CentreY() - 14, 28, 28}, selected ? Accent() : Secondary());
-			// the pages' names all one size (#76): a long one takes two lines rather than a smaller size
-			ui::TextStyle style = Style({24, selected ? ui::Weight::SemiBold : ui::Weight::Medium, 1.0f});
+			const Box item{rail.x + 14, ry, railW - 28, step - 6};
+			const uint32_t ink = selected ? (ui::Luminance(accent) > 0.6f ? 0xff1b0f0a : 0xffffffff) : Secondary();
+			canvas.Draw(pages[i].icon, {item.x + 20, item.CentreY() - 14, 28, 28}, ink);
+			ui::TextStyle style = Style({23, selected ? ui::Weight::SemiBold : ui::Weight::Medium, 1.0f});
 			style.minScale = 1;
-			const ui::TextBlock text = m_fonts.Layout(style, pages[i].title, item.w - 86, 2);
-			canvas.Text(text, item.x + 68, item.CentreY() - text.height * 0.5f, selected ? kText : Secondary());
+			const ui::TextBlock text = m_fonts.Layout(style, pages[i].title, item.w - 76, 2);
+			canvas.Text(text, item.x + 62, item.CentreY() - text.height * 0.5f, selected ? ink : kText);
 		}
 		canvas.PopClip();
 
-		// the page: its title, what it is for, its rows filling the rest of the dialog; a › page's, its
-		// row's label and line, the page it is on still marked in the rail
+		// -- the page: a big title, then its rows on one sheet of glass --------------------------------------
 		const SettingsPage& current = pages[page];
 		const bool sub = !m_subPage.empty();
-		const float px = dialog.x + navW + 48, pw = dialog.Right() - 48 - px;
-		float ty = dialog.y + 36;
-		canvas.Text(Style(kTitleStyle), px, ty, sub ? m_subTitle : current.title, kText, pw, 1);
-		canvas.Text(Style({22, ui::Weight::Regular, 1.3f}), px, ty + 62, sub ? current.title + "  ›  " + m_subLine : current.subtitle, Secondary(), pw, 1);
+		const float px = rail.Right() + 56, pw = 1920 - kSafeX - px;
+		const float ty = top - 14;
+		// above the title: the page a › page is on (the rail says whose settings these are)
+		if (sub)
+			canvas.Text(Style({20, ui::Weight::SemiBold, 1.0f, 3.0f, true}), px, ty + 6, current.title + "  ›", ui::SetAlpha(accent, 0.95f), pw, 1);
+		canvas.Text(Style({60, ui::Weight::Bold, 1.05f, -0.8f}), px, ty + 32, sub ? m_subTitle : current.title, kText, pw, 1);
+		canvas.Text(Style({22, ui::Weight::Regular, 1.3f}), px, ty + 104, sub ? m_subLine : current.subtitle, Secondary(), pw, 1);
 		auto rows = SettingRows(m_page);
 		m_settingRow = std::clamp(m_settingRow, 0, std::max(0, (int)rows.size() - 1));
-		const float ry = ty + 112;
-		const float rowH = 96;
-		// rows past the dialog's height scroll with the focus
-		const float available = dialog.Bottom() - 28 - ry;
-		const float scroll = std::max(0.0f, (m_settingRow + 1) * (rowH + 12) - available);
-		canvas.PushClip({px - 20, ry - 12, pw + 40, available + 24});
-		const float labelScale = LabelScale(rows, pw); // every row's label the same size (#76)
+		const float ry = ty + 152;
+		const float rowH = 104;
+		const float available = bottom - ry;
+		const float content = rows.size() * rowH;
+		const float most = std::max(0.0f, content - available + 16);
+		const std::string scrolled = m_page + "/" + m_subPage;
+		m_rowsScroll.target = std::clamp((m_settingRow + 1.6f) * rowH - available, 0.0f, most);
+		m_rowsScroll.omega = m_settings.ui.reduceMotion ? 60.0f : kScrollOmega;
+		if (m_rowsScrollPage != scrolled)
+		{
+			m_rowsScroll.Snap(m_rowsScroll.target);
+			m_rowBlob.Snap(m_settingRow * rowH);
+			m_rowsScrollPage = scrolled;
+		}
+		m_rowsScroll.Update(m_dt);
+		const float scroll = m_rowsScroll.value;
+		const Box sheet{px, ry, pw, std::min(available, std::max(rowH, content + 8))};
+		if (!rows.empty())
+		{
+			canvas.Shadow(sheet, 30, 24, 60, light ? 0x22000000 : 0x55000000);
+			Glass(canvas, sheet, 30, contrast ? kInk2 : ui::SetAlpha(light ? 0xffffffff : kInk1, light ? 0.72f : 0.62f));
+		}
+		canvas.PushClip(sheet, 30);
+		const float labelScale = LabelScale(rows, pw);
+		// the highlight: gliding to the focused row, stretched while it moves
+		m_rowBlob.target = m_settingRow * rowH;
+		m_rowBlob.omega = m_settings.ui.reduceMotion ? 60.0f : 18.0f;
+		m_rowBlob.Update(m_dt);
+		if (m_onRows && !rows.empty())
+		{
+			const float stretch = std::min(22.0f, std::fabs(m_rowBlob.velocity) * 0.02f);
+			const Box blob{px + 8, ry + 4 + m_rowBlob.value - scroll - stretch * 0.5f, pw - 16, rowH - 8 + stretch};
+			canvas.Glow(blob, 22, 24, ui::SetAlpha(accent, light ? 0.20f : 0.28f));
+			canvas.Rect(blob, 22, ui::SetAlpha(accent, light ? 0.16f : 0.24f));
+			canvas.LinearGradient(blob, 22, ui::SetAlpha(0xffffffff, light ? 0.55f : 0.14f), 0x00ffffff, blob.x, blob.y, blob.x, blob.y + blob.h * 0.7f);
+			canvas.Ring(blob, 22, 2.0f, ui::SetAlpha(accent, 0.85f));
+		}
 		for (int i = 0; i < (int)rows.size(); i++)
 		{
-			const Box box{px, ry + i * (rowH + 12) - scroll, pw, rowH};
+			const Box box{px + 8, ry + 4 + i * rowH - scroll, pw - 16, rowH - 8};
+			if (box.Bottom() < ry - rowH || box.y > sheet.Bottom() + rowH)
+				continue;
 			const bool focused = m_onRows && i == m_settingRow;
-			DrawRow(canvas, rows[i], box, focused, labelScale);
+			if (i > 0)
+				canvas.Rect({px + 32, box.y - 4, pw - 64, 1}, 0, ui::SetAlpha(kText, light ? 0.08f : 0.07f));
+			DrawRow(canvas, rows[i], box, focused, labelScale, true);
 			if (focused && rows[i].kind == Row::Kind::Hold)
 				HoldRing(canvas, box, m_holdProgress);
 		}
-		// the remote touch screen, while it is on: the code to scan, the address, what is happening (its › page's,
-		// on Controls or the Wii U's System)
-		const float under = ry + rows.size() * (rowH + 12) - scroll;
+		canvas.PopClip();
+		// what the page says under its rows: the remote screen's card, About's support card, its words
+		const float under = sheet.Bottom() + 22;
 		const std::string& shown = sub ? m_subPage : m_page;
 		if (shown == "remote" && m_settings.remoteScreen && !InGameSettings())
-			DrawRemoteScreen(canvas, {px, under + 18, pw, 372});
+			DrawRemoteScreen(canvas, {px, std::min(under, bottom - 372), pw, 372});
 		else
 		{
-			// what the page (or the › page: the Wii U's USB devices, the remote touch screen) says under its rows,
-			// in as many lines as the dialog has room for; About's beside its support card
 			const std::string panel = PanelText(shown);
 			float textW = pw;
 			if (m_page == "about")
 			{
 				const float cardW = 380;
-				DrawSupport(canvas, {px + pw - cardW, under, cardW, std::min(560.0f, dialog.Bottom() - 28 - under)});
+				DrawSupport(canvas, {px + pw - cardW, std::min(under, bottom - 300), cardW, std::max(300.0f, std::min(560.0f, bottom - under))});
 				textW = pw - cardW - 40;
 			}
-			if (!panel.empty())
+			if (!panel.empty() && under < bottom - 30)
 			{
-				const ui::TextStyle style = Style({m_page == "about" ? 20.0f : 22.0f, ui::Weight::Regular, 1.45f});
-				const float top = under + (rows.empty() ? 0 : 8);
-				const int lines = std::max(1, (int)((dialog.Bottom() - 28 - top) / (style.size * style.lineHeight)));
-				canvas.Text(style, px, top, panel, Secondary(), textW, lines);
+				const ui::TextStyle style = Style({m_page == "about" ? 20.0f : 21.0f, ui::Weight::Regular, 1.45f});
+				const int lines = std::max(1, (int)((bottom - under) / (style.size * style.lineHeight)));
+				canvas.Text(style, px + 8, under, panel, Secondary(), textW - 8, lines);
 			}
 		}
-		canvas.PopClip();
+		canvas.PopOffset();
 		canvas.PopAlpha();
 	}
+
 }

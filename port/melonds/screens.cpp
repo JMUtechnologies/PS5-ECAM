@@ -114,6 +114,7 @@ namespace ps5melonds::screens
 		Functions vk;
 		const char* s_missing = "";
 		const char* s_who = "ds"; // the boot log's word for who draws (Start)
+		uint64_t s_generation = 0; // which device this is (Start), for the in-game menu
 
 		bool LoadInstance(VkInstance instance)
 		{
@@ -697,7 +698,7 @@ namespace ps5melonds::screens
 		void Overlay(VkCommandBuffer commands, bool inside)
 		{
 			ps5ingame3ds::Record({s.instance, s.physical, s.device, s.queueFamily, s.queue, s.renderPass, (uint32_t)s.images.size(), commands,
-				s.width, s.height, inside, 1});
+				s.width, s.height, inside, s_generation});
 		}
 	}
 
@@ -705,6 +706,9 @@ namespace ps5melonds::screens
 	{
 		if (s.device)
 			return true;
+		// a new device each start (a second game in this session): the in-game menu tells it from the last by
+		// this, as the new one can have the old one's handle (a fixed 1 here crashed the menu on a second game)
+		s_generation++;
 		s_who = who;
 		vk.GetInstanceProcAddr = ps5vk::GetInstanceProcAddr();
 		vk.CreateInstance = vk.GetInstanceProcAddr ? (PFN_vkCreateInstance)vk.GetInstanceProcAddr(VK_NULL_HANDLE, "vkCreateInstance") : nullptr;

@@ -81,6 +81,9 @@ namespace ps5ingame3ds
 		bool s_cheevosShown = false; // RetroAchievements, under s_mutex with the two below
 		std::string s_cheevosSummary;
 		std::vector<Achievement> s_cheevos;
+		std::vector<CoreOption> s_coreOptions;			   // under s_mutex: a libretro game's (SetCoreOptions)
+		std::vector<std::pair<std::string, int>> s_coreChanged; // under s_mutex: the menu's changes, for TakeCoreOption
+		std::atomic<bool> s_resetRequested{false};
 		std::string s_extrasMessage;
 		ExtrasRequest s_extrasRequest;
 		int s_amiiboIndex = 0;
@@ -524,111 +527,132 @@ namespace ps5ingame3ds
 			const std::string on = Tr("On"), off = Tr("Off");
 			if (single)
 				rows.push_back({"screens", Tr("Screen and border"), BorderName(settings.border), false, Tr("The border around the screen."), {
-					{"border", Tr("Border"), BorderName(settings.border), true, Tr("Artwork around the screen, never over it.")},
+					{"border", Tr("Border"), BorderName(settings.border), true, Tr("Artwork around the screen.")},
 				}});
 			else
 			{
 			rows.push_back({"screens", Tr("Screens and border"), fmt::format("{} \u00b7 {}", LayoutName(settings.layout), BorderName(settings.border)), false,
-				Tr("The screens' layout, which one is the main one, and the border."), {
+				Tr("Screen layout, main screen and border."), {
 				{"layout", Tr("Layout"), LayoutName(settings.layout), true,
-					Tr("How the two screens share the TV. In the game, touchpad click + R1 goes to the next.")},
+					Tr("How the two screens fit on the TV. In the game, touchpad click + R1 changes it.")},
 				// tr: the 3DS's top and bottom screens
 				{"swap", Tr("Main screen"), settings.swapScreens ? Tr("Bottom") : Tr("Top"), true,
-					Tr("Which screen takes the top screen's place. In the game, touchpad click + L1 swaps them.")},
+					Tr("Which screen goes on top. In the game, touchpad click + L1 swaps them.")},
 				{"border", Tr("Border"), BorderName(settings.border), true,
-					Tr("Artwork around the screens, never over them. Also in the launcher's Settings > Screens.")},
+					Tr("Artwork around the screens. Also in Settings > Screens.")},
 			}});
 			// the console turned with its screens, for the games played holding it on its side
 			rows.back().rows.insert(rows.back().rows.begin() + 2,
 				{"rotation", Tr("Screen rotation"), Tr(kRotations[std::clamp(settings.rotation, 0, kRotationCount - 1)]), true,
-					ds ? Tr("For the games played with the DS held on its side, like a book (Hotel Dusk): both screens turn together.") :
-						 Tr("For the games played with the 3DS held on its side, like a book: both screens turn together, and the touch "
-							"screen with them.")});
+					ds ? Tr("For games played with the DS held sideways, like a book. Both screens turn together.") :
+						 Tr("For games played with the 3DS held sideways, like a book. Both screens and touch turn together.")});
 			// a gap between the screens, as the hinge makes: also a quick action
 			rows.back().rows.insert(rows.back().rows.begin() + 3,
 				{"gap", Tr("Screen gap"), settings.screenGap ? on : off, true,
-					Tr("A gap between the two screens where both show, as the console's hinge makes: one above the other, side by side, "
-					   "or turned like a book.")});
+					Tr("Adds a gap between the two screens, like the console's hinge.")});
 			// the bottom screen touched while only the top one shows
 			rows.back().rows.insert(rows.back().rows.begin() + 4,
 				{"hiddentouch", Tr("Touch without the bottom screen"), settings.hiddenTouch ? on : off, true,
-					Tr("With the top screen alone, the touchpad still touches the bottom screen, its cursor over the top one (Star Fox 64 3D).")});
+					Tr("With only the top screen shown, the touchpad still touches the bottom screen, with a cursor on the top one.")});
+			}
+			if (single)
+			{
+				// the picture: its size and shape on the TV
+				const int size = std::clamp(settings.pictureSize, 0, kPictureSizeCount - 1), shape = std::clamp(settings.pictureShape, 0, kPictureShapeCount - 1);
+				rows.push_back({"picture", Tr("Picture"), fmt::format("{} \u00b7 {}", Tr(kPictureSizes[size]), Tr(kPictureShapes[shape])), false,
+					Tr("How big the picture is on the TV, and its shape."), {
+					{"picturesize", Tr("Size"), Tr(kPictureSizes[size]), true,
+						Tr("Fit makes it as large as the screen allows. Whole pixels keeps every pixel the same size, with a frame around it. Fill screen stretches it edge to edge.")},
+					{"pictureshape", Tr("Shape"), Tr(kPictureShapes[shape]), true,
+						Tr("Original is the console's own. 4:3 is an old TV's. Square pixels shows them as the game draws them.")},
+				}});
+				// the emulator's own options, as Settings > Emulator has them, changed for this game's console now
+				std::vector<CoreOption> options;
+				{
+					std::lock_guard lock(s_mutex);
+					options = s_coreOptions;
+				}
+				if (!options.empty())
+				{
+					Row emulator{"emulator", Tr("Emulator"), ps5lang::TrP((long long)options.size(), "{0} option", "{0} options"), false,
+						Tr("Every option of this console's emulator. Changes apply now and are kept for every game on it.")};
+					for (const CoreOption& option : options)
+						emulator.rows.push_back({"core:" + option.key, option.label,
+							option.values.empty() ? std::string() : option.values[std::clamp(option.index, 0, (int)option.values.size() - 1)], true, option.help});
+					rows.push_back(std::move(emulator));
+				}
 			}
 			if (single)
 				rows.push_back({"graphics", Tr("Graphics"), Tr(filter), false, Tr("The screen filter and the performance overlay."), {
 					{"dsfilter", Tr("Screen filter"), Tr(filter), true,
-						Tr("How the game's picture is scaled to the TV. Sharp keeps every pixel square and even; Smooth blurs them together; "
-						   "Square pixels takes the nearest, uneven at most sizes.")},
+						Tr("Sharp keeps pixels crisp and even. Smooth blends them. Square pixels can look uneven at most sizes.")},
 					{"performance", Tr("Performance overlay"), settings.performance ? on : off, true,
-						Tr("The frame rate and the emulation's speed, in the top left corner.")},
+						Tr("Shows frame rate and speed in the top-left corner.")},
 				}});
 			else if (ds)
 				rows.push_back({"graphics", Tr("Graphics"), Tr(filter), false, Tr("The screen filter and the performance overlay."), {
 					{"dsfilter", Tr("Screen filter"), Tr(filter), true,
-						Tr("How the DS's 256 x 192 screens are scaled to the TV. Sharp keeps every pixel square and even; Smooth blurs them "
-						   "together; Square pixels takes the nearest, uneven at most sizes.")},
+						Tr("How the DS screens are scaled. Sharp keeps pixels crisp and even, Smooth blends them, Square pixels can look uneven.")},
 					{"performance", Tr("Performance overlay"), settings.performance ? on : off, true,
-						Tr("The frame rate and the emulation's speed, in the top left corner.")},
+						Tr("Shows frame rate and speed in the top-left corner.")},
 				}});
 			else
 			{
 				rows.push_back({"graphics", Tr("Graphics"), fmt::format("{}x \u00b7 {}", resolution, FilterName(settings.textureFilter)), false,
 					Tr("Internal resolution, texture filter and the performance overlay."), {
 					{"resolution", Tr("Internal resolution"), fmt::format("{}x  ({}x{})", resolution, 400 * resolution, 240 * resolution), true,
-						Tr("How large the 3D scenes are drawn before they are scaled to the TV. Higher is sharper and asks more of the GPU.")},
+						Tr("Higher draws 3D scenes sharper but needs more power.")},
 					{"filter", Tr("Texture filter"), FilterName(settings.textureFilter), true,
-						Tr("Smooths textures as they are scaled up. The costliest setting here: if a game stutters, try None first.")},
+						Tr("Smooths textures. If a game stutters, try None first.")},
 					{"framegen", Tr("Frame generation"), settings.frameGeneration ? on : off, true,
-						Tr("A picture made between each two frames of a game at 30 fps, so it is shown at 60. It changes at once.")},
+						Tr("Adds a frame between each pair, so 30 fps games play at 60.")},
 					{"performance", Tr("Performance overlay"), settings.performance ? on : off, true,
-						Tr("The frame rate and the emulation's speed, in the top left corner.")},
+						Tr("Shows frame rate and speed in the top-left corner.")},
 				}});
 			}
 			// tr: no speed limit
 			Row speedLimit{"speed", Tr("Speed limit"), settings.speedLimit ? Percent(settings.speedLimit) : std::string(TrC("speed limit", "None")), true,
-				Tr("Above 100% hurries through slow scenes; None runs as fast as the PS5 can. For this game only.")};
+				Tr("Above 100% speeds through slow parts. None runs as fast as possible. This game only.")};
 			// the same word on the category as on its row
 			const std::string speed = settings.speedLimit ? Percent(settings.speedLimit) : std::string(TrC("speed limit", "None"));
 			if (ds || single)
 				rows.push_back({"pace", Tr("Speed"), speed, false, Tr("How fast the game may run."), {speedLimit}});
 			else
 			{
-				rows.push_back({"pace", Tr("Speed"), speed, false, Tr("The emulated CPU's clock, and how fast the game may run."), {
+				rows.push_back({"pace", Tr("Speed"), speed, false, Tr("CPU clock and speed limit."), {
 					{"cpu", Tr("CPU clock"), Percent(settings.cpuClock), true,
-						Tr("Below 100% can bring a slow game to full speed; above it smooths games that dropped frames on the 3DS.")},
+						Tr("Lower can help a slow game reach full speed. Higher smooths games that dropped frames on the 3DS.")},
 					speedLimit,
 				}});
 			}
 			Row volume{"volume", Tr("Volume"), Percent(settings.volume), true, Tr("The game's sound. Left and Right change it by 10%.")};
 			volume.slider = settings.volume / 100.0f;
 			rows.push_back({"states", Tr("Save states"), TrF("Slot {0}", s_stateSlot), false,
-				Tr("Five slots for this game: save exactly where you are, and come back to it."), {
+				Tr("Save exactly where you are and come back later. Five slots per game."), {
 				// tr: a save state slot's number, then when it was saved (or empty)
 				{"slot", Tr("Slot"), fmt::format("{}  {}", s_stateSlot, time.empty() ? Tr("(empty)") : time), true,
-					Tr("Which of this game's five slots to save to or load from. In the game, touchpad click + Square saves to it, and "
-					   "touchpad click + Triangle held loads it.")},
+					Tr("The slot to save to or load from. In the game, touchpad click + Square saves, and holding touchpad click + Triangle loads.")},
 				{"save", Tr("Save to this slot"), stateMessage, false,
-					Tr("Saves the game as it is now, replacing what the slot had. Newer app versions may not load it: keep saving in the game too.")},
+					Tr("Saves now, replacing what is in the slot. Keep saving in the game too: updates may not load old states.")},
 			}});
 			Row cheatRows{"cheats", Tr("Cheats"), "", false,
 				ds ? Tr("The game's cheats, from melonds/cheats/<game file>.mch (melonDS's format).") :
 					 Tr("The game's cheats, from azahar/cheats/<title ID>.txt (Gateway format).")};
 			for (size_t i = 0; i < cheats.size(); i++)
 				cheatRows.rows.push_back({fmt::format("cheat{}", i), cheats[i].first, cheats[i].second ? on : off, true,
-					Tr("Cross, Left or Right turns it on or off, at once; it is kept for next time.")});
+					Tr("Cross, Left or Right turns it on or off. It is remembered.")});
 			if (cheats.empty())
 				cheatRows.rows.push_back({"nocheats", Tr("No cheats for this game"), "", false,
 					// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-					ds ? TrF("Put them in {0}/melonds/cheats/<game file>.mch (the game's file name, .mch for .nds), then start "
-							 "the game again.", ecam_layout::Parent(ps5paths::MelonDs())) :
+					ds ? TrF("Put them in {0}/melonds/cheats/<game file>.mch, then restart the game.", ecam_layout::Parent(ps5paths::MelonDs())) :
 						 // tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-						 TrF("Put them in {0}/azahar/cheats/<title ID>.txt, then start the game again.", ecam_layout::Parent(ps5paths::Azahar()))});
+						 TrF("Put them in {0}/azahar/cheats/<title ID>.txt, then restart the game.", ecam_layout::Parent(ps5paths::Azahar()))});
 			else
 				// tr: how many of the game's cheats are on: {0} of {1}
 				cheatRows.value = TrF("{0} of {1} on", std::count_if(cheats.begin(), cheats.end(), [](const auto& c) { return c.second; }), cheats.size());
 			if (!single)
 				rows.push_back(cheatRows);
-			if (ds && cheevosShown)
+			if (cheevosShown) // the DS's and a libretro side's (app/achievements.h)
 			{
 				// RetroAchievements (6.16): how many are earned, then each, the earned first
 				const int earned = (int)std::count_if(cheevos.begin(), cheevos.end(), [](const Achievement& a) { return a.unlocked; });
@@ -644,70 +668,69 @@ namespace ps5ingame3ds
 				}
 				if (cheevos.empty())
 					cheevoRows.rows.push_back({"nocheevos", cheevosSummary.empty() ? std::string(Tr("No achievements")) : cheevosSummary, "", false,
-						Tr("RetroAchievements lists a game's achievements once it has a set for it.")});
+						Tr("RetroAchievements has no set for this game yet.")});
 				rows.push_back(cheevoRows);
 			}
 			if (!ds && !single)
 			{
-				rows.push_back({"amiibos", Tr("Amiibo"), amiibo, false, Tr("Hold an amiibo dump to the 3DS's reader when the game asks for one."), {
+				rows.push_back({"amiibos", Tr("Amiibo"), amiibo, false, Tr("Scan an amiibo when the game asks for one."), {
 					{"amiibo", Tr("Amiibo"), amiibo, true,
 						// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
 						noAmiibo ? TrF("Put amiibo dumps (.bin) in {0}/amiibo to scan them here.", ps5paths::Root()) :
-								   Tr("Left and Right choose an amiibo dump; Cross holds it to the reader.")},
-					{"noamiibo", Tr("Take the amiibo away"), amiiboMessage, false, Tr("Takes the amiibo off the reader, as lifting it off would.")},
+								   Tr("Left and Right choose an amiibo. Cross scans it.")},
+					{"noamiibo", Tr("Remove amiibo"), amiiboMessage, false, Tr("Takes the amiibo off the reader.")},
 				}});
 			}
 			rows.push_back(volume);
 			const std::string ab = settings.aOnCircle ? Tr("A on Circle") : Tr("A on Cross");
 			if (single)
-				rows.push_back({"controls", Tr("Controls"), ab, false, Tr("The left stick's deadzone and where A and B are."), {
+				rows.push_back({"controls", Tr("Controls"), ab, false, Tr("Stick deadzone and button layout."), {
 					{"deadzone", Tr("Stick deadzone"), Percent(settings.deadzone), true,
-						Tr("How far the left stick moves before it presses the D-pad. Raise it if something drifts when you let go.")},
+						Tr("How far the left stick moves before it presses the D-pad. Raise it if there is drift.")},
 					{"ab", Tr("A and B"), ab, true,
-						Tr("A on Circle and B on Cross, where Nintendo puts them, or the other way round, with X and Y swapped to match.")},
+						Tr("A on Circle and B on Cross like Nintendo's layout, or swapped, with X and Y swapped too.")},
 				}});
 			else if (ds)
 				// tr: the DS's lid, closed or open
 				rows.push_back({"controls", Tr("Controls"), settings.lidClosed ? std::string(Tr("Lid closed")) : ab, false,
-					Tr("The lid, the left stick's deadzone and where A and B are. Hold R3 to blow into the microphone."), {
+					Tr("Lid, stick deadzone and button layout. Hold R3 to blow into the mic."), {
 					{"lid", Tr("Lid"), settings.lidClosed ? Tr("Closed") : Tr("Open"), true,
-						Tr("Closes the DS's lid, for games that ask you to; the DS sleeps until it is opened. Choose it again to open it.")},
+						Tr("Closes the DS lid for games that ask you to. Choose it again to open it.")},
 					{"deadzone", Tr("Stick deadzone"), Percent(settings.deadzone), true,
-						Tr("How far the left stick moves before it presses the D-pad. Raise it if something drifts when you let go.")},
+						Tr("How far the left stick moves before it presses the D-pad. Raise it if there is drift.")},
 					{"ab", Tr("A and B"), ab, true,
-						Tr("A on Circle and B on Cross, where the DS has them, or the other way round, with X and Y swapped to match.")},
+						Tr("A on Circle and B on Cross as on the DS, or swapped, with X and Y swapped too.")},
 				}});
 			else
 			{
-				rows.push_back({"controls", Tr("Controls"), ab, false, Tr("Motion controls, the sticks' deadzone and where A and B are."), {
+				rows.push_back({"controls", Tr("Controls"), ab, false, Tr("Motion controls, stick deadzone and button layout."), {
 					{"motion", Tr("Motion controls"), settings.motion ? on : off, true,
-						Tr("The DualSense's gyroscope and accelerometer as the 3DS's, for the games that aim or steer by tilting.")},
+						Tr("Use DualSense motion to aim or steer by tilting.")},
 					{"deadzone", Tr("Stick deadzone"), Percent(settings.deadzone), true,
-						Tr("How far a stick moves before the game sees it. Raise it if something drifts when you let go.")},
+						Tr("How far a stick moves before the game sees it. Raise it if there is drift.")},
 					{"ab", Tr("A and B"), ab, true,
-						Tr("A on Circle and B on Cross, where the 3DS has them, or the other way round, with X and Y swapped to match.")},
+						Tr("A on Circle and B on Cross as on the 3DS, or swapped, with X and Y swapped too.")},
 				}});
 			}
 			// every button, as Settings > Controls > Buttons has them, set here without leaving the game; the
 			// touchpad is the touch screen, so its click cancels
 			rows.push_back(s_buttonsMenu.Category(ButtonRows(settings), s_heldInput, sceKernelGetProcessTime(), true,
-				Tr("Every button back where the console has it. Held to confirm.")));
+				Tr("Puts every button back to default. Hold Cross to confirm.")));
 			// a home screen tile's game closes the app instead, as the row says (#48)
 			Row library = ps5emu::ExitAfterGame() ?
 				Row{"library", Tr("Quit to the home screen"), "", false,
-					Tr("Leaves the game and closes Playtendoh, as its home screen tile asks. What you have not saved in the game is lost, so Cross is held.")} :
+					Tr("Closes the game and Playtendoh. Unsaved progress is lost. Hold Cross.")} :
 				Row{"library", Tr("Quit to the library"), "", false,
-					Tr("Leaves the game for the library. What you have not saved in the game is lost, so Cross is held.")};
+					Tr("Closes the game and goes to the library. Unsaved progress is lost. Hold Cross.")};
 			library.apart = true;
 			library.hold = true;
 			// loading a state, as a row too: held, as the quick action is
 			Row load{"load", Tr("Load this slot"), time.empty() ? Tr("Empty") : "", false,
-				Tr("Goes back to the moment the slot was saved. What you did since is lost, so Cross is held.")};
+				Tr("Goes back to when the slot was saved. Progress since then is lost. Hold Cross.")};
 			load.hold = !time.empty();
 			// and the game as it was just before the last load, while there is one: held too
 			Row back{"undo", Tr("Undo the last load"), "", false,
-				Tr("Goes back to the moment before the last load, as if it had not been made. What you did since the load is lost, so "
-				   "Cross is held.")};
+				Tr("Goes back to just before the last load. Progress since that load is lost. Hold Cross.")};
 			back.hold = true;
 			for (Row& row : rows)
 				if (row.id == "states")
@@ -742,6 +765,10 @@ namespace ps5ingame3ds
 				{"gap", Tr("Screen gap"), "gap", settings.screenGap ? Tr("On") : Tr("Off")}};
 			if (s_console == Console::Retro)
 				tiles.resize(3); // one screen: no layouts, no gap
+			// tr: the quick action that resets the console, as its reset button does: Cross held, as nothing saved since is kept
+			if (s_console != Console::N3ds)
+				tiles.insert(tiles.begin() + 3, {"reset", Tr("Reset"), "reset", Tr("Hold Cross"), true,
+					Tr("Restarts the game, as the console's reset button does. What isn't saved is lost.")});
 			// how the last save or load went, on its tile (Made by another version, Saved slot 1...)
 			for (ps5menu::Tile& tile : tiles)
 				if (!message.empty() && tile.id == s_stateAction)
@@ -771,6 +798,29 @@ namespace ps5ingame3ds
 			{
 				CloseMenu();
 				changed = false;
+			}
+			else if (id == "reset")
+			{
+				s_resetRequested = true;
+				CloseMenu();
+				changed = false;
+			}
+			else if (id == "picturesize")
+				next.pictureSize = (std::clamp(settings.pictureSize, 0, kPictureSizeCount - 1) + change + kPictureSizeCount) % kPictureSizeCount;
+			else if (id == "pictureshape")
+				next.pictureShape = (std::clamp(settings.pictureShape, 0, kPictureShapeCount - 1) + change + kPictureShapeCount) % kPictureShapeCount;
+			else if (id.rfind("core:", 0) == 0)
+			{
+				// an emulator option: the next value, for the game's loop to give the core
+				changed = false;
+				std::lock_guard lock(s_mutex);
+				for (CoreOption& option : s_coreOptions)
+					if ("core:" + option.key == id && !option.values.empty())
+					{
+						const int count = (int)option.values.size();
+						option.index = (std::clamp(option.index, 0, count - 1) + (change ? change : 1) + count) % count;
+						s_coreChanged.emplace_back(option.key, option.index);
+					}
 			}
 			else if (id == "layout")
 				next.layout = (settings.layout + change + 4) % 4;
@@ -1144,6 +1194,25 @@ namespace ps5ingame3ds
 		std::lock_guard lock(s_mutex);
 		s_undoAvailable = available;
 	}
+
+	void SetCoreOptions(const std::vector<CoreOption>& options)
+	{
+		std::lock_guard lock(s_mutex);
+		s_coreOptions = options;
+	}
+
+	bool TakeCoreOption(std::string& key, int& index)
+	{
+		std::lock_guard lock(s_mutex);
+		if (s_coreChanged.empty())
+			return false;
+		key = s_coreChanged.front().first;
+		index = s_coreChanged.front().second;
+		s_coreChanged.erase(s_coreChanged.begin());
+		return true;
+	}
+
+	bool TakeResetRequest() { return s_resetRequested.exchange(false); }
 
 	bool TakeUndoRequest()
 	{

@@ -26,7 +26,7 @@ namespace ps5shell
 
 	namespace
 	{
-		constexpr float kListTop = 290, kListWidth = 1000, kRowHeight = 82, kRowGap = 8;
+		constexpr float kListTop = 300, kListWidth = 1000, kRowHeight = 82, kRowGap = 8;
 		constexpr float kAsideX = 1196, kAsideWidth = 628, kAsidePad = 36;
 		constexpr const char* kSite = "github.com/premohq/PlayTendoh";
 		constexpr const char* kRepository = "https://github.com/premohq/PlayTendoh";
@@ -131,15 +131,14 @@ namespace ps5shell
 			// where the data is when it is on the app's drive (#52); in /data, that /data is open
 			storage.detail = Join({ps5paths::Root() == ps5paths::kDefaultRoot ? std::string(Tr("/data is reachable")) : ps5paths::Root(), free}, " · ");
 			storage.aboutTitle = Tr("Where everything is kept");
-			storage.about = TrF("Settings, saves, caches and logs live in {0}, which your HEN opens to Playtendoh: its app jailbreak, or "
-								"elfldr with the helper that comes with the app.",
+			storage.about = TrF("Settings, saves, caches and logs are kept in {0}, which your HEN unlocks for Playtendoh.",
 				ps5paths::Root());
 		}
 		else
 		{
 			storage.state = 1;
-			storage.detail = Tr("/data is out of reach: nothing can be kept");
-			storage.aboutTitle = Tr("Let Playtendoh out of its sandbox");
+			storage.detail = Tr("/data can't be reached: nothing can be saved");
+			storage.aboutTitle = Tr("Give Playtendoh access to /data");
 			storage.about = Tr("Add PPSA99360 to your HEN's app jailbreak list (etaHEN: its app jailbreak list; OnionHEN: the end of "
 							   "exact_title_ids in config.ini, with no comma after it), or have elfldr listening on port 9021. Then start "
 							   "Playtendoh again.");
@@ -147,25 +146,22 @@ namespace ps5shell
 		m_checks.push_back(storage);
 
 		// what runs the games' code
-		Check recompilers{"recompilers", Tr("Recompilers")};
+		Check recompilers{"recompilers", Tr("Game speed")};
 		recompilers.guide = henGuide;
 		recompilers.guideTitle = Tr("the HEN setup guide");
-		recompilers.aboutTitle = Tr("What runs the games' code");
+		recompilers.aboutTitle = Tr("Whether games can run at full speed");
 		if (privileges.jit || privileges.executable)
 		{
 			recompilers.state = 0;
 			recompilers.detail = privileges.jit ? Tr("JIT memory from your HEN: games run at full speed") :
 												  Tr("Executable memory: games run at full speed, no HEN grant needed");
-			recompilers.about = Tr("Cemu's and Azahar's recompilers turn the games' code into the PS5's as they run. They need memory they "
-								   "can write code into and run it from: your HEN's JIT memory, or executable memory Playtendoh makes itself.");
+			recompilers.about = Tr("Wii U and 3DS games need special memory from your HEN, or that Playtendoh makes itself, to run at full speed.");
 		}
 		else
 		{
 			recompilers.state = 1;
-			recompilers.detail = Tr("No JIT or executable memory: Wii U games run on the much slower interpreter");
-			recompilers.about = Tr("Neither your HEN's JIT memory nor executable memory could be made, so Wii U games fall back to Cemu's "
-								   "interpreter. Add PPSA99360 to your HEN's app jailbreak list, then start Playtendoh again; Settings > "
-								   "Diagnostics says what it got.");
+			recompilers.detail = Tr("No JIT memory: Wii U games will run much slower");
+			recompilers.about = Tr("Wii U games will run much slower. Add PPSA99360 to your HEN's app jailbreak list, then start Playtendoh again. Settings > Diagnostics shows what it got.");
 		}
 		m_checks.push_back(recompilers);
 
@@ -192,12 +188,12 @@ namespace ps5shell
 				games.action = Tr("Choose a folder");
 				games.state = count > 0 && runtime ? 0 : 1;
 				const std::string where = ShortPath(Place(folder), 44);
-				games.detail = !runtime ? Tr("This side's emulator is not in this copy of Playtendoh.") :
+				games.detail = !runtime ? Tr("This system's emulator is not in this copy of Playtendoh.") :
 					count > 0			? TrP(count, "{0} game in {1}", "{0} games in {1}", where) :
 					readable			? TrF("None in {0} yet", where) :
 										  TrF("{0} cannot be read", where);
 				games.aboutTitle = TrF("{0} games", SystemName(side));
-				games.about = TrF("Put this system's games in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are searched too, four deep.", folder);
+				games.about = TrF("Put this system's games in {0}, or choose any folder, such as one on a USB drive. Subfolders are searched too.", folder);
 				m_checks.push_back(games);
 				continue;
 			}
@@ -225,17 +221,13 @@ namespace ps5shell
 				nds					? Tr("Where your DS games go") :
 				nx					? Tr("Where your Switch games go") :
 									  Tr("Where your Wii U games go");
-			games.about = n3ds ? TrF("Put them in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are "
-									 "searched too. CIA files are installed, from Settings > Game files on the 3DS side.",
+			games.about = n3ds ? TrF("Put them in {0}, or choose any folder, such as one on a USB drive. Subfolders are searched too. Install CIA files from Settings > Game files.",
 									 folder) :
-				nds			   ? TrF("Put them in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are "
-									 "searched too.",
+				nds			   ? TrF("Put them in {0}, or choose any folder, such as one on a USB drive. Subfolders are searched too.",
 									 folder) :
-				nx			   ? TrF("Put them in {0}: .nsp and .xci files, alone or each in a folder of its own with its update and DLC. "
-									 "Eden needs your Switch's keys and firmware too.",
+				nx			   ? TrF("Put .nsp and .xci files in {0}, each alone or in a folder with its update and DLC. You also need your Switch's keys and firmware.",
 									 ps5eden::ScanFolder(folder)) :
-								 TrF("Put them in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Updates and DLC go "
-									 "in from Settings > Game files, or come with a .wua.",
+								 TrF("Put them in {0}, or choose any folder, such as one on a USB drive. Install updates and DLC from Settings > Game files (a .wua already has them).",
 									 folder);
 			games.chips = n3ds ? std::vector<std::string>{".3ds", ".cci", ".cxi", ".3dsx", ".z3ds", ".cia", ".7z", ".zip"} :
 				nds			   ? std::vector<std::string>{".nds", ".srl", ".7z", ".zip"} :
@@ -245,7 +237,7 @@ namespace ps5shell
 			if (nx2)
 			{
 				games.aboutTitle = Tr("Where your Switch 2 games go");
-				games.about = TrF("Put them in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are searched too.", folder);
+				games.about = TrF("Put them in {0}, or choose any folder, such as one on a USB drive. Subfolders are searched too.", folder);
 				games.chips = {"exefs/main", "romfs/", "base/", "updates/", "dlc/", "firmware/"};
 				games.guide = std::string(kRepository) + "#switch-2";
 			}
@@ -260,8 +252,7 @@ namespace ps5shell
 		wiiuKeys.detail = discKeys ? Tr("keys.txt found") : Tr("keys.txt is missing: only encrypted .wud and .wux need it");
 		wiiuKeys.action = discKeys ? "" : Tr("How to");
 		wiiuKeys.aboutTitle = Tr("Keys for encrypted discs");
-		wiiuKeys.about = TrF("Encrypted .wud and .wux dumps need their disc keys in {0}/keys.txt, one a line. Decrypted dumps, .wua files and "
-							 "folders with code, content and meta need none.",
+		wiiuKeys.about = TrF("Encrypted .wud and .wux need their disc keys in {0}/keys.txt, one per line. Other formats need none.",
 			ps5paths::CemuRoot());
 		wiiuKeys.guide = std::string(kRepository) + "#wii-u";
 		wiiuKeys.guideTitle = Tr("the game files page");
@@ -278,11 +269,10 @@ namespace ps5shell
 			ps5azahar::Available() && m_prepared == System::N3ds && ps5azahar::HomeMenu(m_settings.n3ds.region, homeMenu);
 		Check system{"3ds-system", Tr("3DS system files")};
 		system.state = systemFiles ? 0 : 2;
-		system.detail = systemFiles ? Tr("Artic Setup has run: the Home Menu can start") : Tr("Artic Setup copies them from your 3DS, for the Home Menu");
+		system.detail = systemFiles ? Tr("Artic Setup is done: the Home Menu can start") : Tr("Artic Setup copies them from your 3DS, for the Home Menu");
 		system.action = systemFiles || !ps5azahar::Available() ? "" : Tr("Artic Base");
 		system.aboutTitle = Tr("Your 3DS's own files");
-		system.about = Tr("The 3DS Home Menu, and the few games that need the console's system files, run once Artic Setup has copied them "
-						  "from your own 3DS over the network: start the Artic Setup Tool on the 3DS, then Artic Base here.");
+		system.about = Tr("The 3DS Home Menu and a few games need your 3DS's system files. Start the Artic Setup Tool on your 3DS, then Artic Base here.");
 		system.guide = std::string(kRepository) + "#nintendo-3ds-azahar";
 		system.guideTitle = Tr("the 3DS page");
 		if (SideShown(System::N3ds))
@@ -292,12 +282,10 @@ namespace ps5shell
 		const bool dsBios = ps5melonds::OwnBiosFound();
 		Check nds{"ds-bios", "DS BIOS"};
 		nds.state = dsBios ? 0 : 2;
-		nds.detail = dsBios ? Tr("Your DS's BIOS found: DS games run on it") : Tr("melonDS's built-in BIOS runs DS games; your DS's is optional");
+		nds.detail = dsBios ? Tr("Your DS BIOS was found and is used") : Tr("Using the built-in BIOS. Your own DS BIOS is optional");
 		nds.action = dsBios ? "" : Tr("How to");
 		nds.aboutTitle = Tr("Your DS's own BIOS and firmware");
-		nds.about = TrF("melonDS runs DS games on its own BIOS (FreeBIOS) and firmware, which most games are happy with. The few that "
-								"are not run on your own DS's: bios7.bin, bios9.bin and firmware.bin, dumped from it, in {0}/bios. No BIOS "
-								"comes with Playtendoh.",
+		nds.about = TrF("DS games run on a built-in BIOS and firmware, which most games are fine with. For the few that aren't, put bios7.bin, bios9.bin and firmware.bin from your own DS in {0}/bios. Playtendoh does not include a BIOS.",
 			ps5melonds::Root());
 		nds.guide = std::string(kRepository) + "#nintendo-ds-melonds";
 		nds.guideTitle = Tr("the DS page");
@@ -310,22 +298,20 @@ namespace ps5shell
 		const bool nxKeys = ps5eden::KeysFound(), nxFirmware = ps5eden::FirmwareFound();
 		Check switchKeys{"switch-keys", Tr("Switch keys")};
 		switchKeys.state = nxKeys ? 0 : 1;
-		switchKeys.detail = nxKeys ? Tr("prod.keys found: Eden can read your games") : Tr("prod.keys is missing: Eden cannot read Switch games without it");
+		switchKeys.detail = nxKeys ? Tr("prod.keys found") : Tr("prod.keys is missing: Switch games need it");
 		switchKeys.action = nxKeys ? "" : Tr("How to");
 		switchKeys.aboutTitle = Tr("Your Switch's keys");
-		switchKeys.about = TrF("Eden reads Switch games with your own console's keys: prod.keys (and title.keys), dumped from your Switch, in "
-							   "{0}/keys. No keys come with Playtendoh.",
+		switchKeys.about = TrF("Switch games need your own console's keys: prod.keys (and title.keys) from your Switch, in {0}/keys. Playtendoh does not include keys.",
 			edenFiles);
 		switchKeys.guide = std::string(kRepository) + "#nintendo-switch-eden";
 		switchKeys.guideTitle = Tr("the Switch page");
 		Check switchFirmware{"switch-firmware", Tr("Switch firmware")};
 		switchFirmware.state = nxFirmware ? 0 : 1;
-		switchFirmware.detail = nxFirmware ? Tr("Firmware found: games that need the system's files start") :
+		switchFirmware.detail = nxFirmware ? Tr("Firmware found") :
 											 Tr("No firmware yet: many games need it to start");
 		switchFirmware.action = nxFirmware ? "" : Tr("How to");
 		switchFirmware.aboutTitle = Tr("Your Switch's firmware");
-		switchFirmware.about = TrF("Many Switch games need the console's own system files: its firmware's .nca files, dumped from your Switch, "
-								   "in {0}/firmware. No firmware comes with Playtendoh.",
+		switchFirmware.about = TrF("Many Switch games need firmware: the .nca files from your Switch, in {0}/firmware. Playtendoh does not include firmware.",
 			edenFiles);
 		switchFirmware.guide = switchKeys.guide;
 		switchFirmware.guideTitle = switchKeys.guideTitle;
@@ -336,18 +322,18 @@ namespace ps5shell
 		}
 		Check switch2Keys{"switch2-keys", Tr("Switch 2 keys")};
 		switch2Keys.state = ps5eglantine::KeysFound() ? 0 : 1;
-		switch2Keys.detail = ps5eglantine::KeysFound() ? Tr("prod.keys found for EglantinePS5") : Tr("prod.keys is missing: EglantinePS5 needs your own Switch keys");
+		switch2Keys.detail = ps5eglantine::KeysFound() ? Tr("prod.keys found for Lichii") : Tr("prod.keys is missing: Lichii needs your own Switch keys");
 		switch2Keys.action = ps5eglantine::KeysFound() ? "" : Tr("How to");
-		switch2Keys.aboutTitle = Tr("Your Switch 2 emulator's keys");
-		switch2Keys.about = TrF("Put your own prod.keys in {0}/keys. Playtendoh and EglantinePS5 do not include keys.", ps5eglantine::DataFolder());
+		switch2Keys.aboutTitle = Tr("Your Switch 2 keys");
+		switch2Keys.about = TrF("Put your own prod.keys in {0}/keys. Playtendoh and Lichii do not include keys.", ps5eglantine::DataFolder());
 		switch2Keys.guide = std::string(kRepository) + "#switch-2";
 		switch2Keys.guideTitle = Tr("the Switch 2 page");
 		Check switch2Firmware{"switch2-firmware", Tr("Switch 2 firmware")};
 		switch2Firmware.state = ps5eglantine::FirmwareFound() ? 0 : 1;
-		switch2Firmware.detail = ps5eglantine::FirmwareFound() ? Tr("Firmware found for EglantinePS5") : Tr("Firmware is missing: some games need it");
+		switch2Firmware.detail = ps5eglantine::FirmwareFound() ? Tr("Firmware found for Lichii") : Tr("Firmware is missing: some games need it");
 		switch2Firmware.action = ps5eglantine::FirmwareFound() ? "" : Tr("How to");
-		switch2Firmware.aboutTitle = Tr("Your Switch 2 emulator's firmware");
-		switch2Firmware.about = TrF("Put your own Switch firmware files in {0}/firmware. No firmware comes with Playtendoh or EglantinePS5.", ps5eglantine::DataFolder());
+		switch2Firmware.aboutTitle = Tr("Your Switch 2 firmware");
+		switch2Firmware.about = TrF("Put your own Switch firmware files in {0}/firmware. Playtendoh and Lichii do not include firmware.", ps5eglantine::DataFolder());
 		switch2Firmware.guide = switch2Keys.guide;
 		switch2Firmware.guideTitle = switch2Keys.guideTitle;
 		if (SideShown(System::Switch2))
@@ -361,8 +347,7 @@ namespace ps5shell
 		boxArt.guide = std::string(kRepository) + "#online";
 		boxArt.guideTitle = Tr("what Playtendoh fetches online");
 		boxArt.aboutTitle = Tr("Covers from GameTDB");
-		boxArt.about = Tr("The first time a game shows up, its cover comes from GameTDB (art.gametdb.com), by the ID on its box. Without a "
-						  "connection the games' own icons are shown, and the next start tries again.");
+		boxArt.about = Tr("Covers for new games come from GameTDB. Offline, game icons are shown and Playtendoh tries again next time.");
 		const int covers = Covers();
 		if (!m_settings.boxArt)
 		{
@@ -380,9 +365,31 @@ namespace ps5shell
 			boxArt.state = 0;
 			boxArt.detail = ps5boxart::Answered() == 1 ? TrP(covers, "GameTDB is reachable · {0} cover", "GameTDB is reachable · {0} covers") :
 				covers > 0								  ? TrP(covers, "On · {0} cover", "On · {0} covers") :
-															std::string(Tr("On: covers come as your games show up"));
+															std::string(Tr("On: covers download as games are added"));
 		}
 		m_checks.push_back(boxArt);
+
+		// where each system's files go: together by default, any of them in a folder of its own when picked
+		// (Settings > Game files > A folder for each system, app/reorganize.h)
+		{
+			Check folders{"folders", Tr("System folders")};
+			folders.state = 2;
+			const ps5reorganize::Layout layout = ps5reorganize::Look(ps5paths::Root(), ps5paths::kDefaultRoot);
+			folders.detail = layout.separated.empty() ? TrF("Together in {0}", ps5paths::Root()) :
+				// tr: the Setup check: how many of the systems that can move have a folder of their own
+				TrP((long long)layout.separated.size(), "{0} system in its own folder", "{0} systems in their own folders");
+			folders.action = Tr("Choose");
+			folders.aboutTitle = Tr("Where each system's files go");
+			folders.about = TrF("Saves, BIOS files and settings for every system are kept together in {0}. You can give the Wii U, 3DS, DS or "
+								"Switch a folder of its own instead. Cross shows them, each with its own switch.",
+				ps5paths::Root());
+			m_checks.push_back(folders);
+		}
+		// 6.0: what needs a look first, then what is optional, then what is ready, each in the order made
+		std::stable_sort(m_checks.begin(), m_checks.end(), [](const Check& a, const Check& b) {
+			auto rank = [](int state) { return state == 1 ? 0 : state == 2 ? 1 : 2; };
+			return rank(a.state) < rank(b.state);
+		});
 	}
 
 	void Shell::SetupUpdate(const ui::Press& press)
@@ -443,6 +450,19 @@ namespace ps5shell
 			}
 			else if (check.id == "3ds-system")
 				ArticOpen();
+			else if (check.id == "folders" && !IsRetro())
+			{
+				// Settings > Game files, on its A folder for each system
+				SettingsOpen("files", true);
+				const auto rows = SettingRows("files");
+				for (int i = 0; i < (int)rows.size(); i++)
+					if (rows[i].opens == "systemfolders")
+					{
+						m_settingRow = i;
+						OpenSubPage(rows[i]);
+						break;
+					}
+			}
 			else if (check.id == "boxart")
 			{
 				m_settings.boxArt = true;
@@ -479,32 +499,44 @@ namespace ps5shell
 		const int count = (int)m_checks.size();
 		m_setupRow = std::clamp(m_setupRow, 0, std::max(0, count - 1));
 
-		// what this is, and how far along
+		// what this is, and how far along: a card of glass with one bar, rather than a dash for each check
 		canvas.PushAlpha(Enter(0));
 		canvas.Text(Style(kOverlineStyle), kSafeX, 92, m_setupFirst ? Tr("Welcome to Playtendoh") : Tr("Help"), Secondary(), 1100, 1);
 		canvas.Text(Style({56, ui::Weight::Bold, 1.1f, -0.8f}), kSafeX, 122, Tr("Let’s check your setup"), kText, 1100, 1);
 		const int ready = (int)std::count_if(m_checks.begin(), m_checks.end(), [](const Check& check) { return check.state != 1; });
-		float x = kSafeX;
-		for (int i = 0; i < count; i++, x += 50)
-			canvas.Rect({x, 243, 40, 6}, 3, i < ready ? kText : Wash(0.14f));
-		// tr: the Setup check's progress: how many checks are ready, and how many need a look
-		const std::string progress = ready == count ? TrP(count, "The {0} check is ready.", "All {0} checks are ready.") :
-			ready == 0								? TrP(count, "The {0} check needs a look.", "All {0} checks need a look.") :
-													  TrP(ready, "{0} of {1} is ready.", "{0} of {1} are ready.", count) + " " +
-														  TrP(count - ready, "{0} needs a look.", "{0} need a look.");
-		canvas.Text(Style({20, ui::Weight::Medium, 1.0f}), x + 8, 236, progress, Secondary(), kListWidth + kSafeX - x - 8, 1);
+		const int needs = count - ready;
+		{
+			const Box card{kSafeX, 206, kListWidth, 64};
+			Glass(canvas, card, 32, Surface());
+			const uint32_t tone = needs ? kWarn : kGood;
+			const Box dot{card.x + 14, card.y + 12, 40, 40};
+			canvas.Rect(dot, 20, ui::SetAlpha(tone, 0.18f));
+			canvas.Draw(needs ? Icon::Warning : Icon::Check, dot.Inset(9), tone);
+			// tr: the Setup check's summary: how many checks need the player, or that every one is ready
+			const std::string headline = needs ? TrP(needs, "{0} thing needs you", "{0} things need you") : std::string(Tr("Everything is ready"));
+			const ui::TextBlock head = canvas.Text(Style({24, ui::Weight::SemiBold, 1.0f}), dot.Right() + 16, card.CentreY() - 13, headline, kText, 420, 1);
+			// tr: the Setup check's summary: {0} checks ready of {1}
+			const std::string counted = TrF("{0} of {1} ready", ready, count);
+			const float countedW = m_fonts.Width(Style({20, ui::Weight::Medium, 1.0f}), counted);
+			canvas.Text(Style({20, ui::Weight::Medium, 1.0f}), card.Right() - 28 - countedW, card.CentreY() - 11, counted, Secondary(), countedW + 1, 1);
+			const float barX = dot.Right() + 16 + head.width + 28, barW = card.Right() - 28 - countedW - 24 - barX;
+			if (barW > 40)
+			{
+				canvas.Rect({barX, card.CentreY() - 4, barW, 8}, 4, Wash(0.10f));
+				canvas.Rect({barX, card.CentreY() - 4, barW * (count ? (float)ready / count : 1.0f), 8}, 4, tone);
+			}
+		}
 
 		// the language, at the right: the PS5's own, until another is chosen
 		{
 			const ui::TextStyle style = Style({24, ui::Weight::Medium, 1.0f});
-			const std::string name = m_settings.ui.language.empty() ? TrF("{0} · as the PS5", ps5lang::NameOf(ps5lang::Current())) :
+			const std::string name = m_settings.ui.language.empty() ? TrF("{0} · same as the PS5", ps5lang::NameOf(ps5lang::Current())) :
 																	  std::string(ps5lang::NameOf(ps5lang::Current()));
 			const float textWidth = std::min(m_fonts.Width(style, name), 520.0f);
 			const float width = 28 + 30 + 14 + textWidth + 14 + 24 + 26;
 			const Box pill{1920 - kSafeX - width, 132, width, 64};
 			const Box drawn = m_setupOnLanguage ? pill.Scaled(1.03f) : pill;
-			canvas.Rect(drawn, drawn.h / 2, m_setupOnLanguage ? Surface2() : Surface());
-			canvas.Ring(drawn, drawn.h / 2, 1.5f, kGlassEdge);
+			Glass(canvas, drawn, drawn.h / 2, m_setupOnLanguage ? Surface2() : Surface());
 			canvas.Draw(Icon::Globe, {drawn.x + 28, drawn.CentreY() - 15, 30, 30}, kText);
 			canvas.Text(style, drawn.x + 28 + 30 + 14, drawn.CentreY() - 13, name, kText, textWidth + 1, 1);
 			canvas.Draw(Icon::ChevronDown, {drawn.Right() - 26 - 24, drawn.CentreY() - 12, 24, 24}, Secondary());
@@ -513,30 +545,62 @@ namespace ps5shell
 		}
 		canvas.PopAlpha();
 
-		// the checks: those past the screen's foot scroll with the focus
+		// the checks, in three groups (RunChecks' order): what needs you as full rows, then the optional, then
+		// what is ready, each a slimmer row; a group's name above it. The list glides with the focus.
 		canvas.PushAlpha(Enter(1));
 		canvas.PushOffset(0, (1 - Enter(1)) * 24);
-		constexpr float kListBottom = 1080 - 96;
-		const float listHeight = count * (kRowHeight + kRowGap) - kRowGap;
-		const float listScroll = std::clamp(m_setupRow * (kRowHeight + kRowGap) - (kListBottom - kListTop) * 0.5f, 0.0f,
-			std::max(0.0f, listHeight - (kListBottom - kListTop)));
+		constexpr float kListBottom = 1080 - 96, kSlim = 60, kGroupGap = 46;
+		std::vector<float> tops(count);
+		float at = 0;
+		int lastGroup = -1;
+		for (int i = 0; i < count; i++)
+		{
+			const int group = m_checks[i].state == 1 ? 0 : m_checks[i].state == 2 ? 1 : 2;
+			if (group != lastGroup)
+			{
+				at += kGroupGap;
+				lastGroup = group;
+			}
+			tops[i] = at;
+			at += (group == 0 ? kRowHeight : kSlim) + kRowGap;
+		}
+		const float listHeight = at - kRowGap;
+		const float view = kListBottom - kListTop;
+		m_setupScroll.target = count ? std::clamp(tops[m_setupRow] - view * 0.4f, 0.0f, std::max(0.0f, listHeight - view)) : 0.0f;
+		m_setupScroll.omega = m_settings.ui.reduceMotion ? 60.0f : kScrollOmega;
+		m_setupScroll.Update(m_dt);
+		const float listScroll = m_setupScroll.value;
 		canvas.PushClip({0, kListTop - 12, kSafeX + kListWidth + 24, kListBottom - kListTop + 24});
+		lastGroup = -1;
 		for (int i = 0; i < count; i++)
 		{
 			const Check& check = m_checks[i];
-			const Box row{kSafeX, kListTop + i * (kRowHeight + kRowGap) - listScroll, kListWidth, kRowHeight};
+			const int group = check.state == 1 ? 0 : check.state == 2 ? 1 : 2;
+			const bool slim = group != 0;
+			const Box row{kSafeX, kListTop + tops[i] - listScroll, kListWidth, slim ? kSlim : kRowHeight};
+			if (group != lastGroup)
+			{
+				lastGroup = group;
+				int inGroup = 0;
+				for (const Check& c : m_checks)
+					inGroup += (c.state == 1 ? 0 : c.state == 2 ? 1 : 2) == group;
+				// tr: the Setup check's groups: what needs the player, what is optional, what is ready; {0} how many
+				const std::string name = group == 0 ? TrF("Needs you · {0}", inGroup) : group == 1 ? TrF("Optional · {0}", inGroup) : TrF("Ready · {0}", inGroup);
+				canvas.Text(Style(kOverlineStyle), row.x + 6, row.y - 32, name, group == 0 ? kWarn : Tertiary(), 600, 1);
+			}
 			const bool focused = i == m_setupRow && !m_setupOnLanguage;
-			canvas.Rect(row, kRadiusCard, focused ? Surface2() : Surface());
-			if (focused)
-				canvas.Rect(row, kRadiusCard, Wash(0.05f));
+			Glass(canvas, row, slim ? 18 : kRadiusCard, focused ? Surface2() : slim ? ui::WithAlpha(Surface(), 0.7f) : Surface(), focused ? 1.0f : 0.6f);
+			if (focused && !m_settings.ui.highContrast)
+				canvas.Rect(row, slim ? 18 : kRadiusCard, ui::SetAlpha(Accent(), LightGround() ? 0.07f : 0.10f));
 			// its status
 			const uint32_t colour = check.state == 0 ? kGood : check.state == 1 ? kWarn : Tertiary();
-			const Box icon{row.x + 22, row.CentreY() - 22, 44, 44};
-			canvas.Rect(icon, 22, check.state == 2 ? Wash(0.08f) : ui::SetAlpha(colour, 0.16f));
-			canvas.Draw(check.state == 0 ? Icon::Check : check.state == 1 ? Icon::Warning : Icon::Dash, icon.Inset(10), colour);
-			// what Cross does, on the right
+			const float iconSize = slim ? 34 : 44;
+			const Box icon{row.x + 20, row.CentreY() - iconSize * 0.5f, iconSize, iconSize};
+			canvas.Rect(icon, iconSize * 0.5f, check.state == 2 ? Wash(0.08f) : ui::SetAlpha(colour, 0.16f));
+			canvas.Draw(check.state == 0 ? Icon::Check : check.state == 1 ? Icon::Warning : Icon::Dash, icon.Inset(slim ? 8 : 10), colour);
+			// what Cross does, on the right (a ready row's, only while it has the focus)
 			float right = row.Right() - 28;
-			if (!check.action.empty())
+			if (!check.action.empty() && (!slim || focused || group == 1))
 			{
 				const ui::TextBlock action = m_fonts.Layout(Style({21, ui::Weight::SemiBold, 1.0f}), check.action, 280, 1);
 				right -= action.width;
@@ -548,17 +612,22 @@ namespace ps5shell
 				}
 				right -= 24;
 			}
-			// what it is, and what was found
-			const float tx = icon.Right() + 22;
-			const float optionalWidth = check.state == 2 ? m_fonts.Width(Style({25, ui::Weight::Regular, 1.2f}), Tr("· optional")) + 10 : 0.0f;
-			const ui::TextBlock title =
-				canvas.Text(Style({25, ui::Weight::SemiBold, 1.2f}), tx, row.y + 11, check.title, kText, std::max(100.0f, right - tx - optionalWidth), 1);
-			if (check.state == 2)
-				canvas.Text(Style({25, ui::Weight::Regular, 1.2f}), tx + title.width + 10, row.y + 11, Tr("· optional"), Tertiary(),
-					std::max(60.0f, right - tx - title.width - 10), 1);
-			canvas.Text(Style({20, ui::Weight::Regular, 1.25f}), tx, row.y + 45, check.detail, Secondary(), std::max(100.0f, right - tx), 1);
+			// what it is, and what was found: under it on a full row, after it on a slim one
+			const float tx = icon.Right() + 20;
+			if (slim)
+			{
+				const ui::TextBlock title = canvas.Text(Style({23, ui::Weight::SemiBold, 1.0f}), tx, row.CentreY() - 12, check.title, kText,
+					std::max(100.0f, (right - tx) * 0.45f), 1);
+				canvas.Text(Style({19, ui::Weight::Regular, 1.0f}), tx + title.width + 16, row.CentreY() - 10, check.detail, Secondary(),
+					std::max(60.0f, right - tx - title.width - 16), 1);
+			}
+			else
+			{
+				canvas.Text(Style({25, ui::Weight::SemiBold, 1.2f}), tx, row.y + 11, check.title, kText, std::max(100.0f, right - tx), 1);
+				canvas.Text(Style({20, ui::Weight::Regular, 1.25f}), tx, row.y + 45, check.detail, Secondary(), std::max(100.0f, right - tx), 1);
+			}
 			if (focused)
-				Focus(row, kRadiusCard);
+				Focus(row, slim ? 18 : kRadiusCard);
 		}
 		canvas.PopClip();
 		canvas.PopOffset();
@@ -570,8 +639,7 @@ namespace ps5shell
 		// language's has none)
 		Check language{"language", Tr("Language")};
 		language.aboutTitle = Tr("The menus' language");
-		language.about = Tr("Playtendoh speaks the language your PS5 is set to. Cross chooses another; Settings > Language "
-							"changes it at any time.");
+		language.about = Tr("Playtendoh uses your PS5's language. Cross chooses another; you can change it any time in Settings > Language.");
 		const Check& check = m_setupOnLanguage ? language : m_checks[m_setupRow];
 		const float inner = kAsideWidth - 2 * kAsidePad;
 		const ui::TextBlock heading = m_fonts.Layout(Style({32, ui::Weight::SemiBold, 1.2f}), check.aboutTitle, inner, 2);
@@ -597,8 +665,8 @@ namespace ps5shell
 		const Box aside{kAsideX, kListTop + 10, kAsideWidth, height};
 		canvas.PushAlpha(Enter(2));
 		canvas.PushOffset((1 - Enter(2)) * 30, 0);
-		canvas.Rect(aside, kRadiusSheet, m_settings.ui.highContrast ? kInk2 : ui::SetAlpha(kInk1, 0.75f));
-		canvas.Ring(aside, kRadiusSheet, 1.5f, kGlassEdge);
+		canvas.Shadow(aside, kRadiusSheet, 24, 70, 0x40000000);
+		Glass(canvas, aside, kRadiusSheet, m_settings.ui.highContrast ? kInk2 : ui::SetAlpha(kInk1, 0.80f));
 		float y = aside.y + kAsidePad;
 		const float ax = aside.x + kAsidePad;
 		canvas.Text(Style(kOverlineStyle), ax, y, check.title, Secondary(), inner, 1);

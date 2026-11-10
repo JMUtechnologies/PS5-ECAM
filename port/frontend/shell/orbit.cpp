@@ -7,6 +7,7 @@
 
 #include "shell_internal.h"
 #include "../collections.h"
+#include "../../app/esde_get.h"
 #include "../../esde/esde.h"
 
 #include "../../melonds/melonds.h"
@@ -305,7 +306,7 @@ namespace ps5shell
 		std::string line;
 		if (m_orbitHome)
 			// tr: under Orbit's Home: what its row shows
-			line = Tr("The games you played last, on every console");
+			line = Tr("Recently played on every console");
 		else
 		{
 			// a collection browsed (Square, Collections): its name, its games
@@ -489,7 +490,7 @@ namespace ps5shell
 	{
 		m_layoutThen = std::move(then);
 		// EmulationStation, the third choice, where the app has it (port/esde/esde.h)
-		m_layoutFocus = m_settings.ui.emulationStation && ps5esde::Available() ? 2 : std::clamp(m_settings.ui.layout, 0, 1);
+		m_layoutFocus = m_settings.ui.emulationStation ? 2 : std::clamp(m_settings.ui.layout, 0, 1);
 		m_layoutShown = (float)m_layoutFocus;
 		m_onBar = false;
 		Show(ScreenId::Layout);
@@ -503,7 +504,7 @@ namespace ps5shell
 		case Button::Left:
 		case Button::Right:
 		{
-			const int last = ps5esde::Available() ? 2 : 1;
+			const int last = 2;
 			const int next = std::clamp(m_layoutFocus + (press.button == Button::Right ? 1 : -1), 0, last);
 			if (next == m_layoutFocus)
 				m_feedback.Play(ui::Cue::Edge, press.repeat);
@@ -525,9 +526,15 @@ namespace ps5shell
 				m_settings.ui.emulationStation = m_layoutFocus == 2;
 				if (m_layoutFocus < 2)
 					m_settings.ui.layout = m_layoutFocus;
-				else
+				else if (ps5esde::Available())
 					// tr: after EmulationStation is picked as the launcher on the first start or in Settings
-					Toast(Tr("EmulationStation opens the next time Playtendoh starts. Hold L1 as it starts for this launcher."));
+					Toast(Tr("EmulationStation opens next time Playtendoh starts. Hold L1 while it starts to use this launcher instead."));
+				else
+				{
+					// a download of its own (app/esde_get.h): this launcher until it is in
+					ps5esdeget::Start();
+					Toast(Tr("Downloading EmulationStation. It opens next time Playtendoh starts."));
+				}
 			}
 			m_settings.ui.layoutChosen = true;
 			SaveSettings();
@@ -683,7 +690,7 @@ namespace ps5shell
 		// tr: the first start's question: the two layouts of the Library, Classic and Orbit
 		canvas.Text(Style({54, ui::Weight::SemiBold, 1.1f}), left, 164, Tr("How should your games be laid out?"), kInk, width, 1);
 		canvas.Text(Style({22, ui::Weight::Regular, 1.3f}), left, 240,
-			Tr("Pick one now. You can switch any time in Settings > Launcher > Layout, and your games, settings and saves stay as they are."), kInk2, width, 1);
+			Tr("You can change it any time in Settings > Launcher > Layout. Your games, settings and saves stay the same."), kInk2, width, 1);
 		canvas.PopAlpha();
 
 		struct Card
@@ -694,18 +701,18 @@ namespace ps5shell
 			const char* goodFor;
 		};
 		const Card cards[3] = {
-			{Tr("Classic"), "", Tr("One console at a time, from the carousel; L1 and R1 turn it. Recently played on top, every game in a list below."),
+			{Tr("Classic"), "", Tr("One console at a time. L1 and R1 switch consoles. Recently played on top, all games below."),
 				Tr("Good for big libraries on a few consoles")},
-			{Tr("Orbit"), Tr("New in 6.0"),
-				Tr("Turn the dial to pick a console; its middle is what you played lately, on every console. The game you're on fills the background."),
+			{Tr("Orbit"), Tr("New"),
+				Tr("Turn the dial to pick a console. The centre shows what you played lately on any console."),
 				Tr("Good for playing across many consoles")},
 			// tr: the third launcher of the first start's question, where the app has ES-DE
 			{Tr("EmulationStation"), "ES-DE",
-				Tr("ES-DE's menus and themes over the same games, every console in its own system. Games play here, with their settings, saves and in-game menu."),
+				Tr("ES-DE's menus and themes for the same games. Games still play here with their settings, saves and in-game menu."),
 				Tr("Good if you know ES-DE from other devices")},
 		};
 		// two cards side by side; with EmulationStation, three in a row that turns, the focused one in the middle
-		const int count = ps5esde::Available() ? 3 : 2;
+		const int count = 3;
 		m_layoutShown += (m_layoutFocus - m_layoutShown) * std::min(1.0f, 12.0f * m_dt);
 		canvas.PushAlpha(Enter(1));
 		for (int i = 0; i < count; i++)
@@ -741,8 +748,8 @@ namespace ps5shell
 
 		canvas.PushAlpha(Enter(2));
 		canvas.Text(Style({19, ui::Weight::Regular, 1.3f}), left, 926,
-			m_layoutFocus == 2 ? std::string(Tr("Hold L1 as Playtendoh starts for its own launcher. Settings > Launcher > Layout switches back any time."))
-							   : std::string(Tr("Both have the Timeline view: every console on one shelf. Press the touchpad from either.")),
+			m_layoutFocus == 2 ? std::string(Tr("Hold L1 while Playtendoh starts to use its own launcher. Switch back any time in Settings > Launcher > Layout."))
+							   : std::string(Tr("Both have Timeline, every console on one shelf. Press the touchpad to open it.")),
 			kInk2, 1180, 2);
 		// tr: the button of the first start's question: {0} is the layout in focus, Classic or Orbit
 		const std::string use = TrF("Use {0}", cards[m_layoutFocus].name);

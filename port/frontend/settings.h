@@ -61,6 +61,8 @@ namespace ps5settings
 		bool anaglyph = false;
 		// the DS's games (melonDS: port/melonds)
 		int dsFilter = 0;			  // how the DS's screens are scaled to the TV: sharp, smooth, square pixels (ps5melonds::screens::Filter)
+		int pictureSize = 0;		  // a libretro side's picture on the TV: fit, whole pixels, fill (ps5ingame3ds::kPictureSizes)
+		int pictureShape = 0;		  // and its shape: the core's, 4:3, square pixels, 16:9 (ps5ingame3ds::kPictureShapes)
 		// the touchpad touches the bottom screen while only the top one is shown (the top screen alone):
 		// its cursor over the top screen, for the games that want a touch now and then (Star Fox 64 3D)
 		bool hiddenTouch = false;
@@ -109,6 +111,8 @@ namespace ps5settings
 		std::string articAddress;	  // the last Artic Base server's IPv4 address, a 3DS on the network
 		int gameCount = -1;			  // the library's games when last looked for (the start screen's); -1: never
 		std::map<std::string, std::string> buttons; // 3DS button: DualSense input, where not the default
+		// a libretro side's core options (Settings > Emulator), key: value, where not the core's default
+		std::map<std::string, std::string> coreOptions;
 		std::string turbo;			  // the DualSense input that presses again and again while held (Controls > Turbo button); empty: none
 		uint64_t lastGame = 0;		  // title ID, or one made from the path
 		std::vector<uint64_t> recent; // newest first, at most four

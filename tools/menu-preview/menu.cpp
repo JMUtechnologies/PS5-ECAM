@@ -8,7 +8,7 @@
 // A 3DS game's menu, as ingame3ds.cpp fills it: on its quick actions, on a row, with a category open,
 // and a row held. The backdrop stands in for the game behind the menu.
 
-#include "../../port/app/side_menu.h"
+#include "../../port/app/buttons_menu.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -161,8 +161,16 @@ namespace
 		graphics.rows = {setting("res", "Resolution", "1080p", "The 3D screen drawn at up to 6 times its own size."),
 			setting("filter", "Texture filtering", "Linear", "Smooth or sharp pixels."),
 			setting("bright", "Brightness", "60%", "The screens' brightness.", 0.6f)};
-		Row controls{"buttons", "Buttons", "Playtendoh's", false, "What each DualSense button does in this game."};
-		controls.rows = {setting("layout", "Layout", "Playtendoh's", "Left and Right choose the layout the game uses.")};
+		Row controls{"buttons", "Buttons", "12 buttons set", false, "What each DualSense button does in this game."};
+		controls.rows = {Row{"buttons-test", "Controller test", "-", false, "This player's DualSense input, live."}};
+		const std::pair<const char*, int> kSet[] = {{"A", 2}, {"B", 1}, {"X", 4}, {"Y", 3}, {"L", 5}, {"R", 6}, {"ZL", 7}, {"ZR", 8},
+			{"Start", 12}, {"Select", 11}, {"Home", 25}};
+		for (size_t i = 0; i < std::size(kSet); i++)
+		{
+			Row row{"button:" + std::to_string(i), kSet[i].first, ps5menu::kInputNames[kSet[i].second], false, "Press Cross, then the DualSense button to use."};
+			row.pad = kSet[i].second;
+			controls.rows.push_back(row);
+		}
 		std::vector<Row> rows{graphics, controls,
 			setting("speed", "Speed", "100%", "Faster or slower than the console.", 0.5f),
 			Row{"cheats", "Cheats", "2 on", false, "This game's cheats."},
@@ -230,6 +238,7 @@ int main(int argc, char* argv[])
 		{"menu-row", {ps5pad::kDown, 0, ps5pad::kDown, 0, ps5pad::kDown}},
 		{"menu-open", {ps5pad::kDown, 0, ps5pad::kCross, 0, ps5pad::kDown, 0, ps5pad::kDown, 0, ps5pad::kDown}},
 		{"menu-hold", {ps5pad::kUp, 0, ps5pad::kCross}, ps5pad::kCross},
+		{"menu-buttons", {ps5pad::kDown, 0, ps5pad::kDown, 0, ps5pad::kCross, 0, ps5pad::kDown, 0, ps5pad::kDown}},
 	};
 	for (const Shot& shot : shots)
 	{

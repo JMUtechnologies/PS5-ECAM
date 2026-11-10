@@ -96,6 +96,8 @@ namespace ps5settings
 			ReadBool(json, "asyncShaderCompilation", n3ds.asyncShaders);
 			ReadInt(json, "border", n3ds.border, 0, 5);
 			ReadInt(json, "dsFilter", n3ds.dsFilter, 0, 2);
+			ReadInt(json, "pictureSize", n3ds.pictureSize, 0, 2);
+			ReadInt(json, "pictureShape", n3ds.pictureShape, 0, 3);
 			ReadInt(json, "dsRotation", n3ds.dsRotation, 0, 3);
 			ReadBool(json, "screenGap", n3ds.screenGap);
 			ReadBool(json, "hiddenTouch", n3ds.hiddenTouch);
@@ -142,6 +144,10 @@ namespace ps5settings
 				for (const auto& member : json["buttons"].GetObject())
 					if (member.value.IsString())
 						n3ds.buttons[member.name.GetString()] = member.value.GetString();
+			if (json.HasMember("coreOptions") && json["coreOptions"].IsObject())
+				for (const auto& member : json["coreOptions"].GetObject())
+					if (member.value.IsString())
+						n3ds.coreOptions[member.name.GetString()] = member.value.GetString();
 			ReadGames(json, n3ds.lastGame, n3ds.recent);
 		}
 
@@ -189,6 +195,10 @@ namespace ps5settings
 			writer.Int(n3ds.border);
 			writer.Key("dsFilter");
 			writer.Int(n3ds.dsFilter);
+			writer.Key("pictureSize");
+			writer.Int(n3ds.pictureSize);
+			writer.Key("pictureShape");
+			writer.Int(n3ds.pictureShape);
 			writer.Key("dsRotation");
 			writer.Int(n3ds.dsRotation);
 			writer.Key("screenGap");
@@ -277,6 +287,17 @@ namespace ps5settings
 				writer.String(input.c_str());
 			}
 			writer.EndObject();
+			if (!n3ds.coreOptions.empty())
+			{
+				writer.Key("coreOptions");
+				writer.StartObject();
+				for (const auto& [key, value] : n3ds.coreOptions)
+				{
+					writer.Key(key.c_str());
+					writer.String(value.c_str());
+				}
+				writer.EndObject();
+			}
 			WriteGames(writer, n3ds.lastGame, n3ds.recent);
 			writer.EndObject();
 		}
@@ -723,6 +744,8 @@ namespace ps5settings
 				{"language", nullptr, nullptr, &N3ds::language, nullptr, -1, 11},
 				{"cpuClock", nullptr, nullptr, &N3ds::cpuClock, nullptr, 25, 400},
 				{"dsFilter", nullptr, nullptr, &N3ds::dsFilter, nullptr, 0, 2},
+				{"pictureSize", nullptr, nullptr, &N3ds::pictureSize, nullptr, 0, 2},
+				{"pictureShape", nullptr, nullptr, &N3ds::pictureShape, nullptr, 0, 3},
 				{"dsRotation", nullptr, nullptr, &N3ds::dsRotation, nullptr, 0, 3},
 				{"screenGap", nullptr, nullptr, nullptr, &N3ds::screenGap},
 				{"hiddenTouch", nullptr, nullptr, nullptr, &N3ds::hiddenTouch},
@@ -812,7 +835,7 @@ namespace ps5settings
 			"performance", "nxOutput", "nxHighRefresh", "nxLanguage", "nxAsyncShaders", "nxBlockList", "nxFastGpu", "nxUnsafeCpu", "nxUnsafeDma",
 			"nxReactiveFlushing", "nxSkipInvalidation"};
 		// the other sides' (their in-game menu's, port/libretro)
-		static const std::vector<std::string> retro = {"dsFilter", "border", "volume"};
+		static const std::vector<std::string> retro = {"dsFilter", "border", "volume", "pictureSize", "pictureShape"};
 		static const std::vector<std::string> none;
 		return side == "wiiu" ? wiiu : side == "3ds" ? n3ds : side == "ds" ? nds : side == "switch2" ? nx2 : side == "switch" ? nx : ps5retro::Find(side) ? retro : none;
 	}
@@ -899,6 +922,7 @@ namespace ps5settings
 			to.motion = from.motion;
 			to.deadzone = from.deadzone;
 			to.buttons = from.buttons;
+			to.coreOptions = from.coreOptions; // a libretro side's emulator options, from its in-game menu
 			if (side == "switch" || side == "switch2")
 				merged.rumble = after.rumble; // the Switch menu's Vibration is shared by every side
 			else

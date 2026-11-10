@@ -37,8 +37,17 @@ namespace ps5reorganize
 	// files were whatever root is (Eden's program keeps them in /data)
 	Layout Look(const std::string& root, const std::string& console);
 
-	// The request, written down for the next start (false when it could not be)
-	bool Ask(const std::string& root, Request request);
+	// The request, written down for the next start (false when it could not be); only: the systems it is
+	// for ("azahar"...), each system's own switch in Settings > Game files; empty: every one it can
+	bool Ask(const std::string& root, Request request, const std::vector<std::string>& only = {});
+	// The systems the next start is asked to move, and which way (Settings shows them as pending)
+	Request Asked(const std::string& root, std::vector<std::string>& only);
+
+	// A fresh install's systems together in the data folder (6.0's default: each system its own folder
+	// only when the player picks it): for each of the four with no folder of its own yet, its place in the
+	// data folder made, so the app and Eden's program both take it (ecam_layout::System, ::Cemu). A
+	// system's own folder that holds files already is marked as chosen, never moved. log: what it did
+	void DefaultTogether(const std::string& root, const std::string& console, std::vector<std::string>& log);
 	Request Asked(const std::string& root);
 
 	// What a start did: the systems moved, and those that could not be (put back as they were)

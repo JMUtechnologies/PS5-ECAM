@@ -238,8 +238,7 @@ namespace ps5shell
 			ps5log::Line("[settings] ps5cemu.json could not be read: kept as {}, the defaults used", broken);
 			OpenHelp(Tr("Your settings could not be read"),
 				// tr: {0} is where the unreadable settings file is kept: /data/ps5cemu/ps5cemu.json.broken
-				TrF("The launcher's settings file, ps5cemu.json, has a mistake in it, so every setting is back to its default. The file as "
-					"it was is kept as {0}: mend it on a computer and put it back as ps5cemu.json, or leave it.",
+				TrF("The settings file ps5cemu.json is damaged, so settings were reset. The old file is kept as {0}; fix it on a computer and put it back as ps5cemu.json if you like.",
 					broken));
 		}
 		// the session before this one ended in a crash (main_ps5.cpp): said once, with where its log is
@@ -247,8 +246,7 @@ namespace ps5shell
 		{
 			OpenHelp(Tr("Playtendoh closed after a crash"),
 				// tr: {0} is the crash report's first line in the log, as it is: "signal 11 at 0x7f3a..."
-				TrF("The last time, Playtendoh stopped with a crash: {0}. Its log is kept: Settings > Diagnostics > Copy logs to USB puts it "
-					"on a drive, with the sessions before it, to attach to a report on GitHub.",
+				TrF("Last time, Playtendoh crashed: {0}. To report it on GitHub, use Settings > Diagnostics > Copy logs to USB.",
 					m_status.lastCrash));
 			m_status.lastCrash.clear();
 		}
@@ -263,8 +261,7 @@ namespace ps5shell
 			}
 			OpenHelp(Tr("Some files could not move"),
 				// tr: {0} names the systems whose files did not move into folders of their own: "Wii U, Nintendo 3DS"
-				TrF("{0}: their files stayed where they were, with nothing lost. The boot log says why: Settings > Diagnostics > Copy logs "
-					"to USB.",
+				TrF("{0}: their files were left in place and nothing was lost. See the logs with Settings > Diagnostics > Copy logs to USB.",
 					names));
 		}
 		// a folder for each system: what this start did, said once, or else offered to an install from
@@ -272,9 +269,7 @@ namespace ps5shell
 		m_layout = ps5reorganize::Look(ps5paths::Root(), ps5paths::kDefaultRoot);
 		if (!m_status.reorganized.moved.empty())
 			Toast(Tr("The folders have moved"));
-		else if (!returning && !firstStart && m_status.autoLaunch.empty() && !m_layout.separate.empty() && m_layout.blocked.empty() &&
-				 Today() >= m_settings.ui.reorganizeAsked + 7)
-			m_reorganize.offer = true;
+		// (an install from before is given its folders at the start itself now, main_ps5.cpp: nothing to offer)
 		ps5log::Line("[ui] the new launcher is up in {:.0f} ms", (host.clock() - started) * 1000);
 
 		while (!m_done && !m_failed)
@@ -475,7 +470,9 @@ namespace ps5shell
 			m_reorganize.restartAt = -1;
 			ps5update::Restart();
 			// back here only when the PS5 did not start the app again
-			m_reorganize.message = Tr("Close Playtendoh and start it again from the home screen: the folders move as it starts.");
+			m_reorganize.message = Tr("Close Playtendoh and start it again from the home screen to move the folders.");
+			m_reorganize.open = true; // said in its sheet, whichever screen asked
+			m_reorganize.at = m_now;
 		}
 		if (m_frames == 1)
 			ps5log::Line("[ui] first frame: {} instances, {} draws", m_list.instances.size(), m_list.runs.size());
@@ -760,7 +757,7 @@ namespace ps5shell
 			if (key.size() == 6 && std::all_of(key.begin(), key.end(), [](char c) { return (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'); }))
 				game.entry.game.gameId = key;
 		}
-		game.boxArt = IsPorpoise() ? PorpoiseCover(game.entry.game) : IsRetro() ? ps5retro::CoverPath(SideIndex(), entry.game) : IsSwitch() ? SwitchCover(entry.game) : ps5boxart::Path(BoxOf(entry.game), entry.game.gameId);
+		game.boxArt = IsPorpoise() ? PorpoiseCover(game.entry.game) : IsRetro() ? RetroCover(entry.game) : IsSwitch() ? SwitchCover(entry.game) : ps5boxart::Path(BoxOf(entry.game), entry.game.gameId);
 		game.known = !IsRetro() && ps5gameinfo::Find(BoxOf(entry.game), entry.game.gameId, game.info);
 		// the list names games in English: GameTDB's title finds one whose own name is in the menus'
 		// language (7.7). It has no DS or Switch games yet.
@@ -786,7 +783,7 @@ namespace ps5shell
 
 	void Shell::LoadGames()
 	{
-		if (IsRetro()) m_status.noticeRetro[ps5retro::Slot(SideIndex())] = ps5retro::Available(SideIndex(), m_settings.retro[ps5retro::Slot(SideIndex())].retroBackend) ? ps5retro::ScanError(SideIndex()) : Tr("This side's emulator is not in this copy of Playtendoh.");
+		if (IsRetro()) m_status.noticeRetro[ps5retro::Slot(SideIndex())] = ps5retro::Available(SideIndex(), m_settings.retro[ps5retro::Slot(SideIndex())].retroBackend) ? ps5retro::ScanError(SideIndex()) : Tr("This system's emulator is not in this copy of Playtendoh.");
 		m_scanning = CoreReady() && SystemScanning();
 		// a side not looked through this session (a network share's folder, #75) keeps the list of its last look
 		if (CoreReady() && !m_scanning && !m_status.lastLook[SideIndex()])
@@ -847,7 +844,7 @@ namespace ps5shell
 		m_status.coreStarting = false;
 		if (!ok)
 		{
-			m_status.notice = TrF("Cemu did not start: {0}", error);
+			m_status.notice = TrF("The Wii U emulator did not start: {0}", error);
 			ps5log::Line("[launcher] {}", m_status.notice);
 		}
 		else
@@ -908,8 +905,8 @@ namespace ps5shell
 					}
 			}
 			for (Game& game : m_games)
-				if (game.boxArt.empty())
-					game.boxArt = IsPorpoise() ? PorpoiseCover(game.entry.game) : IsRetro() ? ps5retro::CoverPath(SideIndex(), game.entry.game) : IsSwitch() ? SwitchCover(game.entry.game) : ps5boxart::Path(BoxOf(game.entry.game), game.entry.game.gameId);
+				if (game.boxArt.empty() || (IsRetro() && !IsPorpoise() && game.boxArt != RetroCover(game.entry.game)))
+					game.boxArt = IsPorpoise() ? PorpoiseCover(game.entry.game) : IsRetro() ? RetroCover(game.entry.game) : IsSwitch() ? SwitchCover(game.entry.game) : ps5boxart::Path(BoxOf(game.entry.game), game.entry.game.gameId);
 		}
 	}
 
@@ -920,7 +917,7 @@ namespace ps5shell
 			// reading a Wii U game's icon mounts the game: one a frame
 			game.iconLooked = true;
 			m_iconLookedThisFrame = true;
-			game.icon = IsRetro() ? ps5retro::CoverPath(SideIndex(), game.entry.game) : Is3ds()				? ps5azahar::CoverPath(game.entry.game.titleId) :
+			game.icon = IsRetro() ? RetroCover(game.entry.game) : Is3ds()				? ps5azahar::CoverPath(game.entry.game.titleId) :
 				IsDs()						? ps5melonds::CoverPath(game.entry.game.titleId) :
 				IsSwitch()					? ps5eden::CoverPath(game.entry.game) :
 				m_status.coreReady			? ps5emu::CoverPath(game.entry.game.titleId) :
@@ -1030,9 +1027,46 @@ namespace ps5shell
 			ps5log::Line("[launcher] could not save {}", ps5paths::LauncherSettings());
 	}
 
+	// A libretro side's console as libretro's thumbnails name its folder (their covers, by the game file's name)
+	const char* Shell::RetroThumbnails(int side)
+	{
+		if (!ps5retro::IsRetro(side))
+			return "";
+		const std::string_view key = ps5retro::Of(side).key;
+		return key == "nes" || key == "vs"		? "Nintendo - Nintendo Entertainment System" :
+			key == "fds"						? "Nintendo - Family Computer Disk System" :
+			key == "snes"						? "Nintendo - Super Nintendo Entertainment System" :
+			key == "satellaview"				? "Nintendo - Satellaview" :
+			key == "gb" || key == "sgb"			? "Nintendo - Game Boy" :
+			key == "gbc"						? "Nintendo - Game Boy Color" :
+			key == "gba"						? "Nintendo - Game Boy Advance" :
+			key == "n64" || key == "ique"		? "Nintendo - Nintendo 64" :
+			key == "vb"							? "Nintendo - Virtual Boy" :
+			key == "pokemini"					? "Nintendo - Pokemon Mini" :
+			key == "gw"							? "Handheld Electronic Game" : "";
+	}
+
+	std::string Shell::RetroCover(const ps5emu::Game& game)
+	{
+		// the folder's own picture first (.ecam-library.json), else libretro's thumbnail
+		std::string path = ps5retro::CoverPath(SideIndex(), game);
+		if (path.empty())
+			path = ps5boxart::RetroPath(RetroThumbnails(SideIndex()), std::filesystem::path(game.path).stem().string());
+		return path;
+	}
+
 	void Shell::FetchBoxArt()
 	{
-		if (IsRetro() && !IsPorpoise()) return;
+		if (IsRetro() && !IsPorpoise())
+		{
+			// libretro's thumbnails, by each game file's name
+			std::vector<std::string> names;
+			for (const Game& game : m_games)
+				if (game.boxArt.empty())
+					names.push_back(std::filesystem::path(game.entry.game.path).stem().string());
+			ps5boxart::FetchRetro(RetroThumbnails(SideIndex()), names);
+			return;
+		}
 		// the side's covers, from GameTDB's covers of its system (none for a Switch side showing the games' icons)
 		if (IsSwitch() && Handheld(m_side).nxCovers == 1)
 			return;
@@ -1067,7 +1101,7 @@ namespace ps5shell
 		if (!CoreReady() || !Notice().empty())
 		{
 			m_feedback.Play(ui::Cue::Denied);
-			Toast(Notice().empty() ? Tr("Cemu is still starting") : Notice());
+			Toast(Notice().empty() ? Tr("Still starting") : Notice());
 			return;
 		}
 		const ps5emu::Game& game = m_games[index].entry.game;
@@ -1076,8 +1110,7 @@ namespace ps5shell
 		{
 			m_feedback.Play(ui::Cue::Denied);
 			OpenHelp(Tr("The game could not start"),
-				TrF("Eden needs your Switch's keys to read its games: prod.keys (and title.keys), dumped from your own Switch, in {0}/keys. "
-					"The Setup check says what else is missing.",
+				TrF("Switch games need your keys: prod.keys (and title.keys) from your own Switch, in {0}/keys. The Setup check shows what else is missing.",
 					ps5eden::GameFilesFolder()));
 			return;
 		}
@@ -1090,8 +1123,7 @@ namespace ps5shell
 		if (game.format == "ENCRYPTED")
 		{
 			m_feedback.Play(ui::Cue::Denied);
-			OpenHelp(Tr("The game could not start"), Tr("The game is encrypted, and Azahar plays only decrypted games, with keys or without: decrypt it on your "
-														 "3DS first (GodMode9)."));
+			OpenHelp(Tr("The game could not start"), Tr("This game is encrypted. Decrypt it on your 3DS with GodMode9 first."));
 			return;
 		}
 		// the copy unpacked from its archive before, else the archive unpacked now
@@ -1139,10 +1171,10 @@ namespace ps5shell
 		ps5catalog::Save();
 		const Box from{760, 240, 400, 560};
 		LaunchGame(game.entry.game,
-			IsRetro() ? Tr("Starting emulator") : IsDs()		 ? Tr("Starting melonDS") :
-			Is3ds()		 ? Tr("Starting Azahar") :
-			IsSwitch()	 ? Tr("Starting Eden") :
-						   Tr("Starting Cemu"),
+			IsRetro() ? Tr("Starting emulator") : IsDs()		 ? Tr("Starting the DS") :
+			Is3ds()		 ? Tr("Starting the 3DS") :
+			IsSwitch()	 ? Tr("Starting the Switch") :
+						   Tr("Getting ready"),
 			from);
 		m_launch.game = index;
 		m_choice->launchPath = launchPath;
@@ -1228,14 +1260,14 @@ namespace ps5shell
 			cover = IconOf(game);
 		ps5forwarders::Start({game.entry.game.name, game.entry.game.path.string(), cover});
 		m_feedback.Play(ui::Cue::Select);
-		Toast(TrF("Making {0}'s home screen tile…", game.entry.game.name));
+		Toast(TrF("Adding {0} to the home screen…", game.entry.game.name));
 	}
 
 	void Shell::RemoveTile(Game& game)
 	{
 		ps5forwarders::StartRemove({game.entry.game.name, game.entry.game.path.string(), {}});
 		m_feedback.Play(ui::Cue::Select);
-		Toast(TrF("Removing {0}'s home screen tile…", game.entry.game.name));
+		Toast(TrF("Removing {0} from the home screen…", game.entry.game.name));
 	}
 
 	void Shell::PollTiles()
@@ -1247,21 +1279,19 @@ namespace ps5shell
 		if (status.state == ps5forwarders::Status::State::Failed)
 		{
 			m_feedback.Play(ui::Cue::Denied);
-			OpenHelp(status.removed ? Tr("The tile could not be removed") : Tr("The tile could not be made"), status.message);
+			OpenHelp(status.removed ? Tr("The tile could not be removed") : Tr("The tile could not be added"), status.message);
 			return;
 		}
 		if (status.removed)
 		{
 			m_feedback.Play(ui::Cue::Notify);
-			OpenHelp(Tr("The tile is removed"),
-				Tr("Its folder is gone from /data/homebrew. If its picture stays on the home screen, delete it there (Options, then "
-				   "Delete), or restart ShadowMount Plus."));
+			OpenHelp(Tr("Tile removed"),
+				Tr("If it's still on the home screen, delete it there (Options, then Delete)."));
 			return;
 		}
 		// tr: {0} is the tile's folder, /data/homebrew/PPSA99xxx
-		OpenHelp(status.replaced ? Tr("The tile is made again") : Tr("The tile is made"),
-			TrF("It is in {0}. ShadowMount Plus puts it on the PS5's home screen as it does any homebrew: if it does not show, "
-				"restart ShadowMount Plus or the console. The tile starts the game in Playtendoh, and closing the game closes the app.",
+		OpenHelp(status.replaced ? Tr("Tile updated") : Tr("Tile added"),
+			TrF("Saved in {0}. It will appear on the home screen; if it doesn't, restart the console. The tile starts the game in Playtendoh.",
 				status.folder));
 	}
 
@@ -1303,7 +1333,7 @@ namespace ps5shell
 			}
 		}
 		if (m_listed && !m_scanning && !SystemScanning())
-			give(TrF("It is not in the library: {0}", rom));
+			give(TrF("Not in the library: {0}", rom));
 	}
 
 	// -- screens and the bar ------------------------------------------------------------------------
@@ -1614,7 +1644,7 @@ namespace ps5shell
 		case ScreenId::WhatsNew:
 			return {{Icon::Cross, Tr("Continue")}};
 		case ScreenId::Welcome:
-			return {{Icon::LeftRight, Tr("Change")}, {Icon::Triangle, Tr("More about it")},
+			return {{Icon::LeftRight, Tr("Change")}, {Icon::Triangle, Tr("More info")},
 				{Icon::Circle, m_welcomeThenSetup ? Tr("Continue to the Setup check") : m_welcomeFromSettings ? Tr("Back") : Tr("Continue to the Library")}};
 		case ScreenId::Setup:
 		{
@@ -1654,18 +1684,18 @@ namespace ps5shell
 				if (!m_onRows)
 					return {{Icon::UpDown, Tr("Pages")}, {Icon::Cross, Tr("Open")}, {Icon::Circle, Tr("Done")}};
 				if (m_page == "gamesaves") // a game's saves: held to move one aside, no defaults
-					return {{Icon::Cross, Tr("Choose")}, {Icon::Triangle, Tr("More about it")}, {Icon::Circle, Tr("Back")}};
-				return {{Icon::LeftRight, Tr("Change")}, {Icon::Square, Tr("Default")}, {Icon::Triangle, Tr("More about it")}, {Icon::Circle, Tr("Back")}};
+					return {{Icon::Cross, Tr("Choose")}, {Icon::Triangle, Tr("More info")}, {Icon::Circle, Tr("Back")}};
+				return {{Icon::LeftRight, Tr("Change")}, {Icon::Square, Tr("Default")}, {Icon::Triangle, Tr("More info")}, {Icon::Circle, Tr("Back")}};
 			}
 			if (!m_onRows)
 				return {{Icon::UpDown, Tr("Pages")}, {Icon::Cross, Tr("Open")}, {Icon::Circle, Tr("Close")}, {Icon::Touchpad, other}};
-			return {{Icon::LeftRight, Tr("Change")}, {Icon::Triangle, Tr("More about it")}, {Icon::Circle, Tr("Back")}};
+			return {{Icon::LeftRight, Tr("Change")}, {Icon::Triangle, Tr("More info")}, {Icon::Circle, Tr("Back")}};
 		case ScreenId::Packs:
 			return m_presetsFocus ?
 				std::vector<Hint>{{Icon::Cross, Tr("Choose")}, {Icon::LeftRight, Tr("Change")}, {Icon::Circle, Tr("Back to the packs")}} :
 				std::vector<Hint>{{Icon::Cross, Tr("On / off")}, {Icon::LeftRight, Tr("Presets")}, {Icon::Circle, Tr("Back")}};
 		case ScreenId::Player:
-			return {{Icon::Cross, Tr("Choose")}, {Icon::LeftRight, Tr("Change")}, {Icon::Triangle, Tr("More about it")}, {Icon::Circle, Tr("Back")}};
+			return {{Icon::Cross, Tr("Choose")}, {Icon::LeftRight, Tr("Change")}, {Icon::Triangle, Tr("More info")}, {Icon::Circle, Tr("Back")}};
 		case ScreenId::Mapping:
 			if (m_capture.active) // the Wii U takes the touchpad's click as a press; a handheld's cancels
 				return m_mappingSide == System::WiiU ? std::vector<Hint>{} : std::vector<Hint>{{Icon::Touchpad, Tr("Cancel")}};
@@ -2007,7 +2037,7 @@ namespace ps5shell
 		// tr: the game menu: named groups of games the player makes (Couch co-op, say), shown on the Library's filter row
 		m_menu.items.push_back({"collections", Tr("Collections")});
 		// tr: the game menu: a game left out of the Library's list (for demos and clutter), or put back
-		m_menu.items.push_back({"hide", g.entry.hidden ? Tr("Back in the Library") : Tr("Hide from the Library")});
+		m_menu.items.push_back({"hide", g.entry.hidden ? Tr("Show in the Library") : Tr("Hide from the Library")});
 		if (!IsRetro() && ps5forwarders::HasTile(g.entry.game.path.string()))
 			m_menu.items.push_back({"untile", Tr("Remove from home screen")});
 		else if (!IsRetro())
@@ -2462,14 +2492,14 @@ namespace ps5shell
 						{
 							if (wiiu)
 								// tr: after a Wii U game's update or DLC is removed: Updates and DLC (the game's Options) installs it again
-								Toast(Tr("Removed. Updates and DLC puts it back."));
+								Toast(Tr("Removed. Reinstall it from Updates and DLC."));
 							else
-								Toast(Tr("Removed. Install a CIA file puts it back."));
+								Toast(Tr("Removed. Reinstall it with Install a CIA file."));
 						}
 						else
 						{
 							// tr: {0} is the system's reason, as it gives it
-							const std::string why = TrF("It could not all be removed: {0}", error);
+							const std::string why = TrF("Some files could not be removed: {0}", error);
 							OpenHelp(Tr("Remove its update or DLC"), why);
 						}
 						LookForGames();
@@ -2496,7 +2526,7 @@ namespace ps5shell
 					ps5catalog::SetFavourite(CatalogSide(), g.entry.game.titleId, g.entry.favourite);
 					ps5catalog::Save();
 					m_feedback.Play(ui::Cue::Toggle);
-					Toast(g.entry.favourite ? Tr("Added to Favourites") : Tr("Taken out of Favourites"));
+					Toast(g.entry.favourite ? Tr("Added to Favourites") : Tr("Removed from Favourites"));
 					LibraryRefresh();
 				}
 				else if (id == "hide")
@@ -2507,12 +2537,12 @@ namespace ps5shell
 					m_feedback.Play(ui::Cue::Toggle);
 					// where it is found again: the Hidden filter only while the filters' row is shown (Settings > Launcher)
 					if (!g.entry.hidden)
-						Toast(Tr("Back in the Library"));
+						Toast(Tr("Show in the Library"));
 					else if (m_settings.ui.libraryFilters)
-						Toast(Tr("Hidden. The Library's Hidden filter has it, and Search finds it."));
+						Toast(Tr("Hidden. Find it with the Hidden filter or Search."));
 					else
 						// tr: a game just hidden from the Library while its filters' row is off: Search still lists it
-						Toast(Tr("Hidden. Search finds it."));
+						Toast(Tr("Hidden. Find it with Search."));
 					LibraryRefresh();
 				}
 			}
@@ -2723,7 +2753,7 @@ namespace ps5shell
 			{
 			case State::Available:
 				title = TrF("Playtendoh {0} is out", next);
-				text = TrF("This is {0}. Download and install it now? Your games, saves and settings stay as they are.", mine);
+				text = TrF("You have {0}. Download and install it now? Your games, saves and settings are kept.", mine);
 				choices = {Tr("Update now"), Tr("Later"), Tr("Skip this version")};
 				break;
 			case State::Downloading:
@@ -2744,7 +2774,7 @@ namespace ps5shell
 			case State::Ready:
 				title = TrF("{0} is installed", next);
 				if (m_update.restartAt >= 0)
-					text = Tr("Starting Playtendoh again…");
+					text = Tr("Restarting Playtendoh…");
 				else if (!status.message.empty())
 				{
 					text = status.message; // the PS5 did not start it again
@@ -2752,7 +2782,7 @@ namespace ps5shell
 				}
 				else
 				{
-					text = Tr("Playtendoh starts again to finish the update.");
+					text = Tr("Playtendoh will restart to finish the update.");
 					choices = {Tr("Restart now")};
 				}
 				break;
@@ -2801,12 +2831,10 @@ namespace ps5shell
 			const float a = appear(m_reorganize.at);
 			Scrim(canvas, 0.8f * a);
 			const bool restarting = m_reorganize.restartAt >= 0;
-			const std::string text = restarting					 ? std::string(Tr("Starting Playtendoh again…")) :
+			const std::string text = restarting					 ? std::string(Tr("Restarting Playtendoh…")) :
 				!m_reorganize.message.empty() ? m_reorganize.message :
 												// tr: {0} lists the four folders: /data/cemu, /data/azahar, /data/melonds, /data/eden
-												TrF("Your Wii U, 3DS, DS and Switch files go into folders of their own: {0}. They are moved on "
-													"the same drive, never copied, so it takes a moment whatever their size. Playtendoh starts "
-													"again to do it.",
+												TrF("Your Wii U, 3DS, DS and Switch files will move into their own folders in {0}. It only takes a moment. Playtendoh restarts to do it.",
 													SystemFolders());
 			std::vector<std::string> choices;
 			if (!restarting)
@@ -2846,10 +2874,10 @@ namespace ps5shell
 			canvas.PushAlpha(a);
 			canvas.PushOffset(0, (1 - a) * 40);
 			DrawSheet(canvas, sheet, a);
-			canvas.Text(Style(kOverlineStyle), sheet.x + 48, sheet.y + 44, Is3ds() ? Tr("Starting Azahar") : Tr("Starting Cemu"), Secondary(), sheet.w - 96, 1);
+			canvas.Text(Style(kOverlineStyle), sheet.x + 48, sheet.y + 44, Is3ds() ? Tr("Starting the 3DS") : Tr("Getting ready"), Secondary(), sheet.w - 96, 1);
 			canvas.Text(Style(kTitleStyle), sheet.x + 48, sheet.y + 72, m_unpack.name, kText, sheet.w - 96, 1);
 			// tr: under an archived game's name while it is unpacked, the first time it starts
-			canvas.Text(Style(kBodyStyle), sheet.x + 48, sheet.y + 140, Tr("Unpacking the game from its archive. This is done once: the copy is kept for the next start."),
+			canvas.Text(Style(kBodyStyle), sheet.x + 48, sheet.y + 140, Tr("Unpacking the game. This only happens once."),
 				Secondary(), sheet.w - 96, 2);
 			const Box bar{sheet.x + 48, sheet.y + 248, sheet.w - 96, 12};
 			canvas.Rect(bar, 6, Wash(0.14f));

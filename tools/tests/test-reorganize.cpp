@@ -214,6 +214,38 @@ int main(int argc, char** argv)
 	fs::create_directories(shared);
 	layout = ps5reorganize::Look(root, console);
 	Check(layout.separate.empty() && layout.separated.empty(), "a new install has nothing to separate");
+	Clear(base);
+
+	// 6.0: a new install's systems together in the data folder; one picked moves alone, and back again
+	fs::create_directories(shared);
+	ps5reorganize::DefaultTogether(root, console, log);
+	Check(ecam_layout::Cemu(root) == root + "/cemu" && ecam_layout::System(root, "azahar") == root + "/azahar" &&
+			  ecam_layout::System(root, "melonds") == root + "/melonds" && ecam_layout::System(console, "eden") == console + "/eden",
+		"a new install keeps every system together in the data folder");
+	Put(shared / "azahar/sdmc/save.bin", "3ds");
+	Check(ps5reorganize::Ask(root, ps5reorganize::Request::Separate, {"azahar"}), "one system asked for alone");
+	std::vector<std::string> only;
+	Check(ps5reorganize::Asked(root, only) == ps5reorganize::Request::Separate && only == std::vector<std::string>{"azahar"}, "and read back as that one");
+	outcome = ps5reorganize::Run(root, console, log);
+	Check(outcome.moved == std::vector<std::string>{"azahar"} && Read(base / "azahar/sdmc/save.bin") == "3ds" &&
+			  ecam_layout::System(root, "azahar") == (base / "azahar").string() && ecam_layout::Cemu(root) == root + "/cemu",
+		"only it moved to its own folder, the rest stay together");
+	ps5reorganize::Ask(root, ps5reorganize::Request::Separate, {"melonds"});
+	outcome = ps5reorganize::Run(root, console, log);
+	Check(outcome.moved == std::vector<std::string>{"melonds"} && ecam_layout::Activated((base / "melonds").string()) && !fs::exists(shared / "melonds"),
+		"a system with no files yet just takes its own folder");
+	ps5reorganize::Ask(root, ps5reorganize::Request::PutBack, {"azahar"});
+	outcome = ps5reorganize::Run(root, console, log);
+	Check(outcome.moved == std::vector<std::string>{"azahar"} && Read(shared / "azahar/sdmc/save.bin") == "3ds" &&
+			  ecam_layout::System(root, "azahar") == root + "/azahar" && ecam_layout::Activated((base / "melonds").string()),
+		"put back alone, the other's own folder kept");
+	Clear(base);
+	// a system whose own folder holds files already (from a version that made it unasked) stays there
+	Put(base / "melonds/saves/game.sav", "ds");
+	fs::create_directories(shared);
+	ps5reorganize::DefaultTogether(root, console, log);
+	Check(ecam_layout::Activated((base / "melonds").string()) && ecam_layout::System(root, "melonds") == (base / "melonds").string(),
+		"files in a system's own folder keep it there");
 	for (const std::string& line : log)
 		std::cout << "      " << line << '\n';
 	return 0;

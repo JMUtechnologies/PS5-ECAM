@@ -49,6 +49,7 @@ namespace ps5libretro
 		std::vector<std::pair<std::string, std::string>> values; // the value, and its label
 		std::string defaultValue, value;
 		bool visible = true;
+		std::string category; // its group's name, where the core groups them (SET_CORE_OPTIONS_V2)
 	};
 
 	// The core's picture: width x height, 32 bits a pixel as the screens' (blue, green, red, then an
@@ -77,9 +78,18 @@ namespace ps5libretro
 	std::string CoreName();
 
 	const std::vector<Option>& Options();
+	// The options a core has, as it declares them when given its environment (every core here does so in
+	// retro_set_environment), in that language where it has its own words: Settings > Emulator lists them
+	// with no game running. Empty while a game is loaded (its options are Options()).
+	std::vector<Option> Describe(const Core& core, unsigned language);
 	// A value from those the option has: the core reads it before its next frame. False when the core
 	// has no such option or value.
 	bool SetOption(const std::string& key, const std::string& value);
+
+	// RetroAchievements (app/achievements.h): the loaded game's memory as rcheevos addresses it for that
+	// console (rc_consoles.h's id), from the core's memory map or its system RAM; then any read of it
+	bool CheevosMemory(uint32_t console);
+	uint32_t CheevosRead(uint32_t address, uint8_t* buffer, uint32_t size);
 
 	// The save RAM to its file: once it has changed and then held still for a second of frames, or now
 	// (force: as the game is quit). True when there is nothing to write or it was written.

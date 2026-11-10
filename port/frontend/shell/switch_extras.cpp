@@ -41,25 +41,25 @@ namespace ps5shell
 		};
 		if (!view.error.empty())
 		{
-			action("nxextra:error", Tr("Eden's settings could not be read"), view.error);
+			action("nxextra:error", Tr("The Switch settings could not be read"), view.error);
 			return rows;
 		}
 		if ((page == "nxmods" || page == "nxcheats" || (page == "nxpost" && InGameSettings())) && !context.title)
 		{
-			action("nxextra:noid", Tr("This game has no title ID"), Tr("Mods and cheats go by a game's title ID, which Eden reads with the Switch's keys: add the keys, then look for games again."));
+			action("nxextra:noid", Tr("This game has no title ID"), Tr("Mods and cheats need the game's title ID, which needs your Switch keys. Add the keys, then look for games again."));
 			return rows;
 		}
 		auto toggle = [&](const std::string& id, const std::string& name, bool on, const std::string& description) {
 			Row row; row.id = id; row.kind = Row::Kind::Toggle; row.label = name;
 			row.on = on; row.value = on ? Tr("On") : Tr("Off"); row.description = description;
-			row.help = Tr("From the game's next start. The files stay where they are: only Eden's choice changes.");
+			row.help = Tr("Applies next time the game starts. The files themselves are not changed.");
 			rows.push_back(std::move(row));
 		};
 		if (page == "nxmods" || page == "nxcheats")
 		{
 			const bool cheats = page == "nxcheats";
 			toggle(cheats ? "nxextra:cheats" : "nxextra:mods", cheats ? Tr("Use cheats") : Tr("Use mods"),
-				cheats ? view.cheatsOn : view.modsOn, Tr("Off, each one's choice below is kept for when it is on again."));
+				cheats ? view.cheatsOn : view.modsOn, Tr("Off: your choices below are kept for next time."));
 			const auto& items = cheats ? view.cheats : view.mods;
 			for (size_t i = 0; i < items.size(); i++)
 				toggle(std::string(cheats ? "nxextra:cheat:" : "nxextra:mod:") + std::to_string(i), items[i].name, items[i].on,
@@ -75,25 +75,25 @@ namespace ps5shell
 			const auto found = std::find(view.presets.begin(), view.presets.end(), view.preset);
 			row.index = context.title && !view.ownPreset ? 0 : (context.title ? 1 : 0) + (int)(found - view.presets.begin());
 			row.value = row.options[std::clamp(row.index, 0, (int)row.options.size() - 1)];
-			row.description = Tr("A ReShade look over the game's picture, Eden's own or one of yours. Applies to the next game.");
-			row.help = Tr("Default is the side's look, Off none, for this game. Your own looks are .fxp files in the game's reshade folder or in Eden's user/post_presets.");
+			row.description = Tr("A ReShade look over the game, built-in or your own. Applies to the next game.");
+			row.help = Tr("Default uses the system's look; Off uses none. Put your own .fxp looks in the game's reshade folder or in user/post_presets.");
 			rows.push_back(std::move(row));
 		}
 		else if (page == "nxprofiles")
 		{
-			if (view.profiles.empty()) action("nxextra:noprofiles", Tr("No players yet"), Tr("Make one below, or start a Switch game once."));
+			if (view.profiles.empty()) action("nxextra:noprofiles", Tr("No players yet"), Tr("Add one below, or start a Switch game."));
 			else
 			{
 				Row row; row.id = "nxextra:profile"; row.kind = Row::Kind::Choice; row.label = Tr("Player");
 				for (const auto& profile : view.profiles) row.options.push_back(profile.name + " · " + profile.id.substr(24));
 				row.index = std::clamp(view.profile, 0, (int)row.options.size() - 1); row.value = row.options[row.index];
 				row.description = Tr("Who plays the next Switch game.");
-				row.help = Tr("Remembered for this PS5 user. Each player has saves of their own; none are moved or deleted.");
+				row.help = Tr("Remembered for this PS5 user. Each player has their own saves.");
 				rows.push_back(std::move(row));
 			}
 			Row create;
 			create.id = "nxextra:createprofile"; create.kind = Row::Kind::Action; create.label = Tr("New player");
-			create.description = Tr("A player with saves of their own.");
+			create.description = Tr("A player with their own saves.");
 			create.dimmed = view.profiles.size() >= 8; rows.push_back(std::move(create));
 			if (!view.profiles.empty())
 			{
@@ -102,15 +102,15 @@ namespace ps5shell
 				rename.description = view.profiles[view.profile].name; rows.push_back(std::move(rename));
 				Row remove;
 				remove.id = "nxextra:removeprofile"; remove.kind = Row::Kind::Hold; remove.label = Tr("Remove the player");
-				remove.value = Tr("Hold Cross"); remove.description = Tr("From the list only: their saves and settings are kept.");
-				remove.help = Tr("The last player stays. The list from before is kept as profiles.dat.ecam-before.");
+				remove.value = Tr("Hold Cross"); remove.description = Tr("Removes them from the list. Their saves and settings are kept.");
+				remove.help = Tr("The last player can't be removed.");
 				remove.dimmed = view.profiles.size() <= 1; rows.push_back(std::move(remove));
 			}
 		}
 		Row refresh;
 		refresh.id = "nxextra:refresh"; refresh.kind = Row::Kind::Action;
 		refresh.label = Tr("Look again");
-		refresh.description = Tr("Reads the game's folders and Eden's settings again.");
+		refresh.description = Tr("Checks the game's folders and settings again.");
 		rows.push_back(std::move(refresh));
 		return rows;
 	}
@@ -138,7 +138,7 @@ namespace ps5shell
 					std::string error;
 					const bool ok = create ? ps5eden::extras::CreateProfile(context, value, error) : ps5eden::extras::RenameProfile(context, id, value, error);
 					if (!ok) Toast(error);
-					else Toast(create ? Tr("New player made: choose them in Player to play as them") : Tr("Player renamed"));
+					else Toast(create ? Tr("Player added. Choose them in Player to play as them") : Tr("Player renamed"));
 					m_switchExtrasKey.clear();
 				});
 			return true;

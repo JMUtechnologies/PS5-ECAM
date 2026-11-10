@@ -344,6 +344,9 @@ int main(int argc, char* argv[])
 		// opens Cemu's log.txt), and said in the log once it is open
 		std::vector<std::string> reorganizing;
 		reorganized = ps5reorganize::Run(ps5paths::Root(), ps5paths::kDefaultRoot, reorganizing);
+		// 6.0: a system with no folder yet keeps its files with the others in the data folder; one of its own
+		// only when the player picks it (Settings > Game files > A folder for each system)
+		ps5reorganize::DefaultTogether(ps5paths::Root(), ps5paths::kDefaultRoot, reorganizing);
 		ps5paths::DecideSystemRoots();
 		ps5log::Open(ps5paths::Logs().c_str());
 		for (const std::string& line : reorganizing)
@@ -573,14 +576,14 @@ int main(int argc, char* argv[])
 			{"switch-keys", "Switch keys", "prod.keys and title.keys, dumped from your own Switch.", eden + "/keys"},
 			{"switch-firmware", "Switch firmware", "The firmware's .nca files, dumped from your own Switch.", eden + "/firmware"},
 			{"switch2", ps5lang::Tr("Switch 2 games"),
-				std::string(".nup · ") + ps5lang::Tr("Switch 2 game folders need ExeFS and RomFS. Put each game in its own folder; keep updates and DLC where EglantinePS5 expects them."),
+				std::string(".nup · ") + ps5lang::Tr("Switch 2 game folders need ExeFS and RomFS. Put each game in its own folder; keep updates and DLC where Lichii expects them."),
 				ps5eden::ScanFolder(now.nx2.gamesFolder, true)},
 			{"switch2-updates", std::string(ps5lang::Tr("Switch 2 games")) + " / " + ps5lang::Tr("Update"), {}, eglantine + "/updates"},
 			{"switch2-dlc", std::string(ps5lang::Tr("Switch 2 games")) + " / " + ps5lang::Tr("DLC"), {}, eglantine + "/dlc"},
 			{"switch2-keys", ps5lang::Tr("Switch 2 keys"),
-				ps5lang::TrF("Put your own prod.keys in {0}/keys. Playtendoh and EglantinePS5 do not include keys.", eglantine), eglantine + "/keys"},
+				ps5lang::TrF("Put your own prod.keys in {0}/keys. Playtendoh and Lichii do not include keys.", eglantine), eglantine + "/keys"},
 			{"switch2-firmware", ps5lang::Tr("Switch 2 firmware"),
-				ps5lang::TrF("Put your own Switch firmware files in {0}/firmware. No firmware comes with Playtendoh or EglantinePS5.", eglantine), eglantine + "/firmware"},
+				ps5lang::TrF("Put your own Switch firmware files in {0}/firmware. Playtendoh and Lichii do not include firmware.", eglantine), eglantine + "/firmware"},
 			{"amiibo", "Amiibo", "Your amiibo dumps (.bin), for the Wii U and the 3DS.", ps5paths::Root() + "/amiibo"},
 			{"3ds-camera", "3DS camera",
 				"A picture (PNG or JPEG) the 3DS's cameras see, the newest sent: a QR code for a game to scan.",
@@ -748,7 +751,7 @@ int main(int argc, char* argv[])
 		if (ps5retro::IsRetro((int)system))
 		{
 			const int index = (int)system;
-			status.noticeRetro[ps5retro::Slot(index)] = ps5retro::Available(index, settings.retro[ps5retro::Slot(index)].retroBackend) ? std::string() : ps5lang::Tr("This side's emulator is not in this copy of Playtendoh.");
+			status.noticeRetro[ps5retro::Slot(index)] = ps5retro::Available(index, settings.retro[ps5retro::Slot(index)].retroBackend) ? std::string() : ps5lang::Tr("This system's emulator is not in this copy of Playtendoh.");
 			if (!keepList(system, settings.retro[ps5retro::Slot(index)].gamesFolder)) ps5retro::StartScan(index, settings.retro[ps5retro::Slot(index)].gamesFolder);
 			return;
 		}
@@ -771,7 +774,7 @@ int main(int argc, char* argv[])
 			if (privileges.filesystem && (switch2 ? !ps5eglantine::Available() : !ps5eden::Available()))
 				(switch2 ? status.noticeSwitch2 : status.noticeSwitch) = ps5lang::Tr(switch2 ?
 					"This copy has no Switch 2 emulator: eglantine/eboot.bin is missing." :
-					"This build has no Switch emulator: eden/eboot.bin is not in the app's folder.");
+					"This copy has no Switch emulator: eden/eboot.bin is missing.");
 			const std::string& folder = switch2 ? settings.nx2.gamesFolder : settings.nx.gamesFolder;
 			if (!keepList(system, folder))
 				ps5eden::StartScan(folder, switch2);
@@ -797,7 +800,7 @@ int main(int argc, char* argv[])
 		options.keepGameList = keepList(system, settings.gamesFolder);
 		ps5emu::StartCore(options);
 		if (!privileges.jit)
-			ps5notify::Send(ps5lang::Tr("No JIT memory: Wii U games run on the interpreter, much slower. Is PPSA99360 in your HEN's app jailbreak list?"));
+			ps5notify::Send(ps5lang::Tr("No JIT memory: Wii U games will run much slower. Is PPSA99360 in your HEN's app jailbreak list?"));
 	};
 
 	// what this app made since the last start, and earlier builds and sessions as another user, opened
@@ -856,7 +859,7 @@ int main(int argc, char* argv[])
 			sceSystemServiceHideSplashScreen();
 			const std::string& why = ps5shell::LastFailure();
 			// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-			ps5notify::Send(why.empty() ? ps5lang::TrF("The launcher could not start. The boot log in {0}/logs says why.", ps5paths::Root()) :
+			ps5notify::Send(why.empty() ? ps5lang::TrF("The launcher could not start. See the boot log in {0}/logs.", ps5paths::Root()) :
 										  // tr: {0} is why; {1} the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the app's drive
 										  ps5lang::TrF("The launcher could not start: {0}. The boot log in {1}/logs has more.", why, ps5paths::Root()));
 			for (;;)

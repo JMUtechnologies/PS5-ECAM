@@ -16,6 +16,8 @@
 #include "../frontend/settings.h"
 
 #include <string>
+#include <utility>
+#include <vector>
 
 namespace ps5libretro
 {
@@ -30,4 +32,16 @@ namespace ps5libretro
 	// Whether the last LaunchGame took VideoOut: after a failure from there on, only a fresh process
 	// can show the launcher again.
 	bool CoreTouched();
+
+	// A core option as Settings > Emulator shows it: what the core declares (in the launcher's language
+	// where the core has its words), and the value the app gives it when the player has chosen none
+	struct CoreOption
+	{
+		std::string key, label, info, category;
+		std::vector<std::pair<std::string, std::string>> values; // the value, and its label
+		std::string defaultValue;
+	};
+	// The options of the side's core in the app, asked of it once a language; empty when the side has none
+	// (an emulator of its own, or no core in this copy) or a game is running
+	const std::vector<CoreOption>& CoreOptions(int side);
 }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5-ECAM: RetroAchievements in DS games, with rcheevos' rc_client
+// PS5-ECAM: RetroAchievements in DS games and the libretro sides' (port/libretro/game.cpp), with rcheevos' rc_client
 // (.deps/rcheevos): RetroAchievements has sets for the DS, none for the Wii U or the 3DS. Softcore
 // only: save states, cheats and the speed settings stay as they are.
 //
@@ -48,6 +48,10 @@ namespace ps5cheevos
 	// ROM, which re-encrypts the secure area in its copy and so changes the ARM9 code the hash reads
 	// (#107). Empty when no one is signed in, or the ROM cannot be hashed.
 	std::string HashDs(const uint8_t* rom, size_t size);
+	// Any cartridge console's (a libretro side's: NES, SNES, Game Boy, N64...): its hash by rcheevos'
+	// rules for that console (rc_consoles.h's id: an iNES header left out, an N64 ROM's byte order
+	// put right). Empty when no one is signed in, or it cannot be hashed.
+	std::string Hash(uint32_t console, const uint8_t* data, size_t size);
 	// As the game starts (from its loop), signed in: HashDs's hash finds its set. False when no one
 	// is signed in or there is no hash, so the emulation need not call DoFrame.
 	bool StartGame(ReadMemory read, const std::string& hash);

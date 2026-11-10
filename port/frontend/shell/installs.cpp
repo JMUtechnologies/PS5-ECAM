@@ -45,7 +45,7 @@ namespace ps5shell
 		std::string Status(const ps5emu::Installable& item)
 		{
 			if (item.packed)
-				return Tr("Runs from where it is: no install needed");
+				return Tr("No install needed");
 			if (item.installedVersion < 0)
 				return Tr("Not installed");
 			if (item.version > item.installedVersion)
@@ -189,7 +189,7 @@ namespace ps5shell
 		else if (status.state == State::Cancelled)
 		{
 			m_updates.queue.clear();
-			m_updates.message = Tr("Stopped. What was installed before is back as it was.");
+			m_updates.message = Tr("Stopped. The previous install was restored.");
 		}
 		else
 		{
@@ -350,7 +350,7 @@ namespace ps5shell
 		if (m_updates.looking)
 			summary = TrF("Looking in {0}…", ShortPath(m_updates.where, 60));
 		else if (!count)
-			summary = Tr("Nothing to install was found on the drives plugged in.");
+			summary = Tr("Nothing to install on the connected drives.");
 		else
 		{
 			// tr: where updates and DLC were found ({0}: "USB drive 1, The PS5"), then how many are new
@@ -368,8 +368,7 @@ namespace ps5shell
 			const uint64_t whole = std::max(m_updates.runBytes, m_updates.runDone + status.total);
 			const uint64_t done = m_updates.runDone + status.copied;
 			const Box run{1204, 92, 620, 136};
-			canvas.Rect(run, kRadiusCard, Surface());
-			canvas.Ring(run, kRadiusCard, 1.5f, kGlassEdge);
+			Glass(canvas, run, kRadiusCard, Surface());
 			canvas.Draw(Icon::Download, {run.x + 26, run.y + 22, 30, 30}, Accent());
 			// tr: Updates and DLC, installing: which of how many ({0} of {1})
 			canvas.Text(Style({24, ui::Weight::SemiBold, 1.0f}), run.x + 68, run.y + 24, TrF("Installing {0} of {1}", m_updates.finished + 1, m_updates.queued),
@@ -400,9 +399,7 @@ namespace ps5shell
 			Panel(canvas, card, kRadiusSheet);
 			canvas.Text(Style(kHeadingStyle), card.x + 40, card.y + 36, Tr("Nothing found to install"), kText, card.w - 80, 1);
 			canvas.Text(Style({22, ui::Weight::Regular, 1.45f}), card.x + 40, card.y + 96,
-				Tr("Every USB drive and extended storage plugged in, the games folder and /data were searched, four folders deep, for "
-				   "updates, DLC and games as folders with code, content and meta (the format Cemu installs). Put them on a USB drive, or "
-				   "press Triangle to choose a folder anywhere."),
+				Tr("Searched USB drives, extended storage, the games folder and /data for updates, DLC and games (folders with code, content and meta). Put them on a USB drive, or press Triangle to choose a folder."),
 				Secondary(), card.w - 80, 6);
 		}
 		// the list: a heading for each game, its rows under it
@@ -463,7 +460,7 @@ namespace ps5shell
 			const int waiting = (int)(std::find(m_updates.queue.begin(), m_updates.queue.end(), item.folder) - m_updates.queue.begin());
 			const Box box{kListX + 64, top, kListW - 64, kRowH - 10};
 			canvas.PushAlpha(IsNew(item) || running || focused ? 1.0f : 0.55f);
-			canvas.Rect(box, kRadiusCard, focused ? Surface2() : Surface());
+			Glass(canvas, box, kRadiusCard, focused ? Surface2() : Surface(), focused ? 1.0f : 0.6f);
 			if (focused)
 				Focus(box, kRadiusCard);
 			canvas.Text(Style({24, ui::Weight::SemiBold, 1.0f}), box.x + 26, box.CentreY() - 15, WhatItIs(item), kText, 200, 1);
@@ -520,8 +517,8 @@ namespace ps5shell
 		canvas.Rect({aside.x + 36, ay, aside.w - 72, 1.5f}, 0, kLine);
 		ay += 20;
 		const std::string note = !m_updates.message.empty() ? m_updates.message :
-			item.packed ? std::string(Tr("Cemu runs it straight from the game files folder (title.tmd and .app files): put it there and the library lists it with its game.")) :
-						  std::string(Tr("It is installed into the Wii U's storage (mlc01). What is installed now is set aside until it finishes, and put back if you stop."));
+			item.packed ? std::string(Tr("Plays straight from the game files folder (title.tmd and .app files). Put it there and it shows with its game.")) :
+						  std::string(Tr("Installs into the Wii U's storage (mlc01). If you stop, the previous version is restored."));
 		canvas.Text(Style({20, ui::Weight::Regular, 1.5f}), aside.x + 36, ay, note, Secondary(), aside.w - 72, 6);
 		canvas.PopAlpha();
 	}

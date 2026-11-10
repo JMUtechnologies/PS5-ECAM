@@ -155,7 +155,7 @@ namespace ps5shell
 		if (!Notice().empty())
 		{
 			kicker = Tr("Setup");
-			title = Tr("Something needs a look");
+			title = Tr("Something needs attention");
 			text = Notice();
 			buttons = {Tr("Setup check"), Tr("Diagnostics")};
 			return true;
@@ -164,8 +164,8 @@ namespace ps5shell
 		if (!CoreReady() && (!m_status.coreStarting || m_games.empty()))
 		{
 			kicker = "Wii U";
-			title = Tr("Starting Cemu");
-			text = Tr("Its settings, graphic packs and controllers are loading, and then it looks for your games.");
+			title = Tr("Getting ready");
+			text = Tr("Loading settings, graphic packs and controllers, then looking for your games.");
 			return true;
 		}
 		if (!m_games.empty())
@@ -181,23 +181,19 @@ namespace ps5shell
 		kicker = Tr("Welcome");
 		title = Tr("Your games go here");
 		// tr: {0} is the games folder
-		text = IsRetro() ? TrF("Put this system's games in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are searched too, four deep.", folder) : Is3ds() ? TrF("Put your 3DS games (.3ds, .cci, .cxi, .3dsx, decrypted, alone or in .zip, .7z or .rar archives) in {0}, or "
-							 "choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are searched too.",
+		text = IsRetro() ? TrF("Put this system's games in {0}, or choose any folder, such as one on a USB drive. Subfolders are searched too.", folder) : Is3ds() ? TrF("Put your decrypted 3DS games (.3ds, .cci, .cxi, .3dsx, or in .zip, .7z or .rar) in {0}, or choose any folder, such as one on a USB drive.",
 							 folder) :
-			IsDs()	   ? TrF("Put your DS games (.nds, alone or in .zip, .7z or .rar archives) in {0}, or choose any folder the PS5 can read, "
-							 "such as one on a USB drive. Folders inside it are searched too.",
+			IsDs()	   ? TrF("Put your DS games (.nds, or in .zip, .7z or .rar) in {0}, or choose any folder, such as one on a USB drive.",
 							 folder) :
-			// the Switch 2 side's are EglantinePS5's, with its own keys and firmware: the Setup page's words
-			IsSwitch2() ? TrF("Put Switch 2 game folders in {0}; each needs exefs/main and romfs/ (or base/exefs/main and romfs/). Keep updates with the game folder.", ps5eden::ScanFolder(folder)) + " " +
-							  TrF("Put your own prod.keys in {0}/keys. Playtendoh and EglantinePS5 do not include keys.", ps5eglantine::DataFolder()) + " " +
-							  TrF("Put your own Switch firmware files in {0}/firmware. No firmware comes with Playtendoh or EglantinePS5.", ps5eglantine::DataFolder()) :
+			// the Switch 2 side's are Lichii's, with its own keys and firmware: the Setup page's words
+			IsSwitch2() ? TrF("Put Switch 2 game folders in {0}. Each needs exefs/main and romfs/ (or base/exefs/main and romfs/). Keep updates in the game's folder.", ps5eden::ScanFolder(folder)) + " " +
+							  TrF("Put your own prod.keys in {0}/keys. Playtendoh and Lichii do not include keys.", ps5eglantine::DataFolder()) + " " +
+							  TrF("Put your own Switch firmware files in {0}/firmware. Playtendoh and Lichii do not include firmware.", ps5eglantine::DataFolder()) :
 			// tr: {1} is Eden's game files folder, which has keys/ and firmware/ in it
-			IsSwitch2() ? TrF("Put this system's games in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are searched too, four deep.", folder) :
-			IsSwitch() ? TrF("Put your Switch games (.nsp or .xci, alone or each in a folder of its own with its update and DLC) in {0}. "
-							 "Eden needs your Switch's keys in {1}/keys and its firmware in {1}/firmware too.",
+			IsSwitch2() ? TrF("Put this system's games in {0}, or choose any folder, such as one on a USB drive. Subfolders are searched too.", folder) :
+			IsSwitch() ? TrF("Put your Switch games (.nsp or .xci, each alone or in a folder with its update and DLC) in {0}. You also need your Switch's keys in {1}/keys and firmware in {1}/firmware.",
 							 ps5eden::ScanFolder(folder), ps5eden::GameFilesFolder()) :
-						 TrF("Put your Wii U games (.wua, .wud, .wux, or folders with code, content and meta, alone or in .zip, .7z or .rar "
-							 "archives) in {0}, or choose any folder the PS5 can read, such as one on a USB drive.",
+						 TrF("Put your Wii U games (.wua, .wud, .wux, folders with code, content and meta, or in .zip, .7z or .rar) in {0}, or choose any folder, such as one on a USB drive.",
 							 folder);
 		buttons = {Tr("Choose a folder"), Tr("Setup check")};
 		if (Is3ds())
@@ -800,7 +796,7 @@ namespace ps5shell
 			canvas.Text(Style(kCaptionStyle), kSafeX + title.width + 24 + count.width + 24, headTop + 11, Tr("Looking for new games…"), Tertiary(), 360, 1);
 		else if (m_status.lastLook[side])
 			// tr: the Library's list is the one found on the network share last time (#75); Look for games now is in Settings > Game files
-			canvas.Text(Style(kCaptionStyle), kSafeX + title.width + 24 + count.width + 24, headTop + 11, Tr("As found last time"), Tertiary(), 360, 1);
+			canvas.Text(Style(kCaptionStyle), kSafeX + title.width + 24 + count.width + 24, headTop + 11, Tr("From the last search"), Tertiary(), 360, 1);
 		{
 			float right = 1920 - kSafeX;
 			const ui::TextBlock search = m_fonts.Layout(tool, m_search.empty() ? std::string(Tr("Search")) : TrF("Search: {0}", m_search));
@@ -877,8 +873,9 @@ namespace ps5shell
 				const std::string number = i == 3 && i != hidden && counts[3] == 0 ? "" : std::to_string(numbers[i]);
 				const float w = 24 + m_fonts.Width(pillStyle, pills[i]) + (number.empty() ? 0 : 12 + m_fonts.Width(countStyle, number)) + 24;
 				const Box pill{x, filterTop, w, 48};
-				canvas.Rect(pill, 24, on ? ui::SetAlpha(Accent(), 0.22f) : Surface());
-				canvas.Ring(pill, 24, 1.5f, on ? ui::SetAlpha(Accent(), 0.5f) : kGlassEdge);
+				Glass(canvas, pill, 24, on ? ui::SetAlpha(Accent(), 0.22f) : Surface(), 0.7f);
+				if (on)
+					canvas.Ring(pill, 24, 1.5f, ui::SetAlpha(Accent(), 0.5f));
 				const ui::TextBlock text = m_fonts.Layout(pillStyle, pills[i]);
 				canvas.Text(text, x + 24, pill.CentreY() - text.height * 0.5f, on ? kText : Secondary());
 				if (!number.empty())
@@ -899,9 +896,9 @@ namespace ps5shell
 			canvas.Text(Style(kBodyStyle), kSafeX, listTop + 10,
 				!m_search.empty() ? TrF("Nothing matches “{0}”. Circle clears the search.", m_search) :
 				m_scanning		  ? std::string(Tr("Looking for games…")) :
-				filter == 2		  ? std::string(Tr("Options on a game, then Favourite, puts it here.")) :
+				filter == 2		  ? std::string(Tr("Press Options on a game and choose Favourite to add it here.")) :
 				filter			  ? std::string(Tr("All shows every game.")) :
-									std::string(Tr("No games yet. Settings > Game files says where they go.")),
+									std::string(Tr("No games yet. See Settings > Game files.")),
 				Secondary(), 1200, 2);
 		}
 		for (int index = 0; index < total; index++)
@@ -912,7 +909,7 @@ namespace ps5shell
 			const bool focused = !m_onBar && m_libraryZone == 2 && index == m_libraryIndex;
 			// a row each: a small cover, the name, play time and when it was played, how it runs
 			const Box row{kSafeX, rowTop, 1920 - 2 * kSafeX - 40, kListPitch - 12};
-			canvas.Rect(row, kRadiusCard, focused ? Surface2() : Surface());
+			Glass(canvas, row, kRadiusCard, focused ? Surface2() : Surface(), focused ? 1.0f : 0.6f);
 			if (focused)
 				Focus(row, kRadiusCard, index < offset ? kN3ds : 0);
 			if (index < offset)

@@ -24,8 +24,8 @@
 #                                     generation's network, its Lapy helper (lapy.elf, its way to /data
 #                                     where no HEN answers), its licence and notices; not its own
 #                                     launcher's ui/, which the Switch side never opens
-#     es-de/                          EmulationStation (ES-DE), the other frontend, when it is built
-#                                     (tools/build-esde.sh): its es-de.bin, its resources and themes
+#     es-de/                          EmulationStation (ES-DE), only with PS5CEMU_WITH_ESDE=1: the app
+#                                     downloads it otherwise (port/app/esde_get.h, make esde-zip)
 #
 #   tools/package.sh          the app; the ELF must be linked with RADV (tools/link.sh)
 #   tools/package.sh --check  the same steps for a link check's ELF, into build/app-check: not an app
@@ -194,12 +194,11 @@ elif ((!check)); then
     [[ ${PS5CEMU_RELEASE:-0} == 1 ]] && exit 2
 fi
 
-# EmulationStation (tools/build-esde.sh), the optional other frontend: its folder as it was built. The
-# app is whole without it, and Settings > Launcher offers it only where it is (port/esde/esde.h).
-if [[ -f $PS5CEMU_BUILD/esde/es-de/es-de.bin ]]; then
+# EmulationStation (tools/build-esde.sh) is not in the package: the app downloads it when it is chosen
+# (port/app/esde_get.h), from the release `make esde-zip`'s ES-DE-PS5.zip is put on. PS5CEMU_WITH_ESDE=1
+# packages it in the app's folder anyway, for a console with no network.
+if [[ ${PS5CEMU_WITH_ESDE:-0} == 1 && -f $PS5CEMU_BUILD/esde/es-de/es-de.bin ]]; then
     cp -a "$PS5CEMU_BUILD/esde/es-de" "$app/es-de"
-elif ((!check)); then
-    echo "note: build/esde is missing (make esde): the app is packaged without EmulationStation"
 fi
 
 # Optional additional systems: only source-built ECAM overlays are staged here.
