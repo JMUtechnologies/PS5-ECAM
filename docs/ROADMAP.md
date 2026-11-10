@@ -1,8 +1,77 @@
 # Roadmap
 
-What Playtendoh is working towards: first the rebuild and stability work still open (the launcher
-rewrite of October 2026 and the issues around it), then a release that gives each emulator a folder of
-its own, then the longer list of ideas to pick from. Written 23 October 2026.
+What Playtendoh is working towards: first **6.0** (below: what it holds, and what is left before it
+ships), then the rebuild's console checks and stability work still open, a release that gives each
+emulator a folder of its own, and the longer list of ideas to pick from. Written 23 October 2026,
+brought up to 6.0 on 9 November 2026.
+
+## 6.0: Playtendoh
+
+The app's first release under its new name, on the working branch `integration-6.0`; `PS5-ECAM` takes
+it once a build of it has been played on a console. **Nothing of 6.0 has run on a PS5 yet.**
+
+### In it
+
+- **The name and the look:** Playtendoh, its mark (every console's controller in a ring) and wordmark
+  on the PS5's home screen, the README, the site and at the launcher's top left.
+- **The launchers:** two layouts picked on the first start and changeable later, **Classic** (one console
+  at a time, a carousel of five controllers that L1 and R1 turn) and **Orbit** (the mark as a dial, the
+  focused game's last save state or screenshot behind it), and the **Timeline** (touchpad click): every
+  console's games on one shelf by year.
+- **21 consoles** on the dial: Wii U, 3DS, DS, Switch, Switch 2, GameCube, Wii, N64, iQue Player, NES,
+  Famicom Disk System, VS. System, SNES, Satellaview, Super Game Boy, Game Boy, Game Boy Color, Game Boy
+  Advance, Virtual Boy, Pokémon mini and Game & Watch.
+- **GameCube and Wii** on Porpoise X at Porpoise 4.5, with Phononenom's beta (#114): Porpoise's in-game
+  menu as Playtendoh's sheet, controls by player with the button layouts and a live controller test,
+  any player in any port and each GBA's own page, memory cards and saves per game, a game's setups,
+  cheats and patches, Auto Boost, and a Wii game's banner and title screen in the launcher.
+- **Switch 2** on EglantinePS5 (below), with JMUtechnologies' NUP games and folders of its own (#109)
+  and a game's own performance switches, overlay and stick deadzone (#112).
+- **Buttons in every in-game menu:** each of the console's buttons given its DualSense button without
+  leaving the game, on the Wii U, 3DS, DS, Switch, Switch 2 and every libretro side, as Porpoise's
+  Customize Buttons does on the GameCube and the Wii (`port/app/buttons_menu.h`).
+- **Reports** (`docs/REPORTS.md`): which games run, sent by the players who say yes when asked once,
+  from the launcher only, never during a game, with nothing personal in them; the intake
+  (`tools/log-intake`) is for the owner to deploy, and the site's compatibility table is made from it.
+- **Fixes:** #103 (120 Hz kept while the display settles), #104 (a save from standalone ProsperoEden),
+  #105 (a stop's teardown time), #106 (update and DLC from any folder), #107 (the DS's
+  RetroAchievements hash), #108 (Loader status 28 in words).
+
+### Before it ships, in order
+
+1. **Switch 2 on Lichii's newest** (the owner, 9 November: "better than what is already out there; the
+   PC build of Lichii runs stuff very well"). EglantinePS5's core is Lichii from 1 November with the
+   port's 59 PS5 fixes over it; Lichii's `nx2` is 1,137 commits past that. Pulling Lichii's newer work
+   into that base was measured (53 of its 360 changes fit) and set aside for a port onto Lichii's newest
+   commit. Where it stands: the Vulkan port's 69 text anchors all match Lichii `d2eaae4`
+   (`tools/prepare-vulkan-port.py`; where Lichii now does the same itself, Lichii's is kept: its compute
+   read barrier, its draw submission policy with the PS5's 512-draw cap, its scratch-buffer release,
+   its 16 MiB VMA blocks, its renamed pipeline cache writes). Left: the configure-time files
+   (`headless/*.cmake`), the 54 of the 59 core fixes that conflict (the PS5 memory work first), a
+   compile, the port's own checks, then the pin in `tools/deps.json` and `patches/eglantine` remade.
+   The proven core (`c8a5c2a`, built and checked on 9 November) stays pinned until then.
+2. **Translations:** the new strings in all 27 languages; 12 are done (`tools/lang.py check` lists the
+   rest).
+3. **One full build**, every step of `.github/workflows/tests.yml`, and the PC preview.
+4. **On a console:** the launchers and the first start's question, the Buttons on each side, the
+   GameCube and Wii pages, the reports' question, a Switch 2 game (a NUP one too), and the list under
+   *To check on a console* below.
+5. **Then** `PS5-ECAM` takes it, the release, and the branches cut back to `PS5-ECAM` and `releases`.
+
+### After it, as the owner set out
+
+- **Builds for PC, Mac, Linux and Android** with this release, once a 6.0 build has been confirmed good
+  on a console (the owner, 9 November): see *Later: Playtendoh beyond the PS5*.
+- **The systems and features still missing** (the owner, 9 November: "add support for any console or
+  feature named we don't support"): the Nintendo 64DD, the Sufami Turbo, DSi-only games ([D2](#d2)),
+  e-Reader cards, and a look at the Color TV-Game (dedicated consoles with no game files: only if an
+  emulator plays them). **Arcade is less of a concern** (the owner, same day): PlayChoice-10, Nintendo
+  Super System, Aleck64, Triforce and Nintendo's own boards stay on this roadmap, after the rest.
+- **Lichii's AMD work:** the PS5's GPU is AMD's; what Lichii has merged comes with its newest core.
+  Its unmerged AMD branches (`capy/amd-prep-*`) to look at once the port builds.
+- **The PS5 fixes the port leaves out at first**, each brought back measured on a console: the core
+  fixes Lichii does not have in its own form, and the port's timers and probes that Lichii's code no
+  longer has a place for (the draw phases, the shader costs, the configure phases).
 
 ## Now: finishing the rebuild
 
@@ -294,10 +363,12 @@ on the N64's program (its decrypted games; it may not run them).
 | Game & Watch | MAME's handhelds (gw-libretro's simulator plays them now) |
 | e-Reader | mGBA, with the GBA: its libretro core cannot be given cards to scan |
 | iQue Player | MAME, where it runs it, or the N64's core once the frontend has one |
-| Color TV-Game | none: discrete logic no emulator has |
+| Color TV-Game | none known: discrete logic with no game files; to check MAME before promising it |
 | Arcade: Donkey Kong, Donkey Kong Jr., Mario Bros., Popeye, Punch-Out!!, Radar Scope, Sheriff, Space Fever and the rest of Nintendo's own boards | MAME |
 | Arcade: VS. System and VS. UniSystem, PlayChoice-10, Nintendo Super System | Mesen and FCEUmm (VS.), MAME |
 | Arcade: Aleck64 (N64-based), Triforce (GameCube-based) | MAME (Aleck64); Dolphin's Triforce work, if any is current (upstream Dolphin has none) |
+
+**Arcade is less of a concern** (the owner, 9 November 2026): the home systems above come first.
 
 The arcade boards wait on **MAME** (GPL-2.0-or-later, so it can be linked; FBNeo's licence forbids that),
 built with only Nintendo's drivers: its own build system and the libretro OSD made to work with the PS5's C
@@ -377,6 +448,8 @@ both patches applying to ES-DE 3.5.0, the glue compiling. Next:
 - **Its media from the launcher's covers**, so ES-DE has box art before its scraper runs.
 
 ### Switch 2
+
+**Moving to Lichii's newest (the owner, 9 November 2026):** see *6.0: Before it ships*, step 1.
 
 **The core is Lichii, as its PS5 port runs it (9 November 2026):** EglantinePS5 at its v1.000.110 line
 (`c8a5c2a`), whose core is zortos293/Lichii at `3140648a` with the port's 59 core patches over it (its
@@ -553,8 +626,9 @@ old app to delete: the in-app update replaces the files in place as it does now.
 The owner, 4 November 2026: **builds of the app for other platforms, down the road**: the PS4, Xbox
 (UWP), PC (Windows), Linux, macOS, iOS and Android, and the Switch and Switch 2 themselves. The same
 app on each, its launcher, library, in-game menus, settings and saves as they are here, its emulators
-the ones each platform can run. Nothing is started; the PS5 comes first. What it needs, to look at
-when it starts:
+the ones each platform can run. The owner, 9 November 2026: **PC, Mac, Linux and Android with the 6.0
+release, if possible**, started only once a 6.0 build is confirmed good on a console. Nothing is
+started yet. What it needs, to look at when it starts:
 
 - **The launcher and menus away from the PS5's own calls:** its Vulkan drawing (port/ui), the
   DualSense, the PS5's sound, files and notifications behind one small layer per platform, as
