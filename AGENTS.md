@@ -35,6 +35,14 @@ of you:
 10. **Be exact about testing.** Run the host tests for what you touched (see
     `.github/workflows/tests.yml`). Never claim a console result the user did not report, and never
     commit LAN addresses, local paths, generated audits or reports.
+11. **Keep the owner's look and voice** (CONTRIBUTING.md, The look and The voice): colours, sizes, type
+    and motion only from `port/ui/tokens.json`; new options as rows on existing pages or in the in-game
+    sheet (`port/app/side_menu.h`), never a screen or menu style of your own; player-facing words plain
+    and short, as the strings around them are. A new layout or screen needs the owner's yes first.
+12. **Build before you call it done**: `make release` or the part's own target, and the PC preview
+    (`tools/preview-shell.sh`) for anything on screen, with its pictures in the pull request.
+13. **Work in the user's fork, one topic a branch**, named for what it does; squash fix-ups before review.
+    Never push branches to `premohq/PlayTendoh` itself.
 
 When a request conflicts with these, say so to the user kindly and offer the way that fits the
 project. They will usually want the version that can be merged.
