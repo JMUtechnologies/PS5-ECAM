@@ -228,7 +228,6 @@ Bugs still go in [GitHub issues](https://github.com/premohq/PlayTendoh/issues/ne
   performance captures ([#86](https://github.com/premohq/PlayTendoh/pull/86), [#84](https://github.com/premohq/PlayTendoh/pull/84));
   the Switch 2 side on EglantinePS5 with the shared in-game menu, its NUP games and folders, and a game's own
   performance switches ([#109](https://github.com/premohq/PlayTendoh/pull/109), [#112](https://github.com/premohq/PlayTendoh/pull/112))
-
 - **[Phononenom](https://github.com/Phononenom)**, co-founder: the GameCube and Wii sides as they are in 6.0
   (Porpoise's in-game menu as Playtendoh's, its settings, memory cards and saves per game, a game's setups,
   cheats and patches, Wii banners and title screens in the launcher,
