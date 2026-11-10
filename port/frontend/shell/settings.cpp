@@ -9,6 +9,7 @@
 #include "shell_internal.h"
 #include "../actions.h"
 #include "../sound.h"
+#include "../../app/reports.h"
 #include "../../app/achievements.h"
 #include "../../app/boxart.h"
 #include "../../app/mods.h"
@@ -1392,6 +1393,16 @@ namespace ps5shell
 				Tr("Downloads the cover of every game on this side again, replacing the ones you have. Useful when a cover is wrong or "
 				   "looks broken."));
 			endSub();
+			// reports to the project (app/reports.h): the first start's question, changed here
+			if (ps5reports::Available())
+				toggle("reports", Tr("Send reports"), settings.ui.reports, Tr("Which games run and how they end, with nothing about you."),
+					// tr: {0} is the address of the page that lists every field a report has
+					TrF("When a game ends, a short report goes to the Playtendoh project: the game and its console, how it ended and for how "
+						"long, the settings it ran with, the PS5's firmware and model, and the end of Playtendoh's log with addresses and "
+						"folder names taken out. Never your PSN name, your console's serial, its addresses, your accounts or your saves. "
+						"Reports are sent from the menus, never while you play. Off deletes the reports waiting to be sent, at once. "
+						"Every field: {0}",
+						ps5reports::kExplained));
 			// Artic Base's page (pages.cpp): a game played from a 3DS on the network
 			if (Is3ds())
 				action(Kind::Link, "artic", Tr("Artic Base"), settings.n3ds.articAddress, Tr("Play a game from your 3DS, and set up from it."),
@@ -2289,6 +2300,11 @@ namespace ps5shell
 				settings.rumble = on;
 			else if (id == "boxart")
 				settings.boxArt = on;
+			else if (id == "reports")
+			{
+				settings.ui.reports = on;
+				settings.ui.reportsAsked = true;
+			}
 			else if (id == "accountperuser")
 				settings.accountPerUser = on;
 			else if (id == "largertext")
@@ -2453,6 +2469,8 @@ namespace ps5shell
 			UseOwnAccount();
 		if (id == "remote")
 			ps5stream::Configure(m_settings.remoteScreen);
+		if (id == "reports")
+			ps5reports::SetEnabled(ps5reports::Available() && m_settings.ui.reports); // off: what waits is deleted now
 		if (id == "boxart")
 		{
 			ps5boxart::SetEnabled(m_settings.boxArt);

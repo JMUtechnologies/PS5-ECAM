@@ -38,6 +38,8 @@
 #include "melonds/melonds.h"
 #include "frontend/settings.h"
 #include "frontend/shell.h"
+#include "app/achievements.h"
+#include "app/reports.h"
 #include "ps5/crash.h"
 #include "ps5/display.h"
 #include "ps5/driver_clock.h"
@@ -52,6 +54,7 @@
 #include "stream/stream.h"
 
 #include <cctype>
+#include <sys/sysctl.h>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
@@ -121,6 +124,17 @@ namespace
 			return "unknown";
 		version.text[sizeof(version.text) - 1] = 0;
 		return fmt::format("{} ({:#010x})", version.text, version.version);
+	}
+
+	// The console's model name ("CFI-7016"), for a report's model class (app/reports.h): empty when the
+	// kernel does not say
+	std::string HwModel()
+	{
+		char model[128] = {};
+		size_t length = sizeof(model) - 1;
+		if (sysctlbyname("hw.model", model, &length, nullptr, 0) != 0)
+			return {};
+		return model;
 	}
 
 	// A diagnostic for SYSTEM_ILLEGAL_FUNCTION_CALL (0xA002030A), which ends the app with no signal for
@@ -356,6 +370,24 @@ int main(int argc, char* argv[])
 	// the update notice, on a fresh start only (not each time a game hands back to the library)
 	const bool freshStart = settings.side.empty();
 	const TileGame tile = ReadArguments(argc, argv, settings);
+	// reports to the project (app/reports.h), only with the player's yes: the app and the console once,
+	// and the values the scrubber takes out by name
+	ps5reports::SetFolder(ps5paths::Root() + "/reports");
+	{
+		const std::string model = HwModel();
+		ps5log::Line("[main] model {}", model.empty() ? "not said" : model);
+		ps5reports::SetConsole({PS5CEMU_VERSION, PLAYTENDOH_COMMIT, Firmware(), ps5reports::ModelClass(model), privileges.jit, privileges.filesystem});
+		std::vector<std::string> secrets;
+		for (int player = 0; player < 4; player++)
+			secrets.push_back(ps5pad::UserName(player));
+		secrets.push_back(ps5cheevos::Get().user);
+		for (const std::string* value : {&settings.nx.nxNickname, &settings.nx.nxRoomName, &settings.nx.nxRoomPassword, &settings.nx.nxRoomHost,
+				 &settings.nx2.nxNickname, &settings.nx2.nxRoomName, &settings.nx2.nxRoomPassword, &settings.nx2.nxRoomHost})
+			secrets.push_back(*value);
+		ps5reports::SetSecrets(secrets);
+	}
+	// before anything below can end a game's report (Eden's result, ps5reports::Ended)
+	ps5reports::SetEnabled(ps5reports::Available() && privileges.filesystem && settings.ui.reports);
 	if (!tile.rom.empty())
 		ps5log::Line("[main] a home screen tile: --rom {}{} ({} side)", tile.rom, tile.exitAfterGame ? " --exit-after-game" : "",
 			ps5launcher::SideTitle(tile.side));
@@ -588,6 +620,7 @@ int main(int argc, char* argv[])
 	// time, which the library and the game's page show
 	auto countPlayTime = [](ps5catalog::System side, uint64_t titleId, const std::string& name, int64_t ended) {
 		const uint32_t minutes = ps5catalog::Ended(side, titleId, ended);
+		ps5reports::Ended(ended);
 		ps5catalog::Save();
 		ps5log::Line("[main] {} played for {} min", name, minutes);
 	};
@@ -773,17 +806,34 @@ int main(int argc, char* argv[])
 		ps5filemodes::Start();
 	if (freshStart && privileges.filesystem)
 		ps5update::Start();
+	bool reportsFirstLook = true; // the session before this process's: its log is boot.prev.log
 	// how long the app took to get here, from the PS5 starting it: the launcher's first frame follows
 	ps5log::Line("[main] the launcher starts {} ms into the app", sceKernelGetProcessTime() / 1000);
 	for (;;)
 	{
 		SetHighFrameRate(false); // the launcher at 59.94 Hz
 		ps5display::SetFramePacing(1); // and the 3DS's games every refresh
+		// the game the launcher started last, if any: how it ended goes into its report, and the outbox is
+		// sent while the launcher is up
+		{
+			ps5reports::Outcome ended;
+			ended.crash = reportsFirstLook ? status.lastCrash : std::string();
+			for (const std::string* why : {&status.launchError, &status.launchError3ds, &status.launchErrorDs, &status.launchErrorSwitch, &status.launchErrorSwitch2})
+				if (ended.error.empty() && !why->empty())
+					ended.error = *why;
+			ended.logPath = reportsFirstLook ? ps5paths::Logs() + "/boot.prev.log" : std::string(ps5log::Path());
+			ps5log::Flush();
+			if (ps5reports::Close(ended, std::time(nullptr)))
+				ps5log::Line("[reports] the last game's report is in the outbox");
+			reportsFirstLook = false;
+			ps5reports::StartSending();
+		}
 		std::optional<ps5launcher::Choice> choice;
 		const ps5shell::Outcome outcome = ps5shell::Run(settings, status, prepare, choice);
 		const uint64_t stopping = sceKernelGetProcessTime();
 		ps5emu::FinishCoreStart(); // a 3DS or DS game chosen while Cemu's library was still loading waits for it
 		ps5update::Stop(); // nothing of the launcher's runs beside a game
+		ps5reports::StopSending();
 		ps5packs::Stop();
 		ps5mods::Stop();
 		ps5forwarders::Stop();

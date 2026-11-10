@@ -76,14 +76,14 @@ done
 
 version=$(sed -n 's/^VERSION := *\([^ ]*\).*/\1/p' Makefile)
 flags=(-std=c++20 -O1 -g -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -DFMT_HEADER_ONLY
-    -DPS5CEMU_LAUNCHER_PREVIEW "-DPS5CEMU_VERSION=\"$version\"" "-DPS5CEMU_DATA=\"$out/data\""
+    -DPS5CEMU_LAUNCHER_PREVIEW "-DPS5CEMU_VERSION=\"$version\"" "-DPS5CEMU_DATA=\"$out/data\"" "-DPLAYTENDOH_REPORT_URL=\"https://reports.example.invalid/v1/report\""
     -I "$out/include" -I "$PS5CEMU_SYSROOT/include" -I port -I port/app -I tools/launcher-preview
     -I "$PS5CEMU_ROOT/.deps/reshade/deps/stb" $(pkg-config --cflags freetype2))
 sources=(tools/launcher-preview/shell.cpp tools/launcher-preview/console.cpp
     port/frontend/shell/hub.cpp port/frontend/shell/installs.cpp port/frontend/shell/library.cpp port/frontend/shell/pages.cpp
-    port/frontend/shell/settings.cpp port/frontend/shell/consoles.cpp port/frontend/shell/orbit.cpp port/frontend/shell/timeline.cpp port/frontend/shell/porpoise_rows.cpp port/frontend/shell/switch_extras.cpp port/frontend/shell/setup.cpp port/frontend/shell/shares.cpp port/frontend/shell/shell.cpp port/frontend/shell/welcome.cpp port/frontend/shell/whatsnew.cpp port/frontend/shell/widgets.cpp
+    port/frontend/shell/settings.cpp port/frontend/shell/consoles.cpp port/frontend/shell/orbit.cpp port/frontend/shell/timeline.cpp port/frontend/shell/porpoise_rows.cpp port/frontend/shell/switch_extras.cpp port/frontend/shell/setup.cpp port/frontend/shell/shares.cpp port/frontend/shell/shell.cpp port/frontend/shell/welcome.cpp port/frontend/shell/reports.cpp port/frontend/shell/whatsnew.cpp port/frontend/shell/widgets.cpp
     port/ui/canvas.cpp port/ui/feedback.cpp port/ui/gfx.cpp port/ui/images.cpp port/ui/input.cpp port/ui/qr.cpp port/ui/text.cpp port/ui/theme.cpp
-    port/ui/vkfn.cpp port/app/catalog.cpp port/app/saves.cpp port/app/reorganize.cpp port/app/gameinfo.cpp port/app/lang.cpp port/app/compatibility.cpp port/app/keyboard.cpp port/frontend/actions.cpp
+    port/ui/vkfn.cpp port/app/catalog.cpp port/app/reports.cpp port/app/saves.cpp port/app/reorganize.cpp port/app/gameinfo.cpp port/app/lang.cpp port/app/compatibility.cpp port/app/keyboard.cpp port/frontend/actions.cpp
     port/frontend/settings.cpp port/azahar/library.cpp port/azahar/controls.cpp port/azahar/unavailable.cpp
     port/retro/library.cpp port/retro/launch.cpp port/retro/porpoise_settings.cpp port/retro/porpoise_saves.cpp port/retro/porpoise_game.cpp port/retro/porpoise_banner.cpp port/retro/porpoise_disc.cpp port/melonds/library.cpp port/melonds/unavailable.cpp port/eden/library.cpp port/eden/nx_files.cpp port/eden/controls.cpp port/eden/extras.cpp port/eden/save_transfer.cpp)
 

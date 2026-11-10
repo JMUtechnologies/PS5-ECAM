@@ -7,6 +7,7 @@
 // has to be answered.
 
 #include "shell_internal.h"
+#include "../../app/reports.h"
 #include "../../app/updates.h"
 #include "../../azahar/controls.h"
 #include "../../ps5/pad.h"
@@ -37,12 +38,23 @@ namespace ps5shell
 		m_message.clear();
 		Show(ScreenId::Welcome);
 		m_screenAt = m_now;
-		// its first step, once: which layout
-		if (!m_settings.ui.layoutChosen && !m_welcomeFromSettings)
-			LayoutOpen([this] {
-				Show(ScreenId::Welcome);
-				m_screenAt = m_now;
-			});
+		if (m_welcomeFromSettings)
+			return;
+		// its first steps, once each: which layout, then whether to send reports (6.0)
+		auto back = [this] {
+			Show(ScreenId::Welcome);
+			m_screenAt = m_now;
+		};
+		auto reports = [this, back] {
+			if (ps5reports::Available() && !m_settings.ui.reportsAsked)
+				ReportsOpen(back);
+			else
+				back();
+		};
+		if (!m_settings.ui.layoutChosen)
+			LayoutOpen(reports);
+		else if (ps5reports::Available() && !m_settings.ui.reportsAsked)
+			ReportsOpen(back);
 	}
 
 	std::vector<Row> Shell::WelcomeRows()

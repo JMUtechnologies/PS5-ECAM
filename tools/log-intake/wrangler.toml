@@ -1,0 +1,34 @@
+# Playtendoh's report intake (README.md): a Cloudflare Worker and a D1 database. Nothing secret is in
+# this file or in the app: the Worker needs no key to take reports, and the table it publishes has no
+# install IDs in it. Deploy: npx wrangler deploy (after the steps in README.md).
+name = "playtendoh-reports"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+
+# The reports, private: only this Worker and the owner's wrangler reach them.
+[[d1_databases]]
+binding = "DB"
+database_name = "playtendoh-reports"
+database_id = "REPLACE_WITH_THE_ID_WRANGLER_D1_CREATE_PRINTS"
+
+# At most 30 reports an hour per install ID and 60 per network address (the ID is the client's to
+# choose; the address is not). The app keeps a report that is turned away and tries later.
+[[ratelimits]]
+name = "INSTALL_LIMITER"
+namespace_id = "2001"
+
+  [ratelimits.simple]
+  limit = 30
+  period = 3600
+
+[[ratelimits]]
+name = "ADDRESS_LIMITER"
+namespace_id = "2002"
+
+  [ratelimits.simple]
+  limit = 60
+  period = 3600
+
+# Reports older than 180 days are deleted once a day.
+[triggers]
+crons = ["17 3 * * *"]

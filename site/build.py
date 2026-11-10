@@ -92,10 +92,37 @@ def baked(release):
     return text.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
 
 
+COMPAT_FIELDS = {"side": str, "titleId": str, "name": str, "status": str, "consoles": int, "sessions": int, "ended": int, "failed": int,
+                 "crashed": int, "closed": int, "medianMinutes": (int, type(None)), "firmware": list, "models": list, "apps": list,
+                 "commonError": (str, type(None)), "lastSeen": str}
+
+
+def compat_table(path):
+    """The intake's table, kept to the fields compatibility.html shows: empty when there is none yet."""
+    table = {"schema": 1, "generated": None, "games": []}
+    if not path:
+        return table
+    try:
+        with open(path, encoding="utf-8") as f:
+            given = json.load(f)
+    except (OSError, ValueError) as e:
+        print(f"build.py: no compatibility table ({e})", file=sys.stderr)
+        return table
+    if not isinstance(given, dict) or given.get("schema") != 1 or not isinstance(given.get("games"), list):
+        print("build.py: the compatibility table is not schema 1: left out", file=sys.stderr)
+        return table
+    table["generated"] = given.get("generated") if isinstance(given.get("generated"), str) else None
+    for game in given["games"]:
+        if isinstance(game, dict) and all(isinstance(game.get(k), t) for k, t in COMPAT_FIELDS.items()):
+            table["games"].append({k: game[k] for k in COMPAT_FIELDS})
+    return table
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--release", help="the latest release, as JSON from GitHub's API")
     parser.add_argument("--out", default=os.path.join(REPO_ROOT, "_site"))
+    parser.add_argument("--compat", help="the report intake's table (GET /v1/compatibility.json), for compatibility.html")
     args = parser.parse_args()
 
     release = {}
@@ -133,7 +160,10 @@ def main():
     page = re.sub(r"%([A-Z_]+)%", lambda m: values[m.group(1)], page)
     with open(os.path.join(args.out, "index.html"), "w", encoding="utf-8", newline="\n") as f:
         f.write(page)
-    print(f"build.py: {args.out}, with {release.get('tag_name') or 'no release'} baked in")
+    games = compat_table(args.compat)
+    with open(os.path.join(args.out, "compatibility.json"), "w", encoding="utf-8", newline="\n") as f:
+        json.dump(games, f, ensure_ascii=False, separators=(",", ":"))
+    print(f"build.py: {args.out}, with {release.get('tag_name') or 'no release'} baked in, {len(games['games'])} games reported")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Playtendoh: what players' reports say</title>
+<meta name="description" content="Which games run in Playtendoh, from the reports players chose to send: how each game's sessions ended, on which PS5 models and firmware.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="mark.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<script src="theme.js"></script>
+<script src="compatibility.js" defer></script>
+</head>
+<body>
+<main id="main" class="compat">
+  <p class="compat-back"><a href="./">Playtendoh</a></p>
+  <h1>What players' reports say</h1>
+  <p class="compat-lead">Every row is made from the reports players chose to send from Playtendoh's launcher: how each session of a game
+    ended, on which PS5 models and firmware. It is rebuilt every day. No report names a player or a console;
+    <a href="https://github.com/premohq/PlayTendoh/blob/HEAD/docs/REPORTS.md">this page lists every field a report has</a>.
+    A game with few reports may run better or worse than its row says.</p>
+  <div class="compat-tools">
+    <label>Search <input id="search" type="search" autocomplete="off" placeholder="A game's name or ID"></label>
+    <label>System <select id="side"><option value="">All</option></select></label>
+    <label>Result <select id="status"><option value="">All</option><option value="works">Works</option><option value="mixed">Mixed</option><option value="fails">Fails</option></select></label>
+  </div>
+  <p id="summary" class="compat-summary">Loading the reports…</p>
+  <div class="compat-scroll">
+    <table id="games">
+      <thead><tr><th>Game</th><th>System</th><th>Result</th><th>Consoles</th><th>Sessions</th><th>Ended / failed / crashed</th><th>Typical play</th><th>PS5</th><th>Firmware</th><th>Last seen</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</main>
+</body>
+</html>

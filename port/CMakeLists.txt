@@ -118,6 +118,9 @@ add_library(CemuPS5 STATIC
 	app/boxart.h
 	app/catalog.cpp
 	app/catalog.h
+	app/reports.cpp
+	app/reports.h
+	app/report_send.cpp
 	app/compatibility.cpp
 	app/compatibility.h
 	app/covers.cpp
@@ -234,6 +237,7 @@ add_library(CemuPS5 STATIC
 	frontend/shell/shell.cpp
 	frontend/shell/shell_internal.h
 	frontend/shell/welcome.cpp
+	frontend/shell/reports.cpp
 	frontend/shell/orbit.cpp
 	frontend/shell/timeline.cpp
 	frontend/shell/whatsnew.cpp
@@ -364,6 +368,7 @@ set_source_files_properties(
 	frontend/shell/shares.cpp
 	frontend/shell/shell.cpp
 	frontend/shell/welcome.cpp
+	frontend/shell/reports.cpp
 	frontend/shell/orbit.cpp
 	frontend/shell/timeline.cpp
 	frontend/shell/whatsnew.cpp
@@ -417,6 +422,19 @@ target_include_directories(CemuPS5 PRIVATE
 	"${PS5CEMU_DEPS}/ps5-forwarder-format/include"
 )
 # the version the launcher and the boot log show (the app's param.json has it as 02.000.004)
+# Reports to the project (app/reports.h): the intake's address, given at build time (make
+# PLAYTENDOH_REPORT_URL=https://...): none, and the app asks nothing and sends nothing. And the commit a
+# report names, which pins every emulator's revision (tools/deps.json)
+set(PLAYTENDOH_REPORT_URL "$ENV{PLAYTENDOH_REPORT_URL}" CACHE STRING "the report intake's address (tools/log-intake); empty: no reports")
+if(PLAYTENDOH_REPORT_URL)
+	target_compile_definitions(CemuPS5 PRIVATE PLAYTENDOH_REPORT_URL="${PLAYTENDOH_REPORT_URL}")
+endif()
+execute_process(COMMAND git -C "${CMAKE_CURRENT_LIST_DIR}/.." rev-parse --short=7 HEAD OUTPUT_VARIABLE PLAYTENDOH_COMMIT
+	OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+if(NOT PLAYTENDOH_COMMIT)
+	set(PLAYTENDOH_COMMIT "unknown")
+endif()
+target_compile_definitions(CemuPS5 PRIVATE PLAYTENDOH_COMMIT="${PLAYTENDOH_COMMIT}")
 # SteamGridDB's key for this build (boxart.h): from the environment, a secret in CI, never in the source
 if(PS5ECAM_STEAMGRIDDB_KEY)
 	target_compile_definitions(CemuPS5 PRIVATE PS5ECAM_STEAMGRIDDB_KEY="${PS5ECAM_STEAMGRIDDB_KEY}")

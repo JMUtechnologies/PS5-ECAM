@@ -13,6 +13,7 @@
 #include "../../app/keyboard.h"
 #include "../../app/mods.h"
 #include "../../app/pack_updates.h"
+#include "../../app/reports.h"
 #include "../../app/paths.h"
 #include "../../app/updates.h"
 #include "../../azahar/azahar.h"
@@ -133,6 +134,9 @@ namespace ps5shell
 		m_wordmark = host.assets + "/wordmark.png";
 		ps5sound::Start(m_settings.music, m_settings.musicVolume, m_settings.menuSounds);
 		ps5boxart::SetEnabled(m_settings.boxArt);
+		// reports to the project: kept in the data folder's reports/, and only with the player's yes
+		ps5reports::SetFolder(ps5paths::Root() + "/reports");
+		ps5reports::SetEnabled(ps5reports::Available() && m_settings.ui.reports);
 		ps5catalog::Load();
 		m_start = m_now = m_lastFrame = host.clock();
 		m_sideMix.Snap(1); // the backdrop shows from the first frame; switching sides fades it in again
@@ -213,10 +217,17 @@ namespace ps5shell
 			WelcomeOpen(false); // then the side
 		else
 		{
-			// the side's Library, on the game played last: after a game, that game (6.8)
-			OpenSide(m_side, true);
-			if (returning)
-				Toast(Tr("Saved your place in the library"));
+			// reports to the project, never asked yet (a start that went to the Setup check instead): asked
+			// before the side, on a fresh start only
+			if (ps5reports::Available() && !m_settings.ui.reportsAsked && !returning && m_status.autoLaunch.empty())
+				ReportsOpen([this] { OpenSide(m_side, true); });
+			else
+			{
+				// the side's Library, on the game played last: after a game, that game (6.8)
+				OpenSide(m_side, true);
+				if (returning)
+					Toast(Tr("Saved your place in the library"));
+			}
 		}
 		if (!launchError.empty())
 			OpenHelp(Tr("The game could not start"), launchError);
@@ -526,6 +537,7 @@ namespace ps5shell
 			case ScreenId::Updates: UpdatesUpdate(press); break;
 			case ScreenId::Shares: SharesUpdate(press, actions); break;
 			case ScreenId::Layout: LayoutUpdate(press); break;
+			case ScreenId::Reports: ReportsUpdate(press); break;
 			case ScreenId::Timeline: TimelineUpdate(press); break;
 			}
 		}
@@ -567,6 +579,7 @@ namespace ps5shell
 		case ScreenId::Updates: UpdatesDraw(canvas); break;
 		case ScreenId::Shares: SharesDraw(canvas); break;
 		case ScreenId::Layout: LayoutDraw(canvas); break;
+		case ScreenId::Reports: ReportsDraw(canvas); break;
 		case ScreenId::Timeline: TimelineDraw(canvas); break;
 		}
 		const bool overlay = m_picker.open || m_help.open || m_menu.open || m_keyboard.open || m_update.open || m_unpack.open || m_reorganize.open;
@@ -1088,6 +1101,32 @@ namespace ps5shell
 			LaunchChosen(index, copy);
 	}
 
+	// The game about to start, noted for its report (app/reports.h) when the player said yes: its side,
+	// emulator, and its settings that change how it runs (not its volume, language, region or controls)
+	void Shell::ReportBegin(const ps5emu::Game& game)
+	{
+		if (!ps5reports::Enabled())
+			return;
+		ps5reports::Session session;
+		session.side = SideName(m_side);
+		session.emulator = IsWiiU() ? "cemu" : Is3ds() ? "azahar" : m_side == System::Nds ? "melonds" : m_side == System::Switch2 ? "eglantine" :
+			IsSwitch() ? "eden" : IsPorpoise() ? "porpoise" : m_settings.retro[ps5retro::Slot(SideIndex())].retroBackend == 0 ? "libretro" : "program";
+		session.titleId = game.titleId;
+		session.name = game.name;
+		session.started = std::time(nullptr);
+		const ps5settings::Launcher forGame = ps5settings::ForGame(m_settings, session.side, game.titleId);
+		for (const std::string& name : ps5settings::GameSettingNames(session.side))
+		{
+			if (name == "volume" || name == "language" || name == "nxLanguage" || name == "region" || name == "nxController" || name == "nxDeadzone" ||
+				name.rfind("dsTouch", 0) == 0 || name == "dsMicSource")
+				continue;
+			int value = 0;
+			if (ps5settings::Value(forGame, session.side, name, value))
+				session.settings.emplace_back(name, value);
+		}
+		ps5reports::Begin(session);
+	}
+
 	void Shell::LaunchChosen(int index, const std::string& launchPath)
 	{
 		Game& game = m_games[index];
@@ -1095,6 +1134,7 @@ namespace ps5shell
 		SaveSettings();
 		ps5catalog::Played(CatalogSide(), game.entry.game.titleId, std::time(nullptr));
 		game.entry.lastPlayed = std::time(nullptr);
+		ReportBegin(game.entry.game);
 		ps5catalog::Save();
 		const Box from{760, 240, 400, 560};
 		LaunchGame(game.entry.game,
@@ -1587,6 +1627,7 @@ namespace ps5shell
 			return hints;
 		}
 		case ScreenId::Layout:
+		case ScreenId::Reports:
 		case ScreenId::Timeline: return {}; // their own, on their own grounds
 		case ScreenId::Library:
 		{
@@ -1672,7 +1713,7 @@ namespace ps5shell
 	void Shell::DrawBackdrop(Canvas& canvas)
 	{
 		// the Setup check belongs to no side: the sides' colours, and the seam
-		if (m_screen == ScreenId::Layout)
+		if (m_screen == ScreenId::Layout || m_screen == ScreenId::Reports)
 		{
 			canvas.Rect({0, 0, 1920, 1080}, 0, 0xff0d0705); // #05070d, on every theme
 			canvas.RadialGradient({0, 0, 1920, 1080}, 0, 0x478a4a2a, 0x008a4a2a, 1630, 50, 760, 520);

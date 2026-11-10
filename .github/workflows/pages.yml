@@ -1,7 +1,9 @@
 # PS5-ECAM's site on GitHub Pages (Settings > Pages > Source: GitHub Actions), from site/.
 #
-# It is built again when site/ changes, by hand, and when a release is published, with the latest
-# release's notes in the page (site/build.py) for readers GitHub's API turns away.
+# It is built again when site/ changes, by hand, when a release is published, with the latest
+# release's notes in the page (site/build.py) for readers GitHub's API turns away, and every day, with
+# the table players' reports make (compatibility.html) from the report intake (tools/log-intake): its
+# address is the repository variable REPORTS_URL (Settings > Secrets and variables > Actions > Variables).
 
 name: Pages
 
@@ -13,6 +15,8 @@ on:
       - '.github/workflows/pages.yml'
   release:
     types: [published]
+  schedule:
+    - cron: '41 4 * * *'
   workflow_dispatch:
 
 permissions:
@@ -45,8 +49,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh api "repos/$GITHUB_REPOSITORY/releases/latest" > latest.json || echo '{}' > latest.json
+      - name: The table players' reports make
+        env:
+          REPORTS_URL: ${{ vars.REPORTS_URL }}
+        run: |
+          if [ -n "$REPORTS_URL" ]; then
+            curl -fsS --max-time 60 "$REPORTS_URL/v1/compatibility.json" -o compatibility.json || echo '{}' > compatibility.json
+          else
+            echo '{}' > compatibility.json
+          fi
       - name: Build
-        run: python3 site/build.py --release latest.json --out _site
+        run: python3 site/build.py --release latest.json --compat compatibility.json --out _site
       - uses: actions/upload-pages-artifact@v4
         with:
           path: _site

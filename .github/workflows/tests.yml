@@ -89,6 +89,8 @@ jobs:
 
       - name: Library catalogue
         run: bash tools/tests/test-catalog.sh
+      - name: Reports (scrubber, queue, intake)
+        run: bash tools/tests/test-reports.sh
 
       - name: DS screens' places
         run: bash tools/tests/test-screens.sh

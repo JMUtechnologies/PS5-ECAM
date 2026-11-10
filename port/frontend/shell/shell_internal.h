@@ -79,6 +79,7 @@ namespace ps5shell
 		Updates, // Updates and DLC (6.12)
 		Shares,	 // Network shares (6.14)
 		Layout,	 // Make it yours' first step: Classic or Orbit (orbit.cpp)
+		Reports, // Make it yours' second: whether to send reports to the project, asked once (reports.cpp)
 		Timeline, // every console's games on one shelf, oldest to newest (timeline.cpp)
 	};
 
@@ -367,6 +368,12 @@ namespace ps5shell
 		void LayoutUpdate(const ui::Press& press);
 		void LayoutDraw(Canvas& canvas);
 		void LayoutClassicPreview(Canvas& canvas, const Box& box);
+		// Reports to the project (app/reports.h): asked once, then Settings > Online
+		void ReportsOpen(std::function<void()> then);
+		void ReportsUpdate(const ui::Press& press);
+		void ReportsDraw(Canvas& canvas);
+		void ReportsAnswer(bool yes);
+		void ReportBegin(const ps5emu::Game& game); // a game starts: noted for its report
 		void LayoutOrbitPreview(Canvas& canvas, const Box& box);
 		void OrbitDraw(Canvas& canvas);
 		bool OrbitUpdate(const ui::Press& press); // true: it took the press
@@ -742,6 +749,8 @@ namespace ps5shell
 		// the layout's question, and Orbit
 		std::function<void()> m_layoutThen;
 		int m_layoutFocus = 0;
+		std::function<void()> m_reportsThen;
+		int m_reportsFocus = 1; // 0: Not now, 1: Yes
 		bool m_orbitHome = false;	   // on the dial's middle: the games played last, on every side
 		float m_dialTurn = -1;		   // the dial's turn, in sides (-1: not drawn yet)
 		ui::Spring m_orbitRail;		   // the row of games, slid as far as its focus needs
