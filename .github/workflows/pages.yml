@@ -54,7 +54,8 @@ jobs:
           REPORTS_URL: ${{ vars.REPORTS_URL }}
         run: |
           if [ -n "$REPORTS_URL" ]; then
-            curl -fsS --max-time 60 "$REPORTS_URL/v1/compatibility.json" -o compatibility.json || echo '{}' > compatibility.json
+            # the run's own address: the intake keeps its table an hour for anyone else, never for this
+            curl -fsS --max-time 60 "$REPORTS_URL/v1/compatibility.json?run=$GITHUB_RUN_ID" -o compatibility.json || echo '{}' > compatibility.json
           else
             echo '{}' > compatibility.json
           fi
