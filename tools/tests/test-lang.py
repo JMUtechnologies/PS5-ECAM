@@ -51,6 +51,21 @@ class TranslationGate(unittest.TestCase):
     def test_changed_format_specifier(self):
         self.assertEqual(self.result('{0:02d}', ['{0}']), 1)
 
+    def test_preserved_relative_directory(self):
+        self.assertEqual(self.result('Kept in saves/before.', ['Uloženo v saves/before.']), 0)
+
+    def test_translated_relative_directory(self):
+        self.assertEqual(self.result('Kept in saves/before.', ['Uloženo v uložení/před.']), 1)
+
+    def test_translated_game_directory(self):
+        self.assertEqual(self.result('Use games/gba/port1.', ['Použijte hry/gba/port1.']), 1)
+
+    def test_directory_suffix_is_not_the_same_path(self):
+        self.assertEqual(self.result('Use games/gba/port1.', ['Použijte games/gba/port10.']), 1)
+
+    def test_slash_in_words_is_not_a_directory(self):
+        self.assertEqual(self.result('On/Off', ['Zapnuto/Vypnuto']), 0)
+
     def test_missing_plural_form(self):
         self.assertEqual(self.result('{0} save', ['{0} pozice', '{0} pozice', ''], '{0} saves'), 1)
 
