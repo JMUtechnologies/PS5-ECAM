@@ -68,17 +68,76 @@ its menus and themes. It is **a frontend, not another set of emulators**: it lis
 libraries and every game it starts plays in Playtendoh (`port/esde/handoff.h`). A system or a feature is
 added to the app, and EmulationStation shows it; nothing is added to EmulationStation alone.
 
+## The look: one app, drawn one way
+
+Playtendoh has one look, the owner's, and every screen keeps to it. A change that looks like another
+app inside this one will be sent back, however well it works.
+
+- **The design tokens are the only colours, sizes, radii, type and motion there are**
+  (`port/ui/tokens.json`, turned into `port/ui/tokens.h` by `tools/render-tokens.py`): ink backgrounds,
+  glass panels, Lexend, an 8-pixel grid on the 1920 x 1080 layout inside its safe area, the launcher's
+  double focus ring, its springs and its sounds (`port/frontend/sound.h`). Need something new? Add a token,
+  and say why in the pull request; never a colour or a size written in the code.
+- **Each console's colour, controller and backdrop** are its row in `ps5retro::kSystems` and its drawing in
+  `port/frontend/shell/consoles.cpp`. A new console gets its own, in the same hand as the others.
+- **Screens go where the launcher already has a place for them.** The layouts are Classic and Orbit, picked
+  on the first start, with the Timeline as a view over either; a setting is a row on an existing page; a
+  game's actions are in its Options menu. A new layout, page or menu style is for the owner to approve,
+  from a mockup, before any code.
+- **In a game there is one menu**, the sheet down the left (`port/app/side_menu.h` drawn with
+  `port/app/menu_canvas.h`): quick tiles, then categories that open in place. A side's new options are
+  rows or a category there (as `port/app/buttons_menu.h` adds Buttons to every side), never a menu of its
+  own. Porpoise's in-game menu follows the same sheet.
+- **The name, the mark and the wordmark are fixed:** Playtendoh, written exactly so; the mark of every
+  console's controller in a ring; the wordmark drawn by `tools/render-presentation.py`. Don't redraw them.
+- **Show it.** A pull request that changes anything on screen comes with pictures from the PC preview
+  (`tools/preview-shell.sh`, which needs no console), in the default language and in a long one
+  (`PREVIEW_LANGUAGE=qps`).
+
+## The voice: what the app says
+
+The app talks to players plainly, in short sentences, as a person would. Read the strings next to yours
+before writing one.
+
+- **Say what happens, in the player's words:** "Leaves the game for the library." "For every Switch
+  game." Not "Exit to frontend", not an emulator's setting name, not a function name.
+- **One sentence of help a row**, the second only when the first cannot carry it. No exclamation marks, no
+  capitals for emphasis, no "please", no "simply".
+- **Name things as the app names them:** sides by their console's name, buttons by the DualSense's (Cross,
+  Circle, Square, Triangle), Settings' pages by their titles.
+- **Errors say what went wrong and what to do**, without codes alone: "This game's keys are older than the
+  game: put newer prod.keys in ...", not "Loader status 28".
+- Every string through `Tr`, `TrF` or `TrP`, in every `port/lang/*.po` (below).
+
 ## Working together
 
 - **Start from the newest `PS5-ECAM` branch, and rebase before you open a pull request.** The owner
   works on this branch every day; work on an old base re-does or undoes what changed since. If your
   pull request has been open a while, rebase it before pushing more to it.
+- **Work in your own fork.** The branches in this repository are the owner's: `PS5-ECAM` and `releases`.
+  Open your pull request from a branch of your fork, named for what it does (`switch2-nup-games`), not for
+  the tool that wrote it.
 - **One topic a pull request**, small enough to read. A rewrite of the launcher's files mixed into a
-  feature cannot be reviewed.
+  feature cannot be reviewed. Several things at once are several pull requests.
+- **Clean history:** squash fix-ups ("fix test", "fix patch hunk", "address review") into the commit
+  they fix before asking for review. Each commit left is one change, with a message in the history's
+  style (below), and builds.
 - **Check [ROADMAP.md](docs/ROADMAP.md) first.** If what you want is there, it says how it is meant
-  to go. If it is not, open an issue before a large change or a new system.
+  to go. If it is not, **open an issue first** with what a player would see, and wait for the owner's yes
+  before writing it: a new system, a new screen, a feature for one side only, or anything large. Work
+  that was not agreed may be declined however much of it there is.
 - **Match the code around you**: its tabs, its naming, its comments' voice. Read a few neighbouring
   functions before writing one.
+
+### What gets declined
+
+So nobody spends a week on it first:
+
+- a feature on one side that belongs on all of them (build it once, for every side);
+- a new standalone program, a personal port or a fork where an upstream emulator exists;
+- a screen, menu or control that does not follow the look above;
+- a large change nobody has built, or that says it was tested when it was not;
+- generated reports, audits, plans or logs added as documents, and settings for one person's setup.
 
 ## The habits the code relies on
 
@@ -100,6 +159,9 @@ added to the app, and EmulationStation shows it; nothing is added to EmulationSt
 
 ## Testing and honesty about it
 
+- **Build what you change** ([BUILDING.md](docs/BUILDING.md)): `make release` for the app, or the part's
+  own target (`make eden`, `make eglantine`, `make porpoise`...) for an emulator or its patches, and the
+  PC preview for the launcher. A pull request that changes the app and was never built is not ready.
 - Run the host tests for what you touched (`.github/workflows/tests.yml` lists them all; most are
   `bash tools/tests/test-*.sh`) and keep CI green.
 - Say exactly what was tested and where: "builds", "host tests pass", "ran on my PS5 (firmware
@@ -109,5 +171,12 @@ added to the app, and EmulationStation shows it; nothing is added to EmulationSt
 
 ## Commits
 
-Commit messages follow the history's style: `Area: what changed, in plain words`, then a body that
-says why. If an assistant helped, say so if you like, but the message is still about the change.
+Commit messages follow the history's style: `Area: what changed, in plain words`, what a player notices
+rather than which function moved (`Switch 2: NUP games found, and folders of its own for its games`),
+then a body that says why. If an assistant helped, say so if you like, but the message is still about
+the change, and you are its author: read, build and test what it wrote as if you had typed it.
+
+## Credit
+
+Your work is yours: what is taken from your pull request keeps you as its author, squashed into one
+commit a topic if it came in many, and the README's contributors list names you.
