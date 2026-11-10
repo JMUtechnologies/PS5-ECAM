@@ -1,0 +1,97 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Tue, 10 Nov 2026 02:37:20 -0500
+Subject: [PATCH] PS5-ECAM's Switch 2 side: on Lichii, its own GPU fence wait
+ and shutdown, the front macro callback by its name, the compute pipeline's
+ build lock only
+
+---
+ headless/CMakeLists.txt      | 17 +++++++++++------
+ headless/macro_native.cmake  |  5 +++++
+ headless/pipeline_wait.cmake |  6 +++++-
+ 3 files changed, 21 insertions(+), 7 deletions(-)
+
+diff --git a/headless/CMakeLists.txt b/headless/CMakeLists.txt
+index 47c6b9c..67186db 100644
+--- a/headless/CMakeLists.txt
++++ b/headless/CMakeLists.txt
+@@ -2404,7 +2404,10 @@ if(EDEN_PS5_OPENGL)
+             signaled = state.signaled_fence.load(std::memory_order_acquire);
+         }]=])
+         string(FIND "${gpu_worker}" "${fence_wait_old}" fence_wait_at)
+-        if(fence_wait_at LESS 0)
++        # Lichii waits on its condition variable with the thread's stop token already
++        # (PushCommand, SignalCommand): nothing polls there to replace.
++        string(FIND "${gpu_worker}" "state.cv.wait(lk, thread.get_stop_token()" lichii_fence_wait)
++        if(fence_wait_at LESS 0 AND lichii_fence_wait LESS 0)
+             message(FATAL_ERROR "Pinned GPU completion wait changed")
+         endif()
+         string(REPLACE "${fence_wait_old}" [=[        std::unique_lock fence_lock{state.fence_mutex};
+@@ -2416,7 +2419,7 @@ if(EDEN_PS5_OPENGL)
+         state.signaled_fence.notify_all();
+     }]=])
+         string(FIND "${gpu_worker}" "${fence_signal_old}" fence_signal_at)
+-        if(fence_signal_at LESS 0)
++        if(fence_signal_at LESS 0 AND lichii_fence_wait LESS 0)
+             message(FATAL_ERROR "Pinned GPU completion signal changed")
+         endif()
+         string(REPLACE "${fence_signal_old}" [=[    {
+@@ -2497,7 +2500,10 @@ if(EDEN_PS5_OPENGL)
+     # on the worker cannot keep it from ending.
+     set(old_gpu_shutdown "    void NotifyShutdown() {\n        gpu_thread.NotifyShutdown();\n        std::unique_lock lk{sync_mutex};\n        shutting_down.store(true, std::memory_order::relaxed);\n        sync_cv.notify_all();\n    }")
+     string(FIND "${gpu_source}" "${old_gpu_shutdown}" gpu_shutdown_offset)
+-    if(gpu_shutdown_offset LESS 0)
++    # Lichii's shutdown releases the guest threads waiting on a flush itself after its GPU threads stop
++    # (sync_requests_dropped), and its worker waits with a stop token: kept as it is.
++    string(FIND "${gpu_source}" "sync_requests_dropped = true;" lichii_gpu_shutdown)
++    if(gpu_shutdown_offset LESS 0 AND lichii_gpu_shutdown LESS 0)
+         message(FATAL_ERROR "Pinned GPU shutdown changed")
+     endif()
+     string(REPLACE "${old_gpu_shutdown}"
+@@ -2536,9 +2542,8 @@ if(EDEN_PS5_OPENGL)
+             auto const command_header = commands[index]; //can copy
+ ]=])
+             string(FIND "${command_source}" "${dma_word}" dma_word_at)
+-            if(dma_word_at LESS 0)
+-                message(FATAL_ERROR "Pinned DmaPusher::ProcessCommands changed")
+-            endif()
++            # (A speed-up only, off with the split that Switch 2 titles use: on Lichii's rewritten command
++            # loop it is left out, and the REPLACE below finds nothing to change.)
+             if(EDEN_DEV_PROFILE)
+                 set(dma_count_run [=[
+                     ::Eden::Performance::dma_batch_runs.store(::Eden::Performance::dma_batch_runs.load(std::memory_order_relaxed) + 1, std::memory_order_relaxed);
+diff --git a/headless/macro_native.cmake b/headless/macro_native.cmake
+index febb8f0..e9123d1 100644
+--- a/headless/macro_native.cmake
++++ b/headless/macro_native.cmake
+@@ -66,6 +66,11 @@ string(REPLACE "${front_begin}" [=[        ::Eden::MacroNative::Bench native_ben
+ ]=] native_maxwell "${native_maxwell}")
+ set(front_emit "            [&](u32 address, u32 value) {\n")
+ string(FIND "${native_maxwell}" "${front_emit}" front_emit_at)
++if(front_emit_at LESS 0)
++    # Lichii names the front's callback (emit) and hands it to its Turing macro JIT or interpreter.
++    set(front_emit "        const auto emit = [&](u32 address, u32 value) {\n")
++    string(FIND "${native_maxwell}" "${front_emit}" front_emit_at)
++endif()
+ if(front_emit_at LESS 0)
+     message(FATAL_ERROR "Pinned front macro method callback changed")
+ endif()
+diff --git a/headless/pipeline_wait.cmake b/headless/pipeline_wait.cmake
+index 9655435..f7a22c0 100644
+--- a/headless/pipeline_wait.cmake
++++ b/headless/pipeline_wait.cmake
+@@ -4,9 +4,13 @@ foreach(pipeline_header IN ITEMS vk_graphics_pipeline.h vk_compute_pipeline.h)
+     file(READ "${PROJECT_SOURCE_DIR}/src/video_core/renderer_vulkan/${pipeline_header}" pipeline_source)
+     set(pipeline_wait_old "    std::condition_variable build_condvar;\n    std::mutex build_mutex;\n")
+     string(FIND "${pipeline_source}" "${pipeline_wait_old}" pipeline_wait_at)
+-    if(pipeline_wait_at LESS 0)
++    # (Lichii's graphics pipeline has no build lock any more: only the compute one is bounded there.)
++    if(pipeline_wait_at LESS 0 AND pipeline_header STREQUAL "vk_compute_pipeline.h")
+         message(FATAL_ERROR "Pinned ${pipeline_header} build wait changed")
+     endif()
++    if(pipeline_wait_at LESS 0)
++        continue()
++    endif()
+     string(REPLACE "${pipeline_wait_old}"
+         "    ::Eden::StripedCondition build_condvar;\n    ::Eden::StripedMutex build_mutex;\n"
+         pipeline_source "${pipeline_source}")

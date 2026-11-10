@@ -9,10 +9,11 @@ zortos293/Lichii `nx2` at `d2eaae4` (9 November 2026). Where they stand:
 - `tools/prepare-vulkan-port.py`: all 69 Vulkan anchors fit Lichii; where Lichii now does the same itself,
   Lichii's is kept (its compute read barrier, draw submission policy with the PS5's 512-draw cap,
   scratch-buffer release, 16 MiB VMA blocks, pipeline cache writes).
-- `headless/*.cmake` (the configure-time edits): 25 anchors had moved; done so far: the network sockets
-  (Lichii's own hardened ones kept), the idle core spin, mod-root guards, the tracked-write manager, the
-  in-place code decoding. Left: the GPU completion wait, signal and shutdown, `DmaPusher::ProcessCommands`,
-  the front macro callback, the pipeline build wait.
+- `headless/*.cmake` (the configure-time edits): all 25 that had moved are handled, and the core configures
+  on Lichii. Where Lichii does the job itself, its own is kept: hardened network sockets, the idle core spin,
+  mod-root guards, the GPU fence wait and shutdown, the graphics pipeline without a build lock. Fitted: the
+  tracked-write manager, the in-place code decoding, the front macro callback. Left out for now (speed-ups
+  only): the command-word batching.
 - The core fixes: 4 of the port's 59 apply on Lichii; one is in Lichii already; the other 54 are in
   `tools/eglantine-patches-pending/` to port one by one, the PS5 memory work first.
 - Then: compile, the port's own checks, and the pin in `tools/deps.json` with `patches/eglantine` remade.

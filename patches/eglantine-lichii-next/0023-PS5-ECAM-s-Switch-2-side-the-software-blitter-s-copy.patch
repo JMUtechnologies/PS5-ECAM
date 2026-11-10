@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Tue, 10 Nov 2026 02:37:49 -0500
+Subject: [PATCH] PS5-ECAM's Switch 2 side: the software blitter's copy still
+ written; Lichii's fence wait found after the stop-token rename
+
+---
+ headless/CMakeLists.txt      | 2 +-
+ tools/prepare-vulkan-port.py | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/headless/CMakeLists.txt b/headless/CMakeLists.txt
+index 67186db..706d9ba 100644
+--- a/headless/CMakeLists.txt
++++ b/headless/CMakeLists.txt
+@@ -2406,7 +2406,7 @@ if(EDEN_PS5_OPENGL)
+         string(FIND "${gpu_worker}" "${fence_wait_old}" fence_wait_at)
+         # Lichii waits on its condition variable with the thread's stop token already
+         # (PushCommand, SignalCommand): nothing polls there to replace.
+-        string(FIND "${gpu_worker}" "state.cv.wait(lk, thread.get_stop_token()" lichii_fence_wait)
++        string(FIND "${gpu_worker}" "state.cv.wait(lk, stop_source.get_token()" lichii_fence_wait)
+         if(fence_wait_at LESS 0 AND lichii_fence_wait LESS 0)
+             message(FATAL_ERROR "Pinned GPU completion wait changed")
+         endif()
+diff --git a/tools/prepare-vulkan-port.py b/tools/prepare-vulkan-port.py
+index 418aef3..1cb81f8 100644
+--- a/tools/prepare-vulkan-port.py
++++ b/tools/prepare-vulkan-port.py
+@@ -756,6 +756,7 @@ adapt('src/video_core/renderer_vulkan/vk_staging_buffer_pool.cpp', 'vulkan_stagi
+ # go back once the blit has written its result (the scoped guest write ends with its block; the
+ # loading probe's writeback scope ends there too, after the write, as it did at the return).
+ # (Lichii's software blitter gives back its large scratch buffers itself: ReleaseLargeBuffers.)
++adapt('src/video_core/engines/sw_blitter/blitter.cpp', 'sw_blitter.cpp', [])
+ # Development A/B switches for device features (headless/dev_vulkan.h, dev-settings).
+ adapt('src/video_core/vulkan_common/vulkan_device.cpp', 'vulkan_device.cpp', [
+     # (Lichii's VMA blocks are 16 MiB already: preferredLargeHeapBlockSize.)
