@@ -21,7 +21,8 @@ games or saves.
 
 ## Browse
 
-In the Library, press Square, choose Collections, then choose a collection.
+Move down from Recently played into the main Library list, press Square, choose
+Collections, then choose a collection.
 The library heading shows its name. Search and the existing filters still apply;
 hidden games remain hidden unless the Hidden filter is selected. Choose All in
 the collection picker, or press Circle, to clear the collection selection.
