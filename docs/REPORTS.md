@@ -14,7 +14,8 @@ scrubbed), `port/app/report_send.cpp` (sending) and `tools/log-intake` (where it
   becomes a report in the data folder's `reports/outbox/`, and the outbox is sent a few seconds later,
   on its own, while the launcher is idle. Starting a game stops a send.
 - A report that cannot be sent waits: at most 20 reports, 512 KB and 14 days, the oldest dropped first.
-- A build made without an intake address (`PLAYTENDOH_REPORT_URL`) asks nothing and sends nothing.
+- A build from this repository sends to the project's intake. One built with `PLAYTENDOH_REPORT_URL` set
+  empty asks nothing and sends nothing.
 
 ## What a report holds (schema 1)
 

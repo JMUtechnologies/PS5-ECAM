@@ -34,8 +34,10 @@ npx wrangler deploy
 `deploy` prints the Worker's address, for example `https://playtendoh-reports.<account>.workers.dev`.
 Then:
 
-1. **The app:** build with that address: `make release PLAYTENDOH_REPORT_URL=https://playtendoh-reports.<account>.workers.dev/v1/report`
-   (or the same as an environment variable). Without it the app asks nothing and sends nothing.
+1. **The app:** `tools/build-cemu.sh` builds this intake's address in
+   (`https://playtendoh-reports.pixelnet321.workers.dev/v1/report`). Another intake: `make release
+   PLAYTENDOH_REPORT_URL=https://.../v1/report`; none: `PLAYTENDOH_REPORT_URL=` (empty), and the app
+   asks nothing and sends nothing.
 2. **The site:** on GitHub, Settings > Secrets and variables > Actions > Variables, add `REPORTS_URL`
    = `https://playtendoh-reports.<account>.workers.dev` (no path). The Pages workflow then fetches the
    table every day, or at once from Actions > Pages > Run workflow.
