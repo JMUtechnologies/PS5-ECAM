@@ -80,12 +80,12 @@ namespace ps5shell
 		switch (b)
 		{
 		case Button::Triangle:
-			if (!IsRetro())
+			if (!IsRetro() || IsPorpoise())
 			{
 				const auto& game = m_games[m_hubGame].entry.game;
 				const auto system = BoxOf(game);
 				ps5boxart::Fetch(system, {game.gameId}, ps5boxart::Art::Back);
-				if (IsWiiU()) ps5boxart::Fetch(system, {game.gameId}, ps5boxart::Art::Disc);
+				if (IsWiiU() || IsPorpoise()) ps5boxart::Fetch(system, {game.gameId}, ps5boxart::Art::Disc);
 			}
 			m_caseInspect = true;
 			m_caseOpen = false;
@@ -201,8 +201,10 @@ namespace ps5shell
 		canvas.Text(Style({28, ui::Weight::SemiBold, 1.0f}), kSafeX, 74, game.entry.game.name, 0xffffffff, 1700, 1);
 		const auto system = BoxOf(game.entry.game);
 		const std::string& id = game.entry.game.gameId;
-		const ui::Picture& backArt = m_images->Get(IsRetro() ? std::string() : ps5boxart::Path(system, id, ps5boxart::Art::Back));
-		const ui::Picture& discArt = m_images->Get(IsRetro() ? std::string() : ps5boxart::Path(system, id, ps5boxart::Art::Disc));
+		const bool discMedia = IsWiiU() || IsPorpoise();
+		const bool remoteArt = !IsRetro() || IsPorpoise();
+		const ui::Picture& backArt = m_images->Get(!remoteArt ? std::string() : ps5boxart::Path(system, id, ps5boxart::Art::Back));
+		const ui::Picture& discArt = m_images->Get(!remoteArt ? std::string() : ps5boxart::Path(system, id, ps5boxart::Art::Disc));
 		const float w = IsWiiU() ? 420.0f : 490.0f, h = IsWiiU() ? 610.0f : 500.0f;
 		const float angle = m_caseAngle, cs = std::cos(angle), sn = std::sin(angle);
 		auto project = [&](float x, float y, float z) -> ui::Point {
@@ -214,6 +216,18 @@ namespace ps5shell
 			return std::array<ui::Point, 4>{project(-w / 2, -h / 2, z), project(w / 2, -h / 2, z),
 				project(w / 2, h / 2, z), project(-w / 2, h / 2, z)};
 		};
+		if (m_caseDisc && !discMedia)
+		{
+			// Every other side can inspect its media too, using the game's existing cover.
+			const auto media = plane(0);
+			const ui::Picture& art = Cover(game);
+			if (cs >= 0) canvas.ImageQuad(art.texture, media, art.texture ? 0xffffffff : Accent());
+			else canvas.ImageQuad(0, media, 0xff343946);
+			if (!art.texture && cs > 0.6f)
+				canvas.Text(Style({24, ui::Weight::SemiBold, 1.0f}), media[0].x + 24, media[0].y + 60,
+					game.entry.game.name, 0xffffffff, std::max(1.0f, media[1].x - media[0].x - 48), 3);
+			return;
+		}
 		if (m_caseDisc)
 		{
 			// Lift the disc out of its tray for an unobstructed view of either face.
@@ -244,7 +258,17 @@ namespace ps5shell
 		const int other = edge == 1 ? 2 : 3;
 		canvas.Triangle(back[edge].x, back[edge].y, rim[edge].x, rim[edge].y, rim[other].x, rim[other].y, 0xff242a37);
 		canvas.Triangle(back[edge].x, back[edge].y, rim[other].x, rim[other].y, back[other].x, back[other].y, 0xff242a37);
-		if (m_caseOpen)
+		if (m_caseOpen && !discMedia)
+		{
+			const ui::Picture& art = Cover(game);
+			const ui::Point centre = project(0, 0, 18);
+			const float mediaWidth = w * 0.38f * m_caseZoom * std::max(0.03f, std::fabs(cs));
+			const float mediaHeight = h * 0.36f * m_caseZoom;
+			const Box media{centre.x - mediaWidth / 2, centre.y - mediaHeight / 2, mediaWidth, mediaHeight};
+			canvas.Rect(media, 8, 0xff343946);
+			if (art.texture && cs > 0) canvas.ImageCover(art.texture, art.width, art.height, media.Inset(6, 6), 4);
+		}
+		if (m_caseOpen && discMedia)
 		{
 			// A disc in the tray. Its apparent width follows the case's turn.
 			const ui::Point centre = project(0, 0, 18);
