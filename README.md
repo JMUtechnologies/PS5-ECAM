@@ -20,7 +20,7 @@
   DS on <a href="https://github.com/melonDS-emu/melonDS">melonDS</a>, Switch on <a href="https://github.com/eden-emu/mirror">Eden</a>,
   Switch 2 on <a href="https://github.com/heydemoura/EglantinePS5">EglantinePS5</a>, GameCube and Wii on Dolphin, and the classics on
   libretro cores behind the app's own menus.<br>
-  Made by its co-founders, <a href="https://github.com/premohq">premohq</a> and <a href="https://github.com/JMUtechnologies">JMUtechnologies</a>.
+  Made by its co-founders, <a href="https://github.com/premohq">premohq</a>, <a href="https://github.com/JMUtechnologies">JMUtechnologies</a> and <a href="https://github.com/Phononenom">Phononenom</a>.
   It was PS5CEMU-HAR until 5.0.0 and PS5-ECAM until 6.0.
 </p>
 
@@ -229,16 +229,17 @@ Bugs still go in [GitHub issues](https://github.com/premohq/PlayTendoh/issues/ne
   the Switch 2 side on EglantinePS5 with the shared in-game menu, its NUP games and folders, and a game's own
   performance switches ([#109](https://github.com/premohq/PlayTendoh/pull/109), [#112](https://github.com/premohq/PlayTendoh/pull/112))
 
+- **[Phononenom](https://github.com/Phononenom)**, co-founder: the GameCube and Wii sides as they are in 6.0
+  (Porpoise's in-game menu as Playtendoh's, its settings, memory cards and saves per game, a game's setups,
+  cheats and patches, Wii banners and title screens in the launcher,
+  [#114](https://github.com/premohq/PlayTendoh/pull/114)), and the Game Boy Advance on the link cable
+
 ### Contributors
 
 Big thanks to the people who sent code and fixes to Playtendoh itself. Want to join them? [CONTRIBUTING.md](CONTRIBUTING.md)
 says where the app is going and how to fit in.
 
 
-- **[Phononenom](https://github.com/Phononenom)** for the GameCube and Wii sides as they are in 6.0: Porpoise's
-  in-game menu as Playtendoh's, its settings, memory cards and saves per game, a game's setups, cheats and
-  patches, Wii banners and title screens in the launcher ([#114](https://github.com/premohq/PlayTendoh/pull/114)),
-  and the Game Boy Advance on the link cable
 - **[dolphin78](https://github.com/dolphin78)**, with a massive shoutout: Artic Setup works on the PS5
   because of him ([#70](https://github.com/premohq/PlayTendoh/pull/70)). He found and fixed why the 3DS's system update failed and why a
   New 3DS's setup crashed, and tested it all on his own PS5 with a New 3DS XL. He also made crash
