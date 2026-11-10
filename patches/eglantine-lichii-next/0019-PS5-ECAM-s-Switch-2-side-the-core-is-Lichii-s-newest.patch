@@ -1,0 +1,370 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Mon, 9 Nov 2026 22:06:18 -0500
+Subject: [PATCH] PS5-ECAM's Switch 2 side: the core is Lichii's newest (nx2
+ d2eaae4); the core patches that do not apply to it set aside to port again
+
+---
+ .gitmodules                                   |  2 +-
+ .../0001-extracted-versioned-content.patch    |  0
+ ...0002-ampere-u16-f2i-source-modifiers.patch |  0
+ ...3-audio-out-manager-session-lifetime.patch |  0
+ ...-mario-kart-performance-and-readback.patch |  0
+ ...-gate-allocation-and-transcode-dumps.patch |  0
+ ...-unwritten-page-reads-and-spin-waits.patch |  0
+ ...re-cache-costs-and-split-diagnostics.patch |  0
+ .../0008-bananza-terrain-counters.patch       |  0
+ .../0009-software-hmma.patch                  |  0
+ .../0010-sparse-zero-clears.patch             |  0
+ .../0011-sparse-vma-pool.patch                |  0
+ .../0012-collect-emptiest-blocks.patch        |  0
+ .../0013-native-ampere-hmma.patch             |  0
+ .../0014-pipeline-statistics-log.patch        |  0
+ .../0015-nir-compute-backend.patch            |  0
+ ...017-compute-qualification-statistics.patch |  0
+ .../0018-texture-cache-feedback-copies.patch  |  0
+ .../0019-skip-empty-draws.patch               |  0
+ .../0020-read-trap-areas.patch                |  0
+ .../0022-dense-lazy-gpu-regions.patch         |  0
+ .../0023-vma-oom-recovery.patch               |  0
+ .../0024-switch2-texture-cache-ceiling.patch  |  0
+ .../0026-split-pending-releases.patch         |  0
+ .../0027-mme-dma-read-ahead.patch             |  0
+ .../0028-split-register-blocks.patch          |  0
+ .../0029-descriptor-table-lazy.patch          |  0
+ .../0030-uniform-prefetch.patch               |  0
+ .../0031-macro-state-writes.patch             |  0
+ .../0032-astc-opaque-scan-table.patch         |  0
+ .../0033-cache-ticks-without-present.patch    |  0
+ ...-null-image-blit-and-syncpoint-range.patch |  0
+ ...36-new-channel-waits-for-last-writer.patch |  0
+ ...037-video-decoder-later-sdk-commands.patch |  0
+ .../0038-switch2-movies-av1.patch             |  0
+ .../0039-switch2-vibration-values.patch       |  0
+ ...0040-predicated-call-noinc-loop-exit.patch |  0
+ .../0041-shf-immediate-without-wrap.patch     |  0
+ .../0042-constant-lea-without-carry.patch     |  0
+ .../0043-depbar-any-scoreboard.patch          |  0
+ .../0044-uprmt-immediate.patch                |  0
+ .../0045-guarded-ushf.patch                   |  0
+ .../0046-sts-uniform-base.patch               |  0
+ .../0047-iadd3-immediate-sign.patch           |  0
+ .../0048-hfma2-h0-nh1.patch                   |  0
+ .../0049-r2ur-unpredicated-move.patch         |  0
+ .../0050-image-written-pages.patch            |  0
+ .../0051-nup-containers.patch                 |  0
+ .../0052-wait-if-equal-64.patch               |  0
+ .../0053-nx2-audio-streams.patch              |  0
+ .../0054-ocarina-compute-shaders.patch        |  0
+ .../0056-index-buffer-span-cap.patch          |  0
+ .../0057-svc-memory-stats.patch               |  0
+ .../0058-shader-modules-not-kept.patch        |  0
+ .../0059-device-memory-gpu-reach-hook.patch   |  0
+ .../0025-slot-vector-begin.patch              | 19 -------------------
+ 56 files changed, 1 insertion(+), 20 deletions(-)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0001-extracted-versioned-content.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0002-ampere-u16-f2i-source-modifiers.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0003-audio-out-manager-session-lifetime.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0004-mario-kart-performance-and-readback.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0005-gate-allocation-and-transcode-dumps.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0006-ps5-unwritten-page-reads-and-spin-waits.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0007-ps5-texture-cache-costs-and-split-diagnostics.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0008-bananza-terrain-counters.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0009-software-hmma.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0010-sparse-zero-clears.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0011-sparse-vma-pool.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0012-collect-emptiest-blocks.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0013-native-ampere-hmma.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0014-pipeline-statistics-log.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0015-nir-compute-backend.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0017-compute-qualification-statistics.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0018-texture-cache-feedback-copies.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0019-skip-empty-draws.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0020-read-trap-areas.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0022-dense-lazy-gpu-regions.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0023-vma-oom-recovery.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0024-switch2-texture-cache-ceiling.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0026-split-pending-releases.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0027-mme-dma-read-ahead.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0028-split-register-blocks.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0029-descriptor-table-lazy.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0030-uniform-prefetch.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0031-macro-state-writes.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0032-astc-opaque-scan-table.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0033-cache-ticks-without-present.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0035-null-image-blit-and-syncpoint-range.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0036-new-channel-waits-for-last-writer.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0037-video-decoder-later-sdk-commands.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0038-switch2-movies-av1.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0039-switch2-vibration-values.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0040-predicated-call-noinc-loop-exit.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0041-shf-immediate-without-wrap.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0042-constant-lea-without-carry.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0043-depbar-any-scoreboard.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0044-uprmt-immediate.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0045-guarded-ushf.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0046-sts-uniform-base.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0047-iadd3-immediate-sign.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0048-hfma2-h0-nh1.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0049-r2ur-unpredicated-move.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0050-image-written-pages.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0051-nup-containers.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0052-wait-if-equal-64.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0053-nx2-audio-streams.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0054-ocarina-compute-shaders.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0056-index-buffer-span-cap.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0057-svc-memory-stats.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0058-shader-modules-not-kept.patch (100%)
+ rename tools/{eglantine-patches => eglantine-patches-pending}/0059-device-memory-gpu-reach-hook.patch (100%)
+ delete mode 100644 tools/eglantine-patches/0025-slot-vector-begin.patch
+
+diff --git a/.gitmodules b/.gitmodules
+index aceaf37..9313bd6 100644
+--- a/.gitmodules
++++ b/.gitmodules
+@@ -1,3 +1,3 @@
+ [submodule "Eglantine"]
+ 	path = Eglantine
+-	url = https://github.com/zortos293/Eglantine
++	url = https://github.com/zortos293/Lichii
+diff --git a/tools/eglantine-patches/0001-extracted-versioned-content.patch b/tools/eglantine-patches-pending/0001-extracted-versioned-content.patch
+similarity index 100%
+rename from tools/eglantine-patches/0001-extracted-versioned-content.patch
+rename to tools/eglantine-patches-pending/0001-extracted-versioned-content.patch
+diff --git a/tools/eglantine-patches/0002-ampere-u16-f2i-source-modifiers.patch b/tools/eglantine-patches-pending/0002-ampere-u16-f2i-source-modifiers.patch
+similarity index 100%
+rename from tools/eglantine-patches/0002-ampere-u16-f2i-source-modifiers.patch
+rename to tools/eglantine-patches-pending/0002-ampere-u16-f2i-source-modifiers.patch
+diff --git a/tools/eglantine-patches/0003-audio-out-manager-session-lifetime.patch b/tools/eglantine-patches-pending/0003-audio-out-manager-session-lifetime.patch
+similarity index 100%
+rename from tools/eglantine-patches/0003-audio-out-manager-session-lifetime.patch
+rename to tools/eglantine-patches-pending/0003-audio-out-manager-session-lifetime.patch
+diff --git a/tools/eglantine-patches/0004-mario-kart-performance-and-readback.patch b/tools/eglantine-patches-pending/0004-mario-kart-performance-and-readback.patch
+similarity index 100%
+rename from tools/eglantine-patches/0004-mario-kart-performance-and-readback.patch
+rename to tools/eglantine-patches-pending/0004-mario-kart-performance-and-readback.patch
+diff --git a/tools/eglantine-patches/0005-gate-allocation-and-transcode-dumps.patch b/tools/eglantine-patches-pending/0005-gate-allocation-and-transcode-dumps.patch
+similarity index 100%
+rename from tools/eglantine-patches/0005-gate-allocation-and-transcode-dumps.patch
+rename to tools/eglantine-patches-pending/0005-gate-allocation-and-transcode-dumps.patch
+diff --git a/tools/eglantine-patches/0006-ps5-unwritten-page-reads-and-spin-waits.patch b/tools/eglantine-patches-pending/0006-ps5-unwritten-page-reads-and-spin-waits.patch
+similarity index 100%
+rename from tools/eglantine-patches/0006-ps5-unwritten-page-reads-and-spin-waits.patch
+rename to tools/eglantine-patches-pending/0006-ps5-unwritten-page-reads-and-spin-waits.patch
+diff --git a/tools/eglantine-patches/0007-ps5-texture-cache-costs-and-split-diagnostics.patch b/tools/eglantine-patches-pending/0007-ps5-texture-cache-costs-and-split-diagnostics.patch
+similarity index 100%
+rename from tools/eglantine-patches/0007-ps5-texture-cache-costs-and-split-diagnostics.patch
+rename to tools/eglantine-patches-pending/0007-ps5-texture-cache-costs-and-split-diagnostics.patch
+diff --git a/tools/eglantine-patches/0008-bananza-terrain-counters.patch b/tools/eglantine-patches-pending/0008-bananza-terrain-counters.patch
+similarity index 100%
+rename from tools/eglantine-patches/0008-bananza-terrain-counters.patch
+rename to tools/eglantine-patches-pending/0008-bananza-terrain-counters.patch
+diff --git a/tools/eglantine-patches/0009-software-hmma.patch b/tools/eglantine-patches-pending/0009-software-hmma.patch
+similarity index 100%
+rename from tools/eglantine-patches/0009-software-hmma.patch
+rename to tools/eglantine-patches-pending/0009-software-hmma.patch
+diff --git a/tools/eglantine-patches/0010-sparse-zero-clears.patch b/tools/eglantine-patches-pending/0010-sparse-zero-clears.patch
+similarity index 100%
+rename from tools/eglantine-patches/0010-sparse-zero-clears.patch
+rename to tools/eglantine-patches-pending/0010-sparse-zero-clears.patch
+diff --git a/tools/eglantine-patches/0011-sparse-vma-pool.patch b/tools/eglantine-patches-pending/0011-sparse-vma-pool.patch
+similarity index 100%
+rename from tools/eglantine-patches/0011-sparse-vma-pool.patch
+rename to tools/eglantine-patches-pending/0011-sparse-vma-pool.patch
+diff --git a/tools/eglantine-patches/0012-collect-emptiest-blocks.patch b/tools/eglantine-patches-pending/0012-collect-emptiest-blocks.patch
+similarity index 100%
+rename from tools/eglantine-patches/0012-collect-emptiest-blocks.patch
+rename to tools/eglantine-patches-pending/0012-collect-emptiest-blocks.patch
+diff --git a/tools/eglantine-patches/0013-native-ampere-hmma.patch b/tools/eglantine-patches-pending/0013-native-ampere-hmma.patch
+similarity index 100%
+rename from tools/eglantine-patches/0013-native-ampere-hmma.patch
+rename to tools/eglantine-patches-pending/0013-native-ampere-hmma.patch
+diff --git a/tools/eglantine-patches/0014-pipeline-statistics-log.patch b/tools/eglantine-patches-pending/0014-pipeline-statistics-log.patch
+similarity index 100%
+rename from tools/eglantine-patches/0014-pipeline-statistics-log.patch
+rename to tools/eglantine-patches-pending/0014-pipeline-statistics-log.patch
+diff --git a/tools/eglantine-patches/0015-nir-compute-backend.patch b/tools/eglantine-patches-pending/0015-nir-compute-backend.patch
+similarity index 100%
+rename from tools/eglantine-patches/0015-nir-compute-backend.patch
+rename to tools/eglantine-patches-pending/0015-nir-compute-backend.patch
+diff --git a/tools/eglantine-patches/0017-compute-qualification-statistics.patch b/tools/eglantine-patches-pending/0017-compute-qualification-statistics.patch
+similarity index 100%
+rename from tools/eglantine-patches/0017-compute-qualification-statistics.patch
+rename to tools/eglantine-patches-pending/0017-compute-qualification-statistics.patch
+diff --git a/tools/eglantine-patches/0018-texture-cache-feedback-copies.patch b/tools/eglantine-patches-pending/0018-texture-cache-feedback-copies.patch
+similarity index 100%
+rename from tools/eglantine-patches/0018-texture-cache-feedback-copies.patch
+rename to tools/eglantine-patches-pending/0018-texture-cache-feedback-copies.patch
+diff --git a/tools/eglantine-patches/0019-skip-empty-draws.patch b/tools/eglantine-patches-pending/0019-skip-empty-draws.patch
+similarity index 100%
+rename from tools/eglantine-patches/0019-skip-empty-draws.patch
+rename to tools/eglantine-patches-pending/0019-skip-empty-draws.patch
+diff --git a/tools/eglantine-patches/0020-read-trap-areas.patch b/tools/eglantine-patches-pending/0020-read-trap-areas.patch
+similarity index 100%
+rename from tools/eglantine-patches/0020-read-trap-areas.patch
+rename to tools/eglantine-patches-pending/0020-read-trap-areas.patch
+diff --git a/tools/eglantine-patches/0022-dense-lazy-gpu-regions.patch b/tools/eglantine-patches-pending/0022-dense-lazy-gpu-regions.patch
+similarity index 100%
+rename from tools/eglantine-patches/0022-dense-lazy-gpu-regions.patch
+rename to tools/eglantine-patches-pending/0022-dense-lazy-gpu-regions.patch
+diff --git a/tools/eglantine-patches/0023-vma-oom-recovery.patch b/tools/eglantine-patches-pending/0023-vma-oom-recovery.patch
+similarity index 100%
+rename from tools/eglantine-patches/0023-vma-oom-recovery.patch
+rename to tools/eglantine-patches-pending/0023-vma-oom-recovery.patch
+diff --git a/tools/eglantine-patches/0024-switch2-texture-cache-ceiling.patch b/tools/eglantine-patches-pending/0024-switch2-texture-cache-ceiling.patch
+similarity index 100%
+rename from tools/eglantine-patches/0024-switch2-texture-cache-ceiling.patch
+rename to tools/eglantine-patches-pending/0024-switch2-texture-cache-ceiling.patch
+diff --git a/tools/eglantine-patches/0026-split-pending-releases.patch b/tools/eglantine-patches-pending/0026-split-pending-releases.patch
+similarity index 100%
+rename from tools/eglantine-patches/0026-split-pending-releases.patch
+rename to tools/eglantine-patches-pending/0026-split-pending-releases.patch
+diff --git a/tools/eglantine-patches/0027-mme-dma-read-ahead.patch b/tools/eglantine-patches-pending/0027-mme-dma-read-ahead.patch
+similarity index 100%
+rename from tools/eglantine-patches/0027-mme-dma-read-ahead.patch
+rename to tools/eglantine-patches-pending/0027-mme-dma-read-ahead.patch
+diff --git a/tools/eglantine-patches/0028-split-register-blocks.patch b/tools/eglantine-patches-pending/0028-split-register-blocks.patch
+similarity index 100%
+rename from tools/eglantine-patches/0028-split-register-blocks.patch
+rename to tools/eglantine-patches-pending/0028-split-register-blocks.patch
+diff --git a/tools/eglantine-patches/0029-descriptor-table-lazy.patch b/tools/eglantine-patches-pending/0029-descriptor-table-lazy.patch
+similarity index 100%
+rename from tools/eglantine-patches/0029-descriptor-table-lazy.patch
+rename to tools/eglantine-patches-pending/0029-descriptor-table-lazy.patch
+diff --git a/tools/eglantine-patches/0030-uniform-prefetch.patch b/tools/eglantine-patches-pending/0030-uniform-prefetch.patch
+similarity index 100%
+rename from tools/eglantine-patches/0030-uniform-prefetch.patch
+rename to tools/eglantine-patches-pending/0030-uniform-prefetch.patch
+diff --git a/tools/eglantine-patches/0031-macro-state-writes.patch b/tools/eglantine-patches-pending/0031-macro-state-writes.patch
+similarity index 100%
+rename from tools/eglantine-patches/0031-macro-state-writes.patch
+rename to tools/eglantine-patches-pending/0031-macro-state-writes.patch
+diff --git a/tools/eglantine-patches/0032-astc-opaque-scan-table.patch b/tools/eglantine-patches-pending/0032-astc-opaque-scan-table.patch
+similarity index 100%
+rename from tools/eglantine-patches/0032-astc-opaque-scan-table.patch
+rename to tools/eglantine-patches-pending/0032-astc-opaque-scan-table.patch
+diff --git a/tools/eglantine-patches/0033-cache-ticks-without-present.patch b/tools/eglantine-patches-pending/0033-cache-ticks-without-present.patch
+similarity index 100%
+rename from tools/eglantine-patches/0033-cache-ticks-without-present.patch
+rename to tools/eglantine-patches-pending/0033-cache-ticks-without-present.patch
+diff --git a/tools/eglantine-patches/0035-null-image-blit-and-syncpoint-range.patch b/tools/eglantine-patches-pending/0035-null-image-blit-and-syncpoint-range.patch
+similarity index 100%
+rename from tools/eglantine-patches/0035-null-image-blit-and-syncpoint-range.patch
+rename to tools/eglantine-patches-pending/0035-null-image-blit-and-syncpoint-range.patch
+diff --git a/tools/eglantine-patches/0036-new-channel-waits-for-last-writer.patch b/tools/eglantine-patches-pending/0036-new-channel-waits-for-last-writer.patch
+similarity index 100%
+rename from tools/eglantine-patches/0036-new-channel-waits-for-last-writer.patch
+rename to tools/eglantine-patches-pending/0036-new-channel-waits-for-last-writer.patch
+diff --git a/tools/eglantine-patches/0037-video-decoder-later-sdk-commands.patch b/tools/eglantine-patches-pending/0037-video-decoder-later-sdk-commands.patch
+similarity index 100%
+rename from tools/eglantine-patches/0037-video-decoder-later-sdk-commands.patch
+rename to tools/eglantine-patches-pending/0037-video-decoder-later-sdk-commands.patch
+diff --git a/tools/eglantine-patches/0038-switch2-movies-av1.patch b/tools/eglantine-patches-pending/0038-switch2-movies-av1.patch
+similarity index 100%
+rename from tools/eglantine-patches/0038-switch2-movies-av1.patch
+rename to tools/eglantine-patches-pending/0038-switch2-movies-av1.patch
+diff --git a/tools/eglantine-patches/0039-switch2-vibration-values.patch b/tools/eglantine-patches-pending/0039-switch2-vibration-values.patch
+similarity index 100%
+rename from tools/eglantine-patches/0039-switch2-vibration-values.patch
+rename to tools/eglantine-patches-pending/0039-switch2-vibration-values.patch
+diff --git a/tools/eglantine-patches/0040-predicated-call-noinc-loop-exit.patch b/tools/eglantine-patches-pending/0040-predicated-call-noinc-loop-exit.patch
+similarity index 100%
+rename from tools/eglantine-patches/0040-predicated-call-noinc-loop-exit.patch
+rename to tools/eglantine-patches-pending/0040-predicated-call-noinc-loop-exit.patch
+diff --git a/tools/eglantine-patches/0041-shf-immediate-without-wrap.patch b/tools/eglantine-patches-pending/0041-shf-immediate-without-wrap.patch
+similarity index 100%
+rename from tools/eglantine-patches/0041-shf-immediate-without-wrap.patch
+rename to tools/eglantine-patches-pending/0041-shf-immediate-without-wrap.patch
+diff --git a/tools/eglantine-patches/0042-constant-lea-without-carry.patch b/tools/eglantine-patches-pending/0042-constant-lea-without-carry.patch
+similarity index 100%
+rename from tools/eglantine-patches/0042-constant-lea-without-carry.patch
+rename to tools/eglantine-patches-pending/0042-constant-lea-without-carry.patch
+diff --git a/tools/eglantine-patches/0043-depbar-any-scoreboard.patch b/tools/eglantine-patches-pending/0043-depbar-any-scoreboard.patch
+similarity index 100%
+rename from tools/eglantine-patches/0043-depbar-any-scoreboard.patch
+rename to tools/eglantine-patches-pending/0043-depbar-any-scoreboard.patch
+diff --git a/tools/eglantine-patches/0044-uprmt-immediate.patch b/tools/eglantine-patches-pending/0044-uprmt-immediate.patch
+similarity index 100%
+rename from tools/eglantine-patches/0044-uprmt-immediate.patch
+rename to tools/eglantine-patches-pending/0044-uprmt-immediate.patch
+diff --git a/tools/eglantine-patches/0045-guarded-ushf.patch b/tools/eglantine-patches-pending/0045-guarded-ushf.patch
+similarity index 100%
+rename from tools/eglantine-patches/0045-guarded-ushf.patch
+rename to tools/eglantine-patches-pending/0045-guarded-ushf.patch
+diff --git a/tools/eglantine-patches/0046-sts-uniform-base.patch b/tools/eglantine-patches-pending/0046-sts-uniform-base.patch
+similarity index 100%
+rename from tools/eglantine-patches/0046-sts-uniform-base.patch
+rename to tools/eglantine-patches-pending/0046-sts-uniform-base.patch
+diff --git a/tools/eglantine-patches/0047-iadd3-immediate-sign.patch b/tools/eglantine-patches-pending/0047-iadd3-immediate-sign.patch
+similarity index 100%
+rename from tools/eglantine-patches/0047-iadd3-immediate-sign.patch
+rename to tools/eglantine-patches-pending/0047-iadd3-immediate-sign.patch
+diff --git a/tools/eglantine-patches/0048-hfma2-h0-nh1.patch b/tools/eglantine-patches-pending/0048-hfma2-h0-nh1.patch
+similarity index 100%
+rename from tools/eglantine-patches/0048-hfma2-h0-nh1.patch
+rename to tools/eglantine-patches-pending/0048-hfma2-h0-nh1.patch
+diff --git a/tools/eglantine-patches/0049-r2ur-unpredicated-move.patch b/tools/eglantine-patches-pending/0049-r2ur-unpredicated-move.patch
+similarity index 100%
+rename from tools/eglantine-patches/0049-r2ur-unpredicated-move.patch
+rename to tools/eglantine-patches-pending/0049-r2ur-unpredicated-move.patch
+diff --git a/tools/eglantine-patches/0050-image-written-pages.patch b/tools/eglantine-patches-pending/0050-image-written-pages.patch
+similarity index 100%
+rename from tools/eglantine-patches/0050-image-written-pages.patch
+rename to tools/eglantine-patches-pending/0050-image-written-pages.patch
+diff --git a/tools/eglantine-patches/0051-nup-containers.patch b/tools/eglantine-patches-pending/0051-nup-containers.patch
+similarity index 100%
+rename from tools/eglantine-patches/0051-nup-containers.patch
+rename to tools/eglantine-patches-pending/0051-nup-containers.patch
+diff --git a/tools/eglantine-patches/0052-wait-if-equal-64.patch b/tools/eglantine-patches-pending/0052-wait-if-equal-64.patch
+similarity index 100%
+rename from tools/eglantine-patches/0052-wait-if-equal-64.patch
+rename to tools/eglantine-patches-pending/0052-wait-if-equal-64.patch
+diff --git a/tools/eglantine-patches/0053-nx2-audio-streams.patch b/tools/eglantine-patches-pending/0053-nx2-audio-streams.patch
+similarity index 100%
+rename from tools/eglantine-patches/0053-nx2-audio-streams.patch
+rename to tools/eglantine-patches-pending/0053-nx2-audio-streams.patch
+diff --git a/tools/eglantine-patches/0054-ocarina-compute-shaders.patch b/tools/eglantine-patches-pending/0054-ocarina-compute-shaders.patch
+similarity index 100%
+rename from tools/eglantine-patches/0054-ocarina-compute-shaders.patch
+rename to tools/eglantine-patches-pending/0054-ocarina-compute-shaders.patch
+diff --git a/tools/eglantine-patches/0056-index-buffer-span-cap.patch b/tools/eglantine-patches-pending/0056-index-buffer-span-cap.patch
+similarity index 100%
+rename from tools/eglantine-patches/0056-index-buffer-span-cap.patch
+rename to tools/eglantine-patches-pending/0056-index-buffer-span-cap.patch
+diff --git a/tools/eglantine-patches/0057-svc-memory-stats.patch b/tools/eglantine-patches-pending/0057-svc-memory-stats.patch
+similarity index 100%
+rename from tools/eglantine-patches/0057-svc-memory-stats.patch
+rename to tools/eglantine-patches-pending/0057-svc-memory-stats.patch
+diff --git a/tools/eglantine-patches/0058-shader-modules-not-kept.patch b/tools/eglantine-patches-pending/0058-shader-modules-not-kept.patch
+similarity index 100%
+rename from tools/eglantine-patches/0058-shader-modules-not-kept.patch
+rename to tools/eglantine-patches-pending/0058-shader-modules-not-kept.patch
+diff --git a/tools/eglantine-patches/0059-device-memory-gpu-reach-hook.patch b/tools/eglantine-patches-pending/0059-device-memory-gpu-reach-hook.patch
+similarity index 100%
+rename from tools/eglantine-patches/0059-device-memory-gpu-reach-hook.patch
+rename to tools/eglantine-patches-pending/0059-device-memory-gpu-reach-hook.patch
+diff --git a/tools/eglantine-patches/0025-slot-vector-begin.patch b/tools/eglantine-patches/0025-slot-vector-begin.patch
+deleted file mode 100644
+index 676fd3d..0000000
+--- a/tools/eglantine-patches/0025-slot-vector-begin.patch
++++ /dev/null
+@@ -1,19 +0,0 @@
+-SlotVector::begin() took std::distance with its arguments swapped: when the first non-empty word of the
+-storage bitset is not the first word, the index went negative and iteration yielded nothing. Every
+-range-for over a slot vector whose first 64 slots are free skipped all its entries, among them
+-BufferCacheRuntime::TickFrame, which resets buffer usage tracking every frame.
+-(ProsperoEden patches/eglantine/eglantine-a42b4d4-ps5.d/0061-slot-vector-begin.diff)
+-
+-diff --git a/src/common/slot_vector.h b/src/common/slot_vector.h
+-index f6da7a5..542b33a 100644
+---- a/src/common/slot_vector.h
+-+++ b/src/common/slot_vector.h
+-@@ -139,7 +139,7 @@ public:
+-         if (it == stored_bitset.end()) {
+-             return end();
+-         }
+--        const u32 word_index = static_cast<u32>(std::distance(it, stored_bitset.begin()));
+-+        const u32 word_index = static_cast<u32>(std::distance(stored_bitset.begin(), it));
+-         const SlotId first_id{word_index * 64 + static_cast<u32>(std::countr_zero(*it))};
+-         return Iterator(this, first_id);
+-     }

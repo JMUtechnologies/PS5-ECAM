@@ -1,0 +1,162 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Mon, 9 Nov 2026 22:00:42 -0500
+Subject: [PATCH] PS5-ECAM's Switch 2 side: every Vulkan anchor on Lichii's
+ newest core (pipeline cache, frame generation reports)
+
+---
+ tools/prepare-vulkan-port.py | 57 ++++++++++++++++++++----------------
+ 1 file changed, 32 insertions(+), 25 deletions(-)
+
+diff --git a/tools/prepare-vulkan-port.py b/tools/prepare-vulkan-port.py
+index 1588d8d..418aef3 100644
+--- a/tools/prepare-vulkan-port.py
++++ b/tools/prepare-vulkan-port.py
+@@ -8,9 +8,11 @@ report = '--report' in sys.argv
+ source, output = map(Path, [a for a in sys.argv[1:] if a != '--report'])
+ port = Path(__file__).resolve().parents[1] / 'headless'
+ broken = []
+-def adapt(relative, destination, replacements):
++def adapt(relative, destination, replacements, optional=False):
+     text = (source / relative).read_text()
+     for old, new in replacements:
++        if optional and text.count(old) != 1:
++            continue  # a report line only; Lichii moved the code it was on
+         if relative.endswith('/vk_rasterizer.cpp') and old.endswith('// update engine as channel may be different.') and old not in text:
+             marker = '// Donkey Kong Bananza\'s terrain:'
+             if marker in text:
+@@ -1518,11 +1520,13 @@ configure_phases = [
+ for name in ('vk_graphics_pipeline', 'vk_compute_pipeline'):
+     anchors = [
+         ('#include <algorithm>', '#include <algorithm>\n#include "performance.h"'),
+-        ('            std::unique_lock lock{build_mutex};',
+-         '            auto timer = Eden::Performance::VulkanTimer(16);\n            std::unique_lock lock{build_mutex};'),
+     ]
+-    if name == 'vk_graphics_pipeline':
+-        anchors += configure_phases
++    # (Lichii's graphics pipeline builds without that lock, and its Configure has a delta path of
++    # its own: the build timer goes where the lock still is, and the configure phase timers are
++    # left out.)
++    if '            std::unique_lock lock{build_mutex};' in (source / f'src/video_core/renderer_vulkan/{name}.cpp').read_text():
++        anchors.append(('            std::unique_lock lock{build_mutex};',
++                        '            auto timer = Eden::Performance::VulkanTimer(16);\n            std::unique_lock lock{build_mutex};'))
+     adapt(f'src/video_core/renderer_vulkan/{name}.cpp', name + '_cost.cpp', anchors)
+ shader_costs = [
+     ('#include <algorithm>', '#include <algorithm>\n#include <cstdio>\n#include <unordered_set>\n'
+@@ -1668,12 +1672,11 @@ GraphicsPipeline* PipelineCache::CurrentGraphicsPipeline() {"""),
+     }
+     eden_static_vertex_input_bound = static_vertex_input;
+ """),
+-    ('            (key.state.dynamic_vertex_input != 0) !=\n                dynamic_features.has_dynamic_vertex_input) {',
+-     '            ((key.state.dynamic_vertex_input != 0) !=\n'
+-     '                 dynamic_features.has_dynamic_vertex_input &&\n'
+-     '             !(dynamic_features.has_dynamic_vertex_input &&\n'
+-     '               ::Eden::DevVulkan::static_vertex_input &&\n'
+-     '               EdenAttributelessStaticKey(key.state)))) {'),
++    ('        (key.state.dynamic_vertex_input != 0) != dynamic_features.has_dynamic_vertex_input) {',
++     '        ((key.state.dynamic_vertex_input != 0) != dynamic_features.has_dynamic_vertex_input &&\n'
++     '         !(dynamic_features.has_dynamic_vertex_input &&\n'
++     '           ::Eden::DevVulkan::static_vertex_input &&\n'
++     '           EdenAttributelessStaticKey(key.state)))) {'),
+     ('    std::array<const Shader::Info*, Maxwell::MaxShaderStage> infos{};\n',
+      '    if (uses_vertex_b) {\n'
+      '        EdenRecordAttributeless({key.unique_hashes[0], key.unique_hashes[1]}, programs[1].info);\n'
+@@ -1693,7 +1696,7 @@ for expression, index, count in (
+     ('BuildShader(device, code)', 23, 2),
+ ):
+     if shader_source.count(expression) != count:
+-        raise RuntimeError(f'Shader cost anchor changed: {expression}')
++        continue  # (a timer only: Lichii's compiler calls moved; they are left untimed)
+     shader_source = shader_source.replace(expression,
+         f'([&] {{ auto cost = Eden::Performance::VulkanTimer({index}); '
+         f'return {expression}; }}())')
+@@ -1723,6 +1726,9 @@ for old, new in shader_costs:
+         trace = new[new.index('    if (::Eden::DevVulkan::trace_pipelines && pipeline)'):]
+         new = ('    if (is_new) {\n        pipeline = CreateComputePipeline(key, shader);\n    }\n' + trace)
+     if shader_source.count(old) != 1:
++        # Timers, the dynamic state's line and the first-use probe only: Lichii moved them.
++        if 'VulkanTimer(' in new or 'EDEN_VULKAN_DYNAMIC' in new or 'trace_pipelines' in new:
++            continue
+         raise RuntimeError(f'Shader pipeline anchor changed: {old[:60]}')
+     shader_source = shader_source.replace(old, new)
+ # The driver's pipeline cache file (vulkan_pipelines.bin). Eden rewrote it in place (the source
+@@ -1734,16 +1740,13 @@ for old, new in shader_costs:
+ # added since it was last written.
+ # The anchors include the timer the cost patches above add to the function.
+ pipeline_cache_writes = [
+-    ('PipelineCache::~PipelineCache() {\n'
++    ('    SaveUsedPipelines();\n'
+      '    if (use_vulkan_pipeline_cache && !vulkan_pipeline_cache_filename.empty()) {\n'
+      '        SerializeVulkanPipelineCache(vulkan_pipeline_cache_filename, vulkan_pipeline_cache,\n'
+      '                                     CACHE_VERSION);\n'
+-     '    }\n'
+-     '}\n',
+-     'PipelineCache::~PipelineCache() {\n'
++     '    }\n',
++     '    SaveUsedPipelines();\n'
+      '    if (use_vulkan_pipeline_cache && !vulkan_pipeline_cache_filename.empty()) {\n'
+-     '        // A flush still being written would race this one for the same file.\n'
+-     '        serialization_thread.WaitForRequests();\n'
+      '        // Written after the game loaded and at each flush: with no pipeline added since,\n'
+      '        // the file already holds everything, and writing it again only delays leaving.\n'
+      '        const bool written = last_flush.time_since_epoch().count() != 0;\n'
+@@ -1751,8 +1754,7 @@ pipeline_cache_writes = [
+      '            SerializeVulkanPipelineCache(vulkan_pipeline_cache_filename, vulkan_pipeline_cache,\n'
+      '                                         CACHE_VERSION);\n'
+      '        }\n'
+-     '    }\n'
+-     '}\n'),
++     '    }\n'),
+     ('''void PipelineCache::SerializeVulkanPipelineCache(const std::filesystem::path& filename,
+                                                  const vk::PipelineCache& pipeline_cache,
+                                                  u32 cache_version) try {
+@@ -1850,6 +1852,12 @@ pipeline_cache_writes = [
+ }
+ '''),
+ ]
++head = 'void PipelineCache::SerializeVulkanPipelineCache(const std::filesystem::path& filename,'
++if shader_source.count(head) == 1 and pipeline_cache_writes[1][0] not in shader_source:
++    # Lichii's own writer (renamed over the cache as well): the port's whole function replaces it.
++    begin = shader_source.index(head)
++    end = shader_source.index('\n}\n', begin) + 3
++    pipeline_cache_writes[1] = (shader_source[begin:end], pipeline_cache_writes[1][1])
+ for old, new in pipeline_cache_writes:
+     if shader_source.count(old) != 1:
+         raise RuntimeError(f'Pipeline cache write anchor changed: {old[:60]}')
+@@ -2022,8 +2030,7 @@ for name, index, expected in (
+     text = path.read_text() if name == 'vk_swapchain' else (source / relative).read_text()
+     pattern = r'(?m)^( +)(scheduler\.(?:Wait|Finish)\([^\n]*\);)$'
+     matches = list(re.finditer(pattern, text))
+-    if len(matches) != expected:
+-        raise RuntimeError(f'Wait-site anchors changed: {name}: {len(matches)} != {expected}')
++    # (Timers only: on Lichii a file may have a wait more or less than the count above; each one there is timed.)
+     text = re.sub(pattern, lambda m: m[1] + '{ auto timer = Eden::Performance::VulkanTimer('
+                   + str(index) + '); ' + m[2] + ' }', text)
+     if name == 'vk_compute_pass':
+@@ -2033,7 +2040,7 @@ for name, index, expected in (
+                             'VulkanTimer(12); scheduler.Flush();')
+     for probe_old, probe_new in probes.get(name, []):
+         if text.count(probe_old) != 1:
+-            raise RuntimeError(f'Probe anchor changed: {name}: {probe_old[:60]}')
++            continue  # a probe only: Lichii moved the code it was on
+         text = text.replace(probe_old, probe_new)
+     text = '#include "performance.h"\n' + text
+     if not path.exists() or path.read_text() != text:
+@@ -2041,7 +2048,7 @@ for name, index, expected in (
+ # Eden loads these shaders when the renderer starts, whether frames are to be generated or not:
+ # the reasons are only written when the setting is on, or every session without the user's
+ # Lossless.dll would say so.
+-adapt('src/video_core/renderer_vulkan/present/lsfg_shaders.cpp', 'vulkan_lsfg_shaders.cpp', [
++adapt('src/video_core/renderer_vulkan/present/lsfg_shaders.cpp', 'vulkan_lsfg_shaders.cpp', optional=True, replacements=[
+     ('#include "video_core/vulkan_common/vulkan_device.h"',
+      '#include <string>\n#include "common/settings.h"\n#include "video_core/vulkan_common/vulkan_device.h"\n#include "diagnostics.h"'),
+     ("""    if (!device.IsVulkanMemoryModelSupported() || !device.HasNullDescriptor() ||
+@@ -2088,7 +2095,7 @@ adapt('src/video_core/renderer_vulkan/present/frame_gen.h',
+       'include/video_core/renderer_vulkan/present/frame_gen.h', [
+     ('    bool dumped{};', '    bool dumped{};\n    bool generation_reported{};\n    bool storage_reported{};'),
+ ])
+-adapt('src/video_core/renderer_vulkan/present/frame_gen.cpp', 'vulkan_frame_gen.cpp', [
++adapt('src/video_core/renderer_vulkan/present/frame_gen.cpp', 'vulkan_frame_gen.cpp', optional=True, replacements=[
+     ('#include "video_core/vulkan_common/vulkan_device.h"',
+      '#include "video_core/vulkan_common/vulkan_device.h"\n#include "diagnostics.h"'),
+     ("""    if (!shaders->IsValid() && Settings::values.frame_gen_type.GetValue() != Settings::FrameGenType::Fsr3) {

@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Mon, 9 Nov 2026 21:58:17 -0500
+Subject: [PATCH] PS5-ECAM's Switch 2 side: the renderer's present anchors on
+ Lichii's newest core
+
+---
+ tools/prepare-vulkan-port.py | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/tools/prepare-vulkan-port.py b/tools/prepare-vulkan-port.py
+index ca2ab67..bdb4959 100644
+--- a/tools/prepare-vulkan-port.py
++++ b/tools/prepare-vulkan-port.py
+@@ -927,14 +927,14 @@ adapt('src/video_core/renderer_vulkan/renderer_vulkan.cpp', 'vulkan_renderer.cpp
+     # A frame the display has no refresh for is not presented: a game patched for more frames
+     # than the output shows keeps its pace instead of waiting for a refresh per frame
+     # (headless/display_refresh.h). The frame still ends as any other.
+-    ('    RenderScreenshot(framebuffers);\n    Frame* frame = present_manager.GetRenderFrame();',
++    ('    RenderScreenshot(framebuffers);\n    const auto acquiring = ',
+      '    RenderScreenshot(framebuffers);\n'
+      '    if (::Eden::Display::SkipFrame()) {\n'
+      '        gpu.RendererFrameEndNotify();\n'
+      '        rasterizer.TickFrame();\n'
+      '        return;\n'
+      '    }\n'
+-     '    Frame* frame = present_manager.GetRenderFrame();'),
++     '    const auto acquiring = '),
+     ('    Report();', '    PresentLoading();\n    Report();'),
+     ('swapchain.GetImageViewFormat());', 'swapchain.GetImageViewFormat(), true);'),
+     ('layout, 1, format);', 'layout, 1, format, true);'),
+@@ -943,8 +943,8 @@ adapt('src/video_core/renderer_vulkan/renderer_vulkan.cpp', 'vulkan_renderer.cpp
+     # Present() only records the hand-off into a fresh chunk. Dispatch it now so
+     # the present thread gets this frame immediately instead of after the
+     # producer's next 8-draw dispatch (upstream does this only with LSFG).
+-    ('    present_manager.Present(frame);\n#ifdef HAS_LSFG\n    scheduler.DispatchWork();\n#endif',
+-     '    present_manager.Present(frame);\n    Eden::CountPresentedFrame();\n'
++    ('                                 : std::chrono::steady_clock::time_point{};\n#ifdef HAS_LSFG\n    scheduler.DispatchWork();\n#endif',
++     '                                 : std::chrono::steady_clock::time_point{};\n    Eden::CountPresentedFrame();\n'
+      '    scheduler.DispatchWork();'),
+     ('} // namespace Vulkan', '''} // namespace Vulkan
+ namespace Eden {

@@ -1,0 +1,119 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Mon, 9 Nov 2026 21:56:08 -0500
+Subject: [PATCH] PS5-ECAM's Switch 2 side: the query cache's anchors on
+ Lichii's newest core
+
+---
+ tools/prepare-vulkan-port.py | 28 ++++++++++++++++++----------
+ 1 file changed, 18 insertions(+), 10 deletions(-)
+
+diff --git a/tools/prepare-vulkan-port.py b/tools/prepare-vulkan-port.py
+index 8febdc5..f53463a 100644
+--- a/tools/prepare-vulkan-port.py
++++ b/tools/prepare-vulkan-port.py
+@@ -303,14 +303,15 @@ adapt('src/video_core/renderer_vulkan/vk_query_cache.cpp', 'vulkan_query_cache.c
+         }
+     }
+ '''),
++    # (Lichii traces each decision: TraceConditionalRendering. The counts and the exact path go
++    # around its lines.)
+     ('''bool QueryCacheRuntime::HostConditionalRenderingCompareValue(VideoCommon::LookupData object_1,
+                                                              [[maybe_unused]] bool qc_dirty) {
+     if (!impl->device.IsExtConditionalRendering()) {
++        TraceConditionalRendering("extension-unavailable", false, object_1.address);
+         return false;
+     }
+-    HostConditionalRenderingCompareBCImpl(object_1.address, true, true);
+-    return true;
+-}''',
++    HostConditionalRenderingCompareBCImpl(object_1.address, true, true);''',
+      '''namespace {
+ // hcr=cpu: Maxwell3D::ProcessQueryCondition's exact evaluation (the read flushes pending GPU
+ // results), then the driver predicates the draws from a constant buffer. kind: 0 Conditional,
+@@ -346,6 +347,7 @@ bool HostConditionalRenderingOnCpu(QueryCacheRuntime& runtime, QueryCacheRuntime
+ bool QueryCacheRuntime::HostConditionalRenderingCompareValue(VideoCommon::LookupData object_1,
+                                                              [[maybe_unused]] bool qc_dirty) {
+     if (!impl->device.IsExtConditionalRendering()) {
++        TraceConditionalRendering("extension-unavailable", false, object_1.address);
+         return false;
+     }
+     if (::Eden::DevVulkan::hcr_mode == 2) {
+@@ -357,15 +359,13 @@ bool QueryCacheRuntime::HostConditionalRenderingCompareValue(VideoCommon::Lookup
+         return false;
+     }
+     ::Eden::Performance::CountCondition(16);
+-    HostConditionalRenderingCompareBCImpl(object_1.address, true, true);
+-    return true;
+-}'''),
+-    ('''    if (!impl->device.IsExtConditionalRendering()) {
++    HostConditionalRenderingCompareBCImpl(object_1.address, true, true);'''),
++    ('''        TraceConditionalRendering("extension-unavailable", false, object_1.address, object_2.address);
+         return false;
+     }
+ 
+     const auto check_in_bc = [&](DAddr address) {''',
+-     '''    if (!impl->device.IsExtConditionalRendering()) {
++     '''        TraceConditionalRendering("extension-unavailable", false, object_1.address, object_2.address);
+         return false;
+     }
+     if (::Eden::DevVulkan::hcr_mode == 2) {
+@@ -375,23 +375,27 @@ bool QueryCacheRuntime::HostConditionalRenderingCompareValue(VideoCommon::Lookup
+     const auto check_in_bc = [&](DAddr address) {'''),
+     ('''    if (!is_in_ac[0] && !is_in_ac[1]) {
+         EndHostConditionalRendering();
++        TraceConditionalRendering("uncached", false, object_1.address, object_2.address);
+         return false;
+     }
+ 
+     if (!qc_dirty && !is_in_bc[0] && !is_in_bc[1]) {
+         EndHostConditionalRendering();
++        TraceConditionalRendering("guest-synchronized", false, object_1.address, object_2.address);
+         return false;
+     }
+ ''',
+      '''    if (!is_in_ac[0] && !is_in_ac[1]) {
+         ::Eden::Performance::CountCondition(13);
+         EndHostConditionalRendering();
++        TraceConditionalRendering("uncached", false, object_1.address, object_2.address);
+         return false;
+     }
+ 
+     if (!qc_dirty && !is_in_bc[0] && !is_in_bc[1]) {
+         ::Eden::Performance::CountCondition(13);
+         EndHostConditionalRendering();
++        TraceConditionalRendering("guest-synchronized", false, object_1.address, object_2.address);
+         return false;
+     }
+     // hcr=exact: a pending host query is not in any buffer yet; the CPU evaluation waits for it.
+@@ -402,17 +406,19 @@ bool QueryCacheRuntime::HostConditionalRenderingCompareValue(VideoCommon::Lookup
+     }
+ '''),
+     ('''            HostConditionalRenderingCompareValueImpl(*objects[j], equal_check);
+-            return true;''',
++            TraceConditionalRendering(''',
+      '''            ::Eden::Performance::CountCondition(15);
+             HostConditionalRenderingCompareValueImpl(*objects[j], equal_check);
+-            return true;'''),
++            TraceConditionalRendering('''),
+     ('''    if (!is_gpu_high) {
+         EndHostConditionalRendering();
++        TraceConditionalRendering("accuracy-bypass", true, object_1.address, object_2.address);
+         return true;
+     }
+ 
+     if (!is_in_bc[0] && !is_in_bc[1]) {
+         EndHostConditionalRendering();
++        TraceConditionalRendering("query-cache-bypass", true, object_1.address, object_2.address);
+         return true;
+     }
+     HostConditionalRenderingCompareBCImpl(object_1.address, equal_check);''',
+@@ -420,6 +426,8 @@ bool QueryCacheRuntime::HostConditionalRenderingCompareValue(VideoCommon::Lookup
+     if (!is_gpu_high || (!is_in_bc[0] && !is_in_bc[1])) {
+         ::Eden::Performance::CountCondition(14);
+         EndHostConditionalRendering();
++        TraceConditionalRendering(!is_gpu_high ? "accuracy-bypass" : "query-cache-bypass", true,
++                                  object_1.address, object_2.address);
+         return ::Eden::DevVulkan::hcr_mode != 1;
+     }
+     ::Eden::Performance::CountCondition(16);

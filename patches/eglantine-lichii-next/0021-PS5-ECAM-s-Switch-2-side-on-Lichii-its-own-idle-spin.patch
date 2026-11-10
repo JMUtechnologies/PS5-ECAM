@@ -1,0 +1,122 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Mon, 9 Nov 2026 22:18:21 -0500
+Subject: [PATCH] PS5-ECAM's Switch 2 side: on Lichii, its own idle spin,
+ mod-root guards and tracked-write manager; the in-place code decoding fitted
+ to its loader
+
+---
+ headless/CMakeLists.txt | 49 +++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 45 insertions(+), 4 deletions(-)
+
+diff --git a/headless/CMakeLists.txt b/headless/CMakeLists.txt
+index 812c981..47c6b9c 100644
+--- a/headless/CMakeLists.txt
++++ b/headless/CMakeLists.txt
+@@ -909,11 +909,18 @@ endif()
+ # sleeping host thread puts the host scheduler's latency on the guest's critical path.
+ string(FIND "${physical_core_source}" "void PhysicalCore::Idle() {" idle_begin)
+ string(FIND "${physical_core_source}" "bool PhysicalCore::IsInterrupted() const {" idle_end)
+-if(idle_begin LESS 0 OR idle_end LESS idle_begin)
++# Lichii idles its own way (PhysicalCore::Idle(KernelCore&): a Switch 2 title's core polls 100 us before
++# it sleeps, EDEN_NX2_IDLE_SPIN_US): on its source that is kept, and the idle counts are not taken.
++string(FIND "${physical_core_source}" "void PhysicalCore::Idle(KernelCore& kernel) {" lichii_idle)
++if(lichii_idle GREATER_EQUAL 0)
++    set(idle_begin 0)
++    set(idle_end 0)
++elseif(idle_begin LESS 0 OR idle_end LESS idle_begin)
+     message(FATAL_ERROR "Pinned PhysicalCore::Idle changed")
+ endif()
+ math(EXPR idle_length "${idle_end} - ${idle_begin}")
+ string(SUBSTRING "${physical_core_source}" ${idle_begin} ${idle_length} idle_old)
++if(lichii_idle LESS 0)
+ string(REPLACE "${idle_old}" [=[void PhysicalCore::Idle() {
+     const long long start = ::Eden::Performance::NowNs();
+     const unsigned spins = ::Eden::Performance::idle_spin_iterations.load(std::memory_order_relaxed);
+@@ -937,6 +944,7 @@ string(REPLACE "${idle_old}" [=[void PhysicalCore::Idle() {
+ }
+ 
+ ]=] physical_core_source "${physical_core_source}")
++endif()
+ string(REPLACE "${prefetch_old}"
+     "            } else {\n                interface->LogBacktrace(process);\n                if (prefetch_abort)\n                    ::Eden::RecordGuestFault(\"guest thread \" + Core::GetThreadName(thread).value_or(\"?\") +\n                                             \" jumped to an unmapped address\");\n            }\n            thread->RequestSuspend(kernel, SuspendType::Debug);"
+     physical_core_source "${physical_core_source}")
+@@ -1099,6 +1107,11 @@ string(REPLACE "${unmap_old}" "            if (const auto mirror = page_table.en
+ # that core's dirty ranges.
+ set(tracked_old "        system.Host1x().MemoryManager().ApplyOpOnPointer(p, scratch_buffers[core], [&](DAddr address) {\n            auto& current_area = rasterizer_write_areas[core];\n")
+ string(FIND "${arena_source}" "${tracked_old}" tracked_at)
++if(tracked_at LESS 0)
++    # Lichii keeps the device memory manager itself (gpu_device_memory) instead of asking Host1x.
++    set(tracked_old "        gpu_device_memory->ApplyOpOnPointer(p, scratch_buffers[core], [&](DAddr address) {\n            auto& current_area = rasterizer_write_areas[core];\n")
++    string(FIND "${arena_source}" "${tracked_old}" tracked_at)
++endif()
+ if(tracked_at LESS 0)
+     message(FATAL_ERROR "Pinned HandleRasterizerWrite changed")
+ endif()
+@@ -1123,11 +1136,16 @@ endif()
+ # the GPU thread. The A32 window's checked fastmem keeps upstream's rule.
+ set(unwritten_old "if (unwritten_reads_direct && nx2 && !current_page_table->fastmem_arena) {")
+ string(FIND "${arena_source}" "${unwritten_old}" unwritten_at)
+-if(unwritten_at LESS 0)
++# (Lichii has no direct unwritten-read rule to widen: its reads of GPU-tracked pages go through its own
++# read traps, so there is nothing to change there.)
++string(FIND "${arena_source}" "unwritten_reads_direct" unwritten_rule)
++if(unwritten_at LESS 0 AND unwritten_rule GREATER_EQUAL 0)
+     message(FATAL_ERROR "Pinned unwritten-read rule changed (fastmem window)")
+ endif()
++if(unwritten_at GREATER_EQUAL 0)
+ string(REPLACE "${unwritten_old}" "if (unwritten_reads_direct && nx2 && (!current_page_table->fastmem_arena || ::Eden::Fastmem::Window64Base() != 0)) {"
+     arena_source "${arena_source}")
++endif()
+ string(PREPEND arena_source "#include \"${PORT_ROOT}/src/fastmem.h\"\n")
+ write_derived("${PORT_BUILD_DIR}/memory.cpp" "${arena_source}")
+ list(REMOVE_ITEM core_sources "memory.cpp")
+@@ -1304,6 +1322,19 @@ if(PS5_NATIVE)
+             }
+ ]=])
+     string(FIND "${nso_source}" "${old_nso_segment}" nso_segment_at)
++    if(nso_segment_at LESS 0)
++        # Lichii's loader checks each segment's size itself (segment_size, a failed ZBIC segment refused):
++        # the whole if/else that decodes a segment is what the port's in-place decoding replaces.
++        string(FIND "${nso_source}" "            if (nso_header.IsSegmentCompressed(i)) {\n                const u32 segment_size" nso_segment_at)
++        if(NOT nso_segment_at LESS 0)
++            string(SUBSTRING "${nso_source}" ${nso_segment_at} -1 nso_segment_tail)
++            string(FIND "${nso_segment_tail}" "                // Not compressed\n" nso_plain_at)
++            string(SUBSTRING "${nso_segment_tail}" ${nso_plain_at} -1 nso_plain_tail)
++            string(FIND "${nso_plain_tail}" "\n            }\n" nso_plain_end)
++            math(EXPR nso_segment_length "${nso_plain_at} + ${nso_plain_end} + 15")
++            string(SUBSTRING "${nso_source}" ${nso_segment_at} ${nso_segment_length} old_nso_segment)
++        endif()
++    endif()
+     if(nso_segment_at LESS 0)
+         message(FATAL_ERROR "Pinned NSO segment decoding changed")
+     endif()
+@@ -1373,6 +1404,15 @@ function(eden_patch source old new)
+     string(REPLACE "${old}" "${new}" patched "${${source}}")
+     set(${source} "${patched}" PARENT_SCOPE)
+ endfunction()
++# A fix Lichii has made itself in its own words: applied where the old text is, left alone where it is not.
++function(eden_patch_optional source old new)
++    string(FIND "${${source}}" "${old}" patch_at)
++    if(patch_at LESS 0)
++        return()
++    endif()
++    string(REPLACE "${old}" "${new}" patched "${${source}}")
++    set(${source} "${patched}" PARENT_SCOPE)
++endfunction()
+ 
+ # Mods (headless/mods.h). Eden's .pchtxt reader takes every line as a record or a flag: the
+ # credits at the end of a real patch file then wrote over the start of the game's code. Only
+@@ -1450,9 +1490,10 @@ write_derived("${PORT_BUILD_DIR}/ips_layer.cpp" "${ips_source}")
+ # The patch manager: a missing mod root must never enter its sorting and dereference loops, and an
+ # .ips patch is named after the build ID in either case.
+ file(READ "${PROJECT_SOURCE_DIR}/src/core/file_sys/patch_manager.cpp" patch_source)
+-eden_patch(patch_source "std::vector<VirtualDir> patch_dirs = {sdmc_load_dir};"
++# (Lichii guards missing mod roots itself: #686.)
++eden_patch_optional(patch_source "std::vector<VirtualDir> patch_dirs = {sdmc_load_dir};"
+     "std::vector<VirtualDir> patch_dirs;\n    if (sdmc_load_dir) patch_dirs.push_back(sdmc_load_dir);")
+-eden_patch(patch_source
++eden_patch_optional(patch_source
+     "    std::vector<VirtualDir> patch_dirs = load_dir->GetSubdirectories();\n    if (std::find(disabled.cbegin(), disabled.cend(), \"SDMC\") == disabled.cend()) {"
+     "    std::vector<VirtualDir> patch_dirs;\n    if (load_dir != nullptr) patch_dirs = load_dir->GetSubdirectories();\n    if (sdmc_load_dir != nullptr && std::find(disabled.cbegin(), disabled.cend(), \"SDMC\") == disabled.cend()) {")
+ eden_patch(patch_source

@@ -1,0 +1,103 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Mon, 9 Nov 2026 21:57:38 -0500
+Subject: [PATCH] PS5-ECAM's Switch 2 side: the scheduler's, blitter's and
+ device's anchors on Lichii's newest core
+
+---
+ tools/prepare-vulkan-port.py | 55 +++++++++++-------------------------
+ 1 file changed, 17 insertions(+), 38 deletions(-)
+
+diff --git a/tools/prepare-vulkan-port.py b/tools/prepare-vulkan-port.py
+index 55360af..ca2ab67 100644
+--- a/tools/prepare-vulkan-port.py
++++ b/tools/prepare-vulkan-port.py
+@@ -753,31 +753,10 @@ adapt('src/video_core/renderer_vulkan/vk_staging_buffer_pool.cpp', 'vulkan_stagi
+ # Mario Kart World, held for the session in the pool the guest and the GPU share. Past 16 MiB they
+ # go back once the blit has written its result (the scoped guest write ends with its block; the
+ # loading probe's writeback scope ends there too, after the write, as it did at the return).
+-adapt('src/video_core/engines/sw_blitter/blitter.cpp', 'sw_blitter.cpp', [
+-    ('    const size_t dst_size = get_surface_size(dst, dst_bytes_per_pixel);\n',
+-     '    {\n    const size_t dst_size = get_surface_size(dst, dst_bytes_per_pixel);\n'),
+-    ('    VideoCommon::LoadingProbe::writeback.Mark("scoped memory destructor", dst_size);\n    return true;\n}\n',
+-     '    VideoCommon::LoadingProbe::writeback.Mark("scoped memory destructor", dst_size);\n    }\n'
+-     '    constexpr size_t kKeepBytes = 16u << 20;\n'
+-     '    if (impl->tmp_buffer.capacity() > kKeepBytes) impl->tmp_buffer = Common::ScratchBuffer<u8>{};\n'
+-     '    if (impl->src_buffer.capacity() > kKeepBytes) impl->src_buffer = Common::ScratchBuffer<u8>{};\n'
+-     '    if (impl->dst_buffer.capacity() > kKeepBytes) impl->dst_buffer = Common::ScratchBuffer<u8>{};\n'
+-     '    if (impl->intermediate_src.capacity() * sizeof(f32) > kKeepBytes) impl->intermediate_src = Common::ScratchBuffer<f32>{};\n'
+-     '    if (impl->intermediate_dst.capacity() * sizeof(f32) > kKeepBytes) impl->intermediate_dst = Common::ScratchBuffer<f32>{};\n'
+-     '    return true;\n}\n'),
+-])
++# (Lichii's software blitter gives back its large scratch buffers itself: ReleaseLargeBuffers.)
+ # Development A/B switches for device features (headless/dev_vulkan.h, dev-settings).
+ adapt('src/video_core/vulkan_common/vulkan_device.cpp', 'vulkan_device.cpp', [
+-    # 16 MiB blocks: the pool the console's GPU allocates from is the CPU's and the guest's too, and
+-    # what a block holds goes back to it only when the block is empty. With 64 MiB blocks Mario Kart
+-    # World's collector deleted 2,440 images and the allocator held 3,812 MiB before and after (the
+-    # 584 left were spread over every block), and the pool ran out. Anything over 8 MiB is then an
+-    # allocation of its own, given back when freed; the page tables are the same (one per 2 MiB).
+-    # EDEN_PS5_VMA_BLOCK_MIB still overrides it.
+-    ("std::strtoul(value, nullptr, 10) : 64;\n"
+-     "                return static_cast<VkDeviceSize>(mib >= 4 && mib <= 256 ? mib : 64) * 1024u * 1024u;",
+-     "std::strtoul(value, nullptr, 10) : 16;\n"
+-     "                return static_cast<VkDeviceSize>(mib >= 4 && mib <= 256 ? mib : 16) * 1024u * 1024u;"),
++    # (Lichii's VMA blocks are 16 MiB already: preferredLargeHeapBlockSize.)
+     # The allocator counts what it holds itself instead of asking the driver. The driver's figures
+     # are wrong on the console: it counts each allocation of graphics memory twice (as VRAM and as
+     # visible VRAM), so the allocator saw the budget of the 8 GiB heap used up at 4 GiB. From there
+@@ -876,11 +855,10 @@ adapt('src/video_core/renderer_vulkan/vk_scheduler.h',
+      '    std::condition_variable_any event_cv;\n    std::condition_variable drain_cv;\n    unsigned drain_waiters{};'),
+ ])
+ adapt('src/video_core/renderer_vulkan/vk_scheduler.cpp', 'vulkan_scheduler.cpp', [
+-    ('Scheduler::~Scheduler() = default;',
+-     'Scheduler::~Scheduler() {\n'
+-     '    worker_thread.request_stop();\n'
+-     '    if (worker_thread.joinable()) worker_thread.join();\n'
+-     '    GpuTimeReset(device);\n}'),
++    ('            master_semaphore->Wait(trace_gpu_tick);\n        }\n    }\n}\n',
++     '            master_semaphore->Wait(trace_gpu_tick);\n        }\n    }\n'
++     '    if (worker_thread.joinable()) {\n        worker_thread.request_stop();\n        worker_thread.join();\n    }\n'
++     '    GpuTimeReset(device);\n}\n'),
+     ('        event_cv.wait(ql, [this] { return work_queue.empty(); });',
+      '        ++drain_waiters;\n        drain_cv.wait(ql, [this] { return work_queue.empty(); });\n        --drain_waiters;'),
+     ('            event_cv.notify_all();', '            if (eden_vulkan_handoff_enabled()) event_cv.notify_one();\n            else event_cv.notify_all();'),
+@@ -889,27 +867,28 @@ adapt('src/video_core/renderer_vulkan/vk_scheduler.cpp', 'vulkan_scheduler.cpp',
+ 
+     ('#include <memory>', '#include <memory>\n#include <array>\n#include <chrono>\n#include <cstdio>\n#include "dev_vulkan.h"\n#include "hud_gpu_time.h"\n#include "submission_origin.h"\nextern "C" bool eden_vulkan_handoff_enabled();'),
+     ('namespace Vulkan {\n', 'namespace Vulkan {\n' + GPU_TIME_HELPERS),
+-    ('        .pInheritanceInfo = nullptr,\n    });\n}\n\nu64 Scheduler::SubmitExecution(',
+-     '        .pInheritanceInfo = nullptr,\n    });\n    GpuTimeBegin(device, current_upload_cmdbuf);\n}\n\nu64 Scheduler::SubmitExecution('),
+-    ('u64 Scheduler::Flush(VkSemaphore signal_semaphore, VkSemaphore wait_semaphore) {',
+-     'u64 Scheduler::Flush(VkSemaphore signal_semaphore, VkSemaphore wait_semaphore) {\n'
++    ('        .pInheritanceInfo = nullptr,\n    });\n    if (trace_query_pool && !trace_gpu_failed) {\n        TraceGpuSubmission();',
++     '        .pInheritanceInfo = nullptr,\n    });\n    GpuTimeBegin(device, current_upload_cmdbuf);\n'
++     '    if (trace_query_pool && !trace_gpu_failed) {\n        TraceGpuSubmission();'),
++    ('u64 Scheduler::Flush(VkSemaphore signal_semaphore, VkSemaphore wait_semaphore,\n                     std::source_location location) {',
++     'u64 Scheduler::Flush(VkSemaphore signal_semaphore, VkSemaphore wait_semaphore,\n                     std::source_location location) {\n'
+      '    GpuSubmitOriginScope origin{__builtin_return_address(0), false, true};'),
+-    ('void Scheduler::Finish(VkSemaphore signal_semaphore, VkSemaphore wait_semaphore) {',
+-     'void Scheduler::Finish(VkSemaphore signal_semaphore, VkSemaphore wait_semaphore) {\n'
++    ('void Scheduler::Finish(VkSemaphore signal_semaphore, VkSemaphore wait_semaphore,\n                       std::source_location location) {',
++     'void Scheduler::Finish(VkSemaphore signal_semaphore, VkSemaphore wait_semaphore,\n                       std::source_location location) {\n'
+      '    GpuSubmitOriginScope origin{__builtin_return_address(0), true, true};'),
+     ('    RecordWithUploadBuffer([signal_semaphore, wait_semaphore, signal_value,',
+      '    RecordWithUploadBuffer([signal_semaphore, wait_semaphore, signal_value,\n'
+      '                            submit_origin = gpu_submit_origin,'),
+     ('        cmdbuf.End();\n\n        if (on_submit)',
+      '        GpuTimeEnd(cmdbuf);\n        cmdbuf.End();\n\n        if (on_submit)'),
+-    ('            vk::Check(result);\n            break;\n        }\n    });\n    chunk->MarkSubmit();',
++    ('            vk::Check(result);\n            break;\n        }\n        if (trace_frame_end != 0) {',
+      '            vk::Check(result);\n            break;\n        }\n'
+-     '        GpuTimeCountOrigin(submit_origin);\n        GpuTimeCollect(device);\n    });\n    chunk->MarkSubmit();'),
++     '        GpuTimeCountOrigin(submit_origin);\n        GpuTimeCollect(device);\n        if (trace_frame_end != 0) {'),
+     ('    const u64 signal_value = SubmitExecution(signal_semaphore, wait_semaphore);\n'
+-     '    AllocateNewContext();\n    return signal_value;',
++     '    AllocateNewContext();\n    last_flush',
+      '    const u64 signal_value = SubmitExecution(signal_semaphore, wait_semaphore);\n'
+      '    if (::Eden::DevVulkan::sync_submissions) {\n        Wait(signal_value);\n    }\n'
+-     '    AllocateNewContext();\n    return signal_value;'),
++     '    AllocateNewContext();\n    last_flush'),
+ ])
+ adapt('src/video_core/renderer_vulkan/pipeline_helper.h',
+       'include/video_core/renderer_vulkan/pipeline_helper.h', [

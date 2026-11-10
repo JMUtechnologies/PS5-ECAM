@@ -1,0 +1,49 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Mon, 9 Nov 2026 21:56:53 -0500
+Subject: [PATCH] PS5-ECAM's Switch 2 side: the allocator's anchors on Lichii's
+ newest core
+
+---
+ tools/prepare-vulkan-port.py | 15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
+
+diff --git a/tools/prepare-vulkan-port.py b/tools/prepare-vulkan-port.py
+index f53463a..55360af 100644
+--- a/tools/prepare-vulkan-port.py
++++ b/tools/prepare-vulkan-port.py
+@@ -541,12 +541,10 @@ adapt('src/video_core/vulkan_common/vulkan_memory_allocator.h',
+      '        mutable std::array<VmaPool, VK_MAX_MEMORY_TYPES> temporary_pools{};'),
+ ])
+ adapt('src/video_core/vulkan_common/vulkan_memory_allocator.cpp', 'vulkan_memory_allocator.cpp', [
+-    ('            vmaCalculateStatistics(allocator, &statistics);',
+-     '            vmaCalculateStatistics(allocator, &statistics);\n'
+-     '            if (probe_rows == 160 || probe_rows == 256 || probe_rows == 512 || result != VK_SUCCESS)\n'
+-     '                EdenVmaSnapshot(allocator, probe_rows);'),
+-    ('vk::Image MemoryAllocator::CreateUnbackedImage(const VkImageCreateInfo &ci) const {',
+-     (port / 'transient_images.inc').read_text() + '\nvk::Image MemoryAllocator::CreateUnbackedImage(const VkImageCreateInfo &ci) const {'),
++    # (Lichii's allocator keeps its own statistics: the snapshot at probe rows is left out; the timed
++    # one, eden_vma_probe, stays.)
++    ('vk::Image MemoryAllocator::CreateUnbackedImage(const VkImageCreateInfo &ci, bool aliased) const {',
++     (port / 'transient_images.inc').read_text() + '\nvk::Image MemoryAllocator::CreateUnbackedImage(const VkImageCreateInfo &ci, bool aliased) const {'),
+     ('MemoryAllocator::MemoryAllocator(const Device &device_)',
+      r'''namespace {
+ std::mutex vma_probe_mutex;
+@@ -587,14 +585,15 @@ MemoryAllocator::MemoryAllocator(const Device &device_)'''),
+     ('#include "video_core/vulkan_common/vulkan_memory_allocator.h"\n',
+      '#include "video_core/vulkan_common/vulkan_memory_allocator.h"\n#include <atomic>\n#include <cstddef>\n#include <cstdio>\n#include <cstring>\n#include <cstdlib>\n#include "performance.h"\nnamespace Common { void GuestMemoryUsage(std::size_t* span, std::size_t* held) noexcept; }\nextern "C" std::size_t eden_heap_committed(void);\n'),
+     # What an image was that the allocator could not make at all, for stderr.log.
+-    ('    if (result != VK_SUCCESS) {\n        LOG_CRITICAL(Render_Vulkan, "Image {}x{}x{} ({} levels, {} layers, format {}) failed: {}",',
++    ('    if (result != VK_SUCCESS) {\n        failed_images.fetch_add(1, std::memory_order_relaxed);\n',
+      """    if (result != VK_SUCCESS) {
++        failed_images.fetch_add(1, std::memory_order_relaxed);
+         std::fprintf(stderr, "EDEN_IMAGE_REFUSED %ux%ux%u, %u layers, %u levels, format %d, type %d, usage 0x%x, flags 0x%x, "
+                      "tiling %d, samples %d, result %d, huge %d, texels %llu\\n",
+                      ci.extent.width, ci.extent.height, ci.extent.depth, ci.arrayLayers, ci.mipLevels, int(ci.format),
+                      int(ci.imageType), unsigned(ci.usage), unsigned(ci.flags), int(ci.tiling), int(ci.samples),
+                      int(result), int(huge), static_cast<unsigned long long>(texels));
+-        LOG_CRITICAL(Render_Vulkan, "Image {}x{}x{} ({} levels, {} layers, format {}) failed: {}","""),
++"""),
+     # An image with nothing bound (the sparse virtual texture arrays no pool could hold): when the driver refuses
+     # it with residency, it is asked for again with binding alone, and what it said is written down.
+     ('    if (device.GetDispatchLoader().vkCreateImage(*device.GetLogical(), &sparse_ci, nullptr,\n'

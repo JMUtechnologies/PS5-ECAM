@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Mon, 9 Nov 2026 21:44:37 -0500
+Subject: [PATCH] PS5-ECAM's Switch 2 side: Lichii's garbage collector takes
+ out_of_memory
+
+---
+ tools/prepare-vulkan-port.py | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/tools/prepare-vulkan-port.py b/tools/prepare-vulkan-port.py
+index ee09dbe..1f83be5 100644
+--- a/tools/prepare-vulkan-port.py
++++ b/tools/prepare-vulkan-port.py
+@@ -1130,7 +1130,10 @@ reclaimed_bytes = (download_source[delete_begin:delete_end]
+                    .replace('total_used_memory -=', 'bytes +=')
+                    .replace('slot_images[image_id]', 'image'))
+ assert 'image_id' not in reclaimed_bytes, 'DeleteImage accounting needs adapting to an image reference'
+-gc_begin = download_source.index('void TextureCache<P>::RunGarbageCollector() {')
++# Lichii's collector takes whether an allocation just failed (out_of_memory); the older core's took nothing.
++gc_begin = next(download_source.index(head) for head in (
++    'void TextureCache<P>::RunGarbageCollector() {', 'void TextureCache<P>::RunGarbageCollector(bool out_of_memory) {')
++    if head in download_source)
+ gc_end = download_source.index('\ntemplate <class P>', gc_begin)
+ gc_original = download_source[gc_begin:gc_end]
+ gc = gc_original

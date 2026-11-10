@@ -1,0 +1,110 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Mon, 9 Nov 2026 21:59:02 -0500
+Subject: [PATCH] PS5-ECAM's Switch 2 side: the texture and buffer caches'
+ anchors on Lichii's newest core
+
+---
+ tools/prepare-vulkan-port.py | 57 ++++++++----------------------------
+ 1 file changed, 13 insertions(+), 44 deletions(-)
+
+diff --git a/tools/prepare-vulkan-port.py b/tools/prepare-vulkan-port.py
+index bdb4959..1588d8d 100644
+--- a/tools/prepare-vulkan-port.py
++++ b/tools/prepare-vulkan-port.py
+@@ -1109,14 +1109,12 @@ for old, new in [
+     # mark, not when the console's pool alone is critical: rebuilding it decodes it again on the
+     # CPU, in memory the pool did not have (Mario Kart World: 1,561 evicted in one window, 3.4 GB
+     # of conversions and uploads in the next, and the decoder's allocation ended the session).
+-    ('        if ((!aggressive_mode && True(image.flags & ImageFlagBits::CostlyLoad)) || (!DirtyEvictions() && must_download)) {',
+-     '        const bool costly_kept = !(aggressive_mode && total_used_memory >= critical_memory) &&\n'
++    # (Lichii keeps its own pass for old costly images: evict_old_costly, its line split in two.)
++    ('        if ((!aggressive_mode && !evict_old_costly && True(image.flags & ImageFlagBits::CostlyLoad)) ||\n'
++     '            (!DirtyEvictions() && must_download)) {\n            return false;\n        }\n',
++     '        const bool costly_kept = !(aggressive_mode && total_used_memory >= critical_memory) && !evict_old_costly &&\n'
+      '                                 !::Eden::Performance::gc_old_costly && True(image.flags & ImageFlagBits::CostlyLoad);\n'
+-     '        if (costly_kept || (!DirtyEvictions() && must_download)) {'),
+-    ('            probe_costly_skips += !aggressive_mode && True(image.flags & ImageFlagBits::CostlyLoad);\n',
+-     '            probe_costly_skips += costly_kept;\n'),
+-    ('            probe_dirty_skips += !high_priority_mode && must_download;\n            return false;\n        }\n',
+-     '            probe_dirty_skips += !high_priority_mode && must_download;\n            return false;\n        }\n'
++     '        if (costly_kept || (!DirtyEvictions() && must_download)) {\n            return false;\n        }\n'
+      '        if (!::Eden::Performance::gc_count_visits.load(std::memory_order_relaxed)) {\n            --num_iterations;\n        }\n'),
+     # The aggressive pass gets its own scan allowance: Configure resets the
+     # eviction budget per pass, and the scan counter must reset with it, or a
+@@ -1151,8 +1149,8 @@ for old, new in [
+      '        if (aggressive_mode && !memory_short && total_used_memory < critical_memory) {'),
+     ('        } else if (high_priority_mode && total_used_memory < expected_memory) {',
+      '        } else if (high_priority_mode && !memory_short && total_used_memory < expected_memory) {'),
+-    ('    if (total_used_memory >= critical_memory) {\n        Configure(true);',
+-     '    if (total_used_memory >= critical_memory || memory_short) {\n        Configure(true);'),
++    ('    if (out_of_memory || total_used_memory >= critical_memory) {\n        Configure(true);',
++     '    if (out_of_memory || total_used_memory >= critical_memory || memory_short) {\n        Configure(true);'),
+     # While the pool is short, costly images 300 frames unused (a course left behind) go too, in a
+     # pass of their own: kept whenever only the pool was short, Mario Kart World's next course took
+     # 1.2 GB of graphics memory within five seconds with nothing the collector could give back, and
+@@ -1176,7 +1174,7 @@ for old, new in [
+     gc = gc.replace(old, new)
+ texture_costs = []
+ for signature, index in (
+-    ('RunGarbageCollector()', 13), ('DownloadMemory(DAddr cpu_addr, size_t size)', 14),
++    ('RunGarbageCollector(bool out_of_memory)', 13), ('DownloadMemory(DAddr cpu_addr, size_t size)', 14),
+     ('PopAsyncFlushes()', 15),
+ ):
+     anchor = f'void TextureCache<P>::{signature} {{'
+@@ -1211,36 +1209,7 @@ VULKAN_CACHE = 'if constexpr (std::is_same_v<Runtime, Vulkan::TextureCacheRuntim
+ texture_partial = [
+     ('#include "video_core/texture_cache/texture_cache_base.h"',
+      '#include "video_core/texture_cache/texture_cache_base.h"\n#include "texture_partial.h"\n#include "astc_policy.h"'),
+-    ('    constexpr size_t min_size = 16_MiB;\n'
+-     '    constexpr ImageFlagBits excluded = ImageFlagBits::Sparse | ImageFlagBits::Converted |\n'
+-     '                                       ImageFlagBits::AcceleratedUpload | ImageFlagBits::Unbacked |\n'
+-     '                                       ImageFlagBits::TrimmedLevels | ImageFlagBits::AsynchronousDecode;\n'
+-     '    if (False(image.flags & ImageFlagBits::Tracked)',
+-     '    size_t min_size = 16_MiB;\n'
+-     '    ' + VULKAN_CACHE + '\n'
+-     '        if (Eden::Performance::tex_partial.load(std::memory_order_relaxed)) {\n'
+-     '            min_size = Eden::Performance::tex_partial_min.load(std::memory_order_relaxed);\n'
+-     '        }\n'
+-     '    }\n'
+-     '    constexpr ImageFlagBits excluded = ImageFlagBits::Sparse | ImageFlagBits::Converted |\n'
+-     '                                       ImageFlagBits::AcceleratedUpload | ImageFlagBits::Unbacked |\n'
+-     '                                       ImageFlagBits::TrimmedLevels | ImageFlagBits::AsynchronousDecode;\n'
+-     '    if (False(image.flags & ImageFlagBits::Tracked)'),
+-    ('    auto copies = UnswizzleImageRows(*gpu_memory, image.gpu_addr, image.info, ranges, data);\n'
+-     '    if (copies.empty()) {\n'
+-     '        return false;\n'
+-     '    }\n',
+-     '    auto copies = UnswizzleImageRows(*gpu_memory, image.gpu_addr, image.info, ranges, data);\n'
+-     '    if (copies.empty()) {\n'
+-     '        return false;\n'
+-     '    }\n'
+-     '    ' + VULKAN_CACHE + '\n'
+-     '        if (Eden::Performance::tex_partial_check.load(std::memory_order_relaxed)) {\n'
+-     '            Eden::TexturePartial::Check(*gpu_memory, image, copies, std::span<const u8>(data));\n'
+-     '        }\n'
+-     '        Eden::Performance::tex_partial_uploads.fetch_add(1, std::memory_order_relaxed);\n'
+-     '        Eden::Performance::tex_partial_bytes.fetch_add(data.size(), std::memory_order_relaxed);\n'
+-     '    }\n'),
++    # (Lichii has no partial refresh of large images any more: UploadInChunks stages them in pieces.)
+ ]
+ # A large texture array (2D, several layers, 64 MiB or more) the CPU converts is uploaded a layer at
+ # a time, and an ASTC one converted in the background is decoded a layer at a time: Eden staged it
+@@ -1442,13 +1411,13 @@ adapt('src/video_core/texture_cache/texture_cache.h',
+ # the texture-buffer loop looked like the cost of bind and measured 2.8%.
+ adapt('src/video_core/buffer_cache/buffer_cache.h',
+       'vulkan-cache/video_core/buffer_cache/buffer_cache.h', [
+-    ('        if (buffer_bytes >= 1_GiB) {\n'
+-     '            RunGarbageCollector(buffer_bytes >= 2_GiB);\n'
++    ('        if (buffer_bytes >= 512_MiB) {\n'
++     '            RunGarbageCollector(buffer_bytes >= 1_GiB);\n'
+      '        }\n',
+      '        const auto pressure = ::Eden::Performance::graphics_memory_probe.load(std::memory_order_relaxed);\n'
+      '        const bool memory_short = frame_tick >= 60 && pressure && pressure();\n'
+-     '        if (buffer_bytes >= 1_GiB || memory_short) {\n'
+-     '            RunGarbageCollector(memory_short || buffer_bytes >= 2_GiB);\n'
++     '        if (buffer_bytes >= 512_MiB || memory_short) {\n'
++     '            RunGarbageCollector(memory_short || buffer_bytes >= 1_GiB);\n'
+      '        }\n'),
+     ('++frames % 600 == 0', '++frames % 60 == 0'),
+     ('#include "video_core/buffer_cache/buffer_cache_base.h"',
