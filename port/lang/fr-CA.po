@@ -18,7 +18,7 @@ msgid_plural "{0} seconds left, or nothing changes. Touchpad click can be chosen
 msgstr[0] "Encore {0} seconde; ensuite rien ne change. Le clic du pavé tactile compte aussi."
 msgstr[1] "Encore {0} secondes; ensuite rien ne change. Le clic du pavé tactile compte aussi."
 
-#: port/app/emulator.cpp:531 port/frontend/shell/settings.cpp:3123 port/frontend/shell/shell.cpp:2176
+#: port/app/emulator.cpp:531 port/frontend/shell/settings.cpp:3127 port/frontend/shell/shell.cpp:2208
 msgid "Playtendoh cannot write to {0}. Is the HEN loaded?"
 msgstr "Playtendoh ne peut pas écrire dans {0}. Le HEN est-il chargé?"
 
@@ -70,72 +70,67 @@ msgctxt "genre"
 msgid "Wrestling"
 msgstr "Lutte"
 
-#: port/app/ingame.cpp:145 port/frontend/actions.cpp:369
+#: port/app/ingame.cpp:148 port/frontend/actions.cpp:369
 #, menu
 msgid "Wii U Pro Controller"
 msgstr "Manette Pro Wii U"
 
-#: port/app/ingame.cpp:207
+#: port/app/ingame.cpp:210
 #, menu
 msgid "Original keeps the game's proportions with bars at the sides. Stretched fills the screen."
 msgstr "Les proportions d’origine gardent celles de l’image, avec des bandes là où elles diffèrent de l’écran; Étirée le remplit."
 
-#: port/app/ingame.cpp:226
+#: port/app/ingame.cpp:229
 #, menu
 msgid "Shows a notice while shaders are being built."
 msgstr "Les notes de Cemu dans un coin pendant que le jeu compile ses shaders. Désactivé les masque; ils sont compilés dans tous les cas."
 
-#: port/app/ingame.cpp:241
+#: port/app/ingame.cpp:244
 #, menu
 msgid "Cross turns it on or off."
 msgstr "Croix l’active ou le désactive; le jeu l’applique aussitôt."
 
-#: port/app/ingame.cpp:251
+#: port/app/ingame.cpp:254
 #, menu
 msgid "Left and Right choose another."
 msgstr "Gauche et Droite en choisissent un autre; le jeu l’applique aussitôt."
 
-#: port/app/ingame.cpp:288
+#: port/app/ingame.cpp:291
 #, menu
 msgid "Left and Right choose a figure. Cross places it; Empty removes it."
 msgstr "Gauche et Droite choisissent une figurine, Croix la pose; Vide retire celle qui s’y trouve."
 
-#: port/app/ingame.cpp:307
+#: port/app/ingame.cpp:310
 #, menu
 msgid "Left and Right choose an amiibo. Cross scans it when the game asks."
 msgstr "Gauche et Droite choisissent un dump d’amiibo; Croix le pose sur le GamePad quand le jeu en demande un."
 
-#: port/app/ingame3ds.cpp:588
-#, menu
-msgid "Sharp keeps pixels crisp and even. Smooth blends them. Square pixels can look uneven at most sizes."
-msgstr "Comment l’image du jeu est mise à l’échelle du téléviseur. Net garde chaque pixel carré et régulier; Lissé les fond ensemble; Pixels carrés prend le plus proche, irrégulier à la plupart des tailles."
-
-#: port/app/ingame3ds.cpp:595
+#: port/app/ingame3ds.cpp:598
 #, menu
 msgid "How the DS screens are scaled. Sharp keeps pixels crisp and even, Smooth blends them, Square pixels can look uneven."
 msgstr "Comment les écrans 256 x 192 de la DS sont mis à l’échelle sur la TV. Net garde chaque pixel carré et régulier; Lissé les fond entre eux; Pixels carrés prend le plus proche, irrégulier à la plupart des tailles."
 
-#: port/app/ingame3ds.cpp:615 port/eden/ingame.cpp:624
+#: port/app/ingame3ds.cpp:618 port/eden/ingame.cpp:633
 #, menu
 msgid "Above 100% speeds through slow parts. None runs as fast as possible. This game only."
 msgstr "Au-dessus de 100 %, les scènes lentes passent plus vite; Aucune tourne aussi vite que la PS5 le peut. Pour ce jeu seulement."
 
-#: port/app/ingame3ds.cpp:624
+#: port/app/ingame3ds.cpp:627
 #, menu
 msgid "Lower can help a slow game reach full speed. Higher smooths games that dropped frames on the 3DS."
 msgstr "Sous 100 %, un jeu lent peut retrouver sa pleine vitesse; au-dessus, les jeux qui perdaient des images sur 3DS sont plus fluides."
 
-#: port/app/ingame3ds.cpp:643
+#: port/app/ingame3ds.cpp:646
 #, menu
 msgid "Cross, Left or Right turns it on or off. It is remembered."
 msgstr "Croix, Gauche ou Droite l’active ou le désactive aussitôt; c’est conservé pour la prochaine fois."
 
-#: port/app/ingame3ds.cpp:680
+#: port/app/ingame3ds.cpp:683
 #, menu
 msgid "Left and Right choose an amiibo. Cross scans it."
 msgstr "Gauche et Droite choisissent un dump d’amiibo; Croix le présente au lecteur."
 
-#: port/app/ingame3ds.cpp:698
+#: port/app/ingame3ds.cpp:701
 #, menu
 msgid "Closes the DS lid for games that ask you to. Choose it again to open it."
 msgstr "Ferme le couvercle de la DS, pour les jeux qui vous le demandent; la DS se met en veille jusqu’à ce qu’on l’ouvre. Choisissez-le à nouveau pour l’ouvrir."
@@ -152,7 +147,7 @@ msgstr "Azahar s’est arrêté en cours de route; {0}/azahar/log/azahar_log.txt
 
 #. the game menu: named groups of games the player makes (Couch co-op, say), shown on the Library's filter row
 #. What's new in 6.0: collections, groups of games the player makes
-#: port/frontend/shell/library.cpp:424 port/frontend/shell/shell.cpp:2038 port/frontend/shell/shell.cpp:2058 port/frontend/shell/shell.cpp:2084 port/frontend/shell/whatsnew.cpp:40
+#: port/frontend/shell/library.cpp:424 port/frontend/shell/shell.cpp:2070 port/frontend/shell/shell.cpp:2090 port/frontend/shell/shell.cpp:2116 port/frontend/shell/whatsnew.cpp:40
 msgid "Collections"
 msgstr "Collections"
 
@@ -254,20 +249,20 @@ msgstr "Le compte est supprimé; ses sauvegardes restent dans le stockage de la 
 msgid "Artic Base plays a game from your 3DS over the network; saves stay on the 3DS. Artic Setup copies your 3DS's system files, for the Home Menu and games that need them."
 msgstr "Artic Base joue à un jeu depuis une 3DS de votre réseau, ses sauvegardes restant sur la 3DS; Artic Setup copie les fichiers système d’une 3DS dans Azahar, pour le menu HOME et les jeux qui en ont besoin."
 
-#: port/frontend/shell/settings.cpp:1526
+#: port/frontend/shell/settings.cpp:1528
 msgid "Animations become short fades, and the background stays still."
 msgstr "Les ressorts deviennent de courts fondus; rien ne flotte, ne respire ou ne monte derrière les menus."
 
 #. {0} is the folder they are kept in
-#: port/frontend/shell/settings.cpp:1561
+#: port/frontend/shell/settings.cpp:1563
 msgid "Deletes unpacked copies of archived games in {0}. They unpack again next time. Old copies are removed automatically when space runs low."
 msgstr "Supprime les copies des jeux décompressés de leurs archives, gardées dans {0}. Chacun est décompressé à nouveau à son prochain lancement; quand il faut de la place, les copies utilisées il y a le plus longtemps partent d’elles-mêmes."
 
-#: port/frontend/shell/settings.cpp:1586
+#: port/frontend/shell/settings.cpp:1588
 msgid "Built-in music, your own, or none. For your own, put MP3 or WAV files in {0}."
 msgstr "La musique du lanceur, l’une des vôtres ou aucune. Pour la vôtre, placez des fichiers MP3 ou WAV dans {0}; ils apparaissent ici. Tous les côtés jouent la même."
 
-#: port/frontend/shell/settings.cpp:1619
+#: port/frontend/shell/settings.cpp:1621
 msgid ""
 "Shows {0} in a browser on a phone, tablet or computer on your network, with touch. Scan the code or open the address. Buttons and sound stay on the PS5.\n"
 "While a browser is open, games may run a little slower. Anyone on your network can open it, so turn it off on shared networks.\n"
@@ -277,11 +272,11 @@ msgstr ""
 "Tant qu’un navigateur l’affiche, la PS5 copie cet écran jusqu’à 30 fois par seconde, ce qui peut ralentir un peu un jeu; sans navigateur, cela ne coûte rien. Tout appareil de votre réseau peut ouvrir la page : désactivez-le sur un réseau partagé.\n"
 "Un seul interrupteur pour tous les côtés (l’écran du GamePad est celui du joueur 1), aussi dans le menu d’un jeu (clic du pavé tactile + OPTIONS). D’après l’idée et le prototype de dolphin78 (#38)."
 
-#: port/frontend/shell/settings.cpp:2086
+#: port/frontend/shell/settings.cpp:2088
 msgid "On: scan the QR code here to open the second screen in a phone's browser. The phone must be on the PS5's network."
 msgstr "Activé, un QR code ici ouvre le second écran du jeu dans le navigateur d’un téléphone. Rien à installer; le téléphone doit être sur le réseau de la PS5."
 
-#: port/frontend/shell/settings.cpp:3172
+#: port/frontend/shell/settings.cpp:3176
 msgid "{0} deleted. Its saves are kept."
 msgstr "{0} est supprimé; ses sauvegardes restent"
 
@@ -320,16 +315,16 @@ msgid "Turn on file sharing for a folder on your computer or NAS, then add it he
 msgstr "Activez le partage de fichiers pour un dossier de votre ordinateur ou NAS, puis ajoutez-le ici. La PS5 y lit les jeux; elle n’y écrit jamais. Pour les jeux Wii U, un câble vaut mieux que le Wi-Fi."
 
 #. the first choice of a game's Collections: a collection named with the keyboard, the game put in it
-#: port/frontend/shell/shell.cpp:2068 port/frontend/shell/shell.cpp:2087
+#: port/frontend/shell/shell.cpp:2100 port/frontend/shell/shell.cpp:2119
 msgid "New collection"
 msgstr "Nouvelle collection"
 
 #. a game's collection could not be written to the console's storage
-#: port/frontend/shell/shell.cpp:2075
+#: port/frontend/shell/shell.cpp:2107
 msgid "Could not save the collection"
 msgstr "Impossible d’enregistrer la collection"
 
-#: port/frontend/shell/shell.cpp:2756
+#: port/frontend/shell/shell.cpp:2788
 msgid "You have {0}. Download and install it now? Your games, saves and settings are kept."
 msgstr "Vous avez {0}. Télécharger et installer la nouvelle version maintenant? Vos jeux, sauvegardes et paramètres restent tels quels."
 

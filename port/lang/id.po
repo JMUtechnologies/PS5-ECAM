@@ -7,7 +7,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: port/app/accounts.cpp:68 port/frontend/shell/settings.cpp:2790
+#: port/app/accounts.cpp:68 port/frontend/shell/settings.cpp:2794
 msgid "The Wii U has twelve accounts at most."
 msgstr "Wii U punya paling banyak dua belas akun."
 
@@ -391,7 +391,7 @@ msgstr ""
 msgid "This player's DualSense input, live."
 msgstr ""
 
-#: port/app/buttons_menu.h:160 port/app/side_menu.h:566 port/frontend/shell/pages.cpp:965
+#: port/app/buttons_menu.h:160 port/app/side_menu.h:522 port/frontend/shell/pages.cpp:965
 #, menu
 msgid "Press a button"
 msgstr "Tekan sebuah tombol"
@@ -472,7 +472,7 @@ msgstr "Tidak mau mulai"
 msgid "the PS5 Vulkan driver did not start"
 msgstr "driver Vulkan PS5 tidak berjalan"
 
-#: port/app/emulator.cpp:531 port/frontend/shell/settings.cpp:3123 port/frontend/shell/shell.cpp:2176
+#: port/app/emulator.cpp:531 port/frontend/shell/settings.cpp:3127 port/frontend/shell/shell.cpp:2208
 msgid "Playtendoh cannot write to {0}. Is the HEN loaded?"
 msgstr "Playtendoh tidak bisa menulis ke {0}. Apakah HEN sudah dimuat?"
 
@@ -516,7 +516,7 @@ msgid "The Vulkan renderer did not start: {0}"
 msgstr "Perender Vulkan tidak berjalan: {0}"
 
 #. the PS5's notification as a Wii U game starts
-#: port/app/emulator.cpp:869 port/libretro/game.cpp:838
+#: port/app/emulator.cpp:869 port/libretro/game.cpp:856
 msgid "Touchpad click + Options opens the in-game menu"
 msgstr "Klik panel sentuh + OPTIONS: menu dalam game (layar, gambar, volume, kontrol, pustaka)"
 
@@ -1096,50 +1096,50 @@ msgid "Wrestling"
 msgstr "Gulat"
 
 #. the Wii U's controllers, by the names Nintendo gave them in the language
-#: port/app/ingame.cpp:144 port/frontend/actions.cpp:368
+#: port/app/ingame.cpp:147 port/frontend/actions.cpp:368
 #, menu
 msgid "Wii U GamePad"
 msgstr "Wii U GamePad"
 
-#: port/app/ingame.cpp:145 port/frontend/actions.cpp:369
+#: port/app/ingame.cpp:148 port/frontend/actions.cpp:369
 #, menu
 msgid "Wii U Pro Controller"
 msgstr "Wii U Pro Controller"
 
-#: port/app/ingame.cpp:146 port/frontend/actions.cpp:370 port/frontend/shell/porpoise_rows.cpp:248
+#: port/app/ingame.cpp:149 port/frontend/actions.cpp:370 port/frontend/shell/porpoise_rows.cpp:248
 #, menu
 msgid "Classic Controller"
 msgstr "Classic Controller"
 
-#: port/app/ingame.cpp:147 port/frontend/actions.cpp:371 port/frontend/shell/porpoise_rows.cpp:91
+#: port/app/ingame.cpp:150 port/frontend/actions.cpp:371 port/frontend/shell/porpoise_rows.cpp:91
 #, menu
 msgid "Wii Remote"
 msgstr "Wii Remote"
 
-#: port/app/ingame.cpp:148 port/frontend/actions.cpp:372
+#: port/app/ingame.cpp:151 port/frontend/actions.cpp:372
 #, menu
 msgid "Wii Remote + Nunchuk"
 msgstr "Wii Remote + Nunchuk"
 
 #. an original Wii Remote through a DolphinBar, not the DualSense playing one
-#: port/app/ingame.cpp:149 port/frontend/actions.cpp:374
+#: port/app/ingame.cpp:152 port/frontend/actions.cpp:374
 #, menu
 msgid "Real Wii Remote"
 msgstr "Wii Remote asli"
 
-#: port/app/ingame.cpp:150 port/frontend/actions.cpp:375
+#: port/app/ingame.cpp:153 port/frontend/actions.cpp:375
 #, menu
 msgid "Real Wii Remote + Nunchuk"
 msgstr "Wii Remote asli + Nunchuk"
 
-#: port/app/ingame.cpp:153 port/frontend/actions.cpp:378
+#: port/app/ingame.cpp:156 port/frontend/actions.cpp:378
 #, menu
 msgid "No controller"
 msgstr "Tanpa kontroler"
 
 #. how a game's picture is scaled: the methods' names
 #. the Switch side's upscaling filters, as the launcher names them (Eden's order: bilinear, FSR 1, bicubic, nearest)
-#: port/app/ingame.cpp:183 port/eden/ingame.cpp:78 port/frontend/shell/porpoise_rows.cpp:175 port/frontend/shell/settings.cpp:78
+#: port/app/ingame.cpp:186 port/eden/ingame.cpp:78 port/frontend/shell/porpoise_rows.cpp:175 port/frontend/shell/settings.cpp:78
 #, menu
 msgid "Bilinear"
 msgstr "Bilinear"
@@ -1147,34 +1147,34 @@ msgstr "Bilinear"
 #. how a game's picture is scaled: the methods' names
 #. texture filters: None, then the filters' own names
 #. the Switch side's upscaling filters, as the launcher names them (Eden's order: bilinear, FSR 1, bicubic, nearest)
-#: port/app/ingame.cpp:183 port/app/ingame3ds.cpp:193 port/eden/ingame.cpp:78 port/frontend/shell/settings.cpp:65 port/frontend/shell/settings.cpp:78
+#: port/app/ingame.cpp:186 port/app/ingame3ds.cpp:195 port/eden/ingame.cpp:78 port/frontend/shell/settings.cpp:65 port/frontend/shell/settings.cpp:78
 #, menu
 msgid "Bicubic"
 msgstr "Bikubik"
 
 #. how a game's picture is scaled: the methods' names
-#: port/app/ingame.cpp:183 port/frontend/shell/settings.cpp:78
+#: port/app/ingame.cpp:186 port/frontend/shell/settings.cpp:78
 #, menu
 msgid "Bicubic Hermite"
 msgstr "Bikubik Hermite"
 
 #. how a game's picture is scaled: the methods' names
 #. the Switch side's upscaling filters, as the launcher names them (Eden's order: bilinear, FSR 1, bicubic, nearest)
-#: port/app/ingame.cpp:183 port/eden/ingame.cpp:78 port/frontend/shell/settings.cpp:78
+#: port/app/ingame.cpp:186 port/eden/ingame.cpp:78 port/frontend/shell/settings.cpp:78
 #, menu
 msgid "Nearest neighbour"
 msgstr "Tetangga terdekat"
 
 #. how a game's picture is scaled: the methods' names
 #. the Switch side's upscaling filters, as the launcher names them (Eden's order: bilinear, FSR 1, bicubic, nearest)
-#: port/app/ingame.cpp:183 port/eden/ingame.cpp:78 port/frontend/shell/settings.cpp:78
+#: port/app/ingame.cpp:186 port/eden/ingame.cpp:78 port/frontend/shell/settings.cpp:78
 #, menu
 msgid "AMD FSR 1"
 msgstr "AMD FSR 1"
 
 #. the quick action that puts a gap between the two screens, and its state
 #. a row that opens the remote touch screen's page: the game's second screen in a phone's browser, and its code to scan
-#: port/app/ingame.cpp:197 port/app/ingame.cpp:269 port/app/ingame.cpp:269 port/app/ingame3ds.cpp:527 port/app/ingame3ds.cpp:765 port/app/remote_menu.h:29 port/eden/ingame.cpp:603 port/frontend/shell/pages.cpp:610 port/frontend/shell/porpoise_rows.cpp:107 port/frontend/shell/porpoise_rows.cpp:300 port/frontend/shell/porpoise_rows.cpp:713 port/frontend/shell/porpoise_rows.cpp:1209 port/frontend/shell/porpoise_rows.cpp:1630 port/frontend/shell/porpoise_rows.cpp:1744 port/frontend/shell/porpoise_rows.cpp:1776 port/frontend/shell/porpoise_rows.cpp:1786 port/frontend/shell/porpoise_rows.cpp:1800 port/frontend/shell/porpoise_rows.cpp:1818 port/frontend/shell/settings.cpp:546 port/frontend/shell/settings.cpp:1622 port/frontend/shell/switch_extras.cpp:54
+#: port/app/ingame.cpp:200 port/app/ingame.cpp:272 port/app/ingame.cpp:272 port/app/ingame3ds.cpp:530 port/app/ingame3ds.cpp:768 port/app/remote_menu.h:29 port/eden/ingame.cpp:612 port/frontend/shell/pages.cpp:610 port/frontend/shell/porpoise_rows.cpp:107 port/frontend/shell/porpoise_rows.cpp:300 port/frontend/shell/porpoise_rows.cpp:713 port/frontend/shell/porpoise_rows.cpp:1209 port/frontend/shell/porpoise_rows.cpp:1630 port/frontend/shell/porpoise_rows.cpp:1744 port/frontend/shell/porpoise_rows.cpp:1776 port/frontend/shell/porpoise_rows.cpp:1786 port/frontend/shell/porpoise_rows.cpp:1800 port/frontend/shell/porpoise_rows.cpp:1818 port/frontend/shell/settings.cpp:546 port/frontend/shell/settings.cpp:1624 port/frontend/shell/switch_extras.cpp:54
 #, menu
 msgid "On"
 msgstr "Aktif"
@@ -1184,442 +1184,442 @@ msgstr "Aktif"
 #. Settings > Online: a row that opens the box art's settings (GameTDB on or off, downloading the covers again)
 #. Settings > System on the Wii U side: a row that opens Cemu's emulated portals (Skylanders, Disney Infinity, LEGO Dimensions)
 #. a row that opens the remote touch screen's page: the game's second screen in a phone's browser, and its code to scan
-#: port/app/ingame.cpp:197 port/app/ingame.cpp:269 port/app/ingame.cpp:269 port/app/ingame.cpp:295 port/app/ingame3ds.cpp:527 port/app/ingame3ds.cpp:765 port/app/remote_menu.h:29 port/eden/ingame.cpp:82 port/eden/ingame.cpp:603 port/frontend/shell/pages.cpp:610 port/frontend/shell/pages.cpp:618 port/frontend/shell/porpoise_rows.cpp:103 port/frontend/shell/porpoise_rows.cpp:107 port/frontend/shell/porpoise_rows.cpp:126 port/frontend/shell/porpoise_rows.cpp:165 port/frontend/shell/porpoise_rows.cpp:182 port/frontend/shell/porpoise_rows.cpp:184 port/frontend/shell/porpoise_rows.cpp:259 port/frontend/shell/porpoise_rows.cpp:261 port/frontend/shell/porpoise_rows.cpp:265 port/frontend/shell/porpoise_rows.cpp:269 port/frontend/shell/porpoise_rows.cpp:271 port/frontend/shell/porpoise_rows.cpp:275 port/frontend/shell/porpoise_rows.cpp:277 port/frontend/shell/porpoise_rows.cpp:279 port/frontend/shell/porpoise_rows.cpp:281 port/frontend/shell/porpoise_rows.cpp:283 port/frontend/shell/porpoise_rows.cpp:300 port/frontend/shell/porpoise_rows.cpp:308 port/frontend/shell/porpoise_rows.cpp:376 port/frontend/shell/porpoise_rows.cpp:388 port/frontend/shell/porpoise_rows.cpp:400 port/frontend/shell/porpoise_rows.cpp:412 port/frontend/shell/porpoise_rows.cpp:713 port/frontend/shell/porpoise_rows.cpp:1209 port/frontend/shell/porpoise_rows.cpp:1630 port/frontend/shell/porpoise_rows.cpp:1744 port/frontend/shell/porpoise_rows.cpp:1776 port/frontend/shell/porpoise_rows.cpp:1786 port/frontend/shell/porpoise_rows.cpp:1800 port/frontend/shell/porpoise_rows.cpp:1818 port/frontend/shell/settings.cpp:79 port/frontend/shell/settings.cpp:546 port/frontend/shell/settings.cpp:732 port/frontend/shell/settings.cpp:1317 port/frontend/shell/settings.cpp:1600 port/frontend/shell/settings.cpp:1622 port/frontend/shell/settings.cpp:1650 port/frontend/shell/settings.cpp:1658 port/frontend/shell/switch_extras.cpp:54 port/frontend/shell/switch_extras.cpp:74 port/ps5/display.h:47
+#: port/app/ingame.cpp:200 port/app/ingame.cpp:272 port/app/ingame.cpp:272 port/app/ingame.cpp:298 port/app/ingame3ds.cpp:530 port/app/ingame3ds.cpp:768 port/app/remote_menu.h:29 port/eden/ingame.cpp:82 port/eden/ingame.cpp:612 port/frontend/shell/pages.cpp:610 port/frontend/shell/pages.cpp:618 port/frontend/shell/porpoise_rows.cpp:103 port/frontend/shell/porpoise_rows.cpp:107 port/frontend/shell/porpoise_rows.cpp:126 port/frontend/shell/porpoise_rows.cpp:165 port/frontend/shell/porpoise_rows.cpp:182 port/frontend/shell/porpoise_rows.cpp:184 port/frontend/shell/porpoise_rows.cpp:259 port/frontend/shell/porpoise_rows.cpp:261 port/frontend/shell/porpoise_rows.cpp:265 port/frontend/shell/porpoise_rows.cpp:269 port/frontend/shell/porpoise_rows.cpp:271 port/frontend/shell/porpoise_rows.cpp:275 port/frontend/shell/porpoise_rows.cpp:277 port/frontend/shell/porpoise_rows.cpp:279 port/frontend/shell/porpoise_rows.cpp:281 port/frontend/shell/porpoise_rows.cpp:283 port/frontend/shell/porpoise_rows.cpp:300 port/frontend/shell/porpoise_rows.cpp:308 port/frontend/shell/porpoise_rows.cpp:376 port/frontend/shell/porpoise_rows.cpp:388 port/frontend/shell/porpoise_rows.cpp:400 port/frontend/shell/porpoise_rows.cpp:412 port/frontend/shell/porpoise_rows.cpp:713 port/frontend/shell/porpoise_rows.cpp:1209 port/frontend/shell/porpoise_rows.cpp:1630 port/frontend/shell/porpoise_rows.cpp:1744 port/frontend/shell/porpoise_rows.cpp:1776 port/frontend/shell/porpoise_rows.cpp:1786 port/frontend/shell/porpoise_rows.cpp:1800 port/frontend/shell/porpoise_rows.cpp:1818 port/frontend/shell/settings.cpp:79 port/frontend/shell/settings.cpp:546 port/frontend/shell/settings.cpp:732 port/frontend/shell/settings.cpp:1317 port/frontend/shell/settings.cpp:1602 port/frontend/shell/settings.cpp:1624 port/frontend/shell/settings.cpp:1652 port/frontend/shell/settings.cpp:1660 port/frontend/shell/switch_extras.cpp:54 port/frontend/shell/switch_extras.cpp:74 port/ps5/display.h:47
 #, menu
 msgid "Off"
 msgstr "Nonaktif"
 
 #. the screens in the Wii U's menu: the TV's picture and the GamePad's
-#: port/app/ingame.cpp:199
+#: port/app/ingame.cpp:202
 #, menu
 msgid "TV"
 msgstr "TV"
 
 #. the screens in the Wii U's menu: the TV's picture and the GamePad's
-#: port/app/ingame.cpp:199
+#: port/app/ingame.cpp:202
 #, menu
 msgid "GamePad"
 msgstr "GamePad"
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
-#: port/app/ingame.cpp:200 port/app/ingame.cpp:379 port/app/ingame3ds.cpp:763 port/frontend/shell/settings.cpp:216
+#: port/app/ingame.cpp:203 port/app/ingame.cpp:382 port/app/ingame3ds.cpp:766 port/frontend/shell/settings.cpp:216
 #, menu
 msgid "Screens"
 msgstr "Layar"
 
-#: port/app/ingame.cpp:200 port/app/ingame.cpp:206
+#: port/app/ingame.cpp:203 port/app/ingame.cpp:209
 #, menu
 msgid "Stretched"
 msgstr "Diregangkan"
 
 #. a libretro game's picture's shape: the console's own, a 4:3 TV's, each pixel square, a 16:9 TV's
-#: port/app/ingame.cpp:200 port/app/ingame.cpp:206 port/app/ingame3ds.h:79
+#: port/app/ingame.cpp:203 port/app/ingame.cpp:209 port/app/ingame3ds.h:82
 #, menu
 msgid "Original"
 msgstr "Bentuk aslinya"
 
-#: port/app/ingame.cpp:201
+#: port/app/ingame.cpp:204
 #, menu
 msgid "Which screen to show, and how it fits."
 msgstr "Gambar TV dan GamePad, dan cara keduanya mengisi layar."
 
 #. the 3DS's top and bottom screens
-#: port/app/ingame.cpp:202 port/app/ingame3ds.cpp:539
+#: port/app/ingame.cpp:205 port/app/ingame3ds.cpp:542
 #, menu
 msgid "Main screen"
 msgstr "Layar utama"
 
-#: port/app/ingame.cpp:203
+#: port/app/ingame.cpp:206
 #, menu
 msgid "The screen shown full size. In the game, touchpad click + L1 swaps them."
 msgstr "Gambar mana yang mengisi TV: gambar TV atau GamePad. Dalam game, klik panel sentuh + L1 menukarnya."
 
-#: port/app/ingame.cpp:204
+#: port/app/ingame.cpp:207
 #, menu
 msgid "TV in a corner"
 msgstr "TV di sudut"
 
-#: port/app/ingame.cpp:204
+#: port/app/ingame.cpp:207
 #, menu
 msgid "GamePad in a corner"
 msgstr "GamePad di sudut"
 
-#: port/app/ingame.cpp:205
+#: port/app/ingame.cpp:208
 #, menu
 msgid "Shows the other screen small in the bottom-right corner. In the game, touchpad click + R1."
 msgstr "Layar lainnya, kecil di sudut kanan bawah. Dalam game: klik panel sentuh + R1."
 
-#: port/app/ingame.cpp:206 port/app/ingame3ds.cpp:562
+#: port/app/ingame.cpp:209 port/app/ingame3ds.cpp:565
 #, menu
 msgid "Picture"
 msgstr "Gambar"
 
-#: port/app/ingame.cpp:207
+#: port/app/ingame.cpp:210
 #, menu
 msgid "Original keeps the game's proportions with bars at the sides. Stretched fills the screen."
 msgstr "Bentuk aslinya mempertahankan proporsi gambar, dengan bilah di bagian yang berbeda dari layar; Diregangkan mengisi layar."
 
-#: port/app/ingame.cpp:209 port/app/ingame3ds.cpp:586 port/app/ingame3ds.cpp:593 port/app/ingame3ds.cpp:601 port/eden/ingame.cpp:605 port/frontend/shell/settings.cpp:214 port/frontend/shell/settings.cpp:270
+#: port/app/ingame.cpp:212 port/app/ingame3ds.cpp:589 port/app/ingame3ds.cpp:596 port/app/ingame3ds.cpp:604 port/eden/ingame.cpp:614 port/frontend/shell/settings.cpp:214 port/frontend/shell/settings.cpp:270
 #, menu
 msgid "Graphics"
 msgstr "Grafis"
 
-#: port/app/ingame.cpp:210
+#: port/app/ingame.cpp:213
 #, menu
 msgid "Upscaling, accuracy and the performance overlay. Applies to all games."
 msgstr "Peningkatan skala, pengaturan akurasi Cemu, dan overlay performa. Tetap berlaku untuk game berikutnya."
 
-#: port/app/ingame.cpp:211 port/eden/ingame.cpp:607 port/frontend/shell/settings.cpp:626 port/frontend/shell/settings.cpp:724
+#: port/app/ingame.cpp:214 port/eden/ingame.cpp:616 port/frontend/shell/settings.cpp:626 port/frontend/shell/settings.cpp:724
 #, menu
 msgid "Upscaling to 4K"
 msgstr "Peningkatan skala ke 4K"
 
-#: port/app/ingame.cpp:212
+#: port/app/ingame.cpp:215
 #, menu
 msgid "Bicubic is sharpest, Hermite softer, Bilinear softest."
 msgstr "Cara gambar diskalakan ke layar: Bikubik tajam, Hermite lebih lembut, Bilinear lebih lembut lagi."
 
-#: port/app/ingame.cpp:213
+#: port/app/ingame.cpp:216
 #, menu
 msgid "Accurate barriers"
 msgstr "Barrier akurat"
 
-#: port/app/ingame.cpp:214
+#: port/app/ingame.cpp:217
 #, menu
 msgid "Off can raise the frame rate, but some games may flicker or show wrong shadows."
 msgstr "Nonaktif bisa menaikkan frame rate, tetapi beberapa game lalu berkedip atau menampilkan bayangan yang salah. Langsung berlaku."
 
-#: port/app/ingame.cpp:215 port/frontend/shell/settings.cpp:663 port/frontend/shell/settings.cpp:701 port/frontend/shell/settings.cpp:1022
+#: port/app/ingame.cpp:218 port/frontend/shell/settings.cpp:663 port/frontend/shell/settings.cpp:701 port/frontend/shell/settings.cpp:1022
 #, menu
 msgid "Async shader compile"
 msgstr "Kompilasi shader asinkron"
 
-#: port/app/ingame.cpp:216
+#: port/app/ingame.cpp:219
 #, menu
 msgid "Builds shaders in the background. Less stutter, but some things may appear late."
 msgstr "Aktif: shader baru dibuat sementara game terus berjalan. Tanpa tersendat, tetapi sesuatu mungkin hilang sesaat."
 
-#: port/app/ingame.cpp:217 port/frontend/shell/settings.cpp:644
+#: port/app/ingame.cpp:220 port/frontend/shell/settings.cpp:644
 #, menu
 msgid "Frame pacing"
 msgstr "Ritme frame"
 
-#: port/app/ingame.cpp:218
+#: port/app/ingame.cpp:221
 #, menu
 msgid "Keeps the frame rate steady (60 fps at 4K 120 Hz, 30 at 8K 60 Hz). Off shows each frame when ready."
 msgstr "Menjaga game di laju yang rata: 60 fps untuk 4K di 120 Hz, 30 untuk 8K di 60 Hz. Nonaktif menampilkan setiap frame begitu siap."
 
-#: port/app/ingame.cpp:219 port/app/ingame3ds.cpp:607 port/eden/ingame.cpp:617 port/frontend/shell/porpoise_rows.cpp:117 port/frontend/shell/settings.cpp:634 port/frontend/shell/settings.cpp:648 port/frontend/shell/settings.cpp:705 port/frontend/shell/settings.cpp:762 port/frontend/shell/settings.cpp:777
+#: port/app/ingame.cpp:222 port/app/ingame3ds.cpp:610 port/eden/ingame.cpp:626 port/frontend/shell/porpoise_rows.cpp:117 port/frontend/shell/settings.cpp:634 port/frontend/shell/settings.cpp:648 port/frontend/shell/settings.cpp:705 port/frontend/shell/settings.cpp:762 port/frontend/shell/settings.cpp:777
 #, menu
 msgid "Frame generation"
 msgstr "Pembuatan bingkai"
 
-#: port/app/ingame.cpp:220 port/app/ingame3ds.cpp:608 port/eden/ingame.cpp:618
+#: port/app/ingame.cpp:223 port/app/ingame3ds.cpp:611 port/eden/ingame.cpp:627
 #, menu
 msgid "Adds a frame between each pair, so 30 fps games play at 60."
 msgstr "Bingkai dibuat di antara setiap dua bingkai game 30 fps, sehingga ditampilkan 60. Langsung berubah."
 
-#: port/app/ingame.cpp:221 port/frontend/shell/settings.cpp:653 port/frontend/shell/switch_extras.cpp:72
+#: port/app/ingame.cpp:224 port/frontend/shell/settings.cpp:653 port/frontend/shell/switch_extras.cpp:72
 #, menu
 msgid "ReShade"
 msgstr "ReShade"
 
-#: port/app/ingame.cpp:222
+#: port/app/ingame.cpp:225
 #, menu
 msgid "Applies your ReShade preset. Settings > Graphics shows where to put it."
 msgstr "Preset ReShade Anda di atas gambar game (Pengaturan > Grafis memberi tahu tempatnya). Langsung berubah."
 
-#: port/app/ingame.cpp:223 port/app/ingame3ds.cpp:589 port/app/ingame3ds.cpp:596 port/app/ingame3ds.cpp:609 port/eden/ingame.cpp:619 port/frontend/shell/settings.cpp:657 port/frontend/shell/settings.cpp:711 port/frontend/shell/settings.cpp:784 port/frontend/shell/settings.cpp:798
+#: port/app/ingame.cpp:226 port/app/ingame3ds.cpp:592 port/app/ingame3ds.cpp:599 port/app/ingame3ds.cpp:612 port/eden/ingame.cpp:628 port/frontend/shell/settings.cpp:657 port/frontend/shell/settings.cpp:711 port/frontend/shell/settings.cpp:784 port/frontend/shell/settings.cpp:798
 #, menu
 msgid "Performance overlay"
 msgstr "Overlay performa"
 
-#: port/app/ingame.cpp:224
+#: port/app/ingame.cpp:227
 #, menu
 msgid "Shows frame rate, CPU and memory use in the top-left corner."
 msgstr "Frame per detik, penggunaan CPU dan memori di sudut kiri atas, seperti yang ditampilkan Cemu."
 
-#: port/app/ingame.cpp:225 port/frontend/shell/settings.cpp:666
+#: port/app/ingame.cpp:228 port/frontend/shell/settings.cpp:666
 #, menu
 msgid "Shader notices"
 msgstr "Notifikasi shader"
 
-#: port/app/ingame.cpp:226
+#: port/app/ingame.cpp:229
 #, menu
 msgid "Shows a notice while shaders are being built."
 msgstr "Catatan Cemu di pojok saat game membangun shader. Nonaktif menyembunyikannya; shader tetap dibangun."
 
-#: port/app/ingame.cpp:239 port/app/ingame.cpp:269
+#: port/app/ingame.cpp:242 port/app/ingame.cpp:272
 #, menu
 msgid "{0} (next start)"
 msgstr "{0} (mulai berikutnya)"
 
-#: port/app/ingame.cpp:240
+#: port/app/ingame.cpp:243
 #, menu
 msgid "This pack replaces textures. Restart the game to see it."
 msgstr "Paket ini mengganti tekstur: game menampilkan perubahannya saat dimulai lagi."
 
-#: port/app/ingame.cpp:241
+#: port/app/ingame.cpp:244
 #, menu
 msgid "Cross turns it on or off."
 msgstr "Silang mengaktifkan atau menonaktifkannya; game langsung menampilkannya."
 
-#: port/app/ingame.cpp:249 port/frontend/shell/pages.cpp:281 port/frontend/shell/pages.cpp:370
+#: port/app/ingame.cpp:252 port/frontend/shell/pages.cpp:281 port/frontend/shell/pages.cpp:370
 #, menu
 msgid "Preset"
 msgstr "Preset"
 
-#: port/app/ingame.cpp:251
+#: port/app/ingame.cpp:254
 #, menu
 msgid "Left and Right choose another."
 msgstr "Kiri dan Kanan memilih yang lain; game langsung menampilkannya."
 
-#: port/app/ingame.cpp:255
+#: port/app/ingame.cpp:258
 #, menu
 msgid "None for this game"
 msgstr "Tidak ada untuk game ini"
 
-#: port/app/ingame.cpp:255
+#: port/app/ingame.cpp:258
 #, menu
 msgid "Reading the packs…"
 msgstr "Membaca paket…"
 
-#: port/app/ingame.cpp:256
+#: port/app/ingame.cpp:259
 #, menu
 msgid "There are no graphic packs for this game."
 msgstr "Paket grafis komunitas tidak punya satu pun untuk game ini."
 
-#: port/app/ingame.cpp:258 port/app/ingame.cpp:380 port/frontend/shell/hub.cpp:242 port/frontend/shell/pages.cpp:305 port/frontend/shell/shell.cpp:2025
+#: port/app/ingame.cpp:261 port/app/ingame.cpp:383 port/frontend/shell/hub.cpp:242 port/frontend/shell/pages.cpp:305 port/frontend/shell/shell.cpp:2057
 #, menu
 msgid "Graphic packs"
 msgstr "Paket grafis"
 
-#: port/app/ingame.cpp:258 port/app/ingame.cpp:302 port/app/ingame.cpp:380 port/app/ingame3ds.cpp:518 port/eden/ingame.cpp:576 port/eden/ingame.cpp:698 port/frontend/shell/porpoise_rows.cpp:192 port/frontend/shell/porpoise_rows.cpp:195 port/frontend/shell/porpoise_rows.cpp:197 port/frontend/shell/porpoise_rows.cpp:204 port/frontend/shell/porpoise_rows.cpp:207 port/frontend/shell/porpoise_rows.cpp:209 port/frontend/shell/porpoise_rows.cpp:216 port/frontend/shell/porpoise_rows.cpp:219 port/frontend/shell/porpoise_rows.cpp:221 port/frontend/shell/porpoise_rows.cpp:228 port/frontend/shell/porpoise_rows.cpp:231 port/frontend/shell/porpoise_rows.cpp:233 port/frontend/shell/porpoise_rows.cpp:451 port/frontend/shell/porpoise_rows.cpp:1153 port/frontend/shell/porpoise_rows.cpp:1159 port/frontend/shell/porpoise_rows.cpp:1162 port/frontend/shell/porpoise_rows.cpp:1638
+#: port/app/ingame.cpp:261 port/app/ingame.cpp:305 port/app/ingame.cpp:383 port/app/ingame3ds.cpp:521 port/eden/ingame.cpp:585 port/eden/ingame.cpp:707 port/frontend/shell/porpoise_rows.cpp:192 port/frontend/shell/porpoise_rows.cpp:195 port/frontend/shell/porpoise_rows.cpp:197 port/frontend/shell/porpoise_rows.cpp:204 port/frontend/shell/porpoise_rows.cpp:207 port/frontend/shell/porpoise_rows.cpp:209 port/frontend/shell/porpoise_rows.cpp:216 port/frontend/shell/porpoise_rows.cpp:219 port/frontend/shell/porpoise_rows.cpp:221 port/frontend/shell/porpoise_rows.cpp:228 port/frontend/shell/porpoise_rows.cpp:231 port/frontend/shell/porpoise_rows.cpp:233 port/frontend/shell/porpoise_rows.cpp:451 port/frontend/shell/porpoise_rows.cpp:1153 port/frontend/shell/porpoise_rows.cpp:1159 port/frontend/shell/porpoise_rows.cpp:1162 port/frontend/shell/porpoise_rows.cpp:1638
 #, menu
 msgid "None"
 msgstr "Tidak ada"
 
 #. Settings > System on the Wii U side: a row that opens Cemu's emulated portals (Skylanders, Disney Infinity, LEGO Dimensions)
-#: port/app/ingame.cpp:258 port/app/ingame.cpp:295 port/frontend/shell/settings.cpp:1600
+#: port/app/ingame.cpp:261 port/app/ingame.cpp:298 port/frontend/shell/settings.cpp:1602
 #, menu
 msgid "{0} on"
 msgid_plural "{0} on"
 msgstr[0] "{0} aktif"
 
-#: port/app/ingame.cpp:259
+#: port/app/ingame.cpp:262
 #, menu
 msgid "Community packs for resolution, frame rate and mods."
 msgstr "Paket grafis komunitas untuk game ini: resolusi, frame rate, dan mod, seperti di jendela Graphic Packs Cemu."
 
-#: port/app/ingame.cpp:270
+#: port/app/ingame.cpp:273
 #, menu
 msgid "Restart the game for this to take effect."
 msgstr "Game melihat perubahannya saat dimulai lagi: portal disambungkan saat game dimulai."
 
-#: port/app/ingame.cpp:271
+#: port/app/ingame.cpp:274
 #, menu
 msgid "Connects the portal when a game starts. Its figures are listed below."
 msgstr "Disambungkan saat game dimulai, seperti di Cemu. Figurnya ada di bawah selama portal aktif."
 
-#: port/app/ingame.cpp:276 port/app/ingame3ds.cpp:728 port/frontend/shell/porpoise_rows.cpp:1954
+#: port/app/ingame.cpp:279 port/app/ingame3ds.cpp:731 port/frontend/shell/porpoise_rows.cpp:1954
 #, menu
 msgid "Empty"
 msgstr "Kosong"
 
-#: port/app/ingame.cpp:285
+#: port/app/ingame.cpp:288
 #, menu
 msgid "{0} (Cross to place)"
 msgstr "{0} (Silang untuk menaruh)"
 
 #. {0} is a folder of figure dumps
-#: port/app/ingame.cpp:287
+#: port/app/ingame.cpp:290
 #, menu
 msgid "Put figure dumps in {0} to use them here."
 msgstr "Taruh dump figur di {0} untuk menempatkannya di sini."
 
-#: port/app/ingame.cpp:288
+#: port/app/ingame.cpp:291
 #, menu
 msgid "Left and Right choose a figure. Cross places it; Empty removes it."
 msgstr "Kiri dan Kanan memilih figur, Silang menaruhnya; Kosong mengangkat figur yang ada di sana."
 
-#: port/app/ingame.cpp:293
+#: port/app/ingame.cpp:296
 #, menu
 msgid "The figure could not be placed."
 msgstr "Figur terakhir tidak bisa ditaruh."
 
 #. Settings > System on the Wii U side: a row that opens Cemu's emulated portals (Skylanders, Disney Infinity, LEGO Dimensions)
-#: port/app/ingame.cpp:295 port/frontend/shell/settings.cpp:1600
+#: port/app/ingame.cpp:298 port/frontend/shell/settings.cpp:1602
 #, menu
 msgid "USB devices"
 msgstr "Perangkat USB"
 
-#: port/app/ingame.cpp:296
+#: port/app/ingame.cpp:299
 #, menu
 msgid "Skylanders, Disney Infinity and LEGO Dimensions figures."
 msgstr "Figur Skylanders, Disney Infinity, dan LEGO Dimensions di portal emulasi Cemu, seperti amiibo dipindai."
 
-#: port/app/ingame.cpp:298 port/app/ingame3ds.cpp:628 port/eden/ingame.cpp:626 port/frontend/shell/porpoise_rows.cpp:303 port/frontend/shell/porpoise_rows.cpp:414 port/frontend/shell/porpoise_rows.cpp:418 port/frontend/shell/porpoise_rows.cpp:422 port/frontend/shell/porpoise_rows.cpp:426
+#: port/app/ingame.cpp:301 port/app/ingame3ds.cpp:631 port/eden/ingame.cpp:635 port/frontend/shell/porpoise_rows.cpp:303 port/frontend/shell/porpoise_rows.cpp:414 port/frontend/shell/porpoise_rows.cpp:418 port/frontend/shell/porpoise_rows.cpp:422 port/frontend/shell/porpoise_rows.cpp:426
 #, menu
 msgid "Volume"
 msgstr "Volume"
 
-#: port/app/ingame.cpp:298 port/app/ingame3ds.cpp:628 port/eden/ingame.cpp:626
+#: port/app/ingame.cpp:301 port/app/ingame3ds.cpp:631 port/eden/ingame.cpp:635
 #, menu
 msgid "The game's sound. Left and Right change it by 10%."
 msgstr "Suara game. Kiri dan Kanan mengubahnya 10%."
 
 #. amiibo is Nintendo's name for its figures, as it writes it in the language
-#: port/app/ingame.cpp:304 port/app/ingame.cpp:310 port/app/ingame.cpp:380 port/app/ingame3ds.cpp:676 port/app/ingame3ds.cpp:677 port/eden/ingame.cpp:646 port/eden/ingame.cpp:652 port/eden/ingame.cpp:698
+#: port/app/ingame.cpp:307 port/app/ingame.cpp:313 port/app/ingame.cpp:383 port/app/ingame3ds.cpp:679 port/app/ingame3ds.cpp:680 port/eden/ingame.cpp:655 port/eden/ingame.cpp:661 port/eden/ingame.cpp:707
 #, menu
 msgid "Amiibo"
 msgstr "amiibo"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/app/ingame.cpp:306 port/app/ingame3ds.cpp:679 port/eden/ingame.cpp:648
+#: port/app/ingame.cpp:309 port/app/ingame3ds.cpp:682 port/eden/ingame.cpp:657
 #, menu
 msgid "Put amiibo dumps (.bin) in {0}/amiibo to scan them here."
 msgstr "Taruh dump amiibo (.bin) di {0}/amiibo untuk memindainya di sini."
 
-#: port/app/ingame.cpp:307
+#: port/app/ingame.cpp:310
 #, menu
 msgid "Left and Right choose an amiibo. Cross scans it when the game asks."
 msgstr "Kiri dan Kanan memilih dump amiibo; Silang menempelkannya ke GamePad saat game memintanya."
 
 #. a folder of amiibo dumps, as they are shared: Kirby, Metroid...
-#: port/app/ingame.cpp:312 port/eden/ingame.cpp:654
+#: port/app/ingame.cpp:315 port/eden/ingame.cpp:663
 #, menu
 msgid "Amiibo series"
 msgstr "Seri amiibo"
 
-#: port/app/ingame.cpp:313 port/eden/ingame.cpp:655
+#: port/app/ingame.cpp:316 port/eden/ingame.cpp:664
 #, menu
 msgid "Left and Right choose a series (a folder in {0}/amiibo)."
 msgstr "Kiri dan Kanan memilih seri: folder berisi dump di {0}/amiibo."
 
 #. the DS's lid, closed or open
-#: port/app/ingame.cpp:319 port/app/ingame3ds.cpp:687 port/app/ingame3ds.cpp:695 port/app/ingame3ds.cpp:706 port/eden/ingame.cpp:631 port/frontend/shell/pages.cpp:929 port/frontend/shell/porpoise_rows.cpp:1004 port/frontend/shell/settings.cpp:219 port/frontend/shell/settings.cpp:272
+#: port/app/ingame.cpp:322 port/app/ingame3ds.cpp:690 port/app/ingame3ds.cpp:698 port/app/ingame3ds.cpp:709 port/eden/ingame.cpp:640 port/frontend/shell/pages.cpp:929 port/frontend/shell/porpoise_rows.cpp:1004 port/frontend/shell/settings.cpp:219 port/frontend/shell/settings.cpp:272
 #, menu
 msgid "Controls"
 msgstr "Kontrol"
 
-#: port/app/ingame.cpp:320
+#: port/app/ingame.cpp:323
 #, menu
 msgid "Each player's controller, motion, vibration and buttons."
 msgstr "Kontroler, gerakan, getaran, zona mati, serta A dan B tiap pemain."
 
-#: port/app/ingame.cpp:321 port/frontend/shell/switch_extras.cpp:87
+#: port/app/ingame.cpp:324 port/frontend/shell/switch_extras.cpp:87
 #, menu
 msgid "Player"
 msgstr "Pemain"
 
-#: port/app/ingame.cpp:322
+#: port/app/ingame.cpp:325
 #, menu
 msgid "{0} (no Wii Remote found)"
 msgstr "{0} (Wii Remote tidak ditemukan)"
 
-#: port/app/ingame.cpp:322
+#: port/app/ingame.cpp:325
 #, menu
 msgid "{0} (no DualSense)"
 msgstr "{0} (tanpa DualSense)"
 
-#: port/app/ingame.cpp:323
+#: port/app/ingame.cpp:326
 #, menu
 msgid "Left and Right choose which player to set up."
 msgstr "Milik siapa kontroler untuk pengaturan di bawah: Kiri dan Kanan memilih pemain."
 
-#: port/app/ingame.cpp:324 port/frontend/shell/pages.cpp:446 port/frontend/shell/pages.cpp:494 port/frontend/shell/pages.cpp:609
+#: port/app/ingame.cpp:327 port/frontend/shell/pages.cpp:446 port/frontend/shell/pages.cpp:494 port/frontend/shell/pages.cpp:609
 #, menu
 msgid "Emulated controller"
 msgstr "Kontroler emulasi"
 
-#: port/app/ingame.cpp:325
+#: port/app/ingame.cpp:328
 #, menu
 msgid "The controller the game sees. Most games want the GamePad for player 1."
 msgstr "Apa yang dilihat game di tangan pemain ini. Sebagian besar game menginginkan GamePad untuk pemain 1."
 
-#: port/app/ingame.cpp:326 port/app/ingame3ds.cpp:707 port/frontend/shell/pages.cpp:446 port/frontend/shell/pages.cpp:610 port/frontend/shell/settings.cpp:909
+#: port/app/ingame.cpp:329 port/app/ingame3ds.cpp:710 port/frontend/shell/pages.cpp:446 port/frontend/shell/pages.cpp:610 port/frontend/shell/settings.cpp:909
 #, menu
 msgid "Motion controls"
 msgstr "Kontrol gerakan"
 
-#: port/app/ingame.cpp:326 port/frontend/shell/pages.cpp:610
+#: port/app/ingame.cpp:329 port/frontend/shell/pages.cpp:610
 #, menu
 msgid "None on this one"
 msgstr "Yang ini tidak punya"
 
-#: port/app/ingame.cpp:327 port/app/ingame3ds.cpp:708
+#: port/app/ingame.cpp:330 port/app/ingame3ds.cpp:711
 #, menu
 msgid "Use DualSense motion to aim or steer by tilting."
 msgstr "Giroskop dan akselerometer DualSense sebagai milik 3DS, untuk game yang membidik atau mengemudi dengan memiringkan."
 
-#: port/app/ingame.cpp:328 port/eden/ingame.cpp:637 port/frontend/shell/pages.cpp:446 port/frontend/shell/pages.cpp:618 port/frontend/shell/porpoise_rows.cpp:244 port/frontend/shell/settings.cpp:855
+#: port/app/ingame.cpp:331 port/eden/ingame.cpp:646 port/frontend/shell/pages.cpp:446 port/frontend/shell/pages.cpp:618 port/frontend/shell/porpoise_rows.cpp:244 port/frontend/shell/settings.cpp:855
 #, menu
 msgid "Vibration"
 msgstr "Getaran"
 
-#: port/app/ingame.cpp:329
+#: port/app/ingame.cpp:332
 #, menu
 msgid "How strongly the DualSense rumbles. Left and Right change it by 10%."
 msgstr "Seberapa kuat DualSense bergetar. Kiri dan Kanan mengubahnya 10%."
 
-#: port/app/ingame.cpp:330 port/frontend/shell/pages.cpp:447 port/frontend/shell/pages.cpp:621
+#: port/app/ingame.cpp:333 port/frontend/shell/pages.cpp:447 port/frontend/shell/pages.cpp:621
 #, menu
 msgid "Left stick deadzone"
 msgstr "Zona mati stik kiri"
 
-#: port/app/ingame.cpp:331
+#: port/app/ingame.cpp:334
 #, menu
 msgid "How far the left stick moves before the game sees it. Raise it if a character drifts."
 msgstr "Seberapa jauh stik kiri bergerak sebelum game menyadarinya. Naikkan jika karakter berjalan sendiri."
 
-#: port/app/ingame.cpp:332 port/frontend/shell/pages.cpp:447 port/frontend/shell/pages.cpp:624
+#: port/app/ingame.cpp:335 port/frontend/shell/pages.cpp:447 port/frontend/shell/pages.cpp:624
 #, menu
 msgid "Right stick deadzone"
 msgstr "Zona mati stik kanan"
 
-#: port/app/ingame.cpp:333
+#: port/app/ingame.cpp:336
 #, menu
 msgid "How far the right stick moves before the game sees it. Raise it if the camera drifts."
 msgstr "Seberapa jauh stik kanan bergerak sebelum game menyadarinya. Naikkan jika kamera bergeser sendiri."
 
-#: port/app/ingame.cpp:334 port/app/ingame3ds.cpp:690 port/app/ingame3ds.cpp:701 port/app/ingame3ds.cpp:711 port/frontend/shell/pages.cpp:447 port/frontend/shell/pages.cpp:630 port/frontend/shell/settings.cpp:904 port/frontend/shell/welcome.cpp:76
+#: port/app/ingame.cpp:337 port/app/ingame3ds.cpp:693 port/app/ingame3ds.cpp:704 port/app/ingame3ds.cpp:714 port/frontend/shell/pages.cpp:447 port/frontend/shell/pages.cpp:630 port/frontend/shell/settings.cpp:904 port/frontend/shell/welcome.cpp:76
 #, menu
 msgid "A and B"
 msgstr "A dan B"
 
-#: port/app/ingame.cpp:334 port/app/ingame3ds.cpp:685 port/frontend/shell/pages.cpp:632 port/frontend/shell/settings.cpp:904 port/frontend/shell/welcome.cpp:77
+#: port/app/ingame.cpp:337 port/app/ingame3ds.cpp:688 port/frontend/shell/pages.cpp:632 port/frontend/shell/settings.cpp:904 port/frontend/shell/welcome.cpp:77
 #, menu
 msgid "A on Circle"
 msgstr "A di Lingkaran"
 
-#: port/app/ingame.cpp:334 port/app/ingame3ds.cpp:685 port/frontend/shell/pages.cpp:632 port/frontend/shell/settings.cpp:904 port/frontend/shell/welcome.cpp:77
+#: port/app/ingame.cpp:337 port/app/ingame3ds.cpp:688 port/frontend/shell/pages.cpp:632 port/frontend/shell/settings.cpp:904 port/frontend/shell/welcome.cpp:77
 #, menu
 msgid "A on Cross"
 msgstr "A di Silang"
 
-#: port/app/ingame.cpp:335
+#: port/app/ingame.cpp:338
 #, menu
 msgid "A on Circle as on the Wii U, or on Cross with X and Y swapped. Other buttons are in Settings > Controls."
 msgstr "A di Lingkaran seperti di Wii U, atau di Silang, dengan X dan Y ditukar agar cocok. Semua tombol lain: Pengaturan > Kontrol di peluncur."
 
-#: port/app/ingame.cpp:336 port/frontend/shell/pages.cpp:447 port/frontend/shell/pages.cpp:640 port/frontend/shell/welcome.cpp:103
+#: port/app/ingame.cpp:339 port/frontend/shell/pages.cpp:447 port/frontend/shell/pages.cpp:640 port/frontend/shell/welcome.cpp:103
 #, menu
 msgid "Touchpad click"
 msgstr "Klik panel sentuh"
 
 #. what a Wii U player's touchpad click does (as Settings > Controls > Player names them)
-#: port/app/ingame.cpp:337 port/frontend/shell/pages.cpp:54 port/frontend/shell/welcome.cpp:27
+#: port/app/ingame.cpp:340 port/frontend/shell/pages.cpp:54 port/frontend/shell/welcome.cpp:27
 #, menu
 msgid "Touches the screen"
 msgstr "Menyentuh layar"
 
 #. what a Wii U player's touchpad click does (as Settings > Controls > Player names them)
-#: port/app/ingame.cpp:338 port/frontend/shell/pages.cpp:54 port/frontend/shell/welcome.cpp:27
+#: port/app/ingame.cpp:341 port/frontend/shell/pages.cpp:54 port/frontend/shell/welcome.cpp:27
 #, menu
 msgid "Presses a button"
 msgstr "Menekan tombol"
 
-#: port/app/ingame.cpp:338 port/frontend/shell/pages.cpp:641
+#: port/app/ingame.cpp:341 port/frontend/shell/pages.cpp:641
 #, menu
 msgid "{0}: {1}"
 msgstr "{0}: {1}"
@@ -1628,791 +1628,801 @@ msgstr "{0}: {1}"
 #. the languages the emulated 3DS can be set to
 #. the Switch's controller types, as a game sees the DualSense (Automatic: what the game takes)
 #. what a Wii U player's touchpad click does (as Settings > Controls > Player names them)
-#: port/app/ingame.cpp:338 port/eden/ingame.cpp:88 port/frontend/shell/pages.cpp:54 port/frontend/shell/porpoise_rows.cpp:107 port/frontend/shell/porpoise_rows.cpp:135 port/frontend/shell/porpoise_rows.cpp:239 port/frontend/shell/porpoise_rows.cpp:292 port/frontend/shell/porpoise_rows.cpp:294 port/frontend/shell/porpoise_rows.cpp:300 port/frontend/shell/porpoise_rows.cpp:367 port/frontend/shell/porpoise_rows.cpp:371 port/frontend/shell/porpoise_rows.cpp:373 port/frontend/shell/porpoise_rows.cpp:379 port/frontend/shell/porpoise_rows.cpp:383 port/frontend/shell/porpoise_rows.cpp:385 port/frontend/shell/porpoise_rows.cpp:391 port/frontend/shell/porpoise_rows.cpp:395 port/frontend/shell/porpoise_rows.cpp:397 port/frontend/shell/porpoise_rows.cpp:403 port/frontend/shell/porpoise_rows.cpp:407 port/frontend/shell/porpoise_rows.cpp:409 port/frontend/shell/settings.cpp:54 port/frontend/shell/settings.cpp:57 port/frontend/shell/settings.cpp:130 port/frontend/shell/settings.cpp:981 port/frontend/shell/welcome.cpp:27
+#: port/app/ingame.cpp:341 port/eden/ingame.cpp:88 port/frontend/shell/pages.cpp:54 port/frontend/shell/porpoise_rows.cpp:107 port/frontend/shell/porpoise_rows.cpp:135 port/frontend/shell/porpoise_rows.cpp:239 port/frontend/shell/porpoise_rows.cpp:292 port/frontend/shell/porpoise_rows.cpp:294 port/frontend/shell/porpoise_rows.cpp:300 port/frontend/shell/porpoise_rows.cpp:367 port/frontend/shell/porpoise_rows.cpp:371 port/frontend/shell/porpoise_rows.cpp:373 port/frontend/shell/porpoise_rows.cpp:379 port/frontend/shell/porpoise_rows.cpp:383 port/frontend/shell/porpoise_rows.cpp:385 port/frontend/shell/porpoise_rows.cpp:391 port/frontend/shell/porpoise_rows.cpp:395 port/frontend/shell/porpoise_rows.cpp:397 port/frontend/shell/porpoise_rows.cpp:403 port/frontend/shell/porpoise_rows.cpp:407 port/frontend/shell/porpoise_rows.cpp:409 port/frontend/shell/settings.cpp:54 port/frontend/shell/settings.cpp:57 port/frontend/shell/settings.cpp:130 port/frontend/shell/settings.cpp:981 port/frontend/shell/welcome.cpp:27
 #, menu
 msgid "Automatic"
 msgstr "Otomatis"
 
-#: port/app/ingame.cpp:338 port/frontend/shell/pages.cpp:641
+#: port/app/ingame.cpp:341 port/frontend/shell/pages.cpp:641
 #, menu
 msgid "a button"
 msgstr "sebuah tombol"
 
-#: port/app/ingame.cpp:338 port/frontend/shell/pages.cpp:641
+#: port/app/ingame.cpp:341 port/frontend/shell/pages.cpp:641
 #, menu
 msgid "a touch"
 msgstr "sebuah sentuhan"
 
-#: port/app/ingame.cpp:340
+#: port/app/ingame.cpp:343
 #, menu
 msgid "Touches the GamePad screen, or presses the button set for Touchpad click (- if none). Shortcuts still work."
 msgstr "Menyentuh layar GamePad, atau menekan tombol yang diatur sebagai Klik panel sentuh (- jika belum ada). Pintasan tetap berfungsi."
 
-#: port/app/ingame.cpp:347 port/frontend/shell/pages.cpp:653
+#: port/app/ingame.cpp:350 port/frontend/shell/pages.cpp:653
 #, menu
 msgid "Its own"
 msgstr "Miliknya sendiri"
 
-#: port/app/ingame.cpp:349 port/frontend/shell/pages.cpp:654
+#: port/app/ingame.cpp:352 port/frontend/shell/pages.cpp:654
 #, menu
 msgid "This setting is for the DualSense. A real Wii Remote uses its own buttons, pointer, motion and rumble."
 msgstr "Wii Remote asli punya tombol, penunjuk, sensor gerak, dan getarannya sendiri: pengaturan ini untuk DualSense."
 
-#: port/app/ingame.cpp:358 port/frontend/shell/pages.cpp:444
+#: port/app/ingame.cpp:361 port/frontend/shell/pages.cpp:444
 #, menu
 msgid "Puts this controller's buttons, vibration, motion and deadzones back to default. Hold Cross to confirm."
 msgstr "Tombol, getaran, gerakan, dan zona mati default untuk kontroler ini. Ditahan untuk konfirmasi."
 
 #. the remote touch screen's row: which screen a phone or a tablet shows
-#: port/app/ingame.cpp:361 port/frontend/shell/settings.cpp:1618
+#: port/app/ingame.cpp:364 port/frontend/shell/settings.cpp:1620
 #, menu
 msgid "The GamePad's screen"
 msgstr "Layar GamePad"
 
-#: port/app/ingame.cpp:364 port/app/ingame3ds.cpp:721 port/eden/ingame.cpp:681
+#: port/app/ingame.cpp:367 port/app/ingame3ds.cpp:724 port/eden/ingame.cpp:690
 #, menu
 msgid "Quit to the home screen"
 msgstr "Keluar ke layar beranda"
 
-#: port/app/ingame.cpp:365 port/app/ingame3ds.cpp:722 port/eden/ingame.cpp:682
+#: port/app/ingame.cpp:368 port/app/ingame3ds.cpp:725 port/eden/ingame.cpp:691
 #, menu
 msgid "Closes the game and Playtendoh. Unsaved progress is lost. Hold Cross."
 msgstr "Meninggalkan game dan menutup Playtendoh, sesuai permintaan ikon game di layar beranda. Apa pun yang belum disimpan di game akan hilang, jadi Silang ditahan."
 
-#: port/app/ingame.cpp:366 port/app/ingame3ds.cpp:723 port/eden/ingame.cpp:683
+#: port/app/ingame.cpp:369 port/app/ingame3ds.cpp:726 port/eden/ingame.cpp:692
 #, menu
 msgid "Quit to the library"
 msgstr "Keluar ke pustaka"
 
-#: port/app/ingame.cpp:367 port/app/ingame3ds.cpp:724 port/eden/ingame.cpp:684
+#: port/app/ingame.cpp:370 port/app/ingame3ds.cpp:727 port/eden/ingame.cpp:693
 #, menu
 msgid "Closes the game and goes to the library. Unsaved progress is lost. Hold Cross."
 msgstr "Meninggalkan game ke pustaka. Apa pun yang belum disimpan di game akan hilang, jadi Silang ditahan."
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
 #. the quick actions: big tiles at the top of the in-game menu, a word or two each
-#: port/app/ingame.cpp:379 port/app/ingame3ds.cpp:760 port/eden/ingame.cpp:696
+#: port/app/ingame.cpp:382 port/app/ingame3ds.cpp:763 port/eden/ingame.cpp:705
 #, menu
 msgid "Resume"
 msgstr "Lanjutkan"
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
-#: port/app/ingame.cpp:379
+#: port/app/ingame.cpp:382
 #, menu
 msgid "GamePad main"
 msgstr "GamePad besar"
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
-#: port/app/ingame.cpp:379
+#: port/app/ingame.cpp:382
 #, menu
 msgid "TV main"
 msgstr "TV besar"
 
-#: port/app/ingame.cpp:380 port/eden/ingame.cpp:698
+#: port/app/ingame.cpp:383 port/eden/ingame.cpp:707
 #, menu
 msgid "Scan"
 msgstr "Pindai"
 
 #. {0} is an amiibo dump's file name
-#: port/app/ingame.cpp:471 port/azahar/core.cpp:293 port/eden/ingame.cpp:589
+#: port/app/ingame.cpp:474 port/azahar/core.cpp:293 port/eden/ingame.cpp:598
 #, menu
 msgid "Scanned {0}"
 msgstr "{0} dipindai"
 
 #. {0} is an amiibo dump's file name
-#: port/app/ingame.cpp:471
+#: port/app/ingame.cpp:474
 #, menu
 msgid "Not scanned (error {0})"
 msgstr "Tidak dipindai (galat {0})"
 
 #. the in-game menu's badge: the game goes on behind the menu (Cemu cannot pause it)
-#: port/app/ingame.cpp:657 port/eden/ingame.cpp:866
+#: port/app/ingame.cpp:660 port/eden/ingame.cpp:875
 #, menu
 msgid "Running"
 msgstr "Berjalan"
 
-#: port/app/ingame.cpp:667 port/app/ingame3ds.cpp:991 port/eden/ingame.cpp:873 port/frontend/shell/orbit.cpp:444 port/frontend/shell/orbit.cpp:767 port/frontend/shell/reports.cpp:155 port/frontend/shell/setup.cpp:381 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1634 port/frontend/shell/shell.cpp:1638 port/frontend/shell/shell.cpp:1670 port/frontend/shell/shell.cpp:1679 port/frontend/shell/shell.cpp:1687 port/frontend/shell/shell.cpp:1695 port/frontend/shell/shell.cpp:1698 port/frontend/shell/shell.cpp:2820 port/frontend/shell/shell.cpp:2858
+#: port/app/ingame.cpp:671 port/app/ingame3ds.cpp:998 port/eden/ingame.cpp:883 port/frontend/shell/orbit.cpp:444 port/frontend/shell/orbit.cpp:785 port/frontend/shell/reports.cpp:155 port/frontend/shell/setup.cpp:381 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1666 port/frontend/shell/shell.cpp:1670 port/frontend/shell/shell.cpp:1702 port/frontend/shell/shell.cpp:1711 port/frontend/shell/shell.cpp:1719 port/frontend/shell/shell.cpp:1727 port/frontend/shell/shell.cpp:1730 port/frontend/shell/shell.cpp:2852 port/frontend/shell/shell.cpp:2890
 #, menu
 msgid "Choose"
 msgstr "Pilih"
 
-#: port/app/ingame.cpp:667 port/app/ingame3ds.cpp:991 port/eden/ingame.cpp:873 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1647 port/frontend/shell/shell.cpp:1688 port/frontend/shell/shell.cpp:1692 port/frontend/shell/shell.cpp:1695 port/frontend/shell/shell.cpp:1698 port/frontend/shell/shell.cpp:1709
+#: port/app/ingame.cpp:671 port/app/ingame3ds.cpp:998 port/eden/ingame.cpp:883 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1679 port/frontend/shell/shell.cpp:1720 port/frontend/shell/shell.cpp:1724 port/frontend/shell/shell.cpp:1727 port/frontend/shell/shell.cpp:1730 port/frontend/shell/shell.cpp:1741
 #, menu
 msgid "Change"
 msgstr "Ubah"
 
-#: port/app/ingame.cpp:667 port/app/ingame3ds.cpp:991 port/eden/ingame.cpp:873
+#: port/app/ingame.cpp:671 port/app/ingame3ds.cpp:998 port/eden/ingame.cpp:883
 #, menu
 msgid "Back to the game"
 msgstr "Kembali ke game"
 
-#: port/app/ingame.cpp:667 port/app/ingame3ds.cpp:991 port/eden/ingame.cpp:873 port/frontend/shell/installs.cpp:330 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1648 port/frontend/shell/shell.cpp:1657 port/frontend/shell/shell.cpp:1680 port/frontend/shell/shell.cpp:1687 port/frontend/shell/shell.cpp:1688 port/frontend/shell/shell.cpp:1692 port/frontend/shell/shell.cpp:1696 port/frontend/shell/shell.cpp:1698 port/frontend/shell/shell.cpp:1702 port/frontend/shell/shell.cpp:1706 port/frontend/shell/shell.cpp:1710 port/frontend/shell/timeline.cpp:476
+#: port/app/ingame.cpp:671 port/app/ingame3ds.cpp:998 port/eden/ingame.cpp:883 port/frontend/shell/installs.cpp:330 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1680 port/frontend/shell/shell.cpp:1689 port/frontend/shell/shell.cpp:1712 port/frontend/shell/shell.cpp:1719 port/frontend/shell/shell.cpp:1720 port/frontend/shell/shell.cpp:1724 port/frontend/shell/shell.cpp:1728 port/frontend/shell/shell.cpp:1730 port/frontend/shell/shell.cpp:1734 port/frontend/shell/shell.cpp:1738 port/frontend/shell/shell.cpp:1742 port/frontend/shell/timeline.cpp:484
 #, menu
 msgid "Back"
 msgstr "Kembali"
 
 #. the in-game menu's top: the Wii U account the game runs on ({0}: its name)
-#: port/app/ingame.cpp:711
+#: port/app/ingame.cpp:715
 #, menu
 msgid "{0}'s saves"
 msgstr "Data simpanan {0}"
 
 #. the 3DS's screen layouts
-#: port/app/ingame3ds.cpp:191 port/frontend/shell/settings.cpp:63
+#: port/app/ingame3ds.cpp:193 port/frontend/shell/settings.cpp:63
 #, menu
 msgid "Top above bottom"
 msgstr "Atas di atas bawah"
 
 #. the 3DS's screen layouts
-#: port/app/ingame3ds.cpp:191 port/frontend/shell/settings.cpp:63
+#: port/app/ingame3ds.cpp:193 port/frontend/shell/settings.cpp:63
 #, menu
 msgid "Top screen only"
 msgstr "Hanya layar atas"
 
 #. the 3DS's screen layouts
-#: port/app/ingame3ds.cpp:191 port/frontend/shell/settings.cpp:63
+#: port/app/ingame3ds.cpp:193 port/frontend/shell/settings.cpp:63
 #, menu
 msgid "Large top screen"
 msgstr "Layar atas besar"
 
 #. the 3DS's screen layouts
-#: port/app/ingame3ds.cpp:191 port/frontend/shell/settings.cpp:63
+#: port/app/ingame3ds.cpp:193 port/frontend/shell/settings.cpp:63
 #, menu
 msgid "Side by side"
 msgstr "Berdampingan"
 
 #. texture filters: None, then the filters' own names
-#: port/app/ingame3ds.cpp:193 port/frontend/shell/settings.cpp:65
+#: port/app/ingame3ds.cpp:195 port/frontend/shell/settings.cpp:65
 #, menu
 msgctxt "texture filter"
 msgid "None"
 msgstr "Tidak ada"
 
-#: port/app/ingame3ds.cpp:529
+#: port/app/ingame3ds.cpp:532
 #, menu
 msgid "Screen and border"
 msgstr "Layar dan bingkai"
 
-#: port/app/ingame3ds.cpp:529
+#: port/app/ingame3ds.cpp:532
 #, menu
 msgid "The border around the screen."
 msgstr "Bingkai di sekitar layar."
 
-#: port/app/ingame3ds.cpp:530 port/app/ingame3ds.cpp:541 port/frontend/shell/porpoise_rows.cpp:136 port/frontend/shell/settings.cpp:821
+#: port/app/ingame3ds.cpp:533 port/app/ingame3ds.cpp:544 port/frontend/shell/porpoise_rows.cpp:136 port/frontend/shell/settings.cpp:821
 #, menu
 msgid "Border"
 msgstr "Bingkai"
 
-#: port/app/ingame3ds.cpp:530
+#: port/app/ingame3ds.cpp:533
 #, menu
 msgid "Artwork around the screen."
 msgstr "Gambar di sekitar layar, tidak pernah di atasnya."
 
-#: port/app/ingame3ds.cpp:534
+#: port/app/ingame3ds.cpp:537
 #, menu
 msgid "Screens and border"
 msgstr "Layar dan bingkai"
 
-#: port/app/ingame3ds.cpp:535
+#: port/app/ingame3ds.cpp:538
 #, menu
 msgid "Screen layout, main screen and border."
 msgstr "Tata letak layar, mana yang utama, dan bingkainya."
 
-#: port/app/ingame3ds.cpp:536 port/frontend/shell/pages.cpp:784 port/frontend/shell/porpoise_rows.cpp:704 port/frontend/shell/settings.cpp:1454
+#: port/app/ingame3ds.cpp:539 port/frontend/shell/pages.cpp:784 port/frontend/shell/porpoise_rows.cpp:704 port/frontend/shell/settings.cpp:1454
 #, menu
 msgid "Layout"
 msgstr "Tata letak"
 
-#: port/app/ingame3ds.cpp:537
+#: port/app/ingame3ds.cpp:540
 #, menu
 msgid "How the two screens fit on the TV. In the game, touchpad click + R1 changes it."
 msgstr "Cara kedua layar berbagi TV. Dalam game, klik panel sentuh + R1 beralih ke berikutnya."
 
 #. the 3DS's top and bottom screens
-#: port/app/ingame3ds.cpp:539
+#: port/app/ingame3ds.cpp:542
 #, menu
 msgid "Bottom"
 msgstr "Bawah"
 
 #. the 3DS's top and bottom screens
-#: port/app/ingame3ds.cpp:539
+#: port/app/ingame3ds.cpp:542
 #, menu
 msgid "Top"
 msgstr "Atas"
 
-#: port/app/ingame3ds.cpp:540
+#: port/app/ingame3ds.cpp:543
 #, menu
 msgid "Which screen goes on top. In the game, touchpad click + L1 swaps them."
 msgstr "Layar mana yang mengambil tempat layar atas. Dalam game, klik panel sentuh + L1 menukarnya."
 
-#: port/app/ingame3ds.cpp:542
+#: port/app/ingame3ds.cpp:545
 #, menu
 msgid "Artwork around the screens. Also in Settings > Screens."
 msgstr "Gambar di sekitar layar, tidak pernah di atasnya. Juga ada di Pengaturan > Layar di peluncur."
 
-#: port/app/ingame3ds.cpp:546 port/frontend/shell/settings.cpp:807
+#: port/app/ingame3ds.cpp:549 port/frontend/shell/settings.cpp:807
 #, menu
 msgid "Screen rotation"
 msgstr "Rotasi layar"
 
-#: port/app/ingame3ds.cpp:547
+#: port/app/ingame3ds.cpp:550
 #, menu
 msgid "For games played with the DS held sideways, like a book. Both screens turn together."
 msgstr "Untuk game yang dimainkan dengan DS dipegang menyamping seperti buku (Hotel Dusk): kedua layar berputar bersama."
 
-#: port/app/ingame3ds.cpp:548
+#: port/app/ingame3ds.cpp:551
 #, menu
 msgid "For games played with the 3DS held sideways, like a book. Both screens and touch turn together."
 msgstr "Untuk game yang dimainkan dengan 3DS dipegang menyamping seperti buku: kedua layar berputar bersama, layar sentuh juga."
 
 #. the quick action that puts a gap between the two screens, and its state
-#: port/app/ingame3ds.cpp:551 port/app/ingame3ds.cpp:765 port/frontend/shell/settings.cpp:813
+#: port/app/ingame3ds.cpp:554 port/app/ingame3ds.cpp:768 port/frontend/shell/settings.cpp:813
 #, menu
 msgid "Screen gap"
 msgstr "Jarak layar"
 
-#: port/app/ingame3ds.cpp:552
+#: port/app/ingame3ds.cpp:555
 #, menu
 msgid "Adds a gap between the two screens, like the console's hinge."
 msgstr "Jarak antara kedua layar saat keduanya tampil, seperti yang dibuat engsel konsol: atas-bawah, berdampingan, atau diputar seperti buku."
 
-#: port/app/ingame3ds.cpp:555 port/frontend/shell/settings.cpp:817
+#: port/app/ingame3ds.cpp:558 port/frontend/shell/settings.cpp:817
 #, menu
 msgid "Touch without the bottom screen"
 msgstr "Sentuh tanpa layar bawah"
 
-#: port/app/ingame3ds.cpp:556
+#: port/app/ingame3ds.cpp:559
 #, menu
 msgid "With only the top screen shown, the touchpad still touches the bottom screen, with a cursor on the top one."
 msgstr "Dengan layar atas saja, panel sentuh tetap menyentuh layar bawah, kursornya di atas layar atas (Star Fox 64 3D)."
 
-#: port/app/ingame3ds.cpp:563
+#: port/app/ingame3ds.cpp:566
 #, menu
 msgid "How big the picture is on the TV, and its shape."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:564
+#: port/app/ingame3ds.cpp:567
 #, menu
 msgid "Size"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:565
+#: port/app/ingame3ds.cpp:568
 #, menu
 msgid "Fit makes it as large as the screen allows. Whole pixels keeps every pixel the same size, with a frame around it. Fill screen stretches it edge to edge."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:566
+#: port/app/ingame3ds.cpp:569
 #, menu
 msgid "Shape"
 msgstr ""
 
-#: port/app/ingame3ds.cpp:567
+#: port/app/ingame3ds.cpp:570
 #, menu
 msgid "Original is the console's own. 4:3 is an old TV's. Square pixels shows them as the game draws them."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:577 port/frontend/shell/settings.cpp:295 port/frontend/shell/settings.cpp:511 port/frontend/shell/settings.cpp:1720
+#: port/app/ingame3ds.cpp:580 port/frontend/shell/settings.cpp:295 port/frontend/shell/settings.cpp:511 port/frontend/shell/settings.cpp:1722
 #, menu
 msgid "Emulator"
 msgstr "Emulator"
 
 #. a group of an emulator's options in Settings: how many it holds, and how many are not the emulator's own values
-#: port/app/ingame3ds.cpp:577 port/frontend/shell/settings.cpp:1781
+#: port/app/ingame3ds.cpp:580 port/frontend/shell/settings.cpp:1783
 #, menu
 msgid "{0} option"
 msgid_plural "{0} options"
 msgstr[0] ""
 
-#: port/app/ingame3ds.cpp:578
+#: port/app/ingame3ds.cpp:581
 #, menu
 msgid "Every option of this console's emulator. Changes apply now and are kept for every game on it."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:586 port/app/ingame3ds.cpp:593
+#: port/app/ingame3ds.cpp:589 port/app/ingame3ds.cpp:596
 #, menu
 msgid "The screen filter and the performance overlay."
 msgstr "Filter layar dan overlay performa."
 
-#: port/app/ingame3ds.cpp:587 port/app/ingame3ds.cpp:594 port/frontend/shell/porpoise_rows.cpp:108 port/frontend/shell/porpoise_rows.cpp:376 port/frontend/shell/porpoise_rows.cpp:388 port/frontend/shell/porpoise_rows.cpp:400 port/frontend/shell/porpoise_rows.cpp:412 port/frontend/shell/settings.cpp:789
+#: port/app/ingame3ds.cpp:590 port/app/ingame3ds.cpp:597 port/frontend/shell/porpoise_rows.cpp:108 port/frontend/shell/porpoise_rows.cpp:376 port/frontend/shell/porpoise_rows.cpp:388 port/frontend/shell/porpoise_rows.cpp:400 port/frontend/shell/porpoise_rows.cpp:412 port/frontend/shell/settings.cpp:789
 #, menu
 msgid "Screen filter"
 msgstr "Filter layar"
 
-#: port/app/ingame3ds.cpp:588
+#: port/app/ingame3ds.cpp:591
 #, menu
-msgid "Sharp keeps pixels crisp and even. Smooth blends them. Square pixels can look uneven at most sizes."
-msgstr "Cara gambar game diskalakan ke TV. Tajam menjaga setiap piksel tetap persegi dan rata; Halus memadukannya; Piksel persegi mengambil yang terdekat, tidak rata di sebagian besar ukuran."
+msgid "Sharp keeps pixels crisp and even. Smooth blends them. CRT draws the lines and colours of a tube TV, Curved CRT its rounded glass too."
+msgstr ""
 
-#: port/app/ingame3ds.cpp:590 port/app/ingame3ds.cpp:597 port/app/ingame3ds.cpp:610 port/frontend/shell/settings.cpp:711 port/frontend/shell/settings.cpp:712 port/frontend/shell/settings.cpp:784 port/frontend/shell/settings.cpp:785 port/frontend/shell/settings.cpp:798 port/frontend/shell/settings.cpp:799
+#: port/app/ingame3ds.cpp:593 port/app/ingame3ds.cpp:600 port/app/ingame3ds.cpp:613 port/frontend/shell/settings.cpp:711 port/frontend/shell/settings.cpp:712 port/frontend/shell/settings.cpp:784 port/frontend/shell/settings.cpp:785 port/frontend/shell/settings.cpp:798 port/frontend/shell/settings.cpp:799
 #, menu
 msgid "Shows frame rate and speed in the top-left corner."
 msgstr "Frame rate dan kecepatan emulasi, di sudut kiri atas."
 
-#: port/app/ingame3ds.cpp:595
+#: port/app/ingame3ds.cpp:598
 #, menu
 msgid "How the DS screens are scaled. Sharp keeps pixels crisp and even, Smooth blends them, Square pixels can look uneven."
 msgstr "Cara layar DS 256 x 192 diskalakan ke TV. Tajam menjaga setiap piksel tetap persegi dan rata; Halus memadukannya; Piksel persegi mengambil yang terdekat, tidak rata di kebanyakan ukuran."
 
-#: port/app/ingame3ds.cpp:602
+#: port/app/ingame3ds.cpp:605
 #, menu
 msgid "Internal resolution, texture filter and the performance overlay."
 msgstr "Resolusi internal, filter tekstur, dan overlay performa."
 
-#: port/app/ingame3ds.cpp:603 port/frontend/shell/porpoise_rows.cpp:98 port/frontend/shell/settings.cpp:672 port/frontend/shell/settings.cpp:716
+#: port/app/ingame3ds.cpp:606 port/frontend/shell/porpoise_rows.cpp:98 port/frontend/shell/settings.cpp:672 port/frontend/shell/settings.cpp:716
 #, menu
 msgid "Internal resolution"
 msgstr "Resolusi internal"
 
-#: port/app/ingame3ds.cpp:604
+#: port/app/ingame3ds.cpp:607
 #, menu
 msgid "Higher draws 3D scenes sharper but needs more power."
 msgstr "Seberapa besar adegan 3D digambar sebelum diskalakan ke TV. Lebih tinggi lebih tajam dan lebih membebani GPU."
 
-#: port/app/ingame3ds.cpp:605 port/frontend/shell/settings.cpp:682
+#: port/app/ingame3ds.cpp:608 port/frontend/shell/settings.cpp:682
 #, menu
 msgid "Texture filter"
 msgstr "Filter tekstur"
 
-#: port/app/ingame3ds.cpp:606
+#: port/app/ingame3ds.cpp:609
 #, menu
 msgid "Smooths textures. If a game stutters, try None first."
 msgstr "Menghaluskan tekstur saat diperbesar. Pengaturan paling berat di sini: jika game tersendat, coba Tidak ada dulu."
 
 #. no speed limit
-#: port/app/ingame3ds.cpp:614 port/eden/ingame.cpp:623 port/frontend/shell/settings.cpp:977
+#: port/app/ingame3ds.cpp:617 port/eden/ingame.cpp:632 port/frontend/shell/settings.cpp:977
 #, menu
 msgid "Speed limit"
 msgstr "Batas kecepatan"
 
 #. no speed limit
-#: port/app/ingame3ds.cpp:614 port/app/ingame3ds.cpp:617 port/eden/ingame.cpp:565 port/frontend/shell/settings.cpp:976
+#: port/app/ingame3ds.cpp:617 port/app/ingame3ds.cpp:620 port/eden/ingame.cpp:574 port/frontend/shell/settings.cpp:976
 #, menu
 msgctxt "speed limit"
 msgid "None"
 msgstr "Tidak ada"
 
-#: port/app/ingame3ds.cpp:615 port/eden/ingame.cpp:624
+#: port/app/ingame3ds.cpp:618 port/eden/ingame.cpp:633
 #, menu
 msgid "Above 100% speeds through slow parts. None runs as fast as possible. This game only."
 msgstr "Di atas 100% mempercepat adegan lambat; Tidak ada berjalan secepat yang PS5 mampu. Hanya untuk game ini."
 
-#: port/app/ingame3ds.cpp:619 port/app/ingame3ds.cpp:622 port/eden/ingame.cpp:622
+#: port/app/ingame3ds.cpp:622 port/app/ingame3ds.cpp:625 port/eden/ingame.cpp:631
 #, menu
 msgid "Speed"
 msgstr "Kecepatan"
 
-#: port/app/ingame3ds.cpp:619 port/eden/ingame.cpp:622 port/frontend/shell/settings.cpp:977
+#: port/app/ingame3ds.cpp:622 port/eden/ingame.cpp:631 port/frontend/shell/settings.cpp:977
 #, menu
 msgid "How fast the game may run."
 msgstr "Seberapa cepat game boleh berjalan."
 
-#: port/app/ingame3ds.cpp:622
+#: port/app/ingame3ds.cpp:625
 #, menu
 msgid "CPU clock and speed limit."
 msgstr "Clock CPU emulasi, dan seberapa cepat game boleh berjalan."
 
-#: port/app/ingame3ds.cpp:623 port/frontend/shell/porpoise_rows.cpp:341 port/frontend/shell/settings.cpp:950
+#: port/app/ingame3ds.cpp:626 port/frontend/shell/porpoise_rows.cpp:341 port/frontend/shell/settings.cpp:950
 #, menu
 msgid "CPU clock"
 msgstr "Clock CPU"
 
-#: port/app/ingame3ds.cpp:624
+#: port/app/ingame3ds.cpp:627
 #, menu
 msgid "Lower can help a slow game reach full speed. Higher smooths games that dropped frames on the 3DS."
 msgstr "Di bawah 100% bisa membuat game lambat berjalan dengan kecepatan penuh; di atasnya menghaluskan game yang kehilangan frame di 3DS."
 
-#: port/app/ingame3ds.cpp:630
+#: port/app/ingame3ds.cpp:633
 #, menu
 msgid "Save states"
 msgstr "Status tersimpan"
 
-#: port/app/ingame3ds.cpp:630 port/app/ingame3ds.cpp:761 port/app/ingame3ds.cpp:762
+#: port/app/ingame3ds.cpp:633 port/app/ingame3ds.cpp:764 port/app/ingame3ds.cpp:765
 #, menu
 msgid "Slot {0}"
 msgstr "Slot {0}"
 
-#: port/app/ingame3ds.cpp:631
+#: port/app/ingame3ds.cpp:634
 #, menu
 msgid "Save exactly where you are and come back later. Five slots per game."
 msgstr "Lima slot untuk game ini: simpan tepat di posisimu, lalu kembali ke sana."
 
 #. a save state slot's number, then when it was saved (or empty)
-#: port/app/ingame3ds.cpp:633
+#: port/app/ingame3ds.cpp:636
 #, menu
 msgid "Slot"
 msgstr "Slot"
 
 #. a save state slot's number, then when it was saved (or empty)
-#: port/app/ingame3ds.cpp:633
+#: port/app/ingame3ds.cpp:636
 #, menu
 msgid "(empty)"
 msgstr "(kosong)"
 
-#: port/app/ingame3ds.cpp:634
+#: port/app/ingame3ds.cpp:637
 #, menu
 msgid "The slot to save to or load from. In the game, touchpad click + Square saves, and holding touchpad click + Triangle loads."
 msgstr "Slot mana dari lima slot game ini yang dipakai untuk menyimpan atau memuat. Dalam game, klik panel sentuh + Kotak menyimpan ke slot itu, dan klik panel sentuh + Segitiga yang ditahan memuat darinya."
 
-#: port/app/ingame3ds.cpp:635
+#: port/app/ingame3ds.cpp:638
 #, menu
 msgid "Save to this slot"
 msgstr "Simpan ke slot ini"
 
-#: port/app/ingame3ds.cpp:636
+#: port/app/ingame3ds.cpp:639
 #, menu
 msgid "Saves now, replacing what is in the slot. Keep saving in the game too: updates may not load old states."
 msgstr "Menyimpan game apa adanya sekarang, mengganti isi slot. Versi aplikasi yang lebih baru mungkin tidak bisa memuatnya: tetap simpan juga di dalam game."
 
-#: port/app/ingame3ds.cpp:638 port/frontend/shell/porpoise_rows.cpp:360 port/frontend/shell/settings.cpp:322
+#: port/app/ingame3ds.cpp:641 port/frontend/shell/porpoise_rows.cpp:360 port/frontend/shell/settings.cpp:322
 #, menu
 msgid "Cheats"
 msgstr "Cheat"
 
-#: port/app/ingame3ds.cpp:639
+#: port/app/ingame3ds.cpp:642
 #, menu
 msgid "The game's cheats, from melonds/cheats/<game file>.mch (melonDS's format)."
 msgstr "Cheat game, dari melonds/cheats/<file game>.mch (format melonDS)."
 
-#: port/app/ingame3ds.cpp:640
+#: port/app/ingame3ds.cpp:643
 #, menu
 msgid "The game's cheats, from azahar/cheats/<title ID>.txt (Gateway format)."
 msgstr "Cheat game ini, dari azahar/cheats/<ID judul>.txt (format Gateway)."
 
-#: port/app/ingame3ds.cpp:643
+#: port/app/ingame3ds.cpp:646
 #, menu
 msgid "Cross, Left or Right turns it on or off. It is remembered."
 msgstr "Silang, Kiri, atau Kanan langsung mengaktifkan atau menonaktifkannya; tetap tersimpan untuk lain kali."
 
-#: port/app/ingame3ds.cpp:645
+#: port/app/ingame3ds.cpp:648
 #, menu
 msgid "No cheats for this game"
 msgstr "Tidak ada cheat untuk game ini"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/app/ingame3ds.cpp:647
+#: port/app/ingame3ds.cpp:650
 #, menu
 msgid "Put them in {0}/melonds/cheats/<game file>.mch, then restart the game."
 msgstr "Taruh di {0}/melonds/cheats/<file game>.mch (nama file game, dengan .mch alih-alih .nds), lalu mulai ulang game."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/app/ingame3ds.cpp:649
+#: port/app/ingame3ds.cpp:652
 #, menu
 msgid "Put them in {0}/azahar/cheats/<title ID>.txt, then restart the game."
 msgstr "Taruh di {0}/azahar/cheats/<ID judul>.txt, lalu mulai ulang game."
 
 #. how many of the game's cheats are on: {0} of {1}
-#: port/app/ingame3ds.cpp:652
+#: port/app/ingame3ds.cpp:655
 #, menu
 msgid "{0} of {1} on"
 msgstr "{0} dari {1} aktif"
 
-#: port/app/ingame3ds.cpp:659
+#: port/app/ingame3ds.cpp:662
 #, menu
 msgid "Achievements"
 msgstr "Pencapaian"
 
-#: port/app/ingame3ds.cpp:659 port/frontend/shell/installs.cpp:376 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:940 port/frontend/shell/pages.cpp:1337 port/frontend/shell/shell.cpp:2887
+#: port/app/ingame3ds.cpp:662 port/frontend/shell/installs.cpp:376 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:940 port/frontend/shell/pages.cpp:1337 port/frontend/shell/shell.cpp:2919
 #, menu
 msgid "{0} of {1}"
 msgstr "{0} dari {1}"
 
-#: port/app/ingame3ds.cpp:660
+#: port/app/ingame3ds.cpp:663
 #, menu
 msgid "This game's RetroAchievements."
 msgstr "RetroAchievements game ini."
 
-#: port/app/ingame3ds.cpp:666
+#: port/app/ingame3ds.cpp:669
 #, menu
 msgid "Earned"
 msgstr "Didapat"
 
-#: port/app/ingame3ds.cpp:666
+#: port/app/ingame3ds.cpp:669
 #, menu
 msgid "Earned {0}"
 msgstr "Didapat {0}"
 
-#: port/app/ingame3ds.cpp:666
+#: port/app/ingame3ds.cpp:669
 #, menu
 msgid "{0} point"
 msgid_plural "{0} points"
 msgstr[0] "{0} poin"
 
-#: port/app/ingame3ds.cpp:670
+#: port/app/ingame3ds.cpp:673
 #, menu
 msgid "No achievements"
 msgstr "Tidak ada pencapaian"
 
-#: port/app/ingame3ds.cpp:671
+#: port/app/ingame3ds.cpp:674
 #, menu
 msgid "RetroAchievements has no set for this game yet."
 msgstr "RetroAchievements menampilkan pencapaian sebuah game begitu ada set untuknya."
 
-#: port/app/ingame3ds.cpp:676
+#: port/app/ingame3ds.cpp:679
 #, menu
 msgid "Scan an amiibo when the game asks for one."
 msgstr "Tempelkan dump amiibo ke pembaca 3DS saat game memintanya."
 
-#: port/app/ingame3ds.cpp:680
+#: port/app/ingame3ds.cpp:683
 #, menu
 msgid "Left and Right choose an amiibo. Cross scans it."
 msgstr "Kiri dan Kanan memilih dump amiibo; Silang menempelkannya ke pembaca."
 
-#: port/app/ingame3ds.cpp:681
+#: port/app/ingame3ds.cpp:684
 #, menu
 msgid "Remove amiibo"
 msgstr "Angkat amiibo"
 
-#: port/app/ingame3ds.cpp:681
+#: port/app/ingame3ds.cpp:684
 #, menu
 msgid "Takes the amiibo off the reader."
 msgstr "Mengangkat amiibo dari pembaca, seolah kamu mengangkatnya."
 
-#: port/app/ingame3ds.cpp:687
+#: port/app/ingame3ds.cpp:690
 #, menu
 msgid "Stick deadzone and button layout."
 msgstr "Zona mati stik kiri dan letak A dan B."
 
-#: port/app/ingame3ds.cpp:688 port/app/ingame3ds.cpp:699 port/app/ingame3ds.cpp:709 port/eden/ingame.cpp:639 port/frontend/shell/settings.cpp:859 port/frontend/shell/settings.cpp:911
+#: port/app/ingame3ds.cpp:691 port/app/ingame3ds.cpp:702 port/app/ingame3ds.cpp:712 port/eden/ingame.cpp:648 port/frontend/shell/settings.cpp:859 port/frontend/shell/settings.cpp:911
 #, menu
 msgid "Stick deadzone"
 msgstr "Zona mati stik"
 
-#: port/app/ingame3ds.cpp:689 port/app/ingame3ds.cpp:700 port/frontend/shell/settings.cpp:913
+#: port/app/ingame3ds.cpp:692 port/app/ingame3ds.cpp:703 port/frontend/shell/settings.cpp:913
 #, menu
 msgid "How far the left stick moves before it presses the D-pad. Raise it if there is drift."
 msgstr "Seberapa jauh stik kiri bergerak sebelum menekan tombol arah DS. Naikkan jika satu arah tetap tertekan saat kamu melepas stik."
 
-#: port/app/ingame3ds.cpp:691
+#: port/app/ingame3ds.cpp:694
 #, menu
 msgid "A on Circle and B on Cross like Nintendo's layout, or swapped, with X and Y swapped too."
 msgstr "A di Lingkaran dan B di Silang, tempat Nintendo menaruhnya, atau sebaliknya, dengan X dan Y ditukar agar cocok."
 
 #. the DS's lid, closed or open
-#: port/app/ingame3ds.cpp:695
+#: port/app/ingame3ds.cpp:698
 #, menu
 msgid "Lid closed"
 msgstr "Tutup tertutup"
 
-#: port/app/ingame3ds.cpp:696
+#: port/app/ingame3ds.cpp:699
 #, menu
 msgid "Lid, stick deadzone and button layout. Hold R3 to blow into the mic."
 msgstr "Tutup, zona mati stik kiri, dan letak A dan B. Tahan R3 untuk meniup mikrofon."
 
-#: port/app/ingame3ds.cpp:697
+#: port/app/ingame3ds.cpp:700
 #, menu
 msgid "Lid"
 msgstr "Tutup"
 
-#: port/app/ingame3ds.cpp:697
+#: port/app/ingame3ds.cpp:700
 #, menu
 msgid "Closed"
 msgstr "Tertutup"
 
-#: port/app/ingame3ds.cpp:697 port/frontend/shell/shell.cpp:1640 port/frontend/shell/shell.cpp:1674 port/frontend/shell/shell.cpp:1685 port/frontend/shell/shell.cpp:1691 port/frontend/shell/shell.cpp:1706
+#: port/app/ingame3ds.cpp:700 port/frontend/shell/shell.cpp:1672 port/frontend/shell/shell.cpp:1706 port/frontend/shell/shell.cpp:1717 port/frontend/shell/shell.cpp:1723 port/frontend/shell/shell.cpp:1738
 #, menu
 msgid "Open"
 msgstr "Buka"
 
-#: port/app/ingame3ds.cpp:698
+#: port/app/ingame3ds.cpp:701
 #, menu
 msgid "Closes the DS lid for games that ask you to. Choose it again to open it."
 msgstr "Menutup DS, untuk game yang memintamu melakukannya; DS tidur sampai dibuka lagi. Pilih lagi untuk membukanya."
 
-#: port/app/ingame3ds.cpp:702
+#: port/app/ingame3ds.cpp:705
 #, menu
 msgid "A on Circle and B on Cross as on the DS, or swapped, with X and Y swapped too."
 msgstr "A di Lingkaran dan B di Silang, seperti letaknya di DS, atau sebaliknya, dengan X dan Y ditukar agar cocok."
 
-#: port/app/ingame3ds.cpp:706
+#: port/app/ingame3ds.cpp:709
 #, menu
 msgid "Motion controls, stick deadzone and button layout."
 msgstr "Kontrol gerakan, zona mati stik, dan letak A dan B."
 
-#: port/app/ingame3ds.cpp:710
+#: port/app/ingame3ds.cpp:713
 #, menu
 msgid "How far a stick moves before the game sees it. Raise it if there is drift."
 msgstr "Seberapa jauh stik bergerak sebelum game menyadarinya. Naikkan jika sesuatu bergeser saat kamu melepasnya."
 
-#: port/app/ingame3ds.cpp:712
+#: port/app/ingame3ds.cpp:715
 #, menu
 msgid "A on Circle and B on Cross as on the 3DS, or swapped, with X and Y swapped too."
 msgstr "A di Lingkaran dan B di Silang, seperti di 3DS, atau sebaliknya, dengan X dan Y ditukar agar cocok."
 
-#: port/app/ingame3ds.cpp:718 port/eden/ingame.cpp:644
+#: port/app/ingame3ds.cpp:721 port/eden/ingame.cpp:653
 #, menu
 msgid "Puts every button back to default. Hold Cross to confirm."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:728
+#: port/app/ingame3ds.cpp:731
 #, menu
 msgid "Load this slot"
 msgstr "Muat slot ini"
 
-#: port/app/ingame3ds.cpp:729
+#: port/app/ingame3ds.cpp:732
 #, menu
 msgid "Goes back to when the slot was saved. Progress since then is lost. Hold Cross."
 msgstr "Kembali ke saat slot disimpan. Apa yang kamu lakukan sejak itu akan hilang, jadi Silang ditahan."
 
-#: port/app/ingame3ds.cpp:732
+#: port/app/ingame3ds.cpp:735
 #, menu
 msgid "Undo the last load"
 msgstr "Batalkan muatan terakhir"
 
-#: port/app/ingame3ds.cpp:733
+#: port/app/ingame3ds.cpp:736
 #, menu
 msgid "Goes back to just before the last load. Progress since that load is lost. Hold Cross."
 msgstr "Kembali ke saat sebelum muatan terakhir, seolah tidak pernah dilakukan. Apa yang kamu lakukan sejak muatan itu akan hilang, jadi Silang ditahan."
 
-#: port/app/ingame3ds.cpp:743 port/frontend/shell/settings.cpp:1618
+#: port/app/ingame3ds.cpp:746 port/frontend/shell/settings.cpp:1620
 #, menu
 msgid "The touch screen"
 msgstr "Layar sentuh"
 
-#: port/app/ingame3ds.cpp:743 port/frontend/shell/settings.cpp:1618
+#: port/app/ingame3ds.cpp:746 port/frontend/shell/settings.cpp:1620
 #, menu
 msgid "The bottom screen"
 msgstr "Layar bawah"
 
-#: port/app/ingame3ds.cpp:761
+#: port/app/ingame3ds.cpp:764
 #, menu
 msgid "Save state"
 msgstr "Simpan status"
 
-#: port/app/ingame3ds.cpp:762
+#: port/app/ingame3ds.cpp:765
 #, menu
 msgid "Load state"
 msgstr "Muat status"
 
-#: port/app/ingame3ds.cpp:762
+#: port/app/ingame3ds.cpp:765
 #, menu
 msgid "Slot {0} empty"
 msgstr "Slot {0} kosong"
 
-#: port/app/ingame3ds.cpp:770
+#: port/app/ingame3ds.cpp:773
 #, menu
 msgid "Reset"
 msgstr ""
 
 #. {0} is the version the last update replaced, as in 5.0.0
 #. no save of this Switch game in standalone ProsperoEden or on a USB drive
-#: port/app/ingame3ds.cpp:770 port/frontend/shell/pages.cpp:647 port/frontend/shell/pages.cpp:1637 port/frontend/shell/pages.cpp:1639 port/frontend/shell/porpoise_rows.cpp:1654 port/frontend/shell/settings.cpp:485 port/frontend/shell/settings.cpp:881 port/frontend/shell/settings.cpp:931 port/frontend/shell/settings.cpp:1237 port/frontend/shell/settings.cpp:1290 port/frontend/shell/settings.cpp:1329 port/frontend/shell/settings.cpp:1422 port/frontend/shell/settings.cpp:1540 port/frontend/shell/settings.cpp:1543 port/frontend/shell/settings.cpp:1557 port/frontend/shell/settings.cpp:1701 port/frontend/shell/settings.cpp:1791 port/frontend/shell/settings.cpp:1934 port/frontend/shell/settings.cpp:1974 port/frontend/shell/settings.cpp:2000 port/frontend/shell/shares.cpp:328 port/frontend/shell/switch_extras.cpp:105
+#: port/app/ingame3ds.cpp:773 port/frontend/shell/pages.cpp:647 port/frontend/shell/pages.cpp:1637 port/frontend/shell/pages.cpp:1639 port/frontend/shell/porpoise_rows.cpp:1654 port/frontend/shell/settings.cpp:485 port/frontend/shell/settings.cpp:881 port/frontend/shell/settings.cpp:931 port/frontend/shell/settings.cpp:1237 port/frontend/shell/settings.cpp:1290 port/frontend/shell/settings.cpp:1329 port/frontend/shell/settings.cpp:1422 port/frontend/shell/settings.cpp:1542 port/frontend/shell/settings.cpp:1545 port/frontend/shell/settings.cpp:1559 port/frontend/shell/settings.cpp:1703 port/frontend/shell/settings.cpp:1793 port/frontend/shell/settings.cpp:1936 port/frontend/shell/settings.cpp:1976 port/frontend/shell/settings.cpp:2002 port/frontend/shell/shares.cpp:328 port/frontend/shell/switch_extras.cpp:105
 #, menu
 msgid "Hold Cross"
 msgstr "Tahan Silang"
 
-#: port/app/ingame3ds.cpp:771
+#: port/app/ingame3ds.cpp:774
 #, menu
 msgid "Restarts the game, as the console's reset button does. What isn't saved is lost."
 msgstr ""
 
-#: port/app/ingame3ds.cpp:777
+#: port/app/ingame3ds.cpp:780
 #, menu
 msgid "Slot {0}: {1}"
 msgstr "Slot {0}: {1}"
 
-#: port/app/ingame3ds.cpp:896 port/app/ingame3ds.cpp:1228
+#: port/app/ingame3ds.cpp:902 port/app/ingame3ds.cpp:1235
 #, menu
 msgid "Slot {0} is empty"
 msgstr "Slot {0} kosong"
 
-#: port/app/ingame3ds.cpp:904 port/app/ingame3ds.cpp:1233
+#: port/app/ingame3ds.cpp:910 port/app/ingame3ds.cpp:1240
 #, menu
 msgid "Saving…"
 msgstr "Menyimpan…"
 
-#: port/app/ingame3ds.cpp:904 port/app/ingame3ds.cpp:910 port/app/ingame3ds.cpp:1233 port/eden/ingame.cpp:475 port/eden/ingame.cpp:477
+#: port/app/ingame3ds.cpp:910 port/app/ingame3ds.cpp:916 port/app/ingame3ds.cpp:1240 port/eden/ingame.cpp:484 port/eden/ingame.cpp:486
 #, menu
 msgid "Loading…"
 msgstr "Memuat…"
 
 #. the in-game menu's badge: the game waits behind the menu
-#: port/app/ingame3ds.cpp:984
+#: port/app/ingame3ds.cpp:990
 #, menu
 msgid "Paused"
 msgstr "Dijeda"
 
 #. how the DS's screens are scaled to the TV: the filters' names
-#: port/app/ingame3ds.h:67 port/frontend/shell/porpoise_rows.cpp:111 port/frontend/shell/settings.cpp:118
+#: port/app/ingame3ds.h:68 port/frontend/shell/porpoise_rows.cpp:111 port/frontend/shell/settings.cpp:118
 #, menu
 msgid "Sharp"
 msgstr "Tajam"
 
 #. how the DS's screens are scaled to the TV: the filters' names
-#: port/app/ingame3ds.h:67 port/frontend/shell/porpoise_rows.cpp:111 port/frontend/shell/porpoise_rows.cpp:311 port/frontend/shell/porpoise_rows.cpp:417 port/frontend/shell/porpoise_rows.cpp:421 port/frontend/shell/porpoise_rows.cpp:425 port/frontend/shell/porpoise_rows.cpp:429 port/frontend/shell/settings.cpp:118
+#: port/app/ingame3ds.h:68 port/frontend/shell/porpoise_rows.cpp:111 port/frontend/shell/porpoise_rows.cpp:311 port/frontend/shell/porpoise_rows.cpp:417 port/frontend/shell/porpoise_rows.cpp:421 port/frontend/shell/porpoise_rows.cpp:425 port/frontend/shell/porpoise_rows.cpp:429 port/frontend/shell/settings.cpp:118
 #, menu
 msgid "Smooth"
 msgstr "Halus"
 
-#. how the DS's screens are scaled to the TV: the filters' names
 #. a libretro game's picture's shape: the console's own, a 4:3 TV's, each pixel square, a 16:9 TV's
-#: port/app/ingame3ds.h:67 port/app/ingame3ds.h:79 port/frontend/shell/settings.cpp:118
+#. how the DS's screens are scaled to the TV: the filters' names
+#: port/app/ingame3ds.h:68 port/app/ingame3ds.h:82 port/frontend/shell/settings.cpp:118
 #, menu
 msgid "Square pixels"
 msgstr "Piksel persegi"
 
-#: port/app/ingame3ds.h:71 port/frontend/shell/settings.cpp:121
+#: port/app/ingame3ds.h:69
+#, menu
+msgid "CRT"
+msgstr ""
+
+#: port/app/ingame3ds.h:69
+#, menu
+msgid "Curved CRT"
+msgstr ""
+
+#: port/app/ingame3ds.h:74 port/frontend/shell/settings.cpp:121
 #, menu
 msgid "Upright"
 msgstr "Tegak"
 
-#: port/app/ingame3ds.h:71 port/frontend/shell/settings.cpp:121
+#: port/app/ingame3ds.h:74 port/frontend/shell/settings.cpp:121
 #, menu
 msgid "90° right"
 msgstr "90° ke kanan"
 
-#: port/app/ingame3ds.h:71 port/frontend/shell/settings.cpp:121
+#: port/app/ingame3ds.h:74 port/frontend/shell/settings.cpp:121
 #, menu
 msgid "Upside down"
 msgstr "Terbalik"
 
-#: port/app/ingame3ds.h:72 port/frontend/shell/settings.cpp:121
+#: port/app/ingame3ds.h:75 port/frontend/shell/settings.cpp:121
 #, menu
 msgid "90° left"
 msgstr "90° ke kiri"
 
-#: port/app/ingame3ds.h:76
+#: port/app/ingame3ds.h:79
 #, menu
 msgid "Fit"
 msgstr ""
 
-#: port/app/ingame3ds.h:76
+#: port/app/ingame3ds.h:79
 #, menu
 msgid "Whole pixels"
 msgstr ""
 
-#: port/app/ingame3ds.h:76
+#: port/app/ingame3ds.h:79
 #, menu
 msgid "Fill screen"
 msgstr ""
 
 #. the 3DS borders' names (artwork around the screens)
-#: port/app/ingame3ds.h:158 port/frontend/shell/settings.cpp:52
+#: port/app/ingame3ds.h:161 port/frontend/shell/settings.cpp:52
 #, menu
 msgctxt "border"
 msgid "None"
 msgstr "Tidak ada"
 
 #. the 3DS borders' names (artwork around the screens)
-#: port/app/ingame3ds.h:158 port/frontend/shell/settings.cpp:52
+#: port/app/ingame3ds.h:161 port/frontend/shell/settings.cpp:52
 #, menu
 msgctxt "border"
 msgid "Midnight"
 msgstr "Tengah malam"
 
 #. the 3DS borders' names (artwork around the screens)
-#: port/app/ingame3ds.h:159 port/frontend/shell/settings.cpp:52
+#: port/app/ingame3ds.h:162 port/frontend/shell/settings.cpp:52
 #, menu
 msgctxt "border"
 msgid "Waves"
 msgstr "Ombak"
 
-#: port/app/ingame3ds.h:159 port/frontend/shell/settings.cpp:53
+#: port/app/ingame3ds.h:162 port/frontend/shell/settings.cpp:53
 #, menu
 msgctxt "border"
 msgid "Aurora"
 msgstr "Aurora"
 
-#: port/app/ingame3ds.h:159 port/frontend/shell/settings.cpp:53
+#: port/app/ingame3ds.h:162 port/frontend/shell/settings.cpp:53
 #, menu
 msgctxt "border"
 msgid "Shell"
@@ -2448,7 +2458,7 @@ msgstr "Sudah terpasang di sini."
 msgid "An install is already running."
 msgstr "Pemasangan sudah berjalan."
 
-#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2792 port/frontend/shell/shell.cpp:2821 port/frontend/shell/shell.cpp:2841 port/frontend/shell/shell.cpp:2860
+#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2824 port/frontend/shell/shell.cpp:2853 port/frontend/shell/shell.cpp:2873 port/frontend/shell/shell.cpp:2892
 #, menu
 msgid "OK"
 msgstr "OK"
@@ -2464,37 +2474,37 @@ msgstr "Game meminta"
 msgid "Some text"
 msgstr "Sebuah teks"
 
-#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2710
+#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2742
 #, menu
 msgid "L1 R1: {0}"
 msgstr "L1 R1: {0}"
 
 #. the in-game keyboard's keys
-#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2733
+#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2765
 #, menu
 msgid "Shift: on"
 msgstr "Shift: aktif"
 
 #. the in-game keyboard's keys
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1629 port/frontend/shell/shell.cpp:1632 port/frontend/shell/shell.cpp:2733
+#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1661 port/frontend/shell/shell.cpp:1664 port/frontend/shell/shell.cpp:2765
 #, menu
 msgid "Shift"
 msgstr "Shift"
 
-#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2733
+#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2765
 #, menu
 msgid "Space"
 msgstr "Spasi"
 
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/porpoise_rows.cpp:1568 port/frontend/shell/porpoise_rows.cpp:2070 port/frontend/shell/shell.cpp:1629 port/frontend/shell/shell.cpp:1632 port/frontend/shell/shell.cpp:2733
+#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/porpoise_rows.cpp:1568 port/frontend/shell/porpoise_rows.cpp:2070 port/frontend/shell/shell.cpp:1661 port/frontend/shell/shell.cpp:1664 port/frontend/shell/shell.cpp:2765
 #, menu
 msgid "Delete"
 msgstr "Hapus"
 
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:173 port/frontend/shell/shares.cpp:300 port/frontend/shell/shell.cpp:1629 port/frontend/shell/shell.cpp:1632
+#: port/app/keyboard_menu.h:173 port/frontend/shell/shares.cpp:300 port/frontend/shell/shell.cpp:1661 port/frontend/shell/shell.cpp:1664
 #, menu
 msgid "Type"
 msgstr "Ketik"
@@ -2821,7 +2831,7 @@ msgid "The new packs could not replace the old ones"
 msgstr "Paket baru tidak bisa menggantikan yang lama"
 
 #. a row that opens the remote touch screen's page: the game's second screen in a phone's browser, and its code to scan
-#: port/app/remote_menu.h:29 port/frontend/shell/settings.cpp:1622 port/frontend/shell/settings.cpp:1624 port/frontend/shell/settings.cpp:3432
+#: port/app/remote_menu.h:29 port/frontend/shell/settings.cpp:1624 port/frontend/shell/settings.cpp:1626 port/frontend/shell/settings.cpp:3436
 #, menu
 msgid "Remote touch screen"
 msgstr "Layar sentuh jarak jauh"
@@ -2837,7 +2847,7 @@ msgstr "{0} di browser ponsel atau tablet, dengan sentuhan: pindai kode di sebel
 msgid "A phone or tablet on the PS5's network. Sound stays on the PS5."
 msgstr "Ponsel atau tablet di jaringan PS5. Suara tetap di PS5."
 
-#: port/app/remote_menu.h:108 port/frontend/shell/settings.cpp:3439
+#: port/app/remote_menu.h:108 port/frontend/shell/settings.cpp:3443
 #, menu
 msgid "Turn it off and on again once that is fixed."
 msgstr "Matikan lalu nyalakan lagi setelah masalah itu beres."
@@ -2875,22 +2885,22 @@ msgid "Choose a player first."
 msgstr "Pilih pemain dulu, untuk game yang punya ID judul."
 
 #. beside a row held to confirm: hold Cross
-#: port/app/side_menu.h:394 port/frontend/shell/porpoise_rows.cpp:199 port/frontend/shell/porpoise_rows.cpp:211 port/frontend/shell/porpoise_rows.cpp:223 port/frontend/shell/porpoise_rows.cpp:235
+#: port/app/side_menu.h:396 port/frontend/shell/porpoise_rows.cpp:199 port/frontend/shell/porpoise_rows.cpp:211 port/frontend/shell/porpoise_rows.cpp:223 port/frontend/shell/porpoise_rows.cpp:235
 #, menu
 msgid "Hold"
 msgstr "Tahan"
 
-#: port/app/side_menu.h:455
+#: port/app/side_menu.h:457
 #, menu
 msgid "Hold Cross until the ring fills."
 msgstr "Tahan Silang sampai cincinnya penuh."
 
-#: port/app/side_menu.h:520
+#: port/app/side_menu.h:503
 #, menu
 msgid "Your controller"
 msgstr ""
 
-#: port/app/side_menu.h:522
+#: port/app/side_menu.h:505
 #, menu
 msgid "Each button shows the console's button it presses."
 msgstr ""
@@ -3164,7 +3174,7 @@ msgstr "Tidak ada pembaca amiibo"
 msgid "Removed"
 msgstr "Diangkat"
 
-#: port/azahar/core.cpp:294 port/eden/ingame.cpp:593
+#: port/azahar/core.cpp:294 port/eden/ingame.cpp:602
 #, menu
 msgid "Not an amiibo dump"
 msgstr "Bukan dump amiibo"
@@ -3182,13 +3192,13 @@ msgid "{0}: off"
 msgstr "{0}: nonaktif"
 
 #. how a save state's save or load went
-#: port/azahar/core.cpp:342 port/libretro/game.cpp:513 port/melonds/core.cpp:582
+#: port/azahar/core.cpp:342 port/libretro/game.cpp:515 port/melonds/core.cpp:582
 #, menu
 msgid "Loaded slot {0}"
 msgstr "Slot {0} dimuat"
 
 #. how a save state's save or load went
-#: port/azahar/core.cpp:342 port/libretro/game.cpp:507 port/melonds/core.cpp:565
+#: port/azahar/core.cpp:342 port/libretro/game.cpp:509 port/melonds/core.cpp:565
 #, menu
 msgid "Saved slot {0}"
 msgstr "Tersimpan di slot {0}"
@@ -3198,18 +3208,18 @@ msgstr "Tersimpan di slot {0}"
 msgid "Made by another version"
 msgstr "Dibuat oleh versi lain"
 
-#: port/azahar/core.cpp:344 port/libretro/game.cpp:497 port/libretro/game.cpp:507 port/libretro/game.cpp:512 port/melonds/core.cpp:552 port/melonds/core.cpp:566 port/melonds/core.cpp:574 port/melonds/core.cpp:576
+#: port/azahar/core.cpp:344 port/libretro/game.cpp:499 port/libretro/game.cpp:509 port/libretro/game.cpp:514 port/melonds/core.cpp:552 port/melonds/core.cpp:566 port/melonds/core.cpp:574 port/melonds/core.cpp:576
 #, menu
 msgid "It did not work"
 msgstr "Tidak berhasil"
 
 #. how undoing the last load went
-#: port/azahar/core.cpp:346 port/libretro/game.cpp:497 port/melonds/core.cpp:547
+#: port/azahar/core.cpp:346 port/libretro/game.cpp:499 port/melonds/core.cpp:547
 #, menu
 msgid "Load undone"
 msgstr "Kembali ke sebelum muatan"
 
-#: port/azahar/core.cpp:349 port/libretro/game.cpp:513 port/melonds/core.cpp:582
+#: port/azahar/core.cpp:349 port/libretro/game.cpp:515 port/melonds/core.cpp:582
 #, menu
 msgid "Back where you left off"
 msgstr "Kembali ke terakhir kali"
@@ -3225,7 +3235,7 @@ msgstr "Ini bukan game 3DS yang bisa dimulai oleh Azahar."
 msgid "The game could not be loaded."
 msgstr "Game tidak bisa dimuat."
 
-#: port/azahar/core.cpp:619 port/frontend/shell/shell.cpp:1126
+#: port/azahar/core.cpp:619 port/frontend/shell/shell.cpp:1114
 #, menu
 msgid "This game is encrypted. Decrypt it on your 3DS with GodMode9 first."
 msgstr "Game ini terenkripsi, dan Azahar hanya menjalankan game yang sudah didekripsi, dengan atau tanpa kunci: dekripsi dulu di 3DS-mu (GodMode9)."
@@ -3371,154 +3381,154 @@ msgid "Right Joy-Con"
 msgstr "Joy-Con kanan"
 
 #. the Switch side's loading screen: the game's shaders read from the cache, {0} of {1}
-#: port/eden/ingame.cpp:474
+#: port/eden/ingame.cpp:483
 #, menu
 msgid "Shaders: {0} of {1}"
 msgstr "Shader: {0} dari {1}"
 
-#: port/eden/ingame.cpp:476
+#: port/eden/ingame.cpp:485
 #, menu
 msgid "Starting"
 msgstr "Memulai"
 
 #. the amiibo taken away from the controller, as from the Switch's NFC reader
-#: port/eden/ingame.cpp:591
+#: port/eden/ingame.cpp:600
 #, menu
 msgid "{0} removed"
 msgstr "{0} diangkat"
 
-#: port/eden/ingame.cpp:592
+#: port/eden/ingame.cpp:601
 #, menu
 msgid "The game is not asking for one"
 msgstr "Game sedang tidak meminta"
 
-#: port/eden/ingame.cpp:594
+#: port/eden/ingame.cpp:603
 #, menu
 msgid "Could not be read"
 msgstr "Tidak bisa dibaca"
 
-#: port/eden/ingame.cpp:606
+#: port/eden/ingame.cpp:615
 #, menu
 msgid "Upscaling, anti-aliasing, frame generation and the performance overlay. Applies to all games."
 msgstr "Peningkatan skala, anti-aliasing, pembuatan bingkai, dan overlay performa. Disimpan untuk game berikutnya."
 
-#: port/eden/ingame.cpp:608
+#: port/eden/ingame.cpp:617
 #, menu
 msgid "Bicubic is sharp, Bilinear softer, AMD FSR 1 keeps edges clean."
 msgstr "Cara gambar diskalakan ke TV: Bicubic tajam, Bilinear lebih lembut, AMD FSR 1 menjaga tepi tetap bersih. Langsung berubah."
 
-#: port/eden/ingame.cpp:612 port/frontend/shell/settings.cpp:742
+#: port/eden/ingame.cpp:621 port/frontend/shell/settings.cpp:742
 #, menu
 msgid "FSR sharpening"
 msgstr "Ketajaman FSR"
 
-#: port/eden/ingame.cpp:613
+#: port/eden/ingame.cpp:622
 #, menu
 msgid "How much AMD FSR 1 sharpens the picture. 100% is the most."
 msgstr "Seberapa tajam AMD FSR 1 membuat gambar saat menskalakannya: 100% adalah yang paling tajam. Langsung berubah."
 
-#: port/eden/ingame.cpp:614 port/frontend/shell/porpoise_rows.cpp:101 port/frontend/shell/settings.cpp:747
+#: port/eden/ingame.cpp:623 port/frontend/shell/porpoise_rows.cpp:101 port/frontend/shell/settings.cpp:747
 #, menu
 msgid "Anti-aliasing"
 msgstr "Anti-aliasing"
 
-#: port/eden/ingame.cpp:615
+#: port/eden/ingame.cpp:624
 #, menu
 msgid "Smooths jagged edges. FXAA is lighter, SMAA cleaner but a little heavier."
 msgstr "Menghaluskan tepi bergerigi gambar game: FXAA sedikit, SMAA lebih bersih, dengan sedikit kerja tambahan GPU. Langsung berubah."
 
-#: port/eden/ingame.cpp:620
+#: port/eden/ingame.cpp:629
 #, menu
 msgid "Shows frame rate and speed in a corner."
 msgstr "Laju bingkai dan kecepatan emulasi, di salah satu sudut layar."
 
 #. the emulated Switch's console mode: in its dock, or handheld
-#: port/eden/ingame.cpp:630 port/eden/ingame.cpp:697 port/frontend/shell/settings.cpp:961
+#: port/eden/ingame.cpp:639 port/eden/ingame.cpp:706 port/frontend/shell/settings.cpp:961
 #, menu
 msgctxt "switch mode"
 msgid "Docked"
 msgstr "Di dok"
 
 #. the emulated Switch's console mode: in its dock, or handheld
-#: port/eden/ingame.cpp:630 port/eden/ingame.cpp:697 port/frontend/shell/settings.cpp:961
+#: port/eden/ingame.cpp:639 port/eden/ingame.cpp:706 port/frontend/shell/settings.cpp:961
 #, menu
 msgctxt "switch mode"
 msgid "Handheld"
 msgstr "Genggam"
 
-#: port/eden/ingame.cpp:632
+#: port/eden/ingame.cpp:641
 #, menu
 msgid "Docked or handheld, controller type, vibration and stick deadzone."
 msgstr "Di dok atau genggam, controller yang dilihat game, getaran, dan zona mati stik."
 
 #. the emulated Switch's console mode: in its dock, or handheld
-#: port/eden/ingame.cpp:633 port/eden/ingame.cpp:697 port/frontend/shell/settings.cpp:961
+#: port/eden/ingame.cpp:642 port/eden/ingame.cpp:706 port/frontend/shell/settings.cpp:961
 #, menu
 msgid "Console mode"
 msgstr "Mode konsol"
 
-#: port/eden/ingame.cpp:634
+#: port/eden/ingame.cpp:643
 #, menu
 msgid "Docked looks sharpest. Handheld draws at a lower resolution and runs lighter. It switches at once."
 msgstr "Di dok, game menggambar untuk TV, setajam mungkin; genggam, untuk layar konsol itu sendiri, yang lebih ringan bagi GPU. Game langsung tahu, seperti saat Switch keluar dari doknya."
 
-#: port/eden/ingame.cpp:635 port/frontend/shell/settings.cpp:969
+#: port/eden/ingame.cpp:644 port/frontend/shell/settings.cpp:969
 #, menu
 msgid "Controller type"
 msgstr "Jenis controller"
 
-#: port/eden/ingame.cpp:636
+#: port/eden/ingame.cpp:645
 #, menu
 msgid "The controller the game sees. Automatic is a Pro Controller. Handheld needs Handheld mode and is player 1 only. Some games ask you to press a button to confirm."
 msgstr "Apa yang dilihat game di tangan Anda. Otomatis adalah Pro Controller; Genggam butuh mode genggam dan hanya milik pemain 1. Beberapa game meminta Anda menekan tombol untuk menerima yang baru."
 
-#: port/eden/ingame.cpp:638
+#: port/eden/ingame.cpp:647
 #, menu
 msgid "DualSense rumble. Applies to every system, as in Settings > Controls."
 msgstr "Getaran DualSense saat game memintanya. Untuk semua sisi, seperti di Pengaturan > Kontrol."
 
-#: port/eden/ingame.cpp:640
+#: port/eden/ingame.cpp:649
 #, menu
 msgid "How far a stick moves before the game sees it. Raise it if a character or the camera drifts."
 msgstr "Seberapa jauh stik bergerak sebelum game melihatnya. Naikkan jika karakter atau kamera bergeser sendiri."
 
-#: port/eden/ingame.cpp:649
+#: port/eden/ingame.cpp:658
 #, menu
 msgid "Left and Right choose an amiibo. Cross scans it when the game asks; press again to remove it."
 msgstr "Kiri dan Kanan memilih dump amiibo; Silang menempelkannya ke controller saat game memintanya, dan sekali lagi mengangkatnya."
 
-#: port/eden/ingame.cpp:668 port/frontend/shell/settings.cpp:1355
+#: port/eden/ingame.cpp:677 port/frontend/shell/settings.cpp:1355
 #, menu
 msgid "Room"
 msgstr "Ruang"
 
-#: port/eden/ingame.cpp:668
+#: port/eden/ingame.cpp:677
 #, menu
 msgid "Connection lost"
 msgstr "Koneksi terputus"
 
-#: port/eden/ingame.cpp:669
+#: port/eden/ingame.cpp:678
 #, menu
 msgid "The room for this game. Choose Local Wireless (or local play) in the game to play with others."
 msgstr "Ruang yang dimasuki game ini: pilih Permainan nirkabel lokal (atau permainan lokal) di game untuk bermain dengan yang lain di dalamnya."
 
-#: port/eden/ingame.cpp:671
+#: port/eden/ingame.cpp:680
 #, menu
 msgid "In the room."
 msgstr "Di ruang."
 
-#: port/eden/ingame.cpp:673
+#: port/eden/ingame.cpp:682
 #, menu
 msgid "Nobody else yet"
 msgstr "Belum ada orang lain"
 
-#: port/eden/ingame.cpp:673
+#: port/eden/ingame.cpp:682
 #, menu
 msgid "Players appear here as they join."
 msgstr "Pemain di ruang muncul di sini saat mereka bergabung."
 
 #. how many players are in the room
-#: port/eden/ingame.cpp:676
+#: port/eden/ingame.cpp:685
 #, menu
 msgid "{0} player"
 msgid_plural "{0} players"
@@ -3532,44 +3542,62 @@ msgstr "Versi ini tidak punya emulator Switch: eden/eboot.bin tidak ada di folde
 msgid "Eden cannot read games on a network share. Copy this game to the PS5 or a USB drive to play it."
 msgstr "Eden tidak bisa membaca game di folder berbagi jaringan. Salin game ini ke PS5 atau drive USB untuk memainkannya."
 
-#: port/eden/launch.cpp:145 port/eden/launch.cpp:352
+#: port/eden/launch.cpp:145 port/eden/launch.cpp:362
 msgid "The PS5 did not start Eden. See the boot log for details."
 msgstr "Konsol tidak memulai Eden. Log boot menyebutkan jawabannya."
 
-#: port/eden/launch.cpp:264
+#. a Switch 2 game crashed or was closed by the console; {0} is Lichii's logs folder
+#: port/eden/launch.cpp:269
+msgid "The Switch 2 game stopped unexpectedly. Logs are in {0}."
+msgstr "Game Switch 2 berhenti: Lichii tertutup saat berjalan. Log-nya ada di {0}."
+
+#: port/eden/launch.cpp:270
 msgid "The Switch game stopped unexpectedly. Logs are in {0}."
 msgstr "Game Switch berhenti: Eden tertutup saat berjalan. Log-nya ada di {0}."
 
 #. a Switch game's room (Settings > Online > Multiplayer) could not be joined: its name ({0}) and why ({1}, in English)
-#: port/eden/launch.cpp:274
+#: port/eden/launch.cpp:280
 msgid "The room {0} could not be joined: {1} Choose another in Settings > Online > Multiplayer, or play offline."
 msgstr "Tidak bisa masuk ke ruang {0}: {1} Pilih yang lain di Pengaturan > Online > Multipemain, atau main offline."
 
-#: port/eden/launch.cpp:277
+#: port/eden/launch.cpp:283
+msgid "Lichii could not find the game's file. Is the drive with it plugged in?"
+msgstr "Lichii tidak menemukan file game. Apakah drive berisi file itu tersambung?"
+
+#: port/eden/launch.cpp:284
 msgid "Eden could not find the game's file. Is the drive with it plugged in?"
 msgstr "Eden tidak menemukan file game. Apakah drive berisi file itu tersambung?"
 
-#: port/eden/launch.cpp:283 port/frontend/shell/settings.cpp:1104 port/frontend/shell/setup.cpp:301
+#: port/eden/launch.cpp:290 port/frontend/shell/settings.cpp:1087 port/frontend/shell/setup.cpp:325
+msgid "prod.keys is missing: Lichii needs your own Switch keys"
+msgstr "prod.keys tidak ditemukan: Lichii memerlukan kunci Switch milik Anda"
+
+#: port/eden/launch.cpp:290 port/frontend/shell/settings.cpp:1104 port/frontend/shell/setup.cpp:301
 msgid "prod.keys is missing: Switch games need it"
 msgstr "prod.keys tidak ada: tanpanya, Eden tidak bisa membaca game Switch"
 
 #. a Switch game did not start because the player's keys are older than it; {0} is Eden's game files folder, which has keys/ and firmware/ in it
-#: port/eden/launch.cpp:286
+#: port/eden/launch.cpp:293
 msgid "This game needs newer keys. Dump prod.keys again from your Switch on its latest system version into {0}/keys, and its firmware into {0}/firmware."
 msgstr "Game ini butuh kunci yang lebih baru daripada milikmu: game ini, atau pembaruannya, dibuat untuk versi sistem Switch yang lebih baru daripada versi asal prod.keys milikmu. Perbarui Switch-mu ke versi sistem terbaru, lalu ambil lagi prod.keys ke {0}/keys, dan firmware-nya ke {0}/firmware."
 
 #. a Switch game did not start because the keys could not decrypt it; {0} is Eden's game files folder, which has keys/ in it
-#: port/eden/launch.cpp:290
+#: port/eden/launch.cpp:297
 msgid "Your keys can't decrypt this game. Dump prod.keys again from your Switch into {0}/keys, and check that the game file isn't damaged."
 msgstr "Kuncimu tidak bisa mendekripsi game ini: prod.keys di {0}/keys kekurangan kunci untuknya atau kuncinya salah, atau file game-nya rusak. Ambil lagi prod.keys dari Switch-mu sendiri, dan periksa file game-nya di komputer."
 
 #. a Switch game did not start because its title key is missing (its dump has no ticket); {0} is Eden's game files folder, which has keys/ in it
-#: port/eden/launch.cpp:294
+#: port/eden/launch.cpp:301
 msgid "This game's title key is missing. Dump the game again with its ticket, or put your Switch's title.keys in {0}/keys."
 msgstr "Kunci judul game ini tidak ada: file-nya tidak punya tiket. Ambil lagi game-nya beserta tiketnya, atau taruh title.keys dari Switch-mu di {0}/keys."
 
+#. why a Switch 2 game stopped or did not start, in Lichii's own words (English)
+#: port/eden/launch.cpp:308
+msgid "The Switch 2 game did not start or stopped: {0}"
+msgstr "Game Switch 2 tidak dimulai atau berhenti: {0}"
+
 #. why a Switch game stopped or did not start, in Eden's own words (English)
-#: port/eden/launch.cpp:300
+#: port/eden/launch.cpp:310
 msgid "The Switch game did not start or stopped: {0}"
 msgstr "Game Switch tidak dimulai atau berhenti: {0}"
 
@@ -3636,7 +3664,7 @@ msgid_plural "{0} files deleted ({1} MB)"
 msgstr[0] "{0} file dihapus ({1} MB)"
 
 #. what clearing the unpacked games did; {1} is the room it made, as in 2.4 GB
-#: port/frontend/actions.cpp:201 port/frontend/shell/settings.cpp:1558 port/frontend/shell/settings.cpp:3103
+#: port/frontend/actions.cpp:201 port/frontend/shell/settings.cpp:1560 port/frontend/shell/settings.cpp:3107
 msgid "None to delete"
 msgstr "Tidak ada yang dihapus"
 
@@ -3658,7 +3686,7 @@ msgid "Update"
 msgstr "Pembaruan"
 
 #. an update found to install ({0}: its version, as 208)
-#: port/frontend/actions.cpp:388 port/frontend/actions.cpp:467 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:981 port/main_ps5.cpp:582
+#: port/frontend/actions.cpp:388 port/frontend/actions.cpp:467 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:985 port/main_ps5.cpp:582
 msgid "DLC"
 msgstr "DLC"
 
@@ -3690,11 +3718,11 @@ msgstr[0] "{0} DLC"
 msgid "Experimental"
 msgstr "Eksperimental"
 
-#: port/frontend/shell/hub.cpp:229 port/frontend/shell/shell.cpp:2036
+#: port/frontend/shell/hub.cpp:229 port/frontend/shell/shell.cpp:2068
 msgid "Favourite"
 msgstr "Favorit"
 
-#: port/frontend/shell/hub.cpp:236 port/frontend/shell/library.cpp:779 port/frontend/shell/orbit.cpp:358 port/frontend/shell/orbit.cpp:447 port/frontend/shell/shell.cpp:1676 port/frontend/shell/shell.cpp:1677 port/frontend/shell/shell.cpp:2000 port/frontend/shell/timeline.cpp:440
+#: port/frontend/shell/hub.cpp:236 port/frontend/shell/library.cpp:779 port/frontend/shell/orbit.cpp:358 port/frontend/shell/orbit.cpp:447 port/frontend/shell/shell.cpp:1708 port/frontend/shell/shell.cpp:1709 port/frontend/shell/shell.cpp:2032 port/frontend/shell/timeline.cpp:448
 msgid "Play"
 msgstr "Main"
 
@@ -3707,7 +3735,7 @@ msgstr[0] "Paket grafis · {0} aktif"
 msgid "Game settings · custom"
 msgstr "Pengaturan game · khusus"
 
-#: port/frontend/shell/hub.cpp:247 port/frontend/shell/shell.cpp:2019
+#: port/frontend/shell/hub.cpp:247 port/frontend/shell/shell.cpp:2051
 msgid "Game settings"
 msgstr "Pengaturan game"
 
@@ -3812,7 +3840,7 @@ msgstr[0] "{0} terpasang"
 msgid "Everything found is installed already"
 msgstr "Semua yang ditemukan sudah terpasang"
 
-#: port/frontend/shell/installs.cpp:319 port/frontend/shell/shell.cpp:2887
+#: port/frontend/shell/installs.cpp:319 port/frontend/shell/shell.cpp:2919
 msgid "Stopping…"
 msgstr "Menghentikan…"
 
@@ -3820,7 +3848,7 @@ msgstr "Menghentikan…"
 msgid "Stop"
 msgstr "Hentikan"
 
-#: port/frontend/shell/installs.cpp:325 port/frontend/shell/pages.cpp:1294 port/frontend/shell/shell.cpp:1706
+#: port/frontend/shell/installs.cpp:325 port/frontend/shell/pages.cpp:1294 port/frontend/shell/shell.cpp:1738
 msgid "Install"
 msgstr "Pasang"
 
@@ -3855,11 +3883,11 @@ msgstr[0] "{0} baru untuk dipasang."
 msgid "Everything found is installed."
 msgstr "Semua yang ditemukan sudah terpasang."
 
-#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:234 port/frontend/shell/shares.cpp:535 port/frontend/shell/shell.cpp:2846
+#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:234 port/frontend/shell/shares.cpp:535 port/frontend/shell/shell.cpp:2878
 msgid "Game files"
 msgstr "File game"
 
-#: port/frontend/shell/installs.cpp:362 port/frontend/shell/settings.cpp:1132 port/frontend/shell/shell.cpp:2027
+#: port/frontend/shell/installs.cpp:362 port/frontend/shell/settings.cpp:1132 port/frontend/shell/shell.cpp:2059
 msgid "Updates and DLC"
 msgstr "Pembaruan dan DLC"
 
@@ -3967,7 +3995,7 @@ msgstr "Penyiapan"
 msgid "Something needs attention"
 msgstr "Ada yang perlu dicek"
 
-#: port/frontend/shell/library.cpp:160 port/frontend/shell/library.cpp:198 port/frontend/shell/library.cpp:228 port/frontend/shell/settings.cpp:1535
+#: port/frontend/shell/library.cpp:160 port/frontend/shell/library.cpp:198 port/frontend/shell/library.cpp:228 port/frontend/shell/settings.cpp:1537
 msgid "Setup check"
 msgstr "Pemeriksaan penyiapan"
 
@@ -3975,7 +4003,7 @@ msgstr "Pemeriksaan penyiapan"
 msgid "Diagnostics"
 msgstr "Diagnostik"
 
-#: port/frontend/shell/library.cpp:167 port/frontend/shell/shell.cpp:1177 port/frontend/shell/shell.cpp:2877
+#: port/frontend/shell/library.cpp:167 port/frontend/shell/shell.cpp:1209 port/frontend/shell/shell.cpp:2909
 msgid "Getting ready"
 msgstr "Memulai Cemu"
 
@@ -4050,17 +4078,17 @@ msgstr "Kejutkan aku"
 
 #. the game menu: named groups of games the player makes (Couch co-op, say), shown on the Library's filter row
 #. What's new in 6.0: collections, groups of games the player makes
-#: port/frontend/shell/library.cpp:424 port/frontend/shell/shell.cpp:2038 port/frontend/shell/shell.cpp:2058 port/frontend/shell/shell.cpp:2084 port/frontend/shell/whatsnew.cpp:40
+#: port/frontend/shell/library.cpp:424 port/frontend/shell/shell.cpp:2070 port/frontend/shell/shell.cpp:2090 port/frontend/shell/shell.cpp:2116 port/frontend/shell/whatsnew.cpp:40
 msgid "Collections"
 msgstr "Koleksi"
 
 #. the launcher's tabs
-#: port/frontend/shell/library.cpp:425 port/frontend/shell/library.cpp:789 port/frontend/shell/shell.cpp:1502 port/frontend/shell/shell.cpp:2058
+#: port/frontend/shell/library.cpp:425 port/frontend/shell/library.cpp:789 port/frontend/shell/shell.cpp:1534 port/frontend/shell/shell.cpp:2090
 msgctxt "tab"
 msgid "Library"
 msgstr "Pustaka"
 
-#: port/frontend/shell/library.cpp:425 port/frontend/shell/orbit.cpp:449 port/frontend/shell/shell.cpp:1672
+#: port/frontend/shell/library.cpp:425 port/frontend/shell/orbit.cpp:449 port/frontend/shell/shell.cpp:1704
 msgid "Sort"
 msgstr "Urutkan"
 
@@ -4079,12 +4107,12 @@ msgstr "Minggu ini"
 msgid "Earlier"
 msgstr "Sebelumnya"
 
-#: port/frontend/shell/library.cpp:783 port/frontend/shell/orbit.cpp:359 port/frontend/shell/orbit.cpp:450 port/frontend/shell/shell.cpp:1676 port/frontend/shell/shell.cpp:1677 port/frontend/shell/shell.cpp:1679
+#: port/frontend/shell/library.cpp:783 port/frontend/shell/orbit.cpp:359 port/frontend/shell/orbit.cpp:450 port/frontend/shell/shell.cpp:1708 port/frontend/shell/shell.cpp:1709 port/frontend/shell/shell.cpp:1711
 msgid "Options"
 msgstr "Opsi"
 
 #. how many games the Library has
-#: port/frontend/shell/library.cpp:794 port/frontend/shell/orbit.cpp:321 port/frontend/shell/pages.cpp:1397 port/frontend/shell/shell.cpp:1584 port/frontend/shell/timeline.cpp:271 port/frontend/shell/timeline.cpp:387
+#: port/frontend/shell/library.cpp:794 port/frontend/shell/orbit.cpp:321 port/frontend/shell/pages.cpp:1397 port/frontend/shell/shell.cpp:1616 port/frontend/shell/timeline.cpp:271 port/frontend/shell/timeline.cpp:395
 msgid "{0} game"
 msgid_plural "{0} games"
 msgstr[0] "{0} game"
@@ -4098,7 +4126,7 @@ msgstr "Mencari game baru…"
 msgid "From the last search"
 msgstr "Seperti terakhir ditemukan"
 
-#: port/frontend/shell/library.cpp:802 port/frontend/shell/shell.cpp:1672 port/frontend/shell/shell.cpp:2704
+#: port/frontend/shell/library.cpp:802 port/frontend/shell/shell.cpp:1704 port/frontend/shell/shell.cpp:2736
 msgid "Search"
 msgstr "Cari"
 
@@ -4111,7 +4139,7 @@ msgid "Sort: {0}"
 msgstr "Urutan: {0}"
 
 #. the Library's filters, each with its count after it
-#: port/frontend/shell/library.cpp:832 port/frontend/shell/shell.cpp:2055
+#: port/frontend/shell/library.cpp:832 port/frontend/shell/shell.cpp:2087
 msgctxt "filter"
 msgid "All"
 msgstr "Semua"
@@ -4167,7 +4195,7 @@ msgstr "Beranda"
 msgid "Console {0} of {1}"
 msgstr "Konsol {0} dari {1}"
 
-#: port/frontend/shell/orbit.cpp:301 port/frontend/shell/shell.cpp:1645
+#: port/frontend/shell/orbit.cpp:301 port/frontend/shell/shell.cpp:1677
 msgid "Continue"
 msgstr "Lanjut"
 
@@ -4176,13 +4204,13 @@ msgstr "Lanjut"
 msgid "Recently played on every console"
 msgstr "Game yang terakhir kamu mainkan, di semua konsol"
 
-#: port/frontend/shell/orbit.cpp:323 port/frontend/shell/shell.cpp:991
+#: port/frontend/shell/orbit.cpp:323 port/frontend/shell/shell.cpp:995
 msgid "{0} h played"
 msgid_plural "{0} h played"
 msgstr[0] "{0} jam dimainkan"
 
 #. a game's chip in Orbit: {0} is when, as "yesterday" or "3 days ago"
-#: port/frontend/shell/orbit.cpp:351 port/frontend/shell/timeline.cpp:436
+#: port/frontend/shell/orbit.cpp:351 port/frontend/shell/timeline.cpp:444
 msgid "Last played {0}"
 msgstr "Terakhir dimainkan: {0}"
 
@@ -4197,86 +4225,96 @@ msgid "Turn the dial"
 msgstr "Putar dial"
 
 #. the view of every console's games on one shelf, opened with the touchpad
-#: port/frontend/shell/orbit.cpp:452 port/frontend/shell/shell.cpp:1624 port/frontend/shell/timeline.cpp:264
+#: port/frontend/shell/orbit.cpp:452 port/frontend/shell/shell.cpp:1656 port/frontend/shell/timeline.cpp:264
 msgid "Timeline"
 msgstr "Lini masa"
 
 #. after EmulationStation is picked as the launcher on the first start or in Settings
-#: port/frontend/shell/orbit.cpp:531 port/frontend/shell/settings.cpp:2229
+#: port/frontend/shell/orbit.cpp:537 port/frontend/shell/settings.cpp:2231
 msgid "EmulationStation opens next time Playtendoh starts. Hold L1 while it starts to use this launcher instead."
 msgstr "EmulationStation terbuka saat Playtendoh dimulai berikutnya. Tahan L1 saat dimulai untuk peluncur ini."
 
-#: port/frontend/shell/orbit.cpp:536 port/frontend/shell/settings.cpp:2233
+#: port/frontend/shell/orbit.cpp:542 port/frontend/shell/settings.cpp:2235
 msgid "Downloading EmulationStation. It opens next time Playtendoh starts."
 msgstr ""
 
-#: port/frontend/shell/orbit.cpp:689 port/frontend/shell/reports.cpp:73 port/frontend/shell/settings.cpp:1530 port/frontend/shell/welcome.cpp:222
+#: port/frontend/shell/orbit.cpp:695 port/frontend/shell/reports.cpp:73 port/frontend/shell/settings.cpp:1532 port/frontend/shell/welcome.cpp:222
 msgid "Make it yours"
 msgstr "Atur sesukamu"
 
 #. the first start's question: the two layouts of the Library, Classic and Orbit
-#: port/frontend/shell/orbit.cpp:691
+#: port/frontend/shell/orbit.cpp:697
 msgid "How should your games be laid out?"
 msgstr "Bagaimana game-mu ditata?"
 
-#: port/frontend/shell/orbit.cpp:693
+#: port/frontend/shell/orbit.cpp:699
 msgid "You can change it any time in Settings > Launcher > Layout. Your games, settings and saves stay the same."
 msgstr "Pilih sekarang. Kamu bisa menggantinya kapan saja di Pengaturan > Peluncur > Tata letak, dan game, pengaturan, serta save-mu tetap seperti semula."
 
-#: port/frontend/shell/orbit.cpp:704 port/frontend/shell/porpoise_rows.cpp:311 port/frontend/shell/settings.cpp:1453
+#: port/frontend/shell/orbit.cpp:710 port/frontend/shell/porpoise_rows.cpp:311 port/frontend/shell/settings.cpp:1453
 msgid "Classic"
 msgstr "Klasik"
 
-#: port/frontend/shell/orbit.cpp:704
+#: port/frontend/shell/orbit.cpp:710
 msgid "One console at a time. L1 and R1 switch consoles. Recently played on top, all games below."
 msgstr "Satu konsol sekali tampil, dari korsel; L1 dan R1 memutarnya. Baru dimainkan di atas, semua game dalam daftar di bawah."
 
-#: port/frontend/shell/orbit.cpp:705
+#: port/frontend/shell/orbit.cpp:711
 msgid "Good for big libraries on a few consoles"
 msgstr "Cocok untuk pustaka besar di beberapa konsol"
 
-#: port/frontend/shell/orbit.cpp:706 port/frontend/shell/settings.cpp:1453
+#: port/frontend/shell/orbit.cpp:712 port/frontend/shell/settings.cpp:1453
 msgid "Orbit"
 msgstr "Orbit"
 
-#: port/frontend/shell/orbit.cpp:706
+#: port/frontend/shell/orbit.cpp:712
 msgid "New"
 msgstr "Baru di 6.0"
 
-#: port/frontend/shell/orbit.cpp:707
+#: port/frontend/shell/orbit.cpp:713
 msgid "Turn the dial to pick a console. The centre shows what you played lately on any console."
 msgstr "Putar dial untuk memilih konsol; di tengahnya ada yang terakhir kamu mainkan, di semua konsol. Game yang dipilih mengisi latar belakang."
 
-#: port/frontend/shell/orbit.cpp:708
+#: port/frontend/shell/orbit.cpp:714
 msgid "Good for playing across many consoles"
 msgstr "Cocok untuk bermain di banyak konsol"
 
 #. the third launcher of the first start's question, where the app has ES-DE
 #. What's new in 6.0: EmulationStation (ES-DE) as a launcher, downloaded when chosen
-#: port/frontend/shell/orbit.cpp:710 port/frontend/shell/settings.cpp:1453 port/frontend/shell/settings.cpp:1474 port/frontend/shell/whatsnew.cpp:38
+#: port/frontend/shell/orbit.cpp:716 port/frontend/shell/settings.cpp:1453 port/frontend/shell/settings.cpp:1474 port/frontend/shell/whatsnew.cpp:38
 msgid "EmulationStation"
 msgstr "EmulationStation"
 
-#: port/frontend/shell/orbit.cpp:711
+#: port/frontend/shell/orbit.cpp:717
 msgid "ES-DE's menus and themes for the same games. Games still play here with their settings, saves and in-game menu."
 msgstr "Menu dan tema ES-DE di atas game yang sama, tiap konsol sebagai sistemnya sendiri. Game dimainkan di sini, dengan pengaturan, save, dan menu dalam game-nya."
 
-#: port/frontend/shell/orbit.cpp:712
+#: port/frontend/shell/orbit.cpp:718
 msgid "Good if you know ES-DE from other devices"
 msgstr "Cocok jika kamu mengenal ES-DE dari perangkat lain"
 
-#: port/frontend/shell/orbit.cpp:751
+#. the button of the first start's question: {0} is the layout in focus, Classic or Orbit
+#: port/frontend/shell/orbit.cpp:757
+msgid "Use {0}"
+msgstr "Gunakan {0}"
+
+#. the first start's layout question: Triangle turns the covers flat or into 3D boxes
+#: port/frontend/shell/orbit.cpp:763
+msgid "Box art: 3D"
+msgstr ""
+
+#. the first start's layout question: Triangle turns the covers flat or into 3D boxes
+#: port/frontend/shell/orbit.cpp:763
+msgid "Box art: flat"
+msgstr ""
+
+#: port/frontend/shell/orbit.cpp:774
 msgid "Hold L1 while Playtendoh starts to use its own launcher. Switch back any time in Settings > Launcher > Layout."
 msgstr "Tahan L1 saat Playtendoh dimulai untuk peluncurnya sendiri. Pengaturan > Peluncur > Tata letak mengembalikannya kapan saja."
 
-#: port/frontend/shell/orbit.cpp:752
+#: port/frontend/shell/orbit.cpp:775
 msgid "Both have Timeline, every console on one shelf. Press the touchpad to open it."
 msgstr "Keduanya punya tampilan Lini masa: semua konsol dalam satu rak. Tekan touchpad dari mana saja."
-
-#. the button of the first start's question: {0} is the layout in focus, Classic or Orbit
-#: port/frontend/shell/orbit.cpp:755
-msgid "Use {0}"
-msgstr "Gunakan {0}"
 
 #: port/frontend/shell/pages.cpp:306
 msgid "Cross turns a pack on or off. Right shows its presets. Changes apply next time the game starts."
@@ -4302,7 +4340,7 @@ msgstr "Paket ini tidak punya deskripsi."
 msgid "No presets"
 msgstr "Tidak ada preset"
 
-#: port/frontend/shell/pages.cpp:361 port/frontend/shell/shell.cpp:1696
+#: port/frontend/shell/pages.cpp:361 port/frontend/shell/shell.cpp:1728
 msgid "Presets"
 msgstr "Preset"
 
@@ -4311,7 +4349,7 @@ msgid "Presets · choosing one turns it on"
 msgstr "Preset · memilih salah satu mengaktifkannya"
 
 #. what a held row says once it has done its work
-#: port/frontend/shell/pages.cpp:404 port/frontend/shell/settings.cpp:3158
+#: port/frontend/shell/pages.cpp:404 port/frontend/shell/settings.cpp:3162
 msgctxt "finished"
 msgid "Done"
 msgstr "Selesai"
@@ -4727,7 +4765,7 @@ msgstr "Ditemukan di {0}"
 msgid "Missing (only .wud/.wux need it)"
 msgstr "Tidak ada (hanya .wud/.wux yang membutuhkannya)"
 
-#: port/frontend/shell/pages.cpp:1427 port/frontend/shell/shell.cpp:2588 port/frontend/shell/shell.cpp:2615
+#: port/frontend/shell/pages.cpp:1427 port/frontend/shell/shell.cpp:2620 port/frontend/shell/shell.cpp:2647
 msgid "In use"
 msgstr "Dipakai"
 
@@ -5301,7 +5339,7 @@ msgstr ""
 #. Settings > Screens: a row that opens the touch screen's settings (where the touchpad's cursor lands, the right stick as the stylus)
 #. Settings > Performance: a row that opens Eden's accuracy shortcuts (Fast GPU, Unsafe CPU, ...); its value: how many are changed
 #. Settings > Launcher: a row that opens Larger text, High contrast, Reduce motion and Hold to confirm
-#: port/frontend/shell/porpoise_rows.cpp:175 port/frontend/shell/settings.cpp:840 port/frontend/shell/settings.cpp:1033 port/frontend/shell/settings.cpp:1518 port/frontend/shell/shell.cpp:1688 port/frontend/shell/switch_extras.cpp:73 port/frontend/shell/widgets.cpp:402
+#: port/frontend/shell/porpoise_rows.cpp:175 port/frontend/shell/settings.cpp:840 port/frontend/shell/settings.cpp:1033 port/frontend/shell/settings.cpp:1520 port/frontend/shell/shell.cpp:1720 port/frontend/shell/switch_extras.cpp:73 port/frontend/shell/widgets.cpp:466
 msgid "Default"
 msgstr "Default"
 
@@ -5941,7 +5979,7 @@ msgstr "Mikrofon"
 msgid "Use the DualSense mic as the GameCube Microphone and Wii Speak."
 msgstr ""
 
-#: port/frontend/shell/porpoise_rows.cpp:318 port/frontend/shell/shell.cpp:2011
+#: port/frontend/shell/porpoise_rows.cpp:318 port/frontend/shell/shell.cpp:2043
 msgid "Resume where you left off"
 msgstr "Lanjutkan dari terakhir kali"
 
@@ -6321,7 +6359,7 @@ msgstr ""
 msgid "D-pad right"
 msgstr ""
 
-#: port/frontend/shell/porpoise_rows.cpp:616 port/frontend/shell/shell.cpp:2820 port/frontend/shell/shell.cpp:2858
+#: port/frontend/shell/porpoise_rows.cpp:616 port/frontend/shell/shell.cpp:2852 port/frontend/shell/shell.cpp:2890
 msgid "Select"
 msgstr "Pilih"
 
@@ -6759,7 +6797,7 @@ msgstr ""
 msgid "A copy is kept in saves/before."
 msgstr ""
 
-#: port/frontend/shell/porpoise_rows.cpp:2038 port/frontend/shell/settings.cpp:1946
+#: port/frontend/shell/porpoise_rows.cpp:2038 port/frontend/shell/settings.cpp:1948
 msgid "No saves yet"
 msgstr "Belum ada data simpanan"
 
@@ -6931,7 +6969,7 @@ msgstr "Kaca buram gelap dan sudut yang lebih bulat, cahaya sisi yang melayang d
 msgid "A light background with dark text."
 msgstr "Latar terang dengan teks gelap."
 
-#: port/frontend/shell/settings.cpp:209 port/frontend/shell/settings.cpp:621 port/frontend/shell/settings.cpp:944 port/frontend/shell/settings.cpp:984 port/frontend/shell/settings.cpp:1042 port/frontend/shell/settings.cpp:2128 port/frontend/shell/setup.cpp:640
+#: port/frontend/shell/settings.cpp:209 port/frontend/shell/settings.cpp:621 port/frontend/shell/settings.cpp:944 port/frontend/shell/settings.cpp:984 port/frontend/shell/settings.cpp:1042 port/frontend/shell/settings.cpp:2130 port/frontend/shell/setup.cpp:640
 msgid "Language"
 msgstr "Bahasa"
 
@@ -7024,7 +7062,7 @@ msgstr "Akun dan data simpanan"
 msgid "Players and saves"
 msgstr "Pemain dan data simpanan"
 
-#: port/frontend/shell/settings.cpp:245 port/frontend/shell/settings.cpp:290 port/frontend/shell/settings.cpp:318 port/frontend/shell/shell.cpp:2022
+#: port/frontend/shell/settings.cpp:245 port/frontend/shell/settings.cpp:290 port/frontend/shell/settings.cpp:318 port/frontend/shell/shell.cpp:2054
 msgid "Saves"
 msgstr "Data simpanan"
 
@@ -7032,7 +7070,7 @@ msgstr "Data simpanan"
 msgid "Each account has its own saves. Backups include every system's saves."
 msgstr "Setiap akun punya data simpanan sendiri untuk tiap game. Cadangan berisi data simpanan semua sisi."
 
-#: port/frontend/shell/settings.cpp:247 port/frontend/shell/settings.cpp:1670
+#: port/frontend/shell/settings.cpp:247 port/frontend/shell/settings.cpp:1672
 msgid "Players, each with their own saves."
 msgstr "Siapa yang bermain, masing-masing dengan data simpanannya sendiri."
 
@@ -7210,7 +7248,7 @@ msgstr "Silang untuk mengunduh"
 msgid "{0}: Cross to install"
 msgstr "{0}: Silang untuk memasang"
 
-#: port/frontend/shell/settings.cpp:377 port/frontend/shell/settings.cpp:1366 port/frontend/shell/settings.cpp:1467 port/frontend/shell/shell.cpp:2761
+#: port/frontend/shell/settings.cpp:377 port/frontend/shell/settings.cpp:1366 port/frontend/shell/settings.cpp:1467 port/frontend/shell/shell.cpp:2793
 msgid "Downloading…"
 msgstr "Mengunduh…"
 
@@ -7295,7 +7333,7 @@ msgstr ""
 msgid "Puts every setting back to default. Games, folders and saves are kept."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:516 port/frontend/shell/settings.cpp:1723
+#: port/frontend/shell/settings.cpp:516 port/frontend/shell/settings.cpp:1725
 msgid "Which emulator plays this system's games, from the next game. Each keeps its own settings and saves."
 msgstr "Emulator yang memainkan game sisi ini, mulai dari game berikutnya yang dimulai. Masing-masing menyimpan pengaturan dan data simpanannya sendiri."
 
@@ -7311,11 +7349,11 @@ msgstr "Folder tempat game sisi ini berada. Memilih yang lain tidak memindahkan 
 msgid "Look for games now"
 msgstr "Cari game sekarang"
 
-#: port/frontend/shell/settings.cpp:526 port/frontend/shell/settings.cpp:1731
+#: port/frontend/shell/settings.cpp:526 port/frontend/shell/settings.cpp:1733
 msgid "Open emulator settings and saves"
 msgstr "Buka pengaturan dan data simpanan emulator"
 
-#: port/frontend/shell/settings.cpp:527 port/frontend/shell/settings.cpp:1732
+#: port/frontend/shell/settings.cpp:527 port/frontend/shell/settings.cpp:1734
 msgid "Opens this emulator's own menus for its settings, controls and saves. Quit them to come back here."
 msgstr "Emulator sisi ini punya pengaturan, kontrol, dan data simpanannya sendiri: ini membuka menunya untuk mengubahnya, dan keluar dari menu itu kembali ke sini. Yang sudah dimilikinya tetap di tempatnya."
 
@@ -7323,7 +7361,7 @@ msgstr "Emulator sisi ini punya pengaturan, kontrol, dan data simpanannya sendir
 msgid "Porpoise's other settings, your button layouts and Wii Remote setup. Circle at the top comes back here."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:533 port/frontend/shell/settings.cpp:1283 port/frontend/shell/settings.cpp:1954
+#: port/frontend/shell/settings.cpp:533 port/frontend/shell/settings.cpp:1283 port/frontend/shell/settings.cpp:1956
 msgid "Back up to USB"
 msgstr "Cadangkan ke USB"
 
@@ -7331,7 +7369,7 @@ msgstr "Cadangkan ke USB"
 msgid "Every system's saves. A save state only loads in the emulator that made it."
 msgstr "Data simpanan setiap sisi, dari setiap emulator. Status tersimpan hanya dimuat di emulator yang membuatnya."
 
-#: port/frontend/shell/settings.cpp:534 port/frontend/shell/settings.cpp:2843
+#: port/frontend/shell/settings.cpp:534 port/frontend/shell/settings.cpp:2847
 msgid "Emulator diagnostics"
 msgstr "Diagnostik emulator"
 
@@ -8005,7 +8043,7 @@ msgstr "Akurasi"
 
 #. Settings > Performance: a row that opens Eden's accuracy shortcuts (Fast GPU, Unsafe CPU, ...); its value: how many are changed
 #. a group of an emulator's options in Settings: how many it holds, and how many are not the emulator's own values
-#: port/frontend/shell/settings.cpp:1033 port/frontend/shell/settings.cpp:1781
+#: port/frontend/shell/settings.cpp:1033 port/frontend/shell/settings.cpp:1783
 msgid "{0} changed"
 msgid_plural "{0} changed"
 msgstr[0] "{0} diubah"
@@ -8146,10 +8184,6 @@ msgstr "Tidak ada"
 msgid "Keys and firmware"
 msgstr "Kunci dan firmware"
 
-#: port/frontend/shell/settings.cpp:1087 port/frontend/shell/setup.cpp:325
-msgid "prod.keys is missing: Lichii needs your own Switch keys"
-msgstr "prod.keys tidak ditemukan: Lichii memerlukan kunci Switch milik Anda"
-
 #: port/frontend/shell/settings.cpp:1088 port/frontend/shell/setup.cpp:333
 msgid "Firmware is missing: some games need it"
 msgstr "Firmware tidak ditemukan: beberapa game memerlukannya"
@@ -8267,7 +8301,7 @@ msgid "Installs a CIA file. Updates and DLC join their game; games join the libr
 msgstr "Memasang CIA ke penyimpanan 3DS, seperti Install CIA di Azahar: pembaruan atau DLC ikut ke game-nya, dan game masuk ke pustaka. Lingkaran membatalkan saat berjalan."
 
 #. Settings > Game files: a row opening the list of every system's folder; {0} how many have a folder of their own, {1} how many systems
-#: port/frontend/shell/settings.cpp:1163 port/frontend/shell/shell.cpp:2847
+#: port/frontend/shell/settings.cpp:1163 port/frontend/shell/shell.cpp:2879
 msgid "A folder for each system"
 msgstr "Folder untuk setiap sistem"
 
@@ -8409,18 +8443,18 @@ msgid "Removes the account. Its saves stay in the Wii U's storage and backups. Y
 msgstr "Akun dihapus; data simpanannya tetap di penyimpanan Wii U (dan di cadangan mana pun), jadi tidak ada yang hilang. Akun untuk memulai game tidak bisa dihapus: pilih akun lain dulu."
 
 #. a backup or restore of the saves, finished ({0}: how many files)
-#: port/frontend/shell/settings.cpp:1262 port/frontend/shell/settings.cpp:1919
+#: port/frontend/shell/settings.cpp:1262 port/frontend/shell/settings.cpp:1921
 msgid "Done: {0} file"
 msgid_plural "Done: {0} files"
 msgstr[0] "Selesai: {0} file"
 
 #. a backup of the saves, as it copies ({0}: a percentage)
-#: port/frontend/shell/settings.cpp:1279 port/frontend/shell/settings.cpp:1292 port/frontend/shell/settings.cpp:1957 port/frontend/shell/settings.cpp:1976
+#: port/frontend/shell/settings.cpp:1279 port/frontend/shell/settings.cpp:1292 port/frontend/shell/settings.cpp:1959 port/frontend/shell/settings.cpp:1978
 msgid "Copying: {0}"
 msgstr "Menyalin: {0}"
 
 #. the newest backup of the saves: when, and on which drive
-#: port/frontend/shell/settings.cpp:1282 port/frontend/shell/settings.cpp:1959
+#: port/frontend/shell/settings.cpp:1282 port/frontend/shell/settings.cpp:1961
 msgid "Last: {0} · {1}"
 msgstr "Terakhir: {0} · {1}"
 
@@ -8432,11 +8466,11 @@ msgstr "Data simpanan, status tersimpan, dan akun Wii U semua sisi."
 msgid "Copies every system's saves, save states and Wii U accounts, plus your settings, to PS5CEMU-HAR-saves on the first USB drive, in a dated folder. Games are not copied, so backups stay small."
 msgstr "Menyalin data simpanan Wii U (milik setiap akun, beserta akunnya), data simpanan, data tambahan, dan status tersimpan 3DS, data simpanan dan status tersimpan DS, serta data simpanan Switch beserta profil penggunanya ke PS5CEMU-HAR-saves di drive USB pertama yang tercolok, dalam folder yang dinamai tanggal dan waktu. Game tidak pernah ikut, jadi cadangan tetap kecil. Pengaturan ikut disalin: milik peluncur, milik tiap game, dan milik kontroler."
 
-#: port/frontend/shell/settings.cpp:1290 port/frontend/shell/settings.cpp:1974
+#: port/frontend/shell/settings.cpp:1290 port/frontend/shell/settings.cpp:1976
 msgid "No backups found"
 msgstr "Cadangan tidak ditemukan"
 
-#: port/frontend/shell/settings.cpp:1293 port/frontend/shell/settings.cpp:1973
+#: port/frontend/shell/settings.cpp:1293 port/frontend/shell/settings.cpp:1975
 msgid "Restore from USB"
 msgstr "Pulihkan dari USB"
 
@@ -8444,7 +8478,7 @@ msgstr "Pulihkan dari USB"
 msgid "Back up first, or plug in the drive with your backups."
 msgstr "Cadangkan dulu, atau colokkan drive berisi cadanganmu."
 
-#: port/frontend/shell/settings.cpp:1294 port/frontend/shell/settings.cpp:1977
+#: port/frontend/shell/settings.cpp:1294 port/frontend/shell/settings.cpp:1979
 msgid "Left and Right choose which backup, the newest first."
 msgstr "Kiri dan Kanan memilih cadangan, dimulai dari yang terbaru."
 
@@ -8767,7 +8801,7 @@ msgstr "Game Cemu, di bilah."
 msgid "Show the Wii U in the bar. Hidden systems keep their games and settings. At least one stays on."
 msgstr "Apakah bilah menampilkan sisi Wii U (Cemu). Saat disembunyikan, game dan pengaturannya tetap disimpan dan kembali saat diaktifkan lagi. Setidaknya satu sisi tetap aktif."
 
-#: port/frontend/shell/settings.cpp:1493 port/frontend/shell/shell.cpp:1640
+#: port/frontend/shell/settings.cpp:1493 port/frontend/shell/shell.cpp:1672
 msgid "Switch"
 msgstr "Ganti"
 
@@ -8804,256 +8838,268 @@ msgid "Show the 3DS in the bar. Hidden systems keep their games and settings. At
 msgstr "Apakah bilah menampilkan sisi 3DS (Azahar). Saat disembunyikan, game dan pengaturannya tetap disimpan dan kembali saat diaktifkan lagi. Setidaknya satu sisi tetap aktif."
 
 #: port/frontend/shell/settings.cpp:1500
+msgid "3D box art"
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:1500
+msgid "Covers as boxes, with a spine."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:1501
+msgid "Each cover drawn as its box, turned a little, with its spine. Off: flat covers."
+msgstr ""
+
+#: port/frontend/shell/settings.cpp:1502
 msgid "Game pictures behind menus"
 msgstr "Gambar game di belakang menu"
 
-#: port/frontend/shell/settings.cpp:1500
+#: port/frontend/shell/settings.cpp:1502
 msgid "The selected game's cover, blurred, behind the menus."
 msgstr "Sampul game yang dipilih, dilembutkan, di belakang layar."
 
-#: port/frontend/shell/settings.cpp:1501
+#: port/frontend/shell/settings.cpp:1503
 msgid "The selected game's picture fills the background, blurred and dimmed. Off: just the game's colours."
 msgstr "Gambar game yang dipilih mengisi layar di belakang menu, dilembutkan dan diredupkan, sehingga memindahkan pilihan mengubah seluruh layar. Nonaktif: hanya warna game."
 
-#: port/frontend/shell/settings.cpp:1502
+#: port/frontend/shell/settings.cpp:1504
 msgid "Library filters"
 msgstr "Filter pustaka"
 
-#: port/frontend/shell/settings.cpp:1502
+#: port/frontend/shell/settings.cpp:1504
 msgid "A row of filters above the list."
 msgstr "Semua, Baru ditambahkan, Favorit: satu baris di atas daftar."
 
-#: port/frontend/shell/settings.cpp:1503
+#: port/frontend/shell/settings.cpp:1505
 msgid "Filters above the list: All, Recently added (last 30 days), Favourites, and for Wii U, Graphic packs on. Off: just Sort and Search."
 msgstr "Satu baris filter di atas daftar pustaka: Semua, Baru ditambahkan (30 hari terakhir), Favorit dan, di sisi Wii U, Paket grafis aktif, masing-masing dengan jumlahnya. Nonaktif: daftar berisi semua game, dan Urutkan serta Cari sudah cukup."
 
-#: port/frontend/shell/settings.cpp:1511 port/frontend/shell/settings.cpp:1521
+#: port/frontend/shell/settings.cpp:1513 port/frontend/shell/settings.cpp:1523
 msgid "Larger text"
 msgstr "Teks lebih besar"
 
-#: port/frontend/shell/settings.cpp:1511 port/frontend/shell/settings.cpp:1523
+#: port/frontend/shell/settings.cpp:1513 port/frontend/shell/settings.cpp:1525
 msgid "High contrast"
 msgstr "Kontras tinggi"
 
-#: port/frontend/shell/settings.cpp:1512 port/frontend/shell/settings.cpp:1525
+#: port/frontend/shell/settings.cpp:1514 port/frontend/shell/settings.cpp:1527
 msgid "Reduce motion"
 msgstr "Kurangi gerakan"
 
 #. Settings > Launcher: a row that opens Larger text, High contrast, Reduce motion and Hold to confirm
-#: port/frontend/shell/settings.cpp:1518
+#: port/frontend/shell/settings.cpp:1520
 msgid "Accessibility"
 msgstr "Aksesibilitas"
 
-#: port/frontend/shell/settings.cpp:1519
+#: port/frontend/shell/settings.cpp:1521
 msgid "Larger text, high contrast, reduced motion and hold to confirm."
 msgstr "Teks lebih besar, kontras tinggi, lebih sedikit gerakan, tahan untuk konfirmasi."
 
-#: port/frontend/shell/settings.cpp:1520
+#: port/frontend/shell/settings.cpp:1522
 msgid "Text size, contrast, motion, and how long to hold Cross to confirm. Press Triangle on each for more."
 msgstr "Teks satu tingkat lebih besar, panel buram dengan teks berkekuatan penuh, peralihan pudar alih-alih gerakan, dan berapa lama Silang ditahan untuk hal yang tidak bisa dibatalkan. Segitiga di tiap baris memberi tahu lebih banyak."
 
-#: port/frontend/shell/settings.cpp:1521
+#: port/frontend/shell/settings.cpp:1523
 msgid "Makes all text a step larger."
 msgstr "Setiap ukuran teks naik satu tingkat."
 
-#: port/frontend/shell/settings.cpp:1522
+#: port/frontend/shell/settings.cpp:1524
 msgid "Makes every text size one step larger."
 msgstr "Setiap gaya teks naik satu tingkat: keterangan dari 20 ke 23, teks bacaan dari 26 ke 30."
 
-#: port/frontend/shell/settings.cpp:1523
+#: port/frontend/shell/settings.cpp:1525
 msgid "Opaque panels, full-strength text, a thicker ring."
 msgstr "Panel buram, teks penuh, cincin lebih tebal."
 
-#: port/frontend/shell/settings.cpp:1524
+#: port/frontend/shell/settings.cpp:1526
 msgid "Opaque panels instead of glass, all text at full strength, a thicker focus ring and no grain or pictures behind the menus."
 msgstr "Panel buram sebagai ganti kaca, semua teks dengan kekuatan penuh, cincin fokus lebih tebal, dan tanpa bintik atau gambar di belakang menu."
 
-#: port/frontend/shell/settings.cpp:1525
+#: port/frontend/shell/settings.cpp:1527
 msgid "Fades instead of motion."
 msgstr "Peralihan memudar sebagai ganti gerakan."
 
-#: port/frontend/shell/settings.cpp:1526
+#: port/frontend/shell/settings.cpp:1528
 msgid "Animations become short fades, and the background stays still."
 msgstr "Pegas menjadi peralihan pendek; tidak ada yang melayang, bernapas, atau naik di belakang menu."
 
-#: port/frontend/shell/settings.cpp:1527
+#: port/frontend/shell/settings.cpp:1529
 msgid "Hold to confirm"
 msgstr "Tahan untuk konfirmasi"
 
-#: port/frontend/shell/settings.cpp:1527
+#: port/frontend/shell/settings.cpp:1529
 msgid "How long to hold Cross for actions that can't be undone."
 msgstr "Berapa lama Silang ditahan untuk hal yang tidak bisa dibatalkan."
 
-#: port/frontend/shell/settings.cpp:1528
+#: port/frontend/shell/settings.cpp:1530
 msgid "Actions like clearing caches or resetting controls need Cross held to confirm. This sets how long."
 msgstr "Menghapus cache, Artic Setup, dan mengatur ulang kontrol dikonfirmasi dengan menahan, tidak pernah dengan menekan dua kali. Selama ini."
 
-#: port/frontend/shell/settings.cpp:1530
+#: port/frontend/shell/settings.cpp:1532
 msgid "Run first-time setup again."
 msgstr "Pilihan saat pertama kali dimulai, lagi: sisi, tema, tombol."
 
-#: port/frontend/shell/settings.cpp:1531
+#: port/frontend/shell/settings.cpp:1533
 msgid "Shows the first-time setup again: language, systems, theme, buttons, music, vibration and game pictures."
 msgstr "Halaman pembuka saat pertama kali dimulai: bahasa, sisi, tema, A dan B, musik, getaran, dan gambar game, dalam satu halaman."
 
-#: port/frontend/shell/settings.cpp:1535
+#: port/frontend/shell/settings.cpp:1537
 msgid "Checks storage, performance, games, keys and box art."
 msgstr "Penyimpanan, rekompiler, game, kunci, dan sampul, diperiksa."
 
-#: port/frontend/shell/settings.cpp:1536
+#: port/frontend/shell/settings.cpp:1538
 msgid "Each check shows its status and what to do. It also appears on first start, and when a check fails."
 msgstr "Setiap pemeriksaan punya status, artinya, dan apa yang harus dilakukan. Ini juga ditampilkan saat pertama kali mulai dan setiap kali pemeriksaan gagal saat aplikasi dimulai."
 
-#: port/frontend/shell/settings.cpp:1537
+#: port/frontend/shell/settings.cpp:1539
 msgid "Copy logs to USB"
 msgstr "Salin log ke USB"
 
-#: port/frontend/shell/settings.cpp:1537
+#: port/frontend/shell/settings.cpp:1539
 msgid "Copy logs to a USB drive for a bug report."
 msgstr "Log yang dibutuhkan laporan, ke drive USB."
 
-#: port/frontend/shell/settings.cpp:1538
+#: port/frontend/shell/settings.cpp:1540
 msgid "Copies the last five sessions' logs and the settings into a dated folder on a USB drive, to attach to a report."
 msgstr "Menyalin log dari lima sesi terakhir dan pengaturan ke folder bertanggal di drive USB, untuk dilampirkan ke laporan."
 
-#: port/frontend/shell/settings.cpp:1540 port/frontend/shell/settings.cpp:1543
+#: port/frontend/shell/settings.cpp:1542 port/frontend/shell/settings.cpp:1545
 msgid "Clear shader caches"
 msgstr "Hapus cache shader"
 
-#: port/frontend/shell/settings.cpp:1541 port/frontend/shell/settings.cpp:1544
+#: port/frontend/shell/settings.cpp:1543 port/frontend/shell/settings.cpp:1546
 msgid "Try this if a game crashes."
 msgstr "Untuk game yang crash karena cache yang rusak."
 
-#: port/frontend/shell/settings.cpp:1541
+#: port/frontend/shell/settings.cpp:1543
 msgid "Deletes the Wii U shader caches. Games rebuild them, so the first few minutes may stutter."
 msgstr "Menghapus cache shader Cemu. Game membuatnya lagi saat berjalan: beberapa menit pertama tersendat."
 
-#: port/frontend/shell/settings.cpp:1545
+#: port/frontend/shell/settings.cpp:1547
 msgid "Deletes the 3DS shader caches. Games rebuild them, so the first few minutes may stutter."
 msgstr "Menghapus cache shader Azahar. Game membuatnya lagi saat berjalan: beberapa menit pertama tersendat."
 
 #. Settings > Diagnostics: the copies of games unpacked from their archives (.zip, .7z...), kept for their next start
-#: port/frontend/shell/settings.cpp:1555
+#: port/frontend/shell/settings.cpp:1557
 msgid "Unpacked games"
 msgstr "Game yang diekstrak"
 
-#: port/frontend/shell/settings.cpp:1559
+#: port/frontend/shell/settings.cpp:1561
 msgid "Games unpacked from archives, kept for faster starts."
 msgstr "Game dari arsip, disimpan dalam keadaan terekstrak untuk dimulai berikutnya."
 
 #. {0} is the folder they are kept in
-#: port/frontend/shell/settings.cpp:1561
+#: port/frontend/shell/settings.cpp:1563
 msgid "Deletes unpacked copies of archived games in {0}. They unpack again next time. Old copies are removed automatically when space runs low."
 msgstr "Menghapus salinan game yang diekstrak dari arsipnya, yang disimpan di {0}. Masing-masing diekstrak lagi saat dimulai berikutnya; saat butuh ruang, salinan yang paling lama tidak dipakai terhapus sendiri."
 
-#: port/frontend/shell/settings.cpp:1571
+#: port/frontend/shell/settings.cpp:1573
 msgid "Wii U games' volume"
 msgstr "Volume game Wii U"
 
-#: port/frontend/shell/settings.cpp:1571
+#: port/frontend/shell/settings.cpp:1573
 msgid "3DS games' volume"
 msgstr "Volume game 3DS"
 
-#: port/frontend/shell/settings.cpp:1571
+#: port/frontend/shell/settings.cpp:1573
 msgid "Switch games' volume"
 msgstr "Volume game Switch"
 
-#: port/frontend/shell/settings.cpp:1571
+#: port/frontend/shell/settings.cpp:1573
 msgid "DS games' volume"
 msgstr "Volume game DS"
 
-#: port/frontend/shell/settings.cpp:1572
+#: port/frontend/shell/settings.cpp:1574
 msgid "The games' sound."
 msgstr "Suara game."
 
-#: port/frontend/shell/settings.cpp:1572
+#: port/frontend/shell/settings.cpp:1574
 msgid "Game volume for this system. Left and Right change it by 10%."
 msgstr "Suara game di sisi ini. Kiri dan Kanan mengubahnya 10 %."
 
-#: port/frontend/shell/settings.cpp:1575
+#: port/frontend/shell/settings.cpp:1577
 msgid "GamePad speaker"
 msgstr "Speaker GamePad"
 
-#: port/frontend/shell/settings.cpp:1575
+#: port/frontend/shell/settings.cpp:1577
 msgid "GamePad sound from the DualSense speaker."
 msgstr "Suara Wii U GamePad sendiri, di DualSense."
 
-#: port/frontend/shell/settings.cpp:1576
+#: port/frontend/shell/settings.cpp:1578
 msgid "Plays GamePad speaker sounds from player 1's DualSense. Many games send all their sound there too, so it's off by default. Applies to the next game."
 msgstr "Suara yang diputar game di speaker Wii U GamePad, dari speaker DualSense pemain 1. Banyak game juga mengirim seluruh suaranya ke sana, jadi ini nonaktif kecuali kamu menginginkannya. Berlaku untuk game berikutnya."
 
 #. Settings > System: a row that opens the launcher's music and menu sounds
-#: port/frontend/shell/settings.cpp:1583
+#: port/frontend/shell/settings.cpp:1585
 msgid "Launcher sound"
 msgstr "Suara peluncur"
 
 #. Settings > System: a row that opens the launcher's music and menu sounds
-#: port/frontend/shell/settings.cpp:1583
+#: port/frontend/shell/settings.cpp:1585
 msgid "The menus' music and sounds."
 msgstr "Musik dan suara menu."
 
-#: port/frontend/shell/settings.cpp:1584
+#: port/frontend/shell/settings.cpp:1586
 msgid "Menu music, its volume, and menu sounds. The same for every system."
 msgstr "Musik yang diputar di menu, seberapa keras, dan suara saat bergerak dan memilih. Semua sisi sama."
 
-#: port/frontend/shell/settings.cpp:1585
+#: port/frontend/shell/settings.cpp:1587
 msgid "Launcher music"
 msgstr "Musik peluncur"
 
-#: port/frontend/shell/settings.cpp:1585
+#: port/frontend/shell/settings.cpp:1587
 msgid "Music that plays in the menus."
 msgstr "Musik yang diputar di menu."
 
-#: port/frontend/shell/settings.cpp:1586
+#: port/frontend/shell/settings.cpp:1588
 msgid "Built-in music, your own, or none. For your own, put MP3 or WAV files in {0}."
 msgstr "Musik bawaan peluncur, salah satu milikmu, atau tidak ada. Untuk memakai milikmu, taruh file MP3 atau WAV di {0}; file itu muncul di sini. Semua sisi memutar yang sama."
 
-#: port/frontend/shell/settings.cpp:1588
+#: port/frontend/shell/settings.cpp:1590
 msgid "Music volume"
 msgstr "Volume musik"
 
-#: port/frontend/shell/settings.cpp:1588
+#: port/frontend/shell/settings.cpp:1590
 msgid "Menu music volume."
 msgstr "Seberapa keras musik menu."
 
-#: port/frontend/shell/settings.cpp:1589
+#: port/frontend/shell/settings.cpp:1591
 msgid "How loud the launcher's music is. Left and Right change it by 10%."
 msgstr "Seberapa keras musik peluncur. Kiri dan Kanan mengubahnya 10%."
 
-#: port/frontend/shell/settings.cpp:1590
+#: port/frontend/shell/settings.cpp:1592
 msgid "Menu sounds"
 msgstr "Suara menu"
 
-#: port/frontend/shell/settings.cpp:1590
+#: port/frontend/shell/settings.cpp:1592
 msgid "The sounds of moving and choosing."
 msgstr "Suara saat bergerak dan memilih."
 
-#: port/frontend/shell/settings.cpp:1591
+#: port/frontend/shell/settings.cpp:1593
 msgid "The launcher's sounds as you move, choose and go back."
 msgstr "Suara peluncur saat kamu bergerak, memilih, dan kembali."
 
 #. Settings > System on the Wii U side: a row that opens Cemu's emulated portals (Skylanders, Disney Infinity, LEGO Dimensions)
-#: port/frontend/shell/settings.cpp:1600
+#: port/frontend/shell/settings.cpp:1602
 msgid "Emulated toy portals."
 msgstr "Portal emulasi Cemu."
 
-#: port/frontend/shell/settings.cpp:1605
+#: port/frontend/shell/settings.cpp:1607
 msgid "For the Skylanders games."
 msgstr "Untuk game Skylanders."
 
-#: port/frontend/shell/settings.cpp:1606
+#: port/frontend/shell/settings.cpp:1608
 msgid "For Disney Infinity 3.0."
 msgstr "Untuk Disney Infinity 3.0."
 
-#: port/frontend/shell/settings.cpp:1607
+#: port/frontend/shell/settings.cpp:1609
 msgid "For LEGO Dimensions."
 msgstr "Untuk LEGO Dimensions."
 
-#: port/frontend/shell/settings.cpp:1608
+#: port/frontend/shell/settings.cpp:1610
 msgid "An emulated portal, connected when a game starts. Place figures from the in-game menu under USB devices; dumps go in {0}. Real portals are not supported."
 msgstr "Portal emulasi Cemu, tercolok saat game dimulai. Di dalam game, kategori Perangkat USB di menu menaruh figur di atasnya: dump di {0}. Portal asli yang dicolok ke PS5 tidak didukung."
 
-#: port/frontend/shell/settings.cpp:1619
+#: port/frontend/shell/settings.cpp:1621
 msgid ""
 "Shows {0} in a browser on a phone, tablet or computer on your network, with touch. Scan the code or open the address. Buttons and sound stay on the PS5.\n"
 "While a browser is open, games may run a little slower. Anyone on your network can open it, so turn it off on shared networks.\n"
@@ -9064,158 +9110,158 @@ msgstr ""
 "Satu sakelar untuk semua sisi (layar GamePad milik pemain 1), juga di menu game (klik panel sentuh + OPTIONS). Dari ide dan prototipe dolphin78 (#38)."
 
 #. a row that opens the remote touch screen's page: the game's second screen in a phone's browser, and its code to scan
-#: port/frontend/shell/settings.cpp:1622 port/frontend/shell/settings.cpp:1624
+#: port/frontend/shell/settings.cpp:1624 port/frontend/shell/settings.cpp:1626
 msgid "Show {0} on a phone or tablet, with touch."
 msgstr "{0} di browser ponsel atau tablet, dengan sentuhan."
 
 #. the Switch side's players, the people (Eden's user profiles), each with saves of their own; not a number of players
-#: port/frontend/shell/settings.cpp:1668
+#: port/frontend/shell/settings.cpp:1670
 msgctxt "switch"
 msgid "Players"
 msgstr "Pemain"
 
-#: port/frontend/shell/settings.cpp:1671 port/frontend/shell/switch_extras.cpp:91
+#: port/frontend/shell/settings.cpp:1673 port/frontend/shell/switch_extras.cpp:91
 msgid "Remembered for this PS5 user. Each player has their own saves."
 msgstr "Diingat untuk pengguna PS5 ini. Setiap pemain punya data simpanannya sendiri; tidak ada yang dipindah atau dihapus."
 
-#: port/frontend/shell/settings.cpp:1700
+#: port/frontend/shell/settings.cpp:1702
 msgid "Back to defaults"
 msgstr "Kembali ke default"
 
-#: port/frontend/shell/settings.cpp:1702
+#: port/frontend/shell/settings.cpp:1704
 msgid "This game goes back to the system's settings."
 msgstr "Game ini kembali memakai pengaturan sisinya."
 
-#: port/frontend/shell/settings.cpp:1703
+#: port/frontend/shell/settings.cpp:1705
 msgid "Clears this game's own settings so it uses the system's settings again."
 msgstr "Menghapus pengaturan khusus game ini, sehingga kembali memakai pengaturan sisinya, seperti game lainnya."
 
-#: port/frontend/shell/settings.cpp:1790
+#: port/frontend/shell/settings.cpp:1792
 msgid "Back to the emulator's own values"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:1791
+#: port/frontend/shell/settings.cpp:1793
 msgid "Nothing changed"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:1793
+#: port/frontend/shell/settings.cpp:1795
 msgid "Resets every option above to {0}'s default, for every game on this system."
 msgstr ""
 
 #. a Wii U account by its number, when its name cannot be read
-#: port/frontend/shell/settings.cpp:1868
+#: port/frontend/shell/settings.cpp:1870
 msgid "Account {0}"
 msgstr "Akun {0}"
 
 #. a Wii U game's save that all its accounts share
-#: port/frontend/shell/settings.cpp:1870
+#: port/frontend/shell/settings.cpp:1872
 msgid "Every account's"
 msgstr "Semua akun"
 
-#: port/frontend/shell/settings.cpp:1871
+#: port/frontend/shell/settings.cpp:1873
 msgid "Save data"
 msgstr "Data simpanan"
 
 #. a 3DS game's extra data (its extdata), which some games keep beside their saves
-#: port/frontend/shell/settings.cpp:1873
+#: port/frontend/shell/settings.cpp:1875
 msgid "Extra data"
 msgstr "Data tambahan"
 
-#: port/frontend/shell/settings.cpp:1874
+#: port/frontend/shell/settings.cpp:1876
 msgid "{0} save state"
 msgid_plural "{0} save states"
 msgstr[0] "{0} status tersimpan"
 
-#: port/frontend/shell/settings.cpp:1875
+#: port/frontend/shell/settings.cpp:1877
 msgid "The GBA cartridge's save"
 msgstr "Data simpanan kartrid GBA"
 
-#: port/frontend/shell/settings.cpp:1935
+#: port/frontend/shell/settings.cpp:1937
 msgid "Hold to move to saves-before on the PS5. You can restore it later."
 msgstr "Ditahan: dipindahkan ke saves-before di PS5, jadi masih bisa kembali."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1937
+#: port/frontend/shell/settings.cpp:1939
 msgid "Hold Cross to move these files to {0}/saves-before, in a dated folder. The game starts without them next time. Nothing is deleted."
 msgstr "Menahan Silang memindahkan file ini ke {0}/saves-before, ke folder bernama tanggal dan waktu, dan game dimulai tanpa file itu lain kali. Tidak ada yang dihapus: salin kembali dari sana (atau pulihkan cadangan) untuk mendapatkannya lagi."
 
-#: port/frontend/shell/settings.cpp:1947
+#: port/frontend/shell/settings.cpp:1949
 msgid "They appear here once the game has saved."
 msgstr "Muncul di sini begitu game menyimpan."
 
-#: port/frontend/shell/settings.cpp:1960
+#: port/frontend/shell/settings.cpp:1962
 msgid "Copy this game's saves to a USB drive."
 msgstr "Data simpanan game ini ke drive USB pertama."
 
-#: port/frontend/shell/settings.cpp:1961
+#: port/frontend/shell/settings.cpp:1963
 msgid "Copies this game's saves and save states to PS5CEMU-HAR-saves on the first USB drive, in a dated folder."
 msgstr "Menyalin data simpanan game ini (milik semua akun, di Wii U) dan status tersimpannya ke PS5CEMU-HAR-saves di drive USB pertama yang terpasang, ke folder bernama tanggal dan waktu, sama seperti cadangan data simpanan semua sisi."
 
-#: port/frontend/shell/settings.cpp:1977
+#: port/frontend/shell/settings.cpp:1979
 msgid "No backup with this game's saves was found."
 msgstr "Tidak ada cadangan di drive yang terpasang yang berisi data simpanan game ini."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1979
+#: port/frontend/shell/settings.cpp:1981
 msgid "Restores only this game's saves from the chosen backup. Current saves are moved to {0}/saves-before first, so nothing is lost."
 msgstr "Mengembalikan data simpanan game ini dari cadangan yang dipilih ke tempat asalnya, dan tidak yang lain. Data simpanannya yang ada sekarang dipindahkan dulu ke {0}/saves-before, jadi tidak ada yang hilang."
 
-#: port/frontend/shell/settings.cpp:1988
+#: port/frontend/shell/settings.cpp:1990
 msgid "Copy the save to USB"
 msgstr "Salin data simpanan ke USB"
 
-#: port/frontend/shell/settings.cpp:1989
+#: port/frontend/shell/settings.cpp:1991
 msgid "Copies the chosen player's save to USB/PS5-ECAM-exports, for use in another emulator."
 msgstr "Data simpanan pemain yang dipilih, di USB/PS5-ECAM-exports, sebagai folder yang bisa diambil emulator lain."
 
 #. a Switch game's save taken from standalone ProsperoEden on the PS5 or from a USB drive
-#: port/frontend/shell/settings.cpp:1994
+#: port/frontend/shell/settings.cpp:1996
 msgid "Import a save"
 msgstr "Ambil data simpanan"
 
 #. no save of this Switch game in standalone ProsperoEden or on a USB drive
-#: port/frontend/shell/settings.cpp:2000
+#: port/frontend/shell/settings.cpp:2002
 msgid "No saves found to import"
 msgstr "Tidak ada di ProsperoEden maupun di drive USB"
 
-#: port/frontend/shell/settings.cpp:2001
+#: port/frontend/shell/settings.cpp:2003
 msgid "Import from another Switch emulator on this PS5, USB/PS5-ECAM-imports/<title ID>, or a Ryujinx folder in USB/Ryujinx. The replaced save is kept."
 msgstr "Dari ProsperoEden mandiri di PS5 ini (data simpanan tiap pemainnya), USB/PS5-ECAM-imports/<ID judul>, atau salinan folder Ryujinx di USB/Ryujinx, sebagai data simpanan pemain yang dipilih. Data simpanan yang digantikannya tetap disimpan."
 
-#: port/frontend/shell/settings.cpp:2002
+#: port/frontend/shell/settings.cpp:2004
 msgid "Choose the player first in Settings > Players and saves > Players. Files are checked before replacing, and the old save is kept in save-transfer-recovery."
 msgstr "Pilih pemain dulu di Pengaturan > Pemain dan data simpanan > Pemain. Setiap file disalin dan diperiksa sebelum data simpanan diganti, dan data simpanan yang diganti tetap disimpan di folder save-transfer-recovery milik Eden."
 
-#: port/frontend/shell/settings.cpp:2015
+#: port/frontend/shell/settings.cpp:2017
 msgid "{0} min"
 msgstr "{0} mnt"
 
 #. a play time: hours, then minutes
-#: port/frontend/shell/settings.cpp:2017
+#: port/frontend/shell/settings.cpp:2019
 msgid "{0} h {1} min"
 msgstr "{0} j {1} mnt"
 
 #. Settings > Play time, a side's line: {1} the side (Wii U, 3DS, DS, Switch), {2} its play time, {0} how many games
-#: port/frontend/shell/settings.cpp:2049
+#: port/frontend/shell/settings.cpp:2051
 msgid "{1}: {2}, {0} game"
 msgid_plural "{1}: {2}, {0} games"
 msgstr[0] "{1}: {2}, {0} game"
 
-#: port/frontend/shell/settings.cpp:2052
+#: port/frontend/shell/settings.cpp:2054
 msgid "Nothing played yet. Play time shows here and on each game's page."
 msgstr "Belum ada yang dimainkan. Waktu sebuah game dihitung dari mulai sampai selesai, dan tampil di sini dan di halamannya."
 
 #. Settings > Play time: every side's play time added up
-#: port/frontend/shell/settings.cpp:2055
+#: port/frontend/shell/settings.cpp:2057
 msgid "In all: {0}"
 msgstr "Total: {0}"
 
 #. Settings > Play time: every side's play time added up
-#: port/frontend/shell/settings.cpp:2055
+#: port/frontend/shell/settings.cpp:2057
 msgid "Most played"
 msgstr "Paling sering dimainkan"
 
-#: port/frontend/shell/settings.cpp:2075
+#: port/frontend/shell/settings.cpp:2077
 msgid ""
 "Your own theme: put a file such as sunset.json in {0}/themes. It appears under Theme by its name:\n"
 "{{\"name\": \"Sunset\", \"base\": \"midnight\", \"colours\": {{\"wiiu\": \"#ff7a59\", \"ink-0\": \"#120806\"}}, \"corners\": 0.5, \"motif\": \"none\"}}\n"
@@ -9226,31 +9272,31 @@ msgstr ""
 "base: tema awal (light, link-jack, classic, midnight, eden). colours: ink-0 sampai ink-2 (latar), text, wiiu, n3ds, nds, dan nx (milik tiap sisi), glass, line, good, warn, bad, dan focus, sebagai #rrggbb. corners: 0 siku sampai 1.5 bulat. motif: side, none, atau eden."
 
 #. {0} is Eden's data folder; {1} its game files folder (the same one unless another was chosen)
-#: port/frontend/shell/settings.cpp:2079
+#: port/frontend/shell/settings.cpp:2081
 msgid "Saves: {0}/user/nand/user/save. Updates and DLC: beside a game, in its own folder, or in {1}/updates. Mods and cheats: {1}/mods. Covers and names: {0}/covers."
 msgstr "Simpanan: {0}/user/nand/user/save. Pembaruan dan DLC: di samping game, di foldernya sendiri, atau di {1}/updates. Mod dan cheat: {1}/mods. Sampul dan nama: {0}/covers, setelah Eden membaca game."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:2083
+#: port/frontend/shell/settings.cpp:2085
 msgid "Saves: {0}/melonds/saves (a .sav next to the game is used the first time). Save states: melonds/states. Cheats: melonds/cheats/<game file>.mch. Slot-2 GBA games: melonds/slot2/<game file>.gba. DSi games and DS wireless are not supported."
 msgstr "Data simpanan: {0}/melonds/saves (.sav di samping game diambil pertama kali). Status tersimpan: melonds/states. Cheat: melonds/cheats/<file game>.mch, format melonDS. Game GBA untuk Slot-2: melonds/slot2/<file game>.gba. Game DSi dan nirkabel DS tidak didukung."
 
-#: port/frontend/shell/settings.cpp:2086
+#: port/frontend/shell/settings.cpp:2088
 msgid "On: scan the QR code here to open the second screen in a phone's browser. The phone must be on the PS5's network."
 msgstr "Saat aktif, kode QR di sini membuka layar kedua game di browser ponsel. Tidak perlu memasang apa pun; ponsel harus berada di jaringan PS5."
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:2089
+#: port/frontend/shell/settings.cpp:2091
 msgid "Put figure dumps in {0}/figures (skylanders, infinity and dimensions). Turn a portal on here, start the game, then place figures from the in-game menu (touchpad click + Options > USB devices)."
 msgstr "Dump figur ditaruh di {0}/figures: skylanders, infinity, dan dimensions. Aktifkan portal di sini, mulai game, lalu taruh figur di atasnya dari menu dalam game (klik panel sentuh + OPTIONS > Perangkat USB)."
 
 #. premohq and JMUtechnologies are GitHub names: keep them as they are
-#: port/frontend/shell/settings.cpp:2093
+#: port/frontend/shell/settings.cpp:2095
 msgid "Playtendoh is made by its co-founders, premohq and JMUtechnologies."
 msgstr "Playtendoh dibuat oleh para pendiri bersamanya, premohq dan JMUtechnologies."
 
 #. {0} is the app's version; {1} its data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on; {2} Eden's game files folder; {3} Cemu's selected data folder; {4} its default games folder; {5} Azahar's selected folder; {6} melonDS's selected folder
-#: port/frontend/shell/settings.cpp:2095
+#: port/frontend/shell/settings.cpp:2097
 msgid ""
 "Cemu, the Wii U emulator, by the Cemu team and its contributors; RADV on the PS5 by Mihawk-99 and mpereiraesaa; the community graphic packs' authors.\n"
 "Azahar, the 3DS emulator, by the Azahar team and the Citra contributors before them; Mihawk-99's PS5 port of it and dynarmic.\n"
@@ -9281,238 +9327,238 @@ msgstr ""
 "Versi {0}"
 
 #. the first choice in the language list: the PS5's own ({0}, in its own words)
-#: port/frontend/shell/settings.cpp:2113
+#: port/frontend/shell/settings.cpp:2115
 msgid "The PS5's language: {0}"
 msgstr "Bahasa PS5: {0}"
 
-#: port/frontend/shell/settings.cpp:2138
+#: port/frontend/shell/settings.cpp:2140
 msgid "Language: {0}"
 msgstr "Bahasa: {0}"
 
-#: port/frontend/shell/settings.cpp:2294
+#: port/frontend/shell/settings.cpp:2296
 msgid "Playtendoh cannot write to {0}"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:2298
+#: port/frontend/shell/settings.cpp:2300
 msgid "Playtendoh restarts to move the files"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:2309
+#: port/frontend/shell/settings.cpp:2311
 msgid "At least one system must stay on"
 msgstr "Setidaknya satu sisi tetap aktif"
 
 #. the Wii U account games start on now ({0}: its name)
-#: port/frontend/shell/settings.cpp:2476 port/frontend/shell/settings.cpp:2712 port/frontend/shell/settings.cpp:2798
+#: port/frontend/shell/settings.cpp:2480 port/frontend/shell/settings.cpp:2716 port/frontend/shell/settings.cpp:2802
 msgid "Games start on {0}'s saves"
 msgstr "Game dimulai dengan data simpanan {0}"
 
-#: port/frontend/shell/settings.cpp:2584
+#: port/frontend/shell/settings.cpp:2588
 msgid "Settings can't be saved for this game (no game ID)"
 msgstr "Game ini tidak punya ID untuk menyimpan pengaturan"
 
-#: port/frontend/shell/settings.cpp:2735
+#: port/frontend/shell/settings.cpp:2739
 msgid "Backing up {0}'s saves…"
 msgstr "Mencadangkan data simpanan {0}…"
 
-#: port/frontend/shell/settings.cpp:2750 port/frontend/shell/settings.cpp:3202
+#: port/frontend/shell/settings.cpp:2754 port/frontend/shell/settings.cpp:3206
 msgid "Choose a player first, in Settings > Players and saves."
 msgstr "Pilih pemain dulu, di Pengaturan > Pemain dan data simpanan."
 
-#: port/frontend/shell/settings.cpp:2751
+#: port/frontend/shell/settings.cpp:2755
 msgid "Copying to USB…"
 msgstr "Menyalin ke USB…"
 
-#: port/frontend/shell/settings.cpp:2793
+#: port/frontend/shell/settings.cpp:2797
 msgid "A name for the new account"
 msgstr "Nama untuk akun baru"
 
-#: port/frontend/shell/settings.cpp:2810
+#: port/frontend/shell/settings.cpp:2814
 msgid "A new name"
 msgstr "Nama baru"
 
-#: port/frontend/shell/settings.cpp:2812
+#: port/frontend/shell/settings.cpp:2816
 msgid "Renamed {0}"
 msgstr "{0} diganti namanya"
 
-#: port/frontend/shell/settings.cpp:2821
+#: port/frontend/shell/settings.cpp:2825
 msgid "Backing up every side's saves…"
 msgstr "Mencadangkan data simpanan semua sisi…"
 
-#: port/frontend/shell/settings.cpp:2835
+#: port/frontend/shell/settings.cpp:2839
 msgid "EmulationStation's download stopped"
 msgstr ""
 
 #. the loading screen's name for a retro side's own emulator menus: {0} is the side (Nintendo 64)
-#: port/frontend/shell/settings.cpp:2847
+#: port/frontend/shell/settings.cpp:2851
 msgid "{0}: emulator settings"
 msgstr "{0}: pengaturan emulatornya"
 
-#: port/frontend/shell/settings.cpp:2848
+#: port/frontend/shell/settings.cpp:2852
 msgid "Opening emulator settings"
 msgstr "Membuka pengaturan emulator"
 
-#: port/frontend/shell/settings.cpp:2874
+#: port/frontend/shell/settings.cpp:2878
 msgid "Every game has its cover"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:2874
+#: port/frontend/shell/settings.cpp:2878
 msgid "Looking for {0} cover"
 msgid_plural "Looking for {0} covers"
 msgstr[0] ""
 
-#: port/frontend/shell/settings.cpp:2939
+#: port/frontend/shell/settings.cpp:2943
 msgid "Switch games play offline"
 msgstr "Game Switch dimainkan offline"
 
-#: port/frontend/shell/settings.cpp:2943
+#: port/frontend/shell/settings.cpp:2947
 msgid "Your nickname in rooms"
 msgstr "Nama panggilan Anda di ruang"
 
-#: port/frontend/shell/settings.cpp:2948
+#: port/frontend/shell/settings.cpp:2952
 msgid "A nickname is 4 to 20 letters, digits, spaces, dots, dashes or underscores."
 msgstr "Nama panggilan terdiri dari 4 sampai 20 huruf Latin, angka, spasi, titik, tanda hubung, atau garis bawah."
 
 #. the nickname shown in Switch rooms ({0})
-#: port/frontend/shell/settings.cpp:2954
+#: port/frontend/shell/settings.cpp:2958
 msgid "In rooms you are {0}"
 msgstr "Di ruang Anda adalah {0}"
 
-#: port/frontend/shell/settings.cpp:2968
+#: port/frontend/shell/settings.cpp:2972
 msgid "This room is for a different version."
 msgstr "Ruang ini untuk versi Eden lain."
 
 #. the room ({0}) Switch games join from now on
-#: port/frontend/shell/settings.cpp:2979 port/frontend/shell/settings.cpp:3016
+#: port/frontend/shell/settings.cpp:2983 port/frontend/shell/settings.cpp:3020
 msgid "Switch games will join {0}"
 msgstr "Game Switch masuk ke {0} saat dimulai"
 
 #. the password of a room ({0}: its name)
-#: port/frontend/shell/settings.cpp:2983
+#: port/frontend/shell/settings.cpp:2987
 msgid "{0}'s password"
 msgstr "Kata sandi {0}"
 
-#: port/frontend/shell/settings.cpp:2994
+#: port/frontend/shell/settings.cpp:2998
 msgid "The room's address"
 msgstr "Alamat ruang"
 
-#: port/frontend/shell/settings.cpp:2999
+#: port/frontend/shell/settings.cpp:3003
 msgid "An address is a name or an IPv4 address: letters, digits, dots and dashes."
 msgstr "Alamat adalah nama atau alamat IPv4: huruf, angka, titik, dan tanda hubung."
 
-#: port/frontend/shell/settings.cpp:3002
+#: port/frontend/shell/settings.cpp:3006
 msgid "Its UDP port"
 msgstr "Port UDP-nya"
 
-#: port/frontend/shell/settings.cpp:3006
+#: port/frontend/shell/settings.cpp:3010
 msgid "A port is a number from 1 to 65535."
 msgstr "Port adalah angka dari 1 sampai 65535."
 
-#: port/frontend/shell/settings.cpp:3009
+#: port/frontend/shell/settings.cpp:3013
 msgid "Password (leave empty if none)"
 msgstr "Kata sandinya (kosong: tidak ada)"
 
-#: port/frontend/shell/settings.cpp:3026 port/frontend/shell/shell.cpp:1175 port/frontend/shell/shell.cpp:2877
+#: port/frontend/shell/settings.cpp:3030 port/frontend/shell/shell.cpp:1207 port/frontend/shell/shell.cpp:2909
 msgid "Starting the 3DS"
 msgstr "Memulai 3DS"
 
-#: port/frontend/shell/settings.cpp:3035
+#: port/frontend/shell/settings.cpp:3039
 msgid "Your RetroAchievements user name"
 msgstr "Nama pengguna RetroAchievements-mu"
 
-#: port/frontend/shell/settings.cpp:3038
+#: port/frontend/shell/settings.cpp:3042
 msgid "{0}'s RetroAchievements password"
 msgstr "Kata sandi RetroAchievements {0}"
 
-#: port/frontend/shell/settings.cpp:3040
+#: port/frontend/shell/settings.cpp:3044
 msgid "Signing in to RetroAchievements…"
 msgstr "Masuk ke RetroAchievements…"
 
-#: port/frontend/shell/settings.cpp:3045
+#: port/frontend/shell/settings.cpp:3049
 msgid "Your SteamGridDB key"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:3048
+#: port/frontend/shell/settings.cpp:3052
 msgid "Your SteamGridDB key is removed"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:3048
+#: port/frontend/shell/settings.cpp:3052
 msgid "Used next time Playtendoh starts"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:3068
+#: port/frontend/shell/settings.cpp:3072
 msgid "EmulationStation removed. Its scraped data is kept."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:3078
+#: port/frontend/shell/settings.cpp:3082
 msgid "{0} reset to defaults"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:3089
+#: port/frontend/shell/settings.cpp:3093
 msgid "Player removed: their saves and settings are kept"
 msgstr "Pemain dihapus: data simpanan dan pengaturannya tetap ada"
 
 #. what clearing the unpacked games did; {1} is the room it made, as in 2.4 GB
-#: port/frontend/shell/settings.cpp:3103
+#: port/frontend/shell/settings.cpp:3107
 msgid "{0} game deleted ({1})"
 msgid_plural "{0} games deleted ({1})"
 msgstr[0] "{0} game dihapus ({1})"
 
 #. a held row's result: the covers are on their way
-#: port/frontend/shell/settings.cpp:3110
+#: port/frontend/shell/settings.cpp:3114
 msgid "Downloading in the background"
 msgstr "Mengunduh di latar belakang"
 
-#: port/frontend/shell/settings.cpp:3130 port/frontend/shell/shell.cpp:473
+#: port/frontend/shell/settings.cpp:3134 port/frontend/shell/shell.cpp:473
 msgid "Close Playtendoh and start it again from the home screen to move the folders."
 msgstr "Tutup Playtendoh lalu jalankan lagi dari layar beranda: folder dipindah saat aplikasi dimulai."
 
-#: port/frontend/shell/settings.cpp:3172
+#: port/frontend/shell/settings.cpp:3176
 msgid "{0} deleted. Its saves are kept."
 msgstr "{0} dihapus; data simpanannya tetap ada"
 
-#: port/frontend/shell/settings.cpp:3185
+#: port/frontend/shell/settings.cpp:3189
 msgid "Restoring the saves of {0}…"
 msgstr "Memulihkan data simpanan dari {0}…"
 
-#: port/frontend/shell/settings.cpp:3194
+#: port/frontend/shell/settings.cpp:3198
 msgid "Signed out of RetroAchievements"
 msgstr "Keluar dari RetroAchievements"
 
-#: port/frontend/shell/settings.cpp:3204
+#: port/frontend/shell/settings.cpp:3208
 msgid "Importing the save…"
 msgstr "Mengambil data simpanan…"
 
-#: port/frontend/shell/settings.cpp:3214
+#: port/frontend/shell/settings.cpp:3218
 msgid "Restoring {0}'s saves of {1}…"
 msgstr "Memulihkan data simpanan {0} dari {1}…"
 
 #. one of a game's saves moved out of the way ({0}: which, as its row names it)
-#: port/frontend/shell/settings.cpp:3228
+#: port/frontend/shell/settings.cpp:3232
 msgid "{0}: moved to saves-before"
 msgstr "{0}: dipindahkan ke saves-before"
 
-#: port/frontend/shell/settings.cpp:3243
+#: port/frontend/shell/settings.cpp:3247
 msgid "Done. Using the system's settings again"
 msgstr "Selesai: kembali ke pengaturan sisinya"
 
-#: port/frontend/shell/settings.cpp:3432
+#: port/frontend/shell/settings.cpp:3436
 msgid "Scan it, or open"
 msgstr "Pindai, atau buka"
 
-#: port/frontend/shell/settings.cpp:3438
+#: port/frontend/shell/settings.cpp:3442
 msgid "Use a device on the same network as the PS5. No app needed. Sound stays on the PS5. Anyone on the network can open it."
 msgstr "Jaringan yang sama dengan PS5. Tidak perlu memasang apa pun: browser saja cukup. Suara tetap di PS5. Browser mana pun di jaringan bisa melihat dan menyentuhnya."
 
-#: port/frontend/shell/settings.cpp:3468
+#: port/frontend/shell/settings.cpp:3472
 msgid "Support Playtendoh"
 msgstr "Dukung Playtendoh"
 
-#: port/frontend/shell/settings.cpp:3479
+#: port/frontend/shell/settings.cpp:3483
 msgid "Playtendoh is free. If you enjoy it, you can support its work here."
 msgstr "Playtendoh gratis. Jika aplikasi ini mengembalikan game-mu, kamu bisa mendukung pengembangannya di sini."
 
 #. above Settings' pages: whose settings they are ({0}: Wii U, Nintendo 3DS or Nintendo DS)
-#: port/frontend/shell/settings.cpp:3524
+#: port/frontend/shell/settings.cpp:3528
 msgid "{0} settings"
 msgstr "Pengaturan {0}"
 
@@ -9582,7 +9628,7 @@ msgstr "Tanpa memori JIT atau yang dapat dijalankan: game Wii U berjalan di inte
 msgid "Wii U games will run much slower. Add PPSA99360 to your HEN's app jailbreak list, then start Playtendoh again. Settings > Diagnostics shows what it got."
 msgstr "Baik memori JIT HEN-mu maupun memori yang dapat dijalankan tidak bisa dibuat, jadi game Wii U beralih ke interpreter Cemu. Tambahkan PPSA99360 ke daftar jailbreak aplikasi HEN-mu, lalu mulai Playtendoh lagi; Pengaturan > Diagnostik menunjukkan apa yang didapat."
 
-#: port/frontend/shell/setup.cpp:191 port/frontend/shell/shell.cpp:786 port/libretro/game.cpp:724 port/main_ps5.cpp:754 port/retro/launch.cpp:38 port/retro/launch.cpp:48
+#: port/frontend/shell/setup.cpp:191 port/frontend/shell/shell.cpp:790 port/libretro/game.cpp:726 port/main_ps5.cpp:754 port/retro/launch.cpp:38 port/retro/launch.cpp:48
 msgid "This system's emulator is not in this copy of Playtendoh."
 msgstr "Emulator sisi ini tidak ada di salinan Playtendoh ini."
 
@@ -10101,7 +10147,7 @@ msgstr "Tidak ada yang pernah ditulis ke sana."
 msgid "Saved your place in the library"
 msgstr "Posisimu di pustaka tersimpan"
 
-#: port/frontend/shell/shell.cpp:234 port/frontend/shell/shell.cpp:1112 port/frontend/shell/shell.cpp:1126 port/frontend/shell/shell.cpp:1220
+#: port/frontend/shell/shell.cpp:234 port/frontend/shell/shell.cpp:1100 port/frontend/shell/shell.cpp:1114 port/frontend/shell/shell.cpp:1252
 msgid "The game could not start"
 msgstr "Game tidak bisa dimulai"
 
@@ -10136,388 +10182,388 @@ msgstr "{0}: file-filenya tetap di tempat semula, tidak ada yang hilang. Log mul
 msgid "The folders have moved"
 msgstr "Folder sudah dipindah"
 
-#: port/frontend/shell/shell.cpp:847
+#: port/frontend/shell/shell.cpp:851
 msgid "The Wii U emulator did not start: {0}"
 msgstr "Cemu tidak berjalan: {0}"
 
-#: port/frontend/shell/shell.cpp:990
+#: port/frontend/shell/shell.cpp:994
 msgid "{0} min played"
 msgid_plural "{0} min played"
 msgstr[0] "{0} mnt dimainkan"
 
-#: port/frontend/shell/shell.cpp:1006
+#: port/frontend/shell/shell.cpp:1010
 msgid "today"
 msgstr "hari ini"
 
-#: port/frontend/shell/shell.cpp:1008
+#: port/frontend/shell/shell.cpp:1012
 msgid "yesterday"
 msgstr "kemarin"
 
-#: port/frontend/shell/shell.cpp:1010
+#: port/frontend/shell/shell.cpp:1014
 msgid "{0} day ago"
 msgid_plural "{0} days ago"
 msgstr[0] "{0} hari lalu"
 
-#: port/frontend/shell/shell.cpp:1012
+#: port/frontend/shell/shell.cpp:1016
 msgid "{0} week ago"
 msgid_plural "{0} weeks ago"
 msgstr[0] "{0} minggu lalu"
 
-#: port/frontend/shell/shell.cpp:1013
+#: port/frontend/shell/shell.cpp:1017
 msgid "{0} month ago"
 msgid_plural "{0} months ago"
 msgstr[0] "{0} bulan lalu"
 
-#: port/frontend/shell/shell.cpp:1104
+#: port/frontend/shell/shell.cpp:1092
 msgid "Still starting"
 msgstr "Cemu masih memulai"
 
-#: port/frontend/shell/shell.cpp:1113
+#: port/frontend/shell/shell.cpp:1101
 msgid "Switch games need your keys: prod.keys (and title.keys) from your own Switch, in {0}/keys. The Setup check shows what else is missing."
 msgstr "Eden butuh kunci Switch-mu untuk membaca game-nya: prod.keys (dan title.keys), diambil dari Switch-mu sendiri, di {0}/keys. Pemeriksaan penyiapan menyebutkan apa lagi yang kurang."
 
-#: port/frontend/shell/shell.cpp:1174
+#: port/frontend/shell/shell.cpp:1206
 msgid "Starting emulator"
 msgstr "Memulai emulator"
 
-#: port/frontend/shell/shell.cpp:1174
+#: port/frontend/shell/shell.cpp:1206
 msgid "Starting the DS"
 msgstr "Memulai melonDS"
 
-#: port/frontend/shell/shell.cpp:1176
+#: port/frontend/shell/shell.cpp:1208
 msgid "Starting the Switch"
 msgstr "Memulai Eden"
 
-#: port/frontend/shell/shell.cpp:1263
+#: port/frontend/shell/shell.cpp:1295
 msgid "Adding {0} to the home screen…"
 msgstr "Membuat ikon layar beranda untuk {0}…"
 
-#: port/frontend/shell/shell.cpp:1270
+#: port/frontend/shell/shell.cpp:1302
 msgid "Removing {0} from the home screen…"
 msgstr "Menghapus ikon layar beranda {0}…"
 
-#: port/frontend/shell/shell.cpp:1282
+#: port/frontend/shell/shell.cpp:1314
 msgid "The tile could not be removed"
 msgstr "Ikon tidak bisa dihapus"
 
-#: port/frontend/shell/shell.cpp:1282
+#: port/frontend/shell/shell.cpp:1314
 msgid "The tile could not be added"
 msgstr "Ikon tidak bisa dibuat"
 
-#: port/frontend/shell/shell.cpp:1288
+#: port/frontend/shell/shell.cpp:1320
 msgid "Tile removed"
 msgstr "Ikon sudah dihapus"
 
-#: port/frontend/shell/shell.cpp:1289
+#: port/frontend/shell/shell.cpp:1321
 msgid "If it's still on the home screen, delete it there (Options, then Delete)."
 msgstr "Foldernya sudah hilang dari /data/homebrew. Jika gambarnya masih ada di layar beranda, hapus di sana (OPTIONS, lalu Hapus), atau mulai ulang ShadowMount Plus."
 
 #. {0} is the tile's folder, /data/homebrew/PPSA99xxx
-#: port/frontend/shell/shell.cpp:1293
+#: port/frontend/shell/shell.cpp:1325
 msgid "Tile updated"
 msgstr "Ikon dibuat ulang"
 
 #. {0} is the tile's folder, /data/homebrew/PPSA99xxx
-#: port/frontend/shell/shell.cpp:1293
+#: port/frontend/shell/shell.cpp:1325
 msgid "Tile added"
 msgstr "Ikon sudah dibuat"
 
-#: port/frontend/shell/shell.cpp:1294
+#: port/frontend/shell/shell.cpp:1326
 msgid "Saved in {0}. It will appear on the home screen; if it doesn't, restart the console. The tile starts the game in Playtendoh."
 msgstr "Ikon ada di {0}. ShadowMount Plus memasangnya di layar beranda PS5 seperti homebrew lain: jika tidak muncul, mulai ulang ShadowMount Plus atau konsol. Ikon ini memulai game di Playtendoh, dan menutup game akan menutup aplikasi."
 
-#: port/frontend/shell/shell.cpp:1308
+#: port/frontend/shell/shell.cpp:1340
 msgid "The tile's game could not start"
 msgstr "Game dari ikon tidak bisa dimulai"
 
-#: port/frontend/shell/shell.cpp:1336
+#: port/frontend/shell/shell.cpp:1368
 msgid "Not in the library: {0}"
 msgstr "Tidak ada di pustaka: {0}"
 
 #. the launcher's tabs
-#: port/frontend/shell/shell.cpp:1502
+#: port/frontend/shell/shell.cpp:1534
 msgctxt "tab"
 msgid "Settings"
 msgstr "Pengaturan"
 
-#: port/frontend/shell/shell.cpp:1630
+#: port/frontend/shell/shell.cpp:1662
 msgid "Hide"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1630
+#: port/frontend/shell/shell.cpp:1662
 msgid "Show"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1630 port/frontend/shell/shell.cpp:1632 port/frontend/shell/shell.cpp:1685 port/frontend/shell/shell.cpp:2733
+#: port/frontend/shell/shell.cpp:1662 port/frontend/shell/shell.cpp:1664 port/frontend/shell/shell.cpp:1717 port/frontend/shell/shell.cpp:2765
 msgid "Done"
 msgstr "Selesai"
 
-#: port/frontend/shell/shell.cpp:1634 port/frontend/shell/shell.cpp:1701 port/frontend/shell/shell.cpp:1705 port/frontend/shell/shell.cpp:2823 port/frontend/shell/shell.cpp:2891
+#: port/frontend/shell/shell.cpp:1666 port/frontend/shell/shell.cpp:1733 port/frontend/shell/shell.cpp:1737 port/frontend/shell/shell.cpp:2855 port/frontend/shell/shell.cpp:2923
 msgid "Cancel"
 msgstr "Batal"
 
-#: port/frontend/shell/shell.cpp:1636 port/frontend/shell/shell.cpp:1638 port/frontend/shell/shell.cpp:1691
+#: port/frontend/shell/shell.cpp:1668 port/frontend/shell/shell.cpp:1670 port/frontend/shell/shell.cpp:1723
 msgid "Close"
 msgstr "Tutup"
 
-#: port/frontend/shell/shell.cpp:1640 port/frontend/shell/shell.cpp:1676
+#: port/frontend/shell/shell.cpp:1672 port/frontend/shell/shell.cpp:1708
 msgid "Move"
 msgstr "Gerak"
 
-#: port/frontend/shell/shell.cpp:1647 port/frontend/shell/shell.cpp:1687 port/frontend/shell/shell.cpp:1688 port/frontend/shell/shell.cpp:1692 port/frontend/shell/shell.cpp:1698
+#: port/frontend/shell/shell.cpp:1679 port/frontend/shell/shell.cpp:1719 port/frontend/shell/shell.cpp:1720 port/frontend/shell/shell.cpp:1724 port/frontend/shell/shell.cpp:1730
 msgid "More info"
 msgstr "Selengkapnya"
 
-#: port/frontend/shell/shell.cpp:1648 port/frontend/shell/welcome.cpp:118
+#: port/frontend/shell/shell.cpp:1680 port/frontend/shell/welcome.cpp:118
 msgid "Continue to the Setup check"
 msgstr "Lanjut ke pemeriksaan penyiapan"
 
-#: port/frontend/shell/shell.cpp:1648 port/frontend/shell/shell.cpp:1657 port/frontend/shell/welcome.cpp:118
+#: port/frontend/shell/shell.cpp:1680 port/frontend/shell/shell.cpp:1689 port/frontend/shell/welcome.cpp:118
 msgid "Continue to the Library"
 msgstr "Lanjut ke pustaka"
 
-#: port/frontend/shell/shell.cpp:1653
+#: port/frontend/shell/shell.cpp:1685
 msgid "Change the language"
 msgstr "Ganti bahasa"
 
-#: port/frontend/shell/shell.cpp:1656
+#: port/frontend/shell/shell.cpp:1688
 msgid "Check again"
 msgstr "Periksa lagi"
 
-#: port/frontend/shell/shell.cpp:1672
+#: port/frontend/shell/shell.cpp:1704
 msgid "Filters"
 msgstr "Filter"
 
-#: port/frontend/shell/shell.cpp:1677
+#: port/frontend/shell/shell.cpp:1709
 msgid "Jump by letter"
 msgstr "Lompat per huruf"
 
-#: port/frontend/shell/shell.cpp:1679
+#: port/frontend/shell/shell.cpp:1711
 msgid "Back to the buttons"
 msgstr "Kembali ke tombol"
 
-#: port/frontend/shell/shell.cpp:1680
+#: port/frontend/shell/shell.cpp:1712
 msgid "Scroll"
 msgstr "Gulir"
 
-#: port/frontend/shell/shell.cpp:1685 port/frontend/shell/shell.cpp:1691
+#: port/frontend/shell/shell.cpp:1717 port/frontend/shell/shell.cpp:1723
 msgid "Pages"
 msgstr "Halaman"
 
-#: port/frontend/shell/shell.cpp:1695
+#: port/frontend/shell/shell.cpp:1727
 msgid "Back to the packs"
 msgstr "Kembali ke paket"
 
-#: port/frontend/shell/shell.cpp:1696
+#: port/frontend/shell/shell.cpp:1728
 msgid "On / off"
 msgstr "Aktif / nonaktif"
 
-#: port/frontend/shell/shell.cpp:1702
+#: port/frontend/shell/shell.cpp:1734
 msgid "Assign"
 msgstr "Tetapkan"
 
-#: port/frontend/shell/shell.cpp:1702
+#: port/frontend/shell/shell.cpp:1734
 msgid "Clear"
 msgstr "Hapus"
 
-#: port/frontend/shell/shell.cpp:1706
+#: port/frontend/shell/shell.cpp:1738
 msgid "Use this folder"
 msgstr "Pakai folder ini"
 
-#: port/frontend/shell/shell.cpp:1709
+#: port/frontend/shell/shell.cpp:1741
 msgid "Number"
 msgstr "Angka"
 
-#: port/frontend/shell/shell.cpp:1709
+#: port/frontend/shell/shell.cpp:1741
 msgid "Keep"
 msgstr "Simpan"
 
-#: port/frontend/shell/shell.cpp:1710
+#: port/frontend/shell/shell.cpp:1742
 msgid "Edit"
 msgstr "Edit"
 
-#: port/frontend/shell/shell.cpp:1710
+#: port/frontend/shell/shell.cpp:1742
 msgid "Connect"
 msgstr "Sambungkan"
 
-#: port/frontend/shell/shell.cpp:1710
+#: port/frontend/shell/shell.cpp:1742
 msgid "Hold to set up"
 msgstr "Tahan untuk menyiapkan"
 
-#: port/frontend/shell/shell.cpp:2014
+#: port/frontend/shell/shell.cpp:2046
 msgid "Game hub"
 msgstr "Halaman game"
 
-#: port/frontend/shell/shell.cpp:2019
+#: port/frontend/shell/shell.cpp:2051
 msgid "Game settings: custom"
 msgstr "Pengaturan game: khusus"
 
-#: port/frontend/shell/shell.cpp:2026
+#: port/frontend/shell/shell.cpp:2058
 msgid "Add mods from USB"
 msgstr "Tambah mod dari USB"
 
-#: port/frontend/shell/shell.cpp:2035 port/frontend/shell/shell.cpp:2488 port/frontend/shell/shell.cpp:2503
+#: port/frontend/shell/shell.cpp:2067 port/frontend/shell/shell.cpp:2520 port/frontend/shell/shell.cpp:2535
 msgid "Remove its update or DLC"
 msgstr "Hapus pembaruan atau DLC-nya"
 
-#: port/frontend/shell/shell.cpp:2036
+#: port/frontend/shell/shell.cpp:2068
 msgid "Not a favourite"
 msgstr "Hapus dari favorit"
 
 #. the game menu: a game left out of the Library's list (for demos and clutter), or put back
-#: port/frontend/shell/shell.cpp:2040 port/frontend/shell/shell.cpp:2540
+#: port/frontend/shell/shell.cpp:2072 port/frontend/shell/shell.cpp:2572
 msgid "Show in the Library"
 msgstr "Kembali di Pustaka"
 
 #. the game menu: a game left out of the Library's list (for demos and clutter), or put back
-#: port/frontend/shell/shell.cpp:2040
+#: port/frontend/shell/shell.cpp:2072
 msgid "Hide from the Library"
 msgstr "Sembunyikan dari Pustaka"
 
-#: port/frontend/shell/shell.cpp:2042
+#: port/frontend/shell/shell.cpp:2074
 msgid "Remove from home screen"
 msgstr "Hapus dari layar beranda"
 
-#: port/frontend/shell/shell.cpp:2044
+#: port/frontend/shell/shell.cpp:2076
 msgid "Add to home screen"
 msgstr "Tambahkan ke layar beranda"
 
 #. the first choice of a game's Collections: a collection named with the keyboard, the game put in it
-#: port/frontend/shell/shell.cpp:2068 port/frontend/shell/shell.cpp:2087
+#: port/frontend/shell/shell.cpp:2100 port/frontend/shell/shell.cpp:2119
 msgid "New collection"
 msgstr "Koleksi baru"
 
 #. a game's collection could not be written to the console's storage
-#: port/frontend/shell/shell.cpp:2075
+#: port/frontend/shell/shell.cpp:2107
 msgid "Could not save the collection"
 msgstr "Koleksi tidak dapat disimpan"
 
-#: port/frontend/shell/shell.cpp:2474
+#: port/frontend/shell/shell.cpp:2506
 msgid "The update"
 msgstr "Pembaruan"
 
-#: port/frontend/shell/shell.cpp:2479
+#: port/frontend/shell/shell.cpp:2511
 msgid "The DLC"
 msgstr "DLC"
 
-#: port/frontend/shell/shell.cpp:2484
+#: port/frontend/shell/shell.cpp:2516
 msgid "The update and the DLC"
 msgstr "Pembaruan dan DLC"
 
 #. after a Wii U game's update or DLC is removed: Updates and DLC (the game's Options) installs it again
-#: port/frontend/shell/shell.cpp:2495
+#: port/frontend/shell/shell.cpp:2527
 msgid "Removed. Reinstall it from Updates and DLC."
 msgstr "Dihapus. Pembaruan dan DLC mengembalikannya."
 
-#: port/frontend/shell/shell.cpp:2497
+#: port/frontend/shell/shell.cpp:2529
 msgid "Removed. Reinstall it with Install a CIA file."
 msgstr "Dihapus. Pasang file CIA mengembalikannya."
 
 #. {0} is the system's reason, as it gives it
-#: port/frontend/shell/shell.cpp:2502
+#: port/frontend/shell/shell.cpp:2534
 msgid "Some files could not be removed: {0}"
 msgstr "Tidak semuanya bisa dihapus: {0}"
 
-#: port/frontend/shell/shell.cpp:2529
+#: port/frontend/shell/shell.cpp:2561
 msgid "Added to Favourites"
 msgstr "Ditambahkan ke favorit"
 
-#: port/frontend/shell/shell.cpp:2529
+#: port/frontend/shell/shell.cpp:2561
 msgid "Removed from Favourites"
 msgstr "Dihapus dari favorit"
 
-#: port/frontend/shell/shell.cpp:2542
+#: port/frontend/shell/shell.cpp:2574
 msgid "Hidden. Find it with the Hidden filter or Search."
 msgstr "Disembunyikan. Filter Tersembunyi di Pustaka menampilkannya, dan Cari menemukannya."
 
 #. a game just hidden from the Library while its filters' row is off: Search still lists it
-#: port/frontend/shell/shell.cpp:2545
+#: port/frontend/shell/shell.cpp:2577
 msgid "Hidden. Find it with Search."
 msgstr "Disembunyikan. Cari menemukannya."
 
-#: port/frontend/shell/shell.cpp:2755
+#: port/frontend/shell/shell.cpp:2787
 msgid "Playtendoh {0} is out"
 msgstr "Playtendoh {0} sudah keluar"
 
-#: port/frontend/shell/shell.cpp:2756
+#: port/frontend/shell/shell.cpp:2788
 msgid "You have {0}. Download and install it now? Your games, saves and settings are kept."
 msgstr "Ini versi {0}. Unduh dan pasang sekarang? Game, data simpanan, dan pengaturanmu tetap seperti semula."
 
-#: port/frontend/shell/shell.cpp:2757
+#: port/frontend/shell/shell.cpp:2789
 msgid "Update now"
 msgstr "Perbarui sekarang"
 
-#: port/frontend/shell/shell.cpp:2757 port/frontend/shell/shell.cpp:2781 port/frontend/shell/shell.cpp:2820 port/frontend/shell/shell.cpp:2841 port/frontend/shell/shell.cpp:2858
+#: port/frontend/shell/shell.cpp:2789 port/frontend/shell/shell.cpp:2813 port/frontend/shell/shell.cpp:2852 port/frontend/shell/shell.cpp:2873 port/frontend/shell/shell.cpp:2890
 msgid "Later"
 msgstr "Nanti"
 
-#: port/frontend/shell/shell.cpp:2757
+#: port/frontend/shell/shell.cpp:2789
 msgid "Skip this version"
 msgstr "Lewati versi ini"
 
-#: port/frontend/shell/shell.cpp:2760 port/frontend/shell/shell.cpp:2765 port/frontend/shell/shell.cpp:2770
+#: port/frontend/shell/shell.cpp:2792 port/frontend/shell/shell.cpp:2797 port/frontend/shell/shell.cpp:2802
 msgid "Updating to {0}"
 msgstr "Memperbarui ke {0}"
 
-#: port/frontend/shell/shell.cpp:2761
+#: port/frontend/shell/shell.cpp:2793
 msgid "Downloading: {0} of {1} MB"
 msgstr "Mengunduh: {0} dari {1} MB"
 
-#: port/frontend/shell/shell.cpp:2766
+#: port/frontend/shell/shell.cpp:2798
 msgid "Checking the download"
 msgstr "Memeriksa unduhan"
 
-#: port/frontend/shell/shell.cpp:2771
+#: port/frontend/shell/shell.cpp:2803
 msgid "Installing"
 msgstr "Memasang"
 
-#: port/frontend/shell/shell.cpp:2775
+#: port/frontend/shell/shell.cpp:2807
 msgid "{0} is installed"
 msgstr "{0} terpasang"
 
-#: port/frontend/shell/shell.cpp:2777 port/frontend/shell/shell.cpp:2834
+#: port/frontend/shell/shell.cpp:2809 port/frontend/shell/shell.cpp:2866
 msgid "Restarting Playtendoh…"
 msgstr "Memulai ulang Playtendoh…"
 
-#: port/frontend/shell/shell.cpp:2781 port/frontend/shell/shell.cpp:2786
+#: port/frontend/shell/shell.cpp:2813 port/frontend/shell/shell.cpp:2818
 msgid "Restart now"
 msgstr "Mulai ulang sekarang"
 
-#: port/frontend/shell/shell.cpp:2785
+#: port/frontend/shell/shell.cpp:2817
 msgid "Playtendoh will restart to finish the update."
 msgstr "Playtendoh dimulai ulang untuk menyelesaikan pembaruan."
 
-#: port/frontend/shell/shell.cpp:2790
+#: port/frontend/shell/shell.cpp:2822
 msgid "The update did not finish"
 msgstr "Pembaruan tidak selesai"
 
-#: port/frontend/shell/shell.cpp:2791
+#: port/frontend/shell/shell.cpp:2823
 msgid "Playtendoh is still {0}."
 msgstr "Playtendoh masih versi {0}."
 
-#: port/frontend/shell/shell.cpp:2794
+#: port/frontend/shell/shell.cpp:2826
 msgid "Checking for updates"
 msgstr "Memeriksa pembaruan"
 
-#: port/frontend/shell/shell.cpp:2800
+#: port/frontend/shell/shell.cpp:2832
 msgid "Playtendoh update"
 msgstr "Pembaruan Playtendoh"
 
-#: port/frontend/shell/shell.cpp:2821
+#: port/frontend/shell/shell.cpp:2853
 msgid "Restart"
 msgstr "Mulai ulang"
 
 #. {0} lists the four folders: /data/cemu, /data/azahar, /data/melonds, /data/eden
-#: port/frontend/shell/shell.cpp:2837
+#: port/frontend/shell/shell.cpp:2869
 msgid "Your Wii U, 3DS, DS and Switch files will move into their own folders in {0}. It only takes a moment. Playtendoh restarts to do it."
 msgstr "File Wii U, 3DS, DS, dan Switch-mu masuk ke folder masing-masing: {0}. File dipindah di drive yang sama, tidak pernah disalin, jadi hanya butuh sebentar berapa pun ukurannya. Playtendoh dimulai ulang untuk melakukannya."
 
-#: port/frontend/shell/shell.cpp:2841
+#: port/frontend/shell/shell.cpp:2873
 msgid "Reorganize"
 msgstr "Atur ulang"
 
 #. under an archived game's name while it is unpacked, the first time it starts
-#: port/frontend/shell/shell.cpp:2880
+#: port/frontend/shell/shell.cpp:2912
 msgid "Unpacking the game. This only happens once."
 msgstr "Mengekstrak game dari arsipnya. Ini dilakukan sekali saja: salinannya disimpan untuk dimulai berikutnya."
 
@@ -10629,23 +10675,23 @@ msgstr "Nama pemain diganti"
 msgid "Every console, oldest to newest"
 msgstr "Semua konsol, dari yang terlama ke yang terbaru"
 
-#: port/frontend/shell/timeline.cpp:387
+#: port/frontend/shell/timeline.cpp:395
 msgid "No games yet"
 msgstr "Belum ada game"
 
-#: port/frontend/shell/timeline.cpp:393 port/frontend/shell/timeline.cpp:463
+#: port/frontend/shell/timeline.cpp:401 port/frontend/shell/timeline.cpp:471
 msgid "An empty shelf"
 msgstr "Rak kosong"
 
-#: port/frontend/shell/timeline.cpp:464
+#: port/frontend/shell/timeline.cpp:472
 msgid "Put its games in {0}, on the PS5 or a USB drive."
 msgstr "Taruh game-nya di {0}, di PS5 atau drive USB."
 
-#: port/frontend/shell/timeline.cpp:476
+#: port/frontend/shell/timeline.cpp:484
 msgid "Previous or next console"
 msgstr "Konsol sebelumnya atau berikutnya"
 
-#: port/frontend/shell/timeline.cpp:476
+#: port/frontend/shell/timeline.cpp:484
 msgid "Jump a decade"
 msgstr "Lompat satu dekade"
 
@@ -10714,7 +10760,7 @@ msgstr ""
 
 #. What's new in 6.0: how many consoles the app plays now
 #: port/frontend/shell/whatsnew.cpp:30
-msgid "From the Game & Watch to the Switch 2, each with its own folder, settings and saves."
+msgid "From the Game & Watch to the Switch 2, each with its own settings and saves."
 msgstr ""
 
 #. What's new in 6.0: Switch 2 games; Lichii is the emulator's name, left as it is
@@ -10786,17 +10832,17 @@ msgstr "Yang baru"
 msgid "The highlights. See the release notes on GitHub for everything."
 msgstr "Pembaruan terbesar sejauh ini, sekilas. Catatan rilis di GitHub berisi semuanya."
 
-#: port/frontend/shell/widgets.cpp:402
+#: port/frontend/shell/widgets.cpp:466
 msgid "This game"
 msgstr "Game ini"
 
 #. a notification as a game on a libretro core stops because the PS5's GPU stopped drawing it
-#: port/libretro/game.cpp:606
+#: port/libretro/game.cpp:608
 msgid "The game's graphics stopped working."
 msgstr "Gambar game berhenti (perangkat GPU hilang)."
 
 #. why a game in a .zip or .7z archive did not start: no file in it the system's emulator reads
-#: port/libretro/game.cpp:674
+#: port/libretro/game.cpp:676
 msgid "There is no game for this system in this archive, or the archive could not be read."
 msgstr "Tidak ada game untuk sistem ini di arsip ini, atau arsip tidak bisa dibaca."
 

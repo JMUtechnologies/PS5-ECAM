@@ -671,7 +671,7 @@ int main(int argc, char* argv[])
 	if (privileges.filesystem)
 		if (const ps5eden::Result result = ps5eden::TakeResult(); result.found)
 		{
-			if (std::string why = ps5eden::ResultMessage(result); !why.empty())
+			if (std::string why = ps5eden::ResultMessage(result, settings.side == "switch2"); !why.empty())
 				(settings.side == "switch2" ? status.launchErrorSwitch2 : status.launchErrorSwitch) = why;
 			// to when the game ended or was being left; a crash leaves "running", written as it started
 			if ((result.state == "ended" || result.state == "leaving") && result.written > 0)

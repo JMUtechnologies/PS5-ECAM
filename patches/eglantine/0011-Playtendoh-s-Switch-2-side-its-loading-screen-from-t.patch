@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Tue, 10 Nov 2026 17:04:05 -0500
+Subject: [PATCH] Playtendoh's Switch 2 side: its loading screen from the first
+ frame
+
+Playtendoh's loading screen is drawn from the first loading frame: PresentLoading gives its drawing the
+instance too, which only Composite did, so this program's own loading screen showed for the whole load
+and Playtendoh's for its last moment. As Eden's program has it (Playtendoh's patches/eden 0008).
+
+Playtendoh's loading screen and menu are drawn on the swapchain's frames only (those with their
+render_ready semaphore), never a screenshot's (patches/eden 0009).
+---
+ headless/vulkan_hud_prepare.inc | 5 ++++-
+ headless/vulkan_loading.inc     | 6 ++++++
+ 2 files changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/headless/vulkan_hud_prepare.inc b/headless/vulkan_hud_prepare.inc
+index cd05544..cc4b9c3 100644
+--- a/headless/vulkan_hud_prepare.inc
++++ b/headless/vulkan_hud_prepare.inc
+@@ -14,7 +14,10 @@
+     const VkPipeline hud_graphics_pipeline = *hud_pipeline;
+     const VkPipelineLayout hud_pipeline_layout = *hud_layout;
+ #ifdef EDEN_ECAM
+-    const bool ecam = Eden::EcamVulkan::instance != VK_NULL_HANDLE;
++    // Playtendoh's loading screen and in-game menu (ecam_bridge.h): drawn with the overlay, on the
++    // picture presented, around this pass's own drawing. Only on the swapchain's frames, which the
++    // present manager made with their semaphore: a screenshot's frame has none.
++    const bool ecam = Eden::EcamVulkan::instance != VK_NULL_HANDLE && *dst->render_ready != VK_NULL_HANDLE;
+     ps5ingamenx::Target ecam_target{};
+     if (ecam) {
+         ecam_target.getInstanceProcAddr = Eden::EcamVulkan::gipa;
+diff --git a/headless/vulkan_loading.inc b/headless/vulkan_loading.inc
+index 2e7868e..6894d99 100644
+--- a/headless/vulkan_loading.inc
++++ b/headless/vulkan_loading.inc
+@@ -1,6 +1,12 @@
+ // Runs on the existing GPU worker, before the first guest Composite. Reuse its
+ // swapchain and composition pass without guest captures or FPS notifications.
+ void RendererVulkan::PresentLoading() {
++#ifdef EDEN_ECAM
++    // Playtendoh's loading screen (ecam_bridge.h) from this first frame on: given the instance only by
++    // Composite, it waited for the game's first picture, and this program's own showed for the whole load
++    Eden::EcamVulkan::instance = *instance;
++    Eden::EcamVulkan::gipa = dld.vkGetInstanceProcAddr;
++#endif
+     Frame* frame = present_manager.GetRenderFrame();
+     scheduler.RequestOutsideRenderPassOperationContext();
+     blit_swapchain.DrawToFrame(device, rasterizer, frame, {},

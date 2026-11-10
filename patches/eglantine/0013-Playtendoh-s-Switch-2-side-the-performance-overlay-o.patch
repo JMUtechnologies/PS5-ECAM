@@ -1,0 +1,2940 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Tue, 10 Nov 2026 17:15:20 -0500
+Subject: [PATCH] Playtendoh's Switch 2 side: the performance overlay of
+ Playtendoh's Switch side
+
+The overlay is the one Eden's program draws for Playtendoh's Switch side (ProsperoEdenX's hud.h,
+vulkan_hud.frag and their checks): a chip against the corner the settings name, its line in
+Montserrat from the same baked table as the loading screen's words, in its inks, and the same
+pieces: "VLK 960x540 27FPS 37.0MS CPU 55% 40% 12% 8% GPU 43% MEM 4.1/16.0G GFX 2.5G", where this
+program's line was a 3x5 pixel font saying "VLK F27 S100 W37 C55 G43 M4.2G".
+
+- hud.h: Eden's line, chip and fields (every piece by default, the CPU core by core, the game's own
+  resolution), the snapshot marked by a bit the loading screen never sets.
+- loading_text.glsl and hud_text_advances.h from ProsperoEdenX's bake-loading-text.py (its glyph
+  fields as they are there, so the line looks the same); the loading screen's helpers now come from
+  that file, its name line says LICHII and its colours are Playtendoh's Switch red.
+- performance.cpp: each of the four emulated cores' load, the memory pool's size and what is taken
+  of it, and what the Vulkan allocator holds (prepare-vulkan-port.py), as Eden's program reads them.
+- The game's resolution taken as each frame reaches the display (vulkan_guest_resolution.inc).
+- The OpenGL path draws the same chip; fps_overlay_colors is kept with the other overlay settings.
+---
+ headless/CMakeLists.txt                  |   3 +
+ headless/eglantineps5/pe/ui/services.hpp |   2 +-
+ headless/graphics.cpp                    | 133 +++--
+ headless/hud.h                           | 433 ++++++++--------
+ headless/hud_text_advances.h             |  46 ++
+ headless/loading_scene.glsl              |  44 +-
+ headless/loading_text.glsl               | 635 ++++++++++++++++++-----
+ headless/performance.cpp                 |  83 +++
+ headless/performance.h                   |  11 +
+ headless/preferences_check.cpp           |   2 +-
+ headless/settings_store.h                |   5 +-
+ headless/vulkan_guest_resolution.inc     |  10 +
+ headless/vulkan_hud.frag                 |  44 +-
+ headless/vulkan_hud_draw.inc             |  31 +-
+ tools/check-hud-mask.py                  | 196 +------
+ tools/check-hud.py                       | 271 ++++++++--
+ tools/launcher/bake-loading-text.py      | 333 +++++++++++-
+ tools/prepare-vulkan-port.py             |  14 +-
+ 18 files changed, 1627 insertions(+), 669 deletions(-)
+ create mode 100644 headless/hud_text_advances.h
+ create mode 100644 headless/vulkan_guest_resolution.inc
+
+diff --git a/headless/CMakeLists.txt b/headless/CMakeLists.txt
+index 812c981..f32da2a 100644
+--- a/headless/CMakeLists.txt
++++ b/headless/CMakeLists.txt
+@@ -3172,6 +3172,9 @@ if(EDEN_PS5_OPENGL)
+         "${EDEN_PORT_DIR}/loading_text.glsl" "${EDEN_PORT_DIR}/loading_scene.glsl")
+     write_derived("${PORT_BUILD_DIR}/include/loading_scene_glsl.h"
+         "// Generated from loading_text.glsl and loading_scene.glsl.\n#pragma once\ninline constexpr const char* kLoadingSceneGlsl = R\"glsl(\n${loading_wordmark}${loading_scene})glsl\";\n")
++    # The baked font alone, for the overlay (the loading screen's shader carries the whole scene).
++    write_derived("${PORT_BUILD_DIR}/include/loading_text_glsl.h"
++        "// Generated from loading_text.glsl.\n#pragma once\ninline constexpr const char* kLoadingTextGlsl = R\"glsl(\n${loading_wordmark})glsl\";\n")
+     target_compile_definitions(eden-headless PRIVATE EDEN_PS5_OPENGL=1)
+     target_link_libraries(eden-headless PRIVATE PS5OpenGL::OpenGL glad)
+ endif()
+diff --git a/headless/eglantineps5/pe/ui/services.hpp b/headless/eglantineps5/pe/ui/services.hpp
+index 5925ec4..866bde2 100644
+--- a/headless/eglantineps5/pe/ui/services.hpp
++++ b/headless/eglantineps5/pe/ui/services.hpp
+@@ -291,7 +291,7 @@ struct Preferences
+     // The FPS overlay's look: what its line shows (a bit per field, hud.h's kHudField*, from the
+     // renderer up to the ping), its size (0 1x, 1 1.5x, 2 2x) and corner (top left, top right,
+     // bottom left, bottom right).
+-    int hud_fields = 0xcf; // all but CPU and GPU: settings_store.h's default
++    int hud_fields = 0x2ff; // every piece, the CPU read core by core: settings_store.h's default
+     int hud_size = 0;
+     int hud_corner = 0;
+     int volume = 100; // game volume, 0-100
+diff --git a/headless/graphics.cpp b/headless/graphics.cpp
+index fc76c5a..25bdece 100644
+--- a/headless/graphics.cpp
++++ b/headless/graphics.cpp
+@@ -20,6 +20,7 @@
+ #include "hud.h"
+ #include "network/network.h"
+ #include "loading_scene_glsl.h"
++#include "loading_text_glsl.h"
+ #include "preferences.h"
+ #include "diagnostics.h"
+ #include "display_refresh.h"
+@@ -63,6 +64,8 @@ std::atomic<int> session_hud_override{-1};
+ // Read by the renderer thread, so they are set with the session's preferences as hud_enabled is.
+ std::atomic<uint32_t> hud_fields{kHudFieldDefault};
+ std::atomic<int> hud_size{0}, hud_corner{0};
++// Whether the line is drawn in its inks rather than one (bake-loading-text.py, hud_ink).
++std::atomic<bool> hud_colors{true};
+ // The GPU is timed only while the overlay is on and shows its share (hud_gpu_time.h).
+ void WantGpuTime() {
+     Hud::gpu_time_wanted.store(hud_enabled.load(std::memory_order_relaxed) &&
+@@ -77,6 +80,7 @@ void LoadHudPreferences() {
+     hud_fields.store(static_cast<uint32_t>(preferences.hud_fields), std::memory_order_relaxed);
+     hud_size.store(preferences.hud_size, std::memory_order_relaxed);
+     hud_corner.store(preferences.hud_corner, std::memory_order_relaxed);
++    hud_colors.store(preferences.hud_colors, std::memory_order_relaxed);
+     WantGpuTime();
+ }
+ // The GPU's busy share since the previous call, from the scheduler's timestamps (hud_gpu_time.h):
+@@ -99,18 +103,20 @@ unsigned GpuBusyPercent() {
+     last_busy = busy;
+     return first ? ~0u : HudPercent(static_cast<long long>(work), wall);
+ }
+-// What the overlay's line says about the machine (hud.h, HudMachine). Read once a second with the
+-// emulation speed, and only for the fields shown, so a field that is off costs nothing.
++// What the overlay's line says about the machine (hud.h, HudMachine): how loaded the four emulated
++// cores are, how busy the GPU is, how much of the memory pool is taken and how much of that the
++// graphics hold. Read a few times a second, and only for the pieces shown, so a piece that is off
++// costs nothing.
+ HudMachine MachineNow() {
+     HudMachine machine;
+     if (!hud_enabled.load(std::memory_order_relaxed)) return machine;
+     const uint32_t fields = hud_fields.load(std::memory_order_relaxed);
+-    if (fields & kHudFieldCpu) machine.cpu = Performance::BusiestGuestCore();
++    if (fields & kHudFieldCpu) Performance::GuestCoreLoads(machine.cores);
+     if (fields & kHudFieldGpu) machine.gpu = GpuBusyPercent();
+-    // The pool's largest free block, less the guest's headroom: what the caches see, and what the
+-    // next large allocation needs (performance.h, graphics_memory_free). Not known off the console.
+-    if (fields & kHudFieldMem)
+-        if (const auto pool = Performance::graphics_memory_free.load(std::memory_order_relaxed)) machine.memory_free = pool();
++    if (fields & kHudFieldMem) {
++        Performance::MemoryPool(&machine.memory_free, &machine.memory_total);
++        if (const auto held = Performance::graphics_memory_held.load(std::memory_order_relaxed)) machine.graphics = held();
++    }
+     return machine;
+ }
+ HudClock vulkan_hud_clock;
+@@ -120,6 +126,7 @@ HudClock vulkan_hud_output_clock;
+ HudSnapshot vulkan_hud;
+ double vulkan_hud_stats_time{}, vulkan_hud_speed{};
+ HudMachine vulkan_hud_machine;
++double vulkan_hud_machine_time{};
+ // Read by the GPU thread, cleared by whichever thread composites the first guest frame (the
+ // split GPU thread's back, when it runs).
+ std::atomic<bool> vulkan_loading{};
+@@ -474,17 +481,32 @@ private:
+         Check(eglMakeCurrent(display, surface, surface, hud_context), "HUD current");
+         SCOPE_EXIT { Cleanup(eglMakeCurrent(display, surface, surface, context), "HUD restore"); };
+         if (!hud_program) {
+-            hud_program = glCreateProgram();
++            // The overlay's font and the walk over it (loading_text.glsl, the same table the
++            // loading screen's shader reads), then what this picture does with it.
++            // The line's own ink is picked by hud_pick, which reads the characters around each
++            // one; this picture only asks the palette for its colour and lays the chip out.
++            const std::string fragment =
++                std::string("#version 330 core\nuniform uint glyphs[28]; uniform vec2 at;"
++                            " uniform vec2 box; uniform vec2 box_at;"
++                            " uniform float cap; uniform int startup; uniform bool colors;"
++                            " out vec4 color;\n") +
++                kLoadingTextGlsl +
++                "void main(){\n"
++                "Pick pick = Pick(-1, 0, vec2(0.0), 1.0);\n"
++                "hud_pick(pick, glyphs, gl_FragCoord.xy, at, cap);\n"
++                "float cover = pick_cover(pick);\n"
++                "if (startup != 0) {"
++                " color = vec4(mix(vec3(0.0196,0.0392,0.0039), vec3(0.7216,0.9490,0.0471), cover), 1.0);"
++                " return; }\n"
++                "vec4 panel = hud_panel(vec2(gl_FragCoord.x - box_at.x,"
++                " box_at.y + box.y - gl_FragCoord.y), box);\n"
++                "vec3 ink = colors ? hud_ink(pick.ink) : kHudInk;\n"
++                "color = vec4(mix(panel.rgb, ink, cover), mix(panel.a, 1.0, cover));\n}\n";
+             const char* sources[]{
+                 "#version 330 core\nvoid main(){vec2 p=vec2((gl_VertexID<<1)&2,gl_VertexID&2);"
+                 "gl_Position=vec4(p*2.0-1.0,0.0,1.0);}",
+-                "#version 330 core\nuniform uint glyphs[28]; uniform ivec2 origin; uniform int startup;"
+-                "uniform float cell; out vec4 color;"
+-                "void main(){ivec2 p=ivec2(gl_FragCoord.xy)-origin; bool ink=false;"
+-                "if(p.x>=0&&p.y>=0){ivec2 c=ivec2(vec2(p)/cell);int i=c.x/4;int x=c.x%4;"
+-                "if(i<56&&x<3&&c.y<5) ink=((((glyphs[i>>1]>>uint((i&1)*16))&0x7fffu)>>uint(c.y*3+2-x))&1u)!=0u;}"
+-                "color=startup!=0?(ink?vec4(0.7216,0.9490,0.0471,1.0):vec4(0.0196,0.0392,0.0039,1.0))"
+-                ":(ink?vec4(0.9,0.95,1.0,1.0):vec4(0.025,0.04,0.075,0.5));}"};
++                fragment.c_str()};
++            hud_program = glCreateProgram();
+             for (unsigned i = 0; i < 2; ++i) {
+                 GLuint shader = glCreateShader(i ? GL_FRAGMENT_SHADER : GL_VERTEX_SHADER);
+                 glShaderSource(shader, 1, &sources[i], nullptr);
+@@ -507,32 +529,50 @@ private:
+         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+         glUseProgram(hud_program);
+         glBindVertexArray(hud_vao);
+-        // Laid out for a picture 1080 rows high (a glyph's cell is 4 pixels there) and scaled to
+-        // the surface's. The overlay's line goes where its settings put it (hud.h, PlaceHud: rows
+-        // counted from the top, which OpenGL counts from the bottom); "LOADING" in the middle at 1x.
++        // The overlay's box, laid out for a picture 1080 rows high and scaled to the surface's.
++        // It covers only what it holds, so the picture underneath shows around it.
+         const float scale = static_cast<float>(height) / 1080.0f;
+-        const auto units = [scale](int value) { return static_cast<int>(std::lround(value * scale)); };
+-        const int text_width = int(std::strlen(text)) * 16;
+-        HudSnapshot line{};
+-        line.width = static_cast<uint32_t>(text_width + 24);
+-        line.x = static_cast<uint32_t>(std::clamp(hud_corner.load(std::memory_order_relaxed), 0, kHudCorners - 1));
+-        line.y = static_cast<uint32_t>(std::clamp(hud_size.load(std::memory_order_relaxed), 0, kHudSizes - 1));
+-        const auto place = PlaceHud(line, static_cast<uint32_t>(width), static_cast<uint32_t>(height));
+-        if (!startup && !place.shown) return;
+-        const float cell = 4.0f * static_cast<float>(startup ? height : place.cell_rows) / 1080.0f;
++        const auto units = [scale](float value) { return static_cast<int>(std::lround(value * scale)); };
++        // The chip's scale, from the size the session named: 1x, 1.5x or 2x (hud.h).
++        const float hud_scale = 1.0f + 0.5f * static_cast<float>(hud_size.load(std::memory_order_relaxed));
++        const int box_w = startup ? width :
++            units(HudTextWidth(text, kHudCapUnits * hud_scale) + 2 * kHudPadUnits * hud_scale);
++        const int box_h = startup ? height : units(kHudBoxUnits * hud_scale);
++        // Against whichever corner was named, at the same distance in from each of its two edges.
++        const int corner = hud_corner.load(std::memory_order_relaxed);
++        const int box_x = startup ? 0 :
++            (corner == 1 || corner == 3 ? width - box_w - units(kHudBoxX) : units(kHudBoxX));
++        const int box_y = startup ? 0 :
++            (corner >= 2 ? height - box_h - units(kHudBoxY) : units(kHudBoxY));
++        if (box_w <= 0 || box_h <= 0 || box_x < 0 || box_x + box_w > width || box_y + box_h > height) return;
++        glViewport(box_x, height - box_y - box_h, box_w, box_h);
++        // The line's left end and its baseline, counted from the surface's bottom left the way
++        // OpenGL counts rows: centred when the loading screen's own shader would not build, or
++        // where the box puts them.
++        const float cap_units = startup ? kHudCapUnits * 3.0f : kHudCapUnits * hud_scale;
++        const int cap = units(cap_units);
++        const int text_width = units(HudTextWidth(text, cap_units));
++        glUniform2f(glGetUniformLocation(hud_program, "at"),
++                    startup ? (width - text_width) * 0.5f : box_x + units(kHudPadUnits * hud_scale),
++                    startup ? (height - cap) * 0.5f :
++                        height - box_y - units(kHudBaselineUnits * hud_scale));
++        glUniform1f(glGetUniformLocation(hud_program, "cap"), static_cast<float>(cap));
++        // The chip the line stands in, in the surface's own rows: its size, and its bottom left
++        // corner the way OpenGL counts them.
++        glUniform2f(glGetUniformLocation(hud_program, "box"), static_cast<float>(box_w),
++                    static_cast<float>(box_h));
++        glUniform2f(glGetUniformLocation(hud_program, "box_at"), static_cast<float>(box_x),
++                    static_cast<float>(height - box_y - box_h));
++        HudSnapshot snapshot{};
++        PutHudText(snapshot, text);
++        glUniform1uiv(glGetUniformLocation(hud_program, "glyphs[0]"), snapshot.glyphs.size(),
++                      snapshot.glyphs.data());
++        glUniform1i(glGetUniformLocation(hud_program, "startup"), startup ? 1 : 0);
++        glUniform1i(glGetUniformLocation(hud_program, "colors"),
++                    !startup && hud_colors.load(std::memory_order_relaxed) ? 1 : 0);
+         if (startup)
+-            glViewport(0, 0, width, height);
+-        else
+-            glViewport(int(place.box_x), height - int(place.box_y + place.box_h), int(place.box_w), int(place.box_h));
+-        const auto glyphs = HudText(text);
+-        glUniform1uiv(glGetUniformLocation(hud_program, "glyphs[0]"), glyphs.size(), glyphs.data());
+-        glUniform2i(glGetUniformLocation(hud_program, "origin"),
+-                    startup ? (width - units(text_width)) / 2 : int(place.text_x),
+-                    startup ? (height - units(20)) / 2 :
+-                              height - int(place.text_y) - int(std::lround(5.0f * cell)));
+-        glUniform1i(glGetUniformLocation(hud_program, "startup"), startup);
+-        glUniform1f(glGetUniformLocation(hud_program, "cell"), cell);
+-        if (!startup) {
++            glDisable(GL_BLEND);
++        else {
+             glEnable(GL_BLEND);
+             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+         }
+@@ -622,12 +662,14 @@ GraphicsWindow::GraphicsWindow(bool use_vulkan) : vulkan(use_vulkan) {
+     vulkan_loading_frames = 0;
+     vulkan_loading_pace = {};
+     LoadHudPreferences();
++    // a new session's picture: the resolution piece waits for its first frame (hud.h)
++    Hud::ForgetGuestScreen();
+ #ifdef EDEN_PS5_VULKAN
+     if (vulkan) {
+         vulkan_hud_clock = {};
+         vulkan_hud_output_clock = {};
+         vulkan_hud = MakeLoadingSnapshot(0);
+-        vulkan_hud_stats_time = vulkan_hud_speed = 0;
++        vulkan_hud_stats_time = vulkan_hud_speed = vulkan_hud_machine_time = 0;
+         vulkan_hud_machine = {};
+         window_info.type = Core::Frontend::WindowSystemType::PS5;
+         window_info.render_surface = this;
+@@ -740,14 +782,19 @@ void GraphicsWindow::OnFrameDisplayed() {
+         vulkan_hud_clock.Present(now);
+         if (system && now - vulkan_hud_stats_time >= 1.0) {
+             vulkan_hud_speed = system->GetAndResetPerfStats().emulation_speed * 100.0;
+-            vulkan_hud_machine = MachineNow();
+             vulkan_hud_stats_time = now;
+         }
++        // the machine's load every quarter of a second, as the cores' readings are made (performance.h)
++        if (now - vulkan_hud_machine_time >= 0.25) {
++            vulkan_hud_machine = MachineNow();
++            vulkan_hud_machine_time = now;
++        }
+         vulkan_hud =
+             MakeHudSnapshot(vulkan_hud_clock, vulkan_hud_output_clock, vulkan_hud_speed, vulkan_hud_machine,
+                             Eden::Display::output_millihertz.load(std::memory_order_relaxed) / 1000.0,
+-                            RoomPingMilliseconds(), hud_fields.load(std::memory_order_relaxed),
+-                            hud_size.load(std::memory_order_relaxed), hud_corner.load(std::memory_order_relaxed));
++                            RoomPingMilliseconds(), hud_size.load(std::memory_order_relaxed),
++                            hud_corner.load(std::memory_order_relaxed), hud_colors.load(std::memory_order_relaxed),
++                            hud_fields.load(std::memory_order_relaxed));
+ #endif
+         ++frame_total;
+         Eden::OrderedReadTrace::Frame(frame_total,
+diff --git a/headless/hud.h b/headless/hud.h
+index feaf1aa..3604d0e 100644
+--- a/headless/hud.h
++++ b/headless/hud.h
+@@ -11,6 +11,10 @@
+ #include <string_view>
+ #include "hud_gpu_time.h"
+ 
++// The overlay's baked font: how far each character moves the pen, and how large its box is.
++// Outside the namespace below, which opens its own.
++#include "hud_text_advances.h"
++
+ namespace Eden {
+ // Counts contiguous presentation intervals; loading gaps are never reported as FPS.
+ struct HudClock {
+@@ -50,86 +54,107 @@ struct StartupGate {
+         return smooth_frames >= 8 || now - first >= 5.0;
+     }
+ };
+-// The overlay's font: 3x5 cells, one bit per cell, the top row in the high bits.
+-inline uint32_t HudGlyph(char c) {
+-    switch (c) {
+-    case '0': return 0x7b6f;
+-    case '1': return 0x2c97;
+-    case '2': return 0x73e7;
+-    case '3': return 0x73cf;
+-    case '4': return 0x5bc9;
+-    case '5': return 0x79cf;
+-    case '6': return 0x79ef;
+-    case '7': return 0x7292;
+-    case '8': return 0x7bef;
+-    case '9': return 0x7bcf;
+-    case 'F': return 0x79a4;
+-    case 'P': return 0x6ba4;
+-    case 'S': return 0x79cf;
+-    case 'L': return 0x4927;
+-    case 'O': return 0x7b6f;
+-    case 'A': return 0x2bed;
+-    case 'D': return 0x6b6e;
+-    case 'I': return 0x7497;
+-    case 'N': return 0x5ffd;
+-    case 'G': return 0x796f;
+-    case 'V': return 0x5b6a;
+-    case 'K': return 0x5bad;
+-    // W is wide at the bottom and M at the top, so the worst frame and the memory read apart.
+-    case 'W': return 0x5bfd;
+-    case 'M': return 0x5fed;
+-    case 'C': return 0x7927;
+-    case '.': return 0x0002;
+-    case '-': return 0x01c0;
+-    default: return 0;
+-    }
+-}
+-// How many characters the overlay's line may have: two 15-bit glyphs to each of a snapshot's
+-// 28 words (low half first), so the line with every field on still fits in the push constants.
+-inline constexpr size_t kHudTextMax = 56;
+-inline std::array<uint32_t, 28> HudText(std::string_view text) {
++// How many characters of the overlay's line fit in a HudSnapshot's words: four go to a word, and
++// the line is NUL-terminated, so the shader stops at the first byte that is 0.
++inline constexpr size_t kHudTextMax = 111;
++// Where the overlay's box stands in that picture: against a corner, so it never gets in the way
++// of the middle of the screen. Any corner is that many units in from its two edges, so all four
++// read the same way once the picture is scaled.
++inline constexpr uint32_t kHudBoxX = 6, kHudBoxY = 4;
++inline constexpr uint32_t kHudPictureWidth = 1920, kHudPictureHeight = 1080;
++// The corners the caller can name, top left through bottom right (kHudCornerKeys, the launchers'
++// own order in settings_store.h).
++inline constexpr int kHudCornerCount = 4;
++// What the line says about the machine: a percentage that could not be read shows as "--", and a
++// memory pool that could not be read as a size of 0.
++struct HudMachine {
++    unsigned cpu = ~0u;
++    // The four emulated cores, each as a share of one CPU: shown instead of `cpu` when known.
++    unsigned cores[4] = {~0u, ~0u, ~0u, ~0u};
++    unsigned gpu = ~0u;
++    unsigned long long memory_free = 0;
++    unsigned long long memory_total = 0;
++    unsigned long long graphics = 0;  // of what is taken, what the graphics hold; 0: not known
++};
++// The overlay's line and where its box goes, in a picture 1080 rows high. Where it is drawn they
++// are scaled to the picture, and `width` then carries the picture's height to the shader instead
++// (vulkan_hud_draw.inc): the box's height and the baseline in it come from kHudBoxUnits and
++// kHudBaselineUnits, which hud_text_advances.h and loading_text.glsl are both generated with.
++// `glyphs` is the line itself, four characters to a word.
++struct HudSnapshot {
+     std::array<uint32_t, 28> glyphs{};
+-    for (size_t i = 0; i < text.size() && i < kHudTextMax; ++i)
+-        glyphs[i / 2] |= HudGlyph(text[i]) << (i % 2 * 16);
+-    return glyphs;
++    uint32_t width{};
++    uint32_t x{kHudBoxX}, y{kHudBoxY}, loading{};
++};
++static_assert(sizeof(HudSnapshot) == 128); // Vulkan guarantees at least 128 push-constant bytes.
++// The overlay's snapshot carries how and where its chip is drawn in `loading`, which the loading
++// screen leaves to the milliseconds since it began: bit 31 marks the overlay, so the shader can
++// tell the two apart, and the bits below it say the rest. The loading path never sets bit 31, so
++// a snapshot from it still reads as the loading screen (vulkan_hud_draw.inc, vulkan_hud.frag).
++inline constexpr uint32_t kHudOverlayFlag = 0x80000000u;
++// The overlay's chip carries its size and whether it is coloured in `loading`, beside the bit
++// that marks it. The size is the chip's scale times two, in three bits (2 = 1x, 3 = 1.5x,
++// 4 = 2x, so a large chip keeps the pattern the old kHudLargeFlag had); the colour bit says the
++// line is drawn in its inks rather than one (bake-loading-text.py, vulkan_hud.frag).
++inline constexpr uint32_t kHudSizeShift = 28, kHudSizeMask = 0x70000000u;
++inline constexpr uint32_t kHudColorsFlag = 0x08000000u;
++// The chip's size, as the field carries it: the launcher's size index 0, 1, 2 is a scale of
++// 1x, 1.5x, 2x, stored as that scale times two (2, 3, 4).
++inline uint32_t HudSizeField(int size) {
++    return (2u + (static_cast<uint32_t>(size) & 3u)) << kHudSizeShift;
+ }
+-// One glyph of HudText's words, as both shaders read it (vulkan_hud.frag, graphics.cpp DrawHud).
+-inline uint32_t HudTextGlyph(const std::array<uint32_t, 28>& glyphs, size_t i) {
+-    return i < kHudTextMax ? (glyphs[i / 2] >> (i % 2 * 16)) & 0x7fffu : 0;
++// The scale the field names, for the box and the line alike (vulkan_hud_draw.inc, DrawHud).
++inline float HudSizeScale(uint32_t field) {
++    return static_cast<float>((field >> kHudSizeShift) & 7u) * 0.5f;
+ }
+-// What the overlay's line may say, bit by bit (Settings > Video, settings_store.h's
+-// fps_overlay_fields). The bits are the ones ProsperoEden's launcher saves for the same pieces,
+-// so the two read each other's numbers alike; its resolution and per-core bits are not used here.
+-inline constexpr uint32_t kHudFieldBackend = 1u << 0;  // VLK or OGL
+-inline constexpr uint32_t kHudFieldFps = 1u << 1;      // F60, or N30 F60 with frame generation
+-inline constexpr uint32_t kHudFieldMs = 1u << 2;       // W17: the worst frame of the last second
+-inline constexpr uint32_t kHudFieldSpeed = 1u << 3;    // S100: emulation speed
+-inline constexpr uint32_t kHudFieldCpu = 1u << 4;      // C55: the busiest emulated core
+-inline constexpr uint32_t kHudFieldGpu = 1u << 5;      // G43: the GPU's busy share
+-inline constexpr uint32_t kHudFieldMem = 1u << 6;      // M4.2G: the pool's largest free block
+-inline constexpr uint32_t kHudFieldPing = 1u << 7;     // P42: in a multiplayer room only
+-inline constexpr uint32_t kHudFieldCount = 8;
+-inline constexpr uint32_t kHudFieldSupported = (1u << kHudFieldCount) - 1;
+-// What the line said before there was a choice, and what a setting that names none starts at:
+-// that and the free memory. CPU and GPU are off until asked for, as the GPU's share needs the
+-// scheduler to write timestamps (hud_gpu_time.h).
+-inline constexpr uint32_t kHudFieldClassic = kHudFieldBackend | kHudFieldFps | kHudFieldMs | kHudFieldSpeed |
+-                                             kHudFieldPing;
+-inline constexpr uint32_t kHudFieldDefault = kHudFieldClassic | kHudFieldMem;
++// What the overlay's line may say, bit by bit: the pieces the user can turn off (the launcher's
++// hud_fields, settings_store.h). All on by default.
++inline constexpr uint32_t kHudFieldBackend = 1u << 0;
++inline constexpr uint32_t kHudFieldFps = 1u << 1;
++inline constexpr uint32_t kHudFieldMs = 1u << 2;
++inline constexpr uint32_t kHudFieldSpeed = 1u << 3;
++inline constexpr uint32_t kHudFieldCpu = 1u << 4;
++inline constexpr uint32_t kHudFieldGpu = 1u << 5;
++inline constexpr uint32_t kHudFieldMem = 1u << 6;
++inline constexpr uint32_t kHudFieldPing = 1u << 7;
++// Not a piece of its own but how the CPU piece reads: set, only the busiest of the four emulated
++// cores (the one that holds a game back); clear, as in every setting saved before there was a
++// choice, each of the four.
++inline constexpr uint32_t kHudFieldOneCore = 1u << 8;
++// The game's own picture: what it renders at, before the upscaling filter and the output size.
++inline constexpr uint32_t kHudFieldResolution = 1u << 9;
++// Every piece of the line, which is what a setting that names none starts at. Bit 8 is a mode of
++// the CPU piece rather than a piece, so it is not in this, as it was not before.
++inline constexpr uint32_t kHudFieldAll = 0x2ffu;
++inline constexpr uint32_t kHudFieldSupported = kHudFieldAll | kHudFieldOneCore;
+ inline constexpr bool ValidHudFields(int fields) {
+     return fields >= 0 && (static_cast<uint32_t>(fields) & ~kHudFieldSupported) == 0;
+ }
+-// The overlay's size (1x, 1.5x, 2x) and the corner it stands in (top left, top right, bottom
+-// left, bottom right): the launcher's order, settings_store.h's kHudSizeKeys and kHudCornerKeys.
+-inline constexpr int kHudSizes = 3, kHudCorners = 4;
+-// What the line says about the machine: ~0u is a percentage that could not be read, a free
+-// memory of 0 one that could not; the line shows both as "--".
+-struct HudMachine {
+-    unsigned cpu = ~0u;              // the busiest emulated core, as a share of one CPU
+-    unsigned gpu = ~0u;              // the GPU's busy share of the wall clock
+-    unsigned long long memory_free = 0;  // the direct memory pool's largest free block, in bytes
+-};
+-// Work against wall time as a whole percentage, 0 to 100, for the CPU and GPU fields. A thread's
++
++// The game's size, as the RES piece names it: the frame it last handed to the display, with a
++// cropped layer counted as the part that is shown. 0 until the first one arrives, which is also
++// what a session starts at (graphics.cpp), and what the OpenGL renderer leaves it at: it does not
++// say (vulkan_guest_resolution.inc records it on the Vulkan one).
++namespace Hud {
++inline std::atomic<uint32_t> guest_width{0}, guest_height{0};
++inline void GuestScreen(uint32_t width, uint32_t height) {
++    guest_width.store(width, std::memory_order_relaxed);
++    guest_height.store(height, std::memory_order_relaxed);
++}
++inline void ForgetGuestScreen() { GuestScreen(0, 0); }
++} // namespace Hud
++// True while the snapshot is the loading screen rather than the overlay's line.
++inline bool HudLoading(const HudSnapshot& hud) {
++    return hud.loading != 0 && (hud.loading & kHudOverlayFlag) == 0;
++}
++// The line in a snapshot's words, four characters to a word, and a zero after it.
++inline void PutHudText(HudSnapshot& hud, std::string_view text) {
++    auto* bytes = reinterpret_cast<char*>(hud.glyphs.data());
++    const size_t length = std::min(text.size(), kHudTextMax);
++    std::memcpy(bytes, text.data(), length);
++    std::memset(bytes + length, 0, sizeof(hud.glyphs) - length);
++}
++// Work against wall time as a whole percentage, 0 to 100, for the CPU and GPU pieces. A thread's
+ // CPU clock and the monotonic clock are read a moment apart, so a busy core can come out a little
+ // over its wall time: that is 100.
+ inline unsigned HudPercent(long long work, long long wall) {
+@@ -137,17 +162,13 @@ inline unsigned HudPercent(long long work, long long wall) {
+     if (work >= wall) return 100;
+     return static_cast<unsigned>((work * 100 + wall / 2) / wall);
+ }
+-// The overlay's snapshot. For the line, `width` is its box's width at 1x in a picture 1080 rows
+-// high, x the corner and y the size (MakeHudSnapshot); where it is drawn PlaceHud turns them into
+-// pixels, and the shader is then given the text's origin in x and y and the rows its cells are
+-// laid out for in `width` (vulkan_hud_draw.inc). The loading screen uses the same words otherwise
+-// (MakeLoadingSnapshot).
+-struct HudSnapshot {
+-    std::array<uint32_t, 28> glyphs{};
+-    uint32_t width{};
+-    uint32_t x{}, y{}, loading{};
+-};
+-static_assert(sizeof(HudSnapshot) == 128); // Vulkan guarantees at least 128 push-constant bytes.
++// The sizes (1x, 1.5x, 2x) and the corners (top left, top right, bottom left, bottom right) the
++// settings name: settings_store.h's kHudSizeKeys and kHudCornerKeys.
++inline constexpr int kHudSizes = 3, kHudCorners = kHudCornerCount;
++// What a setting that names no pieces starts at: every one, as on Playtendoh's Switch side.
++inline constexpr uint32_t kHudFieldDefault = kHudFieldAll;
++// The pieces EglantinePS5's own launcher has a row for (bits 0 to 7), in its Settings > Video.
++inline constexpr uint32_t kHudFieldCount = 8;
+ // What a game's start is doing, for the loading screen (loading_scene.glsl draws it: the steps
+ // one under the other and a progress bar). main.cpp says which step the start is at; the bar's
+ // share of each step is an estimate, except while shaders are built, where it is counted. Within
+@@ -229,150 +250,156 @@ struct LoadingPace {
+         return true;
+     }
+ };
+-// Where the line's box goes in a picture `width` x `height`, in pixels. At 1x the box is laid out
+-// for a picture 1080 rows high: 16 units in from its corner's two edges, 48 high, the text 12 in
+-// and 14 down, a glyph's cell 4 units; 1.5x and 2x take all but the distance to the edges that
+-// many times over. `cell_rows` is what the shaders lay the cells out for (a cell is
+-// 4 * cell_rows / 1080 pixels). `shown` is false where the box does not fit the picture: it is
+-// then not drawn, as before there was a choice of size.
+-struct HudPlacement {
+-    uint32_t box_x{}, box_y{}, box_w{}, box_h{};
+-    uint32_t text_x{}, text_y{}, cell_rows{};
+-    bool shown{};
+-};
+-inline HudPlacement PlaceHud(const HudSnapshot& hud, uint32_t width, uint32_t height) {
+-    const uint64_t halves = 2 + std::min<uint32_t>(hud.y, kHudSizes - 1);  // the scale, times two
+-    const auto units = [height](uint64_t value) { return static_cast<uint32_t>(value * height / 1080); };
+-    const auto scaled = [&](uint64_t value) { return units(value * halves / 2); };
+-    HudPlacement place;
+-    const uint32_t margin = units(16);
+-    place.box_w = scaled(hud.width);
+-    place.box_h = scaled(48);
+-    place.cell_rows = static_cast<uint32_t>(uint64_t{height} * halves / 2);
+-    place.shown = hud.width != 0 && uint64_t{place.box_w} + margin <= width &&
+-                  uint64_t{place.box_h} + margin <= height;
+-    if (!place.shown) return place;
+-    const bool right = (hud.x & 1) != 0, bottom = (hud.x & 2) != 0;
+-    place.box_x = right ? width - margin - place.box_w : margin;
+-    place.box_y = bottom ? height - margin - place.box_h : margin;
+-    place.text_x = place.box_x + scaled(12);
+-    place.text_y = place.box_y + scaled(14);
+-    return place;
+-}
+-// The overlay's line: "VLK F60 S100 W17 C55 G43 M4.2G P42", each piece as `fields` asks.
+-// N is the rate the guest itself produces; F is the rate the display shows. They are the same
+-// until frame generation is on, and the overlay then keeps its usual text (F alone). With frame
+-// generation F is counted from every frame handed to the present manager (CountPresentedFrame():
+-// the frames it adds do not go through OnFrameDisplayed(), which runs once per guest frame), and
+-// never reads above `refresh`, the output's own rate: a display shows no more than that, however
+-// many frames it is handed. refresh 0: not known, no limit. M is what is left of the memory pool
+-// in one block, the number that ends a session when it runs out (performance.h, kShortMemory);
+-// P shows only in a multiplayer room (ping_ms >= 0). Pieces that do not fit are cut, the last
+-// first.
++// The line the overlay shows: "VLK 960x540 27FPS 37.0MS CPU 55% GPU 43% MEM 4.1/8.0G GFX 2.5G".
++// The rate the
++// guest itself produces, and the rate the display shows when they differ (with frame generation
++// the display is handed frames the guest never made, and never more than `refresh`, its own
++// rate; refresh 0: not known, no limit); then the worst frame of the last second, how far behind
++// 100% the emulation is when it is behind at all, and the machine's own load. Where a number
++// cannot be read it shows as "--".
+ inline std::array<char, kHudTextMax + 1> FormatHudText(const HudClock& clock, const HudClock& output,
+                                                        double speed, const char* backend,
+-                                                       const HudMachine& machine, double refresh,
+-                                                       int ping_ms, uint32_t fields) {
++                                                       const HudMachine& machine, double refresh = 0,
++                                                       int ping_ms = -1,
++                                                       uint32_t fields = kHudFieldAll) {
+     std::array<char, kHudTextMax + 1> text{};
++    char line[192]{};
++    char piece[64]{};
+     size_t used = 0;
+-    // Every piece goes in whole or not at all, after a space unless it is the first; nothing goes
+-    // in after a piece that did not fit.
+-    const auto add = [&](const char* piece) {
+-        const size_t length = std::strlen(piece), need = length + (used ? 1 : 0);
+-        if (used + need > kHudTextMax) {
+-            used = kHudTextMax + 1;
+-            return;
+-        }
+-        if (used) text[used++] = ' ';
+-        std::memcpy(text.data() + used, piece, length);
+-        used += length;
++    // Every piece goes in as it is written, up to what the line can hold. A piece opens with a
++    // space, which is dropped where the line is still empty.
++    const auto put = [&](const char* value) {
++        const char* v = used == 0 && *value == ' ' ? value + 1 : value;
++        const size_t take = std::min(std::strlen(v), text.size() - 1 - used);
++        std::memcpy(line + used, v, take);
++        used += take;
++        line[used] = '\0';
+     };
+-    char piece[32];
+-    if (fields & kHudFieldBackend) add(backend);
+-    const bool known = clock.fps >= 0;
+-    if (fields & kHudFieldFps) {
+-        const double shown = !known || output.fps < 0 ? clock.fps
+-                                                      : refresh > 0 ? std::min(output.fps, refresh) : output.fps;
+-        if (!known)
+-            std::snprintf(piece, sizeof(piece), "F--");
+-        else if (shown < clock.fps + 1.5)
+-            std::snprintf(piece, sizeof(piece), "F%.0f", std::min(clock.fps, 9999.0));
+-        else
+-            std::snprintf(piece, sizeof(piece), "N%.0f F%.0f", std::min(clock.fps, 9999.0), std::min(shown, 9999.0));
+-        add(piece);
++    if (fields & kHudFieldBackend) {
++        std::snprintf(piece, sizeof(piece), "%s", backend);
++        put(piece);
+     }
+-    if (fields & kHudFieldSpeed) {
+-        if (known) std::snprintf(piece, sizeof(piece), "S%.0f", std::clamp(speed, 0.0, 9999.0));
+-        else std::snprintf(piece, sizeof(piece), "S--");
+-        add(piece);
++    // The picture the game renders, next to the renderer that drew it. Nothing is said until the
++    // first frame is handed to the display, so a game that is still loading has no piece.
++    if ((fields & kHudFieldResolution) != 0) {
++        const uint32_t width = Hud::guest_width.load(std::memory_order_relaxed);
++        const uint32_t height = Hud::guest_height.load(std::memory_order_relaxed);
++        if (width != 0 && height != 0) {
++            std::snprintf(piece, sizeof(piece), " %ux%u", width, height);
++            put(piece);
++        }
+     }
+-    if (fields & kHudFieldMs) {
+-        if (known) std::snprintf(piece, sizeof(piece), "W%.0f", std::min(clock.worst_ms, 9999.0));
+-        else std::snprintf(piece, sizeof(piece), "W--");
+-        add(piece);
++    if (clock.fps < 0) {
++        if (fields & kHudFieldFps) put(" --FPS");
++        if (fields & kHudFieldMs) put(" --MS");
++    } else {
++        const double shown = output.fps < 0 ? clock.fps
++                                            : refresh > 0 ? std::min(output.fps, refresh) : output.fps;
++        if (fields & kHudFieldFps) {
++            if (shown < clock.fps + 1.5)
++                std::snprintf(piece, sizeof(piece), " %.0fFPS", clock.fps);
++            else
++                std::snprintf(piece, sizeof(piece), " %.0f/%.0fFPS", clock.fps, shown);
++            put(piece);
++        }
++        if (fields & kHudFieldMs) {
++            std::snprintf(piece, sizeof(piece), " %.1fMS", clock.worst_ms);
++            put(piece);
++        }
+     }
++    // Speed only when it is not a full 100: the rates on the line already say the rest.
++    if ((fields & kHudFieldSpeed) && std::fabs(speed - 100.0) > 0.5) {
++        std::snprintf(piece, sizeof(piece), " %.0f%%", speed);
++        put(piece);
++    }
++    char cpu[8] = "--";
++    char gpu[8] = "--";
++    if (machine.cpu != ~0u) std::snprintf(cpu, sizeof(cpu), "%u", machine.cpu);
++    if (machine.gpu != ~0u) std::snprintf(gpu, sizeof(gpu), "%u", machine.gpu);
+     if (fields & kHudFieldCpu) {
+-        if (machine.cpu != ~0u) std::snprintf(piece, sizeof(piece), "C%u", std::min(machine.cpu, 999u));
+-        else std::snprintf(piece, sizeof(piece), "C--");
+-        add(piece);
++        const bool by_core = machine.cores[0] != ~0u || machine.cores[1] != ~0u || machine.cores[2] != ~0u ||
++                             machine.cores[3] != ~0u;
++        if (by_core && (fields & kHudFieldOneCore) != 0) {
++            // Only the busiest core.
++            unsigned busiest = 0;
++            for (const unsigned load : machine.cores)
++                if (load != ~0u && load > busiest) busiest = load;
++            std::snprintf(piece, sizeof(piece), " CPU %u%%", busiest);
++            put(piece);
++        } else if (by_core) {
++            // Each core with its own sign, so each is coloured by its own load.
++            put(" CPU");
++            for (const unsigned load : machine.cores) {
++                if (load != ~0u) std::snprintf(piece, sizeof(piece), " %u%%", load);
++                else std::snprintf(piece, sizeof(piece), " --%%");
++                put(piece);
++            }
++        } else {
++            std::snprintf(piece, sizeof(piece), " CPU %s%%", cpu);
++            put(piece);
++        }
+     }
+     if (fields & kHudFieldGpu) {
+-        if (machine.gpu != ~0u) std::snprintf(piece, sizeof(piece), "G%u", std::min(machine.gpu, 999u));
+-        else std::snprintf(piece, sizeof(piece), "G--");
+-        add(piece);
++        std::snprintf(piece, sizeof(piece), " GPU %s%%", gpu);
++        put(piece);
+     }
+     if (fields & kHudFieldMem) {
+-        if (machine.memory_free != 0)
+-            std::snprintf(piece, sizeof(piece), "M%.1fG",
+-                          std::min(static_cast<double>(machine.memory_free) / 1073741824.0, 99.9));
+-        else
+-            std::snprintf(piece, sizeof(piece), "M--");
+-        add(piece);
++        char memory[40] = "--/--";
++        if (machine.memory_total != 0)
++            // What is taken of the pool, then the pool: the order a player expects ("4.1 of
++            // 8.0"), in the binary gigabytes the rest of the app counts the pool in.
++            std::snprintf(memory, sizeof(memory), "%.1f/%.1fG",
++                          static_cast<double>(machine.memory_total - std::min(machine.memory_free, machine.memory_total)) /
++                              1073741824.0,
++                          static_cast<double>(machine.memory_total) / 1073741824.0);
++        std::snprintf(piece, sizeof(piece), " MEM %s", memory);
++        put(piece);
++        // The graphics' part of it: the one that grows as scenery loads.
++        if (machine.graphics != 0) {
++            std::snprintf(piece, sizeof(piece), " GFX %.1fG", static_cast<double>(machine.graphics) / 1073741824.0);
++            put(piece);
++        }
+     }
+     if ((fields & kHudFieldPing) && ping_ms >= 0) {
+-        std::snprintf(piece, sizeof(piece), "P%d", std::min(ping_ms, 9999));
+-        add(piece);
++        std::snprintf(piece, sizeof(piece), " P%d", std::min(ping_ms, 9999));
++        put(piece);
+     }
++    std::memcpy(text.data(), line, used);
+     return text;
+ }
+-// What the line said before there was a choice of fields: the callers and checks that predate it.
+-inline std::array<char, kHudTextMax + 1> FormatHudText(const HudClock& clock, const HudClock& output,
+-                                                       double speed, const char* backend, double refresh = 0,
+-                                                       int ping_ms = -1) {
+-    return FormatHudText(clock, output, speed, backend, HudMachine{}, refresh, ping_ms, kHudFieldClassic);
+-}
+-// The line and where it goes: `size` and `corner` are the launcher's indices (kHudSizes,
+-// kHudCorners), carried to PlaceHud in y and x.
+ inline HudSnapshot MakeHudSnapshot(const HudClock& clock, const HudClock& output, double speed,
+-                                   const HudMachine& machine, double refresh, int ping_ms, uint32_t fields,
+-                                   int size = 0, int corner = 0) {
++                                   const HudMachine& machine, double refresh = 0, int ping_ms = -1,
++                                   int size = 0, int corner = 0, bool colors = false,
++                                   uint32_t fields = kHudFieldAll) {
+     const auto text = FormatHudText(clock, output, speed, "VLK", machine, refresh, ping_ms, fields);
+-    const std::string_view value{text.data()};
+-    // A line with every field off still keeps the box, empty, so the overlay's switch shows it is on.
+-    HudSnapshot hud{HudText(value), static_cast<uint32_t>(value.size() * 16 + 24)};
+-    hud.x = static_cast<uint32_t>(std::clamp(corner, 0, kHudCorners - 1));
+-    hud.y = static_cast<uint32_t>(std::clamp(size, 0, kHudSizes - 1));
++    const std::string_view line{text.data()};
++    // The chip's scale, from the size the launcher named: 1x, 1.5x or 2x. Every one of the
++    // box's numbers is taken that many times over (vulkan_hud_draw.inc and DrawHud scale alike).
++    const float scale = HudSizeScale(HudSizeField(size));
++    HudSnapshot hud{};
++    PutHudText(hud, line);
++    // The box holds the line and a margin of kHudPadUnits either side of it.
++    hud.width = static_cast<uint32_t>(
++        std::lround(HudTextWidth(line, kHudCapUnits * scale) + 2 * kHudPadUnits * scale));
++    const uint32_t box_h = static_cast<uint32_t>(std::lround(kHudBoxUnits * scale));
++    // Against whichever corner was named, at the same distance in from each of its two edges; the
++    // two coordinates say which, so nothing else has to (vulkan_hud_draw.inc, DrawHud).
++    const bool right = corner == 1 || corner == 3, bottom = corner == 2 || corner == 3;
++    hud.x = right ? kHudPictureWidth - hud.width - kHudBoxX : kHudBoxX;
++    hud.y = bottom ? kHudPictureHeight - box_h - kHudBoxY : kHudBoxY;
++    hud.loading = kHudOverlayFlag | HudSizeField(size) | (colors ? kHudColorsFlag : 0u);
+     return hud;
+ }
+-inline HudSnapshot MakeHudSnapshot(const HudClock& clock, const HudClock& output, double speed,
+-                                   double refresh = 0, int ping_ms = -1) {
+-    return MakeHudSnapshot(clock, output, speed, HudMachine{}, refresh, ping_ms, kHudFieldClassic);
+-}
+ // The OpenGL renderer has no frame generation: what it presents is the guest's own rate, so both
+-// numbers come from one clock. Callers that cannot have an output clock use these.
+-inline std::array<char, kHudTextMax + 1> FormatHudText(const HudClock& clock, double speed, const char* backend,
+-                                                       const HudMachine& machine, int ping_ms, uint32_t fields) {
++// numbers come from one clock. Callers that cannot have an output clock use this.
++inline std::array<char, kHudTextMax + 1> FormatHudText(const HudClock& clock, double speed,
++                                                       const char* backend, const HudMachine& machine,
++                                                       int ping_ms = -1,
++                                                       uint32_t fields = kHudFieldAll) {
+     return FormatHudText(clock, clock, speed, backend, machine, 0, ping_ms, fields);
+ }
+-inline std::array<char, kHudTextMax + 1> FormatHudText(const HudClock& clock, double speed, const char* backend,
+-                                                       int ping_ms = -1) {
+-    return FormatHudText(clock, clock, speed, backend, 0, ping_ms);
+-}
+-inline HudSnapshot MakeHudSnapshot(const HudClock& clock, double speed) {
+-    return MakeHudSnapshot(clock, clock, speed);
+-}
+ // Every frame handed to the present manager, the guest's own and each one frame generation adds,
+-// so the HUD's F measures the output and not just the guest (graphics.cpp).
++// so the HUD's rate measures the output and not just the guest (graphics.cpp).
+ void CountPresentedFrame();
+ // Read on the renderer thread; the scheduler captures the returned value per frame.
+ HudSnapshot GetVulkanHud();
+diff --git a/headless/hud_text_advances.h b/headless/hud_text_advances.h
+new file mode 100644
+index 0000000..419b851
+--- /dev/null
++++ b/headless/hud_text_advances.h
+@@ -0,0 +1,46 @@
++// Generated by tools/launcher/bake-loading-text.py from Montserrat Medium (SIL Open Font
++// License 1.1). Do not edit: change the script and run it again.
++#pragma once
++#include <string_view>
++namespace Eden {
++// The overlay's font, the one headless/loading_text.glsl draws: a cap of 12 texels,
++// and how far each ASCII character from 32 to 126 moves the pen in texels at that cap.
++// A character the font has no glyph for moves it as a space does.
++inline constexpr float kHudGlyphCap = 12.00f;
++inline constexpr float kHudSpaceAdvance = 5.14f;
++// The overlay's box in a picture 1080 rows high, as kHudCapUnits and kHudPadUnits are in
++// loading_text.glsl. Its height is the cap plus twice the pad.
++inline constexpr float kHudCapUnits = 14.0f;
++inline constexpr float kHudPadUnits = 3.0f;
++inline constexpr float kHudBoxUnits = 20.0f;
++inline constexpr float kHudBaselineUnits = 17.0f;
++inline constexpr float kHudAdvance[95] = {
++    5.14f, 5.14f, 5.14f, 5.14f, 5.14f, 14.44f, 5.14f, 5.14f,
++    5.14f, 5.14f, 5.14f, 5.14f, 5.14f, 6.56f, 3.89f, 6.03f,
++    11.42f, 6.34f, 9.83f, 9.79f, 11.46f, 9.83f, 10.57f, 10.24f,
++    11.03f, 10.57f, 3.89f, 5.14f, 5.14f, 5.14f, 5.14f, 5.14f,
++    5.14f, 12.54f, 12.96f, 12.38f, 14.14f, 11.47f, 10.88f, 13.22f,
++    13.91f, 5.31f, 8.79f, 12.31f, 10.17f, 16.35f, 13.91f, 14.38f,
++    12.37f, 14.38f, 12.45f, 10.63f, 10.05f, 13.54f, 12.19f, 19.28f,
++    11.53f, 11.08f, 11.25f, 5.14f, 5.14f, 5.14f, 5.14f, 5.14f,
++    5.14f, 5.14f, 5.14f, 5.14f, 5.14f, 5.14f, 5.14f, 5.14f,
++    5.14f, 5.14f, 5.14f, 5.14f, 5.14f, 5.14f, 5.14f, 5.14f,
++    5.14f, 5.14f, 5.14f, 5.14f, 5.14f, 5.14f, 5.14f, 5.14f,
++    5.14f, 5.14f, 5.14f, 5.14f, 5.14f, 5.14f, 5.14f
++};
++// The widest digit, which every figure in the overlay's line takes: a number that is
++// rewritten several times a second must not move what stands after it. hud_step in
++// loading_text.glsl lays the line out the same way.
++inline constexpr float kHudDigitAdvance = 11.46f;
++// One line's width, in whatever units its cap is given in.
++inline constexpr float HudTextWidth(std::string_view text, float cap) {
++    float width = 0.0f;
++    for (const char c : text) {
++        const unsigned char code = static_cast<unsigned char>(c);
++        width += (c >= '0' && c <= '9' ? kHudDigitAdvance
++                  : code >= 32 && code < 127 ? kHudAdvance[code - 32] : kHudSpaceAdvance) * cap /
++                 kHudGlyphCap;
++    }
++    return width;
++}
++} // namespace Eden
+diff --git a/headless/loading_scene.glsl b/headless/loading_scene.glsl
+index deb3631..c8cce16 100644
+--- a/headless/loading_scene.glsl
++++ b/headless/loading_scene.glsl
+@@ -11,8 +11,9 @@
+ // the progress in thousandths, the shaders built and their total, and the seconds the step has
+ // lasted.
+ 
+-const vec3 kLime = vec3(0.89, 0.23, 0.38);  // the rose's petal-tip pink
+-const vec3 kGreen = vec3(0.48, 0.12, 0.24); // deep rose
++// Playtendoh's Switch red (its port/app/menu_canvas.h, kRed: #f2434f), and a deep one
++const vec3 kLime = vec3(0.949, 0.263, 0.310);
++const vec3 kGreen = vec3(0.50, 0.08, 0.11);
+ const int kLineBrand = 0; // then the four steps: kLine[step]
+ const int kLineLoading = 5;
+ const int kLineSeconds = 6;
+@@ -27,45 +28,10 @@ float hash21(vec2 p)
+     return fract(p.x * p.y);
+ }
+ 
+-float glyph_texel(int glyph, int x, int y)
+-{
+-    x = clamp(x, 0, kGlyphWidth - 1);
+-    y = clamp(y, 0, kGlyphHeight - 1);
+-    int at = y * kGlyphWidth + x;
+-    return float((glyph_word(glyph, at >> 3) >> uint((at & 7) * 4)) & 0xfu) / 15.0;
+-}
+-
+ // The lettering is read in one place only, at the end of loading_scene: the console's shader
+ // compiler copes badly with the glyph table being read from many. So the text is laid out first,
+-// which only decides which glyph, if any, this pixel falls in (a Pick), and what ink it gets.
+-struct Pick
+-{
+-    int glyph;   // -1: no text here
+-    int ink;
+-    vec2 st;     // where in the glyph's field, in texels
+-    float texel; // pixels per texel
+-};
+-
+-float pen_step(int glyph, float cap, float tracking)
+-{
+-    return (glyph < 0 ? 0.30 * kGlyphCap / 0.70 : kAdvance[glyph]) * cap / kGlyphCap + tracking * cap;
+-}
+-
+-// Takes the pixel for this glyph when it lies between the glyph's pen and the next one.
+-// at is where the pen stands (left end of the baseline), cap the height of a capital in pixels.
+-void pick_glyph(inout Pick pick, int glyph, int ink, vec2 pixel, vec2 at, float cap, float tracking)
+-{
+-    float texel = cap / kGlyphCap;
+-    float step = pen_step(glyph, cap, tracking);
+-    if (pixel.x < at.x - 0.5 * tracking * cap || pixel.x >= at.x + step - 0.5 * tracking * cap)
+-        return;
+-    pick.glyph = glyph;
+-    pick.ink = ink;
+-    pick.st = vec2((pixel.x - at.x) / texel + kGlyphLeft,
+-                   float(kGlyphHeight) - ((pixel.y - at.y) / texel + kGlyphBase)) - 0.5;
+-    pick.texel = texel;
+-}
+-
++// which only decides which glyph, if any, this pixel falls in (a Pick, pick_glyph and pen_step in
++// loading_text.glsl, which the overlay's line shares), and what ink it gets.
+ float line_width(int line, float cap, float tracking)
+ {
+     float width = 0.0;
+diff --git a/headless/loading_text.glsl b/headless/loading_text.glsl
+index 53217b9..e774500 100644
+--- a/headless/loading_text.glsl
++++ b/headless/loading_text.glsl
+@@ -6,18 +6,126 @@ const float kGlyphCap = 12.0;
+ const float kGlyphBase = 4.0;
+ const float kGlyphLeft = 3.0;
+ const float kGlyphSpread = 2.0;
+-const int kDigit = 18;
+-const int kPercent = 28;
+-const int kSlash = 29;
++// The overlay's box in a picture 1080 rows high: its cap height, the margin around the
++// text in it, its whole height and where its baseline stands from its top. hud.h and
++// vulkan_hud_draw.inc size and place the box with these; all four are here so they
++// cannot drift.
++const float kHudCapUnits = 14.0;
++const float kHudPadUnits = 3.0;
++const float kHudBoxUnits = 20.0;
++const float kHudBaselineUnits = 17.0;
++// The chip the line stands in (hud_panel), in that same picture: how far its corners are
++// cut round.
++const float kHudRadiusUnits = 5.0;
++// The overlay's line, in characters (hud.h, kHudTextMax).
++const int kHudTextMax = 111;
++const int kDigit = 4;
++const int kPercent = 0;
++const int kSlash = 3;
++// The widest digit, which every figure in the overlay's line takes (hud_step).
++const float kHudDigitAdvance = 11.46;
++// ASCII 32 to 126 as a glyph index, -1 where the font has no glyph (drawn as a space).
++const int kCharIndex[95] = int[95](
++    -1, -1, -1, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, -1, -1, -1, -1, -1, -1, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
+ // How far each glyph moves the pen, in texels.
+-const float kAdvance[30] = float[30](
+-    9.83, 12.54, 12.96, 12.38, 14.14, 11.47, 13.22, 13.91, 5.31, 10.17, 16.35, 13.91, 14.38, 12.37, 12.45, 10.63, 10.05, 13.54, 11.42, 6.34, 9.83, 9.79, 11.46, 9.83, 10.57, 10.24, 11.03, 10.57, 14.44, 6.03);
++const float kAdvance[41] = float[41](
++    14.44, 6.56, 3.89, 6.03, 11.42, 6.34, 9.83, 9.79, 11.46, 9.83, 10.57, 10.24, 11.03, 10.57, 3.89, 12.54, 12.96, 12.38, 14.14, 11.47, 10.88, 13.22, 13.91, 5.31, 8.79, 12.31, 10.17, 16.35, 13.91, 14.38, 12.37, 14.38, 12.45, 10.63, 10.05, 13.54, 12.19, 19.28, 11.53, 11.08, 11.25);
+ // The lines of text: glyph indexes (-1 is a space), and where each line starts and how long it is.
+-const int kText[86] = int[86](
+-    5, 6, 9, 1, 11, 16, 8, 11, 5, 13, 15, 0, 14, 5, 1, 4, 8, 11, 6, -1, 16, 7, 5, -1, 6, 1, 10, 5, 15, 16, 1, 14, 16, 8, 11, 6, -1, 6, 14, 1, 13, 7, 8, 3, 15, 2, 17, 8, 9, 4, 8, 11, 6, -1, 15, 7, 1, 4, 5, 14, 15, 15, 16, 1, 14, 16, 8, 11, 6, -1, 16, 7, 5, -1, 6, 1, 10, 5, 9, 12, 1, 4, 8, 11, 6, 15);
++const int kText[80] = int[80](
++    26, 23, 17, 22, 23, 23, 32, 19, 15, 18, 23, 28, 21, -1, 34, 22, 19, -1, 21, 15, 27, 19, 33, 34, 15, 32, 34, 23, 28, 21, -1, 21, 32, 15, 30, 22, 23, 17, 33, 16, 35, 23, 26, 18, 23, 28, 21, -1, 33, 22, 15, 18, 19, 32, 33, 33, 34, 15, 32, 34, 23, 28, 21, -1, 34, 22, 19, -1, 21, 15, 27, 19, 26, 29, 15, 18, 23, 28, 21, 33);
+ const ivec2 kLine[7] = ivec2[7](
+-    ivec2(0, 12), ivec2(12, 16), ivec2(28, 17), ivec2(45, 16), ivec2(61, 17), ivec2(78, 7), ivec2(85, 1));
++    ivec2(0, 6), ivec2(6, 16), ivec2(22, 17), ivec2(39, 16), ivec2(55, 17), ivec2(72, 7), ivec2(79, 1));
+ const uint kGlyph0[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22210000u, 0x12200000u,
++    0x00000000u, 0x56541000u, 0x45530014u, 0x00000000u, 0x99a74100u, 0x48852036u, 0x00000001u, 0x757a6200u,
++    0x35974259u, 0x00000000u, 0x52597300u, 0x04696359u, 0x00000000u, 0x52497300u, 0x01478569u, 0x00000000u,
++    0x64596300u, 0x2335986au, 0x00000000u, 0x98885200u, 0x57756a67u, 0x00000013u, 0x77752000u, 0x98896795u,
++    0x00000036u, 0x44320000u, 0x85588598u, 0x00000148u, 0x63000000u, 0x7337946au, 0x00000149u, 0x95200000u,
++    0x73379447u, 0x00000149u, 0x98410000u, 0x95587425u, 0x00000047u, 0x6a630000u, 0x89985203u, 0x00000025u,
++    0x45530000u, 0x56652001u, 0x00000003u, 0x12200000u, 0x12210000u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
++);
++const uint kGlyph1[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x33333000u, 0x00000023u, 0x00000000u, 0x77775200u, 0x00000047u,
++    0x00000000u, 0xaaaa5200u, 0x00000048u, 0x00000000u, 0x55555100u, 0x00000035u, 0x00000000u, 0x22221000u,
++    0x00000012u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
++);
++const uint kGlyph2[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x01231000u, 0x00000000u, 0x00000000u, 0x04664100u,
++    0x00000000u, 0x00000000u, 0x259a6200u, 0x00000000u, 0x00000000u, 0x25996200u, 0x00000000u, 0x00000000u,
++    0x04564100u, 0x00000000u, 0x00000000u, 0x00221000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
++);
++const uint kGlyph3[60] = uint[60](
++    0x20000000u, 0x00000233u, 0x00000000u, 0x41000000u, 0x00000477u, 0x00000000u, 0x62000000u, 0x0000037au,
++    0x00000000u, 0x83000000u, 0x0000026au, 0x00000000u, 0x95100000u, 0x00000148u, 0x00000000u, 0xa6200000u,
++    0x00000037u, 0x00000000u, 0x98300000u, 0x00000025u, 0x00000000u, 0x89520000u, 0x00000014u, 0x00000000u,
++    0x6a630000u, 0x00000003u, 0x00000000u, 0x59840000u, 0x00000001u, 0x00000000u, 0x47a51000u, 0x00000001u,
++    0x00000000u, 0x36b73000u, 0x00000000u, 0x00000000u, 0x25994000u, 0x00000000u, 0x00000000u, 0x047a5200u,
++    0x00000000u, 0x00000000u, 0x036a7300u, 0x00000000u, 0x00000000u, 0x01498410u, 0x00000000u, 0x00000000u,
++    0x0047a520u, 0x00000000u, 0x00000000u, 0x00269730u, 0x00000000u, 0x00000000u, 0x00144420u, 0x00000000u,
++    0x00000000u, 0x00001100u, 0x00000000u, 0x00000000u
++);
++const uint kGlyph4[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x21000000u, 0x00000122u,
++    0x00000000u, 0x54200000u, 0x00013566u, 0x00000000u, 0xa8530000u, 0x001469aau, 0x00000000u, 0x8a852000u,
++    0x0036a977u, 0x00000000u, 0x47b84000u, 0x0259a643u, 0x00000000u, 0x25a95100u, 0x036a8410u, 0x00000000u,
++    0x148a5200u, 0x047b6300u, 0x00000000u, 0x047a6200u, 0x048a6200u, 0x00000000u, 0x047a6200u, 0x048a6200u,
++    0x00000000u, 0x148a5200u, 0x047a6300u, 0x00000000u, 0x25995100u, 0x036a8410u, 0x00000000u, 0x47b74000u,
++    0x0259a643u, 0x00000000u, 0x8a952000u, 0x0036a987u, 0x00000000u, 0x98530000u, 0x001469aau, 0x00000000u,
++    0x54200000u, 0x00013566u, 0x00000000u, 0x21000000u, 0x00000122u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
++);
++const uint kGlyph5[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22222100u, 0x00000000u,
++    0x00000000u, 0x55555410u, 0x00000003u, 0x00000000u, 0x7aaa9510u, 0x00000004u, 0x00000000u, 0x7a777510u,
++    0x00000004u, 0x00000000u, 0x7a633200u, 0x00000004u, 0x00000000u, 0x7a620000u, 0x00000004u, 0x00000000u,
++    0x7a620000u, 0x00000004u, 0x00000000u, 0x7a620000u, 0x00000004u, 0x00000000u, 0x7a620000u, 0x00000004u,
++    0x00000000u, 0x7a620000u, 0x00000004u, 0x00000000u, 0x7a620000u, 0x00000004u, 0x00000000u, 0x7a620000u,
++    0x00000004u, 0x00000000u, 0x7a620000u, 0x00000004u, 0x00000000u, 0x7a620000u, 0x00000004u, 0x00000000u,
++    0x55520000u, 0x00000003u, 0x00000000u, 0x22100000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
++);
++const uint kGlyph6[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22100000u, 0x00000012u,
++    0x00000000u, 0x65532000u, 0x00002456u, 0x00000000u, 0xaa974200u, 0x0001479au, 0x00000000u, 0x779a8410u,
++    0x00036a97u, 0x00000000u, 0x34585400u, 0x00048a64u, 0x00000000u, 0x00343100u, 0x00049a52u, 0x00000000u,
++    0x00010000u, 0x00047b63u, 0x00000000u, 0x30000000u, 0x00036a95u, 0x00000000u, 0x53100000u, 0x000147a8u,
++    0x00000000u, 0x96310000u, 0x0000247au, 0x00000000u, 0xa9631000u, 0x00000147u, 0x00000000u, 0x7a963100u,
++    0x00133334u, 0x00000000u, 0x77b96300u, 0x00367777u, 0x00000000u, 0xaaaa7300u, 0x0036aaaau, 0x00000000u,
++    0x55555200u, 0x00255555u, 0x00000000u, 0x22222000u, 0x00012222u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
++);
++const uint kGlyph7[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22222000u, 0x00002222u,
++    0x00000000u, 0x55555300u, 0x00035555u, 0x00000000u, 0xaaaa7300u, 0x00047aaau, 0x00000000u, 0x77777300u,
++    0x00036a97u, 0x00000000u, 0x43333100u, 0x000147a8u, 0x00000000u, 0x64100000u, 0x0000258au, 0x00000000u,
++    0xa6300000u, 0x00002458u, 0x00000000u, 0xb8400000u, 0x0002479au, 0x00000000u, 0x77400000u, 0x00047a97u,
++    0x00000000u, 0x33200000u, 0x00159a54u, 0x00000000u, 0x00134100u, 0x0015a941u, 0x00000000u, 0x34466300u,
++    0x00159964u, 0x00000000u, 0x788a9510u, 0x00047a98u, 0x00000000u, 0xaa986400u, 0x0002479au, 0x00000000u,
++    0x66543100u, 0x00002355u, 0x00000000u, 0x22210000u, 0x00000012u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
++);
++const uint kGlyph8[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00012220u,
++    0x00000000u, 0x00000000u, 0x00035552u, 0x00000000u, 0x20000000u, 0x00047a85u, 0x00000000u, 0x41000000u,
++    0x000147a7u, 0x00000000u, 0x63000000u, 0x0000258au, 0x00000000u, 0x95300000u, 0x00012369u, 0x00000000u,
++    0xa8520000u, 0x00145546u, 0x00000000u, 0x7a841000u, 0x0025a844u, 0x00000000u, 0x48a64100u, 0x1335a843u,
++    0x00000000u, 0x77996300u, 0x3677a977u, 0x00000000u, 0xaaaa7300u, 0x36aaaaaau, 0x00000000u, 0x55555200u,
++    0x2555a955u, 0x00000000u, 0x22222000u, 0x0125a942u, 0x00000000u, 0x00000000u, 0x0015a941u, 0x00000000u,
++    0x00000000u, 0x00145540u, 0x00000000u, 0x00000000u, 0x00012210u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
++);
++const uint kGlyph9[60] = uint[60](
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22220000u, 0x00012222u,
+     0x00000000u, 0x55552000u, 0x00035555u, 0x00000000u, 0xaaa63000u, 0x00048aaau, 0x00000000u, 0x77b73000u,
+     0x00047777u, 0x00000000u, 0x36a84000u, 0x00023333u, 0x00000000u, 0x25a84000u, 0x00000122u, 0x00000000u,
+@@ -27,7 +135,57 @@ const uint kGlyph0[60] = uint[60](
+     0x65542000u, 0x00002456u, 0x00000000u, 0x22100000u, 0x00000022u, 0x00000000u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph1[60] = uint[60](
++const uint kGlyph10[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x10000000u, 0x00001222u,
++    0x00000000u, 0x54200000u, 0x00245666u, 0x00000000u, 0x97520000u, 0x00379aaau, 0x00000000u, 0x8a852000u,
++    0x00268777u, 0x00000000u, 0x57a73000u, 0x00145333u, 0x00000000u, 0x25a95100u, 0x00011233u, 0x00000000u,
++    0x648a5200u, 0x00034666u, 0x00000000u, 0xa87a6200u, 0x00258aaau, 0x00000000u, 0x799a6200u, 0x0148b866u,
++    0x00000000u, 0x36aa6200u, 0x025a8532u, 0x00000000u, 0x25a95100u, 0x026a8400u, 0x00000000u, 0x47a84000u,
++    0x025a9533u, 0x00000000u, 0x8a952000u, 0x0047a877u, 0x00000000u, 0x98630000u, 0x002479aau, 0x00000000u,
++    0x54310000u, 0x00024566u, 0x00000000u, 0x21000000u, 0x00000222u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
++);
++const uint kGlyph11[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22222000u, 0x00022222u,
++    0x00000000u, 0x55555300u, 0x00355555u, 0x00000000u, 0xaaaa8400u, 0x0037aaaau, 0x00000000u, 0x777a8400u,
++    0x0037b777u, 0x00000000u, 0x336a8400u, 0x00259953u, 0x00000000u, 0x02688400u, 0x00147a73u, 0x00000000u,
++    0x11344200u, 0x00026a85u, 0x00000000u, 0x30000000u, 0x000148a6u, 0x00000000u, 0x41000000u, 0x000036a8u,
++    0x00000000u, 0x63000000u, 0x0000158au, 0x00000000u, 0x84100000u, 0x0000036bu, 0x00000000u, 0x95200000u,
++    0x00000259u, 0x00000000u, 0xb8400000u, 0x00000047u, 0x00000000u, 0x99520000u, 0x00000025u, 0x00000000u,
++    0x55510000u, 0x00000004u, 0x00000000u, 0x22100000u, 0x00000001u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
++);
++const uint kGlyph12[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x21000000u, 0x00000122u,
++    0x00000000u, 0x65420000u, 0x00013556u, 0x00000000u, 0xa9752000u, 0x002479aau, 0x00000000u, 0x79a74000u,
++    0x0047a977u, 0x00000000u, 0x36a94100u, 0x01599533u, 0x00000000u, 0x25995100u, 0x01599521u, 0x00000000u,
++    0x57a84000u, 0x0047a855u, 0x00000000u, 0xab752000u, 0x00257ba9u, 0x00000000u, 0x79a84100u, 0x0147a977u,
++    0x00000000u, 0x458a6200u, 0x026a9543u, 0x00000000u, 0x047b6200u, 0x036b8300u, 0x00000000u, 0x358a6200u,
++    0x036a8533u, 0x00000000u, 0x78b85100u, 0x0158a977u, 0x00000000u, 0xa9753000u, 0x002579aau, 0x00000000u,
++    0x65420000u, 0x00024566u, 0x00000000u, 0x22000000u, 0x00000122u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
++);
++const uint kGlyph13[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22100000u, 0x00000022u,
++    0x00000000u, 0x65430000u, 0x00002456u, 0x00000000u, 0xa9853000u, 0x0002579au, 0x00000000u, 0x77a95200u,
++    0x00147a87u, 0x00000000u, 0x347b7300u, 0x0036a853u, 0x00000000u, 0x026a8400u, 0x0047b730u, 0x00000000u,
++    0x247b7400u, 0x0048b843u, 0x00000000u, 0x679a6200u, 0x0149aa86u, 0x00000000u, 0xaa974100u, 0x0149a79au,
++    0x00000000u, 0x66531000u, 0x0049a656u, 0x00000000u, 0x33210000u, 0x0037b743u, 0x00000000u, 0x33442000u,
++    0x00259964u, 0x00000000u, 0x77884000u, 0x00047a98u, 0x00000000u, 0xaa985100u, 0x0001468au, 0x00000000u,
++    0x66543000u, 0x00001345u, 0x00000000u, 0x22210000u, 0x00000012u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
++);
++const uint kGlyph14[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00221000u,
++    0x00000000u, 0x00000000u, 0x04564100u, 0x00000000u, 0x00000000u, 0x25996200u, 0x00000000u, 0x00000000u,
++    0x25aa6200u, 0x00000000u, 0x00000000u, 0x14664100u, 0x00000000u, 0x00000000u, 0x01231000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x01321000u, 0x00000000u, 0x00000000u, 0x14664100u,
++    0x00000000u, 0x00000000u, 0x25aa6300u, 0x00000000u, 0x00000000u, 0x259a6200u, 0x00000000u, 0x00000000u,
++    0x04554100u, 0x00000000u, 0x00000000u, 0x01221000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
++);
++const uint kGlyph15[60] = uint[60](
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x10000000u, 0x00000122u,
+     0x00000000u, 0x30000000u, 0x00002555u, 0x00000000u, 0x51000000u, 0x000037a9u, 0x00000000u, 0x63000000u,
+     0x0002599au, 0x00000000u, 0x95100000u, 0x00036a7au, 0x00000000u, 0xa6300000u, 0x00158957u, 0x00000000u,
+@@ -37,7 +195,7 @@ const uint kGlyph1[60] = uint[60](
+     0x01455510u, 0x55520000u, 0x00000003u, 0x00122100u, 0x22200000u, 0x00000000u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph2[60] = uint[60](
++const uint kGlyph16[60] = uint[60](
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22220000u, 0x00011222u,
+     0x00000000u, 0x55552000u, 0x01345555u, 0x00000000u, 0xaaa63000u, 0x14689aaau, 0x00000000u, 0x77b63000u,
+     0x269a8777u, 0x00000000u, 0x47b63000u, 0x37b74433u, 0x00000000u, 0x47b62000u, 0x47b63111u, 0x00000000u,
+@@ -47,7 +205,7 @@ const uint kGlyph2[60] = uint[60](
+     0x55552000u, 0x02455555u, 0x00000000u, 0x22210000u, 0x00012222u, 0x00000000u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph3[60] = uint[60](
++const uint kGlyph17[60] = uint[60](
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x10000000u, 0x00012222u,
+     0x00000000u, 0x43100000u, 0x01355665u, 0x00000000u, 0x86420000u, 0x2469aaa9u, 0x00000000u, 0xaa741000u,
+     0x47a97778u, 0x00000001u, 0x79a63000u, 0x46864334u, 0x00000000u, 0x47a94100u, 0x13421001u, 0x00000000u,
+@@ -57,7 +215,7 @@ const uint kGlyph3[60] = uint[60](
+     0x43100000u, 0x01355665u, 0x00000000u, 0x10000000u, 0x00012222u, 0x00000000u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph4[60] = uint[60](
++const uint kGlyph18[60] = uint[60](
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22220000u, 0x00011222u,
+     0x00000000u, 0x55552000u, 0x01345555u, 0x00000000u, 0xaaa63000u, 0x14689aaau, 0x00000000u, 0x77b63000u,
+     0x47aa8777u, 0x00000001u, 0x47b63000u, 0x7a964433u, 0x00000003u, 0x47b63000u, 0x9a631000u, 0x00000025u,
+@@ -67,7 +225,7 @@ const uint kGlyph4[60] = uint[60](
+     0x55552000u, 0x01345555u, 0x00000000u, 0x22220000u, 0x00011222u, 0x00000000u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph5[60] = uint[60](
++const uint kGlyph19[60] = uint[60](
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22220000u, 0x00122222u,
+     0x00000000u, 0x55552000u, 0x02555555u, 0x00000000u, 0xaaa63000u, 0x026aaaaau, 0x00000000u, 0x77b63000u,
+     0x02677777u, 0x00000000u, 0x47b62000u, 0x01333333u, 0x00000000u, 0x47b62000u, 0x00011111u, 0x00000000u,
+@@ -77,7 +235,17 @@ const uint kGlyph5[60] = uint[60](
+     0x55552000u, 0x03555555u, 0x00000000u, 0x22210000u, 0x00222222u, 0x00000000u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph6[60] = uint[60](
++const uint kGlyph20[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22220000u, 0x00122222u,
++    0x00000000u, 0x55552000u, 0x02555555u, 0x00000000u, 0xaaa63000u, 0x026aaaaau, 0x00000000u, 0x77b63000u,
++    0x02677777u, 0x00000000u, 0x47b62000u, 0x01333333u, 0x00000000u, 0x47b62000u, 0x00000000u, 0x00000000u,
++    0x47b62000u, 0x00133333u, 0x00000000u, 0x67b62000u, 0x00366666u, 0x00000000u, 0xaab62000u, 0x0047aaaau,
++    0x00000000u, 0x67b63000u, 0x00366666u, 0x00000000u, 0x37b63000u, 0x00122222u, 0x00000000u, 0x37b63000u,
++    0x00000000u, 0x00000000u, 0x37b63000u, 0x00000000u, 0x00000000u, 0x37a63000u, 0x00000000u, 0x00000000u,
++    0x35552000u, 0x00000000u, 0x00000000u, 0x02220000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
++);
++const uint kGlyph21[60] = uint[60](
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x10000000u, 0x00012222u,
+     0x00000000u, 0x43100000u, 0x02355665u, 0x00000000u, 0x86420000u, 0x2579aaa9u, 0x00000000u, 0xaa741000u,
+     0x48a97778u, 0x00000001u, 0x69a63000u, 0x36854334u, 0x00000000u, 0x47a94100u, 0x13420001u, 0x00000000u,
+@@ -87,7 +255,7 @@ const uint kGlyph6[60] = uint[60](
+     0x43100000u, 0x02355665u, 0x00000000u, 0x10000000u, 0x00012222u, 0x00000000u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph7[60] = uint[60](
++const uint kGlyph22[60] = uint[60](
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x02220000u, 0x12210000u,
+     0x00000000u, 0x35552000u, 0x55530000u, 0x00000001u, 0x37a63000u, 0x5a840000u, 0x00000002u, 0x37b63000u,
+     0x5b840000u, 0x00000002u, 0x37b63000u, 0x5b840000u, 0x00000002u, 0x37b63000u, 0x5b841111u, 0x00000002u,
+@@ -97,7 +265,7 @@ const uint kGlyph7[60] = uint[60](
+     0x35552000u, 0x55530000u, 0x00000001u, 0x02220000u, 0x12210000u, 0x00000000u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph8[60] = uint[60](
++const uint kGlyph23[60] = uint[60](
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x02220000u, 0x00000000u,
+     0x00000000u, 0x35552000u, 0x00000000u, 0x00000000u, 0x37a63000u, 0x00000000u, 0x00000000u, 0x37b63000u,
+     0x00000000u, 0x00000000u, 0x37b63000u, 0x00000000u, 0x00000000u, 0x37b63000u, 0x00000000u, 0x00000000u,
+@@ -107,7 +275,27 @@ const uint kGlyph8[60] = uint[60](
+     0x35552000u, 0x00000000u, 0x00000000u, 0x02220000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph9[60] = uint[60](
++const uint kGlyph24[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22221000u, 0x00000122u,
++    0x00000000u, 0x55555100u, 0x00002555u, 0x00000000u, 0xaaaa5200u, 0x000026aau, 0x00000000u, 0x77775200u,
++    0x000026a9u, 0x00000000u, 0x43333000u, 0x000026a9u, 0x00000000u, 0x40000000u, 0x000026a9u, 0x00000000u,
++    0x40000000u, 0x000026a9u, 0x00000000u, 0x40000000u, 0x000026a9u, 0x00000000u, 0x40000000u, 0x000026a9u,
++    0x00000000u, 0x40000000u, 0x000026a9u, 0x00000000u, 0x40134200u, 0x000026a9u, 0x00000000u, 0x53467410u,
++    0x00001599u, 0x00000000u, 0x8779a520u, 0x0000147bu, 0x00000000u, 0xaaa96410u, 0x00000258u, 0x00000000u,
++    0x56553100u, 0x00000034u, 0x00000000u, 0x22210000u, 0x00000001u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
++);
++const uint kGlyph25[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x02220000u, 0x12210000u,
++    0x00000000u, 0x35552000u, 0x45552000u, 0x00000001u, 0x47a63000u, 0x47a85200u, 0x00000001u, 0x37b63000u,
++    0x257a8520u, 0x00000000u, 0x37b63000u, 0x0257a852u, 0x00000000u, 0x37b63000u, 0x00258a74u, 0x00000000u,
++    0x47b63000u, 0x000258a7u, 0x00000000u, 0x77b63000u, 0x0000359au, 0x00000000u, 0xa7b63000u, 0x000258a9u,
++    0x00000000u, 0x9bb63000u, 0x00258b85u, 0x00000000u, 0x69b63000u, 0x0147a853u, 0x00000000u, 0x37b63000u,
++    0x147a9531u, 0x00000000u, 0x37b63000u, 0x36996300u, 0x00000000u, 0x47a63000u, 0x59a64100u, 0x00000002u,
++    0x35552000u, 0x55541000u, 0x00000002u, 0x02210000u, 0x22210000u, 0x00000000u, 0x00000000u, 0x00000000u,
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
++);
++const uint kGlyph26[60] = uint[60](
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x02220000u, 0x00000000u,
+     0x00000000u, 0x35552000u, 0x00000000u, 0x00000000u, 0x37a63000u, 0x00000000u, 0x00000000u, 0x37b63000u,
+     0x00000000u, 0x00000000u, 0x37b63000u, 0x00000000u, 0x00000000u, 0x37b63000u, 0x00000000u, 0x00000000u,
+@@ -117,7 +305,7 @@ const uint kGlyph9[60] = uint[60](
+     0x55552000u, 0x01555555u, 0x00000000u, 0x22210000u, 0x00122222u, 0x00000000u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph10[60] = uint[60](
++const uint kGlyph27[60] = uint[60](
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x01220000u, 0x10000000u,
+     0x00000022u, 0x25552000u, 0x41000000u, 0x00000355u, 0x47a63000u, 0x63000001u, 0x0000037au, 0x6ab63000u,
+     0x85200003u, 0x0000047bu, 0x8cb63000u, 0xa7400015u, 0x0000047bu, 0xa7b63000u, 0x99520037u, 0x0000047au,
+@@ -127,7 +315,7 @@ const uint kGlyph10[60] = uint[60](
+     0x35552000u, 0x52000000u, 0x00000355u, 0x02210000u, 0x10000000u, 0x00000022u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph11[60] = uint[60](
++const uint kGlyph28[60] = uint[60](
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x01220000u, 0x12210000u,
+     0x00000000u, 0x25552000u, 0x55530000u, 0x00000002u, 0x58a63000u, 0x6a840002u, 0x00000002u, 0x7bb63000u,
+     0x6a840014u, 0x00000002u, 0xaab63000u, 0x6a840147u, 0x00000002u, 0xa7b63000u, 0x6a840369u, 0x00000002u,
+@@ -137,7 +325,7 @@ const uint kGlyph11[60] = uint[60](
+     0x35552000u, 0x55530000u, 0x00000001u, 0x02220000u, 0x12200000u, 0x00000000u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph12[60] = uint[60](
++const uint kGlyph29[60] = uint[60](
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x10000000u, 0x00012222u,
+     0x00000000u, 0x43100000u, 0x02355665u, 0x00000000u, 0x86410000u, 0x2578aaa9u, 0x00000000u, 0xaa641000u,
+     0x58a97778u, 0x00000002u, 0x69a63000u, 0x7b854334u, 0x00000014u, 0x46a84100u, 0xa9520001u, 0x00000026u,
+@@ -147,7 +335,7 @@ const uint kGlyph12[60] = uint[60](
+     0x43100000u, 0x02355665u, 0x00000000u, 0x10000000u, 0x00012222u, 0x00000000u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph13[60] = uint[60](
++const uint kGlyph30[60] = uint[60](
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22220000u, 0x00001222u,
+     0x00000000u, 0x55552000u, 0x00234555u, 0x00000000u, 0xaaa63000u, 0x025789aau, 0x00000000u, 0x77b63000u,
+     0x158a9777u, 0x00000000u, 0x47b63000u, 0x26a95433u, 0x00000000u, 0x37b63000u, 0x37b73000u, 0x00000000u,
+@@ -157,7 +345,17 @@ const uint kGlyph13[60] = uint[60](
+     0x35552000u, 0x00000000u, 0x00000000u, 0x02220000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph14[60] = uint[60](
++const uint kGlyph31[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x10000000u, 0x00012222u,
++    0x00000000u, 0x43100000u, 0x02355665u, 0x00000000u, 0x86410000u, 0x2578aaa9u, 0x00000000u, 0xaa641000u,
++    0x58a97778u, 0x00000002u, 0x6aa63000u, 0x7a854334u, 0x00000014u, 0x46a84100u, 0xa9530001u, 0x00000026u,
++    0x159a5200u, 0xb7300000u, 0x00000036u, 0x047a6200u, 0xa6300000u, 0x00000047u, 0x048a6200u, 0xa6300000u,
++    0x00000047u, 0x159a5200u, 0xb7300000u, 0x00000037u, 0x46a85100u, 0xa9520001u, 0x00000025u, 0x69a63000u,
++    0x7b854334u, 0x00000014u, 0xaa741000u, 0x58a98778u, 0x00000002u, 0x86410000u, 0x3579abaau, 0x00000034u,
++    0x53100000u, 0x6557a965u, 0x00000258u, 0x10000000u, 0xa9aa8532u, 0x00000258u, 0x00000000u, 0x67765300u,
++    0x00000035u, 0x00000000u, 0x34431000u, 0x00000002u
++);
++const uint kGlyph32[60] = uint[60](
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22220000u, 0x00001222u,
+     0x00000000u, 0x55552000u, 0x00234555u, 0x00000000u, 0xaaa63000u, 0x025789aau, 0x00000000u, 0x77b63000u,
+     0x148a9777u, 0x00000000u, 0x47b63000u, 0x36a85433u, 0x00000000u, 0x47b63000u, 0x37b63000u, 0x00000000u,
+@@ -167,7 +365,7 @@ const uint kGlyph14[60] = uint[60](
+     0x35552000u, 0x35552000u, 0x00000000u, 0x02220000u, 0x12220000u, 0x00000000u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph15[60] = uint[60](
++const uint kGlyph33[60] = uint[60](
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x21000000u, 0x00001222u,
+     0x00000000u, 0x65420000u, 0x00024566u, 0x00000000u, 0xa9752000u, 0x002589aau, 0x00000000u, 0x79a84000u,
+     0x0036a877u, 0x00000000u, 0x35995100u, 0x00246433u, 0x00000000u, 0x249a5200u, 0x00023101u, 0x00000000u,
+@@ -177,7 +375,7 @@ const uint kGlyph15[60] = uint[60](
+     0x65431000u, 0x00023556u, 0x00000000u, 0x22100000u, 0x00000122u, 0x00000000u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph16[60] = uint[60](
++const uint kGlyph34[60] = uint[60](
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22222100u, 0x00122222u,
+     0x00000000u, 0x55555410u, 0x01555555u, 0x00000000u, 0xaaaa9510u, 0x025aaaaau, 0x00000000u, 0xa7777510u,
+     0x02577779u, 0x00000000u, 0xa4333200u, 0x00333359u, 0x00000000u, 0xa4100000u, 0x00000159u, 0x00000000u,
+@@ -187,7 +385,7 @@ const uint kGlyph16[60] = uint[60](
+     0x54000000u, 0x00000145u, 0x00000000u, 0x21000000u, 0x00000012u, 0x00000000u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph17[60] = uint[60](
++const uint kGlyph35[60] = uint[60](
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x02220000u, 0x12210000u,
+     0x00000000u, 0x35552000u, 0x45541000u, 0x00000001u, 0x37a63000u, 0x59951000u, 0x00000001u, 0x37b63000u,
+     0x59951000u, 0x00000001u, 0x37b63000u, 0x59951000u, 0x00000001u, 0x37b63000u, 0x59951000u, 0x00000001u,
+@@ -197,126 +395,56 @@ const uint kGlyph17[60] = uint[60](
+     0x53100000u, 0x00245665u, 0x00000000u, 0x10000000u, 0x00002222u, 0x00000000u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph18[60] = uint[60](
+-    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x21000000u, 0x00000122u,
+-    0x00000000u, 0x54200000u, 0x00013566u, 0x00000000u, 0xa8530000u, 0x001469aau, 0x00000000u, 0x8a852000u,
+-    0x0036a977u, 0x00000000u, 0x47b84000u, 0x0259a643u, 0x00000000u, 0x25a95100u, 0x036a8410u, 0x00000000u,
+-    0x148a5200u, 0x047b6300u, 0x00000000u, 0x047a6200u, 0x048a6200u, 0x00000000u, 0x047a6200u, 0x048a6200u,
+-    0x00000000u, 0x148a5200u, 0x047a6300u, 0x00000000u, 0x25995100u, 0x036a8410u, 0x00000000u, 0x47b74000u,
+-    0x0259a643u, 0x00000000u, 0x8a952000u, 0x0036a987u, 0x00000000u, 0x98530000u, 0x001469aau, 0x00000000u,
+-    0x54200000u, 0x00013566u, 0x00000000u, 0x21000000u, 0x00000122u, 0x00000000u, 0x00000000u, 0x00000000u,
++const uint kGlyph36[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00122100u, 0x12200000u,
++    0x00000000u, 0x01455510u, 0x55530000u, 0x00000001u, 0x026a9510u, 0x69941000u, 0x00000002u, 0x047b7300u,
++    0x47a63000u, 0x00000001u, 0x25995200u, 0x36a84100u, 0x00000000u, 0x37b84000u, 0x148a6200u, 0x00000000u,
++    0x59a62000u, 0x036a8401u, 0x00000000u, 0x7a841000u, 0x02599523u, 0x00000000u, 0x8a630000u, 0x0037b734u,
++    0x00000000u, 0xa8510000u, 0x00259956u, 0x00000000u, 0xb7300000u, 0x00047a68u, 0x00000000u, 0x95200000u,
++    0x00026a8au, 0x00000000u, 0x74000000u, 0x000148bbu, 0x00000000u, 0x52000000u, 0x000036a9u, 0x00000000u,
++    0x41000000u, 0x00001555u, 0x00000000u, 0x10000000u, 0x00000122u, 0x00000000u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph19[60] = uint[60](
+-    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22222100u, 0x00000000u,
+-    0x00000000u, 0x55555410u, 0x00000003u, 0x00000000u, 0x7aaa9510u, 0x00000004u, 0x00000000u, 0x7a777510u,
+-    0x00000004u, 0x00000000u, 0x7a633200u, 0x00000004u, 0x00000000u, 0x7a620000u, 0x00000004u, 0x00000000u,
+-    0x7a620000u, 0x00000004u, 0x00000000u, 0x7a620000u, 0x00000004u, 0x00000000u, 0x7a620000u, 0x00000004u,
+-    0x00000000u, 0x7a620000u, 0x00000004u, 0x00000000u, 0x7a620000u, 0x00000004u, 0x00000000u, 0x7a620000u,
+-    0x00000004u, 0x00000000u, 0x7a620000u, 0x00000004u, 0x00000000u, 0x7a620000u, 0x00000004u, 0x00000000u,
+-    0x55520000u, 0x00000003u, 0x00000000u, 0x22100000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u,
+-    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+-);
+-const uint kGlyph20[60] = uint[60](
+-    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22100000u, 0x00000012u,
+-    0x00000000u, 0x65532000u, 0x00002456u, 0x00000000u, 0xaa974200u, 0x0001479au, 0x00000000u, 0x779a8410u,
+-    0x00036a97u, 0x00000000u, 0x34585400u, 0x00048a64u, 0x00000000u, 0x00343100u, 0x00049a52u, 0x00000000u,
+-    0x00010000u, 0x00047b63u, 0x00000000u, 0x30000000u, 0x00036a95u, 0x00000000u, 0x53100000u, 0x000147a8u,
+-    0x00000000u, 0x96310000u, 0x0000247au, 0x00000000u, 0xa9631000u, 0x00000147u, 0x00000000u, 0x7a963100u,
+-    0x00133334u, 0x00000000u, 0x77b96300u, 0x00367777u, 0x00000000u, 0xaaaa7300u, 0x0036aaaau, 0x00000000u,
+-    0x55555200u, 0x00255555u, 0x00000000u, 0x22222000u, 0x00012222u, 0x00000000u, 0x00000000u, 0x00000000u,
+-    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+-);
+-const uint kGlyph21[60] = uint[60](
+-    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22222000u, 0x00002222u,
+-    0x00000000u, 0x55555300u, 0x00035555u, 0x00000000u, 0xaaaa7300u, 0x00047aaau, 0x00000000u, 0x77777300u,
+-    0x00036a97u, 0x00000000u, 0x43333100u, 0x000147a8u, 0x00000000u, 0x64100000u, 0x0000258au, 0x00000000u,
+-    0xa6300000u, 0x00002458u, 0x00000000u, 0xb8400000u, 0x0002479au, 0x00000000u, 0x77400000u, 0x00047a97u,
+-    0x00000000u, 0x33200000u, 0x00159a54u, 0x00000000u, 0x00134100u, 0x0015a941u, 0x00000000u, 0x34466300u,
+-    0x00159964u, 0x00000000u, 0x788a9510u, 0x00047a98u, 0x00000000u, 0xaa986400u, 0x0002479au, 0x00000000u,
+-    0x66543100u, 0x00002355u, 0x00000000u, 0x22210000u, 0x00000012u, 0x00000000u, 0x00000000u, 0x00000000u,
++const uint kGlyph37[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00222000u, 0x00221000u,
++    0x01221000u, 0x02555300u, 0x03555200u, 0x03554100u, 0x047a7300u, 0x149a6300u, 0x047a6200u, 0x159a5200u,
++    0x26ac8410u, 0x036b7300u, 0x36a84100u, 0x37b8a520u, 0x02598410u, 0x47b63000u, 0x48a7a730u, 0x0047a621u,
++    0x59952000u, 0x6a859841u, 0x0036a732u, 0x6a841000u, 0x7b748953u, 0x00259953u, 0x7b730000u, 0x99537a74u,
++    0x00047a64u, 0x99520000u, 0xa8425985u, 0x00036a85u, 0xa8410000u, 0xb63148a6u, 0x00015997u, 0xa7300000u,
++    0x952036b7u, 0x000147a8u, 0x95200000u, 0x8410259bu, 0x000036bbu, 0x84100000u, 0x6300047au, 0x000025aau,
++    0x53000000u, 0x52000255u, 0x00000455u, 0x20000000u, 0x10000022u, 0x00000122u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph22[60] = uint[60](
+-    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00012220u,
+-    0x00000000u, 0x00000000u, 0x00035552u, 0x00000000u, 0x20000000u, 0x00047a85u, 0x00000000u, 0x41000000u,
+-    0x000147a7u, 0x00000000u, 0x63000000u, 0x0000258au, 0x00000000u, 0x95300000u, 0x00012369u, 0x00000000u,
+-    0xa8520000u, 0x00145546u, 0x00000000u, 0x7a841000u, 0x0025a844u, 0x00000000u, 0x48a64100u, 0x1335a843u,
+-    0x00000000u, 0x77996300u, 0x3677a977u, 0x00000000u, 0xaaaa7300u, 0x36aaaaaau, 0x00000000u, 0x55555200u,
+-    0x2555a955u, 0x00000000u, 0x22222000u, 0x0125a942u, 0x00000000u, 0x00000000u, 0x0015a941u, 0x00000000u,
+-    0x00000000u, 0x00145540u, 0x00000000u, 0x00000000u, 0x00012210u, 0x00000000u, 0x00000000u, 0x00000000u,
++const uint kGlyph38[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00222000u, 0x01221000u,
++    0x00000000u, 0x03555300u, 0x15554100u, 0x00000000u, 0x258a6300u, 0x158a6310u, 0x00000000u, 0x48b74100u,
++    0x03599631u, 0x00000000u, 0x6a852000u, 0x0037a854u, 0x00000000u, 0x99530000u, 0x00147a76u, 0x00000000u,
++    0xa7410000u, 0x000258a8u, 0x00000000u, 0x84100000u, 0x0000359bu, 0x00000000u, 0x95200000u, 0x000146aau,
++    0x00000000u, 0xa8410000u, 0x00036997u, 0x00000000u, 0x8a731000u, 0x00259a75u, 0x00000000u, 0x6a962000u,
++    0x0147b843u, 0x00000000u, 0x47a85200u, 0x046a8521u, 0x00000000u, 0x247a8400u, 0x25996300u, 0x00000000u,
++    0x02555300u, 0x25554100u, 0x00000000u, 0x00222100u, 0x02221000u, 0x00000000u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph23[60] = uint[60](
+-    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22220000u, 0x00012222u,
+-    0x00000000u, 0x55552000u, 0x00035555u, 0x00000000u, 0xaaa63000u, 0x00048aaau, 0x00000000u, 0x77b73000u,
+-    0x00047777u, 0x00000000u, 0x36a84000u, 0x00023333u, 0x00000000u, 0x25a84000u, 0x00000122u, 0x00000000u,
+-    0x66984000u, 0x00002456u, 0x00000000u, 0xaab94100u, 0x0003589au, 0x00000000u, 0x66665100u, 0x00158a87u,
+-    0x00000000u, 0x33332000u, 0x0026a853u, 0x00000000u, 0x00243100u, 0x0026b840u, 0x00000000u, 0x34576200u,
+-    0x0026a853u, 0x00000000u, 0x789a8400u, 0x00147b88u, 0x00000000u, 0xaa975300u, 0x0002579au, 0x00000000u,
+-    0x65542000u, 0x00002456u, 0x00000000u, 0x22100000u, 0x00000022u, 0x00000000u, 0x00000000u, 0x00000000u,
++const uint kGlyph39[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00122100u, 0x01221000u,
++    0x00000000u, 0x01455510u, 0x15553000u, 0x00000000u, 0x036a9520u, 0x25995200u, 0x00000000u, 0x148a6300u,
++    0x036a8410u, 0x00000000u, 0x46a84100u, 0x0158a630u, 0x00000000u, 0x59952000u, 0x00269852u, 0x00000000u,
++    0x7a730000u, 0x00147a74u, 0x00000000u, 0xa8520000u, 0x00025996u, 0x00000000u, 0xa6300000u, 0x000037a9u,
++    0x00000000u, 0x84100000u, 0x0000158bu, 0x00000000u, 0x63000000u, 0x0000037bu, 0x00000000u, 0x63000000u,
++    0x0000037bu, 0x00000000u, 0x63000000u, 0x0000037bu, 0x00000000u, 0x63000000u, 0x0000037au, 0x00000000u,
++    0x52000000u, 0x00000355u, 0x00000000u, 0x20000000u, 0x00000022u, 0x00000000u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph24[60] = uint[60](
+-    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x10000000u, 0x00001222u,
+-    0x00000000u, 0x54200000u, 0x00245666u, 0x00000000u, 0x97520000u, 0x00379aaau, 0x00000000u, 0x8a852000u,
+-    0x00268777u, 0x00000000u, 0x57a73000u, 0x00145333u, 0x00000000u, 0x25a95100u, 0x00011233u, 0x00000000u,
+-    0x648a5200u, 0x00034666u, 0x00000000u, 0xa87a6200u, 0x00258aaau, 0x00000000u, 0x799a6200u, 0x0148b866u,
+-    0x00000000u, 0x36aa6200u, 0x025a8532u, 0x00000000u, 0x25a95100u, 0x026a8400u, 0x00000000u, 0x47a84000u,
+-    0x025a9533u, 0x00000000u, 0x8a952000u, 0x0047a877u, 0x00000000u, 0x98630000u, 0x002479aau, 0x00000000u,
+-    0x54310000u, 0x00024566u, 0x00000000u, 0x21000000u, 0x00000222u, 0x00000000u, 0x00000000u, 0x00000000u,
++const uint kGlyph40[60] = uint[60](
++    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22221000u, 0x00222222u,
++    0x00000000u, 0x55555200u, 0x03555555u, 0x00000000u, 0xaaaa6200u, 0x047aaaaau, 0x00000000u, 0x77776200u,
++    0x036a9777u, 0x00000000u, 0x33333100u, 0x0147b853u, 0x00000000u, 0x10000000u, 0x00258a74u, 0x00000000u,
++    0x40000000u, 0x000259a6u, 0x00000000u, 0x53000000u, 0x00003699u, 0x00000000u, 0x85200000u, 0x0000146au,
++    0x00000000u, 0xb8420000u, 0x00000147u, 0x00000000u, 0x8a741000u, 0x00000025u, 0x00000000u, 0x59a64100u,
++    0x02333333u, 0x00000000u, 0x77a96200u, 0x14777777u, 0x00000000u, 0xaaaa6200u, 0x149aaaaau, 0x00000000u,
++    0x55555200u, 0x04555555u, 0x00000000u, 0x22221000u, 0x01222222u, 0x00000000u, 0x00000000u, 0x00000000u,
+     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+ );
+-const uint kGlyph25[60] = uint[60](
+-    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22222000u, 0x00022222u,
+-    0x00000000u, 0x55555300u, 0x00355555u, 0x00000000u, 0xaaaa8400u, 0x0037aaaau, 0x00000000u, 0x777a8400u,
+-    0x0037b777u, 0x00000000u, 0x336a8400u, 0x00259953u, 0x00000000u, 0x02688400u, 0x00147a73u, 0x00000000u,
+-    0x11344200u, 0x00026a85u, 0x00000000u, 0x30000000u, 0x000148a6u, 0x00000000u, 0x41000000u, 0x000036a8u,
+-    0x00000000u, 0x63000000u, 0x0000158au, 0x00000000u, 0x84100000u, 0x0000036bu, 0x00000000u, 0x95200000u,
+-    0x00000259u, 0x00000000u, 0xb8400000u, 0x00000047u, 0x00000000u, 0x99520000u, 0x00000025u, 0x00000000u,
+-    0x55510000u, 0x00000004u, 0x00000000u, 0x22100000u, 0x00000001u, 0x00000000u, 0x00000000u, 0x00000000u,
+-    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+-);
+-const uint kGlyph26[60] = uint[60](
+-    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x21000000u, 0x00000122u,
+-    0x00000000u, 0x65420000u, 0x00013556u, 0x00000000u, 0xa9752000u, 0x002479aau, 0x00000000u, 0x79a74000u,
+-    0x0047a977u, 0x00000000u, 0x36a94100u, 0x01599533u, 0x00000000u, 0x25995100u, 0x01599521u, 0x00000000u,
+-    0x57a84000u, 0x0047a855u, 0x00000000u, 0xab752000u, 0x00257ba9u, 0x00000000u, 0x79a84100u, 0x0147a977u,
+-    0x00000000u, 0x458a6200u, 0x026a9543u, 0x00000000u, 0x047b6200u, 0x036b8300u, 0x00000000u, 0x358a6200u,
+-    0x036a8533u, 0x00000000u, 0x78b85100u, 0x0158a977u, 0x00000000u, 0xa9753000u, 0x002579aau, 0x00000000u,
+-    0x65420000u, 0x00024566u, 0x00000000u, 0x22000000u, 0x00000122u, 0x00000000u, 0x00000000u, 0x00000000u,
+-    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+-);
+-const uint kGlyph27[60] = uint[60](
+-    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22100000u, 0x00000022u,
+-    0x00000000u, 0x65430000u, 0x00002456u, 0x00000000u, 0xa9853000u, 0x0002579au, 0x00000000u, 0x77a95200u,
+-    0x00147a87u, 0x00000000u, 0x347b7300u, 0x0036a853u, 0x00000000u, 0x026a8400u, 0x0047b730u, 0x00000000u,
+-    0x247b7400u, 0x0048b843u, 0x00000000u, 0x679a6200u, 0x0149aa86u, 0x00000000u, 0xaa974100u, 0x0149a79au,
+-    0x00000000u, 0x66531000u, 0x0049a656u, 0x00000000u, 0x33210000u, 0x0037b743u, 0x00000000u, 0x33442000u,
+-    0x00259964u, 0x00000000u, 0x77884000u, 0x00047a98u, 0x00000000u, 0xaa985100u, 0x0001468au, 0x00000000u,
+-    0x66543000u, 0x00001345u, 0x00000000u, 0x22210000u, 0x00000012u, 0x00000000u, 0x00000000u, 0x00000000u,
+-    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+-);
+-const uint kGlyph28[60] = uint[60](
+-    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x22210000u, 0x12200000u,
+-    0x00000000u, 0x56541000u, 0x45530014u, 0x00000000u, 0x99a74100u, 0x48852036u, 0x00000001u, 0x757a6200u,
+-    0x35974259u, 0x00000000u, 0x52597300u, 0x04696359u, 0x00000000u, 0x52497300u, 0x01478569u, 0x00000000u,
+-    0x64596300u, 0x2335986au, 0x00000000u, 0x98885200u, 0x57756a67u, 0x00000013u, 0x77752000u, 0x98896795u,
+-    0x00000036u, 0x44320000u, 0x85588598u, 0x00000148u, 0x63000000u, 0x7337946au, 0x00000149u, 0x95200000u,
+-    0x73379447u, 0x00000149u, 0x98410000u, 0x95587425u, 0x00000047u, 0x6a630000u, 0x89985203u, 0x00000025u,
+-    0x45530000u, 0x56652001u, 0x00000003u, 0x12200000u, 0x12210000u, 0x00000000u, 0x00000000u, 0x00000000u,
+-    0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u
+-);
+-const uint kGlyph29[60] = uint[60](
+-    0x20000000u, 0x00000233u, 0x00000000u, 0x41000000u, 0x00000477u, 0x00000000u, 0x62000000u, 0x0000037au,
+-    0x00000000u, 0x83000000u, 0x0000026au, 0x00000000u, 0x95100000u, 0x00000148u, 0x00000000u, 0xa6200000u,
+-    0x00000037u, 0x00000000u, 0x98300000u, 0x00000025u, 0x00000000u, 0x89520000u, 0x00000014u, 0x00000000u,
+-    0x6a630000u, 0x00000003u, 0x00000000u, 0x59840000u, 0x00000001u, 0x00000000u, 0x47a51000u, 0x00000001u,
+-    0x00000000u, 0x36b73000u, 0x00000000u, 0x00000000u, 0x25994000u, 0x00000000u, 0x00000000u, 0x047a5200u,
+-    0x00000000u, 0x00000000u, 0x036a7300u, 0x00000000u, 0x00000000u, 0x01498410u, 0x00000000u, 0x00000000u,
+-    0x0047a520u, 0x00000000u, 0x00000000u, 0x00269730u, 0x00000000u, 0x00000000u, 0x00144420u, 0x00000000u,
+-    0x00000000u, 0x00001100u, 0x00000000u, 0x00000000u
+-);
+ // One word of a glyph's field.
+ uint glyph_word(int glyph, int word)
+ {
+@@ -352,6 +480,243 @@ uint glyph_word(int glyph, int word)
+     case 27: return kGlyph27[word];
+     case 28: return kGlyph28[word];
+     case 29: return kGlyph29[word];
++    case 30: return kGlyph30[word];
++    case 31: return kGlyph31[word];
++    case 32: return kGlyph32[word];
++    case 33: return kGlyph33[word];
++    case 34: return kGlyph34[word];
++    case 35: return kGlyph35[word];
++    case 36: return kGlyph36[word];
++    case 37: return kGlyph37[word];
++    case 38: return kGlyph38[word];
++    case 39: return kGlyph39[word];
++    case 40: return kGlyph40[word];
+     }
+     return 0u;
+ }
++
++float glyph_texel(int glyph, int x, int y)
++{
++    x = clamp(x, 0, kGlyphWidth - 1);
++    y = clamp(y, 0, kGlyphHeight - 1);
++    int at = y * kGlyphWidth + x;
++    return float((glyph_word(glyph, at >> 3) >> uint((at & 7) * 4)) & 0xfu) / 15.0;
++}
++
++struct Pick
++{
++    int glyph;   // -1: no text here
++    int ink;
++    vec2 st;     // where in the glyph's field, in texels
++    float texel; // pixels per texel
++};
++
++float pen_step(int glyph, float cap, float tracking)
++{
++    return (glyph < 0 ? 0.30 * kGlyphCap / 0.70 : kAdvance[glyph]) * cap / kGlyphCap + tracking * cap;
++}
++
++// Takes the pixel for this glyph when it lies between the glyph's pen and the next one, at a pen
++// step the caller has already worked out.
++// at is where the pen stands (left end of the baseline), cap the height of a capital in pixels.
++void pick_glyph_step(inout Pick pick, int glyph, int ink, vec2 pixel, vec2 at, float step, float cap, float tracking)
++{
++    float texel = cap / kGlyphCap;
++    if (pixel.x < at.x - 0.5 * tracking * cap || pixel.x >= at.x + step - 0.5 * tracking * cap)
++        return;
++    pick.glyph = glyph;
++    pick.ink = ink;
++    pick.st = vec2((pixel.x - at.x) / texel + kGlyphLeft,
++                   float(kGlyphHeight) - ((pixel.y - at.y) / texel + kGlyphBase)) - 0.5;
++    pick.texel = texel;
++}
++
++void pick_glyph(inout Pick pick, int glyph, int ink, vec2 pixel, vec2 at, float cap, float tracking)
++{
++    pick_glyph_step(pick, glyph, ink, pixel, at, pen_step(glyph, cap, tracking), cap, tracking);
++}
++
++// How much of that glyph covers this pixel, 0 where there is none: the field sampled at the
++// pixel's place in it, its distance pushed across the outline at this size.
++float pick_cover(Pick pick)
++{
++    if (pick.glyph < 0 || pick.st.x <= -1.0 || pick.st.y <= -1.0 ||
++        pick.st.x >= float(kGlyphWidth) || pick.st.y >= float(kGlyphHeight))
++        return 0.0;
++    ivec2 i = ivec2(floor(pick.st));
++    vec2 f = pick.st - vec2(i);
++    float value = mix(mix(glyph_texel(pick.glyph, i.x, i.y), glyph_texel(pick.glyph, i.x + 1, i.y), f.x),
++                      mix(glyph_texel(pick.glyph, i.x, i.y + 1), glyph_texel(pick.glyph, i.x + 1, i.y + 1), f.x),
++                      f.y);
++    return clamp((value - 0.5) * 2.0 * kGlyphSpread * pick.texel + 0.5, 0.0, 1.0);
++}
++
++// One character of the overlay's line (hud.h, HudSnapshot): four go to a word, so this is one
++// of them.
++int hud_byte(uint words[28], int at)
++{
++    return int((words[at >> 2] >> uint((at & 3) * 8)) & 0xffu);
++}
++
++// The glyph for a character of that line, -1 where the font has none (drawn as a space).
++int hud_glyph(int code)
++{
++    return code >= 32 && code < 127 ? kCharIndex[code - 32] : -1;
++}
++
++// The one ink the overlay's line is drawn in when colours are off. It draws over whatever the
++// game shows, and a single colour reads against all of them; the loading screen's own ink is its
++// palette's (loading_scene.glsl), and the pick's ink field is left to it.
++const vec3 kHudInk = vec3(0.93, 0.96, 1.0);
++// The inks the line is drawn in when colours are on: labels dim, values bright, and the loads
++// coloured by how far they run (hud_number_ink decides which of the three).
++const int kHudInkLabel = 0;
++const int kHudInkValue = 1;
++const int kHudInkGood = 2;
++const int kHudInkWarn = 3;
++const int kHudInkBad = 4;
++// One of those inks, as a colour.
++vec3 hud_ink(int ink)
++{
++    if (ink == kHudInkLabel) return vec3(0.55, 0.62, 0.73);
++    if (ink == kHudInkGood) return vec3(0.42, 0.87, 0.58);
++    if (ink == kHudInkWarn) return vec3(0.97, 0.78, 0.33);
++    if (ink == kHudInkBad) return vec3(0.96, 0.45, 0.42);
++    return vec3(0.93, 0.96, 1.0); // kHudInkValue
++}
++// The characters the line is read by, as the bytes hud_byte returns them (ASCII). GLSL in this
++// build has no character literals, so they are named here.
++const int kAsciiZero = 48, kAsciiNine = 57;
++const int kAsciiDot = 46, kAsciiSlash = 47, kAsciiPercent = 37;
++const int kAsciiF = 70, kAsciiM = 77, kAsciiU = 85, kAsciiSpace = 32;
++// The ink a run of digits takes, by the sign that ends it and the number before it: the rate the
++// guest makes (F; of "30/60FPS" the first number), the worst frame's length (M), and a percentage.
++// A percentage is a load after CPU, GPU or another load, where less is better; anywhere else it
++// is the game's speed, where more is. A run with no sign after it — memory, a ping — is simply a
++// value. The thresholds are the ones the launcher settled on.
++int hud_number_ink(uint words[28], int at)
++{
++    // Walk past the digits and any '.' or '/' among them, to the sign that ends the run.
++    float value = 0.0, frac = 0.0, scale = 0.1;
++    bool point = false, have = false, second = false;
++    int end = at;
++    while (end < kHudTextMax)
++    {
++        int code = hud_byte(words, end);
++        int digit = code - kAsciiZero;
++        if (digit >= 0 && digit <= 9)
++        {
++            if (second) { }
++            else if (point) { frac += float(digit) * scale; scale *= 0.1; }
++            else value = value * 10.0 + float(digit);
++            have = true;
++        }
++        else if (code == kAsciiDot && have) point = true;
++        else if (code == kAsciiSlash && have) second = true; // the number after it is not the one judged
++        else break;
++        ++end;
++    }
++    if (!have) return kHudInkValue;
++    int sign = end < kHudTextMax ? hud_byte(words, end) : 0;
++    if (sign == kAsciiF)
++        return value >= 55.0 ? kHudInkGood : value >= 30.0 ? kHudInkWarn : kHudInkBad;
++    if (sign == kAsciiM)
++        return value <= 18.5 ? kHudInkGood : value <= 33.5 ? kHudInkWarn : kHudInkBad;
++    if (sign == kAsciiPercent)
++    {
++        int before = at >= 2 && hud_byte(words, at - 1) == kAsciiSpace ? hud_byte(words, at - 2) : 0;
++        if (before != kAsciiU && before != kAsciiPercent)
++            return value >= 95.0 ? kHudInkGood : value >= 80.0 ? kHudInkWarn : kHudInkBad; // the speed
++        return value <= 50.0 ? kHudInkGood : value <= 80.0 ? kHudInkWarn : kHudInkBad;
++    }
++    return kHudInkValue;
++}
++
++// How far the pen moves in the overlay's line: every digit takes the one width, so a number that
++// changes does not move what stands after it. Montserrat's own digits are proportional, which is
++// right for a word and wrong for a figure that is rewritten several times a second.
++float hud_step(int glyph, float cap)
++{
++    float advance = glyph >= kDigit && glyph <= kDigit + 9 ? kHudDigitAdvance
++                    : glyph < 0 ? 0.30 * kGlyphCap / 0.70 : kAdvance[glyph];
++    return advance * cap / kGlyphCap;
++}
++
++// How wide the whole line is, which is the chip's own width less its margin: hud.h sizes the box
++// the same way, in C++, before any of this is drawn.
++float hud_line_width(uint words[28], float cap)
++{
++    float width = 0.0;
++    for (int i = 0; i < kHudTextMax; ++i)
++    {
++        int code = hud_byte(words, i);
++        if (code == 0) break;
++        width += hud_step(hud_glyph(code), cap);
++    }
++    return width;
++}
++
++// The chip the line stands in: a rounded panel, quiet enough to read the picture through, and in
++// no colour of its own. local is
++// the pixel's place in the box, counted down and right from its top left corner; size is the
++// box's own size in pixels.
++vec4 hud_panel(vec2 local, vec2 size)
++{
++    float unit = size.y / kHudBoxUnits;
++    float radius = kHudRadiusUnits * unit;
++    vec2 half_size = 0.5 * size;
++    vec2 q = abs(local - half_size) - half_size + radius;
++    float edge = min(max(q.x, q.y), 0.0) + length(max(q, vec2(0.0))) - radius;
++    float inside = 1.0 - smoothstep(-0.75, 0.75, edge);
++    vec4 panel = vec4(vec3(0.05, 0.06, 0.095), 0.78 * inside);
++    return panel;
++}
++
++// The line with the left end of its baseline at `at`, at a cap of `cap` pixels; pixel has its
++// origin at the bottom left, as loading_scene's does. The line ends at its first NUL, and no
++// glyph standing past this pixel can take it, so both end the walk early. Each glyph's ink is
++// worked out here (labels dim, the numbers about them by the sign they end in) and left on the
++// pick; whether the line is drawn in those inks or one is the caller's, not this one's.
++void hud_pick(inout Pick pick, uint words[28], vec2 pixel, vec2 at, float cap)
++{
++    if (pixel.y < at.y - 0.5 * cap || pixel.y > at.y + 1.5 * cap || pixel.x < at.x - cap)
++        return;
++    float pen = at.x;
++    int ink = kHudInkLabel;   // what the next glyph is drawn in
++    int number = kHudInkValue; // the ink of the run of digits under the pen
++    bool inside = false;      // between a digit and the sign that ends it
++    for (int i = 0; i < kHudTextMax; ++i)
++    {
++        if (pen > pixel.x) break;
++        int code = hud_byte(words, i);
++        if (code == 0) break;
++        int glyph = hud_glyph(code);
++        bool digit = code >= kAsciiZero && code <= kAsciiNine;
++        if (!inside && digit)
++        {
++            // A run of digits begins: its ink is the sign that ends it and the number itself.
++            number = hud_number_ink(words, i);
++            inside = true;
++            ink = number;
++        }
++        else if (inside)
++        {
++            if (digit || code == kAsciiDot || code == kAsciiSlash)
++                ink = number; // still within the number
++            else
++            {
++                // The sign that ends it: a percent keeps the number's ink, a unit letter does not.
++                inside = false;
++                ink = code == kAsciiPercent ? number : kHudInkLabel;
++            }
++        }
++        if (glyph >= 0)
++        {
++            // A digit stands in the middle of the width every digit takes: at its left edge a
++            // narrow one (the 1) left a gap after it that read as a space ("1 0%").
++            float inset = digit ? 0.5 * (hud_step(glyph, cap) - kAdvance[glyph] * cap / kGlyphCap) : 0.0;
++            pick_glyph_step(pick, glyph, ink, pixel, vec2(pen + inset, at.y), hud_step(glyph, cap), cap, 0.0);
++        }
++        pen += hud_step(glyph, cap);
++    }
++}
+diff --git a/headless/performance.cpp b/headless/performance.cpp
+index 8ad84f8..3f83d0f 100644
+--- a/headless/performance.cpp
++++ b/headless/performance.cpp
+@@ -1056,6 +1056,89 @@ unsigned BusiestGuestCore() {
+     return busiest;
+ }
+ 
++void GuestCoreLoads(unsigned loads[4]) {
++    // As BusiestGuestCore, each core's own reading set against its previous one, but every quarter
++    // of a second and each of the four: a core that wrote nothing since the last look was asleep,
++    // which is no load; when it wakes, its next reading covers the whole stretch.
++    struct Core {
++        long long mono = 0, cpu = 0;
++        unsigned shown = ~0u;
++    };
++    static Core cores[4];
++    static long long asked = 0;
++    const long long now = ClockNs(CLOCK_MONOTONIC);
++    if (now > 0 && (asked == 0 || now - asked >= 250'000'000)) {
++        asked = now;
++        std::array<CpuSample, kGuestCores> samples;
++        {
++            std::lock_guard lock(workers_mutex);
++            std::copy_n(cpu_samples.begin(), kGuestCores, samples.begin());
++        }
++        for (unsigned i = 0; i < 4; ++i) {
++            const CpuSample& sample = samples[i];
++            Core& core = cores[i];
++            if (sample.epoch == ~0u || sample.cpu_ns < 0) {
++                core = {};
++            } else if (core.mono == 0) {
++                core.mono = sample.mono_ns;
++                core.cpu = sample.cpu_ns;
++            } else if (sample.mono_ns > core.mono) {
++                core.shown = HudPercent(sample.cpu_ns - core.cpu, sample.mono_ns - core.mono);
++                core.mono = sample.mono_ns;
++                core.cpu = sample.cpu_ns;
++            } else if (core.shown != ~0u) {
++                core.shown = 0;
++            }
++        }
++        sample_epoch.fetch_add(1, std::memory_order_relaxed);  // the next readings, please
++    }
++    for (unsigned i = 0; i < 4; ++i) loads[i] = cores[i].shown;
++}
++
++void MemoryPool(unsigned long long* free_bytes, unsigned long long* total_bytes) {
++    static long long checked = 0;
++    static unsigned long long free_pool = 0, total_pool = 0;
++    const long long now = ClockNs(CLOCK_MONOTONIC);
++    if (checked != 0 && now - checked < 1'000'000'000) {
++        *free_bytes = free_pool;
++        *total_bytes = total_pool;
++        return;
++    }
++    checked = now;
++#ifdef PS5_NATIVE
++    const std::int64_t total = sceKernelGetDirectMemorySize();
++    std::int64_t taken = 0, offset = 0;
++    DirectMemoryRegion region{};
++    unsigned regions = 0;
++    while (total > 0 && offset < total && regions < 8192 &&
++           sceKernelDirectMemoryQuery(offset, 1, &region, sizeof(region)) == 0 && region.end > offset) {
++        taken += region.end - region.start;
++        offset = region.end;
++        ++regions;
++    }
++    // No region at all means the walk could not be read, not that nothing is taken.
++    total_pool = regions != 0 ? static_cast<unsigned long long>(total) : 0;
++    free_pool = regions != 0 ? static_cast<unsigned long long>(total - taken) : 0;
++#else
++    std::FILE* meminfo = std::fopen("/proc/meminfo", "r");
++    unsigned long long total = 0, available = 0;
++    if (meminfo != nullptr) {
++        char line[128];
++        while (std::fgets(line, sizeof(line), meminfo) != nullptr) {
++            if (std::strncmp(line, "MemTotal:", 9) == 0)
++                total = std::strtoull(line + 9, nullptr, 10) * 1024;
++            else if (std::strncmp(line, "MemAvailable:", 13) == 0)
++                available = std::strtoull(line + 13, nullptr, 10) * 1024;
++        }
++        std::fclose(meminfo);
++    }
++    total_pool = total;
++    free_pool = total != 0 ? available : 0;
++#endif
++    *free_bytes = free_pool;
++    *total_bytes = total_pool;
++}
++
+ void Snapshot() {
+     // Request a fresh owner-written sample; report the last completed sample with
+     // its own timestamp. An idle core may remain stale; never infer zero CPU use.
+diff --git a/headless/performance.h b/headless/performance.h
+index c0c939e..0908bb5 100644
+--- a/headless/performance.h
++++ b/headless/performance.h
+@@ -60,6 +60,14 @@ void SampleCpu(unsigned core, unsigned long long thread, unsigned long long pc,
+ // a share of every CPU of the console would hide. Each call asks the cores for new readings, so
+ // with the field off nothing more is read. One caller at a time (the overlay, once a second).
+ unsigned BusiestGuestCore();
++// The overlay's CPU piece as Playtendoh's Switch side has it: how busy each of the first four
++// emulated cores' threads was over the last quarter of a second, as a percentage of one CPU (~0u:
++// not known). Asks the cores for readings as BusiestGuestCore does; one caller at a time.
++void GuestCoreLoads(unsigned loads[4]);
++// The overlay's MEM piece: the memory pool the guest, the JIT and the graphics driver all draw on
++// (direct memory on the console, the machine's RAM elsewhere), what is free of it and its size; 0
++// where it cannot be read. Looked at once a second.
++void MemoryPool(unsigned long long* free_bytes, unsigned long long* total_bytes);
+ struct alignas(64) Totals {
+     std::atomic<unsigned long long> calls{}, nanoseconds{}, requested_bytes{};
+ };
+@@ -561,6 +569,9 @@ inline std::atomic<void (*)()> guest_pool_report{nullptr};
+ // caches evict at half the use they were set to. dev-settings graphics_usage=driver restores
+ // the driver's count.
+ inline std::atomic<unsigned long long (*)()> graphics_memory_free{nullptr};
++// What the Vulkan allocator holds in its blocks, for the overlay's GFX piece (hud.h): set while
++// there is an allocator (tools/prepare-vulkan-port.py), else nullptr.
++inline std::atomic<unsigned long long (*)()> graphics_memory_held{nullptr};
+ inline std::atomic<bool> graphics_usage_from_pool{true};
+ // The pool is short now (the probe above): the texture collector then collects as if past its
+ // first mark. Switch 2 titles set the marks near the driver's device memory, which on the console
+diff --git a/headless/preferences_check.cpp b/headless/preferences_check.cpp
+index c1d38e4..bab734b 100644
+--- a/headless/preferences_check.cpp
++++ b/headless/preferences_check.cpp
+@@ -69,7 +69,7 @@ int main() {
+         assert(Read(file).find("\"fps_overlay_corner\": \"bottom_right\"") != std::string::npos);
+         assert(Read(file).find("\"fps_overlay_size\": \"large\"") != std::string::npos);
+         using Change = void (*)(Eden::Preferences&);
+-        for (const Change bad : {Change{[](Eden::Preferences& p) { p.hud_fields = 0x100; }},
++        for (const Change bad : {Change{[](Eden::Preferences& p) { p.hud_fields = 0x400; }},
+                                  Change{[](Eden::Preferences& p) { p.hud_fields = -1; }},
+                                  Change{[](Eden::Preferences& p) { p.hud_size = 3; }},
+                                  Change{[](Eden::Preferences& p) { p.hud_corner = 4; }}}) {
+diff --git a/headless/settings_store.h b/headless/settings_store.h
+index 0bddfb7..762ea56 100644
+--- a/headless/settings_store.h
++++ b/headless/settings_store.h
+@@ -4,7 +4,7 @@
+ //   {
+ //     "version": 1,
+ //     "video": { "renderer": "vulkan", "fps_overlay": true, "fps_overlay_size": "regular",
+-//                "fps_overlay_corner": "top_left", "fps_overlay_fields": 207, "resolution": "1x",
++//                "fps_overlay_corner": "top_left", "fps_overlay_fields": 767, "resolution": "1x",
+ //                "upscaling_filter": "bilinear", "refresh_rate": "60",
+ //                "output_resolution": "1080p", "frame_gen": false,
+ //                "frame_gen_target": "auto", "frame_gen_multiplier": "2" },
+@@ -164,6 +164,7 @@ struct Preferences {
+     int hud_fields = static_cast<int>(kHudFieldDefault);  // what the overlay shows (hud.h, kHudField*)
+     int hud_size = 0;                    // index into kHudSizeKeys: 1x, 1.5x, 2x
+     int hud_corner = 0;                  // index into kHudCornerKeys: top left first
++    bool hud_colors = true;              // the line in its inks rather than one (bake-loading-text.py)
+     // Settings > Video: skip the anti-aliasing network some games run on tensor cores (Ocarina of
+     // Time's, video_core/oot_network.h) for a plain upscale; off runs the game's own.
+     bool skip_game_aa = true;
+@@ -431,6 +432,7 @@ inline Preferences LoadPreferences(const std::string& file = SettingsFile()) {
+                                kHudSizeKeys, int(std::size(kHudSizeKeys)), result.hud_size);
+     result.hud_corner = KeyIndex(Settings::String(document, Json::json_pointer("/video/fps_overlay_corner")),
+                                  kHudCornerKeys, int(std::size(kHudCornerKeys)), result.hud_corner);
++    result.hud_colors = Settings::Bool(document, Json::json_pointer("/video/fps_overlay_colors"), result.hud_colors);
+     result.backend = Settings::String(document, Json::json_pointer("/video/renderer")) == "opengl" ?
+         GraphicsBackend::OpenGL : GraphicsBackend::Vulkan;
+     const int volume = Settings::Int(document, Json::json_pointer("/audio/volume"), result.volume);
+@@ -500,6 +502,7 @@ inline bool SavePreferences(const Preferences& value, const std::string& file =
+     document["video"]["fps_overlay_fields"] = value.hud_fields;
+     document["video"]["fps_overlay_size"] = kHudSizeKeys[value.hud_size];
+     document["video"]["fps_overlay_corner"] = kHudCornerKeys[value.hud_corner];
++    document["video"]["fps_overlay_colors"] = value.hud_colors;
+     document["video"]["resolution"] = kResolutionKeys[value.resolution];
+     document["video"]["upscaling_filter"] = kUpscalingFilterKeys[value.upscaling_filter];
+     document["video"]["refresh_rate"] = kRefreshKeys[value.refresh];
+diff --git a/headless/vulkan_guest_resolution.inc b/headless/vulkan_guest_resolution.inc
+new file mode 100644
+index 0000000..fe82f7e
+--- /dev/null
++++ b/headless/vulkan_guest_resolution.inc
+@@ -0,0 +1,10 @@
++// The game's own picture (hud.h's resolution piece): the size of the frame the guest handed to
++// the display, with a cropped layer counted as the part that is shown, as frame generation's own
++// GuestExtent counts it. Recorded before anything else, so an applet-only or skipped frame still
++// says what the game last rendered.
++if (!framebuffers.empty()) {
++    const auto& guest_layer = framebuffers.front();
++    const bool cropped = !guest_layer.crop_rect.IsEmpty();
++    Eden::Hud::GuestScreen(cropped ? static_cast<u32>(guest_layer.crop_rect.GetWidth()) : guest_layer.width,
++                           cropped ? static_cast<u32>(guest_layer.crop_rect.GetHeight()) : guest_layer.height);
++}
+diff --git a/headless/vulkan_hud.frag b/headless/vulkan_hud.frag
+index 0b204c2..a9bfce7 100644
+--- a/headless/vulkan_hud.frag
++++ b/headless/vulkan_hud.frag
+@@ -16,7 +16,9 @@ void main() {
+         text.glyphs[16], text.glyphs[17], text.glyphs[18], text.glyphs[19],
+         text.glyphs[20], text.glyphs[21], text.glyphs[22], text.glyphs[23],
+         text.glyphs[24], text.glyphs[25], text.glyphs[26], text.glyphs[27]);
+-    if (text.loading != 0u) {
++    // The loading screen owns the small numbers; the overlay marks its snapshot with a bit the
++    // loading path never sets, so the two are told apart here (hud.h, kHudOverlayFlag).
++    if (text.loading != 0u && (text.loading & 0x80000000u) == 0u) {
+         // The loading screen: x and y carry the picture's size, loading the milliseconds since
+         // it began (plus one), the glyphs' words what the start is doing (hud.h). Vulkan counts
+         // rows from the top.
+@@ -27,20 +29,28 @@ void main() {
+                                    float(text.loading - 1u) * 0.001, state), 1.0);
+         return;
+     }
+-    // The overlay: x and y are where its text starts, width the rows its cells are laid out
+-    // for (a glyph's cell is 4 pixels in a picture 1080 rows high at 1x; hud.h, PlaceHud). Two
+-    // glyphs to a word, the even one in the low half (hud.h, HudText).
+-    ivec2 p = ivec2(gl_FragCoord.xy) - ivec2(text.x, text.y);
+-    float cell_size = 4.0 * float(text.width) / 1080.0;
+-    bool ink = false;
+-    if (p.x >= 0 && p.y >= 0) {
+-        ivec2 cell = ivec2(vec2(p) / cell_size);
+-        int i = cell.x / 4;
+-        int x = cell.x % 4;
+-        if (i < 56 && x < 3 && cell.y < 5) {
+-            uint glyph = (glyphs[i >> 1] >> uint((i & 1) * 16)) & 0x7fffu;
+-            ink = ((glyph >> uint((4 - cell.y) * 3 + 2 - x)) & 1u) != 0u;
+-        }
+-    }
+-    color = ink ? vec4(0.9, 0.95, 1.0, 1.0) : vec4(0.025, 0.04, 0.075, 0.5);
++    // The overlay: x and y are its box's top left corner in this picture, width the picture's
++    // height (vulkan_hud_draw.inc sets all three). Everything is laid out for a picture 1080
++    // rows high; unit is how far one of those rows reaches here. The chip's scale comes from the
++    // size field in `loading` (2, 3 or 4 for 1x, 1.5x or 2x; hud.h, HudSizeField), so every size
++    // below is taken that many times over. The colour bit says the line is drawn in its inks.
++    const float unit = float(text.width) / 1080.0;
++    const float scale = float((text.loading >> 28) & 7u) * 0.5;
++    const bool colors = (text.loading & 0x08000000u) != 0u;
++    // Vulkan counts rows from the top, hud_pick (like loading_scene) from the bottom left.
++    const vec2 pixel = vec2(gl_FragCoord.x, float(text.width) - gl_FragCoord.y);
++    const vec2 at = vec2(float(text.x) + kHudPadUnits * unit * scale,
++                         float(text.width) - (float(text.y) + kHudBaselineUnits * unit * scale));
++    Pick pick = Pick(-1, 0, vec2(0.0), 1.0);
++    hud_pick(pick, glyphs, pixel, at, kHudCapUnits * unit * scale);
++    const float cover = pick_cover(pick);
++    // The chip the line stands in, walked out here because Vulkan's push constants have no room
++    // left to carry it: this pixel's place in the box, and the box's own size in this picture.
++    const vec2 box = vec2(hud_line_width(glyphs, kHudCapUnits * unit * scale) +
++                              2.0 * kHudPadUnits * unit * scale,
++                          kHudBoxUnits * unit * scale);
++    const vec4 panel = hud_panel(gl_FragCoord.xy - vec2(float(text.x), float(text.y)), box);
++    // The line in its inks when colours are on, in the one ink when they are off.
++    const vec3 ink = colors ? hud_ink(pick.ink) : kHudInk;
++    color = vec4(mix(panel.rgb, ink, cover), mix(panel.a, 1.0, cover));
+ }
+diff --git a/headless/vulkan_hud_draw.inc b/headless/vulkan_hud_draw.inc
+index c11a55e..60fd75c 100644
+--- a/headless/vulkan_hud_draw.inc
++++ b/headless/vulkan_hud_draw.inc
+@@ -1,30 +1,37 @@
+-        // The overlay's box, against the corner and at the size the settings name, laid out for a
+-        // picture 1080 rows high and scaled to this one (hud.h, PlaceHud).
+-        const auto hud_place = Eden::PlaceHud(hud, render_area.width, render_area.height);
++        // The overlay is laid out for a picture 1080 rows high and scaled to this one.
++        const auto hud_units = [rows = render_area.height](uint32_t value) { return value * rows / 1080u; };
++        // The chip's scale, from the size field in `loading`: 2, 3 or 4 for 1x, 1.5x or 2x
++        // (hud.h, HudSizeField). Every one of the box's numbers is taken that many times over, so
++        // the box's height is kHudBoxUnits times that field, half again for the middle size.
++        const uint32_t hud_size_field = (hud.loading & Eden::kHudSizeMask) >> Eden::kHudSizeShift;
++        const uint32_t hud_box = static_cast<uint32_t>(Eden::kHudBoxUnits) * hud_size_field / 2u;
++        const bool loading = Eden::HudLoading(hud);
+ #ifdef EDEN_ECAM
++        // Playtendoh's loading screen is drawn in place of this one (ecam_bridge.h)
+         const bool ecam_loading = ecam && ps5ingamenx::DrawsLoading();
+ #else
+         const bool ecam_loading = false;
+ #endif
+-        if (hud.width && !(hud.loading && ecam_loading) && (hud.loading || hud_place.shown)) {
+-            const VkRect2D scissor = hud.loading ? VkRect2D{{0, 0}, render_area} :
+-                VkRect2D{{static_cast<int32_t>(hud_place.box_x), static_cast<int32_t>(hud_place.box_y)},
+-                         {hud_place.box_w, hud_place.box_h}};
++        if (hud.width && !(loading && ecam_loading) && (loading || (render_area.width >= hud_units(hud.x + hud.width) &&
++                                      render_area.height >= hud_units(hud.y + hud_box)))) {
++            const VkRect2D scissor = loading ? VkRect2D{{0, 0}, render_area} :
++                VkRect2D{{static_cast<int32_t>(hud_units(hud.x)), static_cast<int32_t>(hud_units(hud.y))},
++                         {hud_units(hud.width), hud_units(hud_box)}};
+             const VkViewport viewport{static_cast<float>(scissor.offset.x), static_cast<float>(scissor.offset.y),
+                 static_cast<float>(scissor.extent.width), static_cast<float>(scissor.extent.height), 0, 1};
+             cmdbuf.SetViewport(0, viewport);
+             cmdbuf.SetScissor(0, scissor);
+             cmdbuf.BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, hud_graphics_pipeline);
+             auto constants = hud;
+-            if (hud.loading) {
++            if (loading) {
+                 // The loading scene fills the picture: tell it how large that is.
+                 constants.x = render_area.width;
+                 constants.y = render_area.height;
+             } else {
+-                // Where the text starts in this picture, and the rows its cells are laid out for.
+-                constants.x = hud_place.text_x;
+-                constants.y = hud_place.text_y;
+-                constants.width = hud_place.cell_rows;
++                // Where the text starts in this picture, and the picture's height for its size.
++                constants.x = hud_units(hud.x);
++                constants.y = hud_units(hud.y);
++                constants.width = render_area.height;
+             }
+             cmdbuf.PushConstants(hud_pipeline_layout, VK_SHADER_STAGE_FRAGMENT_BIT, constants);
+             cmdbuf.Draw(4, 1, 0, 0);
+diff --git a/tools/check-hud-mask.py b/tools/check-hud-mask.py
+index e6aa57b..983b9af 100644
+--- a/tools/check-hud-mask.py
++++ b/tools/check-hud-mask.py
+@@ -1,175 +1,35 @@
+ #!/usr/bin/env python3
+-"""The FPS overlay's selectable fields, size and corner: the line each field mask gives, where the
+-box goes in pictures of several sizes, the two-glyphs-a-word text both shaders read, and the
+-places that carry the settings from the launcher to the renderers."""
++# SPDX-License-Identifier: GPL-3.0-or-later
++"""Compile the actual generated helper with sanitizers; run with clang++ installed."""
+ from pathlib import Path
+-import re
+-import subprocess
+-import tempfile
+-
++import os, subprocess, tempfile
+ root = Path(__file__).resolve().parents[1]
+-headless = root / 'headless'
+-read = lambda name: (headless / name).read_text()
+-
+-# Both shaders read two 15-bit glyphs to a word, low half first, up to hud.h's kHudTextMax.
+-frag = read('vulkan_hud.frag')
+-assert 'glyphs[i >> 1] >> uint((i & 1) * 16)) & 0x7fffu' in frag and 'i < 56' in frag
+-graphics = read('graphics.cpp')
+-assert '(glyphs[i>>1]>>uint((i&1)*16))&0x7fffu' in graphics and 'i<56' in graphics
+-# The Vulkan overlay is placed by PlaceHud and given the rows its cells are laid out for.
+-draw = read('vulkan_hud_draw.inc')
+-assert 'Eden::PlaceHud(hud, render_area.width, render_area.height)' in draw
+-assert 'constants.width = hud_place.cell_rows;' in draw
+-# The renderers read the fields, size and corner with the session's settings, and the machine's
+-# numbers once a second with the emulation speed.
+-assert graphics.count('LoadHudPreferences();') == 1 and 'WantGpuTime();' in graphics
+-assert graphics.count('MachineNow();') == 2
+-assert 'hud_fields.load(std::memory_order_relaxed)' in graphics.split('void GraphicsWindow::OnFrameDisplayed()', 1)[1]
+-# The scheduler's timestamp probe sees what the overlay asks for (hud_gpu_time.h).
+-prepare = (root / 'tools/prepare-vulkan-port.py').read_text()
+-assert '#include \\"hud_gpu_time.h\\"' in prepare or '#include "hud_gpu_time.h"' in prepare.replace('\\"', '"')
+-probe = read('gpu_time_probe.inc')
+-assert '::Eden::Hud::gpu_time_wanted' in probe and '::Eden::Hud::gpu_busy_ns.fetch_add' in probe
+-# Settings: stored under the video keys, and the launcher has a row for every field bit.
+-store = read('settings_store.h')
+-for key in ('fps_overlay_fields', 'fps_overlay_size', 'fps_overlay_corner'):
+-    assert store.count(f'"{key}"') >= 2, key
+-settings_ui = read('eglantineps5/pe/ui/settings.cpp')
+-rows = settings_ui.split('enum VideoRow : int', 1)[1].split('kVideoRows,', 1)[0]
+-fields = re.findall(r'^\s*(video_overlay_\w+),', rows, re.M)
+-assert fields[:2] == ['video_overlay_size', 'video_overlay_corner'] and len(fields) == 2 + 8, fields
+-assert rows.index('video_overlay_ping') < rows.index('video_frame_gen,'), 'frame generation rows stay last'
+-services = read('eglantineps5/eden_services.cpp')
+-for name in ('hud_fields', 'hud_size', 'hud_corner'):
+-    assert f'result.{name} = saved.{name};' in services and f'value.{name} = preferences.{name};' in services
+-notices = (root / 'THIRD_PARTY_NOTICES.md').read_text()
+-assert 'overlay' in notices.split('[ProsperoEden]', 1)[1].split('- **[', 1)[0]
++def check(code):
++    with tempfile.TemporaryDirectory() as folder:
++        source = Path(folder)/'check.cpp'; source.write_text(code)
++        binary = Path(folder)/'check'
++        subprocess.run([os.environ.get('CXX', 'clang++'), '-std=c++20', '-O1', '-g',
++                        '-fsanitize=address,undefined', '-fno-sanitize-recover=all', '-pthread',
++                        '-I'+str(root/'headless'), str(source), '-o', str(binary)], check=True)
++        subprocess.run([str(binary)], check=True)
+ 
+-with tempfile.TemporaryDirectory() as directory:
+-    source = Path(directory) / 'hud_mask.cpp'
+-    binary = Path(directory) / 'hud_mask'
+-    source.write_text(r'''#include "hud.h"
++check("""
++#include "hud.h"
+ #include <cassert>
+-#include <set>
+-#include <string_view>
+-using namespace Eden;
+-static std::string_view Line(const std::array<char, kHudTextMax + 1>& text) { return text.data(); }
+ int main() {
+-    HudClock clock;
+-    clock.fps = 60;
+-    clock.worst_ms = 17;
+-    HudMachine machine;
+-    machine.cpu = 55;
+-    machine.gpu = 43;
+-    machine.memory_free = 4509715661ull;  // 4.2 GiB
+-    // The default is the line from before there was a choice, with the free memory.
+-    static_assert(kHudFieldDefault == 0xcf && kHudFieldClassic == 0x8f);
+-    assert(Line(FormatHudText(clock, clock, 100, "VLK", machine, 0, -1, kHudFieldDefault)) == "VLK F60 S100 W17 M4.2G");
+-    assert(Line(FormatHudText(clock, clock, 100, "VLK", machine, 0, 42, kHudFieldDefault)) == "VLK F60 S100 W17 M4.2G P42");
+-    assert(Line(FormatHudText(clock, clock, 100, "VLK", machine, 0, 42, kHudFieldSupported)) ==
+-           "VLK F60 S100 W17 C55 G43 M4.2G P42");
+-    // Each field alone, with nothing in front of it.
+-    const std::pair<uint32_t, std::string_view> alone[] = {
+-        {kHudFieldBackend, "VLK"}, {kHudFieldFps, "F60"}, {kHudFieldMs, "W17"}, {kHudFieldSpeed, "S100"},
+-        {kHudFieldCpu, "C55"}, {kHudFieldGpu, "G43"}, {kHudFieldMem, "M4.2G"}, {kHudFieldPing, "P42"}};
+-    for (const auto& [field, text] : alone)
+-        assert(Line(FormatHudText(clock, clock, 100, "VLK", machine, 0, 42, field)) == text);
+-    assert(Line(FormatHudText(clock, clock, 100, "VLK", machine, 0, 42, 0)).empty());
+-    // Ping only in a room; numbers that cannot be read show as "--".
+-    assert(Line(FormatHudText(clock, clock, 100, "VLK", machine, 0, -1, kHudFieldPing)).empty());
+-    assert(Line(FormatHudText(clock, clock, 100, "OGL", HudMachine{}, 0, -1, kHudFieldSupported)) ==
+-           "OGL F60 S100 W17 C-- G-- M--");
+-    // With frame generation both rates, still as one field.
+-    HudClock shown = clock;
+-    shown.fps = 120;
+-    clock.fps = 30;
+-    assert(Line(FormatHudText(clock, shown, 100, "VLK", machine, 119.88, -1, kHudFieldFps | kHudFieldMem)) ==
+-           "N30 F120 M4.2G");
+-    // Before the first second of frames.
+-    clock.fps = -1;
+-    assert(Line(FormatHudText(clock, shown, 0, "VLK", machine, 0, -1, kHudFieldDefault)) == "VLK F-- S-- W-- M4.2G");
+-    // However large the numbers, the line fits, and what does not fit is cut whole from the end.
+-    clock.fps = clock.worst_ms = 1e9;
+-    shown.fps = 2e9;
+-    machine.cpu = machine.gpu = 100000;
+-    machine.memory_free = ~0ull;
+-    const auto longest = FormatHudText(clock, shown, 1e9, "VLK", machine, 0, 1000000, kHudFieldSupported);
+-    assert(Line(longest).size() <= kHudTextMax && Line(longest).ends_with(" P9999"));
+-    assert(Line(FormatHudText(clock, shown, 1e9, "A-VERY-LONG-RENDERER-NAME-THAT-TAKES-MOST-OF-THE-LINE", machine,
+-                              0, 42, kHudFieldSupported)) == "A-VERY-LONG-RENDERER-NAME-THAT-TAKES-MOST-OF-THE-LINE");
+-    assert(ValidHudFields(0) && ValidHudFields(0xff) && !ValidHudFields(0x100) && !ValidHudFields(-1));
+-
+-    // Two glyphs to a word, low half first, and nothing past kHudTextMax.
+-    const auto packed = HudText("FM");
+-    assert(packed[0] == (HudGlyph('F') | HudGlyph('M') << 16) && packed[1] == 0);
+-    const std::string full(kHudTextMax + 4, '8');
+-    const auto words = HudText(full);
+-    for (size_t i = 0; i < kHudTextMax; ++i) assert(HudTextGlyph(words, i) == HudGlyph('8'));
+-    assert(HudTextGlyph(words, kHudTextMax) == 0);
+-    // Every letter the line uses has a glyph, and none two letters share.
+-    std::set<uint32_t> distinct;
+-    for (char c : std::string_view("VLKOGNFSWCMP")) {
+-        assert(HudGlyph(c) != 0);
+-        distinct.insert(HudGlyph(c));
+-    }
+-    assert(distinct.size() == 12);
+-
+-    // Where the box goes. At 1x in 1080 rows: 16 in from the corner's edges, 48 high, the text 12
+-    // in and 14 down, cells of 4 pixels, as before there was a choice.
+-    clock.fps = 60;
+-    clock.worst_ms = 17;
+-    machine = {};
+-    HudSnapshot hud = MakeHudSnapshot(clock, clock, 100, machine, 0, -1, kHudFieldClassic);
+-    assert(hud.width == std::string_view("VLK F60 S100 W17").size() * 16 + 24 && hud.x == 0 && hud.y == 0);
+-    auto place = PlaceHud(hud, 1920, 1080);
+-    assert(place.shown && place.box_x == 16 && place.box_y == 16 && place.box_w == hud.width && place.box_h == 48);
+-    assert(place.text_x == 28 && place.text_y == 30 && place.cell_rows == 1080);
+-    // Each corner, the same distance in from its two edges.
+-    for (int corner = 0; corner < kHudCorners; ++corner) {
+-        hud = MakeHudSnapshot(clock, clock, 100, machine, 0, -1, kHudFieldClassic, 0, corner);
+-        place = PlaceHud(hud, 1920, 1080);
+-        const bool right = corner == 1 || corner == 3, bottom = corner >= 2;
+-        assert(place.shown && place.box_x == (right ? 1920 - 16 - place.box_w : 16));
+-        assert(place.box_y == (bottom ? 1080 - 16 - 48 : 16));
+-        assert(place.text_x - place.box_x == 12 && place.text_y - place.box_y == 14);
+-    }
+-    // The sizes: 1.5x and 2x take the box, the text's offset and the cells that many times over;
+-    // the distance to the edges stays. In a 2160-row picture everything is twice over again.
+-    for (int size = 0; size < kHudSizes; ++size) {
+-        hud = MakeHudSnapshot(clock, clock, 100, machine, 0, -1, kHudFieldClassic, size, 3);
+-        for (const uint32_t rows : {1080u, 2160u}) {
+-            const uint32_t columns = rows * 16 / 9, k = rows / 1080;
+-            place = PlaceHud(hud, columns, rows);
+-            const uint32_t halves = 2 + size;
+-            assert(place.shown && place.box_w == hud.width * halves / 2 * k && place.box_h == 24 * halves * k);
+-            assert(place.box_x + place.box_w == columns - 16 * k && place.box_y + place.box_h == rows - 16 * k);
+-            assert(place.cell_rows == rows * halves / 2);
+-            assert(place.text_x == place.box_x + 6 * halves * k && place.text_y == place.box_y + 7 * halves * k);
+-        }
+-    }
+-    // Out-of-range indices are held to the last size and corner.
+-    hud = MakeHudSnapshot(clock, clock, 100, machine, 0, -1, kHudFieldClassic, 9, 9);
+-    assert(hud.x == 3 && hud.y == 2);
+-    // A box wider than the picture is not drawn: everything scales with the picture's height, so
+-    // a narrow picture is the one a large box may not fit.
+-    hud = MakeHudSnapshot(clock, clock, 100, machine, 0, -1, kHudFieldSupported, 2);
+-    assert(hud.width == 28 * 16 + 24 && !PlaceHud(hud, 900, 1080).shown);
+-    hud.y = 0;
+-    assert(PlaceHud(hud, 900, 1080).shown);
+-    assert(!PlaceHud(HudSnapshot{}, 1920, 1080).shown);
+-    // The longest line still fits a 16:9 picture at 2x.
+-    clock.fps = clock.worst_ms = 1e9;
+-    machine.cpu = machine.gpu = 100;
+-    machine.memory_free = 99ull << 30;
+-    hud = MakeHudSnapshot(clock, shown, 1e9, machine, 0, 9999, kHudFieldSupported, 2, 1);
+-    assert(PlaceHud(hud, 1920, 1080).shown);
+-
+-    // The CPU and GPU shares.
+-    assert(HudPercent(0, 1000) == 0 && HudPercent(500, 1000) == 50 && HudPercent(1005, 1000) == 100);
+-    assert(HudPercent(5, 1000) == 1 && HudPercent(4, 1000) == 0 && HudPercent(100, 0) == 0 && HudPercent(-5, 100) == 0);
++    using namespace Eden;
++    assert(ValidHudFields(0));
++    assert(ValidHudFields(kHudFieldAll));
++    assert(ValidHudFields(kHudFieldSupported));
++    assert(!ValidHudFields(-1));
++    assert(!ValidHudFields(kHudFieldSupported+1));
++    for(unsigned bit=0;bit<31;++bit)
++        assert(ValidHudFields(1u<<bit)==((kHudFieldSupported & (1u<<bit))!=0));
+ }
+-''')
+-    subprocess.run(['c++', '-std=c++20', '-Wall', '-Wextra', '-Werror', '-I' + str(headless), str(source), '-o', str(binary)],
+-                   check=True)
+-    subprocess.run([str(binary)], check=True)
+-print('HUD field masks, bounded lines, packed glyphs, size and corner placement, settings wiring PASS')
++""")
++store=(root/'headless/settings_store.h').read_text()
++assert 'ValidHudFields(hud_fields)' in store
++assert '!ValidHudFields(value.hud_fields)' in store
++bridge=root/'headless/prosperoeden/pe/ui/runtime_launcher.cpp'
++if bridge.exists(): assert '!Eden::ValidHudFields(v.hud_fields)' in bridge.read_text()
++print('PASS: overlay defaults and every supported bit accepted; unknown/negative bits rejected')
+diff --git a/tools/check-hud.py b/tools/check-hud.py
+index 556e300..b2d0c17 100644
+--- a/tools/check-hud.py
++++ b/tools/check-hud.py
+@@ -1,6 +1,7 @@
+ #!/usr/bin/env python3
+-"""FPS interval math, bounded bitmap text and startup-only queue polling."""
++"""FPS interval math, bounded overlay text and startup-only queue polling."""
+ from pathlib import Path
++import re
+ import subprocess
+ import tempfile
+ root = Path(__file__).resolve().parents[1]
+@@ -14,13 +15,73 @@ assert (present_loading.index('DrawLoading(') < present_loading.index('DrawHud(t
+         < present_loading.index('eglSwapBuffers'))
+ draw_loading = graphics.split('    bool DrawLoading(', 1)[1].split('    void DrawHud(', 1)[0]
+ assert 'eglSwapBuffers' not in draw_loading and 'loading_failed = true' in draw_loading
+-assert 'vec4(0.025,0.04,0.075,0.5)' in graphics
+-assert 'glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)' in graphics
+-# As wide as its text, laid out for a picture 1080 rows high and scaled to the surface's.
+-assert 'const int text_width = int(std::strlen(text)) * 16;' in draw_hud
+-assert 'line.width = static_cast<uint32_t>(text_width + 24);' in draw_hud
+-assert 'PlaceHud(line, ' in draw_hud
++# The line is picked out of the panel behind it, in the one ink the overlay draws with.
++assert 'hud_pick(pick, glyphs, gl_FragCoord.xy, at, cap)' in draw_hud
++assert 'hud_panel(' in draw_hud and 'kHudInk' in draw_hud
++assert 'vec3(0.0196,0.0392,0.0039)' in draw_hud  # loading stays a full screen of its own ink
++assert 'glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)' in draw_hud
++# The box covers only the line: its place at one top corner, as wide as the text, laid out for a
++# picture 1080 rows high and scaled to the surface's. A large chip takes every number twice.
++assert 'glViewport(box_x, height - box_y - box_h, box_w, box_h)' in draw_hud
++assert 'HudTextWidth(text, kHudCapUnits * hud_scale) + 2 * kHudPadUnits * hud_scale' in draw_hud
++assert 'units(kHudBoxUnits * hud_scale)' in draw_hud and 'units(kHudBaselineUnits * hud_scale)' in draw_hud
+ assert 'static_cast<float>(height) / 1080.0f' in draw_hud
++assert all(name in draw_hud for name in ('kHudBoxX', 'kHudBoxY', 'kHudBoxUnits', 'kHudBaselineUnits'))
++# The chip stands against whichever of the four corners was named, the same distance in from
++# each of its two edges (Preferences::hud_corner, hud.h).
++assert 'width - box_w - units(kHudBoxX)' in draw_hud
++assert 'height - box_h - units(kHudBoxY)' in draw_hud
++assert 'hud_size.load' in draw_hud and 'hud_corner.load' in draw_hud
++assert 'hud_colors.load' in draw_hud and 'hud_fields.load' in graphics
++# The game's own picture reaches the line from where the guest hands it to the display: the port
++# records it in RendererVulkan::Composite (vulkan_guest_resolution.inc), a new session forgets it,
++# and the launcher has a switch for the piece (Settings > Video > Overlay options > Resolution).
++guest_inc = (root/'headless/vulkan_guest_resolution.inc').read_text()
++port_script = (root/'tools/prepare-vulkan-port.py').read_text()
++assert 'Eden::Hud::GuestScreen(' in guest_inc and 'crop_rect' in guest_inc
++assert "vulkan_guest_resolution.inc" in port_script
++assert 'void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebuffers) {' in port_script
++assert 'Hud::ForgetGuestScreen();' in graphics
++store = (root/'headless/settings_store.h').read_text()
++assert 'int hud_fields = static_cast<int>(kHudFieldDefault);' in store and '!ValidHudFields(value.hud_fields)' in store
++assert 'ValidHudFields(hud_fields)' in store and '/video/fps_overlay_colors' in store
++# The places that name the line's default all say the same: every piece, and the CPU piece read as
++# each of the four cores (bit 8 clear), as on Playtendoh's Switch side.
++assert 'kHudFieldDefault = kHudFieldAll;' in (root/'headless/hud.h').read_text()
++assert 'std::atomic<uint32_t> hud_fields{kHudFieldDefault};' in graphics
++assert 'int hud_fields = 0x2ff;' in (root/'headless/eglantineps5/pe/ui/services.hpp').read_text()
++# The line in its inks when colours are on, in the one ink when they are off.
++assert 'colors ? hud_ink(pick.ink) : kHudInk' in draw_hud
++# The Vulkan overlay draws that same line with that same font (vulkan_hud.frag, which the build
++# compiles to SPIR-V, so a mistake there is a build failure).
++frag = (root/'headless/vulkan_hud.frag').read_text()
++assert 'hud_pick(pick, glyphs, pixel, at,' in frag and 'pick_cover(pick)' in frag
++assert 'hud_panel(' in frag and 'kHudInk' in frag
++# The chip's width is walked out here rather than pushed: Vulkan's push constants are all used up
++# by the line itself, so the box has to agree with the C++ one by construction.
++assert 'hud_line_width(glyphs,' in frag
++assert all(name in frag for name in ('kHudCapUnits', 'kHudPadUnits', 'kHudBaselineUnits'))
++assert 'float(text.width) - gl_FragCoord.y' in frag  # Vulkan counts rows from the top
++assert 'float((text.loading >> 28) & 7u) * 0.5' in frag  # the chip's scale, from the size field
++# The overlay's snapshot marks itself in the field the loading screen owns, and the two are told
++# apart by a bit the loading path never sets. The shader and the draw path carry the literals,
++# so they have to be the ones hud.h defines.
++hud_h = (root/'headless/hud.h').read_text()
++draw = (root/'headless/vulkan_hud_draw.inc').read_text()
++assert 'kHudOverlayFlag = 0x80000000u' in hud_h and '0x80000000u' in frag
++# The chip's size is the scale times two in three bits (2 = 1x, 3 = 1.5x, 4 = 2x), and the
++# colour bit says the line is drawn in its inks; both ride in the field the loading screen owns.
++assert 'kHudSizeShift = 28' in hud_h and 'kHudSizeMask = 0x70000000u' in hud_h
++assert 'kHudColorsFlag = 0x08000000u' in hud_h and '0x08000000u' in frag
++assert 'kHudSizeMask' in draw and 'kHudSizeShift' in draw  # the box's height from that field
++assert 'Eden::HudLoading(hud)' in draw
++# C++ and GLSL size the box from the same generated numbers, so the box never drifts apart. The
++# digit advance is among them: the C++ width and the shader's own walk over the line have to land
++# on the same edge, or the last figure would stand outside the chip.
++header = (root/'headless/hud_text_advances.h').read_text()
++for name in ('kHudCapUnits', 'kHudPadUnits', 'kHudBoxUnits', 'kHudBaselineUnits', 'kHudDigitAdvance'):
++    value = re.search(rf'const float {name} = ([0-9.]+);', (root/'headless/loading_text.glsl').read_text()).group(1)
++    assert re.search(rf'inline constexpr float {name} = {value}f;', header), name
+ 
+ with tempfile.TemporaryDirectory() as directory:
+     source = Path(directory) / 'hud.cpp'
+@@ -28,6 +89,7 @@ with tempfile.TemporaryDirectory() as directory:
+     source.write_text(r'''#include "hud.h"
+ #include <cassert>
+ #include <cmath>
++#include <string>
+ int main() {
+     Eden::HudClock clock;
+     clock.Present(80.0); // Long startup must not count as a slow game frame.
+@@ -51,50 +113,173 @@ int main() {
+     Eden::StartupGate slow;
+     for (int i = 0; i < 5; ++i) assert(!slow.Ready(i));
+     assert(slow.Ready(5)); // Slow rendering must not remain hidden forever.
+-    assert(Eden::HudGlyph(' ') == 0 && Eden::HudGlyph('F') != 0 && Eden::HudGlyph('W') != 0);
+-    auto text = Eden::HudText("FPS 12.3");
+-    assert(Eden::HudTextGlyph(text, 0) == Eden::HudGlyph('F') && Eden::HudTextGlyph(text, 8) == 0);
+-    assert(Eden::HudTextGlyph(Eden::HudText("01234567890123456789"), 15) == Eden::HudGlyph('5'));
+-    assert(std::string_view(Eden::FormatHudText(clock, 100, "OGL").data()) == "OGL F60 S100 W17");
+-    assert(Eden::HudGlyph('V') != 0 && Eden::HudGlyph('K') != 0);
+-    auto snapshot = Eden::MakeHudSnapshot(clock, 100);
+-    assert(snapshot.glyphs == Eden::HudText("VLK F60 S100 W17"));
+-    assert(snapshot.width == std::string_view("VLK F60 S100 W17").size() * 16 + 24);
+-    // With frame generation the display is given more frames than the guest makes: both rates
+-    // are shown then, and the output's never above its refresh rate.
++
++    // The line is the font's own characters: four to a word, and a zero after it.
++    Eden::HudSnapshot packed{};
++    Eden::PutHudText(packed, "VLK 60FPS");
++    assert(std::string_view(reinterpret_cast<const char*>(packed.glyphs.data())) == "VLK 60FPS");
++    Eden::PutHudText(packed, "");
++    assert(std::string_view(reinterpret_cast<const char*>(packed.glyphs.data())).empty());
++    Eden::HudSnapshot full{};
++    Eden::PutHudText(full, std::string(Eden::kHudTextMax + 40, 'A'));
++    assert(std::string_view(reinterpret_cast<const char*>(full.glyphs.data())).size() ==
++           Eden::kHudTextMax);
++    static_assert(sizeof(Eden::HudSnapshot) == 128); // Vulkan's guaranteed push-constant bytes.
++
++    // The box the line sits in, and the text's baseline in it, come from one set of numbers.
++    assert(Eden::kHudBaselineUnits == Eden::kHudPadUnits + Eden::kHudCapUnits);
++    assert(Eden::kHudBoxUnits == Eden::kHudCapUnits + 2 * Eden::kHudPadUnits);
++
++    // What the machine could not say is shown as "--", until it can say it.
++    Eden::HudMachine unknown;
++    assert(unknown.cpu == ~0u && unknown.gpu == ~0u && unknown.memory_total == 0);
++    clock.fps = 60;
++    clock.worst_ms = 17;
++    assert(std::string_view(Eden::FormatHudText(clock, 100, "OGL", unknown).data())
++           == "OGL 60FPS 17.0MS CPU --% GPU --% MEM --/--");
++    Eden::HudMachine known;
++    known.cpu = 55;
++    known.gpu = 43;
++    known.memory_free = 4187593114ULL;   // 4.1 GiB of the 8.0 are taken
++    known.memory_total = 8589934592ULL;
++    // The four emulated cores take the place of the one share when they are known.
++    {
++        Eden::HudMachine by_core = known;
++        by_core.cores[0] = 92; by_core.cores[1] = 45; by_core.cores[2] = 38; by_core.cores[3] = 3;
++        assert(std::string_view(Eden::FormatHudText(clock, 100, "VLK", by_core).data())
++               == "VLK 60FPS 17.0MS CPU 92% 45% 38% 3% GPU 43% MEM 4.1/8.0G");
++        // With that switch off, only the busiest of them.
++        assert(std::string_view(Eden::FormatHudText(clock, 100, "VLK", by_core, -1,
++                                                    Eden::kHudFieldAll | Eden::kHudFieldOneCore).data())
++               == "VLK 60FPS 17.0MS CPU 92% GPU 43% MEM 4.1/8.0G");
++        by_core.cores[3] = ~0u;
++        assert(std::string_view(Eden::FormatHudText(clock, 100, "VLK", by_core).data())
++               == "VLK 60FPS 17.0MS CPU 92% 45% 38% --% GPU 43% MEM 4.1/8.0G");
++    }
++    // The graphics' part follows the pool when it is known.
++    {
++        Eden::HudMachine with_graphics = known;
++        with_graphics.graphics = 2684354560ULL;  // 2.5 GiB
++        assert(std::string_view(Eden::FormatHudText(clock, 100, "VLK", with_graphics).data())
++               == "VLK 60FPS 17.0MS CPU 55% GPU 43% MEM 4.1/8.0G GFX 2.5G");
++    }
++    // A full 100% speed is not worth saying; anything else is.
++    assert(std::string_view(Eden::FormatHudText(clock, 98, "VLK", known).data())
++           == "VLK 60FPS 17.0MS 98% CPU 55% GPU 43% MEM 4.1/8.0G");
++    assert(std::string_view(Eden::FormatHudText(clock, 100, "VLK", known).data())
++           == "VLK 60FPS 17.0MS CPU 55% GPU 43% MEM 4.1/8.0G");
++    clock.fps = -1;
++    assert(std::string_view(Eden::FormatHudText(clock, 100, "OGL", known).data())
++           == "OGL --FPS --MS CPU 55% GPU 43% MEM 4.1/8.0G");
++    clock.fps = 60;
++    assert(std::string_view(Eden::FormatHudText(clock, 100, "OGL", known, 42).data())
++           == "OGL 60FPS 17.0MS CPU 55% GPU 43% MEM 4.1/8.0G P42");
++    assert(std::string_view(Eden::FormatHudText(clock, 100, "OGL", known, -1).data())
++           == "OGL 60FPS 17.0MS CPU 55% GPU 43% MEM 4.1/8.0G");
++
++    // With frame generation the display is given frames the guest never made: both rates are
++    // shown then, and the display's is never above its own refresh rate.
+     Eden::HudClock guest = clock, shown = clock;
+     guest.fps = 30;
+     guest.worst_ms = 33;
+     shown.fps = 60;
+-    assert(std::string_view(Eden::FormatHudText(guest, shown, 100, "VLK", 59.94).data()) == "VLK N30 F60 S100 W33");
++    assert(std::string_view(Eden::FormatHudText(guest, shown, 100, "VLK", unknown, 59.94).data())
++           == "VLK 30/60FPS 33.0MS CPU --% GPU --% MEM --/--");
+     shown.fps = 120;
+-    assert(std::string_view(Eden::FormatHudText(guest, shown, 100, "VLK", 59.94).data()) == "VLK N30 F60 S100 W33");
+-    assert(std::string_view(Eden::FormatHudText(guest, shown, 100, "VLK", 119.88).data()) == "VLK N30 F120 S100 W33");
++    assert(std::string_view(Eden::FormatHudText(guest, shown, 100, "VLK", unknown, 59.94).data())
++           == "VLK 30/60FPS 33.0MS CPU --% GPU --% MEM --/--");
++    assert(std::string_view(Eden::FormatHudText(guest, shown, 100, "VLK", unknown, 119.88).data())
++           == "VLK 30/120FPS 33.0MS CPU --% GPU --% MEM --/--");
+     guest.fps = 60;
+     guest.worst_ms = 17;
+-    assert(std::string_view(Eden::FormatHudText(guest, shown, 100, "VLK", 59.94).data()) == "VLK F60 S100 W17");
+-    assert(Eden::MakeHudSnapshot(guest, shown, 100, 119.88).glyphs == Eden::HudText("VLK N60 F120 S100 W17"));
+-    clock.fps = -1;
+-    assert(Eden::MakeHudSnapshot(clock, 0).glyphs == Eden::HudText("VLK F-- S-- W--"));
++    assert(std::string_view(Eden::FormatHudText(guest, shown, 100, "VLK", unknown, 59.94).data())
++           == "VLK 60FPS 17.0MS CPU --% GPU --% MEM --/--");
++
++    // The box is as wide as that line needs, with a margin either side, at the corner it sits in.
++    auto snapshot = Eden::MakeHudSnapshot(guest, shown, 100, known, 119.88, 9999);
++    const std::string_view line{reinterpret_cast<const char*>(snapshot.glyphs.data())};
++    assert(line == "VLK 60/120FPS 17.0MS CPU 55% GPU 43% MEM 4.1/8.0G P9999");
++    assert(snapshot.x == Eden::kHudBoxX && snapshot.y == Eden::kHudBoxY);
++    assert(snapshot.width == static_cast<uint32_t>(std::lround(
++               Eden::HudTextWidth(line, Eden::kHudCapUnits) + 2 * Eden::kHudPadUnits)));
++    assert(snapshot.width < 1920); // One line, in a picture 1080 rows high.
++    // The chip's size: regular 1x, medium 1.5x, large 2x, stored as the scale times two in bits
++    // 28-30 (hud.h, HudSizeField). A large chip is twice every one of the box's numbers.
++    const auto regular = Eden::MakeHudSnapshot(guest, shown, 100, known, 119.88, 9999, 0, 0);
++    const auto medium = Eden::MakeHudSnapshot(guest, shown, 100, known, 119.88, 9999, 1, 0);
++    const auto large = Eden::MakeHudSnapshot(guest, shown, 100, known, 119.88, 9999, 2, 0);
++    assert(((regular.loading & Eden::kHudSizeMask) >> Eden::kHudSizeShift) == 2);
++    assert(((medium.loading & Eden::kHudSizeMask) >> Eden::kHudSizeShift) == 3);
++    assert(((large.loading & Eden::kHudSizeMask) >> Eden::kHudSizeShift) == 4);
++    assert(Eden::HudSizeScale(regular.loading) == 1.0f);
++    assert(Eden::HudSizeScale(medium.loading) == 1.5f);
++    assert(Eden::HudSizeScale(large.loading) == 2.0f);
++    assert(large.width == static_cast<uint32_t>(std::lround(
++               Eden::HudTextWidth(line, Eden::kHudCapUnits * 2.0f) + 2 * Eden::kHudPadUnits * 2.0f)));
++    assert(large.x == Eden::kHudBoxX && large.y == Eden::kHudBoxY);
++    assert((large.loading & Eden::kHudOverlayFlag) != 0);
++    assert(!Eden::HudLoading(large)); // the overlay is never mistaken for the loading screen
++    // The colour bit, and the pieces of the line the user may turn off.
++    const auto coloured = Eden::MakeHudSnapshot(guest, shown, 100, known, 119.88, 9999, 0, 0, true);
++    assert((coloured.loading & Eden::kHudColorsFlag) != 0);
++    assert((snapshot.loading & Eden::kHudColorsFlag) == 0); // off by default
++    // Only the pieces the mask names reach the line; the rest are dropped, and their separators
++    // with them, so a kept piece never opens with a stray space.
++    assert(std::string_view(Eden::FormatHudText(clock, 100, "VLK", known, -1,
++                                                Eden::kHudFieldBackend | Eden::kHudFieldFps |
++                                                    Eden::kHudFieldMem).data())
++           == "VLK 60FPS MEM 4.1/8.0G");
++    assert(std::string_view(Eden::FormatHudText(clock, 100, "VLK", known, -1, 0).data()).empty());
++    // The game's own picture, next to the renderer that drew it (bit 9). It is said as soon as the
++    // guest hands a frame to the display, and not before; with the piece off, or another game's
++    // size left over from a session, nothing goes on the line.
++    {
++        Eden::Hud::GuestScreen(1280, 720);
++        assert(std::string_view(Eden::FormatHudText(clock, 100, "VLK", known).data())
++               == "VLK 1280x720 60FPS 17.0MS CPU 55% GPU 43% MEM 4.1/8.0G");
++        // A dynamic-resolution game moves the number: it is read again every picture.
++        Eden::Hud::GuestScreen(960, 540);
++        assert(std::string_view(Eden::FormatHudText(clock, 100, "VLK", known).data())
++               == "VLK 960x540 60FPS 17.0MS CPU 55% GPU 43% MEM 4.1/8.0G");
++        assert(std::string_view(Eden::FormatHudText(clock, 100, "VLK", known, -1,
++                                                    Eden::kHudFieldAll & ~Eden::kHudFieldResolution).data())
++               == "VLK 60FPS 17.0MS CPU 55% GPU 43% MEM 4.1/8.0G");
++        Eden::Hud::ForgetGuestScreen();
++        assert(std::string_view(Eden::FormatHudText(clock, 100, "VLK", known).data())
++               == "VLK 60FPS 17.0MS CPU 55% GPU 43% MEM 4.1/8.0G");
++        assert(Eden::kHudFieldResolution == (1u << 9));
++        assert(Eden::kHudFieldAll == 0x2ffu); // every piece; bit 8 is a mode, not a piece
++        // The whole line, with everything on, still fits in a snapshot's words.
++        Eden::Hud::GuestScreen(3840, 2160);
++        const auto widest = Eden::MakeHudSnapshot(clock, clock, 99, known, 119.88, 9999, 0, 0, false,
++                                                  Eden::kHudFieldAll | Eden::kHudFieldOneCore);
++        // The size is in the words the GPU draws, not only in the formatted line.
++        assert(std::string_view(reinterpret_cast<const char*>(widest.glyphs.data()))
++               .starts_with("VLK 3840x2160 "));
++        assert(std::string_view(reinterpret_cast<const char*>(widest.glyphs.data())).size()
++               <= Eden::kHudTextMax);
++        Eden::Hud::ForgetGuestScreen();
++    }
++    // All four corners: each the same distance in from the two edges it stands against.
++    for (int corner = 0; corner < Eden::kHudCornerCount; ++corner)
++    {
++        const auto placed = Eden::MakeHudSnapshot(guest, shown, 100, known, 119.88, 9999, 0, corner);
++        const uint32_t box = static_cast<uint32_t>(std::lround(Eden::kHudBoxUnits));
++        const bool right = corner == 1 || corner == 3, bottom = corner == 2 || corner == 3;
++        assert(placed.x == (right ? Eden::kHudPictureWidth - placed.width - Eden::kHudBoxX
++                                  : Eden::kHudBoxX));
++        assert(placed.y == (bottom ? Eden::kHudPictureHeight - box - Eden::kHudBoxY : Eden::kHudBoxY));
++        assert(((placed.loading & Eden::kHudSizeMask) >> Eden::kHudSizeShift) == 2 && !Eden::HudLoading(placed));
++    }
++    assert(Eden::HudLoading(Eden::MakeLoadingSnapshot(0)));
++    // Nothing it can say reaches past what the words of a snapshot hold.
+     clock.fps = 1000000;
+     clock.worst_ms = 1000000;
+-    assert(Eden::MakeHudSnapshot(clock, 1000000).width <= Eden::kHudTextMax * 16 + 24);
+-    static_assert(sizeof(Eden::HudSnapshot) == 128);
+-    clock.fps = 60;
+-    clock.worst_ms = 17;
+-    for (const char* backend : {"OGL", "VLK"}) {
+-        const auto online = Eden::FormatHudText(clock, 100, backend, 42);
+-        assert(std::string_view(online.data()).ends_with(" W17 P42"));
+-        assert(std::string_view(Eden::FormatHudText(clock, 100, backend, 0).data()).ends_with(" P0"));
+-        assert(std::string_view(Eden::FormatHudText(clock, 100, backend, -1).data()).ends_with(" W17"));
+-    }
+-    const auto online = Eden::MakeHudSnapshot(guest, shown, 100, 119.88, 9999);
+-    assert(online.glyphs == Eden::HudText("VLK N60 F120 S100 W17 P9999"));
+-    assert(online.width == std::string_view("VLK N60 F120 S100 W17 P9999").size() * 16 + 24);
+-    clock.fps = clock.worst_ms = 1000000;
+-    const auto bounded = Eden::FormatHudText(clock, 1000000, "VLK", 1000000);
+-    assert(std::string_view(bounded.data()).size() <= 28);
+-    assert(std::string_view(bounded.data()).ends_with(" P9999"));
++    const auto bounded = Eden::MakeHudSnapshot(clock, clock, 1000000, known, 0, 1000000);
++    assert(std::string_view(reinterpret_cast<const char*>(bounded.glyphs.data())).size()
++           <= Eden::kHudTextMax);
++    assert(bounded.width < 1920);
++
+     // The loading scene is drawn from the time alone: milliseconds since it began, plus one.
+     assert(Eden::MakeLoadingSnapshot(0).loading == 1 && Eden::MakeLoadingSnapshot(0).width != 0);
+     assert(Eden::MakeLoadingSnapshot(2.5).loading == 2501);
+@@ -110,4 +295,4 @@ int main() {
+ ''')
+     subprocess.run(['c++', '-std=c++20', '-I'+str(root/'headless'), str(source), '-o', str(binary)], check=True)
+     subprocess.run([str(binary)], check=True)
+-print('HUD interval math, startup exclusion and bounded glyph text PASS')
++print('HUD interval math, startup exclusion and bounded overlay line PASS')
+diff --git a/tools/launcher/bake-loading-text.py b/tools/launcher/bake-loading-text.py
+index 07ef025..0406bba 100644
+--- a/tools/launcher/bake-loading-text.py
++++ b/tools/launcher/bake-loading-text.py
+@@ -3,8 +3,14 @@
+ # Copyright (C) 2026 BlackBearReloaded
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ """Writes headless/loading_text.glsl: capitals, digits and a few signs of Montserrat Medium as
+-small signed distance fields packed into constant arrays (one per glyph), and the loading screen's lines of text
+-as indexes into them, so the loading shader needs no texture and no font at run time.
++small signed distance fields packed into constant arrays (one per glyph), the loading screen's lines of text
++as indexes into them, and the routines that read the fields and walk a line of characters over them
++(Pick, pick_glyph, pick_cover, hud_pick). The loading shader needs no texture and no font at run time, and
++the overlay's line (hud.h, FormatHudText) reaches that same shader as characters, looked up in the
++same table.
++
++Writes headless/hud_text_advances.h beside it: the same advances in C++, for sizing the overlay's box
++to its text before any of it is drawn.
+ 
+ A glyph's field is WIDTH x HEIGHT texels of four bits each (eight per uint, lowest bits first, top
+ row first): 7.5 on the outline, 15 SPREAD texels inside, 0 SPREAD texels outside. The fields are
+@@ -21,16 +27,267 @@ from PIL import Image, ImageDraw, ImageFont
+ ROOT = Path(__file__).resolve().parents[2]
+ FONT = ROOT / "third_party/fonts/Montserrat-Medium.ttf"
+ OUTPUT = ROOT / "headless/loading_text.glsl"
++# The same advances in C++, so the overlay's box can be sized to its text before it is drawn
++# (hud.h, HudTextWidth).
++ADVANCES_OUTPUT = ROOT / "headless/hud_text_advances.h"
+ 
+ # The lines the screen shows, in the order the shader names them (loading_scene.glsl).
+-LINES = ["EGLANTINEPS5", "READING THE GAME", "STARTING GRAPHICS", "BUILDING SHADERS", "STARTING THE GAME",
++LINES = ["LICHII", "READING THE GAME", "STARTING GRAPHICS", "BUILDING SHADERS", "STARTING THE GAME",
+          "LOADING", "S"]
+-# Only the glyphs the lines use, then the digits and signs of the figures.
+-GLYPHS = "".join(sorted(set("".join(LINES)) - {" "})) + "0123456789%/"
++# What those lines use, plus everything the overlay's line can say: the OGL/VLK backend,
++# "27/60FPS 37.0MS CPU 55% GPU 43% MEM 4.1/8.0G" and a ping (hud.h, FormatHudText). One set:
++# the loading shader and the overlay share one table, and one shader (vulkan_hud.frag) draws both.
++GLYPHS = "".join(sorted(set("".join(LINES)) - {" "})) + "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.%/:-"
++GLYPHS = "".join(sorted(set(GLYPHS)))
+ WIDTH, HEIGHT = 24, 20    # texels of one glyph's field
+ CAP, BASE, LEFT = 12, 4, 3
+ SPREAD = 2.0              # texels of distance stored each side of the outline
+ SCALE = 8                 # a glyph is drawn this much larger, then measured
++# How far the pen moves for a space, which GLYPHS does not hold: what loading_scene.glsl's
++# pen_step() gives a glyph index of -1.
++SPACE_ADVANCE = 0.30 * CAP / 0.70
++# The overlay's box in that picture: how tall a capital is in it, and the margin round the text.
++# The height of one line of text, and so of the box, is CAP_UNITS + 2 * PAD_UNITS, and the
++# baseline stands CAP_UNITS + PAD_UNITS below its top. hud.h sizes the box with these too.
++CAP_UNITS, PAD_UNITS = 14.0, 3.0
++# The chip that box draws (hud_panel): how far its corners are cut round, in the same picture as
++# the rest of it, so they scale with it.
++RADIUS_UNITS = 5.0
++# The overlay's line, in characters (hud.h, kHudTextMax): four go to a word, and the line ends
++# at a NUL, so this is what hud_pick stops at.
++TEXT_MAX = 111
++
++# The reading of a glyph's field, and the laying out of a line over it. The lettering is read in
++# one place only, at the end of each shader that draws it: the console's compiler copes badly
++# with the glyph tables being read from many, so the text is laid out first, which only decides
++# which glyph, if any, this pixel falls in (a Pick), and what ink it gets.
++HELPERS = """
++float glyph_texel(int glyph, int x, int y)
++{
++    x = clamp(x, 0, kGlyphWidth - 1);
++    y = clamp(y, 0, kGlyphHeight - 1);
++    int at = y * kGlyphWidth + x;
++    return float((glyph_word(glyph, at >> 3) >> uint((at & 7) * 4)) & 0xfu) / 15.0;
++}
++
++struct Pick
++{
++    int glyph;   // -1: no text here
++    int ink;
++    vec2 st;     // where in the glyph's field, in texels
++    float texel; // pixels per texel
++};
++
++float pen_step(int glyph, float cap, float tracking)
++{
++    return (glyph < 0 ? 0.30 * kGlyphCap / 0.70 : kAdvance[glyph]) * cap / kGlyphCap + tracking * cap;
++}
++
++// Takes the pixel for this glyph when it lies between the glyph's pen and the next one, at a pen
++// step the caller has already worked out.
++// at is where the pen stands (left end of the baseline), cap the height of a capital in pixels.
++void pick_glyph_step(inout Pick pick, int glyph, int ink, vec2 pixel, vec2 at, float step, float cap, float tracking)
++{
++    float texel = cap / kGlyphCap;
++    if (pixel.x < at.x - 0.5 * tracking * cap || pixel.x >= at.x + step - 0.5 * tracking * cap)
++        return;
++    pick.glyph = glyph;
++    pick.ink = ink;
++    pick.st = vec2((pixel.x - at.x) / texel + kGlyphLeft,
++                   float(kGlyphHeight) - ((pixel.y - at.y) / texel + kGlyphBase)) - 0.5;
++    pick.texel = texel;
++}
++
++void pick_glyph(inout Pick pick, int glyph, int ink, vec2 pixel, vec2 at, float cap, float tracking)
++{
++    pick_glyph_step(pick, glyph, ink, pixel, at, pen_step(glyph, cap, tracking), cap, tracking);
++}
++
++// How much of that glyph covers this pixel, 0 where there is none: the field sampled at the
++// pixel's place in it, its distance pushed across the outline at this size.
++float pick_cover(Pick pick)
++{
++    if (pick.glyph < 0 || pick.st.x <= -1.0 || pick.st.y <= -1.0 ||
++        pick.st.x >= float(kGlyphWidth) || pick.st.y >= float(kGlyphHeight))
++        return 0.0;
++    ivec2 i = ivec2(floor(pick.st));
++    vec2 f = pick.st - vec2(i);
++    float value = mix(mix(glyph_texel(pick.glyph, i.x, i.y), glyph_texel(pick.glyph, i.x + 1, i.y), f.x),
++                      mix(glyph_texel(pick.glyph, i.x, i.y + 1), glyph_texel(pick.glyph, i.x + 1, i.y + 1), f.x),
++                      f.y);
++    return clamp((value - 0.5) * 2.0 * kGlyphSpread * pick.texel + 0.5, 0.0, 1.0);
++}
++
++// One character of the overlay's line (hud.h, HudSnapshot): four go to a word, so this is one
++// of them.
++int hud_byte(uint words[28], int at)
++{
++    return int((words[at >> 2] >> uint((at & 3) * 8)) & 0xffu);
++}
++
++// The glyph for a character of that line, -1 where the font has none (drawn as a space).
++int hud_glyph(int code)
++{
++    return code >= 32 && code < 127 ? kCharIndex[code - 32] : -1;
++}
++
++// The one ink the overlay's line is drawn in when colours are off. It draws over whatever the
++// game shows, and a single colour reads against all of them; the loading screen's own ink is its
++// palette's (loading_scene.glsl), and the pick's ink field is left to it.
++const vec3 kHudInk = vec3(0.93, 0.96, 1.0);
++// The inks the line is drawn in when colours are on: labels dim, values bright, and the loads
++// coloured by how far they run (hud_number_ink decides which of the three).
++const int kHudInkLabel = 0;
++const int kHudInkValue = 1;
++const int kHudInkGood = 2;
++const int kHudInkWarn = 3;
++const int kHudInkBad = 4;
++// One of those inks, as a colour.
++vec3 hud_ink(int ink)
++{
++    if (ink == kHudInkLabel) return vec3(0.55, 0.62, 0.73);
++    if (ink == kHudInkGood) return vec3(0.42, 0.87, 0.58);
++    if (ink == kHudInkWarn) return vec3(0.97, 0.78, 0.33);
++    if (ink == kHudInkBad) return vec3(0.96, 0.45, 0.42);
++    return vec3(0.93, 0.96, 1.0); // kHudInkValue
++}
++// The characters the line is read by, as the bytes hud_byte returns them (ASCII). GLSL in this
++// build has no character literals, so they are named here.
++const int kAsciiZero = 48, kAsciiNine = 57;
++const int kAsciiDot = 46, kAsciiSlash = 47, kAsciiPercent = 37;
++const int kAsciiF = 70, kAsciiM = 77, kAsciiU = 85, kAsciiSpace = 32;
++// The ink a run of digits takes, by the sign that ends it and the number before it: the rate the
++// guest makes (F; of "30/60FPS" the first number), the worst frame's length (M), and a percentage.
++// A percentage is a load after CPU, GPU or another load, where less is better; anywhere else it
++// is the game's speed, where more is. A run with no sign after it — memory, a ping — is simply a
++// value. The thresholds are the ones the launcher settled on.
++int hud_number_ink(uint words[28], int at)
++{
++    // Walk past the digits and any '.' or '/' among them, to the sign that ends the run.
++    float value = 0.0, frac = 0.0, scale = 0.1;
++    bool point = false, have = false, second = false;
++    int end = at;
++    while (end < kHudTextMax)
++    {
++        int code = hud_byte(words, end);
++        int digit = code - kAsciiZero;
++        if (digit >= 0 && digit <= 9)
++        {
++            if (second) { }
++            else if (point) { frac += float(digit) * scale; scale *= 0.1; }
++            else value = value * 10.0 + float(digit);
++            have = true;
++        }
++        else if (code == kAsciiDot && have) point = true;
++        else if (code == kAsciiSlash && have) second = true; // the number after it is not the one judged
++        else break;
++        ++end;
++    }
++    if (!have) return kHudInkValue;
++    int sign = end < kHudTextMax ? hud_byte(words, end) : 0;
++    if (sign == kAsciiF)
++        return value >= 55.0 ? kHudInkGood : value >= 30.0 ? kHudInkWarn : kHudInkBad;
++    if (sign == kAsciiM)
++        return value <= 18.5 ? kHudInkGood : value <= 33.5 ? kHudInkWarn : kHudInkBad;
++    if (sign == kAsciiPercent)
++    {
++        int before = at >= 2 && hud_byte(words, at - 1) == kAsciiSpace ? hud_byte(words, at - 2) : 0;
++        if (before != kAsciiU && before != kAsciiPercent)
++            return value >= 95.0 ? kHudInkGood : value >= 80.0 ? kHudInkWarn : kHudInkBad; // the speed
++        return value <= 50.0 ? kHudInkGood : value <= 80.0 ? kHudInkWarn : kHudInkBad;
++    }
++    return kHudInkValue;
++}
++
++// How far the pen moves in the overlay's line: every digit takes the one width, so a number that
++// changes does not move what stands after it. Montserrat's own digits are proportional, which is
++// right for a word and wrong for a figure that is rewritten several times a second.
++float hud_step(int glyph, float cap)
++{
++    float advance = glyph >= kDigit && glyph <= kDigit + 9 ? kHudDigitAdvance
++                    : glyph < 0 ? 0.30 * kGlyphCap / 0.70 : kAdvance[glyph];
++    return advance * cap / kGlyphCap;
++}
++
++// How wide the whole line is, which is the chip's own width less its margin: hud.h sizes the box
++// the same way, in C++, before any of this is drawn.
++float hud_line_width(uint words[28], float cap)
++{
++    float width = 0.0;
++    for (int i = 0; i < kHudTextMax; ++i)
++    {
++        int code = hud_byte(words, i);
++        if (code == 0) break;
++        width += hud_step(hud_glyph(code), cap);
++    }
++    return width;
++}
++
++// The chip the line stands in: a rounded panel, quiet enough to read the picture through, and in
++// no colour of its own. local is
++// the pixel's place in the box, counted down and right from its top left corner; size is the
++// box's own size in pixels.
++vec4 hud_panel(vec2 local, vec2 size)
++{
++    float unit = size.y / kHudBoxUnits;
++    float radius = kHudRadiusUnits * unit;
++    vec2 half_size = 0.5 * size;
++    vec2 q = abs(local - half_size) - half_size + radius;
++    float edge = min(max(q.x, q.y), 0.0) + length(max(q, vec2(0.0))) - radius;
++    float inside = 1.0 - smoothstep(-0.75, 0.75, edge);
++    vec4 panel = vec4(vec3(0.05, 0.06, 0.095), 0.78 * inside);
++    return panel;
++}
++
++// The line with the left end of its baseline at `at`, at a cap of `cap` pixels; pixel has its
++// origin at the bottom left, as loading_scene's does. The line ends at its first NUL, and no
++// glyph standing past this pixel can take it, so both end the walk early. Each glyph's ink is
++// worked out here (labels dim, the numbers about them by the sign they end in) and left on the
++// pick; whether the line is drawn in those inks or one is the caller's, not this one's.
++void hud_pick(inout Pick pick, uint words[28], vec2 pixel, vec2 at, float cap)
++{
++    if (pixel.y < at.y - 0.5 * cap || pixel.y > at.y + 1.5 * cap || pixel.x < at.x - cap)
++        return;
++    float pen = at.x;
++    int ink = kHudInkLabel;   // what the next glyph is drawn in
++    int number = kHudInkValue; // the ink of the run of digits under the pen
++    bool inside = false;      // between a digit and the sign that ends it
++    for (int i = 0; i < kHudTextMax; ++i)
++    {
++        if (pen > pixel.x) break;
++        int code = hud_byte(words, i);
++        if (code == 0) break;
++        int glyph = hud_glyph(code);
++        bool digit = code >= kAsciiZero && code <= kAsciiNine;
++        if (!inside && digit)
++        {
++            // A run of digits begins: its ink is the sign that ends it and the number itself.
++            number = hud_number_ink(words, i);
++            inside = true;
++            ink = number;
++        }
++        else if (inside)
++        {
++            if (digit || code == kAsciiDot || code == kAsciiSlash)
++                ink = number; // still within the number
++            else
++            {
++                // The sign that ends it: a percent keeps the number's ink, a unit letter does not.
++                inside = false;
++                ink = code == kAsciiPercent ? number : kHudInkLabel;
++            }
++        }
++        if (glyph >= 0)
++        {
++            // A digit stands in the middle of the width every digit takes: at its left edge a
++            // narrow one (the 1) left a gap after it that read as a space ("1 0%").
++            float inset = digit ? 0.5 * (hud_step(glyph, cap) - kAdvance[glyph] * cap / kGlyphCap) : 0.0;
++            pick_glyph_step(pick, glyph, ink, pixel, vec2(pen + inset, at.y), hud_step(glyph, cap), cap, 0.0);
++        }
++        pen += hud_step(glyph, cap);
++    }
++}
++"""
+ 
+ 
+ def draw_glyph(font, letter):
+@@ -84,9 +341,29 @@ def main():
+         f"const float kGlyphBase = {BASE:.1f};",
+         f"const float kGlyphLeft = {LEFT:.1f};",
+         f"const float kGlyphSpread = {SPREAD:.1f};",
++        "// The overlay's box in a picture 1080 rows high: its cap height, the margin around the",
++        "// text in it, its whole height and where its baseline stands from its top. hud.h and",
++        "// vulkan_hud_draw.inc size and place the box with these; all four are here so they",
++        "// cannot drift.",
++        f"const float kHudCapUnits = {CAP_UNITS:.1f};",
++        f"const float kHudPadUnits = {PAD_UNITS:.1f};",
++        f"const float kHudBoxUnits = {CAP_UNITS + 2 * PAD_UNITS:.1f};",
++        f"const float kHudBaselineUnits = {PAD_UNITS + CAP_UNITS:.1f};",
++        f"// The chip the line stands in (hud_panel), in that same picture: how far its corners are",
++        f"// cut round.",
++        f"const float kHudRadiusUnits = {RADIUS_UNITS:.1f};",
++        f"// The overlay's line, in characters (hud.h, kHudTextMax).",
++        f"const int kHudTextMax = {TEXT_MAX};",
+         f"const int kDigit = {GLYPHS.index('0')};",
+         f"const int kPercent = {GLYPHS.index('%')};",
+         f"const int kSlash = {GLYPHS.index('/')};",
++        "// The widest digit, which every figure in the overlay's line takes (hud_step).",
++        f"const float kHudDigitAdvance = {max(advances[GLYPHS.index(d)] for d in '0123456789'):.2f};",
++        # The overlay's line reaches the shader as characters, not as kText's indexes.
++        "// ASCII 32 to 126 as a glyph index, -1 where the font has no glyph (drawn as a space).",
++        f"const int kCharIndex[{127 - 32}] = int[{127 - 32}](",
++        "    " + ", ".join(str(GLYPHS.index(chr(code)) if chr(code) in GLYPHS else -1)
++                          for code in range(32, 127)) + ");",
+         "// How far each glyph moves the pen, in texels.",
+         f"const float kAdvance[{len(advances)}] = float[{len(advances)}](",
+         "    " + ", ".join(f"{value:.2f}" for value in advances) + ");",
+@@ -105,9 +382,55 @@ def main():
+     lines += ["// One word of a glyph's field.", "uint glyph_word(int glyph, int word)", "{", "    switch (glyph)", "    {"]
+     lines += [f"    case {index}: return kGlyph{index}[word];" for index in range(len(tables))]
+     lines += ["    }", "    return 0u;", "}"]
++    # How a glyph's field is read and a line laid out over it, which both shaders need.
++    lines += HELPERS.splitlines()
+     words = np.concatenate(tables)
+     OUTPUT.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+     print(f"{OUTPUT.name}: {len(GLYPHS)} glyphs of {WIDTH}x{HEIGHT} texels, {words.size} words, {len(LINES)} lines")
++    # The same advances for C++, which has to know how wide the line is before anything draws it.
++    every = [advances[GLYPHS.index(chr(code))] if chr(code) in GLYPHS else SPACE_ADVANCE
++             for code in range(32, 127)]
++    digit_advance = max(advances[GLYPHS.index(d)] for d in "0123456789")
++    columns = [", ".join(f"{value:.2f}f" for value in every[start:start + 8]) for start in range(0, len(every), 8)]
++    header = [
++        "// Generated by tools/launcher/bake-loading-text.py from Montserrat Medium (SIL Open Font",
++        "// License 1.1). Do not edit: change the script and run it again.",
++        "#pragma once",
++        "#include <string_view>",
++        "namespace Eden {",
++        f"// The overlay's font, the one headless/loading_text.glsl draws: a cap of {CAP} texels,",
++        "// and how far each ASCII character from 32 to 126 moves the pen in texels at that cap.",
++        "// A character the font has no glyph for moves it as a space does.",
++        f"inline constexpr float kHudGlyphCap = {CAP:.2f}f;",
++        f"inline constexpr float kHudSpaceAdvance = {SPACE_ADVANCE:.2f}f;",
++        "// The overlay's box in a picture 1080 rows high, as kHudCapUnits and kHudPadUnits are in",
++        "// loading_text.glsl. Its height is the cap plus twice the pad.",
++        f"inline constexpr float kHudCapUnits = {CAP_UNITS:.1f}f;",
++        f"inline constexpr float kHudPadUnits = {PAD_UNITS:.1f}f;",
++        f"inline constexpr float kHudBoxUnits = {CAP_UNITS + 2 * PAD_UNITS:.1f}f;",
++        f"inline constexpr float kHudBaselineUnits = {PAD_UNITS + CAP_UNITS:.1f}f;",
++        f"inline constexpr float kHudAdvance[{len(every)}] = {{",
++        *[f"    {column}{',' if index + 1 < len(columns) else ''}" for index, column in enumerate(columns)],
++        "};",
++        "// The widest digit, which every figure in the overlay's line takes: a number that is",
++        "// rewritten several times a second must not move what stands after it. hud_step in",
++        "// loading_text.glsl lays the line out the same way.",
++        f"inline constexpr float kHudDigitAdvance = {digit_advance:.2f}f;",
++        "// One line's width, in whatever units its cap is given in.",
++        "inline constexpr float HudTextWidth(std::string_view text, float cap) {",
++        "    float width = 0.0f;",
++        "    for (const char c : text) {",
++        "        const unsigned char code = static_cast<unsigned char>(c);",
++        "        width += (c >= '0' && c <= '9' ? kHudDigitAdvance",
++        "                  : code >= 32 && code < 127 ? kHudAdvance[code - 32] : kHudSpaceAdvance) * cap /",
++        "                 kHudGlyphCap;",
++        "    }",
++        "    return width;",
++        "}",
++        "} // namespace Eden",
++    ]
++    ADVANCES_OUTPUT.write_text("\n".join(header) + "\n", encoding="utf-8", newline="\n")
++    print(f"{ADVANCES_OUTPUT.name}: advances for ASCII 32..126")
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/tools/prepare-vulkan-port.py b/tools/prepare-vulkan-port.py
+index ee09dbe..16ad105 100644
+--- a/tools/prepare-vulkan-port.py
++++ b/tools/prepare-vulkan-port.py
+@@ -630,12 +630,24 @@ extern "C" void eden_vma_probe(unsigned seconds) {
+     std::lock_guard lock{vma_probe_mutex};
+     if (vma_probe_allocator) EdenVmaSnapshot(vma_probe_allocator, 100000 + seconds);
+ }
++// What the allocator holds in its blocks, for the overlay's GFX piece (performance.h, graphics_memory_held).
++static unsigned long long EdenGraphicsMemoryHeld() {
++    std::lock_guard lock{vma_probe_mutex};
++    if (!vma_probe_allocator) return 0;
++    VmaBudget held[VK_MAX_MEMORY_HEAPS]{};
++    vmaGetHeapBudgets(vma_probe_allocator, held);
++    unsigned long long blocks = 0;
++    for (const VmaBudget& heap : held) blocks += heap.statistics.blockBytes;
++    return blocks;
++}
+ MemoryAllocator::MemoryAllocator(const Device &device_)'''),
+     ('    // Preserve the previous "RenderDoc small heap"',
+      '    { std::lock_guard lock{vma_probe_mutex}; vma_probe_allocator = allocator; }\n'
++     '    ::Eden::Performance::graphics_memory_held.store(&EdenGraphicsMemoryHeld, std::memory_order_release);\n'
+      '    // Preserve the previous "RenderDoc small heap"'),
+     ('MemoryAllocator::~MemoryAllocator() = default;',
+      'MemoryAllocator::~MemoryAllocator() {\n'
++     '    ::Eden::Performance::graphics_memory_held.store(nullptr, std::memory_order_release);\n'
+      '    std::lock_guard lock{vma_probe_mutex};\n'
+      '    if (vma_probe_allocator == allocator) vma_probe_allocator = nullptr;\n'
+      '    for (auto pool : temporary_pools) if (pool) vmaDestroyPool(allocator, pool);\n' +
+@@ -995,7 +1007,7 @@ adapt('src/video_core/renderer_vulkan/renderer_vulkan.cpp', 'vulkan_renderer.cpp
+      '#include "diagnostics.h"\n#include "hud.h"\n#include "ecam_bridge.h"'),
+     ('void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebuffers) {',
+      'void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebuffers) {\n'
+-     + (port / 'vulkan_ecam_composite.inc').read_text()),
++     + (port / 'vulkan_guest_resolution.inc').read_text() + (port / 'vulkan_ecam_composite.inc').read_text()),
+     # The HUD counted the guest rate only: OnFrameDisplayed() runs once per Composite(), while the
+     # frames frame generation adds are presented through PresentManager::Present() (hud.h). Count
+     # every frame handed to the present manager.

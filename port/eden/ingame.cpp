@@ -464,6 +464,13 @@ namespace ps5ingamenx
 
 		// -- the loading screen ----------------------------------------------------------------------
 
+		// the system it names: the Switch 2 side's program is built with PS5ECAM_SWITCH2 (its ecam.cmake)
+#ifdef PS5ECAM_SWITCH2
+		constexpr const char* kSystemName = "Nintendo Switch 2";
+#else
+		constexpr const char* kSystemName = "Nintendo Switch";
+#endif
+
 		std::string StepText()
 		{
 			switch ((Step)s_step.load())
@@ -523,7 +530,7 @@ namespace ps5ingamenx
 			}
 			const float tx = x0 + coverWidth + 80, width = 1920 - tx - 180;
 			float y = y0 + 40;
-			canvas.Chip(g.chip, tx, y, "Nintendo Switch", colours.accentInk, colours.accent, true);
+			canvas.Chip(g.chip, tx, y, kSystemName, colours.accentInk, colours.accent, true);
 			y += 64;
 			const ps5menu::Canvas::Lines lines = canvas.Break(g.big, 60, title, width);
 			const int shown = std::min(2, (int)lines.drawn.size());
