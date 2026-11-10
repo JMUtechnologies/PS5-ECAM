@@ -30,7 +30,9 @@ jobs:
         run: python3 -B tools/deps.py fetch pacbrew pugixml dr_mp3 rapidjson prosperoedenx melonds libretro-common reshade
 
       - name: String tables
-        run: python3 -B tools/lang.py check
+        run: |
+          python3 -B tools/tests/test-lang.py
+          python3 -B tools/lang.py check
 
       - name: System paths and legacy discovery
         run: bash tools/tests/test-paths.sh
