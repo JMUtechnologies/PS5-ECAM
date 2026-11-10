@@ -29,6 +29,7 @@ namespace ps5catalog
 		ps5emu::Game game;
 		uint32_t ambient[2] = {}; // RGBA, from the cover (0: not known yet)
 		int64_t added = 0;		  // seconds since 1970 a scan first found it; 0: in the first scan
+		std::vector<std::string> collections; // named groups, shared names across systems
 		bool favourite = false;
 		bool hidden = false;	  // left out of the Library's list (its Hidden filter, and Search, still find it)
 		int64_t lastPlayed = 0;	  // seconds since 1970; 0: never
@@ -43,6 +44,8 @@ namespace ps5catalog
 	Entry* Find(System side, uint64_t titleId);
 	// After a side's scan: its list replaced, what is known of each game kept by title ID
 	void Replace(System side, const std::vector<ps5emu::Game>& scanned);
+	std::vector<std::string> Collections();
+	bool SetCollection(System side, uint64_t titleId, std::string name, bool member);
 	void SetFavourite(System side, uint64_t titleId, bool favourite);
 	void SetHidden(System side, uint64_t titleId, bool hidden);
 	void SetAmbient(System side, uint64_t titleId, const uint32_t ambient[2]);

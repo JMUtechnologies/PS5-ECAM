@@ -5,6 +5,9 @@
 // reads a file that is not JSON as an empty catalogue. The data folder is PS5CEMU_DATA, a folder of the
 // test's.
 #include "app/catalog.h"
+#include "app/paths.h"
+#include "retro/registry.h"
+#include <filesystem>
 
 #include <cstdio>
 #include <cstring>
@@ -69,11 +72,29 @@ static void Write()
 	Check(Ended(System::N3ds, kPokemon, kStarted - 5) == 0, "play time: a clock that went back counts none");
 	Check(Ended(System::N3ds, kPokemon, kStarted + 86401) == 0, "play time: over a day counts none");
 	Check(Ended(System::WiiU, kPokemon, kStarted + 600) == 0, "play time: another side's game is not this one");
+	for (int side = 0; side <= ps5retro::kSideCount; ++side)
+	{
+		const auto system = (System)side;
+		if (Games(system).empty()) Replace(system, {Make(123, "Collection test", "/games/test")});
+		const auto title = Games(system).front().game.titleId;
+		Check(SetCollection(system, title, " Couch co-op ", true), "every registered side can join a collection");
+		Check(SetCollection(system, title, "Couch co-op", true) && Find(system, title)->collections.size() == 1, "duplicate collection membership is idempotent");
+	}
+	Check(!SetCollection(System::WiiU, kZelda, "\ninvalid", true), "control characters rejected");
+	Check(!SetCollection(System::WiiU, kZelda, "   ", true), "blank names rejected");
 	Check(Save(), "saved");
 }
 
 static void Read()
 {
+	for (int side = 0; side <= ps5retro::kSideCount; ++side)
+		Check(Games((System)side).front().collections == std::vector<std::string>{"Couch co-op"}, "collection survives process restart on every side");
+	Check(Collections() == std::vector<std::string>{"Couch co-op"}, "one shared collection name across systems");
+	const auto temporary = ps5paths::Root() + "/library.json.tmp";
+	std::filesystem::create_directory(temporary);
+	Check(!SetCollection(System::WiiU, kZelda, "Unsaved", true) && Find(System::WiiU, kZelda)->collections.size() == 1, "failed write rolls back membership");
+	std::filesystem::remove(temporary);
+	Check(SetCollection(System::WiiU, kZelda, "Couch co-op", false) && Find(System::WiiU, kZelda)->collections.empty(), "remove a game from a collection");
 	const Entry* zelda = Find(System::WiiU, kZelda);
 	Check(zelda && zelda->game.name == "Zelda BOTW" && zelda->game.version == 208 && zelda->game.hasUpdate && zelda->game.dlcCount == 2 &&
 			zelda->game.format == "WUA" && zelda->game.gameId == "ALZE01",
@@ -105,7 +126,7 @@ static void Read()
 	const int64_t before = std::time(nullptr);
 	Replace(System::N3ds, {moved, added});
 	const Entry* kept = Find(System::N3ds, kPokemon);
-	Check(kept && kept->favourite && kept->minutesPlayed == 62 && kept->lastPlayed == kStarted && kept->game.path == moved.path &&
+	Check(kept && kept->collections == std::vector<std::string>{"Couch co-op"} && kept->favourite && kept->minutesPlayed == 62 && kept->lastPlayed == kStarted && kept->game.path == moved.path &&
 			!kept->game.Archived(),
 		"a new scan keeps what is known, with the game as found");
 	const Entry* fresh = Find(System::N3ds, added.titleId);

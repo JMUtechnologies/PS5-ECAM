@@ -265,6 +265,8 @@ namespace ps5shell
 		for (int i = 0; i < (int)m_games.size(); i++)
 		{
 			Game& game = m_games[i];
+			const auto& collection = m_libraryCollection[side];
+			if (!collection.empty() && std::find(game.entry.collections.begin(), game.entry.collections.end(), collection) == game.entry.collections.end()) continue;
 			// a hidden game in the Hidden filter alone, and found by a search
 			if (hidden >= 0 && filter == hidden ? !game.entry.hidden : game.entry.hidden && search.empty())
 				continue;
@@ -389,7 +391,9 @@ namespace ps5shell
 			std::vector<std::string> choices = SortNames();
 			// tr: the last choice of the Library's Sort list: a game of the list picked by chance, the order kept
 			choices.push_back(Tr("Surprise me"));
+			choices.push_back(Tr("Collections"));
 			OpenPicker(TrC("tab", "Library"), Tr("Sort"), choices, m_settings.ui.librarySort[side], [this, side](int choice) {
+				if (choice == (int)std::size(kSorts) + 1) { OpenCollections(); return; }
 				if (choice == (int)std::size(kSorts))
 				{
 					SurpriseMe();
@@ -404,7 +408,12 @@ namespace ps5shell
 		case Button::Triangle: OpenKeyboard(); return;
 		case Button::Circle:
 			// the search let go, then up to the top, then the bar: the Library is where a side opens
-			if (!m_search.empty())
+			if (!m_libraryCollection[side].empty())
+			{
+				m_libraryCollection[side].clear();
+				LibraryRefresh();
+			}
+			else if (!m_search.empty())
 			{
 				m_search.clear();
 				LibraryRefresh();
@@ -728,8 +737,10 @@ namespace ps5shell
 		}
 
 		// the Library: its heading and count, Sort and Search at the right
-		const ui::TextBlock title = canvas.Text(heading, kSafeX, headTop, TrC("tab", "Library"), kText, 600, 1);
-		const int listed = (int)std::count_if(m_games.begin(), m_games.end(), [](const Game& g) { return !g.entry.hidden; }); // as All counts them
+		const ui::TextBlock title = canvas.Text(heading, kSafeX, headTop, m_libraryCollection[side].empty() ? std::string(TrC("tab", "Library")) : m_libraryCollection[side], kText, 600, 1);
+		const int listed = (int)std::count_if(m_games.begin(), m_games.end(), [&](const Game& g) {
+			return !g.entry.hidden && (m_libraryCollection[side].empty() || std::find(g.entry.collections.begin(), g.entry.collections.end(), m_libraryCollection[side]) != g.entry.collections.end());
+		}); // as All counts them
 		// tr: how many games the Library has
 		const ui::TextBlock count = canvas.Text(tool, kSafeX + title.width + 24, headTop + 9, TrP(listed, "{0} game", "{0} games"), Tertiary(), 300, 1);
 		if (m_scanning)

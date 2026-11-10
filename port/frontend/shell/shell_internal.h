@@ -646,6 +646,8 @@ namespace ps5shell
 			std::function<void(int)> choose);
 		void OpenHelp(const std::string& title, const std::string& text);
 		void OpenGameMenu(int game);
+		void OpenCollections(int game = -1);
+		std::array<std::string, kSides> m_libraryCollection{};
 		void OpenKeyboard();
 		void OpenNameKeyboard(const std::string& title, const std::string& text, size_t limit, std::function<void(const std::string&)> done);
 		// text as it is typed: no capitals put in, with capitals and symbols on R1 and L1; secret shows dots
