@@ -5,7 +5,8 @@ and `dist/PS5-ECAM-vVERSION.zip`. Ubuntu 24.04 is what it is built on; WSL works
 
 ## Requirements
 
-- `clang-18`, `lld-18` and the LLVM 18 tools
+- `clang-18`, `lld-18` and the LLVM 18 tools, with `clang` and `clang++` by those names too (Ubuntu's
+  `clang` package): Porpoise's build calls `/usr/bin/clang`
 - `cmake`, `ninja`, `git`, `make` and `python3`
 - For RADV, the Vulkan driver: `meson`, Python's `mako` and `packaging`, `rsync`,
   `glslangValidator`, and LLVM, Clang, libclc, SPIRV-Tools and the SPIR-V translator for Mesa's
@@ -15,7 +16,7 @@ On Ubuntu 24.04:
 
 ```bash
 pip install meson mako packaging
-sudo apt install rsync flex glslang-tools llvm-18-dev libclang-18-dev libclc-18-dev libllvmspirvlib-18-dev llvm-spirv-18 spirv-tools
+sudo apt install clang rsync flex glslang-tools llvm-18-dev libclang-18-dev libclc-18-dev libllvmspirvlib-18-dev llvm-spirv-18 spirv-tools
 ```
 
 ## Targets
