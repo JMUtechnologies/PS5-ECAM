@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Wed, 11 Nov 2026 00:05:52 -0500
+Subject: [PATCH] Playtendoh's Switch 2 side: Ocarina of Time's mesh draws
+ skipped again, as they stopped the GPU
+
+On PS5-680 Ocarina of Time stopped the GPU at the first task/mesh draw of gameplay, three runs in a
+row (VK_ERROR_DEVICE_LOST 10 s later, at 54-77 s), with its helper calls lowered and with
+EglantinePS5's own GPU shortcuts. Core patch 0075 (WIP in EglantinePS5) issues the mesh-only draws
+that 0071 skipped. With EDEN_OOT_MESH_DRAWS=skip in env.txt the game went past that point and
+played on. It is now one of the core switches' defaults, which env.txt still overrides
+(EDEN_OOT_MESH_DRAWS=draw for work on them). Trees' leaves are missing, as with 0071.
+---
+ headless/main.cpp | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/headless/main.cpp b/headless/main.cpp
+index 5502859..af79f87 100644
+--- a/headless/main.cpp
++++ b/headless/main.cpp
+@@ -669,10 +669,14 @@ int main(int argc, char** argv) {
+         // pages with nothing to flush answer on the guest core instead of waiting for the GPU
+         // thread, as they do with fastmem (Mario Kart World's title screen: 13 -> 20 FPS). The
+         // three waits poll 300 us before sleeping: a wake-up here is a system call on both sides.
++        // Playtendoh: Ocarina of Time's task and mesh draws are all skipped, as core patch 0071 had
++        // them. 0075 issues the mesh-only ones, and on PS5-680 the GPU stopped at the first of them
++        // every time (VK_ERROR_DEVICE_LOST 10 s later); with them skipped the game plays on.
+         for (const auto& [name, value] : {std::pair{"EDEN_NX2_UNSAFE_PREEMPTIVE_READS", "1"},
+                                           std::pair{"EDEN_PS5_READ_SPIN_US", "300"},
+                                           std::pair{"EDEN_PS5_GPU_SPIN_US", "300"},
+-                                          std::pair{"EDEN_PS5_WORKER_SPIN_US", "300"}}) {
++                                          std::pair{"EDEN_PS5_WORKER_SPIN_US", "300"},
++                                          std::pair{"EDEN_OOT_MESH_DRAWS", "skip"}}) {
+             setenv(name, value, 0);
+         }
+         // The 64-bit fastmem window (src/host_memory.cpp, Window64): opt-in while it is qualified,
