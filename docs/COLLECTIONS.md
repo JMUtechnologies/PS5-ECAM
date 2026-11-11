@@ -21,8 +21,10 @@ games or saves.
 
 ## Browse
 
-Move down from Recently played into the main Library list, press Square, choose
-Collections, then choose a collection.
+In Classic with library filters enabled, choose the collection's pill in the
+filter row. In Orbit, or with filters disabled, move into the main Library list,
+press Square, choose Collections, then choose a collection. The picker is offered
+once this side has a collection.
 The library heading shows its name. Search and the existing filters still apply;
 hidden games remain hidden unless the Hidden filter is selected. Choose All in
 the collection picker, or press Circle, to clear the collection selection.
@@ -31,5 +33,5 @@ Membership is kept in `library.json` alongside each game's existing metadata,
 keyed by system and title ID. It survives restarts and rescans. A failed catalogue
 write restores the previous in-memory membership and displays an error.
 
-This implements named collections. Automatically populated genre/player-count
+Upstream now includes named collections. Automatically populated genre/player-count
 collections and a dedicated cross-system combined library are not included.
