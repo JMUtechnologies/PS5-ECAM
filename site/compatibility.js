@@ -1,5 +1,6 @@
-// Playtendoh's site: the table of compatibility.json, which site/build.py puts beside this page from the
-// report intake's daily table (tools/log-intake). Every value goes into the page as text, never as HTML.
+// Playtendoh's site: the table players' reports make, read live from the report intake (tools/log-intake), which
+// rebuilds it at most once an hour; compatibility.json beside this page (site/build.py) when the intake can't be
+// reached. Every value goes into the page as text, never as HTML.
 'use strict';
 
 const SIDES = { wiiu: 'Wii U', '3ds': '3DS', ds: 'DS', switch: 'Switch', switch2: 'Switch 2', gamecube: 'GameCube', wii: 'Wii', n64: 'N64', nes: 'NES',
@@ -55,15 +56,29 @@ function draw() {
 		: 'No reports yet.';
 }
 
-async function load() {
+const ROW = ['side', 'titleId', 'name', 'status'];
+
+async function fetchTable(url, ms) {
+	const controller = new AbortController();
+	const timer = setTimeout(() => controller.abort(), ms);
 	try {
-		const response = await fetch('compatibility.json', { cache: 'no-cache' });
+		const response = await fetch(url, { signal: controller.signal });
+		if (!response.ok) return null;
 		const table = await response.json();
-		games = Array.isArray(table.games) ? table.games : [];
-		if (table.generated) document.getElementById('summary').dataset.generated = table.generated;
+		return table && table.schema === 1 && Array.isArray(table.games) ? table : null;
 	} catch {
-		games = [];
+		return null;
+	} finally {
+		clearTimeout(timer);
 	}
+}
+
+async function load() {
+	const intake = (document.querySelector('meta[name="reports-url"]') || {}).content || '';
+	let table = intake.startsWith('https://') ? await fetchTable(intake + '/v1/compatibility.json', 8000) : null;
+	if (!table) table = await fetchTable('compatibility.json', 15000);
+	games = table ? table.games.filter((g) => g && ROW.every((k) => typeof g[k] === 'string')) : [];
+	if (table && table.generated) document.getElementById('summary').dataset.generated = table.generated;
 	const select = document.getElementById('side');
 	for (const key of [...new Set(games.map((g) => g.side))].sort((a, b) => side(a).localeCompare(side(b)))) {
 		const option = document.createElement('option');
