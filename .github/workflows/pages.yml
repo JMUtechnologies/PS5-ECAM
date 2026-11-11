@@ -60,7 +60,9 @@ jobs:
             echo '{}' > compatibility.json
           fi
       - name: Build
-        run: python3 site/build.py --release latest.json --compat compatibility.json --out _site
+        env:
+          REPORTS_URL: ${{ vars.REPORTS_URL }}
+        run: python3 site/build.py --release latest.json --compat compatibility.json --reports-url "$REPORTS_URL" --out _site
       - uses: actions/upload-pages-artifact@v4
         with:
           path: _site

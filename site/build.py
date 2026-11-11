@@ -123,6 +123,7 @@ def main():
     parser.add_argument("--release", help="the latest release, as JSON from GitHub's API")
     parser.add_argument("--out", default=os.path.join(REPO_ROOT, "_site"))
     parser.add_argument("--compat", help="the report intake's table (GET /v1/compatibility.json), for compatibility.html")
+    parser.add_argument("--reports-url", default="", help="the report intake's address: compatibility.html reads its table live from there")
     args = parser.parse_args()
 
     release = {}
@@ -159,6 +160,13 @@ def main():
         sys.exit(f"build.py: index.html has placeholders with no value: {', '.join(missing)}")
     page = re.sub(r"%([A-Z_]+)%", lambda m: values[m.group(1)], page)
     with open(os.path.join(args.out, "index.html"), "w", encoding="utf-8", newline="\n") as f:
+        f.write(page)
+    # compatibility.html reads the intake's table itself, so it is never older than the intake's hour, whether or
+    # not GitHub runs this workflow's schedule; the table baked in below is what it shows when the intake can't be reached.
+    origin = re.match(r"^https://[A-Za-z0-9.-]+(?::[0-9]+)?", args.reports_url.strip())
+    with open(os.path.join(SITE, "compatibility.html"), encoding="utf-8") as f:
+        page = f.read().replace("%REPORTS_ORIGIN%", html.escape(origin.group(0)) if origin else "")
+    with open(os.path.join(args.out, "compatibility.html"), "w", encoding="utf-8", newline="\n") as f:
         f.write(page)
     games = compat_table(args.compat)
     with open(os.path.join(args.out, "compatibility.json"), "w", encoding="utf-8", newline="\n") as f:

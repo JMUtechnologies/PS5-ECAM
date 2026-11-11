@@ -6,8 +6,9 @@ D1 database:
 - `POST /v1/report`: one report from the app (64 KB at most). Checked against schema 1 (`src/report.js`), limited to
   20 a minute per install ID and 30 per network address, scrubbed again, and kept in D1. The address
   is only the rate limiter's key; nothing about the sender is stored.
-- `GET /v1/compatibility.json`: one row a game, no install ID, no log. GitHub Pages fetches it every
-  day (`.github/workflows/pages.yml`) and shows it at `compatibility.html`.
+- `GET /v1/compatibility.json`: one row a game, no install ID, no log, rebuilt at most once an hour (Cloudflare's
+  cache). `compatibility.html` reads it live; GitHub Pages also bakes a copy in every hour (`.github/workflows/pages.yml`)
+  for when the intake can't be reached.
 - Once a day, reports older than 180 days are deleted.
 
 The app holds no secret: only the intake's address, given at build time. The Worker holds none
