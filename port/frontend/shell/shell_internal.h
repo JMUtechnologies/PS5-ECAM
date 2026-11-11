@@ -149,6 +149,8 @@ namespace ps5shell
 	// its icon (RetroArch's, port/ui/consoles) in body, its colour, once it is on the GPU; else drawn in a
 	// few rounded shapes, cut its screens and buttons, second the Switch's other Joy-Con and the Game Boy's
 	// screen (consoles.cpp)
+	// the Timeline's mark in the console lists (consoles.cpp): its ruler's line, and a console's dot on each of three stems
+	void DrawTimelineMark(Canvas& canvas, float cx, float cy, float s, uint32_t body, const uint32_t dots[3]);
 	void DrawConsole(Canvas& canvas, System side, float cx, float cy, float s, uint32_t body, uint32_t cut, uint32_t second,
 		const ui::Picture* icon = nullptr);
 
@@ -418,10 +420,20 @@ namespace ps5shell
 		void StartFromAnySide(System side, const Game& game);
 		std::string StateShot(const Game& game) const; // the newest picture beside its save states
 		void GameMenuFromAnySide(System side, const Game& game);
-		// The Timeline (timeline.cpp)
+		// The Timeline (timeline.cpp): a stop of its own in the console lists, after the last console (the
+		// Classic carousel's, Orbit's dial), whose card opens it
 		void TimelineOpen();
 		void TimelineUpdate(const ui::Press& press);
 		void TimelineDraw(Canvas& canvas);
+		void TimelineStop(bool on);
+		void TimelineStopUpdate(const ui::Press& press);
+		void TimelineStopDraw(Canvas& canvas);
+		void TimelineStopColours(uint32_t dots[3]) const; // its mark's three dots: the consoles' colours it shows
+		void TimelineMedia(); // the real discs' and cards' pictures, looked for again as they arrive
+		void TimelineBuild(); // its shelves, from every side's catalogue
+		// its ruler in area: the eras, the years, a mark for each console (focusShelf's larger), the player's games
+		// by year, and a pointer under pointerYear (-1: none); ground behind the marks (0: none)
+		void TimelineRuler(Canvas& canvas, const Box& area, uint32_t ink, uint32_t quiet, uint32_t ground, int focusShelf, float pointerYear);
 
 		// Make it yours: first, a first start's look and feel, else what this
 		// version brings that the last did not have
@@ -710,7 +722,9 @@ namespace ps5shell
 		ScreenId m_screen = ScreenId::Library;
 		ScreenId m_tab = ScreenId::Library;
 		bool m_onBar = false;
-		int m_barFocus = kSides; // the sides (0 to kSides - 1), then the Library and Settings tabs
+		int m_barFocus = kSides; // the sides (0 to kSides - 1), then the Library and Settings tabs, and the Timeline's stop
+		static constexpr int kTimelineBar = kSides + 2; // m_barFocus on the carousel's Timeline, after the last side
+		bool m_timelineStop = false; // the console lists' Timeline is in focus, not a side (the side stays loaded under it)
 		float m_barSlide = -1;	 // the side switch's carousel: how far its sides have slid (-1: not drawn yet)
 		double m_screenAt = -10;  // when the screen was entered (its parts arrive)
 		bool m_done = false;	  // a game is chosen and the launch shown
@@ -803,11 +817,15 @@ namespace ps5shell
 			const char* brief = "";
 			int media = 0;
 			std::vector<Game> games;
+			std::vector<std::string> mediaArt; // each game's real disc or card, from GameTDB, when it has come
 			float x = 0, w = 0;
+			float mediaW = 0, mediaH = 0; // its media's size on the shelf: its true shape, the sizes kept apart a little less
 		};
 		std::vector<TimelineShelf> m_shelves;
 		int m_shelfAt = 0, m_shelfGame = 0;
 		ui::Spring m_shelfScroll;
+		ui::Spring m_rulerAt;		   // the ruler's pointer, gliding to the year of the game in focus
+		uint32_t m_mediaArrivals = 0; // ps5boxart::MediaArrivals, last looked at
 		double m_insertAt = 0;		   // when Cross put the game in the slot (0: not yet)
 		ScreenId m_hubFrom = ScreenId::Library;
 		int m_hubAction = 0;

@@ -386,6 +386,11 @@ namespace ps5shell
 
 	void Shell::LibraryUpdate(const ui::Press& press)
 	{
+		if (m_timelineStop)
+		{
+			TimelineStopUpdate(press); // the console lists' Timeline (timeline.cpp)
+			return;
+		}
 		if (Orbit() && OrbitUpdate(press))
 			return;
 		const Button b = press.button;
@@ -589,46 +594,6 @@ namespace ps5shell
 					FocusBar();
 				break;
 			case Button::Down: move(at + 1); break;
-			case Button::L2:
-			case Button::R2:
-			{
-				// to the previous or next group: letter, year or status, as sorted
-				const int sort = m_settings.ui.librarySort[side];
-				auto group = [&](int index) -> int {
-					if (index < offset)
-						return -1;
-					const Game& game = m_games[m_shelf[index - offset]];
-					if (sort == 2)
-						return game.year;
-					if (sort == 3)
-						return StatusRank(game.report);
-					if (sort == 0)
-						return (index - offset) / 10;
-					const char c = game.sortName.empty() ? '#' : game.sortName[0];
-					return std::isalpha((unsigned char)c) ? c : '#';
-				};
-				const int current = group(at);
-				int to = at;
-				if (b == Button::R2)
-				{
-					while (to < total - 1 && group(to) == current)
-						to++;
-				}
-				else
-				{
-					while (to > 0 && group(to - 1) == current)
-						to--;
-					if (to == at && to > 0)
-					{
-						const int previous = group(to - 1);
-						to--;
-						while (to > 0 && group(to - 1) == previous)
-							to--;
-					}
-				}
-				move(to);
-				break;
-			}
 			default: break;
 			}
 		}
@@ -645,6 +610,11 @@ namespace ps5shell
 
 	void Shell::LibraryDraw(Canvas& canvas)
 	{
+		if (m_timelineStop)
+		{
+			TimelineStopDraw(canvas); // the console lists' Timeline (timeline.cpp)
+			return;
+		}
 		if (Orbit())
 		{
 			OrbitDraw(canvas);

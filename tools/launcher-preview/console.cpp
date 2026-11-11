@@ -369,7 +369,7 @@ namespace ps5pad
 }
 
 // -- GameTDB's box art, in brief: what the preview's own folder has ---------------------------------
-// (build/preview/boxart/<wiiu|3ds|switch>/<ID>.tga, put there by hand: GameTDB's covers are not ours
+// (build/preview/boxart/<wiiu|3ds|switch|wii>/<ID>.tga, put there by hand: GameTDB's covers are not ours
 // to keep in the repository)
 
 namespace ps5boxart
@@ -377,12 +377,27 @@ namespace ps5boxart
 	std::string Path(System system, const std::string& id)
 	{
 		const std::string path =
-			output + "/boxart/" + (system == System::WiiU ? "wiiu/" : system == System::Switch ? "switch/" : "3ds/") + id + ".tga";
+			output + "/boxart/" + (system == System::WiiU ? "wiiu/" : system == System::Switch ? "switch/" : system == System::GameCubeWii ? "wii/" : "3ds/") + id + ".tga";
 		return !id.empty() && std::ifstream(path).good() ? path : std::string();
 	}
+	// the Timeline's discs and cards, the same way: build/preview/boxart/<wiiu|wii|3ds|ds|switch>/media/<ID>.tga
+	std::string MediaPath(System system, const std::string& id)
+	{
+		const char* folder = system == System::WiiU ? "wiiu" : system == System::GameCubeWii ? "wii" : system == System::Switch ? "switch" :
+							 system == System::Nds	? "ds"	 : "3ds";
+		const std::string path = output + "/boxart/" + folder + "/media/" + id + ".tga";
+		return !id.empty() && std::ifstream(path).good() ? path : std::string();
+	}
+	void FetchMedia(System, const std::vector<std::string>&) {}
+	uint32_t MediaArrivals() { return 0; }
 	void Fetch(System, const std::vector<std::string>&) {}
 	void Refetch(System, const std::vector<std::string>&, bool) {}
-	std::string RetroPath(const std::string&, const std::string&) { return {}; }
+	// a libretro side's cover, the same way: build/preview/boxart/retro/<folder>/<the game file's name>.tga
+	std::string RetroPath(const std::string& system, const std::string& name)
+	{
+		const std::string path = output + "/boxart/retro/" + system + "/" + name + ".tga";
+		return !name.empty() && std::ifstream(path).good() ? path : std::string();
+	}
 	void FetchRetro(const std::string&, const std::vector<std::string>&, bool) {}
 	size_t RetroPending() { return 0; }
 	size_t Pending() { return 0; }

@@ -48,6 +48,13 @@ namespace ps5boxart
 	void FetchRetro(const std::string& system, const std::vector<std::string>& names, bool again = false);
 	size_t RetroPending();
 
+	// The Timeline's real media (6.0): a game's disc (the GameCube's, the Wii's, the Wii U's) or its card (the
+	// DS's, the 3DS's, the Switch's), GameTDB's scan of it by the cover's ID, clear around its own shape. Kept
+	// beside the covers, covers/boxart/<folder>/media/<ID>.tga, on the same queue, after the covers asked for.
+	std::string MediaPath(System system, const std::string& id);
+	void FetchMedia(System system, const std::vector<std::string>& ids);
+	uint32_t MediaArrivals(); // how many have arrived since the start
+
 	// The cover's TGA when it has been fetched, else empty.
 	std::string Path(System system, const std::string& id);
 	// Fetches the covers not fetched yet, one at a time, on a thread of its own.

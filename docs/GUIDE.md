@@ -13,13 +13,13 @@ wrong.
 
 | Button | Action |
 |---|---|
-| L1 / R1 | Previous or next console |
-| Touchpad click | The Timeline, from the Library; the next console, in Settings |
+| L1 / R1 | Previous or next console, and the Timeline after the last one (the Library) |
+| L2 / R2 | The Library or Settings |
+| Touchpad click | The next console |
 | R3 | Orbit: Home, what you played last on every console |
 | Cross | Play the game, or open what's focused |
 | Options | A game's options: its hub, its game settings, favourite, hide |
 | Square / Triangle | Sort and search (Library); a setting's help (Settings), and Square back to Default (game settings) |
-| R2 | Jump by letter (Library) |
 | Circle | Back |
 
 The app opens on the Library of the side a game came back from, or else the side you used last,
@@ -48,7 +48,7 @@ work stops before a game starts.
   `/data/ps5cemu/music` and choose one, or *Shuffle your music*, in **Settings > System > Launcher
   sound**, which also sets its volume or turns it off
 - **The Library:** your recently played games first, then every game on the side as a list, with
-  Sort (Square), Search (Triangle) and L2 and R2 to jump by letter. **Settings > Launcher > Library
+  Sort (Square) and Search (Triangle); L2 and R2 go to the Library and Settings. **Settings > Launcher > Library
   filters** adds a row of filters over the list (All, Recently added, Favourites, Graphic packs on).
   Sort's last choice, **Surprise me**, puts the focus on a game of the list by chance, and keeps the
   order.

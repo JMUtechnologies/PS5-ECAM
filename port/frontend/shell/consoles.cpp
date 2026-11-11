@@ -243,6 +243,24 @@ namespace ps5shell
 		}
 	}
 
+	void DrawTimelineMark(Canvas& canvas, float cx, float cy, float s, uint32_t body, const uint32_t dots[3])
+	{
+		// the Timeline's ruler in little: its line with a year's tick at each end, and three consoles' dots
+		// on stems of their own heights, as its ruler has them over the years
+		auto shape = [&](float x, float y, float w, float h, float r, uint32_t colour) {
+			canvas.Rect({cx + (x - w / 2) * s, cy + (y - h / 2) * s, w * s, h * s}, r * s, colour);
+		};
+		shape(0, 0.3f, 1.0f, 0.08f, 0.04f, body);
+		shape(-0.46f, 0.36f, 0.06f, 0.2f, 0.03f, body);
+		shape(0.46f, 0.36f, 0.06f, 0.2f, 0.03f, body);
+		constexpr float kX[3] = {-0.27f, 0.02f, 0.3f}, kY[3] = {0.0f, -0.32f, -0.12f};
+		for (int i = 0; i < 3; i++)
+		{
+			shape(kX[i], (kY[i] + 0.3f) / 2, 0.05f, 0.3f - kY[i], 0, body);
+			shape(kX[i], kY[i], 0.24f, 0.24f, 0.12f, dots[i]);
+		}
+	}
+
 	const ui::Picture* Shell::ConsoleIcon(System side, float size)
 	{
 		// RetroArch's XMB Monochrome icons (CC BY 4.0, tools/render-console-icons.py), at 192 and at 64 for
@@ -288,7 +306,8 @@ namespace ps5shell
 		// the pointer, at three o'clock; its NES pad in the middle is Home
 		constexpr uint32_t kGround = 0xff2b1d16, kGroundLow = 0xff1d130e, kHub = 0xff231711; // #161d2b, #0e131d, #111723
 		constexpr float cx = 90, cy = 540, radius = 500, ring = 350, hub = 238;
-		int order[kSides];
+		// and the Timeline, a stop of its own after the last side (6.0)
+		int order[kSides + 1];
 		int shown = 0, open = 0;
 		for (int i = 0; i < kSides; i++)
 		{
@@ -298,6 +317,9 @@ namespace ps5shell
 				open = shown;
 			order[shown++] = i;
 		}
+		if (m_timelineStop)
+			open = shown;
+		order[shown++] = kTimelineBar;
 		if (m_dialTurn < 0)
 			m_dialTurn = (float)open;
 		const float way = std::remainder((float)open - m_dialTurn, (float)shown); // the short way round
@@ -314,8 +336,19 @@ namespace ps5shell
 			const float x = cx + std::cos(angle) * ring, y = cy + std::sin(angle) * ring;
 			if (x < -size || y < -size || y > 1080 + size)
 				continue;
+			if (order[k] == kTimelineBar)
+			{
+				uint32_t dots[3];
+				TimelineStopColours(dots);
+				const bool lit = m_timelineStop && !m_orbitHome;
+				for (uint32_t& dot : dots)
+					dot = lit ? dot : ui::Mix(dot, kGroundLow, 0.3f);
+				const uint32_t ink = lit ? 0xffffffff : ui::Mix(0xffffffff, kGroundLow, 0.45f);
+				DrawTimelineMark(canvas, x, y, size * (lit ? 1.15f : 1.0f), ink, dots);
+				continue;
+			}
 			const System side = BarSide(order[k]);
-			const bool lit = side == m_side && !m_orbitHome;
+			const bool lit = side == m_side && !m_orbitHome && !m_timelineStop;
 			const uint32_t colour = lit ? Vivid(side) : ui::Mix(Vivid(side), kGroundLow, 0.3f);
 			DrawConsole(canvas, side, x, y, size * (lit ? 1.15f : 1.0f), colour, kGround, Second(side, colour), ConsoleIcon(side, size));
 		}
@@ -328,7 +361,7 @@ namespace ps5shell
 			canvas.Ring(middle.Scaled(1.04f), hub * 1.04f, 3, nes);
 		else
 		{
-			const uint32_t accent = Vivid(m_side);
+			const uint32_t accent = m_timelineStop ? 0xffffffff : Vivid(m_side);
 			const Box pointer{cx + ring - 68, cy - 68, 136, 136};
 			canvas.Glow(pointer, 68, 40, ui::SetAlpha(accent, 0.33f));
 			canvas.Ring(pointer, 68, 3, accent);

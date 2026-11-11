@@ -24,6 +24,7 @@
 #include <map>
 #include <mutex>
 #include <set>
+#include <string_view>
 #include <thread>
 
 namespace fs = std::filesystem;
@@ -45,6 +46,8 @@ namespace ps5boxart
 		std::set<std::string> s_queued;						 // folder/ID, under s_mutex
 		bool s_started = false;
 		std::atomic<uint32_t> s_arrivals{0};
+		std::atomic<uint32_t> s_mediaArrivals{0};
+		constexpr std::string_view kMedia = "media/"; // before an ID on the queue: its disc or card, not its cover
 		std::atomic<bool> s_enabled{true};
 		std::atomic<bool> s_spines{false}; // 3D box art: each GameTDB cover's spine too
 		std::atomic<bool> s_stopped{false}; // for good: a game is starting
@@ -61,6 +64,21 @@ namespace ps5boxart
 		std::string Base(System system, const std::string& id)
 		{
 			return fmt::format("{}/boxart/{}/{}", ps5paths::Covers(), Folder(system), id);
+		}
+
+		// The ID on the queue as GameTDB names it, and whether it asks for the disc or card
+		std::string_view Bare(const std::string& id, bool* media = nullptr)
+		{
+			const bool isMedia = id.rfind(kMedia, 0) == 0;
+			if (media)
+				*media = isMedia;
+			return std::string_view(id).substr(isMedia ? kMedia.size() : 0);
+		}
+
+		bool Here(System system, const std::string& id)
+		{
+			std::error_code ec;
+			return fs::exists(Base(system, id) + ".tga", ec);
 		}
 
 		bool Valid(const std::string& id)
@@ -242,20 +260,25 @@ namespace ps5boxart
 		};
 
 		// One game's cover: GameTDB's large one in each region, then its small one
-		Outcome FetchOne(CURL* curl, System system, const std::string& id)
+		Outcome FetchOne(CURL* curl, System system, const std::string& queued)
 		{
-			const std::string base = Base(system, id);
+			const std::string base = Base(system, queued);
+			bool media = false;
+			const std::string id(Bare(queued, &media));
 			std::error_code ec;
 			fs::create_directories(fs::path(base).parent_path(), ec);
 			std::vector<uint8_t> data;
-			// (GameTDB's Wii and GameCube covers are PNGs, at one size)
+			// (GameTDB's Wii and GameCube covers are PNGs, at one size; its discs and cards are PNGs, clear
+			// around their shapes: the discs as "disc", the DS's, 3DS's and Switch's cards as "cart")
 			const bool wii = system == System::GameCubeWii;
-			for (const char* size : {"coverHQ", "cover"})
+			const bool disc = wii || system == System::WiiU;
+			const std::vector<const char*> sizes = media ? std::vector<const char*>{disc ? "disc" : "cart"} : std::vector<const char*>{"coverHQ", "cover"};
+			for (const char* size : sizes)
 				for (const std::string& region : Regions(id))
 				{
 					if (wii && std::string_view(size) == "coverHQ")
 						continue;
-					const std::string url = fmt::format("http://art.gametdb.com/{}/{}/{}/{}.{}", Folder(system), size, region, id, wii ? "png" : "jpg");
+					const std::string url = fmt::format("http://art.gametdb.com/{}/{}/{}/{}.{}", Folder(system), size, region, id, wii || media ? "png" : "jpg");
 					const long status = Get(curl, url, data);
 					if (status < 0)
 						return Outcome::Later;
@@ -278,7 +301,13 @@ namespace ps5boxart
 					}
 					int fitWidth, fitHeight;
 					const std::vector<uint8_t> fitted = Fit(rgba, width, height, fitWidth, fitHeight);
-					if (WriteTga(base + ".tga", fitted, fitWidth, fitHeight))
+					if (media && WriteTga(base + ".tga", fitted, fitWidth, fitHeight))
+					{
+						fs::remove(base + ".none", ec);
+						s_mediaArrivals++;
+						ps5log::Line("[boxart] {} {}'s {}: {}x{}", Folder(system), id, size, fitWidth, fitHeight);
+					}
+					else if (!media && WriteTga(base + ".tga", fitted, fitWidth, fitHeight))
 					{
 						fs::remove(base + ".none", ec);
 						{
@@ -292,7 +321,7 @@ namespace ps5boxart
 				}
 			// GameTDB has none: asked for again in two weeks, or when Settings asks
 			std::ofstream(base + ".none").put('\n');
-			ps5log::Line("[boxart] {} {}: GameTDB has no cover", Folder(system), id);
+			ps5log::Line("[boxart] {} {}: GameTDB has no {}", Folder(system), id, media ? (disc ? "disc" : "card") : "cover");
 			return Outcome::None;
 		}
 
@@ -420,16 +449,17 @@ namespace ps5boxart
 					forget();
 					continue;
 				}
-				// a cover here: its spine still to come, for 3D box art
-				const bool have = !Path(item.first, item.second).empty();
+				// a cover here: its spine still to come, for 3D box art (a disc or card has none: there or not)
+				const bool media = item.second.rfind(kMedia, 0) == 0;
+				const bool have = media ? Here(item.first, item.second) : !Path(item.first, item.second).empty();
 				const std::string base = Base(item.first, item.second);
 				std::error_code here;
-				const bool spine = s_spines && !fs::exists(base + ".spine.tga", here) && !Recent(base + ".spine.none");
+				const bool spine = !media && s_spines && !fs::exists(base + ".spine.tga", here) && !Recent(base + ".spine.none");
 				if (have ? !spine : RecentlyNone(item.first, item.second))
 					continue;
 				s_busy = true;
 				Outcome outcome = have ? FetchSpine(curl, item.first, item.second) : FetchOne(curl, item.first, item.second);
-				if (!have && outcome == Outcome::Fetched && s_spines)
+				if (!have && !media && outcome == Outcome::Fetched && s_spines)
 					outcome = FetchSpine(curl, item.first, item.second) == Outcome::Later ? Outcome::Later : Outcome::Fetched;
 				s_busy = false;
 				if (outcome != Outcome::Later)
@@ -456,6 +486,20 @@ namespace ps5boxart
 				seconds = std::min(seconds * 2, std::chrono::seconds(240));
 			}
 		}
+	}
+
+	std::string MediaPath(System system, const std::string& id)
+	{
+		if (!Valid(id))
+			return {};
+		const std::string path = Base(system, std::string(kMedia) + id) + ".tga";
+		std::error_code ec;
+		return fs::exists(path, ec) ? path : std::string();
+	}
+
+	uint32_t MediaArrivals()
+	{
+		return s_mediaArrivals;
 	}
 
 	std::string Path(System system, const std::string& id)
@@ -1025,6 +1069,30 @@ namespace ps5boxart
 			queued++;
 		}
 		ps5log::Line("[boxart] {}: {} games have a box ID, {} new to look for", Folder(system), ids.size(), queued);
+		if (!s_started && !s_queue.empty())
+		{
+			s_started = true;
+			std::thread(Worker).detach();
+		}
+		s_wake.notify_one();
+	}
+
+	void FetchMedia(System system, const std::vector<std::string>& ids)
+	{
+		if (!s_enabled || s_stopped)
+			return;
+		std::lock_guard lock(s_mutex);
+		size_t queued = 0;
+		for (const std::string& id : ids)
+		{
+			const std::string media = std::string(kMedia) + id;
+			if (!Valid(id) || Here(system, media) || RecentlyNone(system, media) || !s_queued.insert(fmt::format("{}/{}", Folder(system), media)).second)
+				continue;
+			s_queue.emplace_back(system, media);
+			queued++;
+		}
+		if (queued)
+			ps5log::Line("[boxart] {}: {} discs or cards to look for", Folder(system), queued);
 		if (!s_started && !s_queue.empty())
 		{
 			s_started = true;

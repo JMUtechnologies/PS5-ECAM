@@ -31,7 +31,10 @@ ln -sfn "$PS5CEMU_PACBREW/include/fmt" "$out/include/fmt"
 # console preview has them
 games=$out/games
 rm -rf "$games" "$out/data"
+# PREVIEW_CATALOG: a library.json to start from, every side's games as last seen (museum-library.json: the
+# Timeline's, a few on most consoles)
 mkdir -p "$games/Mario Kart 8" "$games/Splatoon" "$games/Super Mario 3D World [00050000101C9400]" "$out/data"
+[[ -n ${PREVIEW_CATALOG:-} ]] && cp "$PREVIEW_CATALOG" "$out/data/library.json"
 for title in "BotW Update v208" "BotW DLC"; do
     mkdir -p "$games/Installs/$title/code" "$games/Installs/$title/content" "$games/Installs/$title/meta"
     echo '<menu/>' >"$games/Installs/$title/meta/meta.xml"

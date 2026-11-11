@@ -750,6 +750,7 @@ namespace ps5shell
 
 	void Shell::SwitchSide(System side)
 	{
+		m_timelineStop = false;
 		if (side == m_side)
 			return;
 		m_feedback.Play(ui::Cue::Select);
@@ -1415,7 +1416,10 @@ namespace ps5shell
 			m_settingRow = 0;
 		}
 		if (tab == ScreenId::Settings)
+		{
 			m_onBar = false; // the dialog has the focus: the bar is under its dim
+			m_timelineStop = false; // Settings are a side's: the side under the Timeline's stop
+		}
 		Show(tab);
 	}
 
@@ -1434,27 +1438,68 @@ namespace ps5shell
 		if (press.button == Button::L1 || press.button == Button::R1)
 		{
 			// the previous or next side shown, in the bar's order, round from the last to the first (6.0:
-			// they turn the carousel; the tabs are on the bar, Up and then along it)
+			// they turn the carousel, or Orbit's dial; the tabs are on the bar, Up and then along it). On the
+			// Library the Timeline is a stop of its own, after the last side
 			const int step = press.button == Button::R1 ? 1 : -1;
 			m_orbitHome = false;
-			for (int i = 1; i < kSides; i++)
+			std::vector<int> ring;
+			for (int i = 0; i < kSides; i++)
+				if (SideShown(BarSide(i)))
+					ring.push_back(i);
+			if (m_tab == ScreenId::Library)
+				ring.push_back(kTimelineBar);
+			const int count = (int)ring.size();
+			const int now = m_timelineStop ? kTimelineBar : BarIndex(m_side);
+			const int at = (int)(std::find(ring.begin(), ring.end(), now) - ring.begin());
+			if (count < 2 || at >= count)
 			{
-				const System next = BarSide(((BarIndex(m_side) + step * i) % kSides + kSides) % kSides);
-				if (!SideShown(next))
-					continue;
-				if (m_onBar && m_barFocus < kSides)
-					m_barFocus = BarIndex(next);
-				SwitchSide(next);
+				m_feedback.Play(ui::Cue::Denied);
 				return true;
 			}
-			m_feedback.Play(ui::Cue::Denied);
+			const int next = ring[((at + step) % count + count) % count];
+			if (m_onBar && (m_barFocus < kSides || m_barFocus == kTimelineBar))
+				m_barFocus = next;
+			if (next == kTimelineBar)
+				TimelineStop(true);
+			else if (BarSide(next) == m_side)
+			{
+				m_timelineStop = false;
+				m_feedback.Play(ui::Cue::Focus);
+			}
+			else
+				SwitchSide(BarSide(next));
+			return true;
+		}
+		if (press.button == Button::L2 || press.button == Button::R2)
+		{
+			// the triggers: the Library and Settings tabs (6.0), from either layout
+			const ScreenId tab = press.button == Button::L2 ? ScreenId::Library : ScreenId::Settings;
+			if (m_tab == tab)
+			{
+				m_feedback.Play(ui::Cue::Edge, press.repeat);
+				return true;
+			}
+			ShowTab(tab);
+			if (m_onBar)
+				m_barFocus = tab == ScreenId::Library ? kSides : kSides + 1;
+			m_feedback.Play(ui::Cue::Focus);
 			return true;
 		}
 		if (press.button == Button::Touchpad)
 		{
-			// the Library's opens the Timeline (L1 and R1 step the sides); elsewhere the next side
-			if (m_screen == ScreenId::Library)
-				TimelineOpen();
+			// the next console (6.0: the Timeline is a stop on the console lists, no longer the touchpad's);
+			// from the Timeline's stop, the first
+			if (m_timelineStop)
+			{
+				const System first = FirstShownSide();
+				if (first == m_side)
+				{
+					m_timelineStop = false;
+					m_feedback.Play(ui::Cue::Focus);
+				}
+				else
+					SwitchSide(first);
+			}
 			else if (SidesShown() > 1)
 				SwitchSide(NextShownSide(m_side));
 			else
@@ -1468,15 +1513,27 @@ namespace ps5shell
 		case Button::Left:
 		case Button::Right:
 		{
+			// along the bar: the sides shown and the Timeline (the carousel's: Orbit's are on its dial),
+			// then the two tabs
 			const int step = press.button == Button::Right ? 1 : -1;
-			int next = m_barFocus + step;
-			while (next >= 0 && next < kSides && !SideShown(BarSide(next))) // past the sides not shown
-				next += step;
-			if (next < 0 || next > kSides + 1 || (Orbit() && next < kSides)) // Orbit's sides are on its dial
+			std::vector<int> stops;
+			if (!Orbit())
+			{
+				for (int i = 0; i < kSides; i++)
+					if (SideShown(BarSide(i)))
+						stops.push_back(i);
+				stops.push_back(kTimelineBar);
+			}
+			stops.push_back(kSides);
+			stops.push_back(kSides + 1);
+			const int at = (int)(std::find(stops.begin(), stops.end(), m_barFocus) - stops.begin());
+			const int to = at + step;
+			if (at >= (int)stops.size() || to < 0 || to >= (int)stops.size())
 			{
 				m_feedback.Play(ui::Cue::Edge, press.repeat);
 				break;
 			}
+			const int next = stops[to];
 			m_barFocus = next;
 			// onto a tab opens it, as the PS5's bar does
 			if (next == kSides && m_tab != ScreenId::Library)
@@ -1487,7 +1544,15 @@ namespace ps5shell
 			break;
 		}
 		case Button::Cross:
-			if (m_barFocus < kSides && BarSide(m_barFocus) != m_side)
+			if (m_barFocus == kTimelineBar)
+			{
+				// the Timeline's stop, on the Library, its card in focus
+				if (m_tab != ScreenId::Library)
+					ShowTab(ScreenId::Library);
+				TimelineStop(true);
+				m_onBar = false;
+			}
+			else if (m_barFocus < kSides && (BarSide(m_barFocus) != m_side || m_timelineStop))
 				SwitchSide(BarSide(m_barFocus));
 			else
 			{
@@ -1579,9 +1644,12 @@ namespace ps5shell
 		constexpr float kTile = 42, kPitch = 112;
 		if (!orbit)
 		{
-			int order[kSides];
+			// and the Timeline, a stop of its own after the last side (6.0)
+			int order[kSides + 1];
 			int shown = 0, anchor = 0;
-			const int anchorBar = m_onBar && m_barFocus < kSides ? m_barFocus : BarIndex(m_side);
+			const int anchorBar = m_onBar && (m_barFocus < kSides || m_barFocus == kTimelineBar) ? m_barFocus
+								  : m_timelineStop											  ? kTimelineBar
+																							  : BarIndex(m_side);
 			for (int i = 0; i < kSides; i++)
 			{
 				if (!SideShown(BarSide(i)))
@@ -1590,6 +1658,9 @@ namespace ps5shell
 					anchor = shown;
 				order[shown++] = i;
 			}
+			if (anchorBar == kTimelineBar)
+				anchor = shown;
+			order[shown++] = kTimelineBar;
 			const bool round = shown > kAtOnce;
 			const float loop = shown * kPitch;
 			const float target = anchor * kPitch;
@@ -1609,7 +1680,8 @@ namespace ps5shell
 			bool focusOnSide = false;
 			for (int k = 0; k < shown; k++)
 			{
-				const System side = BarSide(order[k]);
+				const bool timeline = order[k] == kTimelineBar;
+				const System side = BarSide(timeline ? 0 : order[k]);
 				float offset = k * kPitch - m_barSlide; // from the middle
 				if (round)
 					offset = std::remainder(offset, loop);
@@ -1621,7 +1693,18 @@ namespace ps5shell
 				const Box box{cx - size / 2, y + h / 2 - size / 2, size, size};
 				// fainter further out; a sixth only as it comes in or goes
 				canvas.PushAlpha(std::clamp(std::min(1.0f - 0.22f * away, (kAtOnce + 1) * 0.5f - away), 0.0f, 1.0f));
-				DrawBareConsole(canvas, side, box, side == m_side);
+				if (timeline)
+				{
+					// as quiet as the others, in its consoles' colours while it is open
+					uint32_t dots[3];
+					TimelineStopColours(dots);
+					const uint32_t quiet = ui::Mix(kText, kInk1, 0.55f) | 0xff000000;
+					if (!m_timelineStop)
+						dots[0] = dots[1] = dots[2] = quiet;
+					DrawTimelineMark(canvas, box.CentreX(), box.CentreY(), box.w, quiet, dots);
+				}
+				else
+					DrawBareConsole(canvas, side, box, side == m_side && !m_timelineStop);
 				canvas.PopAlpha();
 				if (m_onBar && m_barFocus == order[k])
 					focused = box.Scaled(1.45f), focusOnSide = true;
@@ -1632,9 +1715,11 @@ namespace ps5shell
 				Focus(focused, focused.w * 0.27f);
 			// under it, the side in its middle: its name, and the open one's count of games (as the Library's)
 			{
-				const System inMiddle = shown ? BarSide(order[anchor]) : m_side;
-				std::string caption = SystemName(inMiddle);
-				if (inMiddle == m_side && m_listed)
+				const bool timelineMiddle = order[anchor] == kTimelineBar;
+				const System inMiddle = shown && !timelineMiddle ? BarSide(order[anchor]) : m_side;
+				// tr: the Timeline's name under it in the console lists
+				std::string caption = timelineMiddle ? std::string(Tr("Timeline")) : SystemName(inMiddle);
+				if (!timelineMiddle && inMiddle == m_side && m_listed && !m_timelineStop)
 				{
 					const int listed = (int)std::count_if(m_games.begin(), m_games.end(), [](const Game& g) { return !g.entry.hidden; });
 					caption += " · ";
@@ -1677,8 +1762,11 @@ namespace ps5shell
 
 	std::vector<Hint> Shell::Hints() const
 	{
-		// the touchpad's next side; none when one side is shown (its hint goes: DrawHints leaves out an empty one)
-		const std::string other = m_screen == ScreenId::Library ? std::string(Tr("Timeline")) : SidesShown() > 1 ? SystemName(NextShownSide(m_side)) : "";
+		// the touchpad's next side (from the Timeline's stop, the first); none when one side is shown and open
+		// (its hint goes: DrawHints leaves out an empty one)
+		const std::string other = m_timelineStop ? SystemName(FirstShownSide()) : SidesShown() > 1 ? SystemName(NextShownSide(m_side)) : "";
+		// tr: the hint for L2 and R2, which go to the Library and Settings tabs
+		const std::string tabs = Tr("Library or Settings");
 		if (m_update.open || m_unpack.open || m_reorganize.open)
 			return {}; // their sheets' own
 		// tr: the hints along the bottom: what a button does on this screen, a word or two
@@ -1694,8 +1782,8 @@ namespace ps5shell
 		if (m_menu.open)
 			return {{Icon::Cross, Tr("Choose")}, {Icon::Circle, Tr("Close")}};
 		if (m_onBar && (m_screen == ScreenId::Library || m_screen == ScreenId::Settings) && !InGameSettings())
-			return {{Icon::LeftRight, Tr("Move")}, {Icon::Cross, m_barFocus < kSides && BarSide(m_barFocus) != m_side ? Tr("Switch") : Tr("Open")},
-				{Icon::Touchpad, other}};
+			return {{Icon::LeftRight, Tr("Move")}, {Icon::Cross, m_barFocus < kSides && (BarSide(m_barFocus) != m_side || m_timelineStop) ? Tr("Switch") : Tr("Open")},
+				{Icon::R2, tabs}, {Icon::Touchpad, other}};
 		switch (m_screen)
 		{
 		case ScreenId::WhatsNew:
@@ -1721,6 +1809,8 @@ namespace ps5shell
 		{
 			if (Orbit())
 				return {}; // its own, with the keys its dial has (OrbitHintsDraw)
+			if (m_timelineStop)
+				return {{Icon::Cross, Tr("Open")}, {Icon::R2, tabs}, {Icon::Touchpad, other}};
 			std::string kicker, title, text;
 			std::vector<std::string> buttons;
 			if (LibraryState(kicker, title, text, buttons))
@@ -1731,7 +1821,7 @@ namespace ps5shell
 				return {{Icon::Cross, Tr("Open")}, {Icon::Touchpad, other}};
 			if (m_libraryZone == 0)
 				return {{Icon::Cross, Tr("Play")}, {Icon::Options, Tr("Options")}, {Icon::LeftRight, Tr("Move")}, {Icon::Touchpad, other}};
-			return {{Icon::Cross, Tr("Play")}, {Icon::Options, Tr("Options")}, {Icon::R2, Tr("Jump by letter")}, {Icon::Touchpad, other}};
+			return {{Icon::Cross, Tr("Play")}, {Icon::Options, Tr("Options")}, {Icon::R2, tabs}, {Icon::Touchpad, other}};
 		}
 		case ScreenId::Hub: return {{Icon::Cross, m_hubAbout ? Tr("Back to the buttons") : Tr("Choose")}, {Icon::Options, Tr("Options")},
 			{Icon::UpDown, Tr("Scroll")}, {Icon::Circle, Tr("Back")}};
@@ -1745,7 +1835,7 @@ namespace ps5shell
 				return {{Icon::LeftRight, Tr("Change")}, {Icon::Square, Tr("Default")}, {Icon::Triangle, Tr("More info")}, {Icon::Circle, Tr("Back")}};
 			}
 			if (!m_onRows)
-				return {{Icon::UpDown, Tr("Pages")}, {Icon::Cross, Tr("Open")}, {Icon::Circle, Tr("Close")}, {Icon::Touchpad, other}};
+				return {{Icon::UpDown, Tr("Pages")}, {Icon::Cross, Tr("Open")}, {Icon::Circle, Tr("Close")}, {Icon::R2, tabs}, {Icon::Touchpad, other}};
 			return {{Icon::LeftRight, Tr("Change")}, {Icon::Triangle, Tr("More info")}, {Icon::Circle, Tr("Back")}};
 		case ScreenId::Packs:
 			return m_presetsFocus ?

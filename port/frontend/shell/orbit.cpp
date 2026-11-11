@@ -110,6 +110,8 @@ namespace ps5shell
 	void Shell::OrbitHomeOpen(bool home)
 	{
 		m_orbitHome = home;
+		if (home)
+			m_timelineStop = false;
 		m_feedback.Play(home ? ui::Cue::Select : ui::Cue::Back);
 		if (!home)
 			return;
@@ -197,8 +199,8 @@ namespace ps5shell
 			if (LibraryState(kicker, title, text, buttons))
 				return false; // its card's buttons, as in Classic
 		}
-		// the Library's list, as a row: its own Cross, Options, Sort, Search and jumps by letter go on
-		// working on it (LibraryUpdate)
+		// the Library's list, as a row: its own Cross, Options, Sort and Search go on working on it
+		// (LibraryUpdate)
 		m_libraryZone = 2;
 		const int total = (int)m_shelf.size() + ArticTiles();
 		switch (b)
@@ -446,7 +448,9 @@ namespace ps5shell
 		// tr: Orbit's hints: L1 and R1 turn its dial
 		items.push_back({{Icon::L1, Icon::R1}, nullptr, Tr("Turn the dial")});
 		items.push_back({{}, "R3", Tr("Home")});
-		if (state)
+		if (m_timelineStop)
+			items.push_back({{Icon::Cross}, nullptr, Tr("Open")});
+		else if (state)
 			items.push_back({{Icon::Cross}, nullptr, Tr("Choose")});
 		else
 		{
@@ -455,7 +459,7 @@ namespace ps5shell
 				items.push_back({{Icon::Square}, nullptr, Tr("Sort")});
 			items.push_back({{Icon::Options}, nullptr, Tr("Options")});
 		}
-		items.push_back({{Icon::Touchpad}, nullptr, Tr("Timeline")});
+		items.push_back({{Icon::L2, Icon::R2}, nullptr, Tr("Library or Settings")});
 		constexpr float kIcon = 28, kGap = 30;
 		const float y = 1080 - 30 - 28;
 		float width = 0;
@@ -779,7 +783,7 @@ namespace ps5shell
 		}
 		canvas.Text(Style({19, ui::Weight::Regular, 1.3f}), left, 926,
 			m_layoutFocus == 2 ? std::string(Tr("Hold L1 while Playtendoh starts to use its own launcher. Switch back any time in Settings > Launcher > Layout."))
-							   : std::string(Tr("Both have Timeline, every console on one shelf. Press the touchpad to open it.")),
+							   : std::string(Tr("Both have the Timeline, every console's games on one shelf, after the last console.")),
 			kInk2, (m_layoutFocus < 2 ? boxesChip.x : button.x) - 24 - left, 2);
 		canvas.Rect(button, 34, kInk);
 		canvas.Draw(Icon::Cross, {button.x + 32, button.CentreY() - 13, 26, 26}, 0xff1b0f0a);

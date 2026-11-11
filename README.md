@@ -47,8 +47,8 @@ console; until then the download above is 5.1.0, the latest release. What it bri
 - **Two layouts, picked on the first start:** Classic, one console at a time from a carousel of five, and
   **Orbit**, where the logo is a dial L1 and R1 turn, its middle what you played last on every console,
   and the game you are on fills the background: a picture of your last save state, else a screenshot.
-- **The Timeline** (touchpad click): every console's games on one shelf, oldest to newest, each as its
-  cartridge, card, disc or case.
+- **The Timeline**, after the last console in either layout: a museum of every console's games on one
+  shelf, oldest to newest, each as the real disc or card it came on (GameTDB's) or its cartridge, by era.
 - **Twenty-one systems** (below): the GameCube and the Wii on Dolphin (Porpoise), the iQue Player, and
   thirteen classics on libretro cores inside the app (the NES, SNES, Game Boys, N64, Virtual Boy, Pokémon
   mini, Famicom Disk System, Super Game Boy, Game &amp; Watch, Satellaview and VS. System), each a side of
@@ -184,8 +184,9 @@ files** on each system. No games, keys or firmware are included. Use dumps of ga
 
 | | |
 |---|---|
-| **L1 / R1** | Previous or next console |
-| **Touchpad click** | The Timeline: every console's games on one shelf (in the Library) |
+| **L1 / R1** | Previous or next console, and the Timeline after the last one |
+| **L2 / R2** | Library or Settings |
+| **Touchpad click** | The next console |
 | **Cross / Circle** | Play or open / back |
 | **Options** | A game's menu: game settings, saves, graphic packs, mods, home screen tile |
 | **Touchpad click + Options** | The in-game menu |
