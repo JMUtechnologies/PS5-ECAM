@@ -1,0 +1,74 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Wed, 11 Nov 2026 00:14:06 -0500
+Subject: [PATCH] Playtendoh's Switch 2 side: Ocarina of Time past its
+ 2010-0212 stop, stub replies zeroed (upstream Lichii)
+
+With its mesh draws skipped, Ocarina of Time reached gameplay on PS5-680 twice and stopped both
+times within seconds (67 s and 59 s): it calls prepo:u 10500, which no core implements, and the
+auto stub replied with the result only. The game read its reply words anyway, took its own
+request's leftover "SFCI" for an object id (HasSessionRequestHandler: object_id 1229145683 is too
+big), and panicked with 2010-0212. The owner's desktop Lichii (nx2-build-130) logs the same call
+and plays on: upstream's c26cfaeac4 (Takoroka, 1 November) replies with 32 zeroed words after the
+result, after the core this port pins. Core patch 0077 does the same for both of the auto stub's
+replies.
+---
+ .../0077-stub-replies-zeroed.patch            | 49 +++++++++++++++++++
+ 1 file changed, 49 insertions(+)
+ create mode 100644 tools/eglantine-patches/0077-stub-replies-zeroed.patch
+
+diff --git a/tools/eglantine-patches/0077-stub-replies-zeroed.patch b/tools/eglantine-patches/0077-stub-replies-zeroed.patch
+new file mode 100644
+index 0000000..a79cb03
+--- /dev/null
++++ b/tools/eglantine-patches/0077-stub-replies-zeroed.patch
+@@ -0,0 +1,49 @@
++diff --git a/src/core/hle/service/service.cpp b/src/core/hle/service/service.cpp
++index cdc5d35..50ad26d 100644
++--- a/src/core/hle/service/service.cpp
+++++ b/src/core/hle/service/service.cpp
++@@ -67,6 +67,22 @@ void ServiceFrameworkBase::RegisterHandlersBaseTipc(const FunctionInfoBase* func
++         handlers_tipc.emplace_hint(handlers_tipc.cend(), functions[i].expected_header, functions[i]);
++ }
++ 
+++namespace {
+++
+++// Callers read the reply words they expect without checking how many were written, so an empty
+++// reply hands them the request's leftover words as data (an HDR output format, a refresh rate, a
+++// device id; Ocarina of Time's prepo:u 10500 took its own request's "SFCI" for an object id and
+++// stopped with 2010-0212). Stub replies carry this many zeroed words (upstream c26cfaeac4).
+++constexpr u32 StubZeroedWords = 32;
+++
+++void PushStubZeroes(IPC::ResponseBuilder& rb) {
+++    for (u32 i = 0; i < StubZeroedWords; ++i) {
+++        rb.Push<u32>(0);
+++    }
+++}
+++
+++} // namespace
+++
++ void ServiceFrameworkBase::ReportUnimplementedFunction(HLERequestContext& ctx,
++                                                        const FunctionInfoBase* info) {
++     // EDEN_NX2_AUTO_STUB=1 auto-stubs every unknown command without touching the config. Switch 2
++@@ -83,8 +99,9 @@ void ServiceFrameworkBase::ReportUnimplementedFunction(HLERequestContext& ctx,
++         static std::set<std::pair<std::string, u32>> reported;
++         std::scoped_lock lk{reported_mutex};
++         if (!reported.emplace(service_name, ctx.GetCommand()).second) {
++-            IPC::ResponseBuilder rb{ctx, 2};
+++            IPC::ResponseBuilder rb{ctx, 2 + StubZeroedWords};
++             rb.Push(ResultSuccess);
+++            PushStubZeroes(rb);
++             return;
++         }
++     }
++@@ -104,8 +121,9 @@ void ServiceFrameworkBase::ReportUnimplementedFunction(HLERequestContext& ctx,
++     UNIMPLEMENTED_MSG("Unknown / unimplemented {}", fmt::to_string(buf));
++     if (auto_stub) {
++         LOG_WARNING(Service, "Using auto stub fallback (repeats of this command are not logged)");
++-        IPC::ResponseBuilder rb{ctx, 2};
+++        IPC::ResponseBuilder rb{ctx, 2 + StubZeroedWords};
++         rb.Push(ResultSuccess);
+++        PushStubZeroes(rb);
++     }
++ }
++ 
