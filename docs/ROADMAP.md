@@ -313,7 +313,9 @@ both patches applying to ES-DE 3.5.0, the glue compiling. Next:
 **The core is Lichii, as its PS5 port runs it (9 November 2026):** EglantinePS5 at its main of 10 November
 (`972abeb`, past v1.000.110), whose core is zortos293/Lichii at `3140648a` with the port's 71 core patches over it (its
 `tools/eglantine-patches`): NUP containers, Ocarina of Time, Mario Kart World's memory work on a PS5 without
-Pro memory, and the JIT's code cache in pieces. The owner asked on 5 November for Lichii's all-in-one
+Pro memory, and the JIT's code cache in pieces. Playtendoh adds one more from upstream Lichii until the port
+has it (`patches/eglantine` 0015, its core patch 0076): Ocarina of Time's helper calls, whose rejected compute
+programs stopped the GPU as the game entered a scene (10 November). The owner asked on 5 November for Lichii's all-in-one
 (`9b1a32dbb1`, 956 commits on); that move was written (patches/eglantine 0010, in the history at 04c38d3) and
 did not configure: the port patches the core by text anchors, and Lichii's rewritten sockets and GPU thread
 moved more than fifteen of them, the multiplayer hardening's thirteen among them. Lichii gains about 200 commits a day, so a newer core comes by moving the port's pin when

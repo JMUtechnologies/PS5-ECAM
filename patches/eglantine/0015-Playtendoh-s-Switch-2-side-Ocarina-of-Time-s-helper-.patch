@@ -1,0 +1,234 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Tue, 10 Nov 2026 23:06:55 -0500
+Subject: [PATCH] Playtendoh's Switch 2 side: Ocarina of Time's helper calls,
+ from upstream Lichii
+
+Ocarina of Time stopped PS5-680 at the same point three times (12:40, 12:52 and 22:54 on
+10 November): entering a scene, the core rejects compute programs, skips their dispatches, and the
+GPU stops 10 s later (VK_ERROR_DEVICE_LOST on GPUFencingThread). The rejections of the 22:54 run:
+
+- "native call linkage mode" (two programs): CALL.REL.NOINC to a helper past the EXIT, its return
+  address set by a MOV a few instructions up rather than just ahead of the call.
+- "branch outside capture bounds" (one): the capture took CALL.REL.NOINC for a forward branch, so a
+  program whose helper sits past its EXIT never ended and ran on to the 64K-instruction limit.
+
+Upstream Lichii (zortos293/Eglantine) lowers both: its #87 (c9ebb5c3af, Ocarina's own fixes) counts
+NOINC calls in the capture, and f6a8f51324 takes a return address set further up when the control
+flow proof (bounded_control, already in this core since 0068) shows nothing in between touches it.
+EglantinePS5 972abeb carries the proof but not these two uses; core patch 0076 adds them as
+upstream has them, with upstream's tests and the console's rejected CALL.
+
+nx2-core-check: 204 cases pass (200 before).
+---
+ .../0076-ocarina-helper-calls.patch           | 201 ++++++++++++++++++
+ 1 file changed, 201 insertions(+)
+ create mode 100644 tools/eglantine-patches/0076-ocarina-helper-calls.patch
+
+diff --git a/tools/eglantine-patches/0076-ocarina-helper-calls.patch b/tools/eglantine-patches/0076-ocarina-helper-calls.patch
+new file mode 100644
+index 0000000..dfb09c5
+--- /dev/null
++++ b/tools/eglantine-patches/0076-ocarina-helper-calls.patch
+@@ -0,0 +1,201 @@
++diff --git a/src/shader_recompiler/frontend/ampere/lower_to_maxwell.h b/src/shader_recompiler/frontend/ampere/lower_to_maxwell.h
++index b862f98..5b67d23 100644
++--- a/src/shader_recompiler/frontend/ampere/lower_to_maxwell.h
+++++ b/src/shader_recompiler/frontend/ampere/lower_to_maxwell.h
++@@ -90,8 +90,9 @@ inline LoweredProgram LowerToMaxwellWith(std::span<const Instruction> code, u32
++         if (!*geometry_exit)
++             return fail(geometry_exit->error_offset / sizeof(Instruction), geometry_exit->error);
++     }
++-    // Control-flow facts for the per-tap gather proof (upstream Eglantine). Only bounded_control,
++-    // control_entries and write_count are used here.
+++    // Control-flow facts (upstream Eglantine): the per-tap gather proof, calls whose return
+++    // address is set some instructions ahead of them (bounded_links) and code a branch skips
+++    // that nothing enters (dead_instructions).
++     std::vector<bool> control_entries(code.size()), dead_instructions(code.size()), checked_returns(code.size());
++     std::vector<u32> bounded_links(code.size(), ~0U), direct_targets(code.size(), ~0U);
++     std::vector<std::pair<u32, u32>> control_edges;
++@@ -261,6 +262,7 @@ inline LoweredProgram LowerToMaxwellWith(std::span<const Instruction> code, u32
++     for (u32 index = 0; index < code.size(); ++index) {
++         auto insn = code[index];
++         result.source_instruction_offsets.push_back(static_cast<u32>(result.instructions.size()));
+++        if (dead_instructions[index]) continue;
++         if (geometry_exit && (index < GeometryExitSetupInstructions ||
++                               index * sizeof(Instruction) == geometry_exit->handler + sizeof(Instruction)))
++             continue;
++@@ -275,8 +277,13 @@ inline LoweredProgram LowerToMaxwellWith(std::span<const Instruction> code, u32
++                     active_link = call_links[call];
++                 }
++             }
++-            // RET has no destination GPR; bits 16..23 are reserved, not a write to R0.
++-            if (active_link && opcode != 0x950 && insn.Bits(16, 8) == *active_link)
+++            // RET, BRA, NOP and ISETP/FSETP (predicate outputs) have no destination GPR; bits 16..23
+++            // are not a write to R0. IMAD.WIDE writes a register pair.
+++            const bool no_destination = opcode == 0x950 || opcode == 0x947 || opcode == 0x918 ||
+++                                        (opcode & 0x1ff) == 0x00c || (opcode & 0x1ff) == 0x00b;
+++            const u32 written = write_count(insn).value_or(1);
+++            if (active_link && !no_destination &&
+++                insn.Bits(16, 8) <= *active_link && *active_link < insn.Bits(16, 8) + written)
++                 return fail(index, "native callee overwrites link register");
++         }
++         // Scratch values and emulated uniform state occupy reserved high GPRs. A program whose own
++@@ -3787,18 +3794,21 @@ case 0x311: { // F2I.FTZ.U64.TRUNC, per nvdisasm: Maxwell's F2I gives 32 bits, s
++             }
++             // ponytail: a call from the post-exit library region is lowered like a main call;
++             // its return relies on the library RET.REL.NODEC base
+++            // The return address is set by the MOV just ahead of the call, or (bounded_control)
+++            // by one further up that the instructions between leave alone.
+++            const bool adjacent = index != 0 &&
+++                (code[index - 1].words[0] & ~0x00ff0000U) == 0x00007802 &&
+++                code[index - 1].Bits(16, 8) < 250 &&
+++                code[index - 1].words[1] == (index + 1) * 16 &&
+++                code[index - 1].words[2] == 0xf00;
++             if (index == 0 || insn.words[0] != 0x7944 ||
++-                (insn.words[2] & ~0x3ffffU) != 0x03c00000 ||
++-                (code[index - 1].words[0] & ~0x00ff0000U) != 0x00007802 ||
++-                code[index - 1].Bits(16, 8) >= 250 ||
++-                code[index - 1].words[1] != (index + 1) * 16 ||
++-                code[index - 1].words[2] != 0xf00)
+++                (insn.words[2] & ~0x3ffffU) != 0x03c00000 || (!adjacent && !bounded_control))
++                 return fail(index, "native call linkage mode");
++             const u64 raw = insn.words[1] | (u64{insn.words[2] & 0x3ffff} << 32);
++             const s64 relative = static_cast<s64>(raw << 14) >> 14;
++             const s64 target = s64{index} * 16 + 16 + relative;
++             if (target < 0 || target % 16) return fail(index, "native call destination alignment");
++-            const u32 link = code[index - 1].Bits(16, 8);
+++            const u32 link = adjacent ? code[index - 1].Bits(16, 8) : bounded_links[index];
++             for (size_t call = 0; call < call_targets.size(); ++call) {
++                 if (call_targets[call] == target / 16 && call_links[call] != link)
++                     return fail(index, "native inconsistent call linkage");
++diff --git a/src/shader_recompiler/frontend/ampere/program_capture.h b/src/shader_recompiler/frontend/ampere/program_capture.h
++index 8da494d..5d430f4 100644
++--- a/src/shader_recompiler/frontend/ampere/program_capture.h
+++++ b/src/shader_recompiler/frontend/ampere/program_capture.h
++@@ -44,8 +44,9 @@ public:
++             const s64 target = s64{index} * 16 + 16 + relative;
++             if (target < 0 || target % 16 || target >= MaximumInstructions * 16)
++                 return Result::InvalidTarget;
++-            const bool noinc_call = opcode == 0x944 && (instruction.words[2] & 0x400000) != 0;
++-            if (opcode == 0x944 && !noinc_call) {
+++            // CALL.REL.NOINC (bit 86) pushes no return address, but its callee still returns
+++            // with RET.REL.NODEC through the link register set ahead of the call.
+++            if (opcode == 0x944) {
++                 last_call_target = std::max(last_call_target, static_cast<u32>(target / 16));
++             } else {
++                 last_forward_target = std::max(last_forward_target, static_cast<u32>(target / 16));
++@@ -59,7 +60,7 @@ public:
++         if (opcode == 0x949 || opcode == 0x958) computed_branch = true;
++         if (computed_branch) return Result::Continue;
++         if (opcode == 0x94d && instruction.Bits(12, 4) == 7 && index >= last_forward_target) {
++-            if (!last_call_target) return Result::Complete;
+++            if (index >= last_call_target) return Result::Complete;
++             main_exited = true;
++         }
++         if (opcode == 0x950 && instruction.Bits(12, 4) == 7 && main_exited &&
++diff --git a/src/tests/video_core/ampere_ocarina_calls.cpp b/src/tests/video_core/ampere_ocarina_calls.cpp
++new file mode 100644
++index 0000000..787b93f
++--- /dev/null
+++++ b/src/tests/video_core/ampere_ocarina_calls.cpp
++@@ -0,0 +1,102 @@
+++// SPDX-License-Identifier: GPL-3.0-or-later
+++
+++#include <array>
+++#include <catch2/catch_test_macros.hpp>
+++
+++#include "shader_recompiler/frontend/ampere/lower_to_maxwell.h"
+++#include "shader_recompiler/frontend/ampere/program_capture.h"
+++
+++// Ocarina of Time's compute programs call helpers that sit past their EXIT with CALL.REL.NOINC,
+++// the return address set by a MOV some instructions ahead of the call (upstream Eglantine #87 and
+++// f6a8f51324). The cases are upstream's.
+++namespace {
+++using Shader::Ampere::Instruction;
+++using Shader::Ampere::LowerToMaxwell;
+++using Shader::Ampere::ProgramCaptureState;
+++
+++constexpr Instruction Exit{{0x0000794d, 0, 0x03800000, 0}};
+++
+++TEST_CASE("Ampere calls find a return address set ahead of them", "[video_core][ampere]") {
+++    // MOV R9, 0x30; MOV R4, 0x5; CALL.REL.NOINC; EXIT; RET.REL.NODEC R9
+++    std::array<Instruction, 5> code{{
+++        {{0x00097802, 0x30, 0x00000f00, 0}},
+++        {{0x00047802, 0x5, 0x00000f00, 0}},
+++        {{0x00007944, 0x10, 0x03c00000, 0}},
+++        Exit,
+++        {{0x09007950, 0xffffffb0, 0x03c3ffff, 0}},
+++    }};
+++    const auto linked = LowerToMaxwell(code);
+++    INFO(linked.error);
+++    REQUIRE(static_cast<bool>(linked));
+++
+++    // The link register is written again between its MOV and the call.
+++    code[1] = {{0x00097802, 0x5, 0x00000f00, 0}};
+++    const auto lowered = LowerToMaxwell(code);
+++    REQUIRE_FALSE(static_cast<bool>(lowered));
+++    REQUIRE(lowered.error == "native call linkage mode");
+++}
+++
+++TEST_CASE("Ampere programs go on past an EXIT that a branch jumps over", "[video_core][ampere]") {
+++    // A call, then a branch over an EXIT to more of the program, with another call there.
+++    const std::array<Instruction, 8> code{{
+++        {{0x00047802, 0x20, 0x00000f00, 0}},
+++        {{0x00007944, 0x50, 0x03c00000, 0}},
+++        {{0x00007947, 0x10, 0x03800000, 0}},
+++        Exit,
+++        {{0x00047802, 0x60, 0x00000f00, 0}},
+++        {{0x00007944, 0x10, 0x03c00000, 0}},
+++        Exit,
+++        {{0x04007950, 0xffffff80, 0x03c3ffff, 0}},
+++    }};
+++    const auto lowered = LowerToMaxwell(code);
+++    INFO(lowered.error);
+++    REQUIRE(static_cast<bool>(lowered));
+++    REQUIRE(lowered.source_size == sizeof(code));
+++}
+++
+++TEST_CASE("Ampere capture ends at the return of a helper called past the EXIT",
+++          "[video_core][ampere]") {
+++    // Ocarina 69a40579971fb867: MOV R0, 0x20; CALL.REL.NOINC; EXIT; RET.REL.NODEC R0, then the
+++    // next program in memory. Before, the capture took the NOINC call for a forward branch, never
+++    // ended and ran on to its 64K-instruction limit ("branch outside capture bounds").
+++    const std::array<Instruction, 4> code{{
+++        {{0x00007802, 0x20, 0x00000f00, 0}},
+++        {{0x00007944, 0x10, 0x03c00000, 0}},
+++        Exit,
+++        {{0x00007950, 0xffffffc0, 0x03c3ffff, 0}},
+++    }};
+++    ProgramCaptureState capture;
+++    for (u32 index = 0; index + 1 < code.size(); ++index)
+++        CHECK(capture.Observe(code[index], index) == ProgramCaptureState::Result::Continue);
+++    CHECK(capture.Observe(code.back(), 3) == ProgramCaptureState::Result::Complete);
+++    REQUIRE(static_cast<bool>(LowerToMaxwell(code)));
+++
+++    ProgramCaptureState jump;
+++    CHECK(jump.Observe({{0x00007944, 0x10, 0x03c00000, 0}}, 0) == ProgramCaptureState::Result::Continue);
+++    CHECK(jump.Observe(Exit, 1) == ProgramCaptureState::Result::Continue);
+++    CHECK(jump.Observe(Exit, 2) == ProgramCaptureState::Result::Complete);
+++}
+++
+++TEST_CASE("Ampere Ocarina's helper call with its return address set further up",
+++          "[video_core][ampere]") {
+++    // The console's rejection (Ocarina of Time 0400486024dec000 v131072, entering a scene):
+++    // "instruction 0x2120: native call linkage mode [op 944 00007944 000128e0 03c00000 010fea00]".
+++    // Here the same CALL.REL.NOINC, its MOV R6 two instructions up and an unrelated write between.
+++    const std::array<Instruction, 6> code{{
+++        {{0x00067802, 0x30, 0x00000f00, 0}},              // MOV R6, 0x30
+++        {{0x00047802, 0x5, 0x00000f00, 0}},               // MOV R4, 0x5
+++        {{0x00007944, 0x20, 0x03c00000, 0x010fea00}},     // CALL.REL.NOINC 0x50
+++        Exit,                                             // 0x30
+++        Exit,
+++        {{0x06007950, 0xffffffa0, 0x03c3ffff, 0}},        // 0x50: RET.REL.NODEC R6
+++    }};
+++    ProgramCaptureState capture;
+++    for (u32 index = 0; index + 1 < code.size(); ++index)
+++        CHECK(capture.Observe(code[index], index) == ProgramCaptureState::Result::Continue);
+++    CHECK(capture.Observe(code.back(), 5) == ProgramCaptureState::Result::Complete);
+++    const auto lowered = LowerToMaxwell(code);
+++    INFO(lowered.error);
+++    REQUIRE(static_cast<bool>(lowered));
+++    REQUIRE(lowered.source_size == sizeof(code));
+++}
+++} // namespace
