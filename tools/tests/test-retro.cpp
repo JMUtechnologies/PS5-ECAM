@@ -216,7 +216,7 @@ int main(int argc, char** argv)
 	Check(ps5retro::ValidateRom(snes, (root / "carts/Game.sfc").string(), error) && ps5retro::ValidateRom((int)ps5launcher::System::VirtualBoy, (root / "carts/Game.vb").string(), error) &&
 		ps5retro::ValidateRom((int)ps5launcher::System::PokemonMini, (root / "carts/Game.min").string(), error), "SNES, Virtual Boy and Pokemon mini games pass preflight");
 	Put(root / "carts/huge.sfc", "x"); fs::resize_file(root / "carts/huge.sfc", 32ull * 1024 * 1024 + 1);
-	Check(!ps5retro::ValidateRom(snes, (root / "carts/huge.sfc").string(), error) && error.find("larger") != std::string::npos, "an oversized SNES game is refused, saying why");
+	Check(!ps5retro::ValidateRom(snes, (root / "carts/huge.sfc").string(), error) && error == "This game is too large for this system's emulator.", "an oversized SNES game is refused, saying why");
 	Check(!ps5retro::ValidateRom(nesSide, (root / "roms/fake.zip").string(), error) && error == "This ZIP archive is damaged or too large.", "a refused game's reason is the app's words");
 	Check(!ps5retro::Available(snes) && !ps5retro::Launch(snes, (root / "carts/Game.sfc").string(), error) && !ps5retro::LaunchLibrary(snes, error),
 		"a side with no program and no core linked is not offered, and nothing is started for it");
