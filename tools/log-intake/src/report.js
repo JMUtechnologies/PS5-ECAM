@@ -116,7 +116,8 @@ export function compatibility(rows, now) {
 	}
 	const list = [...games.values()].map((g) => {
 		const worked = g.ended / g.sessions;
-		const status = g.ended === 0 ? 'fails' : worked >= 0.8 && g.consoles.size >= 2 ? 'works' : 'mixed';
+		// works: four in five times or more, on however many consoles (the table says how many)
+		const status = g.ended === 0 ? 'fails' : worked >= 0.8 ? 'works' : 'mixed';
 		const error = [...g.errors.entries()].sort((a, b) => b[1] - a[1])[0];
 		return {
 			side: g.side, titleId: g.titleId, name: g.name, status, consoles: g.consoles.size, sessions: g.sessions,

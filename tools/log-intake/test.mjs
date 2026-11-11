@@ -67,6 +67,8 @@ const zelda = table.games.find((g) => g.titleId === '0100f2c0115b6000');
 check(mk8 && mk8.consoles === 3 && mk8.sessions === 4 && mk8.ended === 3 && mk8.crashed === 1 && mk8.status === 'mixed', 'the table counts consoles and endings');
 check(mk8 && mk8.medianMinutes === 42 && mk8.models.join() === 'base,pro' && mk8.firmware.join() === '11.60,9.00', 'play time, models and firmware');
 check(zelda && zelda.status === 'fails' && zelda.commonError === 'keys missing', 'a game that never ended: fails, with why');
+const once = compatibility([{ ...validate({ ...good, install: 'e'.repeat(32), result: 'ended' }).row, received: 700 }], 1000).games[0];
+check(once && once.status === 'works' && once.consoles === 1, 'a game that ended well on one console: works');
 add('d', 'crashed', 600, { logs: [{ file: 'core.log', text: 'the emulator log' }] });
 const published = JSON.stringify(compatibility(rows, 1000));
 check(!published.includes('a'.repeat(32)) && !published.includes('"log"') && !published.includes('install') &&
