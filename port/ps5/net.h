@@ -8,6 +8,7 @@
 #pragma once
 
 #include <cstdint>
+#include <initializer_list>
 #include <string>
 
 struct curl_slist;
@@ -20,4 +21,7 @@ namespace ps5net
 	// list (curl's CURLOPT_RESOLVE) with "host:port:address" added, or as it was when the host is not
 	// found; a null list makes a new one
 	curl_slist* AddResolve(curl_slist* list, const std::string& host, int port);
+	// The same, where the console's resolver finds no address for host itself: the address of the first of
+	// the names it is an alias of (its CNAMEs, which that resolver does not follow) that it finds
+	curl_slist* AddResolve(curl_slist* list, const std::string& host, int port, std::initializer_list<const char*> aliases);
 }

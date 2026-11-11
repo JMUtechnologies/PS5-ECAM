@@ -281,7 +281,10 @@ namespace ps5shots
 		void Work()
 		{
 			curl_global_init(CURL_GLOBAL_DEFAULT);
-			curl_slist* resolved = ps5net::AddResolve(ps5net::AddResolve(nullptr, kLibretro, 443), kEshop, 443);
+			// the eShop's pictures are behind two aliases to Akamai, which the console's resolver answered with no
+			// address on PS5-680 ("img-eshop.cdn.nintendo.net could not be found: 0x0"): their own names then
+			curl_slist* resolved = ps5net::AddResolve(ps5net::AddResolve(nullptr, kLibretro, 443), kEshop, 443,
+				{"star.cdn.nintendo.net.edgekey.net", "e10534.g.akamaiedge.net"});
 			static curl_slist* const headers = ps5curl::Headers();
 			CURL* curl = curl_easy_init();
 			if (curl)

@@ -72,4 +72,17 @@ namespace ps5net
 		inet_ntop(AF_INET, &address, text, sizeof(text));
 		return curl_slist_append(list, fmt::format("{}:{}:{}", host, port, text).c_str());
 	}
+
+	curl_slist* AddResolve(curl_slist* list, const std::string& host, int port, std::initializer_list<const char*> aliases)
+	{
+		uint32_t address = Resolve(host);
+		for (const char* alias : aliases)
+			if (!address && (address = Resolve(alias)))
+				ps5log::Line("[net] {}: {}'s address", host, alias);
+		if (!address)
+			return list;
+		char text[INET_ADDRSTRLEN] = {};
+		inet_ntop(AF_INET, &address, text, sizeof(text));
+		return curl_slist_append(list, fmt::format("{}:{}:{}", host, port, text).c_str());
+	}
 }
