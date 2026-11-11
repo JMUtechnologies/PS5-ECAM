@@ -2,7 +2,7 @@
 // PS5-ECAM: what GameTDB (https://www.gametdb.com) knows of a game, for its details page and the
 // in-game menus: its description, developer, publisher, release date, genre, players and rating, by
 // the ID on its box, as the box art is found (boxart.h). The app carries GameTDB's English Wii U,
-// 3DS, DS and Switch databases, cut down to those fields (tools/render-gametdb.py: assets/gametdb), so
+// 3DS, DS, Switch and Wii (with the GameCube's discs) databases, cut down to those fields (tools/render-gametdb.py: assets/gametdb), so
 // it needs no network for them; each is read the first time a game of its system is looked up. A
 // Switch game's files have no box ID (GameTDB's is its product code's last part, HAC-P-AHNXA, and its
 // database has no title IDs): the game is found by its name (FindByTitle).

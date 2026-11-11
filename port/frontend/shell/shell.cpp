@@ -774,15 +774,47 @@ namespace ps5shell
 	void Shell::MakeGame(Game& game, const ps5catalog::Entry& entry)
 	{
 		game.entry = entry;
-		// a GameCube or Wii game's ID, from its disc: its cover's name
+		// a GameCube or Wii game's ID, from its disc: its cover's name and its GameTDB entry. A disc whose
+		// header can't be read has it in its name, as USB loaders keep them: RMCE01.wbfs, or the folder
+		// Mario Kart Wii [RMCE01]
+		std::string folderName;
+		auto trim = [](std::string text) {
+			const size_t first = text.find_first_not_of(" _-.");
+			return first == std::string::npos ? std::string() : text.substr(first, text.find_last_not_of(" _-.") - first + 1);
+		};
 		if (IsPorpoise())
 		{
-			const std::string key = ps5porpoise::GameKey(entry.game.path.string());
-			if (key.size() == 6 && std::all_of(key.begin(), key.end(), [](char c) { return (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'); }))
-				game.entry.game.gameId = key;
+			auto isId = [](const std::string& key) {
+				return key.size() == 6 && std::all_of(key.begin(), key.end(), [](char c) { return (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'); });
+			};
+			const std::filesystem::path& path = entry.game.path;
+			folderName = path.parent_path().filename().string();
+			const size_t open = folderName.rfind('['), close = folderName.rfind(']');
+			const std::string tagged = open != std::string::npos && close == open + 7 ? folderName.substr(open + 1, 6) : std::string();
+			for (const std::string& key : {ps5porpoise::GameKey(path.string()), path.stem().string(), tagged})
+				if (isId(key))
+				{
+					game.entry.game.gameId = key;
+					break;
+				}
+			// the folder's name without its tag, when it is a game's own (Mario Kart Wii)
+			folderName = !tagged.empty() && tagged == game.entry.game.gameId ? trim(folderName.substr(0, open)) : std::string();
 		}
 		game.boxArt = IsPorpoise() ? PorpoiseCover(game.entry.game) : IsRetro() ? RetroCover(entry.game) : IsSwitch() ? SwitchCover(entry.game) : ps5boxart::Path(BoxOf(entry.game), entry.game.gameId);
-		game.known = !IsRetro() && ps5gameinfo::Find(BoxOf(entry.game), entry.game.gameId, game.info);
+		game.known = (!IsRetro() || IsPorpoise()) && ps5gameinfo::Find(BoxOf(game.entry.game), game.entry.game.gameId, game.info);
+		// a disc named only by its ID (RMCE01.wbfs, RMCE01 [RMCE01].iso): GameTDB's title, else its
+		// folder's; a name of the player's own (a hack keeps the game's ID) stays
+		if (IsPorpoise() && !game.entry.game.gameId.empty())
+		{
+			std::string& name = game.entry.game.name;
+			const std::string id = game.entry.game.gameId, tag = "[" + id + "]";
+			std::string bare = name;
+			if (const size_t at = bare.find(tag); at != std::string::npos)
+				bare.erase(at, tag.size());
+			bare = trim(bare);
+			if (bare.empty() || bare == id)
+				name = game.known && !game.info.title.empty() ? game.info.title : !folderName.empty() ? folderName : name;
+		}
 		// the list names games in English: GameTDB's title finds one whose own name is in the menus'
 		// language (7.7). It has no DS or Switch games yet.
 		const bool reported = IsWiiU() || Is3ds();
@@ -790,7 +822,7 @@ namespace ps5shell
 		if (!game.report && game.known && reported)
 			game.report = ps5compat::Find(Is3ds(), game.info.title);
 		game.year = game.known && game.info.released.size() >= 4 ? std::atoi(game.info.released.substr(0, 4).c_str()) : 0;
-		std::string name = Lower(entry.game.name);
+		std::string name = Lower(game.entry.game.name);
 		if (name.rfind("the ", 0) == 0)
 			name = name.substr(4);
 		game.sortName = name;
