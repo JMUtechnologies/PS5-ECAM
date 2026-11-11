@@ -33,6 +33,7 @@
 #include "frontend/launcher.h"
 #include "retro/library.h"
 #include "retro/launch.h"
+#include "retro/porpoise_settings.h"
 #include "libretro/game.h"
 #include "melonds/library.h"
 #include "melonds/melonds.h"
@@ -103,15 +104,21 @@ extern "C" int32_t sceKernelGetSystemSwVersion(SceKernelSwVersion* version);
 namespace
 {
 	// The session before this one's first crash report (ps5/crash.h, Cemu's handler: boot.prev.log's
-	// first "[crash] " line, without it), or empty when it ended without one
+	// first "[crash] " line, without it), or empty when it ended without one. The GameCube and Wii sides'
+	// program writes its own trace: a crash in it, when it ran after that session, is that game's.
 	std::string LastCrash()
 	{
-		std::ifstream log(ps5paths::Logs() + "/boot.prev.log");
+		const std::string previous = ps5paths::Logs() + "/boot.prev.log";
+		std::ifstream log(previous);
 		std::string line;
 		while (std::getline(log, line))
 			if (line.rfind("[crash] ", 0) == 0)
 				return line.substr(8, 160);
-		return {};
+		struct stat info{};
+		if (stat(previous.c_str(), &info) != 0)
+			return {};
+		return ps5porpoise::LastCrash({ps5porpoise::LogsFolder() + "/trace.txt", ps5paths::SandboxDownload() + "/" + ps5porpoise::kSandboxTrace},
+			(int64_t)info.st_mtime);
 	}
 
 	// The console's firmware, as its settings show it ("11.60"), for the boot log and Diagnostics:

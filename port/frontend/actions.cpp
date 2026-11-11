@@ -6,6 +6,7 @@
 #include "../app/lang.h"
 #include "../app/netfs.h"
 #include "../app/paths.h"
+#include "../retro/porpoise_settings.h"
 #include "../ps5/kernel.h"
 #include "../ps5/log.h"
 
@@ -165,6 +166,13 @@ namespace ps5actions
 				sandboxFiles.push_back(sandbox + "/eden-headless-g7/" + name);
 			for (const std::string& file : sandboxFiles)
 				if (IsFile(file) && CopyFile(file, folder + "/eden-sandbox-" + file.substr(file.find_last_of('/') + 1)))
+					copied++;
+			// the GameCube and Wii sides': Porpoise's trace and Dolphin's log, of its last two starts, and its
+			// trace in the sandbox when it could not reach /data
+			const std::string porpoiseLogs = ps5porpoise::LogsFolder();
+			for (const std::string& file : {porpoiseLogs + "/trace.txt", porpoiseLogs + "/trace.prev.txt", porpoiseLogs + "/core.log",
+					 porpoiseLogs + "/core.prev.log", sandbox + "/" + ps5porpoise::kSandboxTrace})
+				if (IsFile(file) && CopyFile(file, folder + "/porpoise-" + file.substr(file.find_last_of('/') + 1)))
 					copied++;
 			ps5log::Line("[launcher] {} log files copied to {}", copied, folder);
 			// tr: {1} is the USB drive's number

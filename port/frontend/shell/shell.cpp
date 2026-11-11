@@ -1182,8 +1182,11 @@ namespace ps5shell
 		}
 		else if (IsPorpoise())
 		{
+			// its trace and Dolphin's log (the sandbox's trace while /data can't be reached), and its debug
+			// folder's app, crash and each game's logs when that is on
 			session.emulator = "porpoise";
-			session.logs = {std::string(ps5retro::Of(SideIndex()).data) + "/debug"}; // app, crash and each game's logs
+			session.logs = {ps5porpoise::LogsFolder(), ps5paths::SandboxDownload() + "/" + ps5porpoise::kSandboxTrace,
+				std::string(ps5retro::Of(SideIndex()).data) + "/debug"};
 		}
 		else if (IsRetro())
 		{

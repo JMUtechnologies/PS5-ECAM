@@ -8,6 +8,7 @@
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <sys/stat.h>
 
 namespace fs = std::filesystem;
 
@@ -88,6 +89,36 @@ namespace ps5porpoise
 	bool Plays(int side, int backend) { return ps5retro::IsRetro(side) && std::strcmp(ps5retro::BackendFor(side, backend).runtime, "retro/porpoise/eboot.bin") == 0; }
 	std::string Data() { return ps5retro::Find("gamecube")->data; }
 	std::string SettingsFile() { return Data() + "/settings.ini"; }
+	std::string LogsFolder() { return Data() + "/logs"; }
+
+	std::string LastCrash(const std::vector<std::string>& traces, int64_t after)
+	{
+		for (const std::string& trace : traces)
+		{
+			struct stat info{};
+			if (stat(trace.c_str(), &info) != 0 || !S_ISREG(info.st_mode))
+				continue;
+			if ((int64_t)info.st_mtime <= after)
+				return {};
+			// its end: a crash is the last thing Porpoise writes
+			std::ifstream in(trace, std::ios::binary);
+			constexpr std::streamoff kTail = 256 * 1024;
+			if (info.st_size > kTail)
+				in.seekg(info.st_size - kTail);
+			std::string found;
+			for (std::string line; std::getline(in, line);)
+			{
+				if (!line.empty() && line.back() == '\r')
+					line.pop_back();
+				if (line.rfind("crash: signal ", 0) == 0)
+					found = line.substr(7);
+				else if (line.rfind("terminate: ", 0) == 0)
+					found = line;
+			}
+			return found.empty() ? std::string() : "Porpoise: " + found.substr(0, 150);
+		}
+		return {};
+	}
 
 	void WriteAchievementsAccount(const std::string& user, const std::string& token, int points)
 	{
