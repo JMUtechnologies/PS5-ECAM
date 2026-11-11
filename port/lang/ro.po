@@ -7,7 +7,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)) ? 1 : 2);\n"
 
-#: port/app/accounts.cpp:68 port/frontend/shell/settings.cpp:2794
+#: port/app/accounts.cpp:68 port/frontend/shell/settings.cpp:2799
 msgid "The Wii U has twelve accounts at most."
 msgstr "Wii U are cel mult douăsprezece conturi."
 
@@ -363,9 +363,10 @@ msgctxt "button"
 msgid "Rewind"
 msgstr "Derulare înapoi"
 
+#. the first start's steps, as the bar at the top right names them
 #. {0} is the player's number, {1} an emulated controller (Wii U GamePad)
 #. Settings > Controls: a row that opens the buttons' settings (each button, the defaults)
-#: port/app/buttons_menu.h:150 port/frontend/shell/pages.cpp:447 port/frontend/shell/pages.cpp:646 port/frontend/shell/pages.cpp:929 port/frontend/shell/pages.cpp:935 port/frontend/shell/porpoise_rows.cpp:1333 port/frontend/shell/settings.cpp:876 port/frontend/shell/settings.cpp:925
+#: port/app/buttons_menu.h:150 port/frontend/shell/firststart.cpp:27 port/frontend/shell/pages.cpp:447 port/frontend/shell/pages.cpp:646 port/frontend/shell/pages.cpp:929 port/frontend/shell/pages.cpp:935 port/frontend/shell/porpoise_rows.cpp:1333 port/frontend/shell/settings.cpp:876 port/frontend/shell/settings.cpp:925
 #, menu
 msgid "Buttons"
 msgstr "Butoane"
@@ -480,7 +481,7 @@ msgstr "Nu pornește"
 msgid "the PS5 Vulkan driver did not start"
 msgstr "driverul Vulkan al PS5 nu a pornit"
 
-#: port/app/emulator.cpp:531 port/frontend/shell/settings.cpp:3127 port/frontend/shell/shell.cpp:2208
+#: port/app/emulator.cpp:531 port/frontend/shell/settings.cpp:3132 port/frontend/shell/shell.cpp:2236
 msgid "Playtendoh cannot write to {0}. Is the HEN loaded?"
 msgstr "Playtendoh nu poate scrie în {0}. Este HEN-ul încărcat?"
 
@@ -1104,50 +1105,50 @@ msgid "Wrestling"
 msgstr "Wrestling"
 
 #. the Wii U's controllers, by the names Nintendo gave them in the language
-#: port/app/ingame.cpp:147 port/frontend/actions.cpp:368
+#: port/app/ingame.cpp:146 port/frontend/actions.cpp:368
 #, menu
 msgid "Wii U GamePad"
 msgstr "Wii U GamePad"
 
-#: port/app/ingame.cpp:148 port/frontend/actions.cpp:369
+#: port/app/ingame.cpp:147 port/frontend/actions.cpp:369
 #, menu
 msgid "Wii U Pro Controller"
 msgstr "Wii U Pro Controller"
 
-#: port/app/ingame.cpp:149 port/frontend/actions.cpp:370 port/frontend/shell/porpoise_rows.cpp:248
+#: port/app/ingame.cpp:148 port/frontend/actions.cpp:370 port/frontend/shell/porpoise_rows.cpp:248
 #, menu
 msgid "Classic Controller"
 msgstr "Classic Controller"
 
-#: port/app/ingame.cpp:150 port/frontend/actions.cpp:371 port/frontend/shell/porpoise_rows.cpp:91
+#: port/app/ingame.cpp:149 port/frontend/actions.cpp:371 port/frontend/shell/porpoise_rows.cpp:91
 #, menu
 msgid "Wii Remote"
 msgstr "Wii Remote"
 
-#: port/app/ingame.cpp:151 port/frontend/actions.cpp:372
+#: port/app/ingame.cpp:150 port/frontend/actions.cpp:372
 #, menu
 msgid "Wii Remote + Nunchuk"
 msgstr "Wii Remote + Nunchuk"
 
 #. an original Wii Remote through a DolphinBar, not the DualSense playing one
-#: port/app/ingame.cpp:152 port/frontend/actions.cpp:374
+#: port/app/ingame.cpp:151 port/frontend/actions.cpp:374
 #, menu
 msgid "Real Wii Remote"
 msgstr "Wii Remote real"
 
-#: port/app/ingame.cpp:153 port/frontend/actions.cpp:375
+#: port/app/ingame.cpp:152 port/frontend/actions.cpp:375
 #, menu
 msgid "Real Wii Remote + Nunchuk"
 msgstr "Wii Remote real + Nunchuk"
 
-#: port/app/ingame.cpp:156 port/frontend/actions.cpp:378
+#: port/app/ingame.cpp:155 port/frontend/actions.cpp:378
 #, menu
 msgid "No controller"
 msgstr "Fără controller"
 
 #. how a game's picture is scaled: the methods' names
 #. the Switch side's upscaling filters, as the launcher names them (Eden's order: bilinear, FSR 1, bicubic, nearest)
-#: port/app/ingame.cpp:186 port/eden/ingame.cpp:78 port/frontend/shell/porpoise_rows.cpp:175 port/frontend/shell/settings.cpp:78
+#: port/app/ingame.cpp:185 port/eden/ingame.cpp:78 port/frontend/shell/porpoise_rows.cpp:175 port/frontend/shell/settings.cpp:78
 #, menu
 msgid "Bilinear"
 msgstr "Biliniar"
@@ -1155,34 +1156,34 @@ msgstr "Biliniar"
 #. how a game's picture is scaled: the methods' names
 #. texture filters: None, then the filters' own names
 #. the Switch side's upscaling filters, as the launcher names them (Eden's order: bilinear, FSR 1, bicubic, nearest)
-#: port/app/ingame.cpp:186 port/app/ingame3ds.cpp:195 port/eden/ingame.cpp:78 port/frontend/shell/settings.cpp:65 port/frontend/shell/settings.cpp:78
+#: port/app/ingame.cpp:185 port/app/ingame3ds.cpp:195 port/eden/ingame.cpp:78 port/frontend/shell/settings.cpp:65 port/frontend/shell/settings.cpp:78
 #, menu
 msgid "Bicubic"
 msgstr "Bicubic"
 
 #. how a game's picture is scaled: the methods' names
-#: port/app/ingame.cpp:186 port/frontend/shell/settings.cpp:78
+#: port/app/ingame.cpp:185 port/frontend/shell/settings.cpp:78
 #, menu
 msgid "Bicubic Hermite"
 msgstr "Bicubic Hermite"
 
 #. how a game's picture is scaled: the methods' names
 #. the Switch side's upscaling filters, as the launcher names them (Eden's order: bilinear, FSR 1, bicubic, nearest)
-#: port/app/ingame.cpp:186 port/eden/ingame.cpp:78 port/frontend/shell/settings.cpp:78
+#: port/app/ingame.cpp:185 port/eden/ingame.cpp:78 port/frontend/shell/settings.cpp:78
 #, menu
 msgid "Nearest neighbour"
 msgstr "Cel mai apropiat vecin"
 
 #. how a game's picture is scaled: the methods' names
 #. the Switch side's upscaling filters, as the launcher names them (Eden's order: bilinear, FSR 1, bicubic, nearest)
-#: port/app/ingame.cpp:186 port/eden/ingame.cpp:78 port/frontend/shell/settings.cpp:78
+#: port/app/ingame.cpp:185 port/eden/ingame.cpp:78 port/frontend/shell/settings.cpp:78
 #, menu
 msgid "AMD FSR 1"
 msgstr "AMD FSR 1"
 
 #. the quick action that puts a gap between the two screens, and its state
 #. a row that opens the remote touch screen's page: the game's second screen in a phone's browser, and its code to scan
-#: port/app/ingame.cpp:200 port/app/ingame.cpp:272 port/app/ingame.cpp:272 port/app/ingame3ds.cpp:530 port/app/ingame3ds.cpp:768 port/app/remote_menu.h:29 port/eden/ingame.cpp:612 port/frontend/shell/pages.cpp:610 port/frontend/shell/porpoise_rows.cpp:107 port/frontend/shell/porpoise_rows.cpp:300 port/frontend/shell/porpoise_rows.cpp:713 port/frontend/shell/porpoise_rows.cpp:1209 port/frontend/shell/porpoise_rows.cpp:1630 port/frontend/shell/porpoise_rows.cpp:1744 port/frontend/shell/porpoise_rows.cpp:1776 port/frontend/shell/porpoise_rows.cpp:1786 port/frontend/shell/porpoise_rows.cpp:1800 port/frontend/shell/porpoise_rows.cpp:1818 port/frontend/shell/settings.cpp:546 port/frontend/shell/settings.cpp:1624 port/frontend/shell/switch_extras.cpp:54
+#: port/app/ingame.cpp:199 port/app/ingame.cpp:271 port/app/ingame.cpp:271 port/app/ingame3ds.cpp:530 port/app/ingame3ds.cpp:768 port/app/remote_menu.h:29 port/eden/ingame.cpp:612 port/frontend/shell/pages.cpp:610 port/frontend/shell/porpoise_rows.cpp:107 port/frontend/shell/porpoise_rows.cpp:300 port/frontend/shell/porpoise_rows.cpp:713 port/frontend/shell/porpoise_rows.cpp:1209 port/frontend/shell/porpoise_rows.cpp:1630 port/frontend/shell/porpoise_rows.cpp:1744 port/frontend/shell/porpoise_rows.cpp:1776 port/frontend/shell/porpoise_rows.cpp:1786 port/frontend/shell/porpoise_rows.cpp:1800 port/frontend/shell/porpoise_rows.cpp:1818 port/frontend/shell/settings.cpp:546 port/frontend/shell/settings.cpp:1624 port/frontend/shell/switch_extras.cpp:54
 #, menu
 msgid "On"
 msgstr "Activat"
@@ -1192,223 +1193,223 @@ msgstr "Activat"
 #. Settings > Online: a row that opens the box art's settings (GameTDB on or off, downloading the covers again)
 #. Settings > System on the Wii U side: a row that opens Cemu's emulated portals (Skylanders, Disney Infinity, LEGO Dimensions)
 #. a row that opens the remote touch screen's page: the game's second screen in a phone's browser, and its code to scan
-#: port/app/ingame.cpp:200 port/app/ingame.cpp:272 port/app/ingame.cpp:272 port/app/ingame.cpp:298 port/app/ingame3ds.cpp:530 port/app/ingame3ds.cpp:768 port/app/remote_menu.h:29 port/eden/ingame.cpp:82 port/eden/ingame.cpp:612 port/frontend/shell/pages.cpp:610 port/frontend/shell/pages.cpp:618 port/frontend/shell/porpoise_rows.cpp:103 port/frontend/shell/porpoise_rows.cpp:107 port/frontend/shell/porpoise_rows.cpp:126 port/frontend/shell/porpoise_rows.cpp:165 port/frontend/shell/porpoise_rows.cpp:182 port/frontend/shell/porpoise_rows.cpp:184 port/frontend/shell/porpoise_rows.cpp:259 port/frontend/shell/porpoise_rows.cpp:261 port/frontend/shell/porpoise_rows.cpp:265 port/frontend/shell/porpoise_rows.cpp:269 port/frontend/shell/porpoise_rows.cpp:271 port/frontend/shell/porpoise_rows.cpp:275 port/frontend/shell/porpoise_rows.cpp:277 port/frontend/shell/porpoise_rows.cpp:279 port/frontend/shell/porpoise_rows.cpp:281 port/frontend/shell/porpoise_rows.cpp:283 port/frontend/shell/porpoise_rows.cpp:300 port/frontend/shell/porpoise_rows.cpp:308 port/frontend/shell/porpoise_rows.cpp:376 port/frontend/shell/porpoise_rows.cpp:388 port/frontend/shell/porpoise_rows.cpp:400 port/frontend/shell/porpoise_rows.cpp:412 port/frontend/shell/porpoise_rows.cpp:713 port/frontend/shell/porpoise_rows.cpp:1209 port/frontend/shell/porpoise_rows.cpp:1630 port/frontend/shell/porpoise_rows.cpp:1744 port/frontend/shell/porpoise_rows.cpp:1776 port/frontend/shell/porpoise_rows.cpp:1786 port/frontend/shell/porpoise_rows.cpp:1800 port/frontend/shell/porpoise_rows.cpp:1818 port/frontend/shell/settings.cpp:79 port/frontend/shell/settings.cpp:546 port/frontend/shell/settings.cpp:732 port/frontend/shell/settings.cpp:1317 port/frontend/shell/settings.cpp:1602 port/frontend/shell/settings.cpp:1624 port/frontend/shell/settings.cpp:1652 port/frontend/shell/settings.cpp:1660 port/frontend/shell/switch_extras.cpp:54 port/frontend/shell/switch_extras.cpp:74 port/ps5/display.h:47
+#: port/app/ingame.cpp:199 port/app/ingame.cpp:271 port/app/ingame.cpp:271 port/app/ingame.cpp:297 port/app/ingame3ds.cpp:530 port/app/ingame3ds.cpp:768 port/app/remote_menu.h:29 port/eden/ingame.cpp:82 port/eden/ingame.cpp:612 port/frontend/shell/pages.cpp:610 port/frontend/shell/pages.cpp:618 port/frontend/shell/porpoise_rows.cpp:103 port/frontend/shell/porpoise_rows.cpp:107 port/frontend/shell/porpoise_rows.cpp:126 port/frontend/shell/porpoise_rows.cpp:165 port/frontend/shell/porpoise_rows.cpp:182 port/frontend/shell/porpoise_rows.cpp:184 port/frontend/shell/porpoise_rows.cpp:259 port/frontend/shell/porpoise_rows.cpp:261 port/frontend/shell/porpoise_rows.cpp:265 port/frontend/shell/porpoise_rows.cpp:269 port/frontend/shell/porpoise_rows.cpp:271 port/frontend/shell/porpoise_rows.cpp:275 port/frontend/shell/porpoise_rows.cpp:277 port/frontend/shell/porpoise_rows.cpp:279 port/frontend/shell/porpoise_rows.cpp:281 port/frontend/shell/porpoise_rows.cpp:283 port/frontend/shell/porpoise_rows.cpp:300 port/frontend/shell/porpoise_rows.cpp:308 port/frontend/shell/porpoise_rows.cpp:376 port/frontend/shell/porpoise_rows.cpp:388 port/frontend/shell/porpoise_rows.cpp:400 port/frontend/shell/porpoise_rows.cpp:412 port/frontend/shell/porpoise_rows.cpp:713 port/frontend/shell/porpoise_rows.cpp:1209 port/frontend/shell/porpoise_rows.cpp:1630 port/frontend/shell/porpoise_rows.cpp:1744 port/frontend/shell/porpoise_rows.cpp:1776 port/frontend/shell/porpoise_rows.cpp:1786 port/frontend/shell/porpoise_rows.cpp:1800 port/frontend/shell/porpoise_rows.cpp:1818 port/frontend/shell/settings.cpp:79 port/frontend/shell/settings.cpp:546 port/frontend/shell/settings.cpp:732 port/frontend/shell/settings.cpp:1317 port/frontend/shell/settings.cpp:1602 port/frontend/shell/settings.cpp:1624 port/frontend/shell/settings.cpp:1652 port/frontend/shell/settings.cpp:1660 port/frontend/shell/switch_extras.cpp:54 port/frontend/shell/switch_extras.cpp:74 port/ps5/display.h:47
 #, menu
 msgid "Off"
 msgstr "Dezactivat"
 
 #. the screens in the Wii U's menu: the TV's picture and the GamePad's
-#: port/app/ingame.cpp:202
+#: port/app/ingame.cpp:201
 #, menu
 msgid "TV"
 msgstr "TV"
 
 #. the screens in the Wii U's menu: the TV's picture and the GamePad's
-#: port/app/ingame.cpp:202
+#: port/app/ingame.cpp:201
 #, menu
 msgid "GamePad"
 msgstr "GamePad"
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
-#: port/app/ingame.cpp:203 port/app/ingame.cpp:382 port/app/ingame3ds.cpp:766 port/frontend/shell/settings.cpp:216
+#: port/app/ingame.cpp:202 port/app/ingame.cpp:381 port/app/ingame3ds.cpp:766 port/frontend/shell/settings.cpp:216
 #, menu
 msgid "Screens"
 msgstr "Ecrane"
 
-#: port/app/ingame.cpp:203 port/app/ingame.cpp:209
+#: port/app/ingame.cpp:202 port/app/ingame.cpp:208
 #, menu
 msgid "Stretched"
 msgstr "Întinsă"
 
 #. a libretro game's picture's shape: the console's own, a 4:3 TV's, each pixel square, a 16:9 TV's
-#: port/app/ingame.cpp:203 port/app/ingame.cpp:209 port/app/ingame3ds.h:82
+#: port/app/ingame.cpp:202 port/app/ingame.cpp:208 port/app/ingame3ds.h:82
 #, menu
 msgid "Original"
 msgstr "Forma proprie"
 
-#: port/app/ingame.cpp:204
+#: port/app/ingame.cpp:203
 #, menu
 msgid "Which screen to show, and how it fits."
 msgstr "Imaginile TV-ului și ale GamePad-ului și cum umplu ecranul."
 
 #. the 3DS's top and bottom screens
-#: port/app/ingame.cpp:205 port/app/ingame3ds.cpp:542
+#: port/app/ingame.cpp:204 port/app/ingame3ds.cpp:542
 #, menu
 msgid "Main screen"
 msgstr "Ecran principal"
 
-#: port/app/ingame.cpp:206
+#: port/app/ingame.cpp:205
 #, menu
 msgid "The screen shown full size. In the game, touchpad click + L1 swaps them."
 msgstr "Ce imagine umple televizorul: a TV-ului sau a GamePad-ului. În joc, clic pe touchpad + L1 le inversează."
 
-#: port/app/ingame.cpp:207
+#: port/app/ingame.cpp:206
 #, menu
 msgid "TV in a corner"
 msgstr "TV în colț"
 
-#: port/app/ingame.cpp:207
+#: port/app/ingame.cpp:206
 #, menu
 msgid "GamePad in a corner"
 msgstr "GamePad în colț"
 
-#: port/app/ingame.cpp:208
+#: port/app/ingame.cpp:207
 #, menu
 msgid "Shows the other screen small in the bottom-right corner. In the game, touchpad click + R1."
 msgstr "Celălalt ecran, mic, în colțul din dreapta jos. În joc: clic pe touchpad + R1."
 
-#: port/app/ingame.cpp:209 port/app/ingame3ds.cpp:565
+#: port/app/ingame.cpp:208 port/app/ingame3ds.cpp:565
 #, menu
 msgid "Picture"
 msgstr "Imagine"
 
-#: port/app/ingame.cpp:210
+#: port/app/ingame.cpp:209
 #, menu
 msgid "Original keeps the game's proportions with bars at the sides. Stretched fills the screen."
 msgstr "Forma proprie păstrează proporțiile imaginii, cu benzi acolo unde diferă de ale ecranului; Întinsă îl umple complet."
 
-#: port/app/ingame.cpp:212 port/app/ingame3ds.cpp:589 port/app/ingame3ds.cpp:596 port/app/ingame3ds.cpp:604 port/eden/ingame.cpp:614 port/frontend/shell/settings.cpp:214 port/frontend/shell/settings.cpp:270
+#: port/app/ingame.cpp:211 port/app/ingame3ds.cpp:589 port/app/ingame3ds.cpp:596 port/app/ingame3ds.cpp:604 port/eden/ingame.cpp:614 port/frontend/shell/settings.cpp:214 port/frontend/shell/settings.cpp:270
 #, menu
 msgid "Graphics"
 msgstr "Grafică"
 
-#: port/app/ingame.cpp:213
+#: port/app/ingame.cpp:212
 #, menu
 msgid "Upscaling, accuracy and the performance overlay. Applies to all games."
 msgstr "Scalare, setările de precizie ale Cemu și indicatorul de performanță. Rămân pentru următoarele jocuri."
 
-#: port/app/ingame.cpp:214 port/eden/ingame.cpp:616 port/frontend/shell/settings.cpp:626 port/frontend/shell/settings.cpp:724
+#: port/app/ingame.cpp:213 port/eden/ingame.cpp:616 port/frontend/shell/settings.cpp:626 port/frontend/shell/settings.cpp:724
 #, menu
 msgid "Upscaling to 4K"
 msgstr "Scalare la 4K"
 
-#: port/app/ingame.cpp:215
+#: port/app/ingame.cpp:214
 #, menu
 msgid "Bicubic is sharpest, Hermite softer, Bilinear softest."
 msgstr "Cum se scalează imaginea pe ecran: Bicubic e clar, Hermite mai moale, Biliniar și mai moale."
 
-#: port/app/ingame.cpp:216
+#: port/app/ingame.cpp:215
 #, menu
 msgid "Accurate barriers"
 msgstr "Bariere precise"
 
-#: port/app/ingame.cpp:217
+#: port/app/ingame.cpp:216
 #, menu
 msgid "Off can raise the frame rate, but some games may flicker or show wrong shadows."
 msgstr "Dezactivat poate crește numărul de cadre, dar unele jocuri pâlpâie atunci sau arată umbre greșite. Se aplică imediat."
 
-#: port/app/ingame.cpp:218 port/frontend/shell/settings.cpp:663 port/frontend/shell/settings.cpp:701 port/frontend/shell/settings.cpp:1022
+#: port/app/ingame.cpp:217 port/frontend/shell/settings.cpp:663 port/frontend/shell/settings.cpp:701 port/frontend/shell/settings.cpp:1022
 #, menu
 msgid "Async shader compile"
 msgstr "Compilare asincronă a shaderelor"
 
-#: port/app/ingame.cpp:219
+#: port/app/ingame.cpp:218
 #, menu
 msgid "Builds shaders in the background. Less stutter, but some things may appear late."
 msgstr "Activat, shaderele noi se construiesc în timp ce jocul continuă: fără sacadări, dar ceva poate lipsi o clipă."
 
-#: port/app/ingame.cpp:220 port/frontend/shell/settings.cpp:644
+#: port/app/ingame.cpp:219 port/frontend/shell/settings.cpp:644
 #, menu
 msgid "Frame pacing"
 msgstr "Ritm uniform al cadrelor"
 
-#: port/app/ingame.cpp:221
+#: port/app/ingame.cpp:220
 #, menu
 msgid "Keeps the frame rate steady (60 fps at 4K 120 Hz, 30 at 8K 60 Hz). Off shows each frame when ready."
 msgstr "Ține jocul la un ritm constant: 60 fps pentru 4K la 120 Hz, 30 pentru 8K la 60 Hz. Dezactivat arată fiecare cadru imediat ce e gata."
 
-#: port/app/ingame.cpp:222 port/app/ingame3ds.cpp:610 port/eden/ingame.cpp:626 port/frontend/shell/porpoise_rows.cpp:117 port/frontend/shell/settings.cpp:634 port/frontend/shell/settings.cpp:648 port/frontend/shell/settings.cpp:705 port/frontend/shell/settings.cpp:762 port/frontend/shell/settings.cpp:777
+#: port/app/ingame.cpp:221 port/app/ingame3ds.cpp:610 port/eden/ingame.cpp:626 port/frontend/shell/porpoise_rows.cpp:117 port/frontend/shell/settings.cpp:634 port/frontend/shell/settings.cpp:648 port/frontend/shell/settings.cpp:705 port/frontend/shell/settings.cpp:762 port/frontend/shell/settings.cpp:777
 #, menu
 msgid "Frame generation"
 msgstr "Generare de cadre"
 
-#: port/app/ingame.cpp:223 port/app/ingame3ds.cpp:611 port/eden/ingame.cpp:627
+#: port/app/ingame.cpp:222 port/app/ingame3ds.cpp:611 port/eden/ingame.cpp:627
 #, menu
 msgid "Adds a frame between each pair, so 30 fps games play at 60."
 msgstr "Un cadru creat între fiecare două cadre ale unui joc la 30 fps, ca să fie arătat la 60. Se schimbă imediat."
 
-#: port/app/ingame.cpp:224 port/frontend/shell/settings.cpp:653 port/frontend/shell/switch_extras.cpp:72
+#: port/app/ingame.cpp:223 port/frontend/shell/settings.cpp:653 port/frontend/shell/switch_extras.cpp:72
 #, menu
 msgid "ReShade"
 msgstr "ReShade"
 
-#: port/app/ingame.cpp:225
+#: port/app/ingame.cpp:224
 #, menu
 msgid "Applies your ReShade preset. Settings > Graphics shows where to put it."
 msgstr "Presetul tău ReShade peste imaginea jocului (Setări > Grafică spune unde se pune). Se schimbă imediat."
 
-#: port/app/ingame.cpp:226 port/app/ingame3ds.cpp:592 port/app/ingame3ds.cpp:599 port/app/ingame3ds.cpp:612 port/eden/ingame.cpp:628 port/frontend/shell/settings.cpp:657 port/frontend/shell/settings.cpp:711 port/frontend/shell/settings.cpp:784 port/frontend/shell/settings.cpp:798
+#: port/app/ingame.cpp:225 port/app/ingame3ds.cpp:592 port/app/ingame3ds.cpp:599 port/app/ingame3ds.cpp:612 port/eden/ingame.cpp:628 port/frontend/shell/settings.cpp:657 port/frontend/shell/settings.cpp:711 port/frontend/shell/settings.cpp:784 port/frontend/shell/settings.cpp:798
 #, menu
 msgid "Performance overlay"
 msgstr "Indicator de performanță"
 
-#: port/app/ingame.cpp:227
+#: port/app/ingame.cpp:226
 #, menu
 msgid "Shows frame rate, CPU and memory use in the top-left corner."
 msgstr "Cadre pe secundă, utilizarea CPU și a memoriei în colțul din stânga sus, așa cum le arată Cemu."
 
-#: port/app/ingame.cpp:228 port/frontend/shell/settings.cpp:666
+#: port/app/ingame.cpp:227 port/frontend/shell/settings.cpp:666
 #, menu
 msgid "Shader notices"
 msgstr "Notificări despre shadere"
 
-#: port/app/ingame.cpp:229
+#: port/app/ingame.cpp:228
 #, menu
 msgid "Shows a notice while shaders are being built."
 msgstr "Notele lui Cemu dintr-un colț cât timp jocul compilează shadere. Dezactivat le ascunde; shaderele se compilează oricum."
 
-#: port/app/ingame.cpp:242 port/app/ingame.cpp:272
+#: port/app/ingame.cpp:241 port/app/ingame.cpp:271
 #, menu
 msgid "{0} (next start)"
 msgstr "{0} (la următoarea pornire)"
 
-#: port/app/ingame.cpp:243
+#: port/app/ingame.cpp:242
 #, menu
 msgid "This pack replaces textures. Restart the game to see it."
 msgstr "Acest pachet înlocuiește texturi: jocul arată schimbarea la următoarea pornire."
 
-#: port/app/ingame.cpp:244
+#: port/app/ingame.cpp:243
 #, menu
 msgid "Cross turns it on or off."
 msgstr "Crucea îl activează sau dezactivează; jocul îl arată imediat."
 
-#: port/app/ingame.cpp:252 port/frontend/shell/pages.cpp:281 port/frontend/shell/pages.cpp:370
+#: port/app/ingame.cpp:251 port/frontend/shell/pages.cpp:281 port/frontend/shell/pages.cpp:370
 #, menu
 msgid "Preset"
 msgstr "Presetare"
 
-#: port/app/ingame.cpp:254
+#: port/app/ingame.cpp:253
 #, menu
 msgid "Left and Right choose another."
 msgstr "Stânga și dreapta aleg alta; jocul o arată imediat."
 
-#: port/app/ingame.cpp:258
+#: port/app/ingame.cpp:257
 #, menu
 msgid "None for this game"
 msgstr "Niciunul pentru acest joc"
 
-#: port/app/ingame.cpp:258
+#: port/app/ingame.cpp:257
 #, menu
 msgid "Reading the packs…"
 msgstr "Se citesc pachetele…"
 
-#: port/app/ingame.cpp:259
+#: port/app/ingame.cpp:258
 #, menu
 msgid "There are no graphic packs for this game."
 msgstr "Pachetele grafice ale comunității nu au niciunul pentru acest joc."
 
-#: port/app/ingame.cpp:261 port/app/ingame.cpp:383 port/frontend/shell/hub.cpp:242 port/frontend/shell/pages.cpp:305 port/frontend/shell/shell.cpp:2057
+#: port/app/ingame.cpp:260 port/app/ingame.cpp:382 port/frontend/shell/hub.cpp:242 port/frontend/shell/pages.cpp:305 port/frontend/shell/shell.cpp:2085
 #, menu
 msgid "Graphic packs"
 msgstr "Pachete grafice"
 
-#: port/app/ingame.cpp:261 port/app/ingame.cpp:305 port/app/ingame.cpp:383 port/app/ingame3ds.cpp:521 port/eden/ingame.cpp:585 port/eden/ingame.cpp:707 port/frontend/shell/porpoise_rows.cpp:192 port/frontend/shell/porpoise_rows.cpp:195 port/frontend/shell/porpoise_rows.cpp:197 port/frontend/shell/porpoise_rows.cpp:204 port/frontend/shell/porpoise_rows.cpp:207 port/frontend/shell/porpoise_rows.cpp:209 port/frontend/shell/porpoise_rows.cpp:216 port/frontend/shell/porpoise_rows.cpp:219 port/frontend/shell/porpoise_rows.cpp:221 port/frontend/shell/porpoise_rows.cpp:228 port/frontend/shell/porpoise_rows.cpp:231 port/frontend/shell/porpoise_rows.cpp:233 port/frontend/shell/porpoise_rows.cpp:451 port/frontend/shell/porpoise_rows.cpp:1153 port/frontend/shell/porpoise_rows.cpp:1159 port/frontend/shell/porpoise_rows.cpp:1162 port/frontend/shell/porpoise_rows.cpp:1638
+#: port/app/ingame.cpp:260 port/app/ingame.cpp:304 port/app/ingame.cpp:382 port/app/ingame3ds.cpp:521 port/eden/ingame.cpp:585 port/eden/ingame.cpp:707 port/frontend/shell/porpoise_rows.cpp:192 port/frontend/shell/porpoise_rows.cpp:195 port/frontend/shell/porpoise_rows.cpp:197 port/frontend/shell/porpoise_rows.cpp:204 port/frontend/shell/porpoise_rows.cpp:207 port/frontend/shell/porpoise_rows.cpp:209 port/frontend/shell/porpoise_rows.cpp:216 port/frontend/shell/porpoise_rows.cpp:219 port/frontend/shell/porpoise_rows.cpp:221 port/frontend/shell/porpoise_rows.cpp:228 port/frontend/shell/porpoise_rows.cpp:231 port/frontend/shell/porpoise_rows.cpp:233 port/frontend/shell/porpoise_rows.cpp:451 port/frontend/shell/porpoise_rows.cpp:1153 port/frontend/shell/porpoise_rows.cpp:1159 port/frontend/shell/porpoise_rows.cpp:1162 port/frontend/shell/porpoise_rows.cpp:1638
 #, menu
 msgid "None"
 msgstr "Niciunul"
 
 #. Settings > System on the Wii U side: a row that opens Cemu's emulated portals (Skylanders, Disney Infinity, LEGO Dimensions)
-#: port/app/ingame.cpp:261 port/app/ingame.cpp:298 port/frontend/shell/settings.cpp:1602
+#: port/app/ingame.cpp:260 port/app/ingame.cpp:297 port/frontend/shell/settings.cpp:1602
 #, menu
 msgid "{0} on"
 msgid_plural "{0} on"
@@ -1416,220 +1417,220 @@ msgstr[0] "{0} activ"
 msgstr[1] "{0} active"
 msgstr[2] "{0} active"
 
-#: port/app/ingame.cpp:262
+#: port/app/ingame.cpp:261
 #, menu
 msgid "Community packs for resolution, frame rate and mods."
 msgstr "Pachetele grafice ale comunității pentru joc: rezoluție, număr de cadre și moduri, ca în fereastra Graphic Packs din Cemu."
 
-#: port/app/ingame.cpp:273
+#: port/app/ingame.cpp:272
 #, menu
 msgid "Restart the game for this to take effect."
 msgstr "Jocul vede schimbarea la următoarea pornire: portalul se conectează când pornește un joc."
 
-#: port/app/ingame.cpp:274
+#: port/app/ingame.cpp:273
 #, menu
 msgid "Connects the portal when a game starts. Its figures are listed below."
 msgstr "Conectat când pornește un joc, ca în Cemu. Figurinele lui sunt mai jos cât timp e activat."
 
-#: port/app/ingame.cpp:279 port/app/ingame3ds.cpp:731 port/frontend/shell/porpoise_rows.cpp:1954
+#: port/app/ingame.cpp:278 port/app/ingame3ds.cpp:731 port/frontend/shell/porpoise_rows.cpp:1954
 #, menu
 msgid "Empty"
 msgstr "Gol"
 
-#: port/app/ingame.cpp:288
+#: port/app/ingame.cpp:287
 #, menu
 msgid "{0} (Cross to place)"
 msgstr "{0} (Cruce pentru a o pune)"
 
 #. {0} is a folder of figure dumps
-#: port/app/ingame.cpp:290
+#: port/app/ingame.cpp:289
 #, menu
 msgid "Put figure dumps in {0} to use them here."
 msgstr "Pune dump-uri de figurine în {0} ca să le așezi aici."
 
-#: port/app/ingame.cpp:291
+#: port/app/ingame.cpp:290
 #, menu
 msgid "Left and Right choose a figure. Cross places it; Empty removes it."
 msgstr "Stânga și Dreapta aleg o figurină, Crucea o pune; Gol o ia pe cea de acolo."
 
-#: port/app/ingame.cpp:296
+#: port/app/ingame.cpp:295
 #, menu
 msgid "The figure could not be placed."
 msgstr "Ultima figurină nu a putut fi așezată."
 
 #. Settings > System on the Wii U side: a row that opens Cemu's emulated portals (Skylanders, Disney Infinity, LEGO Dimensions)
-#: port/app/ingame.cpp:298 port/frontend/shell/settings.cpp:1602
+#: port/app/ingame.cpp:297 port/frontend/shell/settings.cpp:1602
 #, menu
 msgid "USB devices"
 msgstr "Dispozitive USB"
 
-#: port/app/ingame.cpp:299
+#: port/app/ingame.cpp:298
 #, menu
 msgid "Skylanders, Disney Infinity and LEGO Dimensions figures."
 msgstr "Figurine Skylanders, Disney Infinity și LEGO Dimensions pe portalurile emulate ale Cemu, așa cum se scanează amiibo."
 
-#: port/app/ingame.cpp:301 port/app/ingame3ds.cpp:631 port/eden/ingame.cpp:635 port/frontend/shell/porpoise_rows.cpp:303 port/frontend/shell/porpoise_rows.cpp:414 port/frontend/shell/porpoise_rows.cpp:418 port/frontend/shell/porpoise_rows.cpp:422 port/frontend/shell/porpoise_rows.cpp:426
+#: port/app/ingame.cpp:300 port/app/ingame3ds.cpp:631 port/eden/ingame.cpp:635 port/frontend/shell/porpoise_rows.cpp:303 port/frontend/shell/porpoise_rows.cpp:414 port/frontend/shell/porpoise_rows.cpp:418 port/frontend/shell/porpoise_rows.cpp:422 port/frontend/shell/porpoise_rows.cpp:426
 #, menu
 msgid "Volume"
 msgstr "Volum"
 
-#: port/app/ingame.cpp:301 port/app/ingame3ds.cpp:631 port/eden/ingame.cpp:635
+#: port/app/ingame.cpp:300 port/app/ingame3ds.cpp:631 port/eden/ingame.cpp:635
 #, menu
 msgid "The game's sound. Left and Right change it by 10%."
 msgstr "Sunetul jocului. Stânga și dreapta îl schimbă cu 10%."
 
 #. amiibo is Nintendo's name for its figures, as it writes it in the language
-#: port/app/ingame.cpp:307 port/app/ingame.cpp:313 port/app/ingame.cpp:383 port/app/ingame3ds.cpp:679 port/app/ingame3ds.cpp:680 port/eden/ingame.cpp:655 port/eden/ingame.cpp:661 port/eden/ingame.cpp:707
+#: port/app/ingame.cpp:306 port/app/ingame.cpp:312 port/app/ingame.cpp:382 port/app/ingame3ds.cpp:679 port/app/ingame3ds.cpp:680 port/eden/ingame.cpp:655 port/eden/ingame.cpp:661 port/eden/ingame.cpp:707
 #, menu
 msgid "Amiibo"
 msgstr "amiibo"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/app/ingame.cpp:309 port/app/ingame3ds.cpp:682 port/eden/ingame.cpp:657
+#: port/app/ingame.cpp:308 port/app/ingame3ds.cpp:682 port/eden/ingame.cpp:657
 #, menu
 msgid "Put amiibo dumps (.bin) in {0}/amiibo to scan them here."
 msgstr "Pune dump-uri amiibo (.bin) în {0}/amiibo ca să le scanezi aici."
 
-#: port/app/ingame.cpp:310
+#: port/app/ingame.cpp:309
 #, menu
 msgid "Left and Right choose an amiibo. Cross scans it when the game asks."
 msgstr "Stânga și dreapta aleg un dump amiibo; Crucea îl atinge de GamePad când jocul cere unul."
 
 #. a folder of amiibo dumps, as they are shared: Kirby, Metroid...
-#: port/app/ingame.cpp:315 port/eden/ingame.cpp:663
+#: port/app/ingame.cpp:314 port/eden/ingame.cpp:663
 #, menu
 msgid "Amiibo series"
 msgstr "Serie amiibo"
 
-#: port/app/ingame.cpp:316 port/eden/ingame.cpp:664
+#: port/app/ingame.cpp:315 port/eden/ingame.cpp:664
 #, menu
 msgid "Left and Right choose a series (a folder in {0}/amiibo)."
 msgstr "Stânga și Dreapta aleg o serie: un folder cu dumpuri în {0}/amiibo."
 
 #. the DS's lid, closed or open
-#: port/app/ingame.cpp:322 port/app/ingame3ds.cpp:690 port/app/ingame3ds.cpp:698 port/app/ingame3ds.cpp:709 port/eden/ingame.cpp:640 port/frontend/shell/pages.cpp:929 port/frontend/shell/porpoise_rows.cpp:1004 port/frontend/shell/settings.cpp:219 port/frontend/shell/settings.cpp:272
+#: port/app/ingame.cpp:321 port/app/ingame3ds.cpp:690 port/app/ingame3ds.cpp:698 port/app/ingame3ds.cpp:709 port/eden/ingame.cpp:640 port/frontend/shell/pages.cpp:929 port/frontend/shell/porpoise_rows.cpp:1004 port/frontend/shell/settings.cpp:219 port/frontend/shell/settings.cpp:272
 #, menu
 msgid "Controls"
 msgstr "Comenzi"
 
-#: port/app/ingame.cpp:323
+#: port/app/ingame.cpp:322
 #, menu
 msgid "Each player's controller, motion, vibration and buttons."
 msgstr "Controllerul fiecărui jucător, mișcarea, vibrațiile, zonele moarte, plus A și B."
 
-#: port/app/ingame.cpp:324 port/frontend/shell/switch_extras.cpp:87
+#: port/app/ingame.cpp:323 port/frontend/shell/switch_extras.cpp:87
 #, menu
 msgid "Player"
 msgstr "Jucător"
 
-#: port/app/ingame.cpp:325
+#: port/app/ingame.cpp:324
 #, menu
 msgid "{0} (no Wii Remote found)"
 msgstr "{0} (niciun Wii Remote găsit)"
 
-#: port/app/ingame.cpp:325
+#: port/app/ingame.cpp:324
 #, menu
 msgid "{0} (no DualSense)"
 msgstr "{0} (fără DualSense)"
 
-#: port/app/ingame.cpp:326
+#: port/app/ingame.cpp:325
 #, menu
 msgid "Left and Right choose which player to set up."
 msgstr "Al cui controller îl privesc setările de mai jos: stânga și dreapta aleg jucătorul."
 
-#: port/app/ingame.cpp:327 port/frontend/shell/pages.cpp:446 port/frontend/shell/pages.cpp:494 port/frontend/shell/pages.cpp:609
+#: port/app/ingame.cpp:326 port/frontend/shell/pages.cpp:446 port/frontend/shell/pages.cpp:494 port/frontend/shell/pages.cpp:609
 #, menu
 msgid "Emulated controller"
 msgstr "Controller emulat"
 
-#: port/app/ingame.cpp:328
+#: port/app/ingame.cpp:327
 #, menu
 msgid "The controller the game sees. Most games want the GamePad for player 1."
 msgstr "Ce vede jocul în mâinile acestui jucător. Majoritatea jocurilor vor GamePad-ul pentru jucătorul 1."
 
-#: port/app/ingame.cpp:329 port/app/ingame3ds.cpp:710 port/frontend/shell/pages.cpp:446 port/frontend/shell/pages.cpp:610 port/frontend/shell/settings.cpp:909
+#: port/app/ingame.cpp:328 port/app/ingame3ds.cpp:710 port/frontend/shell/pages.cpp:446 port/frontend/shell/pages.cpp:610 port/frontend/shell/settings.cpp:909
 #, menu
 msgid "Motion controls"
 msgstr "Comenzi prin mișcare"
 
-#: port/app/ingame.cpp:329 port/frontend/shell/pages.cpp:610
+#: port/app/ingame.cpp:328 port/frontend/shell/pages.cpp:610
 #, menu
 msgid "None on this one"
 msgstr "Acesta nu are"
 
-#: port/app/ingame.cpp:330 port/app/ingame3ds.cpp:711
+#: port/app/ingame.cpp:329 port/app/ingame3ds.cpp:711
 #, menu
 msgid "Use DualSense motion to aim or steer by tilting."
 msgstr "Giroscopul și accelerometrul DualSense în locul celor ale 3DS, pentru jocurile în care țintești sau conduci prin înclinare."
 
-#: port/app/ingame.cpp:331 port/eden/ingame.cpp:646 port/frontend/shell/pages.cpp:446 port/frontend/shell/pages.cpp:618 port/frontend/shell/porpoise_rows.cpp:244 port/frontend/shell/settings.cpp:855
+#: port/app/ingame.cpp:330 port/eden/ingame.cpp:646 port/frontend/shell/pages.cpp:446 port/frontend/shell/pages.cpp:618 port/frontend/shell/porpoise_rows.cpp:244 port/frontend/shell/settings.cpp:855
 #, menu
 msgid "Vibration"
 msgstr "Vibrații"
 
-#: port/app/ingame.cpp:332
+#: port/app/ingame.cpp:331
 #, menu
 msgid "How strongly the DualSense rumbles. Left and Right change it by 10%."
 msgstr "Cât de tare vibrează DualSense. Stânga și dreapta schimbă cu 10%."
 
-#: port/app/ingame.cpp:333 port/frontend/shell/pages.cpp:447 port/frontend/shell/pages.cpp:621
+#: port/app/ingame.cpp:332 port/frontend/shell/pages.cpp:447 port/frontend/shell/pages.cpp:621
 #, menu
 msgid "Left stick deadzone"
 msgstr "Zonă moartă stick stâng"
 
-#: port/app/ingame.cpp:334
+#: port/app/ingame.cpp:333
 #, menu
 msgid "How far the left stick moves before the game sees it. Raise it if a character drifts."
 msgstr "Cât se mișcă stickul stâng până când jocul observă. Mărește-o dacă un personaj merge singur."
 
-#: port/app/ingame.cpp:335 port/frontend/shell/pages.cpp:447 port/frontend/shell/pages.cpp:624
+#: port/app/ingame.cpp:334 port/frontend/shell/pages.cpp:447 port/frontend/shell/pages.cpp:624
 #, menu
 msgid "Right stick deadzone"
 msgstr "Zonă moartă stick drept"
 
-#: port/app/ingame.cpp:336
+#: port/app/ingame.cpp:335
 #, menu
 msgid "How far the right stick moves before the game sees it. Raise it if the camera drifts."
 msgstr "Cât se mișcă stickul drept până când jocul observă. Mărește-o dacă camera se mișcă singură."
 
-#: port/app/ingame.cpp:337 port/app/ingame3ds.cpp:693 port/app/ingame3ds.cpp:704 port/app/ingame3ds.cpp:714 port/frontend/shell/pages.cpp:447 port/frontend/shell/pages.cpp:630 port/frontend/shell/settings.cpp:904 port/frontend/shell/welcome.cpp:76
+#: port/app/ingame.cpp:336 port/app/ingame3ds.cpp:693 port/app/ingame3ds.cpp:704 port/app/ingame3ds.cpp:714 port/frontend/shell/pages.cpp:447 port/frontend/shell/pages.cpp:630 port/frontend/shell/settings.cpp:904 port/frontend/shell/welcome.cpp:70
 #, menu
 msgid "A and B"
 msgstr "A și B"
 
-#: port/app/ingame.cpp:337 port/app/ingame3ds.cpp:688 port/frontend/shell/pages.cpp:632 port/frontend/shell/settings.cpp:904 port/frontend/shell/welcome.cpp:77
+#: port/app/ingame.cpp:336 port/app/ingame3ds.cpp:688 port/frontend/shell/pages.cpp:632 port/frontend/shell/settings.cpp:904 port/frontend/shell/welcome.cpp:71
 #, menu
 msgid "A on Circle"
 msgstr "A pe Cerc"
 
-#: port/app/ingame.cpp:337 port/app/ingame3ds.cpp:688 port/frontend/shell/pages.cpp:632 port/frontend/shell/settings.cpp:904 port/frontend/shell/welcome.cpp:77
+#: port/app/ingame.cpp:336 port/app/ingame3ds.cpp:688 port/frontend/shell/pages.cpp:632 port/frontend/shell/settings.cpp:904 port/frontend/shell/welcome.cpp:71
 #, menu
 msgid "A on Cross"
 msgstr "A pe Cruce"
 
-#: port/app/ingame.cpp:338
+#: port/app/ingame.cpp:337
 #, menu
 msgid "A on Circle as on the Wii U, or on Cross with X and Y swapped. Other buttons are in Settings > Controls."
 msgstr "A pe Cerc ca pe Wii U sau pe Cruce, cu X și Y inversate corespunzător. Toate celelalte butoane: Setări > Comenzi în lansator."
 
-#: port/app/ingame.cpp:339 port/frontend/shell/pages.cpp:447 port/frontend/shell/pages.cpp:640 port/frontend/shell/welcome.cpp:103
+#: port/app/ingame.cpp:338 port/frontend/shell/pages.cpp:447 port/frontend/shell/pages.cpp:640 port/frontend/shell/welcome.cpp:86
 #, menu
 msgid "Touchpad click"
 msgstr "Clic pe touchpad"
 
 #. what a Wii U player's touchpad click does (as Settings > Controls > Player names them)
-#: port/app/ingame.cpp:340 port/frontend/shell/pages.cpp:54 port/frontend/shell/welcome.cpp:27
+#: port/app/ingame.cpp:339 port/frontend/shell/pages.cpp:54 port/frontend/shell/welcome.cpp:25
 #, menu
 msgid "Touches the screen"
 msgstr "Atinge ecranul"
 
 #. what a Wii U player's touchpad click does (as Settings > Controls > Player names them)
-#: port/app/ingame.cpp:341 port/frontend/shell/pages.cpp:54 port/frontend/shell/welcome.cpp:27
+#: port/app/ingame.cpp:340 port/frontend/shell/pages.cpp:54 port/frontend/shell/welcome.cpp:25
 #, menu
 msgid "Presses a button"
 msgstr "Apasă un buton"
 
-#: port/app/ingame.cpp:341 port/frontend/shell/pages.cpp:641
+#: port/app/ingame.cpp:340 port/frontend/shell/pages.cpp:641
 #, menu
 msgid "{0}: {1}"
 msgstr "{0}: {1}"
@@ -1638,131 +1639,132 @@ msgstr "{0}: {1}"
 #. the languages the emulated 3DS can be set to
 #. the Switch's controller types, as a game sees the DualSense (Automatic: what the game takes)
 #. what a Wii U player's touchpad click does (as Settings > Controls > Player names them)
-#: port/app/ingame.cpp:341 port/eden/ingame.cpp:88 port/frontend/shell/pages.cpp:54 port/frontend/shell/porpoise_rows.cpp:107 port/frontend/shell/porpoise_rows.cpp:135 port/frontend/shell/porpoise_rows.cpp:239 port/frontend/shell/porpoise_rows.cpp:292 port/frontend/shell/porpoise_rows.cpp:294 port/frontend/shell/porpoise_rows.cpp:300 port/frontend/shell/porpoise_rows.cpp:367 port/frontend/shell/porpoise_rows.cpp:371 port/frontend/shell/porpoise_rows.cpp:373 port/frontend/shell/porpoise_rows.cpp:379 port/frontend/shell/porpoise_rows.cpp:383 port/frontend/shell/porpoise_rows.cpp:385 port/frontend/shell/porpoise_rows.cpp:391 port/frontend/shell/porpoise_rows.cpp:395 port/frontend/shell/porpoise_rows.cpp:397 port/frontend/shell/porpoise_rows.cpp:403 port/frontend/shell/porpoise_rows.cpp:407 port/frontend/shell/porpoise_rows.cpp:409 port/frontend/shell/settings.cpp:54 port/frontend/shell/settings.cpp:57 port/frontend/shell/settings.cpp:130 port/frontend/shell/settings.cpp:981 port/frontend/shell/welcome.cpp:27
+#: port/app/ingame.cpp:340 port/eden/ingame.cpp:88 port/frontend/shell/pages.cpp:54 port/frontend/shell/porpoise_rows.cpp:107 port/frontend/shell/porpoise_rows.cpp:135 port/frontend/shell/porpoise_rows.cpp:239 port/frontend/shell/porpoise_rows.cpp:292 port/frontend/shell/porpoise_rows.cpp:294 port/frontend/shell/porpoise_rows.cpp:300 port/frontend/shell/porpoise_rows.cpp:367 port/frontend/shell/porpoise_rows.cpp:371 port/frontend/shell/porpoise_rows.cpp:373 port/frontend/shell/porpoise_rows.cpp:379 port/frontend/shell/porpoise_rows.cpp:383 port/frontend/shell/porpoise_rows.cpp:385 port/frontend/shell/porpoise_rows.cpp:391 port/frontend/shell/porpoise_rows.cpp:395 port/frontend/shell/porpoise_rows.cpp:397 port/frontend/shell/porpoise_rows.cpp:403 port/frontend/shell/porpoise_rows.cpp:407 port/frontend/shell/porpoise_rows.cpp:409 port/frontend/shell/settings.cpp:54 port/frontend/shell/settings.cpp:57 port/frontend/shell/settings.cpp:130 port/frontend/shell/settings.cpp:981 port/frontend/shell/welcome.cpp:25
 #, menu
 msgid "Automatic"
 msgstr "Automat"
 
-#: port/app/ingame.cpp:341 port/frontend/shell/pages.cpp:641
+#: port/app/ingame.cpp:340 port/frontend/shell/pages.cpp:641
 #, menu
 msgid "a button"
 msgstr "un buton"
 
-#: port/app/ingame.cpp:341 port/frontend/shell/pages.cpp:641
+#: port/app/ingame.cpp:340 port/frontend/shell/pages.cpp:641
 #, menu
 msgid "a touch"
 msgstr "o atingere"
 
-#: port/app/ingame.cpp:343
+#: port/app/ingame.cpp:342
 #, menu
 msgid "Touches the GamePad screen, or presses the button set for Touchpad click (- if none). Shortcuts still work."
 msgstr "Atinge ecranul GamePad-ului sau apasă butonul setat ca Clic pe touchpad (- dacă nu e niciunul). Scurtăturile funcționează în continuare."
 
-#: port/app/ingame.cpp:350 port/frontend/shell/pages.cpp:653
+#: port/app/ingame.cpp:349 port/frontend/shell/pages.cpp:653
 #, menu
 msgid "Its own"
 msgstr "Proprii"
 
-#: port/app/ingame.cpp:352 port/frontend/shell/pages.cpp:654
+#: port/app/ingame.cpp:351 port/frontend/shell/pages.cpp:654
 #, menu
 msgid "This setting is for the DualSense. A real Wii Remote uses its own buttons, pointer, motion and rumble."
 msgstr "Un Wii Remote real are propriile butoane, indicator, senzori de mișcare și vibrații: această setare este pentru DualSense."
 
-#: port/app/ingame.cpp:361 port/frontend/shell/pages.cpp:444
+#: port/app/ingame.cpp:360 port/frontend/shell/pages.cpp:444
 #, menu
 msgid "Puts this controller's buttons, vibration, motion and deadzones back to default. Hold Cross to confirm."
 msgstr "Butoanele, vibrațiile, mișcarea și zonele moarte implicite ale acestui controller. Se confirmă ținând apăsat."
 
 #. the remote touch screen's row: which screen a phone or a tablet shows
-#: port/app/ingame.cpp:364 port/frontend/shell/settings.cpp:1620
+#: port/app/ingame.cpp:363 port/frontend/shell/settings.cpp:1620
 #, menu
 msgid "The GamePad's screen"
 msgstr "Ecranul GamePad-ului"
 
-#: port/app/ingame.cpp:367 port/app/ingame3ds.cpp:724 port/eden/ingame.cpp:690
+#: port/app/ingame.cpp:366 port/app/ingame3ds.cpp:724 port/eden/ingame.cpp:690
 #, menu
 msgid "Quit to the home screen"
 msgstr "Ieși la ecranul principal"
 
-#: port/app/ingame.cpp:368 port/app/ingame3ds.cpp:725 port/eden/ingame.cpp:691
+#: port/app/ingame.cpp:367 port/app/ingame3ds.cpp:725 port/eden/ingame.cpp:691
 #, menu
 msgid "Closes the game and Playtendoh. Unsaved progress is lost. Hold Cross."
 msgstr "Părăsește jocul și închide Playtendoh, cum cere pictograma jocului de pe ecranul principal. Ce nu ai salvat în joc se pierde, de aceea Crucea se ține apăsată."
 
-#: port/app/ingame.cpp:369 port/app/ingame3ds.cpp:726 port/eden/ingame.cpp:692
+#: port/app/ingame.cpp:368 port/app/ingame3ds.cpp:726 port/eden/ingame.cpp:692
 #, menu
 msgid "Quit to the library"
 msgstr "Ieși în bibliotecă"
 
-#: port/app/ingame.cpp:370 port/app/ingame3ds.cpp:727 port/eden/ingame.cpp:693
+#: port/app/ingame.cpp:369 port/app/ingame3ds.cpp:727 port/eden/ingame.cpp:693
 #, menu
 msgid "Closes the game and goes to the library. Unsaved progress is lost. Hold Cross."
 msgstr "Părăsește jocul pentru bibliotecă. Ce nu ai salvat în joc se pierde, de aceea Crucea se ține apăsată."
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
 #. the quick actions: big tiles at the top of the in-game menu, a word or two each
-#: port/app/ingame.cpp:382 port/app/ingame3ds.cpp:763 port/eden/ingame.cpp:705
+#: port/app/ingame.cpp:381 port/app/ingame3ds.cpp:763 port/eden/ingame.cpp:705
 #, menu
 msgid "Resume"
 msgstr "Reia"
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
-#: port/app/ingame.cpp:382
+#: port/app/ingame.cpp:381
 #, menu
 msgid "GamePad main"
 msgstr "GamePad mare"
 
 #. the quick actions: big tiles at the top of the in-game menu, a word each
-#: port/app/ingame.cpp:382
+#: port/app/ingame.cpp:381
 #, menu
 msgid "TV main"
 msgstr "TV mare"
 
-#: port/app/ingame.cpp:383 port/eden/ingame.cpp:707
+#: port/app/ingame.cpp:382 port/eden/ingame.cpp:707
 #, menu
 msgid "Scan"
 msgstr "Scanează"
 
 #. {0} is an amiibo dump's file name
-#: port/app/ingame.cpp:474 port/azahar/core.cpp:293 port/eden/ingame.cpp:598
+#: port/app/ingame.cpp:473 port/azahar/core.cpp:293 port/eden/ingame.cpp:598
 #, menu
 msgid "Scanned {0}"
 msgstr "{0} scanat"
 
 #. {0} is an amiibo dump's file name
-#: port/app/ingame.cpp:474
+#: port/app/ingame.cpp:473
 #, menu
 msgid "Not scanned (error {0})"
 msgstr "Nescanat (eroare {0})"
 
 #. the in-game menu's badge: the game goes on behind the menu (Cemu cannot pause it)
-#: port/app/ingame.cpp:660 port/eden/ingame.cpp:875
+#: port/app/ingame.cpp:659 port/eden/ingame.cpp:875
 #, menu
 msgid "Running"
 msgstr "Rulează"
 
-#: port/app/ingame.cpp:671 port/app/ingame3ds.cpp:998 port/eden/ingame.cpp:883 port/frontend/shell/orbit.cpp:444 port/frontend/shell/orbit.cpp:785 port/frontend/shell/reports.cpp:155 port/frontend/shell/setup.cpp:381 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1666 port/frontend/shell/shell.cpp:1670 port/frontend/shell/shell.cpp:1702 port/frontend/shell/shell.cpp:1711 port/frontend/shell/shell.cpp:1719 port/frontend/shell/shell.cpp:1727 port/frontend/shell/shell.cpp:1730 port/frontend/shell/shell.cpp:2852 port/frontend/shell/shell.cpp:2890
+#. the first start's setup: Cross on its last step
+#: port/app/ingame.cpp:670 port/app/ingame3ds.cpp:998 port/eden/ingame.cpp:883 port/frontend/shell/firststart.cpp:264 port/frontend/shell/orbit.cpp:450 port/frontend/shell/orbit.cpp:792 port/frontend/shell/reports.cpp:155 port/frontend/shell/setup.cpp:383 port/frontend/shell/shares.cpp:524 port/frontend/shell/shell.cpp:1693 port/frontend/shell/shell.cpp:1697 port/frontend/shell/shell.cpp:1730 port/frontend/shell/shell.cpp:1739 port/frontend/shell/shell.cpp:1747 port/frontend/shell/shell.cpp:1755 port/frontend/shell/shell.cpp:1758 port/frontend/shell/shell.cpp:2880 port/frontend/shell/shell.cpp:2918
 #, menu
 msgid "Choose"
 msgstr "Alege"
 
-#: port/app/ingame.cpp:671 port/app/ingame3ds.cpp:998 port/eden/ingame.cpp:883 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1679 port/frontend/shell/shell.cpp:1720 port/frontend/shell/shell.cpp:1724 port/frontend/shell/shell.cpp:1727 port/frontend/shell/shell.cpp:1730 port/frontend/shell/shell.cpp:1741
+#: port/app/ingame.cpp:670 port/app/ingame3ds.cpp:998 port/eden/ingame.cpp:883 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:523 port/frontend/shell/shell.cpp:1706 port/frontend/shell/shell.cpp:1748 port/frontend/shell/shell.cpp:1752 port/frontend/shell/shell.cpp:1755 port/frontend/shell/shell.cpp:1758 port/frontend/shell/shell.cpp:1769
 #, menu
 msgid "Change"
 msgstr "Schimbă"
 
-#: port/app/ingame.cpp:671 port/app/ingame3ds.cpp:998 port/eden/ingame.cpp:883
+#: port/app/ingame.cpp:670 port/app/ingame3ds.cpp:998 port/eden/ingame.cpp:883
 #, menu
 msgid "Back to the game"
 msgstr "Înapoi la joc"
 
-#: port/app/ingame.cpp:671 port/app/ingame3ds.cpp:998 port/eden/ingame.cpp:883 port/frontend/shell/installs.cpp:330 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1680 port/frontend/shell/shell.cpp:1689 port/frontend/shell/shell.cpp:1712 port/frontend/shell/shell.cpp:1719 port/frontend/shell/shell.cpp:1720 port/frontend/shell/shell.cpp:1724 port/frontend/shell/shell.cpp:1728 port/frontend/shell/shell.cpp:1730 port/frontend/shell/shell.cpp:1734 port/frontend/shell/shell.cpp:1738 port/frontend/shell/shell.cpp:1742 port/frontend/shell/timeline.cpp:484
+#: port/app/ingame.cpp:670 port/app/ingame3ds.cpp:998 port/eden/ingame.cpp:883 port/frontend/shell/firststart.cpp:266 port/frontend/shell/installs.cpp:330 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1716 port/frontend/shell/shell.cpp:1740 port/frontend/shell/shell.cpp:1747 port/frontend/shell/shell.cpp:1748 port/frontend/shell/shell.cpp:1752 port/frontend/shell/shell.cpp:1756 port/frontend/shell/shell.cpp:1758 port/frontend/shell/shell.cpp:1762 port/frontend/shell/shell.cpp:1766 port/frontend/shell/shell.cpp:1770 port/frontend/shell/timeline.cpp:496
 #, menu
 msgid "Back"
 msgstr "Înapoi"
 
 #. the in-game menu's top: the Wii U account the game runs on ({0}: its name)
-#: port/app/ingame.cpp:715
+#: port/app/ingame.cpp:714
 #, menu
 msgid "{0}'s saves"
 msgstr "Salvările lui {0}"
@@ -1828,7 +1830,8 @@ msgstr "Ecrane și chenar"
 msgid "Screen layout, main screen and border."
 msgstr "Aranjarea ecranelor, care e cel principal și chenarul."
 
-#: port/app/ingame3ds.cpp:539 port/frontend/shell/pages.cpp:784 port/frontend/shell/porpoise_rows.cpp:704 port/frontend/shell/settings.cpp:1454
+#. the first start's steps, as the bar at the top right names them
+#: port/app/ingame3ds.cpp:539 port/frontend/shell/firststart.cpp:27 port/frontend/shell/pages.cpp:784 port/frontend/shell/porpoise_rows.cpp:704 port/frontend/shell/settings.cpp:1454
 #, menu
 msgid "Layout"
 msgstr "Aranjare"
@@ -2123,7 +2126,7 @@ msgstr "Activate: {0} din {1}"
 msgid "Achievements"
 msgstr "Realizări"
 
-#: port/app/ingame3ds.cpp:662 port/frontend/shell/installs.cpp:376 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:940 port/frontend/shell/pages.cpp:1337 port/frontend/shell/shell.cpp:2919
+#: port/app/ingame3ds.cpp:662 port/frontend/shell/installs.cpp:376 port/frontend/shell/pages.cpp:325 port/frontend/shell/pages.cpp:940 port/frontend/shell/pages.cpp:1337 port/frontend/shell/shell.cpp:2947
 #, menu
 msgid "{0} of {1}"
 msgstr "{0} din {1}"
@@ -2222,7 +2225,7 @@ msgstr "Capac"
 msgid "Closed"
 msgstr "Închis"
 
-#: port/app/ingame3ds.cpp:700 port/frontend/shell/shell.cpp:1672 port/frontend/shell/shell.cpp:1706 port/frontend/shell/shell.cpp:1717 port/frontend/shell/shell.cpp:1723 port/frontend/shell/shell.cpp:1738
+#: port/app/ingame3ds.cpp:700 port/frontend/shell/shell.cpp:1699 port/frontend/shell/shell.cpp:1734 port/frontend/shell/shell.cpp:1745 port/frontend/shell/shell.cpp:1751 port/frontend/shell/shell.cpp:1766
 #, menu
 msgid "Open"
 msgstr "Deschide"
@@ -2472,7 +2475,7 @@ msgstr "E deja instalat aici."
 msgid "An install is already running."
 msgstr "O instalare rulează deja."
 
-#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2824 port/frontend/shell/shell.cpp:2853 port/frontend/shell/shell.cpp:2873 port/frontend/shell/shell.cpp:2892
+#: port/app/keyboard_menu.h:61 port/frontend/shell/shell.cpp:2852 port/frontend/shell/shell.cpp:2881 port/frontend/shell/shell.cpp:2901 port/frontend/shell/shell.cpp:2920
 #, menu
 msgid "OK"
 msgstr "OK"
@@ -2488,37 +2491,37 @@ msgstr "Jocul cere"
 msgid "Some text"
 msgstr "Un text"
 
-#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2742
+#: port/app/keyboard_menu.h:96 port/frontend/shell/shell.cpp:2770
 #, menu
 msgid "L1 R1: {0}"
 msgstr "L1 R1: {0}"
 
 #. the in-game keyboard's keys
-#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2765
+#: port/app/keyboard_menu.h:153 port/frontend/shell/shell.cpp:2793
 #, menu
 msgid "Shift: on"
 msgstr "Shift: activat"
 
 #. the in-game keyboard's keys
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1661 port/frontend/shell/shell.cpp:1664 port/frontend/shell/shell.cpp:2765
+#: port/app/keyboard_menu.h:153 port/app/keyboard_menu.h:173 port/frontend/shell/shell.cpp:1688 port/frontend/shell/shell.cpp:1691 port/frontend/shell/shell.cpp:2793
 #, menu
 msgid "Shift"
 msgstr "Shift"
 
-#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2765
+#: port/app/keyboard_menu.h:155 port/frontend/shell/shell.cpp:2793
 #, menu
 msgid "Space"
 msgstr "Spațiu"
 
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/porpoise_rows.cpp:1568 port/frontend/shell/porpoise_rows.cpp:2070 port/frontend/shell/shell.cpp:1661 port/frontend/shell/shell.cpp:1664 port/frontend/shell/shell.cpp:2765
+#: port/app/keyboard_menu.h:157 port/app/keyboard_menu.h:173 port/frontend/shell/porpoise_rows.cpp:1568 port/frontend/shell/porpoise_rows.cpp:2070 port/frontend/shell/shell.cpp:1688 port/frontend/shell/shell.cpp:1691 port/frontend/shell/shell.cpp:2793
 #, menu
 msgid "Delete"
 msgstr "Șterge"
 
 #. the in-game keyboard's hints: Cross types the focused key
-#: port/app/keyboard_menu.h:173 port/frontend/shell/shares.cpp:300 port/frontend/shell/shell.cpp:1661 port/frontend/shell/shell.cpp:1664
+#: port/app/keyboard_menu.h:173 port/frontend/shell/shares.cpp:300 port/frontend/shell/shell.cpp:1688 port/frontend/shell/shell.cpp:1691
 #, menu
 msgid "Type"
 msgstr "Scrie"
@@ -2845,7 +2848,7 @@ msgid "The new packs could not replace the old ones"
 msgstr "Pachetele noi nu au putut lua locul celor vechi"
 
 #. a row that opens the remote touch screen's page: the game's second screen in a phone's browser, and its code to scan
-#: port/app/remote_menu.h:29 port/frontend/shell/settings.cpp:1624 port/frontend/shell/settings.cpp:1626 port/frontend/shell/settings.cpp:3436
+#: port/app/remote_menu.h:29 port/frontend/shell/settings.cpp:1624 port/frontend/shell/settings.cpp:1626 port/frontend/shell/settings.cpp:3441
 #, menu
 msgid "Remote touch screen"
 msgstr "Ecran tactil la distanță"
@@ -2861,7 +2864,7 @@ msgstr "{0} în browserul unui telefon sau al unei tablete, cu atingere: scaneaz
 msgid "A phone or tablet on the PS5's network. Sound stays on the PS5."
 msgstr "Un telefon sau o tabletă din rețeaua PS5. Sunetul rămâne pe PS5."
 
-#: port/app/remote_menu.h:108 port/frontend/shell/settings.cpp:3443
+#: port/app/remote_menu.h:108 port/frontend/shell/settings.cpp:3448
 #, menu
 msgid "Turn it off and on again once that is fixed."
 msgstr "Oprește-l și pornește-l din nou după ce problema e rezolvată."
@@ -3249,7 +3252,7 @@ msgstr "Acesta nu e un joc 3DS pe care Azahar îl poate porni."
 msgid "The game could not be loaded."
 msgstr "Jocul nu a putut fi încărcat."
 
-#: port/azahar/core.cpp:619 port/frontend/shell/shell.cpp:1114
+#: port/azahar/core.cpp:619 port/frontend/shell/shell.cpp:1141
 #, menu
 msgid "This game is encrypted. Decrypt it on your 3DS with GodMode9 first."
 msgstr "Jocul e criptat, iar Azahar rulează doar jocuri decriptate, cu sau fără chei: decriptează-l mai întâi pe 3DS-ul tău (GodMode9)."
@@ -3584,11 +3587,11 @@ msgstr "Lichii nu a găsit fișierul jocului. Unitatea pe care se află este con
 msgid "Eden could not find the game's file. Is the drive with it plugged in?"
 msgstr "Eden nu a găsit fișierul jocului. Unitatea pe care se află este conectată?"
 
-#: port/eden/launch.cpp:290 port/frontend/shell/settings.cpp:1087 port/frontend/shell/setup.cpp:325
+#: port/eden/launch.cpp:290 port/frontend/shell/settings.cpp:1087 port/frontend/shell/setup.cpp:327
 msgid "prod.keys is missing: Lichii needs your own Switch keys"
 msgstr "Lipsește prod.keys: Lichii are nevoie de propriile tale chei Switch"
 
-#: port/eden/launch.cpp:290 port/frontend/shell/settings.cpp:1104 port/frontend/shell/setup.cpp:301
+#: port/eden/launch.cpp:290 port/frontend/shell/settings.cpp:1104 port/frontend/shell/setup.cpp:303
 msgid "prod.keys is missing: Switch games need it"
 msgstr "Lipsește prod.keys: fără el, Eden nu poate citi jocuri de Switch"
 
@@ -3684,7 +3687,7 @@ msgstr[1] "{0} fișiere șterse ({1} MB)"
 msgstr[2] "{0} de fișiere șterse ({1} MB)"
 
 #. what clearing the unpacked games did; {1} is the room it made, as in 2.4 GB
-#: port/frontend/actions.cpp:201 port/frontend/shell/settings.cpp:1560 port/frontend/shell/settings.cpp:3107
+#: port/frontend/actions.cpp:201 port/frontend/shell/settings.cpp:1560 port/frontend/shell/settings.cpp:3112
 msgid "None to delete"
 msgstr "Nimic de șters"
 
@@ -3706,7 +3709,7 @@ msgid "Update"
 msgstr "Actualizare"
 
 #. an update found to install ({0}: its version, as 208)
-#: port/frontend/actions.cpp:388 port/frontend/actions.cpp:467 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:985 port/main_ps5.cpp:582
+#: port/frontend/actions.cpp:388 port/frontend/actions.cpp:467 port/frontend/shell/hub.cpp:209 port/frontend/shell/installs.cpp:42 port/frontend/shell/shell.cpp:1012 port/main_ps5.cpp:582
 msgid "DLC"
 msgstr "DLC"
 
@@ -3722,14 +3725,290 @@ msgstr "Demo"
 msgid "Title"
 msgstr "Titlu"
 
+#. the first start's steps, as the bar at the top right names them
+#: port/frontend/shell/firststart.cpp:27 port/frontend/shell/settings.cpp:209 port/frontend/shell/settings.cpp:621 port/frontend/shell/settings.cpp:944 port/frontend/shell/settings.cpp:984 port/frontend/shell/settings.cpp:1042 port/frontend/shell/settings.cpp:2132 port/frontend/shell/setup.cpp:642
+msgid "Language"
+msgstr "Limbă"
+
+#. the first start's steps, as the bar at the top right names them
+#: port/frontend/shell/firststart.cpp:27
+msgid "Covers"
+msgstr ""
+
+#. the first start's steps, as the bar at the top right names them
+#: port/frontend/shell/firststart.cpp:27
+msgid "Reports"
+msgstr ""
+
+#. the first start's steps, as the bar at the top right names them
+#: port/frontend/shell/firststart.cpp:27
+msgid "Ready"
+msgstr ""
+
+#. after EmulationStation is picked as the launcher on the first start or in Settings
+#: port/frontend/shell/firststart.cpp:117 port/frontend/shell/orbit.cpp:544 port/frontend/shell/settings.cpp:2233
+msgid "EmulationStation opens next time Playtendoh starts. Hold L1 while it starts to use this launcher instead."
+msgstr "EmulationStation se deschide la următoarea pornire a Playtendoh. Ține apăsat L1 la pornire pentru acest lansator."
+
+#: port/frontend/shell/firststart.cpp:121 port/frontend/shell/orbit.cpp:549 port/frontend/shell/settings.cpp:2237
+msgid "Downloading EmulationStation. It opens next time Playtendoh starts."
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:260 port/frontend/shell/firststart.cpp:262 port/frontend/shell/shell.cpp:1699 port/frontend/shell/shell.cpp:1736
+msgid "Move"
+msgstr "Mișcare"
+
+#. the first start's setup: Cross on its last step
+#: port/frontend/shell/firststart.cpp:264
+msgid "Start playing"
+msgstr ""
+
+#. the first start's first question
+#: port/frontend/shell/firststart.cpp:364
+msgid "Which language?"
+msgstr ""
+
+#. the first start's first question
+#: port/frontend/shell/firststart.cpp:364
+msgid "Playtendoh speaks your PS5's language. Pick another if you like."
+msgstr ""
+
+#. the first start's languages: a tag on the PS5's own language
+#: port/frontend/shell/firststart.cpp:384 port/frontend/shell/pages.cpp:1320
+msgid "PS5"
+msgstr "PS5"
+
+#: port/frontend/shell/firststart.cpp:401
+msgid "Change it later in Settings > Language."
+msgstr ""
+
+#. the first start's question: the Library's layouts (Classic, Orbit) or EmulationStation
+#: port/frontend/shell/firststart.cpp:407
+msgid "How do you want to browse your games?"
+msgstr ""
+
+#. the first start's question: the Library's layouts (Classic, Orbit) or EmulationStation
+#: port/frontend/shell/firststart.cpp:407
+msgid "Your games, saves and settings are the same in each."
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:414 port/frontend/shell/orbit.cpp:717 port/frontend/shell/porpoise_rows.cpp:311 port/frontend/shell/settings.cpp:1453
+msgid "Classic"
+msgstr "Clasic"
+
+#: port/frontend/shell/firststart.cpp:414 port/frontend/shell/orbit.cpp:717
+msgid "One console at a time. L1 and R1 switch consoles. Recently played on top, all games below."
+msgstr "O consolă pe rând, din carusel; L1 și R1 îl rotesc. Jucate recent sus, toate jocurile într-o listă dedesubt."
+
+#: port/frontend/shell/firststart.cpp:415 port/frontend/shell/orbit.cpp:719 port/frontend/shell/settings.cpp:1453
+msgid "Orbit"
+msgstr "Orbit"
+
+#: port/frontend/shell/firststart.cpp:415 port/frontend/shell/orbit.cpp:720
+msgid "Turn the dial to pick a console. The centre shows what you played lately on any console."
+msgstr "Rotește discul ca să alegi o consolă; în mijloc e ce ai jucat ultima dată, pe fiecare consolă. Jocul selectat umple fundalul."
+
+#. the first start's layouts: EmulationStation, downloaded when the setup is done
+#. the third launcher of the first start's question, where the app has ES-DE
+#. What's new in 6.0: EmulationStation (ES-DE) as a launcher, downloaded when chosen
+#: port/frontend/shell/firststart.cpp:417 port/frontend/shell/orbit.cpp:723 port/frontend/shell/settings.cpp:1453 port/frontend/shell/settings.cpp:1474 port/frontend/shell/whatsnew.cpp:38
+msgid "EmulationStation"
+msgstr "EmulationStation"
+
+#. the first start's layouts: EmulationStation, downloaded when the setup is done
+#: port/frontend/shell/firststart.cpp:417
+msgid "ES-DE's menus and themes. Downloaded when you finish (about 850 MB); games still play here."
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:444
+msgid "Change it later in Settings > Launcher > Layout."
+msgstr ""
+
+#. the first start's question: covers flat, or as 3D boxes with a spine
+#: port/frontend/shell/firststart.cpp:450
+msgid "How should covers look?"
+msgstr ""
+
+#. the first start's question: covers flat, or as 3D boxes with a spine
+#: port/frontend/shell/firststart.cpp:450
+msgid "As flat pictures, or as boxes on a shelf."
+msgstr ""
+
+#. the first start's covers question: the two choices
+#: port/frontend/shell/firststart.cpp:491
+msgid "Flat"
+msgstr ""
+
+#. the first start's covers question: the two choices
+#: port/frontend/shell/firststart.cpp:491
+msgid "3D boxes"
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:493
+msgid "Each game's cover as a picture. Shows the most games at once."
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:494
+msgid "Each game as its box, with the spine. Covers come from GameTDB."
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:498
+msgid "Change it later in Settings > Launcher > 3D box art."
+msgstr ""
+
+#. the first start's question: which of the PS5's buttons is a Nintendo controller's A
+#: port/frontend/shell/firststart.cpp:504
+msgid "Which button is A?"
+msgstr ""
+
+#. the first start's question: which of the PS5's buttons is a Nintendo controller's A
+#: port/frontend/shell/firststart.cpp:504
+msgid "For every game. In Playtendoh's menus, Cross always chooses."
+msgstr ""
+
+#. the first start's buttons question: the two choices
+#: port/frontend/shell/firststart.cpp:538
+msgid "Circle is A"
+msgstr ""
+
+#. the first start's buttons question: the two choices
+#: port/frontend/shell/firststart.cpp:538
+msgid "Cross is A"
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:540
+msgid "Where A is on a Nintendo controller: on the right."
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:540
+msgid "Where most PlayStation games confirm: at the bottom."
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:544
+msgid "Change it later in each system's Controls."
+msgstr ""
+
+#. the first start's question: whether the app may send reports of how games run to the project
+#: port/frontend/shell/firststart.cpp:549 port/frontend/shell/reports.cpp:75
+msgid "Help Playtendoh get better?"
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:550
+msgid "When a game ends, Playtendoh can send a short report on how it ran. Nothing is sent while you play."
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:561 port/frontend/shell/reports.cpp:131
+msgid "Yes, send reports"
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:561 port/frontend/shell/reports.cpp:131
+msgid "Not now"
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:563
+msgid "The game, how it ran and its settings, to fix problems and grow the list of working games."
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:564
+msgid "Nothing is sent. You can turn it on any time."
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:579
+msgid "What a report never has"
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:581
+msgid "Your PSN name or ID, your console's serial or addresses, your accounts, folders, saves or game list."
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:582
+msgid "Scan the code for every field a report has."
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:584
+msgid "Change it later in Settings > Accounts and updates > Send reports."
+msgstr ""
+
+#. the first start's last step: a summary, nothing to answer
+#: port/frontend/shell/firststart.cpp:591
+msgid "You're ready to play"
+msgstr ""
+
+#. the first start's last step: a summary, nothing to answer
+#: port/frontend/shell/firststart.cpp:591
+msgid "Almost ready"
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:592
+msgid "Everything Playtendoh needs is here."
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:593
+msgid "One thing to sort out before some games will play."
+msgid_plural "{0} things to sort out before some games will play."
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#: port/frontend/shell/firststart.cpp:607
+msgid "Your games"
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:613 port/frontend/shell/timeline.cpp:403
+msgid "No games yet"
+msgstr "Încă nu sunt jocuri"
+
+#: port/frontend/shell/firststart.cpp:615
+msgid "Copy your games to the PS5 or a USB drive, each console's in its own folder. They show up the next time you open its library. Settings > Game files says where each one goes."
+msgstr ""
+
+#. how many games the Library has
+#: port/frontend/shell/firststart.cpp:629 port/frontend/shell/library.cpp:796 port/frontend/shell/orbit.cpp:321 port/frontend/shell/pages.cpp:1397 port/frontend/shell/shell.cpp:1643 port/frontend/shell/timeline.cpp:271 port/frontend/shell/timeline.cpp:403
+msgid "{0} game"
+msgid_plural "{0} games"
+msgstr[0] "{0} joc"
+msgstr[1] "{0} jocuri"
+msgstr[2] "{0} de jocuri"
+
+#: port/frontend/shell/firststart.cpp:635
+msgid "{0} game found. Add more any time: each console has its own folder."
+msgid_plural "{0} games found. Add more any time: each console has its own folder."
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#: port/frontend/shell/firststart.cpp:641
+msgid "Checked"
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:641
+msgid "Before you play"
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:649
+msgid "Storage and game speed are fine"
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:675
+msgid "EmulationStation downloads when you start (about 850 MB). It opens next time Playtendoh starts."
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:689
+msgid "Scan it for how, on your phone."
+msgstr ""
+
+#: port/frontend/shell/firststart.cpp:695
+msgid "Settings > Setup check has the details any time."
+msgstr ""
+
 #. a chip: the game's update, by its version ("Update v208")
 #. an update found to install ({0}: its version, as 208)
 #. the update a Wii U game has installed ({0}: its version, as 208)
-#: port/frontend/shell/hub.cpp:207 port/frontend/shell/hub.cpp:216 port/frontend/shell/installs.cpp:42 port/frontend/shell/library.cpp:767 port/frontend/shell/library.cpp:769
+#: port/frontend/shell/hub.cpp:207 port/frontend/shell/hub.cpp:216 port/frontend/shell/installs.cpp:42 port/frontend/shell/library.cpp:769 port/frontend/shell/library.cpp:771
 msgid "Update v{0}"
 msgstr "Actualizarea v{0}"
 
-#: port/frontend/shell/hub.cpp:218 port/frontend/shell/library.cpp:771
+#: port/frontend/shell/hub.cpp:218 port/frontend/shell/library.cpp:773
 msgid "{0} DLC"
 msgid_plural "{0} DLC"
 msgstr[0] "{0} DLC"
@@ -3740,11 +4019,11 @@ msgstr[2] "{0} de DLC-uri"
 msgid "Experimental"
 msgstr "Experimental"
 
-#: port/frontend/shell/hub.cpp:229 port/frontend/shell/shell.cpp:2068
+#: port/frontend/shell/hub.cpp:229 port/frontend/shell/shell.cpp:2096
 msgid "Favourite"
 msgstr "Favorit"
 
-#: port/frontend/shell/hub.cpp:236 port/frontend/shell/library.cpp:779 port/frontend/shell/orbit.cpp:358 port/frontend/shell/orbit.cpp:447 port/frontend/shell/shell.cpp:1708 port/frontend/shell/shell.cpp:1709 port/frontend/shell/shell.cpp:2032 port/frontend/shell/timeline.cpp:448
+#: port/frontend/shell/hub.cpp:236 port/frontend/shell/library.cpp:781 port/frontend/shell/orbit.cpp:358 port/frontend/shell/orbit.cpp:453 port/frontend/shell/shell.cpp:1736 port/frontend/shell/shell.cpp:1737 port/frontend/shell/shell.cpp:2060 port/frontend/shell/timeline.cpp:460
 msgid "Play"
 msgstr "Joacă"
 
@@ -3759,7 +4038,7 @@ msgstr[2] "Pachete grafice · {0} active"
 msgid "Game settings · custom"
 msgstr "Setările jocului · proprii"
 
-#: port/frontend/shell/hub.cpp:247 port/frontend/shell/shell.cpp:2051
+#: port/frontend/shell/hub.cpp:247 port/frontend/shell/shell.cpp:2079
 msgid "Game settings"
 msgstr "Setările jocului"
 
@@ -3866,7 +4145,7 @@ msgstr[2] "{0} de instalate"
 msgid "Everything found is installed already"
 msgstr "Tot ce s-a găsit e deja instalat"
 
-#: port/frontend/shell/installs.cpp:319 port/frontend/shell/shell.cpp:2919
+#: port/frontend/shell/installs.cpp:319 port/frontend/shell/shell.cpp:2947
 msgid "Stopping…"
 msgstr "Se oprește…"
 
@@ -3874,7 +4153,7 @@ msgstr "Se oprește…"
 msgid "Stop"
 msgstr "Oprește"
 
-#: port/frontend/shell/installs.cpp:325 port/frontend/shell/pages.cpp:1294 port/frontend/shell/shell.cpp:1738
+#: port/frontend/shell/installs.cpp:325 port/frontend/shell/pages.cpp:1294 port/frontend/shell/shell.cpp:1766
 msgid "Install"
 msgstr "Instalare"
 
@@ -3883,7 +4162,7 @@ msgstr "Instalare"
 msgid "Install every new one ({0})"
 msgstr "Instalează toate noutățile ({0})"
 
-#: port/frontend/shell/installs.cpp:329 port/frontend/shell/library.cpp:198 port/frontend/shell/pages.cpp:1300 port/frontend/shell/setup.cpp:188 port/frontend/shell/setup.cpp:213
+#: port/frontend/shell/installs.cpp:329 port/frontend/shell/library.cpp:198 port/frontend/shell/pages.cpp:1300 port/frontend/shell/setup.cpp:188 port/frontend/shell/setup.cpp:214
 msgid "Choose a folder"
 msgstr "Alege un folder"
 
@@ -3911,11 +4190,11 @@ msgstr[2] "{0} de noi de instalat."
 msgid "Everything found is installed."
 msgstr "Tot ce s-a găsit e instalat."
 
-#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:234 port/frontend/shell/shares.cpp:535 port/frontend/shell/shell.cpp:2878
+#: port/frontend/shell/installs.cpp:361 port/frontend/shell/settings.cpp:234 port/frontend/shell/shares.cpp:535 port/frontend/shell/shell.cpp:2906
 msgid "Game files"
 msgstr "Fișiere de joc"
 
-#: port/frontend/shell/installs.cpp:362 port/frontend/shell/settings.cpp:1132 port/frontend/shell/shell.cpp:2059
+#: port/frontend/shell/installs.cpp:362 port/frontend/shell/settings.cpp:1132 port/frontend/shell/shell.cpp:2087
 msgid "Updates and DLC"
 msgstr "Actualizări și DLC"
 
@@ -4019,7 +4298,7 @@ msgstr "Anul lansării"
 msgid "How it runs"
 msgstr "Cum rulează"
 
-#: port/frontend/shell/library.cpp:157 port/frontend/shell/setup.cpp:436
+#: port/frontend/shell/library.cpp:157 port/frontend/shell/setup.cpp:438
 msgid "Setup"
 msgstr "Configurare"
 
@@ -4035,7 +4314,7 @@ msgstr "Verificarea configurării"
 msgid "Diagnostics"
 msgstr "Diagnosticare"
 
-#: port/frontend/shell/library.cpp:167 port/frontend/shell/shell.cpp:1209 port/frontend/shell/shell.cpp:2909
+#: port/frontend/shell/library.cpp:167 port/frontend/shell/shell.cpp:1236 port/frontend/shell/shell.cpp:2937
 msgid "Getting ready"
 msgstr "Pornește Cemu"
 
@@ -4043,7 +4322,7 @@ msgstr "Pornește Cemu"
 msgid "Loading settings, graphic packs and controllers, then looking for your games."
 msgstr "Se încarcă setările, pachetele grafice și controllerele lui, apoi îți caută jocurile."
 
-#: port/frontend/shell/library.cpp:176 port/frontend/shell/library.cpp:898
+#: port/frontend/shell/library.cpp:176 port/frontend/shell/library.cpp:900
 msgid "Looking for games…"
 msgstr "Se caută jocuri…"
 
@@ -4061,7 +4340,7 @@ msgstr "Aici vor apărea jocurile tale"
 
 #. {0} is the games folder
 #. {1} is Eden's game files folder, which has keys/ and firmware/ in it
-#: port/frontend/shell/library.cpp:184 port/frontend/shell/library.cpp:193 port/frontend/shell/setup.cpp:196
+#: port/frontend/shell/library.cpp:184 port/frontend/shell/library.cpp:193 port/frontend/shell/setup.cpp:197
 msgid "Put this system's games in {0}, or choose any folder, such as one on a USB drive. Subfolders are searched too."
 msgstr "Pune jocurile acestui sistem în {0} sau alege orice folder pe care PS5 îl poate citi, de exemplu pe o unitate USB. Se caută și în subfoldere, până la patru niveluri."
 
@@ -4078,11 +4357,11 @@ msgstr "Pune-ți jocurile DS (.nds, separat sau în arhive .zip, .7z ori .rar) �
 msgid "Put Switch 2 game folders in {0}. Each needs exefs/main and romfs/ (or base/exefs/main and romfs/). Keep updates in the game's folder."
 msgstr "Pune dosarele jocurilor Switch 2 în {0}; fiecare are nevoie de exefs/main și romfs/ (sau base/exefs/main și romfs/). Păstrează actualizările în dosarul jocului."
 
-#: port/frontend/shell/library.cpp:190 port/frontend/shell/setup.cpp:328 port/main_ps5.cpp:584
+#: port/frontend/shell/library.cpp:190 port/frontend/shell/setup.cpp:330 port/main_ps5.cpp:584
 msgid "Put your own prod.keys in {0}/keys. Playtendoh and Lichii do not include keys."
 msgstr "Pune propriul tău prod.keys în {0}/keys. Playtendoh și Lichii nu includ chei."
 
-#: port/frontend/shell/library.cpp:191 port/frontend/shell/setup.cpp:336 port/main_ps5.cpp:586
+#: port/frontend/shell/library.cpp:191 port/frontend/shell/setup.cpp:338 port/main_ps5.cpp:586
 msgid "Put your own Switch firmware files in {0}/firmware. Playtendoh and Lichii do not include firmware."
 msgstr "Pune propriile tale fișiere de firmware Switch în {0}/firmware. Playtendoh și Lichii nu vin cu firmware."
 
@@ -4094,7 +4373,7 @@ msgstr "Pune jocurile tale de Switch (.nsp sau .xci, separat sau fiecare în fol
 msgid "Put your Wii U games (.wua, .wud, .wux, folders with code, content and meta, or in .zip, .7z or .rar) in {0}, or choose any folder, such as one on a USB drive."
 msgstr "Pune jocurile tale Wii U (.wua, .wud, .wux sau foldere cu code, content și meta, separat sau în arhive .zip, .7z ori .rar) în {0} sau alege orice folder pe care PS5 îl poate citi, de exemplu pe o unitate USB."
 
-#: port/frontend/shell/library.cpp:200 port/frontend/shell/library.cpp:230 port/frontend/shell/library.cpp:918 port/frontend/shell/orbit.cpp:390
+#: port/frontend/shell/library.cpp:200 port/frontend/shell/library.cpp:230 port/frontend/shell/library.cpp:920 port/frontend/shell/orbit.cpp:390
 msgid "Play from your 3DS"
 msgstr "Joacă de pe 3DS-ul tău"
 
@@ -4110,17 +4389,17 @@ msgstr "Surprinde-mă"
 
 #. the game menu: named groups of games the player makes (Couch co-op, say), shown on the Library's filter row
 #. What's new in 6.0: collections, groups of games the player makes
-#: port/frontend/shell/library.cpp:424 port/frontend/shell/shell.cpp:2070 port/frontend/shell/shell.cpp:2090 port/frontend/shell/shell.cpp:2116 port/frontend/shell/whatsnew.cpp:40
+#: port/frontend/shell/library.cpp:424 port/frontend/shell/shell.cpp:2098 port/frontend/shell/shell.cpp:2118 port/frontend/shell/shell.cpp:2144 port/frontend/shell/whatsnew.cpp:40
 msgid "Collections"
 msgstr "Colecții"
 
 #. the launcher's tabs
-#: port/frontend/shell/library.cpp:425 port/frontend/shell/library.cpp:789 port/frontend/shell/shell.cpp:1534 port/frontend/shell/shell.cpp:2090
+#: port/frontend/shell/library.cpp:425 port/frontend/shell/library.cpp:791 port/frontend/shell/shell.cpp:1561 port/frontend/shell/shell.cpp:2118
 msgctxt "tab"
 msgid "Library"
 msgstr "Bibliotecă"
 
-#: port/frontend/shell/library.cpp:425 port/frontend/shell/orbit.cpp:449 port/frontend/shell/shell.cpp:1704
+#: port/frontend/shell/library.cpp:425 port/frontend/shell/orbit.cpp:455 port/frontend/shell/shell.cpp:1732
 msgid "Sort"
 msgstr "Sortează"
 
@@ -4139,88 +4418,80 @@ msgstr "Săptămâna aceasta"
 msgid "Earlier"
 msgstr "Mai devreme"
 
-#: port/frontend/shell/library.cpp:783 port/frontend/shell/orbit.cpp:359 port/frontend/shell/orbit.cpp:450 port/frontend/shell/shell.cpp:1708 port/frontend/shell/shell.cpp:1709 port/frontend/shell/shell.cpp:1711
+#: port/frontend/shell/library.cpp:785 port/frontend/shell/orbit.cpp:359 port/frontend/shell/orbit.cpp:456 port/frontend/shell/shell.cpp:1736 port/frontend/shell/shell.cpp:1737 port/frontend/shell/shell.cpp:1739
 msgid "Options"
 msgstr "Opțiuni"
 
-#. how many games the Library has
-#: port/frontend/shell/library.cpp:794 port/frontend/shell/orbit.cpp:321 port/frontend/shell/pages.cpp:1397 port/frontend/shell/shell.cpp:1616 port/frontend/shell/timeline.cpp:271 port/frontend/shell/timeline.cpp:395
-msgid "{0} game"
-msgid_plural "{0} games"
-msgstr[0] "{0} joc"
-msgstr[1] "{0} jocuri"
-msgstr[2] "{0} de jocuri"
-
-#: port/frontend/shell/library.cpp:796
+#: port/frontend/shell/library.cpp:798
 msgid "Looking for new games…"
 msgstr "Se caută jocuri noi…"
 
 #. the Library's list is the one found on the network share last time (#75); Look for games now is in Settings > Game files
-#: port/frontend/shell/library.cpp:799
+#: port/frontend/shell/library.cpp:801
 msgid "From the last search"
 msgstr "Cum au fost găsite ultima dată"
 
-#: port/frontend/shell/library.cpp:802 port/frontend/shell/shell.cpp:1704 port/frontend/shell/shell.cpp:2736
+#: port/frontend/shell/library.cpp:804 port/frontend/shell/shell.cpp:1732 port/frontend/shell/shell.cpp:2764
 msgid "Search"
 msgstr "Caută"
 
-#: port/frontend/shell/library.cpp:802
+#: port/frontend/shell/library.cpp:804
 msgid "Search: {0}"
 msgstr "Căutare: {0}"
 
-#: port/frontend/shell/library.cpp:807
+#: port/frontend/shell/library.cpp:809
 msgid "Sort: {0}"
 msgstr "Sortare: {0}"
 
 #. the Library's filters, each with its count after it
-#: port/frontend/shell/library.cpp:832 port/frontend/shell/shell.cpp:2087
+#: port/frontend/shell/library.cpp:834 port/frontend/shell/shell.cpp:2115
 msgctxt "filter"
 msgid "All"
 msgstr "Toate"
 
 #. the Library's filters, each with its count after it
-#: port/frontend/shell/library.cpp:832
+#: port/frontend/shell/library.cpp:834
 msgid "Recently added"
 msgstr "Adăugate recent"
 
 #. the Library's filters, each with its count after it
-#: port/frontend/shell/library.cpp:832
+#: port/frontend/shell/library.cpp:834
 msgid "Favourites"
 msgstr "Favorite"
 
 #. the Library's filters, each with its count after it
-#: port/frontend/shell/library.cpp:832
+#: port/frontend/shell/library.cpp:834
 msgid "Graphic packs on"
 msgstr "Cu pachete grafice"
 
 #. the Library's filter of the games hidden from its list (the game menu's Hide from the Library)
-#: port/frontend/shell/library.cpp:834
+#: port/frontend/shell/library.cpp:836
 msgctxt "filter"
 msgid "Hidden"
 msgstr "Ascunse"
 
-#: port/frontend/shell/library.cpp:897
+#: port/frontend/shell/library.cpp:899
 msgid "Nothing matches “{0}”. Circle clears the search."
 msgstr "Nimic nu se potrivește cu „{0}”. Cercul șterge căutarea."
 
-#: port/frontend/shell/library.cpp:899
+#: port/frontend/shell/library.cpp:901
 msgid "Press Options on a game and choose Favourite to add it here."
 msgstr "OPTIONS pe un joc, apoi Favorit, îl pune aici."
 
-#: port/frontend/shell/library.cpp:900
+#: port/frontend/shell/library.cpp:902
 msgid "All shows every game."
 msgstr "Toate arată fiecare joc."
 
-#: port/frontend/shell/library.cpp:901
+#: port/frontend/shell/library.cpp:903
 msgid "No games yet. See Settings > Game files."
 msgstr "Încă nu ai jocuri. Setări > Fișiere de joc spune unde se pun."
 
-#: port/frontend/shell/library.cpp:919
+#: port/frontend/shell/library.cpp:921
 msgid "Artic Base, over your network"
 msgstr "Artic Base, prin rețeaua ta"
 
 #. Orbit's dial: which console of those it shows is at its pointer ({0} of {1})
-#: port/frontend/shell/orbit.cpp:300 port/frontend/shell/orbit.cpp:442
+#: port/frontend/shell/orbit.cpp:300 port/frontend/shell/orbit.cpp:448
 msgid "Home"
 msgstr "Acasă"
 
@@ -4229,7 +4500,7 @@ msgstr "Acasă"
 msgid "Console {0} of {1}"
 msgstr "Consola {0} din {1}"
 
-#: port/frontend/shell/orbit.cpp:301 port/frontend/shell/shell.cpp:1677
+#: port/frontend/shell/orbit.cpp:301 port/frontend/shell/shell.cpp:1704
 msgid "Continue"
 msgstr "Continuă"
 
@@ -4238,7 +4509,7 @@ msgstr "Continuă"
 msgid "Recently played on every console"
 msgstr "Ultimele jocuri jucate, pe fiecare consolă"
 
-#: port/frontend/shell/orbit.cpp:323 port/frontend/shell/shell.cpp:995
+#: port/frontend/shell/orbit.cpp:323 port/frontend/shell/shell.cpp:1022
 msgid "{0} h played"
 msgid_plural "{0} h played"
 msgstr[0] "{0} oră jucată"
@@ -4246,7 +4517,7 @@ msgstr[1] "{0} ore jucate"
 msgstr[2] "{0} de ore jucate"
 
 #. a game's chip in Orbit: {0} is when, as "yesterday" or "3 days ago"
-#: port/frontend/shell/orbit.cpp:351 port/frontend/shell/timeline.cpp:444
+#: port/frontend/shell/orbit.cpp:351 port/frontend/shell/timeline.cpp:456
 msgid "Last played {0}"
 msgstr "Jucat ultima dată: {0}"
 
@@ -4256,99 +4527,68 @@ msgid "The games you play show up here."
 msgstr "Jocurile pe care le joci apar aici."
 
 #. Orbit's hints: L1 and R1 turn its dial
-#: port/frontend/shell/orbit.cpp:441
+#: port/frontend/shell/orbit.cpp:447
 msgid "Turn the dial"
 msgstr "Rotește discul"
 
 #. the view of every console's games on one shelf, opened with the touchpad
-#: port/frontend/shell/orbit.cpp:452 port/frontend/shell/shell.cpp:1656 port/frontend/shell/timeline.cpp:264
+#: port/frontend/shell/orbit.cpp:458 port/frontend/shell/shell.cpp:1683 port/frontend/shell/timeline.cpp:264
 msgid "Timeline"
 msgstr "Cronologie"
 
-#. after EmulationStation is picked as the launcher on the first start or in Settings
-#: port/frontend/shell/orbit.cpp:537 port/frontend/shell/settings.cpp:2231
-msgid "EmulationStation opens next time Playtendoh starts. Hold L1 while it starts to use this launcher instead."
-msgstr "EmulationStation se deschide la următoarea pornire a Playtendoh. Ține apăsat L1 la pornire pentru acest lansator."
-
-#: port/frontend/shell/orbit.cpp:542 port/frontend/shell/settings.cpp:2235
-msgid "Downloading EmulationStation. It opens next time Playtendoh starts."
-msgstr ""
-
-#: port/frontend/shell/orbit.cpp:695 port/frontend/shell/reports.cpp:73 port/frontend/shell/settings.cpp:1532 port/frontend/shell/welcome.cpp:222
+#: port/frontend/shell/orbit.cpp:702 port/frontend/shell/reports.cpp:73 port/frontend/shell/settings.cpp:1532
 msgid "Make it yours"
 msgstr "Fă-l al tău"
 
 #. the first start's question: the two layouts of the Library, Classic and Orbit
-#: port/frontend/shell/orbit.cpp:697
+#: port/frontend/shell/orbit.cpp:704
 msgid "How should your games be laid out?"
 msgstr "Cum să fie aranjate jocurile tale?"
 
-#: port/frontend/shell/orbit.cpp:699
+#: port/frontend/shell/orbit.cpp:706
 msgid "You can change it any time in Settings > Launcher > Layout. Your games, settings and saves stay the same."
 msgstr "Alege acum. Poți schimba oricând din Setări > Lansator > Aranjare, iar jocurile, setările și salvările tale rămân cum sunt."
 
-#: port/frontend/shell/orbit.cpp:710 port/frontend/shell/porpoise_rows.cpp:311 port/frontend/shell/settings.cpp:1453
-msgid "Classic"
-msgstr "Clasic"
-
-#: port/frontend/shell/orbit.cpp:710
-msgid "One console at a time. L1 and R1 switch consoles. Recently played on top, all games below."
-msgstr "O consolă pe rând, din carusel; L1 și R1 îl rotesc. Jucate recent sus, toate jocurile într-o listă dedesubt."
-
-#: port/frontend/shell/orbit.cpp:711
+#: port/frontend/shell/orbit.cpp:718
 msgid "Good for big libraries on a few consoles"
 msgstr "Bun pentru biblioteci mari pe câteva console"
 
-#: port/frontend/shell/orbit.cpp:712 port/frontend/shell/settings.cpp:1453
-msgid "Orbit"
-msgstr "Orbit"
-
-#: port/frontend/shell/orbit.cpp:712
+#: port/frontend/shell/orbit.cpp:719
 msgid "New"
 msgstr "Nou în 6.0"
 
-#: port/frontend/shell/orbit.cpp:713
-msgid "Turn the dial to pick a console. The centre shows what you played lately on any console."
-msgstr "Rotește discul ca să alegi o consolă; în mijloc e ce ai jucat ultima dată, pe fiecare consolă. Jocul selectat umple fundalul."
-
-#: port/frontend/shell/orbit.cpp:714
+#: port/frontend/shell/orbit.cpp:721
 msgid "Good for playing across many consoles"
 msgstr "Bun pentru jocul pe multe console"
 
-#. the third launcher of the first start's question, where the app has ES-DE
-#. What's new in 6.0: EmulationStation (ES-DE) as a launcher, downloaded when chosen
-#: port/frontend/shell/orbit.cpp:716 port/frontend/shell/settings.cpp:1453 port/frontend/shell/settings.cpp:1474 port/frontend/shell/whatsnew.cpp:38
-msgid "EmulationStation"
-msgstr "EmulationStation"
-
-#: port/frontend/shell/orbit.cpp:717
+#: port/frontend/shell/orbit.cpp:724
 msgid "ES-DE's menus and themes for the same games. Games still play here with their settings, saves and in-game menu."
 msgstr "Meniurile și temele ES-DE peste aceleași jocuri, fiecare consolă ca sistem propriu. Jocurile rulează aici, cu setările, salvările și meniul lor din joc."
 
-#: port/frontend/shell/orbit.cpp:718
+#: port/frontend/shell/orbit.cpp:725
 msgid "Good if you know ES-DE from other devices"
 msgstr "Bun dacă știi ES-DE de pe alte dispozitive"
 
 #. the button of the first start's question: {0} is the layout in focus, Classic or Orbit
-#: port/frontend/shell/orbit.cpp:757
+#: port/frontend/shell/orbit.cpp:764
 msgid "Use {0}"
 msgstr "Folosește {0}"
 
 #. the first start's layout question: Triangle turns the covers flat or into 3D boxes
-#: port/frontend/shell/orbit.cpp:763
+#: port/frontend/shell/orbit.cpp:770
 msgid "Box art: 3D"
 msgstr "Coperți: 3D"
 
 #. the first start's layout question: Triangle turns the covers flat or into 3D boxes
-#: port/frontend/shell/orbit.cpp:763
+#: port/frontend/shell/orbit.cpp:770
 msgid "Box art: flat"
 msgstr "Coperți: plate"
 
-#: port/frontend/shell/orbit.cpp:774
+#: port/frontend/shell/orbit.cpp:781
 msgid "Hold L1 while Playtendoh starts to use its own launcher. Switch back any time in Settings > Launcher > Layout."
 msgstr "Ține apăsat L1 la pornirea Playtendoh pentru lansatorul său. Setări > Lansator > Aranjare te readuce oricând."
 
-#: port/frontend/shell/orbit.cpp:775
+#: port/frontend/shell/orbit.cpp:782
 msgid "Both have Timeline, every console on one shelf. Press the touchpad to open it."
 msgstr "Ambele au vizualizarea Cronologie: fiecare consolă pe un singur raft. Apasă touchpadul din oricare."
 
@@ -4376,7 +4616,7 @@ msgstr "Acest pachet nu are descriere."
 msgid "No presets"
 msgstr "Nicio presetare"
 
-#: port/frontend/shell/pages.cpp:361 port/frontend/shell/shell.cpp:1728
+#: port/frontend/shell/pages.cpp:361 port/frontend/shell/shell.cpp:1756
 msgid "Presets"
 msgstr "Presetări"
 
@@ -4385,7 +4625,7 @@ msgid "Presets · choosing one turns it on"
 msgstr "Presetări · alegerea uneia îl activează"
 
 #. what a held row says once it has done its work
-#: port/frontend/shell/pages.cpp:404 port/frontend/shell/settings.cpp:3162
+#: port/frontend/shell/pages.cpp:404 port/frontend/shell/settings.cpp:3167
 msgctxt "finished"
 msgid "Done"
 msgstr "Gata"
@@ -4673,23 +4913,23 @@ msgstr "Anulat. Ce s-a copiat a fost șters, împreună cu orice copie anterioar
 msgid "Cancelled. The previous install is unchanged."
 msgstr "Anulat. Ce era instalat înainte e cum era."
 
-#: port/frontend/shell/pages.cpp:1295 port/frontend/shell/setup.cpp:187 port/frontend/shell/setup.cpp:195
+#: port/frontend/shell/pages.cpp:1295 port/frontend/shell/setup.cpp:187 port/frontend/shell/setup.cpp:196
 msgid "{0} games"
 msgstr "Jocuri {0}"
 
-#: port/frontend/shell/pages.cpp:1296 port/frontend/shell/settings.cpp:1063 port/frontend/shell/setup.cpp:211
+#: port/frontend/shell/pages.cpp:1296 port/frontend/shell/settings.cpp:1063 port/frontend/shell/setup.cpp:212
 msgid "3DS games"
 msgstr "Jocuri 3DS"
 
-#: port/frontend/shell/pages.cpp:1297 port/frontend/shell/settings.cpp:1063 port/frontend/shell/setup.cpp:211
+#: port/frontend/shell/pages.cpp:1297 port/frontend/shell/settings.cpp:1063 port/frontend/shell/setup.cpp:212
 msgid "DS games"
 msgstr "Jocuri DS"
 
-#: port/frontend/shell/pages.cpp:1298 port/frontend/shell/settings.cpp:1063 port/frontend/shell/setup.cpp:211
+#: port/frontend/shell/pages.cpp:1298 port/frontend/shell/settings.cpp:1063 port/frontend/shell/setup.cpp:212
 msgid "Switch games"
 msgstr "Jocuri de Switch"
 
-#: port/frontend/shell/pages.cpp:1299 port/frontend/shell/settings.cpp:1063 port/frontend/shell/setup.cpp:211
+#: port/frontend/shell/pages.cpp:1299 port/frontend/shell/settings.cpp:1063 port/frontend/shell/setup.cpp:212
 msgid "Wii U games"
 msgstr "Jocuri Wii U"
 
@@ -4728,10 +4968,6 @@ msgstr "Alege folderul cu jocurile tale de Switch"
 #: port/frontend/shell/pages.cpp:1307
 msgid "Choose the folder that holds your Wii U games"
 msgstr "Alege folderul cu jocurile tale Wii U"
-
-#: port/frontend/shell/pages.cpp:1320
-msgid "PS5"
-msgstr "PS5"
 
 #: port/frontend/shell/pages.cpp:1339
 msgid "This folder is empty."
@@ -4801,7 +5037,7 @@ msgstr "Găsit în {0}"
 msgid "Missing (only .wud/.wux need it)"
 msgstr "Lipsește (doar .wud/.wux au nevoie de el)"
 
-#: port/frontend/shell/pages.cpp:1427 port/frontend/shell/shell.cpp:2620 port/frontend/shell/shell.cpp:2647
+#: port/frontend/shell/pages.cpp:1427 port/frontend/shell/shell.cpp:2648 port/frontend/shell/shell.cpp:2675
 msgid "In use"
 msgstr "În uz"
 
@@ -4842,7 +5078,7 @@ msgstr "Conectare la {0}"
 msgid "Artic Setup Tool"
 msgstr "Artic Setup Tool"
 
-#: port/frontend/shell/pages.cpp:1606 port/frontend/shell/pages.cpp:1617 port/frontend/shell/settings.cpp:1341 port/frontend/shell/setup.cpp:273
+#: port/frontend/shell/pages.cpp:1606 port/frontend/shell/pages.cpp:1617 port/frontend/shell/settings.cpp:1341 port/frontend/shell/setup.cpp:275
 msgid "Artic Base"
 msgstr "Artic Base"
 
@@ -5375,7 +5611,7 @@ msgstr ""
 #. Settings > Screens: a row that opens the touch screen's settings (where the touchpad's cursor lands, the right stick as the stylus)
 #. Settings > Performance: a row that opens Eden's accuracy shortcuts (Fast GPU, Unsafe CPU, ...); its value: how many are changed
 #. Settings > Launcher: a row that opens Larger text, High contrast, Reduce motion and Hold to confirm
-#: port/frontend/shell/porpoise_rows.cpp:175 port/frontend/shell/settings.cpp:840 port/frontend/shell/settings.cpp:1033 port/frontend/shell/settings.cpp:1520 port/frontend/shell/shell.cpp:1720 port/frontend/shell/switch_extras.cpp:73 port/frontend/shell/widgets.cpp:466
+#: port/frontend/shell/porpoise_rows.cpp:175 port/frontend/shell/settings.cpp:840 port/frontend/shell/settings.cpp:1033 port/frontend/shell/settings.cpp:1520 port/frontend/shell/shell.cpp:1748 port/frontend/shell/switch_extras.cpp:73 port/frontend/shell/widgets.cpp:554
 msgid "Default"
 msgstr "Implicit"
 
@@ -6015,7 +6251,7 @@ msgstr "Microfon"
 msgid "Use the DualSense mic as the GameCube Microphone and Wii Speak."
 msgstr ""
 
-#: port/frontend/shell/porpoise_rows.cpp:318 port/frontend/shell/shell.cpp:2043
+#: port/frontend/shell/porpoise_rows.cpp:318 port/frontend/shell/shell.cpp:2071
 msgid "Resume where you left off"
 msgstr "Continuă de unde ai rămas"
 
@@ -6395,7 +6631,7 @@ msgstr ""
 msgid "D-pad right"
 msgstr ""
 
-#: port/frontend/shell/porpoise_rows.cpp:616 port/frontend/shell/shell.cpp:2852 port/frontend/shell/shell.cpp:2890
+#: port/frontend/shell/porpoise_rows.cpp:616 port/frontend/shell/shell.cpp:2880 port/frontend/shell/shell.cpp:2918
 msgid "Select"
 msgstr "Selectează"
 
@@ -6869,11 +7105,6 @@ msgstr ""
 msgid "Moved to {0}"
 msgstr ""
 
-#. the first start's question: whether the app may send reports of how games run to the project
-#: port/frontend/shell/reports.cpp:75
-msgid "Help Playtendoh get better?"
-msgstr ""
-
 #: port/frontend/shell/reports.cpp:77
 msgid "When a game ends, Playtendoh can send a short report on how it ran, to help fix problems and grow the list of working games. It has nothing about you, and nothing is sent while you play."
 msgstr ""
@@ -6916,14 +7147,6 @@ msgstr ""
 
 #: port/frontend/shell/reports.cpp:130
 msgid "You can change this any time in Settings > Online. Turning it off deletes the reports waiting to be sent."
-msgstr ""
-
-#: port/frontend/shell/reports.cpp:131
-msgid "Not now"
-msgstr ""
-
-#: port/frontend/shell/reports.cpp:131
-msgid "Yes, send reports"
 msgstr ""
 
 #: port/frontend/shell/settings.cpp:54
@@ -7012,10 +7235,6 @@ msgstr "Sticlă mată întunecată și colțuri mai rotunjite, lumina părții p
 #: port/frontend/shell/settings.cpp:173
 msgid "A light background with dark text."
 msgstr "Un fundal luminos cu text închis."
-
-#: port/frontend/shell/settings.cpp:209 port/frontend/shell/settings.cpp:621 port/frontend/shell/settings.cpp:944 port/frontend/shell/settings.cpp:984 port/frontend/shell/settings.cpp:1042 port/frontend/shell/settings.cpp:2130 port/frontend/shell/setup.cpp:640
-msgid "Language"
-msgstr "Limbă"
 
 #: port/frontend/shell/settings.cpp:209
 msgid "The menu language. Uses the PS5's unless you choose another."
@@ -7106,7 +7325,7 @@ msgstr "Conturi și salvări"
 msgid "Players and saves"
 msgstr "Jucători și salvări"
 
-#: port/frontend/shell/settings.cpp:245 port/frontend/shell/settings.cpp:290 port/frontend/shell/settings.cpp:318 port/frontend/shell/shell.cpp:2054
+#: port/frontend/shell/settings.cpp:245 port/frontend/shell/settings.cpp:290 port/frontend/shell/settings.cpp:318 port/frontend/shell/shell.cpp:2082
 msgid "Saves"
 msgstr "Salvări"
 
@@ -7292,7 +7511,7 @@ msgstr "Crucea pentru descărcare"
 msgid "{0}: Cross to install"
 msgstr "{0}: Crucea pentru instalare"
 
-#: port/frontend/shell/settings.cpp:377 port/frontend/shell/settings.cpp:1366 port/frontend/shell/settings.cpp:1467 port/frontend/shell/shell.cpp:2793
+#: port/frontend/shell/settings.cpp:377 port/frontend/shell/settings.cpp:1366 port/frontend/shell/settings.cpp:1467 port/frontend/shell/shell.cpp:2821
 msgid "Downloading…"
 msgstr "Se descarcă…"
 
@@ -7421,7 +7640,7 @@ msgstr "Copie de rezervă pe USB"
 msgid "Every system's saves. A save state only loads in the emulator that made it."
 msgstr "Salvările tuturor părților, ale fiecărui emulator. O stare salvată se încarcă doar în emulatorul care a creat-o."
 
-#: port/frontend/shell/settings.cpp:534 port/frontend/shell/settings.cpp:2847
+#: port/frontend/shell/settings.cpp:534 port/frontend/shell/settings.cpp:2852
 msgid "Emulator diagnostics"
 msgstr "Diagnosticarea emulatorului"
 
@@ -8165,7 +8384,7 @@ msgstr "Pentru jocurile DS care citesc un joc GBA în al doilea slot, cum face P
 msgid "Put the GBA game in {0}/slot2 named like the DS game, ending .gba, with its .sav if it has one. Its save is then kept in {0}/slot2-saves; your files are not changed. Applies to the next game."
 msgstr "Pune jocul GBA în {0}/slot2 cu numele fișierului jocului DS, terminat în .gba, și .sav-ul lui alături, dacă are. Salvarea cartușului e apoi păstrată în {0}/slot2-saves, iar fișierele pe care le pui acolo nu sunt schimbate niciodată. Un joc DS fără cartuș acolo pornește cu slotul gol. Se aplică de la următorul joc."
 
-#: port/frontend/shell/settings.cpp:1063 port/frontend/shell/setup.cpp:211 port/main_ps5.cpp:578 port/main_ps5.cpp:581 port/main_ps5.cpp:582
+#: port/frontend/shell/settings.cpp:1063 port/frontend/shell/setup.cpp:212 port/main_ps5.cpp:578 port/main_ps5.cpp:581 port/main_ps5.cpp:582
 msgid "Switch 2 games"
 msgstr "Jocuri Switch 2"
 
@@ -8238,7 +8457,7 @@ msgstr "Lipsește"
 msgid "Keys and firmware"
 msgstr "Chei și firmware"
 
-#: port/frontend/shell/settings.cpp:1088 port/frontend/shell/setup.cpp:333
+#: port/frontend/shell/settings.cpp:1088 port/frontend/shell/setup.cpp:335
 msgid "Firmware is missing: some games need it"
 msgstr "Lipsește firmware-ul: unele jocuri au nevoie de el"
 
@@ -8254,7 +8473,7 @@ msgstr "Pune propriul tău prod.keys în {0}/keys. Nici Playtendoh, nici Lichii 
 msgid "Put your own Switch firmware files in {0}/firmware. Neither app includes firmware."
 msgstr "Pune propriile fișiere firmware Switch în {0}/firmware. Niciuna dintre aplicații nu include firmware."
 
-#: port/frontend/shell/settings.cpp:1105 port/frontend/shell/setup.cpp:311
+#: port/frontend/shell/settings.cpp:1105 port/frontend/shell/setup.cpp:313
 msgid "No firmware yet: many games need it to start"
 msgstr "Încă nu există firmware: multe jocuri au nevoie de el ca să pornească"
 
@@ -8262,11 +8481,11 @@ msgstr "Încă nu există firmware: multe jocuri au nevoie de el ca să porneasc
 msgid "Your keys are ready."
 msgstr "Eden îți poate citi jocurile."
 
-#: port/frontend/shell/settings.cpp:1107 port/frontend/shell/setup.cpp:304
+#: port/frontend/shell/settings.cpp:1107 port/frontend/shell/setup.cpp:306
 msgid "Switch games need your own console's keys: prod.keys (and title.keys) from your Switch, in {0}/keys. Playtendoh does not include keys."
 msgstr "Eden citește jocurile de Switch cu cheile propriei tale console: prod.keys (și title.keys), extrase din Switch-ul tău, în {0}/keys. Playtendoh nu include chei."
 
-#: port/frontend/shell/settings.cpp:1110 port/frontend/shell/setup.cpp:314
+#: port/frontend/shell/settings.cpp:1110 port/frontend/shell/setup.cpp:316
 msgid "Many Switch games need firmware: the .nca files from your Switch, in {0}/firmware. Playtendoh does not include firmware."
 msgstr "Multe jocuri de Switch au nevoie de fișierele de sistem ale consolei: fișierele .nca ale firmware-ului ei, extrase din Switch-ul tău, în {0}/firmware. Playtendoh nu include firmware."
 
@@ -8289,11 +8508,11 @@ msgstr "Jocuri pe un computer sau NAS, prin SMB sau NFS."
 msgid "Add a folder shared by a computer or NAS, then choose a games folder on it in the folder browser. Nothing is written to it; saves and installs stay on the PS5. Wired is better than Wi-Fi."
 msgstr "Un folder partajat de un computer cu Windows, macOS sau Linux ori de un NAS, citit acolo unde e: adaugă-l aici, apoi alege pe el un folder de jocuri cu navigatorul de foldere, unde fiecare partajare e o filă. Nu se scrie niciodată nimic pe el; salvările și instalările rămân pe PS5. Pentru jocurile Wii U, un cablu merge mai bine decât Wi-Fi."
 
-#: port/frontend/shell/settings.cpp:1125 port/frontend/shell/setup.cpp:250
+#: port/frontend/shell/settings.cpp:1125 port/frontend/shell/setup.cpp:252
 msgid "Wii U disc keys"
 msgstr "Chei de disc Wii U"
 
-#: port/frontend/shell/settings.cpp:1125 port/frontend/shell/setup.cpp:252
+#: port/frontend/shell/settings.cpp:1125 port/frontend/shell/setup.cpp:254
 msgid "keys.txt found"
 msgstr "keys.txt găsit"
 
@@ -8301,12 +8520,12 @@ msgstr "keys.txt găsit"
 msgid "Only encrypted .wud and .wux need them."
 msgstr "Doar .wud și .wux criptate au nevoie de ele."
 
-#: port/frontend/shell/settings.cpp:1126 port/frontend/shell/setup.cpp:252
+#: port/frontend/shell/settings.cpp:1126 port/frontend/shell/setup.cpp:254
 msgid "keys.txt is missing: only encrypted .wud and .wux need it"
 msgstr "keys.txt lipsește: doar .wud și .wux criptate au nevoie de el"
 
 #. {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-#: port/frontend/shell/settings.cpp:1128 port/frontend/shell/setup.cpp:255
+#: port/frontend/shell/settings.cpp:1128 port/frontend/shell/setup.cpp:257
 msgid "Encrypted .wud and .wux need their disc keys in {0}/keys.txt, one per line. Other formats need none."
 msgstr "Dump-urile .wud și .wux criptate au nevoie de cheile lor de disc în {0}/keys.txt, câte una pe linie. Dump-urile decriptate, fișierele .wua și folderele cu code, content și meta nu au nevoie."
 
@@ -8357,7 +8576,7 @@ msgid "Installs a CIA file. Updates and DLC join their game; games join the libr
 msgstr "Instalează un CIA în stocarea 3DS-ului, cum face Install CIA din Azahar: o actualizare sau un DLC merge cu jocul lui, iar un joc intră în bibliotecă. Cercul anulează în timpul instalării."
 
 #. Settings > Game files: a row opening the list of every system's folder; {0} how many have a folder of their own, {1} how many systems
-#: port/frontend/shell/settings.cpp:1163 port/frontend/shell/shell.cpp:2879
+#: port/frontend/shell/settings.cpp:1163 port/frontend/shell/shell.cpp:2907
 msgid "A folder for each system"
 msgstr "Un folder pentru fiecare sistem"
 
@@ -8546,7 +8765,7 @@ msgid "Restores the chosen backup's saves and settings. Current saves are moved 
 msgstr "Pune salvările din copia aleasă înapoi de unde au venit. Salvările de acolo de acum sunt mutate întâi în {0}/saves-before, deci nu se pierde nimic; salvările pe care copia nu le are rămân cum sunt. Se întorc și setările ei, iar Playtendoh pornește din nou ca să le folosească."
 
 #. Settings > Online: a row that opens the box art's settings (GameTDB on or off, downloading the covers again)
-#: port/frontend/shell/settings.cpp:1317 port/frontend/shell/settings.cpp:1325 port/frontend/shell/setup.cpp:346
+#: port/frontend/shell/settings.cpp:1317 port/frontend/shell/settings.cpp:1325 port/frontend/shell/setup.cpp:348
 msgid "Box art"
 msgstr "Coperte"
 
@@ -8863,7 +9082,7 @@ msgstr "Jocurile lui Cemu, în bară."
 msgid "Show the Wii U in the bar. Hidden systems keep their games and settings. At least one stays on."
 msgstr "Dacă bara arată partea Wii U (Cemu). Ascunsă, jocurile și setările ei sunt păstrate și revin când e activată din nou. Cel puțin o parte rămâne activată."
 
-#: port/frontend/shell/settings.cpp:1493 port/frontend/shell/shell.cpp:1672
+#: port/frontend/shell/settings.cpp:1493 port/frontend/shell/shell.cpp:1699
 msgid "Switch"
 msgstr "Comută"
 
@@ -9367,7 +9586,7 @@ msgid "The console icons: RetroArch's XMB Monochrome, by the libretro team (CC B
 msgstr "Pictogramele consolelor: XMB Monochrome din RetroArch, de echipa libretro (CC BY 4.0)."
 
 #. {0} is the app's version; {1} its data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on; {2} Eden's game files folder; {3} Cemu's selected data folder; {4} its default games folder; {5} Azahar's selected folder; {6} melonDS's selected folder
-#: port/frontend/shell/settings.cpp:2097
+#: port/frontend/shell/settings.cpp:2099
 msgid ""
 "Cemu, the Wii U emulator, by the Cemu team and its contributors; RADV on the PS5 by Mihawk-99 and mpereiraesaa; the community graphic packs' authors.\n"
 "Azahar, the 3DS emulator, by the Azahar team and the Citra contributors before them; Mihawk-99's PS5 port of it and dynarmic.\n"
@@ -9398,180 +9617,180 @@ msgstr ""
 "Versiunea {0}"
 
 #. the first choice in the language list: the PS5's own ({0}, in its own words)
-#: port/frontend/shell/settings.cpp:2115
+#: port/frontend/shell/settings.cpp:2117
 msgid "The PS5's language: {0}"
 msgstr "Limba PS5: {0}"
 
-#: port/frontend/shell/settings.cpp:2140
+#: port/frontend/shell/settings.cpp:2142
 msgid "Language: {0}"
 msgstr "Limbă: {0}"
 
-#: port/frontend/shell/settings.cpp:2296
+#: port/frontend/shell/settings.cpp:2298
 msgid "Playtendoh cannot write to {0}"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:2300
+#: port/frontend/shell/settings.cpp:2302
 msgid "Playtendoh restarts to move the files"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:2311
+#: port/frontend/shell/settings.cpp:2313
 msgid "At least one system must stay on"
 msgstr "Cel puțin o parte rămâne activată"
 
 #. the Wii U account games start on now ({0}: its name)
-#: port/frontend/shell/settings.cpp:2480 port/frontend/shell/settings.cpp:2716 port/frontend/shell/settings.cpp:2802
+#: port/frontend/shell/settings.cpp:2485 port/frontend/shell/settings.cpp:2721 port/frontend/shell/settings.cpp:2807
 msgid "Games start on {0}'s saves"
 msgstr "Jocurile pornesc cu salvările lui {0}"
 
-#: port/frontend/shell/settings.cpp:2588
+#: port/frontend/shell/settings.cpp:2593
 msgid "Settings can't be saved for this game (no game ID)"
 msgstr "Jocul acesta nu are un ID sub care să se salveze setările"
 
-#: port/frontend/shell/settings.cpp:2739
+#: port/frontend/shell/settings.cpp:2744
 msgid "Backing up {0}'s saves…"
 msgstr "Se face copia salvărilor din {0}…"
 
-#: port/frontend/shell/settings.cpp:2754 port/frontend/shell/settings.cpp:3206
+#: port/frontend/shell/settings.cpp:2759 port/frontend/shell/settings.cpp:3211
 msgid "Choose a player first, in Settings > Players and saves."
 msgstr "Alege întâi un jucător, în Setări > Jucători și salvări."
 
-#: port/frontend/shell/settings.cpp:2755
+#: port/frontend/shell/settings.cpp:2760
 msgid "Copying to USB…"
 msgstr "Se copiază pe USB…"
 
-#: port/frontend/shell/settings.cpp:2797
+#: port/frontend/shell/settings.cpp:2802
 msgid "A name for the new account"
 msgstr "Un nume pentru contul nou"
 
-#: port/frontend/shell/settings.cpp:2814
+#: port/frontend/shell/settings.cpp:2819
 msgid "A new name"
 msgstr "Un nume nou"
 
-#: port/frontend/shell/settings.cpp:2816
+#: port/frontend/shell/settings.cpp:2821
 msgid "Renamed {0}"
 msgstr "{0} redenumit"
 
-#: port/frontend/shell/settings.cpp:2825
+#: port/frontend/shell/settings.cpp:2830
 msgid "Backing up every side's saves…"
 msgstr "Se face copia de rezervă a salvărilor tuturor părților…"
 
-#: port/frontend/shell/settings.cpp:2839
+#: port/frontend/shell/settings.cpp:2844
 msgid "EmulationStation's download stopped"
 msgstr ""
 
 #. the loading screen's name for a retro side's own emulator menus: {0} is the side (Nintendo 64)
-#: port/frontend/shell/settings.cpp:2851
+#: port/frontend/shell/settings.cpp:2856
 msgid "{0}: emulator settings"
 msgstr "{0}: setările emulatorului său"
 
-#: port/frontend/shell/settings.cpp:2852
+#: port/frontend/shell/settings.cpp:2857
 msgid "Opening emulator settings"
 msgstr "Se deschid setările emulatorului"
 
-#: port/frontend/shell/settings.cpp:2878
+#: port/frontend/shell/settings.cpp:2883
 msgid "Every game has its cover"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:2878
+#: port/frontend/shell/settings.cpp:2883
 msgid "Looking for {0} cover"
 msgid_plural "Looking for {0} covers"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: port/frontend/shell/settings.cpp:2943
+#: port/frontend/shell/settings.cpp:2948
 msgid "Switch games play offline"
 msgstr "Jocurile Switch rulează offline"
 
-#: port/frontend/shell/settings.cpp:2947
+#: port/frontend/shell/settings.cpp:2952
 msgid "Your nickname in rooms"
 msgstr "Porecla ta în camere"
 
-#: port/frontend/shell/settings.cpp:2952
+#: port/frontend/shell/settings.cpp:2957
 msgid "A nickname is 4 to 20 letters, digits, spaces, dots, dashes or underscores."
 msgstr "O poreclă are 4 până la 20 de litere latine, cifre, spații, puncte, cratime sau liniuțe de subliniere."
 
 #. the nickname shown in Switch rooms ({0})
-#: port/frontend/shell/settings.cpp:2958
+#: port/frontend/shell/settings.cpp:2963
 msgid "In rooms you are {0}"
 msgstr "În camere ești {0}"
 
-#: port/frontend/shell/settings.cpp:2972
+#: port/frontend/shell/settings.cpp:2977
 msgid "This room is for a different version."
 msgstr "Această cameră este pentru altă versiune de Eden."
 
 #. the room ({0}) Switch games join from now on
-#: port/frontend/shell/settings.cpp:2983 port/frontend/shell/settings.cpp:3020
+#: port/frontend/shell/settings.cpp:2988 port/frontend/shell/settings.cpp:3025
 msgid "Switch games will join {0}"
 msgstr "Jocurile Switch intră în {0} la pornire"
 
 #. the password of a room ({0}: its name)
-#: port/frontend/shell/settings.cpp:2987
+#: port/frontend/shell/settings.cpp:2992
 msgid "{0}'s password"
 msgstr "Parola camerei {0}"
 
-#: port/frontend/shell/settings.cpp:2998
+#: port/frontend/shell/settings.cpp:3003
 msgid "The room's address"
 msgstr "Adresa camerei"
 
-#: port/frontend/shell/settings.cpp:3003
+#: port/frontend/shell/settings.cpp:3008
 msgid "An address is a name or an IPv4 address: letters, digits, dots and dashes."
 msgstr "O adresă este un nume sau o adresă IPv4: litere, cifre, puncte și cratime."
 
-#: port/frontend/shell/settings.cpp:3006
+#: port/frontend/shell/settings.cpp:3011
 msgid "Its UDP port"
 msgstr "Portul ei UDP"
 
-#: port/frontend/shell/settings.cpp:3010
+#: port/frontend/shell/settings.cpp:3015
 msgid "A port is a number from 1 to 65535."
 msgstr "Un port este un număr de la 1 la 65535."
 
-#: port/frontend/shell/settings.cpp:3013
+#: port/frontend/shell/settings.cpp:3018
 msgid "Password (leave empty if none)"
 msgstr "Parola ei (goală: niciuna)"
 
-#: port/frontend/shell/settings.cpp:3030 port/frontend/shell/shell.cpp:1207 port/frontend/shell/shell.cpp:2909
+#: port/frontend/shell/settings.cpp:3035 port/frontend/shell/shell.cpp:1234 port/frontend/shell/shell.cpp:2937
 msgid "Starting the 3DS"
 msgstr "Pornește 3DS-ul"
 
-#: port/frontend/shell/settings.cpp:3039
+#: port/frontend/shell/settings.cpp:3044
 msgid "Your RetroAchievements user name"
 msgstr "Numele tău de utilizator RetroAchievements"
 
-#: port/frontend/shell/settings.cpp:3042
+#: port/frontend/shell/settings.cpp:3047
 msgid "{0}'s RetroAchievements password"
 msgstr "Parola RetroAchievements a lui {0}"
 
-#: port/frontend/shell/settings.cpp:3044
+#: port/frontend/shell/settings.cpp:3049
 msgid "Signing in to RetroAchievements…"
 msgstr "Conectare la RetroAchievements…"
 
-#: port/frontend/shell/settings.cpp:3049
+#: port/frontend/shell/settings.cpp:3054
 msgid "Your SteamGridDB key"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:3052
+#: port/frontend/shell/settings.cpp:3057
 msgid "Your SteamGridDB key is removed"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:3052
+#: port/frontend/shell/settings.cpp:3057
 msgid "Used next time Playtendoh starts"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:3072
+#: port/frontend/shell/settings.cpp:3077
 msgid "EmulationStation removed. Its scraped data is kept."
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:3082
+#: port/frontend/shell/settings.cpp:3087
 msgid "{0} reset to defaults"
 msgstr ""
 
-#: port/frontend/shell/settings.cpp:3093
+#: port/frontend/shell/settings.cpp:3098
 msgid "Player removed: their saves and settings are kept"
 msgstr "Jucător eliminat: salvările și setările lui rămân"
 
 #. what clearing the unpacked games did; {1} is the room it made, as in 2.4 GB
-#: port/frontend/shell/settings.cpp:3107
+#: port/frontend/shell/settings.cpp:3112
 msgid "{0} game deleted ({1})"
 msgid_plural "{0} games deleted ({1})"
 msgstr[0] "{0} joc șters ({1})"
@@ -9579,61 +9798,61 @@ msgstr[1] "{0} jocuri șterse ({1})"
 msgstr[2] "{0} de jocuri șterse ({1})"
 
 #. a held row's result: the covers are on their way
-#: port/frontend/shell/settings.cpp:3114
+#: port/frontend/shell/settings.cpp:3119
 msgid "Downloading in the background"
 msgstr "Se descarcă în fundal"
 
-#: port/frontend/shell/settings.cpp:3134 port/frontend/shell/shell.cpp:473
+#: port/frontend/shell/settings.cpp:3139 port/frontend/shell/shell.cpp:492
 msgid "Close Playtendoh and start it again from the home screen to move the folders."
 msgstr "Închide Playtendoh și pornește-l din nou de pe ecranul principal: folderele se mută când pornește."
 
-#: port/frontend/shell/settings.cpp:3176
+#: port/frontend/shell/settings.cpp:3181
 msgid "{0} deleted. Its saves are kept."
 msgstr "{0} e șters; salvările lui rămân"
 
-#: port/frontend/shell/settings.cpp:3189
+#: port/frontend/shell/settings.cpp:3194
 msgid "Restoring the saves of {0}…"
 msgstr "Se restaurează salvările din {0}…"
 
-#: port/frontend/shell/settings.cpp:3198
+#: port/frontend/shell/settings.cpp:3203
 msgid "Signed out of RetroAchievements"
 msgstr "Deconectat de la RetroAchievements"
 
-#: port/frontend/shell/settings.cpp:3208
+#: port/frontend/shell/settings.cpp:3213
 msgid "Importing the save…"
 msgstr "Se preia salvarea…"
 
-#: port/frontend/shell/settings.cpp:3218
+#: port/frontend/shell/settings.cpp:3223
 msgid "Restoring {0}'s saves of {1}…"
 msgstr "Se restaurează salvările din {0} din copia {1}…"
 
 #. one of a game's saves moved out of the way ({0}: which, as its row names it)
-#: port/frontend/shell/settings.cpp:3232
+#: port/frontend/shell/settings.cpp:3237
 msgid "{0}: moved to saves-before"
 msgstr "{0}: mutat în saves-before"
 
-#: port/frontend/shell/settings.cpp:3247
+#: port/frontend/shell/settings.cpp:3252
 msgid "Done. Using the system's settings again"
 msgstr "Gata: din nou setările părții sale"
 
-#: port/frontend/shell/settings.cpp:3436
+#: port/frontend/shell/settings.cpp:3441
 msgid "Scan it, or open"
 msgstr "Scanează-l sau deschide"
 
-#: port/frontend/shell/settings.cpp:3442
+#: port/frontend/shell/settings.cpp:3447
 msgid "Use a device on the same network as the PS5. No app needed. Sound stays on the PS5. Anyone on the network can open it."
 msgstr "Aceeași rețea ca PS5. Nimic de instalat: browserul e de ajuns. Sunetul rămâne pe PS5. Orice browser din rețea îl poate vedea și atinge."
 
-#: port/frontend/shell/settings.cpp:3472
+#: port/frontend/shell/settings.cpp:3477
 msgid "Support Playtendoh"
 msgstr "Susține Playtendoh"
 
-#: port/frontend/shell/settings.cpp:3483
+#: port/frontend/shell/settings.cpp:3488
 msgid "Playtendoh is free. If you enjoy it, you can support its work here."
 msgstr "Playtendoh e gratuit. Dacă ți-a adus înapoi jocurile, poți susține munca la el aici."
 
 #. above Settings' pages: whose settings they are ({0}: Wii U, Nintendo 3DS or Nintendo DS)
-#: port/frontend/shell/settings.cpp:3528
+#: port/frontend/shell/settings.cpp:3548
 msgid "{0} settings"
 msgstr "Setări {0}"
 
@@ -9703,262 +9922,262 @@ msgstr "Fără memorie JIT sau executabilă: jocurile Wii U rulează pe interpre
 msgid "Wii U games will run much slower. Add PPSA99360 to your HEN's app jailbreak list, then start Playtendoh again. Settings > Diagnostics shows what it got."
 msgstr "Nu s-a putut obține nici memoria JIT a HEN-ului tău, nici memorie executabilă, așa că jocurile Wii U trec pe interpretorul Cemu. Adaugă PPSA99360 în lista de jailbreak de aplicații a HEN-ului tău, apoi repornește Playtendoh; Setări > Diagnosticare spune ce a obținut."
 
-#: port/frontend/shell/setup.cpp:191 port/frontend/shell/shell.cpp:790 port/libretro/game.cpp:726 port/main_ps5.cpp:754 port/retro/launch.cpp:38 port/retro/launch.cpp:48
+#: port/frontend/shell/setup.cpp:191 port/frontend/shell/shell.cpp:816 port/libretro/game.cpp:726 port/main_ps5.cpp:754 port/retro/launch.cpp:38 port/retro/launch.cpp:48
 msgid "This system's emulator is not in this copy of Playtendoh."
 msgstr "Emulatorul acestei părți nu e în această copie a Playtendoh."
 
 #. {1} is a folder
-#: port/frontend/shell/setup.cpp:192 port/frontend/shell/setup.cpp:217
+#: port/frontend/shell/setup.cpp:192 port/frontend/shell/setup.cpp:219
 msgid "{0} game in {1}"
 msgid_plural "{0} games in {1}"
 msgstr[0] "{0} joc în {1}"
 msgstr[1] "{0} jocuri în {1}"
 msgstr[2] "{0} de jocuri în {1}"
 
-#: port/frontend/shell/setup.cpp:193 port/frontend/shell/setup.cpp:218
+#: port/frontend/shell/setup.cpp:193 port/frontend/shell/setup.cpp:220
 msgid "None in {0} yet"
 msgstr "Încă niciunul în {0}"
 
-#: port/frontend/shell/setup.cpp:194 port/frontend/shell/setup.cpp:219 port/retro/library.cpp:343
+#: port/frontend/shell/setup.cpp:194 port/frontend/shell/setup.cpp:221 port/retro/library.cpp:343
 msgid "{0} cannot be read"
 msgstr "{0} nu poate fi citit"
 
-#: port/frontend/shell/setup.cpp:220
+#: port/frontend/shell/setup.cpp:222
 msgid "Where your 3DS games go"
 msgstr "Unde merg jocurile tale 3DS"
 
-#: port/frontend/shell/setup.cpp:221
+#: port/frontend/shell/setup.cpp:223
 msgid "Where your DS games go"
 msgstr "Unde se pun jocurile tale DS"
 
-#: port/frontend/shell/setup.cpp:222
+#: port/frontend/shell/setup.cpp:224
 msgid "Where your Switch games go"
 msgstr "Unde se pun jocurile tale de Switch"
 
-#: port/frontend/shell/setup.cpp:223
+#: port/frontend/shell/setup.cpp:225
 msgid "Where your Wii U games go"
 msgstr "Unde merg jocurile tale Wii U"
 
-#: port/frontend/shell/setup.cpp:224
+#: port/frontend/shell/setup.cpp:226
 msgid "Put them in {0}, or choose any folder, such as one on a USB drive. Subfolders are searched too. Install CIA files from Settings > Game files."
 msgstr "Pune-le în {0} sau alege orice folder pe care PS5 îl poate citi, de exemplu pe o unitate USB. Se caută și în subfoldere. Fișierele CIA se instalează din Setări > Fișiere de joc, pe partea 3DS."
 
-#: port/frontend/shell/setup.cpp:226 port/frontend/shell/setup.cpp:240
+#: port/frontend/shell/setup.cpp:228 port/frontend/shell/setup.cpp:242
 msgid "Put them in {0}, or choose any folder, such as one on a USB drive. Subfolders are searched too."
 msgstr "Pune-le în {0} sau alege orice folder pe care PS5 îl poate citi, de exemplu pe o unitate USB. Se caută și în subfoldere."
 
-#: port/frontend/shell/setup.cpp:228
+#: port/frontend/shell/setup.cpp:230
 msgid "Put .nsp and .xci files in {0}, each alone or in a folder with its update and DLC. You also need your Switch's keys and firmware."
 msgstr "Pune-le în {0}: fișiere .nsp și .xci, separat sau fiecare în folderul lui cu actualizarea și DLC-urile lui. Eden are nevoie și de cheile și firmware-ul Switch-ului tău."
 
-#: port/frontend/shell/setup.cpp:230
+#: port/frontend/shell/setup.cpp:232
 msgid "Put them in {0}, or choose any folder, such as one on a USB drive. Install updates and DLC from Settings > Game files (a .wua already has them)."
 msgstr "Pune-le în {0} sau alege orice folder pe care PS5 îl poate citi, de exemplu pe o unitate USB. Actualizările și DLC-urile se instalează din Setări > Fișiere de joc sau vin cu un .wua."
 
-#: port/frontend/shell/setup.cpp:235
+#: port/frontend/shell/setup.cpp:237
 msgid "code · content · meta"
 msgstr "code · content · meta"
 
-#: port/frontend/shell/setup.cpp:239
+#: port/frontend/shell/setup.cpp:241
 msgid "Where your Switch 2 games go"
 msgstr "Unde se pun jocurile Switch 2"
 
-#: port/frontend/shell/setup.cpp:244 port/frontend/shell/setup.cpp:258
+#: port/frontend/shell/setup.cpp:246 port/frontend/shell/setup.cpp:260
 msgid "the game files page"
 msgstr "pagina despre fișierele jocurilor"
 
-#: port/frontend/shell/setup.cpp:253 port/frontend/shell/setup.cpp:286 port/frontend/shell/setup.cpp:302 port/frontend/shell/setup.cpp:312 port/frontend/shell/setup.cpp:326 port/frontend/shell/setup.cpp:334
+#: port/frontend/shell/setup.cpp:255 port/frontend/shell/setup.cpp:288 port/frontend/shell/setup.cpp:304 port/frontend/shell/setup.cpp:314 port/frontend/shell/setup.cpp:328 port/frontend/shell/setup.cpp:336
 msgid "How to"
 msgstr "Cum se face"
 
-#: port/frontend/shell/setup.cpp:254
+#: port/frontend/shell/setup.cpp:256
 msgid "Keys for encrypted discs"
 msgstr "Chei pentru discuri criptate"
 
-#: port/frontend/shell/setup.cpp:270
+#: port/frontend/shell/setup.cpp:272
 msgid "3DS system files"
 msgstr "Fișiere de sistem 3DS"
 
-#: port/frontend/shell/setup.cpp:272
+#: port/frontend/shell/setup.cpp:274
 msgid "Artic Setup is done: the Home Menu can start"
 msgstr "Artic Setup a rulat: meniul HOME poate porni"
 
-#: port/frontend/shell/setup.cpp:272
+#: port/frontend/shell/setup.cpp:274
 msgid "Artic Setup copies them from your 3DS, for the Home Menu"
 msgstr "Artic Setup le copiază de pe 3DS-ul tău, pentru meniul HOME"
 
-#: port/frontend/shell/setup.cpp:274
+#: port/frontend/shell/setup.cpp:276
 msgid "Your 3DS's own files"
 msgstr "Fișierele proprii ale 3DS-ului tău"
 
-#: port/frontend/shell/setup.cpp:275
+#: port/frontend/shell/setup.cpp:277
 msgid "The 3DS Home Menu and a few games need your 3DS's system files. Start the Artic Setup Tool on your 3DS, then Artic Base here."
 msgstr "Meniul HOME al 3DS-ului și puținele jocuri care au nevoie de fișierele de sistem ale consolei rulează după ce Artic Setup le copiază prin rețea de pe propriul tău 3DS: pornește Artic Setup Tool pe 3DS, apoi Artic Base aici."
 
-#: port/frontend/shell/setup.cpp:277
+#: port/frontend/shell/setup.cpp:279
 msgid "the 3DS page"
 msgstr "pagina despre 3DS"
 
-#: port/frontend/shell/setup.cpp:285
+#: port/frontend/shell/setup.cpp:287
 msgid "Your DS BIOS was found and is used"
 msgstr "BIOS-ul DS-ului tău găsit: jocurile DS rulează pe el"
 
-#: port/frontend/shell/setup.cpp:285
+#: port/frontend/shell/setup.cpp:287
 msgid "Using the built-in BIOS. Your own DS BIOS is optional"
 msgstr "Jocurile DS le rulează BIOS-ul integrat al melonDS; al DS-ului tău e opțional"
 
-#: port/frontend/shell/setup.cpp:287
+#: port/frontend/shell/setup.cpp:289
 msgid "Your DS's own BIOS and firmware"
 msgstr "BIOS-ul și firmware-ul propriului tău DS"
 
-#: port/frontend/shell/setup.cpp:288
+#: port/frontend/shell/setup.cpp:290
 msgid "DS games run on a built-in BIOS and firmware, which most games are fine with. For the few that aren't, put bios7.bin, bios9.bin and firmware.bin from your own DS in {0}/bios. Playtendoh does not include a BIOS."
 msgstr "melonDS rulează jocurile DS pe propriul BIOS (FreeBIOS) și firmware, cu care se descurcă majoritatea jocurilor. Puținele care nu rulează pe ale DS-ului tău: bios7.bin, bios9.bin și firmware.bin, extrase de pe el, în {0}/bios. Niciun BIOS nu vine cu Playtendoh."
 
-#: port/frontend/shell/setup.cpp:291
+#: port/frontend/shell/setup.cpp:293
 msgid "the DS page"
 msgstr "pagina DS"
 
-#: port/frontend/shell/setup.cpp:299
+#: port/frontend/shell/setup.cpp:301
 msgid "Switch keys"
 msgstr "Chei Switch"
 
-#: port/frontend/shell/setup.cpp:301
+#: port/frontend/shell/setup.cpp:303
 msgid "prod.keys found"
 msgstr "prod.keys găsit: Eden îți poate citi jocurile"
 
-#: port/frontend/shell/setup.cpp:303
+#: port/frontend/shell/setup.cpp:305
 msgid "Your Switch's keys"
 msgstr "Cheile Switch-ului tău"
 
-#: port/frontend/shell/setup.cpp:307
+#: port/frontend/shell/setup.cpp:309
 msgid "the Switch page"
 msgstr "pagina Switch"
 
-#: port/frontend/shell/setup.cpp:308
+#: port/frontend/shell/setup.cpp:310
 msgid "Switch firmware"
 msgstr "Firmware Switch"
 
-#: port/frontend/shell/setup.cpp:310
+#: port/frontend/shell/setup.cpp:312
 msgid "Firmware found"
 msgstr "Firmware găsit: jocurile care au nevoie de fișierele de sistem pornesc"
 
-#: port/frontend/shell/setup.cpp:313
+#: port/frontend/shell/setup.cpp:315
 msgid "Your Switch's firmware"
 msgstr "Firmware-ul Switch-ului tău"
 
-#: port/frontend/shell/setup.cpp:323 port/main_ps5.cpp:583
+#: port/frontend/shell/setup.cpp:325 port/main_ps5.cpp:583
 msgid "Switch 2 keys"
 msgstr "Chei Switch 2"
 
-#: port/frontend/shell/setup.cpp:325
+#: port/frontend/shell/setup.cpp:327
 msgid "prod.keys found for Lichii"
 msgstr "prod.keys găsit pentru Lichii"
 
-#: port/frontend/shell/setup.cpp:327
+#: port/frontend/shell/setup.cpp:329
 msgid "Your Switch 2 keys"
 msgstr "Cheile emulatorului tău Switch 2"
 
-#: port/frontend/shell/setup.cpp:330
+#: port/frontend/shell/setup.cpp:332
 msgid "the Switch 2 page"
 msgstr "pagina Switch 2"
 
-#: port/frontend/shell/setup.cpp:331 port/main_ps5.cpp:585
+#: port/frontend/shell/setup.cpp:333 port/main_ps5.cpp:585
 msgid "Switch 2 firmware"
 msgstr "Firmware Switch 2"
 
-#: port/frontend/shell/setup.cpp:333
+#: port/frontend/shell/setup.cpp:335
 msgid "Firmware found for Lichii"
 msgstr "Firmware găsit pentru Lichii"
 
-#: port/frontend/shell/setup.cpp:335
+#: port/frontend/shell/setup.cpp:337
 msgid "Your Switch 2 firmware"
 msgstr "Firmware-ul emulatorului tău Switch 2"
 
-#: port/frontend/shell/setup.cpp:348
+#: port/frontend/shell/setup.cpp:350
 msgid "what Playtendoh fetches online"
 msgstr "ce descarcă Playtendoh online"
 
-#: port/frontend/shell/setup.cpp:349
+#: port/frontend/shell/setup.cpp:351
 msgid "Covers from GameTDB"
 msgstr "Coperte de la GameTDB"
 
-#: port/frontend/shell/setup.cpp:350
+#: port/frontend/shell/setup.cpp:352
 msgid "Covers for new games come from GameTDB. Offline, game icons are shown and Playtendoh tries again next time."
 msgstr "Prima dată când apare un joc, coperta lui vine de la GameTDB (art.gametdb.com), după ID-ul de pe cutie. Fără conexiune se arată pictogramele jocurilor, iar următoarea pornire încearcă din nou."
 
-#: port/frontend/shell/setup.cpp:355
+#: port/frontend/shell/setup.cpp:357
 msgid "Off: the games' icons are shown instead"
 msgstr "Dezactivat: se arată în schimb pictogramele jocurilor"
 
-#: port/frontend/shell/setup.cpp:356
+#: port/frontend/shell/setup.cpp:358
 msgid "Turn on"
 msgstr "Activează"
 
-#: port/frontend/shell/setup.cpp:361
+#: port/frontend/shell/setup.cpp:363
 msgid "GameTDB did not answer: the games' icons are shown instead"
 msgstr "GameTDB nu a răspuns: se arată în schimb pictogramele jocurilor"
 
-#: port/frontend/shell/setup.cpp:366
+#: port/frontend/shell/setup.cpp:368
 msgid "GameTDB is reachable · {0} cover"
 msgid_plural "GameTDB is reachable · {0} covers"
 msgstr[0] "GameTDB e accesibil · {0} copertă"
 msgstr[1] "GameTDB e accesibil · {0} coperte"
 msgstr[2] "GameTDB e accesibil · {0} de coperte"
 
-#: port/frontend/shell/setup.cpp:367
+#: port/frontend/shell/setup.cpp:369
 msgid "On · {0} cover"
 msgid_plural "On · {0} covers"
 msgstr[0] "Activat · {0} copertă"
 msgstr[1] "Activat · {0} coperte"
 msgstr[2] "Activat · {0} de coperte"
 
-#: port/frontend/shell/setup.cpp:368
+#: port/frontend/shell/setup.cpp:370
 msgid "On: covers download as games are added"
 msgstr "Activat: copertele vin pe măsură ce apar jocurile tale"
 
-#: port/frontend/shell/setup.cpp:375
+#: port/frontend/shell/setup.cpp:377
 msgid "System folders"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:378
+#: port/frontend/shell/setup.cpp:380
 msgid "Together in {0}"
 msgstr ""
 
 #. the Setup check: how many of the systems that can move have a folder of their own
-#: port/frontend/shell/setup.cpp:380
+#: port/frontend/shell/setup.cpp:382
 msgid "{0} system in its own folder"
 msgid_plural "{0} systems in their own folders"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: port/frontend/shell/setup.cpp:382
+#: port/frontend/shell/setup.cpp:384
 msgid "Where each system's files go"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:383
+#: port/frontend/shell/setup.cpp:385
 msgid "Saves, BIOS files and settings for every system are kept together in {0}. You can give the Wii U, 3DS, DS or Switch a folder of its own instead. Cross shows them, each with its own switch."
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:480
+#: port/frontend/shell/setup.cpp:482
 msgid "Checked again"
 msgstr "Verificat din nou"
 
-#: port/frontend/shell/setup.cpp:504 port/frontend/shell/welcome.cpp:221
+#: port/frontend/shell/setup.cpp:506
 msgid "Welcome to Playtendoh"
 msgstr "Bun venit în Playtendoh"
 
-#: port/frontend/shell/setup.cpp:504
+#: port/frontend/shell/setup.cpp:506
 msgid "Help"
 msgstr "Ajutor"
 
-#: port/frontend/shell/setup.cpp:505
+#: port/frontend/shell/setup.cpp:507
 msgid "Let’s check your setup"
 msgstr "Hai să-ți verificăm configurarea"
 
 #. the Setup check's summary: how many checks need the player, or that every one is ready
-#: port/frontend/shell/setup.cpp:516
+#: port/frontend/shell/setup.cpp:518
 msgid "{0} thing needs you"
 msgid_plural "{0} things need you"
 msgstr[0] ""
@@ -9966,47 +10185,47 @@ msgstr[1] ""
 msgstr[2] ""
 
 #. the Setup check's summary: how many checks need the player, or that every one is ready
-#: port/frontend/shell/setup.cpp:516
+#: port/frontend/shell/setup.cpp:518
 msgid "Everything is ready"
 msgstr ""
 
 #. the Setup check's summary: {0} checks ready of {1}
-#: port/frontend/shell/setup.cpp:519
+#: port/frontend/shell/setup.cpp:521
 msgid "{0} of {1} ready"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:533
+#: port/frontend/shell/setup.cpp:535
 msgid "{0} · same as the PS5"
 msgstr "{0} · ca PS5"
 
 #. the Setup check's groups: what needs the player, what is optional, what is ready; {0} how many
-#: port/frontend/shell/setup.cpp:588
+#: port/frontend/shell/setup.cpp:590
 msgid "Needs you · {0}"
 msgstr ""
 
 #. the Setup check's groups: what needs the player, what is optional, what is ready; {0} how many
-#: port/frontend/shell/setup.cpp:588
+#: port/frontend/shell/setup.cpp:590
 msgid "Optional · {0}"
 msgstr ""
 
 #. the Setup check's groups: what needs the player, what is optional, what is ready; {0} how many
-#: port/frontend/shell/setup.cpp:588
+#: port/frontend/shell/setup.cpp:590
 msgid "Ready · {0}"
 msgstr ""
 
-#: port/frontend/shell/setup.cpp:641
+#: port/frontend/shell/setup.cpp:643
 msgid "The menus' language"
 msgstr "Limba meniurilor"
 
-#: port/frontend/shell/setup.cpp:642
+#: port/frontend/shell/setup.cpp:644
 msgid "Playtendoh uses your PS5's language. Cross chooses another; you can change it any time in Settings > Language."
 msgstr "Playtendoh vorbește limba setată pe PS5-ul tău. Crucea alege alta; Setări > Limbă o schimbă oricând."
 
-#: port/frontend/shell/setup.cpp:709
+#: port/frontend/shell/setup.cpp:711
 msgid "The guide, on your phone"
 msgstr "Ghidul, pe telefonul tău"
 
-#: port/frontend/shell/setup.cpp:712
+#: port/frontend/shell/setup.cpp:714
 msgid "Scan it for {0}: {1}"
 msgstr "Scanează-l pentru {0}: {1}"
 
@@ -10230,435 +10449,427 @@ msgstr "Activează partajarea fișierelor pentru un folder de pe computerul sau 
 msgid "Nothing is ever written to it."
 msgstr "Nu se scrie niciodată nimic pe ea."
 
-#: port/frontend/shell/shell.cpp:230
+#: port/frontend/shell/shell.cpp:232
 msgid "Saved your place in the library"
 msgstr "Locul tău în bibliotecă a fost salvat"
 
-#: port/frontend/shell/shell.cpp:234 port/frontend/shell/shell.cpp:1100 port/frontend/shell/shell.cpp:1114 port/frontend/shell/shell.cpp:1252
+#: port/frontend/shell/shell.cpp:236 port/frontend/shell/shell.cpp:1127 port/frontend/shell/shell.cpp:1141 port/frontend/shell/shell.cpp:1279
 msgid "The game could not start"
 msgstr "Jocul nu a putut porni"
 
-#: port/frontend/shell/shell.cpp:239
+#: port/frontend/shell/shell.cpp:241
 msgid "Your settings could not be read"
 msgstr "Setările tale nu au putut fi citite"
 
 #. {0} is where the unreadable settings file is kept: /data/ps5cemu/ps5cemu.json.broken
-#: port/frontend/shell/shell.cpp:241
+#: port/frontend/shell/shell.cpp:243
 msgid "The settings file ps5cemu.json is damaged, so settings were reset. The old file is kept as {0}; fix it on a computer and put it back as ps5cemu.json if you like."
 msgstr "Fișierul de setări al lansatorului, ps5cemu.json, conține o greșeală, așa că toate setările au revenit la valorile implicite. Fișierul, așa cum era, e păstrat ca {0}: repară-l pe un computer și pune-l înapoi ca ps5cemu.json, sau lasă-l așa."
 
-#: port/frontend/shell/shell.cpp:247
+#: port/frontend/shell/shell.cpp:249
 msgid "Playtendoh closed after a crash"
 msgstr "Playtendoh s-a închis după o eroare fatală"
 
 #. {0} is the crash report's first line in the log, as it is: "signal 11 at 0x7f3a..."
-#: port/frontend/shell/shell.cpp:249
+#: port/frontend/shell/shell.cpp:251
 msgid "Last time, Playtendoh crashed: {0}. To report it on GitHub, use Settings > Diagnostics > Copy logs to USB."
 msgstr "Data trecută, Playtendoh s-a oprit din cauza unei erori fatale: {0}. Jurnalul lui e păstrat: Setări > Diagnosticare > Copiază jurnalele pe USB îl copiază pe o unitate, împreună cu sesiunile de dinainte, ca să-l atașezi la un raport pe GitHub."
 
-#: port/frontend/shell/shell.cpp:262
+#: port/frontend/shell/shell.cpp:264
 msgid "Some files could not move"
 msgstr "Unele fișiere nu au putut fi mutate"
 
 #. {0} names the systems whose files did not move into folders of their own: "Wii U, Nintendo 3DS"
-#: port/frontend/shell/shell.cpp:264
+#: port/frontend/shell/shell.cpp:266
 msgid "{0}: their files were left in place and nothing was lost. See the logs with Settings > Diagnostics > Copy logs to USB."
 msgstr "{0}: fișierele lor au rămas unde erau, fără să se piardă nimic. Jurnalul de pornire spune de ce: Setări > Diagnosticare > Copiază jurnalele pe USB."
 
-#: port/frontend/shell/shell.cpp:271
+#: port/frontend/shell/shell.cpp:273
 msgid "The folders have moved"
 msgstr "Folderele au fost mutate"
 
-#: port/frontend/shell/shell.cpp:851
+#: port/frontend/shell/shell.cpp:877
 msgid "The Wii U emulator did not start: {0}"
 msgstr "Cemu nu a pornit: {0}"
 
-#: port/frontend/shell/shell.cpp:994
+#: port/frontend/shell/shell.cpp:1021
 msgid "{0} min played"
 msgid_plural "{0} min played"
 msgstr[0] "{0} min jucat"
 msgstr[1] "{0} min jucate"
 msgstr[2] "{0} de min jucate"
 
-#: port/frontend/shell/shell.cpp:1010
+#: port/frontend/shell/shell.cpp:1037
 msgid "today"
 msgstr "azi"
 
-#: port/frontend/shell/shell.cpp:1012
+#: port/frontend/shell/shell.cpp:1039
 msgid "yesterday"
 msgstr "ieri"
 
-#: port/frontend/shell/shell.cpp:1014
+#: port/frontend/shell/shell.cpp:1041
 msgid "{0} day ago"
 msgid_plural "{0} days ago"
 msgstr[0] "acum {0} zi"
 msgstr[1] "acum {0} zile"
 msgstr[2] "acum {0} de zile"
 
-#: port/frontend/shell/shell.cpp:1016
+#: port/frontend/shell/shell.cpp:1043
 msgid "{0} week ago"
 msgid_plural "{0} weeks ago"
 msgstr[0] "acum {0} săptămână"
 msgstr[1] "acum {0} săptămâni"
 msgstr[2] "acum {0} de săptămâni"
 
-#: port/frontend/shell/shell.cpp:1017
+#: port/frontend/shell/shell.cpp:1044
 msgid "{0} month ago"
 msgid_plural "{0} months ago"
 msgstr[0] "acum {0} lună"
 msgstr[1] "acum {0} luni"
 msgstr[2] "acum {0} de luni"
 
-#: port/frontend/shell/shell.cpp:1092
+#: port/frontend/shell/shell.cpp:1119
 msgid "Still starting"
 msgstr "Cemu încă pornește"
 
-#: port/frontend/shell/shell.cpp:1101
+#: port/frontend/shell/shell.cpp:1128
 msgid "Switch games need your keys: prod.keys (and title.keys) from your own Switch, in {0}/keys. The Setup check shows what else is missing."
 msgstr "Eden are nevoie de cheile Switch-ului tău ca să-i citească jocurile: prod.keys (și title.keys), extrase din propriul tău Switch, în {0}/keys. Verificarea configurării spune ce mai lipsește."
 
-#: port/frontend/shell/shell.cpp:1206
+#: port/frontend/shell/shell.cpp:1233
 msgid "Starting emulator"
 msgstr "Pornește emulatorul"
 
-#: port/frontend/shell/shell.cpp:1206
+#: port/frontend/shell/shell.cpp:1233
 msgid "Starting the DS"
 msgstr "Pornește melonDS"
 
-#: port/frontend/shell/shell.cpp:1208
+#: port/frontend/shell/shell.cpp:1235
 msgid "Starting the Switch"
 msgstr "Pornește Eden"
 
-#: port/frontend/shell/shell.cpp:1295
+#: port/frontend/shell/shell.cpp:1322
 msgid "Adding {0} to the home screen…"
 msgstr "Se creează pictograma de pe ecranul principal pentru {0}…"
 
-#: port/frontend/shell/shell.cpp:1302
+#: port/frontend/shell/shell.cpp:1329
 msgid "Removing {0} from the home screen…"
 msgstr "Se elimină pictograma lui {0} de pe ecranul principal…"
 
-#: port/frontend/shell/shell.cpp:1314
+#: port/frontend/shell/shell.cpp:1341
 msgid "The tile could not be removed"
 msgstr "Pictograma nu a putut fi eliminată"
 
-#: port/frontend/shell/shell.cpp:1314
+#: port/frontend/shell/shell.cpp:1341
 msgid "The tile could not be added"
 msgstr "Pictograma nu a putut fi creată"
 
-#: port/frontend/shell/shell.cpp:1320
+#: port/frontend/shell/shell.cpp:1347
 msgid "Tile removed"
 msgstr "Pictograma a fost eliminată"
 
-#: port/frontend/shell/shell.cpp:1321
+#: port/frontend/shell/shell.cpp:1348
 msgid "If it's still on the home screen, delete it there (Options, then Delete)."
 msgstr "Folderul ei nu mai este în /data/homebrew. Dacă imaginea rămâne pe ecranul principal, șterge-o de acolo (OPTIONS, apoi Ștergere) sau repornește ShadowMount Plus."
 
 #. {0} is the tile's folder, /data/homebrew/PPSA99xxx
-#: port/frontend/shell/shell.cpp:1325
+#: port/frontend/shell/shell.cpp:1352
 msgid "Tile updated"
 msgstr "Pictograma a fost creată din nou"
 
 #. {0} is the tile's folder, /data/homebrew/PPSA99xxx
-#: port/frontend/shell/shell.cpp:1325
+#: port/frontend/shell/shell.cpp:1352
 msgid "Tile added"
 msgstr "Pictograma a fost creată"
 
-#: port/frontend/shell/shell.cpp:1326
+#: port/frontend/shell/shell.cpp:1353
 msgid "Saved in {0}. It will appear on the home screen; if it doesn't, restart the console. The tile starts the game in Playtendoh."
 msgstr "Este în {0}. ShadowMount Plus o pune pe ecranul principal al PS5-ului, ca pe orice homebrew: dacă nu apare, repornește ShadowMount Plus sau consola. Pictograma pornește jocul în Playtendoh, iar închiderea jocului închide aplicația."
 
-#: port/frontend/shell/shell.cpp:1340
+#: port/frontend/shell/shell.cpp:1367
 msgid "The tile's game could not start"
 msgstr "Jocul pictogramei nu a putut porni"
 
-#: port/frontend/shell/shell.cpp:1368
+#: port/frontend/shell/shell.cpp:1395
 msgid "Not in the library: {0}"
 msgstr "Nu este în bibliotecă: {0}"
 
 #. the launcher's tabs
-#: port/frontend/shell/shell.cpp:1534
+#: port/frontend/shell/shell.cpp:1561
 msgctxt "tab"
 msgid "Settings"
 msgstr "Setări"
 
-#: port/frontend/shell/shell.cpp:1662
+#: port/frontend/shell/shell.cpp:1689
 msgid "Hide"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1662
+#: port/frontend/shell/shell.cpp:1689
 msgid "Show"
 msgstr ""
 
-#: port/frontend/shell/shell.cpp:1662 port/frontend/shell/shell.cpp:1664 port/frontend/shell/shell.cpp:1717 port/frontend/shell/shell.cpp:2765
+#: port/frontend/shell/shell.cpp:1689 port/frontend/shell/shell.cpp:1691 port/frontend/shell/shell.cpp:1745 port/frontend/shell/shell.cpp:2793
 msgid "Done"
 msgstr "Gata"
 
-#: port/frontend/shell/shell.cpp:1666 port/frontend/shell/shell.cpp:1733 port/frontend/shell/shell.cpp:1737 port/frontend/shell/shell.cpp:2855 port/frontend/shell/shell.cpp:2923
+#: port/frontend/shell/shell.cpp:1693 port/frontend/shell/shell.cpp:1761 port/frontend/shell/shell.cpp:1765 port/frontend/shell/shell.cpp:2883 port/frontend/shell/shell.cpp:2951
 msgid "Cancel"
 msgstr "Anulează"
 
-#: port/frontend/shell/shell.cpp:1668 port/frontend/shell/shell.cpp:1670 port/frontend/shell/shell.cpp:1723
+#: port/frontend/shell/shell.cpp:1695 port/frontend/shell/shell.cpp:1697 port/frontend/shell/shell.cpp:1751
 msgid "Close"
 msgstr "Închide"
 
-#: port/frontend/shell/shell.cpp:1672 port/frontend/shell/shell.cpp:1708
-msgid "Move"
-msgstr "Mișcare"
-
-#: port/frontend/shell/shell.cpp:1679 port/frontend/shell/shell.cpp:1719 port/frontend/shell/shell.cpp:1720 port/frontend/shell/shell.cpp:1724 port/frontend/shell/shell.cpp:1730
+#: port/frontend/shell/shell.cpp:1706 port/frontend/shell/shell.cpp:1747 port/frontend/shell/shell.cpp:1748 port/frontend/shell/shell.cpp:1752 port/frontend/shell/shell.cpp:1758
 msgid "More info"
 msgstr "Mai multe despre asta"
 
-#: port/frontend/shell/shell.cpp:1680 port/frontend/shell/welcome.cpp:118
-msgid "Continue to the Setup check"
-msgstr "Continuă la verificarea configurării"
-
-#: port/frontend/shell/shell.cpp:1680 port/frontend/shell/shell.cpp:1689 port/frontend/shell/welcome.cpp:118
+#: port/frontend/shell/shell.cpp:1707 port/frontend/shell/shell.cpp:1716 port/frontend/shell/welcome.cpp:100
 msgid "Continue to the Library"
 msgstr "Continuă la bibliotecă"
 
-#: port/frontend/shell/shell.cpp:1685
+#: port/frontend/shell/shell.cpp:1712
 msgid "Change the language"
 msgstr "Schimbă limba"
 
-#: port/frontend/shell/shell.cpp:1688
+#: port/frontend/shell/shell.cpp:1715
 msgid "Check again"
 msgstr "Verifică din nou"
 
-#: port/frontend/shell/shell.cpp:1704
+#: port/frontend/shell/shell.cpp:1732
 msgid "Filters"
 msgstr "Filtre"
 
-#: port/frontend/shell/shell.cpp:1709
+#: port/frontend/shell/shell.cpp:1737
 msgid "Jump by letter"
 msgstr "Salt după literă"
 
-#: port/frontend/shell/shell.cpp:1711
+#: port/frontend/shell/shell.cpp:1739
 msgid "Back to the buttons"
 msgstr "Înapoi la butoane"
 
-#: port/frontend/shell/shell.cpp:1712
+#: port/frontend/shell/shell.cpp:1740
 msgid "Scroll"
 msgstr "Derulare"
 
-#: port/frontend/shell/shell.cpp:1717 port/frontend/shell/shell.cpp:1723
+#: port/frontend/shell/shell.cpp:1745 port/frontend/shell/shell.cpp:1751
 msgid "Pages"
 msgstr "Pagini"
 
-#: port/frontend/shell/shell.cpp:1727
+#: port/frontend/shell/shell.cpp:1755
 msgid "Back to the packs"
 msgstr "Înapoi la pachete"
 
-#: port/frontend/shell/shell.cpp:1728
+#: port/frontend/shell/shell.cpp:1756
 msgid "On / off"
 msgstr "Activat / dezactivat"
 
-#: port/frontend/shell/shell.cpp:1734
+#: port/frontend/shell/shell.cpp:1762
 msgid "Assign"
 msgstr "Atribuie"
 
-#: port/frontend/shell/shell.cpp:1734
+#: port/frontend/shell/shell.cpp:1762
 msgid "Clear"
 msgstr "Golește"
 
-#: port/frontend/shell/shell.cpp:1738
+#: port/frontend/shell/shell.cpp:1766
 msgid "Use this folder"
 msgstr "Folosește acest folder"
 
-#: port/frontend/shell/shell.cpp:1741
+#: port/frontend/shell/shell.cpp:1769
 msgid "Number"
 msgstr "Număr"
 
-#: port/frontend/shell/shell.cpp:1741
+#: port/frontend/shell/shell.cpp:1769
 msgid "Keep"
 msgstr "Păstrează"
 
-#: port/frontend/shell/shell.cpp:1742
+#: port/frontend/shell/shell.cpp:1770
 msgid "Edit"
 msgstr "Editează"
 
-#: port/frontend/shell/shell.cpp:1742
+#: port/frontend/shell/shell.cpp:1770
 msgid "Connect"
 msgstr "Conectează"
 
-#: port/frontend/shell/shell.cpp:1742
+#: port/frontend/shell/shell.cpp:1770
 msgid "Hold to set up"
 msgstr "Ține apăsat pentru configurare"
 
-#: port/frontend/shell/shell.cpp:2046
+#: port/frontend/shell/shell.cpp:2074
 msgid "Game hub"
 msgstr "Fișa jocului"
 
-#: port/frontend/shell/shell.cpp:2051
+#: port/frontend/shell/shell.cpp:2079
 msgid "Game settings: custom"
 msgstr "Setările jocului: proprii"
 
-#: port/frontend/shell/shell.cpp:2058
+#: port/frontend/shell/shell.cpp:2086
 msgid "Add mods from USB"
 msgstr "Adaugă moduri de pe USB"
 
-#: port/frontend/shell/shell.cpp:2067 port/frontend/shell/shell.cpp:2520 port/frontend/shell/shell.cpp:2535
+#: port/frontend/shell/shell.cpp:2095 port/frontend/shell/shell.cpp:2548 port/frontend/shell/shell.cpp:2563
 msgid "Remove its update or DLC"
 msgstr "Elimină actualizarea sau DLC-ul"
 
-#: port/frontend/shell/shell.cpp:2068
+#: port/frontend/shell/shell.cpp:2096
 msgid "Not a favourite"
 msgstr "Scoate de la favorite"
 
 #. the game menu: a game left out of the Library's list (for demos and clutter), or put back
-#: port/frontend/shell/shell.cpp:2072 port/frontend/shell/shell.cpp:2572
+#: port/frontend/shell/shell.cpp:2100 port/frontend/shell/shell.cpp:2600
 msgid "Show in the Library"
 msgstr "Din nou în bibliotecă"
 
 #. the game menu: a game left out of the Library's list (for demos and clutter), or put back
-#: port/frontend/shell/shell.cpp:2072
+#: port/frontend/shell/shell.cpp:2100
 msgid "Hide from the Library"
 msgstr "Ascunde din bibliotecă"
 
-#: port/frontend/shell/shell.cpp:2074
+#: port/frontend/shell/shell.cpp:2102
 msgid "Remove from home screen"
 msgstr "Elimină de pe ecranul principal"
 
-#: port/frontend/shell/shell.cpp:2076
+#: port/frontend/shell/shell.cpp:2104
 msgid "Add to home screen"
 msgstr "Adaugă pe ecranul principal"
 
 #. the first choice of a game's Collections: a collection named with the keyboard, the game put in it
-#: port/frontend/shell/shell.cpp:2100 port/frontend/shell/shell.cpp:2119
+#: port/frontend/shell/shell.cpp:2128 port/frontend/shell/shell.cpp:2147
 msgid "New collection"
 msgstr "Colecție nouă"
 
 #. a game's collection could not be written to the console's storage
-#: port/frontend/shell/shell.cpp:2107
+#: port/frontend/shell/shell.cpp:2135
 msgid "Could not save the collection"
 msgstr "Colecția nu a putut fi salvată"
 
-#: port/frontend/shell/shell.cpp:2506
+#: port/frontend/shell/shell.cpp:2534
 msgid "The update"
 msgstr "Actualizarea"
 
-#: port/frontend/shell/shell.cpp:2511
+#: port/frontend/shell/shell.cpp:2539
 msgid "The DLC"
 msgstr "DLC-ul"
 
-#: port/frontend/shell/shell.cpp:2516
+#: port/frontend/shell/shell.cpp:2544
 msgid "The update and the DLC"
 msgstr "Actualizarea și DLC-ul"
 
 #. after a Wii U game's update or DLC is removed: Updates and DLC (the game's Options) installs it again
-#: port/frontend/shell/shell.cpp:2527
+#: port/frontend/shell/shell.cpp:2555
 msgid "Removed. Reinstall it from Updates and DLC."
 msgstr "Eliminat. Actualizări și DLC îl pune la loc."
 
-#: port/frontend/shell/shell.cpp:2529
+#: port/frontend/shell/shell.cpp:2557
 msgid "Removed. Reinstall it with Install a CIA file."
 msgstr "Eliminat. Instalează un fișier CIA îl pune la loc."
 
 #. {0} is the system's reason, as it gives it
-#: port/frontend/shell/shell.cpp:2534
+#: port/frontend/shell/shell.cpp:2562
 msgid "Some files could not be removed: {0}"
 msgstr "Nu s-a putut elimina totul: {0}"
 
-#: port/frontend/shell/shell.cpp:2561
+#: port/frontend/shell/shell.cpp:2589
 msgid "Added to Favourites"
 msgstr "Adăugat la favorite"
 
-#: port/frontend/shell/shell.cpp:2561
+#: port/frontend/shell/shell.cpp:2589
 msgid "Removed from Favourites"
 msgstr "Scos de la favorite"
 
-#: port/frontend/shell/shell.cpp:2574
+#: port/frontend/shell/shell.cpp:2602
 msgid "Hidden. Find it with the Hidden filter or Search."
 msgstr "Ascuns. Filtrul Ascunse din bibliotecă îl arată, iar Caută îl găsește."
 
 #. a game just hidden from the Library while its filters' row is off: Search still lists it
-#: port/frontend/shell/shell.cpp:2577
+#: port/frontend/shell/shell.cpp:2605
 msgid "Hidden. Find it with Search."
 msgstr "Ascuns. Caută îl găsește."
 
-#: port/frontend/shell/shell.cpp:2787
+#: port/frontend/shell/shell.cpp:2815
 msgid "Playtendoh {0} is out"
 msgstr "A apărut Playtendoh {0}"
 
-#: port/frontend/shell/shell.cpp:2788
+#: port/frontend/shell/shell.cpp:2816
 msgid "You have {0}. Download and install it now? Your games, saves and settings are kept."
 msgstr "Aceasta e {0}. O descarci și o instalezi acum? Jocurile, salvările și setările tale rămân cum sunt."
 
-#: port/frontend/shell/shell.cpp:2789
+#: port/frontend/shell/shell.cpp:2817
 msgid "Update now"
 msgstr "Actualizează acum"
 
-#: port/frontend/shell/shell.cpp:2789 port/frontend/shell/shell.cpp:2813 port/frontend/shell/shell.cpp:2852 port/frontend/shell/shell.cpp:2873 port/frontend/shell/shell.cpp:2890
+#: port/frontend/shell/shell.cpp:2817 port/frontend/shell/shell.cpp:2841 port/frontend/shell/shell.cpp:2880 port/frontend/shell/shell.cpp:2901 port/frontend/shell/shell.cpp:2918
 msgid "Later"
 msgstr "Mai târziu"
 
-#: port/frontend/shell/shell.cpp:2789
+#: port/frontend/shell/shell.cpp:2817
 msgid "Skip this version"
 msgstr "Sari peste această versiune"
 
-#: port/frontend/shell/shell.cpp:2792 port/frontend/shell/shell.cpp:2797 port/frontend/shell/shell.cpp:2802
+#: port/frontend/shell/shell.cpp:2820 port/frontend/shell/shell.cpp:2825 port/frontend/shell/shell.cpp:2830
 msgid "Updating to {0}"
 msgstr "Se actualizează la {0}"
 
-#: port/frontend/shell/shell.cpp:2793
+#: port/frontend/shell/shell.cpp:2821
 msgid "Downloading: {0} of {1} MB"
 msgstr "Se descarcă: {0} din {1} MB"
 
-#: port/frontend/shell/shell.cpp:2798
+#: port/frontend/shell/shell.cpp:2826
 msgid "Checking the download"
 msgstr "Se verifică descărcarea"
 
-#: port/frontend/shell/shell.cpp:2803
+#: port/frontend/shell/shell.cpp:2831
 msgid "Installing"
 msgstr "Se instalează"
 
-#: port/frontend/shell/shell.cpp:2807
+#: port/frontend/shell/shell.cpp:2835
 msgid "{0} is installed"
 msgstr "{0} e instalată"
 
-#: port/frontend/shell/shell.cpp:2809 port/frontend/shell/shell.cpp:2866
+#: port/frontend/shell/shell.cpp:2837 port/frontend/shell/shell.cpp:2894
 msgid "Restarting Playtendoh…"
 msgstr "Playtendoh pornește din nou…"
 
-#: port/frontend/shell/shell.cpp:2813 port/frontend/shell/shell.cpp:2818
+#: port/frontend/shell/shell.cpp:2841 port/frontend/shell/shell.cpp:2846
 msgid "Restart now"
 msgstr "Repornește acum"
 
-#: port/frontend/shell/shell.cpp:2817
+#: port/frontend/shell/shell.cpp:2845
 msgid "Playtendoh will restart to finish the update."
 msgstr "Playtendoh repornește ca să termine actualizarea."
 
-#: port/frontend/shell/shell.cpp:2822
+#: port/frontend/shell/shell.cpp:2850
 msgid "The update did not finish"
 msgstr "Actualizarea nu s-a terminat"
 
-#: port/frontend/shell/shell.cpp:2823
+#: port/frontend/shell/shell.cpp:2851
 msgid "Playtendoh is still {0}."
 msgstr "Playtendoh e încă {0}."
 
-#: port/frontend/shell/shell.cpp:2826
+#: port/frontend/shell/shell.cpp:2854
 msgid "Checking for updates"
 msgstr "Se caută actualizări"
 
-#: port/frontend/shell/shell.cpp:2832
+#: port/frontend/shell/shell.cpp:2860
 msgid "Playtendoh update"
 msgstr "Actualizare Playtendoh"
 
-#: port/frontend/shell/shell.cpp:2853
+#: port/frontend/shell/shell.cpp:2881
 msgid "Restart"
 msgstr "Repornește"
 
 #. {0} lists the four folders: /data/cemu, /data/azahar, /data/melonds, /data/eden
-#: port/frontend/shell/shell.cpp:2869
+#: port/frontend/shell/shell.cpp:2897
 msgid "Your Wii U, 3DS, DS and Switch files will move into their own folders in {0}. It only takes a moment. Playtendoh restarts to do it."
 msgstr "Fișierele tale de Wii U, 3DS, DS și Switch merg în foldere proprii: {0}. Sunt mutate pe aceeași unitate, niciodată copiate, așa că durează o clipă oricât de mari ar fi. Playtendoh pornește din nou pentru asta."
 
-#: port/frontend/shell/shell.cpp:2873
+#: port/frontend/shell/shell.cpp:2901
 msgid "Reorganize"
 msgstr "Reorganizează"
 
 #. under an archived game's name while it is unpacked, the first time it starts
-#: port/frontend/shell/shell.cpp:2912
+#: port/frontend/shell/shell.cpp:2940
 msgid "Unpacking the game. This only happens once."
 msgstr "Jocul se despachetează din arhiva lui. Se face o singură dată: copia se păstrează pentru următoarea pornire."
 
@@ -10770,71 +10981,59 @@ msgstr "Jucător redenumit"
 msgid "Every console, oldest to newest"
 msgstr "Fiecare consolă, de la cea mai veche la cea mai nouă"
 
-#: port/frontend/shell/timeline.cpp:395
-msgid "No games yet"
-msgstr "Încă nu sunt jocuri"
-
-#: port/frontend/shell/timeline.cpp:401 port/frontend/shell/timeline.cpp:471
+#: port/frontend/shell/timeline.cpp:409 port/frontend/shell/timeline.cpp:483
 msgid "An empty shelf"
 msgstr "Un raft gol"
 
-#: port/frontend/shell/timeline.cpp:472
+#: port/frontend/shell/timeline.cpp:484
 msgid "Put its games in {0}, on the PS5 or a USB drive."
 msgstr "Pune jocurile în {0}, pe PS5 sau pe o unitate USB."
 
-#: port/frontend/shell/timeline.cpp:484
+#: port/frontend/shell/timeline.cpp:496
 msgid "Previous or next console"
 msgstr "Consola anterioară sau următoare"
 
-#: port/frontend/shell/timeline.cpp:484
+#: port/frontend/shell/timeline.cpp:496
 msgid "Jump a decade"
 msgstr "Sari un deceniu"
 
-#: port/frontend/shell/welcome.cpp:81
+#: port/frontend/shell/welcome.cpp:75
 msgid "For every system: A on Circle as on Nintendo consoles, or on Cross."
 msgstr "Pe fiecare parte: A pe Cerc, ca pe consolele Nintendo, sau pe Cruce."
 
-#: port/frontend/shell/welcome.cpp:82
+#: port/frontend/shell/welcome.cpp:76
 msgid "A on Circle and B on Cross as on Nintendo consoles, or A on Cross and B on Circle as on PlayStation. X and Y swap to match. You can change it later in each system's Controls."
 msgstr "A pe Cerc și B pe Cruce, unde le au Wii U, 3DS și DS, sau A pe Cruce și B pe Cerc, cum confirmă jocurile PlayStation. X și Y se inversează corespunzător. Comenzile fiecărei părți și fiecare jucător Wii U le pot schimba mai târziu."
 
-#: port/frontend/shell/welcome.cpp:107
+#: port/frontend/shell/welcome.cpp:90
 msgid "For Wii U player 1: touch the GamePad screen, or press a button."
 msgstr "Al jucătorului 1 Wii U: o atingere a ecranului GamePad-ului sau un buton."
 
-#: port/frontend/shell/welcome.cpp:108
+#: port/frontend/shell/welcome.cpp:91
 msgid "What a touchpad click does for Wii U player 1: touch the GamePad screen, or press the button set for Touchpad click (- (Select) if none). Automatic: a touch with the GamePad, a button with other controllers. Other players: Settings > Controls for the Wii U."
 msgstr "Ce face un clic pe touchpad pentru jucătorul 1 Wii U: o atingere a ecranului GamePad-ului sau butonul setat ca Clic pe touchpad la Butoane (- (Select) dacă nu e niciunul). Automat: o atingere cu GamePad-ul, un buton cu celelalte controllere. Pentru fiecare jucător: Setări > Comenzi pe partea Wii U."
 
-#: port/frontend/shell/welcome.cpp:118
-msgid "Back to Settings"
-msgstr "Înapoi la Setări"
-
-#: port/frontend/shell/welcome.cpp:119
+#: port/frontend/shell/welcome.cpp:101
 msgid "Everything here is in Settings too."
 msgstr "Tot ce e aici e și în Setări."
 
-#: port/frontend/shell/welcome.cpp:120
+#: port/frontend/shell/welcome.cpp:102
 msgid "Continue. You don't have to choose now: everything here is also in Settings."
 msgstr "Continuă. Nu trebuie ales nimic acum: fiecare rând al acestei pagini e și în Setări, pe partea lui."
 
-#: port/frontend/shell/welcome.cpp:221 port/frontend/shell/whatsnew.cpp:83
+#: port/frontend/shell/welcome.cpp:190 port/frontend/shell/whatsnew.cpp:83
 msgid "Playtendoh {0}"
 msgstr "Playtendoh {0}"
 
-#: port/frontend/shell/welcome.cpp:222
+#: port/frontend/shell/welcome.cpp:191
 msgid "New in this version"
 msgstr "Nou în această versiune"
 
-#: port/frontend/shell/welcome.cpp:224
-msgid "Choose how the app looks and feels. You can change it in Settings."
-msgstr "Cum arată și cum se simte aplicația, ales o dată. Totul e și în Setări."
-
-#: port/frontend/shell/welcome.cpp:225
+#: port/frontend/shell/welcome.cpp:192
 msgid "A few new options to set up. They're also in Settings."
 msgstr "Câteva opțiuni noi de setat o dată. Toate sunt și în Setări."
 
-#: port/frontend/shell/welcome.cpp:266
+#: port/frontend/shell/welcome.cpp:232
 msgid "This row"
 msgstr "Acest rând"
 
@@ -10927,7 +11126,7 @@ msgstr "Ce e nou"
 msgid "The highlights. See the release notes on GitHub for everything."
 msgstr "Cea mai mare actualizare de până acum, pe scurt. Notele versiunii de pe GitHub au tot."
 
-#: port/frontend/shell/widgets.cpp:466
+#: port/frontend/shell/widgets.cpp:554
 msgid "This game"
 msgstr "Acest joc"
 
