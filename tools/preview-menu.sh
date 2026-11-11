@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-# The in-game menus' sheet (port/app/side_menu.h) on the PC, as PNGs in build/menu-preview, to work on
-# its look without a console (tools/menu-preview/menu.cpp says what it shows):
+# The in-game menus' sheet (port/app/side_menu.h) and the loading screen (port/app/loading_screen.h) on
+# the PC, as PNGs in build/menu-preview, to work on their look without a console
+# (tools/menu-preview/menu.cpp says what it shows):
 #
 #   tools/preview-menu.sh [BACKDROP.png]     the backdrop stands in for the game behind the menu
 #

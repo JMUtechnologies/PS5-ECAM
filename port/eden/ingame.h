@@ -9,7 +9,8 @@
 // session file (ps5eden::WriteSession).
 //
 // The loading screen: the game's cover, its name, GameTDB's publisher and year and what Eden is doing,
-// on the cover's colours blurred, in place of ProsperoEden's. Touchpad click + Options opens the menu,
+// on the cover's colours blurred, in place of ProsperoEden's, fading into the game's first frames; the
+// Wii U's and the 3DS's are the same (app/loading_screen.h). Touchpad click + Options opens the menu,
 // as on the other sides. The game runs on behind it with its controller still, as Cemu's does behind
 // the Wii U's menu: Eden's port keeps the emulation from being paused (its
 // tools/check-gpu-producer-stop.py). Without a session file, or when ImGui cannot start on Eden's

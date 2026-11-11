@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Wed, 11 Nov 2026 03:21:45 -0500
+Subject: [PATCH] PS5: the port's loading screen in place of the shader cache's
+
+PS5Cemu_DrawLoading (the port's in-game code) draws the TV's picture while the game's cached shaders
+and pipelines load, with how far each is, and the last frame before the game's; Cemu's own screen
+(the game's bootTvTex, Cemu's bar and counts) is drawn only when it declines. The GamePad's picture
+and the boot sound are as they were.
+---
+ src/Cafe/HW/Latte/Core/LatteShaderCache.cpp | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/src/Cafe/HW/Latte/Core/LatteShaderCache.cpp b/src/Cafe/HW/Latte/Core/LatteShaderCache.cpp
+index 892d917..4fbb14f 100644
+--- a/src/Cafe/HW/Latte/Core/LatteShaderCache.cpp
++++ b/src/Cafe/HW/Latte/Core/LatteShaderCache.cpp
+@@ -76,6 +76,13 @@ void LatteShaderCache_LoadPipelineCache(uint64 cacheTitleId);
+ bool LatteShaderCache_updatePipelineLoadingProgress();
+ void LatteShaderCache_ShowProgress(const std::function <bool(void)>& loadUpdateFunc, bool isPipelines);
+ 
++#if defined(CEMU_PS5)
++// PS5Cemu's loading screen in place of this one (ps5cemu/port/app/ingame.cpp), on the TV's picture:
++// stage 0 reading the cached shaders, 1 compiling them, 2 the cached pipelines, done of of each, 3 the
++// last frame before the game's. False: this one is drawn.
++bool PS5Cemu_DrawLoading(sint32 stage, uint32 done, uint32 of);
++#endif
++
+ struct
+ {
+ 	struct
+@@ -507,6 +514,9 @@ void LatteShaderCache_Load()
+ 
+ 
+ 	g_renderer->BeginFrame(true);
++#if defined(CEMU_PS5)
++	if (!PS5Cemu_DrawLoading(3, 0, 0))
++#endif
+ 	if (g_renderer->ImguiBegin(true))
+ 	{
+ 		LatteShaderCache_drawBackgroundImage(g_shaderCacheLoaderState.textureTVId, 1280, 720);
+@@ -560,6 +570,13 @@ void LatteShaderCache_ShowProgress(const std::function <bool(void)>& loadUpdateF
+ 		ImGui_GetFont(window_size.y / 48.0f); // = 16
+ 
+ 		g_renderer->BeginFrame(true);
++#if defined(CEMU_PS5)
++		if (PS5Cemu_DrawLoading(isPipelines ? 2 : shaderCacheScreenStats.compiledShaderCount >= 3 ? 1 : 0,
++				isPipelines ? g_shaderCacheLoaderState.loadedPipelines : g_shaderCacheLoaderState.loadedShaderFiles,
++				std::max(isPipelines ? g_shaderCacheLoaderState.pipelineFileCount : g_shaderCacheLoaderState.shaderFileCount, 0)))
++			lastFrameUpdate = tick_cached();
++		else
++#endif
+ 		if (g_renderer->ImguiBegin(true))
+ 		{
+ 			auto& io = ImGui::GetIO();

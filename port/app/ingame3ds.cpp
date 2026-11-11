@@ -4,6 +4,7 @@
 #include "emulator.h"
 #include "keyboard_menu.h"
 #include "lang.h"
+#include "loading_screen.h"
 #include "paths.h"
 #include "menu_canvas.h"
 #include "remote_menu.h"
@@ -123,6 +124,7 @@ namespace ps5ingame3ds
 			ImFont* row = nullptr;	 // label
 			ImFont* small = nullptr; // caption
 			ImFont* chip = nullptr;
+			ImFont* big = nullptr; // the loading screen's game name (a 3DS game's only)
 			bool fontsUploaded = false;
 			int uploadAge = -1;	   // frames since the font upload, until its buffer goes
 			bool pending = false;  // a frame's draw data waits for the render pass
@@ -131,10 +133,47 @@ namespace ps5ingame3ds
 			ImTextureID pad = nullptr;	 // the Buttons page's DualSense (assets/ui/dualsense.tga), made then too
 			bool coverTried = false;
 			int coverWidth = 0, coverHeight = 0;
+			ps5menu::LoadingPicture blur; // the cover's small copy, the loading screen's ground, made with it
+			uint64_t fadeFrom = 0;		  // the game's first frame after the loading screen (sceKernelGetProcessTime)
 			std::vector<std::pair<ImTextureID, int>> retired; // textures and their age in frames, until the GPU is done with them
 			uint64_t lastFrame = 0;
 		};
 		Gpu g;
+		// The loading screen (SetLoading), under s_mutex: what Azahar is doing and how far; whether it is
+		// up, and once it ended, that it fades over the game's first frames
+		LoadingStep s_loadingStep = LoadingStep::Loading;
+		size_t s_loadingDone = 0, s_loadingOf = 0;
+		std::atomic<bool> s_loading{false}, s_loadingFades{false};
+		uint64_t s_loadingFrom = 0; // sceKernelGetProcessTime
+
+		void DrawLoading(float scale, float alpha)
+		{
+			ps5menu::Loading loading;
+			LoadingStep step;
+			size_t done, of;
+			{
+				std::lock_guard lock(s_mutex);
+				loading.title = s_name;
+				loading.details = s_details;
+				step = s_loadingStep;
+				done = std::min(s_loadingDone, s_loadingOf);
+				of = s_loadingOf;
+			}
+			loading.system = "Nintendo 3DS";
+			if (step == LoadingStep::Starting)
+				loading.step = ps5menu::StartingStep();
+			else if (step == LoadingStep::Loading || of == 0)
+				loading.step = ps5menu::LoadingStep();
+			else
+			{
+				loading.step = step == LoadingStep::Pipelines ? ps5menu::PipelineStep(done, of) : ps5menu::ShaderStep(done, of);
+				loading.progress = (float)done / of;
+			}
+			loading.cover = {g.cover, g.coverWidth, g.coverHeight};
+			loading.blur = g.blur;
+			ps5menu::DrawLoading(ImGui::GetForegroundDrawList(), ImGui::GetIO().DisplaySize, scale, Colours(),
+				{g.big, g.chip, g.body, g.row, g.small}, loading, (sceKernelGetProcessTime() - s_loadingFrom) / 1e6f, alpha);
+		}
 		uint32_t s_buttons = 0, s_pressed = 0;
 		uint32_t s_menuButtons = 0; // the same, with the left stick's directions as the D-pad's
 
@@ -444,6 +483,8 @@ namespace ps5ingame3ds
 			g.row = add(Weight::Regular, ps5menu::kLabel);
 			g.small = add(Weight::Regular, ps5menu::kCaption);
 			g.chip = add(Weight::SemiBold, ps5menu::kChip);
+			if (s_console == Console::N3ds)
+				g.big = add(Weight::SemiBold, ps5menu::kLoadingTitle);
 			g.context = ImGui::CreateContext(g.atlas);
 			ImGui::SetCurrentContext(g.context);
 			ImGuiIO& io = ImGui::GetIO();
@@ -1081,6 +1122,26 @@ namespace ps5ingame3ds
 		s_coverPath = coverPath;
 	}
 
+	void SetLoading(LoadingStep step, size_t done, size_t of)
+	{
+		{
+			std::lock_guard lock(s_mutex);
+			s_loadingStep = step;
+			s_loadingDone = done;
+			s_loadingOf = of;
+		}
+		if (!s_loading.exchange(true))
+			s_loadingFrom = sceKernelGetProcessTime();
+	}
+
+	void EndLoading()
+	{
+		if (!s_loading.exchange(false))
+			return;
+		g.fadeFrom = 0;
+		s_loadingFades = true;
+	}
+
 	void ToggleMenu()
 	{
 		if (s_open)
@@ -1338,7 +1399,19 @@ namespace ps5ingame3ds
 				else
 					i++;
 			const bool border = borderTheme > 0 && (g.border || borderFresh);
-			if (!open && !performance && !keyboard && !border)
+			// the loading screen, then the game's first frames with it fading over them
+			const bool loading = s_loading;
+			float fade = 0;
+			if (!loading && s_loadingFades)
+			{
+				const uint64_t now = sceKernelGetProcessTime();
+				if (!g.fadeFrom)
+					g.fadeFrom = now;
+				fade = ps5menu::LoadingFadeAlpha((now - g.fadeFrom) / 1e6f);
+				if (fade <= 0)
+					s_loadingFades = false;
+			}
+			if (!open && !performance && !keyboard && !border && !loading && fade <= 0)
 			{
 				s_buttons = 0; // the menu sees a fresh controller when it next opens
 				return;
@@ -1394,8 +1467,8 @@ namespace ps5ingame3ds
 				if (!pixels.empty())
 					g.border = ImGui_ImplVulkan_GenerateTexture(target.commandBuffer, pixels, {width, height});
 			}
-			// the game's box art, the first time the menu opens
-			if (open && !g.coverTried)
+			// the game's box art, the first time the menu opens or the loading screen shows
+			if ((open || loading) && !g.coverTried)
 			{
 				g.coverTried = true;
 				std::string path;
@@ -1405,11 +1478,14 @@ namespace ps5ingame3ds
 				}
 				std::vector<uint8_t> rgba;
 				int width = 0, height = 0;
-				if (!path.empty() && ps5tga::Load(path, 264, 352, rgba, width, height))
+				if (!path.empty() && ps5tga::Load(path, ps5menu::kLoadingCoverWidth, ps5menu::kLoadingCoverHeight, rgba, width, height))
 				{
 					g.cover = ImGui_ImplVulkan_GenerateTexture(target.commandBuffer, rgba, {width, height});
 					g.coverWidth = width;
 					g.coverHeight = height;
+					// its small copy: the loading screen's ground, its colours blurred
+					if (ps5tga::Load(path, ps5menu::kLoadingBlurSize, ps5menu::kLoadingBlurSize, rgba, width, height))
+						g.blur = {ImGui_ImplVulkan_GenerateTexture(target.commandBuffer, rgba, {width, height}), width, height};
 				}
 				else
 					ps5log::Line("[ingame3ds] no box art for the menu ({})", path.empty() ? "none fetched" : path);
@@ -1423,14 +1499,21 @@ namespace ps5ingame3ds
 			g.lastFrame = now;
 			Input();
 			ImGui::NewFrame();
-			if (borderTheme > 0 && g.border)
-				DrawBorder(borderTheme);
-			if (open)
-				DrawMenu(scale);
-			else if (keyboard)
-				DrawKeyboard(scale);
-			if (performance)
-				DrawPerformance(scale);
+			if (loading)
+				DrawLoading(scale, 1.0f);
+			else
+			{
+				if (borderTheme > 0 && g.border)
+					DrawBorder(borderTheme);
+				if (open)
+					DrawMenu(scale);
+				else if (keyboard)
+					DrawKeyboard(scale);
+				if (performance)
+					DrawPerformance(scale);
+				if (fade > 0)
+					DrawLoading(scale, fade);
+			}
 			ImGui::Render();
 			g.pending = true;
 			return;

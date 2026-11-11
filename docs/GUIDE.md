@@ -836,5 +836,6 @@ every 10 seconds with the frame rate, and `[crash]` lines if an emulator crashes
 - 3DS texture filters are expensive at high internal resolutions; if a game stutters, try Texture
   filter: None first.
 - The first start with a large Wii U shader cache takes a few minutes while Cemu builds the
-  pipelines.
+  pipelines. The Wii U and the 3DS show the same loading screen as the Switch meanwhile (the game's
+  cover and name), counting the shaders and pipelines as they are made ready.
 - etaHEN is the most tested HEN; OnionHEN and others have had fewer reports so far.

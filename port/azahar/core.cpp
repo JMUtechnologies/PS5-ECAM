@@ -661,6 +661,41 @@ namespace ps5azahar
 				target.inside_render_pass, target.generation});
 		}
 
+		// Azahar's shader cache made ready before the game's first step, behind Playtendoh's loading screen
+		// (app/loading_screen.h, drawn in the frames presented meanwhile: ingame3ds.cpp): a frame at most
+		// 30 times a second, saying how far into each of the cache's parts Azahar is (its vertex,
+		// fragment and geometry shaders, then its pipelines). Only this thread presents until Emulate's
+		// starts; the cache's own workers make shaders and pipelines, never a frame.
+		void LoadShaders(Core::System& system)
+		{
+			const uint64_t from = sceKernelGetProcessTime();
+			uint64_t presented = 0;
+			auto present = [&](bool always) {
+				const uint64_t now = sceKernelGetProcessTime();
+				if (!always && now - presented < 33000)
+					return;
+				presented = now;
+				system.GPU().Renderer().SwapBuffers();
+			};
+			using Step = ps5ingame3ds::LoadingStep;
+			ps5ingame3ds::SetLoading(Step::Loading);
+			present(true);
+			std::atomic_bool stopLoading = false;
+			system.GPU().Renderer().Rasterizer()->LoadDefaultDiskResources(stopLoading,
+				[&](VideoCore::LoadCallbackStage stage, std::size_t done, std::size_t of, const std::string& name) {
+					// done counts from 0, to of (its last index) for the last one
+					if (stage == VideoCore::LoadCallbackStage::Build && name != "Driver Pipeline Cache")
+						ps5ingame3ds::SetLoading(name == "Pipeline" ? Step::Pipelines : Step::Shaders, done + 1, of + 1);
+					else
+						ps5ingame3ds::SetLoading(Step::Loading);
+					present(false);
+				});
+			ps5ingame3ds::SetLoading(Step::Starting);
+			present(true);
+			ps5ingame3ds::EndLoading();
+			ps5log::Line("[azahar] the shader cache loaded in {:.1f} s", (sceKernelGetProcessTime() - from) / 1e6);
+		}
+
 		void Emulate()
 		{
 			Common::SetCurrentThreadName("AzaharEmu");
@@ -889,8 +924,6 @@ namespace ps5azahar
 				ps5log::Line("[azahar] system language {}", (int)language);
 			}
 		system.GPU().ApplyPerProgramSettings(programId);
-		std::atomic_bool stopLoading = false;
-		system.GPU().Renderer().Rasterizer()->LoadDefaultDiskResources(stopLoading, nullptr);
 
 		s_name = game.name;
 		std::string title;
@@ -911,6 +944,7 @@ namespace ps5azahar
 			ps5ingame3ds::SetGame(details, cover);
 		}
 		ShowInMenu();
+		LoadShaders(system);
 		ShowStateSlots();
 		ps5ingame3ds::SetUndoAvailable(false); // kUndoSlot is a load of this session's to undo, or nothing
 		ShowExtras();
