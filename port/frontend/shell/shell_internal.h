@@ -145,10 +145,12 @@ namespace ps5shell
 		float bannerAspect = 3;
 	};
 
-	// A console's controller (or the handheld that is its controller), in a few rounded shapes centred on
-	// cx, cy and about s wide: body its colour, cut its screens and buttons, second the Switch's other
-	// Joy-Con and the Game Boy's screen (consoles.cpp)
-	void DrawConsole(Canvas& canvas, System side, float cx, float cy, float s, uint32_t body, uint32_t cut, uint32_t second);
+	// A console's controller (or the handheld that is its controller), centred on cx, cy and about s wide:
+	// its icon (RetroArch's, port/ui/consoles) in body, its colour, once it is on the GPU; else drawn in a
+	// few rounded shapes, cut its screens and buttons, second the Switch's other Joy-Con and the Game Boy's
+	// screen (consoles.cpp)
+	void DrawConsole(Canvas& canvas, System side, float cx, float cy, float s, uint32_t body, uint32_t cut, uint32_t second,
+		const ui::Picture* icon = nullptr);
 
 	struct SettingsPage
 	{
@@ -178,6 +180,7 @@ namespace ps5shell
 		void DrawMark(Canvas& canvas, float cx, float cy, float radius); // the top left's: every console's controller in a ring
 		float DrawWordmark(Canvas& canvas, float x, float centreY, float height, uint32_t colour); // the logo's name; its width
 		void DrawBareConsole(Canvas& canvas, System side, const Box& box, bool open); // a side's in the bar's carousel: its controller (consoles.cpp)
+		const ui::Picture* ConsoleIcon(System side, float size); // its icon at about size wide, once on the GPU (consoles.cpp)
 		void DrawHints(Canvas& canvas, const std::vector<Hint>& hints);
 		void DrawOverlays(Canvas& canvas);
 		std::vector<Hint> Hints() const;
@@ -781,6 +784,7 @@ namespace ps5shell
 		// the hub
 		int m_hubGame = -1;
 		std::string m_wordmark; // the logo's name as a picture, a white shape to tint (port/ui/wordmark.png)
+		std::string m_consoleIcons; // the consoles' icons' folder (port/ui/consoles)
 		// the layout's question, and Orbit
 		std::function<void()> m_layoutThen;
 		int m_layoutFocus = 0;

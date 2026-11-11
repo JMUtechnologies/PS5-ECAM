@@ -2093,6 +2093,8 @@ namespace ps5shell
 		if (page == "about")
 			// tr: premohq and JMUtechnologies are GitHub names: keep them as they are
 			return std::string(Tr("Playtendoh is made by its co-founders, premohq and JMUtechnologies.")) + "\n" +
+				   // tr: RetroArch, libretro and XMB Monochrome are names: keep them as they are
+				   Tr("The console icons: RetroArch's XMB Monochrome, by the libretro team (CC BY 4.0).") + "\n" +
 				   // tr: {0} is the app's version; {1} its data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on; {2} Eden's game files folder; {3} Cemu's selected data folder; {4} its default games folder; {5} Azahar's selected folder; {6} melonDS's selected folder
 				   TrF("Cemu, the Wii U emulator, by the Cemu team and its contributors; RADV on the PS5 by Mihawk-99 and mpereiraesaa; the "
 				   "community graphic packs' authors.\nAzahar, the 3DS emulator, by the Azahar team and the Citra contributors before them; "

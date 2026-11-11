@@ -36,8 +36,15 @@ namespace ps5shell
 		}
 	}
 
-	void DrawConsole(Canvas& canvas, System side, float cx, float cy, float s, uint32_t body, uint32_t cut, uint32_t second)
+	void DrawConsole(Canvas& canvas, System side, float cx, float cy, float s, uint32_t body, uint32_t cut, uint32_t second, const ui::Picture* icon)
 	{
+		if (icon && icon->texture)
+		{
+			// white on clear, square, the console about the drawing's width in it
+			const float size = s * 1.06f;
+			canvas.Image(icon->texture, {cx - size / 2, cy - size / 2, size, size}, 0, body);
+			return;
+		}
 		// a shape by its centre, width and height, in the drawing's width (s)
 		auto shape = [&](float x, float y, float w, float h, float r, uint32_t colour) {
 			canvas.Rect({cx + (x - w / 2) * s, cy + (y - h / 2) * s, w * s, h * s}, r * s, colour);
@@ -236,6 +243,22 @@ namespace ps5shell
 		}
 	}
 
+	const ui::Picture* Shell::ConsoleIcon(System side, float size)
+	{
+		// RetroArch's XMB Monochrome icons (CC BY 4.0, tools/render-console-icons.py), at 192 and at 64 for
+		// the marks drawn small (the layout's 1920 is the screen's 3840: under 48 wide is under 96 pixels);
+		// none for a side the set has no icon of (the Switch 2, the Super Game Boy, ...): its drawing stays
+		std::string_view name = side == System::WiiU ? "wiiu" : side == System::Switch ? "switch" : side == System::N3ds ? "3ds" :
+								side == System::Nds	 ? "ds" : "";
+		if (ps5retro::IsRetro((int)side))
+			name = ps5retro::Of((int)side).key;
+		static constexpr std::string_view kDrawn[] = {"sgb", "satellaview", "vs", "ique"};
+		if (name.empty() || std::find(std::begin(kDrawn), std::end(kDrawn), name) != std::end(kDrawn) || m_consoleIcons.empty())
+			return nullptr;
+		const ui::Picture& picture = m_images->Get(m_consoleIcons + "/" + std::string(name) + (size < 48 ? "-small.png" : ".png"));
+		return picture.texture ? &picture : nullptr;
+	}
+
 	void Shell::DrawMark(Canvas& canvas, float cx, float cy, float radius)
 	{
 		// a dark disc on every theme, every console's controller in a ring on it in the bar's order from
@@ -252,9 +275,10 @@ namespace ps5shell
 			const System side = BarSide(i);
 			const float angle = kTau * i / kSides - kTau / 4;
 			const uint32_t colour = side == m_side ? Vivid(side) : ui::Mix(Vivid(side), kGroundLow, 0.25f);
-			DrawConsole(canvas, side, cx + std::cos(angle) * ring, cy + std::sin(angle) * ring, size, colour, kGround, second(side, colour));
+			DrawConsole(canvas, side, cx + std::cos(angle) * ring, cy + std::sin(angle) * ring, size, colour, kGround, second(side, colour),
+				ConsoleIcon(side, size));
 		}
-		DrawConsole(canvas, m_side, cx, cy, radius * 0.72f, Vivid(m_side), kGround, second(m_side, Vivid(m_side)));
+		DrawConsole(canvas, m_side, cx, cy, radius * 0.72f, Vivid(m_side), kGround, second(m_side, Vivid(m_side)), ConsoleIcon(m_side, radius * 0.72f));
 	}
 
 	void Shell::DrawDial(Canvas& canvas)
@@ -293,13 +317,13 @@ namespace ps5shell
 			const System side = BarSide(order[k]);
 			const bool lit = side == m_side && !m_orbitHome;
 			const uint32_t colour = lit ? Vivid(side) : ui::Mix(Vivid(side), kGroundLow, 0.3f);
-			DrawConsole(canvas, side, x, y, size * (lit ? 1.15f : 1.0f), colour, kGround, Second(side, colour));
+			DrawConsole(canvas, side, x, y, size * (lit ? 1.15f : 1.0f), colour, kGround, Second(side, colour), ConsoleIcon(side, size));
 		}
 		const Box middle{cx - hub, cy - hub, hub * 2, hub * 2};
 		canvas.Rect(middle, hub, kHub);
 		canvas.Ring(middle, hub, 1.5f, 0x12ffffff);
 		const uint32_t nes = Vivid(System::Nes);
-		DrawConsole(canvas, System::Nes, cx, cy, 360, nes, kGround, Second(System::Nes, nes));
+		DrawConsole(canvas, System::Nes, cx, cy, 360, nes, kGround, Second(System::Nes, nes), ConsoleIcon(System::Nes, 360));
 		if (m_orbitHome)
 			canvas.Ring(middle.Scaled(1.04f), hub * 1.04f, 3, nes);
 		else
@@ -331,7 +355,7 @@ namespace ps5shell
 		const uint32_t quiet = ui::Mix(kText, kInk1, 0.55f) | 0xff000000;
 		const uint32_t colour = open ? Vivid(side) : quiet;
 		const uint32_t cut = side == System::Switch2 ? (open ? kDark : quiet) : kInk1 | 0xff000000;
-		DrawConsole(canvas, side, box.CentreX(), box.CentreY(), box.w, colour, cut, open ? Second(side, colour) : quiet);
+		DrawConsole(canvas, side, box.CentreX(), box.CentreY(), box.w, colour, cut, open ? Second(side, colour) : quiet, ConsoleIcon(side, box.w));
 	}
 
 	// -- the later consoles' motifs: each one's own, in its colour, on the bubbles' places and speeds ----------

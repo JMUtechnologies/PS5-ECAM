@@ -133,6 +133,7 @@ namespace ps5shell
 		m_fonts.TakeChanged(first, rows);
 		m_images = std::make_unique<ui::Images>(m_gfx);
 		m_wordmark = host.assets + "/wordmark.png";
+		m_consoleIcons = host.assets + "/consoles";
 		ps5sound::Start(m_settings.music, m_settings.musicVolume, m_settings.menuSounds);
 		ps5boxart::SetEnabled(m_settings.boxArt);
 		// reports to the project: kept in the data folder's reports/, and only with the player's yes

@@ -139,6 +139,10 @@ cp "$PS5CEMU_ROOT/port/ui/wordmark.png" "$ui/"
 # the in-game menus' DualSense on their Buttons page: Zacksly's drawing (CC BY 3.0, its licence beside it)
 python3 -B "$PS5CEMU_ROOT/tools/render-pad-art.py" "$PS5CEMU_ROOT/port/ui/dualsense.png" "$ui/dualsense.tga"
 cp "$PS5CEMU_ROOT/port/ui/CC-BY-3.0-Zacksly.txt" "$ui/"
+# the consoles' marks: RetroArch's XMB Monochrome icons (CC BY 4.0, its licence beside them; tools/render-console-icons.py)
+mkdir -p "$ui/consoles"
+cp "$PS5CEMU_ROOT"/port/ui/consoles/*.png "$ui/consoles/"
+cp "$PS5CEMU_ROOT/port/ui/CC-BY-4.0-RetroArch.txt" "$ui/"
 cp "$PS5CEMU_ROOT/port/ui/fonts/lexend.sdf" "$PS5CEMU_ROOT"/port/ui/fonts/Lexend-*.ttf "$PS5CEMU_ROOT/tools/fonts/OFL.txt" "$ui/fonts/"
 cp "$PS5CEMU_ROOT"/port/frontend/ui/sounds/*.wav "$ui/sounds/"
 cp "$work/icons/ui/icons/ps5cemu-72.tga" "$work/icons/ui/icons/azahar-72.tga" "$work/icons/ui/icons/melonds-72.tga" \
