@@ -140,10 +140,15 @@ namespace ps5settings
 		return nx;
 	}
 
+	// The GPU shortcuts are EglantinePS5's own for every Switch 2 game (its settings_store.h,
+	// LoadPerformance), the setup its author proves games in: the fast GPU fences and no reactive
+	// flushing, without which the core's split GPU thread stays off.
 	inline N3ds Switch2Defaults()
 	{
 		N3ds nx;
 		nx.gamesFolder = "/data/eglantineps5/roms";
+		nx.nxFastGpu = true;
+		nx.nxReactiveFlushing = false;
 		return nx;
 	}
 
@@ -338,6 +343,8 @@ namespace ps5settings
 		N3ds nds = DsDefaults();
 		N3ds nx = SwitchDefaults();
 		N3ds nx2 = Switch2Defaults(); // Switch 2's side settings, separate from Switch
+		// 1: the Switch 2 side's GPU shortcuts are Switch2Defaults' (saved before: the Switch's, once replaced)
+		int switch2Defaults = 1;
 		// the other sides', in ps5retro::kSystems' order, each with its default games folder
 		std::array<N3ds, ps5retro::kSystems.size()> retro = [] { std::array<N3ds, ps5retro::kSystems.size()> values{}; for (size_t i = 0; i < values.size(); i++) values[i].gamesFolder = ps5retro::kSystems[i].games; return values; }();
 		// games' own settings, by GameKey: "3ds:0004000000055d00" -> {"resolution": 3}

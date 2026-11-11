@@ -2,6 +2,7 @@
 #include "frontend/settings.h"
 #include <algorithm>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 static int failures = 0;
 static void Check(bool ok, const char* name) { std::cout << (ok ? "PASS " : "FAIL ") << name << '\n'; failures += !ok; }
@@ -58,5 +59,21 @@ int main()
 		"Changing another menu setting does not copy the game's controls or HUD to side defaults");
 	Check(ForGame(saved, "switch2", title).nx2.nxDeadzone == 20 && ForGame(saved, "switch2", title).nx2.performance,
 		"Saving menu changes preserves the game's controls and HUD overrides");
+	// The Switch 2 side's GPU shortcuts are EglantinePS5's own (fast GPU on, reactive flushing off); a
+	// file saved with the Switch's gets them once, and what the player chooses after that stays
+	Check(Launcher{}.nx2.nxFastGpu && !Launcher{}.nx2.nxReactiveFlushing && !Launcher{}.nx.nxFastGpu && Launcher{}.nx.nxReactiveFlushing,
+		"Switch 2 starts from EglantinePS5's GPU shortcuts, the Switch from its own");
+	{
+		std::ofstream old(ps5paths::Root() + "/ps5cemu.json");
+		old << R"({"switch2": {"nxFastGpu": false, "nxReactiveFlushing": true, "nxDocked": false}})";
+	}
+	auto migrated = Load();
+	Check(migrated.nx2.nxFastGpu && !migrated.nx2.nxReactiveFlushing && !migrated.nx2.nxDocked,
+		"settings saved with the Switch's GPU shortcuts get EglantinePS5's once, the rest kept");
+	migrated.nx2.nxFastGpu = false;
+	migrated.nx2.nxReactiveFlushing = true;
+	Check(Save(migrated), "the player's own GPU shortcuts serialize");
+	const auto chosen = Load();
+	Check(!chosen.nx2.nxFastGpu && chosen.nx2.nxReactiveFlushing, "after that, the player's own GPU shortcuts stay");
 	return failures ? 1 : 0;
 }

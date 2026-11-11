@@ -388,7 +388,20 @@ namespace ps5settings
 		if (json.HasMember("switch") && json["switch"].IsObject())
 			ReadN3ds(json["switch"], settings.nx, false);
 		if (json.HasMember("switch2") && json["switch2"].IsObject())
+		{
 			ReadN3ds(json["switch2"], settings.nx2, false);
+			// saved with the Switch's GPU shortcuts (fast GPU off, reactive flushing on), which put
+			// Ocarina of Time's GPU in a stop: EglantinePS5's own instead, once
+			settings.switch2Defaults = 0;
+			ReadInt(json, "switch2Defaults", settings.switch2Defaults, 0, 1);
+			if (settings.switch2Defaults < 1)
+			{
+				const N3ds proven = Switch2Defaults();
+				settings.nx2.nxFastGpu = proven.nxFastGpu;
+				settings.nx2.nxReactiveFlushing = proven.nxReactiveFlushing;
+				settings.switch2Defaults = 1;
+			}
+		}
 		if (settings.nx2.gamesFolder.empty())
 			settings.nx2.gamesFolder = "/data/eglantineps5/roms";
 		for (size_t i = 0; i < ps5retro::kSystems.size(); i++)
@@ -608,6 +621,8 @@ namespace ps5settings
 		WriteN3ds(writer, settings.nx);
 		writer.Key("switch2");
 		WriteN3ds(writer, settings.nx2);
+		writer.Key("switch2Defaults");
+		writer.Int(settings.switch2Defaults);
 		for (size_t i = 0; i < ps5retro::kSystems.size(); i++) { writer.Key(ps5retro::kSystems[i].key); WriteN3ds(writer, settings.retro[i]); }
 		writer.Key("games");
 		writer.StartObject();
