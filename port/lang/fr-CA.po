@@ -18,7 +18,7 @@ msgid_plural "{0} seconds left, or nothing changes. Touchpad click can be chosen
 msgstr[0] "Encore {0} seconde; ensuite rien ne change. Le clic du pavé tactile compte aussi."
 msgstr[1] "Encore {0} secondes; ensuite rien ne change. Le clic du pavé tactile compte aussi."
 
-#: port/app/emulator.cpp:531 port/frontend/shell/settings.cpp:3127 port/frontend/shell/shell.cpp:2208
+#: port/app/emulator.cpp:531 port/frontend/shell/settings.cpp:3137 port/frontend/shell/shell.cpp:2257
 msgid "Playtendoh cannot write to {0}. Is the HEN loaded?"
 msgstr "Playtendoh ne peut pas écrire dans {0}. Le HEN est-il chargé?"
 
@@ -70,37 +70,37 @@ msgctxt "genre"
 msgid "Wrestling"
 msgstr "Lutte"
 
-#: port/app/ingame.cpp:148 port/frontend/actions.cpp:369
+#: port/app/ingame.cpp:147 port/frontend/actions.cpp:369
 #, menu
 msgid "Wii U Pro Controller"
 msgstr "Manette Pro Wii U"
 
-#: port/app/ingame.cpp:210
+#: port/app/ingame.cpp:209
 #, menu
 msgid "Original keeps the game's proportions with bars at the sides. Stretched fills the screen."
 msgstr "Les proportions d’origine gardent celles de l’image, avec des bandes là où elles diffèrent de l’écran; Étirée le remplit."
 
-#: port/app/ingame.cpp:229
+#: port/app/ingame.cpp:228
 #, menu
 msgid "Shows a notice while shaders are being built."
 msgstr "Les notes de Cemu dans un coin pendant que le jeu compile ses shaders. Désactivé les masque; ils sont compilés dans tous les cas."
 
-#: port/app/ingame.cpp:244
+#: port/app/ingame.cpp:243
 #, menu
 msgid "Cross turns it on or off."
 msgstr "Croix l’active ou le désactive; le jeu l’applique aussitôt."
 
-#: port/app/ingame.cpp:254
+#: port/app/ingame.cpp:253
 #, menu
 msgid "Left and Right choose another."
 msgstr "Gauche et Droite en choisissent un autre; le jeu l’applique aussitôt."
 
-#: port/app/ingame.cpp:291
+#: port/app/ingame.cpp:290
 #, menu
 msgid "Left and Right choose a figure. Cross places it; Empty removes it."
 msgstr "Gauche et Droite choisissent une figurine, Croix la pose; Vide retire celle qui s’y trouve."
 
-#: port/app/ingame.cpp:310
+#: port/app/ingame.cpp:309
 #, menu
 msgid "Left and Right choose an amiibo. Cross scans it when the game asks."
 msgstr "Gauche et Droite choisissent un dump d’amiibo; Croix le pose sur le GamePad quand le jeu en demande un."
@@ -147,7 +147,7 @@ msgstr "Azahar s’est arrêté en cours de route; {0}/azahar/log/azahar_log.txt
 
 #. the game menu: named groups of games the player makes (Couch co-op, say), shown on the Library's filter row
 #. What's new in 6.0: collections, groups of games the player makes
-#: port/frontend/shell/library.cpp:424 port/frontend/shell/shell.cpp:2070 port/frontend/shell/shell.cpp:2090 port/frontend/shell/shell.cpp:2116 port/frontend/shell/whatsnew.cpp:40
+#: port/frontend/shell/library.cpp:424 port/frontend/shell/shell.cpp:2119 port/frontend/shell/shell.cpp:2139 port/frontend/shell/shell.cpp:2165 port/frontend/shell/whatsnew.cpp:40
 msgid "Collections"
 msgstr "Collections"
 
@@ -249,20 +249,20 @@ msgstr "Le compte est supprimé; ses sauvegardes restent dans le stockage de la 
 msgid "Artic Base plays a game from your 3DS over the network; saves stay on the 3DS. Artic Setup copies your 3DS's system files, for the Home Menu and games that need them."
 msgstr "Artic Base joue à un jeu depuis une 3DS de votre réseau, ses sauvegardes restant sur la 3DS; Artic Setup copie les fichiers système d’une 3DS dans Azahar, pour le menu HOME et les jeux qui en ont besoin."
 
-#: port/frontend/shell/settings.cpp:1528
+#: port/frontend/shell/settings.cpp:1531
 msgid "Animations become short fades, and the background stays still."
 msgstr "Les ressorts deviennent de courts fondus; rien ne flotte, ne respire ou ne monte derrière les menus."
 
 #. {0} is the folder they are kept in
-#: port/frontend/shell/settings.cpp:1563
+#: port/frontend/shell/settings.cpp:1566
 msgid "Deletes unpacked copies of archived games in {0}. They unpack again next time. Old copies are removed automatically when space runs low."
 msgstr "Supprime les copies des jeux décompressés de leurs archives, gardées dans {0}. Chacun est décompressé à nouveau à son prochain lancement; quand il faut de la place, les copies utilisées il y a le plus longtemps partent d’elles-mêmes."
 
-#: port/frontend/shell/settings.cpp:1588
+#: port/frontend/shell/settings.cpp:1591
 msgid "Built-in music, your own, or none. For your own, put MP3 or WAV files in {0}."
 msgstr "La musique du lanceur, l’une des vôtres ou aucune. Pour la vôtre, placez des fichiers MP3 ou WAV dans {0}; ils apparaissent ici. Tous les côtés jouent la même."
 
-#: port/frontend/shell/settings.cpp:1621
+#: port/frontend/shell/settings.cpp:1624
 msgid ""
 "Shows {0} in a browser on a phone, tablet or computer on your network, with touch. Scan the code or open the address. Buttons and sound stay on the PS5.\n"
 "While a browser is open, games may run a little slower. Anyone on your network can open it, so turn it off on shared networks.\n"
@@ -272,11 +272,11 @@ msgstr ""
 "Tant qu’un navigateur l’affiche, la PS5 copie cet écran jusqu’à 30 fois par seconde, ce qui peut ralentir un peu un jeu; sans navigateur, cela ne coûte rien. Tout appareil de votre réseau peut ouvrir la page : désactivez-le sur un réseau partagé.\n"
 "Un seul interrupteur pour tous les côtés (l’écran du GamePad est celui du joueur 1), aussi dans le menu d’un jeu (clic du pavé tactile + OPTIONS). D’après l’idée et le prototype de dolphin78 (#38)."
 
-#: port/frontend/shell/settings.cpp:2088
+#: port/frontend/shell/settings.cpp:2091
 msgid "On: scan the QR code here to open the second screen in a phone's browser. The phone must be on the PS5's network."
 msgstr "Activé, un QR code ici ouvre le second écran du jeu dans le navigateur d’un téléphone. Rien à installer; le téléphone doit être sur le réseau de la PS5."
 
-#: port/frontend/shell/settings.cpp:3176
+#: port/frontend/shell/settings.cpp:3186
 msgid "{0} deleted. Its saves are kept."
 msgstr "{0} est supprimé; ses sauvegardes restent"
 
@@ -315,32 +315,32 @@ msgid "Turn on file sharing for a folder on your computer or NAS, then add it he
 msgstr "Activez le partage de fichiers pour un dossier de votre ordinateur ou NAS, puis ajoutez-le ici. La PS5 y lit les jeux; elle n’y écrit jamais. Pour les jeux Wii U, un câble vaut mieux que le Wi-Fi."
 
 #. the first choice of a game's Collections: a collection named with the keyboard, the game put in it
-#: port/frontend/shell/shell.cpp:2100 port/frontend/shell/shell.cpp:2119
+#: port/frontend/shell/shell.cpp:2149 port/frontend/shell/shell.cpp:2168
 msgid "New collection"
 msgstr "Nouvelle collection"
 
 #. a game's collection could not be written to the console's storage
-#: port/frontend/shell/shell.cpp:2107
+#: port/frontend/shell/shell.cpp:2156
 msgid "Could not save the collection"
 msgstr "Impossible d’enregistrer la collection"
 
-#: port/frontend/shell/shell.cpp:2788
+#: port/frontend/shell/shell.cpp:2837
 msgid "You have {0}. Download and install it now? Your games, saves and settings are kept."
 msgstr "Vous avez {0}. Télécharger et installer la nouvelle version maintenant? Vos jeux, sauvegardes et paramètres restent tels quels."
 
-#: port/main_ps5.cpp:761
+#: port/main_ps5.cpp:762
 msgid "This session: Azahar (3DS); Cemu's emulated Wii U is not started"
 msgstr "Cette session : Azahar (3DS); la Wii U émulée de Cemu n’est pas démarrée"
 
-#: port/main_ps5.cpp:786
+#: port/main_ps5.cpp:787
 msgid "This session: melonDS (DS); Cemu's emulated Wii U is not started"
 msgstr "Cette session : melonDS (DS); la Wii U émulée de Cemu n’est pas démarrée"
 
-#: port/main_ps5.cpp:793
+#: port/main_ps5.cpp:794
 msgid "This session: Cemu (Wii U); Azahar's core is not started"
 msgstr "Cette session : Cemu (Wii U); le cœur d’Azahar n’est pas démarré"
 
-#: port/main_ps5.cpp:803
+#: port/main_ps5.cpp:804
 msgid "No JIT memory: Wii U games will run much slower. Is PPSA99360 in your HEN's app jailbreak list?"
 msgstr "Pas de mémoire JIT : les jeux Wii U tournent sur l’interpréteur, bien plus lent. PPSA99360 est-il dans la liste de jailbreak d’applis de votre HEN?"
 
@@ -349,25 +349,25 @@ msgid "The DS game in this archive could not be read. The archive may be damaged
 msgstr "Le jeu DS de cette archive n’a pas pu être lu : l’archive est-elle complète?"
 
 #. a note from the compatibility list, about how the game runs
-#: docs/COMPATIBILITY.md:23
+#: docs/COMPATIBILITY.md:26
 msgctxt "compatibility note"
 msgid "Runs at about 60 fps at 1440p. Up to 2.0.0 C it froze and closed when Magnesis or other runes, or the Sheikah scope (R3), highlighted objects; fixed after 2.0.0 C (a newer Cemu)"
 msgstr "Tourne à environ 60 i/s en 1440p. Jusqu’à 2.0.0 C, il se figeait puis se fermait quand Magnétisme ou d’autres modules, ou la longue-vue Sheikah (R3), mettaient des objets en surbrillance; corrigé après 2.0.0 C (un Cemu plus récent)"
 
 #. a note from the compatibility list, about how the game runs
-#: docs/COMPATIBILITY.md:25
+#: docs/COMPATIBILITY.md:28
 msgctxt "compatibility note"
 msgid "Crashes before it boots on 3.5.0 and earlier: every game started with Pro Controllers for players 2 to 4, and Giants only takes the GamePad at boot. 4.0.0 gives players 2 to 4 a controller only while their DualSense is signed in; not yet confirmed on a console"
 msgstr "Plante avant de démarrer sur la 3.5.0 et les versions antérieures : chaque jeu démarrait avec des manettes Pro pour les joueurs 2 à 4, et Giants n’accepte que le GamePad au démarrage. La version 4.0.0 ne donne une manette aux joueurs 2 à 4 que lorsque leur DualSense est connectée; pas encore confirmé sur console"
 
 #. a note from the compatibility list, about how the game runs
-#: docs/COMPATIBILITY.md:27
+#: docs/COMPATIBILITY.md:30
 msgctxt "compatibility note"
 msgid "Plays with its 60 FPS graphic pack turned off; with it on, it glitches and crashes once gameplay loads. Up to 2.0.0 C it crashed there either way (Cemu ran out of Vulkan descriptors)"
 msgstr "Se joue avec son pack graphique 60 FPS désactivé; activé, il affiche des glitchs et plante dès que le jeu se charge. Jusqu’à 2.0.0 C, il y plantait dans tous les cas (Cemu manquait de descripteurs Vulkan)"
 
 #. a note from the compatibility list, about how the game runs
-#: docs/COMPATIBILITY.md:34
+#: docs/COMPATIBILITY.md:37
 msgctxt "compatibility note"
 msgid "Moving black dots on outlined 3D models (the Poké Ball and Professor Sycamore in the introduction, then the characters), at any internal resolution. 4.0.0's Outline fix removes them and is on by default for X, Y, Omega Ruby and Alpha Sapphire; it costs some speed"
 msgstr "Des points noirs mouvants sur les modèles 3D à contours (la Poké Ball et le Professeur Platane dans l’introduction, puis les personnages), à toute résolution interne. La correction des contours de la version 4.0.0 les supprime et est activée par défaut pour X, Y, Rubis Oméga et Saphir Alpha; elle coûte un peu de vitesse"
