@@ -6,14 +6,22 @@
 #include "../app/lang.h"
 #include "../app/netfs.h"
 #include "../app/paths.h"
+#include "../app/tga.h"
 #include "../ps5/log.h"
 
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <deque>
+#include <filesystem>
 #include <fstream>
 #include <sys/stat.h>
+
+// ui/images.cpp's: a picture file decoded as RGBA rows, with the launcher's stb_image
+namespace ui
+{
+	bool DecodeFile(const std::string& path, std::vector<uint8_t>& rgba, int& width, int& height);
+}
 
 namespace ps5eden
 {
@@ -153,11 +161,24 @@ namespace ps5eden
 			out << key << '=' << value << '\n';
 		};
 		const std::string file = ps5ingamenx::SessionFile(), staged = file + ".new";
+		// Eden's menu reads TGAs only (app/tga.h): a cover of the player's own, a PNG or JPEG, as the
+		// Library shows it, goes to it as a TGA beside this file
+		std::string cover = session.cover;
+		std::vector<uint8_t> rgba;
+		int width = 0, height = 0;
+		if (!cover.empty() && !ps5tga::Load(cover, 1, 1, rgba, width, height))
+		{
+			const std::string copy = (std::filesystem::path(file).parent_path() / "ecam-cover.tga").string();
+			if (ps5tga::Load(cover, 512, 704, rgba, width, height, ui::DecodeFile) && ps5tga::Save(copy, rgba, width, height))
+				cover = copy;
+			else
+				ps5log::Line("[switch] the cover {} could not be read for the in-game menu", cover);
+		}
 		{
 			std::ofstream out(staged, std::ios::trunc);
 			line(out, "title", session.title);
 			line(out, "details", session.details);
-			line(out, "cover", session.cover);
+			line(out, "cover", cover);
 			line(out, "language", ps5lang::Current());
 			line(out, "font", ps5lang::GetMenuFont().path);
 			line(out, "face", std::to_string(ps5lang::GetMenuFont().face));

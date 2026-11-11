@@ -104,7 +104,7 @@ jobs:
         run: bash tools/tests/test-retro.sh
 
       - name: Porpoise's settings files, as the GameCube and Wii sides write them
-        run: bash tools/tests/test-porpoise-settings.sh && bash tools/tests/test-porpoise-saves.sh && bash tools/tests/test-porpoise-game.sh && bash tools/tests/test-banner-compose.sh
+        run: bash tools/tests/test-porpoise-settings.sh && bash tools/tests/test-porpoise-saves.sh && bash tools/tests/test-porpoise-game.sh && bash tools/tests/test-banner-compose.sh && bash tools/tests/test-tga.sh
 
       - name: The libretro frontend, with a core of the test's own
         run: bash tools/tests/test-libretro.sh
