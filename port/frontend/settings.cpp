@@ -98,6 +98,7 @@ namespace ps5settings
 			ReadInt(json, "dsFilter", n3ds.dsFilter, 0, 2);
 			ReadInt(json, "pictureSize", n3ds.pictureSize, 0, 2);
 			ReadInt(json, "pictureShape", n3ds.pictureShape, 0, 3);
+			ReadInt(json, "retroController", n3ds.retroController, 0, 4);
 			ReadInt(json, "dsRotation", n3ds.dsRotation, 0, 3);
 			ReadBool(json, "screenGap", n3ds.screenGap);
 			ReadBool(json, "hiddenTouch", n3ds.hiddenTouch);
@@ -199,6 +200,8 @@ namespace ps5settings
 			writer.Int(n3ds.pictureSize);
 			writer.Key("pictureShape");
 			writer.Int(n3ds.pictureShape);
+			writer.Key("retroController");
+			writer.Int(n3ds.retroController);
 			writer.Key("dsRotation");
 			writer.Int(n3ds.dsRotation);
 			writer.Key("screenGap");
@@ -749,6 +752,7 @@ namespace ps5settings
 				{"dsFilter", nullptr, nullptr, &N3ds::dsFilter, nullptr, 0, 2},
 				{"pictureSize", nullptr, nullptr, &N3ds::pictureSize, nullptr, 0, 2},
 				{"pictureShape", nullptr, nullptr, &N3ds::pictureShape, nullptr, 0, 3},
+				{"retroController", nullptr, nullptr, &N3ds::retroController, nullptr, 0, 4},
 				{"dsRotation", nullptr, nullptr, &N3ds::dsRotation, nullptr, 0, 3},
 				{"screenGap", nullptr, nullptr, nullptr, &N3ds::screenGap},
 				{"hiddenTouch", nullptr, nullptr, nullptr, &N3ds::hiddenTouch},
@@ -838,7 +842,7 @@ namespace ps5settings
 			"performance", "nxOutput", "nxHighRefresh", "nxLanguage", "nxAsyncShaders", "nxBlockList", "nxFastGpu", "nxUnsafeCpu", "nxUnsafeDma",
 			"nxReactiveFlushing", "nxSkipInvalidation"};
 		// the other sides' (their in-game menu's, port/libretro)
-		static const std::vector<std::string> retro = {"dsFilter", "border", "volume", "pictureSize", "pictureShape"};
+		static const std::vector<std::string> retro = {"dsFilter", "border", "volume", "pictureSize", "pictureShape", "retroController"};
 		static const std::vector<std::string> none;
 		return side == "wiiu" ? wiiu : side == "3ds" ? n3ds : side == "ds" ? nds : side == "switch2" ? nx2 : side == "switch" ? nx : ps5retro::Find(side) ? retro : none;
 	}
@@ -936,13 +940,27 @@ namespace ps5settings
 		}
 		const std::string key = GameKey(side, titleId);
 		const auto own = all.games.find(key);
-		const bool hasOwn = own != all.games.end() && !own->second.empty();
+		// (a libretro game's controller alone is not settings of its own)
+		const bool hasOwn = own != all.games.end() &&
+			std::any_of(own->second.begin(), own->second.end(), [](const auto& value) { return value.first != "retroController"; });
 		for (const std::string& name : GameSettingNames(side))
 		{
 			int was = 0, now = 0;
 			if (!Value(before, side, name, was) || !Value(after, side, name, now) || was == now)
 				continue;
-			if (hasOwn)
+			if (name == "retroController")
+			{
+				// the game's own only: Auto is having none
+				if (now)
+					merged.games[key][name] = now;
+				else if (const auto game = merged.games.find(key); game != merged.games.end())
+				{
+					game->second.erase(name);
+					if (game->second.empty())
+						merged.games.erase(game);
+				}
+			}
+			else if (hasOwn)
 				merged.games[key][name] = now;
 			else
 				SetValue(merged, side, name, now);

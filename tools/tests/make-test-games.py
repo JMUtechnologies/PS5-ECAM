@@ -19,6 +19,28 @@ def nes():
     return b"NES\x1a" + bytes([2, 1, 0, 0]) + bytes(8) + prg + bytes(0x2000)
 
 
+def nes_device(device):
+    """An NES 2.0 image whose header asks for a controller of its own (byte 15, Mesen's GameInputType: 0x0F the
+    Arkanoid paddle in the second port, 0x08 the Zapper there), reading the second port as the Arkanoid paddle is
+    read: its last read kept at $00, the knob's eight bits (inverted, as the paddle sends them) at $02"""
+    prg = bytearray([0xEA] * 0x8000)
+    code = bytes([0x78, 0xD8,                          # 8000: SEI; CLD
+                  0xA9, 0x01, 0x8D, 0x16, 0x40,        # 8002: LDA #1; STA $4016 (strobe)
+                  0xA9, 0x00, 0x8D, 0x16, 0x40,        #       LDA #0; STA $4016
+                  0x85, 0x01, 0xA2, 0x08,              #       STA $01; LDX #8
+                  0xAD, 0x17, 0x40, 0x85, 0x00,        # 800F: LDA $4017; STA $00
+                  0x29, 0x10, 0xC9, 0x10, 0x26, 0x01,  #       AND #$10; CMP #$10; ROL $01 (the bit, in)
+                  0xCA, 0xD0, 0xF2,                    #       DEX; BNE $800F
+                  0xA5, 0x01, 0x85, 0x02,              #       LDA $01; STA $02 (the eight, whole)
+                  0x4C, 0x02, 0x80])                   #       JMP $8002
+    prg[0:len(code)] = code
+    prg[0x40] = 0x40                                   # 8040: RTI
+    prg[0x7FFA:0x8000] = struct.pack("<HHH", 0x8040, 0x8000, 0x8040)
+    header = bytearray(b"NES\x1a" + bytes([2, 1, 0, 0x08]) + bytes(8))  # flags 7: NES 2.0
+    header[15] = device
+    return bytes(header) + prg + bytes(0x2000)
+
+
 def snes():
     # LoROM, 128 KiB: the reset vector at a branch to itself, a valid header and checksum
     rom = bytearray(0x20000)
@@ -169,7 +191,7 @@ def main():
     out = sys.argv[1]
     os.makedirs(out, exist_ok=True)
     games = {"test.nes": nes(), "test.sfc": snes(), "test.gb": gb(False), "test.gbc": gb(True), "test.gba": gba(),
-             "test.vb": vb(), "test.min": pokemini(), "input.sfc": snes_input(), "input.gba": gba_input(), "broken.z64": b"not a Nintendo 64 game" * 100, "test.z64": n64(),
+             "test.vb": vb(), "test.min": pokemini(), "input.sfc": snes_input(), "arkanoid.nes": nes_device(0x0F), "zapper.nes": nes_device(0x08), "input.gba": gba_input(), "broken.z64": b"not a Nintendo 64 game" * 100, "test.z64": n64(),
              "broken.mgw": b"not a Game & Watch" * 10}
     for name, data in games.items():
         with open(os.path.join(out, name), "wb") as f:

@@ -63,6 +63,9 @@ namespace ps5settings
 		int dsFilter = 0;			  // how the DS's screens are scaled to the TV: sharp, smooth, square pixels (ps5melonds::screens::Filter)
 		int pictureSize = 0;		  // a libretro side's picture on the TV: fit, whole pixels, fill (ps5ingame3ds::kPictureSizes)
 		int pictureShape = 0;		  // and its shape: the core's, 4:3, square pixels, 16:9 (ps5ingame3ds::kPictureShapes)
+		// a libretro game's controller (port/libretro/devices.h's choices): 0 Auto, 1 the pad, else a special
+		// one (the Zapper...). A game's own only (its in-game Buttons page), never the side's
+		int retroController = 0;
 		// the touchpad touches the bottom screen while only the top one is shown (the top screen alone):
 		// its cursor over the top screen, for the games that want a touch now and then (Star Fox 64 3D)
 		bool hiddenTouch = false;

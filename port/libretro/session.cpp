@@ -6,6 +6,7 @@
 #include <rc_libretro.h>
 
 #include <algorithm>
+#include <atomic>
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
@@ -46,6 +47,10 @@ namespace ps5libretro
 			bool shutdown = false;
 			std::vector<std::string> messages;
 			uint16_t rumble[kPlayers][2] = {};
+			// each port's controller: what it was given (SetDevice), and what the core's input descriptors say
+			// is in it, when not a pad (0: nothing said)
+			unsigned given[kPorts] = {};
+			unsigned described[kPorts] = {};
 			// the save RAM as last written, and the frames it has held still since it last changed
 			std::vector<uint8_t> written;
 			std::vector<uint8_t> lastSeen;
@@ -57,6 +62,7 @@ namespace ps5libretro
 			rc_libretro_memory_regions_t cheevos{};
 		};
 		State s;
+		std::atomic<bool> s_motion{false}; // the core turned the accelerometer or the gyroscope on (asked from the game's loop)
 		void (*s_log)(int level, const std::string& line) = nullptr;
 
 		void Log(int level, const std::string& line)
@@ -86,6 +92,38 @@ namespace ps5libretro
 				return false;
 			s.rumble[port][effect == RETRO_RUMBLE_STRONG ? 0 : 1] = strength;
 			return true;
+		}
+
+		// The DualSense's motion, for a core that turns it on (libretro's sensor interface)
+		bool RETRO_CALLCONV SetSensorState(unsigned port, retro_sensor_action action, unsigned rate)
+		{
+			(void)rate;
+			if (port >= (unsigned)kPlayers)
+				return false;
+			switch (action)
+			{
+			case RETRO_SENSOR_ACCELEROMETER_ENABLE:
+			case RETRO_SENSOR_GYROSCOPE_ENABLE:
+				s_motion = true;
+				return true;
+			case RETRO_SENSOR_ACCELEROMETER_DISABLE:
+			case RETRO_SENSOR_GYROSCOPE_DISABLE:
+				return true;
+			default:
+				return false; // no light sensor: mGBA's solar sensor then takes its level from L3 and R3
+			}
+		}
+
+		float RETRO_CALLCONV SensorInput(unsigned port, unsigned id)
+		{
+			if (port >= (unsigned)kPlayers)
+				return 0;
+			const Pad& pad = s.pads[port];
+			if (id <= RETRO_SENSOR_ACCELEROMETER_Z)
+				return pad.accel[id - RETRO_SENSOR_ACCELEROMETER_X];
+			if (id >= RETRO_SENSOR_GYROSCOPE_X && id <= RETRO_SENSOR_GYROSCOPE_Z)
+				return pad.gyro[id - RETRO_SENSOR_GYROSCOPE_X];
+			return 0;
 		}
 
 		Option* FindOption(const char* key)
@@ -348,7 +386,23 @@ namespace ps5libretro
 				return true;
 			case RETRO_ENVIRONMENT_GET_INPUT_DEVICE_CAPABILITIES:
 				if (data)
-					*(uint64_t*)data = (1ull << RETRO_DEVICE_JOYPAD) | (1ull << RETRO_DEVICE_ANALOG);
+					*(uint64_t*)data = (1ull << RETRO_DEVICE_JOYPAD) | (1ull << RETRO_DEVICE_ANALOG) | (1ull << RETRO_DEVICE_MOUSE) |
+						(1ull << RETRO_DEVICE_POINTER) | (1ull << RETRO_DEVICE_LIGHTGUN);
+				return true;
+			case RETRO_ENVIRONMENT_GET_SENSOR_INTERFACE:
+				if (!data)
+					return false;
+				((retro_sensor_interface*)data)->set_sensor_state = SetSensorState;
+				((retro_sensor_interface*)data)->get_sensor_input = SensorInput;
+				return true;
+			case RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS:
+				// the descriptors of a controller other than the pad say which is in that port (Mesen's, with
+				// patches/libretro/Mesen 0002, its game database's choice too)
+				std::fill(std::begin(s.described), std::end(s.described), 0u);
+				for (const auto* d = (const retro_input_descriptor*)data; d && d->description; d++)
+					if (d->port < kPorts && d->device != RETRO_DEVICE_JOYPAD && d->device != RETRO_DEVICE_ANALOG &&
+						(d->device & RETRO_DEVICE_MASK) != RETRO_DEVICE_NONE)
+						s.described[d->port] = d->device;
 				return true;
 			case RETRO_ENVIRONMENT_GET_INPUT_BITMASKS:
 				return true;
@@ -378,7 +432,6 @@ namespace ps5libretro
 				return true;
 			// told, and nothing to do: the frontend shows no core's own descriptions or menus
 			case RETRO_ENVIRONMENT_SET_PERFORMANCE_LEVEL:
-			case RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS:
 			case RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME:
 			case RETRO_ENVIRONMENT_SET_SUBSYSTEM_INFO:
 			case RETRO_ENVIRONMENT_SET_CONTROLLER_INFO:
@@ -463,11 +516,37 @@ namespace ps5libretro
 
 		int16_t RETRO_CALLCONV InputState(unsigned port, unsigned device, unsigned index, unsigned id)
 		{
-			if (port >= (unsigned)kPlayers)
+			if (port >= kPorts)
 				return 0;
-			const Pad& pad = s.pads[port];
+			// Mesen's Famicom expansion port, after the players' (the Family Trainer, Exciting Boxing): the first player's
+			const Pad& pad = s.pads[port == (unsigned)kPlayers ? 0 : port];
+			const auto mouseButton = [&](unsigned button) -> int16_t { return (pad.mouseButtons >> button) & 1; };
 			switch (device & RETRO_DEVICE_MASK)
 			{
+			case RETRO_DEVICE_MOUSE:
+				if (id == RETRO_DEVICE_ID_MOUSE_X || id == RETRO_DEVICE_ID_MOUSE_Y)
+					return pad.mouse[id - RETRO_DEVICE_ID_MOUSE_X];
+				return id == RETRO_DEVICE_ID_MOUSE_LEFT || id == RETRO_DEVICE_ID_MOUSE_RIGHT || id == RETRO_DEVICE_ID_MOUSE_MIDDLE ? mouseButton(id) : 0;
+			case RETRO_DEVICE_POINTER:
+				if (index != 0)
+					return 0;
+				if (id == RETRO_DEVICE_ID_POINTER_X || id == RETRO_DEVICE_ID_POINTER_Y)
+					return pad.aim[id - RETRO_DEVICE_ID_POINTER_X];
+				if (id == RETRO_DEVICE_ID_POINTER_PRESSED)
+					return mouseButton(RETRO_DEVICE_ID_MOUSE_LEFT);
+				return id == RETRO_DEVICE_ID_POINTER_COUNT ? 1 : 0;
+			case RETRO_DEVICE_LIGHTGUN:
+				switch (id)
+				{
+				case RETRO_DEVICE_ID_LIGHTGUN_SCREEN_X: return pad.aim[0];
+				case RETRO_DEVICE_ID_LIGHTGUN_SCREEN_Y: return pad.aim[1];
+				case RETRO_DEVICE_ID_LIGHTGUN_IS_OFFSCREEN: return pad.offscreen;
+				case RETRO_DEVICE_ID_LIGHTGUN_TRIGGER: return mouseButton(RETRO_DEVICE_ID_MOUSE_LEFT);
+				case RETRO_DEVICE_ID_LIGHTGUN_RELOAD: return mouseButton(RETRO_DEVICE_ID_MOUSE_RIGHT);
+				case RETRO_DEVICE_ID_LIGHTGUN_AUX_A: return mouseButton(RETRO_DEVICE_ID_MOUSE_MIDDLE);
+				case RETRO_DEVICE_ID_LIGHTGUN_START: return (pad.buttons >> RETRO_DEVICE_ID_JOYPAD_START) & 1;
+				default: return 0;
+				}
 			case RETRO_DEVICE_JOYPAD:
 				if (id == RETRO_DEVICE_ID_JOYPAD_MASK)
 					return (int16_t)pad.buttons;
@@ -550,6 +629,7 @@ namespace ps5libretro
 		{
 			const auto log = s_log;
 			s = State();
+			s_motion = false;
 			s_log = log;
 		}
 	}
@@ -620,7 +700,10 @@ namespace ps5libretro
 		}
 		core.getSystemAvInfo(&s.av);
 		for (unsigned port = 0; port < (unsigned)kPlayers; port++)
+		{
 			core.setControllerPortDevice(port, RETRO_DEVICE_JOYPAD);
+			s.given[port] = RETRO_DEVICE_JOYPAD;
+		}
 		ReadSave();
 		s.loaded = true;
 		Log(RETRO_LOG_INFO, CoreName() + ": " + fs::path(game).filename().string() + ", " + std::to_string(s.av.geometry.base_width) + "x" +
@@ -643,6 +726,23 @@ namespace ps5libretro
 		if (!FlushSave(false, error))
 			Log(RETRO_LOG_WARN, error);
 	}
+
+	void SetDevice(unsigned port, unsigned device)
+	{
+		if (!s.loaded || port >= kPorts)
+			return;
+		s.core->setControllerPortDevice(port, device);
+		s.given[port] = device;
+	}
+
+	unsigned PortDevice(unsigned port)
+	{
+		if (port >= kPorts)
+			return RETRO_DEVICE_NONE;
+		return s.described[port] ? s.described[port] : s.given[port];
+	}
+
+	bool MotionUsed() { return s_motion; }
 
 	const Picture& LastPicture() { return s.picture; }
 	const std::vector<int16_t>& Sound() { return s.sound; }

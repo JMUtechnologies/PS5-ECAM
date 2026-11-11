@@ -19,7 +19,7 @@ for source in "$rc"/src/rcheevos/*.c "$rc"/src/rapi/*.c "$rc/src/rc_client.c" "$
         -DRC_HASH_NO_ENCRYPTED -DRC_HASH_NO_ZIP -c "$source" -o "${rcobjects[-1]}"
 done
 "${CXX:-c++}" -std=c++20 -Wall -Wextra -Werror -I"$root/port" -I"$include" -I"$rc/include" -I"$rc/src" \
- "$root/tools/tests/test-libretro.cpp" "$root/port/libretro/session.cpp" "$root/port/libretro/cores.cpp" "${rcobjects[@]}" -o "$work/test-libretro"
+ "$root/tools/tests/test-libretro.cpp" "$root/port/libretro/session.cpp" "$root/port/libretro/cores.cpp" "$root/port/libretro/devices.cpp" "${rcobjects[@]}" -o "$work/test-libretro"
 "$work/test-libretro" "$work/files"
 # a core linked in, as build/libretro/<core>.o is: its renamed entry points found through the same
 # weak references, in a position-independent executable as the PS5's is

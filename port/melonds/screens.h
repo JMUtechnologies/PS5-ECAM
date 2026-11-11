@@ -78,6 +78,7 @@ namespace ps5melonds::screens
 		bool cursor = false;	   // the touch cursor, over the bottom screen
 		float cursorX = 0, cursorY = 0; // 0 to 1 across it, as the TV shows it
 		bool cursorOnTop = false;  // over the top screen instead: the bottom one is not shown and touched all the same
+		bool cursorOnPicture = false; // over a libretro core's picture instead (a light gun's crosshair)
 		// A libretro core's one picture (port/libretro), in place of the DS's screens: pictureWidth x
 		// pictureHeight of kPictureMax square at most, 32 bits a pixel as the screens'; null: the one shown
 		// last. Shown at pictureRect with the filter, when that is not empty.

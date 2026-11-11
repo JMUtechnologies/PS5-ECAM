@@ -1,0 +1,41 @@
+From: Playtendoh
+Subject: [PATCH] Libretro: the controller in each port as an input descriptor, the game database's too
+
+On an "Auto" port Mesen plugs in what its game database (or an NES 2.0 header) says the game needs: the
+Arkanoid paddle for Arkanoid, the Zapper for Duck Hunt, the Power Pad. A frontend could not tell, and so
+could not give the paddle or the light gun anything from its own controller. Each port with a controller
+other than a pad now has a descriptor of its own whose device is that controller's (DEVICE_ARKANOID,
+DEVICE_ZAPPER...). RetroArch reads only the joypad's and analog's descriptors, so it is unchanged.
+
+---
+diff --git a/Libretro/libretro.cpp b/Libretro/libretro.cpp
+index 48fa641..77dc6c9 100644
+--- a/Libretro/libretro.cpp
++++ b/Libretro/libretro.cpp
+@@ -816,7 +816,14 @@ extern "C" {
+ 			desc.push_back(d);
+ 		};
+ 
+-		auto setupPlayerButtons = [addDesc](int port) {
++		//The controller in each port, the game database's on an "Auto" port too, as a descriptor of its own: a
++		//frontend that shows it, or maps its own input to it (a light gun, the Arkanoid paddle), can tell
++		auto addDevice = [&desc](unsigned port, unsigned device) {
++			retro_input_descriptor d = { port, device, 0, 0, "Controller" };
++			desc.push_back(d);
++		};
++
++		auto setupPlayerButtons = [addDesc, addDevice](int port) {
+ 			unsigned device = _inputDevices[port];
+ 			if(device == DEVICE_AUTO) {
+ 				if(port <= 3) {
+@@ -850,6 +857,10 @@ extern "C" {
+ 				}
+ 			}
+ 
++			if(device != DEVICE_AUTO && device != RETRO_DEVICE_NONE && device != DEVICE_GAMEPAD && device != DEVICE_SNESGAMEPAD) {
++				addDevice(port, device);
++			}
++
+ 			if(device == DEVICE_GAMEPAD || device == DEVICE_SNESGAMEPAD) {
+ 				addDesc(port, RETRO_DEVICE_ID_JOYPAD_LEFT, "D-Pad Left");
+ 				addDesc(port, RETRO_DEVICE_ID_JOYPAD_UP, "D-Pad Up");

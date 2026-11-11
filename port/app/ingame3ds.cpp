@@ -85,6 +85,8 @@ namespace ps5ingame3ds
 		std::vector<CoreOption> s_coreOptions;			   // under s_mutex: a libretro game's (SetCoreOptions)
 		std::vector<std::pair<std::string, int>> s_coreChanged; // under s_mutex: the menu's changes, for TakeCoreOption
 		std::atomic<bool> s_resetRequested{false};
+		Controllers s_controllers; // under s_mutex: a libretro game's (SetControllers)
+		std::atomic<bool> s_levelRequested{false};
 		std::string s_extrasMessage;
 		ExtrasRequest s_extrasRequest;
 		int s_amiiboIndex = 0;
@@ -151,6 +153,30 @@ namespace ps5ingame3ds
 			ps5settings::N3ds mapped;
 			mapped.buttons = settings.buttons;
 			return mapped;
+		}
+
+		// The words of a libretro game's special controllers (port/libretro/devices.h, game.cpp): marked here so
+		// that the in-game fonts have their characters, translated where they show
+		std::string ControllerWords(const std::string& english)
+		{
+			using ps5lang::TrMark;
+			// tr: the Buttons page's Controller row: the game's own choice, the console's pad, a special controller
+			static constexpr const char* kWords[] = {TrMark("Auto"), TrMark("Standard"), TrMark("Arkanoid paddle"),
+				// tr: what the DualSense does with a special controller plugged in (the Arkanoid paddle, the
+				// Zapper or Super Scope light guns, the SNES Mouse, the Power Pad mat)
+				TrMark("Turn the knob"), TrMark("Fire"), TrMark("Aim"), TrMark("Aim at the middle"), TrMark("Shoot away from the screen"),
+				TrMark("Cursor"), TrMark("Turbo"), TrMark("Pause"), TrMark("Move"), TrMark("Left button"), TrMark("Right button"),
+				// tr: {0} is a number on the Power Pad's mat
+				TrMark("Mat {0}"), TrMark("Tilt"),
+				// tr: the DualSense's inputs for a special controller
+				TrMark("Touchpad, left stick or D-pad"), TrMark("Touchpad, motion or right stick"), TrMark("Touchpad or left stick"),
+				TrMark("Cross or R2"), TrMark("Circle or L2"), TrMark("Tilt or turn the DualSense")};
+			(void)kWords;
+			// a Power Pad's button: "Mat 7"
+			if (english.rfind("Mat ", 0) == 0 && english.size() > 4 && std::isdigit((unsigned char)english[4]))
+				return ps5lang::TrF("Mat {0}", std::atoi(english.c_str() + 4));
+			const std::string words = ps5lang::Tr(english.c_str());
+			return words != english ? words : ps5menu::ButtonLabel(english);
 		}
 
 		std::vector<ps5menu::ButtonRow> ButtonRows(const Settings& settings)
@@ -717,8 +743,38 @@ namespace ps5ingame3ds
 			}
 			// every button, as Settings > Controls > Buttons has them, set here without leaving the game; the
 			// touchpad is the touch screen, so its click cancels
-			rows.push_back(s_buttonsMenu.Category(ButtonRows(settings), s_heldInput, sceKernelGetProcessTime(), true,
-				Tr("Puts every button back to default. Hold Cross to confirm.")));
+			Row buttons = s_buttonsMenu.Category(ButtonRows(settings), s_heldInput, sceKernelGetProcessTime(), true,
+				Tr("Puts every button back to default. Hold Cross to confirm."));
+			if (single)
+			{
+				// a libretro game's special controller (port/libretro/devices.h): which, and what the DualSense does
+				// with it, under the test's row
+				Controllers controllers;
+				{
+					std::lock_guard lock(s_mutex);
+					controllers = s_controllers;
+				}
+				std::vector<Row> special;
+				if (!controllers.choices.empty())
+				{
+					const int count = (int)controllers.choices.size();
+					const int choice = std::clamp(settings.controller, 0, count - 1);
+					const std::string value = choice > 0 ? ControllerWords(controllers.choices[choice]) :
+						controllers.found.empty() ? ControllerWords("Auto") : TrF("Auto: {0}", ControllerWords(controllers.found));
+					// tr: the Buttons page's row that plugs a special controller in, for this game: Auto, Standard, the Zapper...
+					special.push_back({"controller", Tr("Controller"), value, true,
+						Tr("The controller plugged into the console for this game. Auto picks the one the game was made for, such as the Zapper for Duck Hunt.")});
+				}
+				for (size_t i = 0; i < controllers.mapping.size(); i++)
+					special.push_back({"special:" + std::to_string(i), ControllerWords(controllers.mapping[i].first),
+						ControllerWords(controllers.mapping[i].second), false, Tr("What the DualSense does for the controller plugged in.")});
+				if (controllers.motion)
+					// tr: a row that takes how the DualSense is held now as level, for a game played by tilting it
+					special.push_back({"level", Tr("Level the motion"), "", false,
+						Tr("Hold the DualSense as you like to play, then press Cross. The game sees it as held level from there.")});
+				buttons.rows.insert(buttons.rows.begin() + std::min<size_t>(1, buttons.rows.size()), special.begin(), special.end());
+			}
+			rows.push_back(std::move(buttons));
 			// a home screen tile's game closes the app instead, as the row says (#48)
 			Row library = ps5emu::ExitAfterGame() ?
 				Row{"library", Tr("Quit to the home screen"), "", false,
@@ -808,6 +864,19 @@ namespace ps5ingame3ds
 				CloseMenu();
 				changed = false;
 			}
+			else if (id == "controller")
+			{
+				std::lock_guard lock(s_mutex);
+				const int count = std::max(1, (int)s_controllers.choices.size());
+				next.controller = (std::clamp(settings.controller, 0, count - 1) + (change ? change : 1) + count) % count;
+			}
+			else if (id == "level")
+			{
+				s_levelRequested = true;
+				changed = false;
+			}
+			else if (id.rfind("special:", 0) == 0)
+				changed = false;
 			else if (id == "picturesize")
 				next.pictureSize = (std::clamp(settings.pictureSize, 0, kPictureSizeCount - 1) + change + kPictureSizeCount) % kPictureSizeCount;
 			else if (id == "pictureshape")
@@ -1072,6 +1141,8 @@ namespace ps5ingame3ds
 		s_systemColours = ps5menu::Side(colour, ink);
 		s_settings = settings;
 		s_changed = false;
+		s_controllers = {}; // a libretro game's, from its loop (SetControllers)
+		s_levelRequested = false;
 	}
 
 	void SetGame(const std::string& details, const std::string& coverPath)
@@ -1220,6 +1291,14 @@ namespace ps5ingame3ds
 	}
 
 	bool TakeResetRequest() { return s_resetRequested.exchange(false); }
+
+	void SetControllers(const Controllers& controllers)
+	{
+		std::lock_guard lock(s_mutex);
+		s_controllers = controllers;
+	}
+
+	bool TakeLevelRequest() { return s_levelRequested.exchange(false); }
 
 	bool TakeUndoRequest()
 	{

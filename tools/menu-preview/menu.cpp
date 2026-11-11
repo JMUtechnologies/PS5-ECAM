@@ -185,6 +185,31 @@ namespace
 		return rows;
 	}
 
+	// a libretro game's (an NES game with the Arkanoid paddle): its Buttons page with the Controller row and what
+	// the DualSense does for the paddle, as ingame3ds.cpp makes them
+	std::vector<ps5menu::Row> RetroRows()
+	{
+		using ps5menu::Row;
+		Row controls{"buttons", "Buttons", "8 buttons set", false, "Choose the DualSense button for each button."};
+		controls.rows = {Row{"buttons-test", "Controller test", "-", false, "This player's DualSense input, live."},
+			Row{"controller", "Controller", "Auto: Arkanoid paddle", true,
+				"The controller plugged into the console for this game. Auto picks the one the game was made for, such as the Zapper for Duck Hunt."},
+			Row{"special:0", "Turn the knob", "Touchpad, left stick or D-pad", false, "What the DualSense does for the controller plugged in."},
+			Row{"special:1", "Fire", "Cross or R2", false, "What the DualSense does for the controller plugged in."}};
+		const std::pair<const char*, int> kSet[] = {{"A", 2}, {"B", 1}, {"Start", 12}, {"Select", 11}};
+		for (size_t i = 0; i < std::size(kSet); i++)
+		{
+			Row row{"button:" + std::to_string(i), kSet[i].first, ps5menu::kInputNames[kSet[i].second], false, "Press Cross, then the DualSense button to use."};
+			row.pad = kSet[i].second;
+			controls.rows.push_back(row);
+		}
+		Row quit{"library", "Quit to the library", "", false, "Closes the game and goes to the library. Unsaved progress is lost. Hold Cross."};
+		quit.apart = true;
+		quit.hold = true;
+		return {Row{"screens", "Screen and border", "None", false, "The border around the screen."}, controls,
+			Row{"volume", "Volume", "100%", true, "The game's volume."}, quit};
+	}
+
 	std::vector<ps5menu::Tile> Tiles()
 	{
 		return {{"resume", "Resume", "resume"}, {"save", "Save state", "save", "Slot 1"}, {"load", "Load state", "load", "Slot 1", true},
@@ -238,6 +263,7 @@ int main(int argc, char* argv[])
 		const char* name;
 		std::vector<uint32_t> presses; // one a frame
 		uint32_t held = 0;
+		bool retro = false; // the libretro game's rows (RetroRows)
 	};
 	const std::vector<Shot> shots{
 		{"menu-tiles", {}},
@@ -245,7 +271,9 @@ int main(int argc, char* argv[])
 		{"menu-open", {ps5pad::kDown, 0, ps5pad::kCross, 0, ps5pad::kDown, 0, ps5pad::kDown, 0, ps5pad::kDown}},
 		{"menu-hold", {ps5pad::kUp, 0, ps5pad::kCross}, ps5pad::kCross},
 		{"menu-buttons", {ps5pad::kDown, 0, ps5pad::kDown, 0, ps5pad::kCross, 0, ps5pad::kDown, 0, ps5pad::kDown}},
+		{"menu-controller", {ps5pad::kDown, 0, ps5pad::kDown, 0, ps5pad::kCross, 0, ps5pad::kDown, 0, ps5pad::kDown}, 0, true},
 	};
+	const std::vector<ps5menu::Row> retroRows = RetroRows();
 	for (const Shot& shot : shots)
 	{
 		ps5menu::SideMenu menu;
@@ -258,10 +286,18 @@ int main(int argc, char* argv[])
 		{
 			bool close = false;
 			now += f + 1 == frames.size() ? 0 : 1000000 / 60 * (shot.held && f > shot.presses.size() + 20 ? 0 : 1);
-			menu.Update(rows, tiles, frames[f], now, close);
+			const std::vector<ps5menu::Row>& shown = shot.retro ? retroRows : rows;
+			menu.Update(shown, tiles, frames[f], now, close);
 			ImGui::NewFrame();
 			const ps5menu::Canvas canvas{ImGui::GetForegroundDrawList(), 1.0f, {0, 0}, ps5menu::kGold};
-			menu.Draw(canvas, set, header, rows, tiles, hints);
+			ps5menu::Header top = header;
+			if (shot.retro)
+			{
+				top.system = "NES";
+				top.title = "Arkanoid";
+				top.details = "Mesen";
+			}
+			menu.Draw(canvas, set, top, shown, tiles, hints);
 			ImGui::Render();
 			if (f + 1 == frames.size())
 			{

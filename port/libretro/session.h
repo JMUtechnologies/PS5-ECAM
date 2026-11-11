@@ -39,6 +39,16 @@ namespace ps5libretro
 		uint16_t buttons = 0;	  // 1 << RETRO_DEVICE_ID_JOYPAD_B ... _R3
 		int16_t left[2] = {};	  // the sticks, x and y, -32768 to 32767 (y down)
 		int16_t right[2] = {};
+		// the special controllers' (devices.h), which the cores read from the first player's: a mouse's or the
+		// Arkanoid paddle's movement this frame, its buttons (1 << RETRO_DEVICE_ID_MOUSE_LEFT, _RIGHT, _MIDDLE),
+		// and where a light gun aims, -32767 to 32767 across the picture (y down), or off it
+		int16_t mouse[2] = {};
+		uint8_t mouseButtons = 0;
+		int16_t aim[2] = {};
+		bool offscreen = false;
+		// the motion sensors, for a core that asks for them (a Game Boy cartridge's tilt or gyro sensor), as
+		// libretro's: x to the right, y to the screen's top, z out of it; in g, and radians a second
+		float accel[3] = {}, gyro[3] = {};
 	};
 
 	// A core option, as the core gave it (SET_VARIABLES, SET_CORE_OPTIONS, SET_CORE_OPTIONS_V2; in the
@@ -60,6 +70,17 @@ namespace ps5libretro
 		unsigned width = 0, height = 0;
 		uint64_t frame = 0; // the Run that made it: a frame the core duplicated keeps the one before
 	};
+
+	// The core's ports: Load plugs in a pad (RETRO_DEVICE_JOYPAD, a core's Auto) in each player's; SetDevice
+	// another (devices.h's), between two frames. PortDevice is what the core says is in a port (its input
+	// descriptors', Mesen's game database's choice on an Auto port), else what it was given. Port kPlayers is
+	// Mesen's Famicom expansion port: its add-ons read the first player's pad.
+	constexpr unsigned kPorts = kPlayers + 1;
+	void SetDevice(unsigned port, unsigned device);
+	unsigned PortDevice(unsigned port);
+	// Whether the core has turned the motion sensors on (mGBA does as a cartridge with a tilt or gyro sensor
+	// first reads it)
+	bool MotionUsed();
 
 	// The core started and the game loaded into it, its save RAM from <saves>/<stem>.srm when there.
 	// False, with why, when the core refuses it or one is loaded already.

@@ -866,11 +866,12 @@ namespace ps5melonds::screens
 			Draw(commands, frame.pictureRect, mode, 0, (float)s.pictureWidth, (float)s.pictureHeight, (float)s.pictureWidth / kPictureMax,
 				(float)s.pictureHeight / kPictureMax);
 		}
-		const Rect& bottom = frame.cursorOnTop ? frame.topRect : frame.bottomRect;
-		if (frame.cursor && bottom.Shown() && s.screens[frame.cursorOnTop ? 0 : 1].filled)
+		const Rect& bottom = frame.cursorOnPicture ? frame.pictureRect : frame.cursorOnTop ? frame.topRect : frame.bottomRect;
+		const bool under = frame.cursorOnPicture ? s.picture.filled : s.screens[frame.cursorOnTop ? 0 : 1].filled;
+		if (frame.cursor && bottom.Shown() && under)
 		{
 			// Azahar's crosshair: two bars, a sixtieth of the screen's height long each way and a fifth of
-			// that thick, kept on the bottom screen
+			// that thick, kept on the bottom screen (or the picture)
 			const float x = bottom.left + std::clamp(frame.cursorX, 0.0f, 1.0f) * bottom.Width();
 			const float y = bottom.top + std::clamp(frame.cursorY, 0.0f, 1.0f) * bottom.Height();
 			const float arm = bottom.Height() / 60.0f, thick = arm / 5.0f;
