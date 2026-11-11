@@ -241,6 +241,7 @@ add_library(CemuPS5 STATIC
 	frontend/shell/shell.cpp
 	frontend/shell/shell_internal.h
 	frontend/shell/welcome.cpp
+	frontend/shell/firststart.cpp
 	frontend/shell/reports.cpp
 	frontend/shell/orbit.cpp
 	frontend/shell/timeline.cpp
@@ -372,6 +373,7 @@ set_source_files_properties(
 	frontend/shell/shares.cpp
 	frontend/shell/shell.cpp
 	frontend/shell/welcome.cpp
+	frontend/shell/firststart.cpp
 	frontend/shell/reports.cpp
 	frontend/shell/orbit.cpp
 	frontend/shell/timeline.cpp

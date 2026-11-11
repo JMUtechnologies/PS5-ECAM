@@ -66,8 +66,8 @@ namespace ps5shell
 
 	enum class ScreenId
 	{
-		WhatsNew, // what a version brings, once: on the first start and after an update (whatsnew.cpp)
-		Welcome, // Make it yours: a first start's look and feel, or a new version's new options
+		WhatsNew, // what a version brings, once, after an update (whatsnew.cpp)
+		Welcome, // a new version's new options, once (welcome.cpp)
 		Setup,
 		Library,
 		Hub,
@@ -82,6 +82,7 @@ namespace ps5shell
 		Layout,	 // Make it yours' first step: Classic or Orbit (orbit.cpp)
 		Reports, // Make it yours' second: whether to send reports to the project, asked once (reports.cpp)
 		Timeline, // every console's games on one shelf, oldest to newest (timeline.cpp)
+		Start,	  // the first start's setup, one question a screen (firststart.cpp)
 	};
 
 	struct ShareJob; // shares.cpp: a test or a look around the network, on a thread of its own
@@ -425,7 +426,34 @@ namespace ps5shell
 
 		// Make it yours: first, a first start's look and feel, else what this
 		// version brings that the last did not have
-		void WelcomeOpen(bool first);
+		// The first start's setup (firststart.cpp): a question a screen, then a summary
+		enum class StartStep
+		{
+			Language,
+			Layout,
+			Covers,
+			Buttons,
+			Reports,
+			Ready,
+		};
+		void StartOpen(bool fromSettings);
+		void StartUpdate(const ui::Press& press);
+		void StartDraw(Canvas& canvas);
+		std::vector<Hint> StartHints() const;
+		std::vector<StartStep> StartSteps() const;
+		std::vector<std::string> StartLanguages() const;
+		void StartGo(int by);
+		void StartChoose();
+		void StartFinish();
+		Box StartCard(Canvas& canvas, const Box& box, bool focused, bool chosen, std::string_view key);
+		void StartHeader(Canvas& canvas, const std::string& question, const std::string& line);
+		void StartFooter(Canvas& canvas, const std::string& note);
+		int m_startStep = 0;
+		int m_startFocus[6] = {};		 // each step's focus, kept going back and forth
+		bool m_startForward = true;		 // the step came from the left (back) or the right
+		bool m_startFromSettings = false; // Settings > Make it yours: back there when done
+		float m_startShown = 0;			 // the layout cards, turning to the focused one
+		void WelcomeOpen(); // an update's new options, once
 		void WelcomeUpdate(const ui::Press& press, const ui::Actions& actions);
 		void WelcomeDraw(Canvas& canvas);
 		std::vector<Row> WelcomeRows();
@@ -434,7 +462,7 @@ namespace ps5shell
 		enum class NewsThen
 		{
 			Side,
-			Welcome,	 // a first start's Make it yours, then the Setup check
+			Welcome,	 // a first start's setup (firststart.cpp)
 			Setup,
 			NewOptions, // an update's Make it yours: its new options
 		};
@@ -933,10 +961,7 @@ namespace ps5shell
 		std::array<int, 4> m_articOctets{192, 168, 1, 2};
 
 		// Make it yours
-		bool m_welcomeFirst = false; // a first start's (else what is new)
 		int m_welcomeRow = 0;
-		bool m_welcomeThenSetup = false; // the Setup check follows (a first start)
-		bool m_welcomeFromSettings = false; // opened from Settings > Launcher: back there when done
 		float m_welcomeScroll = 0;
 		NewsThen m_newsThen = NewsThen::Side; // what follows What's new
 
@@ -953,8 +978,10 @@ namespace ps5shell
 			std::string about, aboutTitle;		  // the panel beside the list: what it means, what to do
 			std::vector<std::string> chips;		  // what goes there (a games folder's formats)
 			std::string guide, guideTitle;		  // the guide's page for it, as the QR code, and what it is
+			int games = -1;						  // a console's games check: how many were found
 		};
 		std::vector<Check> m_checks;
+		std::vector<const Check*> StartNeeds() const; // the setup's summary: what stands in the way of playing
 		void RunChecks();
 		std::unordered_map<std::string, ui::QrCode> m_qrCodes; // made once each
 

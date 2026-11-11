@@ -1,44 +1,46 @@
 # The new launcher's first start (PREVIEW_FIRST=1 tools/preview-shell.sh tools/launcher-preview/shell-first.txt):
-# What's new, Make it yours, the Setup check, then the Library of the first side with games, nothing
-# asking which.
+# the setup, a question a screen (firststart.cpp), then the Library of the first side with games.
 wait 90
-shot first-whatsnew           # what the version brings
-press cross                   # on to Make it yours
-wait 40
-shot first-welcome            # Make it yours: the look and feel, chosen once
-press down down down down down # the theme, under the language and the sides
+shot first-1-language         # which language: the PS5's first, in focus
+press right down              # another, to see the focus move
 wait 25
-shot first-welcome-theme
-press right                   # Link Jack
-wait 30
-shot first-theme-link-jack
-press right right             # Midnight
-wait 30
-shot first-theme-midnight
-press right                   # Eden
-wait 30
-shot first-theme-eden
-press left left left left     # back to the default, Light
-wait 20
-press circle                  # on to the Setup check
+shot first-1-language-focus
+press up left
+press cross                   # the PS5's: on to the layout
 wait 60
-shot first-setup              # the Setup check, its language focused
-press cross                   # the languages
+shot first-2-layout           # Classic, Orbit, EmulationStation
+press right
 wait 40
-shot first-setup-language
-press circle
-wait 20
-press down                    # the first check
-wait 20
-shot first-setup-check
+shot first-2-layout-orbit
+press left
+press cross                   # Classic
+wait 60
+shot first-3-covers           # flat or 3D boxes
+press right
+wait 30
+shot first-3-covers-boxes
+press left
+press cross                   # flat
+wait 60
+shot first-4-buttons          # which button is A
+press right
+wait 30
+shot first-4-buttons-cross
+press left
+press cross                   # A on Circle
+wait 60
+shot first-5-reports          # reports: Yes in focus
+press cross                   # yes
+wait 60
+shot first-6-ready            # the summary
 press down
-wait 20
-shot first-setup-next
-press cross                   # what that check's Cross does
+wait 25
+shot first-6-ready-next
+press circle                  # back a step: the reports again, as answered
+wait 60
+shot first-back
+press cross
 wait 40
-shot first-setup-action
-press circle
-wait 20
-press circle                  # continue: the Library, on the Wii U side
+press cross                   # start playing
 wait 90
 shot first-library

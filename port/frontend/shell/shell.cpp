@@ -196,13 +196,13 @@ namespace ps5shell
 		m_side = ps5launcher::SideNamed(side);
 		if (!SideShown(m_side) && m_status.autoLaunch.empty())
 			m_side = FirstShownSide();
-		// a version this console has not run before: What's new, once, before anything else, on a first
-		// start too (a home screen tile's game starts at once instead, and What's new waits for the next
-		// start); then a first start's look and feel to choose, or an update's new options
+		// a version this console has not run before: What's new, once, before anything else (a home screen
+		// tile's game starts at once instead, and What's new waits for the next start), then an update's new
+		// options. A first start has nothing new to it: its setup instead (firststart.cpp)
 		const bool firstStart = !m_settings.ui.setupDone;
 		const bool newVersion = m_settings.ui.lastVersion != PS5CEMU_VERSION;
 		const bool updated = !firstStart && !returning && newVersion;
-		const bool news = newVersion && !returning && m_status.autoLaunch.empty();
+		const bool news = newVersion && !returning && m_status.autoLaunch.empty() && !firstStart;
 		if (newVersion && m_status.autoLaunch.empty())
 		{
 			ps5log::Line("[ui] version {} (last run: {})", PS5CEMU_VERSION, m_settings.ui.lastVersion.empty() ? "3.5.0 or earlier" : m_settings.ui.lastVersion);
@@ -213,11 +213,11 @@ namespace ps5shell
 		if (news)
 			WhatsNewOpen(then);
 		else if (then == NewsThen::Welcome)
-			WelcomeOpen(true); // then the Setup check, then the side
+			StartOpen(false); // then the side
 		else if (then == NewsThen::Setup)
 			SetupOpen(true); // then the side (FinishStart)
 		else if (then == NewsThen::NewOptions)
-			WelcomeOpen(false); // then the side
+			WelcomeOpen(); // then the side
 		else
 		{
 			// reports to the project, never asked yet (a start that went to the Setup check instead): asked
@@ -556,6 +556,7 @@ namespace ps5shell
 			case ScreenId::Layout: LayoutUpdate(press); break;
 			case ScreenId::Reports: ReportsUpdate(press); break;
 			case ScreenId::Timeline: TimelineUpdate(press); break;
+			case ScreenId::Start: StartUpdate(press); break;
 			}
 		}
 		// what is held to confirm goes on without presses
@@ -600,6 +601,7 @@ namespace ps5shell
 		case ScreenId::Layout: LayoutDraw(canvas); break;
 		case ScreenId::Reports: ReportsDraw(canvas); break;
 		case ScreenId::Timeline: TimelineDraw(canvas); break;
+		case ScreenId::Start: StartDraw(canvas); break;
 		}
 		const bool overlay = m_picker.open || m_help.open || m_menu.open || m_keyboard.open || m_update.open || m_unpack.open || m_reorganize.open;
 		if (overlay)
@@ -1046,7 +1048,7 @@ namespace ps5shell
 	{
 		ps5lang::Load(m_settings.ui.language);
 		m_fonts.SetLanguage(ps5lang::Current());
-		if (m_screen == ScreenId::Setup)
+		if (m_screen == ScreenId::Setup || m_screen == ScreenId::Start)
 			RunChecks();
 	}
 
@@ -1702,7 +1704,7 @@ namespace ps5shell
 			return {{Icon::Cross, Tr("Continue")}};
 		case ScreenId::Welcome:
 			return {{Icon::LeftRight, Tr("Change")}, {Icon::Triangle, Tr("More info")},
-				{Icon::Circle, m_welcomeThenSetup ? Tr("Continue to the Setup check") : m_welcomeFromSettings ? Tr("Back") : Tr("Continue to the Library")}};
+				{Icon::Circle, Tr("Continue to the Library")}};
 		case ScreenId::Setup:
 		{
 			std::vector<Hint> hints;
@@ -1714,6 +1716,7 @@ namespace ps5shell
 			hints.push_back({Icon::Circle, !m_setupFirst ? Tr("Back") : Tr("Continue to the Library")});
 			return hints;
 		}
+		case ScreenId::Start: return StartHints();
 		case ScreenId::Layout:
 		case ScreenId::Reports:
 		case ScreenId::Timeline: return {}; // their own, on their own grounds
@@ -1812,7 +1815,7 @@ namespace ps5shell
 			canvas.Rect({0, 0, 1920, 1080}, 0, 0xffebe8e7); // #e7e8eb, on every theme
 			return;
 		}
-		if (m_screen == ScreenId::Setup || m_screen == ScreenId::Welcome || m_screen == ScreenId::WhatsNew)
+		if (m_screen == ScreenId::Setup || m_screen == ScreenId::Welcome || m_screen == ScreenId::WhatsNew || m_screen == ScreenId::Start)
 		{
 			// What's new's seam between its second and third columns of cards, never through one
 			DrawBrandBackdrop(canvas, m_screen == ScreenId::WhatsNew ? 1252.0f : 1140.0f);

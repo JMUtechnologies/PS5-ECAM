@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5-ECAM: Make it yours. On a first start, before the Setup check, the
-// few choices that decide how the app looks and feels: its language, which sides the bar offers, the
-// theme, where A is, the music, vibration and the games' pictures. After an update, once, the new
-// options to set up, each a row as in Settings (the same rows: Settings changes them later); What's new
-// (whatsnew.cpp) has said what the version brings before it. Circle goes on either way: nothing here
-// has to be answered.
+// PS5-ECAM: New in this version. After an update, once, the new options to set up, each a row as in
+// Settings (the same rows: Settings changes them later); What's new (whatsnew.cpp) has said what the
+// version brings before it. Circle goes on: nothing here has to be answered. A first start has its own
+// setup instead (firststart.cpp).
 
 #include "shell_internal.h"
 #include "../../app/reports.h"
@@ -27,20 +25,16 @@ namespace ps5shell
 		constexpr const char* kTouchpadClicks[] = {TrMark("Automatic"), TrMark("Touches the screen"), TrMark("Presses a button")};
 	}
 
-	void Shell::WelcomeOpen(bool first)
+	void Shell::WelcomeOpen()
 	{
-		m_welcomeFromSettings = m_screen == ScreenId::Settings;
-		m_welcomeFirst = first;
-		m_welcomeThenSetup = first && !m_welcomeFromSettings;
 		m_welcomeRow = 0;
 		m_welcomeScroll = 0;
 		m_onBar = false;
 		m_message.clear();
 		Show(ScreenId::Welcome);
 		m_screenAt = m_now;
-		if (m_welcomeFromSettings)
-			return;
-		// its first steps, once each: which layout, then whether to send reports (6.0)
+		// its first steps, once each, for a console that never had them: which layout, then whether to send
+		// reports (6.0)
 		auto back = [this] {
 			Show(ScreenId::Welcome);
 			m_screenAt = m_now;
@@ -82,40 +76,28 @@ namespace ps5shell
 			row.help = Tr("A on Circle and B on Cross as on Nintendo consoles, or A on Cross and B on Circle as on PlayStation. X and Y swap to match. You can change it later in each system's Controls.");
 			rows.push_back(row);
 		};
-		if (m_welcomeFirst)
+		pick("launcher", {"theme", "side-wiiu", "side-switch", "side-ds", "side-3ds"});
+		faceButtons();
+		if (SideShown(System::WiiU))
 		{
-			pick("ui-language", {"ui-language"});
-			pick("launcher", {"side-wiiu", "side-switch", "side-ds", "side-3ds", "theme"}); // the sides in the bar's order
-			faceButtons();
-			pick("system", {"music"});
-			pick("controls", {"rumble"});
-			pick("launcher", {"pictures"});
-		}
-		else
-		{
-			pick("launcher", {"theme", "side-wiiu", "side-switch", "side-ds", "side-3ds"});
-			faceButtons();
-			if (SideShown(System::WiiU))
-			{
-				Row touchpad;
-				touchpad.kind = Row::Kind::Choice;
-				touchpad.id = "touchpad1";
-				touchpad.label = Tr("Touchpad click");
-				touchpad.options = {Tr(kTouchpadClicks[0]), Tr(kTouchpadClicks[1]), Tr(kTouchpadClicks[2])};
-				touchpad.index = std::clamp(m_settings.touchpadClick[0], 0, 2);
-				touchpad.value = touchpad.options[touchpad.index];
-				touchpad.description = Tr("For Wii U player 1: touch the GamePad screen, or press a button.");
-				touchpad.help = Tr("What a touchpad click does for Wii U player 1: touch the GamePad screen, or press the button set for Touchpad click (- (Select) if none). Automatic: a touch with the GamePad, a button with other controllers. Other players: Settings > Controls for the Wii U.");
-				rows.push_back(touchpad);
-				// on the Wii U side, its pages' new rows
-				if (IsWiiU())
-					pick("graphics", {"upscaling", "shadernotices"});
-			}
+			Row touchpad;
+			touchpad.kind = Row::Kind::Choice;
+			touchpad.id = "touchpad1";
+			touchpad.label = Tr("Touchpad click");
+			touchpad.options = {Tr(kTouchpadClicks[0]), Tr(kTouchpadClicks[1]), Tr(kTouchpadClicks[2])};
+			touchpad.index = std::clamp(m_settings.touchpadClick[0], 0, 2);
+			touchpad.value = touchpad.options[touchpad.index];
+			touchpad.description = Tr("For Wii U player 1: touch the GamePad screen, or press a button.");
+			touchpad.help = Tr("What a touchpad click does for Wii U player 1: touch the GamePad screen, or press the button set for Touchpad click (- (Select) if none). Automatic: a touch with the GamePad, a button with other controllers. Other players: Settings > Controls for the Wii U.");
+			rows.push_back(touchpad);
+			// on the Wii U side, its pages' new rows
+			if (IsWiiU())
+				pick("graphics", {"upscaling", "shadernotices"});
 		}
 		Row next;
 		next.kind = Row::Kind::Link;
 		next.id = "continue";
-		next.label = m_welcomeThenSetup ? Tr("Continue to the Setup check") : m_welcomeFromSettings ? Tr("Back to Settings") : Tr("Continue to the Library");
+		next.label = Tr("Continue to the Library");
 		next.description = Tr("Everything here is in Settings too.");
 		next.help = Tr("Continue. You don't have to choose now: everything here is also in Settings.");
 		rows.push_back(next);
@@ -125,18 +107,6 @@ namespace ps5shell
 	void Shell::WelcomeDone()
 	{
 		m_feedback.Play(ui::Cue::Select);
-		if (m_welcomeThenSetup)
-		{
-			m_welcomeThenSetup = false;
-			SetupOpen(true); // then the side (FinishStart)
-			return;
-		}
-		if (m_welcomeFromSettings)
-		{
-			m_welcomeFromSettings = false;
-			SettingsOpen("launcher", true);
-			return;
-		}
 		OpenSide(m_side, !m_prepared);
 	}
 
@@ -217,13 +187,9 @@ namespace ps5shell
 
 		// what this is
 		canvas.PushAlpha(Enter(0));
-		canvas.Text(Style(kOverlineStyle), kSafeX, 92,
-			m_welcomeFirst ? std::string(Tr("Welcome to Playtendoh")) : TrF("Playtendoh {0}", ps5update::Readable(PS5CEMU_VERSION)), Secondary(), 1100, 1);
-		canvas.Text(Style({56, ui::Weight::Bold, 1.1f, -0.8f}), kSafeX, 122, m_welcomeFirst ? Tr("Make it yours") : Tr("New in this version"), kText, 1100, 1);
-		canvas.Text(Style({24, ui::Weight::Regular, 1.3f}), kSafeX, 206,
-			m_welcomeFirst ? Tr("Choose how the app looks and feels. You can change it in Settings.") :
-							 Tr("A few new options to set up. They're also in Settings."),
-			Secondary(), 1100, 1);
+		canvas.Text(Style(kOverlineStyle), kSafeX, 92, TrF("Playtendoh {0}", ps5update::Readable(PS5CEMU_VERSION)), Secondary(), 1100, 1);
+		canvas.Text(Style({56, ui::Weight::Bold, 1.1f, -0.8f}), kSafeX, 122, Tr("New in this version"), kText, 1100, 1);
+		canvas.Text(Style({24, ui::Weight::Regular, 1.3f}), kSafeX, 206, Tr("A few new options to set up. They're also in Settings."), Secondary(), 1100, 1);
 		canvas.PopAlpha();
 
 		// the rows: those past the screen's foot scroll with the focus
