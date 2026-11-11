@@ -30,8 +30,7 @@
 // that does not fit), PREVIEW_SYSTEM_LANGUAGE the PS5's (its number: 4 is German, 0 Japanese).
 // PREVIEW_WHATSNEW starts as after an update (Make it yours, with what the version brings); PREVIEW_THEME
 // names a theme (ui/theme.h's id: link-jack, midnight...); PREVIEW_SIDES the sides shown (1 Wii U, 2 3DS, 4 DS);
-// PREVIEW_FILTERS turns the Library's filters' row on; PREVIEW_LARGER_TEXT, PREVIEW_REDUCE_MOTION and
-// PREVIEW_HIGH_CONTRAST turn on Settings > Launcher's accessibility rows.
+// PREVIEW_FILTERS turns the Library's filters' row on.
 
 #include "console.h"
 
@@ -133,12 +132,6 @@ int main(int argc, char* argv[])
 		settings.ui.libraryFilters = true;
 	if (const char* theme = std::getenv("PREVIEW_THEME"))
 		settings.ui.theme = theme;
-	if (std::getenv("PREVIEW_LARGER_TEXT"))
-		settings.ui.largerText = true;
-	if (std::getenv("PREVIEW_REDUCE_MOTION"))
-		settings.ui.reduceMotion = true;
-	if (std::getenv("PREVIEW_HIGH_CONTRAST"))
-		settings.ui.highContrast = true;
 	// the side it opens on: wiiu, 3ds, ds or switch
 	if (const char* side = std::getenv("PREVIEW_SIDE"))
 		settings.ui.lastSide = side;

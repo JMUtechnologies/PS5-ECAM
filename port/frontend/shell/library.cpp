@@ -721,10 +721,7 @@ namespace ps5shell
 			canvas.PushClip({0, 160, rowRight + 8, kRecentTop + kRecentHeight + 40 - 160});
 			float x = kSafeX - m_recentScroll.value;
 			int lastGroup = -1;
-			// the game in focus lifted from its bottom left, so it rises clear of its neighbours, gliding up as
-			// the focus arrives and down as it leaves (6.0; both jumped before)
-			const float most = m_settings.ui.reduceMotion ? 0.0f : 0.05f;
-			std::vector<std::pair<float, std::pair<int, Box>>> raised;
+			Box focusedBox{};
 			for (int i = 0; i < (int)m_recent.size(); i++)
 			{
 				Game& g = m_games[m_recent[i]];
@@ -736,21 +733,22 @@ namespace ps5shell
 					lastGroup = group;
 				}
 				const bool focused = !m_onBar && m_libraryZone == 0 && i == m_recentIndex;
-				const float mix = FocusMix(FocusKey(g.entry.game.path.string(), (uint64_t)m_side + 101), focused);
 				if (box.x < 1920)
 				{
-					const float lift = 1 + most * mix;
-					const Box drawn{box.x, box.Bottom() - box.h * lift, box.w * lift, box.h * lift};
-					if (mix > 0.002f || focused)
-						raised.push_back({mix + (focused ? 1 : 0), {i, drawn}});
+					if (focused)
+						focusedBox = box;
 					else
-						DrawCover(canvas, g, drawn, false, 0);
+						DrawCover(canvas, g, box, false, 0);
 				}
-				x = box.Right() + kRecentGap + 12 * mix;
+				x = box.Right() + kRecentGap + (focused ? 12 : 0);
 			}
-			std::sort(raised.begin(), raised.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
-			for (const auto& [mix, which] : raised)
-				DrawCover(canvas, m_games[m_recent[which.first]], which.second, !m_onBar && m_libraryZone == 0 && which.first == m_recentIndex, 0);
+			if (focusedBox.w > 0)
+			{
+				// lifted from its bottom left, so it rises clear of its neighbours
+				const float lift = m_settings.ui.reduceMotion ? 0.0f : 0.05f;
+				const Box lifted{focusedBox.x, focusedBox.Bottom() - focusedBox.h * (1 + lift), focusedBox.w * (1 + lift), focusedBox.h * (1 + lift)};
+				DrawCover(canvas, m_games[m_recent[m_recentIndex]], lifted, true, 0);
+			}
 			canvas.PopClip();
 			// the panel: the game's console, its name, play time, when it was last played, its update and
 			// DLC, how it runs, and what Cross and Options do with it
