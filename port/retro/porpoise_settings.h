@@ -30,8 +30,10 @@ namespace ps5porpoise
 	// (.iso, .gcm), a WBFS's, a WIA's or RVZ's, a CISO's; else the file's name
 	std::string GameKey(const std::string& gamePath);
 
-	// What Porpoise's loading screen says of the game about to start: <data>/playtendoh-session.txt, a line each
 	void ClearAchievementsAccount(); // signed out: Porpoise's copy goes too
+	// What Porpoise's loading screen (the Switch side's, in Porpoise X) says of the game about to start:
+	// <data>/playtendoh-session.txt, a line each; banner: a full-screen picture of the game (ps5boxart's title
+	// art) for its ground, in place of its cover's colours
 	void WriteSession(const std::string& side, const std::string& title, const std::string& details, const std::string& cover, const std::string& banner = {});
 
 	// Porpoise's own logs: its trace.txt and Dolphin's core.log, each start's own with the last one's beside it

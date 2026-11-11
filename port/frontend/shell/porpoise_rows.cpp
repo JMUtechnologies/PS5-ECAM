@@ -447,11 +447,11 @@ namespace ps5shell
 					return &mods;
 			return nullptr;
 		}
-		// the built-in borders' names and labels (porpoise_borders.cpp), then the player's own
-		constexpr const char* kBorders[][2] = {{"", TrMark("None")}, {"porpoise", "Porpoise"}, {"glass", "Porpoise Glass"}, {"midnight", "Midnight"}, {"frost", "Frost"}, {"carbon", "Carbon"},
+		// the built-in borders' names and labels (porpoise_borders.cpp), then the player's own; not those of
+		// Porpoise's own looks (Porpoise, Porpoise Glass, Revolution, Star Cube), which its copy here leaves out
+		constexpr const char* kBorders[][2] = {{"", TrMark("None")}, {"midnight", "Midnight"}, {"frost", "Frost"}, {"carbon", "Carbon"},
 			{"arcade", TrMark("Arcade Cabinet")}, {"arcade-retro", TrMark("Retro Cabinet")}, {"arcade-synth", TrMark("Synthwave Cabinet")}, {"tv-80s", TrMark("80s TV")},
-			{"tv-woodgrain", TrMark("Wood-Grain TV")}, {"tv-90s", TrMark("90s TV")}, {"tv-black", TrMark("Black TV")}, {"monitor-beige", TrMark("Beige Monitor")},
-			{"revolution", "Revolution"}, {"star-cube", "Star Cube"}};
+			{"tv-woodgrain", TrMark("Wood-Grain TV")}, {"tv-90s", TrMark("90s TV")}, {"tv-black", TrMark("Black TV")}, {"monitor-beige", TrMark("Beige Monitor")}};
 
 		constexpr const char* kPrefix = "porpoise:";
 		constexpr int kCustomSound = 4; // the sound's keys as no preset has them
