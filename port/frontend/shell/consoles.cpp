@@ -28,8 +28,7 @@ namespace ps5shell
 				   (side == System::Switch || side == System::Switch2) ? kNxDefault : kWiiuDefault;
 		}
 
-		// the second colour a controller is drawn in: the Switches' other Joy-Con (the Switch 2's left
-		// rail), the Game Boy's screen
+		// the second colour a controller is drawn in: the Switches' other Joy-Con, the Game Boy's screen
 		uint32_t Second(System side, uint32_t colour)
 		{
 			return side == System::Switch || side == System::Switch2 ? kJoyConBlue : ps5retro::Is((int)side, "gb") ? ui::Mix(colour, 0xffffffff, 0.5f) : colour;
@@ -62,24 +61,10 @@ namespace ps5shell
 			shape(-0.37f, -0.12f, 0.09f, 0.09f, 0.045f, cut);
 			shape(0.37f, -0.12f, 0.09f, 0.09f, 0.045f, cut);
 		}
-		else if (side == System::Switch2)
+		else if (side == System::Switch || side == System::Switch2)
 		{
-			// the Joy-Con 2, its own (the owner's, 2026-11-05): taller, dark, the two colours on the rails
-			// between them (second the left one's, body the right one's), the sticks and the C button
-			const uint32_t grey = ui::Mix(cut, 0xffffffff, 0.3f);
-			shape(-0.25f, 0, 0.36f, 0.98f, 0.18f, grey);
-			shape(-0.15f, 0, 0.16f, 0.98f, 0, grey);
-			shape(0.25f, 0, 0.36f, 0.98f, 0.18f, grey);
-			shape(0.15f, 0, 0.16f, 0.98f, 0, grey);
-			shape(-0.085f, 0, 0.04f, 0.86f, 0.02f, second);
-			shape(0.085f, 0, 0.04f, 0.86f, 0.02f, body);
-			shape(-0.25f, -0.2f, 0.14f, 0.14f, 0.07f, cut);
-			shape(0.25f, 0.16f, 0.14f, 0.14f, 0.07f, cut);
-			shape(0.25f, -0.04f, 0.06f, 0.06f, 0.03f, ui::Mix(grey, 0xffffffff, 0.7f));
-		}
-		else if (side == System::Switch)
-		{
-			// the two Joy-Con, each flat on the side that slides onto the console
+			// the two Joy-Con, each flat on the side that slides onto the console (the Switch 2's too, until
+			// its icon, the Switch's squared, is on the GPU)
 			shape(-0.25f, 0, 0.34f, 0.86f, 0.17f, second);
 			shape(-0.16f, 0, 0.16f, 0.86f, 0, second);
 			shape(0.25f, 0, 0.34f, 0.86f, 0.17f, body);
@@ -265,9 +250,10 @@ namespace ps5shell
 	{
 		// RetroArch's XMB Monochrome icons (CC BY 4.0, tools/render-console-icons.py), at 192 and at 64 for
 		// the marks drawn small (the layout's 1920 is the screen's 3840: under 48 wide is under 96 pixels);
-		// none for a side the set has no icon of (the Switch 2, the Super Game Boy, ...): its drawing stays
-		std::string_view name = side == System::WiiU ? "wiiu" : side == System::Switch ? "switch" : side == System::N3ds ? "3ds" :
-								side == System::Nds	 ? "ds" : "";
+		// the Switch 2's the Switch's with a raised 2, as a square is written; none for a side the set has
+		// no icon of (the Super Game Boy, ...): its drawing stays
+		std::string_view name = side == System::WiiU ? "wiiu" : side == System::Switch ? "switch" : side == System::Switch2 ? "switch2" :
+								side == System::N3ds ? "3ds" : side == System::Nds ? "ds" : "";
 		if (ps5retro::IsRetro((int)side))
 			name = ps5retro::Of((int)side).key;
 		static constexpr std::string_view kDrawn[] = {"sgb", "satellaview", "vs", "ique"};
@@ -382,12 +368,10 @@ namespace ps5shell
 	void Shell::DrawBareConsole(Canvas& canvas, System side, const Box& box, bool open)
 	{
 		// a side in the bar's carousel (6.0): only its controller as the mark draws it, on the bar's own
-		// ground; the open side's in its colour, the others in one quiet ink. The Switch 2's stays dark:
-		// its Joy-Con 2 are drawn in its cut colour, the mark's ground
-		constexpr uint32_t kDark = 0xff2b1d16; // #161d2b
+		// ground; the open side's in its colour, the others in one quiet ink
 		const uint32_t quiet = ui::Mix(kText, kInk1, 0.55f) | 0xff000000;
 		const uint32_t colour = open ? Vivid(side) : quiet;
-		const uint32_t cut = side == System::Switch2 ? (open ? kDark : quiet) : kInk1 | 0xff000000;
+		const uint32_t cut = kInk1 | 0xff000000;
 		DrawConsole(canvas, side, box.CentreX(), box.CentreY(), box.w, colour, cut, open ? Second(side, colour) : quiet, ConsoleIcon(side, box.w));
 	}
 

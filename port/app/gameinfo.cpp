@@ -47,7 +47,8 @@ namespace ps5gameinfo
 		{
 			database.loaded = true;
 			const std::string path = Folder() + (system == ps5boxart::System::WiiU ? "/wiiu.tsv.gz" :
-				system == ps5boxart::System::Nds ? "/ds.tsv.gz" : system == ps5boxart::System::Switch ? "/switch.tsv.gz" : "/3ds.tsv.gz");
+				system == ps5boxart::System::Nds ? "/ds.tsv.gz" : system == ps5boxart::System::Switch ? "/switch.tsv.gz" :
+				system == ps5boxart::System::GameCubeWii ? "/wii.tsv.gz" : "/3ds.tsv.gz");
 			gzFile file = gzopen(path.c_str(), "rb");
 			if (!file)
 			{

@@ -51,6 +51,7 @@ namespace ps5actions
 	int Count3dsGames(const std::string& folder);
 	int CountDsGames(const std::string& folder);
 	int CountGames(const std::string& folder);
+	int CountRetroGames(int side, const std::string& folder);
 
 	// Diagnostics: what each did, as its row shows it
 	std::string CopyLogsToUsb();

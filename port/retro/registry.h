@@ -86,5 +86,7 @@ namespace ps5retro
 		if (const Alternative* other = AlternativeOf(side); other && backend == 1) return other->backend;
 		const auto& s = Of(side); return {s.name, s.runtime, s.data};
 	}
+	// A side's game files, as the folder browser lists them (".gb .gbc"), and whether a name is one
+	std::string_view Formats(std::string_view side);
 	bool HasExtension(std::string_view side, std::string name);
 }

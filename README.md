@@ -322,7 +322,8 @@ says where the app is going and how to fit in.
 - **Zacksly** for [PS5 Button Icons and Controls](https://zacksly.itch.io/ps5-button-icons-and-controls), the DualSense on the
   in-game menus' Buttons page (CC BY 3.0; Porpoise X's rendering, its PlayStation logo removed and its lines thickened)
 - The **libretro** team for RetroArch's [XMB Monochrome](https://github.com/libretro/retroarch-assets) icons, the
-  consoles' marks in the launcher (CC BY 4.0; shrunk and made white on clear, tools/render-console-icons.py)
+  consoles' marks in the launcher (CC BY 4.0; shrunk and made white on clear, the Switch's also with a raised 2
+  for the Switch 2, tools/render-console-icons.py)
 - [GameTDB](https://www.gametdb.com/) for box art and game information, and the authors of the
   [Cemu community graphic packs](https://github.com/cemu-project/cemu_graphic_packs)
 

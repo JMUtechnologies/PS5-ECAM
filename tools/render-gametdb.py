@@ -2,13 +2,15 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """GameTDB's game information for the launcher and the in-game menus: each game's description,
 developer, publisher, release date, genre, players and rating, by the ID on its box (ALZE01 for a
-Wii U game, AREE for a 3DS one, AMCE for a DS one, AHNXA for a Switch one, as for the box art).
+Wii U game, AREE for a 3DS one, AMCE for a DS one, AHNXA for a Switch one, RMCE01 for a Wii or
+GameCube disc, as for the box art).
 
-    render-gametdb.py [OUTPUT_FOLDER] [--from FOLDER] [--only wiiu|3ds|ds|switch]
+    render-gametdb.py [OUTPUT_FOLDER] [--from FOLDER] [--only wiiu|3ds|ds|switch|wii]
 
-Downloads GameTDB's English Wii U, 3DS, DS and Switch databases (www.gametdb.com/wiiutdb.zip,
-3dstdb.zip, dstdb.zip and switchtdb.zip), or reads them from FOLDER, and writes wiiu.tsv.gz,
-3ds.tsv.gz, ds.tsv.gz and switch.tsv.gz (default: port/app/gametdb), or only the one --only names: one
+Downloads GameTDB's English Wii U, 3DS, DS, Switch and Wii databases (www.gametdb.com/wiiutdb.zip,
+3dstdb.zip, dstdb.zip, switchtdb.zip and wiitdb.zip, its GameCube discs in it and its WiiWare left
+out), or reads them from FOLDER, and writes wiiu.tsv.gz, 3ds.tsv.gz, ds.tsv.gz, switch.tsv.gz and
+wii.tsv.gz (default: port/app/gametdb), or only the one --only names: one
 game a line, sorted by ID, its fields separated by tabs, with tabs, line breaks and backslashes in them
 written as \\t, \\n and \\\\:
 
@@ -29,8 +31,11 @@ import urllib.request
 import xml.etree.ElementTree as ElementTree
 import zipfile
 
-SOURCES = {"wiiu": "wiiutdb", "3ds": "3dstdb", "ds": "dstdb", "switch": "switchtdb"}
+SOURCES = {"wiiu": "wiiutdb", "3ds": "3dstdb", "ds": "dstdb", "switch": "switchtdb", "wii": "wiitdb"}
 URL = "https://www.gametdb.com/{}.zip?LANG=EN"
+# the Wii's: its discs and the GameCube's, the ones Porpoise plays (not WiiWare's channels, which
+# convert leaves out too)
+EXTRA = {"wii": "&WIIWARE=FALSE&GAMECUBE=TRUE"}
 
 
 def text(element):
@@ -62,13 +67,16 @@ def field(value):
     return value.replace("\\", "\\\\").replace("\t", "\\t").replace("\n", "\\n")
 
 
-def convert(xml, out_path):
+def convert(xml, out_path, disc_only=False):
     root = ElementTree.fromstring(xml)
     rows = {}
     for game in root.iter("game"):
         game_id = (game.findtext("id") or "").strip().upper()
         # a Switch game's is five letters, its product code's last part (HAC-P-AHNXA)
         if not re.fullmatch(r"[A-Z0-9]{4,6}", game_id) or game_id in rows:
+            continue
+        # the Wii's channels (Virtual Console, WiiWare, homebrew) have four: only its discs are kept
+        if disc_only and len(game_id) != 6:
             continue
         locale = next((l for l in game.findall("locale") if l.get("lang") == "EN"), None)
         title = text(locale.find("title")) if locale is not None else ""
@@ -118,14 +126,14 @@ def main():
             with open(os.path.join(source, f"{name}.zip"), "rb") as file:
                 data = file.read()
         else:
-            request = urllib.request.Request(URL.format(name), headers={"User-Agent": "PS5-ECAM"})
+            request = urllib.request.Request(URL.format(name) + EXTRA.get(system, ""), headers={"User-Agent": "PS5-ECAM"})
             with urllib.request.urlopen(request, timeout=120) as response:
                 data = response.read()
         with zipfile.ZipFile(io.BytesIO(data)) as archive:
             xml = archive.read(f"{name}.xml")
         version = re.search(rb'version="(\d+)"', xml)
         path = os.path.join(out, f"{system}.tsv.gz")
-        count = convert(xml, path)
+        count = convert(xml, path, disc_only=system == "wii")
         print(f"{path}: {count} games from GameTDB's {name} {version[1].decode() if version else ''} "
               f"({os.path.getsize(path) // 1024} KiB)")
 
