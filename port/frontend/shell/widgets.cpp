@@ -353,7 +353,8 @@ namespace ps5shell
 			// as a box from a shelf's size up (a list's small cover stays flat: its spine would be a hairline)
 			if (m_settings.ui.boxArt3d && box.w >= 100)
 			{
-				DrawBox3d(canvas, picture, drawn, focused, game.entry.ambient[0] ? game.entry.ambient[0] : picture.ambient[0]);
+				DrawBox3d(canvas, picture, m_images->Get(ps5boxart::SpinePath(game.boxArt)), drawn, focused,
+					game.entry.ambient[0] ? game.entry.ambient[0] : picture.ambient[0]);
 				return;
 			}
 		}
@@ -396,39 +397,40 @@ namespace ps5shell
 			Focus(drawn, kRadiusCover, glow);
 	}
 
-	void Shell::DrawBox3d(Canvas& canvas, const ui::Picture& picture, const Box& box, bool focused, uint32_t ambient)
+	void Shell::DrawBox3d(Canvas& canvas, const ui::Picture& picture, const ui::Picture& spineArt, const Box& box, bool focused, uint32_t ambient)
 	{
-		// The cover as its box, turned a little to the right: a spine on the left (the cover's left edge, in
-		// shade), then the front, whose far edge is shorter. The canvas draws no perspective, so each face is
+		// The cover as its box, turned a little to the right: a spine on the left (the box's own, from GameTDB's
+		// whole cover; else the cover's left edge), in shade, then the front, whose far edge is shorter. The canvas draws no perspective, so each face is
 		// thin upright slices of the picture, each a little shorter than the last
 		constexpr int kSlices = 40;
 		const float spine = box.w * 0.11f, front = box.w - spine;
 		const float near = box.h, far = box.h * 0.9f, back = box.h * 0.94f;
 		const float floor = box.Bottom();
 		// where a face's top and bottom are, across it: the floor rises half as much as the top falls
-		const auto slice = [&](float x, float w, float h, float u0, float u1, uint32_t tint) {
+		const auto slice = [&](const ui::Picture& art, float x, float w, float h, float u0, float u1, uint32_t tint) {
 			const float drop = box.h - h;
 			// each slice reaches 2 pixels into the next, so the soft edge of one lies on the next's picture, not on
 			// the ground behind: no seams
-			canvas.Image(picture.texture, {x, floor - h - drop * 0.35f, w + 2.0f, h}, 0, tint, u0, 0, u1 + (u1 - u0) * 2.0f / std::max(w, 0.5f), 1);
+			canvas.Image(art.texture, {x, floor - h - drop * 0.35f, w + 2.0f, h}, 0, tint, u0, 0, u1 + (u1 - u0) * 2.0f / std::max(w, 0.5f), 1);
 		};
 		uint32_t edge = ambient ? ambient : Accent();
 		canvas.Shadow({box.x + spine * 0.5f, box.y + box.h * 0.04f, box.w - spine * 0.5f, box.h * 0.94f}, 6, focused ? 26.0f : 14.0f,
 			focused ? 60.0f : 30.0f, focused ? 0x99000000 : 0x73000000);
-		// the spine: the cover's first twentieth, darker toward the back
+		// the spine, darker toward the back: the box's own, else the cover's first twentieth
+		const bool own = spineArt.texture != 0;
 		for (int i = 0; i < kSlices / 4; i++)
 		{
 			const float t0 = (float)i / (kSlices / 4), t1 = (float)(i + 1) / (kSlices / 4);
 			const float h = back + (near - back) * t0;
-			const uint32_t shade = ui::Mix(0xff5a5a5a, 0xff9a9a9a, t0);
-			slice(box.x + spine * t0, spine * (t1 - t0), h, 0.05f * t0, 0.05f * t1, shade);
+			const uint32_t shade = own ? ui::Mix(0xff8a8a8a, 0xffc4c4c4, t0) : ui::Mix(0xff5a5a5a, 0xff9a9a9a, t0);
+			slice(own ? spineArt : picture, box.x + spine * t0, spine * (t1 - t0), h, own ? t0 : 0.05f * t0, own ? t1 : 0.05f * t1, shade);
 		}
 		// the front: the whole picture, its near edge full height, its far edge shorter
 		for (int i = 0; i < kSlices; i++)
 		{
 			const float t0 = (float)i / kSlices, t1 = (float)(i + 1) / kSlices;
 			const float h = near + (far - near) * t0;
-			slice(box.x + spine + front * t0, front * (t1 - t0), h, t0, t1, ui::Mix(0xffffffff, 0xffd6d6d6, t0));
+			slice(picture, box.x + spine + front * t0, front * (t1 - t0), h, t0, t1, ui::Mix(0xffffffff, 0xffd6d6d6, t0));
 		}
 		// the fold between spine and front catches the light; the side's colour as a hairline there
 		const float foldTop = floor - near;

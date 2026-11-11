@@ -389,6 +389,12 @@ namespace ps5boxart
 	std::vector<std::string> TakeArrived() { return {}; }
 	uint32_t Arrivals() { return 0; }
 	void SetEnabled(bool) {}
+	void SetSpines(bool) {}
+	// a spine beside a preview cover (<ID>.spine.tga), as the app keeps GameTDB's
+	std::string SpinePath(const std::string& cover)
+	{
+		return cover.size() > 4 ? cover.substr(0, cover.size() - 4) + ".spine.tga" : std::string();
+	}
 	void Stop() {}
 	int Answered() { return -1; } // nothing asked of GameTDB
 	// the GameCube and Wii games' loading pictures and SteamGridDB's key: none without a network

@@ -367,7 +367,7 @@ namespace ps5shell
 		// needs, at most the step text takes before an ellipsis, so a longer language's rows are not
 		// each a size of their own
 		float LabelScale(const std::vector<Row>& rows, float boxWidth);
-		void DrawBox3d(Canvas& canvas, const ui::Picture& picture, const Box& box, bool focused, uint32_t ambient);
+		void DrawBox3d(Canvas& canvas, const ui::Picture& picture, const ui::Picture& spineArt, const Box& box, bool focused, uint32_t ambient);
 		void DrawToggle(Canvas& canvas, float x, float y, bool on, bool focused);
 		void HoldRing(Canvas& canvas, const Box& box, float progress);
 		float Enter(int part) const; // a screen's part, arriving: 0 to 1, 40 ms apart

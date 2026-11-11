@@ -524,6 +524,7 @@ namespace ps5shell
 		case Button::Triangle:
 			// the covers flat or as boxes, for either launcher (Settings > Launcher > 3D box art)
 			m_settings.ui.boxArt3d = !m_settings.ui.boxArt3d;
+			ps5boxart::SetSpines(m_settings.ui.boxArt3d);
 			SaveSettings();
 			m_feedback.Play(ui::Cue::Select);
 			break;

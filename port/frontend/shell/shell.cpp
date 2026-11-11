@@ -136,6 +136,7 @@ namespace ps5shell
 		m_consoleIcons = host.assets + "/consoles";
 		ps5sound::Start(m_settings.music, m_settings.musicVolume, m_settings.menuSounds);
 		ps5boxart::SetEnabled(m_settings.boxArt);
+		ps5boxart::SetSpines(m_settings.ui.boxArt3d);
 		// reports to the project: kept in the data folder's reports/, and only with the player's yes
 		ps5reports::SetFolder(ps5paths::Root() + "/reports");
 		ps5reports::SetEnabled(ps5reports::Available() && m_settings.ui.reports);
@@ -929,6 +930,7 @@ namespace ps5shell
 							game.boxArt = path;
 							m_images->Forget(game.boxArt);
 						}
+						m_images->Forget(ps5boxart::SpinePath(path)); // or its spine, for 3D box art
 					}
 			}
 			for (Game& game : m_games)

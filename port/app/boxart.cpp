@@ -16,6 +16,7 @@
 #include <cctype>
 #include <condition_variable>
 #include <cstdio>
+#include <cmath>
 #include <cstring>
 #include <deque>
 #include <filesystem>
@@ -45,6 +46,7 @@ namespace ps5boxart
 		bool s_started = false;
 		std::atomic<uint32_t> s_arrivals{0};
 		std::atomic<bool> s_enabled{true};
+		std::atomic<bool> s_spines{false}; // 3D box art: each GameTDB cover's spine too
 		std::atomic<bool> s_stopped{false}; // for good: a game is starting
 		std::atomic<bool> s_busy{false};	// a cover is being fetched
 		std::atomic<int> s_answered{-1};	// Answered()
@@ -294,6 +296,73 @@ namespace ps5boxart
 			return Outcome::None;
 		}
 
+		// A marker younger than the wait for a cover asked for again
+		bool Recent(const std::string& marker)
+		{
+			std::error_code ec;
+			const auto when = fs::last_write_time(marker, ec);
+			return !ec && fs::file_time_type::clock::now() - when < kNoneAgain;
+		}
+
+		// One game's spine, for 3D box art: the strip between the back and the front of GameTDB's whole cover
+		// (back, spine, front side by side, the back as wide as the front), cut out at its own resolution as
+		// <ID>.spine.tga. The front's width there is the cover's shape at the whole cover's height
+		Outcome FetchSpine(CURL* curl, System system, const std::string& id)
+		{
+			const std::string base = Base(system, id);
+			int coverWidth = 0, coverHeight = 0;
+			if (!ImageSize(base + ".tga", coverWidth, coverHeight) || coverWidth <= 0 || coverHeight <= 0)
+				return Outcome::None;
+			const bool wii = system == System::GameCubeWii;
+			std::vector<uint8_t> data;
+			for (const char* size : {"coverfullHQ", "coverfull"})
+				for (const std::string& region : Regions(id))
+				{
+					const std::string url = fmt::format("http://art.gametdb.com/{}/{}/{}/{}.{}", Folder(system), size, region, id, wii ? "png" : "jpg");
+					const long status = Get(curl, url, data);
+					if (status < 0)
+						return Outcome::Later;
+					if (status == 404 || status == 410)
+						continue;
+					if (status != 200 || data.size() < 8)
+					{
+						ps5log::Line("[boxart] {}: HTTP {}; tried again later", url, status);
+						return Outcome::Later;
+					}
+					std::vector<uint8_t> rgba;
+					int width = 0, height = 0;
+					const bool png = std::memcmp(data.data(), "\x89PNG", 4) == 0;
+					if (!(png ? DecodePng(data, rgba, width, height) : DecodeJpeg(data, rgba, width, height)))
+						continue;
+					const int front = (int)std::lround((double)height * coverWidth / coverHeight);
+					const int spine = width - 2 * front;
+					// a whole cover of another shape (a sleeve, a cover with its flaps): no spine from it
+					if (spine < width / 60 || spine > width / 5)
+					{
+						ps5log::Line("[boxart] {} {}: GameTDB's whole cover is {}x{}, no spine between a {} wide back and front", Folder(system), id,
+							width, height, front);
+						std::ofstream(base + ".spine.none").put('\n');
+						return Outcome::None;
+					}
+					std::vector<uint8_t> strip((size_t)spine * height * 4);
+					for (int y = 0; y < height; y++)
+						std::memcpy(&strip[(size_t)y * spine * 4], &rgba[((size_t)y * width + front) * 4], (size_t)spine * 4);
+					int fitWidth, fitHeight;
+					const std::vector<uint8_t> fitted = Fit(strip, spine, height, fitWidth, fitHeight);
+					if (!WriteTga(base + ".spine.tga", fitted, fitWidth, fitHeight))
+						return Outcome::None;
+					{
+						std::lock_guard lock(s_mutex);
+						s_arrived.push_back(fmt::format("{}/{}", Folder(system), id));
+					}
+					s_arrivals++;
+					ps5log::Line("[boxart] {} {}: spine {}x{} from {}", Folder(system), id, fitWidth, fitHeight, url);
+					return Outcome::Fetched;
+				}
+			std::ofstream(base + ".spine.none").put('\n');
+			return Outcome::None;
+		}
+
 		// A cover GameTDB had none of, lately: not asked for again yet
 		bool RecentlyNone(System system, const std::string& id)
 		{
@@ -351,10 +420,17 @@ namespace ps5boxart
 					forget();
 					continue;
 				}
-				if (!Path(item.first, item.second).empty() || RecentlyNone(item.first, item.second))
+				// a cover here: its spine still to come, for 3D box art
+				const bool have = !Path(item.first, item.second).empty();
+				const std::string base = Base(item.first, item.second);
+				std::error_code here;
+				const bool spine = s_spines && !fs::exists(base + ".spine.tga", here) && !Recent(base + ".spine.none");
+				if (have ? !spine : RecentlyNone(item.first, item.second))
 					continue;
 				s_busy = true;
-				const Outcome outcome = FetchOne(curl, item.first, item.second);
+				Outcome outcome = have ? FetchSpine(curl, item.first, item.second) : FetchOne(curl, item.first, item.second);
+				if (!have && outcome == Outcome::Fetched && s_spines)
+					outcome = FetchSpine(curl, item.first, item.second) == Outcome::Later ? Outcome::Later : Outcome::Fetched;
 				s_busy = false;
 				if (outcome != Outcome::Later)
 				{
@@ -1009,6 +1085,22 @@ namespace ps5boxart
 	void SetEnabled(bool enabled)
 	{
 		s_enabled = enabled;
+	}
+
+	void SetSpines(bool spines)
+	{
+		// turned on: the covers already here are asked for again, for their spines
+		if (spines && !s_spines.exchange(true))
+		{
+			std::lock_guard lock(s_mutex);
+			s_queued.clear();
+		}
+		s_spines = spines;
+	}
+
+	std::string SpinePath(const std::string& cover)
+	{
+		return cover.size() > 4 && cover.compare(cover.size() - 4, 4, ".tga") == 0 ? cover.substr(0, cover.size() - 4) + ".spine.tga" : std::string();
 	}
 
 	void Stop()

@@ -66,6 +66,10 @@ namespace ps5boxart
 	int Answered();
 	// The launcher's setting: when off, nothing more is fetched.
 	void SetEnabled(bool enabled);
+	// 3D box art (Settings > Launcher): each GameTDB cover's spine fetched too, from its whole cover
+	void SetSpines(bool spines);
+	// Where a GameTDB cover's spine is kept (<ID>.spine.tga beside it), whether or not it is there yet
+	std::string SpinePath(const std::string& cover);
 	// Before a game starts: nothing more is fetched in this session (the app starts over after the
 	// game), and a cover being fetched is waited for, a few seconds at most.
 	void Stop();

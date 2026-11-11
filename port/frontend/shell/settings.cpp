@@ -2318,7 +2318,10 @@ namespace ps5shell
 			else if (id == "pictures")
 				settings.ui.gamePictures = on;
 			else if (id == "boxart3d")
+			{
 				settings.ui.boxArt3d = on;
+				ps5boxart::SetSpines(on);
+			}
 			else if (id == "filters")
 				settings.ui.libraryFilters = on;
 			else if (id == "emulationstation")
