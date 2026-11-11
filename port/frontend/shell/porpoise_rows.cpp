@@ -1612,16 +1612,8 @@ namespace ps5shell
 		const std::string status = pending ? TrP((long long)pending, "Downloading: {0} left", "Downloading: {0} left") :
 			ps5boxart::Answered() == 0 ? std::string(Tr("GameTDB did not answer: is the PS5 online?")) :
 			missing ? TrP(missing, "{0} game without box art", "{0} games without box art") : std::string(Tr("Every game has box art"));
-		// the app's one account: as a game starts, Porpoise is told it (ps5porpoise::WriteAchievementsAccount)
-		const ps5cheevos::Account account = ps5cheevos::Get();
-		Row cheevos;
-		cheevos.kind = account.signedIn ? Row::Kind::Hold : Row::Kind::Action;
-		cheevos.id = "cheevos";
-		cheevos.label = Tr("RetroAchievements");
-		cheevos.value = account.signedIn ? TrF("{1}: {0} points", account.points, account.user) : account.busy ? std::string(Tr("Signing in…")) : std::string(Tr("Sign in"));
-		cheevos.description = Tr("Earn achievements in supported games. See them in the in-game menu.");
-		cheevos.help = cheevos.description;
-		rows.push_back(std::move(cheevos));
+		// (RetroAchievements, which Porpoise is told of as a game starts, and the SteamGridDB key: on every side's
+		// Accounts and updates)
 		Row toggle;
 		toggle.kind = Row::Kind::Toggle;
 		toggle.id = "boxart";
@@ -1631,14 +1623,6 @@ namespace ps5shell
 		toggle.description = Tr("Covers for the library, downloaded once.");
 		toggle.help = toggle.description;
 		rows.push_back(std::move(toggle));
-		Row art;
-		art.kind = Row::Kind::Action;
-		art.id = "steamgriddb";
-		art.label = Tr("SteamGridDB key");
-		art.value = ps5boxart::PlayerSteamGridKey() ? Tr("Yours") : ps5boxart::HasSteamGridKey() ? Tr("Built in") : Tr("None");
-		art.description = Tr("Wide art shown as a game starts. Your own key from steamgriddb.com is used first; leave it empty to remove it.");
-		art.help = art.description;
-		rows.push_back(std::move(art));
 		Row missingRow;
 		missingRow.kind = Row::Kind::Action;
 		missingRow.id = "boxartmissing";

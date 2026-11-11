@@ -87,7 +87,7 @@ namespace ps5shell
 			pick("ui-language", {"ui-language"});
 			pick("launcher", {"side-wiiu", "side-switch", "side-ds", "side-3ds", "theme"}); // the sides in the bar's order
 			faceButtons();
-			pick("system", {"music"});
+			pick("launcher", {"music"}); // (Settings > Launcher > Launcher sound)
 			pick("controls", {"rumble"});
 			pick("launcher", {"pictures"});
 		}

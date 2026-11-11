@@ -44,6 +44,7 @@
 #include "azahar/library.h"
 #include "melonds/library.h"
 #include "eden/library.h"
+#include "retro/library.h"
 #include "frontend/shell.h"
 #include "libretro/game.h"
 #include "stream/stream.h"
@@ -103,6 +104,9 @@ int main(int argc, char* argv[])
 	settings.gamesFolder = argv[3];
 	settings.n3ds.gamesFolder = argv[4];
 	settings.nds.gamesFolder = argv[5];
+	// the other sides' games in the games folder's folder of their key (gba/: preview-shell.sh puts a few there)
+	for (size_t i = 0; i < ps5retro::kSystems.size(); i++)
+		settings.retro[i].gamesFolder = std::string(argv[3]) + "/" + std::string(ps5retro::kSystems[i].key);
 	if (!std::getenv("PREVIEW_FIRST"))
 	{
 		// earlier sessions: the side last used, the games last played, the counts their scans saved
@@ -170,6 +174,8 @@ int main(int argc, char* argv[])
 			ps5melonds::StartScan(settings.nds.gamesFolder);
 		else if (system == ps5launcher::System::Switch)
 			ps5eden::StartScan(settings.nx.gamesFolder);
+		else if (ps5retro::IsRetro((int)system))
+			ps5retro::StartScan((int)system, settings.retro[ps5retro::Slot((int)system)].gamesFolder);
 		else
 			status.coreReady = true;
 	}, choice);

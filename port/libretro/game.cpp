@@ -78,6 +78,7 @@ namespace ps5libretro
 		std::string s_key; // the side's ("snes")
 		std::string s_name;
 		uint64_t s_titleId = 0;
+		bool s_gameOnly = false; // the game has settings of its own (the menu's Settings for this game only)
 		ps5settings::N3ds s_settings; // the game's loop's: as the menu leaves them
 		ps5settings::N3ds s_launched; // what the game started with, or what the menu last saved
 		bool s_coreTouched = false;
@@ -377,6 +378,7 @@ namespace ps5libretro
 			menu.screenFilter = s_settings.dsFilter;
 			menu.pictureSize = s_settings.pictureSize;
 			menu.pictureShape = s_settings.pictureShape;
+			menu.gameOnly = s_gameOnly;
 			std::lock_guard lock(s_mutex);
 			menu.speedLimit = s_view.speedLimit;
 			return menu;
@@ -471,6 +473,11 @@ namespace ps5libretro
 			ps5settings::Launcher before, after;
 			before.retro[ps5retro::Slot(s_side)] = s_launched;
 			after.retro[ps5retro::Slot(s_side)] = s_settings;
+			if (menu.gameOnly != s_gameOnly)
+			{
+				s_gameOnly = menu.gameOnly;
+				ps5settings::SetGameOwn(s_key, s_titleId, s_gameOnly, after);
+			}
 			ps5settings::SaveChanges(s_key, s_titleId, before, after);
 			s_launched = s_settings;
 		}
@@ -732,6 +739,7 @@ namespace ps5libretro
 		s_name = game.name;
 		s_titleId = game.titleId;
 		s_settings = s_launched = settings;
+		s_gameOnly = ps5settings::HasOwn(ps5settings::Load(), s_key, s_titleId);
 		{
 			std::lock_guard lock(s_mutex);
 			s_view = View{settings.dsFilter, 100, settings.pictureSize, settings.pictureShape};

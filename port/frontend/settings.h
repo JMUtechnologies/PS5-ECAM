@@ -338,6 +338,9 @@ namespace ps5settings
 		std::array<N3ds, ps5retro::kSystems.size()> retro = [] { std::array<N3ds, ps5retro::kSystems.size()> values{}; for (size_t i = 0; i < values.size(); i++) values[i].gamesFolder = ps5retro::kSystems[i].games; return values; }();
 		// games' own settings, by GameKey: "3ds:0004000000055d00" -> {"resolution": 3}
 		std::map<std::string, GameValues> games;
+		// and a libretro side's games' own core options (Game settings > Emulator), by GameKey:
+		// "nes:60..." -> {"mesen_aspect_ratio": "4:3"}; an empty value is the core's own, whatever the side's
+		std::map<std::string, std::map<std::string, std::string>> gameCoreOptions;
 		// The launcher's own sound, on both sides (frontend/sound.h): its music ("setup" or "off") and the music's volume in percent, and the menu's sounds.
 		std::string music = "setup";
 		int musicVolume = 50;
@@ -371,6 +374,12 @@ namespace ps5settings
 	// The settings a game starts with: its side's, with the game's own over them (and hardware shaders
 	// off for the Pokemon games, PokemonByDefault, unless the game says otherwise)
 	Launcher ForGame(const Launcher& settings, const std::string& side, uint64_t titleId);
+	// Whether a game has settings of its own (games, or a libretro game's gameCoreOptions)
+	bool HasOwn(const Launcher& settings, const std::string& side, uint64_t titleId);
+	// An in-game menu's For this game only, saved at once: on, the game keeps every setting it can have of
+	// its own as current (what it plays with now) has them, and the menu's changes are its own from then;
+	// off, its own are taken away and it follows its side's again
+	void SetGameOwn(const std::string& side, uint64_t titleId, bool own, const Launcher& current);
 	bool PokemonByDefault(uint64_t titleId);
 	// After a game's menu changed settings: each one it changed (from before, what the game started
 	// with, to after) saved in ps5cemu.json, into the game's own settings when it has some and the

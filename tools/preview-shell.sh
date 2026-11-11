@@ -37,6 +37,11 @@ for title in "BotW Update v208" "BotW DLC"; do
     echo '<menu/>' >"$games/Installs/$title/meta/meta.xml"
 done
 python3 -B tools/launcher-preview/make-3ds-samples.py "$games/3ds" "$games/ds"
+# Game Boy Advance games, empty files by their names, for a libretro side's Library and Game settings
+mkdir -p "$games/gba"
+for game in "Metroid Fusion (USA).gba" "Advance Wars (USA).gba" "Golden Sun (USA, Europe).gba"; do
+    : >"$games/gba/$game"
+done
 # Switch games where Eden keeps them (the Switch side's default folder, ps5eden::DefaultGamesFolder):
 # empty files by a dump's names, one in a folder of its own with its update, and Eden's keys
 roms=$out/eden/roms

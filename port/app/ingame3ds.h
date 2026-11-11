@@ -51,6 +51,9 @@ namespace ps5ingame3ds
 		// a libretro core's (Console::Retro): the picture's size on the TV and its shape (kPictureSizes, kPictureShapes)
 		int pictureSize = 0;
 		int pictureShape = 0;
+		// the menu's Settings for this game only: on, the game keeps settings of its own and what the menu
+		// changes is its own (ps5settings::SetGameOwn); off, it follows its system's
+		bool gameOnly = false;
 		// the console's buttons on the DualSense where not the default (ps5settings::N3ds::buttons): the menu's
 		// Buttons change them, and the A and B row's swap is in them
 		std::map<std::string, std::string> buttons;
