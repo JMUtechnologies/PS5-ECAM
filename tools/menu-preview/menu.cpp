@@ -7,8 +7,15 @@
 //
 // A 3DS game's menu, as ingame3ds.cpp fills it: on its quick actions, on a row, with a category open,
 // and a row held. The backdrop stands in for the game behind the menu.
+//
+// Then the top of the sheet with a game's box art, read as the menus read it (app/tga.h, PNGs and JPEGs
+// through stb_image as ui::DecodeFile does): a libretro side's picture of its own (a PNG), a 3DS game's
+// GameTDB cover (the launcher's TGA) and a Switch game's picture beside it (a JPEG). Real covers go in
+// OUT_DIR/covers/{retro.png,3ds.tga,switch.jpg} by hand (GameTDB's and libretro's are not ours to
+// commit); without them the preview draws a stand-in of each.
 
 #include "../../port/app/buttons_menu.h"
+#include "../../port/app/tga.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -16,6 +23,7 @@
 #include <stb_image_write.h>
 
 #include <cstdio>
+#include <filesystem>
 #include <fstream>
 #include <iterator>
 #include <string>
@@ -77,7 +85,7 @@ namespace
 
 	// ImGui's triangles, each pixel's centre tested against them: colours and the atlas's alpha
 	// interpolated, blended over what is there
-	void Raster(Image& image, const ImDrawData* data, const Texture& atlas, const Texture& pad = {})
+	void Raster(Image& image, const ImDrawData* data, const Texture& atlas, const Texture& pad = {}, const Texture& cover = {})
 	{
 		for (int l = 0; l < data->CmdListsCount; l++)
 		{
@@ -86,7 +94,8 @@ namespace
 			{
 				const int x0c = std::max(0, (int)cmd.ClipRect.x), y0c = std::max(0, (int)cmd.ClipRect.y);
 				const int x1c = std::min(kW, (int)std::ceil(cmd.ClipRect.z)), y1c = std::min(kH, (int)std::ceil(cmd.ClipRect.w));
-				const Texture& texture = pad.rgba && cmd.TextureId == (ImTextureID)pad.rgba ? pad : atlas;
+				const Texture& texture = pad.rgba && cmd.TextureId == (ImTextureID)pad.rgba ? pad :
+										 cover.rgba && cmd.TextureId == (ImTextureID)cover.rgba ? cover : atlas;
 				const bool textured = cmd.TextureId == texture.rgba;
 				for (unsigned e = 0; e + 2 < cmd.ElemCount; e += 3)
 				{
@@ -148,6 +157,57 @@ namespace
 	{
 		std::ifstream in(path, std::ios::binary);
 		return {std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>()};
+	}
+
+	// ui::DecodeFile, as the console has it: stb_image's RGBA
+	bool DecodeFile(const std::string& path, std::vector<uint8_t>& rgba, int& width, int& height)
+	{
+		int channels = 0;
+		unsigned char* pixels = stbi_load(path.c_str(), &width, &height, &channels, 4);
+		if (!pixels)
+			return false;
+		rgba.assign(pixels, pixels + (size_t)width * height * 4);
+		stbi_image_free(pixels);
+		return true;
+	}
+
+	// A stand-in box: the art's colours top to bottom, and the band across its top a box of that console has
+	std::vector<uint8_t> StandIn(int w, int h, uint32_t top, uint32_t bottom, uint32_t band, int bandHeight)
+	{
+		std::vector<uint8_t> rgba((size_t)w * h * 4);
+		for (int y = 0; y < h; y++)
+			for (int x = 0; x < w; x++)
+			{
+				uint8_t* p = &rgba[((size_t)y * w + x) * 4];
+				const float t = (float)y / h, glow = std::max(0.0f, 1 - std::hypot(x - w * 0.6f, y - h * 0.55f) / (w * 0.5f));
+				for (int c = 0; c < 3; c++)
+				{
+					const int shift = 16 - 8 * c;
+					const float value = y < bandHeight ? (float)(band >> shift & 255) :
+														 (top >> shift & 255) * (1 - t) + (bottom >> shift & 255) * t + 90 * glow * glow;
+					p[c] = (uint8_t)std::clamp(value, 0.0f, 255.0f);
+				}
+				p[3] = 255;
+			}
+		return rgba;
+	}
+
+	// A game's cover for the sheet's top: the one put by hand, else a stand-in written in the same format
+	std::string Cover(const std::string& out, const char* name, int w, int h, uint32_t top, uint32_t bottom, uint32_t band, int bandHeight)
+	{
+		const std::string path = out + "/covers/" + name;
+		if (std::filesystem::exists(path))
+			return path;
+		const std::string made = out + "/stand-in-" + name;
+		const std::vector<uint8_t> rgba = StandIn(w, h, top, bottom, band, bandHeight);
+		const std::string extension = std::filesystem::path(name).extension().string();
+		if (extension == ".png")
+			stbi_write_png(made.c_str(), w, h, 4, rgba.data(), w * 4);
+		else if (extension == ".jpg")
+			stbi_write_jpg(made.c_str(), w, h, 4, rgba.data(), 90);
+		else
+			ps5tga::Save(made, rgba, w, h);
+		return made;
 	}
 
 	std::vector<ps5menu::Row> Rows()
@@ -271,6 +331,55 @@ int main(int argc, char* argv[])
 				Save(image, out + "/" + shot.name + ".png");
 			}
 		}
+	}
+
+	// the top of the sheet with each kind of box art, as the menus read it (264x352 at the most)
+	struct Game
+	{
+		const char* name;
+		const char* system;
+		const char* title;
+		const char* details;
+		std::string cover;
+	};
+	const std::vector<Game> games{
+		{"menu-cover-retro", "SNES", "Super Metroid", "Snes9x", Cover(out, "retro.png", 512, 362, 0x1a2a4a, 0x401a3a, 0xd8d8d8, 34)},
+		{"menu-cover-3ds", "3DS", "Pokémon Ultra Sun", "The Pokémon Company  /  2017", Cover(out, "3ds.tga", 176, 160, 0xf0a030, 0xc03020, 0xffffff, 20)},
+		{"menu-cover-switch", "SWITCH", "Super Mario Odyssey", "Nintendo  /  2017", Cover(out, "switch.jpg", 326, 520, 0x3a7ab0, 0x1a3a2a, 0xe60012, 34)},
+	};
+	for (const Game& game : games)
+	{
+		std::vector<uint8_t> rgba;
+		int width = 0, height = 0;
+		if (!ps5tga::Load(game.cover, 264, 352, rgba, width, height, DecodeFile))
+		{
+			std::fprintf(stderr, "%s: %s could not be read\n", game.name, game.cover.c_str());
+			return 1;
+		}
+		const Texture cover{rgba.data(), width, height};
+		ps5menu::Header top = header;
+		top.cover = (ImTextureID)rgba.data();
+		top.coverWidth = (float)width;
+		top.coverHeight = (float)height;
+		top.system = game.system;
+		top.title = game.title;
+		top.details = game.details;
+		ps5menu::SideMenu menu;
+		uint64_t now = 1000000;
+		for (int f = 0; f < 40; f++)
+		{
+			bool close = false;
+			now += 1000000 / 60;
+			menu.Update(rows, tiles, 0, now, close);
+			ImGui::NewFrame();
+			const ps5menu::Canvas canvas{ImGui::GetForegroundDrawList(), 1.0f, {0, 0}, ps5menu::kGold};
+			menu.Draw(canvas, set, top, rows, tiles, hints);
+			ImGui::Render();
+		}
+		Image image;
+		Backdrop(image, backdrop);
+		Raster(image, ImGui::GetDrawData(), atlas, pad, cover);
+		Save(image, out + "/" + game.name + ".png");
 	}
 	ImGui::DestroyContext();
 	return 0;
