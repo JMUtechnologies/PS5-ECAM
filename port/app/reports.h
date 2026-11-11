@@ -36,6 +36,9 @@ namespace ps5reports
 	constexpr int64_t kOutboxSeconds = 14 * 24 * 3600;
 	// a report's log: the boot log's last lines
 	constexpr size_t kLogLines = 120, kLogBytes = 16 * 1024;
+	// and the emulator's own logs of that session (Session::logs): its crash first, then the newest, each
+	// one's last lines
+	constexpr size_t kEmulatorLogs = 3, kEmulatorLogBytes = 8 * 1024;
 	constexpr size_t kNameLength = 80, kErrorLength = 300;
 
 	// What the launcher knows as a game starts
@@ -47,6 +50,10 @@ namespace ps5reports
 		std::string name;	   // the catalogue's
 		int64_t started = 0;   // seconds since 1970
 		std::vector<std::pair<std::string, int>> settings; // the game's own, by their ps5cemu.json names
+		// where the emulator keeps logs of its own, beside the boot log: files, and folders looked through
+		// three deep for files named *log*, *crash* or *trace* (.log, .txt). Only what changed while the game
+		// ran goes into the report.
+		std::vector<std::string> logs;
 	};
 	// The app and the console it runs on
 	struct Console

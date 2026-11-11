@@ -40,6 +40,14 @@ namespace ps5boxart
 	std::string PlayerSteamGridKeyText(); // what the player entered, to check and change it
 	void SetSteamGridKey(const std::string& key); // empty: the player's is forgotten
 
+	// The libretro sides' covers (NES, SNES, the Game Boys, N64, Virtual Boy...): libretro's thumbnails, by its
+	// folder for the console ("Nintendo - Game Boy") and the game file's name, as its No-Intro set names it.
+	// Kept in covers/boxart/retro/<folder>/<name>.tga; one with none is asked for again after two weeks, or
+	// at once with again (Settings > Online).
+	std::string RetroPath(const std::string& system, const std::string& name);
+	void FetchRetro(const std::string& system, const std::vector<std::string>& names, bool again = false);
+	size_t RetroPending();
+
 	// The cover's TGA when it has been fetched, else empty.
 	std::string Path(System system, const std::string& id);
 	// Fetches the covers not fetched yet, one at a time, on a thread of its own.

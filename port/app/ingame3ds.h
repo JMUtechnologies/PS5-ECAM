@@ -48,6 +48,9 @@ namespace ps5ingame3ds
 		bool screenGap = false;	  // a gap between the two screens, as the console's hinge makes (the 3DS's too)
 		bool hiddenTouch = false; // the touchpad touches the bottom screen while only the top one shows
 		bool lidClosed = false;	  // the DS closed, for the games that ask (for this game only)
+		// a libretro core's (Console::Retro): the picture's size on the TV and its shape (kPictureSizes, kPictureShapes)
+		int pictureSize = 0;
+		int pictureShape = 0;
 		// the console's buttons on the DualSense where not the default (ps5settings::N3ds::buttons): the menu's
 		// Buttons change them, and the A and B row's swap is in them
 		std::map<std::string, std::string> buttons;
@@ -68,6 +71,13 @@ namespace ps5ingame3ds
 	constexpr const char* kRotations[] = {ps5lang::TrMark("Upright"), ps5lang::TrMark("90° right"), ps5lang::TrMark("Upside down"),
 		ps5lang::TrMark("90° left")};
 	constexpr int kRotationCount = (int)std::size(kRotations);
+	// tr: how a libretro game's picture fills the TV: as large as fits in its shape, in whole multiples of its pixels, or
+	// the whole screen
+	constexpr const char* kPictureSizes[] = {ps5lang::TrMark("Fit"), ps5lang::TrMark("Whole pixels"), ps5lang::TrMark("Fill screen")};
+	constexpr int kPictureSizeCount = (int)std::size(kPictureSizes);
+	// tr: a libretro game's picture's shape: the console's own, a 4:3 TV's, each pixel square, a 16:9 TV's
+	constexpr const char* kPictureShapes[] = {ps5lang::TrMark("Original"), "4:3", ps5lang::TrMark("Square pixels"), "16:9"};
+	constexpr int kPictureShapeCount = (int)std::size(kPictureShapes);
 
 	// Azahar's frame being recorded (its renderer's FrontendOverlayTarget): before its render pass
 	// begins, then in it
@@ -163,6 +173,20 @@ namespace ps5ingame3ds
 		std::string when; // when it was earned, as the menu says it
 	};
 	void SetAchievements(bool shown, const std::string& summary, const std::vector<Achievement>& achievements);
+
+	// A libretro game's emulator options (its core's, port/libretro/session.h), its Emulator category: each
+	// option's key, label, its values' labels and the one in use, and what it is for. From the game's loop;
+	// TakeCoreOption gives a change made in the menu, once: the key and its new value's index.
+	struct CoreOption
+	{
+		std::string key, label, help;
+		std::vector<std::string> values;
+		int index = 0;
+	};
+	void SetCoreOptions(const std::vector<CoreOption>& options);
+	bool TakeCoreOption(std::string& key, int& index);
+	// The Reset tile (a console that can be reset): asked for once
+	bool TakeResetRequest();
 
 	void SetBorder(int theme, std::vector<uint8_t> rgba, int width, int height);
 	// The theme's picture from the app's assets/borders (tools/render-borders.py), as SetBorder takes it

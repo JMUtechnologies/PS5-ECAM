@@ -48,17 +48,19 @@ EDEN_ECAM_CHILD=ON EDEN_PS5_VULKAN=ON EDEN_VULKAN_DRIVER=RADV make -C "$eglantin
 
 # The program and the files it reads from its own folder (storage_paths.h: AppDir() is the app's
 # eglantine/). Left out: its sce_sys and sce_module (the app's are PS5-ECAM's), its self-updater (the
-# app updates eglantine/ with everything else, and the check is off in patches/eglantine) and the test
-# program it carries. Its launcher's ui/ stays: it shows its own loading screen, and its launcher when
-# a game stops with an error. Its Lapy helper (lapy.elf and its manifest, built for PPSA99360 by
-# patches/eglantine) stays: where no HEN answers its requests, it reaches /data through it.
+# app updates eglantine/ with everything else, and the check is off in patches/eglantine), the test
+# program it carries, and its launcher's ui/ (art, font, sounds, translations): as a child runtime it
+# never opens its launcher, and its loading screen, overlay and in-game menu are Playtendoh's (all in
+# patches/eglantine), as Eden's are for the Switch side. Its Lapy helper (lapy.elf and its manifest,
+# built for PPSA99360 by patches/eglantine) stays: where no HEN answers its requests, it reaches /data
+# through it.
 package=$eglantine/build/release/PPSA98515
 [[ -f $package/eboot.bin ]] || { echo "$package/eboot.bin is missing" >&2; exit 2; }
 [[ -f $package/lapy.elf ]] || { echo "$package/lapy.elf is missing: EglantinePS5 could not reach /data" >&2; exit 2; }
 rm -rf "$out/app"
 mkdir -p "$out/app"
 (cd "$package" && find . -mindepth 1 -maxdepth 1 \
-    ! -name sce_sys ! -name sce_module ! -name self-updater.elf ! -name core-homebrew.nro \
+    ! -name sce_sys ! -name sce_module ! -name self-updater.elf ! -name core-homebrew.nro ! -name ui \
     -exec cp -a {} "$out/app/" \;)
 cp "$eglantine/LICENSE" "$out/app/LICENSE.EglantinePS5.txt"
 cp "$eglantine/THIRD_PARTY_NOTICES.md" "$out/app/THIRD_PARTY_NOTICES.md"

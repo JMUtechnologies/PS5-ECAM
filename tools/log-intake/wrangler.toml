@@ -9,25 +9,26 @@ compatibility_date = "2025-06-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "playtendoh-reports"
-database_id = "REPLACE_WITH_THE_ID_WRANGLER_D1_CREATE_PRINTS"
+database_id = "03e1cd36-edb3-484f-996a-32f48b2fa6d9"
 
-# At most 30 reports an hour per install ID and 60 per network address (the ID is the client's to
-# choose; the address is not). The app keeps a report that is turned away and tries later.
+# At most 20 reports a minute per install ID (a whole outbox at once) and 30 per network address (the ID
+# is the client's to choose; the address is not). Cloudflare's limiter counts over 10 or 60 seconds only.
+# The app keeps a report that is turned away and tries later.
 [[ratelimits]]
 name = "INSTALL_LIMITER"
 namespace_id = "2001"
 
   [ratelimits.simple]
-  limit = 30
-  period = 3600
+  limit = 20
+  period = 60
 
 [[ratelimits]]
 name = "ADDRESS_LIMITER"
 namespace_id = "2002"
 
   [ratelimits.simple]
-  limit = 60
-  period = 3600
+  limit = 30
+  period = 60
 
 # Reports older than 180 days are deleted once a day.
 [triggers]

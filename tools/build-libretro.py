@@ -41,6 +41,14 @@ COMMON = ["--target=x86_64-sie-ps5", "-isysroot", SDK, "-I" + os.path.join(ROOT,
 C_FLAGS = ["clang-18"] + COMMON
 CXX_FLAGS = ["clang++-18", "-isystem", SDK + "/target/include/c++/v1"] + COMMON + [
     "-frtti", "-fexceptions", "-fcxx-exceptions", "-D_LIBCPP_ENABLE_EXPERIMENTAL=1"]
+# LIBRETRO_HOST=1: the same cores for the PC, into build/libretro-host, for tools/tests/test-cores.sh to run real
+# frames through the app's own frontend
+HOST_BUILD = os.environ.get("LIBRETRO_HOST") == "1"
+if HOST_BUILD:
+    OUT = os.path.join(ROOT, "build", "libretro-host")
+    HOST = ["-fPIC", "-O1", "-DNDEBUG", "-w", "-ffunction-sections", "-fdata-sections"]
+    C_FLAGS = ["clang-18"] + HOST
+    CXX_FLAGS = ["clang++-18"] + HOST + ["-frtti", "-fexceptions"]
 
 
 def makefile_list(path, variables, names=("SOURCES_C", "SOURCES_CXX")):
@@ -168,12 +176,12 @@ def cores():
                 "src/platform/posix/memory.c"] +
                sorted(os.path.relpath(p, folder) for p in glob.glob(os.path.join(folder, "src/third-party/inih/*.c"))) +
                sorted(os.path.relpath(p, folder) for p in glob.glob(os.path.join(folder, "src/platform/libretro/*.c"))) +
-               [os.path.relpath(os.path.join(generated, "version.c"), folder),
-                os.path.relpath(os.path.join(ROOT, "port/libretro/compat/locale.c"), folder)])
+               [os.path.relpath(os.path.join(generated, "version.c"), folder)] +
+               ([] if HOST_BUILD else [os.path.relpath(os.path.join(ROOT, "port/libretro/compat/locale.c"), folder)]))
     found["mgba"] = Core("mgba", "mgba", sources, ["include", "src", os.path.relpath(os.path.join(generated, "include"), folder)],
                          ["__LIBRETRO__", "_GNU_SOURCE", "COLOR_16_BIT", "COLOR_5_6_5", "DISABLE_THREADING", "MGBA_STANDALONE",
                           "ENABLE_VFS_FD", "HAVE_STRDUP", "HAVE_STRNDUP", "HAVE_LOCALTIME_R", "ENABLE_VFS", "ENABLE_DIRECTORIES",
-                          "HAVE_LOCALE", "HAVE_XLOCALE",  # the SDK's locale_t, with port/libretro/compat/locale.c
+                          "HAVE_LOCALE"] + ([] if HOST_BUILD else ["HAVE_XLOCALE"]) + [  # the SDK's locale_t, with port/libretro/compat/locale.c
                           "MINIMAL_CORE=2", "M_PI=3.14159265358979323846", "M_CORE_GB", "M_CORE_GBA"])
 
     # ParaLLEl-N64 (mupen64plus's, GPL-2.0-or-later): the Nintendo 64, on the CPU as PS5N64X builds it:

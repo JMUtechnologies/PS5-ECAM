@@ -197,33 +197,33 @@ namespace
 		const std::string on = Tr("On"), off = Tr("Off");
 		// tr: the screens in the Wii U's menu: the TV's picture and the GamePad's
 		const std::string tv = Tr("TV"), gamePad = Tr("GamePad");
-		rows.push_back({"screens", Tr("Screens"), fmt::format("{} \u00b7 {}", gamePadMain ? gamePad : tv, stretch ? Tr("Stretched") : Tr("Its shape")), false,
-			Tr("The TV's and the GamePad's pictures, and how they fill the screen."), {
+		rows.push_back({"screens", Tr("Screens"), fmt::format("{} \u00b7 {}", gamePadMain ? gamePad : tv, stretch ? Tr("Stretched") : Tr("Original")), false,
+			Tr("Which screen to show, and how it fits."), {
 			{"main", Tr("Main screen"), gamePadMain ? gamePad : tv, true,
-				Tr("Which picture fills the TV: the TV's or the GamePad's. In the game, touchpad click + L1 swaps them.")},
+				Tr("The screen shown full size. In the game, touchpad click + L1 swaps them.")},
 			{"corner", gamePadMain ? Tr("TV in a corner") : Tr("GamePad in a corner"), s_cornerScreen ? on : off, true,
-				Tr("The other screen, small in the bottom right corner. In the game, touchpad click + R1.")},
-			{"scaling", Tr("Picture"), stretch ? Tr("Stretched") : Tr("Its own shape"), true,
-				Tr("Its own shape keeps the picture's proportions, with bars where they differ from the screen's; Stretched fills it.")},
+				Tr("Shows the other screen small in the bottom-right corner. In the game, touchpad click + R1.")},
+			{"scaling", Tr("Picture"), stretch ? Tr("Stretched") : Tr("Original"), true,
+				Tr("Original keeps the game's proportions with bars at the sides. Stretched fills the screen.")},
 		}});
 		rows.push_back({"graphics", Tr("Graphics"), Tr(kFilters[filter]), false,
-			Tr("Upscaling, Cemu's accuracy settings and the performance overlay. Kept for the next games."), {
+			Tr("Upscaling, accuracy and the performance overlay. Applies to all games."), {
 			{"upscaling", Tr("Upscaling to 4K"), Tr(kFilters[filter]), true,
-				Tr("How the picture is scaled to the screen: Bicubic is sharp, Hermite softer, Bilinear softer still.")},
+				Tr("Bicubic is sharpest, Hermite softer, Bilinear softest.")},
 			{"barriers", Tr("Accurate barriers"), config.vk_accurate_barriers ? on : off, true,
-				Tr("Off can raise the frame rate, but some games then flicker or show wrong shadows. It changes at once.")},
+				Tr("Off can raise the frame rate, but some games may flicker or show wrong shadows.")},
 			{"async", Tr("Async shader compile"), config.async_compile ? on : off, true,
-				Tr("On, new shaders build while the game carries on: no stutter, but things may be missing for a moment.")},
+				Tr("Builds shaders in the background. Less stutter, but some things may appear late.")},
 			{"pacing", Tr("Frame pacing"), ps5display::FramePacingName(ps5display::FramePacing(), ps5display::OutputRefresh() > 100000), true,
-				Tr("Holds the game to an even rate: 60 fps for 4K at 120 Hz, 30 for 8K at 60 Hz. Off shows each frame when it is done.")},
+				Tr("Keeps the frame rate steady (60 fps at 4K 120 Hz, 30 at 8K 60 Hz). Off shows each frame when ready.")},
 			{"framegen", Tr("Frame generation"), ps5emu::FrameGeneration() ? on : off, true,
-				Tr("A picture made between each two frames of a game at 30 fps, so it is shown at 60. It changes at once.")},
+				Tr("Adds a frame between each pair, so 30 fps games play at 60.")},
 			{"reshade", Tr("ReShade"), ps5emu::ReShade() ? on : off, true,
-				Tr("Your ReShade preset over the game's picture (Settings > Graphics says where it goes). It changes at once.")},
+				Tr("Applies your ReShade preset. Settings > Graphics shows where to put it.")},
 			{"overlay", Tr("Performance overlay"), overlay ? on : off, true,
-				Tr("Frames per second, CPU and memory use in the top left corner, as Cemu shows them.")},
+				Tr("Shows frame rate, CPU and memory use in the top-left corner.")},
 			{"notices", Tr("Shader notices"), config.notification.shader_compiling ? on : off, true,
-				Tr("Cemu's notes in a corner while the game builds shaders. Off hides them; they are built either way.")},
+				Tr("Shows a notice while shaders are being built.")},
 		}});
 		// the game's graphic packs, as the main thread last listed them: each one on or off, and the
 		// presets of those that are on
@@ -237,8 +237,8 @@ namespace
 				// tr: a setting that the game takes only when it starts again: "On (next start)"
 				packs.push_back({fmt::format("pack:{}", i), pack.folder.empty() ? pack.name : pack.folder + " / " + pack.name,
 					nextStart ? TrF("{0} (next start)", pack.enabled ? on : off) : (pack.enabled ? on : off), true,
-					nextStart ? Tr("This pack replaces textures: the game shows the change when it starts again.") :
-								Tr("Cross turns it on or off; the game shows it at once.")});
+					nextStart ? Tr("This pack replaces textures. Restart the game to see it.") :
+								Tr("Cross turns it on or off.")});
 				if (!pack.enabled)
 					continue;
 				for (size_t c = 0; c < pack.choices.size(); c++)
@@ -248,15 +248,15 @@ namespace
 						continue;
 					packs.push_back({fmt::format("preset:{}:{}", i, c), "   " + (choice.category.empty() ? std::string(Tr("Preset")) : choice.category),
 						choice.presets[std::clamp(choice.active, 0, (int)choice.presets.size() - 1)], true,
-						Tr("Left and Right choose another; the game shows it at once.")});
+						Tr("Left and Right choose another.")});
 				}
 			}
 			if (packs.empty())
 				packs.push_back({"nopacks", running.version ? Tr("None for this game") : Tr("Reading the packs…"), "", false,
-					Tr("The community graphic packs have none for this game.")});
+					Tr("There are no graphic packs for this game.")});
 			const auto enabled = std::count_if(running.packs.begin(), running.packs.end(), [](const auto& pack) { return pack.enabled; });
 			rows.push_back({"packs", Tr("Graphic packs"), running.packs.empty() ? std::string(Tr("None")) : TrP(enabled, "{0} on", "{0} on"), false,
-				Tr("The game's community graphic packs: resolution, frame rate and mods, as Cemu's Graphic Packs window has them."), packs});
+				Tr("Community packs for resolution, frame rate and mods."), packs});
 		}
 		// the toys-to-life portals: each device's switch, and the figures on the ones plugged in
 		{
@@ -267,8 +267,8 @@ namespace
 				const bool on = ps5usb::Enabled(device), plugged = ps5usb::Plugged(device);
 				usb.push_back({fmt::format("usb:{}", d), ps5usb::Name(device),
 					on != plugged ? TrF("{0} (next start)", on ? Tr("On") : Tr("Off")) : std::string(on ? Tr("On") : Tr("Off")), true,
-					on != plugged ? Tr("The game sees the change when it starts again: the portal is plugged in as a game starts.") :
-									Tr("Plugged in as a game starts, as in Cemu. Its figures are below while it is on.")});
+					on != plugged ? Tr("Restart the game for this to take effect.") :
+									Tr("Connects the portal when a game starts. Its figures are listed below.")});
 				if (!plugged)
 					continue;
 				const auto figures = ps5usb::Figures(device);
@@ -282,18 +282,18 @@ namespace
 					const bool pending = pick != s_figurePick.end() && pick->second != slots[s].figure;
 					// tr: a figure chosen in the in-game menu, not on the portal yet: "Spyro (Cross to put on)"
 					usb.push_back({fmt::format("figure:{}:{}", d, s), "   " + slots[s].label,
-						pending ? TrF("{0} (Cross to put on)", figureName(pick->second)) : figureName(slots[s].figure), true,
+						pending ? TrF("{0} (Cross to place)", figureName(pick->second)) : figureName(slots[s].figure), true,
 						// tr: {0} is a folder of figure dumps
-						figures.empty() ? TrF("Put figure dumps in {0} to put them on here.", ps5usb::Folder(device)) :
-										  std::string(Tr("Left and Right choose a figure, Cross puts it on; Empty takes the one there off."))});
+						figures.empty() ? TrF("Put figure dumps in {0} to use them here.", ps5usb::Folder(device)) :
+										  std::string(Tr("Left and Right choose a figure. Cross places it; Empty removes it."))});
 				}
 			}
 			const std::string error = ps5usb::LastError();
 			if (!error.empty())
-				usb.push_back({"usberror", error, "", false, Tr("The last figure could not be put on.")});
+				usb.push_back({"usberror", error, "", false, Tr("The figure could not be placed.")});
 			const auto plugged = std::count_if(std::begin(ps5usb::kDevices), std::end(ps5usb::kDevices), [](ps5usb::Device device) { return ps5usb::Plugged(device); });
 			rows.push_back({"usb", Tr("USB devices"), plugged ? TrP(plugged, "{0} on", "{0} on") : std::string(Tr("Off")), false,
-				Tr("Skylanders, Disney Infinity and LEGO Dimensions figures on Cemu's emulated portals, as amiibo are scanned."), usb});
+				Tr("Skylanders, Disney Infinity and LEGO Dimensions figures."), usb});
 		}
 		Row volume{"volume", Tr("Volume"), Percent(config.tv_volume), true, Tr("The game's sound. Left and Right change it by 10%.")};
 		volume.slider = config.tv_volume / 100.0f;
@@ -304,27 +304,27 @@ namespace
 		Row amiibo{"amiibo", Tr("Amiibo"), figure, true,
 			// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
 			s_amiibo.empty() ? TrF("Put amiibo dumps (.bin) in {0}/amiibo to scan them here.", ps5paths::Root()) :
-							   Tr("Left and Right choose an amiibo dump; Cross touches it to the GamePad when the game asks for one.")};
+							   Tr("Left and Right choose an amiibo. Cross scans it when the game asks.")};
 		if (s_amiibo.size() > 1)
 			// dumps in folders, a series each: the series, then the figures in it
 			rows.push_back({"amiibo-page", Tr("Amiibo"), figure, false, amiibo.help, {
 				// tr: a folder of amiibo dumps, as they are shared: Kirby, Metroid...
 				{"amiibo-series", Tr("Amiibo series"), ps5amiibo::SeriesName(s_amiibo[s_amiiboSeries]), true,
-					TrF("Left and Right choose a series: a folder of dumps in {0}/amiibo.", ps5paths::Root())},
+					TrF("Left and Right choose a series (a folder in {0}/amiibo).", ps5paths::Root())},
 				amiibo,
 			}});
 		else
 			rows.push_back(amiibo);
 		const bool realRemote = ps5emu::IsRealWiiRemote(controls.type);
 		rows.push_back({"controls", Tr("Controls"), TypeName(ps5emu::GetPlayerControls(0).type), false,
-			Tr("Each player's controller, motion, vibration, deadzones and A and B."), {
+			Tr("Each player's controller, motion, vibration and buttons."), {
 			{"player", Tr("Player"), controls.connected ? std::to_string(player + 1) :
 				realRemote ? TrF("{0} (no Wii Remote found)", player + 1) : TrF("{0} (no DualSense)", player + 1), true,
-				Tr("Whose controller the settings below are: Left and Right choose the player.")},
+				Tr("Left and Right choose which player to set up.")},
 			{"type", Tr("Emulated controller"), TypeName(controls.type), true,
-				Tr("What the game sees in this player's hands. Most games want the GamePad for player 1.")},
+				Tr("The controller the game sees. Most games want the GamePad for player 1.")},
 			{"motion", Tr("Motion controls"), !controls.hasMotion ? std::string(Tr("None on this one")) : controls.motion ? on : off, true,
-				Tr("The DualSense's gyroscope and accelerometer, for the games that aim or steer by tilting.")},
+				Tr("Use DualSense motion to aim or steer by tilting.")},
 			{"rumble", Tr("Vibration"), controls.rumble ? Percent(controls.rumble) : off, true,
 				Tr("How strongly the DualSense rumbles. Left and Right change it by 10%.")},
 			{"left", Tr("Left stick deadzone"), Percent(controls.leftDeadzone), true,
@@ -332,12 +332,12 @@ namespace
 			{"right", Tr("Right stick deadzone"), Percent(controls.rightDeadzone), true,
 				Tr("How far the right stick moves before the game sees it. Raise it if the camera drifts.")},
 			{"layout", Tr("A and B"), !faceButtons ? std::string("-") : aOnCircle ? Tr("A on Circle") : Tr("A on Cross"), true,
-				Tr("A on Circle as on the Wii U, or on Cross, with X and Y swapped to match. Every other button: Settings > Controls in the launcher.")},
+				Tr("A on Circle as on the Wii U, or on Cross with X and Y swapped. Other buttons are in Settings > Controls.")},
 			{"touchpad", Tr("Touchpad click"),
 				ps5emu::TouchpadClick(player) == 1 ? std::string(Tr("Touches the screen")) : ps5emu::TouchpadClick(player) == 2 ?
 					std::string(Tr("Presses a button")) : TrF("{0}: {1}", Tr("Automatic"), ps5pad::TouchpadButton(player) ? Tr("a button") : Tr("a touch")),
 				true,
-				Tr("Touches the GamePad's screen, or presses the button set to Touchpad click (- if none is set). The shortcuts still work.")},
+				Tr("Touches the GamePad screen, or presses the button set for Touchpad click (- if none). Shortcuts still work.")},
 		}});
 		if (realRemote)
 			// a real Wii Remote's own: the DualSense's settings are not for it
@@ -346,7 +346,7 @@ namespace
 				{
 					row.value = Tr("Its own");
 					row.setting = false;
-					row.help = Tr("A real Wii Remote has its own buttons, pointer, motion and rumble: this setting is for the DualSense.");
+					row.help = Tr("This setting is for the DualSense. A real Wii Remote uses its own buttons, pointer, motion and rumble.");
 				}
 		if (!realRemote)
 		{
@@ -355,16 +355,16 @@ namespace
 			for (const auto& mapping : mappings)
 				buttons.push_back({mapping.button, mapping.input});
 			rows.push_back(s_buttonsMenu.Category(buttons, s_heldInput, sceKernelGetProcessTime(), false,
-				Tr("The default buttons, vibration, motion and deadzones for this controller. Held to confirm.")));
+				Tr("Puts this controller's buttons, vibration, motion and deadzones back to default. Hold Cross to confirm.")));
 		}
 		// tr: the remote touch screen's row: which screen a phone or a tablet shows
 		rows.push_back(ps5menu::RemoteRow(Tr("The GamePad's screen")));
 		// a home screen tile's game closes the app instead, as the row says (#48)
 		Row library = ps5emu::ExitAfterGame() ?
 			Row{"library", Tr("Quit to the home screen"), "", false,
-				Tr("Leaves the game and closes Playtendoh, as its home screen tile asks. What you have not saved in the game is lost, so Cross is held.")} :
+				Tr("Closes the game and Playtendoh. Unsaved progress is lost. Hold Cross.")} :
 			Row{"library", Tr("Quit to the library"), "", false,
-				Tr("Leaves the game for the library. What you have not saved in the game is lost, so Cross is held.")};
+				Tr("Closes the game and goes to the library. Unsaved progress is lost. Hold Cross.")};
 		library.apart = true;
 		library.hold = true;
 		rows.push_back(library);

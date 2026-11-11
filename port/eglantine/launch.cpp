@@ -45,12 +45,12 @@ namespace ps5eglantine
 		const std::string path = game.path.string();
 		if (ps5netfs::is_net(path))
 		{
-			error = ps5lang::Tr("EglantinePS5 cannot read games on a network share. Copy this game to the PS5 or a USB drive to play it.");
+			error = ps5lang::Tr("Lichii cannot read games on a network share. Copy this game to the PS5 or a USB drive to play it.");
 			return;
 		}
 		if (path.empty() || path.find_first_of("\r\n") != std::string::npos || path.find('\0') != std::string::npos || path.size() > 4096)
 		{
-			error = ps5lang::Tr("This game's path cannot be handed to the Switch 2 emulator.");
+			error = ps5lang::Tr("Lichii cannot open this game's path.");
 			return;
 		}
 		const std::string request = "/data/eglantineps5/ps5ecam-launch-request.txt";
@@ -58,7 +58,7 @@ namespace ps5eglantine
 		std::filesystem::create_directories("/data/eglantineps5", directoryError);
 		if (directoryError)
 		{
-			error = ps5lang::TrF("EglantinePS5's data folder could not be opened: {0}", directoryError.message());
+			error = ps5lang::TrF("Lichii's data folder could not be opened: {0}", directoryError.message());
 			return;
 		}
 		// This is a child runtime, so end its one-game session and return to ECAM after every game.
@@ -94,10 +94,10 @@ namespace ps5eglantine
 			args.push_back("--ecam-setting");
 			args.push_back("button" + std::to_string(i) + "=" + std::to_string(pads[i]));
 		}
-		ps5log::Line("[switch2] starting {} in EglantinePS5 ({})", game.name, path);
+		ps5log::Line("[switch2] starting {} in Lichii ({})", game.name, path);
 		// The child reads the staged request if PS5 LoadExec drops argv. On exit it starts this app's
 		// /app0/eboot.bin again; the selected side was saved before this call.
 		ps5emu::LoadExecApp("eglantine/eboot.bin", args, true, request);
-		error = ps5lang::Tr("The console did not start EglantinePS5. The boot log says what it answered.");
+		error = ps5lang::Tr("The PS5 did not start Lichii. See the boot log for details.");
 	}
 }

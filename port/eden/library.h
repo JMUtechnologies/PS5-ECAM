@@ -35,7 +35,7 @@ namespace ps5eden
 	// standalone ProsperoEden's when only that has keys
 	std::string GameFilesFolder();
 	std::string GameFilesFolder(bool switch2Side);
-	// EglantinePS5's own /data/eglantineps5, for Switch 2 keys, firmware, updates, DLC and games
+	// Lichii's own /data/eglantineps5, for Switch 2 keys, firmware, updates, DLC and games
 	std::string Switch2FilesFolder();
 	// The games folder a scan of folder looks in: Eden's roms/ for the default one
 	std::string ScanFolder(const std::string& folder, bool switch2Side = false);

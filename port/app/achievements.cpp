@@ -276,7 +276,7 @@ namespace ps5cheevos
 			{
 				const rc_client_game_t* game = rc_client_get_game_info(client);
 				// tr: every RetroAchievements achievement of a game earned ({0}: the game's name)
-				Notify(ps5lang::TrF("Every achievement of {0} is yours", game && game->title ? game->title : ""));
+				Notify(ps5lang::TrF("{0}: every achievement unlocked", game && game->title ? game->title : ""));
 				break;
 			}
 			case RC_CLIENT_EVENT_SERVER_ERROR:
@@ -424,6 +424,20 @@ namespace ps5cheevos
 			return {};
 		}
 		ps5log::Line("[cheevos] the ROM's hash: {}", hash);
+		return hash;
+	}
+
+	std::string Hash(uint32_t console, const uint8_t* data, size_t size)
+	{
+		if (!Get().signedIn || !data || !size || !console)
+			return {};
+		char hash[33] = {};
+		if (!rc_hash_generate_from_buffer(hash, console, data, size))
+		{
+			ps5log::Line("[cheevos] the game could not be hashed (console {}): no set looked for", console);
+			return {};
+		}
+		ps5log::Line("[cheevos] the game's hash: {} (console {})", hash, console);
 		return hash;
 	}
 

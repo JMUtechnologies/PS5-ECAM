@@ -8,8 +8,18 @@ root=$(cd "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 include=${ECAM_LIBRETRO_INCLUDE:-$root/.deps/libretro/libretro-common/include}
-"${CXX:-c++}" -std=c++20 -Wall -Wextra -Werror -I"$root/port" -I"$include" \
- "$root/tools/tests/test-libretro.cpp" "$root/port/libretro/session.cpp" "$root/port/libretro/cores.cpp" -o "$work/test-libretro"
+# rcheevos (the frontend maps a core's memory for RetroAchievements with its rc_libretro.c)
+rc=$root/.deps/rcheevos
+mkdir -p "$work/rc"
+rcobjects=()
+for source in "$rc"/src/rcheevos/*.c "$rc"/src/rapi/*.c "$rc/src/rc_client.c" "$rc/src/rc_compat.c" "$rc/src/rc_util.c" "$rc/src/rc_version.c" \
+    "$rc/src/rc_libretro.c" "$rc/src/rhash/hash.c" "$rc/src/rhash/hash_rom.c" "$rc/src/rhash/md5.c"; do
+    rcobjects+=("$work/rc/$(basename "${source%.c}").o")
+    "${CC:-cc}" -std=gnu11 -fPIC -w -I"$rc/include" -I"$rc/src" -I"$include" -DRC_CLIENT_SUPPORTS_HASH -DRC_DISABLE_LUA -DRC_HASH_NO_DISC \
+        -DRC_HASH_NO_ENCRYPTED -DRC_HASH_NO_ZIP -c "$source" -o "${rcobjects[-1]}"
+done
+"${CXX:-c++}" -std=c++20 -Wall -Wextra -Werror -I"$root/port" -I"$include" -I"$rc/include" -I"$rc/src" \
+ "$root/tools/tests/test-libretro.cpp" "$root/port/libretro/session.cpp" "$root/port/libretro/cores.cpp" "${rcobjects[@]}" -o "$work/test-libretro"
 "$work/test-libretro" "$work/files"
 # a core linked in, as build/libretro/<core>.o is: its renamed entry points found through the same
 # weak references, in a position-independent executable as the PS5's is

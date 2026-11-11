@@ -228,7 +228,7 @@ namespace ps5emu
 			if (!ec && space.available <= total)
 			{
 				// tr: {0} and {1} are sizes (2.4 GB)
-				SetStatus(InstallStatus::State::Failed, ps5lang::TrF("There is not enough space: it needs {0}, and {1} is free.",
+				SetStatus(InstallStatus::State::Failed, ps5lang::TrF("Not enough space: {0} needed, {1} free.",
 					Gigabytes(total), Gigabytes(space.available)));
 				return;
 			}
@@ -293,7 +293,7 @@ namespace ps5emu
 				if (ec)
 				{
 					ps5log::Line("[install] {}: {} could not be moved aside: {}", title, _pathToUtf8(target), ec.message());
-					SetStatus(InstallStatus::State::Failed, ps5lang::TrF("What is installed there now could not be moved aside: {0}", ec.message()));
+					SetStatus(InstallStatus::State::Failed, ps5lang::TrF("The current install could not be moved: {0}", ec.message()));
 					DropLater(staging);
 					return;
 				}
@@ -514,14 +514,14 @@ namespace ps5emu
 		if (!fs::is_directory(path / "meta", ec) || !fs::is_directory(path / "content", ec))
 		{
 			candidate.note = fs::exists(path / "title.tmd", ec) ?
-				ps5lang::Tr("This one is not unpacked (title.tmd and .app files). Cemu reads it from the game files folder as it is: no install needed.") :
-				ps5lang::Tr("There is no title here: a game, update or DLC to install is a folder with code, content and meta.");
+				ps5lang::Tr("This game is packed (title.tmd and .app files) and plays from the game files folder as it is. No install needed.") :
+				ps5lang::Tr("No game, update or DLC here. It should be a folder with code, content and meta inside.");
 			return candidate;
 		}
 		TitleInfo title(path);
 		if (!title.IsValid())
 		{
-			candidate.note = ps5lang::Tr("Its meta folder does not describe a Wii U title (meta.xml).");
+			candidate.note = ps5lang::Tr("This is not a Wii U title: meta/meta.xml is missing or wrong.");
 			return candidate;
 		}
 		// its own name in the menus' language, its English one where it has none
@@ -542,7 +542,7 @@ namespace ps5emu
 		if (fs::equivalent(target, path, ec))
 		{
 			candidate.kind = InstallCandidate::Kind::None;
-			candidate.note = ps5lang::Tr("This is where it is installed already.");
+			candidate.note = ps5lang::Tr("It is already installed here.");
 			return candidate;
 		}
 		if (fs::exists(target, ec))

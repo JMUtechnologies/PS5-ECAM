@@ -76,6 +76,10 @@ namespace ps5shell
 		if (asked)
 		{
 			const float target[5] = {m_ringBox.x, m_ringBox.y, m_ringBox.w, m_ringBox.h, m_ringRadius};
+			// a new place: the lens lands with a small settle, so a step is seen to arrive
+			if (m_ringShown && (std::fabs(target[0] - m_ring[0].target) > 1 || std::fabs(target[1] - m_ring[1].target) > 1) &&
+				!m_settings.ui.reduceMotion)
+				m_ringPulse = 1.0f;
 			for (int i = 0; i < 5; i++)
 			{
 				if (!m_ringShown)
@@ -93,7 +97,10 @@ namespace ps5shell
 		}
 		for (auto& spring : m_ring)
 			spring.Update(m_dt);
-		const Box box{m_ring[0].value, m_ring[1].value, m_ring[2].value, m_ring[3].value};
+		m_ringPulse = std::max(0.0f, m_ringPulse - m_dt * 5.0f);
+		// out a few pixels as it lands, then back: sin over the pulse's 0.2 s
+		const float settle = 3.0f * std::sin(m_ringPulse * 3.14159265f);
+		const Box box = Box{m_ring[0].value, m_ring[1].value, m_ring[2].value, m_ring[3].value}.Inset(-settle);
 		const float radius = m_ring[4].value;
 		canvas.PushAlpha(m_ringAlpha);
 		// the glow in the element's own colour, breathing (±6 % over 2.4 s) while the focus rests
@@ -102,16 +109,54 @@ namespace ps5shell
 			const float breath = m_settings.ui.reduceMotion ? 0.0f : 0.06f * std::sin((float)(m_now * 2 * 3.14159265 / kBreathSeconds));
 			canvas.Glow(box, radius, 46, ui::WithAlpha(m_ringGlow, 0.42f + breath));
 		}
-		const float width = m_settings.ui.highContrast ? 6.0f : 4.0f;
-		canvas.Ring(box.Inset(-width), radius + width, width, kInk0);
-		canvas.Ring(box.Inset(-2 * width), radius + 2 * width, width, kFocus);
+		if (m_settings.ui.highContrast)
+		{
+			// high contrast keeps the ring it had: dark, then white, wide
+			canvas.Ring(box.Inset(-6), radius + 6, 6, kInk0);
+			canvas.Ring(box.Inset(-12), radius + 12, 6, kFocus);
+		}
+		else
+		{
+			// 6.0: a lens in the side's colour around what has the focus: a soft halo, its rim, and a thin bright
+			// edge inside it, as the light on liquid glass
+			const uint32_t accent = Accent();
+			canvas.Glow(box.Inset(-2), radius + 2, 30, ui::SetAlpha(accent, LightGround() ? 0.30f : 0.38f));
+			canvas.Ring(box.Inset(-4), radius + 4, 3.5f, ui::SetAlpha(accent, 0.95f));
+			canvas.Ring(box.Inset(-0.5f), radius + 0.5f, 1.5f, ui::SetAlpha(0xffffffff, LightGround() ? 0.9f : 0.55f));
+		}
 		canvas.PopAlpha();
+	}
+
+	bool Shell::LightGround() const
+	{
+		return ui::Luminance(kText) < 0.5f;
+	}
+
+	void Shell::Glass(Canvas& canvas, const Box& box, float radius, uint32_t fill, float shine)
+	{
+		canvas.Rect(box, radius, fill);
+		if (m_settings.ui.highContrast)
+		{
+			canvas.Ring(box, radius, 1.5f, kGlassEdge);
+			return;
+		}
+		const bool light = LightGround();
+		// light caught across the top, fading by the middle
+		canvas.LinearGradient(box, radius, ui::SetAlpha(0xffffffff, (light ? 0.42f : 0.10f) * shine), 0x00ffffff, box.x, box.y,
+			box.x + box.w * 0.18f, box.y + std::min(box.h, 220.0f));
+		// a faint shade at the foot, so it sits on what is behind
+		canvas.LinearGradient(box, radius, 0x00000000, ui::SetAlpha(0xff000000, light ? 0.035f : 0.10f), box.x, box.Bottom() - std::min(box.h, 160.0f),
+			box.x, box.Bottom());
+		// the edge: the whole of it faint, its top bright, as glass catches the light
+		canvas.Ring(box, radius, 1.0f, light ? ui::SetAlpha(0xff000000, 0.07f) : ui::SetAlpha(0xffffffff, 0.07f));
+		canvas.PushClip({box.x - 2, box.y - 2, box.w + 4, std::min(box.h * 0.45f, radius * 0.8f + 4)});
+		canvas.Ring(box, radius, 1.5f, ui::SetAlpha(0xffffffff, (light ? 0.95f : 0.30f) * std::min(1.0f, shine)));
+		canvas.PopClip();
 	}
 
 	void Shell::Panel(Canvas& canvas, const Box& box, float radius)
 	{
-		canvas.Rect(box, radius, Surface());
-		canvas.Ring(box, radius, 1.5f, kGlassEdge);
+		Glass(canvas, box, radius, Surface());
 	}
 
 	Box Shell::PillButton(Canvas& canvas, float x, float y, const std::string& label, bool primary, bool focused, Icon icon, bool withIcon, float height,
@@ -133,8 +178,7 @@ namespace ps5shell
 			canvas.Rect(drawn, height / 2, kText);
 		else
 		{
-			canvas.Rect(drawn, height / 2, Surface2());
-			canvas.Ring(drawn, height / 2, 2, kGlassEdge);
+			Glass(canvas, drawn, height / 2, Surface2());
 		}
 		const uint32_t ink = primary ? kInk1 : kText;
 		float at = drawn.x + (drawn.w - (width - pad * 2)) * 0.5f;
@@ -154,8 +198,7 @@ namespace ps5shell
 	{
 		Box box{x, y, size, size};
 		const Box drawn = focused ? box.Scaled(1.04f) : box;
-		canvas.Rect(drawn, size / 2, Surface2());
-		canvas.Ring(drawn, size / 2, 2, kGlassEdge);
+		Glass(canvas, drawn, size / 2, Surface2());
 		canvas.Draw(icon, drawn.Inset(size * 0.3f), kText);
 		if (focused)
 			Focus(drawn, size / 2);
@@ -321,11 +364,15 @@ namespace ps5shell
 		return std::clamp(scale, label.minScale, 1.0f);
 	}
 
-	void Shell::DrawRow(Canvas& canvas, const Row& row, const Box& box, bool focused, float labelScale)
+	void Shell::DrawRow(Canvas& canvas, const Row& row, const Box& box, bool focused, float labelScale, bool bare)
 	{
 		canvas.PushAlpha(row.dimmed ? 0.5f : 1.0f);
-		canvas.Rect(box, kRadiusCard, focused ? Surface2() : Surface());
-		canvas.Ring(box, kRadiusCard, 1.5f, kGlassEdge);
+		if (!bare)
+		{
+			Glass(canvas, box, kRadiusCard, focused ? Surface2() : Surface(), focused ? 1.0f : 0.6f);
+			if (focused && !m_settings.ui.highContrast)
+				canvas.Rect(box, kRadiusCard, ui::SetAlpha(Accent(), LightGround() ? 0.07f : 0.10f));
+		}
 		ui::TextStyle label = Style(kBodyStyle);
 		if (labelScale > 0)
 		{
@@ -461,7 +508,7 @@ namespace ps5shell
 		}
 		}
 		canvas.PopAlpha();
-		if (focused)
+		if (focused && !bare)
 			Focus(box, kRadiusCard);
 	}
 
@@ -486,8 +533,7 @@ namespace ps5shell
 	void Shell::DrawSheet(Canvas& canvas, const Box& box, float appear)
 	{
 		canvas.Shadow(box, kRadiusSheet, 24, 60, ui::WithAlpha(0x99000000, appear));
-		canvas.Rect(box, kRadiusSheet, m_settings.ui.highContrast ? kInk2 : ui::SetAlpha(kInk1, 0.96f));
-		canvas.Ring(box, kRadiusSheet, 1.5f, kGlassEdge);
+		Glass(canvas, box, kRadiusSheet, m_settings.ui.highContrast ? kInk2 : ui::SetAlpha(kInk1, 0.90f));
 	}
 
 	void Shell::Scrim(Canvas& canvas, float alpha)

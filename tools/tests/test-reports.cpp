@@ -1,16 +1,19 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Playtendoh: the reports (port/app/reports.cpp) on a PC, run by test-reports.sh: what the scrubber takes
 // out and what it leaves, a report made from a log full of made-up personal data with none of it in the
-// result, the session's four endings, the player's no deleting everything at once, and the outbox's
-// limits. The folder is argv[1], a folder of the test's.
+// result, the session's four endings, the player's no deleting everything at once, the outbox's limits,
+// and the emulator's own logs a session changed. The folder is argv[1], a folder of the test's.
 #include "app/reports.h"
 
 #include <rapidjson/document.h>
 
 #include <cstdio>
+#include <ctime>
 #include <filesystem>
 #include <fstream>
 #include <string>
+
+#include <utime.h>
 
 using namespace ps5reports;
 namespace fs = std::filesystem;
@@ -283,12 +286,78 @@ static void Sessions(const std::string& folder)
 	SetEnabled(false);
 }
 
+// The emulator's own logs (Session::logs): those its session changed, a crash first, scrubbed, cut, and
+// nothing of where they were on the console
+static void EmulatorLogs(const std::string& root)
+{
+	const std::string folder = root + "/emulator", data = folder + "/data";
+	SetFolder(folder + "/reports");
+	SetEnabled(true);
+	SetSecrets({"Jordan Okafor", "jordan_ok_77", "RetroJordan", "kq8Zt2pLm4Xw9vBn", "0f1e2d3c4b5a69788796a5b4c3d2e1f0", "JordansRoom", "JO-Player", "nas-okafor",
+		"hunter2secret", "jordan"});
+	for (const char* sub : {"/debug/crashes", "/debug/app", "/debug/games/Zelda/20261110-1200", "/games"})
+		fs::create_directories(data + sub);
+	const int64_t now = (int64_t)std::time(nullptr);
+	std::ofstream(data + "/debug/crashes/crash-20261110-1201.txt") << "[crash] SIGSEGV in Dolphin's JIT at 0x10\n" << kLog;
+	std::ofstream(data + "/debug/app/app-20261110-1200.log") << "[app] the player Jordan Okafor at 192.168.1.37\n" << [] {
+		std::string lines;
+		for (int i = 0; i < 2000; i++)
+			lines += "[core] a long line of the emulator's own log, number " + std::to_string(i) + "\n";
+		return lines;
+	}();
+	std::ofstream(data + "/debug/games/Zelda/20261110-1200/game.log") << "[game] Zelda's disc read\n";
+	std::ofstream(data + "/debug/app/app-20261101-0900.log") << "[app] an older session's\n";
+	std::ofstream(data + "/debug/settings.ini") << "nickname=JO-Player\n";
+	std::ofstream(data + "/games/Zelda log.txt") << "a file outside the places the session named\n";
+	std::ofstream(folder + "/cemu.prev.txt") << "[cemu] the session's own Cemu log\n";
+	// the older session's log: an hour before this one
+	struct utimbuf old{(time_t)(now - 3600), (time_t)(now - 3600)};
+	utime((data + "/debug/app/app-20261101-0900.log").c_str(), &old);
+
+	Session session = Game(now - 30);
+	session.side = "gamecube";
+	session.emulator = "porpoise";
+	session.logs = {data + "/debug", folder + "/cemu.prev.txt", folder + "/not-there.log"};
+	Begin(session);
+	Check(Close({"SIGSEGV in Dolphin's JIT", "", ""}, now + 5), "a crashed game with logs of its emulator's own");
+	const std::vector<std::string> pending = Pending(now + 5);
+	Check(pending.size() == 1, "its report in the outbox");
+	if (pending.size() != 1)
+		return;
+	const std::string whole = Read(pending[0]);
+	const rapidjson::Document json = Parse(pending[0]);
+	Check(!json.HasMember("logPlaces") && !Has(whole, folder), "the report names no place on the console");
+	Check(json.HasMember("logs") && json["logs"].IsArray() && json["logs"].Size() == kEmulatorLogs, "three of the emulator's logs, at most");
+	if (!json.HasMember("logs") || !json["logs"].IsArray() || json["logs"].Size() == 0)
+		return;
+	const auto& logs = json["logs"];
+	Check(std::string(logs[0]["file"].GetString()) == "crash-20261110-1201.txt" && Has(logs[0]["text"].GetString(), "SIGSEGV in Dolphin's JIT"),
+		"the crash first");
+	std::string files;
+	bool cut = true;
+	for (const auto& log : logs.GetArray())
+	{
+		files += std::string(log["file"].GetString()) + " ";
+		cut = cut && log["text"].GetStringLength() <= kEmulatorLogBytes;
+	}
+	Check(!Has(files, "app-20261101-0900.log") && !Has(files, "settings.ini") && !Has(files, "Zelda log.txt"),
+		"not an older session's log, a file that is no log, or one outside its places");
+	Check(cut && Has(whole, "number 1999") && !Has(whole, "number 10\n"), "each one's last lines, cut to 8 KB");
+	for (const char* item : kPrivate)
+		if (Has(whole, item))
+			Check(false, std::string("an emulator's log in a report has \"") + item + "\"");
+	// kept for the intake's test (tools/log-intake/test.mjs), which posts it to the Worker as the app would
+	std::ofstream(root + "/sample-report.json") << whole;
+	SetEnabled(false);
+}
+
 int main(int argc, char* argv[])
 {
 	if (argc != 2)
 		return 2;
 	Scrubbing();
 	Sessions(argv[1]);
+	EmulatorLogs(argv[1]);
 	std::printf("%s\n", failures ? "FAILED" : "all passed");
 	return failures ? 1 : 0;
 }

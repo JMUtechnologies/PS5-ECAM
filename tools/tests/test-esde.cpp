@@ -59,8 +59,8 @@ int main(int argc, char** argv)
 	Check(named && !ps5esde::SystemName(ique) && !ps5esde::SystemName(ps5launcher::kSideCount) && ps5esde::SideNamed("psx") == -1 &&
 			  ps5esde::SideNamed("switch2") == (int)ps5launcher::System::Switch2,
 		"each registered side has an ES-DE system of its own, but the iQue Player, which ES-DE has none of");
-	Check(std::string(ps5esde::SystemName((int)ps5launcher::System::GameWatch)) == "gw" && std::string(ps5esde::SystemName((int)ps5launcher::System::VsSystem)) == "arcade",
-		"Game & Watch is ES-DE's gw, VS. System its arcade");
+	Check(std::string(ps5esde::SystemName((int)ps5launcher::System::GameWatch)) == "gameandwatch" && std::string(ps5esde::SystemName((int)ps5launcher::System::VsSystem)) == "arcade",
+		"Game & Watch is ES-DE's gameandwatch, VS. System its arcade");
 	auto maps = [](std::string_view name) {
 		const int side = ps5esde::SideNamed(name);
 		return side >= 0 && name == ps5esde::SystemName(side);

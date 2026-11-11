@@ -1,0 +1,100 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Tue, 10 Nov 2026 17:06:57 -0500
+Subject: [PATCH] Playtendoh's Switch 2 side: how each game ended in its result
+ file, and a game after a crash
+
+Playtendoh's session file is read as the game starts (ps5ingamenx::Start), which leaves "running" in
+the result file. Nothing more was written when the game ended or the player left it, so every game
+read back in Playtendoh as one that stopped by itself, a crash, and its play time was not counted.
+It now says "ended" as the game ends and "leaving" once the player quits, as Eden's program does
+(Playtendoh's patches/eden 0008).
+
+An earlier crash, which Playtendoh says already, no longer keeps the next game Playtendoh asks for
+from starting: it went straight back with the crash report's path as the reason.
+
+Started without a game, the reason Playtendoh shows names the emulator as players know it: Lichii.
+---
+ headless/main.cpp | 28 ++++++++++++++++++++++++++--
+ 1 file changed, 26 insertions(+), 2 deletions(-)
+
+diff --git a/headless/main.cpp b/headless/main.cpp
+index 3d4252a..5502859 100644
+--- a/headless/main.cpp
++++ b/headless/main.cpp
+@@ -142,6 +142,10 @@ extern "C" bool eden_jit_shared;  // headless/dynarmic/jit_group_support.inc
+ #ifdef EDEN_ECAM
+ #include "ingame.h"
+ 
++// Playtendoh's session began (ps5ingamenx::Start, which leaves "running" in its result file): how it
++// ends is said there too, so that Playtendoh tells a game that ended or was left from a crash
++static bool ecam_started = false;
++
+ static ps5ingamenx::Settings EcamSettings(const Eden::ForwardedArgs& forwarded, const Eden::Pad* pad) {
+     ps5ingamenx::Settings menu;
+     // its Buttons: each game button's DualSense button (button_mapping.h's numbers are the menu's)
+@@ -564,10 +568,21 @@ int main(int argc, char** argv) {
+             LOG_ERROR(Frontend, "Ignoring invalid PS5-ECAM session path");
+ #endif
+         Eden::SetSessionPreferenceOverrides(forwarded.ecam_settings);
++#endif
++#if defined(EDEN_ECAM_CHILD) && EDEN_ECAM_CHILD
++        // Playtendoh asked for this game: an earlier crash, which Playtendoh said already, does not keep it
++        // from starting (as Eden's program has it, Playtendoh's patches/eden 0008)
++        constexpr bool ecam_child = true;
++        if (!forwarded.rom.empty() && !last_crash.report.empty()) {
++            Eden::BootTrace::Line("the last run crashed (%s): Playtendoh's game starts all the same", last_crash.report.c_str());
++            launch_error.clear();
++        }
++#else
++        constexpr bool ecam_child = false;
+ #endif
+         std::string forwarded_game;
+         bool forwarded_session = false;
+-        if (!forwarded.rom.empty() && last_crash.report.empty()) {
++        if (!forwarded.rom.empty() && (last_crash.report.empty() || ecam_child)) {
+             std::string path = Eden::ResolveForwardedRom(forwarded.rom, Eden::AssetsPath("roms"));
+             if (const auto main = Eden::ExtractedGameMain(path); !main.empty()) path = main;
+             if (!path.empty() && Eden::FileExists(path)) forwarded_game = path;
+@@ -726,6 +741,9 @@ int main(int argc, char** argv) {
+             Eden::BootTrace::Line("starting the forwarded game");
+         } else if (forwarded_session && forwarded.exit_after_game && launch_error.empty()) {
+             Eden::Report("exit", "Forwarded game ended");
++#ifdef EDEN_ECAM
++            if (ecam_started) ps5ingamenx::WriteResult("ended");
++#endif
+ #if defined(EDEN_ECAM_CHILD) && EDEN_ECAM_CHILD
+             // PS5-ECAM persists the selected side before starting this child runtime. Restart it
+             // in place so the player returns to the same library instead of the PS5 home screen.
+@@ -744,10 +762,11 @@ int main(int argc, char** argv) {
+         // does for the Switch side, PS5-ECAM's patches/eden 0015).
+         {
+             const std::string why = !launch_error.empty() ? launch_error :
+-                forwarded.rom.empty() ? std::string{"EglantinePS5 was started without a game to play"} :
++                forwarded.rom.empty() ? std::string{"Lichii was started without a game to play"} :
+                                         std::string{"The game ended"};
+ #ifdef EDEN_ECAM
+             if (!launch_error.empty() || forwarded.rom.empty()) ps5ingamenx::WriteResult("failed", why);
++            else if (ecam_started) ps5ingamenx::WriteResult("ended");
+ #endif
+             Eden::Report("exit", ("Back to PS5-ECAM: " + why).c_str());
+             std::fflush(nullptr);
+@@ -1714,6 +1733,7 @@ int main(int argc, char** argv) {
+ #endif
+ #ifdef EDEN_ECAM
+                 ps5ingamenx::Start(EcamSettings(forwarded, pad.get()));
++                ecam_started = true;
+                 ps5ingamenx::SetLoading(ps5ingamenx::Step::Game);
+ #endif
+                 Eden::Loading::Set(Eden::Loading::Step::game);
+@@ -2198,6 +2218,10 @@ int main(int argc, char** argv) {
+                         if (pad->TakeReturnToMenu() || room_lost || ecam_leave) {
+                             // From here the player is waiting to leave (stop_limit.h).
+                             Eden::StopLimit::Begin();
++#ifdef EDEN_ECAM
++                            // a stop that takes too long starts the app again: Playtendoh then knows it was no crash
++                            if (ecam_started) ps5ingamenx::WriteResult("leaving");
++#endif
+                             std::lock_guard lock(completion->mutex);
+                             completion->return_to_menu = true;
+                             completion->room_lost = room_lost;

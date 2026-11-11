@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Playtendoh's report intake, a Cloudflare Worker (README.md):
-//   POST /v1/report               one report from the app (application/json, 32 KB at most): checked,
+//   POST /v1/report               one report from the app (application/json, 64 KB at most): checked,
 //                                 rate-limited, scrubbed again and kept in D1. 201, or 400 (dropped by the
 //                                 app), 413, 415 or 429 (kept by the app and sent later).
 //   GET  /v1/compatibility.json   the table GitHub Pages shows: one row a game, no install ID, no log.

@@ -14,7 +14,7 @@ APP := build/app/PPSA99360
 JOBS ?= $(shell nproc)
 export JOBS
 
-.PHONY: gameboy retro-upgrades retro test-retro help deps deps-status radv azahar melonds libretro eden eglantine porpoise build check package release clean distclean test-contribution esde
+.PHONY: gameboy retro-upgrades retro test-retro help deps deps-status radv azahar melonds libretro eden eglantine porpoise build check package release clean distclean test-contribution esde esde-zip
 
 test-retro: ## Host verification for the additional system integration
 	bash tools/tests/test-retro.sh
@@ -74,6 +74,17 @@ porpoise: deps radv ## Build Porpoise X, the GameCube and Wii sides' program (Do
 
 esde: ## Build EmulationStation (ES-DE), the optional other frontend, with PS5-ECAM's glue: build/esde/es-de
 	bash tools/build-esde.sh
+
+# ES-DE as the app downloads it (port/app/esde_get.h): its folder under PPSA99360/, for the GitHub release
+# tagged as esde_get.h's kTag, asset ES-DE-PS5.zip
+esde-zip: esde ## dist/ES-DE-PS5.zip: EmulationStation, the app's download of it
+	@mkdir -p dist
+	rm -rf build/esde-zip dist/ES-DE-PS5.zip
+	mkdir -p build/esde-zip/PPSA99360
+	cp -al build/esde/es-de build/esde-zip/PPSA99360/es-de
+	cd build/esde-zip && python3 -m zipfile -c ../../dist/ES-DE-PS5.zip PPSA99360
+	rm -rf build/esde-zip
+	cd dist && sha256sum ES-DE-PS5.zip
 
 libretro: deps ## Build the libretro cores the other systems play on in the app (NES, SNES, Game Boys, N64, Virtual Boy, Pokemon mini): build/libretro
 	python3 tools/build-libretro.py

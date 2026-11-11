@@ -1,0 +1,22 @@
+# Settings > Emulator on a libretro side: the core's options, its groups behind › rows
+# (PREVIEW_SIDE=gba PREVIEW_SIDES=1024 tools/preview-shell.sh tools/launcher-preview/shell-core.txt)
+wait 90
+press circle                  # the folders question: later
+wait 20
+press up                      # the bar
+press right right             # Library, then Settings: its first page, Emulator
+wait 20
+press down
+wait 40
+shot core-pages
+press right                   # its rows
+wait 25
+shot core-rows
+press down down               # a group
+press cross
+wait 30
+shot core-group
+press down
+press right                   # a value changed
+wait 20
+shot core-changed

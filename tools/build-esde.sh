@@ -71,6 +71,8 @@ if [[ ! -f $port/.ecam-stamp || $(<"$port/.ecam-stamp") != "$stamp" ]]; then
     mkdir -p "$port"
     (cd "$root/.deps/esde-port" && git ls-files -z) |
         (cd "$root/.deps/esde-port" && xargs -0 cp --parents -t "$port")
+    # its compiler wrapper is kept without its executable bit (100644), and CMake runs it as the compiler
+    chmod +x "$port/tooling/prospero-clang18"
     glue="$port/frontends/es-de/ps5"
     rm -f "$glue/main_ps5.cpp" "$glue/game_ps5.cpp" "$glue/library_ps5.cpp" "$glue/library_ps5.h" \
         "$glue/include/GuiFrameGen.h" "$glue/include/GuiWebUI.h"
