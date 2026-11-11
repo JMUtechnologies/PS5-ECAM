@@ -1503,6 +1503,9 @@ namespace ps5shell
 				Tr("The selected game's picture fills the background, blurred and dimmed. Off: just the game's colours."));
 			toggle("filters", Tr("Library filters"), settings.ui.libraryFilters, Tr("A row of filters above the list."),
 				Tr("Filters above the list: All, Recently added (last 30 days), Favourites, and for Wii U, Graphic packs on. Off: just Sort and Search."));
+			// tr: Settings > Launcher: a game's badge, Playable, Issues or Not playable, from players' reports
+			toggle("compatbadges", Tr("How games run"), settings.ui.compatBadges, Tr("Playable, Issues or Not playable on each game."),
+				Tr("A badge on each game that has been reported: Playable, Issues or Not playable, from the compatibility list and players' reports, updated when the app starts. Off: no badges."));
 			int hold = 2;
 			for (int i = 0; i < 6; i++)
 				if (kHolds[i] <= settings.ui.holdMs)
@@ -2324,6 +2327,8 @@ namespace ps5shell
 			}
 			else if (id == "filters")
 				settings.ui.libraryFilters = on;
+			else if (id == "compatbadges")
+				settings.ui.compatBadges = on;
 			else if (id == "emulationstation")
 				settings.ui.emulationStation = on;
 			else if (id == "lookonshares")

@@ -7,7 +7,7 @@
 #
 # PREVIEW_FIRST=1 starts it as on a first start, PREVIEW_REMOTE=1 with the remote touch screen on,
 # PREVIEW_UPDATE=1 with a newer release found, PREVIEW_NO_DATA=1 with /data out of reach,
-# PREVIEW_LAYOUT=1 in Orbit, PREVIEW_BOXART3D=1 with 3D box art, PREVIEW_LAUNCH_ERROR=1 after a game that did not start; PREVIEW_LANGUAGE=de (a code of app/lang.cpp's, or
+# PREVIEW_LAYOUT=1 in Orbit, PREVIEW_BOXART3D=1 with 3D box art, PREVIEW_NO_BADGES=1 with How games run off, PREVIEW_LAUNCH_ERROR=1 after a game that did not start; PREVIEW_LANGUAGE=de (a code of app/lang.cpp's, or
 # qps, tools/lang.py pseudo's longer text) in that language, PREVIEW_SYSTEM_LANGUAGE=4 with the PS5 set to
 # its language number.
 #
@@ -37,6 +37,9 @@ for title in "BotW Update v208" "BotW DLC"; do
     echo '<menu/>' >"$games/Installs/$title/meta/meta.xml"
 done
 python3 -B tools/launcher-preview/make-3ds-samples.py "$games/3ds" "$games/ds"
+# how games run, as the console reads it (port/app/compatibility.h): the list's, and made-up reports for
+# some of these games so each badge shows
+python3 -B tools/compat_feed.py --reports tools/launcher-preview/compat-reports.json --out "$out/compatibility.json"
 # Switch games where Eden keeps them (the Switch side's default folder, ps5eden::DefaultGamesFolder):
 # empty files by a dump's names, one in a folder of its own with its update, and Eden's keys
 roms=$out/eden/roms

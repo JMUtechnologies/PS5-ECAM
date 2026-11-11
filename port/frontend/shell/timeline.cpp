@@ -455,7 +455,15 @@ namespace ps5shell
 			if (!last.empty())
 				facts += (facts.empty() ? "" : " · ") + TrF("Last played {0}", last);
 			const float factsY = 742 + title.height + 12;
-			canvas.Text(Style({22, ui::Weight::Regular, 1.2f}), x, factsY, facts, kInk2, width, 1);
+			const ui::TextBlock factsText = canvas.Text(Style({22, ui::Weight::Regular, 1.2f}), x, factsY, facts, kInk2, width, 1);
+			if (focus->report)
+			{
+				// how it runs, after its facts: the chips' dot in its colour, and its word
+				const std::string kind = ps5compat::Kind(focus->report->status);
+				const float dx = x + (facts.empty() ? 0 : factsText.width + 22);
+				canvas.Rect({dx, factsY + 9, 10, 10}, 5, kind == "good" ? kGood : kind == "warn" ? kWarn : kBad);
+				canvas.Text(Style({22, ui::Weight::SemiBold, 1.2f}), dx + 18, factsY, TrC("status", focus->report->status), kInk2, width, 1);
+			}
 			const ui::TextStyle playStyle = Style({22, ui::Weight::SemiBold, 1.0f});
 			const std::string play = Tr("Play");
 			const Box button{x, factsY + 44, m_fonts.Width(playStyle, play) + 96, 60};

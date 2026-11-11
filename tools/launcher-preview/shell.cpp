@@ -94,7 +94,8 @@ int main(int argc, char* argv[])
 	// tiles, Eden's launch picture)
 	ps5paths::detail::AppDirSlot() = preview::output + "/app";
 	ps5gameinfo::SetFolder("port/app/gametdb"); // the repository's: the preview runs from its root
-	ps5compat::SetPath("docs/COMPATIBILITY.md");
+	// how games run: the feed preview-shell.sh made from the list and a few made-up reports (no fetch)
+	ps5compat::SetPaths(preview::output + "/compatibility.json", "");
 	if (std::getenv("PREVIEW_UPDATE"))
 		ps5update::Start(); // as the app's check finding a newer release
 	preview::LoadScript(argv[2]);
@@ -131,6 +132,8 @@ int main(int argc, char* argv[])
 		settings.remoteScreen = true;
 	if (std::getenv("PREVIEW_FILTERS"))
 		settings.ui.libraryFilters = true;
+	if (std::getenv("PREVIEW_NO_BADGES"))
+		settings.ui.compatBadges = false; // Settings > Launcher > How games run, off
 	if (const char* theme = std::getenv("PREVIEW_THEME"))
 		settings.ui.theme = theme;
 	if (std::getenv("PREVIEW_LARGER_TEXT"))

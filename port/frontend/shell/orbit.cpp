@@ -382,7 +382,7 @@ namespace ps5shell
 		}
 		auto drawTile = [&](int i, const Box& box, bool focused) {
 			if (m_orbitHome)
-				AsSide(m_homeGames[i].side, [&] { DrawCover(canvas, m_homeGames[i].game, box, focused, 0); });
+				AsSide(m_homeGames[i].side, [&] { DrawCover(canvas, m_homeGames[i].game, box, focused, 0, true); });
 			else if (i < offset)
 			{
 				// the 3DS's Artic Base, ahead of its games
@@ -392,7 +392,7 @@ namespace ps5shell
 					Focus(box, kRadiusCover);
 			}
 			else
-				DrawCover(canvas, m_games[m_shelf[i - offset]], box, focused, 0);
+				DrawCover(canvas, m_games[m_shelf[i - offset]], box, focused, 0, true);
 		};
 		canvas.PushClip({640, 690, 1280, 390});
 		// each tile's lift glides: the one gaining the focus grows and makes room as the one losing it settles

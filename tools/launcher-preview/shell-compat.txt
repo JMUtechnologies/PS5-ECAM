@@ -1,0 +1,38 @@
+# How games run (tools/preview-shell.sh tools/launcher-preview/shell-compat.txt): the badges the
+# compatibility feed gives, from the list and the preview's made-up reports (compat-reports.json). Run
+# it again with PREVIEW_LAYOUT=1 (Orbit), PREVIEW_BOXART3D=1 and PREVIEW_SIDE=switch.
+wait 90
+shot compat-library           # Recently played: a badge on each cover reported, its chip in the panel
+press down down               # the list: its chip at each row's end
+wait 30
+shot compat-list
+press up up
+press options                 # the Game menu
+press down cross              # the game's page: how it runs, with the notes
+wait 45
+shot compat-hub
+press circle
+wait 20
+press touchpad                # the Timeline: the game in focus, its status after its facts
+wait 60
+shot compat-timeline
+press circle
+wait 30
+press up                      # the bar
+press right right right right right right right right # Settings
+wait 40
+press right                   # into Graphics' rows
+press circle                  # back on the pages
+press down down down down down down # Launcher
+press right
+wait 30
+shot compat-settings
+press down down down down down down down down down down down # down to How games run
+wait 30
+shot compat-settings-row
+press cross                   # off: no badges
+wait 20
+press circle circle
+press left                    # the Library
+wait 40
+shot compat-off

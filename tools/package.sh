@@ -12,7 +12,7 @@
 #     tile-installer.elf              moves the home screen tiles the app made into /data/homebrew
 #     assets/ui/                      the launcher's font (fonts/lexend.sdf), the in-game menus'
 #                                     (fonts/Lexend-*.ttf), sounds and the two sides' tiles
-#     assets/compatibility.md         the compatibility list, for the game pages' status
+#     assets/compatibility.json       how games run, the list's alone, until the site's is fetched
 #     assets/cemu/                    Cemu's game profiles and the Wii U system fonts (the community
 #                                     graphic packs are not in the app: it downloads them, #74)
 #     assets/gametdb/                 GameTDB's game information (descriptions, publishers, dates)
@@ -189,8 +189,9 @@ mkdir -p "$app/assets/lang"
 for po in "$PS5CEMU_ROOT"/port/lang/*.po; do
     [[ $(basename "$po") == qps.po ]] || sed -e '/^#[^,]/d' -e '/^#$/d' -e '/^$/d' "$po" >"$app/assets/lang/$(basename "$po")"
 done
-# the compatibility list the game pages show a status from (app/compatibility.h)
-cp "$PS5CEMU_ROOT/docs/COMPATIBILITY.md" "$app/assets/compatibility.md"
+# how games run, from the compatibility list, for a console that has not fetched the site's yet
+# (app/compatibility.h, tools/compat_feed.py)
+python3 -B "$PS5CEMU_ROOT/tools/compat_feed.py" --out "$app/assets/compatibility.json"
 # the 3DS side's border themes (tools/render-borders.py, committed)
 mkdir -p "$app/assets/borders"
 cp "$PS5CEMU_ROOT"/port/azahar/borders/*.png "$app/assets/borders/"

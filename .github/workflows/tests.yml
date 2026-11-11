@@ -94,6 +94,9 @@ jobs:
       - name: Reports (scrubber, queue, intake)
         run: bash tools/tests/test-reports.sh
 
+      - name: How games run (the feed, its fetch's copy, the site's status.json)
+        run: bash tools/tests/test-compat.sh
+
       - name: DS screens' places
         run: bash tools/tests/test-screens.sh
 

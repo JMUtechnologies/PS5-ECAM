@@ -125,6 +125,7 @@ add_library(CemuPS5 STATIC
 	app/report_send.cpp
 	app/compatibility.cpp
 	app/compatibility.h
+	app/compat_fetch.cpp
 	app/covers.cpp
 	app/gameinfo.cpp
 	app/gameinfo.h

@@ -1,29 +1,56 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5-ECAM: how a game runs in the app, as players have reported it: the compatibility list
-// (docs/COMPATIBILITY.md, bundled as assets/compatibility.md), read for the launcher's game pages.
-// A game is found by its name, compared without case, spaces or punctuation ("Batman™: Arkham
-// Origins" is "Batman: Arkham Origins").
+// Playtendoh: how a game runs in the app, for the launcher's badges and game pages: Playable, Issues or
+// Not playable, with the list's notes. One feed for every system (tools/compat_feed.py): the
+// compatibility list (docs/COMPATIBILITY.md) and what players' reports say, which the site makes every
+// hour (premohq.github.io/PlayTendoh/status.json). The console fetches it a few seconds after the
+// launcher is up (compat_fetch.cpp), keeps it (cache/compatibility.json, with its ETag), and reads that
+// copy until a newer one comes; with none yet, the one the app came with (assets/compatibility.json, the
+// list alone). A game is found by its side and title ID, else by its name, compared without case,
+// spaces or punctuation ("Batman™: Arkham Origins" is "Batman: Arkham Origins").
 
 #pragma once
 
+#include <cstdint>
 #include <string>
 
 namespace ps5compat
 {
+	// what the console fetches, and where it keeps it
+	constexpr const char* kUrl = "https://premohq.github.io/PlayTendoh/status.json";
+
 	struct Report
 	{
-		std::string name;	// as the list has it
-		std::string region; // the region and version reported
-		std::string status; // Playable, Issues, Crashes or Won't start
-		std::string notes;
+		std::string name;	// as the feed has it
+		std::string region; // the region and version reported, or empty
+		std::string status; // Playable, Issues or Not playable, as the launcher shows it (TrC "status")
+		std::string notes;	// the list's, or empty
+		int consoles = 0, sessions = 0, ended = 0; // players' reports: consoles, sessions that said, ended well
 	};
 
-	// The report for a game of the side (n3ds: the 3DS's table), or null when none is listed.
-	const Report* Find(bool n3ds, const std::string& name);
+	// The report for a game of a side (launcher.h's SideName: "wiiu", "nes"), by its title ID (0: none)
+	// or its name; null when the feed has none. Reports stay where they are for the app's life: a newer
+	// feed adds its own (Generation), it never frees the old.
+	const Report* Find(const std::string& side, uint64_t titleId, const std::string& name);
 	// How the launcher marks a status: "good", "warn" or "bad"; empty for none.
 	const char* Kind(const std::string& status);
+	// Goes up each time a newer feed is read: the launcher finds its games' reports again.
+	int Generation();
 
-	// Where the list is (default: the app's assets/compatibility.md); the launcher's preview gives
-	// the repository's.
-	void SetPath(const std::string& path);
+	// A feed's text, read and made the one Find uses when it parses; false when it does not (kept: the
+	// one before). The fetch's, and the tests'.
+	bool Take(const std::string& text);
+	// The kept copy (cache/compatibility.json) and its ETag, for the fetch
+	std::string CachePath();
+	std::string CachedTag();
+	// A fresh feed from the site: kept with its ETag, then read (Take). False when it does not parse.
+	bool Keep(const std::string& text, const std::string& etag);
+
+	// Fetched on a thread of its own, once a launch, a few seconds after the launcher is up (offline: the
+	// kept copy, then the bundled one). StopFetch first, before a game: nothing runs beside one.
+	void StartFetch();
+	void StopFetch();
+
+	// Where the bundled feed and the kept copy are (default: assets/compatibility.json and
+	// cache/compatibility.json); the launcher's preview and the tests give their own. Empty cache: none.
+	void SetPaths(const std::string& bundled, const std::string& cache);
 }

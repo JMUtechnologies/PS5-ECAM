@@ -50,7 +50,7 @@ namespace ps5shell
 			if (!report)
 				return 4;
 			const std::string kind = ps5compat::Kind(report->status);
-			return report->status == "Playable" ? 0 : kind == "good" ? 0 : kind == "warn" ? 1 : report->status == "Crashes" ? 2 : 3;
+			return kind == "good" ? 0 : kind == "warn" ? 1 : kind == "bad" ? 2 : 3;
 		}
 
 		// a game's facts in a line, the empty ones left out
@@ -744,13 +744,13 @@ namespace ps5shell
 					if (mix > 0.002f || focused)
 						raised.push_back({mix + (focused ? 1 : 0), {i, drawn}});
 					else
-						DrawCover(canvas, g, drawn, false, 0);
+						DrawCover(canvas, g, drawn, false, 0, true);
 				}
 				x = box.Right() + kRecentGap + 12 * mix;
 			}
 			std::sort(raised.begin(), raised.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
 			for (const auto& [mix, which] : raised)
-				DrawCover(canvas, m_games[m_recent[which.first]], which.second, !m_onBar && m_libraryZone == 0 && which.first == m_recentIndex, 0);
+				DrawCover(canvas, m_games[m_recent[which.first]], which.second, !m_onBar && m_libraryZone == 0 && which.first == m_recentIndex, 0, true);
 			canvas.PopClip();
 			// the panel: the game's console, its name, play time, when it was last played, its update and
 			// DLC, how it runs, and what Cross and Options do with it
