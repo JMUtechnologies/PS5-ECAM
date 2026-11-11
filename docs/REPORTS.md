@@ -58,4 +58,4 @@ in a private database for 180 days, keeps nothing about the sender (its network 
 to limit how many reports it takes), and publishes one thing: a table with one row a game (how many
 consoles and sessions, how they ended, the firmware and models seen), with no install ID and no log.
 That table is on the project's site, [premohq.github.io/PlayTendoh/compatibility.html](https://premohq.github.io/PlayTendoh/compatibility.html),
-rebuilt every day.
+rebuilt every hour.

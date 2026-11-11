@@ -40,7 +40,7 @@ Then:
    asks nothing and sends nothing.
 2. **The site:** on GitHub, Settings > Secrets and variables > Actions > Variables, add `REPORTS_URL`
    = `https://playtendoh-reports.<account>.workers.dev` (no path). The Pages workflow then fetches the
-   table every day, or at once from Actions > Pages > Run workflow.
+   table every hour, or at once from Actions > Pages > Run workflow.
 
 ## Reading the reports
 
@@ -67,8 +67,8 @@ Everything from one release, to see what it broke: `... WHERE app = '6.0.0' ...`
 ## Cost
 
 Free up to Cloudflare's free plan's limits: 100,000 requests a day, 5 GB of D1 (a report is 2 to 40 KB with
-its logs, so some 200,000 reports at the most) and 5 million D1 rows read a day. The daily table reads every
-row once and is cached for an hour. Past those limits, Workers Paid is 5 USD a month.
+its logs, so some 200,000 reports at the most) and 5 million D1 rows read a day. The table, made every hour, reads
+every row once: 24 reads of every row a day, under the limit up to about 200,000 reports. Past those limits, Workers Paid is 5 USD a month.
 
 ## Tests
 
