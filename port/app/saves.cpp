@@ -323,14 +323,14 @@ namespace ps5saves
 					const fs::path kept = KeptPath(stamp, file.to);
 					if (fs::exists(kept, ec))
 					{
-						SetState(Status::State::Failed, ps5lang::Tr("A save moved aside a moment ago is in the way: try again in a moment."));
+						SetState(Status::State::Failed, ps5lang::Tr("A save is still being moved. Try again in a moment."));
 						return;
 					}
 					fs::create_directories(kept.parent_path(), ec);
 					fs::rename(file.to, kept, ec);
 					if (ec)
 					{
-						SetState(Status::State::Failed, ps5lang::TrF("A save could not be moved aside: {0}", file.to.string()));
+						SetState(Status::State::Failed, ps5lang::TrF("A save could not be moved: {0}", file.to.string()));
 						return;
 					}
 					moved++;
@@ -403,7 +403,7 @@ namespace ps5saves
 					ec.clear();
 				}
 			}
-			error = ps5lang::Tr("No USB drive found: plug one in, formatted exFAT or FAT32.");
+			error = ps5lang::Tr("No USB drive found. Plug in one formatted exFAT or FAT32.");
 			return false;
 		}
 
@@ -570,14 +570,14 @@ namespace ps5saves
 			const fs::path kept = KeptPath(stamp, path);
 			if (fs::exists(kept, ec))
 			{
-				error = ps5lang::Tr("A save moved aside a moment ago is in the way: try again in a moment.");
+				error = ps5lang::Tr("A save is still being moved. Try again in a moment.");
 				return {};
 			}
 			fs::create_directories(kept.parent_path(), ec);
 			fs::rename(path, kept, ec);
 			if (ec)
 			{
-				error = ps5lang::TrF("A save could not be moved aside: {0}", path);
+				error = ps5lang::TrF("A save could not be moved: {0}", path);
 				ps5log::Line("[saves] moving {} aside: {}", path, ec.message());
 				return {};
 			}
@@ -645,7 +645,7 @@ namespace ps5saves
 		std::error_code ec;
 		if (!fs::is_directory(backup.folder, ec))
 		{
-			error = ps5lang::Tr("That backup is not there any more.");
+			error = ps5lang::Tr("That backup no longer exists.");
 			return false;
 		}
 		return Begin(backup.folder, true, error, game);
@@ -702,7 +702,7 @@ namespace ps5saves
 		std::error_code ec;
 		if (!fs::is_directory(backup.folder, ec))
 		{
-			error = ps5lang::Tr("That backup is not there any more.");
+			error = ps5lang::Tr("That backup no longer exists.");
 			return false;
 		}
 		return Begin(backup.folder, true, error);
@@ -714,7 +714,7 @@ namespace ps5saves
 		{
 			if (game.side != 3 || !SwitchTitle(game) || profile.size() != 32 ||
 				profile.find_first_not_of("0123456789abcdefABCDEF") != std::string::npos)
-			{ error = ps5lang::Tr("Choose a player first, for a game with a title ID."); return false; }
+			{ error = ps5lang::Tr("Choose a player first."); return false; }
 			if (Current().state == Status::State::Running) { error = ps5lang::Tr("A backup is already running."); return false; }
 			if (s_thread.joinable()) s_thread.join();
 			{
@@ -756,7 +756,7 @@ namespace ps5saves
 								break;
 							}
 						}
-						if (!done && why.empty()) why = ps5lang::Tr("No USB drive found: plug one in, formatted exFAT or FAT32.");
+						if (!done && why.empty()) why = ps5lang::Tr("No USB drive found. Plug in one formatted exFAT or FAT32.");
 					}
 					{
 						std::lock_guard lock(s_mutex); s_status.where = where;

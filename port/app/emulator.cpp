@@ -6,6 +6,7 @@
 // MainWindow::FileLoad and VulkanCanvas; this file keeps their MPL-2.0 licence.
 
 #include "emulator.h"
+#include "esde_get.h"
 #include "boxart.h"
 #include "shots.h"
 #include "game_archives.h"
@@ -553,7 +554,7 @@ namespace ps5emu
 		}
 		if (!CreateDefaultMlcFiles(ActiveSettings::GetMlcPath()))
 		{
-			error = ps5lang::TrF("Playtendoh cannot create the MLC folder {0}", _pathToUtf8(ActiveSettings::GetMlcPath()));
+			error = ps5lang::TrF("Playtendoh cannot create the folder {0}", _pathToUtf8(ActiveSettings::GetMlcPath()));
 			return false;
 		}
 		// the community graphic packs are not in the app (#74): GitHub's latest, downloaded in the
@@ -865,7 +866,7 @@ namespace ps5emu
 	void RunGame()
 	{
 		// tr: the PS5's notification as a Wii U game starts
-		ps5notify::Send(ps5lang::Tr("Touchpad click + Options: the in-game menu (screens, picture, volume, controls, the library)"));
+		ps5notify::Send(ps5lang::Tr("Touchpad click + Options opens the in-game menu"));
 		uint64_t polls = 0;
 		LogMemory();
 		uint32_t loggedFrames = LatteGPUState.frameCounter;
@@ -1005,6 +1006,7 @@ namespace ps5emu
 		// Artic Base one can (#45): it is waited for too.
 		ps5boxart::Stop();
 		ps5shots::Stop();
+		ps5esdeget::Stop();
 		ps5update::WaitForCheck(10000);
 		// Cemu's settings only where Cemu ran: a 3DS session never read them, and would write its
 		// defaults over them
@@ -1101,7 +1103,7 @@ namespace ps5emu
 		ps5log::Line("[emu] back to the library: starting PS5Cemu over");
 		LoadExecApp("eboot.bin", {}, false);
 		// none took: the app ends, which is said rather than it just closing
-		ps5notify::Send(ps5lang::Tr("Playtendoh could not start itself again to show the library: start it again from the home screen."));
+		ps5notify::Send(ps5lang::Tr("Playtendoh could not restart. Start it again from the home screen."));
 		ps5log::FlushAll();
 	}
 
@@ -1109,6 +1111,7 @@ namespace ps5emu
 	{
 		ps5boxart::Stop();
 		ps5shots::Stop();
+		ps5esdeget::Stop();
 		ps5update::WaitForCheck(10000);
 		ps5log::Line("[emu] the game is over: PS5Cemu closes (a home screen tile's --exit-after-game)");
 		if (s_coreStarted)

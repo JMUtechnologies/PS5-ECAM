@@ -47,7 +47,8 @@ namespace ps5update
 		fs::remove_all(folder, ec);
 	}
 
-	bool Unpack(const fs::path& archive, const fs::path& folder, std::vector<fs::path>& files, std::string& error, const std::atomic<bool>& stop)
+	bool Unpack(const fs::path& archive, const fs::path& folder, std::vector<fs::path>& files, std::string& error, const std::atomic<bool>& stop,
+		const char* required)
 	{
 		// a handle for each worker, libzip's being for one thread at a time
 		struct Handle
@@ -87,9 +88,9 @@ namespace ps5update
 			indices.push_back((zip_uint64_t)i);
 			files.push_back(entry);
 		}
-		if (std::find(files.begin(), files.end(), fs::path("eboot.bin")) == files.end())
+		if (std::find(files.begin(), files.end(), fs::path(required)) == files.end())
 		{
-			error = ps5lang::Tr("the download has no eboot.bin");
+			error = std::string(required) == "eboot.bin" ? ps5lang::Tr("the download has no eboot.bin") : ps5lang::TrF("the download has no {0}", required);
 			return false;
 		}
 		MakeFolders(folder, files);

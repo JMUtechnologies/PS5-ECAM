@@ -30,12 +30,12 @@ namespace ps5retro
 		if (!IsRetro(side)) return "Unknown emulator system.";
 		const auto b = BackendFor(side, backend);
 		// tr: a retro side's emulator: {0} its name, {1} its program in the app's folder, {2} whether this copy has it, {3} its data folder
-		return TrF("{0}\nIts program: {1}, {2}\nIts data and logs: {3}\nIts settings and save states are its own: no other emulator reads them.", b.name, b.runtime,
+		return TrF("{0}\nProgram: {1}, {2}\nData and logs: {3}\nIts settings and save states only work with this emulator.", b.name, b.runtime,
 			Available(side, backend) ? Tr("in this copy of Playtendoh") : Tr("not in this copy of Playtendoh"), b.data);
 	}
 	bool LaunchLibrary(int side, std::string& error, int backend)
 	{
-		if (!HasProgram(side, backend)) { error = Tr("This side's emulator is not in this copy of Playtendoh."); return false; }
+		if (!HasProgram(side, backend)) { error = Tr("This system's emulator is not in this copy of Playtendoh."); return false; }
 		FinishScans();
 		const auto request = (std::filesystem::path(ps5paths::AppDir()) / BackendFor(side, backend).runtime).parent_path() / "ecam-request.txt";
 		ps5emu::LoadExecApp(BackendFor(side, backend).runtime, {"--ecam-library", "--ecam-return", ps5paths::Eboot()}, true, request.string());
@@ -45,13 +45,13 @@ namespace ps5retro
 
 	bool Launch(int side, const std::string& rom, std::string& error, int backend)
 	{
-		if (!HasProgram(side, backend)) { error = Tr("This side's emulator is not in this copy of Playtendoh."); return false; }
+		if (!HasProgram(side, backend)) { error = Tr("This system's emulator is not in this copy of Playtendoh."); return false; }
 		std::error_code ec;
-		if (!HasExtension(Of(side).key, rom) || !std::filesystem::is_regular_file(rom, ec)) { error = Tr("This game is no longer where it was, or is not one this side can start."); return false; }
+		if (!HasExtension(Of(side).key, rom) || !std::filesystem::is_regular_file(rom, ec)) { error = Tr("This game has moved, or this system can't start it."); return false; }
 		if (!ValidateRom(side, rom, error, backend)) return false;
 		FinishScans();
 		const auto arguments = LaunchArguments(side, rom, ps5paths::AppDir() + "/eboot.bin");
-		if (arguments.empty()) { error = Tr("This game's folder or name cannot be handed to its emulator: move it or rename it."); return false; }
+		if (arguments.empty()) { error = Tr("This game's folder or name can't be used. Move or rename it."); return false; }
 		const auto request = (std::filesystem::path(ps5paths::AppDir()) / BackendFor(side, backend).runtime).parent_path() / "ecam-request.txt";
 		ps5emu::LoadExecApp(BackendFor(side, backend).runtime, arguments, true, request.string());
 		error = Tr("The game could not be started.");

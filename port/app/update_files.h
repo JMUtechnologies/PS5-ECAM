@@ -46,6 +46,9 @@ namespace ps5update
 	// The release's PPSA99360 folder unpacked into folder (made new); its files, relative to it, in the
 	// archive's order. False, with why (in the player's language), when it could not be, or stop was set
 	// meanwhile (a game starting)
+	// (required: the file it must have, the app's own program; ES-DE's download, es-de/es-de.bin)
 	bool Unpack(const std::filesystem::path& archive, const std::filesystem::path& folder, std::vector<std::filesystem::path>& files,
-		std::string& error, const std::atomic<bool>& stop);
+		std::string& error, const std::atomic<bool>& stop, const char* required = "eboot.bin");
+	// A file's SHA-256, in lowercase hex (updates.cpp's, for the release's SHA256SUMS)
+	std::string Sha256Of(const std::filesystem::path& file);
 }

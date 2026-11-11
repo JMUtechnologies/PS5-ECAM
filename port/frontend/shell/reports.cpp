@@ -74,8 +74,7 @@ namespace ps5shell
 		// tr: the first start's question: whether the app may send reports of how games run to the project
 		canvas.Text(Style({54, ui::Weight::SemiBold, 1.1f}), left, 164, Tr("Help Playtendoh get better?"), kInk, width, 1);
 		canvas.Text(Style({22, ui::Weight::Regular, 1.3f}), left, 240,
-			Tr("When a game ends, Playtendoh can send the project a short report of how it ran, so what fails gets fixed and the list of games "
-			   "that work grows. Nothing about you is in it, and nothing is sent while you play."),
+			Tr("When a game ends, Playtendoh can send a short report on how it ran, to help fix problems and grow the list of working games. It has nothing about you, and nothing is sent while you play."),
 			kInk2, 1200, 2);
 		canvas.PopAlpha();
 
@@ -88,7 +87,7 @@ namespace ps5shell
 		const Column columns[2] = {
 			{Tr("What a report has"),
 				{Tr("The game and its console, how it ended, and for how long"), Tr("The settings it ran with, and the PS5's firmware and model"),
-					Tr("The last lines of Playtendoh's log, with addresses and folder names taken out")}},
+					Tr("The last lines of Playtendoh's log, with addresses and folder names removed")}},
 			{Tr("What it never has"),
 				{Tr("Your PSN name or ID, your console's serial, its IP or MAC address"),
 					Tr("Your RetroAchievements and SteamGridDB accounts, room names, nicknames and Wi-Fi names"), Tr("Your folders, your saves and your game list")}},

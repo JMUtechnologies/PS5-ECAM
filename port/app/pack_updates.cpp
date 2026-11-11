@@ -179,7 +179,7 @@ namespace ps5packs
 			}
 			if (ok && files == 0)
 			{
-				error = ps5lang::Tr("the download holds no packs");
+				error = ps5lang::Tr("the download has no packs");
 				ok = false;
 			}
 			return ok;
@@ -225,7 +225,7 @@ namespace ps5packs
 			{
 				curl_slist_free_all(resolve);
 				ps5log::Line("[packs] no release from GitHub ({}, HTTP {})", curl_easy_strerror(result), http);
-				Set(Status::State::Failed, ps5lang::Tr("GitHub did not answer with a release"));
+				Set(Status::State::Failed, ps5lang::Tr("No release was found on GitHub"));
 				return;
 			}
 			{
@@ -291,7 +291,7 @@ namespace ps5packs
 			{
 				fs::rename(old, target, ec); // put the packs back as they were
 				ps5log::Line("[packs] {} could not take the old packs' place", tag);
-				Set(Status::State::Failed, ps5lang::Tr("The new packs could not take the old ones' place"));
+				Set(Status::State::Failed, ps5lang::Tr("The new packs could not replace the old ones"));
 				return;
 			}
 			fs::remove_all(old, ec);

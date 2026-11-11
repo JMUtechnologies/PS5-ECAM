@@ -48,5 +48,9 @@ if [[ -n $sdk_revision ]] && ! git -C "$PS5_PAYLOAD_SDK_FORK" cat-file -e "$sdk_
     echo "==> [porpoise] fetching the SDK fork's ${sdk_revision:0:12}, Porpoise's pin"
     git -C "$PS5_PAYLOAD_SDK_FORK" fetch -q origin "$sdk_revision"
 fi
+# Porpoise's notices (its tools/stage-notices.py) take LLVM's licence from an llvm-project checkout beside
+# it, which this build has no use for: the text alone, where it looks (../PS5_LLVM)
+mkdir -p "$PS5CEMU_BUILD/retro-source/PS5_LLVM/llvm"
+cp -f "$PS5CEMU_ROOT/tools/retro/LLVM-LICENSE.TXT" "$PS5CEMU_BUILD/retro-source/PS5_LLVM/llvm/LICENSE.TXT"
 python3 "$PS5CEMU_ROOT/tools/build-retro.py" "${reuse[@]}" porpoise
 echo "==> [porpoise] $out ($(du -sh "$out" | cut -f1))"

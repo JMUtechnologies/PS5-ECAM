@@ -12,10 +12,19 @@ namespace ui
 		using ps5sound::Effect;
 		switch (cue)
 		{
-		case Cue::Focus: ps5sound::Play(Effect::Move); break;
+		// 6.0: a step of the focus is felt as well as heard, a tick so short it is more click than rumble (not
+		// while a direction is held: the repeats would buzz), so moving about has weight
+		case Cue::Focus:
+			ps5sound::Play(Effect::Move);
+			if (!repeat)
+				Rumble(0, 38, 0.022);
+			break;
 		case Cue::Toggle:
 		case Cue::Select:
 		case Cue::Sheet:
+			ps5sound::Play(Effect::Select);
+			Rumble(0, 70, 0.035);
+			break;
 		case Cue::Notify: ps5sound::Play(Effect::Select); break;
 		case Cue::Back: ps5sound::Play(Effect::Back); break;
 		case Cue::Denied:
@@ -23,8 +32,10 @@ namespace ui
 			Rumble(0, 90, 0.05);
 			break;
 		case Cue::Edge:
+			// the end of a list says nothing: a sound each time it is reached was heard as nagging (6.0); a soft
+			// bump in the hand instead, once, not while held
 			if (!repeat)
-				ps5sound::Play(Effect::Denied);
+				Rumble(40, 0, 0.03);
 			break;
 		case Cue::Launch:
 			ps5sound::Play(Effect::Launch);

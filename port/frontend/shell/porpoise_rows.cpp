@@ -71,13 +71,13 @@ namespace ps5shell
 			{"porpoise-enhancements", TrMark("Enhancements"), TrMark("Bloom, colour, texture filtering, resampling, lighting and fog.")},
 			{"porpoise-rendering", TrMark("Rendering"), TrMark("Shaders, the texture cache and texture packs.")},
 			{"porpoise-player1", TrMark("Player 1"), TrMark("Button layout, vibration, sticks, turbo and the triggers.")},
-			{"porpoise-player2", TrMark("Player 2"), TrMark("This player's light bar. Their buttons are player 1's.")},
-			{"porpoise-player3", TrMark("Player 3"), TrMark("This player's light bar. Their buttons are player 1's.")},
-			{"porpoise-player4", TrMark("Player 4"), TrMark("This player's light bar. Their buttons are player 1's.")},
-			{"porpoise-port1", TrMark("Port 1"), TrMark("What this port holds, and who plays it.")},
-			{"porpoise-port2", TrMark("Port 2"), TrMark("What this port holds, and who plays it.")},
-			{"porpoise-port3", TrMark("Port 3"), TrMark("What this port holds, and who plays it.")},
-			{"porpoise-port4", TrMark("Port 4"), TrMark("What this port holds, and who plays it.")},
+			{"porpoise-player2", TrMark("Player 2"), TrMark("This player's light bar. Buttons are the same as player 1's.")},
+			{"porpoise-player3", TrMark("Player 3"), TrMark("This player's light bar. Buttons are the same as player 1's.")},
+			{"porpoise-player4", TrMark("Player 4"), TrMark("This player's light bar. Buttons are the same as player 1's.")},
+			{"porpoise-port1", TrMark("Port 1"), TrMark("What's plugged into this port, and who plays it.")},
+			{"porpoise-port2", TrMark("Port 2"), TrMark("What's plugged into this port, and who plays it.")},
+			{"porpoise-port3", TrMark("Port 3"), TrMark("What's plugged into this port, and who plays it.")},
+			{"porpoise-port4", TrMark("Port 4"), TrMark("What's plugged into this port, and who plays it.")},
 			{"porpoise-gbavideo", TrMark("GBA video"), TrMark("Each GBA's screen on the TV.")},
 			{"porpoise-gbasound", TrMark("GBA sound"), TrMark("Each GBA's sound.")},
 			{"porpoise-gbav1", TrMark("Port 1"), TrMark("This port's GBA screen.")},
@@ -96,22 +96,18 @@ namespace ps5shell
 		// PorpoiseRows.
 		const std::vector<Setting> kSettings = {
 			{"graphics", "resolution", Kind::Choice, TrMark("Internal resolution"),
-				TrMark("How sharp games render: higher is sharper, and can slow a game."), nullptr,
+				TrMark("Higher is sharper but can slow games down."), nullptr,
 				{"1x (480p)", "2x (720p)", "3x (1080p)", "4x (1440p)", "5x (1800p)", "6x (4K)"}, 1, 6, 3},
 			{"graphics", "antialiasing", Kind::Choice, TrMark("Anti-aliasing"),
-				TrMark("Smooths jagged edges. SSAA is the sharpest, and asks the most of the GPU."), nullptr,
+				TrMark("Smooths jagged edges. SSAA is sharpest but heaviest."), nullptr,
 				{TrMark("Off"), "2x MSAA", "4x MSAA", "8x MSAA", "2x SSAA", "4x SSAA", "8x SSAA"}, 0, 6, 0},
 			{"graphics", "wide", Kind::Choice, TrMark("Widescreen"),
-				TrMark("16:9 for a game with a widescreen code or option of its own, 4:3 for the rest."),
-				TrMark("Automatic: 16:9 for a game with a widescreen code or a 16:9 option of its own, 4:3 for the rest. On: the same, "
-					   "and Dolphin's widescreen hack for a game with neither, which can glitch at the screen's edges. Off: always 4:3. "
-					   "Universal (beta): Porpoise widens the game's own 3D view to 16:9 where it can, and uses the hack where it cannot."),
+				TrMark("16:9 for games with a widescreen code or option, 4:3 for the rest."),
+				TrMark("Automatic: 16:9 for games with a widescreen code or option, 4:3 for the rest. On: also uses a widescreen hack for other games, which can glitch at the edges. Off: always 4:3. Universal (beta): widens the game's 3D view where it can, and uses the hack elsewhere."),
 				{TrMark("Automatic"), TrMark("On"), TrMark("Off"), TrMark("Universal (beta)")}, 0, 3, 0},
 			{"graphics", "screen_filter", Kind::Choice, TrMark("Screen filter"),
-				TrMark("Porpoise's own filter on the picture: scaling, CRTs, tapes, pixels or an LCD."),
-				TrMark("Smooth or sharp scaling, sharpening, CRTs and an arcade monitor, VHS tapes, 8-bit and 16-bit pixels, a green "
-					   "handheld's screen, scanlines, a composite cable, a TV's shadow mask, an aperture grille, a sharp LCD, AMD's FSR 1 "
-					   "upscaler, or edges smoothed with FXAA. Filter strength sets how strong it is."),
+				TrMark("A filter over the picture: scaling, CRT, VHS, pixels or LCD."),
+				TrMark("Smooth or sharp scaling, sharpening, CRT and arcade monitors, VHS, 8-bit and 16-bit pixels, a green handheld screen, scanlines, composite, shadow mask, aperture grille, sharp LCD, AMD FSR 1, or FXAA. Filter strength sets how strong it is."),
 				{TrMark("Smooth"), TrMark("Sharp"), TrMark("Sharpen (CAS)"), "CRT", TrMark("Arcade CRT"), "VHS", TrMark("Soft VHS"),
 					TrMark("8-bit"), TrMark("Pocket"), TrMark("Scanlines"), TrMark("Shadow mask"), "LCD", "FSR 1", TrMark("16-bit"),
 					TrMark("NTSC composite"), TrMark("Aperture grille"), TrMark("Smooth edges (FXAA)")},
@@ -119,39 +115,35 @@ namespace ps5shell
 			{"graphics", "filter_strength", Kind::Percent, TrMark("Filter strength"), TrMark("How strong the screen filter is."), nullptr, {},
 				1, 10, 6},
 			{"graphics", "frame_gen", Kind::Toggle, TrMark("Frame generation"),
-				TrMark("A picture made between each two of the game's: 30 fps shown at 60. Adds a little delay."),
-				TrMark("Makes a picture between each two of the game's: a game at 30 fps is shown at 60, and with the PS5 at 120 Hz a "
-					   "game at 60 fps is shown at 120. Adds a little delay, and can smear fast motion."),
+				TrMark("Adds a frame between each pair, so 30 fps plays at 60. Adds a little delay."),
+				TrMark("Adds a frame between each pair: 30 fps plays at 60, and at 120 Hz, 60 fps plays at 120. Adds a little delay and can smear fast motion."),
 				{}, 0, 1, 0},
 			{"graphics", "fg_steady30", Kind::Toggle, TrMark("Steady 30 fps"),
-				TrMark("With frame generation, the game's frames at an even 30, for a steady 60."),
-				TrMark("With frame generation on, the game's own frames are shown at an even 30 a second and frame generation fills in "
-					   "the rest, for a steady 60: for games that swing between 30 and 60. It does not make a slow game faster. Leave it "
-					   "off for a game that holds 60."),
+				TrMark("With frame generation, holds the game at an even 30 for a steady 60."),
+				TrMark("With frame generation on, the game is held at an even 30 fps and frame generation fills in the rest, for a steady 60. For games that swing between 30 and 60. Leave it off for games that hold 60."),
 				{}, 0, 1, 0},
 			{"graphics", "colour_filter", Kind::Choice, TrMark("Color filter"), TrMark("For color blindness: moves the colors you may not tell apart to ones you can."), nullptr,
 				{TrMark("Off"), TrMark("Red-weak"), TrMark("Green-weak"), TrMark("Blue-weak"), TrMark("Grayscale")}, 0, 4, 0, Only::Both, true},
-			{"graphics", "colour_filter_games", Kind::Toggle, TrMark("Color filter in games"), TrMark("The same color filter on the game's picture too."), nullptr, {}, 0, 1, 0, Only::Both, true},
-			{"graphics", "fps_overlay", Kind::Toggle, TrMark("Frame rate counter"), TrMark("The frame rate in a corner while you play."),
+			{"graphics", "colour_filter_games", Kind::Toggle, TrMark("Color filter in games"), TrMark("Applies the color filter to games too."), nullptr, {}, 0, 1, 0, Only::Both, true},
+			{"graphics", "fps_overlay", Kind::Toggle, TrMark("Frame rate counter"), TrMark("Shows the frame rate in a corner."),
 				nullptr, {}, 0, 1, 0},
 			{"graphics", "output_res", Kind::Choice, TrMark("Output resolution"),
-				TrMark("The picture sent to the TV. Match the PS5 keeps the console's own."),
-				TrMark("The picture Porpoise sends to the TV. Match the PS5 keeps the console's own output, so the TV does not switch "
-					   "modes. 1080p is the quickest; 1440p and 4K are sharper on a 4K TV with a high internal resolution."),
+				TrMark("The resolution sent to the TV. Match the PS5 uses the console's setting."),
+				TrMark("The resolution sent to the TV. Match the PS5 uses the console's setting, so the TV doesn't switch modes. 1080p is fastest; 1440p and 4K are sharper on a 4K TV."),
 				{TrMark("Match the PS5"), "1080p", "1440p", "4K"}, 0, 3, 0, Only::Both, true},
 			{"graphics", "aspect", Kind::Choice, TrMark("Aspect ratio"), TrMark("The picture's shape. Automatic follows the game."), nullptr,
 				{TrMark("Automatic"), TrMark("Force 16:9"), TrMark("Force 4:3"), TrMark("Stretch to fill")}, 0, 3, 3, Only::Both, false, nullptr},
 			{"graphics", "border", Kind::Border, TrMark("Border"), TrMark("Fills the bars beside a 4:3 picture. Your own 1920x1080 PNGs go in /data/porpoise/borders."), nullptr, {}, 0, 0, 0},
-			{"graphics", "vsync", Kind::Toggle, TrMark("V-Sync"), TrMark("Every frame on the TV's own refresh, for the smoothest motion."),
-				TrMark("Shows every frame on the TV's own refresh, for the smoothest motion. Off times frames with Porpoise's own clock instead."),
+			{"graphics", "vsync", Kind::Toggle, TrMark("V-Sync"), TrMark("Syncs frames to the TV's refresh for the smoothest motion."),
+				TrMark("Syncs frames to the TV's refresh for the smoothest motion. Off uses the emulator's own timing."),
 				{}, 0, 1, 1, Only::Both, false, nullptr},
-			{"graphics", "shader_mode", Kind::Choice, TrMark("Shader compilation"), TrMark("Ubershaders hide the stutter when a game draws something new, at a GPU cost."), nullptr,
+			{"graphics", "shader_mode", Kind::Choice, TrMark("Shader compilation"), TrMark("Ubershaders prevent stutter when something new is drawn, but use more GPU."), nullptr,
 				{TrMark("Synchronous"), TrMark("Ubershaders"), TrMark("Async ubershaders"), TrMark("Async, skip drawing")}, 0, 3, 2, Only::Both, false, "porpoise-rendering"},
 			{"graphics", "wait_shaders", Kind::Toggle, TrMark("Build shaders before starting"), TrMark("Shaders the game used last time are built while it loads. It starts a moment later."),
-				TrMark("The shaders the game used last time are built while it loads, so effects you have seen don't stutter the first time. The game takes a moment longer to start."),
+				TrMark("Builds the shaders the game used last time while it loads, so effects don't stutter. The game takes a moment longer to start."),
 				{}, 0, 1, 1, Only::Both, false, "porpoise-rendering"},
 			{"graphics", "threaded_gpu", Kind::Toggle, TrMark("Threaded GPU recording"), TrMark("The driver records drawing on its own thread. Turn it off if a game crashes."),
-				TrMark("The graphics driver records Dolphin's drawing on a thread of its own, so Dolphin's video thread spends less time in the driver. Can speed up demanding games. Turn it off if a game crashes or looks wrong. Applies the next time a game starts."),
+				TrMark("Records drawing on a separate thread. Can speed up demanding games. Turn it off if a game crashes or looks wrong. Applies next time a game starts."),
 				{}, 0, 1, 0, Only::Both, false, "porpoise-rendering"},
 			{"graphics", "texture_cache", Kind::Choice, TrMark("Texture cache accuracy"), TrMark("Safe fixes some games' text and effects; Fast is quickest."), nullptr,
 				{TrMark("Fast"), TrMark("Middle"), TrMark("Safe")}, 0, 2, 0, Only::Both, false, "porpoise-rendering"},
@@ -169,7 +161,7 @@ namespace ps5shell
 				0, 1, 1, Only::Both, false, "porpoise-rendering"},
 			{"graphics", "anisotropy", Kind::Choice, TrMark("Anisotropic filtering"), TrMark("Sharper textures on floors and walls seen at an angle."), nullptr,
 				{"1x", "2x", "4x", "8x", "16x"}, 0, 4, 2, Only::Both, false, "porpoise-enhancements"},
-			{"graphics", "bloom", Kind::Choice, TrMark("Extra bloom"), TrMark("A soft glow around the brightest parts of the picture, on top of the game's own."), nullptr,
+			{"graphics", "bloom", Kind::Choice, TrMark("Extra bloom"), TrMark("Adds a soft glow around bright areas."), nullptr,
 				{TrMark("Off"), TrMark("Low"), TrMark("Medium"), TrMark("High")}, 0, 3, 0, Only::Both, false, "porpoise-enhancements"},
 			{"graphics", "color_saturation", Kind::Choice, TrMark("Saturation"), TrMark("How rich the colours are. 0 is as the game has them."), nullptr,
 				{"-5", "-4", "-3", "-2", "-1", "0", "+1", "+2", "+3", "+4", "+5"}, 0, 10, 5, Only::Both, false, "porpoise-enhancements"},
@@ -179,82 +171,80 @@ namespace ps5shell
 				{"-5", "-4", "-3", "-2", "-1", "0", "+1", "+2", "+3", "+4", "+5"}, 0, 10, 5, Only::Both, false, "porpoise-enhancements"},
 			{"graphics", "texture_filter", Kind::Choice, TrMark("Texture filtering"), TrMark("Force sharp or smooth textures, or leave it to the game."), nullptr,
 				{TrMark("The game's own"), TrMark("Nearest (sharp)"), TrMark("Linear (smooth)")}, 0, 2, 0, Only::Both, false, "porpoise-enhancements"},
-			{"graphics", "resampling", Kind::Choice, TrMark("Output resampling"), TrMark("How Dolphin scales its picture. Sharp bilinear keeps pixels crisp."), nullptr,
+			{"graphics", "resampling", Kind::Choice, TrMark("Output resampling"), TrMark("How the picture is scaled. Sharp bilinear keeps pixels crisp."), nullptr,
 				{TrMark("Default"), TrMark("Bilinear"), "B-Spline", "Mitchell-Netravali", "Catmull-Rom", TrMark("Sharp bilinear"), TrMark("Area sampling")},
 				0, 6, 0, Only::Both, false, "porpoise-enhancements"},
 			{"graphics", "pixel_lighting", Kind::Toggle, TrMark("Per-pixel lighting"), TrMark("Smoother lighting on surfaces. A little heavier."), nullptr, {},
 				0, 1, 0, Only::Both, false, "porpoise-enhancements"},
 			{"graphics", "disable_fog", Kind::Toggle, TrMark("Disable fog"), TrMark("Removes distance fog. Some games use fog for their look."), nullptr, {},
 				0, 1, 0, Only::Both, false, "porpoise-enhancements"},
-			{"graphics", "gfx_bloom", Kind::Choice, TrMark("Bloom"), TrMark("Dolphin's graphics mod for this game's glow. Applies the next time it starts."), nullptr,
+			{"graphics", "gfx_bloom", Kind::Choice, TrMark("Bloom"), TrMark("A graphics mod for this game's glow. Applies next time it starts."), nullptr,
 				{TrMark("The game's own"), TrMark("Off"), TrMark("Blurred"), TrMark("Native resolution")}, 0, 3, 0, Only::Both, false, "porpoise-enhancements", true},
-			{"graphics", "gfx_dof", Kind::Choice, TrMark("Depth of field"), TrMark("Dolphin's graphics mod for the blur on faraway things. Applies the next time it starts."), nullptr,
+			{"graphics", "gfx_dof", Kind::Choice, TrMark("Depth of field"), TrMark("A graphics mod for the blur on faraway things. Applies next time it starts."), nullptr,
 				{TrMark("The game's own"), TrMark("Off"), TrMark("Blurred"), TrMark("Native resolution")}, 0, 3, 0, Only::Both, false, "porpoise-enhancements", true},
 			{"graphics", "gfx_hud", Kind::Toggle, TrMark("Hide the HUD"), TrMark("Hides the game's HUD, for clean screenshots. Applies the next time it starts."), nullptr, {}, 0, 1, 0, Only::Both, false, "porpoise-enhancements", true},
 			{"graphics", "gfx_extra", Kind::Toggle, TrMark("Native resolution goop"), TrMark("Super Mario Sunshine's goop at the game's own resolution. Applies the next time it starts."), nullptr, {}, 0, 1, 0, Only::Both, false, "porpoise-enhancements", true},
 			{"graphics", "custom_textures", Kind::Toggle, TrMark("Custom textures"), TrMark("Loads HD texture packs."),
 				TrMark("Loads HD texture packs. Put each pack's folder, named with the game's ID (like GALE01), in /data/porpoise/saves/User/Load/Textures."),
 				{}, 0, 1, 0, Only::Both, false, "porpoise-enhancements"},
-			{"controls", "gc_port1_device", Kind::Choice, TrMark("Device"), TrMark("What this GameCube controller port holds."),
-				TrMark("What this GameCube controller port holds. GBA (Integrated) is a Game Boy Advance on the link cable, for Wind Waker's Tingle Tuner and Four Swords Adventures. It needs the GBA BIOS as /data/porpoise/saves/User/GBA/gba_bios.bin. Best set for one game."),
+			{"controls", "gc_port1_device", Kind::Choice, TrMark("Device"), TrMark("What's plugged into this controller port."),
+				TrMark("What's plugged into this controller port. GBA (Integrated) is a Game Boy Advance on the link cable, for games like Four Swords Adventures. It needs the GBA BIOS at /data/porpoise/saves/User/GBA/gba_bios.bin. Best set per game."),
 				{TrMark("GameCube Controller"), TrMark("GBA (Integrated)"), TrMark("None")}, 0, 2, 0, Only::GameCube, false, "porpoise-port1"},
-			{"controls", "gba_port1_control", Kind::Choice, TrMark("Controlled by"), TrMark("Who plays this GBA, while holding their GBA button."),
-				TrMark("A player plays it while holding their GBA button, its sound on their controller and its screen theirs to show. Its own controller: the controller in this port is the GBA, no button held (Four Swords Adventures). Nobody: only the page in a browser."),
+			{"controls", "gba_port1_control", Kind::Choice, TrMark("Controlled by"), TrMark("Who plays this GBA by holding their GBA button."),
+				TrMark("A player: they play it while holding their GBA button, with its sound on their controller. Its own controller: the controller in this port is the GBA, no button needed. Nobody: only from the web page."),
 				{TrMark("Player 1"), TrMark("Player 2"), TrMark("Player 3"), TrMark("Player 4"), TrMark("Its own controller"), TrMark("None")}, 0, 5, 0, Only::GameCube, false, "porpoise-port1"},
 			{"controls", "gc_port1_player", Kind::Choice, TrMark("Controlled by"), TrMark("Whose controller is in this port."), nullptr,
 				{TrMark("Player 1"), TrMark("Player 2"), TrMark("Player 3"), TrMark("Player 4"), TrMark("None")}, 0, 4, 0, Only::GameCube, false, "porpoise-port1"},
-			{"controls", "gba_port1_mode", Kind::Choice, TrMark("GBA button"), TrMark("Whether its player holds their GBA button, presses it to turn it on and off, or doesn't need it."), nullptr,
+			{"controls", "gba_port1_mode", Kind::Choice, TrMark("GBA button"), TrMark("Hold the GBA button, press it to toggle, or keep it always on or off."), nullptr,
 				{TrMark("Hold"), TrMark("Toggle"), TrMark("Always on"), TrMark("Always off")}, 0, 3, 0, Only::GameCube, false, "porpoise-port1"},
-			{"controls", "gba_rom1", Kind::GbaGame, TrMark("GBA game"), TrMark("The game in this GBA as the game starts: a file in games/gba/port1. None: the BIOS alone."), nullptr, {}, 0, 0, 0, Only::GameCube, false, "porpoise-port1", false, 1},
-			{"controls", "gba_rom1", Kind::Toggle, TrMark("Save beside the game"), TrMark("This GBA's save beside its game, instead of with Porpoise's saves."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-port1", false, 0},
-			{"controls", "gc_port2_device", Kind::Choice, TrMark("Device"), TrMark("What this GameCube controller port holds."),
-				TrMark("What this GameCube controller port holds. GBA (Integrated) is a Game Boy Advance on the link cable, for Wind Waker's Tingle Tuner and Four Swords Adventures. It needs the GBA BIOS as /data/porpoise/saves/User/GBA/gba_bios.bin. Best set for one game."),
+			{"controls", "gba_rom1", Kind::GbaGame, TrMark("GBA game"), TrMark("The GBA game loaded at start, from games/gba/port1. None: BIOS only."), nullptr, {}, 0, 0, 0, Only::GameCube, false, "porpoise-port1", false, 1},
+			{"controls", "gba_rom1", Kind::Toggle, TrMark("Save beside the game"), TrMark("Keeps this GBA's save next to its game instead of with the other saves."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-port1", false, 0},
+			{"controls", "gc_port2_device", Kind::Choice, TrMark("Device"), TrMark("What's plugged into this controller port."),
+				TrMark("What's plugged into this controller port. GBA (Integrated) is a Game Boy Advance on the link cable, for games like Four Swords Adventures. It needs the GBA BIOS at /data/porpoise/saves/User/GBA/gba_bios.bin. Best set per game."),
 				{TrMark("GameCube Controller"), TrMark("GBA (Integrated)"), TrMark("None")}, 0, 2, 0, Only::GameCube, false, "porpoise-port2"},
-			{"controls", "gba_port2_control", Kind::Choice, TrMark("Controlled by"), TrMark("Who plays this GBA, while holding their GBA button."),
-				TrMark("A player plays it while holding their GBA button, its sound on their controller and its screen theirs to show. Its own controller: the controller in this port is the GBA, no button held (Four Swords Adventures). Nobody: only the page in a browser."),
+			{"controls", "gba_port2_control", Kind::Choice, TrMark("Controlled by"), TrMark("Who plays this GBA by holding their GBA button."),
+				TrMark("A player: they play it while holding their GBA button, with its sound on their controller. Its own controller: the controller in this port is the GBA, no button needed. Nobody: only from the web page."),
 				{TrMark("Player 1"), TrMark("Player 2"), TrMark("Player 3"), TrMark("Player 4"), TrMark("Its own controller"), TrMark("None")}, 0, 5, 0, Only::GameCube, false, "porpoise-port2"},
 			{"controls", "gc_port2_player", Kind::Choice, TrMark("Controlled by"), TrMark("Whose controller is in this port."), nullptr,
 				{TrMark("Player 1"), TrMark("Player 2"), TrMark("Player 3"), TrMark("Player 4"), TrMark("None")}, 0, 4, 1, Only::GameCube, false, "porpoise-port2"},
-			{"controls", "gba_port2_mode", Kind::Choice, TrMark("GBA button"), TrMark("Whether its player holds their GBA button, presses it to turn it on and off, or doesn't need it."), nullptr,
+			{"controls", "gba_port2_mode", Kind::Choice, TrMark("GBA button"), TrMark("Hold the GBA button, press it to toggle, or keep it always on or off."), nullptr,
 				{TrMark("Hold"), TrMark("Toggle"), TrMark("Always on"), TrMark("Always off")}, 0, 3, 0, Only::GameCube, false, "porpoise-port2"},
-			{"controls", "gba_rom2", Kind::GbaGame, TrMark("GBA game"), TrMark("The game in this GBA as the game starts: a file in games/gba/port2. None: the BIOS alone."), nullptr, {}, 0, 0, 0, Only::GameCube, false, "porpoise-port2", false, 1},
-			{"controls", "gba_rom2", Kind::Toggle, TrMark("Save beside the game"), TrMark("This GBA's save beside its game, instead of with Porpoise's saves."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-port2", false, 0},
-			{"controls", "gc_port3_device", Kind::Choice, TrMark("Device"), TrMark("What this GameCube controller port holds."),
-				TrMark("What this GameCube controller port holds. GBA (Integrated) is a Game Boy Advance on the link cable, for Wind Waker's Tingle Tuner and Four Swords Adventures. It needs the GBA BIOS as /data/porpoise/saves/User/GBA/gba_bios.bin. Best set for one game."),
+			{"controls", "gba_rom2", Kind::GbaGame, TrMark("GBA game"), TrMark("The GBA game loaded at start, from games/gba/port2. None: BIOS only."), nullptr, {}, 0, 0, 0, Only::GameCube, false, "porpoise-port2", false, 1},
+			{"controls", "gba_rom2", Kind::Toggle, TrMark("Save beside the game"), TrMark("Keeps this GBA's save next to its game instead of with the other saves."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-port2", false, 0},
+			{"controls", "gc_port3_device", Kind::Choice, TrMark("Device"), TrMark("What's plugged into this controller port."),
+				TrMark("What's plugged into this controller port. GBA (Integrated) is a Game Boy Advance on the link cable, for games like Four Swords Adventures. It needs the GBA BIOS at /data/porpoise/saves/User/GBA/gba_bios.bin. Best set per game."),
 				{TrMark("GameCube Controller"), TrMark("GBA (Integrated)"), TrMark("None")}, 0, 2, 0, Only::GameCube, false, "porpoise-port3"},
-			{"controls", "gba_port3_control", Kind::Choice, TrMark("Controlled by"), TrMark("Who plays this GBA, while holding their GBA button."),
-				TrMark("A player plays it while holding their GBA button, its sound on their controller and its screen theirs to show. Its own controller: the controller in this port is the GBA, no button held (Four Swords Adventures). Nobody: only the page in a browser."),
+			{"controls", "gba_port3_control", Kind::Choice, TrMark("Controlled by"), TrMark("Who plays this GBA by holding their GBA button."),
+				TrMark("A player: they play it while holding their GBA button, with its sound on their controller. Its own controller: the controller in this port is the GBA, no button needed. Nobody: only from the web page."),
 				{TrMark("Player 1"), TrMark("Player 2"), TrMark("Player 3"), TrMark("Player 4"), TrMark("Its own controller"), TrMark("None")}, 0, 5, 0, Only::GameCube, false, "porpoise-port3"},
 			{"controls", "gc_port3_player", Kind::Choice, TrMark("Controlled by"), TrMark("Whose controller is in this port."), nullptr,
 				{TrMark("Player 1"), TrMark("Player 2"), TrMark("Player 3"), TrMark("Player 4"), TrMark("None")}, 0, 4, 2, Only::GameCube, false, "porpoise-port3"},
-			{"controls", "gba_port3_mode", Kind::Choice, TrMark("GBA button"), TrMark("Whether its player holds their GBA button, presses it to turn it on and off, or doesn't need it."), nullptr,
+			{"controls", "gba_port3_mode", Kind::Choice, TrMark("GBA button"), TrMark("Hold the GBA button, press it to toggle, or keep it always on or off."), nullptr,
 				{TrMark("Hold"), TrMark("Toggle"), TrMark("Always on"), TrMark("Always off")}, 0, 3, 0, Only::GameCube, false, "porpoise-port3"},
-			{"controls", "gba_rom3", Kind::GbaGame, TrMark("GBA game"), TrMark("The game in this GBA as the game starts: a file in games/gba/port3. None: the BIOS alone."), nullptr, {}, 0, 0, 0, Only::GameCube, false, "porpoise-port3", false, 1},
-			{"controls", "gba_rom3", Kind::Toggle, TrMark("Save beside the game"), TrMark("This GBA's save beside its game, instead of with Porpoise's saves."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-port3", false, 0},
-			{"controls", "gc_port4_device", Kind::Choice, TrMark("Device"), TrMark("What this GameCube controller port holds."),
-				TrMark("What this GameCube controller port holds. GBA (Integrated) is a Game Boy Advance on the link cable, for Wind Waker's Tingle Tuner and Four Swords Adventures. It needs the GBA BIOS as /data/porpoise/saves/User/GBA/gba_bios.bin. Best set for one game."),
+			{"controls", "gba_rom3", Kind::GbaGame, TrMark("GBA game"), TrMark("The GBA game loaded at start, from games/gba/port3. None: BIOS only."), nullptr, {}, 0, 0, 0, Only::GameCube, false, "porpoise-port3", false, 1},
+			{"controls", "gba_rom3", Kind::Toggle, TrMark("Save beside the game"), TrMark("Keeps this GBA's save next to its game instead of with the other saves."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-port3", false, 0},
+			{"controls", "gc_port4_device", Kind::Choice, TrMark("Device"), TrMark("What's plugged into this controller port."),
+				TrMark("What's plugged into this controller port. GBA (Integrated) is a Game Boy Advance on the link cable, for games like Four Swords Adventures. It needs the GBA BIOS at /data/porpoise/saves/User/GBA/gba_bios.bin. Best set per game."),
 				{TrMark("GameCube Controller"), TrMark("GBA (Integrated)"), TrMark("None")}, 0, 2, 0, Only::GameCube, false, "porpoise-port4"},
-			{"controls", "gba_port4_control", Kind::Choice, TrMark("Controlled by"), TrMark("Who plays this GBA, while holding their GBA button."),
-				TrMark("A player plays it while holding their GBA button, its sound on their controller and its screen theirs to show. Its own controller: the controller in this port is the GBA, no button held (Four Swords Adventures). Nobody: only the page in a browser."),
+			{"controls", "gba_port4_control", Kind::Choice, TrMark("Controlled by"), TrMark("Who plays this GBA by holding their GBA button."),
+				TrMark("A player: they play it while holding their GBA button, with its sound on their controller. Its own controller: the controller in this port is the GBA, no button needed. Nobody: only from the web page."),
 				{TrMark("Player 1"), TrMark("Player 2"), TrMark("Player 3"), TrMark("Player 4"), TrMark("Its own controller"), TrMark("None")}, 0, 5, 0, Only::GameCube, false, "porpoise-port4"},
 			{"controls", "gc_port4_player", Kind::Choice, TrMark("Controlled by"), TrMark("Whose controller is in this port."), nullptr,
 				{TrMark("Player 1"), TrMark("Player 2"), TrMark("Player 3"), TrMark("Player 4"), TrMark("None")}, 0, 4, 3, Only::GameCube, false, "porpoise-port4"},
-			{"controls", "gba_port4_mode", Kind::Choice, TrMark("GBA button"), TrMark("Whether its player holds their GBA button, presses it to turn it on and off, or doesn't need it."), nullptr,
+			{"controls", "gba_port4_mode", Kind::Choice, TrMark("GBA button"), TrMark("Hold the GBA button, press it to toggle, or keep it always on or off."), nullptr,
 				{TrMark("Hold"), TrMark("Toggle"), TrMark("Always on"), TrMark("Always off")}, 0, 3, 0, Only::GameCube, false, "porpoise-port4"},
-			{"controls", "gba_rom4", Kind::GbaGame, TrMark("GBA game"), TrMark("The game in this GBA as the game starts: a file in games/gba/port4. None: the BIOS alone."), nullptr, {}, 0, 0, 0, Only::GameCube, false, "porpoise-port4", false, 1},
-			{"controls", "gba_rom4", Kind::Toggle, TrMark("Save beside the game"), TrMark("This GBA's save beside its game, instead of with Porpoise's saves."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-port4", false, 0},
-			{"controls", "console", Kind::Choice, TrMark("Console"), TrMark("Which console's controls the game gets, for a game detected wrongly."), nullptr,
+			{"controls", "gba_rom4", Kind::GbaGame, TrMark("GBA game"), TrMark("The GBA game loaded at start, from games/gba/port4. None: BIOS only."), nullptr, {}, 0, 0, 0, Only::GameCube, false, "porpoise-port4", false, 1},
+			{"controls", "gba_rom4", Kind::Toggle, TrMark("Save beside the game"), TrMark("Keeps this GBA's save next to its game instead of with the other saves."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-port4", false, 0},
+			{"controls", "console", Kind::Choice, TrMark("Console"), TrMark("Which console's controls to use, if a game is detected wrongly."), nullptr,
 				{TrMark("Automatic"), "GameCube", "Wii"}, 0, 2, 0, Only::Both, false, nullptr, true},
 			{"hidden", "button_layout", Kind::Choice, TrMark("Button layout"),
 				TrMark("PlayStation: Cross is A and Circle B. GameCube: Circle is A and Cross B."),
-				TrMark("PlayStation: Cross is A and Circle is B. GameCube: Circle is A and Cross is B. My layouts are your own, made on the Buttons page. For GameCube games, and Wii games played with the GameCube controller."),
+				TrMark("PlayStation: Cross is A and Circle is B. GameCube: Circle is A and Cross is B. My layouts are the ones you make on the Buttons page. For GameCube games and Wii games played with a GameCube controller."),
 				{"GameCube", "PlayStation"}, 0, 5, 1, Only::Both, false, "porpoise-player1"},
-			{"controls", "rumble", Kind::Toggle, TrMark("Vibration"), TrMark("The controller's rumble, as the game asks for it."), nullptr, {},
+			{"controls", "rumble", Kind::Toggle, TrMark("Vibration"), TrMark("Controller rumble."), nullptr, {},
 				0, 1, 1, Only::Both, false, "porpoise-player1"},
 			{"controls", "wii_controller", Kind::Choice, TrMark("Wii controller"), TrMark("How a Wii game sees your DualSense."),
-				TrMark("Remote and Nunchuk: the Nunchuk on the left stick, L1 and L2. Remote: held pointing at the TV, with its motion. "
-					   "Held sideways: like an NES pad, tilted to steer. Two DualSenses (alpha): the second one is the Nunchuk. GameCube "
-					   "controller: for the Wii games that take one. Every other DualSense is another player's own Wii Remote."),
+				TrMark("Remote and Nunchuk: Nunchuk on the left stick, L1 and L2. Remote: point at the TV, with motion. Held sideways: like an NES pad, tilt to steer. Two DualSenses (alpha): the second is the Nunchuk. GameCube controller: for Wii games that support one. Each other DualSense is another player's Wii Remote."),
 				{TrMark("Remote and Nunchuk"), TrMark("Remote"), TrMark("Remote held sideways"), TrMark("Classic Controller"),
 					TrMark("Two DualSenses (alpha)"), TrMark("GameCube controller")},
 				0, 5, 0, Only::Wii, false, "porpoise-player1"},
@@ -263,13 +253,13 @@ namespace ps5shell
 					   "Right stick: push it."),
 				{TrMark("Gyro"), TrMark("Touchpad"), TrMark("Right stick")}, 0, 2, 0, Only::Wii, false, "porpoise-player1"},
 			{"hidden", "p1_port", Kind::Choice, TrMark("Player 1's port"), TrMark("The GameCube port your controller is in, for the few games that want another."),
-				TrMark("The GameCube controller port your controller is in. For the few games that want it in another port for a moment (Metal Gear Solid: The Twin Snakes)."),
+				TrMark("The GameCube port your controller is in. A few games briefly need it in another port."),
 				{TrMark("Port 1"), TrMark("Port 2"), TrMark("Port 3"), TrMark("Port 4")}, 0, 3, 0, Only::GameCube, false, "porpoise-player1"},
-			{"controls", "invert_main", Kind::Choice, TrMark("Invert the control stick"), TrMark("For a game that moves the other way. Best set for one game."), nullptr,
+			{"controls", "invert_main", Kind::Choice, TrMark("Invert the control stick"), TrMark("For a game whose controls feel reversed. Best set per game."), nullptr,
 				{TrMark("Off"), TrMark("Up and down"), TrMark("Left and right"), TrMark("Both")}, 0, 3, 0, Only::Both, false, "porpoise-player1"},
-			{"controls", "invert_c", Kind::Choice, TrMark("Invert the C-stick"), TrMark("For a game whose camera goes the other way. Best set for one game."), nullptr,
+			{"controls", "invert_c", Kind::Choice, TrMark("Invert the C-stick"), TrMark("For a game whose camera feels reversed. Best set per game."), nullptr,
 				{TrMark("Off"), TrMark("Up and down"), TrMark("Left and right"), TrMark("Both")}, 0, 3, 0, Only::Both, false, "porpoise-player1"},
-			{"controls", "stick_sensitivity", Kind::Choice, TrMark("Stick sensitivity"), TrMark("How much a small push moves. A full push is still a full turn."), nullptr,
+			{"controls", "stick_sensitivity", Kind::Choice, TrMark("Stick sensitivity"), TrMark("Lower makes small pushes gentler. A full push still turns fully."), nullptr,
 				{TrMark("Normal"), TrMark("Lower"), TrMark("Low"), TrMark("Lowest")}, 0, 3, 0, Only::Both, false, "porpoise-player1"},
 			{"controls", "stick_deadzone", Kind::Choice, TrMark("Stick dead zone"), TrMark("How far the stick moves before the game sees it, for a stick that drifts."), nullptr,
 				{TrMark("Off"), TrMark("Small"), TrMark("Medium"), TrMark("Large")}, 0, 3, 0, Only::Both, false, "porpoise-player1"},
@@ -277,61 +267,60 @@ namespace ps5shell
 				0, 1, 1, Only::Both, false, "porpoise-player1"},
 			{"controls", "quick_slot", Kind::Choice, TrMark("Quick save buttons"), TrMark("Touchpad + L1 saves to this slot and touchpad + L2 loads it."), nullptr,
 				{TrMark("Off"), TrMark("Slot 1"), TrMark("Slot 2"), TrMark("Slot 3")}, 0, 3, 0, Only::Both, false, "porpoise-player1"},
-			{"controls", "turbo", Kind::Choice, TrMark("Turbo button"), TrMark("While held, this button presses again and again by itself."), nullptr,
+			{"controls", "turbo", Kind::Choice, TrMark("Turbo button"), TrMark("Holding this button presses it repeatedly."), nullptr,
 				{TrMark("Off"), TrMark("Cross"), TrMark("Circle"), TrMark("Square"), TrMark("Triangle"), "L1", "R1", "L2", "R2"}, 0, 8, 0, Only::Both, false, "porpoise-player1"},
-			{"controls", "shot_buttons", Kind::Toggle, TrMark("Screenshot buttons"), TrMark("In a game, touch pad + Square takes a screenshot. The in-game menu has Screenshot too."), nullptr, {},
+			{"controls", "shot_buttons", Kind::Toggle, TrMark("Screenshot buttons"), TrMark("In a game, touchpad + Square takes a screenshot."), nullptr, {},
 				0, 1, 1, Only::Both, true, nullptr},
-			{"controls", "trigger_feel", Kind::Choice, TrMark("Trigger click"), TrMark("The adaptive triggers click near the bottom of L2 and R2, as the GameCube's do."), nullptr,
+			{"controls", "trigger_feel", Kind::Choice, TrMark("Trigger click"), TrMark("L2 and R2 click near the bottom, like the GameCube's triggers."), nullptr,
 				{TrMark("Off"), TrMark("Light"), TrMark("Firm"), TrMark("Extra firm")}, 0, 3, 2, Only::Both, false, "porpoise-player1"},
-			{"controls", "light_1", Kind::Choice, TrMark("Light bar"), TrMark("The colour of this player's light bar, so everyone knows which controller is theirs."), nullptr,
+			{"controls", "light_1", Kind::Choice, TrMark("Light bar"), TrMark("The colour of this player's light bar."), nullptr,
 				{TrMark("Blue"), TrMark("Red"), TrMark("Green"), TrMark("Pink"), TrMark("Purple"), TrMark("Orange"), TrMark("Yellow"), TrMark("Cyan"), TrMark("White"), TrMark("Off")}, 0, 9, 0, Only::Both, true, "porpoise-player1"},
-			{"controls", "light_2", Kind::Choice, TrMark("Light bar"), TrMark("The colour of this player's light bar, so everyone knows which controller is theirs."), nullptr,
+			{"controls", "light_2", Kind::Choice, TrMark("Light bar"), TrMark("The colour of this player's light bar."), nullptr,
 				{TrMark("Blue"), TrMark("Red"), TrMark("Green"), TrMark("Pink"), TrMark("Purple"), TrMark("Orange"), TrMark("Yellow"), TrMark("Cyan"), TrMark("White"), TrMark("Off")}, 0, 9, 1, Only::Both, true, "porpoise-player2"},
-			{"controls", "light_3", Kind::Choice, TrMark("Light bar"), TrMark("The colour of this player's light bar, so everyone knows which controller is theirs."), nullptr,
+			{"controls", "light_3", Kind::Choice, TrMark("Light bar"), TrMark("The colour of this player's light bar."), nullptr,
 				{TrMark("Blue"), TrMark("Red"), TrMark("Green"), TrMark("Pink"), TrMark("Purple"), TrMark("Orange"), TrMark("Yellow"), TrMark("Cyan"), TrMark("White"), TrMark("Off")}, 0, 9, 2, Only::Both, true, "porpoise-player3"},
-			{"controls", "light_4", Kind::Choice, TrMark("Light bar"), TrMark("The colour of this player's light bar, so everyone knows which controller is theirs."), nullptr,
+			{"controls", "light_4", Kind::Choice, TrMark("Light bar"), TrMark("The colour of this player's light bar."), nullptr,
 				{TrMark("Blue"), TrMark("Red"), TrMark("Green"), TrMark("Pink"), TrMark("Purple"), TrMark("Orange"), TrMark("Yellow"), TrMark("Cyan"), TrMark("White"), TrMark("Off")}, 0, 9, 3, Only::Both, true, "porpoise-player4"},
-			{"controls", "wii_source", Kind::Choice, TrMark("Wii Remotes"), TrMark("Your DualSense as the Remote, or real ones through a Mayflash DolphinBar."),
-				TrMark("DualSense: your controller plays the Wii Remote. Real Wii Remotes: up to four through a Mayflash DolphinBar (mode 4) in a USB port, with their own attachments, pointer and motion. Applies when the game starts or this changes."),
+			{"controls", "wii_source", Kind::Choice, TrMark("Wii Remotes"), TrMark("Use your DualSense, or real Remotes through a Mayflash DolphinBar."),
+				TrMark("DualSense: your controller is the Wii Remote. Real Wii Remotes: up to four through a Mayflash DolphinBar (mode 4) in a USB port, with their own attachments, pointer and motion. Applies when the game starts."),
 				{"DualSense", TrMark("Real Wii Remotes (DolphinBar)")}, 0, 1, 0, Only::Wii, false, "porpoise-experimental"},
 			{"controls", "wii_buttons_use", Kind::Choice, TrMark("Wii buttons"), TrMark("Which buttons the Wii controllers use."), nullptr,
-				{TrMark("Porpoise's set"), TrMark("Mine 1"), TrMark("Mine 2")}, 0, 2, 1, Only::Wii, false, "porpoise-remote"},
+				{TrMark("Default set"), TrMark("Mine 1"), TrMark("Mine 2")}, 0, 2, 1, Only::Wii, false, "porpoise-remote"},
 			{"controls", "wii_speed", Kind::Choice, TrMark("Pointer speed"), TrMark("How far you turn the controller to reach the screen's edge."), nullptr,
 				{TrMark("Your screen"), "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}, 0, 10, 5, Only::Wii, false, "porpoise-remote"},
-			{"controls", "wii_range", Kind::Choice, TrMark("Pointer range"), TrMark("How far the game's pointer can go, for a game whose pointer can't reach an edge."), nullptr,
+			{"controls", "wii_range", Kind::Choice, TrMark("Pointer range"), TrMark("Widen it if the pointer can't reach the screen's edge."), nullptr,
 				{TrMark("Automatic"), TrMark("Standard"), TrMark("Wide"), TrMark("Extra wide")}, 0, 3, 0, Only::Wii, false, "porpoise-remote"},
-			{"controls", "wii_grip", Kind::Choice, TrMark("Grip"), TrMark("How you hold the DualSense. Automatic reads it."), nullptr,
+			{"controls", "wii_grip", Kind::Choice, TrMark("Grip"), TrMark("How you hold the DualSense. Automatic detects it."), nullptr,
 				{TrMark("Automatic"), TrMark("Both hands"), TrMark("Upright, trigger to the TV"), TrMark("Upright, facing you")}, 0, 3, 0, Only::Wii, false, "porpoise-remote"},
-			{"controls", "wii_motion", Kind::Toggle, TrMark("Motion"), TrMark("The DualSense's motion is the Remote's: tilt, swing and point."), nullptr, {},
+			{"controls", "wii_motion", Kind::Toggle, TrMark("Motion"), TrMark("Tilt, swing and point with the DualSense."), nullptr, {},
 				0, 1, 1, Only::Wii, false, "porpoise-remote"},
 			{"controls", "wii_shake", Kind::Toggle, TrMark("Flick to shake"), TrMark("A quick flick of the controller shakes the Remote."), nullptr, {},
 				0, 1, 1, Only::Wii, false, "porpoise-remote"},
-			{"controls", "wii_motion_plus", Kind::Choice, TrMark("Wii MotionPlus"), TrMark("A MotionPlus on the Remote, played by the gyroscope. Automatic: for games that need one."), nullptr,
+			{"controls", "wii_motion_plus", Kind::Choice, TrMark("Wii MotionPlus"), TrMark("Adds MotionPlus using the gyroscope. Automatic: for games that need it."), nullptr,
 				{TrMark("Automatic"), TrMark("On"), TrMark("Off")}, 0, 2, 0, Only::Wii, false, "porpoise-remote"},
 			{"controls", "wii_setup_ask", Kind::Toggle, TrMark("Setup before each game"), TrMark("Shows the Wii Remote's setup when a game starts."), nullptr, {},
 				0, 1, 0, Only::Wii, false, "porpoise-remote"},
 			{"sound", "volume", Kind::Percent, TrMark("Volume"), TrMark("The game's sound."), nullptr, {}, 0, 10, 10},
 			{"sound", "muted", Kind::Toggle, TrMark("Mute the game"), TrMark("Silences the game."), nullptr, {}, 0, 1, 0, Only::Both, false, nullptr},
-			{"sound", "dsp_accurate", Kind::Toggle, TrMark("Accurate sound"), TrMark("Dolphin's exact sound chip: fixes a few games, and needs much more of the processor."), nullptr, {},
+			{"sound", "dsp_accurate", Kind::Toggle, TrMark("Accurate sound"), TrMark("Exact sound emulation. Fixes a few games but is much slower."), nullptr, {},
 				0, 1, 0, Only::Both, false, nullptr},
-			{"sound", "wiimote_speaker", Kind::Choice, TrMark("Wii Remote speaker"), TrMark("The Remote's own sounds: in the TV's sound, or from each player's controller."), nullptr,
+			{"sound", "wiimote_speaker", Kind::Choice, TrMark("Wii Remote speaker"), TrMark("The Remote's sounds: from the TV, or from each player's controller."), nullptr,
 				{TrMark("Off"), "TV", TrMark("Controller")}, 0, 2, 0, Only::Wii, false, "porpoise-experimental"},
-			{"sound", "audio_preset", Kind::SoundPreset, TrMark("Sound preset"), TrMark("How the sound copes when a game runs slow."),
-				TrMark("Smooth: Dolphin's own mixer covers the gaps when a game runs slow, instead of crackling. Responsive keeps less sound ready, for a little less delay. Extra smooth keeps more, for games that slow down often. Classic is the sound of Porpoise 2.1. A change to or from Classic applies the next time a game starts."),
-				{TrMark("Smooth"), TrMark("Responsive"), TrMark("Extra smooth"), TrMark("Classic (2.1)")}, 0, 3, 0, Only::Both, false, nullptr},
-			{"sound", "audio_buffer", Kind::Choice, TrMark("Audio buffer"), TrMark("How much sound is kept ready. More holds off crackling, for a little delay."), nullptr,
+			{"sound", "audio_preset", Kind::SoundPreset, TrMark("Sound preset"), TrMark("How sound handles a game running slow."),
+				TrMark("Smooth fills gaps when a game runs slow instead of crackling. Responsive has a little less delay. Extra smooth suits games that slow down often. Classic is the older sound; changing to or from it applies next time a game starts."),
+				{TrMark("Smooth"), TrMark("Responsive"), TrMark("Extra smooth"), TrMark("Classic")}, 0, 3, 0, Only::Both, false, nullptr},
+			{"sound", "audio_buffer", Kind::Choice, TrMark("Audio buffer"), TrMark("More prevents crackling but adds a little delay."), nullptr,
 				{TrMark("Low"), TrMark("Normal"), TrMark("Safe")}, 0, 2, 1},
-			{"sound", "audio_fill", Kind::Toggle, TrMark("Fill audio gaps"), TrMark("When a game runs slow, the sound it just played covers the gap, faded."), nullptr, {}, 0, 1, 1},
+			{"sound", "audio_fill", Kind::Toggle, TrMark("Fill audio gaps"), TrMark("Fills gaps with a faded repeat when a game runs slow."), nullptr, {}, 0, 1, 1},
 			{"sound", "audio_stretch", Kind::Toggle, TrMark("Audio stretching"), TrMark("When a game slows down, its sound slows with it, instead of crackling."), nullptr, {}, 0, 1, 0},
-			{"sound", "microphone", Kind::Toggle, TrMark("Microphone"), TrMark("The DualSense's microphone as the GameCube Microphone and the Wii Speak."), nullptr, {},
+			{"sound", "microphone", Kind::Toggle, TrMark("Microphone"), TrMark("Use the DualSense mic as the GameCube Microphone and Wii Speak."), nullptr, {},
 				0, 1, 0, Only::Both, false, nullptr},
 			{"system", "quick_resume", Kind::Toggle, TrMark("Resume where you left off"),
-				TrMark("A game left from its menu goes on from there the next time."),
-				TrMark("Leaving a game from the in-game menu keeps where you were, and the game picks up right there the next time it "
-					   "starts. Start Over in the in-game menu starts it afresh."),
+				TrMark("Pick up where you left off when you quit from the in-game menu."),
+				TrMark("Quit from the in-game menu and the game continues from there next time. Start Over in the in-game menu starts fresh."),
 				{}, 0, 1, 0},
 			{"system", "language", Kind::Choice, TrMark("System language"),
-				TrMark("The console's language: European games show their text in it."), nullptr,
+				TrMark("The console's language. European games use it."), nullptr,
 				{TrMark("English"), TrMark("Japanese"), TrMark("German"), TrMark("French"), TrMark("Spanish"), TrMark("Italian"),
 					TrMark("Dutch"), TrMark("Chinese (simplified)"), TrMark("Chinese (traditional)"), TrMark("Korean")},
 				0, 9, 0},
@@ -339,26 +328,26 @@ namespace ps5shell
 				0, 1, 1},
 			{"system", "progressive", Kind::Toggle, TrMark("Progressive scan"), TrMark("480p output, as on a component cable."), nullptr, {},
 				0, 1, 1, Only::Both, false, nullptr},
-			{"system", "wii_widescreen", Kind::Toggle, TrMark("Wii widescreen"), TrMark("The Wii's own 16:9 setting, which Wii games follow."), nullptr, {},
+			{"system", "wii_widescreen", Kind::Toggle, TrMark("Wii widescreen"), TrMark("The Wii's 16:9 setting, used by Wii games."), nullptr, {},
 				0, 1, 1, Only::Wii, false, "porpoise-experimental"},
 			{"system", "pal60", Kind::Toggle, TrMark("PAL games at 60 Hz"), TrMark("European Wii games at 60 Hz, as a Wii set to EURGB60. Off: 50 Hz."), nullptr, {},
 				0, 1, 1, Only::Wii, false, "porpoise-experimental"},
-			{"system", "sensor_bar", Kind::Choice, TrMark("Sensor bar"), TrMark("Where the Wii is told its sensor bar sits."), nullptr,
+			{"system", "sensor_bar", Kind::Choice, TrMark("Sensor bar"), TrMark("Where the sensor bar is."), nullptr,
 				{TrMark("Below the TV"), TrMark("Above the TV")}, 0, 1, 0, Only::Wii, false, "porpoise-experimental"},
-			{"system", "gc_bios", Kind::Toggle, TrMark("GameCube boot animation"), TrMark("Games start with the console's own start-up, from your own BIOS's IPL.bin."), nullptr, {},
+			{"system", "gc_bios", Kind::Toggle, TrMark("GameCube boot animation"), TrMark("Shows the GameCube start-up before games. Needs your own IPL.bin."), nullptr, {},
 				0, 1, 0, Only::GameCube, false, "porpoise-experimental"},
-			{"system", "wii_online", Kind::Toggle, TrMark("WiiConnect24 channels"), TrMark("Forecast, News, Check Mii Out and more through WiiLink. Needs the console online."), nullptr, {},
+			{"system", "wii_online", Kind::Toggle, TrMark("WiiConnect24 channels"), TrMark("Forecast, News, Check Mii Out and more through WiiLink. Needs the PS5 online."), nullptr, {},
 				0, 1, 0, Only::Wii, false, "porpoise-experimental"},
 			{"system", "cpu_clock", Kind::Choice, TrMark("CPU clock"), TrMark("Overclocking can smooth a game that slows down. 100% is the real console."), nullptr,
 				{"50%", "60%", "70%", "80%", "90%", "100%", "150%", "200%", "250%", "300%"}, 0, 9, 5, Only::Both, false, nullptr},
-			{"system", "auto_boost", Kind::Toggle, TrMark("Auto Boost"), TrMark("New games start with the settings that run them best on PS5, as tested. A game's own Auto Boost can turn them off."), nullptr, {},
+			{"system", "auto_boost", Kind::Toggle, TrMark("Auto Boost"), TrMark("New games start with the settings that run them best on PS5. Turn it off for a game in its own settings."), nullptr, {},
 				0, 1, 1, Only::Both, true, nullptr},
 			// (a game's own is beside its Auto Boost: PorpoiseBoostRows)
 			{"system", "fast_float", Kind::Toggle, TrMark("Riptide Boost"), TrMark("Speeds up the emulated processor's 3D math. Turn it off if a game misbehaves."), nullptr, {},
 				0, 1, 0, Only::Both, true, nullptr},
-			{"system", "perf_profile", Kind::Toggle, TrMark("Performance profiler"), TrMark("For a report on a slow game: notes where the PS5's CPU spends its time, in the debug logs. Costs a little speed. Turn it off after."), nullptr, {},
+			{"system", "perf_profile", Kind::Toggle, TrMark("Performance profiler"), TrMark("For reporting a slow game: logs where the CPU spends its time. Costs a little speed; turn it off after."), nullptr, {},
 				0, 1, 0, Only::Both, true, nullptr},
-			{"system", "debug_log_folder", Kind::Toggle, TrMark("Debug logs"), TrMark("Keeps Porpoise's detailed logs in its debug folder, for reporting a problem. Can slow a game a little."), nullptr, {},
+			{"system", "debug_log_folder", Kind::Toggle, TrMark("Debug logs"), TrMark("Keeps detailed logs for reporting a problem. Can slow games a little."), nullptr, {},
 				0, 1, 0, Only::Both, true, nullptr},
 			{"system", "dual_core", Kind::Toggle, TrMark("Dual core"), TrMark("Faster. Turn it off for a game that freezes or glitches."), nullptr, {},
 				0, 1, 1, Only::Both, false, nullptr},
@@ -368,76 +357,76 @@ namespace ps5shell
 				0, 1, 0, Only::Both, false, nullptr},
 			{"system", "fast_disc", Kind::Toggle, TrMark("Fast disc loading"), TrMark("Shorter loading screens. A few games need real disc speed."), nullptr, {},
 				0, 1, 0, Only::Both, false, nullptr},
-			{"system", "cheats", Kind::Toggle, TrMark("Cheats"), TrMark("Dolphin's cheat codes for games that have them."), nullptr, {},
+			{"system", "cheats", Kind::Toggle, TrMark("Cheats"), TrMark("Cheat codes, for games that have them."), nullptr, {},
 				0, 1, 0, Only::Both, false, nullptr},
-			{"hidden", "gba_buttons_use", Kind::Choice, TrMark("GBA buttons in use"), TrMark("Porpoise's set, or one of your own two."), nullptr,
-				{TrMark("Porpoise's set"), TrMark("Mine 1"), TrMark("Mine 2")}, 0, 2, 1},
-			{"gba", "gba_web", Kind::Toggle, TrMark("GBA web page"), TrMark("The GBA's screen and buttons in a browser on the same network, on port 6771."), nullptr, {},
+			{"hidden", "gba_buttons_use", Kind::Choice, TrMark("GBA buttons in use"), TrMark("The default set, or one of your own."), nullptr,
+				{TrMark("Default set"), TrMark("Mine 1"), TrMark("Mine 2")}, 0, 2, 1},
+			{"gba", "gba_web", Kind::Toggle, TrMark("GBA web page"), TrMark("Play the GBA in a browser on the same network, on port 6771."), nullptr, {},
 				0, 1, 1, Only::GameCube, false, nullptr},
 			{"gba", "gba_port1_corner", Kind::Choice, TrMark("Position"), TrMark("Where its screen sits on the TV. Moving it in a game makes it Manual."), nullptr,
 				{TrMark("Automatic"), TrMark("Top left"), TrMark("Top right"), TrMark("Bottom left"), TrMark("Bottom right"), TrMark("Manual")}, 0, 5, 0, Only::GameCube, false, "porpoise-gbav1"},
-			{"gba", "gba_port1_show", Kind::Choice, TrMark("Show the GBA's screen"), TrMark("On the TV, over the game: while held, on and off with each press, or always on or off."), nullptr,
+			{"gba", "gba_port1_show", Kind::Choice, TrMark("Show the GBA's screen"), TrMark("Shows it over the game while held, toggled with each press, or always on or off."), nullptr,
 				{TrMark("While held"), TrMark("Toggle"), TrMark("Always on"), TrMark("Always off")}, 0, 3, 0, Only::GameCube, false, "porpoise-gbav1"},
-			{"gba", "gba_window1", Kind::Position, TrMark("Position across"), TrMark("Where its screen sits on the TV. Automatic: a corner of its own."), nullptr,
+			{"gba", "gba_window1", Kind::Position, TrMark("Position across"), TrMark("Where its screen sits on the TV. Automatic picks a corner."), nullptr,
 				{TrMark("Automatic"), "0", "120", "240", "360", "480", "600", "720", "840", "960", "1080", "1200", "1320", "1440", "1560", "1680"}, 0, 15, 0, Only::GameCube, false, "porpoise-gbav1", false, 0},
-			{"gba", "gba_window1", Kind::Position, TrMark("Position down"), TrMark("Where its screen sits on the TV. Automatic: a corner of its own."), nullptr,
+			{"gba", "gba_window1", Kind::Position, TrMark("Position down"), TrMark("Where its screen sits on the TV. Automatic picks a corner."), nullptr,
 				{TrMark("Automatic"), "0", "120", "240", "360", "480", "600", "720", "840", "960"}, 0, 9, 0, Only::GameCube, false, "porpoise-gbav1", false, 1},
-			{"gba", "gba_window1", Kind::Choice, TrMark("Screen size"), TrMark("How big its screen is on the TV: one to four times its own 240 x 160."), nullptr, {"1x", "2x", "3x", "4x"}, 0, 3, 2, Only::GameCube, false, "porpoise-gbav1", false, 2},
+			{"gba", "gba_window1", Kind::Choice, TrMark("Screen size"), TrMark("How big its screen is: 1 to 4 times the GBA's size."), nullptr, {"1x", "2x", "3x", "4x"}, 0, 3, 2, Only::GameCube, false, "porpoise-gbav1", false, 2},
 			{"gba", "gba_window1", Kind::Choice, TrMark("Opacity"), TrMark("How much of the game shows through its screen on the TV."), nullptr, {"40%", "50%", "60%", "70%", "80%", "90%", "100%"}, 0, 6, 6, Only::GameCube, false, "porpoise-gbav1", false, 3},
-			{"gba", "gba_window1", Kind::Choice, TrMark("Screen filter"), TrMark("Its pixels sharp, or softened. The browser's page has its own."), nullptr, {TrMark("Off"), TrMark("Soft pixels")}, 0, 1, 0, Only::GameCube, false, "porpoise-gbav1", false, 6},
-			{"gba", "gba_window1", Kind::Toggle, TrMark("Interframe blending"), TrMark("Each picture half over the one before, for games that flicker sprites. The TV's only."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-gbav1", false, 7},
+			{"gba", "gba_window1", Kind::Choice, TrMark("Screen filter"), TrMark("Sharp or soft pixels. The web page has its own setting."), nullptr, {TrMark("Off"), TrMark("Soft pixels")}, 0, 1, 0, Only::GameCube, false, "porpoise-gbav1", false, 6},
+			{"gba", "gba_window1", Kind::Toggle, TrMark("Interframe blending"), TrMark("Blends each frame with the last, for games that flicker sprites. TV only."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-gbav1", false, 7},
 			{"gba", "gba_port2_corner", Kind::Choice, TrMark("Position"), TrMark("Where its screen sits on the TV. Moving it in a game makes it Manual."), nullptr,
 				{TrMark("Automatic"), TrMark("Top left"), TrMark("Top right"), TrMark("Bottom left"), TrMark("Bottom right"), TrMark("Manual")}, 0, 5, 0, Only::GameCube, false, "porpoise-gbav2"},
-			{"gba", "gba_port2_show", Kind::Choice, TrMark("Show the GBA's screen"), TrMark("On the TV, over the game: while held, on and off with each press, or always on or off."), nullptr,
+			{"gba", "gba_port2_show", Kind::Choice, TrMark("Show the GBA's screen"), TrMark("Shows it over the game while held, toggled with each press, or always on or off."), nullptr,
 				{TrMark("While held"), TrMark("Toggle"), TrMark("Always on"), TrMark("Always off")}, 0, 3, 0, Only::GameCube, false, "porpoise-gbav2"},
-			{"gba", "gba_window2", Kind::Position, TrMark("Position across"), TrMark("Where its screen sits on the TV. Automatic: a corner of its own."), nullptr,
+			{"gba", "gba_window2", Kind::Position, TrMark("Position across"), TrMark("Where its screen sits on the TV. Automatic picks a corner."), nullptr,
 				{TrMark("Automatic"), "0", "120", "240", "360", "480", "600", "720", "840", "960", "1080", "1200", "1320", "1440", "1560", "1680"}, 0, 15, 0, Only::GameCube, false, "porpoise-gbav2", false, 0},
-			{"gba", "gba_window2", Kind::Position, TrMark("Position down"), TrMark("Where its screen sits on the TV. Automatic: a corner of its own."), nullptr,
+			{"gba", "gba_window2", Kind::Position, TrMark("Position down"), TrMark("Where its screen sits on the TV. Automatic picks a corner."), nullptr,
 				{TrMark("Automatic"), "0", "120", "240", "360", "480", "600", "720", "840", "960"}, 0, 9, 0, Only::GameCube, false, "porpoise-gbav2", false, 1},
-			{"gba", "gba_window2", Kind::Choice, TrMark("Screen size"), TrMark("How big its screen is on the TV: one to four times its own 240 x 160."), nullptr, {"1x", "2x", "3x", "4x"}, 0, 3, 2, Only::GameCube, false, "porpoise-gbav2", false, 2},
+			{"gba", "gba_window2", Kind::Choice, TrMark("Screen size"), TrMark("How big its screen is: 1 to 4 times the GBA's size."), nullptr, {"1x", "2x", "3x", "4x"}, 0, 3, 2, Only::GameCube, false, "porpoise-gbav2", false, 2},
 			{"gba", "gba_window2", Kind::Choice, TrMark("Opacity"), TrMark("How much of the game shows through its screen on the TV."), nullptr, {"40%", "50%", "60%", "70%", "80%", "90%", "100%"}, 0, 6, 6, Only::GameCube, false, "porpoise-gbav2", false, 3},
-			{"gba", "gba_window2", Kind::Choice, TrMark("Screen filter"), TrMark("Its pixels sharp, or softened. The browser's page has its own."), nullptr, {TrMark("Off"), TrMark("Soft pixels")}, 0, 1, 0, Only::GameCube, false, "porpoise-gbav2", false, 6},
-			{"gba", "gba_window2", Kind::Toggle, TrMark("Interframe blending"), TrMark("Each picture half over the one before, for games that flicker sprites. The TV's only."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-gbav2", false, 7},
+			{"gba", "gba_window2", Kind::Choice, TrMark("Screen filter"), TrMark("Sharp or soft pixels. The web page has its own setting."), nullptr, {TrMark("Off"), TrMark("Soft pixels")}, 0, 1, 0, Only::GameCube, false, "porpoise-gbav2", false, 6},
+			{"gba", "gba_window2", Kind::Toggle, TrMark("Interframe blending"), TrMark("Blends each frame with the last, for games that flicker sprites. TV only."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-gbav2", false, 7},
 			{"gba", "gba_port3_corner", Kind::Choice, TrMark("Position"), TrMark("Where its screen sits on the TV. Moving it in a game makes it Manual."), nullptr,
 				{TrMark("Automatic"), TrMark("Top left"), TrMark("Top right"), TrMark("Bottom left"), TrMark("Bottom right"), TrMark("Manual")}, 0, 5, 0, Only::GameCube, false, "porpoise-gbav3"},
-			{"gba", "gba_port3_show", Kind::Choice, TrMark("Show the GBA's screen"), TrMark("On the TV, over the game: while held, on and off with each press, or always on or off."), nullptr,
+			{"gba", "gba_port3_show", Kind::Choice, TrMark("Show the GBA's screen"), TrMark("Shows it over the game while held, toggled with each press, or always on or off."), nullptr,
 				{TrMark("While held"), TrMark("Toggle"), TrMark("Always on"), TrMark("Always off")}, 0, 3, 0, Only::GameCube, false, "porpoise-gbav3"},
-			{"gba", "gba_window3", Kind::Position, TrMark("Position across"), TrMark("Where its screen sits on the TV. Automatic: a corner of its own."), nullptr,
+			{"gba", "gba_window3", Kind::Position, TrMark("Position across"), TrMark("Where its screen sits on the TV. Automatic picks a corner."), nullptr,
 				{TrMark("Automatic"), "0", "120", "240", "360", "480", "600", "720", "840", "960", "1080", "1200", "1320", "1440", "1560", "1680"}, 0, 15, 0, Only::GameCube, false, "porpoise-gbav3", false, 0},
-			{"gba", "gba_window3", Kind::Position, TrMark("Position down"), TrMark("Where its screen sits on the TV. Automatic: a corner of its own."), nullptr,
+			{"gba", "gba_window3", Kind::Position, TrMark("Position down"), TrMark("Where its screen sits on the TV. Automatic picks a corner."), nullptr,
 				{TrMark("Automatic"), "0", "120", "240", "360", "480", "600", "720", "840", "960"}, 0, 9, 0, Only::GameCube, false, "porpoise-gbav3", false, 1},
-			{"gba", "gba_window3", Kind::Choice, TrMark("Screen size"), TrMark("How big its screen is on the TV: one to four times its own 240 x 160."), nullptr, {"1x", "2x", "3x", "4x"}, 0, 3, 2, Only::GameCube, false, "porpoise-gbav3", false, 2},
+			{"gba", "gba_window3", Kind::Choice, TrMark("Screen size"), TrMark("How big its screen is: 1 to 4 times the GBA's size."), nullptr, {"1x", "2x", "3x", "4x"}, 0, 3, 2, Only::GameCube, false, "porpoise-gbav3", false, 2},
 			{"gba", "gba_window3", Kind::Choice, TrMark("Opacity"), TrMark("How much of the game shows through its screen on the TV."), nullptr, {"40%", "50%", "60%", "70%", "80%", "90%", "100%"}, 0, 6, 6, Only::GameCube, false, "porpoise-gbav3", false, 3},
-			{"gba", "gba_window3", Kind::Choice, TrMark("Screen filter"), TrMark("Its pixels sharp, or softened. The browser's page has its own."), nullptr, {TrMark("Off"), TrMark("Soft pixels")}, 0, 1, 0, Only::GameCube, false, "porpoise-gbav3", false, 6},
-			{"gba", "gba_window3", Kind::Toggle, TrMark("Interframe blending"), TrMark("Each picture half over the one before, for games that flicker sprites. The TV's only."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-gbav3", false, 7},
+			{"gba", "gba_window3", Kind::Choice, TrMark("Screen filter"), TrMark("Sharp or soft pixels. The web page has its own setting."), nullptr, {TrMark("Off"), TrMark("Soft pixels")}, 0, 1, 0, Only::GameCube, false, "porpoise-gbav3", false, 6},
+			{"gba", "gba_window3", Kind::Toggle, TrMark("Interframe blending"), TrMark("Blends each frame with the last, for games that flicker sprites. TV only."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-gbav3", false, 7},
 			{"gba", "gba_port4_corner", Kind::Choice, TrMark("Position"), TrMark("Where its screen sits on the TV. Moving it in a game makes it Manual."), nullptr,
 				{TrMark("Automatic"), TrMark("Top left"), TrMark("Top right"), TrMark("Bottom left"), TrMark("Bottom right"), TrMark("Manual")}, 0, 5, 0, Only::GameCube, false, "porpoise-gbav4"},
-			{"gba", "gba_port4_show", Kind::Choice, TrMark("Show the GBA's screen"), TrMark("On the TV, over the game: while held, on and off with each press, or always on or off."), nullptr,
+			{"gba", "gba_port4_show", Kind::Choice, TrMark("Show the GBA's screen"), TrMark("Shows it over the game while held, toggled with each press, or always on or off."), nullptr,
 				{TrMark("While held"), TrMark("Toggle"), TrMark("Always on"), TrMark("Always off")}, 0, 3, 0, Only::GameCube, false, "porpoise-gbav4"},
-			{"gba", "gba_window4", Kind::Position, TrMark("Position across"), TrMark("Where its screen sits on the TV. Automatic: a corner of its own."), nullptr,
+			{"gba", "gba_window4", Kind::Position, TrMark("Position across"), TrMark("Where its screen sits on the TV. Automatic picks a corner."), nullptr,
 				{TrMark("Automatic"), "0", "120", "240", "360", "480", "600", "720", "840", "960", "1080", "1200", "1320", "1440", "1560", "1680"}, 0, 15, 0, Only::GameCube, false, "porpoise-gbav4", false, 0},
-			{"gba", "gba_window4", Kind::Position, TrMark("Position down"), TrMark("Where its screen sits on the TV. Automatic: a corner of its own."), nullptr,
+			{"gba", "gba_window4", Kind::Position, TrMark("Position down"), TrMark("Where its screen sits on the TV. Automatic picks a corner."), nullptr,
 				{TrMark("Automatic"), "0", "120", "240", "360", "480", "600", "720", "840", "960"}, 0, 9, 0, Only::GameCube, false, "porpoise-gbav4", false, 1},
-			{"gba", "gba_window4", Kind::Choice, TrMark("Screen size"), TrMark("How big its screen is on the TV: one to four times its own 240 x 160."), nullptr, {"1x", "2x", "3x", "4x"}, 0, 3, 2, Only::GameCube, false, "porpoise-gbav4", false, 2},
+			{"gba", "gba_window4", Kind::Choice, TrMark("Screen size"), TrMark("How big its screen is: 1 to 4 times the GBA's size."), nullptr, {"1x", "2x", "3x", "4x"}, 0, 3, 2, Only::GameCube, false, "porpoise-gbav4", false, 2},
 			{"gba", "gba_window4", Kind::Choice, TrMark("Opacity"), TrMark("How much of the game shows through its screen on the TV."), nullptr, {"40%", "50%", "60%", "70%", "80%", "90%", "100%"}, 0, 6, 6, Only::GameCube, false, "porpoise-gbav4", false, 3},
-			{"gba", "gba_window4", Kind::Choice, TrMark("Screen filter"), TrMark("Its pixels sharp, or softened. The browser's page has its own."), nullptr, {TrMark("Off"), TrMark("Soft pixels")}, 0, 1, 0, Only::GameCube, false, "porpoise-gbav4", false, 6},
-			{"gba", "gba_window4", Kind::Toggle, TrMark("Interframe blending"), TrMark("Each picture half over the one before, for games that flicker sprites. The TV's only."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-gbav4", false, 7},
+			{"gba", "gba_window4", Kind::Choice, TrMark("Screen filter"), TrMark("Sharp or soft pixels. The web page has its own setting."), nullptr, {TrMark("Off"), TrMark("Soft pixels")}, 0, 1, 0, Only::GameCube, false, "porpoise-gbav4", false, 6},
+			{"gba", "gba_window4", Kind::Toggle, TrMark("Interframe blending"), TrMark("Blends each frame with the last, for games that flicker sprites. TV only."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-gbav4", false, 7},
 			{"gba", "gba_window1", Kind::Choice, TrMark("Volume"), TrMark("Its sound, on the TV or its player's controller."), nullptr, {"0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%"}, 0, 10, 10, Only::GameCube, false, "porpoise-gbas1", false, 4},
-			{"gba", "gba_window1", Kind::Toggle, TrMark("Mute"), TrMark("Its sound off."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-gbas1", false, 5},
+			{"gba", "gba_window1", Kind::Toggle, TrMark("Mute"), TrMark("Turns its sound off."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-gbas1", false, 5},
 			{"gba", "gba_window1", Kind::Toggle, TrMark("Sound on the controller"), TrMark("From its player's controller speaker instead of the TV."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-gbas1", false, 8},
-			{"gba", "gba_window1", Kind::Choice, TrMark("Speaker resampling"), TrMark("Simple: the nearest sample. Smooth: between two, a little softer."), nullptr, {TrMark("Simple"), TrMark("Smooth")}, 0, 1, 0, Only::GameCube, false, "porpoise-gbas1", false, 9},
+			{"gba", "gba_window1", Kind::Choice, TrMark("Speaker resampling"), TrMark("Simple is sharper; Smooth is a little softer."), nullptr, {TrMark("Simple"), TrMark("Smooth")}, 0, 1, 0, Only::GameCube, false, "porpoise-gbas1", false, 9},
 			{"gba", "gba_window2", Kind::Choice, TrMark("Volume"), TrMark("Its sound, on the TV or its player's controller."), nullptr, {"0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%"}, 0, 10, 10, Only::GameCube, false, "porpoise-gbas2", false, 4},
-			{"gba", "gba_window2", Kind::Toggle, TrMark("Mute"), TrMark("Its sound off."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-gbas2", false, 5},
+			{"gba", "gba_window2", Kind::Toggle, TrMark("Mute"), TrMark("Turns its sound off."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-gbas2", false, 5},
 			{"gba", "gba_window2", Kind::Toggle, TrMark("Sound on the controller"), TrMark("From its player's controller speaker instead of the TV."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-gbas2", false, 8},
-			{"gba", "gba_window2", Kind::Choice, TrMark("Speaker resampling"), TrMark("Simple: the nearest sample. Smooth: between two, a little softer."), nullptr, {TrMark("Simple"), TrMark("Smooth")}, 0, 1, 0, Only::GameCube, false, "porpoise-gbas2", false, 9},
+			{"gba", "gba_window2", Kind::Choice, TrMark("Speaker resampling"), TrMark("Simple is sharper; Smooth is a little softer."), nullptr, {TrMark("Simple"), TrMark("Smooth")}, 0, 1, 0, Only::GameCube, false, "porpoise-gbas2", false, 9},
 			{"gba", "gba_window3", Kind::Choice, TrMark("Volume"), TrMark("Its sound, on the TV or its player's controller."), nullptr, {"0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%"}, 0, 10, 10, Only::GameCube, false, "porpoise-gbas3", false, 4},
-			{"gba", "gba_window3", Kind::Toggle, TrMark("Mute"), TrMark("Its sound off."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-gbas3", false, 5},
+			{"gba", "gba_window3", Kind::Toggle, TrMark("Mute"), TrMark("Turns its sound off."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-gbas3", false, 5},
 			{"gba", "gba_window3", Kind::Toggle, TrMark("Sound on the controller"), TrMark("From its player's controller speaker instead of the TV."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-gbas3", false, 8},
-			{"gba", "gba_window3", Kind::Choice, TrMark("Speaker resampling"), TrMark("Simple: the nearest sample. Smooth: between two, a little softer."), nullptr, {TrMark("Simple"), TrMark("Smooth")}, 0, 1, 0, Only::GameCube, false, "porpoise-gbas3", false, 9},
+			{"gba", "gba_window3", Kind::Choice, TrMark("Speaker resampling"), TrMark("Simple is sharper; Smooth is a little softer."), nullptr, {TrMark("Simple"), TrMark("Smooth")}, 0, 1, 0, Only::GameCube, false, "porpoise-gbas3", false, 9},
 			{"gba", "gba_window4", Kind::Choice, TrMark("Volume"), TrMark("Its sound, on the TV or its player's controller."), nullptr, {"0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%"}, 0, 10, 10, Only::GameCube, false, "porpoise-gbas4", false, 4},
-			{"gba", "gba_window4", Kind::Toggle, TrMark("Mute"), TrMark("Its sound off."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-gbas4", false, 5},
+			{"gba", "gba_window4", Kind::Toggle, TrMark("Mute"), TrMark("Turns its sound off."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-gbas4", false, 5},
 			{"gba", "gba_window4", Kind::Toggle, TrMark("Sound on the controller"), TrMark("From its player's controller speaker instead of the TV."), nullptr, {}, 0, 1, 0, Only::GameCube, false, "porpoise-gbas4", false, 8},
-			{"gba", "gba_window4", Kind::Choice, TrMark("Speaker resampling"), TrMark("Simple: the nearest sample. Smooth: between two, a little softer."), nullptr, {TrMark("Simple"), TrMark("Smooth")}, 0, 1, 0, Only::GameCube, false, "porpoise-gbas4", false, 9},
+			{"gba", "gba_window4", Kind::Choice, TrMark("Speaker resampling"), TrMark("Simple is sharper; Smooth is a little softer."), nullptr, {TrMark("Simple"), TrMark("Smooth")}, 0, 1, 0, Only::GameCube, false, "porpoise-gbas4", false, 9},
 		};
 
 		// which of Dolphin's graphics mods a game has, by its ID's first three letters (porpoise_gfxmods.cpp)
@@ -682,7 +671,7 @@ namespace ps5shell
 	std::vector<std::string> Shell::PorpoiseLayoutNames() const
 	{
 		if (m_porpoiseButtons == "gba")
-			return {Tr("Porpoise's set"), Tr("Mine 1"), Tr("Mine 2")};
+			return {Tr("Default set"), Tr("Mine 1"), Tr("Mine 2")};
 		std::vector<std::string> names = {"GameCube", "PlayStation"};
 		for (int layout = 1; layout <= 4; layout++)
 			names.push_back(TrF("My layout {0}", layout));
@@ -879,7 +868,7 @@ namespace ps5shell
 			test.kind = Row::Kind::Link;
 			test.id = "porpoisepadtest";
 			test.label = Tr("Controller test");
-			test.description = Tr("Everything this player's DualSense sends, live.");
+			test.description = Tr("This player's DualSense input, live.");
 			test.help = test.description;
 			rows.push_back(std::move(test));
 		}
@@ -958,7 +947,7 @@ namespace ps5shell
 		ps5pad::Data pad{};
 		const bool connected = ps5pad::Read(m_player, pad);
 		DrawPageHeader(canvas, std::string(SystemName(m_side)) + " · " + TrF("Player {0}", m_player + 1), Tr("Controller test"),
-			connected ? Tr("Everything this DualSense sends, live. Hold Circle to leave.") : Tr("No DualSense for this player: turn it on and sign in. Hold Circle on yours to leave."));
+			connected ? Tr("This DualSense's input, live. Hold Circle to leave.") : Tr("No DualSense for this player: turn it on and sign in. Hold Circle on yours to leave."));
 		canvas.PushAlpha(Enter(1));
 		static constexpr struct { uint32_t bit; const char* name; } kButtons[] = {
 			{ps5pad::kCross, "Cross"}, {ps5pad::kCircle, "Circle"}, {ps5pad::kSquare, "Square"}, {ps5pad::kTriangle, "Triangle"},
@@ -1141,7 +1130,7 @@ namespace ps5shell
 								ports.id = "sub";
 								ports.opens = "porpoise-ports";
 								ports.label = Tr("Ports");
-								ports.description = Tr("What each GameCube controller port holds, and who plays it.");
+								ports.description = Tr("What's plugged into each controller port, and who plays it.");
 								ports.help = ports.description;
 								rows.push_back(std::move(ports));
 							}
@@ -1630,7 +1619,7 @@ namespace ps5shell
 		cheevos.id = "cheevos";
 		cheevos.label = Tr("RetroAchievements");
 		cheevos.value = account.signedIn ? TrF("{1}: {0} points", account.points, account.user) : account.busy ? std::string(Tr("Signing in…")) : std::string(Tr("Sign in"));
-		cheevos.description = Tr("Earn achievements with your account, in the games with a set. The in-game menu lists them.");
+		cheevos.description = Tr("Earn achievements in supported games. See them in the in-game menu.");
 		cheevos.help = cheevos.description;
 		rows.push_back(std::move(cheevos));
 		Row toggle;
@@ -1647,7 +1636,7 @@ namespace ps5shell
 		art.id = "steamgriddb";
 		art.label = Tr("SteamGridDB key");
 		art.value = ps5boxart::PlayerSteamGridKey() ? Tr("Yours") : ps5boxart::HasSteamGridKey() ? Tr("Built in") : Tr("None");
-		art.description = Tr("Wide art for the screen a game starts on. Your own key from steamgriddb.com is used first. Leave it empty to remove yours.");
+		art.description = Tr("Wide art shown as a game starts. Your own key from steamgriddb.com is used first; leave it empty to remove it.");
 		art.help = art.description;
 		rows.push_back(std::move(art));
 		Row missingRow;
@@ -1663,7 +1652,7 @@ namespace ps5shell
 		all.id = "boxartall";
 		all.label = Tr("Download all box art again");
 		all.value = m_message.empty() ? Tr("Hold Cross") : m_message;
-		all.description = Tr("Replaces every cover on this side with a fresh download.");
+		all.description = Tr("Downloads every cover for this system again.");
 		all.help = all.description;
 		rows.push_back(std::move(all));
 		return rows;
@@ -1711,11 +1700,11 @@ namespace ps5shell
 			if (!setup.exists)
 				continue;
 			// tr: a saved set of Graphics settings: {0} is its number
-			Row use = GameRow(Row::Kind::Action, "use:" + std::to_string(i), TrF("Use setup {0}", i + 1), Tr("Puts this setup's Graphics settings on this game."));
+			Row use = GameRow(Row::Kind::Action, "use:" + std::to_string(i), TrF("Use setup {0}", i + 1), Tr("Applies this setup's Graphics settings to this game."));
 			use.value = setup.from;
 			rows.push_back(std::move(use));
 		}
-		rows.push_back(GameRow(Row::Kind::Action, "save", Tr("Save as a setup"), Tr("Keeps this game's Graphics settings as a setup, to use on other games.")));
+		rows.push_back(GameRow(Row::Kind::Action, "save", Tr("Save as a setup"), Tr("Saves this game's Graphics settings to use on other games.")));
 		return rows;
 	}
 
@@ -1728,16 +1717,16 @@ namespace ps5shell
 			const bool wii = ps5retro::Is(SideIndex(), "wii");
 			const ps5porpoise::WideKind kind = ps5porpoise::WidescreenKind("/app0/retro/porpoise/system/dolphin-emu/Sys/GameSettings", "/app0/retro/porpoise/assets/widescreen", m_porpoiseGame.id, wii);
 			Row wide = GameRow(Row::Kind::Action, "widestatus", Tr("Widescreen"),
-				wii ? Tr("Wii games are 16:9 when Wii widescreen is on in Settings, as on a Wii.") :
-				kind == ps5porpoise::WideKind::Patch ? Tr("This game has a widescreen code: Automatic and On draw it in 16:9 the way the game itself would.") :
-				kind == ps5porpoise::WideKind::Native ? Tr("This game has a 16:9 option of its own: turn it on in the game's options, and the picture follows.") :
-				Tr("This game has no widescreen code. On uses Dolphin's widescreen hack, which can glitch at the screen's edges."));
+				wii ? Tr("Wii games are 16:9 when Wii widescreen is on in Settings.") :
+				kind == ps5porpoise::WideKind::Patch ? Tr("This game has a widescreen code: Automatic and On show it in 16:9.") :
+				kind == ps5porpoise::WideKind::Native ? Tr("This game has its own 16:9 option. Turn it on in the game's options.") :
+				Tr("This game has no widescreen code. On uses a widescreen hack, which can glitch at the edges."));
 			wide.value = wii ? Tr("The Wii's setting") : kind == ps5porpoise::WideKind::Patch ? Tr("16:9 code") : kind == ps5porpoise::WideKind::Native ? Tr("In the game's options") : Tr("4:3 only");
 			wide.dimmed = true;
 			rows.push_back(std::move(wide));
 			if (m_porpoiseGame.id.size() == 6)
 			{
-				Row add = GameRow(Row::Kind::Action, "addcode", Tr("Your own code"), Tr("Type in a Gecko code, with a name. It's saved in /data/porpoise/cheats and is on unless you turn it off."));
+				Row add = GameRow(Row::Kind::Action, "addcode", Tr("Your own code"), Tr("Type a Gecko code and a name. It's saved in /data/porpoise/cheats and turned on."));
 				add.value = Tr("Add a code");
 				rows.push_back(std::move(add));
 			}
@@ -1748,16 +1737,16 @@ namespace ps5shell
 			const auto& cheat = cheats[i];
 			const bool on = cheat.defaultOn ? !m_porpoise.own.count(ps5porpoise::CheatKey(cheat, false)) : m_porpoise.own.count(ps5porpoise::CheatKey(cheat, true)) != 0;
 			Row row = GameRow(Row::Kind::Toggle, "cheat:" + std::to_string(i), cheat.name.size() > 1 ? cheat.name.substr(1) : cheat.name,
-				cheat.own ? Tr("Your own code, from /data/porpoise/cheats. On unless you turn it off here.") :
+				cheat.own ? Tr("Your code, from /data/porpoise/cheats.") :
 				cheat.pack ? Tr("From the widescreen collection for this game.") :
-				cheat.kind == "OnFrame" ? Tr("A patch from Dolphin's list for this game.") : Tr("A cheat from Dolphin's list for this game."));
+				cheat.kind == "OnFrame" ? Tr("A patch for this game.") : Tr("A cheat for this game."));
 			row.on = on;
 			row.value = on ? Tr("On") : Tr("Off");
 			rows.push_back(std::move(row));
 		}
 		if (rows.size() == before)
 		{
-			Row none = GameRow(Row::Kind::Action, "none", Tr("No codes for this game"), Tr("Your own go in /data/porpoise/cheats, named with the game's ID."));
+			Row none = GameRow(Row::Kind::Action, "none", Tr("No codes for this game"), Tr("Put your own in /data/porpoise/cheats, named with the game's ID."));
 			none.dimmed = true;
 			rows.push_back(std::move(none));
 		}
@@ -1774,7 +1763,7 @@ namespace ps5shell
 		};
 		if (m_porpoiseGame.ownDolphinFile)
 		{
-			Row own = GameRow(Row::Kind::Action, "ownfile", Tr("Your own Dolphin file"), Tr("This game has a Dolphin settings file of yours, so the switches below change nothing. Remove it to use them."));
+			Row own = GameRow(Row::Kind::Action, "ownfile", Tr("Your own settings file"), Tr("This game uses your own settings file, so the options below have no effect. Remove it to use them."));
 			own.dimmed = true;
 			rows.push_back(std::move(own));
 		}
@@ -1782,7 +1771,7 @@ namespace ps5shell
 		{
 			const auto& values = m_porpoiseGame.pick.values;
 			const bool all = std::all_of(values.begin(), values.end(), [&](const auto& v) { return has(v.first, v.second); });
-			Row every = GameRow(Row::Kind::Toggle, "boostall", Tr("Auto Boost"), m_porpoiseGame.pick.note.empty() ? std::string(Tr("Settings that run this game best on PS5, as tested.")) : m_porpoiseGame.pick.note);
+			Row every = GameRow(Row::Kind::Toggle, "boostall", Tr("Auto Boost"), m_porpoiseGame.pick.note.empty() ? std::string(Tr("Settings that run this game best on PS5.")) : m_porpoiseGame.pick.note);
 			every.on = all;
 			every.value = all ? Tr("On") : Tr("Off");
 			rows.push_back(std::move(every));
@@ -1806,7 +1795,7 @@ namespace ps5shell
 					continue; // the row above
 				std::string label, text;
 				ps5porpoise::DescribeDolphin(values[i].first, values[i].second, label, text);
-				Row one = GameRow(Row::Kind::Toggle, "pick:" + std::to_string(i), label + ": " + text, Tr("One of Porpoise's picks for this game."));
+				Row one = GameRow(Row::Kind::Toggle, "pick:" + std::to_string(i), label + ": " + text, Tr("Recommended for this game."));
 				one.on = has(values[i].first, values[i].second);
 				one.value = one.on ? Tr("On") : Tr("Off");
 				rows.push_back(std::move(one));
@@ -1815,7 +1804,7 @@ namespace ps5shell
 		for (size_t i = 0; i < m_porpoiseGame.fixes.size(); i++)
 		{
 			const auto& fix = m_porpoiseGame.fixes[i];
-			const std::string why = fix.why.empty() ? std::string(Tr("One of Dolphin's own fixes for this game.")) : fix.why;
+			const std::string why = fix.why.empty() ? std::string(Tr("A known fix for this game.")) : fix.why;
 			if (fix.overrideKey.empty())
 			{
 				Row applied = GameRow(Row::Kind::Action, "fixed", fix.label + ": " + fix.value, why);
@@ -1831,7 +1820,7 @@ namespace ps5shell
 		}
 		if (nothingElse)
 		{
-			Row none = GameRow(Row::Kind::Action, "none", Tr("Runs as it is"), Tr("This game needs no Auto Boost: Dolphin lists no fixes for it, and Porpoise's own settings already run it as tested."));
+			Row none = GameRow(Row::Kind::Action, "none", Tr("No changes needed"), Tr("This game runs well with the default settings."));
 			none.dimmed = true;
 			rows.push_back(std::move(none));
 		}
@@ -2010,7 +1999,7 @@ namespace ps5shell
 				if (!save.separate)
 				{
 					row.dimmed = true;
-					row.description = Tr("This card is one image file, so its saves can't be copied one by one. Back up to USB keeps the whole card.");
+					row.description = Tr("This card is a single image file, so saves can't be copied one by one. Use Copy the whole card to USB instead.");
 				}
 				row.help = row.description;
 				rows.push_back(std::move(row));
@@ -2022,7 +2011,7 @@ namespace ps5shell
 				whole.id = "porpoisecard:" + std::to_string(c);
 				whole.group = group;
 				whole.label = Tr("Copy the whole card to USB");
-				whole.description = Tr("Every save on this card, as one backup. Restore from USB lists it.");
+				whole.description = Tr("Backs up every save on this card at once.");
 				whole.help = whole.description;
 				rows.push_back(std::move(whole));
 				const auto action = [&](const char* id, const std::string& label, const std::string& description) {
@@ -2035,9 +2024,9 @@ namespace ps5shell
 					extra.help = description;
 					rows.push_back(std::move(extra));
 				};
-				action("porpoisecardsave:", Tr("Copy a save from USB"), Tr("One save from the drive, onto this card."));
-				action("porpoisecardload:", Tr("Copy a card from USB"), Tr("Every save of a card on the drive, onto this card. One already here stays as it is."));
-				action("porpoisecarddelete:", Tr("Delete every save on this card"), Tr("They're kept in saves/before, in case."));
+				action("porpoisecardsave:", Tr("Copy a save from USB"), Tr("Copy one save from the drive to this card."));
+				action("porpoisecardload:", Tr("Copy a card from USB"), Tr("Copy every save from a card on the drive to this card. Saves already here are kept."));
+				action("porpoisecarddelete:", Tr("Delete every save on this card"), Tr("A copy is kept in saves/before."));
 			}
 		}
 		if (wii && m_porpoiseSaves[0].saves.empty())
@@ -2055,7 +2044,7 @@ namespace ps5shell
 			one.kind = Row::Kind::Action;
 			one.id = "porpoisecardsave:0";
 			one.label = Tr("Copy a save from USB");
-			one.description = Tr("One save from the drive, to its place.");
+			one.description = Tr("Copy one save from the drive.");
 			one.help = one.description;
 			rows.push_back(std::move(one));
 		}
@@ -2063,7 +2052,7 @@ namespace ps5shell
 		import.kind = Row::Kind::Action;
 		import.id = "porpoisesaves-import";
 		import.label = Tr("Copy every save from USB");
-		import.description = Tr("From a USB drive's backups and Porpoise Saves folder. A save already here stays as it is.");
+		import.description = Tr("From a USB drive's backups and Porpoise Saves folder. Saves already here are kept.");
 		import.help = import.description;
 		rows.push_back(std::move(import));
 		return rows;

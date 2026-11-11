@@ -128,7 +128,7 @@ namespace ps5eden
 	{
 		if (!Available())
 		{
-			error = ps5lang::Tr("This build has no Switch emulator: eden/eboot.bin is not in the app's folder.");
+			error = ps5lang::Tr("This copy has no Switch emulator: eden/eboot.bin is missing.");
 			return;
 		}
 		// a network share (/net/...) is the launcher's own: Eden, a program of its own, cannot read it (#101)
@@ -142,7 +142,7 @@ namespace ps5eden
 		if (forGame.nx.nxFrameGeneration)
 			ps5log::Line("[switch] frame generation: {} {}", LosslessFound() ? "Lossless Scaling, from" : "MihawkGen, no Lossless.dll at", LosslessFile());
 		ps5emu::LoadExecApp(kProgram, GameArguments(game, forGame, exitAfterGame), true, RequestFile());
-		error = ps5lang::Tr("The console did not start Eden. The boot log says what it answered.");
+		error = ps5lang::Tr("The PS5 did not start Eden. See the boot log for details.");
 	}
 
 	void WriteSession(const Session& session)
@@ -255,13 +255,19 @@ namespace ps5eden
 		return result;
 	}
 
-	std::string ResultMessage(const Result& result)
+	std::string ResultMessage(const Result& result, bool switch2)
 	{
 		using ps5lang::Tr;
 		using ps5lang::TrF;
-		if (result.state == "running")
-			// Eden's program stopped without saying so: a crash, or the console closed it
-			return TrF("The Switch game stopped: Eden closed while it ran. Its logs are in {0}.", DataFolder() + "/logs");
+		// the program's own folder, which has keys/, firmware/ and logs/: Eden's, or Lichii's
+		const std::string files = GameFilesFolder(switch2);
+		// the program stopped without saying so (a crash, or the console closed it), or said only where
+		// its crash report is (Eden::Crash::kNotice)
+		if (result.state == "running" || (result.state == "failed" && result.error.rfind("crash-report:", 0) == 0))
+			return switch2 ?
+				// tr: a Switch 2 game crashed or was closed by the console; {0} is Lichii's logs folder
+				TrF("The Switch 2 game stopped unexpectedly. Logs are in {0}.", files + "/logs") :
+				TrF("The Switch game stopped unexpectedly. Logs are in {0}.", DataFolder() + "/logs");
 		if (result.state != "failed" || result.error.empty())
 			return {};
 		// a room that could not be joined: "room:" its name, a tab, Eden's words
@@ -274,32 +280,32 @@ namespace ps5eden
 			return TrF("The room {0} could not be joined: {1} Choose another in Settings > Online > Multiplayer, or play offline.", name, why);
 		}
 		if (result.error.rfind("Forwarded game not found", 0) == 0)
-			return Tr("Eden could not find the game's file. Is the drive with it plugged in?");
+			return switch2 ? Tr("Lichii could not find the game's file. Is the drive with it plugged in?") :
+							 Tr("Eden could not find the game's file. Is the drive with it plugged in?");
 		// a game Eden's loader could not read for want of the right keys: said in words, not as Eden's
 		// number (load_status.h; the boot log keeps Eden's own words)
 		switch (LoadStatusProblem(result.error))
 		{
 		case LoadProblem::NoKeys:
-			return Tr("prod.keys is missing: Eden cannot read Switch games without it");
+			return switch2 ? Tr("prod.keys is missing: Lichii needs your own Switch keys") : Tr("prod.keys is missing: Switch games need it");
 		case LoadProblem::KeysTooOld:
 			// tr: a Switch game did not start because the player's keys are older than it; {0} is Eden's game files folder, which has keys/ and firmware/ in it
-			return TrF("This game needs newer keys than yours: it, or its update, was made for a newer Switch system version than the "
-					   "one your prod.keys came from. Dump prod.keys again from your Switch, updated to its latest system version, into "
-					   "{0}/keys, and its firmware into {0}/firmware.",
-				GameFilesFolder());
+			return TrF("This game needs newer keys. Dump prod.keys again from your Switch on its latest system version into {0}/keys, and its firmware into {0}/firmware.",
+				files);
 		case LoadProblem::KeysWrong:
 			// tr: a Switch game did not start because the keys could not decrypt it; {0} is Eden's game files folder, which has keys/ in it
-			return TrF("Your keys could not decrypt this game: prod.keys in {0}/keys has keys missing or wrong for it, or the game's file "
-					   "is damaged. Dump prod.keys again from your own Switch, and check the game's file on a computer.",
-				GameFilesFolder());
+			return TrF("Your keys can't decrypt this game. Dump prod.keys again from your Switch into {0}/keys, and check that the game file isn't damaged.",
+				files);
 		case LoadProblem::NoTicket:
 			// tr: a Switch game did not start because its title key is missing (its dump has no ticket); {0} is Eden's game files folder, which has keys/ in it
-			return TrF("This game's title key is missing: its file has no ticket. Dump the game again with its ticket, or put your "
-					   "Switch's title.keys in {0}/keys.",
-				GameFilesFolder());
+			return TrF("This game's title key is missing. Dump the game again with its ticket, or put your Switch's title.keys in {0}/keys.",
+				files);
 		case LoadProblem::None:
 			break;
 		}
+		if (switch2)
+			// tr: why a Switch 2 game stopped or did not start, in Lichii's own words (English)
+			return TrF("The Switch 2 game did not start or stopped: {0}", result.error);
 		// tr: why a Switch game stopped or did not start, in Eden's own words (English)
 		return TrF("The Switch game did not start or stopped: {0}", result.error);
 	}
@@ -353,6 +359,6 @@ namespace ps5eden
 		ps5log::Line("[switch] Eden never took its launch request ({}), and has no trace since: the console did not run "
 					 "eden/eboot.bin and started this app again instead (boot.prev.log has the LoadExec it was asked for)",
 			request);
-		return ps5lang::Tr("The console did not start Eden. The boot log says what it answered.");
+		return ps5lang::Tr("The PS5 did not start Eden. See the boot log for details.");
 	}
 }

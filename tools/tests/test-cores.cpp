@@ -1,0 +1,177 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Every libretro core the app links, for real, through the app's own frontend (port/libretro/session.cpp,
+// cores.cpp): built for the PC by tools/build-libretro.py (LIBRETRO_HOST=1) and given the tiny games
+// make-test-games.py writes. For each: its options listed with no game (Settings > Emulator), the game
+// loaded, ten seconds of frames run with a picture and sound, a save state saved and loaded, and its memory
+// mapped for RetroAchievements. Game images that no tiny file can stand for (the N64's needs its boot chip's
+// code, the Game & Watch's its artwork) check that the core starts and turns a bad file down cleanly.
+// tools/tests/test-cores.sh builds and runs it; PASS and FAIL lines, exit 1 on a failure.
+
+#include "libretro/core.h"
+#include "libretro/session.h"
+
+#include <cstdio>
+#include <filesystem>
+#include <string>
+
+namespace fs = std::filesystem;
+
+namespace
+{
+	int failures = 0;
+
+	void Check(bool ok, const std::string& what)
+	{
+		std::printf("%s %s\n", ok ? "PASS" : "FAIL", what.c_str());
+		failures += ok ? 0 : 1;
+	}
+
+	struct Case
+	{
+		const char* core;
+		const char* game;
+		const char* system;
+		unsigned cheevos; // rc_consoles.h's id, 0: none
+		bool runs = true; // false: a bad file it should refuse
+		bool states = true;
+	};
+}
+
+int main(int argc, char* argv[])
+{
+	if (argc < 3)
+	{
+		std::fprintf(stderr, "test-cores GAMES_DIR WORK_DIR\n");
+		return 2;
+	}
+	std::setvbuf(stdout, nullptr, _IONBF, 0);
+	const fs::path games = argv[1], work = argv[2];
+	ps5libretro::SetLog([](int level, const std::string& line) {
+		if (level >= 2)
+			std::fprintf(stderr, "  [core] %s\n", line.c_str());
+	});
+	const Case cases[] = {
+		{"mesen", "test.nes", "NES", 7},
+		{"mesens", "test.sfc", "SNES", 3},
+		{"mgba", "test.gb", "Game Boy", 4},
+		{"mgba", "test.gbc", "Game Boy Color", 6},
+		{"mgba", "test.gba", "Game Boy Advance", 5},
+		{"beetlevb", "test.vb", "Virtual Boy", 28},
+		{"pokemini", "test.min", "Pokémon mini", 24},
+		{"paralleln64", "broken.z64", "Nintendo 64", 2, false},
+		{"gw", "broken.mgw", "Game & Watch", 0, false},
+	};
+	for (const Case& c : cases)
+	{
+		const std::string name = std::string(c.system) + " (" + c.core + ")";
+		std::printf("-- %s\n", name.c_str());
+		const ps5libretro::Core* core = ps5libretro::Find(c.core);
+		Check(core != nullptr, name + ": linked");
+		if (!core)
+			continue;
+		const auto options = ps5libretro::Describe(*core, RETRO_LANGUAGE_ENGLISH);
+		std::printf("     %zu options\n", options.size());
+		Check(std::string(c.core) == "gw" || !options.empty(), name + ": its options listed with no game");
+		ps5libretro::Setup setup;
+		const fs::path folder = work / c.core / c.game;
+		fs::create_directories(folder / "system");
+		fs::create_directories(folder / "saves");
+		fs::create_directories(folder / "states");
+		setup.system = (folder / "system").string();
+		setup.saves = (folder / "saves").string();
+		setup.states = (folder / "states").string();
+		std::string error;
+		const bool loaded = ps5libretro::Load(*core, (games / c.game).string(), setup, error);
+		if (!c.runs)
+		{
+			Check(!loaded && !ps5libretro::Loaded(), name + ": a bad file turned down (" + error + ")");
+			if (loaded)
+				ps5libretro::Unload();
+			continue;
+		}
+		Check(loaded, name + ": the game loads" + (loaded ? "" : " (" + error + ")"));
+		if (!loaded)
+			continue;
+		ps5libretro::Pad pads[ps5libretro::kPlayers] = {};
+		size_t sound = 0;
+		const int frames = (int)(ps5libretro::FrameRate() * 10);
+		for (int i = 0; i < frames; i++)
+		{
+			pads[0].buttons = (i / 30) % 2 ? (1 << RETRO_DEVICE_ID_JOYPAD_START) : 0;
+			ps5libretro::Run(pads);
+			sound += ps5libretro::Sound().size();
+		}
+		const auto& picture = ps5libretro::LastPicture();
+		Check(picture.width > 0 && picture.height > 0 && picture.pixels.size() == size_t(picture.width) * picture.height,
+			name + ": " + std::to_string(frames) + " frames, a " + std::to_string(picture.width) + "x" + std::to_string(picture.height) + " picture");
+		Check(sound > 0, name + ": sound (" + std::to_string(sound / 2) + " samples)");
+		if (c.states)
+		{
+			const bool saved = ps5libretro::SaveState(1, error);
+			Check(saved, name + ": a save state saved" + (saved ? "" : " (" + error + ")"));
+			if (saved)
+			{
+				for (int i = 0; i < 30; i++)
+					ps5libretro::Run(pads);
+				const bool back = ps5libretro::LoadState(1, error);
+				Check(back, name + ": and loaded" + (back ? "" : " (" + error + ")"));
+			}
+		}
+		if (c.cheevos)
+		{
+			const bool mapped = ps5libretro::CheevosMemory(c.cheevos);
+			uint8_t byte = 0;
+			Check(mapped && ps5libretro::CheevosRead(0, &byte, 1) == 1, name + ": its memory mapped for RetroAchievements");
+		}
+		ps5libretro::Unload();
+		Check(!ps5libretro::Loaded(), name + ": unloaded");
+	}
+	// the DualSense's buttons reach the game: a program that copies its joypad register to RAM, read back
+	// through the memory RetroAchievements sees
+	struct Input
+	{
+		const char* core;
+		const char* game;
+		const char* system;
+		unsigned cheevos;
+		unsigned button;	// RETRO_DEVICE_ID_JOYPAD_*
+		uint32_t address;	// where the program keeps the register
+		uint8_t rest, held; // that byte with nothing pressed, and with the button
+	};
+	const Input inputs[] = {
+		{"mesens", "input.sfc", "SNES", 3, RETRO_DEVICE_ID_JOYPAD_A, 0, 0x00, 0x80},
+		{"mesens", "input.sfc", "SNES", 3, RETRO_DEVICE_ID_JOYPAD_B, 1, 0x00, 0x80},
+	};
+	for (const Input& in : inputs)
+	{
+		const ps5libretro::Core* core = ps5libretro::Find(in.core);
+		if (!core)
+			continue;
+		ps5libretro::Setup setup;
+		const fs::path folder = work / "input" / in.core;
+		fs::create_directories(folder);
+		setup.system = setup.saves = setup.states = folder.string();
+		std::string error;
+		if (!ps5libretro::Load(*core, (games / in.game).string(), setup, error))
+		{
+			Check(false, std::string(in.system) + " input: the program loads (" + error + ")");
+			continue;
+		}
+		ps5libretro::CheevosMemory(in.cheevos);
+		ps5libretro::Pad pads[ps5libretro::kPlayers] = {};
+		for (int i = 0; i < 30; i++)
+			ps5libretro::Run(pads);
+		uint8_t rest = 0x5A, held = 0x5A;
+		ps5libretro::CheevosRead(in.address, &rest, 1);
+		pads[0].buttons = uint16_t(1u << in.button);
+		for (int i = 0; i < 30; i++)
+			ps5libretro::Run(pads);
+		ps5libretro::CheevosRead(in.address, &held, 1);
+		char what[160];
+		std::snprintf(what, sizeof(what), "%s input: button %u read by the game (%02x at rest, %02x held)", in.system, in.button, rest, held);
+		Check(rest == in.rest && held == in.held, what);
+		ps5libretro::Unload();
+	}
+	std::printf("%s\n", failures ? "SOME CORES FAILED" : "EVERY CORE PASSED");
+	return failures ? 1 : 0;
+}

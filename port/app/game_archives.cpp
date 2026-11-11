@@ -800,7 +800,7 @@ namespace ps5archive
 			case Failure::Write: error = ps5lang::TrF("The game could not be written to {0}.", UnpackedRoot()); break;
 			case Failure::Changed:
 				// tr: why an archived game could not start
-				error = ps5lang::Tr("The archive has changed since the library read it: look for games again (Settings > Game files).");
+				error = ps5lang::Tr("The archive has changed. Look for games again in Settings > Game files.");
 				break;
 			default: break; // stopped: nothing to say
 			}

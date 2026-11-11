@@ -1,4 +1,4 @@
-# PS5-ECAM's site on GitHub Pages (Settings > Pages > Source: GitHub Actions), from site/.
+# Playtendoh's site on GitHub Pages (Settings > Pages > Source: GitHub Actions), from site/.
 #
 # It is built again when site/ changes, by hand, when a release is published, with the latest
 # release's notes in the page (site/build.py) for readers GitHub's API turns away, and every day, with
@@ -9,7 +9,7 @@ name: Pages
 
 on:
   push:
-    branches: [PS5-ECAM]
+    branches: [Playtendoh] # the github-pages environment allows it (Settings > Environments)
     paths:
       - 'site/**'
       - '.github/workflows/pages.yml'
@@ -54,13 +54,14 @@ jobs:
           REPORTS_URL: ${{ vars.REPORTS_URL }}
         run: |
           if [ -n "$REPORTS_URL" ]; then
-            curl -fsS --max-time 60 "$REPORTS_URL/v1/compatibility.json" -o compatibility.json || echo '{}' > compatibility.json
+            # the run's own address: the intake keeps its table an hour for anyone else, never for this
+            curl -fsS --max-time 60 "$REPORTS_URL/v1/compatibility.json?run=$GITHUB_RUN_ID" -o compatibility.json || echo '{}' > compatibility.json
           else
             echo '{}' > compatibility.json
           fi
       - name: Build
         run: python3 site/build.py --release latest.json --compat compatibility.json --out _site
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
 
@@ -75,4 +76,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

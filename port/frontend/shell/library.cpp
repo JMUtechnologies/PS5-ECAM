@@ -95,6 +95,29 @@ namespace ps5shell
 		return m_settings.ui.libraryFilters && filter < LibraryFilters() ? filter : 0;
 	}
 
+	// the collections this side's games are in (the game menu's Collections), by name
+	std::vector<std::string> Shell::LibraryCollections() const
+	{
+		std::vector<std::string> names;
+		for (const Game& game : m_games)
+			if (!game.entry.hidden)
+				names.insert(names.end(), game.entry.collections.begin(), game.entry.collections.end());
+		std::sort(names.begin(), names.end());
+		names.erase(std::unique(names.begin(), names.end()), names.end());
+		return names;
+	}
+
+	// a collection picked to browse: only its games listed, with the filter row on All
+	void Shell::ShowCollection(const std::string& name)
+	{
+		m_libraryCollection[SideIndex()] = name;
+		if (!name.empty())
+			m_settings.ui.libraryFilter[SideIndex()] = 0;
+		m_libraryIndex = 0;
+		m_libraryFocusTitle = 0;
+		LibraryRefresh();
+	}
+
 	int Shell::LibraryTop() const
 	{
 		return !m_recent.empty() ? 0 : m_settings.ui.libraryFilters ? 1 : 2;
@@ -132,7 +155,7 @@ namespace ps5shell
 		if (!Notice().empty())
 		{
 			kicker = Tr("Setup");
-			title = Tr("Something needs a look");
+			title = Tr("Something needs attention");
 			text = Notice();
 			buttons = {Tr("Setup check"), Tr("Diagnostics")};
 			return true;
@@ -141,8 +164,8 @@ namespace ps5shell
 		if (!CoreReady() && (!m_status.coreStarting || m_games.empty()))
 		{
 			kicker = "Wii U";
-			title = Tr("Starting Cemu");
-			text = Tr("Its settings, graphic packs and controllers are loading, and then it looks for your games.");
+			title = Tr("Getting ready");
+			text = Tr("Loading settings, graphic packs and controllers, then looking for your games.");
 			return true;
 		}
 		if (!m_games.empty())
@@ -158,23 +181,19 @@ namespace ps5shell
 		kicker = Tr("Welcome");
 		title = Tr("Your games go here");
 		// tr: {0} is the games folder
-		text = IsRetro() ? TrF("Put this system's games in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are searched too, four deep.", folder) : Is3ds() ? TrF("Put your 3DS games (.3ds, .cci, .cxi, .3dsx, decrypted, alone or in .zip, .7z or .rar archives) in {0}, or "
-							 "choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are searched too.",
+		text = IsRetro() ? TrF("Put this system's games in {0}, or choose any folder, such as one on a USB drive. Subfolders are searched too.", folder) : Is3ds() ? TrF("Put your decrypted 3DS games (.3ds, .cci, .cxi, .3dsx, or in .zip, .7z or .rar) in {0}, or choose any folder, such as one on a USB drive.",
 							 folder) :
-			IsDs()	   ? TrF("Put your DS games (.nds, alone or in .zip, .7z or .rar archives) in {0}, or choose any folder the PS5 can read, "
-							 "such as one on a USB drive. Folders inside it are searched too.",
+			IsDs()	   ? TrF("Put your DS games (.nds, or in .zip, .7z or .rar) in {0}, or choose any folder, such as one on a USB drive.",
 							 folder) :
-			// the Switch 2 side's are EglantinePS5's, with its own keys and firmware: the Setup page's words
-			IsSwitch2() ? TrF("Put Switch 2 game folders in {0}; each needs exefs/main and romfs/ (or base/exefs/main and romfs/). Keep updates with the game folder.", ps5eden::ScanFolder(folder)) + " " +
-							  TrF("Put your own prod.keys in {0}/keys. Playtendoh and EglantinePS5 do not include keys.", ps5eglantine::DataFolder()) + " " +
-							  TrF("Put your own Switch firmware files in {0}/firmware. No firmware comes with Playtendoh or EglantinePS5.", ps5eglantine::DataFolder()) :
+			// the Switch 2 side's are Lichii's, with its own keys and firmware: the Setup page's words
+			IsSwitch2() ? TrF("Put Switch 2 game folders in {0}. Each needs exefs/main and romfs/ (or base/exefs/main and romfs/). Keep updates in the game's folder.", ps5eden::ScanFolder(folder)) + " " +
+							  TrF("Put your own prod.keys in {0}/keys. Playtendoh and Lichii do not include keys.", ps5eglantine::DataFolder()) + " " +
+							  TrF("Put your own Switch firmware files in {0}/firmware. Playtendoh and Lichii do not include firmware.", ps5eglantine::DataFolder()) :
 			// tr: {1} is Eden's game files folder, which has keys/ and firmware/ in it
-			IsSwitch2() ? TrF("Put this system's games in {0}, or choose any folder the PS5 can read, such as one on a USB drive. Folders inside it are searched too, four deep.", folder) :
-			IsSwitch() ? TrF("Put your Switch games (.nsp or .xci, alone or each in a folder of its own with its update and DLC) in {0}. "
-							 "Eden needs your Switch's keys in {1}/keys and its firmware in {1}/firmware too.",
+			IsSwitch2() ? TrF("Put this system's games in {0}, or choose any folder, such as one on a USB drive. Subfolders are searched too.", folder) :
+			IsSwitch() ? TrF("Put your Switch games (.nsp or .xci, each alone or in a folder with its update and DLC) in {0}. You also need your Switch's keys in {1}/keys and firmware in {1}/firmware.",
 							 ps5eden::ScanFolder(folder), ps5eden::GameFilesFolder()) :
-						 TrF("Put your Wii U games (.wua, .wud, .wux, or folders with code, content and meta, alone or in .zip, .7z or .rar "
-							 "archives) in {0}, or choose any folder the PS5 can read, such as one on a USB drive.",
+						 TrF("Put your Wii U games (.wua, .wud, .wux, folders with code, content and meta, or in .zip, .7z or .rar) in {0}, or choose any folder, such as one on a USB drive.",
 							 folder);
 		buttons = {Tr("Choose a folder"), Tr("Setup check")};
 		if (Is3ds())
@@ -262,12 +281,19 @@ namespace ps5shell
 		const int64_t recent = std::time(nullptr) - 30 * 86400;
 		const std::string search = Lower(m_search);
 		const int hidden = HiddenFilter();
+		std::string& collection = m_libraryCollection[side];
+		if (!collection.empty())
+		{
+			const std::vector<std::string> names = LibraryCollections();
+			if (!std::binary_search(names.begin(), names.end(), collection))
+				collection.clear();
+		}
 		m_shelf.clear();
 		for (int i = 0; i < (int)m_games.size(); i++)
 		{
 			Game& game = m_games[i];
-			const auto& collection = m_libraryCollection[side];
-			if (!ps5collections::Matches(game.entry, collection)) continue;
+			if (!ps5collections::Matches(game.entry, collection))
+				continue;
 			// a hidden game in the Hidden filter alone, and found by a search
 			if (hidden >= 0 && filter == hidden ? !game.entry.hidden : game.entry.hidden && search.empty())
 				continue;
@@ -360,13 +386,6 @@ namespace ps5shell
 
 	void Shell::LibraryUpdate(const ui::Press& press)
 	{
-		if (press.button == Button::Circle && !m_libraryCollection[SideIndex()].empty())
-		{
-			m_libraryCollection[SideIndex()].clear();
-			LibraryRefresh();
-			m_feedback.Play(ui::Cue::Back);
-			return;
-		}
 		if (Orbit() && OrbitUpdate(press))
 			return;
 		const Button b = press.button;
@@ -399,12 +418,19 @@ namespace ps5shell
 			std::vector<std::string> choices = SortNames();
 			// tr: the last choice of the Library's Sort list: a game of the list picked by chance, the order kept
 			choices.push_back(Tr("Surprise me"));
-			choices.push_back(Tr("Collections"));
+			// Orbit, or the filters off: the collections are picked here, not on the filter row
+			const bool collections = (Orbit() || !filters) && !LibraryCollections().empty();
+			if (collections)
+				choices.push_back(Tr("Collections"));
 			OpenPicker(TrC("tab", "Library"), Tr("Sort"), choices, m_settings.ui.librarySort[side], [this, side](int choice) {
-				if (choice == (int)std::size(kSorts) + 1) { OpenCollections(); return; }
 				if (choice == (int)std::size(kSorts))
 				{
 					SurpriseMe();
+					return;
+				}
+				if (choice == (int)std::size(kSorts) + 1)
+				{
+					OpenCollections();
 					return;
 				}
 				m_settings.ui.librarySort[side] = choice;
@@ -416,6 +442,12 @@ namespace ps5shell
 		case Button::Triangle: OpenKeyboard(); return;
 		case Button::Circle:
 			// the search let go, then up to the top, then the bar: the Library is where a side opens
+			if (!m_libraryCollection[side].empty() && m_search.empty())
+			{
+				ShowCollection("");
+				m_feedback.Play(ui::Cue::Back);
+				return;
+			}
 			if (!m_search.empty())
 			{
 				m_search.clear();
@@ -490,12 +522,25 @@ namespace ps5shell
 			case Button::Left:
 			case Button::Right:
 			{
-				const int next = filter + (b == Button::Right ? 1 : -1);
-				if (next < 0 || next >= LibraryFilters())
+				// the filters, then a pill for each collection
+				const std::vector<std::string> names = LibraryCollections();
+				const int filters = LibraryFilters();
+				const auto it = std::find(names.begin(), names.end(), m_libraryCollection[side]);
+				const int at = it != names.end() ? filters + (int)(it - names.begin()) : LibraryFilter();
+				const int next = at + (b == Button::Right ? 1 : -1);
+				if (next < 0 || next >= filters + (int)names.size())
 					m_feedback.Play(ui::Cue::Edge, press.repeat);
 				else
 				{
-					filter = next;
+					if (next < filters)
+					{
+						filter = next;
+						m_libraryCollection[side].clear();
+					}
+					else
+						m_libraryCollection[side] = names[next - filters];
+					if (next >= filters)
+						filter = 0;
 					SaveSettings();
 					m_libraryIndex = 0;
 					m_libraryFocusTitle = 0;
@@ -740,9 +785,10 @@ namespace ps5shell
 		}
 
 		// the Library: its heading and count, Sort and Search at the right
-		const ui::TextBlock title = canvas.Text(heading, kSafeX, headTop, m_libraryCollection[side].empty() ? std::string(TrC("tab", "Library")) : m_libraryCollection[side], kText, 600, 1);
+		const std::string& collection = m_libraryCollection[side];
+		const ui::TextBlock title = canvas.Text(heading, kSafeX, headTop, collection.empty() ? std::string(TrC("tab", "Library")) : collection, kText, 600, 1);
 		const int listed = (int)std::count_if(m_games.begin(), m_games.end(), [&](const Game& g) {
-			return !g.entry.hidden && ps5collections::Matches(g.entry, m_libraryCollection[side]);
+			return !g.entry.hidden && ps5collections::Matches(g.entry, collection);
 		}); // as All counts them
 		// tr: how many games the Library has
 		const ui::TextBlock count = canvas.Text(tool, kSafeX + title.width + 24, headTop + 9, TrP(listed, "{0} game", "{0} games"), Tertiary(), 300, 1);
@@ -750,7 +796,7 @@ namespace ps5shell
 			canvas.Text(Style(kCaptionStyle), kSafeX + title.width + 24 + count.width + 24, headTop + 11, Tr("Looking for new games…"), Tertiary(), 360, 1);
 		else if (m_status.lastLook[side])
 			// tr: the Library's list is the one found on the network share last time (#75); Look for games now is in Settings > Game files
-			canvas.Text(Style(kCaptionStyle), kSafeX + title.width + 24 + count.width + 24, headTop + 11, Tr("As found last time"), Tertiary(), 360, 1);
+			canvas.Text(Style(kCaptionStyle), kSafeX + title.width + 24 + count.width + 24, headTop + 11, Tr("From the last search"), Tertiary(), 360, 1);
 		{
 			float right = 1920 - kSafeX;
 			const ui::TextBlock search = m_fonts.Layout(tool, m_search.empty() ? std::string(Tr("Search")) : TrF("Search: {0}", m_search));
@@ -772,7 +818,6 @@ namespace ps5shell
 			int counts[5] = {0, 0, 0, 0, 0};
 			for (Game& g : m_games)
 			{
-				if (!ps5collections::Matches(g.entry, m_libraryCollection[side])) continue;
 				if (g.entry.hidden)
 				{
 					counts[4]++;
@@ -793,14 +838,26 @@ namespace ps5shell
 				names[hidden] = names[4];
 				counts[hidden] = counts[4];
 			}
-			const int count = LibraryFilters();
-			const int filter = LibraryFilter();
+			// then a pill for each collection, with its games on this side
+			std::vector<std::string> pills(names, names + LibraryFilters());
+			std::vector<int> numbers(counts, counts + LibraryFilters());
+			const std::vector<std::string> collections = LibraryCollections();
+			for (const std::string& name : collections)
+			{
+				pills.push_back(name);
+				numbers.push_back((int)std::count_if(m_games.begin(), m_games.end(), [&](const Game& g) {
+					return !g.entry.hidden && ps5collections::Matches(g.entry, name);
+				}));
+			}
+			const int count = (int)pills.size();
+			const auto chosen = std::find(collections.begin(), collections.end(), m_libraryCollection[side]);
+			const int filter = chosen != collections.end() ? LibraryFilters() + (int)(chosen - collections.begin()) : LibraryFilter();
 			ui::TextStyle pillStyle = Style({24, ui::Weight::Medium, 1.0f});
 			ui::TextStyle countStyle = Style({19, ui::Weight::SemiBold, 1.0f, 0, false, true});
 			auto filtersWidth = [&] {
 				float width = 0;
 				for (int i = 0; i < count; i++)
-					width += 24 + m_fonts.Width(pillStyle, names[i]) + 12 + m_fonts.Width(countStyle, std::to_string(counts[i])) + 24 + 14;
+					width += 24 + m_fonts.Width(pillStyle, pills[i]) + 12 + m_fonts.Width(countStyle, std::to_string(numbers[i])) + 24 + 14;
 				return width;
 			};
 			// a step smaller at a time in a language whose words do not fit the row
@@ -813,12 +870,13 @@ namespace ps5shell
 			for (int i = 0; i < count; i++)
 			{
 				const bool on = i == filter;
-				const std::string number = i == 3 && i != hidden && counts[3] == 0 ? "" : std::to_string(counts[i]);
-				const float w = 24 + m_fonts.Width(pillStyle, names[i]) + (number.empty() ? 0 : 12 + m_fonts.Width(countStyle, number)) + 24;
+				const std::string number = i == 3 && i != hidden && counts[3] == 0 ? "" : std::to_string(numbers[i]);
+				const float w = 24 + m_fonts.Width(pillStyle, pills[i]) + (number.empty() ? 0 : 12 + m_fonts.Width(countStyle, number)) + 24;
 				const Box pill{x, filterTop, w, 48};
-				canvas.Rect(pill, 24, on ? ui::SetAlpha(Accent(), 0.22f) : Surface());
-				canvas.Ring(pill, 24, 1.5f, on ? ui::SetAlpha(Accent(), 0.5f) : kGlassEdge);
-				const ui::TextBlock text = m_fonts.Layout(pillStyle, names[i]);
+				Glass(canvas, pill, 24, on ? ui::SetAlpha(Accent(), 0.22f) : Surface(), 0.7f);
+				if (on)
+					canvas.Ring(pill, 24, 1.5f, ui::SetAlpha(Accent(), 0.5f));
+				const ui::TextBlock text = m_fonts.Layout(pillStyle, pills[i]);
 				canvas.Text(text, x + 24, pill.CentreY() - text.height * 0.5f, on ? kText : Secondary());
 				if (!number.empty())
 				{
@@ -838,9 +896,9 @@ namespace ps5shell
 			canvas.Text(Style(kBodyStyle), kSafeX, listTop + 10,
 				!m_search.empty() ? TrF("Nothing matches “{0}”. Circle clears the search.", m_search) :
 				m_scanning		  ? std::string(Tr("Looking for games…")) :
-				filter == 2		  ? std::string(Tr("Options on a game, then Favourite, puts it here.")) :
+				filter == 2		  ? std::string(Tr("Press Options on a game and choose Favourite to add it here.")) :
 				filter			  ? std::string(Tr("All shows every game.")) :
-									std::string(Tr("No games yet. Settings > Game files says where they go.")),
+									std::string(Tr("No games yet. See Settings > Game files.")),
 				Secondary(), 1200, 2);
 		}
 		for (int index = 0; index < total; index++)
@@ -851,7 +909,7 @@ namespace ps5shell
 			const bool focused = !m_onBar && m_libraryZone == 2 && index == m_libraryIndex;
 			// a row each: a small cover, the name, play time and when it was played, how it runs
 			const Box row{kSafeX, rowTop, 1920 - 2 * kSafeX - 40, kListPitch - 12};
-			canvas.Rect(row, kRadiusCard, focused ? Surface2() : Surface());
+			Glass(canvas, row, kRadiusCard, focused ? Surface2() : Surface(), focused ? 1.0f : 0.6f);
 			if (focused)
 				Focus(row, kRadiusCard, index < offset ? kN3ds : 0);
 			if (index < offset)

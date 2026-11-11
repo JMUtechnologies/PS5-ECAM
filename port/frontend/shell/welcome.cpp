@@ -78,10 +78,8 @@ namespace ps5shell
 			const bool aOnCircle = ps5azahar::MappedInput(m_settings.n3ds, ps5azahar::Button::A) == ps5emu::PadInput::Circle;
 			row.index = aOnCircle ? 0 : 1;
 			row.value = row.options[row.index];
-			row.description = Tr("On every side: A on Circle, as Nintendo's consoles have it, or on Cross.");
-			row.help = Tr("A on Circle and B on Cross, where the Wii U, the 3DS and the DS have them, or A on Cross and B on Circle, as "
-						  "PlayStation games confirm. X and Y swap to match. Each side's Controls, and each Wii U player, can change it "
-						  "later.");
+			row.description = Tr("For every system: A on Circle as on Nintendo consoles, or on Cross.");
+			row.help = Tr("A on Circle and B on Cross as on Nintendo consoles, or A on Cross and B on Circle as on PlayStation. X and Y swap to match. You can change it later in each system's Controls.");
 			rows.push_back(row);
 		};
 		if (m_welcomeFirst)
@@ -106,10 +104,8 @@ namespace ps5shell
 				touchpad.options = {Tr(kTouchpadClicks[0]), Tr(kTouchpadClicks[1]), Tr(kTouchpadClicks[2])};
 				touchpad.index = std::clamp(m_settings.touchpadClick[0], 0, 2);
 				touchpad.value = touchpad.options[touchpad.index];
-				touchpad.description = Tr("Wii U player 1's: a touch of the GamePad's screen, or a button.");
-				touchpad.help = Tr("What a click of the touchpad is for Wii U player 1: a touch of the GamePad's screen, or the button set to "
-								   "Touchpad click under Buttons (- (Select) when nothing is). Automatic: a touch with the GamePad, a button "
-								   "with the other controllers. Each player's own: Settings > Controls on the Wii U side.");
+				touchpad.description = Tr("For Wii U player 1: touch the GamePad screen, or press a button.");
+				touchpad.help = Tr("What a touchpad click does for Wii U player 1: touch the GamePad screen, or press the button set for Touchpad click (- (Select) if none). Automatic: a touch with the GamePad, a button with other controllers. Other players: Settings > Controls for the Wii U.");
 				rows.push_back(touchpad);
 				// on the Wii U side, its pages' new rows
 				if (IsWiiU())
@@ -121,7 +117,7 @@ namespace ps5shell
 		next.id = "continue";
 		next.label = m_welcomeThenSetup ? Tr("Continue to the Setup check") : m_welcomeFromSettings ? Tr("Back to Settings") : Tr("Continue to the Library");
 		next.description = Tr("Everything here is in Settings too.");
-		next.help = Tr("Continues. Nothing here has to be chosen now: every row of this page is also in Settings, on its own side.");
+		next.help = Tr("Continue. You don't have to choose now: everything here is also in Settings.");
 		rows.push_back(next);
 		return rows;
 	}
@@ -225,8 +221,8 @@ namespace ps5shell
 			m_welcomeFirst ? std::string(Tr("Welcome to Playtendoh")) : TrF("Playtendoh {0}", ps5update::Readable(PS5CEMU_VERSION)), Secondary(), 1100, 1);
 		canvas.Text(Style({56, ui::Weight::Bold, 1.1f, -0.8f}), kSafeX, 122, m_welcomeFirst ? Tr("Make it yours") : Tr("New in this version"), kText, 1100, 1);
 		canvas.Text(Style({24, ui::Weight::Regular, 1.3f}), kSafeX, 206,
-			m_welcomeFirst ? Tr("How the app looks and feels, chosen once. Settings has all of it too.") :
-							 Tr("A few new options to set up once. Settings has all of them too."),
+			m_welcomeFirst ? Tr("Choose how the app looks and feels. You can change it in Settings.") :
+							 Tr("A few new options to set up. They're also in Settings."),
 			Secondary(), 1100, 1);
 		canvas.PopAlpha();
 
@@ -263,8 +259,7 @@ namespace ps5shell
 		const Box aside{kAsideX, top, kAsideWidth, height};
 		canvas.PushAlpha(Enter(2));
 		canvas.PushOffset((1 - Enter(2)) * 30, 0);
-		canvas.Rect(aside, kRadiusSheet, m_settings.ui.highContrast ? kInk2 : ui::SetAlpha(kInk1, 0.80f));
-		canvas.Ring(aside, kRadiusSheet, 1.5f, kGlassEdge);
+		Glass(canvas, aside, kRadiusSheet, m_settings.ui.highContrast ? kInk2 : ui::SetAlpha(kInk1, 0.80f));
 		canvas.PushClip(aside, kRadiusSheet);
 		float y = aside.y + kAsidePad;
 		const float ax = aside.x + kAsidePad;

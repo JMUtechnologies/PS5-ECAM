@@ -58,8 +58,9 @@ namespace ps5eden
 		} settings;
 	};
 	Result TakeResult();
-	// What the Switch side says of it, in the player's language; empty when all went well
-	std::string ResultMessage(const Result& result);
+	// What the Switch side says of it, in the player's language; empty when all went well. switch2: the
+	// Switch 2 side's program (Lichii) left it, and its own folders are named
+	std::string ResultMessage(const Result& result, bool switch2 = false);
 	// What the in-game menu changed, kept as the other sides' menus keep theirs (ps5settings::SaveChanges)
 	void KeepMenuChanges(const Result& result);
 	// The nickname shown in a room: Settings > Online > Multiplayer's, else ProsperoEden's own

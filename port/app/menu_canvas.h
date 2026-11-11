@@ -559,6 +559,14 @@ namespace ps5menu
 				const ImVec2 tray[] = {{c.x - 12 * s, c.y + 3 * s}, {c.x - 12 * s, c.y + 12 * s}, {c.x + 12 * s, c.y + 12 * s}, {c.x + 12 * s, c.y + 3 * s}};
 				draw->AddPolyline(tray, 4, colour, 0, thick);
 			}
+			else if (name == "reset")
+			{
+				// a circling arrow: most of a ring, its head at the top
+				draw->PathArcTo(c, 11 * s, -1.2f, 4.4f, 24);
+				draw->PathStroke(colour, 0, thick);
+				const ImVec2 tip{c.x + 11 * s * 0.362f, c.y - 11 * s * 0.932f};
+				draw->AddTriangleFilled({tip.x - 7 * s, tip.y - 5 * s}, {tip.x + 4 * s, tip.y - 1 * s}, {tip.x - 4 * s, tip.y + 7 * s}, colour);
+			}
 			else if (name == "screens")
 			{
 				// the 3DS's two screens, the top one wider

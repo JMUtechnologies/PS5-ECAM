@@ -31,10 +31,16 @@ fi
 bash "$PS5CEMU_ROOT/tools/cemu-patches.sh" apply
 bash "$PS5CEMU_ROOT/tools/reshade-patches.sh" apply # its effect compiler (port/cemu/ReShadeEffects.cpp)
 
+# The reports' intake (docs/REPORTS.md, tools/log-intake): the project's, unless PLAYTENDOH_REPORT_URL
+# names another or is set empty (no reports: the app asks nothing and sends nothing)
+report_url=${PLAYTENDOH_REPORT_URL-https://playtendoh-reports.pixelnet321.workers.dev/v1/report}
+
 options=(
     -DCMAKE_TOOLCHAIN_FILE="$PS5CEMU_TOOLCHAIN" -DCMAKE_BUILD_TYPE=Release
     -DCEMU_PS5=ON -DCEMU_PS5_PORT_DIR="$PS5CEMU_ROOT/port"
     -DPS5ECAM_STEAMGRIDDB_KEY="${PS5ECAM_STEAMGRIDDB_KEY:-}"
+    # here, so a new address configures again rather than the one the cache kept
+    -DPLAYTENDOH_REPORT_URL="$report_url"
     -DENABLE_VCPKG=OFF -DENABLE_WXWIDGETS=OFF -DENABLE_OPENGL=OFF -DENABLE_METAL=OFF -DENABLE_VULKAN=ON
     -DENABLE_DISCORD_RPC=OFF -DENABLE_HIDAPI=OFF -DENABLE_SDL=OFF -DENABLE_LIBUSB=OFF -DENABLE_CUBEB=OFF
     -DALLOW_PORTABLE=OFF -DBoost_USE_STATIC_LIBS=ON -DBoost_ROOT="$PS5CEMU_SYSROOT"
@@ -46,6 +52,11 @@ options=(
     # the libretro cores, when tools/build-libretro.py has built them (port/CMakeLists.txt)
     -DPS5CEMU_LIBRETRO_OBJECTS="$PS5CEMU_BUILD/libretro/objects.txt"
 )
+if [[ -z $report_url ]]; then
+    echo "note: PLAYTENDOH_REPORT_URL is empty: this build asks for no reports and sends none (tools/log-intake/README.md)"
+elif [[ ${PS5CEMU_RELEASE:-0} == 1 ]]; then
+    echo "reports go to $report_url"
+fi
 # configured again when the options change (this script's), as CMake would not know
 if [[ ! -f $build/build.ninja || $(cat "$build/ps5-options" 2>/dev/null) != "${options[*]}" ]]; then
     mkdir -p "$build"
@@ -68,3 +79,10 @@ if [[ -f $elf && ${PS5CEMU_LINK_CHECK:-0} != 1 && $(cat "$elf.radv" 2>/dev/null)
 fi
 
 ninja -C "$build" -j "$JOBS" "$@"
+
+# a release holds the reports' address it was built with, or stops: one that sent nothing would only
+# show on a console
+if [[ ${PS5CEMU_RELEASE:-0} == 1 && -n $report_url && $# -eq 0 && -f $elf ]] && ! grep -qaF "$report_url" "$elf"; then
+    echo "error: $elf does not hold the reports' address $report_url" >&2
+    exit 1
+fi

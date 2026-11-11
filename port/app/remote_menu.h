@@ -28,7 +28,7 @@ namespace ps5menu
 		const bool on = ps5stream::Enabled();
 		return {kRemoteRow, Tr("Remote touch screen"), on ? Tr("On") : Tr("Off"), true,
 			// tr: {0} is the side's second screen: the GamePad's screen, the bottom screen or the touch screen
-			TrF("{0} in a phone's or tablet's browser, with touch: scan the code beside this. Kept for the next games.", screen)};
+			TrF("Open {0} on a phone or tablet to use it as a touch screen, or scan the code. Applies to all games.", screen)};
 	}
 
 	// Its row chosen or changed: the server on or off at once, and ps5cemu.json saying so
