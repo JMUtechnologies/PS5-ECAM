@@ -37,6 +37,22 @@ for title in "BotW Update v208" "BotW DLC"; do
     echo '<menu/>' >"$games/Installs/$title/meta/meta.xml"
 done
 python3 -B tools/launcher-preview/make-3ds-samples.py "$games/3ds" "$games/ds"
+# Wii discs as USB loaders keep them, each the head of a WBFS file (its ID and the Wii's magic word at
+# 0x200): one in a folder named for it, one alone and named by its ID; and Game Boy Advance games
+python3 -B - "$games/wii" <<'PY'
+import os, sys
+for name in ("Mario Kart Wii [RMCE01]/RMCE01.wbfs", "RSBE01.wbfs", "wbfs/Wii Sports [RSPE01]/RSPE01.wbfs"):
+    path = os.path.join(sys.argv[1], name)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    head = bytearray(0x400)
+    head[0:4] = b"WBFS"
+    head[0x200:0x206] = os.path.basename(name)[:6].encode()
+    head[0x218:0x21c] = bytes.fromhex("5d1c9ea3")
+    open(path, "wb").write(head)
+PY
+mkdir -p "$games/gba/Pokemon"
+: >"$games/gba/Metroid Fusion (USA).gba"
+: >"$games/gba/Pokemon/Pokemon - Emerald Version (USA, Europe).gba"
 # Switch games where Eden keeps them (the Switch side's default folder, ps5eden::DefaultGamesFolder):
 # empty files by a dump's names, one in a folder of its own with its update, and Eden's keys
 roms=$out/eden/roms

@@ -46,6 +46,7 @@
 #include "eden/library.h"
 #include "frontend/shell.h"
 #include "libretro/game.h"
+#include "retro/library.h"
 #include "stream/stream.h"
 
 #include <algorithm>
@@ -103,6 +104,9 @@ int main(int argc, char* argv[])
 	settings.gamesFolder = argv[3];
 	settings.n3ds.gamesFolder = argv[4];
 	settings.nds.gamesFolder = argv[5];
+	// the Wii's and the Game Boy Advance's samples (preview-shell.sh)
+	settings.retro[ps5retro::Slot((int)ps5launcher::System::Wii)].gamesFolder = std::string(argv[3]) + "/wii";
+	settings.retro[ps5retro::Slot((int)ps5launcher::System::Gba)].gamesFolder = std::string(argv[3]) + "/gba";
 	if (!std::getenv("PREVIEW_FIRST"))
 	{
 		// earlier sessions: the side last used, the games last played, the counts their scans saved
@@ -170,6 +174,8 @@ int main(int argc, char* argv[])
 			ps5melonds::StartScan(settings.nds.gamesFolder);
 		else if (system == ps5launcher::System::Switch)
 			ps5eden::StartScan(settings.nx.gamesFolder);
+		else if (ps5retro::IsRetro((int)system)) // as main_ps5.cpp's: the side's folder looked through
+			ps5retro::StartScan((int)system, settings.retro[ps5retro::Slot((int)system)].gamesFolder);
 		else
 			status.coreReady = true;
 	}, choice);

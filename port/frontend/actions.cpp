@@ -6,6 +6,7 @@
 #include "../app/lang.h"
 #include "../app/netfs.h"
 #include "../app/paths.h"
+#include "../retro/registry.h"
 #include "../ps5/kernel.h"
 #include "../ps5/log.h"
 
@@ -327,6 +328,26 @@ namespace ps5actions
 		bool ok = false;
 		const auto files = ListEntries(folder, false, ok);
 		return ok ? (int)std::count_if(files.begin(), files.end(), HasDsExtension) : -1;
+	}
+
+	// The games of one of ps5retro::kSystems' sides in a folder and the folders right in it (its library
+	// looks deeper; one level holds a game in a folder of its own, "Title [RMCE01]/RMCE01.wbfs"). -1: unreadable.
+	int CountRetroGames(int side, const std::string& folder)
+	{
+		const std::string_view key = ps5retro::Of(side).key;
+		bool ok = false;
+		int count = 0;
+		for (const auto& name : ListEntries(folder, false, ok))
+			count += ps5retro::HasExtension(key, name);
+		if (!ok)
+			return -1;
+		for (const auto& sub : ListEntries(folder, true, ok))
+		{
+			bool read = false;
+			for (const auto& name : ListEntries(JoinPath(folder, sub), false, read))
+				count += ps5retro::HasExtension(key, name);
+		}
+		return count;
 	}
 
 	// What Cemu would find in a folder: Wii U images and executables, and folders that hold an

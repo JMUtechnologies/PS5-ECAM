@@ -233,7 +233,10 @@ namespace ps5shell
 			pages.push_back({"performance", Tr("Performance"), Tr("Speed, accuracy and memory."), Icon::Pulse});
 		pages.push_back({"files", Tr("Game files"), IsWiiU() ? Tr("Where your Wii U games are, and installs into the Wii U's storage.") :
 										Is3ds()		 ? Tr("Where your 3DS games are, and installs into the 3DS's storage.") :
+										IsSwitch2()	 ? Tr("Where your Switch 2 games are, with their keys and firmware.") :
 										IsSwitch()	 ? Tr("Where your Switch games are, with its keys and firmware.") :
+										// tr: {0} is a system (Game Boy Advance)
+										IsRetro()	 ? TrF("Where your {0} games are.", SystemName(m_side)) :
 													   Tr("Where your DS games are, and where their saves go."),
 			Icon::Folder});
 		// the Wii U's accounts and every side's saves (6.13); a handheld has one player, so its page is saves alone.

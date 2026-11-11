@@ -135,28 +135,39 @@ namespace ps5retro
 		}
 	}
 
+	std::string_view Formats(std::string_view side)
+	{
+		if (side == "gb") return ".gb";
+		if (side == "gbc") return ".gbc";
+		if (side == "gba") return ".gba .zip .7z";
+		if (side == "nes") return ".nes .unf .unif .fds .zip .7z";
+		if (side == "snes") return ".sfc .smc .swc .fig .bs .st";
+		if (side == "vb") return ".vb .vboy";
+		if (side == "pokemini") return ".min";
+		if (side == "fds") return ".fds";
+		if (side == "sgb") return ".gb .gbc";
+		if (side == "gw") return ".mgw";
+		if (side == "satellaview") return ".bs";
+		if (side == "vs") return ".nes .zip .7z";
+		if (side == "ique") return ".z64 .n64 .v64 .zip";
+		if (side == "n64") return ".z64 .n64 .v64 .zip .rom";
+		if (side == "gamecube") return ".iso .gcm .rvz .ciso .gcz .wia";
+		if (side == "wii") return ".iso .gcm .rvz .ciso .gcz .wia .wbfs .wad .dol .elf";
+		return "";
+	}
+
 	bool HasExtension(std::string_view side, std::string name)
 	{
 		for (auto& c : name) c = char(std::tolower((unsigned char)c));
 		const auto dot = name.find_last_of('.');
 		if (dot == std::string::npos) return false;
-		const auto ext = name.substr(dot);
-		if (side == "gb") return ext == ".gb";
-		if (side == "gbc") return ext == ".gbc";
-		if (side == "gba") return ext == ".gba" || ext == ".zip" || ext == ".7z";
-		if (side == "nes") return ext == ".nes" || ext == ".unf" || ext == ".unif" || ext == ".fds" || ext == ".zip" || ext == ".7z";
-		if (side == "snes") return ext == ".sfc" || ext == ".smc" || ext == ".swc" || ext == ".fig" || ext == ".bs" || ext == ".st";
-		if (side == "vb") return ext == ".vb" || ext == ".vboy";
-		if (side == "pokemini") return ext == ".min";
-		if (side == "fds") return ext == ".fds";
-		if (side == "sgb") return ext == ".gb" || ext == ".gbc";
-		if (side == "gw") return ext == ".mgw";
-		if (side == "satellaview") return ext == ".bs";
-		if (side == "vs") return ext == ".nes" || ext == ".zip" || ext == ".7z";
-		if (side == "ique") return ext == ".z64" || ext == ".n64" || ext == ".v64" || ext == ".zip";
-		if (side == "n64") return ext == ".z64" || ext == ".n64" || ext == ".v64" || ext == ".zip" || ext == ".rom";
-		if (side == "gamecube" || side == "wii")
-			return ext == ".iso" || ext == ".gcm" || ext == ".rvz" || ext == ".ciso" || ext == ".gcz" || ext == ".wia" || (side == "wii" && (ext == ".wbfs" || ext == ".wad" || ext == ".dol" || ext == ".elf"));
+		const std::string_view ext = std::string_view(name).substr(dot);
+		for (std::string_view formats = Formats(side); !formats.empty();)
+		{
+			const size_t space = formats.find(' ');
+			if (formats.substr(0, space) == ext) return true;
+			formats = space == std::string_view::npos ? std::string_view() : formats.substr(space + 1);
+		}
 		return false;
 	}
 

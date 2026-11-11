@@ -14,6 +14,7 @@
 #include "../../azahar/library.h"
 #include "../../eden/eden.h"
 #include "../../eden/library.h"
+#include "../../eglantine/launch.h"
 #include "../../melonds/library.h"
 #include "../../melonds/melonds.h"
 #include "../../ps5/kernel.h"
@@ -1051,7 +1052,7 @@ namespace ps5shell
 			tabs.push_back(drive);
 		// each network share after the drives (6.14), as /net/<its name>; not for the Switch side's games,
 		// which Eden, a program of its own, cannot read there (#101)
-		if (m_filesSide != System::Switch)
+		if (m_filesSide != System::Switch && m_filesSide != System::Switch2)
 			for (const ps5netfs::Share& share : ps5netfs::shares())
 				tabs.push_back(ps5netfs::root_of(share));
 		return tabs;
@@ -1205,9 +1206,9 @@ namespace ps5shell
 				ps5melonds::StartScan(m_browseFolder);
 				m_scanning = true;
 			}
-			else if (here && m_filesSide == System::Switch)
+			else if (here && (m_filesSide == System::Switch || m_filesSide == System::Switch2))
 			{
-				ps5eden::StartScan(m_browseFolder);
+				ps5eden::StartScan(m_browseFolder, m_filesSide == System::Switch2);
 				m_scanning = true;
 			}
 			else if (here && m_status.coreReady)
@@ -1288,11 +1289,13 @@ namespace ps5shell
 	void Shell::FilesDraw(Canvas& canvas)
 	{
 		const bool install = m_filesMode == 1, cia = m_filesMode == 2;
+		// every side's own words, folders and files: the Switch 2's are Lichii's, the others' their core's
 		const bool n3ds = m_filesSide == System::N3ds, nds = m_filesSide == System::Nds, nx = m_filesSide == System::Switch;
-		const bool retro = ps5retro::IsRetro((int)m_filesSide);
+		const bool nx2 = m_filesSide == System::Switch2, retro = ps5retro::IsRetro((int)m_filesSide);
 		DrawPageHeader(canvas,
 			install || cia ? std::string(SystemName(m_filesSide)) + " · " + Tr("Install") :
 			retro          ? TrF("{0} games", SystemName(m_filesSide)) :
+			nx2            ? TrF("{0} games", SideTitle(m_filesSide)) :
 			n3ds		   ? Tr("3DS games") :
 			nds			   ? Tr("DS games") :
 			nx			   ? Tr("Switch games") :
@@ -1301,6 +1304,7 @@ namespace ps5shell
 			cia		? std::string(Tr("Choose a CIA file: a game, an update or DLC")) :
 			install ? std::string(Tr("Choose a folder with an update, DLC or game (code, content and meta)")) :
 			retro   ? TrF("Choose the folder that holds your {0} games", SystemName(m_filesSide)) :
+			nx2     ? TrF("Choose the folder that holds your {0} games", SideTitle(m_filesSide)) :
 			n3ds	? std::string(Tr("Choose the folder that holds your 3DS games")) :
 			nds		? std::string(Tr("Choose the folder that holds your DS games")) :
 			nx		? std::string(Tr("Choose the folder that holds your Switch games")) :
@@ -1389,8 +1393,8 @@ namespace ps5shell
 			auto it = m_folderCounts.find(m_browseFolder);
 			if (it == m_folderCounts.end())
 			{
-				const int games = ps5retro::IsRetro((int)m_filesSide) ? -1 : n3ds ? Count3dsGames(m_browseFolder) : nds ? CountDsGames(m_browseFolder) : nx ? ps5eden::CountGames(m_browseFolder, m_filesSide == System::Switch2) :
-																												 CountGames(m_browseFolder);
+				const int games = retro ? CountRetroGames((int)m_filesSide, m_browseFolder) : n3ds ? Count3dsGames(m_browseFolder) : nds ? CountDsGames(m_browseFolder) :
+					nx || nx2 ? ps5eden::CountGames(m_browseFolder, nx2) : CountGames(m_browseFolder);
 				it = m_folderCounts.emplace(m_browseFolder, games < 0 ? "-1" : std::to_string(games)).first;
 			}
 			const int games = std::atoi(it->second.c_str());
@@ -1410,6 +1414,21 @@ namespace ps5shell
 				const bool keys = ps5eden::KeysFound();
 				lines[1] = {"prod.keys", keys ? std::string(Tr("Found")) : std::string(Tr("Missing: Switch games need it"))};
 				ready[1] = keys;
+			}
+			else if (nx2)
+			{
+				// Lichii's own keys, in its data folder, not Eden's
+				const bool keys = ps5eglantine::KeysFound();
+				// tr: {0} is the Switch 2 emulator's data folder
+				lines[1] = {"prod.keys", keys ? TrF("Found in {0}", ps5eglantine::DataFolder() + "/keys") : TrF("Missing: put it in {0}", ps5eglantine::DataFolder() + "/keys")};
+				ready[1] = keys;
+			}
+			else if (retro)
+			{
+				// the side's own data folder (its saves and settings), as the console has it
+				const std::string data = ps5retro::BackendFor((int)m_filesSide, Handheld(m_filesSide).retroBackend).data;
+				lines[1] = {Tr("Saves and settings"), data};
+				ready[1] = IsFolder(data);
 			}
 			else if (nds)
 			{
@@ -1431,6 +1450,9 @@ namespace ps5shell
 				message = n3ds ? Tr("Games can be decrypted .3ds, .cci, .cxi, .3dsx or .cia files, or in .zip, .7z or .rar, here or in subfolders. Triangle uses this folder.") :
 					nds		   ? Tr("Games are .nds files, or in .zip, .7z or .rar, here or in subfolders. Triangle uses this folder.") :
 				nx		   ? Tr("Games are .nsp and .xci files, here or each in its own folder with its update and DLC. Network shares can't be used. Triangle uses this folder.") :
+				nx2		   ? Tr("Games are .nup files, or folders with exefs/main and romfs/, each with its update. Network shares can't be used. Triangle uses this folder.") :
+				// tr: {0} is a list of file types (.gb .gbc)
+				retro	   ? TrF("Games are {0} files, here or in subfolders. Triangle uses this folder.", ps5retro::Formats(ps5retro::Of((int)m_filesSide).key)) :
 								 Tr("Games can be .wua, .wud, .wux, folders with code, content and meta, or in .zip, .7z or .rar. Triangle uses this folder.");
 		}
 		else
