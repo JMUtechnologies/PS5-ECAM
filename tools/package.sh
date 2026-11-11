@@ -49,6 +49,24 @@ if [[ -f $elf.linkcheck ]] && ((!check)); then
 fi
 mkdir -p "$work"
 
+# The ELF's image: its segments as they are loaded, .bss with them. 6.0's grew to 503 MiB (ParaLLEl-N64's
+# globals beside Mesen's HQX tables) and PS5-680 restarted as the app started, before its first log line;
+# 5.1's was 346 MiB and 6.0's first builds about 353. A large static table stops here, not on a console.
+image=$(python3 -B - "$elf" <<'EOF'
+import struct, sys
+data = open(sys.argv[1], "rb").read(1 << 16)
+phoff, = struct.unpack_from("<Q", data, 0x20)
+size, count = struct.unpack_from("<HH", data, 0x36)
+ends = [vaddr + memsz for kind, vaddr, memsz in
+        (struct.unpack_from("<I12xQ16xQ", data, phoff + i * size) for i in range(count)) if kind == 1]
+print(max(ends) >> 20)
+EOF
+)
+if ((image > 400)); then
+    echo "$elf loads as $image MiB, over 400: a static table that belongs on the heap (llvm-nm-18 -S --size-sort)" >&2
+    exit 2
+fi
+
 # The host tool that converts and signs the ELF: PS5_Vulkan's native tooling, which its RADV
 # titles go through, with the boilerplate's zlib.
 tool=$PS5CEMU_BUILD/host/ps5-native-tool

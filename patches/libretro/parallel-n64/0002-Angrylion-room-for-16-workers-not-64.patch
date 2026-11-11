@@ -1,0 +1,23 @@
+From: Playtendoh
+Subject: [PATCH] Angrylion: room for 16 workers, not 64
+
+rdp.c keeps a 574 KiB rdp_state for each worker it could have, 35 MiB of the app's image (.bss) for
+64. Playtendoh runs 6 (parallel-n64-angrylion-multithread), on a PS5's 13 CPUs; parallel_alinit
+already holds a larger count to the most.
+
+---
+diff --git a/mupen64plus-video-angrylion/parallel_al.h b/mupen64plus-video-angrylion/parallel_al.h
+index 5037195..a8a1c52 100644
+--- a/mupen64plus-video-angrylion/parallel_al.h
++++ b/mupen64plus-video-angrylion/parallel_al.h
+@@ -6,7 +6,9 @@ extern "C" {
+ 
+ #include <stdint.h>
+ 
+-#define PARALLEL_MAX_WORKERS 64u
++/* PS5: Playtendoh runs 6 workers (port/libretro/game.cpp) on 13 CPUs; each slot is a 574 KiB
++   rdp_state in the app's image (.bss), and 64 of them were 35 MiB of it */
++#define PARALLEL_MAX_WORKERS 16u
+ 
+ void parallel_alinit(uint32_t num);
+ 

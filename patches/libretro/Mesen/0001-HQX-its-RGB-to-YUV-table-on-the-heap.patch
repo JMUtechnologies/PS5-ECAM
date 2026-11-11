@@ -1,0 +1,43 @@
+From: Playtendoh
+Subject: [PATCH] HQX: its RGB to YUV table on the heap, made when the filter is first chosen
+
+The table was 64 MiB of zeroes in the app's image (.bss) whether or not a game ever used the HQX
+filter. With ParaLLEl-N64's memory added the image grew to 503 MiB, and the console restarted as
+the app started, most likely as the image went over what the PS5 gives a title. hqxInit, which every HQX use calls first, now makes it.
+
+---
+diff --git a/Utilities/HQX/common.h b/Utilities/HQX/common.h
+index dbd6c33..bb3bd36 100644
+--- a/Utilities/HQX/common.h
++++ b/Utilities/HQX/common.h
+@@ -39,7 +39,7 @@
+ #define trV   0x00000006
+ 
+ /* RGB to YUV lookup table */
+-extern uint32_t RGBtoYUV[16777216];
++extern uint32_t* RGBtoYUV; /* PS5: hqxInit makes it */
+ 
+ static inline uint32_t rgb_to_yuv(uint32_t c)
+ {
+diff --git a/Utilities/HQX/init.cpp b/Utilities/HQX/init.cpp
+index be9de48..692ec29 100644
+--- a/Utilities/HQX/init.cpp
++++ b/Utilities/HQX/init.cpp
+@@ -20,12 +20,16 @@
+ #include <stdint.h>
+ #include "hqx.h"
+ 
+-uint32_t   RGBtoYUV[16777216];
++uint32_t*  RGBtoYUV;
+ uint32_t   YUV1, YUV2;
+ 
+ void HQX_CALLCONV hqxInit(void)
+ {
+     /* Initalize RGB to YUV lookup table */
++    /* PS5: made here, on the heap, when the filter is first chosen: 64 MiB in the app's image (.bss)
++       counts against what the PS5 gives a title, used or not */
++    if (!RGBtoYUV)
++        RGBtoYUV = new uint32_t[16777216]();
+     uint32_t c, r, g, b, y, u, v;
+     for (c = 0; c < 16777215; c++) {
+         r = (c & 0xFF0000) >> 16;
