@@ -39,10 +39,12 @@
 #include "app/lang.h"
 #include "app/paths.h"
 #include "app/updates.h"
+#include "app/esde_get.h"
 #include "azahar/library.h"
 #include "melonds/library.h"
 #include "eden/library.h"
 #include "frontend/shell.h"
+#include "libretro/game.h"
 #include "stream/stream.h"
 
 #include <algorithm>
@@ -177,7 +179,26 @@ namespace ps5eglantine
 namespace ps5libretro
 {
 	bool Plays(int) { return true; }
-	const char* CoreTitle(int) { return "libretro"; }
+	const char* CoreTitle(int) { return "mGBA"; }
+	// mGBA's options as it declares them (a few), to lay out Settings > Emulator
+	const std::vector<CoreOption>& CoreOptions(int)
+	{
+		static const std::vector<CoreOption> options{
+			{"mgba_solar_sensor_level", "Solar Sensor Level", "Sets ambient sunlight intensity. Can be used by games that included a solar sensor in their cartridges, e.g: the Boktai series.", "",
+				{{"0", "0"}, {"5", "5"}, {"10", "10"}}, "0"},
+			{"mgba_allow_opposing_directions", "Allow Opposing Directional Input", "Enabling this will allow pressing / quickly alternating / holding both left and right (or up and down) directions at the same time.", "Input and Auxiliary",
+				{{"no", "Disabled"}, {"yes", "Enabled"}}, "no"},
+			{"mgba_gb_model", "Game Boy Model", "Runs loaded content with a specific Game Boy model. 'Autodetect' will select the most appropriate model for the current game.", "System",
+				{{"Autodetect", "Autodetect"}, {"Game Boy", "Game Boy"}, {"Super Game Boy", "Super Game Boy"}, {"Game Boy Color", "Game Boy Color"}, {"Game Boy Advance", "Game Boy Advance"}}, "Autodetect"},
+			{"mgba_use_bios", "Use BIOS File if Found", "Use official BIOS/bootloader for emulated hardware, if present in RetroArch's system directory.", "System",
+				{{"ON", "Enabled"}, {"OFF", "Disabled"}}, "ON"},
+			{"mgba_color_correction", "Color Correction", "Adjusts output colors to match the display of real GBA/GBC hardware.", "Video",
+				{{"OFF", "Disabled"}, {"GBA", "Game Boy Advance"}, {"GBC", "Game Boy Color"}, {"Auto", "Auto"}}, "OFF"},
+			{"mgba_frameskip", "Frameskip", "Skip frames to improve performance at the expense of visual smoothness.", "Video",
+				{{"disabled", "Disabled"}, {"auto", "Auto"}, {"auto_threshold", "Threshold"}, {"fixed_interval", "Fixed Interval"}}, "disabled"},
+		};
+		return options;
+	}
 }
 
 namespace ps5shots
@@ -190,8 +211,18 @@ namespace ps5shots
 	}
 }
 
+// ES-DE's download (app/esde_get.cpp): never under way in the preview
+namespace ps5esdeget
+{
+	void Start() {}
+	Status GetStatus() { return {}; }
+	bool Busy() { return false; }
+	bool Cancel() { return false; }
+	bool Remove(std::string&) { return true; }
+}
+
 namespace ps5esde
 {
-	bool Available() { return false; }
+	bool Available() { return std::getenv("PREVIEW_ESDE") != nullptr; } // PREVIEW_ESDE=1: an app with ES-DE
 	void BackToFrontend(const ps5settings::Launcher&, const std::string&) {}
 }

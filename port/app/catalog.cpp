@@ -102,6 +102,11 @@ namespace ps5catalog
 				entry.added = Int(item, "added");
 				entry.favourite = item.HasMember("favourite") && item["favourite"].IsBool() && item["favourite"].GetBool();
 				entry.hidden = item.HasMember("hidden") && item["hidden"].IsBool() && item["hidden"].GetBool();
+				if (item.HasMember("collections") && item["collections"].IsArray())
+					for (const auto& name : item["collections"].GetArray())
+						if (name.IsString() && name.GetStringLength() > 0 && name.GetStringLength() <= 96 && entry.collections.size() < 32 &&
+							std::find(entry.collections.begin(), entry.collections.end(), name.GetString()) == entry.collections.end())
+							entry.collections.emplace_back(name.GetString());
 				entry.lastPlayed = Int(item, "lastPlayed");
 				entry.minutesPlayed = (uint32_t)Int(item, "minutes");
 				if (!entry.game.name.empty())
@@ -180,6 +185,12 @@ namespace ps5catalog
 					writer.Key("hidden");
 					writer.Bool(true);
 				}
+				if (!entry.collections.empty())
+				{
+					writer.Key("collections"); writer.StartArray();
+					for (const auto& name : entry.collections) writer.String(name.c_str());
+					writer.EndArray();
+				}
 				writer.Key("lastPlayed");
 				writer.Int64(entry.lastPlayed);
 				writer.Key("minutes");
@@ -195,6 +206,8 @@ namespace ps5catalog
 			if (!file)
 				return false;
 			file << buffer.GetString() << '\n';
+			file.close();
+			if (!file) return false;
 		}
 		return std::rename(temporary.c_str(), path.c_str()) == 0;
 	}
@@ -234,6 +247,39 @@ namespace ps5catalog
 		}
 		games = std::move(fresh);
 		Sort(games);
+	}
+
+	std::vector<std::string> Collections()
+	{
+		Load();
+		std::vector<std::string> names;
+		for (const auto& games : s_games)
+			for (const auto& game : games)
+				names.insert(names.end(), game.collections.begin(), game.collections.end());
+		std::sort(names.begin(), names.end());
+		names.erase(std::unique(names.begin(), names.end()), names.end());
+		return names;
+	}
+
+	bool SetCollection(System side, uint64_t titleId, std::string name, bool member)
+	{
+		const auto begin = name.find_first_not_of(" ");
+		if (begin == std::string::npos) return false;
+		name = name.substr(begin, name.find_last_not_of(" ") - begin + 1);
+		if (name.size() > 96 || std::any_of(name.begin(), name.end(), [](unsigned char c) { return c < 32; })) return false;
+		Entry* entry = Find(side, titleId);
+		if (!entry) return false;
+		const auto previous = entry->collections;
+		auto found = std::find(entry->collections.begin(), entry->collections.end(), name);
+		if (member && found == entry->collections.end())
+		{
+			if (entry->collections.size() >= 32) return false;
+			entry->collections.push_back(name);
+		}
+		else if (!member && found != entry->collections.end()) entry->collections.erase(found);
+		if (Save()) return true;
+		entry->collections = previous;
+		return false;
 	}
 
 	void SetFavourite(System side, uint64_t titleId, bool favourite)

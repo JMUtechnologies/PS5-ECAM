@@ -263,7 +263,7 @@ namespace ps5retro
 	}
 	bool ValidateRom(int side, const std::string& path, std::string& error, int backend)
 	{
-		if (!IsRetro(side) || !HasExtension(Of(side).key, path)) { error = Tr("This is not a game this side can start."); return false; }
+		if (!IsRetro(side) || !HasExtension(Of(side).key, path)) { error = Tr("This system can't start this game."); return false; }
 		std::error_code ec;
 		const auto size = fs::file_size(path, ec);
 		if (ec || size == 0) { error = Tr("The game file is empty or cannot be read."); return false; }
@@ -272,8 +272,8 @@ namespace ps5retro
 			if (!DiscMatches(Of(side).key, path)) { error = TrF("This disc is not a {0} game, or it cannot be read.", Of(side).name); return false; }
 			error.clear(); return true;
 		}
-		const char* damaged = Tr("This game's file is damaged or incomplete: its header is not a cartridge's.");
-		const char* tooLarge = Tr("This game is larger than this side's emulator can load.");
+		const char* damaged = Tr("This game's file is damaged or incomplete.");
+		const char* tooLarge = Tr("This game is too large for this system's emulator.");
 		std::string ext = fs::path(path).extension().string();
 		for (char& c : ext) c = char(std::tolower((unsigned char)c));
 		// the N64's and the NES's emulators have their limits below (the iQue Player's is the N64's); the
@@ -292,7 +292,7 @@ namespace ps5retro
 				error.clear(); return true; // The native mGBA loader validates complete cartridge contents.
 			}
 		}
-		if (n64OrNes && backend == 0 && (ext == ".7z" || ext == ".rom")) { error = Tr("This side's first emulator cannot read this kind of file: the other one, chosen in its Settings, can."); return false; }
+		if (n64OrNes && backend == 0 && (ext == ".7z" || ext == ".rom")) { error = Tr("This emulator can't read this kind of file. Choose the other emulator in this system's Settings."); return false; }
 		const uint64_t limit = n64 ? (backend == 1 ? 252ull : 64ull) * 1024 * 1024 : 64ull * 1024 * 1024;
 		if (size > limit && ext != ".zip" && ext != ".7z") { error = tooLarge; return false; }
 		unsigned char h[16]{}; std::ifstream in(path, std::ios::binary); in.read(reinterpret_cast<char*>(h), sizeof(h));
@@ -345,7 +345,7 @@ namespace ps5retro
 		size_t inspected = 0;
 		for (; !ec && it != end; it.increment(ec))
 		{
-			if (++inspected > 100000) { error = TrF("Only the first {0} files in {1} were looked through: choose a folder with fewer.", 100000, folder); break; }
+			if (++inspected > 100000) { error = TrF("Only the first {0} files in {1} were searched. Choose a folder with fewer files.", 100000, folder); break; }
 			if (it.depth() >= 4) it.disable_recursion_pending();
 			std::error_code statusError;
 			const auto status = ps5files::OwnStatus(it->path(), statusError);

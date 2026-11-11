@@ -623,8 +623,141 @@ namespace ps5boxart
 		}
 	}
 
-	void Fetch(System system, const std::vector<std::string>& ids, Art art)
+	// -- the libretro sides' covers: libretro's thumbnails, by the game file's name ---------------------------
 
+	namespace
+	{
+		std::mutex s_retroMutex;
+		std::deque<std::pair<std::string, std::string>> s_retroQueue; // under s_retroMutex: the folder, the name
+		std::set<std::string> s_retroSeen;							   // under s_retroMutex
+		bool s_retroRunning = false;								   // under s_retroMutex
+		std::atomic<uint32_t> s_retroArrivals{0};
+
+		std::string RetroBase(const std::string& system, const std::string& name)
+		{
+			return fmt::format("{}/boxart/retro/{}/{}", ps5paths::Covers(), TitleFileName(system), TitleFileName(name));
+		}
+
+		void RetroWorker()
+		{
+			curl_global_init(CURL_GLOBAL_DEFAULT);
+			curl_slist* const resolved = ps5net::AddResolve(ps5net::AddResolve(nullptr, kTitlesHost, 80), kTitlesHost, 443);
+			static curl_slist* const headers = ps5curl::Headers();
+			CURL* const curl = curl_easy_init();
+			if (curl)
+			{
+				ps5curl::Setup(curl);
+				curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+				if (resolved)
+					curl_easy_setopt(curl, CURLOPT_RESOLVE, resolved);
+			}
+			int fetched = 0, missing = 0;
+			for (;;)
+			{
+				std::pair<std::string, std::string> item;
+				{
+					std::lock_guard lock(s_retroMutex);
+					if (s_retroQueue.empty() || s_stopped || !s_enabled || !curl)
+					{
+						s_retroRunning = false;
+						break;
+					}
+					item = std::move(s_retroQueue.front());
+					s_retroQueue.pop_front();
+				}
+				const std::string base = RetroBase(item.first, item.second);
+				std::error_code ec;
+				fs::create_directories(fs::path(base).parent_path(), ec);
+				char* const folder = curl_easy_escape(curl, item.first.c_str(), 0);
+				char* const file = curl_easy_escape(curl, TitleFileName(item.second).c_str(), 0);
+				if (!folder || !file)
+				{
+					curl_free(folder);
+					curl_free(file);
+					continue;
+				}
+				const std::string url = fmt::format("http://{}/{}/Named_Boxarts/{}.png", kTitlesHost, folder, file);
+				curl_free(folder);
+				curl_free(file);
+				std::vector<uint8_t> data, rgba;
+				int width = 0, height = 0;
+				const long status = Get(curl, url, data);
+				if (status == 404 || status == 410)
+				{
+					std::ofstream(base + ".none").put('\n'); // asked for again after a while
+					missing++;
+				}
+				else if (status == 200 && DecodePng(data, rgba, width, height) && width > 0 && height > 0)
+				{
+					int fitWidth = 0, fitHeight = 0;
+					const std::vector<uint8_t> fitted = Fit(rgba, width, height, fitWidth, fitHeight);
+					if (WriteTga(base + ".tga", fitted, fitWidth, fitHeight))
+					{
+						fetched++;
+						s_retroArrivals++;
+						s_arrivals++;
+					}
+				}
+				else
+					ps5log::Line("[boxart] {} / {}: HTTP {}; next start", item.first, item.second, status);
+			}
+			if (fetched || missing)
+				ps5log::Line("[boxart] libretro's covers: {} fetched, {} not there", fetched, missing);
+			if (curl)
+				curl_easy_cleanup(curl);
+		}
+
+		// A game file's name as libretro's thumbnails have it: its own name, without what a hack or a copy adds
+		std::string RetroName(std::string name)
+		{
+			while (!name.empty() && name.back() == ' ')
+				name.pop_back();
+			return name;
+		}
+	}
+
+	std::string RetroPath(const std::string& system, const std::string& name)
+	{
+		if (system.empty() || name.empty())
+			return {};
+		std::error_code ec;
+		const std::string path = RetroBase(system, RetroName(name)) + ".tga";
+		return fs::exists(path, ec) ? path : std::string();
+	}
+
+	void FetchRetro(const std::string& system, const std::vector<std::string>& names, bool again)
+	{
+		if (!s_enabled || s_stopped || system.empty())
+			return;
+		std::lock_guard lock(s_retroMutex);
+		size_t queued = 0;
+		for (const std::string& raw : names)
+		{
+			const std::string name = RetroName(raw);
+			std::error_code ec;
+			const std::string base = RetroBase(system, name);
+			if (name.empty() || (!s_retroSeen.insert(system + "/" + name).second && !again) || fs::exists(base + ".tga", ec) ||
+				(!again && RecentMarker(base + ".none")))
+				continue;
+			s_retroQueue.emplace_back(system, name);
+			queued++;
+		}
+		if (queued)
+			ps5log::Line("[boxart] {}: {} covers to look for in libretro's thumbnails", system, queued);
+		if (!s_retroRunning && !s_retroQueue.empty())
+		{
+			s_retroRunning = true;
+			std::thread(RetroWorker).detach();
+		}
+	}
+
+	size_t RetroPending()
+	{
+		std::lock_guard lock(s_retroMutex);
+		return s_retroQueue.size() + (s_retroRunning ? 1 : 0);
+	}
+
+	void Fetch(System system, const std::vector<std::string>& ids, Art art)
 	{
 		if (!s_enabled || s_stopped)
 			return;

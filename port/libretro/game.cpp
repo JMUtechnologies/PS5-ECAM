@@ -13,6 +13,7 @@
 #include "game.h"
 #include "core.h"
 #include "session.h"
+#include "../app/achievements.h"
 #include "../app/game_archives.h"
 #include "../app/ingame3ds.h"
 #include "../app/lang.h"
@@ -37,9 +38,11 @@
 #include <cmath>
 #include <cstring>
 #include <ctime>
+#include <iterator>
 #include <deque>
 #include <filesystem>
 #include <fstream>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <sys/stat.h>
@@ -76,6 +79,41 @@ namespace ps5libretro
 		ps5settings::N3ds s_settings; // the game's loop's: as the menu leaves them
 		ps5settings::N3ds s_launched; // what the game started with, or what the menu last saved
 		bool s_coreTouched = false;
+		std::atomic<bool> s_cheevos{false}; // RetroAchievements: this game's set looked for (app/achievements.h)
+
+		// RetroAchievements' id for the side's console (rc_consoles.h); 0 for one it has no sets for
+		uint32_t CheevosConsole(std::string_view key)
+		{
+			if (key == "nes") return 7;
+			if (key == "fds") return 81;
+			if (key == "snes" || key == "satellaview") return 3;
+			if (key == "gb" || key == "sgb") return 4;
+			if (key == "gbc") return 6;
+			if (key == "gba") return 5;
+			if (key == "n64" || key == "ique") return 2;
+			if (key == "vb") return 28;
+			if (key == "pokemini") return 24;
+			return 0;
+		}
+
+		// The menu's Achievements, as the DS side shows them (melonds/core.cpp)
+		void ShowAchievements()
+		{
+			std::vector<ps5cheevos::Item> items;
+			std::string summary;
+			ps5cheevos::List(items, summary);
+			std::vector<ps5ingame3ds::Achievement> shown;
+			for (const ps5cheevos::Item& item : items)
+			{
+				ps5ingame3ds::Achievement a{item.title, item.description, item.points, item.unlocked, {}};
+				const std::time_t when = (std::time_t)item.unlockedAt;
+				std::tm local{};
+				if (item.unlocked && when > 0 && localtime_r(&when, &local))
+					a.when = ps5lang::ShortDateTime(local.tm_mon + 1, local.tm_mday, local.tm_hour, local.tm_min);
+				shown.push_back(std::move(a));
+			}
+			ps5ingame3ds::SetAchievements(true, summary, shown);
+		}
 		bool s_resume = false;
 		std::thread s_emulation;
 		std::atomic_bool s_stop = false;
@@ -87,7 +125,12 @@ namespace ps5libretro
 		{
 			int filter = 0;
 			int speedLimit = 100; // percent of the core's own rate; 0: none
+			int size = 0, shape = 0; // the picture's on the TV (ps5ingame3ds::kPictureSizes, kPictureShapes)
 		};
+		// what the menu asked of the core, done between two frames on the emulation's thread: an option's new
+		// value, a reset (under s_mutex)
+		std::vector<std::pair<std::string, std::string>> s_optionChanges;
+		bool s_resetPending = false;
 		std::mutex s_mutex; // s_view and s_pads
 		View s_view;
 		Pad s_pads[kPlayers];
@@ -330,20 +373,38 @@ namespace ps5libretro
 			menu.buttons = s_settings.buttons;
 			menu.border = s_settings.border;
 			menu.screenFilter = s_settings.dsFilter;
+			menu.pictureSize = s_settings.pictureSize;
+			menu.pictureShape = s_settings.pictureShape;
 			std::lock_guard lock(s_mutex);
 			menu.speedLimit = s_view.speedLimit;
 			return menu;
 		}
 
 		// The picture's place on the TV: the whole height, in the core's shape
-		screens::Rect PictureRect(float aspect)
+		screens::Rect PictureRect(float aspect, int size = 0, int shape = 0, unsigned pixelsWide = 0, unsigned pixelsHigh = 0)
 		{
 			const float width = (float)screens::Width(), height = (float)screens::Height();
+			// its shape: the core's, a 4:3 TV's, each pixel square, a 16:9 TV's
+			if (shape == 1)
+				aspect = 4.0f / 3.0f;
+			else if (shape == 2 && pixelsWide && pixelsHigh)
+				aspect = (float)pixelsWide / pixelsHigh;
+			else if (shape == 3)
+				aspect = 16.0f / 9.0f;
+			if (size == 2)
+				return {0, 0, width, height}; // the whole screen
 			float w = height * aspect, h = height;
 			if (w > width)
 			{
 				w = width;
 				h = width / aspect;
+			}
+			// whole pixels: the largest whole multiple of its height (on a 4K screen, a 240-line game 9 times)
+			if (size == 1 && pixelsHigh)
+			{
+				const float times = std::max(1.0f, std::floor(h / pixelsHigh));
+				h = times * pixelsHigh;
+				w = h * aspect;
 			}
 			return {(width - w) / 2, (height - h) / 2, (width + w) / 2, (height + h) / 2};
 		}
@@ -382,6 +443,8 @@ namespace ps5libretro
 			s_settings.performance = menu.performance;
 			s_settings.deadzone = menu.deadzone;
 			s_settings.dsFilter = menu.screenFilter;
+			s_settings.pictureSize = menu.pictureSize;
+			s_settings.pictureShape = menu.pictureShape;
 			if (menu.border != s_settings.border)
 			{
 				s_settings.border = menu.border;
@@ -399,6 +462,8 @@ namespace ps5libretro
 				std::lock_guard lock(s_mutex);
 				s_view.filter = menu.screenFilter;
 				s_view.speedLimit = menu.speedLimit;
+				s_view.size = menu.pictureSize;
+				s_view.shape = menu.pictureShape;
 			}
 			SetVolume(menu.volume);
 			ps5settings::Launcher before, after;
@@ -429,7 +494,7 @@ namespace ps5libretro
 			if (request == kUndoRequest)
 			{
 				done = UndoLoad(error);
-				message = done ? ps5lang::Tr("Back to before the load") : ps5lang::Tr("It did not work");
+				message = done ? ps5lang::Tr("Load undone") : ps5lang::Tr("It did not work");
 			}
 			else if (request > 0)
 			{
@@ -447,6 +512,8 @@ namespace ps5libretro
 				message = !done ? std::string(ps5lang::Tr("It did not work")) :
 					slot == kResumeSlot ? std::string(ps5lang::Tr("Back where you left off")) : ps5lang::TrF("Loaded slot {0}", slot);
 			}
+			if (done && request <= 0 && s_cheevos)
+				ps5cheevos::Reset(); // the set's conditions start again from the state's memory
 			if (!done)
 				ps5log::Line("[retro] save state {}: {}", request, error);
 			if (request == kResumeSlot)
@@ -469,6 +536,26 @@ namespace ps5libretro
 			{
 				if (const int request = s_stateRequest.exchange(0))
 					MakeState(request);
+				{
+					// the menu's emulator options and Reset, between two frames
+					std::vector<std::pair<std::string, std::string>> changes;
+					bool reset = false;
+					{
+						std::lock_guard lock(s_mutex);
+						changes.swap(s_optionChanges);
+						reset = std::exchange(s_resetPending, false);
+					}
+					for (const auto& [key, value] : changes)
+						if (!SetOption(key, value))
+							ps5log::Line("[retro] the core has no {} value {}", key, value);
+					if (reset)
+					{
+						ps5libretro::Reset();
+						if (s_cheevos)
+							ps5cheevos::Reset();
+						ps5log::Line("[retro] reset");
+					}
+				}
 				View view;
 				Pad pads[kPlayers];
 				{
@@ -477,6 +564,8 @@ namespace ps5libretro
 					std::copy(std::begin(s_pads), std::end(s_pads), pads);
 				}
 				const bool paused = ps5ingame3ds::MenuOpen();
+				if (paused && s_cheevos)
+					ps5cheevos::Idle(); // what the server answered is still dealt with
 				if (!paused)
 				{
 					const double rate = FrameRate();
@@ -487,6 +576,8 @@ namespace ps5libretro
 					{
 						Run(pads);
 						s_framesRun++;
+						if (s_cheevos)
+							ps5cheevos::DoFrame();
 						// sound at the core's own speed only: faster or slower, it would be played as such
 						if (view.speedLimit == 100)
 							QueueSound(Sound(), SampleRate());
@@ -506,13 +597,13 @@ namespace ps5libretro
 					frame.picture = picture.pixels.data();
 					frame.pictureWidth = picture.width;
 					frame.pictureHeight = picture.height;
-					frame.pictureRect = PictureRect(AspectRatio());
+					frame.pictureRect = PictureRect(AspectRatio(), view.size, view.shape, picture.width, picture.height);
 				}
 				if (!screens::Present(frame))
 				{
 					ps5log::Line("[retro] the picture stopped: the GPU's device was lost");
 					// tr: a notification as a game on a libretro core stops because the PS5's GPU stopped drawing it
-					ps5notify::Send(ps5lang::Tr("The game's picture stopped (the GPU's device was lost)."));
+					ps5notify::Send(ps5lang::Tr("The game's graphics stopped working."));
 					break;
 				}
 				s_framesShown++;
@@ -585,6 +676,42 @@ namespace ps5libretro
 		}
 	}
 
+	namespace
+	{
+		// the launcher's language, as libretro numbers them
+		unsigned RetroLanguage()
+		{
+			const std::string language = ps5lang::Current();
+			return language == "ja" ? RETRO_LANGUAGE_JAPANESE : language.rfind("fr", 0) == 0 ? RETRO_LANGUAGE_FRENCH :
+				language.rfind("es", 0) == 0 ? RETRO_LANGUAGE_SPANISH : language == "de" ? RETRO_LANGUAGE_GERMAN :
+				language == "it" ? RETRO_LANGUAGE_ITALIAN : language == "nl" ? RETRO_LANGUAGE_DUTCH :
+				language == "pt-BR" ? RETRO_LANGUAGE_PORTUGUESE_BRAZIL : language == "pt-PT" ? RETRO_LANGUAGE_PORTUGUESE_PORTUGAL :
+				language == "ru" ? RETRO_LANGUAGE_RUSSIAN : language == "ko" ? RETRO_LANGUAGE_KOREAN :
+				language == "zh-Hant" ? RETRO_LANGUAGE_CHINESE_TRADITIONAL : language == "zh-Hans" ? RETRO_LANGUAGE_CHINESE_SIMPLIFIED :
+				language == "pl" ? RETRO_LANGUAGE_POLISH : language == "tr" ? RETRO_LANGUAGE_TURKISH : RETRO_LANGUAGE_ENGLISH;
+		}
+	}
+
+	const std::vector<CoreOption>& CoreOptions(int side)
+	{
+		// each side's, as last asked, and in which language
+		static std::map<int, std::pair<std::string, std::vector<CoreOption>>> asked;
+		static const std::vector<CoreOption> none;
+		const Core* core = Plays(side) ? Find(ps5retro::Of(side).core) : nullptr;
+		if (!core || Loaded())
+			return none;
+		auto& [language, options] = asked[side];
+		if (language == ps5lang::Current() && !options.empty())
+			return options;
+		language = ps5lang::Current();
+		options.clear();
+		for (Option& option : Describe(*core, RetroLanguage()))
+			options.push_back({std::move(option.key), std::move(option.label), std::move(option.info), std::move(option.category),
+				std::move(option.values), std::move(option.defaultValue)});
+		ps5log::Line("[retro] {}: {} options", core->name, options.size());
+		return options;
+	}
+
 	bool CoreTouched() { return s_coreTouched; }
 	void SetResume(bool resume) { s_resume = resume; }
 
@@ -594,7 +721,7 @@ namespace ps5libretro
 		const Core* core = Plays(side) ? Find(ps5retro::Of(side).core) : nullptr;
 		if (!core)
 		{
-			error = ps5lang::Tr("This side's emulator is not in this copy of Playtendoh.");
+			error = ps5lang::Tr("This system's emulator is not in this copy of Playtendoh.");
 			return false;
 		}
 		const ps5retro::System& system = ps5retro::Of(side);
@@ -605,7 +732,7 @@ namespace ps5libretro
 		s_settings = s_launched = settings;
 		{
 			std::lock_guard lock(s_mutex);
-			s_view = View{settings.dsFilter, 100};
+			s_view = View{settings.dsFilter, 100, settings.pictureSize, settings.pictureShape};
 			std::fill(std::begin(s_pads), std::end(s_pads), Pad{});
 		}
 		Configure(settings);
@@ -624,14 +751,7 @@ namespace ps5libretro
 			rest = end == std::string_view::npos ? std::string_view{} : rest.substr(end + 1);
 		}
 		// the launcher's language, as libretro numbers them, for the cores that have their own words
-		const std::string language = ps5lang::Current();
-		setup.language = language == "ja" ? RETRO_LANGUAGE_JAPANESE : language.rfind("fr", 0) == 0 ? RETRO_LANGUAGE_FRENCH :
-			language.rfind("es", 0) == 0 ? RETRO_LANGUAGE_SPANISH : language == "de" ? RETRO_LANGUAGE_GERMAN :
-			language == "it" ? RETRO_LANGUAGE_ITALIAN : language == "nl" ? RETRO_LANGUAGE_DUTCH :
-			language == "pt-BR" ? RETRO_LANGUAGE_PORTUGUESE_BRAZIL : language == "pt-PT" ? RETRO_LANGUAGE_PORTUGUESE_PORTUGAL :
-			language == "ru" ? RETRO_LANGUAGE_RUSSIAN : language == "ko" ? RETRO_LANGUAGE_KOREAN :
-			language == "zh-Hant" ? RETRO_LANGUAGE_CHINESE_TRADITIONAL : language == "zh-Hans" ? RETRO_LANGUAGE_CHINESE_SIMPLIFIED :
-			language == "pl" ? RETRO_LANGUAGE_POLISH : language == "tr" ? RETRO_LANGUAGE_TURKISH : RETRO_LANGUAGE_ENGLISH;
+		setup.language = RetroLanguage();
 		// the app's values for some cores' options, over their defaults: the Virtual Boy's second D-pad on
 		// the right stick (Red Alarm, Teleroboxer); the Nintendo 64 on the CPU as it is built
 		// (tools/libretro/parallel-n64.mk): the cached interpreter, no dynarec being in it, and Angrylion's
@@ -642,6 +762,9 @@ namespace ps5libretro
 		else if (coreName == "paralleln64")
 			setup.options = {{"parallel-n64-cpucore", "cached_interpreter"}, {"parallel-n64-gfxplugin", "angrylion"},
 				{"parallel-n64-angrylion-multithread", "6"}};
+		// and the player's, from Settings > Emulator (ps5settings::N3ds::coreOptions), over both
+		for (const auto& [key, value] : settings.coreOptions)
+			setup.options[key] = value;
 		SetLog([](int, const std::string& line) { ps5log::Line("[retro] {}", line); });
 		// a game in an archive: its file unpacked into the side's cache, from where the core reads it
 		std::string path = game.path.string();
@@ -664,6 +787,40 @@ namespace ps5libretro
 		}
 		StartSound();
 		ps5ingame3ds::Start(s_name, s_titleId, MenuSettings(), ps5ingame3ds::Console::Retro, system.name, system.colour);
+		// RetroAchievements, signed in, for a console it has sets for: the game's file hashed as rcheevos
+		// hashes that console's, its memory as rcheevos addresses it
+		s_cheevos = false;
+		if (const uint32_t console = CheevosConsole(system.key); console && ps5cheevos::Get().signedIn)
+		{
+			std::ifstream file(path, std::ios::binary);
+			std::vector<uint8_t> data;
+			if (file)
+				data.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+			const std::string hash = data.size() <= (128u << 20) ? ps5cheevos::Hash(console, data.data(), data.size()) : std::string();
+			if (!hash.empty() && CheevosMemory(console))
+				s_cheevos = ps5cheevos::StartGame(CheevosRead, hash);
+			else if (!hash.empty())
+				ps5log::Line("[retro] RetroAchievements: {} gives no memory to check", CoreName());
+		}
+		ps5ingame3ds::SetAchievements(s_cheevos, {}, {});
+		{
+			// the Emulator category: every option the core shows, as it is now
+			std::vector<ps5ingame3ds::CoreOption> options;
+			for (const Option& option : Options())
+			{
+				if (!option.visible || option.values.empty())
+					continue;
+				ps5ingame3ds::CoreOption row{option.key, option.label, option.info, {}, 0};
+				for (size_t i = 0; i < option.values.size(); i++)
+				{
+					row.values.push_back(option.values[i].second);
+					if (option.values[i].first == option.value)
+						row.index = (int)i;
+				}
+				options.push_back(std::move(row));
+			}
+			ps5ingame3ds::SetCoreOptions(options);
+		}
 		ps5ingame3ds::LoadBorder(s_settings.border);
 		PublishScreens(AspectRatio());
 		ShowStateSlots();
@@ -678,7 +835,7 @@ namespace ps5libretro
 
 	void RunGame()
 	{
-		ps5notify::Send(ps5lang::Tr("Touchpad click + Options: the in-game menu (screens, picture, volume, controls, the library)"));
+		ps5notify::Send(ps5lang::Tr("Touchpad click + Options opens the in-game menu"));
 		ps5pad::SetStateShortcuts(true);
 		s_quitAfterState = false;
 		if (std::exchange(s_resume, false))
@@ -715,6 +872,39 @@ namespace ps5libretro
 					ShowStateSlots();
 				}
 			}
+			// the menu's emulator options: given to the core between frames, kept for the side as Settings > Emulator keeps them
+			for (std::string key; ;)
+			{
+				int index = 0;
+				if (!ps5ingame3ds::TakeCoreOption(key, index))
+					break;
+				for (const Option& option : Options())
+					if (option.key == key && index >= 0 && index < (int)option.values.size())
+					{
+						const std::string& value = option.values[index].first;
+						{
+							std::lock_guard lock(s_mutex);
+							s_optionChanges.emplace_back(key, value);
+						}
+						if (value == option.defaultValue)
+							s_settings.coreOptions.erase(key);
+						else
+							s_settings.coreOptions[key] = value;
+						ps5settings::Launcher before, after;
+						before.retro[ps5retro::Slot(s_side)] = s_launched;
+						after.retro[ps5retro::Slot(s_side)] = s_settings;
+						ps5settings::SaveChanges(s_key, s_titleId, before, after);
+						s_launched = s_settings;
+					}
+			}
+			if (ps5ingame3ds::TakeResetRequest())
+			{
+				std::lock_guard lock(s_mutex);
+				s_resetPending = true;
+			}
+			// RetroAchievements in the menu: read again about once a second while it is open
+			if (s_cheevos && polls % 250 == 1 && ps5ingame3ds::MenuOpen())
+				ShowAchievements();
 			const ps5pad::Shortcut shortcut = ps5pad::TakeShortcut();
 			if (shortcut == ps5pad::Shortcut::Menu)
 				ps5ingame3ds::ToggleMenu();
@@ -758,6 +948,8 @@ namespace ps5libretro
 		std::string message;
 		while (TakeMessage(message))
 			ps5log::Line("[retro] the core said: {}", message);
+		if (s_cheevos.exchange(false))
+			ps5cheevos::EndGame(2000); // an unlock still on its way, a moment to go
 		Unload(); // the save written, the core stopped
 		StopSound();
 		screens::Stop();

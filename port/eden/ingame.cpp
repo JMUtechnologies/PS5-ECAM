@@ -464,6 +464,13 @@ namespace ps5ingamenx
 
 		// -- the loading screen ----------------------------------------------------------------------
 
+		// the system it names: the Switch 2 side's program is built with PS5ECAM_SWITCH2 (its ecam.cmake)
+#ifdef PS5ECAM_SWITCH2
+		constexpr const char* kSystemName = "Nintendo Switch 2";
+#else
+		constexpr const char* kSystemName = "Nintendo Switch";
+#endif
+
 		std::string StepText()
 		{
 			switch ((Step)s_step.load())
@@ -523,7 +530,7 @@ namespace ps5ingamenx
 			}
 			const float tx = x0 + coverWidth + 80, width = 1920 - tx - 180;
 			float y = y0 + 40;
-			canvas.Chip(g.chip, tx, y, "Nintendo Switch", colours.accentInk, colours.accent, true);
+			canvas.Chip(g.chip, tx, y, kSystemName, colours.accentInk, colours.accent, true);
 			y += 64;
 			const ps5menu::Canvas::Lines lines = canvas.Break(g.big, 60, title, width);
 			const int shown = std::min(2, (int)lines.drawn.size());
@@ -588,7 +595,7 @@ namespace ps5ingamenx
 				// tr: {0} is an amiibo dump's file name
 				case AmiiboAnswer::Touched: return TrF("Scanned {0}", name);
 				// tr: the amiibo taken away from the controller, as from the Switch's NFC reader
-				case AmiiboAnswer::Removed: return TrF("{0} taken away", name);
+				case AmiiboAnswer::Removed: return TrF("{0} removed", name);
 				case AmiiboAnswer::NotAsked: return Tr("The game is not asking for one");
 				case AmiiboAnswer::NotAnAmiibo: return Tr("Not an amiibo dump");
 				case AmiiboAnswer::Unreadable: return Tr("Could not be read");
@@ -603,25 +610,25 @@ namespace ps5ingamenx
 			const std::string on = Tr("On"), off = Tr("Off");
 			std::vector<Row> rows;
 			Row graphics{"graphics", Tr("Graphics"), FilterName(settings.filter), false,
-				Tr("Upscaling, anti-aliasing, frame generation and the performance overlay. Kept for the next games."), {
+				Tr("Upscaling, anti-aliasing, frame generation and the performance overlay. Applies to all games."), {
 				{"filter", Tr("Upscaling to 4K"), FilterName(settings.filter), true,
-					Tr("How the picture is scaled to the TV: Bicubic is sharp, Bilinear softer, AMD FSR 1 keeps edges clean. It changes at once.")},
+					Tr("Bicubic is sharp, Bilinear softer, AMD FSR 1 keeps edges clean.")},
 			}};
 			// FSR 1's own setting, while it is the filter
 			if (settings.filter == 1)
 				graphics.rows.push_back({"sharpening", Tr("FSR sharpening"), SharpeningName(settings.sharpening), true,
-					Tr("How much AMD FSR 1 sharpens the picture as it scales it: 100% is the most. It changes at once.")});
+					Tr("How much AMD FSR 1 sharpens the picture. 100% is the most.")});
 			graphics.rows.push_back({"aa", Tr("Anti-aliasing"), Tr(kAntiAliasing[std::clamp(settings.antiAliasing, 0, 2)]), true,
-				Tr("Smooths the jagged edges of the game's picture: FXAA lightly, SMAA more cleanly, for a little more work by the GPU. It changes at once.")});
+				Tr("Smooths jagged edges. FXAA is lighter, SMAA cleaner but a little heavier.")});
 			if (settings.canGenerate)
 				graphics.rows.push_back({"framegen", Tr("Frame generation"), settings.frameGeneration ? on : off, true,
-					Tr("A picture made between each two frames of a game at 30 fps, so it is shown at 60. It changes at once.")});
+					Tr("Adds a frame between each pair, so 30 fps games play at 60.")});
 			graphics.rows.push_back({"overlay", Tr("Performance overlay"), settings.overlay ? on : off, true,
-				Tr("The frame rate and the emulation's speed, in a corner of the screen.")});
+				Tr("Shows frame rate and speed in a corner.")});
 			rows.push_back(graphics);
 			rows.push_back({"pace", Tr("Speed"), SpeedName(settings.speedLimit), false, Tr("How fast the game may run."), {
 				{"speed", Tr("Speed limit"), SpeedName(settings.speedLimit), true,
-					Tr("Above 100% hurries through slow scenes; None runs as fast as the PS5 can. For this game only.")},
+					Tr("Above 100% speeds through slow parts. None runs as fast as possible. This game only.")},
 			}});
 			Row volume{"volume", Tr("Volume"), Percent(settings.volume), true, Tr("The game's sound. Left and Right change it by 10%.")};
 			volume.slider = settings.volume / 100.0f;
@@ -629,33 +636,30 @@ namespace ps5ingamenx
 			// tr: the emulated Switch's console mode: in its dock, or handheld
 			const std::string mode = settings.docked ? TrC("switch mode", "Docked") : TrC("switch mode", "Handheld");
 			rows.push_back({"controls", Tr("Controls"), fmt::format("{} · {}", mode, ControllerName(settings.controller)), false,
-				Tr("Docked or handheld, the controller the game sees, vibration and the sticks' deadzone."), {
+				Tr("Docked or handheld, controller type, vibration and stick deadzone."), {
 				{"docked", Tr("Console mode"), mode, true,
-					Tr("Docked, the game draws for a TV, at its sharpest; handheld, for the console's own screen, which asks less of the GPU. The "
-					   "game is told at once, as when a Switch leaves its dock.")},
+					Tr("Docked looks sharpest. Handheld draws at a lower resolution and runs lighter. It switches at once.")},
 				{"controller", Tr("Controller type"), ControllerName(settings.controller), true,
-					Tr("What the game sees in your hands. Automatic is a Pro Controller; Handheld needs Handheld mode, and is player 1's alone. "
-					   "Some games ask you to press a button to take the new one.")},
+					Tr("The controller the game sees. Automatic is a Pro Controller. Handheld needs Handheld mode and is player 1 only. Some games ask you to press a button to confirm.")},
 				{"vibration", Tr("Vibration"), settings.vibration ? on : off, true,
-					Tr("The DualSense's rumble when the game asks for it. For every side, as Settings > Controls has it.")},
+					Tr("DualSense rumble. Applies to every system, as in Settings > Controls.")},
 				{"deadzone", Tr("Stick deadzone"), Percent(settings.deadzone), true,
 					Tr("How far a stick moves before the game sees it. Raise it if a character or the camera drifts.")},
 			}});
 			// every button, as Settings > Controls > Buttons has them, set here without leaving the game
 			rows.push_back(s_buttonsMenu.Category(ButtonRows(settings), ps5menu::HeldInput(s_buttons.load()), Now(), false,
-				Tr("Every button back where the console has it. Held to confirm.")));
+				Tr("Puts every button back to default. Hold Cross to confirm.")));
 			// tr: amiibo is Nintendo's name for its figures, as it writes it in the language
 			Row amiibo{"amiibo", Tr("Amiibo"), AmiiboValue(), true,
 				// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
 				s_amiibo.empty() ? TrF("Put amiibo dumps (.bin) in {0}/amiibo to scan them here.", s_root) :
-								   Tr("Left and Right choose an amiibo dump; Cross touches it to the controller when the game asks for one, "
-									  "and again takes it away.")};
+								   Tr("Left and Right choose an amiibo. Cross scans it when the game asks; press again to remove it.")};
 			if (s_amiibo.size() > 1)
 				// dumps in folders, a series each: the series, then the figures in it
 				rows.push_back({"amiibo-page", Tr("Amiibo"), amiibo.value, false, amiibo.help, {
 					// tr: a folder of amiibo dumps, as they are shared: Kirby, Metroid...
 					{"amiibo-series", Tr("Amiibo series"), ps5amiibo::SeriesName(s_amiibo[s_amiiboSeries]), true,
-						TrF("Left and Right choose a series: a folder of dumps in {0}/amiibo.", s_root)},
+						TrF("Left and Right choose a series (a folder in {0}/amiibo).", s_root)},
 					amiibo,
 				}});
 			else
@@ -669,11 +673,11 @@ namespace ps5ingamenx
 			if (room.joined || room.lost)
 			{
 				Row players{"room", Tr("Room"), room.lost ? std::string(Tr("Connection lost")) : room.name, false,
-					Tr("The room joined for this game: choose Local Wireless (or local play) in the game to play with the others in it.")};
+					Tr("The room for this game. Choose Local Wireless (or local play) in the game to play with others.")};
 				for (size_t i = 0; i < room.members.size(); i++)
 					players.rows.push_back({fmt::format("member{}", i), room.members[i], "", false, Tr("In the room.")});
 				if (players.rows.empty())
-					players.rows.push_back({"nomembers", Tr("Nobody else yet"), "", false, Tr("The players in the room show here as they join.")});
+					players.rows.push_back({"nomembers", Tr("Nobody else yet"), "", false, Tr("Players appear here as they join.")});
 				else if (!room.lost)
 					// tr: how many players are in the room
 					players.value = fmt::format("{} · {}", room.name, ps5lang::TrP((int)room.members.size(), "{0} player", "{0} players"));
@@ -682,9 +686,9 @@ namespace ps5ingamenx
 			// a home screen tile's game closes the app instead, as the row says (#48)
 			Row leave = exitAfterGame ?
 				Row{"leave", Tr("Quit to the home screen"), "", false,
-					Tr("Leaves the game and closes Playtendoh, as its home screen tile asks. What you have not saved in the game is lost, so Cross is held.")} :
+					Tr("Closes the game and Playtendoh. Unsaved progress is lost. Hold Cross.")} :
 				Row{"leave", Tr("Quit to the library"), "", false,
-					Tr("Leaves the game for the library. What you have not saved in the game is lost, so Cross is held.")};
+					Tr("Closes the game and goes to the library. Unsaved progress is lost. Hold Cross.")};
 			leave.apart = true;
 			leave.hold = true;
 			rows.push_back(leave);

@@ -20,6 +20,7 @@
 
 #include <cstdint>
 #include <cstdlib>
+#include <iterator>
 #include <string>
 #include <utility>
 #include <vector>
@@ -147,26 +148,30 @@ namespace ps5menu
 			for (const ButtonRow& button : buttons)
 				set += !button.input.empty();
 			Row category{"buttons", Tr("Buttons"), TrP(set, "{0} button set", "{0} buttons set"), false,
-				Tr("Which DualSense button presses each button.")};
+				Tr("Choose the DualSense button for each button.")};
 			// tr: the row that shows what the controller sends: the button held now, or a dash
 			category.rows.push_back({"buttons-test", Tr("Controller test"),
 				heldNow > kInputNone && heldNow <= kInputTouchPad ? ButtonLabel(kInputNames[heldNow]) : std::string("-"), false,
-				m_message.empty() ? std::string(Tr("Everything this player's DualSense sends, live.")) : m_message});
+				m_message.empty() ? std::string(Tr("This player's DualSense input, live.")) : m_message});
 			for (size_t i = 0; i < buttons.size(); i++)
 			{
 				const bool listening = (int)i == m_listening;
 				Row row{"button:" + std::to_string(i), ButtonLabel(buttons[i].button),
 					listening ? std::string(Tr("Press a button")) : buttons[i].input.empty() ? std::string(Tr("Not set")) : ButtonLabel(buttons[i].input), false,
 					// tr: a row of the in-game menu's Buttons: one of the game's buttons, and the DualSense button that presses it
-					Tr("Cross, then the DualSense button for it. If another button had that one, the two swap.")};
+					Tr("Press Cross, then the DualSense button to use. If another button already uses it, the two swap.")};
+				// its place on the controller's picture (side_menu.h's DrawPad)
+				for (int input = 1; input < (int)std::size(kInputNames); input++)
+					if (buttons[i].input == kInputNames[input])
+						row.pad = input;
 				if (listening)
 				{
 					const int seconds = (int)((m_until > nowUs ? m_until - nowUs : 0) / 1000000) + 1;
 					// tr: {0} is a button of the console's controller
 					row.help = TrF("Press the DualSense button, trigger or stick direction for {0} now.", ButtonLabel(buttons[i].button)) + " " +
 						(touchpadCancels ? TrP(seconds, "{0} second left. A touchpad click cancels.", "{0} seconds left. A touchpad click cancels.") :
-										   TrP(seconds, "{0} second left; then it stays as it was. The touchpad's click counts too.",
-											   "{0} seconds left; then it stays as it was. The touchpad's click counts too."));
+										   TrP(seconds, "{0} second left, or nothing changes. Touchpad click can be chosen too.",
+											   "{0} seconds left, or nothing changes. Touchpad click can be chosen too."));
 				}
 				else if (!m_message.empty() && (int)i == m_last)
 					row.help = m_message;
@@ -226,15 +231,15 @@ namespace ps5menu
 				m_message = message;
 			};
 			if (nowUs > m_until)
-				stop(Tr("No button was pressed, so it stays as it was."));
+				stop(Tr("No button pressed. Nothing changed."));
 			else if (!m_released)
 				m_released = idle;
 			else if (touchpad && touchpadCancels)
-				stop(Tr("Cancelled: it stays as it was."));
+				stop(Tr("Cancelled. Nothing changed."));
 			else if (const int input = touchpad ? kInputTouchPad : held; input != kInputNone)
 			{
 				if (!allowed)
-					stop(Tr("Cancelled: it stays as it was."));
+					stop(Tr("Cancelled. Nothing changed."));
 				else
 				{
 					asked.index = m_listening;

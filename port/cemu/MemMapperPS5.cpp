@@ -136,7 +136,7 @@ namespace
 			static std::atomic<bool> s_told{false};
 			if (!s_told.exchange(true))
 			{
-				ps5notify::Send(ps5lang::Tr("The PS5 has no memory left for this Wii U game, so it has to stop. The boot log has the details."));
+				ps5notify::Send(ps5lang::Tr("The PS5 ran out of memory for this game, so it had to stop."));
 				ps5log::FlushAll(); // the app ends soon after
 			}
 			return false;

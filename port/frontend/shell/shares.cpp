@@ -247,7 +247,7 @@ namespace ps5shell
 		m_shares.editing = false;
 		ps5log::Line("[netfs] saved {} ({}), {} shares", share.name, Where(share), list.size());
 		// tr: a network share saved ({0}: its name); it is now a tab of the folder browser
-		Toast(TrF("{0} is saved: choose a games folder on it in Game files", share.name));
+		Toast(TrF("{0} saved. Choose a games folder on it in Game files.", share.name));
 		m_feedback.Play(ui::Cue::Select);
 	}
 
@@ -290,7 +290,7 @@ namespace ps5shell
 				(found.smb && found.nfs ? " · SMB, NFS" : found.nfs ? " · NFS" : " · SMB"));
 		Row* network = set(kNetwork, computers.empty() ? Kind::Action : Kind::Choice, "network", Tr("On your network"),
 			m_shares.scan ? std::string(Tr("Looking…")) : computers.empty() ? std::string(Tr("None found: Triangle looks again")) : std::string(),
-			computers.empty() ? Tr("Computers on the PS5's network that share files.") : Tr("Left and Right choose one; Cross takes it."));
+			computers.empty() ? Tr("Computers on the PS5's network that share files.") : Tr("Left and Right choose one; Cross selects it."));
 		if (!computers.empty())
 		{
 			network->options = computers;
@@ -315,16 +315,16 @@ namespace ps5shell
 		Row* user = set(kUser, Kind::Link, "user", Tr("User name"), share.user.empty() ? std::string(Tr("Guest")) : share.user,
 			Tr("Empty signs in as a guest."));
 		Row* password = set(kPassword, Kind::Link, "password", Tr("Password"), std::string(std::min<size_t>(share.password.size(), 12), '*'),
-			Tr("Kept on the PS5 with the share."));
+			Tr("Saved on the PS5."));
 		if (nfs)
 		{
 			user->dimmed = password->dimmed = true;
-			user->description = password->description = Tr("NFS has no sign-in: the export decides by address.");
+			user->description = password->description = Tr("NFS has no sign-in. Access is set on the NAS by address.");
 		}
 		set(kTest, Kind::Action, "test", Tr("Test"), m_shares.test ? std::string(Tr("Connecting…")) : std::string(),
-			Tr("Connects and reads the folder, nothing more."));
+			Tr("Checks that the folder can be read."));
 		set(kSave, Kind::Action, "save", Tr("Save"), m_shares.saving ? std::string(Tr("Connecting…")) : std::string(),
-			Tr("Tested first; then a tab of the folder browser."));
+			Tr("Tests it, then adds it as a tab in the folder browser."));
 		Row* remove = set(kRemove, Kind::Hold, "remove", Tr("Remove"), Tr("Hold Cross"), Tr("Forgets the share. Nothing on it changes."));
 		if (m_shares.index < 0)
 			remove->dimmed = true;
@@ -535,7 +535,7 @@ namespace ps5shell
 		canvas.Text(Style(kOverlineStyle), kSafeX, 64, Tr("Game files"), Secondary(), kListW, 1);
 		canvas.Text(Style(kTitleStyle), kSafeX, 94, Tr("Network shares"), kText, kListW, 1);
 		canvas.Text(Style({24, ui::Weight::Regular, 1.4f}), kSafeX, 184,
-			Tr("Games on a computer or a NAS, played where they are. Each share is a tab of the folder browser. Read only."), Secondary(), kListW, 3);
+			Tr("Play games from a computer or NAS. Each share is a tab in the folder browser. Read only."), Secondary(), kListW, 3);
 		canvas.PopAlpha();
 		// the shares, then Add a share
 		canvas.PushAlpha(Enter(1) * (m_shares.editing ? 0.45f : 1.0f));
@@ -544,8 +544,7 @@ namespace ps5shell
 		{
 			const Box box{kListX, kTop + i * kRowH, kListW, kRowH - 14};
 			const bool focused = !m_shares.editing && i == m_shares.selected;
-			canvas.Rect(box, kRadiusCard, focused ? Surface2() : Surface());
-			canvas.Ring(box, kRadiusCard, 1.5f, kGlassEdge);
+			Glass(canvas, box, kRadiusCard, focused ? Surface2() : Surface());
 			if (focused)
 				Focus(box, kRadiusCard);
 			const bool add = i == (int)m_shares.list.size();
@@ -567,8 +566,7 @@ namespace ps5shell
 		{
 			if (m_shares.list.empty())
 				canvas.Text(Style({22, ui::Weight::Regular, 1.45f}), kListX, kTop + kRowH + 20,
-					Tr("Turn on file sharing for a folder on your computer or NAS, then add it here. The PS5 reads games from it; it never "
-					   "writes to it. A cable does better than Wi-Fi for Wii U games."),
+					Tr("Turn on file sharing for a folder on your computer or NAS, then add it here. The PS5 only reads from it. Wired is better than Wi-Fi for Wii U games."),
 					Secondary(), kListW, 4);
 			return;
 		}

@@ -24,25 +24,26 @@ namespace ps5shell
 
 		// the release notes' highlights: changed with each release that has something to say
 		const News kNews[] = {
-			// tr: What's new: each system's files in a folder of its own (/data/cemu, /data/azahar...), which Reorganize moves an install from before into
-			{Icon::Folder, TrMark("A folder for each system"), TrMark("Wii U, 3DS, DS and Switch files each in a folder of their own, moved there in a moment by Reorganize.")},
-			// tr: What's new: the app installed on a USB drive keeps every system's files on that drive
-			{Icon::Usb, TrMark("Everything on your USB drive"), TrMark("With the app on a USB drive, every system's files can go beside it, the Switch's too.")},
-			// tr: What's new: a Switch game's update and DLC files are found next to it, and its page shows them
-			{Icon::Download, TrMark("Updates and DLC"), TrMark("A Switch game's update and DLC are found beside it, in any games folder, and its page shows them.")},
-			// tr: What's new: the Switch side's Mods and Cheats pages, its players, and its saves to a USB drive and back
-			{Icon::Gear, TrMark("Switch mods and cheats"), TrMark("Choose a game's mods and cheats, add players, and take saves to USB and back.")},
-			// tr: What's new: Lossless Scaling's frame generation for Switch games; Lossless.dll and MihawkGen are names, left as they are
-			{Icon::Sparkle, TrMark("Frame generation"), TrMark("Switch games use Lossless Scaling with your own Lossless.dll: steadier than MihawkGen.")},
-			// tr: What's new: an update of PS5-ECAM itself installs fast
-			{Icon::Pulse, TrMark("Updates in a minute"), TrMark("A new version installs in about a minute instead of half an hour, and can be stopped.")},
-			// tr: What's new: leaving a 3DS or DS game shows the library without the app starting again
-			{Icon::Screens, TrMark("Straight back to the library"), TrMark("Leaving a 3DS or DS game shows the library at once, without the app starting over.")},
-			// tr: What's new: each game's play time is counted and shown
-			{Icon::Play, TrMark("Play time"), TrMark("How long you've played each game, in the library and on its page.")},
-			// tr: What's new: an installed update or DLC can be taken out again from a game's Options menu
-			{Icon::Check, TrMark("Remove its update or DLC"), TrMark("In a Wii U or 3DS game's Options, for one that keeps it from starting.")},
+			// tr: What's new in 6.0: the Library's two new ways to browse
+			{Icon::Sparkle, TrMark("Orbit and the Timeline"), TrMark("Turn a dial to pick a console, or see every console's games on one shelf.")},
+			// tr: What's new in 6.0: how many consoles the app plays now
+			{Icon::Screens, TrMark("21 consoles"), TrMark("From the Game & Watch to the Switch 2, each with its own settings and saves.")},
+			// tr: What's new in 6.0: Switch 2 games; Lichii is the emulator's name, left as it is
+			{Icon::Play, TrMark("Switch 2"), TrMark("Switch 2 games on Lichii, with your own keys and firmware.")},
+			// tr: What's new in 6.0: GameCube and Wii games; Porpoise X is the emulator's name, left as it is
+			{Icon::Pad, TrMark("GameCube and Wii"), TrMark("Played by Porpoise X, with menus in Playtendoh's style.")},
+			// tr: What's new in 6.0: Settings > Emulator lists every option of a console's emulator
+			{Icon::Chip, TrMark("Every emulator option"), TrMark("Settings > Emulator has every option for each console's emulator.")},
+			// tr: What's new in 6.0: EmulationStation (ES-DE) as a launcher, downloaded when chosen
+			{Icon::Download, TrMark("EmulationStation"), TrMark("Choose ES-DE as your launcher: it downloads when you pick it.")},
+			// tr: What's new in 6.0: collections, groups of games the player makes
+			{Icon::Folder, TrMark("Collections"), TrMark("Group your games your way, and find them from the Library's filters.")},
+			// tr: What's new in 6.0: the menu over a game, redesigned, with button mapping in every emulator
+			{Icon::Gear, TrMark("A new in-game menu"), TrMark("One menu for every game, with your own button layout in each emulator.")},
+			// tr: What's new in 6.0: the launcher's music and sounds, quieter
+			{Icon::Pulse, TrMark("Calmer sound"), TrMark("New, quieter music and soft menu sounds.")},
 		};
+
 
 		constexpr int kColumns = 3;
 		constexpr float kGridTop = 290, kGap = 24, kCardHeight = 196, kPad = 26, kIcon = 52;
@@ -83,7 +84,7 @@ namespace ps5shell
 		// tr: the heading of the screen a new version opens on, once: what it brings
 		canvas.Text(Style({56, ui::Weight::Bold, 1.1f, -0.8f}), kSafeX, 122, Tr("What's new"), kText, 1100, 1);
 		canvas.Text(Style({24, ui::Weight::Regular, 1.3f}), kSafeX, 206,
-			Tr("The biggest update yet, at a glance. Its release notes on GitHub have everything."), Secondary(), 1920 - 2 * kSafeX, 2);
+			Tr("The highlights. See the release notes on GitHub for everything."), Secondary(), 1920 - 2 * kSafeX, 2);
 		canvas.PopAlpha();
 
 		// the cards, each in one of the four systems' colours in turn
@@ -98,7 +99,7 @@ namespace ps5shell
 			canvas.PushAlpha(enter);
 			canvas.PushOffset(0, (1 - enter) * 24);
 			const Box card{kSafeX + column * (width + kGap), kGridTop + row * (kCardHeight + kGap), width, kCardHeight};
-			canvas.Rect(card, kRadiusCard, Surface());
+			Glass(canvas, card, kRadiusCard, Surface());
 			// the title and its line, as many lines as the card holds, in the card's middle
 			const ui::TextBlock title = m_fonts.Layout(Style({26, ui::Weight::SemiBold, 1.15f}), Tr(kNews[i].title), textWidth, 2);
 			const ui::TextStyle textStyle = Style({20, ui::Weight::Regular, 1.4f});

@@ -47,8 +47,10 @@ if(NOT EXISTS "${RCHEEVOS}/src/rc_client.c")
 endif()
 file(GLOB RCHEEVOS_SOURCES "${RCHEEVOS}/src/rcheevos/*.c" "${RCHEEVOS}/src/rapi/*.c")
 add_library(rcheevos STATIC ${RCHEEVOS_SOURCES} "${RCHEEVOS}/src/rc_client.c" "${RCHEEVOS}/src/rc_compat.c" "${RCHEEVOS}/src/rc_util.c"
-	"${RCHEEVOS}/src/rc_version.c" "${RCHEEVOS}/src/rhash/hash.c" "${RCHEEVOS}/src/rhash/hash_rom.c" "${RCHEEVOS}/src/rhash/md5.c")
-target_include_directories(rcheevos PUBLIC "${RCHEEVOS}/include")
+	"${RCHEEVOS}/src/rc_version.c" "${RCHEEVOS}/src/rc_libretro.c" "${RCHEEVOS}/src/rhash/hash.c" "${RCHEEVOS}/src/rhash/hash_rom.c" "${RCHEEVOS}/src/rhash/md5.c")
+target_include_directories(rcheevos PUBLIC "${RCHEEVOS}/include" "${RCHEEVOS}/src") # src: rc_libretro.h (libretro/session.cpp)
+# rc_libretro.c (the libretro sides' memory for their sets) reads libretro.h
+target_include_directories(rcheevos PRIVATE "${PS5CEMU_DEPS}/libretro/libretro-common/include")
 target_compile_definitions(rcheevos PUBLIC RC_CLIENT_SUPPORTS_HASH PRIVATE RC_DISABLE_LUA RC_HASH_NO_DISC RC_HASH_NO_ENCRYPTED RC_HASH_NO_ZIP)
 target_compile_options(rcheevos PRIVATE -w)
 
@@ -139,6 +141,8 @@ add_library(CemuPS5 STATIC
 	app/saves.h
 	app/lang.cpp
 	app/lang.h
+	app/esde_get.cpp
+	app/esde_get.h
 	app/update_files.cpp
 	app/update_files.h
 	app/updates.cpp
@@ -429,12 +433,13 @@ set(PLAYTENDOH_REPORT_URL "$ENV{PLAYTENDOH_REPORT_URL}" CACHE STRING "the report
 if(PLAYTENDOH_REPORT_URL)
 	target_compile_definitions(CemuPS5 PRIVATE PLAYTENDOH_REPORT_URL="${PLAYTENDOH_REPORT_URL}")
 endif()
+# the commit a report names; PUBLIC, for main_ps5.cpp (CemuBin) sends it
 execute_process(COMMAND git -C "${CMAKE_CURRENT_LIST_DIR}/.." rev-parse --short=7 HEAD OUTPUT_VARIABLE PLAYTENDOH_COMMIT
 	OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
 if(NOT PLAYTENDOH_COMMIT)
 	set(PLAYTENDOH_COMMIT "unknown")
 endif()
-target_compile_definitions(CemuPS5 PRIVATE PLAYTENDOH_COMMIT="${PLAYTENDOH_COMMIT}")
+target_compile_definitions(CemuPS5 PUBLIC PLAYTENDOH_COMMIT="${PLAYTENDOH_COMMIT}")
 # SteamGridDB's key for this build (boxart.h): from the environment, a secret in CI, never in the source
 if(PS5ECAM_STEAMGRIDDB_KEY)
 	target_compile_definitions(CemuPS5 PRIVATE PS5ECAM_STEAMGRIDDB_KEY="${PS5ECAM_STEAMGRIDDB_KEY}")

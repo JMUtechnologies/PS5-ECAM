@@ -250,17 +250,75 @@ namespace ps5reorganize
 		return layout;
 	}
 
-	bool Ask(const std::string& root, Request request)
+	bool Ask(const std::string& root, Request request, const std::vector<std::string>& only)
 	{
 		if (request == Request::None)
 			return unlink(File(root).c_str()) == 0 || errno == ENOENT;
-		return WriteLines(File(root), {request == Request::Separate ? "separate" : "back"});
+		// "separate" or "back", then ":" and the systems it is only for
+		std::string header = request == Request::Separate ? "separate" : "back";
+		if (!only.empty())
+		{
+			header += ":";
+			for (size_t i = 0; i < only.size(); i++)
+				header += (i ? "," : "") + only[i];
+		}
+		return WriteLines(File(root), {header});
+	}
+
+	Request Asked(const std::string& root, std::vector<std::string>& only)
+	{
+		only.clear();
+		const auto lines = ReadLines(File(root));
+		if (lines.empty())
+			return Request::None;
+		const size_t colon = lines[0].find(':');
+		const std::string base = lines[0].substr(0, colon);
+		if (colon != std::string::npos)
+			for (size_t start = colon + 1; start <= lines[0].size();)
+			{
+				const size_t comma = lines[0].find(',', start);
+				const std::string name = lines[0].substr(start, comma == std::string::npos ? std::string::npos : comma - start);
+				if (!name.empty())
+					only.push_back(name);
+				if (comma == std::string::npos)
+					break;
+				start = comma + 1;
+			}
+		for (size_t i = 1; i < lines.size(); i++)
+			only.push_back(lines[i]); // a request under way: the systems left to move
+		return base == "separate" ? Request::Separate : base == "back" ? Request::PutBack : Request::None;
 	}
 
 	Request Asked(const std::string& root)
 	{
-		const auto lines = ReadLines(File(root));
-		return lines.empty() ? Request::None : lines[0] == "separate" ? Request::Separate : lines[0] == "back" ? Request::PutBack : Request::None;
+		std::vector<std::string> only;
+		return Asked(root, only);
+	}
+
+	void DefaultTogether(const std::string& root, const std::string& console, std::vector<std::string>& log)
+	{
+		for (const System& system : Systems(root, console, true))
+		{
+			if (ecam_layout::Activated(system.folder))
+				continue;
+			// (Present first: where lstat is refused, HoldsFiles takes a folder that is not there for one that holds)
+			if (ps5paths::Present(system.folder) && ecam_layout::HoldsFiles(system.folder))
+			{
+				// files in its own folder from a version that made it unasked: it stays theirs
+				if (ecam_layout::Activate(system.folder))
+					log.push_back(std::string(system.name) + ": its own folder holds files, so it stays " + system.folder);
+				continue;
+			}
+			// Cemu's together: at the top of the data folder (from before) or in its cemu/ (ecam_layout::Cemu)
+			const std::string together = system.whole ? system.legacy : root + "/cemu";
+			if (!system.whole && system.legacy == root && !Moves(system, true).empty())
+				continue; // Cemu's files at the top already
+			if (!ps5paths::Present(together))
+			{
+				MakeFolders(together);
+				log.push_back(std::string(system.name) + ": together in " + together);
+			}
+		}
 	}
 
 	Outcome Run(const std::string& root, const std::string& console, std::vector<std::string>& log)
@@ -270,8 +328,9 @@ namespace ps5reorganize
 		std::vector<std::string> lines = ReadLines(file);
 		if (lines.empty())
 			return outcome;
-		const bool separate = lines[0] == "separate";
-		if (!separate && lines[0] != "back")
+		const std::string base = lines[0].substr(0, lines[0].find(':'));
+		const bool separate = base == "separate";
+		if (!separate && base != "back")
 		{
 			log.push_back("reorganize.txt asks for " + lines[0] + ", which is not a request: removed");
 			unlink(file.c_str());
@@ -282,9 +341,33 @@ namespace ps5reorganize
 		std::vector<std::string> names(lines.begin() + 1, lines.end());
 		if (names.empty())
 		{
-			// a request just made: which systems, and whether each can move, before any does
+			// a request just made: which systems (those it is only for, "separate:azahar"), and whether each
+			// can move, before any does
 			const Layout layout = Look(root, console);
 			names = separate ? layout.separate : layout.separated;
+			if (const size_t colon = lines[0].find(':'); colon != std::string::npos)
+			{
+				const std::string only = "," + lines[0].substr(colon + 1) + ",";
+				names.erase(std::remove_if(names.begin(), names.end(), [&](const std::string& name) { return only.find("," + name + ",") == std::string::npos; }),
+					names.end());
+				lines[0] = lines[0].substr(0, colon);
+				// a system asked for with no files yet: its own folder is only chosen (marked), its place in the
+				// data folder let go of when empty
+				if (separate)
+					for (const System& system : systems)
+						if (only.find("," + std::string(system.name) + ",") != std::string::npos && !ecam_layout::Activated(system.folder) &&
+							std::find(names.begin(), names.end(), system.name) == names.end())
+						{
+							const std::string together = system.whole ? system.legacy : root + "/cemu";
+							if (ps5paths::Present(together) && !ecam_layout::HoldsFiles(together))
+								rmdir(together.c_str());
+							if (Mark(system.folder))
+							{
+								log.push_back(std::string(system.name) + ": its own folder, " + system.folder);
+								outcome.moved.push_back(system.name);
+							}
+						}
+			}
 			Layout check;
 			if (Blocked(systems, names, separate, check))
 			{

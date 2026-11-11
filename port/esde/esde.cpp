@@ -54,7 +54,7 @@ namespace ps5esde
 			{"pokemini", "pokemini", "Nintendo Pokemon Mini", ".min .MIN"},
 			{"fds", "fds", "Nintendo Famicom Disk System", ".fds .FDS"},
 			{"sgb", "sgb", "Nintendo Super Game Boy", ".gb .gbc .GB .GBC"},
-			{"gw", "gw", "Nintendo Game and Watch", ".mgw .MGW"},
+			{"gw", "gameandwatch", "Nintendo Game and Watch", ".mgw .MGW"},
 			{"satellaview", "satellaview", "Nintendo Satellaview", ".bs .BS"},
 			{"vs", "arcade", "Arcade", ".nes .zip .7z .NES .ZIP .7Z"}, // the VS. System's
 		};

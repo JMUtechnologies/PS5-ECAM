@@ -325,6 +325,10 @@ namespace ps5shell
 		void Focus(const Box& box, float radius, uint32_t glow = 0);
 		void DrawFocusRing(Canvas& canvas);
 		void Panel(Canvas& canvas, const Box& box, float radius);
+		// 6.0's liquid glass (widgets.cpp): fill, then light caught across its top, a bright edge above and a
+		// shade below, as a lens of glass over what is behind; high contrast: the fill and a plain edge
+		void Glass(Canvas& canvas, const Box& box, float radius, uint32_t fill, float shine = 1.0f);
+		bool LightGround() const; // dark text on a light ground (the Light theme and its like)
 		// maxWidth: the button's widest, its label smaller (then cut) in a language that needs more (0: as wide as the label)
 		Box PillButton(Canvas& canvas, float x, float y, const std::string& label, bool primary, bool focused, Icon icon = Icon::Play, bool withIcon = false,
 			float height = 72, float maxWidth = 0);
@@ -335,7 +339,8 @@ namespace ps5shell
 		void DrawGameName(Canvas& canvas, Game& game, const Box& box);
 		// labelScale: the list's one size for its labels (LabelScale); 0: the row fits its own label,
 		// a little smaller when it is long
-		void DrawRow(Canvas& canvas, const Row& row, const Box& box, bool focused, float labelScale = 0);
+		// bare: no surface or focus ring of its own (Settings' rows, on one sheet with a highlight that glides)
+		void DrawRow(Canvas& canvas, const Row& row, const Box& box, bool focused, float labelScale = 0, bool bare = false);
 		// The room a row's label has beside its control, and how the control takes the rest (DrawRow)
 		struct RowControl
 		{
@@ -375,6 +380,8 @@ namespace ps5shell
 		void ReportsAnswer(bool yes);
 		void ReportBegin(const ps5emu::Game& game); // a game starts: noted for its report
 		void LayoutOrbitPreview(Canvas& canvas, const Box& box);
+		void LayoutEsdePreview(Canvas& canvas, const Box& box);
+		float m_layoutShown = 0; // the cards of the setup's launcher question, turning to the focused one
 		void OrbitDraw(Canvas& canvas);
 		bool OrbitUpdate(const ui::Press& press); // true: it took the press
 		void OrbitHomeOpen(bool home);
@@ -467,6 +474,7 @@ namespace ps5shell
 		std::vector<Row> SideRows(const std::string& page, const ps5settings::Launcher& settings);
 		// a page's rows as shown: a › page's behind its row, or that › page's own while it is open
 		std::vector<Row> SubPageRows(const std::vector<Row>& rows) const;
+		std::vector<Row> CoreOptionRows(const ps5settings::Launcher& settings); // Settings > Emulator, a core's options (settings.cpp)
 		void OpenSubPage(const Row& row);
 		void CloseSubPage();
 		std::string PanelText(const std::string& page) const;
@@ -647,6 +655,11 @@ namespace ps5shell
 			std::function<void(int)> choose);
 		void OpenHelp(const std::string& title, const std::string& text);
 		void OpenGameMenu(int game);
+		// a game's collections from its menu (game >= 0), or one to browse (Orbit's Square)
+		void OpenCollections(int game = -1);
+		std::vector<std::string> LibraryCollections() const;
+		void ShowCollection(const std::string& name); // empty: every game again
+		std::array<std::string, kSides> m_libraryCollection{}; // browsed, per side, for this session
 		void OpenKeyboard();
 		void OpenNameKeyboard(const std::string& title, const std::string& text, size_t limit, std::function<void(const std::string&)> done);
 		// text as it is typed: no capitals put in, with capitals and symbols on R1 and L1; secret shows dots
@@ -698,6 +711,7 @@ namespace ps5shell
 		float m_ringRadius = 0;
 		uint32_t m_ringGlow = 0;
 		float m_ringAlpha = 0;
+		float m_ringPulse = 0; // the focus lens's settle as it lands somewhere new (widgets.cpp)
 
 		// the backdrop: the focused game's colours and picture, changed once the focus rests
 		uint32_t m_ambient[2] = {};
@@ -794,6 +808,11 @@ namespace ps5shell
 		int m_subFrom = 0;
 		std::string m_subTitle, m_subLine;
 		ui::Spring m_railScroll;
+		static const char* RetroThumbnails(int side); // a libretro side's folder in libretro's thumbnails (shell.cpp)
+		std::string RetroCover(const ps5emu::Game& game);
+		ui::Spring m_railBlob, m_rowBlob; // Settings' liquid highlights: the page open, the row focused
+		ui::Spring m_rowsScroll; // Settings' rows, gliding to keep the focus in sight
+		std::string m_rowsScrollPage; // the page they were on: a new one starts at its top
 		std::string m_diagnosticsDone[3]; // Diagnostics' rows: the logs, Cemu's caches, Azahar's
 		std::string m_unpackedDone;	 // Diagnostics: what clearing the unpacked games did
 		uint64_t m_unpackedBytes = 0; // their size, looked at now and then
@@ -906,6 +925,7 @@ namespace ps5shell
 		bool m_setupFirst = false; // as the app starts, before a side opens
 		bool m_setupOnLanguage = false; // the focus on the language, above the checks
 		int m_setupRow = 0;
+		ui::Spring m_setupScroll; // the Setup check's list, gliding with the focus
 		ScreenId m_setupFrom = ScreenId::Settings; // where Circle goes back to, when not at the start
 		struct Check
 		{

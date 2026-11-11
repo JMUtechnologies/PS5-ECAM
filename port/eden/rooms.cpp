@@ -114,7 +114,7 @@ namespace ps5rooms
 				rooms.push_back(std::move(room));
 			}
 			if (!list.Empty() && rooms.empty())
-				error = ps5lang::Tr("No usable rooms were returned.");
+				error = ps5lang::Tr("No rooms found.");
 			// ProsperoEden's own first, in the order of their ports; then where people are
 			std::stable_sort(rooms.begin(), rooms.end(), [](const Room& a, const Room& b) {
 				if (a.featured != b.featured)
@@ -174,7 +174,7 @@ namespace ps5rooms
 					ps5lang::Tr("Could not download the public rooms. Is the PS5 online? Cross tries again.");
 			else if (http != 200)
 				// tr: the room directory's answer was an HTTP error ({0}: its number)
-				error = ps5lang::TrF("The public room list answered HTTP {0}. Try again later.", http);
+				error = ps5lang::TrF("The room list could not be loaded (HTTP {0}). Try again later.", http);
 			else
 				rooms = Parse(body, error);
 			ps5log::Line("[rooms] public rooms: curl {} ({}) http {} bytes {} rooms {}{}", (int)result, why[0] ? why : curl_easy_strerror(result), http,

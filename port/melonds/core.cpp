@@ -121,6 +121,8 @@ namespace ps5melonds
 		// off (by their index)
 		constexpr int kUndoRequest = -1000;
 		std::atomic<int> s_stateRequest{0};
+		std::atomic<bool> s_resetRequest{false}; // the menu's Reset, done between two frames
+		std::string s_bootName;					  // the game's file's name, for its direct boot again after a reset
 		// the emulation's: the game as it was just before the last load, for Undo the last load
 		std::unique_ptr<melonDS::Savestate> s_undo;
 		// Resume where you left off: the state saved as the game is quit, in a slot the menu does not show
@@ -542,7 +544,7 @@ namespace ps5melonds
 				if (s_undo && nds.DoSavestate(s_undo.get()) && !s_undo->Error)
 				{
 					// tr: how undoing the last load went
-					message = ps5lang::Tr("Back to before the load");
+					message = ps5lang::Tr("Load undone");
 					ps5cheevos::Reset();
 					s_rewind.clear();
 				}
@@ -698,6 +700,16 @@ namespace ps5melonds
 					if (s_captureEnabled) s_capture.Discontinuity();
 					MakeState(nds, request);
 				}
+				if (s_resetRequest.exchange(false))
+				{
+					// as the DS's power button, off and on: straight back into the game
+					if (s_captureEnabled) s_capture.Discontinuity();
+					nds.Reset();
+					nds.SetupDirectBoot(s_bootName);
+					if (s_cheevos)
+						ps5cheevos::Reset();
+					ps5log::Line("[ds] reset");
+				}
 				ToggleCheats(nds);
 				View view;
 				{
@@ -811,7 +823,7 @@ namespace ps5melonds
 				{
 					ps5log::Line("[ds] the screens stopped: the GPU's device was lost");
 					// tr: a notification as a DS game stops because the PS5's GPU stopped drawing its screens
-					ps5notify::Send(ps5lang::Tr("The DS game's screens stopped (the GPU's device was lost)."));
+					ps5notify::Send(ps5lang::Tr("The DS game's graphics stopped working."));
 					break;
 				}
 				if (s_captureEnabled)
@@ -901,7 +913,7 @@ namespace ps5melonds
 			const uint64_t started = sceKernelGetProcessTime();
 			if (!archive::Read(path, found, file))
 			{
-				error = ps5lang::Tr("The DS game in this archive could not be read: is the archive whole?");
+				error = ps5lang::Tr("The DS game in this archive could not be read. The archive may be damaged.");
 				return false;
 			}
 			ps5log::Line("[ds] {} read from the archive: {} MiB in {} ms", found.member.empty() ? std::string("its DS ROM") : found.member,
@@ -913,7 +925,7 @@ namespace ps5melonds
 		if (!title.readable)
 		{
 			// tr: why a DS game did not start
-			error = ps5lang::Tr("This is not a DS game melonDS can read.");
+			error = ps5lang::Tr("This is not a DS game Playtendoh can read.");
 			return false;
 		}
 		if (title.dsiOnly)
@@ -952,7 +964,7 @@ namespace ps5melonds
 		auto cart = melonDS::NDSCart::ParseROM(std::move(rom), romLength, nullptr, std::move(cartArgs));
 		if (!cart)
 		{
-			error = ps5lang::Tr("This is not a DS game melonDS can read.");
+			error = ps5lang::Tr("This is not a DS game Playtendoh can read.");
 			return false;
 		}
 
@@ -969,7 +981,7 @@ namespace ps5melonds
 		if (!slot.error.empty())
 		{
 			ps5log::Line("[ds] Slot-2 left empty: {}", slot.error);
-			ps5notify::Send(ps5lang::Tr("The GBA cartridge for Slot-2 could not be read: the game starts without it (the boot log says why)."));
+			ps5notify::Send(ps5lang::Tr("The Slot-2 GBA cartridge could not be read, so the game starts without it."));
 			gba.reset();
 			slot = {};
 		}
@@ -1011,7 +1023,7 @@ namespace ps5melonds
 		if (std::string why; !microphone::source.Configure(settings.dsMicSource, micFile.string(), why))
 		{
 			ps5log::Line("[ds] the recorded microphone ({}): {}; noise instead", micFile.string(), why);
-			ps5notify::Send(ps5lang::Tr("The recorded microphone could not be read: blowing makes noise instead (the boot log says why)."));
+			ps5notify::Send(ps5lang::Tr("The microphone recording could not be read, so noise is used instead."));
 			microphone::source.Configure(0, {}, why);
 		}
 
@@ -1036,7 +1048,8 @@ namespace ps5melonds
 		s_nds->SetNDSCart(std::move(cart));
 		if (gba) s_nds->SetGBACart(std::move(gba));
 		// straight into the game, past the DS's menu (melonDS's BIOS needs it)
-		s_nds->SetupDirectBoot(game.path.filename().string());
+		s_bootName = game.path.filename().string();
+		s_nds->SetupDirectBoot(s_bootName);
 		static_cast<melonDS::SoftRenderer&>(s_nds->GetRenderer3D()).SetThreaded(true, s_nds->GPU);
 		s_cheats = std::make_unique<melonDS::ARCodeFile>(CheatPath());
 		s_nds->AREngine.Cheats = s_cheats->GetCodes();
@@ -1112,7 +1125,7 @@ namespace ps5melonds
 	void RunGame()
 	{
 		// tr: the PS5's notification as a DS game starts
-		ps5notify::Send(ps5lang::Tr("Touchpad click + Options: the in-game menu. A touchpad click alone: the touch screen. R3: the microphone"));
+		ps5notify::Send(ps5lang::Tr("Touchpad click + Options opens the in-game menu. Touchpad click alone touches the screen. R3 is the microphone"));
 		ps5pad::SetStateShortcuts(true);
 		s_quitAfterState = false;
 		if (std::exchange(s_resume, false))
@@ -1202,6 +1215,8 @@ namespace ps5melonds
 				s_stateRequest = load ? -slot : slot;
 			else if (ps5ingame3ds::TakeUndoRequest())
 				s_stateRequest = kUndoRequest;
+			if (ps5ingame3ds::TakeResetRequest())
+				s_resetRequest = true;
 			// a state for the quit that does not come (the emulation stuck): the quit without it
 			if (quitAskedAt && sceKernelGetProcessTime() - quitAskedAt > 8000000 && !s_stop)
 			{
@@ -1228,7 +1243,7 @@ namespace ps5melonds
 				ps5log::Line("[ds] melonDS stopped the DS ({})", reason);
 				if (reason == (int)Reason::GBAModeNotSupported)
 					// tr: notifications as melonDS stops a DS game
-					ps5notify::Send(ps5lang::Tr("The game asked for the DS's GBA mode, which melonDS does not have."));
+					ps5notify::Send(ps5lang::Tr("This game needs GBA mode, which is not supported."));
 				else if (reason == (int)Reason::BadExceptionRegion)
 					ps5notify::Send(ps5lang::Tr("The DS game crashed."));
 				s_stop = true;

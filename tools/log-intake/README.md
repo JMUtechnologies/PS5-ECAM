@@ -3,8 +3,8 @@
 Where Playtendoh's reports go (`docs/REPORTS.md` says what a report holds). A Cloudflare Worker with a
 D1 database:
 
-- `POST /v1/report`: one report from the app. Checked against schema 1 (`src/report.js`), limited to
-  30 an hour per install ID and 60 per network address, scrubbed again, and kept in D1. The address
+- `POST /v1/report`: one report from the app (64 KB at most). Checked against schema 1 (`src/report.js`), limited to
+  20 a minute per install ID and 30 per network address, scrubbed again, and kept in D1. The address
   is only the rate limiter's key; nothing about the sender is stored.
 - `GET /v1/compatibility.json`: one row a game, no install ID, no log. GitHub Pages fetches it every
   day (`.github/workflows/pages.yml`) and shows it at `compatibility.html`.
@@ -34,30 +34,45 @@ npx wrangler deploy
 `deploy` prints the Worker's address, for example `https://playtendoh-reports.<account>.workers.dev`.
 Then:
 
-1. **The app:** build with that address: `make release PLAYTENDOH_REPORT_URL=https://playtendoh-reports.<account>.workers.dev/v1/report`
-   (or the same as an environment variable). Without it the app asks nothing and sends nothing.
+1. **The app:** `tools/build-cemu.sh` builds this intake's address in
+   (`https://playtendoh-reports.pixelnet321.workers.dev/v1/report`). Another intake: `make release
+   PLAYTENDOH_REPORT_URL=https://.../v1/report`; none: `PLAYTENDOH_REPORT_URL=` (empty), and the app
+   asks nothing and sends nothing.
 2. **The site:** on GitHub, Settings > Secrets and variables > Actions > Variables, add `REPORTS_URL`
    = `https://playtendoh-reports.<account>.workers.dev` (no path). The Pages workflow then fetches the
    table every day, or at once from Actions > Pages > Run workflow.
 
 ## Reading the reports
 
-The table on the site covers most questions. For the rest, SQL on the private database:
+The table on the site covers most questions. For the rest, SQL on the private database (from
+`tools/log-intake`). What fails, grouped by game and by why, the most frequent first:
 
 ```bash
 npx wrangler d1 execute playtendoh-reports --remote --command \
-  "SELECT name, result, firmware, model, error FROM reports WHERE result != 'ended' ORDER BY received DESC LIMIT 50"
-npx wrangler d1 execute playtendoh-reports --remote --command \
-  "SELECT log FROM reports WHERE title_id = '0100f2c0115b6000' AND result = 'crashed' ORDER BY received DESC LIMIT 1"
+  "SELECT side, title_id, name, emulator, result, substr(error, 1, 100) AS why, COUNT(*) AS times, COUNT(DISTINCT install) AS consoles,
+   datetime(MAX(received), 'unixepoch') AS last FROM reports WHERE result != 'ended' GROUP BY side, title_id, result, why ORDER BY times DESC LIMIT 50"
 ```
+
+A game's latest crash, with the boot log and the emulator's own logs (`emulator_logs`: Cemu's,
+Azahar's, Eden's, Lichii's, Porpoise's or a system program's, as JSON):
+
+```bash
+npx wrangler d1 execute playtendoh-reports --remote --json --command \
+  "SELECT received, app, commit_id, emulator, firmware, model, error, log, emulator_logs FROM reports
+   WHERE title_id = '0100f2c0115b6000' AND result = 'crashed' ORDER BY received DESC LIMIT 1"
+```
+
+Everything from one release, to see what it broke: `... WHERE app = '6.0.0' ...`.
 
 ## Cost
 
-Free up to Cloudflare's free plan's limits: 100,000 requests a day, 5 GB of D1 (a report is about
-2 KB, so some 2.5 million reports) and 5 million D1 rows read a day. The daily table reads every
+Free up to Cloudflare's free plan's limits: 100,000 requests a day, 5 GB of D1 (a report is 2 to 40 KB with
+its logs, so some 200,000 reports at the most) and 5 million D1 rows read a day. The daily table reads every
 row once and is cached for an hour. Past those limits, Workers Paid is 5 USD a month.
 
 ## Tests
 
-`node test.mjs` (also run by `tools/tests/test-reports.sh`): what is taken and turned away, the
-second scrub, and that the published table has no install ID and no log.
+`node test.mjs` (also run by `tools/tests/test-reports.sh`, which gives it a report the app's own code
+wrote): what is taken and turned away, the second scrub, that the published table has no install ID
+and no log, and the Worker itself answering as the app expects (201, 400, 413, 415, 429) over a
+stand-in for D1.

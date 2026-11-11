@@ -319,8 +319,7 @@ namespace ps5update
 			s_status.latest = version;
 			s_status.installing = true; // the sheet shows it
 			// tr: at a start after an update: {0} the release installed, {1} the folder, {2} this release
-			s_status.message = ps5lang::TrF("{0} was installed in {1}, but the PS5 started {2} again. Close Playtendoh and start it from the "
-											"home screen; if it is still {2}, copy the release's PPSA99360 folder over by hand.",
+			s_status.message = ps5lang::TrF("{0} was installed in {1}, but {2} started again. Close Playtendoh and start it from the home screen. If it is still {2}, copy the release's PPSA99360 folder over yourself.",
 				Readable(version), folder, Readable(PS5CEMU_VERSION));
 			return false;
 		}
@@ -420,14 +419,14 @@ namespace ps5update
 			if (!answered)
 			{
 				// tr: why an update did not finish
-				Fail(ps5lang::Tr("GitHub did not answer with a release"));
+				Fail(ps5lang::Tr("No release was found on GitHub"));
 				return;
 			}
 			const std::string latest = json["tag_name"].GetString();
 			Version mine, theirs;
 			if (!Parse(PS5CEMU_VERSION, mine) || !Parse(latest, theirs))
 			{
-				Fail(ps5lang::TrF("The latest release's version ({0}) is not one this can read", latest));
+				Fail(ps5lang::TrF("Can't read the latest release's version ({0})", latest));
 				return;
 			}
 			{
@@ -489,7 +488,7 @@ namespace ps5update
 				}
 			if (expected.size() != 64)
 			{
-				Fail(ps5lang::TrF("The releases branch has no checksum for {0}", zipName));
+				Fail(ps5lang::TrF("No checksum found for {0}", zipName));
 				return;
 			}
 
@@ -541,7 +540,7 @@ namespace ps5update
 			if (app.empty())
 			{
 				fs::remove(archive, ec);
-				Fail(ps5lang::Tr("Playtendoh runs from an image, whose files can't be replaced: install the new release by hand"));
+				Fail(ps5lang::Tr("Playtendoh runs from an image that can't be changed. Install the new release yourself."));
 				return;
 			}
 			ps5log::Line("[update] installing in {}", app.string());
@@ -586,7 +585,7 @@ namespace ps5update
 					return true;
 				std::lock_guard lock(failure);
 				if (failed.empty())
-					failed = ps5lang::TrF("{0} could not be replaced ({1}): copy the release's PPSA99360 folder over by hand", files[i].string(), why.message());
+					failed = ps5lang::TrF("{0} could not be replaced ({1}). Copy the release's PPSA99360 folder over yourself.", files[i].string(), why.message());
 				return false;
 			};
 			// all but the program at once, then the program (files' last) on its own
@@ -645,6 +644,8 @@ namespace ps5update
 			s_thread = std::thread(Run, install);
 		}
 	}
+
+	std::string Sha256Of(const std::filesystem::path& file) { return FileSha256(file); }
 
 	void Start()
 	{
@@ -732,7 +733,7 @@ namespace ps5update
 			if (ec)
 			{
 				ps5log::Line("[update] going back to {}: {} could not be put back ({})", version, file.string(), ec.message());
-				error = ps5lang::TrF("{0} could not be put back ({1}): copy that release's PPSA99360 folder over by hand", file.string(), ec.message());
+				error = ps5lang::TrF("{0} could not be restored ({1}). Copy that release's PPSA99360 folder over yourself.", file.string(), ec.message());
 				return false;
 			}
 		}

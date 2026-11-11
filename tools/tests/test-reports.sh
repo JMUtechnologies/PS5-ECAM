@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
 # The reports on a PC (tools/tests/test-reports.cpp, port/app/reports.cpp): the scrubber, a report made
-# from a log full of made-up personal data, the session's endings, the player's no, the outbox's limits;
-# then the intake's own checks (tools/log-intake/test.mjs) when node is there. Needs clang-18 (or g++)
-# and RapidJSON (tools/deps.py fetch rapidjson, else the system's). Prints PASS lines; exits 1 on a
-# failure.
+# from a log full of made-up personal data, the session's endings, the player's no, the outbox's limits,
+# the emulator's own logs; then the intake's own checks (tools/log-intake/test.mjs) when node is there,
+# with a report the app wrote posted to the Worker. Needs clang-18 (or g++) and RapidJSON (tools/deps.py
+# fetch rapidjson, else the system's). Prints PASS lines; exits 1 on a failure.
 set -euo pipefail
 root=$(cd "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
 work=$(mktemp -d)
@@ -21,7 +21,7 @@ mkdir -p "$work/reports" "$work/data"
 REFUSE_LSTAT_UNDER="$work/data" LD_PRELOAD="$work/refuse-lstat.so" "$work/test-reports-plain" "$work/data" | grep -v '^PASS' || true
 [[ ${PIPESTATUS[0]} -eq 0 ]]
 if command -v node >/dev/null; then
-    node "$root/tools/log-intake/test.mjs"
+    node "$root/tools/log-intake/test.mjs" "$work/reports/sample-report.json"
 else
     echo "SKIP  the intake's checks (no node)"
 fi

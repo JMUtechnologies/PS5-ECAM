@@ -285,7 +285,7 @@ namespace ps5azahar
 				{
 					nfc->RemoveAmiibo();
 					// tr: the amiibo was taken off the 3DS's reader
-					message = ps5lang::Tr("Taken away");
+					message = ps5lang::Tr("Removed");
 				}
 				else if (request.index >= 0 && request.index < (int)s_amiiboFiles.size())
 				{
@@ -343,7 +343,7 @@ namespace ps5azahar
 				result == Status::ErrorSavestateBuildMismatch ? std::string(ps5lang::Tr("Made by another version")) :
 																std::string(ps5lang::Tr("It did not work"));
 			if (request == kUndoRequest && result == Status::Success)
-				message = ps5lang::Tr("Back to before the load");
+				message = ps5lang::Tr("Load undone");
 			// tr: a 3DS or DS game gone on from where it was quit (Resume where you left off)
 			if (request == -kResumeSlot && result == Status::Success)
 				message = ps5lang::Tr("Back where you left off");
@@ -611,23 +611,21 @@ namespace ps5azahar
 			switch (status)
 			{
 			// tr: why a 3DS game did not start
-			case Status::ErrorGetLoader: return ps5lang::Tr("This is not a 3DS game Azahar can start.");
+			case Status::ErrorGetLoader: return ps5lang::Tr("This is not a 3DS game Playtendoh can start.");
 			case Status::ErrorLoader: return ps5lang::Tr("The game could not be loaded.");
 			case Status::ErrorLoader_ErrorEncrypted:
 				// Azahar plays no encrypted game, whatever keys it has (NCCHContainer, "Encrypted NCCH are not
 				// supported"): aes_keys.txt does not change that
-				return ps5lang::Tr("The game is encrypted, and Azahar plays only decrypted games, with keys or without: decrypt it on your "
-								   "3DS first (GodMode9).");
+				return ps5lang::Tr("This game is encrypted. Decrypt it on your 3DS with GodMode9 first.");
 			case Status::ErrorLoader_ErrorInvalidFormat: return ps5lang::Tr("The game's format is not supported.");
 			case Status::ErrorLoader_ErrorGbaTitle: return ps5lang::Tr("GBA Virtual Console games are not supported.");
 			case Status::ErrorSystemMode: return ps5lang::Tr("The game's system mode could not be found.");
-			case Status::ErrorSystemFiles: return ps5lang::Tr("The game needs 3DS system files Azahar does not have.");
+			case Status::ErrorSystemFiles: return ps5lang::Tr("The game needs 3DS system files that are missing.");
 			case Status::ErrorLoader_ErrorPatches:
 			case Status::ErrorLoader_ErrorPatchesInvalidTitle: return ps5lang::Tr("The game's patches could not be applied.");
-			case Status::ErrorNotInitialized: return ps5lang::Tr("Azahar's renderer or CPU did not start.");
+			case Status::ErrorNotInitialized: return ps5lang::Tr("The 3DS renderer or CPU did not start.");
 			case Status::ErrorArticDisconnected:
-				return ps5lang::Tr("The Artic Base server did not answer: check the 3DS's address, that Artic Base runs on it, and that the 3DS "
-								   "and the PS5 are on the same network.");
+				return ps5lang::Tr("Artic Base did not answer. Check the 3DS's address, that Artic Base is running, and that both are on the same network.");
 			default: return ps5lang::Tr("The game could not be started.");
 			}
 		}
@@ -740,7 +738,7 @@ namespace ps5azahar
 					// an Artic Base game whose 3DS stopped answering, which Azahar has no words for
 					if (result == Core::System::ResultStatus::ErrorArticDisconnected && details.empty())
 						// tr: the PS5's notification as an Artic Base game ends because the 3DS stopped answering
-						ps5notify::Send(ps5lang::Tr("The 3DS stopped answering: the Artic Base game has stopped."));
+						ps5notify::Send(ps5lang::Tr("The 3DS stopped responding, so the game stopped."));
 					else
 						ps5notify::Send(ps5lang::TrF("The 3DS game stopped: {0}", details));
 					break;
@@ -793,7 +791,7 @@ namespace ps5azahar
 			path = Service::AM::GetTitleContentPath(Service::FS::MediaType::SDMC, game.titleId);
 			if (!FileUtil::Exists(path))
 			{
-				error = ps5lang::Tr("A CIA file is installed, not played: install it from Settings > Game files, then start the game.");
+				error = ps5lang::Tr("Install CIA files first in Settings > Game files, then start the game.");
 				return false;
 			}
 			ps5log::Line("[azahar] the CIA's game is installed: {}", path);
@@ -853,15 +851,12 @@ namespace ps5azahar
 			// an Artic Setup that stopped reads as a disconnection too, but its server answered: the
 			// Artic Setup Tool's screen says why (patches/azahar 0025, for keys aes_keys.txt lacks)
 			if (IsArticSetup(path) && artic)
-				error = ps5lang::Tr("Artic Setup did not finish: the Artic Setup Tool on the 3DS says why. If it says nothing, check the "
-									"3DS's address, and that the 3DS and the PS5 are on the same network.");
+				error = ps5lang::Tr("Artic Setup did not finish. Check the Artic Setup Tool on the 3DS for the reason, or check the 3DS's address and that both are on the same network.");
 			// any request of the load that failed reads so too: a 3DS that answered is told from one
 			// that never did (patches/azahar 0026)
 			else if (artic && Network::ArticBase::Client::LastServerAnswered())
 				// tr: why an Artic Base game did not start, when the 3DS had answered; Y is the 3DS's button
-				error = ps5lang::Tr("The 3DS answered, then Artic Base stopped before the game started. On the 3DS, press Y in the Artic Base "
-									"app to restart its server, then connect again. If it stops again, Settings > Diagnostics > Copy logs to "
-									"USB copies Azahar's log, which says what failed.");
+				error = ps5lang::Tr("Artic Base stopped before the game started. On the 3DS, press Y in the Artic Base app to restart it, then connect again. If it keeps stopping, use Settings > Diagnostics > Copy logs to USB.");
 			else
 				error = LoadError(status);
 			const std::string details = system.GetStatusDetails();
@@ -936,7 +931,7 @@ namespace ps5azahar
 	void RunGame()
 	{
 		// tr: the PS5's notification as a 3DS game starts
-		ps5notify::Send(ps5lang::Tr("Touchpad click + Options: the in-game menu. A touchpad click alone: the bottom screen"));
+		ps5notify::Send(ps5lang::Tr("Touchpad click + Options opens the in-game menu. Touchpad click alone shows the bottom screen"));
 		ps5pad::SetStateShortcuts(true);
 		s_quitAfterState = false;
 		if (std::exchange(s_resume, false))
@@ -1180,17 +1175,16 @@ namespace ps5azahar
 				// Azahar installs only CIAs decrypted all the way through, the CIA and the game in
 				// it; the 3DS's keys do not change that
 				// tr: why a CIA file could not be installed, after "It could not be installed:"
-				s_install.message = ps5lang::Tr("it is encrypted, the CIA or the game inside it. Azahar installs only fully decrypted CIA files: "
-												"decrypt it with GodMode9 on a 3DS, or play the game's decrypted .3ds or .cci file instead");
+				s_install.message = ps5lang::Tr("it is encrypted. Decrypt it with GodMode9 on a 3DS, or use a decrypted .3ds or .cci file instead");
 				break;
 			case Result::ErrorInvalid: s_install.message = ps5lang::Tr("it is not a CIA file, or it is damaged (check the file's size)"); break;
 			case Result::ErrorFileNotFound:
 			case Result::ErrorFailedToOpenFile: s_install.message = ps5lang::Tr("the file could not be read"); break;
 			case Result::ErrorAborted:
 				// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-				s_install.message = ps5lang::TrF("Azahar stopped part-way through; {0}/azahar/log/azahar_log.txt says why", ecam_layout::Parent(ps5paths::Azahar()));
+				s_install.message = ps5lang::TrF("The install stopped part-way. See {0}/azahar/log/azahar_log.txt", ecam_layout::Parent(ps5paths::Azahar()));
 				break;
-			default: s_install.message = ps5lang::Tr("it is not a CIA Azahar can install"); break;
+			default: s_install.message = ps5lang::Tr("it is not a CIA file Playtendoh can install"); break;
 			}
 			if (result != Result::Success && result != Result::Cancelled)
 				s_install.state = ps5emu::InstallStatus::State::Failed;

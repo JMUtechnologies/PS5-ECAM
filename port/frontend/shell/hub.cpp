@@ -417,7 +417,7 @@ namespace ps5shell
 		std::string synopsis = game.known ? game.info.synopsis : std::string();
 		// (a Switch game has no ID on its box in its files: GameTDB finds it by its name, or does not)
 		if (synopsis.empty())
-			synopsis = g.gameId.empty() && !IsSwitch() ? Tr("GameTDB knows a game by the ID on its box, which this dump does not have.") :
+			synopsis = g.gameId.empty() && !IsSwitch() ? Tr("No description: this dump has no game ID.") :
 														 Tr("GameTDB has no description of this game yet.");
 		const ui::TextStyle body = Style({26, ui::Weight::Regular, 1.46f});
 		const ui::TextBlock about = m_fonts.Layout(body, synopsis, kAboutWidth);

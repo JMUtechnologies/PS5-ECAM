@@ -382,6 +382,9 @@ namespace ps5boxart
 	}
 	void Fetch(System, const std::vector<std::string>&, Art) {}
 	void Refetch(System, const std::vector<std::string>&, bool) {}
+	std::string RetroPath(const std::string&, const std::string&) { return {}; }
+	void FetchRetro(const std::string&, const std::vector<std::string>&, bool) {}
+	size_t RetroPending() { return 0; }
 	size_t Pending() { return 0; }
 	std::vector<std::string> TakeArrived() { return {}; }
 	uint32_t Arrivals() { return 0; }

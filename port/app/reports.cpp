@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "reports.h"
+#include "own_status.h"
 
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
@@ -15,6 +16,8 @@
 #include <mutex>
 #include <random>
 #include <sstream>
+
+#include <sys/stat.h>
 
 namespace fs = std::filesystem;
 
@@ -404,15 +407,15 @@ namespace ps5reports
 			return text;
 		}
 
-		// the boot log's last lines, scrubbed
-		std::string LogTail(const std::string& path, const std::vector<std::string>& secrets)
+		// a log's last lines (the boot log's: kLogBytes), scrubbed
+		std::string LogTail(const std::string& path, const std::vector<std::string>& secrets, size_t most = kLogBytes)
 		{
 			std::ifstream file(path, std::ios::binary);
 			if (!file)
 				return {};
 			file.seekg(0, std::ios::end);
 			const std::streamoff size = file.tellg();
-			const std::streamoff from = std::max<std::streamoff>(0, size - (std::streamoff)kLogBytes * 2);
+			const std::streamoff from = std::max<std::streamoff>(0, size - (std::streamoff)most * 2);
 			file.seekg(from);
 			std::string text((size_t)(size - from), '\0');
 			file.read(text.data(), (std::streamsize)text.size());
@@ -435,12 +438,101 @@ namespace ps5reports
 			if (at > 0)
 				text.erase(0, at + 1);
 			std::string scrubbed = Scrub(text, secrets);
-			if (scrubbed.size() > kLogBytes)
+			if (scrubbed.size() > most)
 			{
-				scrubbed.erase(0, scrubbed.size() - kLogBytes);
+				scrubbed.erase(0, scrubbed.size() - most);
 				scrubbed.erase(0, std::min(scrubbed.size(), scrubbed.find('\n') + 1));
 			}
 			return scrubbed;
+		}
+
+		// whether a file in an emulator's log folder is a log: *log*, *crash* or *trace*, .log or .txt
+		bool IsLogName(std::string name)
+		{
+			std::transform(name.begin(), name.end(), name.begin(), Lower);
+			const bool text = name.size() > 4 && (name.compare(name.size() - 4, 4, ".log") == 0 || name.compare(name.size() - 4, 4, ".txt") == 0);
+			return text && (name.find("log") != std::string::npos || name.find("crash") != std::string::npos || name.find("trace") != std::string::npos);
+		}
+
+		struct LogFile
+		{
+			std::string path;
+			int64_t changed = 0;
+			bool crash = false;
+		};
+
+		// a log folder's logs, three deep, at most so many entries looked at (a data folder can hold games)
+		void FindLogs(const std::string& folder, int depth, int& budget, std::vector<LogFile>& found)
+		{
+			std::error_code ec;
+			for (fs::directory_iterator it(folder, ec), end; !ec && it != end && budget > 0; it.increment(ec))
+			{
+				budget--;
+				const std::string path = it->path().string();
+				// a link's own status (a linked folder is not walked into), where /data refuses lstat
+				if (fs::is_directory(ps5files::OwnStatus(path, ec)))
+				{
+					if (depth > 1)
+						FindLogs(path, depth - 1, budget, found);
+					continue;
+				}
+				std::string name = it->path().filename().string();
+				if (!IsLogName(name))
+					continue;
+				std::transform(name.begin(), name.end(), name.begin(), Lower);
+				found.push_back({path, 0, name.find("crash") != std::string::npos});
+			}
+		}
+
+		// The emulator's own logs of a session, as {file name, last lines}: the places a session named
+		// (Session::logs), the files changed between its start and now, a crash first, then the newest
+		std::vector<std::pair<std::string, std::string>> EmulatorLogs(const std::vector<std::string>& places, int64_t started, int64_t now,
+			const std::vector<std::string>& secrets)
+		{
+			std::vector<LogFile> found;
+			int budget = 2000;
+			for (const std::string& place : places)
+			{
+				std::error_code ec;
+				const fs::file_status status = fs::status(place, ec);
+				if (ec)
+					continue;
+				if (fs::is_directory(status))
+					FindLogs(place, 3, budget, found);
+				else if (fs::is_regular_file(status))
+				{
+					std::string name = fs::path(place).filename().string();
+					std::transform(name.begin(), name.end(), name.begin(), Lower);
+					found.push_back({place, 0, name.find("crash") != std::string::npos});
+				}
+			}
+			std::vector<LogFile> changed;
+			for (LogFile& log : found)
+			{
+				// stat's time, in seconds since 1970 as the session's (file_time_type's clock has no epoch to
+				// trust across the console's libc++ and a PC's)
+				struct stat info{};
+				if (stat(log.path.c_str(), &info) != 0)
+					continue;
+				log.changed = (int64_t)info.st_mtime;
+				// a minute's leeway for the console's clock and the file system's
+				if (log.changed >= started - 60 && log.changed <= now + 60 &&
+					std::none_of(changed.begin(), changed.end(), [&](const LogFile& other) { return other.path == log.path; }))
+					changed.push_back(log);
+			}
+			std::sort(changed.begin(), changed.end(), [](const LogFile& a, const LogFile& b) {
+				return a.crash != b.crash ? a.crash : a.changed != b.changed ? a.changed > b.changed : a.path < b.path;
+			});
+			std::vector<std::pair<std::string, std::string>> logs;
+			for (const LogFile& log : changed)
+			{
+				if (logs.size() >= kEmulatorLogs)
+					break;
+				std::string text = LogTail(log.path, secrets, kEmulatorLogBytes);
+				if (!text.empty())
+					logs.emplace_back(Cut(Scrub(fs::path(log.path).filename().string(), secrets), 64), std::move(text));
+			}
+			return logs;
 		}
 
 		// the outbox's files, by name: each starts with its session's time, twelve digits
@@ -621,6 +713,11 @@ namespace ps5reports
 		for (const auto& [name, value] : session.settings)
 			settings.AddMember(rapidjson::Value(name.c_str(), allocator), rapidjson::Value(value), allocator);
 		json.AddMember("settings", settings, allocator);
+		// where the emulator logs: the device's, never sent (Close takes it out)
+		rapidjson::Value places(rapidjson::kArrayType);
+		for (const std::string& place : session.logs)
+			places.PushBack(rapidjson::Value(place.c_str(), (rapidjson::SizeType)place.size(), allocator), allocator);
+		json.AddMember("logPlaces", places, allocator);
 		WriteFile(CurrentPath(), ToJson(json));
 	}
 
@@ -664,6 +761,12 @@ namespace ps5reports
 			return false; // noted under an answer since taken back
 		const bool ended = json.HasMember("ended") && json["ended"].IsBool() && json["ended"].GetBool();
 		json.RemoveMember("ended");
+		std::vector<std::string> places;
+		if (json.HasMember("logPlaces") && json["logPlaces"].IsArray())
+			for (const auto& place : json["logPlaces"].GetArray())
+				if (place.IsString())
+					places.emplace_back(place.GetString(), place.GetStringLength());
+		json.RemoveMember("logPlaces");
 		// a game left from its menu ended, whatever came after it (the launcher's own crash, a restart's
 		// error); otherwise its crash, why it did not start, or nothing: the app or the console was closed
 		const std::string& why = !outcome.crash.empty() ? outcome.crash : outcome.error;
@@ -675,6 +778,21 @@ namespace ps5reports
 			Set(json, "error", Cut(Scrub(why, s_secrets), kErrorLength));
 		if (!outcome.logPath.empty())
 			Set(json, "log", LogTail(outcome.logPath, s_secrets));
+		// the emulator's own logs of the session: [{"file": "core.log", "text": its last lines}]
+		const auto emulatorLogs = EmulatorLogs(places, json["started"].GetInt64(), now, s_secrets);
+		if (!emulatorLogs.empty())
+		{
+			rapidjson::Value logs(rapidjson::kArrayType);
+			for (const auto& [file, text] : emulatorLogs)
+			{
+				rapidjson::Value log(rapidjson::kObjectType);
+				log.AddMember("file", rapidjson::Value(file.c_str(), (rapidjson::SizeType)file.size(), json.GetAllocator()), json.GetAllocator());
+				log.AddMember("text", rapidjson::Value(text.c_str(), (rapidjson::SizeType)text.size(), json.GetAllocator()), json.GetAllocator());
+				logs.PushBack(log, json.GetAllocator());
+			}
+			json.RemoveMember("logs");
+			json.AddMember("logs", logs, json.GetAllocator());
+		}
 		char name[64];
 		std::snprintf(name, sizeof(name), "%012lld-%s.json", (long long)json["started"].GetInt64(), RandomHex(8).c_str());
 		const bool written = WriteFile(Outbox() + "/" + name, ToJson(json));

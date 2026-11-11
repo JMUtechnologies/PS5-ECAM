@@ -303,7 +303,7 @@ namespace ps5shell
 		Game& game = m_games[m_packsGame];
 		WantBackdrop(&game);
 		DrawPageHeader(canvas, Tr("Graphic packs"), game.entry.game.name,
-			Tr("Cross turns a pack on or off; Right goes to its presets. Choosing a preset turns its pack on. Changes apply at the next start."));
+			Tr("Cross turns a pack on or off. Right shows its presets. Changes apply next time the game starts."));
 		canvas.PushAlpha(Enter(1));
 		int packCount = 0, packNumber = 0;
 		for (int i = 0; i < (int)m_packItems.size(); i++)
@@ -316,7 +316,7 @@ namespace ps5shell
 		if (packCount == 0)
 		{
 			canvas.Text(Style(kHeadingStyle), kListX, kListTop, Tr("No graphic packs for this game"), kText, 1920 - 2 * kSafeX, 1);
-			canvas.Text(Style(kBodyStyle), kListX, kListTop + 50, Tr("Settings > Online gets the community's newest."), Secondary(), 800, 2);
+			canvas.Text(Style(kBodyStyle), kListX, kListTop + 50, Tr("Get the latest in Settings > Online."), Secondary(), 800, 2);
 			canvas.PopAlpha();
 			return;
 		}
@@ -332,7 +332,7 @@ namespace ps5shell
 					return;
 				}
 				const auto& pack = m_packs[item.pack];
-				canvas.Rect(box, 16, focused ? Surface2() : Surface());
+				Glass(canvas, box, 16, focused ? Surface2() : Surface(), focused ? 1.0f : 0.6f);
 				canvas.Text(Style(kBodyStyle), box.x + 24, box.CentreY() - 19, pack.name, kText, box.w - 160, 1);
 				DrawToggle(canvas, box.Right() - 24 - 64, box.CentreY() - 18, pack.enabled, focused);
 				if (focused && !m_presetsFocus)
@@ -433,35 +433,22 @@ namespace ps5shell
 		case Button::Triangle:
 		{
 			static const char* kHelp[kPlayerRows] = {
-				TrMark("What the game sees in this player's hands.\n\nMost games want the Wii U GamePad for player 1: its screen is the second one "
-					   "Playtendoh shows, and the touchpad touches it. Others take Pro Controllers, or Wii Remotes for games such as New Super "
-					   "Mario Bros. U.\nA Wii Remote points where a finger rests on the touchpad, or where you aim the DualSense.\nCemu has two "
-					   "GamePads at most."),
-				TrMark("The DualSense's gyroscope and accelerometer as the controller's own, for the games that aim or steer by tilting the "
-					   "GamePad or the Wii Remote.\nThe Pro Controller and the Classic Controller have none."),
+				TrMark("The controller the game sees.\n\nMost games want the Wii U GamePad for player 1. Its screen is the second one shown, and the touchpad touches it. Some games use Pro Controllers or Wii Remotes.\nA Wii Remote points where your finger is on the touchpad, or where you aim the DualSense.\nUp to two GamePads can be used."),
+				TrMark("Use DualSense motion for games that aim or steer by tilting the GamePad or Wii Remote.\nThe Pro Controller and Classic Controller have no motion."),
 				TrMark("How strongly the DualSense rumbles when the game makes the controller vibrate.\nLeft and Right change it by 10%."),
-				TrMark("How far the left stick moves before the game sees it. Raise it if a character drifts when you let go of the stick; "
-					   "lower it for finer control."),
-				TrMark("How far the right stick moves before the game sees it. Raise it if the camera drifts when you let go of the stick; "
-					   "lower it for finer control."),
-				TrMark("A on Circle and B on Cross, where the Wii U has them, or A on Cross and B on Circle, as PlayStation games confirm with "
-					   "Cross. X and Y swap to match. The Wii Remote has no X and Y: its buttons are under Buttons."),
-				TrMark("What a click of the touchpad is for this player.\nTouches the screen: it touches the GamePad's screen where your "
-					   "finger is.\nPresses a button: it presses the Wii U button set to Touchpad click under Buttons; choosing this moves - "
-					   "(Select) there when nothing is.\nAutomatic: a touch with the GamePad, a button with the other controllers, which have "
-					   "no screen.\nEither way, touchpad click + Options, L1 or R1 stay the shortcuts."),
-				TrMark("Which DualSense button presses each of the controller's buttons.\nA is on Circle and B on Cross by default, where the "
-					   "Wii U has them. Giving one button a DualSense input that another already uses swaps the two."),
-				TrMark("The default buttons, vibration, motion and deadzones for this controller. Held to confirm."),
+				TrMark("How far the left stick moves before the game sees it. Raise it if a character drifts; lower it for finer control."),
+				TrMark("How far the right stick moves before the game sees it. Raise it if the camera drifts; lower it for finer control."),
+				TrMark("A on Circle and B on Cross as on the Wii U, or A on Cross and B on Circle as on PlayStation. X and Y swap to match. Wii Remote buttons are under Buttons."),
+				TrMark("What a touchpad click does for this player.\nTouches the screen: touches the GamePad screen where your finger is.\nPresses a button: presses the button set to Touchpad click under Buttons (- if none is set).\nAutomatic: a touch with the GamePad, a button with other controllers.\nThe touchpad click + Options, L1 or R1 shortcuts always work."),
+				TrMark("Choose the DualSense button for each controller button.\nA is on Circle and B on Cross by default, as on the Wii U. If a DualSense button is already used, the two swap."),
+				TrMark("Puts this controller's buttons, vibration, motion and deadzones back to default. Hold Cross to confirm."),
 			};
 			static const char* kNames[kPlayerRows] = {TrMark("Emulated controller"), TrMark("Motion controls"), TrMark("Vibration"),
 				TrMark("Left stick deadzone"), TrMark("Right stick deadzone"), TrMark("A and B"), TrMark("Touchpad click"), TrMark("Buttons"),
 				TrMark("Reset to defaults")};
 			std::string help = Tr(kHelp[m_playerRow]);
 			if (m_playerRow == kRowType)
-				help += std::string("\n") + Tr("Real Wii Remote: an original Wii Remote or Wii Remote Plus through a Mayflash DolphinBar set to mode 4 "
-												 "in one of the PS5's USB ports, with its own pointer, motion, rumble and Nunchuk. The players with one "
-												 "take the Remotes in their order: the first of them the first Remote found.");
+				help += std::string("\n") + Tr("Real Wii Remote: a Wii Remote or Wii Remote Plus through a Mayflash DolphinBar in mode 4, plugged into the PS5. Its pointer, motion, rumble and Nunchuk all work. Remotes go to players in the order they are found.");
 			OpenHelp(Tr(kNames[m_playerRow]), help);
 			return;
 		}
@@ -614,14 +601,14 @@ namespace ps5shell
 		// tr: {0} is an emulated controller (Wii U GamePad)
 		const bool realRemote = ps5emu::IsRealWiiRemote(controls.type);
 		DrawPageHeader(canvas, "Wii U · " + std::string(Tr("Controllers")), TrF("Player {0}", m_player + 1),
-			realRemote ? (controls.connected ? TrF("{0}, found through the DolphinBar", TypeName(controls.type)) :
+			realRemote ? (controls.connected ? TrF("{0}, through the DolphinBar", TypeName(controls.type)) :
 								 TrF("{0}: none found yet. Plug a DolphinBar set to mode 4 into the PS5 and sync a Wii Remote to it.", TypeName(controls.type))) :
 			controls.connected ? TrF("{0}, on this player's DualSense", TypeName(controls.type)) :
 								 TrF("{0}, on a DualSense that is not connected", TypeName(controls.type)));
 		std::vector<Row> rows(kPlayerRows);
-		rows[kRowType] = {Row::Kind::Choice, "", Tr("Emulated controller"), TypeName(controls.type), Tr("What the game sees in this player's hands.")};
+		rows[kRowType] = {Row::Kind::Choice, "", Tr("Emulated controller"), TypeName(controls.type), Tr("The controller the game sees.")};
 		rows[kRowMotion] = {Row::Kind::Toggle, "", Tr("Motion controls"), controls.hasMotion ? (controls.motion ? Tr("On") : Tr("Off")) : Tr("None on this one"),
-			controls.hasMotion ? Tr("The DualSense's motion as the controller's.") :
+			controls.hasMotion ? Tr("Use DualSense motion.") :
 								 // F9 (#25): what to choose instead, where the real controller has no motion sensors
 								 TrF("The {0} has no motion sensors. For motion, choose the GamePad or a Wii Remote.", TypeName(controls.type))};
 		rows[kRowMotion].on = controls.motion;
@@ -641,7 +628,7 @@ namespace ps5shell
 			const auto layout = ps5emu::GetFaceLayout(m_player);
 			const bool wiiRemote = controls.type == ps5emu::EmulatedType::Wiimote || controls.type == ps5emu::EmulatedType::Nunchuk;
 			rows[kRowLayout] = {Row::Kind::Segmented, "", Tr("A and B"), "", wiiRemote ? Tr("The Wii Remote's buttons are under Buttons.") :
-				Tr("Where A is: on Circle, as on the Wii U, or on Cross.")};
+				Tr("A on Circle as on the Wii U, or on Cross.")};
 			rows[kRowLayout].options = {Tr("A on Circle"), Tr("A on Cross")};
 			rows[kRowLayout].index = layout == ps5emu::FaceLayout::PlayStation ? 1 : 0;
 			rows[kRowLayout].value = layout == ps5emu::FaceLayout::None ? std::string(Tr("Your own")) : rows[kRowLayout].options[rows[kRowLayout].index];
@@ -656,15 +643,15 @@ namespace ps5shell
 			rows[kRowTouchpad].options = {Tr(kTouchpadClicks[0]), Tr(kTouchpadClicks[1]), Tr(kTouchpadClicks[2])};
 			rows[kRowTouchpad].index = click;
 		}
-		rows[kRowButtons] = {Row::Kind::Link, "", Tr("Buttons"), TrP(mapped, "{0} button set", "{0} buttons set"), Tr("Which DualSense button presses each button.")};
+		rows[kRowButtons] = {Row::Kind::Link, "", Tr("Buttons"), TrP(mapped, "{0} button set", "{0} buttons set"), Tr("Choose the DualSense button for each button.")};
 		rows[kRowReset] = {Row::Kind::Hold, "", Tr("Reset to defaults"), m_message.empty() ? std::string(Tr("Hold Cross")) : m_message,
-			Tr("The default buttons, vibration, motion and deadzones.")};
+			Tr("Puts buttons, vibration, motion and deadzones back to default.")};
 		if (realRemote)
 			for (int row : {kRowMotion, kRowRumble, kRowLeftDeadzone, kRowRightDeadzone, kRowLayout, kRowTouchpad, kRowButtons})
 			{
 				rows[row].kind = Row::Kind::Action;
 				rows[row].value = Tr("Its own");
-				rows[row].description = Tr("A real Wii Remote has its own buttons, pointer, motion and rumble: this setting is for the DualSense.");
+				rows[row].description = Tr("This setting is for the DualSense. A real Wii Remote uses its own buttons, pointer, motion and rumble.");
 				rows[row].dimmed = true;
 			}
 		canvas.PushAlpha(Enter(1));
@@ -803,7 +790,7 @@ namespace ps5shell
 				{
 					if (!PorpoiseLayoutIsOwn())
 					{
-						m_mapMessage = Tr("This one is built in: choose one of your own at the top to change it.");
+						m_mapMessage = Tr("Built-in layouts can't be changed. Choose one of your own at the top.");
 						m_feedback.Play(ui::Cue::Denied);
 						break;
 					}
@@ -823,7 +810,7 @@ namespace ps5shell
 					ChoosePorpoiseButton(m_mapSelected);
 				else
 				{
-					m_mapMessage = Tr("This one is built in: choose one of your own at the top to change it.");
+					m_mapMessage = Tr("Built-in layouts can't be changed. Choose one of your own at the top.");
 					m_feedback.Play(ui::Cue::Denied);
 				}
 				break;
@@ -857,7 +844,7 @@ namespace ps5shell
 				else
 					ps5emu::SetMapping(m_player, m_mapSelected, ps5emu::PadInput::None);
 				// every Switch button is on a DualSense button: Square puts its default back
-				m_mapMessage = m_mappingSide == System::Switch || !m_porpoiseButtons.empty() ? Tr("Done.") : Tr("Cleared: no DualSense button is this one now.");
+				m_mapMessage = m_mappingSide == System::Switch || !m_porpoiseButtons.empty() ? Tr("Done.") : Tr("Cleared. No DualSense button is set for it.");
 				m_feedback.Play(ui::Cue::Back);
 			}
 			break;
@@ -897,21 +884,21 @@ namespace ps5shell
 		if (m_now > m_capture.until)
 		{
 			m_capture.active = false;
-			m_mapMessage = Tr("No button was pressed, so it stays as it was.");
+			m_mapMessage = Tr("No button pressed. Nothing changed.");
 		}
 		else if (!m_capture.released)
 			m_capture.released = idle;
 		else if ((data.buttons & ps5pad::kTouchPad) && m_mappingSide != System::WiiU && m_mappingSide != System::Switch)
 		{
 			m_capture.active = false;
-			m_mapMessage = Tr("Cancelled: it stays as it was.");
+			m_mapMessage = Tr("Cancelled. Nothing changed.");
 		}
 		else if (const auto input = data.buttons & ps5pad::kTouchPad ? ps5emu::PadInput::TouchPad : Pressed(data);
 				 m_mappingSide == System::Switch && input != ps5emu::PadInput::None && !ps5eden::Mappable(input))
 		{
 			// the Switch's buttons go on the DualSense's buttons: its D-pad and sticks stay the Switch's own
 			m_capture.active = false;
-			m_mapMessage = Tr("Cancelled: it stays as it was.");
+			m_mapMessage = Tr("Cancelled. Nothing changed.");
 		}
 		else if (input != ps5emu::PadInput::None)
 		{
@@ -927,8 +914,7 @@ namespace ps5shell
 				m_settings.touchpadClick[m_player] = 2;
 				ps5emu::ApplyTouchpadClick(m_player, 2, false);
 				SaveSettings();
-				m_mapMessage = Tr("Done. The touchpad's click is now a button for this player, not a touch of the GamePad's screen: their Touchpad "
-								  "click setting changes it back.");
+				m_mapMessage = Tr("Done. Touchpad click is now a button for this player, not a touch. Change it back under Touchpad click.");
 			}
 			m_feedback.Play(ui::Cue::Select);
 		}
@@ -941,7 +927,7 @@ namespace ps5shell
 		m_mapSelected = std::clamp(m_mapSelected, 0, std::max(0, count - 1));
 		if (m_mappingSide != System::WiiU)
 			DrawPageHeader(canvas, std::string(SystemName(m_mappingSide)) + " · " + Tr("Controls"), Tr("Buttons"),
-				TrF("Which DualSense button presses each {0} button", SideTitle(m_mappingSide)));
+				TrF("The DualSense button for each {0} button", SideTitle(m_mappingSide)));
 		else
 		{
 			const auto controls = ps5emu::GetPlayerControls(m_player);
@@ -954,7 +940,7 @@ namespace ps5shell
 			TrF("{0} of {1}", count ? m_mapSelected + 1 : 0, count), Tertiary(), 0, 0, ui::Align::Right);
 		DrawList(canvas, {kListX, kListTop, kListWidth, kListBottom - kListTop}, count, m_mapSelected, m_listScroll.value, 72,
 			[&](int i, const Box& box, bool focused) {
-				canvas.Rect(box, 16, focused ? Surface2() : Surface());
+				Glass(canvas, box, 16, focused ? Surface2() : Surface(), focused ? 1.0f : 0.6f);
 				canvas.Text(Style(kBodyStyle), box.x + 24, box.CentreY() - 19, ButtonName(mappings[i].button), kText, box.w * 0.55f, 1);
 				const bool unset = mappings[i].input.empty();
 				canvas.Text(Style(kLabelStyle), box.Right() - 24 - box.w * 0.4f, box.CentreY() - 16,
@@ -986,23 +972,21 @@ namespace ps5shell
 			message = (m_porpoiseButtons.empty() ? TrF("Press the DualSense button, trigger or stick direction for {0} now.", ButtonName(mapping.button)) :
 							TrF("Press the DualSense button or trigger for {0} now.", ButtonName(mapping.button))) + "\n" +
 				(m_mappingSide == System::WiiU || m_mappingSide == System::Switch ?
-						TrP(seconds, "{0} second left; then it stays as it was. The touchpad's click counts too.",
-							"{0} seconds left; then it stays as it was. The touchpad's click counts too.") :
+						TrP(seconds, "{0} second left, or nothing changes. Touchpad click can be chosen too.",
+							"{0} seconds left, or nothing changes. Touchpad click can be chosen too.") :
 						TrP(seconds, "{0} second left. A touchpad click cancels.", "{0} seconds left. A touchpad click cancels."));
 		}
 		else
 			message = (m_mapMessage.empty() ? "" : m_mapMessage + "\n\n") +
 				(!m_porpoiseButtons.empty() ?
 						// tr: a GameCube or GBA button's mapping: a DualSense button, never a stick's direction or the touchpad
-						(m_mapSelected == 0 ? Tr("Left and Right, or Cross, choose the layout the game uses. The built-in ones can't be changed: choose one of your own to set its buttons.") :
+						(m_mapSelected == 0 ? Tr("Left and Right, or Cross, choose the layout. Built-in layouts can't be changed; choose one of your own to set buttons.") :
 							m_porpoiseButtons == "gba" ? Tr("Cross chooses what this DualSense button does. If another button already did that, the two swap.\nSquare makes it do nothing.") :
 							Tr("Cross chooses what this DualSense button does. If another button already did that, the two swap.\nSquare makes it do nothing.")) :
 				m_mappingSide == System::Switch ?
 						// tr: a Switch button's mapping: each is on a DualSense button (the touchpad's click too), never on none
-						Tr("Cross, then a DualSense button or the touchpad's click: it becomes this one. If another button already had it, the "
-						   "two swap.\nSquare puts its default back.") :
-						Tr("Cross, then a DualSense button, trigger or stick direction: it becomes this one. If another button already had it, the "
-						   "two swap.\nSquare clears it."));
+						Tr("Press Cross, then a DualSense button or touchpad click to use for this. If another button had it, the two swap.\nSquare restores the default.") :
+						Tr("Press Cross, then a DualSense button, trigger or stick direction to use for this. If another button had it, the two swap.\nSquare clears it."));
 		ui::TextStyle body = Style({24, ui::Weight::Regular, 1.45f});
 		body.tabular = true;
 		canvas.Text(body, panel.x + 40, panel.y + 280, message, Secondary(), panel.w - 80, 7);
@@ -1107,12 +1091,12 @@ namespace ps5shell
 				if (m_filesMode == 2)
 				{
 					ps5azahar::CancelInstall();
-					m_filesMessage = Tr("Cancelling: what it copied is removed…");
+					m_filesMessage = Tr("Cancelling and removing copied files…");
 				}
 				else
 				{
 					ps5emu::CancelInstall();
-					m_filesMessage = Tr("Cancelling: what was installed before is put back…");
+					m_filesMessage = Tr("Cancelling and restoring the previous install…");
 				}
 				m_feedback.Play(ui::Cue::Back);
 			}
@@ -1235,7 +1219,7 @@ namespace ps5shell
 				m_rescan[SideIndex(m_filesSide)] = true;
 			m_filesMessage = !saved ? Tr("The folder could not be saved. Please try again.") :
 				here			   ? Tr("Saved. Playtendoh is looking for games there.") :
-									 Tr("Saved. That side looks for games there when it opens.");
+									 Tr("Saved. Games will be found there when this system opens.");
 			m_feedback.Play(saved ? ui::Cue::Select : ui::Cue::Denied);
 			if (saved && here)
 				Toast(TrF("Looking for games in {0}", ShortPath(m_browseFolder, 40)));
@@ -1256,7 +1240,7 @@ namespace ps5shell
 		else
 		{
 			if (!m_status.coreReady)
-				m_filesMessage = Tr("Cemu did not start, so nothing can be installed.");
+				m_filesMessage = Tr("The Wii U emulator did not start, so nothing can be installed.");
 			else if (ps5emu::StartInstall(m_browseFolder, error))
 			{
 				m_installing = true;
@@ -1288,16 +1272,15 @@ namespace ps5shell
 		m_chosenCia = {};
 		if (status.state == State::Done)
 		{
-			m_filesMessage = Tr("Installed. The library has it with its game.");
+			m_filesMessage = Tr("Installed. It's in the library with its game.");
 			if (m_filesSide == m_side)
 				LookForGames();
 			Toast(Tr("Installed"));
 		}
 		else if (status.state == State::Cancelled && m_filesMode == 2)
-			m_filesMessage = Tr("Cancelled. What it copied was removed, with any earlier copy of the same title: install it again to play it. "
-								"Its saves are kept.");
+			m_filesMessage = Tr("Cancelled. The copied files and any earlier copy were removed. Install it again to play. Saves are kept.");
 		else if (status.state == State::Cancelled)
-			m_filesMessage = Tr("Cancelled. What was installed before is as it was.");
+			m_filesMessage = Tr("Cancelled. The previous install is unchanged.");
 		else
 			m_filesMessage = TrF("It could not be installed: {0}", status.message);
 	}
@@ -1338,8 +1321,9 @@ namespace ps5shell
 				const float w = m_fonts.Width(style, label) + 66;
 				const Box tab{x, y, w, h};
 				const bool on = i == current;
-				canvas.Rect(tab, h / 2, on ? ui::SetAlpha(Accent(), 0.22f) : Surface());
-				canvas.Ring(tab, h / 2, 1.5f, on ? ui::SetAlpha(Accent(), 0.55f) : kGlassEdge);
+				Glass(canvas, tab, h / 2, on ? ui::SetAlpha(Accent(), 0.22f) : Surface(), 0.7f);
+				if (on)
+					canvas.Ring(tab, h / 2, 1.5f, ui::SetAlpha(Accent(), 0.55f));
 				canvas.Draw(i == 0 ? Icon::Folder : tabs[i].starts_with("/mnt/usb") ? Icon::Usb : tabs[i].starts_with("/net/") ? Icon::Globe : Icon::Drive,
 					{x + 16, y + 11, 22, 22}, on ? Accent() : Secondary());
 				canvas.Text(style, x + 46, y + 11, label, on ? kText : Secondary(), w - 56, 1);
@@ -1357,7 +1341,7 @@ namespace ps5shell
 			[&](int i, const Box& box, bool focused) {
 				const std::string& entry = m_browseEntries[i];
 				const bool up = entry == "..", drive = entry.starts_with('/'), file = IsFileEntry(i);
-				canvas.Rect(box, 16, focused ? Surface2() : Surface());
+				Glass(canvas, box, 16, focused ? Surface2() : Surface(), focused ? 1.0f : 0.6f);
 				canvas.Draw(up ? Icon::Back : drive ? Icon::Drive : file ? Icon::Square : Icon::Folder, {box.x + 20, box.CentreY() - 16, 32, 32},
 					drive ? Accent() : Secondary());
 				canvas.Text(Style(kBodyStyle), box.x + 70, box.CentreY() - 19, up ? std::string(Tr("Parent folder")) : drive ? DriveName(entry) : entry, kText,
@@ -1396,7 +1380,7 @@ namespace ps5shell
 			lines[2] = {Tr("Version"), file && title.titleId ? fmt::format("v{}", title.version) : "-"};
 			ready[0] = ready[1] = ready[2] = file;
 			if (message.empty())
-				message = file ? Tr("Triangle installs it into the 3DS's storage: an update or DLC goes with its game, and a game joins the library.") :
+				message = file ? Tr("Triangle installs it. Updates and DLC join their game; games join the library.") :
 								 Tr("Choose a CIA file to install: a game, an update or DLC.");
 		}
 		else if (!install)
@@ -1424,13 +1408,13 @@ namespace ps5shell
 			else if (nx)
 			{
 				const bool keys = ps5eden::KeysFound();
-				lines[1] = {"prod.keys", keys ? std::string(Tr("Found")) : std::string(Tr("Missing: Eden cannot read Switch games without it"))};
+				lines[1] = {"prod.keys", keys ? std::string(Tr("Found")) : std::string(Tr("Missing: Switch games need it"))};
 				ready[1] = keys;
 			}
 			else if (nds)
 			{
 				const bool bios = ps5melonds::OwnBiosFound();
-				lines[1] = {Tr("Your DS's BIOS"), bios ? Tr("Found in melonds/bios") : Tr("Not there (melonDS's built-in BIOS runs most games)")};
+				lines[1] = {Tr("Your DS's BIOS"), bios ? Tr("Found in melonds/bios") : Tr("Not found (most games run without it)")};
 				ready[1] = bios;
 			}
 			else
@@ -1444,13 +1428,10 @@ namespace ps5shell
 			ready[0] = games > 0;
 			ready[2] = GamesFolder(m_filesSide) == m_browseFolder;
 			if (message.empty())
-				message = n3ds ? Tr("Games can be .3ds or .cci, .cxi or .3dsx, decrypted, alone or in .zip, .7z or .rar archives, and .cia files, here "
-									"or in the folders in it. Triangle uses the folder shown.") :
-					nds		   ? Tr("Games are .nds files, alone or in .zip, .7z or .rar archives, here or in the folders in it. Triangle uses the folder shown.") :
-				nx		   ? Tr("Games are .nsp and .xci files, here or each in a folder of its own with its update and DLC. Network shares are out "
-								"of Eden's reach. Triangle uses the folder shown.") :
-								 Tr("Games can be .wua, .wud, .wux, or folders with code, content and meta, alone or in .zip, .7z or .rar archives. "
-									"Triangle uses the folder shown.");
+				message = n3ds ? Tr("Games can be decrypted .3ds, .cci, .cxi, .3dsx or .cia files, or in .zip, .7z or .rar, here or in subfolders. Triangle uses this folder.") :
+					nds		   ? Tr("Games are .nds files, or in .zip, .7z or .rar, here or in subfolders. Triangle uses this folder.") :
+				nx		   ? Tr("Games are .nsp and .xci files, here or each in its own folder with its update and DLC. Network shares can't be used. Triangle uses this folder.") :
+								 Tr("Games can be .wua, .wud, .wux, folders with code, content and meta, or in .zip, .7z or .rar. Triangle uses this folder.");
 		}
 		else
 		{
@@ -1465,7 +1446,7 @@ namespace ps5shell
 			ready[0] = ready[1] = valid;
 			ready[2] = valid && candidate.installedVersion < (int)candidate.version;
 			if (message.empty())
-				message = valid ? Tr("Triangle installs it into the Wii U's storage (mlc01). Updates and DLC in the game files folder work as they are, too.") :
+				message = valid ? Tr("Triangle installs it into the Wii U's storage (mlc01). Updates and DLC in the game files folder also work without installing.") :
 								  candidate.note;
 		}
 		if (m_installing && !m_installProgress.empty() && m_filesMessage.empty())
@@ -1650,16 +1631,11 @@ namespace ps5shell
 		};
 		const Item items[kArticRows] = {
 			{Tr("3DS address"), address, Row::Kind::Action,
-				Tr("The address Artic Base shows on the 3DS's screen when it is ready.\nCross edits it: Left and Right choose a number, Up and "
-				   "Down change it by 1, L1 and R1 by 10, and Cross again keeps it.\nThe 3DS and the PS5 must be on the same network.")},
+				Tr("The address Artic Base shows on the 3DS when it is ready.\nCross edits it: Left and Right choose a number, Up and Down change it by 1, L1 and R1 by 10. Cross again saves it.\nThe 3DS and the PS5 must be on the same network.")},
 			{Tr("Connect and play"), "", Row::Kind::Action,
-				Tr("On the 3DS, start the Artic Base app (homebrew, from Azahar's team) and choose a game in it: the cartridge or an installed "
-				   "one. Then connect from here: the game plays on the PS5 from the 3DS, and its saves stay on the 3DS.\nIt is only as smooth as "
-				   "the network: a strong Wi-Fi signal for the 3DS and a wired PS5 help.")},
+				Tr("On the 3DS, start the Artic Base app and choose a game (cartridge or installed). Then connect here. The game plays on the PS5 and saves stay on the 3DS.\nA strong Wi-Fi signal for the 3DS and a wired PS5 make it smoother.")},
 			{Tr("Set up from an Old 3DS"), Tr("Hold Cross"), Row::Kind::Hold,
-				Tr("With the Artic Setup Tool app running on an Old 3DS or 2DS: copies its system files and its own data (system settings, "
-				   "friend code, Mii and eShop data) into Azahar, so games that need the 3DS's system applets or files start, and the Home Menu "
-				   "can (Settings > System).\nThat data is your console's: do not share Azahar's folder afterwards.")},
+				Tr("Run the Artic Setup Tool app on an Old 3DS or 2DS to copy its system files and data (settings, friend code, Mii and eShop data). Games that need system files will then start, and so can the Home Menu (Settings > System).\nThis data is your console's own: do not share the azahar folder.")},
 			{Tr("Set up from a New 3DS"), Tr("Hold Cross"), Row::Kind::Hold, Tr("As above, from a New 3DS or New 2DS running the Artic Setup Tool app.")},
 		};
 		canvas.PushAlpha(Enter(1));

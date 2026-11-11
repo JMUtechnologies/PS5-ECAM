@@ -3,6 +3,8 @@
 // pointer of the frontend's, so what they need is this file's one session, as RetroArch keeps its.
 #include "session.h"
 
+#include <rc_libretro.h>
+
 #include <algorithm>
 #include <cstdarg>
 #include <cstdio>
@@ -10,6 +12,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iterator>
+#include <string_view>
 
 namespace fs = std::filesystem;
 
@@ -49,6 +52,9 @@ namespace ps5libretro
 			int still = 0;
 			bool pending = false;
 			std::vector<uint8_t> undo;
+			// the core's memory map (SET_MEMORY_MAPS), kept whole, and rcheevos' regions over it
+			std::vector<retro_memory_descriptor> descriptors;
+			rc_libretro_memory_regions_t cheevos{};
 		};
 		State s;
 		void (*s_log)(int level, const std::string& line) = nullptr;
@@ -179,6 +185,17 @@ namespace ps5libretro
 			}
 		}
 
+		// a category's name, by its key, in the language last given (SET_CORE_OPTIONS_V2's categories)
+		std::string CategoryName(const retro_core_options_v2* options, const char* key)
+		{
+			if (!options || !key)
+				return {};
+			for (const retro_core_option_v2_category* c = options->categories; c && c->key; c++)
+				if (std::strcmp(c->key, key) == 0)
+					return c->desc ? c->desc : c->key;
+			return {};
+		}
+
 		void AddDefinitionsV2(const retro_core_options_v2* options, bool local)
 		{
 			if (!options)
@@ -188,6 +205,9 @@ namespace ps5libretro
 				if (local)
 				{
 					Localize(d->key, d->desc, d->info, d->values);
+					if (Option* option = FindOption(d->key); option && d->category_key)
+						if (const std::string name = CategoryName(options, d->category_key); !name.empty())
+							option->category = name;
 					continue;
 				}
 				Option option;
@@ -196,6 +216,7 @@ namespace ps5libretro
 				option.info = d->info ? d->info : "";
 				Values(d->values, option);
 				option.defaultValue = d->default_value ? d->default_value : "";
+				option.category = CategoryName(options, d->category_key);
 				AddOption(std::move(option));
 			}
 		}
@@ -310,6 +331,11 @@ namespace ps5libretro
 						option->visible = display->visible;
 				return true;
 			}
+			case RETRO_ENVIRONMENT_SET_MEMORY_MAPS:
+				// kept for RetroAchievements: the descriptors point into the core's own memory, which stays
+				if (const auto* map = (const retro_memory_map*)data; map && map->descriptors)
+					s.descriptors.assign(map->descriptors, map->descriptors + map->num_descriptors);
+				return true;
 			case RETRO_ENVIRONMENT_GET_LOG_INTERFACE:
 				if (!data)
 					return false;
@@ -356,7 +382,6 @@ namespace ps5libretro
 			case RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME:
 			case RETRO_ENVIRONMENT_SET_SUBSYSTEM_INFO:
 			case RETRO_ENVIRONMENT_SET_CONTROLLER_INFO:
-			case RETRO_ENVIRONMENT_SET_MEMORY_MAPS:
 			case RETRO_ENVIRONMENT_SET_SUPPORT_ACHIEVEMENTS:
 			case RETRO_ENVIRONMENT_SET_SERIALIZATION_QUIRKS:
 			case RETRO_ENVIRONMENT_SET_CORE_OPTIONS_UPDATE_DISPLAY_CALLBACK:
@@ -536,6 +561,20 @@ namespace ps5libretro
 			error = "a game is loaded already";
 			return false;
 		}
+		// ParaLLEl-N64 reads a ROM's header as it loads and ends the process on one that is not a Nintendo 64
+		// ROM: what is not one is turned down first, by the first word every byte order of one starts with
+		if (std::string_view(core.name) == "paralleln64")
+		{
+			unsigned char magic[4] = {};
+			std::ifstream file(game, std::ios::binary);
+			file.read((char*)magic, 4);
+			const uint32_t word = uint32_t(magic[0]) << 24 | magic[1] << 16 | magic[2] << 8 | magic[3];
+			if (!file || (word != 0x80371240 && word != 0x37804012 && word != 0x40123780))
+			{
+				error = "not a Nintendo 64 ROM (.z64, .v64 or .n64), or a damaged one";
+				return false;
+			}
+		}
 		Clear();
 		s.core = &core;
 		s.setup = setup;
@@ -630,6 +669,48 @@ namespace ps5libretro
 	}
 
 	const std::vector<Option>& Options() { return s.options; }
+
+	namespace
+	{
+		void RC_CCONV CoreMemory(uint32_t id, rc_libretro_core_memory_info_t* info)
+		{
+			info->data = s.core ? (uint8_t*)s.core->getMemoryData(id) : nullptr;
+			info->size = s.core ? s.core->getMemorySize(id) : 0;
+		}
+	}
+
+	bool CheevosMemory(uint32_t console)
+	{
+		if (!s.loaded || !s.core)
+			return false;
+		rc_libretro_memory_destroy(&s.cheevos);
+		retro_memory_map map{s.descriptors.data(), (unsigned)s.descriptors.size()};
+		if (!rc_libretro_memory_init(&s.cheevos, s.descriptors.empty() ? nullptr : &map, CoreMemory, console))
+			return false;
+		Log(RETRO_LOG_INFO, "RetroAchievements: " + std::to_string(s.cheevos.count) + " memory regions, " + std::to_string(s.cheevos.total_size) + " bytes");
+		return s.cheevos.total_size > 0;
+	}
+
+	uint32_t CheevosRead(uint32_t address, uint8_t* buffer, uint32_t size)
+	{
+		return s.loaded ? rc_libretro_memory_read(&s.cheevos, address, buffer, size) : 0;
+	}
+
+	std::vector<Option> Describe(const Core& core, unsigned language)
+	{
+		if (s.loaded)
+			return {};
+		// the core told its environment on a session of its own, which then goes; the next Load gives it
+		// the game's again before anything else
+		State kept = std::move(s);
+		s = State{};
+		s.core = &core;
+		s.setup.language = language;
+		core.setEnvironment(Environment);
+		std::vector<Option> options = std::move(s.options);
+		s = std::move(kept);
+		return options;
+	}
 
 	bool SetOption(const std::string& key, const std::string& value)
 	{
@@ -763,6 +844,7 @@ namespace ps5libretro
 		std::string error;
 		if (!FlushSave(true, error))
 			Log(RETRO_LOG_ERROR, error);
+		rc_libretro_memory_destroy(&s.cheevos);
 		s.core->unloadGame();
 		s.core->deinit();
 		Clear();

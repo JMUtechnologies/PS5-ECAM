@@ -148,8 +148,7 @@ namespace ps5forwarders
 			if (!SendToElfldr(ps5paths::AppDir() + "/tile-installer.elf", error))
 			{
 				ps5log::Line("[tiles] the tile helper could not be sent to elfldr: {}", error);
-				return ps5lang::Tr("elfldr does not answer on port 9021. Home screen tiles need it, to be put in /data/homebrew and to "
-								   "start their games: load elfldr, then try again.");
+				return ps5lang::Tr("Home screen tiles need elfldr, which is not answering on port 9021. Load elfldr, then try again.");
 			}
 			for (int poll = 0; poll < kInstallPolls && !s_stop; poll++)
 			{
@@ -169,7 +168,7 @@ namespace ps5forwarders
 				std::this_thread::sleep_for(std::chrono::milliseconds(100));
 			}
 			ps5log::Line("[tiles] the tile helper did not answer in {} s", kInstallPolls / 10);
-			return ps5lang::Tr("elfldr took the tile helper, but the tile did not reach /data/homebrew.");
+			return ps5lang::Tr("The tile did not reach /data/homebrew. Try again.");
 		}
 
 		// The tile made for this game before: a forwarder in /data/homebrew that starts PS5-ECAM

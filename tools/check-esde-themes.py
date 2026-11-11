@@ -24,7 +24,8 @@ def systems():
     source = (ROOT / "port/esde/esde.cpp").read_text()
     block = source[source.index("constexpr Known kEsdeSystems[] = {"):]
     block = block[:block.index("};")]
-    names = re.findall(r'\{"([a-z0-9]+)", "', block)
+    # {registry key, ES-DE's name, full name, extensions}: the themes know the second
+    names = re.findall(r'\{"[a-z0-9]+", "([a-z0-9]+)", "', block)
     if len(names) < 15:
         sys.exit(f"port/esde/esde.cpp: kSystems has {len(names)} systems, not read right")
     return names

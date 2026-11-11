@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: premohq <48417750+premohq@users.noreply.github.com>
+Date: Tue, 10 Nov 2026 17:15:30 -0500
+Subject: [PATCH] Playtendoh's Switch 2 side: its loading screen and menu name
+ the Nintendo Switch 2
+
+The shared loading screen and in-game menu (Playtendoh's port/eden/ingame.cpp) are compiled with
+PS5ECAM_SWITCH2 here, so a Switch 2 game's loading screen names its own system, not the Switch.
+---
+ headless/ecam.cmake | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/headless/ecam.cmake b/headless/ecam.cmake
+index ccb5982..fd71623 100644
+--- a/headless/ecam.cmake
++++ b/headless/ecam.cmake
+@@ -1,4 +1,4 @@
+-# Compile PS5-ECAM's Switch menu in the child runtime so Switch and Switch 2 share the same UI.
++# Compile Playtendoh's Switch menu in the child runtime so Switch and Switch 2 share the same UI.
+ set(PS5ECAM_PORT "$ENV{PS5ECAM_PORT}" CACHE PATH "PS5-ECAM's port/ folder for the shared in-game menu")
+ if(PS5ECAM_PORT AND EXISTS "${PS5ECAM_PORT}/eden/ingame.cpp")
+     set(ecam_imgui "${PS5ECAM_PORT}/../.deps/Cemu/dependencies/imgui")
+@@ -12,8 +12,9 @@ if(PS5ECAM_PORT AND EXISTS "${PS5ECAM_PORT}/eden/ingame.cpp")
+         "${PS5ECAM_PORT}/app/lang.cpp" "${PS5ECAM_PORT}/app/keyboard.cpp" "${PS5ECAM_PORT}/ui/text.cpp")
+     target_include_directories(ecam_ingame PUBLIC "${PS5ECAM_PORT}/eden"
+         PRIVATE "${ecam_imgui}" "${ecam_imgui}/backends" "${PS5ECAM_PORT}")
++    # PS5ECAM_SWITCH2: the menu and loading screen say Nintendo Switch 2 (Playtendoh's port/eden/ingame.cpp)
+     target_compile_definitions(ecam_ingame PRIVATE VK_NO_PROTOTYPES IMGUI_IMPL_VULKAN_NO_PROTOTYPES
+-        PS5ECAM_TEXT_NO_FONTS)
++        PS5ECAM_TEXT_NO_FONTS PS5ECAM_SWITCH2)
+     target_compile_options(ecam_ingame PRIVATE -Wno-unused-function -Wno-unused-parameter -Wno-unused-variable
+         -Wno-unused-const-variable -Wno-missing-field-initializers
+         $<$<BOOL:${PS5_NATIVE}>:-femulated-tls>)
