@@ -1,0 +1,34 @@
+From: Playtendoh
+Subject: [PATCH] PS5: no portable.ini or config folder, as getcwd ends the app there
+
+mgba_retro_load_game loads the core's config (mCoreLoadConfig), which looks for portable.ini beside
+getcwd() and then for HOME. On PS5-680 the C library's getcwd ended the app with signal 11 as a Game
+Boy Color game started (rip in libc, mCoreConfigPortablePath on the stack), and the PS5 has no HOME.
+As on the other consoles mGBA knows, no portable.ini; and no config folder of its own: the frontend
+gives the folders a core uses (system, saves). The PC's build (LIBRETRO_HOST) is unchanged.
+
+---
+diff --git a/src/core/config.c b/src/core/config.c
+index 0388c9f..a982d3e 100644
+--- a/src/core/config.c
++++ b/src/core/config.c
+@@ -255,6 +255,9 @@ void mCoreConfigDirectory(char* out, size_t outLength) {
+ 		}
+ 	}
+ 	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
++#elif defined(__PROSPERO__)
++	/* PS5: no HOME, and the frontend gives the folders a core uses: no config folder of its own */
++	out[0] = '\0';
+ #elif defined(PSP2)
+ 	snprintf(out, outLength, "ux0:data/%s", projectName);
+ 	sceIoMkdir(out, 0777);
+@@ -297,7 +300,8 @@ void mCoreConfigPortableIniPath(char* out, size_t outLength) {
+ 	}
+ 	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
+ 	StringCchCatA(out, outLength, PATH_SEP "portable.ini");
+-#elif defined(PSP2) || defined(GEKKO) || defined(__SWITCH__) || defined(__3DS__)
++#elif defined(PSP2) || defined(GEKKO) || defined(__SWITCH__) || defined(__3DS__) || defined(__PROSPERO__)
++	/* PS5: its C library's getcwd ends the app (the Game Boys' first start): no portable.ini */
+ 	UNUSED(outLength);
+ 	out[0] = '\0';
+ #else

@@ -627,6 +627,18 @@ namespace ps5boxart
 			return fmt::format("{}/boxart/retro/{}/{}", ps5paths::Covers(), TitleFileName(system), TitleFileName(name));
 		}
 
+		// A cover libretro had none of, by the file's name or the best of its names ("matched", written since 6.0
+		// matches names): a marker from before, written on the file's name alone, is asked for again
+		constexpr const char* kRetroMissed = "matched";
+		bool RetroMissedRecently(const std::string& base)
+		{
+			if (!RecentMarker(base + ".none"))
+				return false;
+			std::string line;
+			std::getline(std::ifstream(base + ".none"), line);
+			return line == kRetroMissed;
+		}
+
 		// A title as names are matched: lower case, what is in brackets left out (regions, revisions), letters
 		// and digits only, in words, without the words names add or leave out ("the", "version")
 		std::vector<std::string> Words(std::string name)
@@ -850,7 +862,7 @@ namespace ps5boxart
 					}
 				if (status == 404 || status == 410)
 				{
-					std::ofstream(base + ".none").put('\n'); // asked for again after a while
+					std::ofstream(base + ".none") << kRetroMissed << '\n'; // asked for again after a while
 					missing++;
 				}
 				else if (status == 200 && DecodePng(data, rgba, width, height) && width > 0 && height > 0)
@@ -903,7 +915,7 @@ namespace ps5boxart
 			std::error_code ec;
 			const std::string base = RetroBase(system, name);
 			if (name.empty() || (!s_retroSeen.insert(system + "/" + name).second && !again) || fs::exists(base + ".tga", ec) ||
-				(!again && RecentMarker(base + ".none")))
+				(!again && RetroMissedRecently(base)))
 				continue;
 			s_retroQueue.emplace_back(system, name);
 			queued++;
