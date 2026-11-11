@@ -251,6 +251,26 @@ namespace ui
 		return block;
 	}
 
+	void Canvas::Backdrop(int layer)
+	{
+		m_layer = std::clamp(layer, 0, kBackdropLayers - 1);
+		m_list.backdrops[m_layer] = (uint32_t)m_list.instances.size();
+	}
+
+	void Canvas::Frost(const Box& box, float radius, uint32_t tint, const GlassLook& look)
+	{
+		Instance instance = Make(box, box, radius, kFrost, tint);
+		instance.colour0 = tint; // its alpha is how much tint, not how opaque
+		instance.colour1 = WithAlpha(0xffffffff, Alpha());
+		instance.shape[1] = look.vibrancy;
+		instance.gradient[0] = look.rim;
+		instance.gradient[1] = look.bend;
+		instance.gradient[2] = look.light;
+		instance.gradient[3] = look.dispersion;
+		instance.extra[2] = look.shade;
+		Add(instance, kBackdropTexture + (TextureId)m_layer);
+	}
+
 	void Canvas::Draw(Icon icon, const Box& box, uint32_t colour)
 	{
 		// an icon keeps its shapes whatever the theme's corners: a circle stays the Circle button

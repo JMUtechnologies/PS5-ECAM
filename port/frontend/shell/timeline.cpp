@@ -378,7 +378,15 @@ namespace ps5shell
 				canvas.Ring({box.CentreX() - hole, box.CentreY() - hole, hole * 2, hole * 2}, hole, 2 * scale, Rgb(0x9da1aa));
 			}
 		};
-		Box focused{};
+		struct Lift
+		{
+			float order, mix;
+			TimelineShelf* shelf;
+			Game* game;
+			const Media* media;
+			Box box;
+		};
+		std::vector<Lift> lifts;
 		for (int i = 0; i < (int)m_shelves.size(); i++)
 		{
 			TimelineShelf& one = m_shelves[i];
@@ -411,20 +419,24 @@ namespace ps5shell
 					continue;
 				if (box.x > 1920)
 					break;
-				if (i == m_shelfAt && j == m_shelfGame)
-					focused = box;
+				// lifted off the shelf, over its neighbours, gliding up as the focus comes and down as it goes
+				const bool on = i == m_shelfAt && j == m_shelfGame;
+				const float mix = FocusMix(FocusKey(one.games[j].entry.game.path.string(), (uint64_t)one.side + 201), on);
+				if (mix > 0.002f || on)
+					lifts.push_back({mix + (on ? 1 : 0), mix, &one, &one.games[j], &m, box});
 				else
 					drawItem(one, one.games[j], m, box, true);
 			}
 		}
-		if (focused.w > 0 && focus)
+		std::sort(lifts.begin(), lifts.end(), [](const Lift& a, const Lift& b) { return a.order < b.order; });
+		for (const Lift& lift : lifts)
 		{
-			// lifted off the shelf, over its neighbours
-			const float scale = m_settings.ui.reduceMotion ? 1.0f : 1.12f;
-			const Box lifted{focused.x - focused.w * (scale - 1) * 0.5f, focused.Bottom() - focused.h * scale - 36, focused.w * scale, focused.h * scale};
-			canvas.Shadow(lifted, media.radius * scale, 30, 40, 0x52000000);
-			drawItem(shelf, *focus, media, lifted, true);
-			canvas.Ring(lifted, media.radius * scale, 3, kInk);
+			const float scale = 1 + ((m_settings.ui.reduceMotion ? 1.0f : 1.12f) - 1) * lift.mix;
+			const Box& b = lift.box;
+			const Box lifted{b.x - b.w * (scale - 1) * 0.5f, b.Bottom() - b.h * scale - 36 * lift.mix, b.w * scale, b.h * scale};
+			canvas.Shadow(lifted, lift.media->radius * scale, 30 * lift.mix, 40, ui::WithAlpha(0x52000000, lift.mix));
+			drawItem(*lift.shelf, *lift.game, *lift.media, lifted, true);
+			canvas.Ring(lifted, lift.media->radius * scale, 3, ui::WithAlpha(kInk, lift.mix));
 		}
 		canvas.PopClip();
 		canvas.PopAlpha();

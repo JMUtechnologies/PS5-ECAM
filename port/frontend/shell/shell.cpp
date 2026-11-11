@@ -372,8 +372,14 @@ namespace ps5shell
 	{
 		const Host& host = TheHost();
 		m_now = host.clock();
-		m_dt = (float)std::clamp(m_now - m_lastFrame, 0.0, 0.05);
 		const double interval = m_now - m_lastFrame;
+		// VideoOut flips at 59.94 Hz and the launcher keeps up (its frame log), so a frame is shown a whole
+		// number of refreshes after the last: motion advances by exactly that, not by the clock read a
+		// little early or late as the CPU's work varied, which made a glide shimmer by a fraction of a pixel
+		constexpr double kRefresh = 1001.0 / 60000.0;
+		const double refreshes = std::round(interval / kRefresh);
+		m_dt = (float)std::clamp(refreshes >= 1 && refreshes <= 3 && std::fabs(interval - refreshes * kRefresh) < kRefresh * 0.25 ? refreshes * kRefresh : interval,
+			0.0, 0.05);
 		m_lastFrame = m_now;
 		m_iconLookedThisFrame = false;
 		if (++m_frames % 120 == 0)
@@ -403,6 +409,17 @@ namespace ps5shell
 				m_input.Reset(); // what was pressed for the mapping is not the menu's
 		}
 		m_feedback.Update(m_now);
+		// for the focus lens: a step glides, the page moving under it carries it (DrawFocusRing)
+		m_sincePress = actions.presses.empty() ? std::min(m_sincePress + 1, 1000) : 0;
+		if (!m_settings.ui.reduceMotion && std::any_of(actions.presses.begin(), actions.presses.end(), [](const ui::Press& press) {
+				return press.button == Button::Cross && !press.repeat;
+			}))
+			m_ringPress.velocity = 260; // layout units a second, inward
+		if (!actions.presses.empty())
+			m_pressRepeat = std::all_of(actions.presses.begin(), actions.presses.end(), [](const ui::Press& press) { return press.repeat; });
+		// what FocusMix was not asked about for a while is forgotten
+		if (m_frames % 60 == 0)
+			std::erase_if(m_focusLooks, [this](const auto& look) { return m_frames - look.second.frame > 30; });
 		Update(actions);
 		if (m_status.coreStarting)
 			PollCore();
@@ -560,6 +577,8 @@ namespace ps5shell
 	{
 		m_drawing = &canvas;
 		DrawBackdrop(canvas);
+		// the glass on every screen shows the side's backdrop under it, blurred
+		GlassBackdrop(canvas, 0);
 		const float appear = m_launch.active ? 1.0f - ui::ease::CubicOut((float)((m_now - m_launch.at) / kLaunchSeconds)) * 0.85f : 1.0f;
 		canvas.PushAlpha(appear);
 		switch (m_screen)
@@ -590,6 +609,9 @@ namespace ps5shell
 			DrawHints(canvas, Hints());
 		}
 		canvas.PopAlpha();
+		// and a sheet, a picker or the keyboard over it shows the screen under it, blurred
+		if (overlay)
+			GlassBackdrop(canvas, 1);
 		DrawOverlays(canvas);
 		m_drawing = nullptr;
 	}

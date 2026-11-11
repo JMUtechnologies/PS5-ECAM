@@ -66,9 +66,13 @@ namespace ui
 		kLine = 6,
 		kTriangle = 7,
 		kWave = 8,
+		kFrost = 9, // liquid glass: a backdrop, blurred (DrawList::backdrops)
 	};
 
 	using TextureId = uint32_t; // 0: none (a white pixel)
+	// what liquid glass is drawn with: a backdrop, blurred (textures of the kit's own, one a layer)
+	inline constexpr int kBackdropLayers = 2; // the screen's, and an overlay's over it
+	inline constexpr TextureId kBackdropTexture = 0xfffffff0;
 
 	// A frame's instances, in runs that share a texture.
 	struct DrawList
@@ -80,6 +84,10 @@ namespace ui
 		};
 		std::vector<Instance> instances;
 		std::vector<Run> runs;
+		// for each layer, the instances before this one are its backdrop: drawn small, blurred, and shown
+		// through the glass drawn on that layer (kFrost, texture kBackdropTexture + layer); none when it is
+		// past the end. A later layer's backdrop has the earlier one's glass in it.
+		uint32_t backdrops[kBackdropLayers] = {UINT32_MAX, UINT32_MAX};
 
 		void Add(const Instance& instance, TextureId texture);
 		void Clear();
@@ -161,6 +169,13 @@ namespace ui
 		bool MakePipeline(std::string& error);
 		VkDescriptorSet MakeSet(VkImageView image);
 		void RecordUploads(FrameSlot& slot, VkCommandBuffer commands);
+		bool MakeBlur(std::string& error);
+		void FreeBlur();
+		// a layer's backdrop (the list's instances before its mark), drawn small, then blurred into the
+		// layer's first target
+		void RecordBackdrop(const DrawList& list, int layer, VkCommandBuffer commands, VkBuffer instances, float time);
+		// the list's runs up to an instance, each with its texture's set (pictures not yet uploaded left out)
+		void DrawRuns(const DrawList& list, VkCommandBuffer commands, uint32_t end);
 		void SavePipelineCache();
 
 		Target m_target;
@@ -188,6 +203,16 @@ namespace ui
 		VkPipeline m_pipeline = VK_NULL_HANDLE;
 		VkDescriptorPool m_descriptors = VK_NULL_HANDLE;
 		VkSampler m_sampler = VK_NULL_HANDLE;
+		// the backdrop's blur (MakeBlur): its targets from a sixteenth of the screen down by halves, a pass
+		// that leaves them ready to sample, and a pipeline of its own
+		static constexpr int kBlurLevels = 4;
+		Image m_blur[kBackdropLayers][kBlurLevels];
+		uint32_t m_blurSize[kBlurLevels][2] = {};
+		VkFramebuffer m_blurFramebuffers[kBackdropLayers][kBlurLevels] = {};
+		VkDescriptorSet m_blurSets[kBackdropLayers][kBlurLevels] = {};
+		VkRenderPass m_blurPass = VK_NULL_HANDLE;
+		VkPipeline m_blurPipeline = VK_NULL_HANDLE;
+		bool m_blurred[kBackdropLayers] = {}; // this frame drew the layer's backdrop
 		static constexpr int kSlots = 2;
 		FrameSlot m_slots[kSlots];
 		int m_slot = 0;

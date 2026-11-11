@@ -69,6 +69,8 @@ namespace ui
 	{
 		instances.clear();
 		runs.clear();
+		for (uint32_t& backdrop : backdrops)
+			backdrop = UINT32_MAX;
 	}
 
 	bool Gfx::Fail(std::string& error, const std::string& what, VkResult result)
@@ -281,6 +283,12 @@ namespace ui
 
 		if (!MakeTarget(error) || !MakePipeline(error))
 			return false;
+		// frosted glass's blur: without it the launcher still draws, its glass shows no backdrop
+		if (std::string blurError; !MakeBlur(blurError))
+		{
+			Log("[ui] gfx: no backdrop blur (" + blurError + "): frosted glass is drawn plain");
+			FreeBlur();
+		}
 
 		// texture 0: one white pixel, for everything drawn without a picture
 		m_textures.clear();
@@ -586,6 +594,253 @@ namespace ui
 		return true;
 	}
 
+	bool Gfx::MakeBlur(std::string& error)
+	{
+		// the targets: the backdrop drawn at half the layout (960 x 540, a sixteenth of 4K's pixels, the same
+		// on the PC's preview), then halves
+		for (int layer = 0; layer < kBackdropLayers; layer++)
+			for (int i = 0; i < kBlurLevels; i++)
+			{
+				m_blurSize[i][0] = 960u >> i;
+				m_blurSize[i][1] = 540u >> i;
+				if (!MakeImage(m_blur[layer][i], m_blurSize[i][0], m_blurSize[i][1], m_format, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT))
+				{
+					error = "its targets";
+					return false;
+				}
+			}
+		// the pass: each target drawn whole (nothing kept), then left to be sampled; it waits for the last
+		// frame's reads of it and is waited for by the next pass's
+		VkAttachmentDescription attachment{};
+		attachment.format = m_format;
+		attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		attachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		VkAttachmentReference colour{0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
+		VkSubpassDescription subpass{};
+		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+		subpass.colorAttachmentCount = 1;
+		subpass.pColorAttachments = &colour;
+		VkSubpassDependency dependencies[2]{};
+		dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+		dependencies[0].dstSubpass = 0;
+		dependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependencies[0].srcAccessMask = 0;
+		dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		dependencies[1].srcSubpass = 0;
+		dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+		dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		VkRenderPassCreateInfo pass{VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO};
+		pass.attachmentCount = 1;
+		pass.pAttachments = &attachment;
+		pass.subpassCount = 1;
+		pass.pSubpasses = &subpass;
+		pass.dependencyCount = 2;
+		pass.pDependencies = dependencies;
+		VkResult result = vk::vkCreateRenderPass(m_device, &pass, nullptr, &m_blurPass);
+		if (result != VK_SUCCESS)
+		{
+			error = "its render pass: " + Describe(result);
+			return false;
+		}
+		for (int layer = 0; layer < kBackdropLayers; layer++)
+			for (int i = 0; i < kBlurLevels; i++)
+			{
+				VkFramebufferCreateInfo framebuffer{VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
+				framebuffer.renderPass = m_blurPass;
+				framebuffer.attachmentCount = 1;
+				framebuffer.pAttachments = &m_blur[layer][i].view;
+				framebuffer.width = m_blurSize[i][0];
+				framebuffer.height = m_blurSize[i][1];
+				framebuffer.layers = 1;
+				if (vk::vkCreateFramebuffer(m_device, &framebuffer, nullptr, &m_blurFramebuffers[layer][i]) != VK_SUCCESS)
+				{
+					error = "its framebuffers";
+					return false;
+				}
+			}
+
+		// the pipeline: one triangle over the target, the filter in blur.frag, nothing blended
+		VkShaderModule modules[2]{};
+		const std::pair<const uint32_t*, size_t> code[2] = {{shaders::k_blur_vert, sizeof(shaders::k_blur_vert)}, {shaders::k_blur_frag, sizeof(shaders::k_blur_frag)}};
+		for (int i = 0; i < 2; i++)
+		{
+			VkShaderModuleCreateInfo module{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
+			module.codeSize = code[i].second;
+			module.pCode = code[i].first;
+			if (vk::vkCreateShaderModule(m_device, &module, nullptr, &modules[i]) != VK_SUCCESS)
+			{
+				if (modules[0])
+					vk::vkDestroyShaderModule(m_device, modules[0], nullptr);
+				error = "its shaders";
+				return false;
+			}
+		}
+		VkPipelineShaderStageCreateInfo stages[2]{};
+		for (int i = 0; i < 2; i++)
+		{
+			stages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+			stages[i].stage = i == 0 ? VK_SHADER_STAGE_VERTEX_BIT : VK_SHADER_STAGE_FRAGMENT_BIT;
+			stages[i].module = modules[i];
+			stages[i].pName = "main";
+		}
+		VkPipelineVertexInputStateCreateInfo vertexInput{VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
+		VkPipelineInputAssemblyStateCreateInfo assembly{VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO};
+		assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		VkPipelineViewportStateCreateInfo viewport{VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO};
+		viewport.viewportCount = 1;
+		viewport.scissorCount = 1;
+		VkPipelineRasterizationStateCreateInfo raster{VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO};
+		raster.polygonMode = VK_POLYGON_MODE_FILL;
+		raster.cullMode = VK_CULL_MODE_NONE;
+		raster.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+		raster.lineWidth = 1.0f;
+		VkPipelineMultisampleStateCreateInfo multisample{VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO};
+		multisample.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		VkPipelineColorBlendAttachmentState blend{};
+		blend.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+		VkPipelineColorBlendStateCreateInfo blendState{VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO};
+		blendState.attachmentCount = 1;
+		blendState.pAttachments = &blend;
+		const VkDynamicState dynamics[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+		VkPipelineDynamicStateCreateInfo dynamic{VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO};
+		dynamic.dynamicStateCount = 2;
+		dynamic.pDynamicStates = dynamics;
+		VkGraphicsPipelineCreateInfo pipeline{VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO};
+		pipeline.stageCount = 2;
+		pipeline.pStages = stages;
+		pipeline.pVertexInputState = &vertexInput;
+		pipeline.pInputAssemblyState = &assembly;
+		pipeline.pViewportState = &viewport;
+		pipeline.pRasterizationState = &raster;
+		pipeline.pMultisampleState = &multisample;
+		pipeline.pColorBlendState = &blendState;
+		pipeline.pDynamicState = &dynamic;
+		pipeline.layout = m_layout; // the UI's: its sampler at binding 1, 16 bytes of constants
+		pipeline.renderPass = m_blurPass;
+		result = vk::vkCreateGraphicsPipelines(m_device, m_cache, 1, &pipeline, nullptr, &m_blurPipeline);
+		vk::vkDestroyShaderModule(m_device, modules[0], nullptr);
+		vk::vkDestroyShaderModule(m_device, modules[1], nullptr);
+		if (result != VK_SUCCESS)
+		{
+			error = "its pipeline: " + Describe(result);
+			return false;
+		}
+		return true;
+	}
+
+	void Gfx::FreeBlur()
+	{
+		if (m_blurPipeline)
+			vk::vkDestroyPipeline(m_device, m_blurPipeline, nullptr);
+		for (int layer = 0; layer < kBackdropLayers; layer++)
+			for (int i = 0; i < kBlurLevels; i++)
+			{
+				if (m_blurSets[layer][i])
+					vk::vkFreeDescriptorSets(m_device, m_descriptors, 1, &m_blurSets[layer][i]);
+				if (m_blurFramebuffers[layer][i])
+					vk::vkDestroyFramebuffer(m_device, m_blurFramebuffers[layer][i], nullptr);
+				FreeImage(m_blur[layer][i]);
+				m_blurSets[layer][i] = VK_NULL_HANDLE;
+				m_blurFramebuffers[layer][i] = VK_NULL_HANDLE;
+				m_blurred[layer] = false;
+			}
+		if (m_blurPass)
+			vk::vkDestroyRenderPass(m_device, m_blurPass, nullptr);
+		m_blurPipeline = VK_NULL_HANDLE;
+		m_blurPass = VK_NULL_HANDLE;
+	}
+
+	void Gfx::DrawRuns(const DrawList& list, VkCommandBuffer commands, uint32_t end)
+	{
+		VkDescriptorSet bound = VK_NULL_HANDLE;
+		for (const auto& run : list.runs)
+		{
+			if (run.first >= end)
+				break;
+			VkDescriptorSet set = VK_NULL_HANDLE;
+			if (run.texture >= kBackdropTexture && run.texture < kBackdropTexture + kBackdropLayers)
+			{
+				// liquid glass: its layer's backdrop as blurred this frame (none drawn: over the white pixel)
+				const int layer = (int)(run.texture - kBackdropTexture);
+				set = m_blurred[layer] ? m_blurSets[layer][0] : m_textures[0].set;
+			}
+			// a picture still waiting for its upload is not drawn yet (the screens show its placeholder)
+			else if (run.texture < m_textures.size() && m_textures[run.texture].live && m_textures[run.texture].pending.empty())
+				set = m_textures[run.texture].set;
+			if (!set)
+				continue;
+			if (set != bound)
+			{
+				vk::vkCmdBindDescriptorSets(commands, VK_PIPELINE_BIND_POINT_GRAPHICS, m_layout, 0, 1, &set, 0, nullptr);
+				bound = set;
+			}
+			vk::vkCmdDraw(commands, 6, std::min(run.count, end - run.first), 0, run.first);
+		}
+	}
+
+	void Gfx::RecordBackdrop(const DrawList& list, int layer, VkCommandBuffer commands, VkBuffer instances, float time)
+	{
+		m_blurred[layer] = false;
+		const uint32_t mark = list.backdrops[layer];
+		if (!m_blurPipeline || mark == UINT32_MAX || mark == 0)
+			return;
+		for (int i = 0; i < kBlurLevels; i++)
+			if (!m_blurSets[layer][i] && !(m_blurSets[layer][i] = MakeSet(m_blur[layer][i].view)))
+				return;
+		VkClearValue clear{};
+		clear.color = {{0.0196f, 0.0275f, 0.051f, 1.0f}}; // ink-0, as the frame's
+		auto begin = [&](int level) {
+			VkRenderPassBeginInfo pass{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
+			pass.renderPass = m_blurPass;
+			pass.framebuffer = m_blurFramebuffers[layer][level];
+			pass.renderArea = {{0, 0}, {m_blurSize[level][0], m_blurSize[level][1]}};
+			pass.clearValueCount = 1;
+			pass.pClearValues = &clear;
+			vk::vkCmdBeginRenderPass(commands, &pass, VK_SUBPASS_CONTENTS_INLINE);
+			VkViewport viewport{0.0f, 0.0f, (float)m_blurSize[level][0], (float)m_blurSize[level][1], 0.0f, 1.0f};
+			VkRect2D scissor{{0, 0}, {m_blurSize[level][0], m_blurSize[level][1]}};
+			vk::vkCmdSetViewport(commands, 0, 1, &viewport);
+			vk::vkCmdSetScissor(commands, 0, 1, &scissor);
+		};
+
+		// the backdrop, small: the frame's instances up to the mark, as the frame draws them (an earlier
+		// layer's glass with its own backdrop)
+		begin(0);
+		vk::vkCmdBindPipeline(commands, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
+		const float constants[4] = {1920.0f, 1080.0f, m_blurSize[0][0] / 1920.0f, time};
+		vk::vkCmdPushConstants(commands, m_layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(constants), constants);
+		const VkDeviceSize offset = 0;
+		vk::vkCmdBindVertexBuffers(commands, 0, 1, &instances, &offset);
+		DrawRuns(list, commands, mark);
+		vk::vkCmdEndRenderPass(commands);
+
+		// then blurred: down to the smallest, and back up to the first
+		vk::vkCmdBindPipeline(commands, VK_PIPELINE_BIND_POINT_GRAPHICS, m_blurPipeline);
+		auto pass = [&](int from, int to, bool up) {
+			begin(to);
+			vk::vkCmdBindDescriptorSets(commands, VK_PIPELINE_BIND_POINT_GRAPHICS, m_layout, 0, 1, &m_blurSets[layer][from], 0, nullptr);
+			// a texel of the source each way: each tap between four, which the sampler averages
+			const float step[4] = {1.0f / m_blurSize[from][0], 1.0f / m_blurSize[from][1], up ? 1.0f : 0.0f, 0};
+			vk::vkCmdPushConstants(commands, m_layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(step), step);
+			vk::vkCmdDraw(commands, 3, 1, 0, 0);
+			vk::vkCmdEndRenderPass(commands);
+		};
+		for (int level = 1; level < kBlurLevels; level++)
+			pass(level - 1, level, false);
+		for (int level = kBlurLevels - 2; level >= 0; level--)
+			pass(level + 1, level, true);
+		m_blurred[layer] = true;
+	}
+
 	VkDescriptorSet Gfx::MakeSet(VkImageView image)
 	{
 		VkDescriptorSetAllocateInfo allocate{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
@@ -688,6 +943,15 @@ namespace ui
 				});
 				texture.set = VK_NULL_HANDLE;
 			}
+		for (auto& sets : m_blurSets)
+			for (VkDescriptorSet& set : sets)
+				if (set)
+				{
+					m_slots[(m_slot + kSlots - 1) % kSlots].garbage.push_back([this, old = set]() mutable {
+						vk::vkFreeDescriptorSets(m_device, m_descriptors, 1, &old);
+					});
+					set = VK_NULL_HANDLE;
+				}
 	}
 
 	void Gfx::AtlasChanged(uint32_t firstRow, uint32_t rows)
@@ -872,6 +1136,9 @@ namespace ui
 					texture.set = MakeSet(texture.image.view);
 			}
 
+		for (int layer = 0; layer < kBackdropLayers; layer++)
+			RecordBackdrop(list, layer, commands, slot.instances.buffer, time);
+
 		VkClearValue clear{};
 		clear.color = {{0.0196f, 0.0275f, 0.051f, 1.0f}}; // ink-0, #05070d
 		VkRenderPassBeginInfo pass{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
@@ -890,22 +1157,7 @@ namespace ui
 		vk::vkCmdPushConstants(commands, m_layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(constants), constants);
 		const VkDeviceSize offset = 0;
 		vk::vkCmdBindVertexBuffers(commands, 0, 1, &slot.instances.buffer, &offset);
-		VkDescriptorSet bound = VK_NULL_HANDLE;
-		for (const auto& run : list.runs)
-		{
-			// a picture still waiting for its upload is not drawn yet (the screens show its placeholder)
-			if (run.texture >= m_textures.size() || !m_textures[run.texture].live || !m_textures[run.texture].pending.empty())
-				continue;
-			const VkDescriptorSet set = m_textures[run.texture].set;
-			if (!set)
-				continue;
-			if (set != bound)
-			{
-				vk::vkCmdBindDescriptorSets(commands, VK_PIPELINE_BIND_POINT_GRAPHICS, m_layout, 0, 1, &set, 0, nullptr);
-				bound = set;
-			}
-			vk::vkCmdDraw(commands, 6, run.count, 0, run.first);
-		}
+		DrawRuns(list, commands, UINT32_MAX);
 		vk::vkCmdEndRenderPass(commands);
 		if (!m_swapchain)
 		{
@@ -1004,6 +1256,7 @@ namespace ui
 					vk::vkDestroySemaphore(m_device, slot.acquired, nullptr);
 				slot = {};
 			}
+			FreeBlur();
 			for (Texture& texture : m_textures)
 				FreeImage(texture.image);
 			m_textures.clear();
