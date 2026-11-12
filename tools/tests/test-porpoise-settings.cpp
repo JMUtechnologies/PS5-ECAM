@@ -5,6 +5,7 @@
 #include "retro/registry.h"
 
 #include <cstring>
+#include <ctime>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -96,5 +97,23 @@ int main(int argc, char** argv)
 	Check(ps5porpoise::GameKey((root / "games/broken.iso").string()) == "broken.iso" && ps5porpoise::GameKey((root / "missing.gcz").string()) == "missing.gcz",
 		"no ID: the file's name, as Porpoise falls back");
 	Check(ps5porpoise::GameFile((root / "games/Melee.iso").string()) == "/data/porpoise/game-settings/GALE01.ini", "a game's own file, by its ID");
+
+	// the crash Porpoise's last start ended in, from its trace, when that start came after the launcher's
+	const fs::path logs = root / "logs";
+	fs::create_directories(logs);
+	const std::string trace = (logs / "trace.txt").string(), sandbox = (root / "porpoise-trace.txt").string();
+	std::ofstream(trace) << "Porpoise: main() entered\nmain: game started\ncrash: signal 11 fault=0x0000000000000000 rip=0x00000000004a1b2c\n"
+							"crash: stack 1 2 3\n";
+	Check(ps5porpoise::LogsFolder() == "/data/porpoise/logs", "Porpoise's logs folder");
+	Check(ps5porpoise::LastCrash({trace, sandbox}, 0) == "Porpoise: signal 11 fault=0x0000000000000000 rip=0x00000000004a1b2c",
+		"a crash in its trace, said as the boot log's [crash] line");
+	Check(ps5porpoise::LastCrash({trace, sandbox}, std::time(nullptr) + 60).empty(), "none from a start before the launcher's last");
+	std::ofstream(trace) << "Porpoise: main() entered\nterminate: exception type=std::bad_alloc\n";
+	Check(ps5porpoise::LastCrash({trace}, 0) == "Porpoise: terminate: exception type=std::bad_alloc", "an uncaught exception");
+	std::ofstream(trace) << "Porpoise: main() entered\nmain: back to Playtendoh\n";
+	Check(ps5porpoise::LastCrash({trace}, 0).empty(), "none when it ended well");
+	fs::remove(trace);
+	std::ofstream(sandbox) << "crash: signal 10 fault=0x10\n";
+	Check(ps5porpoise::LastCrash({trace, sandbox}, 0) == "Porpoise: signal 10 fault=0x10", "the sandbox's trace when /data had none");
 	return failures ? 1 : 0;
 }

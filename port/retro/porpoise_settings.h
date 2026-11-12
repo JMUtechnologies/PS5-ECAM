@@ -10,6 +10,7 @@
 // presets and button sets, its own menus' settings.
 #pragma once
 
+#include <cstdint>
 #include <map>
 #include <string>
 #include <vector>
@@ -29,9 +30,22 @@ namespace ps5porpoise
 	// (.iso, .gcm), a WBFS's, a WIA's or RVZ's, a CISO's; else the file's name
 	std::string GameKey(const std::string& gamePath);
 
-	// What Porpoise's loading screen says of the game about to start: <data>/playtendoh-session.txt, a line each
 	void ClearAchievementsAccount(); // signed out: Porpoise's copy goes too
+	// What Porpoise's loading screen (the Switch side's, in Porpoise X) says of the game about to start:
+	// <data>/playtendoh-session.txt, a line each; banner: a full-screen picture of the game (ps5boxart's title
+	// art) for its ground, in place of its cover's colours
 	void WriteSession(const std::string& side, const std::string& title, const std::string& details, const std::string& cover, const std::string& banner = {});
+
+	// Porpoise's own logs: its trace.txt and Dolphin's core.log, each start's own with the last one's beside it
+	// (trace.prev.txt, core.prev.log; Porpoise-X's porpoise_paths.hpp). Its trace is in the sandbox
+	// (kSandboxTrace, in SandboxDownload()) while /data can't be reached.
+	std::string LogsFolder();
+	inline constexpr const char* kSandboxTrace = "porpoise-trace.txt";
+	// The crash Porpoise's last start ended in, from its trace ("signal 11 fault=... rip=..." or an uncaught
+	// exception's "terminate: ..."), when the first trace of `traces` that is there changed after `after` (seconds
+	// since 1970): what the launcher says and a report holds, as the boot log's [crash] line for the other sides.
+	// Empty when it ended well, or is older.
+	std::string LastCrash(const std::vector<std::string>& traces, int64_t after);
 
 	// The app's RetroAchievements account, in Porpoise's own file (<data>/retroachievements.ini), so it signs in with it
 	void WriteAchievementsAccount(const std::string& user, const std::string& token, int points);
