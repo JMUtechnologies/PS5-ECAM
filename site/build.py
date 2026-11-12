@@ -182,9 +182,11 @@ def main():
     with open(compat_feed.LIST, encoding="utf-8") as f:
         listed = f.read()
     status = compat_feed.feed(listed, games)
-    # compatibility.html's: the list's games, whose status wins over the reports' (docs/COMPATIBILITY.md)
+    # compatibility.html's: the list's games, whose status wins over the reports' (docs/COMPATIBILITY.md), without
+    # the list's notes: the page says how a game runs, not why
     with open(os.path.join(args.out, "list.json"), "w", encoding="utf-8", newline="\n") as f:
-        json.dump({"schema": 1, "games": compat_feed.from_list(listed)}, f, ensure_ascii=False, separators=(",", ":"))
+        games_listed = [{k: v for k, v in g.items() if k != "notes"} for g in compat_feed.from_list(listed)]
+        json.dump({"schema": 1, "games": games_listed}, f, ensure_ascii=False, separators=(",", ":"))
     with open(os.path.join(args.out, "status.json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump(status, f, ensure_ascii=False, separators=(",", ":"))
     print(f"build.py: {args.out}, with {release.get('tag_name') or 'no release'} baked in, {len(games['games'])} games reported, "
