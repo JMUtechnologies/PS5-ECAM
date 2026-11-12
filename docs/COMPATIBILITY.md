@@ -26,7 +26,7 @@ recompiler), so the status assumes the app got JIT memory (see the README's
 | The Legend of Zelda: Breath of the Wild | v1.5.0 (v208) | Playable | Runs at about 60 fps at 1440p. Up to 2.0.0 C it froze and closed when Magnesis or other runes, or the Sheikah scope (R3), highlighted objects; fixed after 2.0.0 C (a newer Cemu) | [#10](https://github.com/premohq/PlayTendoh/issues/10) | after 2.0.0 C |
 | Fast Racing Neo | | Issues | About half the textures are missing during races | [#13](https://github.com/premohq/PlayTendoh/issues/13) | |
 | Skylanders Giants | | Crashes | Crashes before it boots on 3.5.0 and earlier: every game started with Pro Controllers for players 2 to 4, and Giants only takes the GamePad at boot. 4.0.0 gives players 2 to 4 a controller only while their DualSense is signed in; not yet confirmed on a console | [#29](https://github.com/premohq/PlayTendoh/issues/29) | 3.5.0 |
-| The Legend of Zelda: The Wind Waker HD | EUR, v0 | Crashes | Crashes after making its save, before the title menu, with every setting at default and no graphic packs | [#32](https://github.com/premohq/PlayTendoh/issues/32) | 3.5.0 |
+| The Legend of Zelda: The Wind Waker HD | EUR, v0 | Playable | | [#32](https://github.com/premohq/PlayTendoh/issues/32) | 6.0.0 |
 | Batman: Arkham Origins | USA, v16 | Issues | Plays with its **60 FPS graphic pack turned off**; with it on, it glitches and crashes once gameplay loads. Up to 2.0.0 C it crashed there either way (Cemu ran out of Vulkan descriptors) | [#15](https://github.com/premohq/PlayTendoh/issues/15) | after 2.0.0 C |
 
 ## Nintendo 3DS (Azahar)
