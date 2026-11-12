@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Playtendoh: what players' reports say</title>
-<meta name="description" content="Which games run in Playtendoh, from the reports players chose to send: how each game's sessions ended, on which PS5 models and firmware.">
+<title>Playtendoh: compatibility</title>
+<meta name="description" content="Which games run in Playtendoh: the games tested on real consoles, and the reports players chose to send: how each game's sessions ended, on which PS5 models and firmware.">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' %REPORTS_ORIGIN%; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="reports-url" content="%REPORTS_ORIGIN%">
 <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -17,20 +17,22 @@
 <body>
 <main id="main" class="compat">
   <p class="compat-back"><a href="./">Playtendoh</a></p>
-  <h1>What players' reports say</h1>
-  <p class="compat-lead">Every row is made from the reports players chose to send from Playtendoh's launcher: how each session of a game
+  <h1>Compatibility</h1>
+  <p class="compat-lead">How games run in Playtendoh. The games tested on real consoles
+    (<a href="https://github.com/premohq/PlayTendoh/blob/HEAD/docs/COMPATIBILITY.md">the list</a>, with notes) say so themselves;
+    every other row is made from the reports players chose to send from Playtendoh's launcher: how each session of a game
     ended, on which PS5 models and firmware. It is rebuilt every hour. No report names a player or a console;
     <a href="https://github.com/premohq/PlayTendoh/blob/HEAD/docs/REPORTS.md">this page lists every field a report has</a>.
     A game with few reports may run better or worse than its row says.</p>
   <div class="compat-tools">
     <label>Search <input id="search" type="search" autocomplete="off" placeholder="A game's name or ID"></label>
     <label>System <select id="side"><option value="">All</option></select></label>
-    <label>Result <select id="status"><option value="">All</option><option value="works">Works</option><option value="mixed">Mixed</option><option value="fails">Fails</option></select></label>
+    <label>Status <select id="status"><option value="">All</option><option value="playable">Playable</option><option value="issues">Issues</option><option value="broken">Not playable</option><option value="few">Too few reports</option></select></label>
   </div>
-  <p id="summary" class="compat-summary">Loading the reports…</p>
+  <p id="summary" class="compat-summary">Loading…</p>
   <div class="compat-scroll">
     <table id="games">
-      <thead><tr><th>Game</th><th>System</th><th>Result</th><th>Consoles</th><th>Sessions</th><th>Ended / failed / crashed</th><th>Typical play</th><th>PS5</th><th>Firmware</th><th>Last seen</th></tr></thead>
+      <thead><tr><th>Game</th><th>System</th><th>Status</th><th>Consoles</th><th>Sessions</th><th>Ended / failed / crashed</th><th>Typical play</th><th>PS5</th><th>Firmware</th><th>Last seen</th></tr></thead>
       <tbody></tbody>
     </table>
   </div>

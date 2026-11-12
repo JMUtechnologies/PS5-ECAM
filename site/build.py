@@ -180,7 +180,11 @@ def main():
         json.dump(games, f, ensure_ascii=False, separators=(",", ":"))
     # the console's: every game's status, the list's and the reports' (tools/compat_feed.py)
     with open(compat_feed.LIST, encoding="utf-8") as f:
-        status = compat_feed.feed(f.read(), games)
+        listed = f.read()
+    status = compat_feed.feed(listed, games)
+    # compatibility.html's: the list's games, whose status wins over the reports' (docs/COMPATIBILITY.md)
+    with open(os.path.join(args.out, "list.json"), "w", encoding="utf-8", newline="\n") as f:
+        json.dump({"schema": 1, "games": compat_feed.from_list(listed)}, f, ensure_ascii=False, separators=(",", ":"))
     with open(os.path.join(args.out, "status.json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump(status, f, ensure_ascii=False, separators=(",", ":"))
     print(f"build.py: {args.out}, with {release.get('tag_name') or 'no release'} baked in, {len(games['games'])} games reported, "

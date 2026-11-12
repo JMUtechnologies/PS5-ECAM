@@ -10,9 +10,12 @@ D1 database:
   cache). `compatibility.html` reads it live; GitHub Pages also bakes a copy in every hour (`.github/workflows/pages.yml`)
   for when the intake can't be reached.
 - Once a day, reports older than 180 days are deleted.
+- Every hour, the site is built again (the Pages workflow started on `Playtendoh`), so the console's
+  `status.json` and the table baked into the site are never more than an hour old. GitHub's own hourly
+  schedule in `pages.yml` stays, but GitHub runs it only every few hours.
 
-The app holds no secret: only the intake's address, given at build time. The Worker holds none
-either. Nothing here writes to GitHub.
+The app holds no secret: only the intake's address, given at build time. The Worker holds one, if you
+give it: `PAGES_TOKEN`, which can do nothing but start this repository's workflows.
 
 ## Setting it up (about ten minutes, free)
 
@@ -42,6 +45,10 @@ Then:
 2. **The site:** on GitHub, Settings > Secrets and variables > Actions > Variables, add `REPORTS_URL`
    = `https://playtendoh-reports.<account>.workers.dev` (no path). The Pages workflow then fetches the
    table every hour, or at once from Actions > Pages > Run workflow.
+3. **Every hour, for sure:** on GitHub, Settings > Developer settings > Fine-grained tokens, make one for
+   `premohq/PlayTendoh` alone with Actions: Read and write, then `npx wrangler secret put PAGES_TOKEN`
+   (paste it) and `npx wrangler deploy`. Without it the intake starts nothing, and the site waits for
+   GitHub's schedule.
 
 ## Reading the reports
 

@@ -50,6 +50,27 @@ async function table(env, ctx, request) {
 	return response;
 }
 
+const DAILY = '17 3 * * *';
+
+// The Pages workflow started on the default branch, with PAGES_TOKEN (a fine-grained token for this repository
+// alone, Actions: read and write; `npx wrangler secret put PAGES_TOKEN`). None: nothing is started.
+export async function rebuildSite(env, fetcher = fetch) {
+	if (!env.PAGES_TOKEN) return false;
+	const repository = env.PAGES_REPOSITORY || 'premohq/PlayTendoh';
+	const response = await fetcher(`https://api.github.com/repos/${repository}/actions/workflows/pages.yml/dispatches`, {
+		method: 'POST',
+		headers: {
+			authorization: `Bearer ${env.PAGES_TOKEN}`,
+			accept: 'application/vnd.github+json',
+			'user-agent': 'playtendoh-reports',
+			'x-github-api-version': '2022-11-28',
+		},
+		body: JSON.stringify({ ref: env.PAGES_BRANCH || 'Playtendoh' }),
+	});
+	if (response.status !== 204) console.log('pages dispatch', response.status);
+	return response.status === 204;
+}
+
 export default {
 	async fetch(request, env, ctx) {
 		const { pathname } = new URL(request.url);
@@ -62,8 +83,13 @@ export default {
 			return json({ error: 'intake error' }, 500);
 		}
 	},
-	// once a day: reports over 180 days old go
-	async scheduled(event, env) {
-		await env.DB.prepare('DELETE FROM reports WHERE received < ?').bind(Math.floor(Date.now() / 1000) - 180 * 86400).run();
+	// once a day (wrangler.toml's first cron): reports over 180 days old go. Every hour (its second): the site
+	// built again, as GitHub runs the Pages workflow's own hourly schedule only every few hours
+	async scheduled(event, env, ctx) {
+		if (event.cron === DAILY) {
+			await env.DB.prepare('DELETE FROM reports WHERE received < ?').bind(Math.floor(Date.now() / 1000) - 180 * 86400).run();
+			return;
+		}
+		await rebuildSite(env);
 	},
 };
