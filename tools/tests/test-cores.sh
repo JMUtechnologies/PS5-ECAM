@@ -25,7 +25,7 @@ for source in "${rcsources[@]}"; do
         -DRC_HASH_NO_DISC -DRC_HASH_NO_ENCRYPTED -DRC_HASH_NO_ZIP -c "$source" -o "$object"
 done
 clang++-18 -std=c++20 -fPIE -pie -O1 -g -Wall -Wextra -Wno-unused-parameter -I"$root/port" -I"$include" -I"$rc/include" -I"$rc/src" \
-    "$root/tools/tests/test-cores.cpp" "$root/port/libretro/session.cpp" "$root/port/libretro/cores.cpp" \
+    "$root/tools/tests/test-cores.cpp" "$root/port/libretro/session.cpp" "$root/port/libretro/cores.cpp" "$root/port/libretro/devices.cpp" \
     $(cat "$root/build/libretro-host/objects.txt") "${objects[@]}" -lpthread -lz -o "$out/test-cores"
 rm -rf "$out/work"
 "$out/test-cores" "$out/games" "$out/work"

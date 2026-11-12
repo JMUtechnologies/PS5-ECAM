@@ -209,6 +209,59 @@ int main(int argc, char* argv[])
 		Check(rest == in.rest && held == in.held, what);
 		ps5libretro::Unload();
 	}
+	// the NES's special controllers (port/libretro/devices.h): Mesen plugs in what an NES 2.0 header asks for and
+	// says so (patches/libretro/Mesen 0002); the Arkanoid paddle turned by the mouse's movement and fired by its
+	// button, as the program reads it from the second port; another controller given to a port
+	if (const ps5libretro::Core* mesen = ps5libretro::Find("mesen"))
+	{
+		const unsigned arkanoid = RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_MOUSE, 0), zapper = RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_POINTER, 0);
+		const fs::path folder = work / "devices";
+		fs::create_directories(folder);
+		ps5libretro::Setup setup;
+		setup.system = setup.saves = setup.states = folder.string();
+		std::string error;
+		ps5libretro::Pad pads[ps5libretro::kPlayers] = {};
+		auto knob = [&](int16_t move, bool fire, uint8_t& bits, uint8_t& last) {
+			pads[0].mouse[0] = move;
+			pads[0].mouseButtons = fire ? 1 << RETRO_DEVICE_ID_MOUSE_LEFT : 0;
+			for (int i = 0; i < 40; i++)
+				ps5libretro::Run(pads);
+			ps5libretro::CheevosRead(2, &bits, 1);
+			ps5libretro::CheevosRead(0, &last, 1);
+		};
+		if (ps5libretro::Load(*mesen, (games / "arkanoid.nes").string(), setup, error))
+		{
+			ps5libretro::CheevosMemory(7);
+			Check(ps5libretro::PortDevice(1) == arkanoid && ps5libretro::PortDevice(0) == RETRO_DEVICE_JOYPAD,
+				"NES: an Arkanoid game's header plugs the paddle into the second port, and Mesen says so");
+			uint8_t right = 0, left = 0, last = 0, fired = 0;
+			knob(10, false, right, last);
+			knob(-10, true, left, fired);
+			char what[200];
+			std::snprintf(what, sizeof(what), "NES: the paddle's knob turned all the way right then left by the mouse's movement (%02x, %02x read, "
+				"0b and ab wanted), fired by its button (%02x, %02x)", right, left, last, fired);
+			Check(right == 0x0b && left == 0xab && !(last & 0x08) && (fired & 0x08), what);
+			ps5libretro::Unload();
+		}
+		else
+			Check(false, "NES: the Arkanoid test program loads (" + error + ")");
+		if (ps5libretro::Load(*mesen, (games / "zapper.nes").string(), setup, error))
+		{
+			Check(ps5libretro::PortDevice(1) == zapper, "NES: a Zapper game's header plugs the Zapper into the second port");
+			ps5libretro::Unload();
+		}
+		if (ps5libretro::Load(*mesen, (games / "test.nes").string(), setup, error))
+		{
+			const bool pad = ps5libretro::PortDevice(1) == RETRO_DEVICE_JOYPAD;
+			ps5libretro::SetDevice(1, arkanoid);
+			for (int i = 0; i < 2; i++)
+				ps5libretro::Run(pads);
+			Check(pad && ps5libretro::PortDevice(1) == arkanoid, "NES: a game with no such header has a pad, and the paddle when given it");
+			ps5libretro::SetDevice(1, RETRO_DEVICE_JOYPAD);
+			Check(ps5libretro::PortDevice(1) == RETRO_DEVICE_JOYPAD, "NES: and Auto again");
+			ps5libretro::Unload();
+		}
+	}
 	std::printf("%s\n", failures ? "SOME CORES FAILED" : "EVERY CORE PASSED");
 	return failures ? 1 : 0;
 }

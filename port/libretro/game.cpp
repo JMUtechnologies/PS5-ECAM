@@ -8,10 +8,13 @@
 //  - the sound on another: the core's, at its own rate, made 48 kHz and fed to AudioOut in 256-frame
 //    grains, its buffer kept about half full by stretching it a little either way.
 //  - the game's loop on the main thread: the DualSense as each player's RetroPad (the side's controls,
-//    A and B where the menu puts them, the left stick as the D-pad too), the port's shortcuts
-//    (ps5/pad.h), and what the in-game menu changes, as the DS side's loop does.
+//    A and B where the menu puts them, the left stick as the D-pad too), player 1's as the special
+//    controller a game has plugged in (devices.h: the paddle, a light gun, a mouse, a mat) and its motion
+//    as a cartridge's tilt sensor, the port's shortcuts (ps5/pad.h), and what the in-game menu changes, as
+//    the DS side's loop does.
 #include "game.h"
 #include "core.h"
+#include "devices.h"
 #include "session.h"
 #include "../app/achievements.h"
 #include "../app/boxart.h"
@@ -133,9 +136,28 @@ namespace ps5libretro
 		// value, a reset (under s_mutex)
 		std::vector<std::pair<std::string, std::string>> s_optionChanges;
 		bool s_resetPending = false;
-		std::mutex s_mutex; // s_view and s_pads
+		std::mutex s_mutex; // s_view, s_pads and the special controller's below
 		View s_view;
 		Pad s_pads[kPlayers];
+
+		// The special controller plugged in (devices.h): the Controller row's choice, what it gives the core's
+		// ports (done between two frames), and the first port with a controller other than a pad, as the core
+		// has it after
+		int s_choice = 0;
+		std::string s_path; // the game's file, as the core has it (a SNES game's header for Auto)
+		std::vector<std::pair<unsigned, unsigned>> s_portChanges;
+		struct Special
+		{
+			int port = -1;
+			unsigned device = 0; // libretro's
+			Device kind = Device::Pad;
+		};
+		Special s_special;
+		std::atomic<int> s_plugs{0}; // how many times the ports were given controllers (Plug)
+		// the paddle's knob where a finger on the touchpad puts it, 0 to 1 (-1: no finger), and the mouse's
+		// movement the touchpad made since the last frames, for the emulation to give the core
+		float s_paddleTarget = -1;
+		float s_mouseOwed[2] = {};
 
 		// the game's loop's requests, for the emulation to make between two frames: a save state to slot
 		// n (n), a load from it (-n), the last load undone (kUndoRequest)
@@ -320,11 +342,157 @@ namespace ps5libretro
 				s_mapping[i] = ps5azahar::MappedInput(settings, kButtons[i].second);
 		}
 
+		// -- player 1's DualSense as the special controller, and its motion ------------------------------
+
+		// The Arkanoid paddle's knob as Mesen counts it (ArkanoidController.h): 0x54 to 0xF4, a mouse's move a step
+		constexpr float kKnobLeft = 0x54, kKnobRight = 0xf4;
+		// the left stick all the way, or the D-pad: the knob's steps a frame (across in half a second), and a
+		// mouse's; the right stick all the way: the aim across the picture in a second
+		constexpr float kPaddleSpeed = 5.5f, kMouseSpeed = 6.0f, kAimSpeed = 1.0f;
+		// the touchpad's width as the mouse's counts, and the turn (radians) that aims across the picture, and down it
+		// (as the Wii U side's pointer, cemu/PS5PadController.cpp)
+		constexpr float kTouchpadMouse = 320.0f, kAimAcross = 0.70f, kAimDown = 0.42f;
+
+		float s_aim[2] = {0.5f, 0.5f}; // the light gun's, 0 to 1 across the picture
+		bool s_fingerWas = false;
+		float s_finger[2] = {};
+		uint64_t s_motionAt = 0;
+		bool s_centerWas = false;
+		// the DualSense's gravity as the game started or was last levelled (the Buttons page), libretro's axes:
+		// a tilt is the controller's from there
+		float s_level[3] = {0, 0, 1};
+		std::atomic<bool> s_levelPending{true};
+
+		// The DualSense's axes (SDL's: x right, y up out of its face, z towards the player) as libretro's
+		// sensors' for a handheld held in front of the player (x right, y to its screen's top, z out of it)
+		void Handheld(const float (&in)[3], float (&out)[3])
+		{
+			out[0] = in[0];
+			out[1] = -in[2];
+			out[2] = in[1];
+		}
+
+		// v turned as the turn that takes from to (0, 0, 1) would (Rodrigues'), both of length 1
+		void Level(const float (&from)[3], float (&v)[3])
+		{
+			const float axis[3] = {from[1], -from[0], 0}; // from x (0, 0, 1)
+			const float sine = std::sqrt(axis[0] * axis[0] + axis[1] * axis[1]), cosine = from[2];
+			if (sine < 1e-4f)
+				return;
+			const float k[3] = {axis[0] / sine, axis[1] / sine, 0};
+			const float cross[3] = {k[1] * v[2] - k[2] * v[1], k[2] * v[0] - k[0] * v[2], k[0] * v[1] - k[1] * v[0]};
+			const float dot = k[0] * v[0] + k[1] * v[1] + k[2] * v[2];
+			for (int i = 0; i < 3; i++)
+				v[i] = v[i] * cosine + cross[i] * sine + k[i] * dot * (1 - cosine);
+		}
+
+		// The motion sensors, for every player: as libretro's, levelled from how the DualSense was held
+		void ReadMotion(const ps5pad::Data& data, Pad& pad)
+		{
+			float accel[3];
+			Handheld(data.acceleration, accel);
+			Handheld(data.angularVelocity, pad.gyro);
+			const float length = std::sqrt(accel[0] * accel[0] + accel[1] * accel[1] + accel[2] * accel[2]);
+			if (s_levelPending.exchange(false) && length > 0.5f)
+				for (int i = 0; i < 3; i++)
+					s_level[i] = accel[i] / length;
+			Level(s_level, accel);
+			Level(s_level, pad.gyro);
+			std::copy(std::begin(accel), std::end(accel), pad.accel);
+		}
+
+		// Player 1's DualSense as the special controller: the paddle, the light gun, the mouse (devices.h)
+		void ReadSpecial(Device kind, const ps5pad::Data& data, uint32_t buttons, float deadzone, Pad& pad)
+		{
+			const bool finger = data.touchCount > 0;
+			float fingerAt[2] = {};
+			if (finger)
+			{
+				float width = 1, height = 1;
+				ps5pad::TouchResolution(0, width, height);
+				fingerAt[0] = std::clamp(data.touch[0].x / std::max(width, 1.0f), 0.0f, 1.0f);
+				fingerAt[1] = std::clamp(data.touch[0].y / std::max(height, 1.0f), 0.0f, 1.0f);
+			}
+			const float seconds = s_motionAt && data.timestampUs > s_motionAt ? std::min((data.timestampUs - s_motionAt) / 1e6f, 0.1f) : 0.0f;
+			s_motionAt = data.timestampUs;
+			auto stick = [&](uint8_t value) {
+				const float v = Axis(value);
+				return std::fabs(v) < std::max(deadzone, 0.1f) ? 0.0f : v;
+			};
+			const float dpadX = (buttons & ps5pad::kRight ? 1.0f : 0.0f) - (buttons & ps5pad::kLeft ? 1.0f : 0.0f);
+			auto press = [&](unsigned button, bool held) {
+				if (held)
+					pad.mouseButtons |= uint8_t(1u << button);
+			};
+			float paddle = -1, owed[2] = {};
+			switch (kind)
+			{
+			case Device::Paddle:
+				// a finger across the touchpad is the knob turned as far; the stick and the D-pad turn it
+				if (finger)
+					paddle = fingerAt[0];
+				pad.mouse[0] = (int16_t)std::lround(std::clamp(stick(data.leftX) + dpadX, -1.0f, 1.0f) * kPaddleSpeed);
+				press(RETRO_DEVICE_ID_MOUSE_LEFT, buttons & (ps5pad::kCross | ps5pad::kR2));
+				break;
+			case Device::Mouse:
+				// a finger moved on the touchpad moves it as far, the left stick as long as it is pushed
+				if (finger && s_fingerWas)
+					for (int i = 0; i < 2; i++)
+						owed[i] = (fingerAt[i] - s_finger[i]) * kTouchpadMouse;
+				pad.mouse[0] = (int16_t)std::lround(stick(data.leftX) * kMouseSpeed);
+				pad.mouse[1] = (int16_t)std::lround(stick(data.leftY) * kMouseSpeed);
+				press(RETRO_DEVICE_ID_MOUSE_LEFT, buttons & ps5pad::kCross);
+				press(RETRO_DEVICE_ID_MOUSE_RIGHT, buttons & ps5pad::kCircle);
+				break;
+			case Device::LightGun:
+			{
+				// a finger aims where it is, turning the DualSense aims from there (the Wii U side's pointer),
+				// and the right stick; R3 aims at the middle
+				const bool center = buttons & ps5pad::kR3;
+				if (center && !s_centerWas)
+					s_aim[0] = s_aim[1] = 0.5f;
+				s_centerWas = center;
+				if (finger)
+					std::copy(std::begin(fingerAt), std::end(fingerAt), s_aim);
+				else
+				{
+					s_aim[0] -= data.angularVelocity[1] * seconds / kAimAcross;
+					s_aim[1] -= data.angularVelocity[0] * seconds / kAimDown;
+				}
+				s_aim[0] += stick(data.rightX) * kAimSpeed * seconds;
+				s_aim[1] += stick(data.rightY) * kAimSpeed * seconds;
+				for (float& a : s_aim)
+					a = std::clamp(a, 0.0f, 1.0f);
+				pad.aim[0] = (int16_t)std::lround(s_aim[0] * 65534.0f - 32767.0f);
+				pad.aim[1] = (int16_t)std::lround(s_aim[1] * 65534.0f - 32767.0f);
+				// the Zapper's trigger and its shot away from the screen; the Super Scope's fire, cursor and turbo
+				press(RETRO_DEVICE_ID_MOUSE_LEFT, buttons & (ps5pad::kCross | ps5pad::kR2));
+				press(RETRO_DEVICE_ID_MOUSE_RIGHT, buttons & (ps5pad::kCircle | ps5pad::kL2));
+				press(RETRO_DEVICE_ID_MOUSE_MIDDLE, buttons & ps5pad::kSquare);
+				pad.offscreen = pad.mouseButtons & (1u << RETRO_DEVICE_ID_MOUSE_RIGHT);
+				break;
+			}
+			default:
+				break;
+			}
+			s_fingerWas = finger;
+			std::copy(std::begin(fingerAt), std::end(fingerAt), s_finger);
+			std::lock_guard lock(s_mutex);
+			s_paddleTarget = paddle;
+			s_mouseOwed[0] += owed[0];
+			s_mouseOwed[1] += owed[1];
+		}
+
 		// Each player's controller, a few hundred times a second; while the menu is up, let go
 		void ReadPads(bool blocked)
 		{
 			Pad pads[kPlayers];
 			const float deadzone = std::clamp(s_settings.deadzone, 0, 90) / 100.0f;
+			Device special;
+			{
+				std::lock_guard lock(s_mutex);
+				special = s_special.kind;
+			}
 			for (int player = 0; player < kPlayers; player++)
 			{
 				ps5pad::Data data{};
@@ -358,12 +526,66 @@ namespace ps5libretro
 				pad.left[1] = stick(data.leftY);
 				pad.right[0] = stick(data.rightX);
 				pad.right[1] = stick(data.rightY);
+				ReadMotion(data, pad);
+				if (player == 0 && special != Device::Pad && special != Device::Mat)
+					ReadSpecial(special, data, buttons, deadzone, pad);
 			}
 			std::lock_guard lock(s_mutex);
 			std::copy(std::begin(pads), std::end(pads), s_pads);
 		}
 
 		// -- the menu ------------------------------------------------------------------------------------
+
+		// The Buttons page's Controller row and what the DualSense does for the special controller plugged in
+		// (ps5ingame3ds::Controllers), as the core has it now
+		void PublishControllers()
+		{
+			const std::string_view core = ps5retro::Of(s_side).core;
+			Special special;
+			{
+				std::lock_guard lock(s_mutex);
+				special = s_special;
+			}
+			ps5ingame3ds::Controllers controllers;
+			for (const Choice& choice : Choices(core))
+				controllers.choices.push_back(choice.name);
+			if (special.port >= 0)
+				controllers.found = DeviceName(core, special.device);
+			auto input = [](Button button) { return ps5azahar::Mapping(s_settings, button, true).input; };
+			auto& rows = controllers.mapping;
+			switch (special.kind)
+			{
+			case Device::Paddle:
+				rows = {{"Turn the knob", "Touchpad, left stick or D-pad"}, {"Fire", "Cross or R2"}};
+				break;
+			case Device::LightGun:
+				rows = {{"Aim", "Touchpad, motion or right stick"}, {"Fire", "Cross or R2"}, {"Aim at the middle", "R3"}};
+				if (core == "mesens")
+					rows.insert(rows.end(), {{"Cursor", "Circle or L2"}, {"Turbo", "Square"}, {"Pause", input(Button::Start)}});
+				else
+					rows.push_back({"Shoot away from the screen", "Circle or L2"});
+				break;
+			case Device::Mouse:
+				rows = {{"Move", "Touchpad or left stick"}, {"Left button", "Cross"}, {"Right button", "Circle"}};
+				break;
+			case Device::Mat:
+				// the Power Pad's twelve, as Mesen reads them from a pad's buttons (its libretro.cpp)
+				if (controllers.found == "Power Pad" || controllers.found == "Family Trainer")
+				{
+					static constexpr Button kMat[] = {Button::B, Button::A, Button::Y, Button::X, Button::L, Button::R, Button::Left,
+						Button::Right, Button::Up, Button::Down, Button::Select, Button::Start};
+					for (size_t i = 0; i < std::size(kMat); i++)
+						rows.push_back({"Mat " + std::to_string(i + 1), input(kMat[i])});
+				}
+				break;
+			default:
+				break;
+			}
+			controllers.motion = MotionUsed();
+			if (controllers.motion)
+				rows.push_back({"Tilt", "Tilt or turn the DualSense"});
+			ps5ingame3ds::SetControllers(controllers);
+		}
 
 		ps5ingame3ds::Settings MenuSettings()
 		{
@@ -377,6 +599,7 @@ namespace ps5libretro
 			menu.screenFilter = s_settings.dsFilter;
 			menu.pictureSize = s_settings.pictureSize;
 			menu.pictureShape = s_settings.pictureShape;
+			menu.controller = s_choice;
 			std::lock_guard lock(s_mutex);
 			menu.speedLimit = s_view.speedLimit;
 			return menu;
@@ -447,6 +670,13 @@ namespace ps5libretro
 			s_settings.dsFilter = menu.screenFilter;
 			s_settings.pictureSize = menu.pictureSize;
 			s_settings.pictureShape = menu.pictureShape;
+			if (menu.controller != s_choice)
+			{
+				// another controller plugged in, between two frames; kept for this game only
+				s_choice = s_settings.retroController = menu.controller;
+				std::lock_guard lock(s_mutex);
+				s_portChanges = Ports(ps5retro::Of(s_side).core, s_choice, s_path);
+			}
 			if (menu.border != s_settings.border)
 			{
 				s_settings.border = menu.border;
@@ -476,6 +706,59 @@ namespace ps5libretro
 		}
 
 		// -- the emulation -------------------------------------------------------------------------------
+
+		// The Controller row's choice given to the core's ports, then which special controller it has: on the
+		// emulation's thread, or before it starts
+		void Plug(const std::vector<std::pair<unsigned, unsigned>>& ports)
+		{
+			const std::string_view core = ps5retro::Of(s_side).core;
+			for (const auto& [port, device] : ports)
+				SetDevice(port, device);
+			Special special;
+			for (unsigned port = 0; port < kPorts && special.port < 0; port++)
+				if (const unsigned device = PortDevice(port); DeviceOf(core, device) != Device::Pad)
+					special = {(int)port, device, DeviceOf(core, device)};
+			if (special.port >= 0)
+				ps5log::Line("[retro] port {}: {} (0x{:x})", special.port, DeviceName(core, special.device), special.device);
+			{
+				std::lock_guard lock(s_mutex);
+				s_special = special;
+			}
+			s_plugs++;
+		}
+
+		// The knob where Mesen has it, as the frames before moved it (a state loaded, it is found again at
+		// either end), and the mouse's movement still owed to the core
+		float s_knob = (kKnobRight - kKnobLeft) / 2;
+
+		// Player 1's special controller for one frame: the paddle's knob to where a finger puts it, the
+		// touchpad's mouse movement, and a special controller in another port (the Power Pad, the Super
+		// Scope's pause) pressed by player 1's buttons too
+		void SpecialFrame(Pad (&pads)[kPlayers], const Special& special, float target, int (&mouse)[2])
+		{
+			if (special.port > 0 && special.port < kPlayers)
+				pads[special.port].buttons |= pads[0].buttons;
+			if (special.kind == Device::Paddle)
+			{
+				float move = pads[0].mouse[0];
+				if (target >= 0)
+				{
+					move = kKnobLeft + target * (kKnobRight - kKnobLeft) - s_knob;
+					// at either end, past it: Mesen stops the knob there, and the two agree again
+					if (target < 0.02f || target > 0.98f)
+						move += target < 0.5f ? -kKnobRight : kKnobRight;
+				}
+				const int steps = (int)std::lround(std::clamp(move, -255.0f, 255.0f));
+				s_knob = std::clamp(s_knob + steps, kKnobLeft, kKnobRight);
+				pads[0].mouse[0] = (int16_t)steps;
+			}
+			else if (special.kind == Device::Mouse)
+				for (int i = 0; i < 2; i++)
+				{
+					pads[0].mouse[i] = (int16_t)std::clamp(pads[0].mouse[i] + mouse[i], -127, 127);
+					mouse[i] = 0; // the touchpad's, once
+				}
+		}
 
 		void Answer(const std::string& message)
 		{
@@ -541,12 +824,16 @@ namespace ps5libretro
 				{
 					// the menu's emulator options and Reset, between two frames
 					std::vector<std::pair<std::string, std::string>> changes;
+					std::vector<std::pair<unsigned, unsigned>> ports;
 					bool reset = false;
 					{
 						std::lock_guard lock(s_mutex);
 						changes.swap(s_optionChanges);
+						ports.swap(s_portChanges);
 						reset = std::exchange(s_resetPending, false);
 					}
+					if (!ports.empty())
+						Plug(ports);
 					for (const auto& [key, value] : changes)
 						if (!SetOption(key, value))
 							ps5log::Line("[retro] the core has no {} value {}", key, value);
@@ -560,10 +847,21 @@ namespace ps5libretro
 				}
 				View view;
 				Pad pads[kPlayers];
+				Special special;
+				float paddle;
+				int mouse[2];
 				{
 					std::lock_guard lock(s_mutex);
 					view = s_view;
 					std::copy(std::begin(s_pads), std::end(s_pads), pads);
+					special = s_special;
+					paddle = s_paddleTarget;
+					for (int i = 0; i < 2; i++)
+					{
+						// whole counts; the rest stays for the next frames
+						mouse[i] = (int)s_mouseOwed[i];
+						s_mouseOwed[i] -= (float)mouse[i];
+					}
 				}
 				const bool paused = ps5ingame3ds::MenuOpen();
 				if (paused && s_cheevos)
@@ -576,7 +874,10 @@ namespace ps5libretro
 					owed -= frames;
 					for (int i = 0; i < frames && !s_stop; i++)
 					{
-						Run(pads);
+						Pad frame[kPlayers];
+						std::copy(std::begin(pads), std::end(pads), frame);
+						SpecialFrame(frame, special, paddle, mouse);
+						Run(frame);
 						s_framesRun++;
 						if (s_cheevos)
 							ps5cheevos::DoFrame();
@@ -600,6 +901,13 @@ namespace ps5libretro
 					frame.pictureWidth = picture.width;
 					frame.pictureHeight = picture.height;
 					frame.pictureRect = PictureRect(AspectRatio(), view.size, view.shape, picture.width, picture.height);
+					// a light gun's crosshair, where it aims
+					if (special.kind == Device::LightGun && !paused)
+					{
+						frame.cursor = frame.cursorOnPicture = true;
+						frame.cursorX = (pads[0].aim[0] + 32767) / 65534.0f;
+						frame.cursorY = (pads[0].aim[1] + 32767) / 65534.0f;
+					}
 				}
 				if (!screens::Present(frame))
 				{
@@ -788,6 +1096,20 @@ namespace ps5libretro
 			ps5log::Line("[retro] {} did not load: {}", game.name, error);
 			return false;
 		}
+		// the controllers: the game's choice (Auto: what the core or devices.h finds for it), player 1's motion
+		// levelled as it is held when the game starts
+		s_path = path;
+		s_choice = settings.retroController;
+		s_special = {};
+		s_paddleTarget = -1;
+		s_mouseOwed[0] = s_mouseOwed[1] = 0;
+		s_knob = (kKnobRight - kKnobLeft) / 2;
+		s_aim[0] = s_aim[1] = 0.5f;
+		s_fingerWas = s_centerWas = false;
+		s_motionAt = 0;
+		s_levelPending = true;
+		s_portChanges.clear();
+		Plug(Ports(system.core, s_choice, path));
 		// the screens on VideoOut: from here, a failure needs a fresh process to show the launcher
 		s_coreTouched = true;
 		if (!screens::Start(error, "retro"))
@@ -840,6 +1162,7 @@ namespace ps5libretro
 			ps5ingame3ds::SetCoreOptions(options);
 		}
 		ps5ingame3ds::LoadBorder(s_settings.border);
+		PublishControllers();
 		PublishScreens(AspectRatio());
 		ShowStateSlots();
 		ps5ingame3ds::SetUndoAvailable(false);
@@ -859,6 +1182,7 @@ namespace ps5libretro
 		if (std::exchange(s_resume, false))
 			s_stateRequest = -kResumeSlot;
 		uint64_t polls = 0, quitAskedAt = 0;
+		std::pair<int, bool> shownControllers{s_plugs.load(), MotionUsed()};
 		uint32_t lastRun = 0, lastShown = 0;
 		uint64_t lastSecond = sceKernelGetProcessTime();
 		while (s_running && !s_stop)
@@ -915,6 +1239,15 @@ namespace ps5libretro
 						s_launched = s_settings;
 					}
 			}
+			// the special controller as the core has it after a change, and a cartridge's motion sensor once it is read
+			if (polls % 125 == 0)
+			{
+				const std::pair<int, bool> now{s_plugs.load(), MotionUsed()};
+				if (std::exchange(shownControllers, now) != now)
+					PublishControllers();
+			}
+			if (ps5ingame3ds::TakeLevelRequest())
+				s_levelPending = true;
 			if (ps5ingame3ds::TakeResetRequest())
 			{
 				std::lock_guard lock(s_mutex);

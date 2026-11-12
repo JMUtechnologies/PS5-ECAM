@@ -2,6 +2,7 @@
 // The app's libretro frontend (port/libretro/session.h) with a core of this test's own, which does
 // what the real ones do: declares options, picks a pixel format, draws with padded rows, makes sound,
 // reads the pads, keeps save RAM and serializes. Prints PASS lines; exits 1 on a failure.
+#include "libretro/devices.h"
 #include "libretro/session.h"
 
 #include <cstring>
@@ -103,7 +104,12 @@ namespace testcore
 	void SetSamples(retro_audio_sample_batch_t s) { samples = s; }
 	void SetPoll(retro_input_poll_t p) { poll = p; }
 	void SetInput(retro_input_state_t i) { input = i; }
-	void SetPort(unsigned, unsigned) {}
+	unsigned ports[5] = {};
+	void SetPort(unsigned port, unsigned device)
+	{
+		if (port < 5)
+			ports[port] = device;
+	}
 	void Reset() { counter = 0; }
 	void Run()
 	{
@@ -283,6 +289,75 @@ int main(int argc, char** argv)
 	Check(!ps5libretro::LoadState(4, error) && error.find("state4") != std::string::npos && testcore::counter == 1005, "an empty slot is not loaded");
 	ps5libretro::Reset();
 	Check(testcore::counter == 0, "reset");
+
+	// the special controllers (devices.h): a mouse's and a light gun's answers from the first player's, the
+	// Famicom expansion port's buttons as the first player's, the motion sensors, and the controller a port has
+	pads[0].mouse[0] = 5;
+	pads[0].mouse[1] = -3;
+	pads[0].mouseButtons = 1 << RETRO_DEVICE_ID_MOUSE_LEFT;
+	pads[0].aim[0] = -32767;
+	pads[0].aim[1] = 16000;
+	pads[0].offscreen = true;
+	pads[0].accel[2] = 1.0f;
+	pads[0].gyro[2] = -0.5f;
+	ps5libretro::Run(pads);
+	const auto in = testcore::input;
+	Check(in(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X) == 5 && in(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y) == -3 &&
+			in(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT) == 1 && in(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT) == 0 &&
+			in(1, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X) == 0,
+		"a mouse (the Arkanoid paddle): the first player's movement and buttons");
+	Check(in(0, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_X) == -32767 && in(0, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_Y) == 16000 &&
+			in(0, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_PRESSED) == 1 && in(0, RETRO_DEVICE_POINTER, 1, RETRO_DEVICE_ID_POINTER_X) == 0 &&
+			in(0, RETRO_DEVICE_LIGHTGUN, 0, RETRO_DEVICE_ID_LIGHTGUN_SCREEN_Y) == 16000 && in(0, RETRO_DEVICE_LIGHTGUN, 0, RETRO_DEVICE_ID_LIGHTGUN_IS_OFFSCREEN) == 1 &&
+			in(0, RETRO_DEVICE_LIGHTGUN, 0, RETRO_DEVICE_ID_LIGHTGUN_START) == 1,
+		"a light gun: where it aims, its trigger, off the screen (pointer and lightgun)");
+	Check(in(4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK) == (int16_t)pads[0].buttons && in(5, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK) == 0,
+		"Mesen's Famicom expansion port reads the first player's buttons");
+	retro_sensor_interface sensors{};
+	Check(testcore::environment(RETRO_ENVIRONMENT_GET_SENSOR_INTERFACE, &sensors) && !ps5libretro::MotionUsed() &&
+			sensors.set_sensor_state(0, RETRO_SENSOR_ACCELEROMETER_ENABLE, 60) && ps5libretro::MotionUsed() &&
+			!sensors.set_sensor_state(0, RETRO_SENSOR_ILLUMINANCE_ENABLE, 60) && sensors.get_sensor_input(0, RETRO_SENSOR_ACCELEROMETER_Z) == 1.0f &&
+			sensors.get_sensor_input(0, RETRO_SENSOR_GYROSCOPE_Z) == -0.5f && sensors.get_sensor_input(0, RETRO_SENSOR_ILLUMINANCE) == 0,
+		"the motion sensors: turned on, read; no light sensor");
+	Check(ps5libretro::PortDevice(1) == RETRO_DEVICE_JOYPAD && testcore::ports[1] == RETRO_DEVICE_JOYPAD, "a pad (the core's Auto) in each player's port as the game loads");
+	const unsigned zapper = RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_POINTER, 0), arkanoid = RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_MOUSE, 0);
+	const retro_input_descriptor described[] = {{0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "A"}, {1, zapper, 0, 0, "Controller"}, {}};
+	testcore::environment(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, (void*)described);
+	Check(ps5libretro::PortDevice(1) == zapper && ps5libretro::PortDevice(0) == RETRO_DEVICE_JOYPAD, "the controller the core says it has in a port (its descriptors)");
+	ps5libretro::SetDevice(4, arkanoid);
+	Check(testcore::ports[4] == arkanoid && ps5libretro::PortDevice(4) == arkanoid && ps5libretro::PortDevice(1) == zapper, "a controller given to a port");
+
+	// the special controllers' choices and what Auto finds
+	using ps5libretro::Device;
+	Check(ps5libretro::Choices("mesen").size() == 5 && ps5libretro::Choices("mesens").size() == 4 && ps5libretro::Choices("mgba").empty() &&
+			std::string(ps5libretro::Choices("mesen")[0].name) == "Auto",
+		"the NES's and the SNES's controllers to choose from; none for the others");
+	const auto paddle = ps5libretro::Ports("mesen", 2, "");
+	Check(paddle.size() == 3 && paddle[1].first == 1 && paddle[1].second == arkanoid && ps5libretro::Ports("mesen", 0, "")[1].second == RETRO_DEVICE_JOYPAD &&
+			ps5libretro::Ports("mesen", 9, "").size() == 3,
+		"the Arkanoid paddle in the NES's second port; Auto leaves it to the core");
+	Check(ps5libretro::DeviceOf("mesen", arkanoid) == Device::Paddle && ps5libretro::DeviceOf("mesen", zapper) == Device::LightGun &&
+			ps5libretro::DeviceOf("mesen", RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_JOYPAD, 1)) == Device::Mat &&
+			ps5libretro::DeviceOf("mesen", RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_JOYPAD, 7)) == Device::Pad &&
+			ps5libretro::DeviceOf("mesens", RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_MOUSE, 2)) == Device::Mouse &&
+			ps5libretro::DeviceOf("mesens", RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_JOYPAD, 1)) == Device::Pad &&
+			ps5libretro::DeviceOf("mesen", RETRO_DEVICE_JOYPAD) == Device::Pad && std::string(ps5libretro::DeviceName("mesen", zapper)) == "Zapper" &&
+			std::string(ps5libretro::DeviceName("mesens", zapper)) == "Super Scope",
+		"which special controller a port's device is, and its name");
+	// a LoROM SNES game's header, behind a copier's 512 bytes, its checksum and complement adding up
+	std::string rom(512 + 0x8000, '\0');
+	const char title[] = "MARIO PAINT          ";
+	std::memcpy(&rom[512 + 0x7fc0], title, 21);
+	rom[512 + 0x7fdc] = (char)0x34, rom[512 + 0x7fdd] = (char)0x12, rom[512 + 0x7fde] = (char)0xcb, rom[512 + 0x7fdf] = (char)0xed;
+	Put(root / "snes/Paint.sfc", rom);
+	Check(ps5libretro::SnesTitle(std::vector<uint8_t>(rom.begin() + 512, rom.end())) == "MARIO PAINT" &&
+			ps5libretro::Ports("mesens", 0, (root / "snes/Paint.sfc").string())[0].second == RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_MOUSE, 2),
+		"a SNES game's title from its header: Mario Paint gets the mouse");
+	Check(ps5libretro::SnesDevice("", "Yoshi's Safari (USA).sfc") == Device::LightGun && ps5libretro::SnesDevice("METAL COMBAT", "x.sfc") == Device::LightGun &&
+			ps5libretro::SnesDevice("SUPER MARIOWORLD", "Super Mario World (USA).sfc") == Device::Pad &&
+			ps5libretro::SnesDevice("", "Max Zone.sfc") == Device::Pad && ps5libretro::Ports("mesens", 0, "missing.sfc")[1].second ==
+			RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_JOYPAD, 0),
+		"the Super Scope's games by title or file name; the others, and a file not there, the pad");
 
 	// what the core asks for
 	testcore::log.log(RETRO_LOG_INFO, "a line from the core %d\n", 5);

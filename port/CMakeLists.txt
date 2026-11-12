@@ -196,6 +196,8 @@ add_library(CemuPS5 STATIC
 	retro/porpoise_disc.h
 	libretro/core.h
 	libretro/cores.cpp
+	libretro/devices.cpp
+	libretro/devices.h
 	libretro/game.cpp
 	libretro/game.h
 	libretro/plays.h
@@ -344,6 +346,7 @@ set_source_files_properties(
 	retro/porpoise_saves.cpp
 	retro/porpoise_settings.cpp
 	libretro/cores.cpp
+	libretro/devices.cpp
 	libretro/game.cpp
 	libretro/session.cpp
 	eden/launch.cpp

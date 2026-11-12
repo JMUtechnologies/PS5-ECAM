@@ -52,6 +52,7 @@ namespace ps5ingame3ds
 		// a libretro core's (Console::Retro): the picture's size on the TV and its shape (kPictureSizes, kPictureShapes)
 		int pictureSize = 0;
 		int pictureShape = 0;
+		int controller = 0; // the Buttons page's Controller row: SetControllers' choices, 0 Auto (for this game only)
 		// the console's buttons on the DualSense where not the default (ps5settings::N3ds::buttons): the menu's
 		// Buttons change them, and the A and B row's swap is in them
 		std::map<std::string, std::string> buttons;
@@ -205,6 +206,20 @@ namespace ps5ingame3ds
 	bool TakeCoreOption(std::string& key, int& index);
 	// The Reset tile (a console that can be reset): asked for once
 	bool TakeResetRequest();
+	// A libretro game's special controllers (port/libretro/devices.h), on its Buttons page: the Controller
+	// row's choices (English; the first is Auto, the second the pad; none: no row), what Auto plugged in
+	// (English; empty: the pad), what the DualSense does with the controller in use (what, and which input,
+	// English), and whether the game reads the DualSense's motion (a row to level it, asked for once). From
+	// the game's loop.
+	struct Controllers
+	{
+		std::vector<std::string> choices;
+		std::string found;
+		std::vector<std::pair<std::string, std::string>> mapping;
+		bool motion = false;
+	};
+	void SetControllers(const Controllers& controllers);
+	bool TakeLevelRequest();
 
 	void SetBorder(int theme, std::vector<uint8_t> rgba, int width, int height);
 	// The theme's picture from the app's assets/borders (tools/render-borders.py), as SetBorder takes it
