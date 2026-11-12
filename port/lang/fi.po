@@ -1751,7 +1751,7 @@ msgstr "Vaihda"
 msgid "Back to the game"
 msgstr "Takaisin peliin"
 
-#: port/app/ingame.cpp:670 port/app/ingame3ds.cpp:998 port/eden/ingame.cpp:883 port/frontend/shell/installs.cpp:330 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1793 port/frontend/shell/shell.cpp:1802 port/frontend/shell/shell.cpp:1827 port/frontend/shell/shell.cpp:1834 port/frontend/shell/shell.cpp:1835 port/frontend/shell/shell.cpp:1839 port/frontend/shell/shell.cpp:1843 port/frontend/shell/shell.cpp:1845 port/frontend/shell/shell.cpp:1849 port/frontend/shell/shell.cpp:1853 port/frontend/shell/shell.cpp:1857 port/frontend/shell/timeline.cpp:1030
+#: port/app/ingame.cpp:670 port/app/ingame3ds.cpp:998 port/eden/ingame.cpp:883 port/frontend/shell/installs.cpp:330 port/frontend/shell/shares.cpp:520 port/frontend/shell/shares.cpp:526 port/frontend/shell/shell.cpp:1793 port/frontend/shell/shell.cpp:1802 port/frontend/shell/shell.cpp:1827 port/frontend/shell/shell.cpp:1834 port/frontend/shell/shell.cpp:1835 port/frontend/shell/shell.cpp:1839 port/frontend/shell/shell.cpp:1843 port/frontend/shell/shell.cpp:1845 port/frontend/shell/shell.cpp:1849 port/frontend/shell/shell.cpp:1853 port/frontend/shell/shell.cpp:1857 port/frontend/shell/timeline.cpp:1125
 #, menu
 msgid "Back"
 msgstr "Takaisin"
@@ -2215,7 +2215,7 @@ msgstr "Kansi"
 msgid "Closed"
 msgstr "Kiinni"
 
-#: port/app/ingame3ds.cpp:700 port/frontend/shell/orbit.cpp:452 port/frontend/shell/shell.cpp:1785 port/frontend/shell/shell.cpp:1813 port/frontend/shell/shell.cpp:1821 port/frontend/shell/shell.cpp:1832 port/frontend/shell/shell.cpp:1838 port/frontend/shell/shell.cpp:1853 port/frontend/shell/timeline.cpp:442
+#: port/app/ingame3ds.cpp:700 port/frontend/shell/orbit.cpp:452 port/frontend/shell/shell.cpp:1785 port/frontend/shell/shell.cpp:1813 port/frontend/shell/shell.cpp:1821 port/frontend/shell/shell.cpp:1832 port/frontend/shell/shell.cpp:1838 port/frontend/shell/shell.cpp:1853 port/frontend/shell/timeline.cpp:452
 #, menu
 msgid "Open"
 msgstr "Avaa"
@@ -3733,7 +3733,7 @@ msgstr "Kokeellinen"
 msgid "Favourite"
 msgstr "Suosikki"
 
-#: port/frontend/shell/hub.cpp:236 port/frontend/shell/library.cpp:751 port/frontend/shell/orbit.cpp:360 port/frontend/shell/orbit.cpp:457 port/frontend/shell/shell.cpp:1823 port/frontend/shell/shell.cpp:1824 port/frontend/shell/shell.cpp:2147 port/frontend/shell/timeline.cpp:980
+#: port/frontend/shell/hub.cpp:236 port/frontend/shell/library.cpp:751 port/frontend/shell/orbit.cpp:360 port/frontend/shell/orbit.cpp:457 port/frontend/shell/shell.cpp:1823 port/frontend/shell/shell.cpp:1824 port/frontend/shell/shell.cpp:2147 port/frontend/shell/timeline.cpp:1070
 msgid "Play"
 msgstr "Pelaa"
 
@@ -4128,7 +4128,7 @@ msgid "Options"
 msgstr "Vaihtoehdot"
 
 #. how many games the Library has
-#: port/frontend/shell/library.cpp:766 port/frontend/shell/orbit.cpp:323 port/frontend/shell/pages.cpp:1397 port/frontend/shell/shell.cpp:1726 port/frontend/shell/timeline.cpp:436 port/frontend/shell/timeline.cpp:770 port/frontend/shell/timeline.cpp:884
+#: port/frontend/shell/library.cpp:766 port/frontend/shell/orbit.cpp:323 port/frontend/shell/pages.cpp:1397 port/frontend/shell/shell.cpp:1726 port/frontend/shell/timeline.cpp:446 port/frontend/shell/timeline.cpp:811 port/frontend/shell/timeline.cpp:960
 msgid "{0} game"
 msgid_plural "{0} games"
 msgstr[0] "{0} peli"
@@ -4221,14 +4221,14 @@ msgstr "Jatka"
 msgid "Recently played on every console"
 msgstr "Viimeksi pelaamasi pelit, kaikilla konsoleilla"
 
-#: port/frontend/shell/orbit.cpp:325 port/frontend/shell/shell.cpp:1021
+#: port/frontend/shell/orbit.cpp:325 port/frontend/shell/shell.cpp:1021 port/frontend/shell/timeline.cpp:1108
 msgid "{0} h played"
 msgid_plural "{0} h played"
 msgstr[0] "Pelattu {0} h"
 msgstr[1] "Pelattu {0} h"
 
 #. a game's chip in Orbit: {0} is when, as "yesterday" or "3 days ago"
-#: port/frontend/shell/orbit.cpp:353 port/frontend/shell/timeline.cpp:951
+#: port/frontend/shell/orbit.cpp:353 port/frontend/shell/timeline.cpp:1041
 msgid "Last played {0}"
 msgstr "Viimeksi pelattu: {0}"
 
@@ -4243,7 +4243,7 @@ msgid "Turn the dial"
 msgstr "Käännä kiekkoa"
 
 #. the hint for L2 and R2, which go to the Library and Settings tabs
-#: port/frontend/shell/orbit.cpp:462 port/frontend/shell/shell.cpp:1769 port/frontend/shell/timeline.cpp:1030
+#: port/frontend/shell/orbit.cpp:462 port/frontend/shell/shell.cpp:1769 port/frontend/shell/timeline.cpp:1125
 msgid "Library or Settings"
 msgstr ""
 
@@ -5006,8 +5006,7 @@ msgstr "Pelihallin CRT"
 msgid "Soft VHS"
 msgstr "Pehmeä VHS"
 
-#. an era on the Timeline's ruler (the years its consoles came out in)
-#: port/frontend/shell/porpoise_rows.cpp:112 port/frontend/shell/timeline.cpp:123
+#: port/frontend/shell/porpoise_rows.cpp:112 port/frontend/shell/timeline.cpp:128
 msgid "8-bit"
 msgstr "8-bittinen"
 
@@ -5023,8 +5022,7 @@ msgstr "Juovat"
 msgid "Shadow mask"
 msgstr "Varjomaski"
 
-#. an era on the Timeline's ruler (the years its consoles came out in)
-#: port/frontend/shell/porpoise_rows.cpp:112 port/frontend/shell/timeline.cpp:123
+#: port/frontend/shell/porpoise_rows.cpp:112 port/frontend/shell/timeline.cpp:129
 msgid "16-bit"
 msgstr "16-bittinen"
 
@@ -5883,7 +5881,7 @@ msgstr ""
 msgid "Upright, facing you"
 msgstr ""
 
-#: port/frontend/shell/porpoise_rows.cpp:295 port/frontend/shell/timeline.cpp:124
+#: port/frontend/shell/porpoise_rows.cpp:295 port/frontend/shell/timeline.cpp:132
 msgid "Motion"
 msgstr ""
 
@@ -6605,7 +6603,7 @@ msgstr ""
 msgid "Yours"
 msgstr ""
 
-#: port/frontend/shell/porpoise_rows.cpp:1638 port/frontend/shell/timeline.cpp:48
+#: port/frontend/shell/porpoise_rows.cpp:1638 port/frontend/shell/timeline.cpp:51
 msgid "Built in"
 msgstr ""
 
@@ -10234,7 +10232,7 @@ msgstr "Kansiot on siirretty"
 msgid "The Wii U emulator did not start: {0}"
 msgstr "Cemu ei käynnistynyt: {0}"
 
-#: port/frontend/shell/shell.cpp:1020
+#: port/frontend/shell/shell.cpp:1020 port/frontend/shell/timeline.cpp:1108
 msgid "{0} min played"
 msgid_plural "{0} min played"
 msgstr[0] "Pelattu {0} min"
@@ -10340,7 +10338,7 @@ msgstr "Asetukset"
 
 #. the Timeline's name under it in the console lists
 #. the view of every console's games on one shelf, a stop of its own in the console lists
-#: port/frontend/shell/shell.cpp:1721 port/frontend/shell/timeline.cpp:431 port/frontend/shell/timeline.cpp:763
+#: port/frontend/shell/shell.cpp:1721 port/frontend/shell/timeline.cpp:441 port/frontend/shell/timeline.cpp:805
 msgid "Timeline"
 msgstr "Aikajana"
 
@@ -10725,195 +10723,229 @@ msgstr "Uusi pelaaja luotu: valitse se kohdassa Pelaaja pelataksesi sillä"
 msgid "Player renamed"
 msgstr "Pelaaja nimetty uudelleen"
 
-#: port/frontend/shell/timeline.cpp:49 port/frontend/shell/timeline.cpp:54 port/frontend/shell/timeline.cpp:57 port/frontend/shell/timeline.cpp:60
+#: port/frontend/shell/timeline.cpp:52 port/frontend/shell/timeline.cpp:57 port/frontend/shell/timeline.cpp:60 port/frontend/shell/timeline.cpp:63
 msgid "Cartridge"
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:50
+#: port/frontend/shell/timeline.cpp:53
 msgid "Arcade board"
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:51
+#: port/frontend/shell/timeline.cpp:54
 msgid "Disk Card"
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:52 port/frontend/shell/timeline.cpp:53 port/frontend/shell/timeline.cpp:56 port/frontend/shell/timeline.cpp:58
+#: port/frontend/shell/timeline.cpp:55 port/frontend/shell/timeline.cpp:56 port/frontend/shell/timeline.cpp:59 port/frontend/shell/timeline.cpp:61
 msgid "Game Pak"
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:55
+#: port/frontend/shell/timeline.cpp:58
 msgid "Memory Pak"
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:59
+#: port/frontend/shell/timeline.cpp:62
 msgid "8 cm disc"
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:61
+#: port/frontend/shell/timeline.cpp:64
 msgid "iQue Card"
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:62 port/frontend/shell/timeline.cpp:64 port/frontend/shell/timeline.cpp:66 port/frontend/shell/timeline.cpp:67
+#: port/frontend/shell/timeline.cpp:65 port/frontend/shell/timeline.cpp:67 port/frontend/shell/timeline.cpp:69 port/frontend/shell/timeline.cpp:70
 msgid "Game Card"
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:63 port/frontend/shell/timeline.cpp:65
+#: port/frontend/shell/timeline.cpp:66 port/frontend/shell/timeline.cpp:68
 msgid "12 cm disc"
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:93
+#: port/frontend/shell/timeline.cpp:96
 msgid "One game in each, and a clock. The cross pad began here."
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:94
+#: port/frontend/shell/timeline.cpp:97
 msgid "The Famicom, then the NES: it brought games back to living rooms."
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:95
+#: port/frontend/shell/timeline.cpp:98
 msgid "Arcade cabinets that ran NES games, some with two screens."
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:96
+#: port/frontend/shell/timeline.cpp:99
 msgid "Games on disks, written again at shop kiosks in Japan."
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:97
+#: port/frontend/shell/timeline.cpp:100
 msgid "Four shades of green on AA batteries, and Tetris for two by cable."
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:98
+#: port/frontend/shell/timeline.cpp:101
 msgid "Mode 7, and chips in the cartridges that drew in 3D."
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:99
+#: port/frontend/shell/timeline.cpp:102
 msgid "Game Boy games on the TV, with colours and borders."
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:100
+#: port/frontend/shell/timeline.cpp:103
 msgid "Games sent by satellite to Super Famicoms in Japan."
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:101
+#: port/frontend/shell/timeline.cpp:104
 msgid "3D in red and black, in a visor on a stand."
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:102
+#: port/frontend/shell/timeline.cpp:105
 msgid "The analog stick, the Rumble Pak and four controller ports."
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:103
+#: port/frontend/shell/timeline.cpp:106
 msgid "The Game Boy in colour, and it still plays the old games."
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:104
+#: port/frontend/shell/timeline.cpp:107
 msgid "A 32-bit Game Boy, with shoulder buttons."
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:105
+#: port/frontend/shell/timeline.cpp:108
 msgid "8 cm discs, and a handle on the back."
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:106
+#: port/frontend/shell/timeline.cpp:109
 msgid "The smallest cartridges, with rumble and a shake sensor."
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:107
+#: port/frontend/shell/timeline.cpp:110
 msgid "The N64 inside a controller, for China, its games on a card."
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:108
+#: port/frontend/shell/timeline.cpp:111
 msgid "Two screens, the lower one touched with a stylus."
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:109
+#: port/frontend/shell/timeline.cpp:112
 msgid "A remote to point and swing, in every hand."
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:110
+#: port/frontend/shell/timeline.cpp:113
 msgid "3D without glasses, and a camera that sees in 3D too."
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:111
+#: port/frontend/shell/timeline.cpp:114
 msgid "A second screen in the controller."
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:112
+#: port/frontend/shell/timeline.cpp:115
 msgid "On the TV or in your hands: the same console."
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:113
+#: port/frontend/shell/timeline.cpp:116
 msgid "A bigger Switch, with Joy-Con that work as a mouse."
 msgstr ""
 
-#. an era on the Timeline's ruler (the years its consoles came out in)
-#: port/frontend/shell/timeline.cpp:123
+#. an era on the Timeline's ruler (the years its consoles came out in), and its one line over the shelves
+#: port/frontend/shell/timeline.cpp:127
 msgid "Pocket games"
 msgstr ""
 
-#. an era on the Timeline's ruler (the years its consoles came out in)
-#: port/frontend/shell/timeline.cpp:123
+#. an era on the Timeline's ruler (the years its consoles came out in), and its one line over the shelves
+#: port/frontend/shell/timeline.cpp:127
+msgid "Games on LCD screens, small enough for a pocket."
+msgstr ""
+
+#: port/frontend/shell/timeline.cpp:128
+msgid "Cartridges brought games home, and the screens began to scroll."
+msgstr ""
+
+#: port/frontend/shell/timeline.cpp:129
+msgid "More colours, richer sound, and Mode 7."
+msgstr ""
+
+#: port/frontend/shell/timeline.cpp:130
 msgid "3D"
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:124
+#: port/frontend/shell/timeline.cpp:130
+msgid "Worlds in polygons, the analog stick and rumble."
+msgstr ""
+
+#: port/frontend/shell/timeline.cpp:131
 msgid "Discs and pockets"
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:124
+#: port/frontend/shell/timeline.cpp:131
+msgid "Small discs at home, a 32-bit Game Boy on the go."
+msgstr ""
+
+#: port/frontend/shell/timeline.cpp:132
+msgid "Games played by pointing, swinging and touching."
+msgstr ""
+
+#: port/frontend/shell/timeline.cpp:133
 msgid "HD"
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:124
+#: port/frontend/shell/timeline.cpp:133
+msgid "High definition, and a screen in the controller."
+msgstr ""
+
+#: port/frontend/shell/timeline.cpp:134
 msgid "Hybrid"
 msgstr ""
 
+#: port/frontend/shell/timeline.cpp:134
+msgid "One console, on the TV or in your hands."
+msgstr ""
+
 #. the overline of the Timeline's card in the console lists: it is the library's museum
-#: port/frontend/shell/timeline.cpp:430
+#: port/frontend/shell/timeline.cpp:440
 msgid "Museum"
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:436
+#: port/frontend/shell/timeline.cpp:446
 msgid "{0} console"
 msgid_plural "{0} consoles"
 msgstr[0] ""
 msgstr[1] ""
 
-#: port/frontend/shell/timeline.cpp:440
+#: port/frontend/shell/timeline.cpp:450
 msgid "Every console's games on one shelf, oldest to newest, each as the disc, card or cartridge it came on."
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:764
-msgid "Every console, oldest to newest"
-msgstr "Kaikki konsolit, vanhimmasta uusimpaan"
+#: port/frontend/shell/timeline.cpp:817
+msgid "{0} of your games"
+msgid_plural "{0} of your games"
+msgstr[0] ""
+msgstr[1] ""
 
-#: port/frontend/shell/timeline.cpp:884
+#: port/frontend/shell/timeline.cpp:977
 msgid "No games yet"
 msgstr "Ei vielä pelejä"
 
-#: port/frontend/shell/timeline.cpp:890 port/frontend/shell/timeline.cpp:990
-msgid "An empty shelf"
-msgstr "Tyhjä hylly"
-
 #. on a game's museum label in the Timeline: {0} is the day it came out
-#: port/frontend/shell/timeline.cpp:942
+#: port/frontend/shell/timeline.cpp:1032
 msgid "Released {0}"
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:952
+#: port/frontend/shell/timeline.cpp:1042
 msgid "Not played yet"
 msgstr ""
 
-#: port/frontend/shell/timeline.cpp:991
+#: port/frontend/shell/timeline.cpp:1080
+msgid "An empty shelf"
+msgstr "Tyhjä hylly"
+
+#: port/frontend/shell/timeline.cpp:1081
 msgid "Put its games in {0}, on the PS5 or a USB drive."
 msgstr "Laita sen pelit kansioon {0}, PS5:lle tai USB-asemalle."
 
 #. the Timeline's hint for Up and Down, which go to the era before or after
-#: port/frontend/shell/timeline.cpp:1029
+#: port/frontend/shell/timeline.cpp:1124
 msgid "Previous or next console"
 msgstr "Edellinen tai seuraava konsoli"
 
 #. the Timeline's hint for Up and Down, which go to the era before or after
-#: port/frontend/shell/timeline.cpp:1029
+#: port/frontend/shell/timeline.cpp:1124
 msgid "Previous or next era"
 msgstr ""
 

@@ -826,6 +826,7 @@ namespace ps5shell
 		ui::Spring m_shelfScroll;
 		ui::Spring m_rulerAt;		   // the ruler's pointer, gliding to the year of the game in focus
 		uint32_t m_mediaArrivals = 0; // ps5boxart::MediaArrivals, last looked at
+		uint64_t m_timelineKey = 0;   // what the shelves were made from (TimelineBuild): made again when it changes
 		double m_insertAt = 0;		   // when Cross put the game in the slot (0: not yet)
 		ScreenId m_hubFrom = ScreenId::Library;
 		int m_hubAction = 0;
