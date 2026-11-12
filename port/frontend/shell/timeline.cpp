@@ -49,7 +49,7 @@ namespace ps5shell
 		};
 		// tr: what a game came on, on the Timeline's placards
 		constexpr Media kMedia[] = {
-			{110, 67, TrMark("Built in")},
+			{110, 110, TrMark("Built in")}, // a slot square enough for a Multi Screen unit open, the drawn one 110 x 67
 			{120, 133, TrMark("Cartridge")},
 			{150, 110, TrMark("Arcade board")},
 			{76, 90, TrMark("Disk Card")},
@@ -71,6 +71,15 @@ namespace ps5shell
 			{21, 31, TrMark("Game Card")},
 		};
 		bool Round(int kind) { return kind == kMiniDisc || kind == kWiiDisc || kind == kWiiUDisc; }
+
+		// Where the drawn thing stands in its slot: all of it, but a Game & Watch's, 110 x 67 at its foot
+		Box BodyBox(int kind, const Box& slot)
+		{
+			if (kind != kWatch)
+				return slot;
+			const float h = slot.w * 67 / 110;
+			return {slot.x, slot.Bottom() - h, slot.w, h};
+		}
 
 		// its size on the shelf, in the layout's pixels: as long as it is, to the power 0.6 (the NES's 133 mm
 		// 160 high, a Switch card's 31 mm 67)
@@ -180,6 +189,7 @@ namespace ps5shell
 			case System::N64: return "n64";
 			case System::VirtualBoy: return "vb";
 			case System::PokemonMini: return "mini";
+			case System::GameWatch: return "gw"; // each game's own unit
 			default: return "";
 			}
 		}
@@ -191,8 +201,9 @@ namespace ps5shell
 			Box box;
 			float radius;
 		};
-		Label DrawBody(Canvas& canvas, int kind, const Box& b)
+		Label DrawBody(Canvas& canvas, int kind, const Box& slot)
 		{
+			const Box b = BodyBox(kind, slot);
 			const float u = b.w / kMedia[kind].wide; // the drawing's pixels a millimetre
 			auto at = [&](float x, float y, float w, float h) { return Box{b.x + x * u, b.y + y * u, w * u, h * u}; };
 			auto rect = [&](float x, float y, float w, float h, float r, uint32_t colour) { canvas.Rect(at(x, y, w, h), r * u, colour); };
@@ -917,20 +928,27 @@ namespace ps5shell
 			canvas.Draw(Icon::Star, badge.Inset(size * 0.22f), kPaper);
 		};
 
+		// what a piece takes of its box: its picture (as it is, its own shape clear around it, as large as the box
+		// lets it, standing on its foot), else the drawn thing; and its picture, when it has one
+		auto pieceBox = [&](TimelineShelf& one, int index, const Box& box, const ui::Picture** picture) -> Box {
+			const std::string& scanPath = one.mediaArt[index];
+			const ui::Picture* scan = scanPath.empty() ? nullptr : &m_images->Get(scanPath);
+			*picture = scan && scan->texture && scan->width > 0 && scan->height > 0 ? scan : nullptr;
+			if (!*picture)
+				return BodyBox(one.media, box);
+			const float aspect = (float)scan->width / scan->height;
+			if (box.w > box.h * aspect)
+				return {box.CentreX() - box.h * aspect * 0.5f, box.y, box.h * aspect, box.h};
+			return {box.x, box.Bottom() - box.w / aspect, box.w, box.w / aspect};
+		};
+
 		auto drawPiece = [&](TimelineShelf& one, int index, const Box& box, bool words, float& radius) -> Box {
 			Game& game = one.games[index];
 			const bool round = Round(one.media);
-			const std::string& scanPath = one.mediaArt[index];
-			const ui::Picture* scan = scanPath.empty() ? nullptr : &m_images->Get(scanPath);
-			if (scan && scan->texture && scan->width > 0 && scan->height > 0)
+			const ui::Picture* scan = nullptr;
+			const Box fitted = pieceBox(one, index, box, &scan);
+			if (scan)
 			{
-				// as it is, its own shape clear around it: as large as the box lets it, standing on its foot
-				const float aspect = (float)scan->width / scan->height;
-				Box fitted = box;
-				if (box.w > box.h * aspect)
-					fitted = {box.CentreX() - box.h * aspect * 0.5f, box.y, box.h * aspect, box.h};
-				else
-					fitted = {box.x, box.Bottom() - box.w / aspect, box.w, box.w / aspect};
 				radius = round ? fitted.w / 2 : fitted.w * 0.06f;
 				canvas.Shadow(fitted.Inset(fitted.w * 0.03f), radius, 6, 14, 0x29000000);
 				canvas.Image(scan->texture, fitted, 0);
@@ -938,8 +956,9 @@ namespace ps5shell
 					favourite(game, fitted, round);
 				return fitted;
 			}
-			radius = round ? box.w / 2 : box.w * 0.05f;
-			canvas.Shadow(box, radius, 6, 14, 0x29000000);
+			const Box body = BodyBox(one.media, box);
+			radius = round ? body.w / 2 : body.w * 0.05f;
+			canvas.Shadow(body, radius, 6, 14, 0x29000000);
 			const Label label = DrawBody(canvas, one.media, box);
 			bool art = false;
 			AsSide(one.side, [&] {
@@ -965,8 +984,8 @@ namespace ps5shell
 			}
 			DrawOver(canvas, one.media, box);
 			if (words)
-				favourite(game, box, round);
-			return box;
+				favourite(game, body, round);
+			return body;
 		};
 
 		const Box view{kLeft, kShelfTop, kView, 360};
@@ -1010,7 +1029,7 @@ namespace ps5shell
 				const float fit = std::min(1.0f, (one.w - 40) / w);
 				w *= fit;
 				h *= fit;
-				const Box ghost{x + (one.w - w) / 2, kShelfBottom - h, w, h};
+				const Box ghost = BodyBox(one.media, {x + (one.w - w) / 2, kShelfBottom - h, w, h});
 				const float radius = Round(one.media) ? w / 2 : w * 0.05f;
 				canvas.PushAlpha(0.14f);
 				DrawBody(canvas, one.media, ghost);
@@ -1053,7 +1072,9 @@ namespace ps5shell
 			const float scale = 1 + ((m_settings.ui.reduceMotion ? 1.0f : 1.12f) - 1) * lift.mix;
 			const Box& b = lift.box;
 			const Box lifted{b.x - b.w * (scale - 1) * 0.5f, b.Bottom() - b.h * scale - 36 * lift.mix, b.w * scale, b.h * scale};
-			canvas.Shadow(lifted, Round(lift.shelf->media) ? lifted.w / 2 : 6, 30 * lift.mix, 40, ui::WithAlpha(0x52000000, lift.mix));
+			const ui::Picture* picture = nullptr;
+			const Box shape = pieceBox(*lift.shelf, lift.index, lifted, &picture);
+			canvas.Shadow(shape, Round(lift.shelf->media) ? shape.w / 2 : 6, 30 * lift.mix, 40, ui::WithAlpha(0x52000000, lift.mix));
 			float radius = 0;
 			const Box drawn = drawPiece(*lift.shelf, lift.index, lifted, true, radius);
 			canvas.Ring(drawn.Scaled(1.04f), radius * 1.04f, 3, ui::WithAlpha(kInk, lift.mix));

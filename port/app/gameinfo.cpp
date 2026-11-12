@@ -402,7 +402,9 @@ namespace ps5gameinfo
 	bool FindCart(const std::string& system, const std::string& fileName, Cart& cart)
 	{
 		cart = {};
-		const std::string name = CartName(fileName);
+		std::string name = CartName(fileName);
+		if (system == "gw" && name.rfind("gamewatch", 0) == 0)
+			name.erase(0, 9); // libretro's names, "Game & Watch - Donkey Kong II": the database's, "Donkey Kong II"
 		if (name.size() < 2)
 			return false;
 		std::string line;

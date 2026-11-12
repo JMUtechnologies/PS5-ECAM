@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The retro sides' cartridges for the Timeline: each NES, Super NES, Game Boy, Game Boy Color, Game Boy
 Advance, Nintendo 64, Virtual Boy and Pokemon mini game's year, publisher and the pictures of its cartridge
-in each region it came out in, from the LaunchBox Games Database.
+in each region it came out in, and each Game & Watch game's own unit, from the LaunchBox Games Database.
 
     render-carts.py [OUTPUT] [--from Metadata.zip]       default: port/app/gametdb/launchbox-carts.tsv.gz
 
@@ -12,7 +12,7 @@ separated by tabs:
 
     system  name  year  publisher  carts
 
-system is nes, snes, gb, gbc, gba, n64, vb or mini; name the title as boxart.cpp's Words match names (lower
+system is nes, snes, gb, gbc, gba, n64, vb, mini or gw; name the title as boxart.cpp's Words match names (lower
 case, letters and digits run together, what is in brackets and "the", "of", "and", "a", "version", "edition"
 left out); carts the pictures as region=file, separated by commas, the region one letter (U America, J Japan,
 E Europe, W the world, O elsewhere) and the file the picture's name at images.launchbox-app.com without its
@@ -40,6 +40,7 @@ PLATFORMS = {
     "Nintendo 64": "n64",
     "Nintendo Virtual Boy": "vb",
     "Nintendo Pokemon Mini": "mini",
+    "Nintendo Game & Watch": "gw",
 }
 REGIONS = {
     "North America": "U", "United States": "U", "Canada": "U",
