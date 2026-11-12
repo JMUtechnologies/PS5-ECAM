@@ -1,0 +1,57 @@
+diff --git a/es-core/src/HttpReq.cpp b/es-core/src/HttpReq.cpp
+--- a/es-core/src/HttpReq.cpp
++++ b/es-core/src/HttpReq.cpp
+@@ -20,6 +20,23 @@
+ #include <algorithm>
+ #include <assert.h>
+ 
++#if defined(__PROSPERO__)
++#include <sys/socket.h>
++
++namespace
++{
++    // PS5 (PS5-ECAM): each socket curl opens is made non-blocking by the console's own option,
++    // SO_NBIO, as the app's own downloads are (its port/ps5/curl_socket.h): a title is refused
++    // fcntl's O_NONBLOCK, and a blocking socket waits for the server to close it.
++    int ps5SocketOptions(void*, curl_socket_t socket, curlsocktype)
++    {
++        const int on {1};
++        setsockopt(socket, SOL_SOCKET, 0x1200, &on, sizeof(on));
++        return CURL_SOCKOPT_OK;
++    }
++} // namespace
++#endif
++
+ std::string HttpReq::urlEncode(const std::string& s)
+ {
+     const std::string unreserved {
+@@ -60,6 +77,15 @@
+         return;
+     }
+ 
++#if defined(__PROSPERO__)
++    // PS5: no signals, each socket non-blocking, and the server asked to close the connection
++    // after its answer, which curl would otherwise wait on (PS5-ECAM's port/ps5/curl_socket.h).
++    static curl_slist* ps5Headers {curl_slist_append(nullptr, "Connection: close")};
++    curl_easy_setopt(mHandle, CURLOPT_NOSIGNAL, 1L);
++    curl_easy_setopt(mHandle, CURLOPT_SOCKOPTFUNCTION, ps5SocketOptions);
++    curl_easy_setopt(mHandle, CURLOPT_HTTPHEADER, ps5Headers);
++#endif
++
+     if (!mPollThread) {
+         sStopPoll = false;
+         mPollThread = std::make_unique<std::thread>(&HttpReq::pollCurl, this);
+@@ -341,7 +367,13 @@
+ 
+     do {
+         if (!sStopPoll)
++#if defined(__PROSPERO__)
++            // PS5: curl has no wakeup for this wait (PS5-ECAM's tools/build-esde.sh: its pipe cannot
++            // be made non-blocking in a title), so a new request waits for the next turn: a short one.
++            curl_multi_poll(sMultiHandle, nullptr, 0, 50, &numfds);
++#else
+             curl_multi_poll(sMultiHandle, nullptr, 0, 2000, &numfds);
++#endif
+ 
+         // Check if any easy handles should be added or removed.
+         std::unique_lock<std::mutex> handleLock {sHandleMutex};

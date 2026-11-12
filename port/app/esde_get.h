@@ -33,7 +33,8 @@ namespace ps5esdeget
 		std::string message;
 	};
 
-	// Downloads and installs ES-DE in the background; nothing when one is under way
+	// Downloads and installs ES-DE in the background; nothing when one is under way. Only ever on the
+	// player's word (Settings > Launcher's row held, or the setup's ES-DE card confirmed): never on focus
 	void Start();
 	Status GetStatus();
 	// Whether a download or install is under way
@@ -45,6 +46,7 @@ namespace ps5esdeget
 	// ES-DE out of the app (its folder; its home with what it scraped stays in the data folder). False,
 	// with why, when it could not be
 	bool Remove(std::string& error);
-	// About how much the download is, before GitHub is asked (Settings shows it on the row)
-	constexpr uint64_t kAboutBytes = 850ull << 20;
+	// About how much the download is, before GitHub is asked (Settings and the setup show it before the
+	// player says yes): the program and two themes (tools/build-esde.sh)
+	constexpr uint64_t kAboutBytes = 92ull << 20;
 }

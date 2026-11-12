@@ -21,6 +21,7 @@
 #include "../../azahar/library.h"
 #include "../../eden/eden.h"
 #include "../../eden/library.h"
+#include "../../app/esde_get.h"
 #include "../../esde/esde.h"
 #include "../../melonds/library.h"
 #include "../../ps5/kernel.h"
@@ -532,6 +533,17 @@ namespace ps5shell
 			if (m_now - m_launch.at > kLaunchSeconds + 0.25)
 				m_done = true;
 			return;
+		}
+		// ES-DE's download, from Settings or the setup: how it ended, said once, on whatever screen is up
+		if (const ps5esdeget::Status esde = ps5esdeget::GetStatus(); (int)esde.state != m_esdeState)
+		{
+			using State = ps5esdeget::Status::State;
+			m_esdeState = (int)esde.state;
+			if (esde.state == State::Done)
+				Toast(m_settings.ui.emulationStation ? Tr("EmulationStation is in. It opens next time Playtendoh starts.")
+													 : Tr("EmulationStation is in. Choose it in Settings > Launcher > Layout."));
+			else if (esde.state == State::Failed)
+				Toast(esde.message);
 		}
 		for (const ui::Press& press : actions.presses)
 		{

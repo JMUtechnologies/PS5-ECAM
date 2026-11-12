@@ -853,6 +853,8 @@ namespace ps5shell
 		// the layout's question, and Orbit
 		std::function<void()> m_layoutThen;
 		int m_layoutFocus = 0;
+		int m_esdeState = 0; // ES-DE's download's state last frame (app/esde_get.h), to say how it ended
+		bool m_layoutAskEsde = false; // ES-DE's card pressed once, where the app hasn't got it: its size shown, Cross again downloads
 		std::function<void()> m_reportsThen;
 		int m_reportsFocus = 1; // 0: Not now, 1: Yes
 		bool m_orbitHome = false;	   // on the dial's middle: the games played last, on every side

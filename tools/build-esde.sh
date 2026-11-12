@@ -19,13 +19,18 @@
 #        frontends/es-de/ps5/   main_ecam.cpp, game_ecam.cpp and their headers (port/esde/ps5,
 #                               port/esde/handoff.h) in place of main_ps5.cpp, game_ps5.cpp and
 #                               library_ps5.cpp: PS5-ECAM writes ES-DE's systems and game lists
-#                               (port/esde/esde.cpp) and plays its games; the menu pages of the port's own
-#                               app (include/GuiFrameGen.h, GuiWebUI.h) left out;
-#        frontends/es-de/patches/ patches/esde after Mihawk's own (ES-DE's scraper in its menu, and its
-#                               notes and log lines saying what PS5-ECAM does);
+#                               (port/esde/esde.cpp) and plays its games, and net_ecam.cpp finds the
+#                               scraper's hosts; the menu pages of the port's own app
+#                               (include/GuiFrameGen.h, GuiWebUI.h) left out;
+#        frontends/es-de/patches/ patches/esde after Mihawk's own (ES-DE's scraper in its menu, its
+#                               requests made as the app's own downloads are, and its notes and log
+#                               lines saying what PS5-ECAM does);
 #        tools/build-frontend.sh  without the files of the port's own app it links into every program
 #                               (its game requests, its game library, its WebUI), which PS5-ECAM's ES-DE
-#                               never calls;
+#                               never calls, and without the platform's getaddrinfo, which refuses
+#                               every name, bound over net_ecam.cpp's;
+#        tools/build-curl.sh    without curl's wakeup pipe, which a title cannot make non-blocking:
+#                               curl_multi_init gave up over it, and ES-DE's scraper with it;
 #      its payload SDK (tools/setup-native-dependencies.sh, from his PS5_PayloadSDK at the revision it
 #      pins), its host tool, then tools/build-frontend.sh es-de: ES-DE's libraries (FreeType, HarfBuzz,
 #      ICU, pugixml, curl over mbedTLS, FFmpeg, libwebp), ES-DE itself, the program, its themes;
@@ -79,16 +84,29 @@ if [[ ! -f $port/.ecam-stamp || $(<"$port/.ecam-stamp") != "$stamp" ]]; then
     cp port/esde/ps5/* port/esde/handoff.h "$glue/"
     # the program links only what PS5-ECAM's ES-DE uses: not the port's own app's game requests,
     # library and WebUI, which every one of its programs links
-    python3 - "$port/tools/build-frontend.sh" <<'PY'
+    python3 - "$port/tools/build-frontend.sh" "$port/tools/build-curl.sh" <<'PY'
 import pathlib, sys
 path = pathlib.Path(sys.argv[1])
 text = path.read_text()
 start = text.index("# The contracts every frontend shares with eboot.bin")
 end = text.index('objects+=("$work/obj/webui_link.o")\n') + len('objects+=("$work/obj/webui_link.o")\n')
-path.write_text(text[:start] + "# (PS5-ECAM's build: no contracts with the port's own eboot.bin; tools/build-esde.sh)\n" + text[end:])
+text = text[:start] + "# (PS5-ECAM's build: no contracts with the port's own eboot.bin; tools/build-esde.sh)\n" + text[end:]
+# the platform's getaddrinfo refuses every name: ES-DE's own (port/esde/ps5/net_ecam.cpp) is kept
+own = 'own=" mkstemps openlog popen pclose "'
+text = text.replace(own, own[:-1] + 'getaddrinfo freeaddrinfo "')
+path.write_text(text)
+# curl without its wakeup pipe: curl_multi_init gives up when the pipe cannot be made non-blocking,
+# which a title is refused (fcntl's O_NONBLOCK), and ES-DE's scraper then had no multi handle at all
+path = pathlib.Path(sys.argv[2])
+text = path.read_text()
+path.write_text(text.replace("    ac_cv_func_pipe2=no \\\n", "    --disable-socketpair ac_cv_func_pipe2=no \\\n"))
 PY
     ! grep -q "webui_link\|ps5_game\|ps5_library" "$port/tools/build-frontend.sh" ||
         { echo "error: the port's build-frontend.sh still links its own app's files" >&2; exit 1; }
+    grep -q '^own=".* getaddrinfo freeaddrinfo "$' "$port/tools/build-frontend.sh" ||
+        { echo "error: the port's build-frontend.sh would still bind the platform's getaddrinfo" >&2; exit 1; }
+    grep -q -- '--disable-socketpair' "$port/tools/build-curl.sh" ||
+        { echo "error: the port's build-curl.sh still builds curl's wakeup pipe" >&2; exit 1; }
     cp patches/esde/*.patch "$port/frontends/es-de/patches/"
     for patch in patches/esde/*.patch; do
         grep -qxF "$(basename "$patch")" "$port/frontends/es-de/patches/series" ||
@@ -145,6 +163,11 @@ step "ES-DE, its libraries and the program (tools/build-frontend.sh es-de)"
 rm -rf "$work/es-de"
 cp -a "$port/dist/$title/es-de" "$work/es-de"
 cp "$root/LICENSE" "$work/es-de/LICENSE-PS5-ECAM"
+# two themes, so the download stays under 100 MB: Alekfull NX (the port's default) and ES-DE's own Linear;
+# the port's other six were 750 MB of the 840 a download was
+for theme in "$work/es-de/themes"/*/; do
+    case $(basename "$theme") in alekfull-nx-es-de | linear-es-de) ;; *) rm -rf "$theme" ;; esac
+done
 # every theme it ships has art for every system PS5-ECAM gives ES-DE (port/esde/esde.cpp)
 python3 -B tools/add-esde-switch2-theme-alias.py "$work/es-de/themes"
 python3 -B tools/check-esde-themes.py "$work/es-de/themes"

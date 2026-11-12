@@ -26,7 +26,7 @@ namespace ps5esdeget
 	namespace
 	{
 		// the repository by its names, newest first (GitHub sends an old name on to the new one)
-		constexpr const char* kRepositories[] = {"premohq/PS5-ECAM", "premohq/PlayTendoh"};
+		constexpr const char* kRepositories[] = {"premohq/PlayTendoh", "premohq/PS5-ECAM"};
 		// the API, then where a release's asset is served from (GitHub sends it on, from one of the others)
 		constexpr const char* kHosts[] = {"api.github.com", "github.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com"};
 		constexpr uint64_t kMostBytes = 2048ull << 20;
@@ -129,9 +129,11 @@ namespace ps5esdeget
 			return fs::exists(ps5paths::kMountedEboot, ec) ? fs::path() : fs::path(ps5paths::AppDir());
 		}
 
-		// Where the release's asset is, its size and its SHA-256: GitHub's API, each name of the repository
-		bool Find(curl_slist* resolve, std::string& url, uint64_t& size, std::string& sha)
+		// Where the release's asset is, its size and its SHA-256: GitHub's API, each name of the repository.
+		// missing: GitHub answered, and has no such release or asset (not the network's fault)
+		bool Find(curl_slist* resolve, std::string& url, uint64_t& size, std::string& sha, bool& missing)
 		{
+			missing = false;
 			for (const char* repository : kRepositories)
 			{
 				std::string body;
@@ -151,6 +153,7 @@ namespace ps5esdeget
 				if (result != CURLE_OK || http != 200)
 				{
 					ps5log::Line("[es-de] {}'s {}: {} (HTTP {})", repository, kTag, curl_easy_strerror(result), http);
+					missing |= result == CURLE_OK && http == 404;
 					continue;
 				}
 				rapidjson::Document json;
@@ -170,6 +173,8 @@ namespace ps5esdeget
 					sha = digest.rfind("sha256:", 0) == 0 ? digest.substr(7) : "";
 					return !sha.empty();
 				}
+				ps5log::Line("[es-de] {}'s {} has no {}", repository, kTag, kAsset);
+				missing = true;
 			}
 			return false;
 		}
@@ -178,9 +183,12 @@ namespace ps5esdeget
 		{
 			std::string url, sha;
 			uint64_t size = 0;
-			if (!Find(resolve, url, size, sha))
+			bool missing = false;
+			if (!Find(resolve, url, size, sha, missing))
 			{
-				Fail(s_stop ? ps5lang::Tr("Stopped for a game") : ps5lang::Tr("EmulationStation could not be downloaded. Is the PS5 online?"));
+				Fail(s_stop	   ? ps5lang::Tr("Stopped for a game")
+					 : missing ? ps5lang::Tr("EmulationStation isn't on GitHub for this version yet. Try again after an update.")
+							   : ps5lang::Tr("EmulationStation could not be downloaded. Is the PS5 online?"));
 				return;
 			}
 			const fs::path app = AppFolder();
