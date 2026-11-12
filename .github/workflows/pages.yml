@@ -12,6 +12,8 @@ on:
     branches: [Playtendoh] # the github-pages environment allows it (Settings > Environments)
     paths:
       - 'site/**'
+      - 'docs/COMPATIBILITY.md' # status.json, the console's (tools/compat_feed.py)
+      - 'tools/compat_feed.py'
       - '.github/workflows/pages.yml'
   release:
     types: [published]
@@ -60,7 +62,9 @@ jobs:
             echo '{}' > compatibility.json
           fi
       - name: Build
-        run: python3 site/build.py --release latest.json --compat compatibility.json --out _site
+        env:
+          REPORTS_URL: ${{ vars.REPORTS_URL }}
+        run: python3 site/build.py --release latest.json --compat compatibility.json --reports-url "$REPORTS_URL" --out _site
       - uses: actions/upload-pages-artifact@v4
         with:
           path: _site

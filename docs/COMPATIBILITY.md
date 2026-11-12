@@ -5,6 +5,9 @@ a game that isn't here hasn't been reported yet, which doesn't mean it doesn't w
 or correct one, [open an issue](https://github.com/premohq/PlayTendoh/issues/new/choose) with the
 game's region and version, the app version, and how far you played.
 
+The app shows this list on each game, with what players' automatic reports say about the games it
+does not list ([REPORTS.md](REPORTS.md)): it fetches the newest as it starts.
+
 | Status | Meaning |
 |---|---|
 | **Playable** | Can be played through with no known problem that gets in the way |
@@ -32,6 +35,18 @@ recompiler), so the status assumes the app got JIT memory (see the README's
 |---|---|---|---|---|---|
 | The Legend of Zelda: Majora's Mask 3D | USA, Rev 1 | Playable | Save states work from the in-game menu | | after 2.0.0 C |
 | Pokémon X | EUR | Issues | Moving black dots on outlined 3D models (the Poké Ball and Professor Sycamore in the introduction, then the characters), at any internal resolution. 4.0.0's Outline fix removes them and is on by default for X, Y, Omega Ruby and Alpha Sapphire; it costs some speed | [#23](https://github.com/premohq/PlayTendoh/issues/23) | 3.0.0 |
+
+## Game Boy Color (mGBA)
+
+| Game | Region / version | Status | Notes | Reports | App version |
+|---|---|---|---|---|---|
+| Super Mario Land 2 DX | | Playable | | | 6.0.0 |
+
+## Game Boy Advance (mGBA)
+
+| Game | Region / version | Status | Notes | Reports | App version |
+|---|---|---|---|---|---|
+| Pokemon FireRed | | Playable | | | 6.0.0 |
 
 A CIA that is only partly decrypted (the CIA decrypted, the game
 inside it still encrypted) is refused by Azahar on any console; that is about the dump, not the

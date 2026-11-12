@@ -32,4 +32,4 @@ namespace_id = "2002"
 
 # Reports older than 180 days are deleted once a day.
 [triggers]
-crons = ["17 3 * * *"]
+crons = ["17 3 * * *", "41 * * * *"] # the first: old reports deleted (src/index.js DAILY); the second: the site rebuilt

@@ -10,6 +10,10 @@ port/ui/fonts, the home screen tile (sce_sys/icon0.png) and the README's banner 
 repos/OWNER/REPO/releases/latest); it goes into index.html, so the page shows that release's notes
 at once and still has them when the API turns a reader away. The page asks the API for the latest
 release as it opens (app.js).
+
+With --compat, the report intake's table goes beside compatibility.html (compatibility.json), and with
+the compatibility list (docs/COMPATIBILITY.md) it makes status.json: how each game runs, which the console
+fetches as the app starts (tools/compat_feed.py, port/app/compatibility.h).
 """
 
 import argparse
@@ -32,6 +36,9 @@ ART = {  # the repository's own files the page uses, and their names in it
     "docs/support-qr.svg": "support-qr.svg",
 }
 SKIP = {"build.py", "__pycache__"}
+
+sys.path.insert(0, os.path.join(REPO_ROOT, "tools"))
+import compat_feed  # noqa: E402 (tools/, beside this folder)
 
 
 def facts(release):
@@ -123,6 +130,7 @@ def main():
     parser.add_argument("--release", help="the latest release, as JSON from GitHub's API")
     parser.add_argument("--out", default=os.path.join(REPO_ROOT, "_site"))
     parser.add_argument("--compat", help="the report intake's table (GET /v1/compatibility.json), for compatibility.html")
+    parser.add_argument("--reports-url", default="", help="the report intake's address: compatibility.html reads its table live from there")
     args = parser.parse_args()
 
     release = {}
@@ -160,10 +168,27 @@ def main():
     page = re.sub(r"%([A-Z_]+)%", lambda m: values[m.group(1)], page)
     with open(os.path.join(args.out, "index.html"), "w", encoding="utf-8", newline="\n") as f:
         f.write(page)
+    # compatibility.html reads the intake's table itself, so it is never older than the intake's hour, whether or
+    # not GitHub runs this workflow's schedule; the table baked in below is what it shows when the intake can't be reached.
+    origin = re.match(r"^https://[A-Za-z0-9.-]+(?::[0-9]+)?", args.reports_url.strip())
+    with open(os.path.join(SITE, "compatibility.html"), encoding="utf-8") as f:
+        page = f.read().replace("%REPORTS_ORIGIN%", html.escape(origin.group(0)) if origin else "")
+    with open(os.path.join(args.out, "compatibility.html"), "w", encoding="utf-8", newline="\n") as f:
+        f.write(page)
     games = compat_table(args.compat)
     with open(os.path.join(args.out, "compatibility.json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump(games, f, ensure_ascii=False, separators=(",", ":"))
-    print(f"build.py: {args.out}, with {release.get('tag_name') or 'no release'} baked in, {len(games['games'])} games reported")
+    # the console's: every game's status, the list's and the reports' (tools/compat_feed.py)
+    with open(compat_feed.LIST, encoding="utf-8") as f:
+        listed = f.read()
+    status = compat_feed.feed(listed, games)
+    # compatibility.html's: the list's games, whose status wins over the reports' (docs/COMPATIBILITY.md)
+    with open(os.path.join(args.out, "list.json"), "w", encoding="utf-8", newline="\n") as f:
+        json.dump({"schema": 1, "games": compat_feed.from_list(listed)}, f, ensure_ascii=False, separators=(",", ":"))
+    with open(os.path.join(args.out, "status.json"), "w", encoding="utf-8", newline="\n") as f:
+        json.dump(status, f, ensure_ascii=False, separators=(",", ":"))
+    print(f"build.py: {args.out}, with {release.get('tag_name') or 'no release'} baked in, {len(games['games'])} games reported, "
+          f"{len(status['games'])} with a status")
 
 
 if __name__ == "__main__":
