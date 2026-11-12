@@ -43,8 +43,8 @@ namespace ps5gameinfo
 	// for a game file's name (No-Intro's), and the picture of its cartridge from the region the name gives (a
 	// Japanese NES game's Famicom cartridge), else one shaped the same (never a Famicom cartridge for an
 	// American NES game); ps5boxart::FetchCarts fetches it. From tools/render-carts.py's table,
-	// launchbox-carts.tsv.gz beside GameTDB's. system: nes, snes, gb, gbc, gba, n64, vb or mini; false when
-	// the game is not in it.
+	// launchbox-carts.tsv.gz beside GameTDB's (a Game & Watch game's "cartridge" its own unit). system: nes,
+	// snes, gb, gbc, gba, n64, vb, mini or gw; false when the game is not in it.
 	struct Cart
 	{
 		int year = 0;
