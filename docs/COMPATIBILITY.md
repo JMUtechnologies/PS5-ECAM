@@ -36,6 +36,18 @@ recompiler), so the status assumes the app got JIT memory (see the README's
 | The Legend of Zelda: Majora's Mask 3D | USA, Rev 1 | Playable | Save states work from the in-game menu | | after 2.0.0 C |
 | Pokémon X | EUR | Issues | Moving black dots on outlined 3D models (the Poké Ball and Professor Sycamore in the introduction, then the characters), at any internal resolution. 4.0.0's Outline fix removes them and is on by default for X, Y, Omega Ruby and Alpha Sapphire; it costs some speed | [#23](https://github.com/premohq/PlayTendoh/issues/23) | 3.0.0 |
 
+## Game Boy Color (mGBA)
+
+| Game | Region / version | Status | Notes | Reports | App version |
+|---|---|---|---|---|---|
+| Super Mario Land 2 DX | | Playable | | | 6.0.0 |
+
+## Game Boy Advance (mGBA)
+
+| Game | Region / version | Status | Notes | Reports | App version |
+|---|---|---|---|---|---|
+| Pokemon FireRed | | Playable | | | 6.0.0 |
+
 A CIA that is only partly decrypted (the CIA decrypted, the game
 inside it still encrypted) is refused by Azahar on any console; that is about the dump, not the
 game ([#14](https://github.com/premohq/PlayTendoh/issues/14)).
