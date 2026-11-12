@@ -25,8 +25,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/premohq/PlayTendoh/raw/releases/PS5-ECAM-v5.1.0.zip"><b>Download 5.1.0</b></a> (ZIP) ·
-  <a href="https://github.com/premohq/PlayTendoh/releases/tag/v5.1.0">Release notes</a> ·
+  <a href="https://github.com/premohq/PS5-ECAM/raw/releases/PS5-ECAM-v6.0.0.zip"><b>Download 6.0.0</b></a> (ZIP) ·
+  <a href="https://github.com/premohq/PlayTendoh/releases/tag/v6.0.0">Release notes</a> ·
   <a href="https://premohq.github.io/PlayTendoh/">Website</a> ·
   <a href="#install">Install</a> ·
   <a href="docs/GUIDE.md">Guide</a> ·
@@ -37,42 +37,55 @@
 
 ---
 
-## Coming in 6.0
-
-Playtendoh 6.0 is in the code on the `PS5-ECAM` branch and comes out once a build of it has been played on a
-console; until then the download above is 5.1.0, the latest release. What it brings:
+## What's new in 6.0
 
 - **A new name and a new look:** Playtendoh, with a mark of every console's controller in a ring, on the
-  PS5's home screen and at the launcher's top left.
-- **Two layouts, picked on the first start:** Classic, one console at a time from a carousel of five, and
-  **Orbit**, where the logo is a dial L1 and R1 turn, its middle what you played last on every console,
-  and the game you are on fills the background: a picture of your last save state, else a screenshot.
-- **The Timeline**, after the last console in either layout: a museum of every console's games on one
-  shelf, oldest to newest, each as the real disc or card it came on (GameTDB's) or its cartridge, by era.
-- **Twenty-one systems** (below): the GameCube and the Wii on Dolphin (Porpoise), the iQue Player, and
+  PS5's home screen and at the launcher's top left. The consoles' marks are RetroArch's XMB Monochrome icons;
+  the Switch 2's is the Switch's with a raised 2.
+- **Twenty-one systems** (below): the GameCube and the Wii on Dolphin (Porpoise X), the iQue Player, and
   thirteen classics on libretro cores inside the app (the NES, SNES, Game Boys, N64, Virtual Boy, Pokémon
   mini, Famicom Disk System, Super Game Boy, Game &amp; Watch, Satellaview and VS. System), each a side of
   its own with its colour, its controller and its backdrop.
-- **Switch 2 (experimental):** a side of its own on [EglantinePS5](https://github.com/heydemoura/EglantinePS5),
-  with Playtendoh's in-game menu, from JMUtechnologies ([#109](https://github.com/premohq/PlayTendoh/pull/109)),
-  on [Lichii](https://github.com/zortos293/Lichii)'s core as the port runs it; NUP games are found too.
+- **Switch 2 (experimental):** a side of its own on [EglantinePS5](https://github.com/heydemoura/EglantinePS5)
+  with [Lichii](https://github.com/zortos293/Lichii)'s core, from JMUtechnologies
+  ([#109](https://github.com/premohq/PlayTendoh/pull/109), [#112](https://github.com/premohq/PlayTendoh/pull/112)):
+  Playtendoh's in-game menu and loading screen, NUP games, and folders of its own for games, updates, DLC,
+  keys and firmware.
+- **GameCube and Wii, Phononenom's** ([#114](https://github.com/premohq/PlayTendoh/pull/114)): Porpoise's
+  in-game menu as Playtendoh's, with its Buttons page and loading screen; controls by player, any player in
+  any port and each GBA's own page; memory cards and saves per game, a game's setups, cheats and patches, Auto
+  Boost; a Wii game's banner and title screen in the launcher; GameTDB's titles and descriptions, a WBFS
+  game's too; and its logs in reports and *Copy logs to USB*.
+- **Three ways in, picked on the first start:** Classic, one console at a time from a carousel; **Orbit**,
+  where the logo is a dial L1 and R1 turn, its middle what you played last on every console, and the game
+  you are on fills the background (a picture of your last save state, else a screenshot); or
+  **EmulationStation (ES-DE)**, an optional download only if you pick it, its games played here.
+- **The Timeline**, a stop after the last console in Classic and Orbit: a museum of every console's games on
+  one shelf, oldest to newest, by era, each as the disc or cartridge it came on, in its true shape, with
+  GameTDB's real disc and cartridge scans where there are some.
+- **Quicker to get around:** L2 and R2 for the Library and Settings, a touchpad click for the next console.
+- **A shorter first start:** one question a screen (language, layout, covers, which button is A, reports),
+  then a summary of what's ready that asks nothing.
+- **Settings alike on every console:** each console's own pages, then the same Playtendoh settings
+  (Language, Launcher, Accounts and updates, Backups, Play time, Diagnostics, About); settings for one game
+  on every console, the libretro sides too; and each console's own USB drive and folder menus.
 - **Buttons in every in-game menu:** which DualSense button presses each of the console's buttons, changed
-  without leaving the game, on the Wii U, 3DS, DS, Switch, Switch 2 and every libretro side, as Porpoise's
-  Customize Buttons does on the GameCube and the Wii: Cross on a button, then the one for it, with a live
-  controller test above the list.
-- **GameCube and Wii, Phononenom's beta** ([#114](https://github.com/premohq/PlayTendoh/pull/114)): Porpoise's
-  in-game menu as Playtendoh's sheet, controls by player with the button layouts, any player in any port and
-  each GBA's own page, memory cards and saves per game, a game's setups, cheats and patches, Auto Boost, and a
-  Wii game's banner and title screen in the launcher.
-- **Real Wii Remotes on the Wii U side:** an original Wii Remote or Wii Remote Plus through a Mayflash
-  DolphinBar (mode 4), with its own pointer, motion and Nunchuk: choose **Real Wii Remote** as a player's
-  controller. It runs on Project Porpoise's USB layer, by CroCop86, as the Wii side does.
-- **EmulationStation (ES-DE)** as the other frontend, its games played here.
+  without leaving the game, on every console: Cross on a button, then the one for it, with a live controller
+  test above the list.
+- **Special controllers on the DualSense:** the NES's Arkanoid paddle, Zapper and Power Pad, the SNES Mouse
+  and Super Scope, and tilt for the Game Boy games that read it, each plugged in for the games that use it.
+- **Cheats on every console that has them**, downloaded for one game or the whole library; **Fetch cheats
+  automatically** keeps them coming.
+- **How games run, on every game:** a badge from the [compatibility list](docs/COMPATIBILITY.md), fetched as
+  the app starts and made every hour from the list and the players' reports.
 - **Reports, if you say yes:** asked once, Playtendoh sends a short report when a game ends (the game, how it
-  ran, the settings and the PS5's firmware and model, nothing about you), so what fails gets fixed and the
-  [compatibility list](docs/COMPATIBILITY.md) fills itself. Never while you play; **Settings > Online** turns
-  it off ([what a report holds](docs/REPORTS.md)).
-- **Fixes:** a fix for Switch games ending after 6 to 10 minutes ([#97](https://github.com/premohq/PlayTendoh/issues/97));
+  ran, the settings and the PS5's firmware and model, nothing about you), so what fails gets fixed. Never
+  while you play; **Settings > Accounts and updates** turns it off ([what a report holds](docs/REPORTS.md)).
+- **Picture and play:** the Switch's loading screen on the Wii U, 3DS and Switch 2 while shaders load; box
+  art in 3D with each box's own spine; CRT filters, core options, NES HD packs and RetroAchievements on the
+  classics; collections in the Library; and real Wii Remotes on the Wii U side through a Mayflash DolphinBar
+  (mode 4), on Project Porpoise's USB layer by CroCop86.
+- **Fixes:** Switch games no longer end after 6 to 10 minutes ([#97](https://github.com/premohq/PlayTendoh/issues/97));
   Wii U installs no longer stop at 0 % ([#96](https://github.com/premohq/PlayTendoh/issues/96)); the touchpad's
   shortcuts with a Pro Controller on the Wii U ([#93](https://github.com/premohq/PlayTendoh/issues/93)); 120 Hz
   kept while the display settles ([#103](https://github.com/premohq/PlayTendoh/issues/103)); a Switch save taken
@@ -81,10 +94,8 @@ console; until then the download above is 5.1.0, the latest release. What it bri
   from any folder ([#106](https://github.com/premohq/PlayTendoh/issues/106)); the DS's RetroAchievements
   ([#107](https://github.com/premohq/PlayTendoh/issues/107)); and a Switch game that cannot start for want of
   newer keys says so ([#108](https://github.com/premohq/PlayTendoh/issues/108)).
-- **Switch 2 on Lichii's newest core** is being ported for 6.0 (the [roadmap](docs/ROADMAP.md) has where it stands).
 
-None of 6.0 has run on a console yet: the [roadmap](docs/ROADMAP.md) says what is being checked. Changes in
-earlier versions are in their [release notes](https://github.com/premohq/PlayTendoh/releases).
+Changes in earlier versions are in their [release notes](https://github.com/premohq/PlayTendoh/releases).
 
 ## Support
 
@@ -125,14 +136,14 @@ Playtendoh is free. If it brings your games back, you can support it:
 - **Saves you can carry:** save states with undo and Resume where you left off, backups to a USB drive,
   RetroAchievements, and the remote touch screen on a phone or computer to add games, keys and saves.
 - **Picture:** up to 4K and 120 Hz on the Wii U, up to 10x on the 3DS, FSR 1, anti-aliasing, borders and
-  layouts, frame generation.
+  layouts, frame generation, CRT filters on the classics.
 - **Updates itself:** a new release installs from inside the app.
 
 ## Install
 
 1. **A PS5 that runs homebrew.** Any firmware up to 13.60, with etaHEN, OnionHEN, or an ELF loader on
    port 9021. See the [firmware and setup guide](docs/HEN-SETUP.md).
-2. **Copy the app.** Download the [5.1.0 ZIP](https://github.com/premohq/PlayTendoh/raw/releases/PS5-ECAM-v5.1.0.zip) ([release notes](https://github.com/premohq/PlayTendoh/releases/tag/v5.1.0)),
+2. **Copy the app.** Download the [6.0.0 ZIP](https://github.com/premohq/PS5-ECAM/raw/releases/PS5-ECAM-v6.0.0.zip) ([release notes](https://github.com/premohq/PlayTendoh/releases/tag/v6.0.0)),
    extract it and copy the `PPSA99360` folder to `/data/homebrew/PPSA99360`.
 3. **Let your HEN in.** etaHEN: add `PPSA99360` to its app jailbreak list. OnionHEN: add `PPSA99360`
    at the end of `exact_title_ids` in `config.ini`, with no comma after it. Any other: have an ELF
@@ -234,7 +245,9 @@ Bugs still go in [GitHub issues](https://github.com/premohq/PlayTendoh/issues/ne
   Slot-2, its recorded microphone and touch screen calibration; and the tools that compare
   performance captures ([#86](https://github.com/premohq/PlayTendoh/pull/86), [#84](https://github.com/premohq/PlayTendoh/pull/84));
   the Switch 2 side on EglantinePS5 with the shared in-game menu, its NUP games and folders, and a game's own
-  performance switches ([#109](https://github.com/premohq/PlayTendoh/pull/109), [#112](https://github.com/premohq/PlayTendoh/pull/112))
+  performance switches ([#109](https://github.com/premohq/PlayTendoh/pull/109), [#112](https://github.com/premohq/PlayTendoh/pull/112));
+  and the first retro sides, the GameCube, Wii, N64, NES and Game Boys, found on their own
+  ([#87](https://github.com/premohq/PlayTendoh/pull/87), [#91](https://github.com/premohq/PlayTendoh/pull/91))
 - **[Phononenom](https://github.com/Phononenom)**, co-founder: the GameCube and Wii sides as they are in 6.0
   (Porpoise's in-game menu as Playtendoh's, its settings, memory cards and saves per game, a game's setups,
   cheats and patches, Wii banners and title screens in the launcher,
