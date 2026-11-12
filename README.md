@@ -208,7 +208,7 @@ Every shortcut, the in-game menu and the rest are in the [guide](docs/GUIDE.md).
 ## Documentation
 
 - [Guide](docs/GUIDE.md): the launcher, each system, controls, saves, mods, the remote touch screen and where files are kept
-- [Firmware and setup](docs/HEN-SETUP.md) · [Mods](docs/GUIDE.md#mods) · [Compatibility](https://premohq.github.io/PlayTendoh/compatibility.html) (live, from the reports and [the tested games](docs/COMPATIBILITY.md))
+- [Firmware and setup](docs/HEN-SETUP.md) · [Mods](docs/GUIDE.md#mods) · [Compatibility](https://premohq.github.io/PlayTendoh/compatibility.html)
 - [Building from source](docs/BUILDING.md) · [Driver performance](docs/DRIVER-PERFORMANCE.md) · [Roadmap](docs/ROADMAP.md) · [Reports](docs/REPORTS.md)
 - [Contributing](CONTRIBUTING.md): where the app is going, its look and voice, and how to send a change
 - Problems: **Settings > Diagnostics > Copy logs to USB**, then [open an issue](https://github.com/premohq/PlayTendoh/issues/new/choose)
