@@ -146,7 +146,12 @@ game's own disc, cartridge or card, as images from a database, instead of box ar
 Wii pages list them too), for what it covers, so the Wii U, the Wii and the GameCube can start there. The
 cartridges and cards of the other systems have a source to find: a database with no account or key first,
 as the screenshots below (`thumbnails.libretro.com` has box art, title screens and snaps, no media). The
-drawn shape stays for a game with no picture.
+drawn shape stays for a game with no picture. Done for the DS, 3DS and Switch cards (GameTDB's), and for the
+libretro sides' cartridges, from the region each game file's name gives: the LaunchBox Games Database's
+"Cart - Front" pictures (no account; `tools/render-carts.py` makes the table, the app fetches the pictures
+from `images.launchbox-app.com`), which also gives those games their years on the ruler. Left: the Disk
+Card, the Satellaview's Memory Pak, the iQue Card, VS. boards and Game & Watch, which it has few or none of;
+and a drawn Famicom or Super Famicom shape for a Japanese game it has no picture of.
 
 **Orbit's background, the gaps:** the 3DS has no save-state picture yet (its frame needs reading back from
 the GPU), the Wii U and the Switch have no save states to take one from, and Game & Watch has no screenshot

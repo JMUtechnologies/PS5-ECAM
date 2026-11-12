@@ -189,7 +189,7 @@ mkdir -p "$app/assets/lang"
 for po in "$PS5CEMU_ROOT"/port/lang/*.po; do
     [[ $(basename "$po") == qps.po ]] || sed -e '/^#[^,]/d' -e '/^#$/d' -e '/^$/d' "$po" >"$app/assets/lang/$(basename "$po")"
 done
-# how games run, from the compatibility list, for a console that has not fetched the site's yet
+# how games run, from the owner's statuses, for a console that has not fetched the site's yet
 # (app/compatibility.h, tools/compat_feed.py)
 python3 -B "$PS5CEMU_ROOT/tools/compat_feed.py" --out "$app/assets/compatibility.json"
 # the 3DS side's border themes (tools/render-borders.py, committed)

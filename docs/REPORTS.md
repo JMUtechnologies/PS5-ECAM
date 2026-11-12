@@ -58,7 +58,7 @@ in a private database for 180 days, keeps nothing about the sender (its network 
 to limit how many reports it takes), and publishes one thing: a table with one row a game (how many
 consoles and sessions, how they ended, the firmware and models seen), with no install ID and no log.
 That table is on the project's site, [premohq.github.io/PlayTendoh/compatibility.html](https://premohq.github.io/PlayTendoh/compatibility.html),
-rebuilt every hour. With the [compatibility list](COMPATIBILITY.md) it also makes `status.json` there
+rebuilt every hour. With the owner's own statuses (`tools/compat-list.json`) it also makes `status.json` there
 (`tools/compat_feed.py`): Playable, Issues or Not playable for each game, which the app fetches as it
 starts and shows on each game (Settings > Launcher > How games run turns the badges off). A game only the
 reports know gets a status once two of its sessions ended from its menu, did not start or crashed: four in

@@ -3,14 +3,17 @@
 // the last console (the Classic carousel's, Orbit's dial), whose card opens it. Every console's games on one
 // shelf, oldest console to newest, each game drawn as what it came on, in that thing's true shape: GameTDB's
 // picture of its disc or card where it has one (the GameCube's, Wii's and Wii U's discs, the DS's, 3DS's and
-// Switch's cards), else its cartridge, Disk Card or disc drawn with its box art on the label. Each kind keeps its
+// Switch's cards), the LaunchBox Games Database's of its cartridge from its own region (a Japanese NES game's
+// Famicom cartridge), else its cartridge, Disk Card or disc drawn with its box art on the label. Each kind keeps its
 // own proportions, and the kinds their sizes against each other, brought a little closer together (a Switch
 // card stays big enough to see beside an NES cartridge). Over the shelves, a ruler of the years in their eras,
 // every console's mark, and the player's own games by the year each came out; under them, the game in focus on
 // its label, and its console's placard on the slot it goes in. L1 and R1 step consoles, Up and Down eras, Cross
-// puts the game in the slot and starts it, Circle goes back. Its own light ground and ink on every theme.
+// puts the game in the slot and starts it, Circle goes back. Its own light ground and ink on every theme. A console
+// with no games is a slim bay with its thing drawn faint; the era in focus has its line over the shelves.
 
 #include "shell_internal.h"
+#include "../../eden/library.h"
 
 #include <algorithm>
 #include <cmath>
@@ -30,6 +33,7 @@ namespace ps5shell
 		}
 		constexpr uint32_t kInk = Rgb(0x15171c), kInk2 = Rgb(0x3b404a), kInk3 = Rgb(0x4a4f5a), kPaper = Rgb(0xe7e8eb);
 		constexpr float kLeft = 96, kView = 1728, kShelfTop = 300, kShelfBottom = 618, kShelfWidth = 300;
+		constexpr float kEmptyWidth = 168; // a shelf with no games: a slim bay, its console's thing drawn faint
 		constexpr int kFirstYear = 1980, kYears = 46;
 
 		// what a game came on: its width and height in millimetres, and its name on the placards
@@ -113,15 +117,22 @@ namespace ps5shell
 			{System::Switch2, 2025, "Switch 2", kSwitch2Card, TrMark("A bigger Switch, with Joy-Con that work as a mouse.")},
 		};
 
-		// the museum's rooms: the eras, from the year each began
+		// the museum's rooms: the eras, from the year each began, and a line on each over the shelves
 		struct Room
 		{
 			int from;
 			const char* name;
+			const char* line;
 		};
-		// tr: an era on the Timeline's ruler (the years its consoles came out in)
-		constexpr Room kRooms[] = {{1980, TrMark("Pocket games")}, {1983, TrMark("8-bit")}, {1990, TrMark("16-bit")}, {1996, TrMark("3D")},
-			{2001, TrMark("Discs and pockets")}, {2006, TrMark("Motion")}, {2012, TrMark("HD")}, {2017, TrMark("Hybrid")}};
+		// tr: an era on the Timeline's ruler (the years its consoles came out in), and its one line over the shelves
+		constexpr Room kRooms[] = {{1980, TrMark("Pocket games"), TrMark("Games on LCD screens, small enough for a pocket.")},
+			{1983, TrMark("8-bit"), TrMark("Cartridges brought games home, and the screens began to scroll.")},
+			{1990, TrMark("16-bit"), TrMark("More colours, richer sound, and Mode 7.")},
+			{1996, TrMark("3D"), TrMark("Worlds in polygons, the analog stick and rumble.")},
+			{2001, TrMark("Discs and pockets"), TrMark("Small discs at home, a 32-bit Game Boy on the go.")},
+			{2006, TrMark("Motion"), TrMark("Games played by pointing, swinging and touching.")},
+			{2012, TrMark("HD"), TrMark("High definition, and a screen in the controller.")},
+			{2017, TrMark("Hybrid"), TrMark("One console, on the TV or in your hands.")}};
 		constexpr int kRoomCount = (int)(sizeof(kRooms) / sizeof(kRooms[0]));
 		int RoomOf(int year)
 		{
@@ -152,6 +163,24 @@ namespace ps5shell
 			case System::GameCube:
 			case System::Wii: system = ps5boxart::System::GameCubeWii; return true;
 			default: return false;
+			}
+		}
+
+		// the LaunchBox Games Database's name for a libretro side's cartridges (ps5gameinfo::FindCart); empty: none
+		const char* CartSystem(System side)
+		{
+			switch (side)
+			{
+			case System::Nes: return "nes";
+			case System::Snes: return "snes";
+			case System::Gb:
+			case System::Sgb: return "gb";
+			case System::Gbc: return "gbc";
+			case System::Gba: return "gba";
+			case System::N64: return "n64";
+			case System::VirtualBoy: return "vb";
+			case System::PokemonMini: return "mini";
+			default: return "";
 			}
 		}
 
@@ -535,8 +564,35 @@ namespace ps5shell
 
 	void Shell::TimelineBuild()
 	{
+		// What the shelves are made from: the sides shown, their games as the catalogue has them, the covers come
+		// since, the language. Made again only when that changes: a game made for every game of every side is
+		// too much for each turn past the stop
+		uint64_t key = 1469598103934665603ull;
+		auto mix = [&](uint64_t value) { key = (key ^ value) * 1099511628211ull; };
+		mix(m_settings.ui.sides);
+		mix(m_settings.boxArt);
+		mix(ps5boxart::Arrivals());
+		mix(ps5eden::CoverArrivals());
+		mix(std::hash<std::string>{}(ps5lang::Current()));
+		for (const Era& era : kEras)
+			if (SideShown(era.side))
+				AsSide(era.side, [&] {
+					mix((uint64_t)era.side + 1);
+					for (const ps5catalog::Entry& entry : ps5catalog::Games(CatalogSide()))
+					{
+						mix(entry.game.titleId);
+						mix(std::hash<std::string>{}(entry.game.path.string()));
+						mix((uint64_t)entry.hidden | (uint64_t)entry.favourite << 1);
+						mix(entry.minutesPlayed);
+						mix((uint64_t)entry.lastPlayed);
+					}
+				});
+		if (key == m_timelineKey && !m_shelves.empty())
+			return;
+		m_timelineKey = key;
 		m_shelves.clear();
 		std::map<ps5boxart::System, std::vector<std::string>> media; // the discs and cards to ask GameTDB for
+		std::vector<std::string> cartPictures;						 // and the cartridges to ask LaunchBox for
 		for (const Era& era : kEras)
 		{
 			if (!SideShown(era.side))
@@ -556,22 +612,44 @@ namespace ps5shell
 					shelf.games.push_back(std::move(game));
 				}
 			});
-			// each by its own year, where GameTDB gives it, else by its name
+			// a libretro side's games: their years, publishers and cartridges from the LaunchBox Games Database
+			const char* cartSystem = CartSystem(era.side);
+			std::map<std::string, std::string> carts; // a game's file -> its cartridge's picture
+			if (*cartSystem)
+				for (Game& game : shelf.games)
+				{
+					ps5gameinfo::Cart cart;
+					if (ps5gameinfo::FindCart(cartSystem, game.entry.game.path.stem().string(), cart))
+					{
+						if (!game.year)
+							game.year = cart.year;
+						if (game.entry.game.publisher.empty())
+							game.entry.game.publisher = cart.publisher;
+					}
+					carts[game.entry.game.path.string()] = cart.picture;
+				}
+			// each by its own year, where GameTDB or LaunchBox gives it, else by its name
 			std::stable_sort(shelf.games.begin(), shelf.games.end(), [](const Game& a, const Game& b) {
 				if (a.year != b.year)
 					return a.year < b.year;
 				return a.sortName < b.sortName;
 			});
 			shelf.mediaArt.assign(shelf.games.size(), std::string());
+			shelf.carts.assign(shelf.games.size(), std::string());
+			for (size_t i = 0; i < shelf.games.size() && !carts.empty(); i++)
+				shelf.carts[i] = carts[shelf.games[i].entry.game.path.string()];
 			ShelfSize(shelf.media, shelf.mediaW, shelf.mediaH);
 			const float gap = std::max(14.0f, shelf.mediaW * 0.14f);
 			const int count = (int)shelf.games.size();
-			shelf.w = std::max(kShelfWidth, 20 + count * shelf.mediaW + std::max(0, count - 1) * gap + 40);
+			shelf.w = count ? std::max(kShelfWidth, 20 + count * shelf.mediaW + std::max(0, count - 1) * gap + 40) : std::max(kEmptyWidth, std::min(shelf.mediaW, 150.0f) + 40);
 			ps5boxart::System system;
 			if (MediaSystem(era.side, system))
 				for (const Game& game : shelf.games)
 					if (!game.entry.game.gameId.empty())
 						media[system].push_back(game.entry.game.gameId);
+			for (const std::string& picture : shelf.carts)
+				if (!picture.empty())
+					cartPictures.push_back(picture);
 			m_shelves.push_back(std::move(shelf));
 		}
 		float along = 0;
@@ -581,8 +659,11 @@ namespace ps5shell
 			along += shelf.w;
 		}
 		if (m_settings.boxArt)
+		{
 			for (const auto& [system, ids] : media)
 				ps5boxart::FetchMedia(system, ids);
+			ps5boxart::FetchCarts(cartPictures);
+		}
 		m_mediaArrivals = ps5boxart::MediaArrivals();
 		TimelineMedia();
 	}
@@ -592,11 +673,10 @@ namespace ps5shell
 		for (TimelineShelf& shelf : m_shelves)
 		{
 			ps5boxart::System system;
-			if (!MediaSystem(shelf.side, system))
-				continue;
+			const bool scans = MediaSystem(shelf.side, system);
 			for (size_t i = 0; i < shelf.games.size(); i++)
 				if (shelf.mediaArt[i].empty())
-					shelf.mediaArt[i] = ps5boxart::MediaPath(system, shelf.games[i].entry.game.gameId);
+					shelf.mediaArt[i] = scans ? ps5boxart::MediaPath(system, shelf.games[i].entry.game.gameId) : ps5boxart::CartPath(shelf.carts[i]);
 		}
 	}
 
@@ -747,10 +827,16 @@ namespace ps5shell
 			return;
 		}
 
-		// the top: its name, what it is, how many, the clock
-		int games = 0;
+		// the top: its name, the era in focus (its line, how many of the player's games are from it), how many,
+		// the clock
+		const int room = RoomOf(shelf.year);
+		int games = 0, eraGames = 0;
 		for (const TimelineShelf& one : m_shelves)
+		{
 			games += (int)one.games.size();
+			if (RoomOf(one.year) == room)
+				eraGames += (int)one.games.size();
+		}
 		char clock[16] = "";
 		const std::time_t now = std::time(nullptr);
 		std::tm local{};
@@ -761,7 +847,6 @@ namespace ps5shell
 		canvas.Rect({kLeft + logo + 18, 56, 2, 30}, 0, ui::SetAlpha(kInk, 0.25f));
 		// tr: the view of every console's games on one shelf, a stop of its own in the console lists
 		const ui::TextBlock heading = canvas.Text(Style({32, ui::Weight::Bold, 1.0f, 0.3f, true}), kLeft + logo + 38, 54, Tr("Timeline"), kInk, 300, 1);
-		canvas.Text(Style({16, ui::Weight::Medium, 1.0f, 0.6f, true}), kLeft + logo + 58 + heading.width, 64, Tr("Every console, oldest to newest"), kInk3, 620, 1);
 		const ui::TextStyle right = Style({20, ui::Weight::Medium, 1.0f, 0.4f, true, true});
 		float rightEdge = 1920 - kSafeX;
 		const ui::TextBlock time = m_fonts.Layout(right, clock);
@@ -770,6 +855,13 @@ namespace ps5shell
 		const ui::TextBlock count = m_fonts.Layout(right, TrP(games, "{0} game", "{0} games"));
 		rightEdge -= count.width + 28;
 		canvas.Text(count, rightEdge, 58, kInk);
+		float eraX = kLeft + logo + 58 + heading.width;
+		// tr: over the Timeline's shelves, after the era's name: how many of the player's games are from it
+		const ui::TextBlock era = canvas.Text(Style({16, ui::Weight::Medium, 1.0f, 0.6f, true}), eraX, 64,
+			Joined({Tr(kRooms[room].name), TrP(eraGames, "{0} of your games", "{0} of your games")}), kInk, rightEdge - 40 - eraX, 1);
+		eraX += era.width + 14;
+		if (rightEdge - 40 - eraX > 120)
+			canvas.Text(Style({19, ui::Weight::Regular, 1.0f}), eraX, 61, Tr(kRooms[room].line), kInk3, rightEdge - 40 - eraX, 1);
 		canvas.PopAlpha();
 
 		// the ruler, its pointer gliding to the year of the game in focus (its console's, when GameTDB has none)
@@ -802,8 +894,29 @@ namespace ps5shell
 		m_shelfScroll.Update(m_dt);
 		const float scroll = m_shelfScroll.value;
 
+		// on opening, the pieces are set down on the shelf one after another, left to right: how far above it one
+		// still is (0: on it)
+		auto setDown = [&](float x) {
+			if (m_settings.ui.reduceMotion || m_behind)
+				return 0.0f;
+			const float t = (float)((m_now - m_screenAt - kStaggerSeconds - std::clamp((x - kLeft) / kView, 0.0f, 1.0f) * 0.32f) / 0.46f);
+			return 1 - ui::ease::CubicOut(std::clamp(t, 0.0f, 1.0f));
+		};
+
 		// one piece: GameTDB's picture of it, else its body with the box art on its label (the box art whole on
 		// a disc's round label, filling a cartridge's); the box it took and its corner, for its ring
+		// a favourite's star, on the piece's corner (a disc's, by its rim)
+		auto favourite = [&](const Game& game, const Box& piece, bool round) {
+			if (!game.entry.favourite)
+				return;
+			const float size = std::clamp(piece.w * 0.2f, 22.0f, 30.0f);
+			const float inset = round ? piece.w * 0.146f : 0.0f; // a circle's corner at 45 degrees
+			const Box badge{piece.Right() - inset - size * 0.7f, piece.y + inset - size * 0.3f, size, size};
+			canvas.Rect(badge.Scaled(1.15f), size * 0.575f, kPaper);
+			canvas.Rect(badge, size / 2, kInk);
+			canvas.Draw(Icon::Star, badge.Inset(size * 0.22f), kPaper);
+		};
+
 		auto drawPiece = [&](TimelineShelf& one, int index, const Box& box, bool words, float& radius) -> Box {
 			Game& game = one.games[index];
 			const bool round = Round(one.media);
@@ -821,6 +934,8 @@ namespace ps5shell
 				radius = round ? fitted.w / 2 : fitted.w * 0.06f;
 				canvas.Shadow(fitted.Inset(fitted.w * 0.03f), radius, 6, 14, 0x29000000);
 				canvas.Image(scan->texture, fitted, 0);
+				if (words)
+					favourite(game, fitted, round);
 				return fitted;
 			}
 			radius = round ? box.w / 2 : box.w * 0.05f;
@@ -849,6 +964,8 @@ namespace ps5shell
 				}
 			}
 			DrawOver(canvas, one.media, box);
+			if (words)
+				favourite(game, box, round);
 			return box;
 		};
 
@@ -876,31 +993,46 @@ namespace ps5shell
 			const float hx = std::max(x, std::min(kLeft, x + one.w - kShelfWidth));
 			const float hw = x + one.w - hx;
 			const uint32_t colour = AccentOf(one.side) | 0xff000000;
+			const bool empty = one.games.empty();
 			canvas.Rect({hx + 20, kShelfTop + 12, 12, 12}, 6, colour);
+			// an empty shelf's bay is slim: its console's short name, its year
+			const std::string name = empty ? std::string(one.brief) : SystemName(one.side);
 			ui::TextStyle shelfName = Style({28, ui::Weight::Bold, 1.0f, 0.2f, true});
-			shelfName.size = m_fonts.Fit(shelfName, SystemName(one.side), hw - 56, 1, 16, 1);
-			canvas.Text(shelfName, hx + 42, kShelfTop + 6, SystemName(one.side), kInk, hw - 56, 1);
-			const std::string sub = Joined({std::to_string(one.year), Tr(kMedia[one.media].what),
-				one.games.empty() ? std::string(Tr("No games yet")) : TrP((int)one.games.size(), "{0} game", "{0} games")});
+			shelfName.size = m_fonts.Fit(shelfName, name, hw - 56, 1, 16, 1);
+			canvas.Text(shelfName, hx + 42, kShelfTop + 6, name, empty ? kInk3 : kInk, hw - 56, 1);
+			const std::string sub = empty ? std::to_string(one.year)
+										  : Joined({std::to_string(one.year), Tr(kMedia[one.media].what), TrP((int)one.games.size(), "{0} game", "{0} games")});
 			canvas.Text(Style({14, ui::Weight::Medium, 1.0f, 0.4f, true, true}), hx + 20, kShelfTop + 42, sub, kInk3, hw - 40, 1);
-			if (one.games.empty())
+			if (empty)
 			{
-				const Box empty{x + 20, kShelfBottom - 120, 240, 120};
-				canvas.Ring(empty, 10, 2, ui::SetAlpha(kInk, 0.3f));
-				canvas.Text(Style({16, ui::Weight::SemiBold, 1.0f}), empty.x + 14, empty.y + 22, Tr("An empty shelf"), kInk, empty.w - 28, 1);
-				canvas.Text(Style({11, ui::Weight::Medium, 1.2f}), empty.x + 14, empty.y + 50, GamesFolder(one.side), kInk3, empty.w - 28, 3);
+				// where its games would stand: the thing they came on, faint, ringed when the bay is in focus
+				float w = one.mediaW, h = one.mediaH;
+				const float fit = std::min(1.0f, (one.w - 40) / w);
+				w *= fit;
+				h *= fit;
+				const Box ghost{x + (one.w - w) / 2, kShelfBottom - h, w, h};
+				const float radius = Round(one.media) ? w / 2 : w * 0.05f;
+				canvas.PushAlpha(0.14f);
+				DrawBody(canvas, one.media, ghost);
+				DrawOver(canvas, one.media, ghost);
+				canvas.PopAlpha();
+				const bool on = i == m_shelfAt;
+				canvas.Ring(ghost, radius, on ? 3.0f : 1.5f, ui::SetAlpha(kInk, on ? 1.0f : 0.25f));
+				canvas.Text(Style({14, ui::Weight::SemiBold, 1.15f}), x + 20, ghost.y - 46, Tr("No games yet"), on ? kInk : kInk3, one.w - 40, 2);
 				continue;
 			}
 			const float gap = std::max(14.0f, one.mediaW * 0.14f);
 			float itemX = x + 20;
 			for (int j = 0; j < (int)one.games.size(); j++)
 			{
-				const Box box{itemX, kShelfBottom - one.mediaH, one.mediaW, one.mediaH};
+				Box box{itemX, kShelfBottom - one.mediaH, one.mediaW, one.mediaH};
 				itemX += one.mediaW + gap;
 				if (box.Right() < 0)
 					continue;
 				if (box.x > 1920)
 					break;
+				const float above = setDown(box.x);
+				box.y -= 90 * above;
 				// lifted off the shelf, over its neighbours, gliding up as the focus comes and down as it goes
 				const bool on = i == m_shelfAt && j == m_shelfGame;
 				const float mix = FocusMix(FocusKey(one.games[j].entry.game.path.string(), (uint64_t)one.side + 201), on);
@@ -909,7 +1041,9 @@ namespace ps5shell
 				else
 				{
 					float radius = 0;
+					canvas.PushAlpha(1 - above);
 					drawPiece(one, j, box, true, radius);
+					canvas.PopAlpha();
 				}
 			}
 		}
@@ -1020,7 +1154,12 @@ namespace ps5shell
 		DrawConsole(canvas, shelf.side, machine.x + 62, machine.y + 104, 72, accent, kInk, accent, ConsoleIcon(shelf.side, 72));
 		const float textX = machine.x + 118, textW = machine.w - 118 - 24;
 		canvas.Text(Style({22, ui::Weight::Bold, 1.0f}), textX, machine.y + 56, SystemName(shelf.side), 0xffffffff, textW, 1);
-		canvas.Text(Style({14, ui::Weight::Medium, 1.0f, 0.4f, true, true}), textX, machine.y + 86, Joined({std::to_string(shelf.year), Tr(kMedia[shelf.media].what)}),
+		// and the player's time on it, every game's together
+		uint32_t minutes = 0;
+		for (const Game& game : shelf.games)
+			minutes += game.entry.minutesPlayed;
+		const std::string hours = minutes == 0 ? "" : minutes < 60 ? TrP(minutes, "{0} min played", "{0} min played") : TrP(minutes / 60, "{0} h played", "{0} h played");
+		canvas.Text(Style({14, ui::Weight::Medium, 1.0f, 0.4f, true, true}), textX, machine.y + 86, Joined({std::to_string(shelf.year), Tr(kMedia[shelf.media].what), hours}),
 			Rgb(0xaeb3bd), textW, 1);
 		if (focusEra)
 			canvas.Text(Style({15, ui::Weight::Regular, 1.3f}), textX, machine.y + 110, Tr(focusEra->placard), Rgb(0xd7d9de), textW, 2);

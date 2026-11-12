@@ -17,10 +17,10 @@ mkdir -p "$work/data"
 "$work/test-compat" "$work/feed.json" "$work/data"
 # the site: status.json beside the table, every game the list has in it
 python3 -B "$root/site/build.py" --compat "$root/tools/launcher-preview/compat-reports.json" --out "$work/site" >/dev/null
-python3 -B - "$work/site/status.json" "$root/docs/COMPATIBILITY.md" <<'EOF'
+python3 -B - "$work/site/status.json" "$root/tools/compat-list.json" <<'EOF'
 import json, sys
 feed = json.load(open(sys.argv[1], encoding="utf-8"))
-listed = sum(1 for line in open(sys.argv[2], encoding="utf-8") if line.startswith("| ") and not line.startswith(("| Game", "| Status", "| **")))
+listed = len(json.load(open(sys.argv[2], encoding="utf-8"))["games"])
 ok = feed["schema"] == 1 and len(feed["games"]) > listed and all(g["status"] in ("playable", "issues", "broken") for g in feed["games"])
 print(("PASS" if ok else "FAIL") + f"  the site's status.json: {len(feed['games'])} games, the list's {listed} and the reports'")
 sys.exit(0 if ok else 1)
