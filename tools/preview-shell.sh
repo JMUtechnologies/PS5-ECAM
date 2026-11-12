@@ -59,6 +59,9 @@ mkdir -p "$games/gba/Pokemon"
 # how games run, as the console reads it (port/app/compatibility.h): the list's, and made-up reports for
 # some of these games so each badge shows
 python3 -B tools/compat_feed.py --reports tools/launcher-preview/compat-reports.json --out "$out/compatibility.json"
+for game in "Advance Wars (USA).gba" "Golden Sun (USA, Europe).gba"; do
+    : >"$games/gba/$game"
+done
 # Switch games where Eden keeps them (the Switch side's default folder, ps5eden::DefaultGamesFolder):
 # empty files by a dump's names, one in a folder of its own with its update, and Eden's keys
 roms=$out/eden/roms

@@ -841,6 +841,10 @@ namespace ps5ingame3ds
 				}
 			if (!single)
 				rows.push_back(ps5menu::RemoteRow(ds ? Tr("The touch screen") : Tr("The bottom screen")));
+			// what the menu changes, kept for this game alone or for every game on its system (Settings > the
+			// game's Game settings has the same, a row at a time)
+			rows.push_back({"gameonly", Tr("Settings for this game only"), settings.gameOnly ? on : off, true,
+				Tr("On: this game keeps its own settings, and what you change here stays with it. Off: it uses the system's settings from its next start.")});
 			rows.push_back(library);
 			return rows;
 		}
@@ -972,6 +976,8 @@ namespace ps5ingame3ds
 				next.speedLimit = NextSpeedLimit(settings.speedLimit, change);
 			else if (id == "performance")
 				next.performance = !settings.performance;
+			else if (id == "gameonly")
+				next.gameOnly = !settings.gameOnly;
 			else if (id == "volume")
 				next.volume = chosen && settings.volume >= 100 ? 0 : std::clamp(settings.volume + change * 10, 0, 100);
 			else if (id == "motion")

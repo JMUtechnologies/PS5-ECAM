@@ -53,6 +53,9 @@ namespace ps5ingame3ds
 		int pictureSize = 0;
 		int pictureShape = 0;
 		int controller = 0; // the Buttons page's Controller row: SetControllers' choices, 0 Auto (for this game only)
+		// the menu's Settings for this game only: on, the game keeps settings of its own and what the menu
+		// changes is its own (ps5settings::SetGameOwn); off, it follows its system's
+		bool gameOnly = false;
 		// the console's buttons on the DualSense where not the default (ps5settings::N3ds::buttons): the menu's
 		// Buttons change them, and the A and B row's swap is in them
 		std::map<std::string, std::string> buttons;

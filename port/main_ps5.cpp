@@ -906,7 +906,7 @@ int main(int argc, char* argv[])
 		ps5emu::SetExitAfterGame(tile.exitAfterGame && IsTileGame(tile, game));
 		// the side's settings, and the game's own over them
 		const ps5settings::Launcher forGame = ps5settings::ForGame(settings, side, game.titleId);
-		if (settings.games.count(ps5settings::GameKey(side, game.titleId)))
+		if (ps5settings::HasOwn(settings, side, game.titleId))
 			ps5log::Line("[main] {} starts with settings of its own", game.name);
 		// a handheld's touchpad is its touch screen, whatever a Wii U player's click was made earlier on
 		if (choice->system != ps5launcher::System::WiiU)

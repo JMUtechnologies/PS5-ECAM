@@ -159,6 +159,7 @@ namespace ps5shell
 	{
 		std::string id, title, subtitle;
 		Icon icon;
+		bool app = false; // Playtendoh's own, the same on every side: under the side's, past a line
 	};
 
 	class Shell
@@ -527,7 +528,11 @@ namespace ps5shell
 		void SettingsUpdate(const ui::Press& press, const ui::Actions& actions);
 		void SettingsDraw(Canvas& canvas);
 		Box SettingsDialog() const { return {200, 136, 1520, 820}; } // over the Library, on every side and theme (6.5)
-		std::vector<SettingsPage> SettingsPages() const; // the side's (or the game's, in game settings)
+		std::vector<SettingsPage> SettingsPages() const; // the side's then Playtendoh's (or the game's, in game settings)
+		std::vector<SettingsPage> SidePages() const;	 // the side's own: its emulator's, its files, its accounts, its box art
+		std::vector<SettingsPage> GamePages() const;	 // a game's: what it can have its own of
+		// a libretro side whose games its core in the app plays (not its second emulator, a program of its own)
+		bool OnCore() const { return IsRetro() && !IsPorpoise() && ps5libretro::Plays(SideIndex()) && m_settings.retro[ps5retro::Slot(SideIndex())].retroBackend == 0; }
 		std::vector<Row> SettingRows(const std::string& page);
 		std::vector<Row> SideRows(const std::string& page, const ps5settings::Launcher& settings);
 		// a page's rows as shown: a › page's behind its row, or that › page's own while it is open

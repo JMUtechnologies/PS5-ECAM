@@ -243,7 +243,7 @@ namespace ps5shell
 				false, !m_hubAbout && m_hubAction == 1, Icon::Play, false, 72, 620);
 			bx = b.Right() + 20;
 		}
-		const bool own = m_settings.games.count(ps5settings::GameKey(ps5launcher::SideName(m_side), g.titleId)) > 0;
+		const bool own = ps5settings::HasOwn(m_settings, ps5launcher::SideName(m_side), g.titleId);
 		b = PillButton(canvas, bx, ay, own ? Tr("Game settings · custom") : Tr("Game settings"), false, !m_hubAbout && m_hubAction == actions - 2);
 		bx = b.Right() + 20;
 		IconButton(canvas, bx, ay, Icon::More, !m_hubAbout && m_hubAction == actions - 1);

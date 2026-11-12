@@ -229,7 +229,9 @@ namespace
 			Row{"cheats", "Cheats", "2 on", false, "This game's cheats."},
 			Row{"saves", "Saves", "", false, "Back up or bring back this game's save."},
 			setting("volume", "Volume", "80%", "The game's volume.", 0.8f),
-			Row{"screenshot", "Screenshot", "", false, "Takes a picture of the screens."}};
+			Row{"screenshot", "Screenshot", "", false, "Takes a picture of the screens."},
+			Row{"gameonly", "Settings for this game only", "On", true,
+				"On: this game keeps its own settings, and what you change here stays with it. Off: it uses the system's settings from its next start."}};
 		Row quit{"quit", "Quit the game", "", false, "Back to the Library. What is not saved is lost."};
 		quit.apart = true;
 		quit.hold = true;

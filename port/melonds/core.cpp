@@ -93,6 +93,7 @@ namespace ps5melonds
 		std::string s_stem;		  // the game's file's name without its extension: its save's, states' and cheats'
 		std::string s_folder;	  // the folder the game's file is in
 		uint64_t s_titleId = 0;
+		bool s_gameOnly = false; // the game has settings of its own (the menu's Settings for this game only)
 		bool s_jit = false;
 		// Opt-in diagnostic: an existing melonds/capture-frames marker. Single emulation-thread
 		// producer; the game loop writes only after joining it, so gameplay never writes capture files.
@@ -440,6 +441,7 @@ namespace ps5melonds
 			menu.rotation = s_settings.dsRotation;
 			menu.screenGap = s_settings.screenGap;
 			menu.hiddenTouch = s_settings.hiddenTouch;
+			menu.gameOnly = s_gameOnly;
 			menu.lidClosed = view.lidClosed;
 			return menu;
 		}
@@ -523,6 +525,11 @@ namespace ps5melonds
 			ps5settings::Launcher before, after;
 			before.nds = s_launched;
 			after.nds = s_settings;
+			if (menu.gameOnly != s_gameOnly)
+			{
+				s_gameOnly = menu.gameOnly;
+				ps5settings::SetGameOwn("ds", s_titleId, s_gameOnly, after);
+			}
 			ps5settings::SaveChanges("ds", s_titleId, before, after);
 			s_launched = s_settings;
 		}
@@ -1068,6 +1075,7 @@ namespace ps5melonds
 		s_settings = s_launched = settings;
 		s_name = game.name;
 		s_titleId = game.titleId;
+		s_gameOnly = ps5settings::HasOwn(ps5settings::Load(), "ds", s_titleId);
 		{
 			std::lock_guard lock(s_viewMutex);
 			s_view = {};

@@ -44,6 +44,7 @@
 #include "azahar/library.h"
 #include "melonds/library.h"
 #include "eden/library.h"
+#include "retro/library.h"
 #include "frontend/shell.h"
 #include "libretro/game.h"
 #include "retro/library.h"
@@ -105,9 +106,9 @@ int main(int argc, char* argv[])
 	settings.gamesFolder = argv[3];
 	settings.n3ds.gamesFolder = argv[4];
 	settings.nds.gamesFolder = argv[5];
-	// the Wii's and the Game Boy Advance's samples (preview-shell.sh)
-	settings.retro[ps5retro::Slot((int)ps5launcher::System::Wii)].gamesFolder = std::string(argv[3]) + "/wii";
-	settings.retro[ps5retro::Slot((int)ps5launcher::System::Gba)].gamesFolder = std::string(argv[3]) + "/gba";
+	// the other sides' games in the games folder's folder of their key (gba/: preview-shell.sh puts a few there)
+	for (size_t i = 0; i < ps5retro::kSystems.size(); i++)
+		settings.retro[i].gamesFolder = std::string(argv[3]) + "/" + std::string(ps5retro::kSystems[i].key);
 	if (!std::getenv("PREVIEW_FIRST"))
 	{
 		// earlier sessions: the side last used, the games last played, the counts their scans saved

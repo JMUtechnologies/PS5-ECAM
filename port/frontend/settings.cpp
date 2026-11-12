@@ -95,7 +95,7 @@ namespace ps5settings
 			ReadBool(json, "customTextures", n3ds.customTextures);
 			ReadBool(json, "asyncShaderCompilation", n3ds.asyncShaders);
 			ReadInt(json, "border", n3ds.border, 0, 5);
-			ReadInt(json, "dsFilter", n3ds.dsFilter, 0, 2);
+			ReadInt(json, "dsFilter", n3ds.dsFilter, 0, 4); // a libretro side's CRT and Curved CRT too
 			ReadInt(json, "pictureSize", n3ds.pictureSize, 0, 2);
 			ReadInt(json, "pictureShape", n3ds.pictureShape, 0, 3);
 			ReadInt(json, "retroController", n3ds.retroController, 0, 4);
@@ -421,6 +421,18 @@ namespace ps5settings
 				if (!values.empty())
 					settings.games[key] = std::move(values);
 			}
+		if (json.HasMember("gameCoreOptions") && json["gameCoreOptions"].IsObject())
+			for (const auto& game : json["gameCoreOptions"].GetObject())
+			{
+				if (!game.value.IsObject())
+					continue;
+				std::map<std::string, std::string> options;
+				for (const auto& member : game.value.GetObject())
+					if (member.value.IsString())
+						options[member.name.GetString()] = member.value.GetString();
+				if (!options.empty())
+					settings.gameCoreOptions[game.name.GetString()] = std::move(options);
+			}
 		ReadString(json, "music", settings.music);
 		// the setup theme is the launcher's only music now: the shop theme's players get it
 		if (settings.music == "shop")
@@ -612,6 +624,22 @@ namespace ps5settings
 			writer.EndObject();
 		}
 		writer.EndObject();
+		writer.Key("gameCoreOptions");
+		writer.StartObject();
+		for (const auto& [key, options] : settings.gameCoreOptions)
+		{
+			if (options.empty())
+				continue;
+			writer.Key(key.c_str());
+			writer.StartObject();
+			for (const auto& [name, value] : options)
+			{
+				writer.Key(name.c_str());
+				writer.String(value.c_str());
+			}
+			writer.EndObject();
+		}
+		writer.EndObject();
 		writer.Key("music");
 		writer.String(settings.music.c_str());
 		writer.Key("musicVolume");
@@ -752,7 +780,7 @@ namespace ps5settings
 				{"region", nullptr, nullptr, &N3ds::region, nullptr, -1, 6},
 				{"language", nullptr, nullptr, &N3ds::language, nullptr, -1, 11},
 				{"cpuClock", nullptr, nullptr, &N3ds::cpuClock, nullptr, 25, 400},
-				{"dsFilter", nullptr, nullptr, &N3ds::dsFilter, nullptr, 0, 2},
+				{"dsFilter", nullptr, nullptr, &N3ds::dsFilter, nullptr, 0, 4},
 				{"pictureSize", nullptr, nullptr, &N3ds::pictureSize, nullptr, 0, 2},
 				{"pictureShape", nullptr, nullptr, &N3ds::pictureShape, nullptr, 0, 3},
 				{"retroController", nullptr, nullptr, &N3ds::retroController, nullptr, 0, 4},
@@ -908,15 +936,69 @@ namespace ps5settings
 		if (found != settings.games.end())
 			for (const auto& [name, value] : found->second)
 				SetValue(game, side, name, value);
+		// a libretro game's own core options over its side's (empty: the core's own value)
+		if (const auto options = settings.gameCoreOptions.find(GameKey(side, titleId)); options != settings.gameCoreOptions.end() && ps5retro::Find(side))
+			for (const auto& [key, value] : options->second)
+			{
+				auto& chosen = Handheld(game, side).coreOptions;
+				if (value.empty())
+					chosen.erase(key);
+				else
+					chosen[key] = value;
+			}
 		if (side == "switch2")
 			game.nx = game.nx2; // Keep the Switch 2 option values separate for the runtime launch.
 		return game;
+	}
+
+	bool HasOwn(const Launcher& settings, const std::string& side, uint64_t titleId)
+	{
+		const std::string key = GameKey(side, titleId);
+		const auto values = settings.games.find(key);
+		const auto options = settings.gameCoreOptions.find(key);
+		// (a libretro game's controller alone is not settings of its own: the Buttons page's, kept either way)
+		const bool own = values != settings.games.end() &&
+			std::any_of(values->second.begin(), values->second.end(), [](const auto& value) { return value.first != "retroController"; });
+		return own || (options != settings.gameCoreOptions.end() && !options->second.empty());
+	}
+
+	void SetGameOwn(const std::string& side, uint64_t titleId, bool own, const Launcher& current)
+	{
+		Launcher all = Load();
+		const std::string key = GameKey(side, titleId);
+		if (HasOwn(all, side, titleId) == own)
+			return;
+		if (own)
+		{
+			GameValues& values = all.games[key];
+			for (const std::string& name : GameSettingNames(side))
+				if (int value = 0; Value(current, side, name, value))
+					values[name] = value;
+			// a libretro game's core options as they are now, those not the core's own
+			if (ps5retro::Find(side))
+				for (const auto& [option, value] : Handheld(current, side).coreOptions)
+					all.gameCoreOptions[key][option] = value;
+		}
+		else
+		{
+			// the game's controller (the Buttons page's) stays its own
+			if (const auto game = all.games.find(key); game != all.games.end())
+			{
+				std::erase_if(game->second, [](const auto& value) { return value.first != "retroController"; });
+				if (game->second.empty())
+					all.games.erase(game);
+			}
+			all.gameCoreOptions.erase(key);
+		}
+		Save(all);
 	}
 
 	void SaveChanges(const std::string& side, uint64_t titleId, const Launcher& before, const Launcher& after)
 	{
 		Launcher all = Load();
 		Launcher merged = all;
+		const std::string key = GameKey(side, titleId);
+		const bool hasOwn = HasOwn(all, side, titleId);
 		// what the menu changes that no game has its own of: as after has it (the buttons, motion,
 		// the deadzone, the performance overlay of a handheld), all else the launcher's as it is
 		if (side == "wiiu")
@@ -932,7 +1014,26 @@ namespace ps5settings
 			to.motion = from.motion;
 			to.deadzone = from.deadzone;
 			to.buttons = from.buttons;
-			to.coreOptions = from.coreOptions; // a libretro side's emulator options, from its in-game menu
+			// a libretro side's emulator options, from its in-game menu: each one changed, the game's own when it
+			// has settings of its own (empty: the core's value), else its side's
+			const N3ds& was = Handheld(before, side);
+			std::vector<std::string> keys;
+			for (const auto* options : {&was.coreOptions, &from.coreOptions})
+				for (const auto& [option, value] : *options)
+					keys.push_back(option);
+			for (const std::string& option : keys)
+			{
+				const auto old = was.coreOptions.find(option), now = from.coreOptions.find(option);
+				const std::string oldValue = old == was.coreOptions.end() ? "" : old->second, newValue = now == from.coreOptions.end() ? "" : now->second;
+				if (oldValue == newValue)
+					continue;
+				if (hasOwn)
+					merged.gameCoreOptions[key][option] = newValue;
+				else if (newValue.empty())
+					to.coreOptions.erase(option);
+				else
+					to.coreOptions[option] = newValue;
+			}
 			if (side == "switch" || side == "switch2")
 				merged.rumble = after.rumble; // the Switch menu's Vibration is shared by every side
 			else
@@ -941,11 +1042,6 @@ namespace ps5settings
 				to.nxDeadzone = from.nxDeadzone;
 			}
 		}
-		const std::string key = GameKey(side, titleId);
-		const auto own = all.games.find(key);
-		// (a libretro game's controller alone is not settings of its own)
-		const bool hasOwn = own != all.games.end() &&
-			std::any_of(own->second.begin(), own->second.end(), [](const auto& value) { return value.first != "retroController"; });
 		for (const std::string& name : GameSettingNames(side))
 		{
 			int was = 0, now = 0;

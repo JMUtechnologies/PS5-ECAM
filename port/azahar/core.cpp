@@ -203,6 +203,7 @@ namespace ps5azahar
 		ps5settings::N3ds s_launched;	// what the game started with, or what the menu last saved
 		std::string s_name;
 		uint64_t s_titleId = 0;
+		bool s_gameOnly = false; // the game has settings of its own (the menu's Settings for this game only)
 		bool s_coreTouched = false; // LaunchGame got as far as starting Azahar's core
 		// a save state the menu asked for, for the emulation thread: a save to slot n (n), a load (-n),
 		// or the last load undone (kUndoRequest). Before each load the game as it is goes to kUndoSlot,
@@ -498,6 +499,7 @@ namespace ps5azahar
 			menu.buttons = settings.buttons;
 			menu.border = settings.border;
 			menu.frameGeneration = settings.frameGeneration;
+			menu.gameOnly = s_gameOnly;
 			menu.rotation = settings.dsRotation;
 			menu.screenGap = settings.screenGap;
 			menu.hiddenTouch = settings.hiddenTouch;
@@ -601,6 +603,11 @@ namespace ps5azahar
 			ps5settings::Launcher before, after;
 			before.n3ds = s_launched;
 			after.n3ds = s_settings;
+			if (menu.gameOnly != s_gameOnly)
+			{
+				s_gameOnly = menu.gameOnly;
+				ps5settings::SetGameOwn("3ds", s_titleId, s_gameOnly, after);
+			}
 			ps5settings::SaveChanges("3ds", s_titleId, before, after);
 			s_launched = s_settings;
 		}
@@ -930,6 +937,7 @@ namespace ps5azahar
 		if (IsArtic(path) && system.GetAppLoader().ReadTitle(title) == Loader::ResultStatus::Success && !title.empty())
 			s_name = title; // the game on the 3DS, by its own name
 		s_titleId = programId ? programId : game.titleId;
+		s_gameOnly = ps5settings::HasOwn(ps5settings::Load(), "3ds", s_titleId);
 		{
 			// the menu's top: GameTDB's publisher and year, and the box art (or the game's icon)
 			ps5gameinfo::Info info;
