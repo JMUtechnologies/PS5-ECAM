@@ -2186,8 +2186,8 @@ namespace ps5shell
 			return TrF("Put figure dumps in {0}/figures (skylanders, infinity and dimensions). Turn a portal on here, start the game, then place figures from the in-game menu (touchpad click + Options > USB devices).",
 				ps5paths::Root());
 		if (page == "about")
-			// tr: premohq and JMUtechnologies are GitHub names: keep them as they are
-			return std::string(Tr("Playtendoh is made by its co-founders, premohq and JMUtechnologies.")) + "\n" +
+			// tr: premohq, JMUtechnologies and Phononenom are GitHub names: keep them as they are
+			return std::string(Tr("Playtendoh is made by its co-founders, premohq, JMUtechnologies and Phononenom.")) + "\n" +
 				   // tr: RetroArch, libretro and XMB Monochrome are names: keep them as they are
 				   Tr("The console icons: RetroArch's XMB Monochrome, by the libretro team (CC BY 4.0).") + "\n" +
 				   // tr: {0} is the app's version; {1} its data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on; {2} Eden's game files folder; {3} Cemu's selected data folder; {4} its default games folder; {5} Azahar's selected folder; {6} melonDS's selected folder
