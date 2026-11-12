@@ -8,6 +8,7 @@
 #include "emulator.h"
 #include "esde_get.h"
 #include "boxart.h"
+#include "cheats.h"
 #include "shots.h"
 #include "game_archives.h"
 #include "ingame.h"
@@ -1005,6 +1006,7 @@ namespace ps5emu
 		// An update check can still be waiting on the PS5's resolver when a game fails at once, as an
 		// Artic Base one can (#45): it is waited for too.
 		ps5boxart::Stop();
+		ps5cheats::Stop();
 		ps5shots::Stop();
 		ps5esdeget::Stop();
 		ps5update::WaitForCheck(10000);
@@ -1110,6 +1112,7 @@ namespace ps5emu
 	void ExitApp()
 	{
 		ps5boxart::Stop();
+		ps5cheats::Stop();
 		ps5shots::Stop();
 		ps5esdeget::Stop();
 		ps5update::WaitForCheck(10000);

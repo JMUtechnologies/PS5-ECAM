@@ -66,7 +66,7 @@ namespace ps5ingame3ds
 	{
 		N3ds,  // Azahar's
 		Nds,   // melonDS's
-		Retro, // a libretro core's (port/libretro): one screen, the DS's rows that apply to it, no cheats
+		Retro, // a libretro core's (port/libretro): one screen, the DS's rows that apply to it, cheats where its core takes them
 	};
 	// tr: how the DS's screens are scaled to the TV: the filters' names
 	// the last two, a tube TV's, for the libretro consoles only (port/melonds/shaders/screens.frag)
@@ -160,6 +160,8 @@ namespace ps5ingame3ds
 	// what the menu asked for, once.
 	void SetExtras(const std::vector<std::string>& amiibo, const std::vector<std::pair<std::string, bool>>& cheats);
 	void SetExtrasMessage(const std::string& message);
+	// A libretro core's game: whether the page has Cheats (its core takes them); after Start
+	void SetCheatsShown(bool shown);
 	struct ExtrasRequest
 	{
 		enum Kind

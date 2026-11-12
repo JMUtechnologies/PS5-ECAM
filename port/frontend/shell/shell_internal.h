@@ -12,6 +12,7 @@
 #include "../actions.h"
 #include "../../app/boxart.h"
 #include "../../app/catalog.h"
+#include "../../app/cheats.h"
 #include "../../app/compatibility.h"
 #include "../../app/game_archives.h"
 #include "../../app/gameinfo.h"
@@ -592,6 +593,15 @@ namespace ps5shell
 		};
 		PorpoiseGame m_porpoiseGame;
 		std::vector<Row> PorpoiseOnlineRows(const ps5settings::Launcher& settings);
+		// cheats (cheat_rows.cpp, app/cheats.h): Settings > Online's Fetch cheats automatically, every game's
+		// looked for; a game's Cheats page (libretro sides, 3DS, DS), and its Get cheats on the Switch's and Porpoise's
+		Row CheatsAutoRow(const ps5settings::Launcher& settings);
+		void FetchCheats();
+		Row CheatsGetRow();
+		std::vector<Row> CheatRows();
+		void ChangeCheats(const Row& row, int step, bool cross);
+		void CheatsRefresh(); // what a download changed read again
+		uint32_t m_cheatArrivals = 0;
 		std::string PorpoiseCover(const ps5emu::Game& game) const;
 		void ChoosePorpoiseSave(const Row& row);
 		void ImportPorpoiseSaves();

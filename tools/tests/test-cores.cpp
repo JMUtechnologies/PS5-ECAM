@@ -261,6 +261,85 @@ int main(int argc, char* argv[])
 			Check(ps5libretro::PortDevice(1) == RETRO_DEVICE_JOYPAD, "NES: and Auto again");
 			ps5libretro::Unload();
 		}
+	// cheats (app/cheats.h): every core that takes them has them linked; a code given through the frontend changes
+	// what the game sees (Mesen's and Mesen-S's as the CPU reads the byte, which the program copies, and no more once
+	// taken back; mGBA's GameShark code written to RAM each frame)
+	struct CheatCase
+	{
+		const char* core;
+		const char* game;
+		const char* system;
+		unsigned cheevos; // the memory read as RetroAchievements maps it; 0: the core's system RAM
+		const char* code;
+		uint32_t address; // where the change shows, 0xffffffff: only given (the N64's test image draws no frame)
+		uint8_t value;
+	};
+	const CheatCase cheatCases[] = {
+		{"mesen", "cheat.nes", "NES", 7, "0300:AB", 0x0301, 0xAB},
+		{"mesens", "cheat.sfc", "SNES", 3, "7E0100AB", 0x0101, 0xAB},
+		{"mgba", "test.gb", "Game Boy", 0, "01AB01C1", 0x0101, 0xAB}, // $C101: its work RAM's byte 0x101
+		{"mgba", "test.gba", "Game Boy Advance", 5, "32000100 000000AB", 0xffffffff, 0},
+		{"paralleln64", "test.z64", "Nintendo 64", 2, "8033B21E 0008", 0xffffffff, 0},
+	};
+	for (const CheatCase& c : cheatCases)
+	{
+		const std::string name = std::string(c.system) + " cheats (" + c.core + ")";
+		const ps5libretro::Core* core = ps5libretro::Find(c.core);
+		if (!core)
+			continue;
+		Check(core->cheatReset && core->cheatSet, name + ": retro_cheat_reset and retro_cheat_set linked");
+		ps5libretro::Setup setup;
+		const fs::path folder = work / "cheats" / c.core / c.game;
+		fs::create_directories(folder);
+		setup.system = setup.saves = setup.states = folder.string();
+		if (std::string(c.core) == "paralleln64")
+			setup.options = {{"parallel-n64-cpucore", "cached_interpreter"}, {"parallel-n64-gfxplugin", "angrylion"}};
+		std::string error;
+		if (!ps5libretro::Load(*core, (games / c.game).string(), setup, error))
+		{
+			Check(false, name + ": the game loads (" + error + ")");
+			continue;
+		}
+		Check(ps5libretro::TakesCheats(), name + ": the frontend gives it cheats");
+		ps5libretro::Pad pads[ps5libretro::kPlayers] = {};
+		const bool frames = c.address != 0xffffffff;
+		if (frames)
+		{
+			if (c.cheevos)
+				ps5libretro::CheevosMemory(c.cheevos);
+			for (int i = 0; i < 10; i++)
+				ps5libretro::Run(pads);
+		}
+		uint8_t before = 0, with = 0, after = 0;
+		const auto read = [&](uint8_t& byte) {
+			if (c.cheevos)
+				ps5libretro::CheevosRead(c.address, &byte, 1);
+			else if (const auto* ram = static_cast<const uint8_t*>(core->getMemoryData(RETRO_MEMORY_SYSTEM_RAM));
+				ram && c.address < core->getMemorySize(RETRO_MEMORY_SYSTEM_RAM))
+				byte = ram[c.address];
+		};
+		if (frames)
+			read(before);
+		ps5libretro::SetCheats({c.code});
+		if (frames)
+		{
+			for (int i = 0; i < 10; i++)
+				ps5libretro::Run(pads);
+			read(with);
+			ps5libretro::SetCheats({});
+			for (int i = 0; i < 10; i++)
+				ps5libretro::Run(pads);
+			read(after);
+			char what[200];
+			std::snprintf(what, sizeof(what), "%s: %s seen by the game (%02x before, %02x with it, %02x after it is taken back)", name.c_str(), c.code, before, with, after);
+			// mGBA's code writes RAM, which keeps the value once it is taken back; Mesen's change only what is read
+			const bool written = std::string(c.core) == "mgba";
+			Check(before != c.value && with == c.value && (written || after != c.value), what);
+		}
+		else
+			Check(true, name + ": " + c.code + " given and taken back");
+		ps5libretro::SetCheats({});
+		ps5libretro::Unload();
 	}
 	std::printf("%s\n", failures ? "SOME CORES FAILED" : "EVERY CORE PASSED");
 	return failures ? 1 : 0;

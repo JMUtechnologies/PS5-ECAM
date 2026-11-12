@@ -286,6 +286,7 @@ namespace ps5shell
 		}
 		// the background work stops behind the launch (4.2, rule 4), the screen kept drawn
 		ps5boxart::Stop();
+		ps5cheats::Stop();
 		ps5packs::Stop();
 		ps5mods::Stop();
 		ps5forwarders::Stop();
@@ -897,6 +898,8 @@ namespace ps5shell
 			m_listed = true;
 			ps5log::Line("[launcher] {} games", m_games.size());
 			FetchBoxArt();
+			if (m_settings.cheats)
+				FetchCheats(); // every game's, once a start (app/cheats.h)
 			RememberCount();
 		}
 		m_libraryIndex = -1;

@@ -1014,6 +1014,23 @@ namespace ps5boxart
 		}
 	}
 
+	std::string BestName(const std::vector<std::string>& theirs, const std::string& name)
+	{
+		const std::vector<std::string> file = Words(name);
+		std::string best;
+		int bestFit = 0, bestPreference = 0;
+		for (const std::string& one : theirs)
+		{
+			const int fit = NameFit(file, Words(one));
+			if (!fit)
+				continue;
+			const int preference = Preference(one);
+			if (fit > bestFit || (fit == bestFit && (preference > bestPreference || (preference == bestPreference && one.size() < best.size()))))
+				best = one, bestFit = fit, bestPreference = preference;
+		}
+		return best;
+	}
+
 	std::string RetroPath(const std::string& system, const std::string& name)
 	{
 		if (system.empty() || name.empty())

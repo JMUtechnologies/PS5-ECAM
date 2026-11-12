@@ -41,6 +41,28 @@ def nes_device(device):
     return bytes(header) + prg + bytes(0x2000)
 
 
+def nes_cheat():
+    # a byte of RAM copied to the next ($0300 to $0301) again and again: a cheat on $0300, which Mesen gives
+    # the CPU as it reads it, is seen in $0301
+    prg = bytearray([0xEA] * 0x8000)
+    prg[0:9] = bytes([0xAD, 0x00, 0x03, 0x8D, 0x01, 0x03, 0x4C, 0x00, 0x80])  # LDA $0300; STA $0301; JMP $8000
+    prg[9] = 0x40                             # 8009: RTI
+    prg[0x7FFA:0x8000] = struct.pack("<HHH", 0x8009, 0x8000, 0x8009)
+    return b"NES\x1a" + bytes([2, 1, 0, 0]) + bytes(8) + prg + bytes(0x2000)
+
+
+def snes_cheat():
+    # the same on the SNES: $7E0100 copied to $7E0101, as a cheat on the first is read by the CPU
+    rom = bytearray(snes())
+    rom[0:11] = bytes([0xAF, 0x00, 0x01, 0x7E, 0x8F, 0x01, 0x01, 0x7E, 0x80, 0xF6, 0x40])  # LDA long; STA long; BRA; RTI
+    rom[0x7FEA:0x7FEC] = struct.pack("<H", 0x800A)
+    rom[0x7FFA:0x7FFE] = struct.pack("<HH", 0x800A, 0x8000)
+    rom[0x7FDC:0x7FE0] = struct.pack("<HH", 0xFFFF, 0x0000)
+    checksum = sum(rom) & 0xFFFF
+    rom[0x7FDC:0x7FE0] = struct.pack("<HH", checksum ^ 0xFFFF, checksum)
+    return bytes(rom)
+
+
 def snes():
     # LoROM, 128 KiB: the reset vector at a branch to itself, a valid header and checksum
     rom = bytearray(0x20000)
@@ -191,7 +213,7 @@ def main():
     out = sys.argv[1]
     os.makedirs(out, exist_ok=True)
     games = {"test.nes": nes(), "test.sfc": snes(), "test.gb": gb(False), "test.gbc": gb(True), "test.gba": gba(),
-             "test.vb": vb(), "test.min": pokemini(), "input.sfc": snes_input(), "arkanoid.nes": nes_device(0x0F), "zapper.nes": nes_device(0x08), "input.gba": gba_input(), "broken.z64": b"not a Nintendo 64 game" * 100, "test.z64": n64(),
+             "test.vb": vb(), "test.min": pokemini(), "input.sfc": snes_input(), "arkanoid.nes": nes_device(0x0F), "zapper.nes": nes_device(0x08), "cheat.nes": nes_cheat(), "cheat.sfc": snes_cheat(), "input.gba": gba_input(), "broken.z64": b"not a Nintendo 64 game" * 100, "test.z64": n64(),
              "broken.mgw": b"not a Game & Watch" * 10}
     for name, data in games.items():
         with open(os.path.join(out, name), "wb") as f:

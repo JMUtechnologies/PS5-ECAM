@@ -91,6 +91,8 @@ jobs:
 
       - name: Library catalogue
         run: bash tools/tests/test-catalog.sh
+      - name: Cheats' files
+        run: bash tools/tests/test-cheats.sh
       - name: Reports (scrubber, queue, intake)
         run: bash tools/tests/test-reports.sh
 

@@ -47,6 +47,9 @@ namespace ps5boxart
 	std::string RetroPath(const std::string& system, const std::string& name);
 	void FetchRetro(const std::string& system, const std::vector<std::string>& names, bool again = false);
 	size_t RetroPending();
+	// Of names in a No-Intro set (libretro's lists), the one that fits a game file's name best, as its cover is
+	// found: the same title, then a subtitle or a word more, an American or worldwide release first; empty: none
+	std::string BestName(const std::vector<std::string>& theirs, const std::string& name);
 
 	// The Timeline's real media (6.0): a game's disc (the GameCube's, the Wii's, the Wii U's) or its card (the
 	// DS's, the 3DS's, the Switch's), GameTDB's scan of it by the cover's ID, clear around its own shape. Kept
