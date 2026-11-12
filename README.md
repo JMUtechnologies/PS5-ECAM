@@ -30,7 +30,7 @@
   <a href="https://premohq.github.io/PlayTendoh/">Website</a> ·
   <a href="#install">Install</a> ·
   <a href="docs/GUIDE.md">Guide</a> ·
-  <a href="docs/COMPATIBILITY.md">Compatibility</a> ·
+  <a href="https://premohq.github.io/PlayTendoh/compatibility.html">Compatibility</a> ·
   <a href="#credits">Credits</a> ·
   <a href="#support">Support</a>
 </p>
@@ -71,7 +71,7 @@ console; until then the download above is 5.1.0, the latest release. What it bri
 - **EmulationStation (ES-DE)** as the other frontend, its games played here.
 - **Reports, if you say yes:** asked once, Playtendoh sends a short report when a game ends (the game, how it
   ran, the settings and the PS5's firmware and model, nothing about you), so what fails gets fixed and the
-  [compatibility list](docs/COMPATIBILITY.md) fills itself. Never while you play; **Settings > Online** turns
+  [compatibility list](https://premohq.github.io/PlayTendoh/compatibility.html) fills itself. Never while you play; **Settings > Online** turns
   it off ([what a report holds](docs/REPORTS.md)).
 - **Fixes:** a fix for Switch games ending after 6 to 10 minutes ([#97](https://github.com/premohq/PlayTendoh/issues/97));
   Wii U installs no longer stop at 0 % ([#96](https://github.com/premohq/PlayTendoh/issues/96)); the touchpad's
@@ -198,7 +198,7 @@ Every shortcut, the in-game menu and the rest are in the [guide](docs/GUIDE.md).
 ## Documentation
 
 - [Guide](docs/GUIDE.md): the launcher, each system, controls, saves, mods, the remote touch screen and where files are kept
-- [Firmware and setup](docs/HEN-SETUP.md) · [Mods](docs/GUIDE.md#mods) · [Compatibility](docs/COMPATIBILITY.md)
+- [Firmware and setup](docs/HEN-SETUP.md) · [Mods](docs/GUIDE.md#mods) · [Compatibility](https://premohq.github.io/PlayTendoh/compatibility.html)
 - [Building from source](docs/BUILDING.md) · [Driver performance](docs/DRIVER-PERFORMANCE.md) · [Roadmap](docs/ROADMAP.md) · [Reports](docs/REPORTS.md)
 - [Contributing](CONTRIBUTING.md): where the app is going, its look and voice, and how to send a change
 - Problems: **Settings > Diagnostics > Copy logs to USB**, then [open an issue](https://github.com/premohq/PlayTendoh/issues/new/choose)

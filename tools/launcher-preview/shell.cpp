@@ -94,7 +94,6 @@ int main(int argc, char* argv[])
 	// tiles, Eden's launch picture)
 	ps5paths::detail::AppDirSlot() = preview::output + "/app";
 	ps5gameinfo::SetFolder("port/app/gametdb"); // the repository's: the preview runs from its root
-	ps5compat::SetPath("docs/COMPATIBILITY.md");
 	if (std::getenv("PREVIEW_UPDATE"))
 		ps5update::Start(); // as the app's check finding a newer release
 	preview::LoadScript(argv[2]);

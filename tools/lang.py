@@ -204,30 +204,6 @@ def scan(path):
     return found
 
 
-def compatibility_notes():
-    """The compatibility list's notes (docs/COMPATIBILITY.md), which the hub shows: one a game."""
-    notes = []
-    path = ROOT / "docs/COMPATIBILITY.md"
-    columns = None
-    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-        cells = [c.strip() for c in line.strip().strip("|").split("|")] if line.startswith("|") else None
-        if not cells:
-            columns = None
-            continue
-        if "Notes" in cells:
-            columns = cells.index("Notes")
-            continue
-        if columns is None or set("".join(cells)) <= set("-: ") or len(cells) <= columns or not cells[columns]:
-            continue
-        # as port/app/compatibility.cpp's Plain makes it: no bold, links as their words
-        note = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", cells[columns].replace("**", "")).strip()
-        entry = Entry("compatibility note", note)
-        entry.refs.append(f"docs/COMPATIBILITY.md:{number}")
-        entry.comments.append("a note from the compatibility list, about how the game runs")
-        notes.append(entry)
-    return notes
-
-
 def extract():
     entries = {}
     order = []
@@ -247,10 +223,6 @@ def extract():
             else:
                 entries[key] = entry
                 order.append(key)
-    for entry in compatibility_notes():
-        if entry.key() not in entries:
-            entries[entry.key()] = entry
-            order.append(entry.key())
     return [entries[k] for k in order]
 
 

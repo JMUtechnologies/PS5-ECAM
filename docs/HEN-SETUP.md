@@ -224,7 +224,7 @@ this:
 | USB / external games "cannot be read" | HEN opened `/data` but not the drives | Make sure elfldr is on 9021; relaunch. Diagnostics should then say the drive was "opened by the elevation helper." |
 | Works once, dead after a reboot | The jailbreak is tethered | Re-run your firmware's exploit and reload the HEN after every cold boot, then start the app. |
 | App won't appear / won't register on the home screen | HEN didn't jailbreak `PPSA99360`, or the folder is in the wrong place | Copy the folder to `/data/homebrew/PPSA99360` and list `PPSA99360` in your HEN before launching. |
-| Everything green but a specific game crashes | Not a firmware/HEN issue | See the [compatibility list](COMPATIBILITY.md) and [report it](#reporting-problems) with logs. |
+| Everything green but a specific game crashes | Not a firmware/HEN issue | See the [compatibility list](https://premohq.github.io/PlayTendoh/compatibility.html) and [report it](#reporting-problems) with logs. |
 
 ---
 
@@ -266,7 +266,7 @@ one of the three needs above wasn't met in a way we can handle better. Please
 
 ## Reporting problems
 
-Check the [compatibility list](COMPATIBILITY.md) first, then
+Check the [compatibility list](https://premohq.github.io/PlayTendoh/compatibility.html) first, then
 [open an issue with the bug report form](https://github.com/premohq/PlayTendoh/issues/new/choose).
 It asks for your **firmware, HEN, app version and logs**, which almost every problem needs — all of
 them are on the first lines of **Settings > Diagnostics**.

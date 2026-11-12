@@ -32,7 +32,7 @@ work stops before a game starts.
 - **Library:** your recently played games' box art from [GameTDB](https://www.gametdb.com/) in a row
   (its icon until the cover arrives), then every game as a list, with sorting and search
 - **Game pages:** a game's description, developer, publisher, release date, genre, players and
-  rating from GameTDB, and how it runs from the [compatibility list](COMPATIBILITY.md); a Wii U
+  rating from GameTDB, and how it runs from the [compatibility list](https://premohq.github.io/PlayTendoh/compatibility.html); a Wii U
   game's graphic packs
 - **Settings:** opens over the Library, for the side you're on and nothing else: one short list of
   pages with icons, twelve at most so the list never scrolls (Language, Graphics, Controls, System,
@@ -806,7 +806,7 @@ them. A game's own backup (its **Saves** page) holds its saves alone.
 
 ## Reporting problems
 
-Check the [compatibility list](COMPATIBILITY.md) first, then
+Check the [compatibility list](https://premohq.github.io/PlayTendoh/compatibility.html) first, then
 [open an issue with the bug report form](https://github.com/premohq/PlayTendoh/issues/new/choose).
 It asks for your firmware, HEN, app version and logs, which almost every problem needs.
 
