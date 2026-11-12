@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// PS5-ECAM: What's new, once a version, before anything else: on the app's first start and after an
-// update, what the version brings, a card each, as its release notes' highlights say it. Cross or
-// Circle goes on to what was next: a first start's Make it yours and Setup check, the Setup check, an
-// update's new options, or the side.
+// PS5-ECAM: What's new, once a version, before anything else: after an update (a first start has its
+// setup instead, firststart.cpp), what the version brings, a card each, as its release notes'
+// highlights say it. Cross or Circle goes on to what was next: the Setup check, the update's new
+// options, or the side.
 
 #include "shell_internal.h"
 #include "../../app/updates.h"
@@ -63,9 +63,9 @@ namespace ps5shell
 		m_feedback.Play(ui::Cue::Select);
 		switch (m_newsThen)
 		{
-		case NewsThen::Welcome: WelcomeOpen(true); break; // then the Setup check, then the side
+		case NewsThen::Welcome: StartOpen(false); break; // then the side
 		case NewsThen::Setup: SetupOpen(true); break;	  // then the side (FinishStart)
-		case NewsThen::NewOptions: WelcomeOpen(false); break;
+		case NewsThen::NewOptions: WelcomeOpen(); break;
 		case NewsThen::Side: OpenSide(m_side, !m_prepared); break;
 		}
 	}

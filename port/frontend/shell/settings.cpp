@@ -3065,7 +3065,7 @@ namespace ps5shell
 				Toast(key.empty() ? Tr("Your SteamGridDB key is removed") : Tr("Used next time Playtendoh starts"));
 			});
 		else if (id == "makeityours")
-			WelcomeOpen(true);
+			StartOpen(true);
 		else if (id == "copylogs")
 			m_diagnosticsDone[0] = CopyLogsToUsb();
 		else if (id == "setupcheck")
