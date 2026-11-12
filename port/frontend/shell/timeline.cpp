@@ -3,7 +3,8 @@
 // the last console (the Classic carousel's, Orbit's dial), whose card opens it. Every console's games on one
 // shelf, oldest console to newest, each game drawn as what it came on, in that thing's true shape: GameTDB's
 // picture of its disc or card where it has one (the GameCube's, Wii's and Wii U's discs, the DS's, 3DS's and
-// Switch's cards), else its cartridge, Disk Card or disc drawn with its box art on the label. Each kind keeps its
+// Switch's cards), the LaunchBox Games Database's of its cartridge from its own region (a Japanese NES game's
+// Famicom cartridge), else its cartridge, Disk Card or disc drawn with its box art on the label. Each kind keeps its
 // own proportions, and the kinds their sizes against each other, brought a little closer together (a Switch
 // card stays big enough to see beside an NES cartridge). Over the shelves, a ruler of the years in their eras,
 // every console's mark, and the player's own games by the year each came out; under them, the game in focus on
@@ -162,6 +163,24 @@ namespace ps5shell
 			case System::GameCube:
 			case System::Wii: system = ps5boxart::System::GameCubeWii; return true;
 			default: return false;
+			}
+		}
+
+		// the LaunchBox Games Database's name for a libretro side's cartridges (ps5gameinfo::FindCart); empty: none
+		const char* CartSystem(System side)
+		{
+			switch (side)
+			{
+			case System::Nes: return "nes";
+			case System::Snes: return "snes";
+			case System::Gb:
+			case System::Sgb: return "gb";
+			case System::Gbc: return "gbc";
+			case System::Gba: return "gba";
+			case System::N64: return "n64";
+			case System::VirtualBoy: return "vb";
+			case System::PokemonMini: return "mini";
+			default: return "";
 			}
 		}
 
@@ -573,6 +592,7 @@ namespace ps5shell
 		m_timelineKey = key;
 		m_shelves.clear();
 		std::map<ps5boxart::System, std::vector<std::string>> media; // the discs and cards to ask GameTDB for
+		std::vector<std::string> cartPictures;						 // and the cartridges to ask LaunchBox for
 		for (const Era& era : kEras)
 		{
 			if (!SideShown(era.side))
@@ -592,13 +612,32 @@ namespace ps5shell
 					shelf.games.push_back(std::move(game));
 				}
 			});
-			// each by its own year, where GameTDB gives it, else by its name
+			// a libretro side's games: their years, publishers and cartridges from the LaunchBox Games Database
+			const char* cartSystem = CartSystem(era.side);
+			std::map<std::string, std::string> carts; // a game's file -> its cartridge's picture
+			if (*cartSystem)
+				for (Game& game : shelf.games)
+				{
+					ps5gameinfo::Cart cart;
+					if (ps5gameinfo::FindCart(cartSystem, game.entry.game.path.stem().string(), cart))
+					{
+						if (!game.year)
+							game.year = cart.year;
+						if (game.entry.game.publisher.empty())
+							game.entry.game.publisher = cart.publisher;
+					}
+					carts[game.entry.game.path.string()] = cart.picture;
+				}
+			// each by its own year, where GameTDB or LaunchBox gives it, else by its name
 			std::stable_sort(shelf.games.begin(), shelf.games.end(), [](const Game& a, const Game& b) {
 				if (a.year != b.year)
 					return a.year < b.year;
 				return a.sortName < b.sortName;
 			});
 			shelf.mediaArt.assign(shelf.games.size(), std::string());
+			shelf.carts.assign(shelf.games.size(), std::string());
+			for (size_t i = 0; i < shelf.games.size() && !carts.empty(); i++)
+				shelf.carts[i] = carts[shelf.games[i].entry.game.path.string()];
 			ShelfSize(shelf.media, shelf.mediaW, shelf.mediaH);
 			const float gap = std::max(14.0f, shelf.mediaW * 0.14f);
 			const int count = (int)shelf.games.size();
@@ -608,6 +647,9 @@ namespace ps5shell
 				for (const Game& game : shelf.games)
 					if (!game.entry.game.gameId.empty())
 						media[system].push_back(game.entry.game.gameId);
+			for (const std::string& picture : shelf.carts)
+				if (!picture.empty())
+					cartPictures.push_back(picture);
 			m_shelves.push_back(std::move(shelf));
 		}
 		float along = 0;
@@ -617,8 +659,11 @@ namespace ps5shell
 			along += shelf.w;
 		}
 		if (m_settings.boxArt)
+		{
 			for (const auto& [system, ids] : media)
 				ps5boxart::FetchMedia(system, ids);
+			ps5boxart::FetchCarts(cartPictures);
+		}
 		m_mediaArrivals = ps5boxart::MediaArrivals();
 		TimelineMedia();
 	}
@@ -628,11 +673,10 @@ namespace ps5shell
 		for (TimelineShelf& shelf : m_shelves)
 		{
 			ps5boxart::System system;
-			if (!MediaSystem(shelf.side, system))
-				continue;
+			const bool scans = MediaSystem(shelf.side, system);
 			for (size_t i = 0; i < shelf.games.size(); i++)
 				if (shelf.mediaArt[i].empty())
-					shelf.mediaArt[i] = ps5boxart::MediaPath(system, shelf.games[i].entry.game.gameId);
+					shelf.mediaArt[i] = scans ? ps5boxart::MediaPath(system, shelf.games[i].entry.game.gameId) : ps5boxart::CartPath(shelf.carts[i]);
 		}
 	}
 

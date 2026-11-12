@@ -390,6 +390,13 @@ namespace ps5boxart
 	}
 	void FetchMedia(System, const std::vector<std::string>&) {}
 	uint32_t MediaArrivals() { return 0; }
+	// and the libretro sides' cartridges: build/preview/boxart/carts/<picture>.tga, LaunchBox's put there by hand
+	std::string CartPath(const std::string& picture)
+	{
+		const std::string path = output + "/boxart/carts/" + picture + ".tga";
+		return !picture.empty() && std::ifstream(path).good() ? path : std::string();
+	}
+	void FetchCarts(const std::vector<std::string>&) {}
 	void Fetch(System, const std::vector<std::string>&) {}
 	void Refetch(System, const std::vector<std::string>&, bool) {}
 	// a libretro side's cover, the same way: build/preview/boxart/retro/<folder>/<the game file's name>.tga

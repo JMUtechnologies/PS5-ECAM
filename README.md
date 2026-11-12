@@ -48,7 +48,8 @@ console; until then the download above is 5.1.0, the latest release. What it bri
   **Orbit**, where the logo is a dial L1 and R1 turn, its middle what you played last on every console,
   and the game you are on fills the background: a picture of your last save state, else a screenshot.
 - **The Timeline**, after the last console in either layout: a museum of every console's games on one
-  shelf, oldest to newest, each as the real disc or card it came on (GameTDB's) or its cartridge, by era.
+  shelf, oldest to newest, each as the real disc, card (GameTDB's) or cartridge (the LaunchBox Games
+  Database's, from its own region: a Japanese NES game's Famicom cartridge) it came on, by era.
 - **Twenty-one systems** (below): the GameCube and the Wii on Dolphin (Porpoise), the iQue Player, and
   thirteen classics on libretro cores inside the app (the NES, SNES, Game Boys, N64, Virtual Boy, Pokémon
   mini, Famicom Disk System, Super Game Boy, Game &amp; Watch, Satellaview and VS. System), each a side of
@@ -323,7 +324,8 @@ says where the app is going and how to fit in.
   in-game menus' Buttons page (CC BY 3.0; Porpoise X's rendering, its PlayStation logo removed and its lines thickened)
 - The **libretro** team for RetroArch's [XMB Monochrome](https://github.com/libretro/retroarch-assets) icons, the
   consoles' marks in the launcher (CC BY 4.0; shrunk and made white on clear, tools/render-console-icons.py)
-- [GameTDB](https://www.gametdb.com/) for box art and game information, and the authors of the
+- [GameTDB](https://www.gametdb.com/) for box art and game information, the
+  [LaunchBox Games Database](https://gamesdb.launchbox-app.com/) for the Timeline's cartridges and the classics' years, and the authors of the
   [Cemu community graphic packs](https://github.com/cemu-project/cemu_graphic_packs)
 
 ## License

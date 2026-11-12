@@ -1055,6 +1055,110 @@ namespace ps5boxart
 		return s_retroQueue.size() + (s_retroRunning ? 1 : 0);
 	}
 
+	// -- the Timeline's cartridges for the libretro sides: the LaunchBox Games Database's pictures, as
+	// ps5gameinfo::FindCart names them -------------------------------------------------------------------
+
+	namespace
+	{
+		constexpr const char* kCartsHost = "images.launchbox-app.com";
+		std::mutex s_cartMutex;
+		std::deque<std::string> s_cartQueue;		  // under s_cartMutex: the pictures to fetch
+		std::set<std::string> s_cartSeen;			  // under s_cartMutex
+		bool s_cartRunning = false;					  // under s_cartMutex
+
+		std::string CartBase(const std::string& picture) { return fmt::format("{}/boxart/carts/{}", ps5paths::Covers(), picture); }
+
+		bool CartValid(const std::string& picture)
+		{
+			return !picture.empty() && picture.size() <= 64 &&
+				std::all_of(picture.begin(), picture.end(), [](char c) { return std::isalnum((unsigned char)c) || c == '-' || c == '_'; });
+		}
+
+		void CartWorker()
+		{
+			curl_global_init(CURL_GLOBAL_DEFAULT);
+			curl_slist* const resolved = ps5net::AddResolve(nullptr, kCartsHost, 443);
+			static curl_slist* const headers = ps5curl::Headers();
+			CURL* const curl = curl_easy_init();
+			if (curl)
+			{
+				ps5curl::Setup(curl);
+				curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+				if (resolved)
+					curl_easy_setopt(curl, CURLOPT_RESOLVE, resolved);
+			}
+			int fetched = 0;
+			for (;;)
+			{
+				std::string picture;
+				{
+					std::lock_guard lock(s_cartMutex);
+					if (s_cartQueue.empty() || s_stopped || !s_enabled || !curl)
+					{
+						s_cartRunning = false;
+						break;
+					}
+					picture = std::move(s_cartQueue.front());
+					s_cartQueue.pop_front();
+				}
+				const std::string base = CartBase(picture);
+				std::error_code ec;
+				fs::create_directories(fs::path(base).parent_path(), ec);
+				std::vector<uint8_t> data, rgba;
+				int width = 0, height = 0;
+				const long status = Get(curl, fmt::format("https://{}/{}.png", kCartsHost, picture), data);
+				int fitWidth = 0, fitHeight = 0;
+				if (status == 200 && DecodePng(data, rgba, width, height) && width > 0 && height > 0)
+				{
+					const std::vector<uint8_t> fitted = Fit(rgba, width, height, fitWidth, fitHeight);
+					if (WriteTga(base + ".tga", fitted, fitWidth, fitHeight))
+					{
+						fetched++;
+						s_mediaArrivals++;
+					}
+				}
+				else
+					ps5log::Line("[boxart] cartridge {}: HTTP {}; next start", picture, status);
+			}
+			if (fetched)
+				ps5log::Line("[boxart] the Timeline's cartridges: {} fetched", fetched);
+			if (curl)
+				curl_easy_cleanup(curl);
+		}
+	}
+
+	std::string CartPath(const std::string& picture)
+	{
+		if (!CartValid(picture))
+			return {};
+		std::error_code ec;
+		const std::string path = CartBase(picture) + ".tga";
+		return fs::exists(path, ec) ? path : std::string();
+	}
+
+	void FetchCarts(const std::vector<std::string>& pictures)
+	{
+		if (!s_enabled || s_stopped)
+			return;
+		std::lock_guard lock(s_cartMutex);
+		size_t queued = 0;
+		for (const std::string& picture : pictures)
+		{
+			std::error_code ec;
+			if (!CartValid(picture) || !s_cartSeen.insert(picture).second || fs::exists(CartBase(picture) + ".tga", ec))
+				continue;
+			s_cartQueue.push_back(picture);
+			queued++;
+		}
+		if (queued)
+			ps5log::Line("[boxart] {} cartridges to fetch for the Timeline", queued);
+		if (!s_cartRunning && !s_cartQueue.empty())
+		{
+			s_cartRunning = true;
+			std::thread(CartWorker).detach();
+		}
+	}
+
 	void Fetch(System system, const std::vector<std::string>& ids)
 	{
 		if (!s_enabled || s_stopped)

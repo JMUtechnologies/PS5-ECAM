@@ -817,7 +817,8 @@ namespace ps5shell
 			const char* brief = "";
 			int media = 0;
 			std::vector<Game> games;
-			std::vector<std::string> mediaArt; // each game's real disc or card, from GameTDB, when it has come
+			std::vector<std::string> mediaArt; // each game's real disc, card (GameTDB's) or cartridge (LaunchBox's), when it has come
+			std::vector<std::string> carts;	   // a libretro side's: each game's cartridge's picture at LaunchBox (empty: none)
 			float x = 0, w = 0;
 			float mediaW = 0, mediaH = 0; // its media's size on the shelf: its true shape, the sizes kept apart a little less
 		};

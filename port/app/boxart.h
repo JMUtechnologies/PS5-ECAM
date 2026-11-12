@@ -55,6 +55,12 @@ namespace ps5boxart
 	void FetchMedia(System system, const std::vector<std::string>& ids);
 	uint32_t MediaArrivals(); // how many have arrived since the start
 
+	// And the libretro sides' cartridges, the LaunchBox Games Database's pictures of them by the names
+	// ps5gameinfo::FindCart gives: kept as covers/boxart/carts/<picture>.tga, fetched one at a time on a thread
+	// of their own (from images.launchbox-app.com); MediaArrivals counts them too.
+	std::string CartPath(const std::string& picture);
+	void FetchCarts(const std::vector<std::string>& pictures);
+
 	// The cover's TGA when it has been fetched, else empty.
 	std::string Path(System system, const std::string& id);
 	// Fetches the covers not fetched yet, one at a time, on a thread of its own.
