@@ -116,6 +116,9 @@ add_library(CemuPS5 STATIC
 	app/netfs.h
 	app/controllers.cpp
 	app/boxart.cpp
+	app/cheats.cpp
+	app/cheat_fetch.cpp
+	app/cheats.h
 	app/shots.cpp
 	app/boxart.h
 	app/catalog.cpp
@@ -235,6 +238,7 @@ add_library(CemuPS5 STATIC
 	frontend/shell/settings.cpp
 	frontend/shell/consoles.cpp
 	frontend/shell/porpoise_rows.cpp
+	frontend/shell/cheat_rows.cpp
 	frontend/shell/switch_extras.cpp
 	frontend/shell/setup.cpp
 	frontend/shell/shares.cpp
@@ -327,6 +331,8 @@ set_source_files_properties(
 	app/wiiu_archives.cpp
 	app/netfs.cpp
 	app/boxart.cpp
+	app/cheats.cpp
+	app/cheat_fetch.cpp
 	app/shots.cpp
 	app/saves.cpp
 	app/reorganize.cpp
@@ -367,6 +373,7 @@ set_source_files_properties(
 	frontend/shell/settings.cpp
 	frontend/shell/consoles.cpp
 	frontend/shell/porpoise_rows.cpp
+	frontend/shell/cheat_rows.cpp
 	frontend/shell/switch_extras.cpp
 	frontend/shell/setup.cpp
 	frontend/shell/shares.cpp

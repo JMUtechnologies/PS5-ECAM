@@ -811,6 +811,20 @@ namespace ps5libretro
 		return true;
 	}
 
+	bool TakesCheats() { return s.loaded && s.core->cheatReset && s.core->cheatSet; }
+
+	void SetCheats(const std::vector<std::string>& codes)
+	{
+		if (!TakesCheats())
+			return;
+		// as RetroArch gives them: every one taken back, then those on, numbered from 0
+		s.core->cheatReset();
+		unsigned index = 0;
+		for (const std::string& code : codes)
+			if (!code.empty())
+				s.core->cheatSet(index++, true, code.c_str());
+	}
+
 	void Reset()
 	{
 		if (s.loaded)

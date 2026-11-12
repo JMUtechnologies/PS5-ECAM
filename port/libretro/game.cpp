@@ -15,6 +15,7 @@
 #include "session.h"
 #include "../app/achievements.h"
 #include "../app/boxart.h"
+#include "../app/cheats.h"
 #include "../app/game_archives.h"
 #include "../app/ingame3ds.h"
 #include "../app/lang.h"
@@ -82,6 +83,9 @@ namespace ps5libretro
 		ps5settings::N3ds s_launched; // what the game started with, or what the menu last saved
 		bool s_coreTouched = false;
 		std::atomic<bool> s_cheevos{false}; // RetroAchievements: this game's set looked for (app/achievements.h)
+		// its cheats (app/cheats.h), when its core takes them: the menu's list, from its .cht
+		bool s_cheats = false;
+		ps5cheats::Game s_cheatGame;
 
 		// RetroAchievements' id for the side's console (rc_consoles.h); 0 for one it has no sets for
 		uint32_t CheevosConsole(std::string_view key)
@@ -116,6 +120,21 @@ namespace ps5libretro
 			}
 			ps5ingame3ds::SetAchievements(true, summary, shown);
 		}
+		// The menu's Cheats from the game's file, and the codes of those that are on
+		std::vector<std::string> ShowCheats()
+		{
+			std::vector<std::pair<std::string, bool>> listed;
+			std::vector<std::string> codes;
+			for (const ps5cheats::Cheat& cheat : ps5cheats::List(s_cheatGame))
+			{
+				listed.emplace_back(cheat.name, cheat.on);
+				if (cheat.on)
+					codes.push_back(cheat.code);
+			}
+			ps5ingame3ds::SetExtras({}, listed);
+			return codes;
+		}
+
 		bool s_resume = false;
 		std::thread s_emulation;
 		std::atomic_bool s_stop = false;
@@ -133,6 +152,8 @@ namespace ps5libretro
 		// value, a reset (under s_mutex)
 		std::vector<std::pair<std::string, std::string>> s_optionChanges;
 		bool s_resetPending = false;
+		std::vector<std::string> s_cheatCodes; // the cheats on, when they changed (s_cheatsChanged)
+		bool s_cheatsChanged = false;
 		std::mutex s_mutex; // s_view and s_pads
 		View s_view;
 		Pad s_pads[kPlayers];
@@ -541,12 +562,17 @@ namespace ps5libretro
 				{
 					// the menu's emulator options and Reset, between two frames
 					std::vector<std::pair<std::string, std::string>> changes;
-					bool reset = false;
+					std::vector<std::string> cheats;
+					bool reset = false, cheatsChanged = false;
 					{
 						std::lock_guard lock(s_mutex);
 						changes.swap(s_optionChanges);
 						reset = std::exchange(s_resetPending, false);
+						cheatsChanged = std::exchange(s_cheatsChanged, false);
+						cheats.swap(s_cheatCodes);
 					}
+					if (cheatsChanged)
+						SetCheats(cheats);
 					for (const auto& [key, value] : changes)
 						if (!SetOption(key, value))
 							ps5log::Line("[retro] the core has no {} value {}", key, value);
@@ -821,6 +847,17 @@ namespace ps5libretro
 				ps5log::Line("[retro] RetroAchievements: {} gives no memory to check", CoreName());
 		}
 		ps5ingame3ds::SetAchievements(s_cheevos, {}, {});
+		// its cheats, those on given to the core before its first frame (and kept by a state it resumes from)
+		s_cheatGame = {side, game.titleId, game.path.string()};
+		s_cheats = TakesCheats() && ps5cheats::KindOf(side) == ps5cheats::Kind::Retro;
+		ps5ingame3ds::SetCheatsShown(s_cheats);
+		if (s_cheats)
+		{
+			const std::vector<std::string> on = ShowCheats();
+			SetCheats(on);
+			if (!on.empty())
+				ps5log::Line("[retro] {} cheats on", on.size());
+		}
 		{
 			// the Emulator category: every option the core shows, as it is now
 			std::vector<ps5ingame3ds::CoreOption> options;
@@ -914,6 +951,25 @@ namespace ps5libretro
 						ps5settings::SaveChanges(s_key, s_titleId, before, after);
 						s_launched = s_settings;
 					}
+			}
+			// a cheat turned on or off: kept in the game's .cht, given to the core between two frames
+			if (ps5ingame3ds::ExtrasRequest extras; ps5ingame3ds::TakeExtrasRequest(extras) && extras.kind == ps5ingame3ds::ExtrasRequest::Cheat && s_cheats)
+			{
+				const std::vector<ps5cheats::Cheat> listed = ps5cheats::List(s_cheatGame);
+				std::string error;
+				if (extras.index >= 0 && extras.index < (int)listed.size())
+				{
+					const ps5cheats::Cheat& cheat = listed[extras.index];
+					if (ps5cheats::SetOn(s_cheatGame, (size_t)extras.index, !cheat.on, error))
+						// tr: a cheat ({0}) turned on or off
+						ps5ingame3ds::SetExtrasMessage(!cheat.on ? ps5lang::TrF("{0}: on", cheat.name) : ps5lang::TrF("{0}: off", cheat.name));
+					else
+						ps5log::Line("[retro] cheat {} not changed: {}", cheat.name, error);
+				}
+				std::vector<std::string> codes = ShowCheats();
+				std::lock_guard lock(s_mutex);
+				s_cheatCodes = std::move(codes);
+				s_cheatsChanged = true;
 			}
 			if (ps5ingame3ds::TakeResetRequest())
 			{

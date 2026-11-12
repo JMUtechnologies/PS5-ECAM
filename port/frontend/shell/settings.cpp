@@ -296,6 +296,9 @@ namespace ps5shell
 					ps5libretro::Plays(SideIndex()) ? TrF("All of {0}'s options, for every game on this system.", ps5libretro::CoreTitle(SideIndex())) :
 													  std::string(Tr("Which emulator plays this system's games.")),
 					Icon::Chip});
+			// a game's cheats, where its core takes them (cheat_rows.cpp)
+			if (InGameSettings() && !IsPorpoise() && ps5cheats::Supported(SideIndex()))
+				selected.push_back({"cheats", Tr("Cheats"), Tr("Get this game's cheats, and turn each on or off."), Icon::Chip});
 			if (IsPorpoise() && !ps5retro::Is(SideIndex(), "wii"))
 				selected.push_back({"gba", Tr("GBA"), Tr("A Game Boy Advance on a GameCube port: set one in Controls, under Ports."), Icon::Pad});
 			for (const auto& page : pages)
@@ -316,6 +319,8 @@ namespace ps5shell
 				game.push_back({page.id, page.title, TrF("For {0} only. Other settings follow the system's.", m_gameName), page.icon});
 		// its saves alone (6.15), whatever settings it has of its own (a Switch game's are Eden's)
 		game.push_back({"gamesaves", Tr("Saves"), TrF("{0}'s saves only. Settings has every system's.", m_gameName), Icon::Save});
+		if (Is3ds() || IsDs())
+			game.push_back({"cheats", Tr("Cheats"), Tr("Get this game's cheats, and turn each on or off."), Icon::Chip});
 		if (IsSwitch())
 		{
 			game.push_back({"nxmods", Tr("Mods"), Tr("Turn this game's mods on or off."), Icon::Folder});
@@ -1330,6 +1335,9 @@ namespace ps5shell
 				Tr("Downloads every cover for this system again."),
 				Tr("Downloads every cover on this system again. Useful if a cover is wrong or broken."));
 			endSub();
+			// every game's cheats (app/cheats.h): the app's, on the sides whose emulators have cheats
+			if (ps5cheats::Supported(SideIndex()))
+				rows.push_back(CheatsAutoRow(settings));
 			// reports to the project (app/reports.h): the first start's question, changed here
 			if (ps5reports::Available())
 				toggle("reports", Tr("Send reports"), settings.ui.reports, Tr("How games run, with nothing about you."),
@@ -1632,7 +1640,18 @@ namespace ps5shell
 
 	std::vector<Row> Shell::SettingRows(const std::string& page)
 	{
-		if (IsSwitch() && (page == "nxmods" || page == "nxcheats"))
+		if (InGameSettings() && page == "cheats" && ps5cheats::Supported(SideIndex()))
+			return CheatRows();
+		if (IsSwitch() && page == "nxcheats")
+		{
+			// Get cheats first (a game with a title ID), then Eden's list
+			CheatsRefresh();
+			std::vector<Row> rows = SwitchExtrasRows(page);
+			if (InGameSettings() && m_gameTitle && !ps5eden::IsMadeId(m_gameTitle))
+				rows.insert(rows.begin(), CheatsGetRow());
+			return rows;
+		}
+		if (IsSwitch() && page == "nxmods")
 			return SwitchExtrasRows(page);
 		// the Switch's rows from Eden's own files (switch_extras.cpp), behind a row of the page they are on: its
 		// ReShade looks behind Graphics' Picture effects, after FSR sharpening and anti-aliasing; its players
@@ -2338,6 +2357,8 @@ namespace ps5shell
 				settings.rumble = on;
 			else if (id == "boxart")
 				settings.boxArt = on;
+			else if (id == "cheatsauto")
+				settings.cheats = on;
 			else if (id == "reports")
 			{
 				settings.ui.reports = on;
@@ -2515,6 +2536,8 @@ namespace ps5shell
 			if (m_settings.boxArt)
 				FetchBoxArt();
 		}
+		if (id == "cheatsauto" && m_settings.cheats)
+			FetchCheats();
 		if (id == "nx-covers")
 		{
 			// each game's cover again, the other kind: box art fetched where it is missing
@@ -2632,6 +2655,11 @@ namespace ps5shell
 	void Shell::ChangeSetting(const Row& row, int step, bool cross)
 	{
 		const std::string& id = row.id;
+		if (id.starts_with("cheats:"))
+		{
+			ChangeCheats(row, step, cross);
+			return;
+		}
 		if (id.starts_with("nxextra:"))
 		{
 			ChangeSwitchExtra(row, step, cross);

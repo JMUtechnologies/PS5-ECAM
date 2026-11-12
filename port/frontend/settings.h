@@ -342,6 +342,7 @@ namespace ps5settings
 		std::string music = "setup";
 		int musicVolume = 50;
 		bool boxArt = true;			  // box art from GameTDB (Settings > Online)
+		bool cheats = false;		  // every game's cheats downloaded (Settings > Online's Fetch cheats automatically: app/cheats.h)
 		bool menuSounds = true;
 		// The side the launcher opens on after a game, the one last played ("wiiu", "3ds", "ds" or "switch");
 		// empty: a fresh start.

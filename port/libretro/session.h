@@ -103,6 +103,10 @@ namespace ps5libretro
 	bool UndoAvailable();
 	bool UndoLoad(std::string& error);
 	void Reset();
+	// Cheats (app/cheats.h): whether the core has them, and the codes that are on given to it, every other
+	// taken back. Between two frames, on the emulation's thread
+	bool TakesCheats();
+	void SetCheats(const std::vector<std::string>& codes);
 
 	// What the core asked of the frontend, taken once: to stop (RETRO_ENVIRONMENT_SHUTDOWN), a message
 	// for the player (SET_MESSAGE)

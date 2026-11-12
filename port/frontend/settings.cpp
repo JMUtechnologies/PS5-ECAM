@@ -426,6 +426,7 @@ namespace ps5settings
 			settings.music = "off";
 		ReadInt(json, "musicVolume", settings.musicVolume, 0, 100);
 		ReadBool(json, "boxArt", settings.boxArt);
+		ReadBool(json, "cheats", settings.cheats);
 		ReadBool(json, "asyncShaders", settings.asyncShaders);
 		ReadBool(json, "shaderNotices", settings.shaderNotices);
 		ReadBool(json, "gamePadSpeaker", settings.gamePadSpeaker);
@@ -614,6 +615,8 @@ namespace ps5settings
 		writer.Int(settings.musicVolume);
 		writer.Key("boxArt");
 		writer.Bool(settings.boxArt);
+		writer.Key("cheats");
+		writer.Bool(settings.cheats);
 		writer.Key("asyncShaders");
 		writer.Bool(settings.asyncShaders);
 		writer.Key("shaderNotices");

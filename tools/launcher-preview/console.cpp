@@ -6,6 +6,7 @@
 
 #include "app/achievements.h"
 #include "app/boxart.h"
+#include "app/cheats.h"
 #include "app/compatibility.h"
 #include "app/netfs.h"
 #include "app/emulator.h"
@@ -371,6 +372,16 @@ namespace ps5pad
 // -- GameTDB's box art, in brief: what the preview's own folder has ---------------------------------
 // (build/preview/boxart/<wiiu|3ds|switch|wii>/<ID>.tga, put there by hand: GameTDB's covers are not ours
 // to keep in the repository)
+
+// the cheats' downloads (app/cheat_fetch.cpp): none in the preview, its files read as the app reads them
+namespace ps5cheats
+{
+	void Fetch(const std::vector<Game>&, bool) {}
+	size_t Pending() { return 0; }
+	int Looked(const Game& game) { return Count(game) ? 1 : -1; }
+	uint32_t Arrivals() { return 0; }
+	void Stop() {}
+}
 
 namespace ps5boxart
 {

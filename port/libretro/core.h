@@ -35,6 +35,9 @@ namespace ps5libretro
 		void (*unloadGame)();
 		void* (*getMemoryData)(unsigned id);
 		size_t (*getMemorySize)(unsigned id);
+		// its cheats (retro_cheat_reset, retro_cheat_set); null in a core built without them
+		void (*cheatReset)();
+		void (*cheatSet)(unsigned index, bool enabled, const char* code);
 	};
 
 	// The core of that name, when this build links it (build/libretro/objects.txt); null when not

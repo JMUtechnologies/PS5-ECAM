@@ -79,6 +79,7 @@ namespace ps5ingame3ds
 		bool s_undoRequest = false;
 		std::vector<std::string> s_amiibo; // under s_mutex, with the four below
 		std::vector<std::pair<std::string, bool>> s_cheats;
+		bool s_cheatsShown = true; // a libretro core's: only one that takes cheats has the page (SetCheatsShown)
 		bool s_cheevosShown = false; // RetroAchievements, under s_mutex with the two below
 		std::string s_cheevosSummary;
 		std::vector<Achievement> s_cheevos;
@@ -503,7 +504,7 @@ namespace ps5ingame3ds
 			using Row = ps5menu::Row;
 			std::string time, stateMessage, amiibo, amiiboMessage;
 			std::vector<std::pair<std::string, bool>> cheats;
-			bool noAmiibo, undo;
+			bool noAmiibo, undo, cheatsShown;
 			bool cheevosShown;
 			std::string cheevosSummary;
 			std::vector<Achievement> cheevos;
@@ -521,6 +522,7 @@ namespace ps5ingame3ds
 				amiibo = noAmiibo ? Tr("None") : s_amiibo[s_amiiboIndex];
 				amiiboMessage = s_extrasMessage;
 				cheats = s_cheats;
+				cheatsShown = s_cheatsShown;
 			}
 			const int resolution = std::clamp(settings.resolution, 1, 10);
 			const bool ds = s_console == Console::Nds;
@@ -639,21 +641,23 @@ namespace ps5ingame3ds
 					Tr("Saves now, replacing what is in the slot. Keep saving in the game too: updates may not load old states.")},
 			}});
 			Row cheatRows{"cheats", Tr("Cheats"), "", false,
-				ds ? Tr("The game's cheats, from melonds/cheats/<game file>.mch (melonDS's format).") :
-					 Tr("The game's cheats, from azahar/cheats/<title ID>.txt (Gateway format).")};
+				single ? Tr("The game's cheats, from cheats/<game file>.cht in its system's folder (RetroArch's format).") :
+				ds	   ? Tr("The game's cheats, from melonds/cheats/<game file>.mch (melonDS's format).") :
+						 Tr("The game's cheats, from azahar/cheats/<title ID>.txt (Gateway format).")};
 			for (size_t i = 0; i < cheats.size(); i++)
 				cheatRows.rows.push_back({fmt::format("cheat{}", i), cheats[i].first, cheats[i].second ? on : off, true,
 					Tr("Cross, Left or Right turns it on or off. It is remembered.")});
 			if (cheats.empty())
 				cheatRows.rows.push_back({"nocheats", Tr("No cheats for this game"), "", false,
 					// tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-					ds ? TrF("Put them in {0}/melonds/cheats/<game file>.mch, then restart the game.", ecam_layout::Parent(ps5paths::MelonDs())) :
+					single ? Tr("Get cheats in the game's settings in the library, or put a .cht file in the system's cheats folder, then restart the game.") :
+					ds ? TrF("Get cheats in the game's settings in the library, or put them in {0}/melonds/cheats/<game file>.mch, then restart the game.", ecam_layout::Parent(ps5paths::MelonDs())) :
 						 // tr: {0} is the app's data folder: /data/ps5cemu, or the PS5CEMU-HAR-data folder on the drive the app is installed on
-						 TrF("Put them in {0}/azahar/cheats/<title ID>.txt, then restart the game.", ecam_layout::Parent(ps5paths::Azahar()))});
+						 TrF("Get cheats in the game's settings in the library, or put them in {0}/azahar/cheats/<title ID>.txt, then restart the game.", ecam_layout::Parent(ps5paths::Azahar()))});
 			else
 				// tr: how many of the game's cheats are on: {0} of {1}
 				cheatRows.value = TrF("{0} of {1} on", std::count_if(cheats.begin(), cheats.end(), [](const auto& c) { return c.second; }), cheats.size());
-			if (!single)
+			if (!single || cheatsShown)
 				rows.push_back(cheatRows);
 			if (cheevosShown) // the DS's and a libretro side's (app/achievements.h)
 			{
@@ -1066,6 +1070,7 @@ namespace ps5ingame3ds
 		s_name = name;
 		s_titleId = titleId;
 		s_console = console;
+		s_cheatsShown = console != Console::Retro; // a libretro core's says so (SetCheatsShown)
 		s_system = system;
 		// its colour, and the dark of it for what is written on it (as the sides' palettes have)
 		const uint32_t ink = (colour >> 16 & 0xff) * 12 / 100 << 16 | (colour >> 8 & 0xff) * 12 / 100 << 8 | (colour & 0xff) * 12 / 100;
@@ -1170,6 +1175,12 @@ namespace ps5ingame3ds
 		std::lock_guard lock(s_mutex);
 		s_amiibo = amiibo;
 		s_cheats = cheats;
+	}
+
+	void SetCheatsShown(bool shown)
+	{
+		std::lock_guard lock(s_mutex);
+		s_cheatsShown = shown;
 	}
 
 	void SetAchievements(bool shown, const std::string& summary, const std::vector<Achievement>& achievements)

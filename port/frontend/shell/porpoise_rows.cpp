@@ -1631,6 +1631,7 @@ namespace ps5shell
 		toggle.description = Tr("Covers for the library, downloaded once.");
 		toggle.help = toggle.description;
 		rows.push_back(std::move(toggle));
+		rows.push_back(CheatsAutoRow(settings)); // every game's cheats (cheat_rows.cpp)
 		Row art;
 		art.kind = Row::Kind::Action;
 		art.id = "steamgriddb";
@@ -1710,6 +1711,7 @@ namespace ps5shell
 
 	std::vector<Row> Shell::PorpoiseCheatRows()
 	{
+		CheatsRefresh(); // a download's codes read again
 		ReadPorpoiseGame();
 		std::vector<Row> rows;
 		const auto& cheats = m_porpoiseGame.cheats;
@@ -1726,6 +1728,7 @@ namespace ps5shell
 			rows.push_back(std::move(wide));
 			if (m_porpoiseGame.id.size() == 6)
 			{
+				rows.push_back(CheatsGetRow());
 				Row add = GameRow(Row::Kind::Action, "addcode", Tr("Your own code"), Tr("Type a Gecko code and a name. It's saved in /data/porpoise/cheats and turned on."));
 				add.value = Tr("Add a code");
 				rows.push_back(std::move(add));

@@ -35,6 +35,8 @@
 	void core##_retro_unload_game(void) __attribute__((weak, visibility("hidden"))); \
 	void* core##_retro_get_memory_data(unsigned) __attribute__((weak, visibility("hidden"))); \
 	size_t core##_retro_get_memory_size(unsigned) __attribute__((weak, visibility("hidden"))); \
+	void core##_retro_cheat_reset(void) __attribute__((weak, visibility("hidden"))); \
+	void core##_retro_cheat_set(unsigned, bool, const char*) __attribute__((weak, visibility("hidden"))); \
 	}
 
 #define PS5LIBRETRO_ENTRY(core) \
@@ -42,7 +44,8 @@
 		core##_retro_get_system_av_info, core##_retro_set_environment, core##_retro_set_video_refresh, core##_retro_set_audio_sample, \
 		core##_retro_set_audio_sample_batch, core##_retro_set_input_poll, core##_retro_set_input_state, \
 		core##_retro_set_controller_port_device, core##_retro_reset, core##_retro_run, core##_retro_serialize_size, core##_retro_serialize, \
-		core##_retro_unserialize, core##_retro_load_game, core##_retro_unload_game, core##_retro_get_memory_data, core##_retro_get_memory_size}
+		core##_retro_unserialize, core##_retro_load_game, core##_retro_unload_game, core##_retro_get_memory_data, core##_retro_get_memory_size, \
+		core##_retro_cheat_reset, core##_retro_cheat_set}
 
 // tools/build-libretro.py's cores (its cores(), and ps5retro::kSystems' core)
 PS5LIBRETRO_CORE(mesen)
