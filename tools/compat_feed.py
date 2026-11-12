@@ -4,20 +4,21 @@
 
     tools/compat_feed.py [--reports TABLE] [--out FILE]
 
-From the compatibility list (docs/COMPATIBILITY.md: the owner's, with notes) and, when given, the report
+From the owner's statuses (tools/compat-list.json: a game the owner played, and how it runs) and, when given, the report
 intake's table (GET /v1/compatibility.json: what players' consoles reported, site/build.py has it). The
 site puts it at premohq.github.io/PlayTendoh/status.json every hour; tools/package.sh bundles the list's
-own (no reports) as assets/compatibility.json for a console that never got the site's.
+own (no reports) as assets/compatibility.json for a console that never got the site's. The site
+(compatibility.html) is where players see how games run.
 
     {"schema": 1, "generated": "2026-11-11T05:00:00Z", "games": [
       {"side": "wiiu", "titleId": "00050000101c9500", "name": "...", "status": "playable",
        "region": "USA, v208", "notes": "...", "consoles": 3, "sessions": 10, "ended": 9}]}
 
 side: the launcher's side keys (launcher.h SideName). status: playable, issues or broken (Not playable).
-titleId (16 hex digits), region, notes and the counts only when there are any. The console finds a game
+titleId (16 hex digits), region and the counts only when there are any. The console finds a game
 by side and title ID, else by side and name, compared without case, spaces or punctuation.
 
-A game the list has keeps the list's status and notes; the reports give it their counts. A game only the
+A game the owner gave a status keeps it; the reports give it their counts. A game only the
 reports have gets a status from them once two of its sessions said something: one that ended from the
 game's menu went well, one that did not start or crashed did not (closed under it says nothing). Four in
 five went well: playable; none did: broken; else issues.
@@ -31,16 +32,9 @@ import re
 import sys
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-LIST = os.path.join(REPO_ROOT, "docs", "COMPATIBILITY.md")
+LIST = os.path.join(REPO_ROOT, "tools", "compat-list.json")
 
-# a list's section, by its heading's words before any "(": the side it is ("## Nintendo 3DS (Azahar)")
-SECTIONS = {"wii u": "wiiu", "3ds": "3ds", "ds": "ds", "switch": "switch", "switch 2": "switch2", "gamecube": "gamecube", "wii": "wii",
-            "64": "n64", "n64": "n64", "nes": "nes", "entertainment system": "nes", "game boy": "gb", "game boy color": "gbc",
-            "game boy advance": "gba", "snes": "snes", "super nintendo": "snes", "super nes": "snes", "virtual boy": "vb",
-            "pokémon mini": "pokemini", "pokemon mini": "pokemini", "famicom disk system": "fds", "fds": "fds", "super game boy": "sgb",
-            "game & watch": "gw", "game and watch": "gw", "satellaview": "satellaview", "vs. system": "vs", "vs system": "vs", "ique": "ique"}
-STATUSES = {"playable": "playable", "issues": "issues", "crashes": "broken", "won't start": "broken", "won’t start": "broken",
-            "not playable": "broken"}
+STATUSES = ("playable", "issues", "broken")
 TITLE_ID = re.compile(r"[0-9a-f]{16}")
 
 
@@ -49,45 +43,12 @@ def key(name):
     return "".join(c for c in name.lower() if c.isalnum() and c.isascii())
 
 
-def plain(cell):
-    """A cell as text: no bold, links as their words (as tools/lang.py takes the notes, for their translations)."""
-    return re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", cell.replace("**", "")).strip()
-
-
-def side_of(heading):
-    words = heading.lstrip("#").split("(")[0].strip().lower()
-    words = re.sub(r"^nintendo\s+", "", words)
-    return SECTIONS.get(words)
-
-
 def from_list(text):
-    """The list's games: one a row of each system's table."""
+    """The owner's games (tools/compat-list.json): side, name, status, and a region when it matters."""
     games = []
-    side = None
-    columns = None
-    for line in text.splitlines():
-        if line.startswith("## "):
-            side = side_of(line)
-            columns = None
-            continue
-        if not side or not line.startswith("|"):
-            columns = None if not line.startswith("|") else columns
-            continue
-        cells = [c.strip() for c in line.strip().strip("|").split("|")]
-        if "Game" in cells and "Status" in cells:
-            columns = {name: cells.index(name) for name in cells}
-            continue
-        if columns is None or set("".join(cells)) <= set("-: "):
-            continue
-        cell = lambda name: plain(cells[columns[name]]) if name in columns and columns[name] < len(cells) else ""
-        name, status = cell("Game"), STATUSES.get(cell("Status").lower())
-        if not name or not status:
-            continue
-        game = {"side": side, "name": name, "status": status}
-        for field, column in (("region", "Region / version"), ("notes", "Notes")):
-            if cell(column):
-                game[field] = cell(column)
-        games.append(game)
+    for g in json.loads(text).get("games") or []:
+        if isinstance(g, dict) and isinstance(g.get("side"), str) and isinstance(g.get("name"), str) and g.get("status") in STATUSES:
+            games.append({k: g[k] for k in ("side", "name", "status", "region") if isinstance(g.get(k), str) and g[k]})
     return games
 
 
@@ -137,7 +98,7 @@ def feed(list_text, reports=None, now=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("--list", default=LIST, help="the compatibility list (default: docs/COMPATIBILITY.md)")
+    parser.add_argument("--list", default=LIST, help="the owner's statuses (default: tools/compat-list.json)")
     parser.add_argument("--reports", help="the report intake's table (GET /v1/compatibility.json)")
     parser.add_argument("--out", default="-", help="where to write it (default: standard output)")
     args = parser.parse_args()

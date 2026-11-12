@@ -1,5 +1,5 @@
-// Playtendoh's site: how games run. The compatibility list's games (list.json beside this page, from
-// docs/COMPATIBILITY.md: site/build.py) keep the list's status and notes; the reports' table, read live from the report
+// Playtendoh's site: how games run. The owner's games (list.json beside this page, from
+// tools/compat-list.json: site/build.py) keep the owner's status; the reports' table, read live from the report
 // intake (tools/log-intake), which rebuilds it at most once an hour, gives every game its counts, and the games the list
 // does not have a status of their own, as the console reads them (tools/compat_feed.py). compatibility.json beside this
 // page when the intake can't be reached. Every value goes into the page as text, never as HTML.
@@ -50,12 +50,6 @@ function draw() {
 			id.textContent = under;
 			name.appendChild(document.createElement('br'));
 			name.appendChild(id);
-		}
-		if (g.notes) {
-			const notes = document.createElement('span');
-			notes.className = 'compat-notes';
-			notes.textContent = g.notes;
-			name.appendChild(notes);
 		}
 		if (g.commonError) name.title = 'Most often: ' + g.commonError;
 		cell(row, side(g.side));

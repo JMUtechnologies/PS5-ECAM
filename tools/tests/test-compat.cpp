@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 	const Report* kart = Find("wiiu", 0x000500001010ec00ULL, "something else");
 	Check(kart && kart->status == "Playable" && kart->sessions == 14 && kart->ended == 13, "by side and title ID, with the reports' counts");
 	const Report* botw = Find("wiiu", 0, "the legend of zelda breath of the wild");
-	Check(botw && botw->status == "Playable" && !botw->notes.empty(), "by name, without case or punctuation, with the list's notes");
+	Check(botw && botw->status == "Playable", "by name, without case or punctuation");
 	Check(Find("3ds", 0, "Mario Kart 8") == nullptr, "never another side's");
 	const Report* world = Find("wiiu", 0x0005000010145d00ULL, "");
 	Check(world && world->status == "Not playable" && std::string(Kind(world->status)) == "bad", "Not playable, marked bad");

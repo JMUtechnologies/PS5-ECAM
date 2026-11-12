@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Playtendoh: how a game runs in the app, for the launcher's badges and game pages: Playable, Issues or
-// Not playable, with the list's notes. One feed for every system (tools/compat_feed.py): the
-// compatibility list (docs/COMPATIBILITY.md) and what players' reports say, which the site makes every
+// Not playable. One feed for every system (tools/compat_feed.py): the owner's own statuses
+// (tools/compat-list.json) and what players' reports say, which the site makes every
 // hour (premohq.github.io/PlayTendoh/status.json). The console fetches it a few seconds after the
 // launcher is up (compat_fetch.cpp), keeps it (cache/compatibility.json, with its ETag), and reads that
 // copy until a newer one comes; with none yet, the one the app came with (assets/compatibility.json, the
-// list alone). A game is found by its side and title ID, else by its name, compared without case,
+// owner's statuses alone). A game is found by its side and title ID, else by its name, compared without case,
 // spaces or punctuation ("Batman™: Arkham Origins" is "Batman: Arkham Origins").
 
 #pragma once

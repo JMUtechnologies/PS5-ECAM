@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <map>
 #include <mutex>
 #include <string_view>
@@ -305,10 +306,151 @@ namespace ps5gameinfo
 		return ps5lang::List(names);
 	}
 
+	namespace
+	{
+		bool s_cartsLoaded = false;							  // under s_mutex
+		std::unordered_map<std::string, std::string> s_carts; // under s_mutex: "<system>\t<name>" -> the rest of its line
+
+		// The table whole (tools/render-carts.py), under s_mutex
+		void LoadCarts()
+		{
+			s_cartsLoaded = true;
+			const std::string path = Folder() + "/launchbox-carts.tsv.gz";
+			gzFile file = gzopen(path.c_str(), "rb");
+			if (!file)
+			{
+				ps5log::Line("[gameinfo] {} cannot be read: the Timeline draws the cartridges", path);
+				return;
+			}
+			std::string text;
+			std::vector<char> buffer(1 << 16);
+			for (int read; (read = gzread(file, buffer.data(), (unsigned)buffer.size())) > 0;)
+				text.append(buffer.data(), (size_t)read);
+			gzclose(file);
+			for (size_t start = 0; start < text.size();)
+			{
+				size_t end = text.find('\n', start);
+				if (end == std::string::npos)
+					end = text.size();
+				const size_t first = text.find('\t', start);
+				const size_t second = first == std::string::npos ? first : text.find('\t', first + 1);
+				if (second != std::string::npos && second < end)
+					s_carts.emplace(text.substr(start, second - start), text.substr(second + 1, end - second - 1));
+				start = end + 1;
+			}
+			ps5log::Line("[gameinfo] {}: {} names", path, s_carts.size());
+		}
+
+		// A game's name as the table has it (as boxart.cpp's Words match libretro's): lower case, what is in
+		// brackets left out (regions, revisions), letters and digits run together, without "the", "of", "and",
+		// "a", "version", "edition"
+		std::string CartName(std::string name)
+		{
+			for (const auto& [from, to] : {std::pair<const char*, const char*>{"\xc3\xa9", "e"}, {"\xc3\x89", "e"}, {"&", " and "}})
+				for (size_t at = 0; (at = name.find(from, at)) != std::string::npos; at += std::strlen(to))
+					name.replace(at, std::strlen(from), to);
+			static const char* const kLeftOut[] = {"the", "version", "edition", "a", "and", "of"};
+			std::string out, word;
+			int depth = 0;
+			const auto flush = [&] {
+				if (std::none_of(std::begin(kLeftOut), std::end(kLeftOut), [&](const char* left) { return word == left; }))
+					out += word;
+				word.clear();
+			};
+			for (const char c : name)
+			{
+				if (c == '(' || c == '[')
+					flush(), depth++;
+				else if ((c == ')' || c == ']') && depth)
+					depth--;
+				else if (!depth && std::isalnum((unsigned char)c))
+					word += (char)std::tolower((unsigned char)c);
+				else
+					flush();
+			}
+			flush();
+			return out;
+		}
+
+		// The region a game file's name gives (No-Intro's): U America (and the world's), E Europe (its
+		// countries, Australia), J Japan; 0 when it names none
+		char CartRegion(const std::string& name)
+		{
+			const auto has = [&](const char* tag) { return name.find(tag) != std::string::npos; };
+			if (has("(USA") || has(", USA") || has("(World"))
+				return 'U';
+			for (const char* europe : {"(Europe", "(Germany", "(France", "(Spain", "(Italy", "(UK", "(Australia", "(Netherlands", "(Sweden", "(Scandinavia"})
+				if (has(europe))
+					return 'E';
+			if (has("(Japan"))
+				return 'J';
+			return 0;
+		}
+
+		// Which shape a region's cartridges have: the Famicom's not the NES's, the Super Famicom's (Japan's and
+		// Europe's) not the Super NES's (America's); every Game Boy's and Nintendo 64's one
+		int CartShape(const std::string& system, char region)
+		{
+			if (system == "nes")
+				return region == 'J' ? 1 : 0;
+			if (system == "snes")
+				return region == 'U' || region == 'W' ? 0 : 1;
+			return 0;
+		}
+	}
+
+	bool FindCart(const std::string& system, const std::string& fileName, Cart& cart)
+	{
+		cart = {};
+		const std::string name = CartName(fileName);
+		if (name.size() < 2)
+			return false;
+		std::string line;
+		{
+			std::lock_guard lock(s_mutex);
+			if (!s_cartsLoaded)
+				LoadCarts();
+			// a Game Boy game in the Game Boy Color's list, or one the other way round, as libretro's covers are
+			for (const std::string& in : {system, std::string(system == "gbc" ? "gb" : system == "gb" ? "gbc" : "")})
+				if (const auto at = s_carts.find(in + '\t' + name); !in.empty() && at != s_carts.end())
+				{
+					line = at->second;
+					break;
+				}
+		}
+		// year, publisher, the pictures as region=file
+		const size_t first = line.find('\t'), second = first == std::string::npos ? first : line.find('\t', first + 1);
+		if (second == std::string::npos)
+			return false;
+		cart.year = std::atoi(line.substr(0, first).c_str());
+		cart.publisher = line.substr(first + 1, second - first - 1);
+		// the cartridge of the file's own region, else the world's or another shaped as it is; with no region
+		// named, America's first
+		const char own = CartRegion(fileName) ? CartRegion(fileName) : 'U';
+		int best = 0;
+		for (size_t at = second + 1; at < line.size();)
+		{
+			size_t end = line.find(',', at);
+			if (end == std::string::npos)
+				end = line.size();
+			if (end - at > 2 && line[at + 1] == '=')
+			{
+				const char region = line[at];
+				const int score = region == own ? 4 : CartShape(system, region) != CartShape(system, own) ? 0 : region == 'W' ? 3 : region == 'U' ? 2 : 1;
+				if (score > best)
+					best = score, cart.picture = line.substr(at + 2, end - at - 2);
+			}
+			at = end + 1;
+		}
+		return true;
+	}
+
 	void SetFolder(const std::string& folder)
 	{
 		std::lock_guard lock(s_mutex);
 		s_folder = folder;
 		s_databases.clear();
+		s_carts.clear();
+		s_cartsLoaded = false;
 	}
 }

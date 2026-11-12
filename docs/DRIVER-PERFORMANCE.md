@@ -71,7 +71,7 @@ to look first if 8K stops or stutters where 4K does not.
 
 ## Where things stand
 
-- **BotW already holds about 60 fps at 1440p** ([COMPATIBILITY.md](COMPATIBILITY.md), and the
+- **BotW already holds about 60 fps at 1440p** ([the compatibility page](https://premohq.github.io/PlayTendoh/compatibility.html), and the
   timer regression patch 0011 found while testing it). 4K is 2.25 times the pixels. Most of Cemu's
   CPU work does not grow with resolution, so going from 1440p to 4K is mostly a question of GPU
   time, and of anything that leaves the GPU idle while there is work for it.

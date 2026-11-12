@@ -39,6 +39,19 @@ namespace ps5gameinfo
 	std::string Year(const std::string& released);
 	std::string Genres(const std::string& genre, int most = 0);
 
+	// The libretro sides' games, which GameTDB has none of: the LaunchBox Games Database's year and publisher
+	// for a game file's name (No-Intro's), and the picture of its cartridge from the region the name gives (a
+	// Japanese NES game's Famicom cartridge), else one shaped the same (never a Famicom cartridge for an
+	// American NES game); ps5boxart::FetchCarts fetches it. From tools/render-carts.py's table,
+	// launchbox-carts.tsv.gz beside GameTDB's. system: nes, snes, gb, gbc, gba, n64, vb or mini; false when
+	// the game is not in it.
+	struct Cart
+	{
+		int year = 0;
+		std::string publisher;
+		std::string picture; // its name at the LaunchBox Games Database (empty: none in a region shaped as it is)
+	};
+	bool FindCart(const std::string& system, const std::string& fileName, Cart& cart);
 	// Where the databases are (default: the app's assets/gametdb); the launcher's preview on a PC
 	// gives its own.
 	void SetFolder(const std::string& folder);

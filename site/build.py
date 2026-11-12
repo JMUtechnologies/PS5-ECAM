@@ -12,7 +12,7 @@ at once and still has them when the API turns a reader away. The page asks the A
 release as it opens (app.js).
 
 With --compat, the report intake's table goes beside compatibility.html (compatibility.json), and with
-the compatibility list (docs/COMPATIBILITY.md) it makes status.json: how each game runs, which the console
+the owner's statuses (tools/compat-list.json) it makes status.json: how each game runs, which the console
 fetches as the app starts (tools/compat_feed.py, port/app/compatibility.h).
 """
 
@@ -182,7 +182,7 @@ def main():
     with open(compat_feed.LIST, encoding="utf-8") as f:
         listed = f.read()
     status = compat_feed.feed(listed, games)
-    # compatibility.html's: the list's games, whose status wins over the reports' (docs/COMPATIBILITY.md)
+    # compatibility.html's: the owner's games, whose status wins over the reports' (tools/compat-list.json)
     with open(os.path.join(args.out, "list.json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump({"schema": 1, "games": compat_feed.from_list(listed)}, f, ensure_ascii=False, separators=(",", ":"))
     with open(os.path.join(args.out, "status.json"), "w", encoding="utf-8", newline="\n") as f:
