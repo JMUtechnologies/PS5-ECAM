@@ -30,7 +30,7 @@
   <a href="https://premohq.github.io/PlayTendoh/">Website</a> ·
   <a href="#install">Install</a> ·
   <a href="docs/GUIDE.md">Guide</a> ·
-  <a href="docs/COMPATIBILITY.md">Compatibility</a> ·
+  <a href="https://premohq.github.io/PlayTendoh/compatibility.html">Compatibility</a> ·
   <a href="#credits">Credits</a> ·
   <a href="#support">Support</a>
 </p>
@@ -76,7 +76,7 @@
   and Super Scope, and tilt for the Game Boy games that read it, each plugged in for the games that use it.
 - **Cheats on every console that has them**, downloaded for one game or the whole library; **Fetch cheats
   automatically** keeps them coming.
-- **How games run, on every game:** a badge from the [compatibility list](docs/COMPATIBILITY.md), fetched as
+- **How games run, on every game:** a badge from the [compatibility list](https://premohq.github.io/PlayTendoh/compatibility.html), fetched as
   the app starts and made every hour from the list and the players' reports.
 - **Reports, if you say yes:** asked once, Playtendoh sends a short report when a game ends (the game, how it
   ran, the settings and the PS5's firmware and model, nothing about you), so what fails gets fixed. Never
@@ -208,7 +208,7 @@ Every shortcut, the in-game menu and the rest are in the [guide](docs/GUIDE.md).
 ## Documentation
 
 - [Guide](docs/GUIDE.md): the launcher, each system, controls, saves, mods, the remote touch screen and where files are kept
-- [Firmware and setup](docs/HEN-SETUP.md) · [Mods](docs/GUIDE.md#mods) · [Compatibility](docs/COMPATIBILITY.md)
+- [Firmware and setup](docs/HEN-SETUP.md) · [Mods](docs/GUIDE.md#mods) · [Compatibility](https://premohq.github.io/PlayTendoh/compatibility.html) (live, from the reports and [the tested games](docs/COMPATIBILITY.md))
 - [Building from source](docs/BUILDING.md) · [Driver performance](docs/DRIVER-PERFORMANCE.md) · [Roadmap](docs/ROADMAP.md) · [Reports](docs/REPORTS.md)
 - [Contributing](CONTRIBUTING.md): where the app is going, its look and voice, and how to send a change
 - Problems: **Settings > Diagnostics > Copy logs to USB**, then [open an issue](https://github.com/premohq/PlayTendoh/issues/new/choose)
