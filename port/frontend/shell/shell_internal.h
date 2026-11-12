@@ -439,6 +439,10 @@ namespace ps5shell
 		void TimelineStopDraw(Canvas& canvas);
 		void TimelineStopColours(uint32_t dots[3]) const; // its mark's three dots: the consoles' colours it shows
 		void TimelineMedia(); // the real discs' and cards' pictures, looked for again as they arrive
+		// A game's manual as Nintendo keeps it online (ps5gameinfo::FindManual), the Timeline's label's and the
+		// Game hub's QR code; empty when it has none. And that code drawn on its white card
+		std::string ManualOf(System side, const Game& game);
+		void DrawManualQr(Canvas& canvas, const std::string& address, const Box& box);
 		void TimelineBuild(); // its shelves, from every side's catalogue
 		// its ruler in area: the eras, the years, a mark for each console (focusShelf's larger), the player's games
 		// by year, and a pointer under pointerYear (-1: none); ground behind the marks (0: none)

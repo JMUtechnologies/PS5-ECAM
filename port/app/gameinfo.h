@@ -12,6 +12,7 @@
 #include "boxart.h"
 
 #include <string>
+#include <vector>
 
 namespace ps5gameinfo
 {
@@ -52,6 +53,11 @@ namespace ps5gameinfo
 		std::string picture; // its name at the LaunchBox Games Database (empty: none in a region shaped as it is)
 	};
 	bool FindCart(const std::string& system, const std::string& fileName, Cart& cart);
+	// A game's manual as Nintendo keeps it online (tools/render-manuals.py's table, manuals.tsv.gz: the NES and
+	// Super NES Classic Editions' and the Wii U's electronic manuals), by any of its names (its file's, its own,
+	// GameTDB's), matched as FindCart's are: the PDF's address, for a QR code; empty when there is none.
+	// system: nes, snes or wiiu.
+	std::string FindManual(const std::string& system, const std::vector<std::string>& names);
 	// Where the databases are (default: the app's assets/gametdb); the launcher's preview on a PC
 	// gives its own.
 	void SetFolder(const std::string& folder);

@@ -308,6 +308,8 @@ namespace ps5gameinfo
 
 	namespace
 	{
+		bool s_manualsLoaded = false;							// under s_mutex
+		std::unordered_map<std::string, std::string> s_manuals; // under s_mutex: "<system>\t<name>" -> its address
 		bool s_cartsLoaded = false;							  // under s_mutex
 		std::unordered_map<std::string, std::string> s_carts; // under s_mutex: "<system>\t<name>" -> the rest of its line
 
@@ -399,6 +401,44 @@ namespace ps5gameinfo
 		}
 	}
 
+	std::string FindManual(const std::string& system, const std::vector<std::string>& names)
+	{
+		std::lock_guard lock(s_mutex);
+		if (!s_manualsLoaded)
+		{
+			// the table whole: system, name, title, address a line
+			s_manualsLoaded = true;
+			const std::string path = Folder() + "/manuals.tsv.gz";
+			if (gzFile file = gzopen(path.c_str(), "rb"))
+			{
+				std::string text;
+				std::vector<char> buffer(1 << 14);
+				for (int read; (read = gzread(file, buffer.data(), (unsigned)buffer.size())) > 0;)
+					text.append(buffer.data(), (size_t)read);
+				gzclose(file);
+				for (size_t start = 0; start < text.size();)
+				{
+					size_t end = text.find('\n', start);
+					if (end == std::string::npos)
+						end = text.size();
+					const size_t first = text.find('\t', start);
+					const size_t second = first == std::string::npos ? first : text.find('\t', first + 1);
+					const size_t third = second == std::string::npos ? second : text.find('\t', second + 1);
+					if (third != std::string::npos && third < end)
+						s_manuals.emplace(text.substr(start, second - start), text.substr(third + 1, end - third - 1));
+					start = end + 1;
+				}
+			}
+			else
+				ps5log::Line("[gameinfo] {} cannot be read: no manuals", path);
+		}
+		for (const std::string& name : names)
+			if (const std::string key = CartName(name); key.size() >= 2)
+				if (const auto at = s_manuals.find(system + '\t' + key); at != s_manuals.end())
+					return at->second;
+		return {};
+	}
+
 	bool FindCart(const std::string& system, const std::string& fileName, Cart& cart)
 	{
 		cart = {};
@@ -454,5 +494,7 @@ namespace ps5gameinfo
 		s_databases.clear();
 		s_carts.clear();
 		s_cartsLoaded = false;
+		s_manuals.clear();
+		s_manualsLoaded = false;
 	}
 }

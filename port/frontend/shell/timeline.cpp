@@ -571,6 +571,28 @@ namespace ps5shell
 		}
 	}
 
+	// -- a game's manual, as Nintendo keeps it online ---------------------------------------------------
+
+	std::string Shell::ManualOf(System side, const Game& game)
+	{
+		const char* system = side == System::Nes ? "nes" : side == System::Snes ? "snes" : side == System::WiiU ? "wiiu" : "";
+		if (!*system)
+			return {};
+		std::vector<std::string> names = {game.entry.game.path.stem().string(), game.entry.game.name};
+		if (game.known && !game.info.title.empty())
+			names.push_back(game.info.title);
+		return ps5gameinfo::FindManual(system, names);
+	}
+
+	void Shell::DrawManualQr(Canvas& canvas, const std::string& address, const Box& box)
+	{
+		auto code = m_qrCodes.find(address);
+		if (code == m_qrCodes.end())
+			code = m_qrCodes.emplace(address, ui::QrCode(address)).first;
+		if (code->second.Size())
+			ui::DrawQr(canvas, code->second, box, 12);
+	}
+
 	// -- the Timeline -----------------------------------------------------------------------------------
 
 	void Shell::TimelineBuild()
@@ -1084,7 +1106,17 @@ namespace ps5shell
 
 		// the game in focus, on its museum label, and its console's placard on the slot it goes in
 		canvas.PushAlpha(Enter(2));
-		const float x = kLeft, width = 1180;
+		// its manual, where Nintendo keeps one online: a QR code at the label's end, to read it on a phone
+		const std::string manual = focus ? ManualOf(shelf.side, *focus) : std::string();
+		const float x = kLeft, width = manual.empty() ? 1180.0f : 1000.0f;
+		if (!manual.empty())
+		{
+			const Box code{kLeft + 1180 - 150, 694, 150, 150};
+			DrawManualQr(canvas, manual, code);
+			// tr: under a QR code on the Timeline's museum label: it opens the game's manual on a phone
+			const ui::TextBlock caption = m_fonts.Layout(Style({14, ui::Weight::Medium, 1.0f, 0.4f, true, true}), Tr("Manual"));
+			canvas.Text(caption, code.CentreX() - caption.width * 0.5f, code.Bottom() + 10, kInk3);
+		}
 		if (focus)
 		{
 			const int year = focus->year ? focus->year : shelf.year;

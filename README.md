@@ -62,7 +62,10 @@
   **EmulationStation (ES-DE)**, an optional download only if you pick it, its games played here.
 - **The Timeline**, a stop after the last console in Classic and Orbit: a museum of every console's games on
   one shelf, oldest to newest, by era, each as the disc or cartridge it came on, in its true shape, with
-  GameTDB's real disc and cartridge scans where there are some.
+  GameTDB's real disc and card scans and the LaunchBox Games Database's photographs of each classic's own
+  cartridge, from its own region (a Japanese NES game's Famicom cartridge), or Game & Watch unit. A game whose
+  manual Nintendo keeps online (the NES and Super NES Classic Editions', the Wii U's) has a QR code to it
+  there and in its Game hub, to read on a phone.
 - **Quicker to get around:** L2 and R2 for the Library and Settings, a touchpad click for the next console.
 - **A shorter first start:** one question a screen (language, layout, covers, which button is A, reports),
   then a summary of what's ready that asks nothing.
@@ -337,7 +340,8 @@ says where the app is going and how to fit in.
 - The **libretro** team for RetroArch's [XMB Monochrome](https://github.com/libretro/retroarch-assets) icons, the
   consoles' marks in the launcher (CC BY 4.0; shrunk and made white on clear, the Switch's also with a raised 2
   for the Switch 2, tools/render-console-icons.py)
-- [GameTDB](https://www.gametdb.com/) for box art and game information, and the authors of the
+- [GameTDB](https://www.gametdb.com/) for box art and game information, the
+  [LaunchBox Games Database](https://gamesdb.launchbox-app.com/) for the Timeline's cartridges and the classics' years, and the authors of the
   [Cemu community graphic packs](https://github.com/cemu-project/cemu_graphic_packs)
 
 ## License
