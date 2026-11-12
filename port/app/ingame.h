@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // PS5Cemu: what the port shows and decides over a running game (ingame.cpp):
+//   - its loading screen (loading_screen.h, every side's), in place of Cemu's shader cache screen;
 //   - its menu (touchpad + Options), a panel down the left (side_menu.h) with the game's box art,
 //     name, publisher and year at its top: the screens, the picture and Cemu's graphics settings,
 //     the volume, amiibo, the controllers, back to the library;

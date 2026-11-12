@@ -7,6 +7,7 @@
 #include "gameinfo.h"
 #include "keyboard_menu.h"
 #include "lang.h"
+#include "loading_screen.h"
 #include "menu_canvas.h"
 #include "remote_menu.h"
 #include "paths.h"
@@ -113,6 +114,14 @@ namespace
 	ImTextureID s_cover = nullptr;
 	ImTextureID s_pad = nullptr; // the Buttons page's DualSense (assets/ui/dualsense.tga), made with the cover
 	int s_coverWidth = 0, s_coverHeight = 0;
+	// Playtendoh's loading screen (loading_screen.h) in place of Cemu's shader cache screen, while
+	// Cemu reads the game's cached shaders and pipelines (PS5Cemu_DrawLoading), then fading over the
+	// game's first frames (PS5Cemu_RenderOverlay): the cover's small copy for its ground, and when it
+	// first showed, when Cemu was done with it and when the game first drew (sceKernelGetProcessTime)
+	ps5menu::LoadingPicture s_blur;
+	uint64_t s_loadingFrom = 0;
+	bool s_loadingDone = false;
+	uint64_t s_fadeFrom = 0;
 
 	float UiScale()
 	{
@@ -598,6 +607,31 @@ namespace
 		return fonts.heading && fonts.body && fonts.label && fonts.caption && fonts.chip;
 	}
 
+	// The loading screen, as every side draws it; alpha falls as it fades into the game
+	void DrawLoading(const std::string& step, float progress, float alpha)
+	{
+		const float scale = UiScale();
+		using ps5menu::Weight;
+		const ps5menu::LoadingFonts fonts{ImGui_GetFontFace((int)Weight::SemiBold, ps5menu::kLoadingTitle * scale),
+			ImGui_GetFontFace((int)Weight::SemiBold, ps5menu::kChip * scale), ImGui_GetFontFace((int)Weight::Medium, ps5menu::kBody * scale),
+			ImGui_GetFontFace((int)Weight::Regular, ps5menu::kLabel * scale), ImGui_GetFontFace((int)Weight::Regular, ps5menu::kCaption * scale)};
+		ps5menu::Loading loading;
+		loading.system = "Wii U";
+		{
+			std::lock_guard lock(s_gameMutex);
+			loading.title = s_gameName;
+			loading.details = s_gameDetails;
+		}
+		if (loading.title.empty())
+			loading.title = CafeSystem::GetForegroundTitleName();
+		loading.step = step;
+		loading.progress = progress;
+		loading.cover = {s_cover, s_coverWidth, s_coverHeight};
+		loading.blur = s_blur;
+		ps5menu::DrawLoading(ImGui::GetForegroundDrawList(), ImGui::GetIO().DisplaySize, scale, ps5menu::kBlue, fonts, loading,
+			(sceKernelGetProcessTime() - s_loadingFrom) / 1e6f, alpha);
+	}
+
 	void DrawMenu(float scale)
 	{
 		ps5menu::Fonts fonts;
@@ -833,7 +867,7 @@ void PS5Cemu_ImGuiInput()
 // after the game).
 void PS5Cemu_ImguiUploads()
 {
-	if (!s_menuOpen || s_coverTried || !g_renderer)
+	if ((!s_menuOpen && !s_loadingFrom) || s_coverTried || !g_renderer)
 		return;
 	s_coverTried = true;
 	// the DualSense's drawing keeps its transparency (patches/cemu 0049: Cemu's GenerateTexture makes every
@@ -852,20 +886,68 @@ void PS5Cemu_ImguiUploads()
 	}
 	std::vector<uint8_t> rgba;
 	int width = 0, height = 0;
-	if (path.empty() || !ps5tga::Load(path, 264, 352, rgba, width, height))
+	if (path.empty() || !ps5tga::Load(path, ps5menu::kLoadingCoverWidth, ps5menu::kLoadingCoverHeight, rgba, width, height))
 	{
 		ps5log::Line("[ingame] no box art for the menu ({})", path.empty() ? "none fetched" : path);
 		return;
 	}
-	std::vector<uint8> rgb((size_t)width * height * 3);
-	for (size_t i = 0; i < (size_t)width * height; i++)
-		std::memcpy(&rgb[i * 3], &rgba[i * 4], 3);
-	s_cover = g_renderer->GenerateTexture(rgb, {width, height});
+	auto opaque = [](const std::vector<uint8_t>& rgba, int width, int height) {
+		std::vector<uint8> rgb((size_t)width * height * 3);
+		for (size_t i = 0; i < (size_t)width * height; i++)
+			std::memcpy(&rgb[i * 3], &rgba[i * 4], 3);
+		return rgb;
+	};
+	s_cover = g_renderer->GenerateTexture(opaque(rgba, width, height), {width, height});
 	if (s_cover)
 	{
 		s_coverWidth = width;
 		s_coverHeight = height;
 	}
+	// its small copy, the loading screen's ground (its colours blurred, drawn large)
+	if (ps5tga::Load(path, ps5menu::kLoadingBlurSize, ps5menu::kLoadingBlurSize, rgba, width, height))
+		if ((s_blur.id = g_renderer->GenerateTexture(opaque(rgba, width, height), {width, height})))
+		{
+			s_blur.width = width;
+			s_blur.height = height;
+		}
+}
+
+// Cemu's shader cache screen (LatteShaderCache.cpp, patches/cemu 0050), on the render thread: the
+// loading screen in its place, with how far Cemu is into the cached shaders (stage 0 reading them, 1
+// compiling them) and pipelines (2), then its last frame before the game's (3), after which it fades
+// over the game's first frames (PS5Cemu_RenderOverlay)
+bool PS5Cemu_DrawLoading(sint32 stage, uint32 done, uint32 of)
+{
+	if (!g_renderer)
+		return false;
+	if (!s_loadingFrom)
+	{
+		s_loadingFrom = sceKernelGetProcessTime();
+		ps5log::Line("[ingame] Playtendoh's loading screen in place of Cemu's shader cache screen");
+	}
+	std::string step;
+	float progress = -1;
+	if (stage >= 3)
+		step = ps5menu::StartingStep();
+	else if (of == 0)
+		step = ps5menu::LoadingStep();
+	else
+	{
+		done = std::min(done, of);
+		step = stage == 2 ? ps5menu::PipelineStep(done, of) : ps5menu::ShaderStep(done, of);
+		progress = (float)done / of;
+	}
+	if (g_renderer->ImguiBegin(true))
+	{
+		DrawLoading(step, progress, 1.0f);
+		g_renderer->ImguiEnd();
+	}
+	if (stage >= 3)
+	{
+		s_loadingDone = true;
+		ps5log::Line("[ingame] the shader cache loaded in {:.1f} s", (sceKernelGetProcessTime() - s_loadingFrom) / 1e6);
+	}
+	return true;
 }
 
 // Cemu's keyboard (swkbd.cpp), on the render thread: drawn as the 3DS's is (app/keyboard_menu.h), in
@@ -919,6 +1001,17 @@ void PS5Cemu_RenderOverlay()
 	{
 		DrawMenu(scale);
 		return;
+	}
+	// the game's first frames: the loading screen fading over them
+	if (s_loadingDone)
+	{
+		const uint64_t now = sceKernelGetProcessTime();
+		if (!s_fadeFrom)
+			s_fadeFrom = now;
+		if (const float since = (now - s_fadeFrom) / 1e6f; since < ps5menu::kLoadingFade)
+			DrawLoading(ps5menu::StartingStep(), -1, ps5menu::LoadingFadeAlpha(since));
+		else
+			s_loadingDone = false;
 	}
 	ImDrawList* draw = ImGui::GetForegroundDrawList();
 	if (ps5ingame::OverlayTakesInput())

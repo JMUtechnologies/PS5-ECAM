@@ -3,6 +3,7 @@
 #include "../app/amiibo_list.h"
 #include "../app/buttons_menu.h"
 #include "../app/lang.h"
+#include "../app/loading_screen.h"
 #include "../app/menu_canvas.h"
 #include "../app/side_menu.h"
 #include "../app/tga.h"
@@ -57,6 +58,7 @@ namespace ps5ingamenx
 		std::atomic<size_t> s_shadersDone{0}, s_shadersOf{0};
 		std::atomic<bool> s_loading{false};
 		std::atomic<bool> s_drawsLoading{false};
+		std::atomic<uint64_t> s_loadingEndedAt{0}; // Now(), as the game first drew: the screen fades into it
 
 		std::atomic<bool> s_ready{false}; // the renderer's ImGui is up: the menu can open
 		std::atomic<bool> s_open{false};
@@ -345,7 +347,7 @@ namespace ps5ingamenx
 			int width = 0, height = 0;
 			if (ps5tga::Load(ps5paths::Assets() + "/ui/dualsense.tga", 1000, 700, rgba, width, height))
 				g.pad = MakeTexture(cmd, rgba, width, height);
-			if (path.empty() || !ps5tga::Load(path, 512, 704, rgba, width, height))
+			if (path.empty() || !ps5tga::Load(path, ps5menu::kLoadingCoverWidth, ps5menu::kLoadingCoverHeight, rgba, width, height))
 			{
 				ps5log::Line("[ingamenx] no cover for the menu ({})", path.empty() ? "none given" : path);
 				return;
@@ -353,7 +355,7 @@ namespace ps5ingamenx
 			g.cover = MakeTexture(cmd, rgba, width, height);
 			std::vector<uint8_t> small;
 			int sw = 0, sh = 0;
-			if (ps5tga::Load(path, 24, 24, small, sw, sh))
+			if (ps5tga::Load(path, ps5menu::kLoadingBlurSize, ps5menu::kLoadingBlurSize, small, sw, sh))
 				g.blur = MakeTexture(cmd, small, sw, sh);
 		}
 
@@ -434,7 +436,7 @@ namespace ps5ingamenx
 			g.row = add(Weight::Regular, ps5menu::kLabel);
 			g.small = add(Weight::Regular, ps5menu::kCaption);
 			g.chip = add(Weight::SemiBold, ps5menu::kChip);
-			g.big = add(Weight::SemiBold, 60);
+			g.big = add(Weight::SemiBold, ps5menu::kLoadingTitle);
 			if (!fonts)
 			{
 				ps5log::Line("[ingamenx] the menu's fonts are not in {}/ui/fonts: Eden's own screens instead", ps5paths::Assets());
@@ -479,85 +481,31 @@ namespace ps5ingamenx
 			{
 			case Step::Shaders:
 				if (const size_t of = s_shadersOf; of > 0)
-					// tr: the Switch side's loading screen: the game's shaders read from the cache, {0} of {1}
-					return TrF("Shaders: {0} of {1}", (size_t)s_shadersDone, of);
-				return Tr("Loading…");
-			case Step::Starting: return Tr("Starting");
-			default: return Tr("Loading…");
+					return ps5menu::ShaderStep(s_shadersDone, of);
+				return ps5menu::LoadingStep();
+			case Step::Starting: return ps5menu::StartingStep();
+			default: return ps5menu::LoadingStep();
 			}
 		}
 
-		void DrawLoading(float scale, float time)
+		// Playtendoh's loading screen (app/loading_screen.h), as every side draws it; alpha falls as it
+		// fades into the game
+		void DrawLoading(float scale, float time, float alpha)
 		{
-			ImGuiIO& io = ImGui::GetIO();
-			const ImVec2 size = io.DisplaySize;
-			ImDrawList* draw = ImGui::GetBackgroundDrawList();
-			const ps5menu::Palette& colours = ps5menu::kRed;
-			draw->AddRectFilled({0, 0}, size, ps5menu::Colour(0x05070d));
-			// the cover's colours, blurred, over the whole screen; darker on the left, where the words are
-			if (g.blur.id)
-			{
-				const float k = std::max(size.x / g.blur.width, size.y / g.blur.height);
-				const ImVec2 half{g.blur.width * k * 0.5f, g.blur.height * k * 0.5f};
-				const ImVec2 middle{size.x * 0.5f, size.y * 0.5f};
-				draw->AddImage(g.blur.id, {middle.x - half.x, middle.y - half.y}, {middle.x + half.x, middle.y + half.y}, {0, 0}, {1, 1},
-					IM_COL32(255, 255, 255, 170));
-			}
-			draw->AddRectFilledMultiColor({0, 0}, size, IM_COL32(5, 7, 13, 236), IM_COL32(5, 7, 13, 150), IM_COL32(5, 7, 13, 170),
-				IM_COL32(5, 7, 13, 240));
-			const ImVec2 origin{(size.x - 1920.0f * scale) * 0.5f, (size.y - 1080.0f * scale) * 0.5f};
-			const ps5menu::Canvas canvas{draw, scale, origin, colours};
-			// the cover, as the launcher's tile showed it, with a soft shadow
-			const float coverHeight = 520;
-			const float coverWidth = g.cover.id ? coverHeight * g.cover.width / g.cover.height : coverHeight * 0.75f;
-			const float x0 = 200, y0 = (1080 - coverHeight) * 0.5f;
-			for (int i = 0; i < 8; i++)
-			{
-				const float d = 4.0f + i * 5;
-				draw->AddRectFilled(canvas.At(x0 - d, y0 - d * 0.5f), canvas.At(x0 + coverWidth + d, y0 + coverHeight + d * 1.5f),
-					IM_COL32(0, 0, 0, 22 - i * 2), (22 + d) * scale);
-			}
-			if (g.cover.id)
-				draw->AddImageRounded(g.cover.id, canvas.At(x0, y0), canvas.At(x0 + coverWidth, y0 + coverHeight), {0, 0}, {1, 1},
-					IM_COL32(255, 255, 255, 255), 22 * scale);
-			else
-				draw->AddRectFilled(canvas.At(x0, y0), canvas.At(x0 + coverWidth, y0 + coverHeight), colours.accentInk, 22 * scale);
-			draw->AddRect(canvas.At(x0, y0), canvas.At(x0 + coverWidth, y0 + coverHeight), IM_COL32(255, 255, 255, 30), 22 * scale, 0, 1.5f * scale);
-			// beside it: the system, the game's name, GameTDB's publisher and year, then what Eden is doing
-			std::string title, details;
+			ps5menu::Loading loading;
+			loading.system = kSystemName;
 			{
 				std::lock_guard lock(s_mutex);
-				title = s_title;
-				details = s_details;
+				loading.title = s_title;
+				loading.details = s_details;
 			}
-			const float tx = x0 + coverWidth + 80, width = 1920 - tx - 180;
-			float y = y0 + 40;
-			canvas.Chip(g.chip, tx, y, kSystemName, colours.accentInk, colours.accent, true);
-			y += 64;
-			const ps5menu::Canvas::Lines lines = canvas.Break(g.big, 60, title, width);
-			const int shown = std::min(2, (int)lines.drawn.size());
-			for (int i = 0; i < shown; i++)
-				canvas.Text(g.big, 60, tx, y + i * 70, colours.title, lines.drawn[i]);
-			y += shown * 70 + 18;
-			if (!details.empty())
-				canvas.Text(g.body, ps5menu::kBody, tx, y, colours.copy, details);
-			// at the cover's foot: the step, a bar for the shaders, and dots that breathe while it waits
-			const float by = y0 + coverHeight - 64;
-			canvas.Text(g.row, ps5menu::kLabel, tx, by, colours.text, StepText());
-			const size_t of = s_shadersOf, done = s_shadersDone;
-			const float barWidth = std::min(width, 560.0f);
-			draw->AddRectFilled(canvas.At(tx, by + 44), canvas.At(tx + barWidth, by + 50), IM_COL32(255, 255, 255, 26), 3 * scale);
-			if ((Step)s_step.load() == Step::Shaders && of > 0)
-				draw->AddRectFilled(canvas.At(tx, by + 44), canvas.At(tx + barWidth * std::min(1.0f, (float)done / of), by + 50), colours.accent, 3 * scale);
-			else
-			{
-				// a short light running along the bar
-				const float run = std::fmod(time * 0.6f, 1.0f);
-				const float a = std::max(0.0f, run * 1.3f - 0.3f), b = std::min(1.0f, run * 1.3f);
-				draw->AddRectFilled(canvas.At(tx + barWidth * a, by + 44), canvas.At(tx + barWidth * b, by + 50), colours.accent, 3 * scale);
-			}
-			// the app's name, small, in the corner
-			canvas.TextRight(g.small, ps5menu::kCaption, 1920 - 64, 1080 - 64, colours.copy, "Playtendoh");
+			loading.step = StepText();
+			if (const size_t of = s_shadersOf; (Step)s_step.load() == Step::Shaders && of > 0)
+				loading.progress = (float)s_shadersDone / of;
+			loading.cover = {g.cover.id, g.cover.width, g.cover.height};
+			loading.blur = {g.blur.id, g.blur.width, g.blur.height};
+			ps5menu::DrawLoading(ImGui::GetBackgroundDrawList(), ImGui::GetIO().DisplaySize, scale, ps5menu::kRed,
+				{g.big, g.chip, g.body, g.row, g.small}, loading, time, alpha);
 		}
 
 		// -- the menu --------------------------------------------------------------------------------
@@ -1039,6 +987,8 @@ namespace ps5ingamenx
 
 	void EndLoading()
 	{
+		if (s_drawsLoading)
+			s_loadingEndedAt = Now();
 		s_loading = false;
 		s_drawsLoading = false;
 	}
@@ -1110,6 +1060,10 @@ namespace ps5ingamenx
 			if (!session)
 				return; // started without the launcher's word: Eden's own screens, no menu
 			const bool loading = s_loading;
+			// the game's first frames, the loading screen fading over them
+			const uint64_t endedAt = s_loadingEndedAt;
+			const float sinceEnd = endedAt ? (Now() - endedAt) / 1e6f : ps5menu::kLoadingFade;
+			const bool fading = !loading && sinceEnd < ps5menu::kLoadingFade;
 			const bool open = s_open;
 			// made ready at the first frame, loading screen or not: the menu needs it later
 			if (!g.ready)
@@ -1147,7 +1101,7 @@ namespace ps5ingamenx
 			}
 			if (!g.picturesTried)
 				MakePictures(target.commandBuffer);
-			if (!loading && !open)
+			if (!loading && !open && !fading)
 				return; // made ready for the menu, nothing to draw
 			ImGuiIO& io = ImGui::GetIO();
 			io.DisplaySize = {(float)target.width, (float)target.height};
@@ -1162,11 +1116,13 @@ namespace ps5ingamenx
 			const float drawScale = target.height / 1080.0f;
 			if (loading)
 			{
-				DrawLoading(drawScale, (now - first) / 1e6f);
+				DrawLoading(drawScale, (now - first) / 1e6f, 1.0f);
 				s_drawsLoading = true;
 			}
 			else if (open)
 				DrawMenu(drawScale);
+			else
+				DrawLoading(drawScale, (now - first) / 1e6f, ps5menu::LoadingFadeAlpha(sinceEnd));
 			ImGui::Render();
 			g.pending = true;
 			return;

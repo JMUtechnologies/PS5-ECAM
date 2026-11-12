@@ -18,6 +18,7 @@
 
 #include "lang.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <map>
@@ -108,6 +109,20 @@ namespace ps5ingame3ds
 	// The menu's top, once: GameTDB's facts on a line ("Nintendo  /  2015"), and the TGA of the
 	// game's box art or icon (empty: none).
 	void SetGame(const std::string& details, const std::string& coverPath);
+	// The loading screen (loading_screen.h, every side's), for a 3DS game: while Azahar makes the game's
+	// cached shaders ready before its first step, port/azahar/core.cpp presents a frame now and then
+	// and the screen is drawn in it, saying what Azahar is doing, done of of (of 0: not counted).
+	// EndLoading as the game starts: the screen fades over its first frames. Start and SetGame first.
+	enum class LoadingStep
+	{
+		Loading,
+		Shaders,
+		Pipelines,
+		Starting,
+	};
+	void SetLoading(LoadingStep step, size_t done = 0, size_t of = 0);
+	void EndLoading();
+
 	// Touchpad click + Options.
 	void ToggleMenu();
 	bool MenuOpen();

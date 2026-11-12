@@ -6,9 +6,13 @@
 //   menu-preview OUT_DIR FONTS_DIR [BACKDROP.png]
 //
 // A 3DS game's menu, as ingame3ds.cpp fills it: on its quick actions, on a row, with a category open,
-// and a row held. The backdrop stands in for the game behind the menu.
+// and a row held. The backdrop stands in for the game behind the menu. Then the loading screen
+// (port/app/loading_screen.h) as each side fills it, with a drawn stand-in for the game's cover: the
+// Switch's, the Wii U's on its shaders and its pipelines, the 3DS's while how far is not known, and
+// halfway through its fade into the game.
 
 #include "../../port/app/buttons_menu.h"
+#include "../../port/app/loading_screen.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -77,7 +81,7 @@ namespace
 
 	// ImGui's triangles, each pixel's centre tested against them: colours and the atlas's alpha
 	// interpolated, blended over what is there
-	void Raster(Image& image, const ImDrawData* data, const Texture& atlas, const Texture& pad = {})
+	void Raster(Image& image, const ImDrawData* data, const Texture& atlas, const std::vector<Texture>& pictures = {})
 	{
 		for (int l = 0; l < data->CmdListsCount; l++)
 		{
@@ -86,7 +90,11 @@ namespace
 			{
 				const int x0c = std::max(0, (int)cmd.ClipRect.x), y0c = std::max(0, (int)cmd.ClipRect.y);
 				const int x1c = std::min(kW, (int)std::ceil(cmd.ClipRect.z)), y1c = std::min(kH, (int)std::ceil(cmd.ClipRect.w));
-				const Texture& texture = pad.rgba && cmd.TextureId == (ImTextureID)pad.rgba ? pad : atlas;
+				const Texture* found = &atlas;
+				for (const Texture& picture : pictures)
+					if (picture.rgba && cmd.TextureId == (ImTextureID)picture.rgba)
+						found = &picture;
+				const Texture& texture = *found;
 				const bool textured = cmd.TextureId == texture.rgba;
 				for (unsigned e = 0; e + 2 < cmd.ElemCount; e += 3)
 				{
@@ -121,10 +129,15 @@ namespace
 							{
 								const float u = w0 * v[0]->uv.x + w1 * v[1]->uv.x + w2 * v[2]->uv.x;
 								const float t = w0 * v[0]->uv.y + w1 * v[1]->uv.y + w2 * v[2]->uv.y;
-								const int tx = std::clamp((int)(u * texture.w), 0, texture.w - 1), ty = std::clamp((int)(t * texture.h), 0, texture.h - 1);
-								const unsigned char* texel = &texture.rgba[(ty * texture.w + tx) * 4];
+								// bilinear, as the console's samplers are (a small picture drawn large is its colours blurred)
+								const float fx = std::clamp(u * texture.w - 0.5f, 0.0f, texture.w - 1.0f);
+								const float fy = std::clamp(t * texture.h - 0.5f, 0.0f, texture.h - 1.0f);
+								const int tx = (int)fx, ty = (int)fy, tx1 = std::min(tx + 1, texture.w - 1), ty1 = std::min(ty + 1, texture.h - 1);
+								const float ax_ = fx - tx, ay_ = fy - ty;
+								auto texel = [&](int x, int y, int k) { return texture.rgba[(y * texture.w + x) * 4 + k] / 255.0f; };
 								for (int k = 0; k < 4; k++)
-									c[k] *= texel[k] / 255.0f;
+									c[k] *= (texel(tx, ty, k) * (1 - ax_) + texel(tx1, ty, k) * ax_) * (1 - ay_) +
+										(texel(tx, ty1, k) * (1 - ax_) + texel(tx1, ty1, k) * ax_) * ay_;
 							}
 							float* p = &image.rgb[(y * kW + x) * 3];
 							for (int k = 0; k < 3; k++)
@@ -148,6 +161,45 @@ namespace
 	{
 		std::ifstream in(path, std::ios::binary);
 		return {std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>()};
+	}
+
+	// A stand-in for a game's cover (no real box art in the repository): a sky, hills and a sun, and its
+	// small copy, each pixel the average of those it covers, as ps5tga::Load makes the blur's
+	std::vector<unsigned char> Cover(int w, int h)
+	{
+		std::vector<unsigned char> rgba((size_t)w * h * 4);
+		for (int y = 0; y < h; y++)
+			for (int x = 0; x < w; x++)
+			{
+				const float u = (float)x / w, v = (float)y / h;
+				float r = 0.95f - 0.5f * v, g = 0.45f + 0.25f * v, b = 0.35f + 0.5f * v;
+				if (std::hypot(u - 0.68f, v - 0.3f) < 0.13f)
+					r = 1.0f, g = 0.86f, b = 0.4f;
+				if (v > 0.62f + 0.06f * std::sin(u * 9.0f))
+					r = 0.16f, g = 0.42f + 0.2f * (1 - v), b = 0.3f;
+				if (v < 0.16f)
+					r = 0.08f, g = 0.1f, b = 0.2f; // the title band
+				unsigned char* p = &rgba[((size_t)y * w + x) * 4];
+				p[0] = (unsigned char)(r * 255), p[1] = (unsigned char)(g * 255), p[2] = (unsigned char)(b * 255), p[3] = 255;
+			}
+		return rgba;
+	}
+
+	std::vector<unsigned char> Shrink(const std::vector<unsigned char>& rgba, int w, int h, int size)
+	{
+		std::vector<unsigned char> out((size_t)size * size * 4);
+		for (int y = 0; y < size; y++)
+			for (int x = 0; x < size; x++)
+				for (int k = 0; k < 4; k++)
+				{
+					float sum = 0;
+					int n = 0;
+					for (int sy = y * h / size; sy < (y + 1) * h / size; sy++)
+						for (int sx = x * w / size; sx < (x + 1) * w / size; sx++, n++)
+							sum += rgba[((size_t)sy * w + sx) * 4 + k];
+					out[((size_t)y * size + x) * 4 + k] = (unsigned char)(sum / std::max(n, 1));
+				}
+		return out;
 	}
 
 	std::vector<ps5menu::Row> Rows()
@@ -213,6 +265,7 @@ int main(int argc, char* argv[])
 	};
 	const ps5menu::Fonts set{font(semi, ps5menu::kHeading), font(medium, ps5menu::kBody), font(regular, ps5menu::kLabel),
 		font(regular, ps5menu::kCaption), font(semi, ps5menu::kChip)};
+	const ps5menu::LoadingFonts loadingFonts{font(semi, ps5menu::kLoadingTitle), set.chip, set.body, set.label, set.caption};
 	unsigned char* pixels;
 	int w, h;
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &w, &h);
@@ -267,10 +320,49 @@ int main(int argc, char* argv[])
 			{
 				Image image;
 				Backdrop(image, backdrop);
-				Raster(image, ImGui::GetDrawData(), atlas, pad);
+				Raster(image, ImGui::GetDrawData(), atlas, {pad});
 				Save(image, out + "/" + shot.name + ".png");
 			}
 		}
+	}
+
+	// the loading screen, as each side fills it
+	const int coverW = 360, coverH = 495; // a 3DS or Switch case's shape, ps5tga::Load's fit in 512x704
+	static const std::vector<unsigned char> cover = Cover(coverW, coverH);
+	static const std::vector<unsigned char> blur = Shrink(cover, coverW, coverH, ps5menu::kLoadingBlurSize);
+	const std::vector<Texture> pictures{{cover.data(), coverW, coverH}, {blur.data(), ps5menu::kLoadingBlurSize, ps5menu::kLoadingBlurSize}};
+	struct LoadingShot
+	{
+		const char* name;
+		const char* system;
+		const ps5menu::Palette& colours;
+		std::string step;
+		float progress, time, alpha;
+	};
+	const std::vector<LoadingShot> loadingShots{
+		{"loading-switch", "Nintendo Switch", ps5menu::kRed, ps5menu::ShaderStep(1834, 4120), 1834.0f / 4120, 0, 1},
+		{"loading-wiiu-shaders", "Wii U", ps5menu::kBlue, ps5menu::ShaderStep(2210, 3400), 2210.0f / 3400, 0, 1},
+		{"loading-wiiu-pipelines", "Wii U", ps5menu::kBlue, ps5menu::PipelineStep(910, 5120), 910.0f / 5120, 0, 1},
+		{"loading-3ds", "Nintendo 3DS", ps5menu::kGold, ps5menu::LoadingStep(), -1, 1.1f, 1},
+		{"loading-3ds-fade", "Nintendo 3DS", ps5menu::kGold, ps5menu::StartingStep(), -1, 2.0f, ps5menu::LoadingFadeAlpha(ps5menu::kLoadingFade / 2)},
+	};
+	for (const LoadingShot& shot : loadingShots)
+	{
+		ps5menu::Loading loading;
+		loading.system = shot.system;
+		loading.title = "The Legend of the Stand-in Cover: A Long Name Over Two Lines";
+		loading.details = "Playtendoh  /  2026";
+		loading.step = shot.step;
+		loading.progress = shot.progress;
+		loading.cover = {(ImTextureID)cover.data(), coverW, coverH};
+		loading.blur = {(ImTextureID)blur.data(), ps5menu::kLoadingBlurSize, ps5menu::kLoadingBlurSize};
+		ImGui::NewFrame();
+		ps5menu::DrawLoading(ImGui::GetBackgroundDrawList(), io.DisplaySize, 1.0f, shot.colours, loadingFonts, loading, shot.time, shot.alpha);
+		ImGui::Render();
+		Image image;
+		Backdrop(image, backdrop);
+		Raster(image, ImGui::GetDrawData(), atlas, pictures);
+		Save(image, out + "/" + shot.name + ".png");
 	}
 	ImGui::DestroyContext();
 	return 0;
