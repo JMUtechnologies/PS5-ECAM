@@ -949,7 +949,16 @@ namespace ps5shell
 			}
 			const std::string last = LastPlayedWords(focus->entry.lastPlayed);
 			const std::string played = Joined({Played(*focus), last.empty() ? "" : TrF("Last played {0}", last)});
-			canvas.Text(Style({22, ui::Weight::Regular, 1.2f}), x, factsY, played.empty() ? std::string(Tr("Not played yet")) : played, kInk2, width, 1);
+			const std::string playedText = played.empty() ? std::string(Tr("Not played yet")) : played;
+			const ui::TextBlock factsText = canvas.Text(Style({22, ui::Weight::Regular, 1.2f}), x, factsY, playedText, kInk2, width, 1);
+			if (focus->report)
+			{
+				// how it runs, after its facts: the chips' dot in its colour, and its word
+				const std::string kind = ps5compat::Kind(focus->report->status);
+				const float dx = x + factsText.width + 22;
+				canvas.Rect({dx, factsY + 9, 10, 10}, 5, kind == "good" ? kGood : kind == "warn" ? kWarn : kBad);
+				canvas.Text(Style({22, ui::Weight::SemiBold, 1.2f}), dx + 18, factsY, TrC("status", focus->report->status), kInk2, width, 1);
+			}
 			float buttonY = factsY + 46;
 			// what the game is, as GameTDB tells it, in as many lines as the label has room for above Play (none
 			// for a game GameTDB does not know): its paragraphs run on, past a first one that is only a tagline

@@ -425,6 +425,9 @@ namespace ps5shell
 		if (m_status.coreStarting)
 			PollCore();
 		PollGames();
+		// how games run: the site's newer feed, fetched as the app started, or the badges turned on or off
+		if (ps5compat::Generation() != m_compatGeneration || m_compatShown != m_settings.ui.compatBadges)
+			FindReports();
 		PollPacks();
 		PollMods();
 		PollTiles();
@@ -816,17 +819,38 @@ namespace ps5shell
 			if (bare.empty() || bare == id)
 				name = game.known && !game.info.title.empty() ? game.info.title : !folderName.empty() ? folderName : name;
 		}
-		// the list names games in English: GameTDB's title finds one whose own name is in the menus'
-		// language (7.7). It has no DS or Switch games yet.
-		const bool reported = IsWiiU() || Is3ds();
-		game.report = !reported ? nullptr : ps5compat::Find(Is3ds(), entry.game.name);
-		if (!game.report && game.known && reported)
-			game.report = ps5compat::Find(Is3ds(), game.info.title);
+		game.report = ReportOf(m_side, game);
 		game.year = game.known && game.info.released.size() >= 4 ? std::atoi(game.info.released.substr(0, 4).c_str()) : 0;
 		std::string name = Lower(game.entry.game.name);
 		if (name.rfind("the ", 0) == 0)
 			name = name.substr(4);
 		game.sortName = name;
+	}
+
+	const ps5compat::Report* Shell::ReportOf(System side, const Game& game) const
+	{
+		if (!m_settings.ui.compatBadges)
+			return nullptr;
+		// by its title ID, else its name; the feed names games in English: GameTDB's title finds one whose
+		// own name is in the menus' language (7.7)
+		const char* key = ps5launcher::SideName(side);
+		const ps5compat::Report* report = ps5compat::Find(key, game.entry.game.titleId, game.entry.game.name);
+		if (!report && game.known && !game.info.title.empty())
+			report = ps5compat::Find(key, 0, game.info.title);
+		return report;
+	}
+
+	void Shell::FindReports()
+	{
+		m_compatShown = m_settings.ui.compatBadges;
+		for (Game& game : m_games)
+			game.report = ReportOf(m_side, game);
+		for (SideGame& one : m_homeGames)
+			one.game.report = ReportOf(one.side, one.game);
+		for (TimelineShelf& shelf : m_shelves)
+			for (Game& game : shelf.games)
+				game.report = ReportOf(shelf.side, game);
+		m_compatGeneration = ps5compat::Generation(); // after: the first Find reads the kept feed
 	}
 
 	std::string Shell::SwitchCover(const ps5emu::Game& game) const

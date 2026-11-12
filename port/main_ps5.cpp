@@ -13,6 +13,7 @@
 
 #include "app/achievements.h"
 #include "app/catalog.h"
+#include "app/compatibility.h"
 #include "app/emulator.h"
 #include "app/file_modes.h"
 #include "app/forwarders.h"
@@ -831,12 +832,15 @@ int main(int argc, char* argv[])
 			reportsFirstLook = false;
 			ps5reports::StartSending();
 		}
+		// how games run (the launcher's badges): the site's newest, fetched once a launch while the launcher is up
+		ps5compat::StartFetch();
 		std::optional<ps5launcher::Choice> choice;
 		const ps5shell::Outcome outcome = ps5shell::Run(settings, status, prepare, choice);
 		const uint64_t stopping = sceKernelGetProcessTime();
 		ps5emu::FinishCoreStart(); // a 3DS or DS game chosen while Cemu's library was still loading waits for it
 		ps5update::Stop(); // nothing of the launcher's runs beside a game
 		ps5reports::StopSending();
+		ps5compat::StopFetch();
 		ps5packs::Stop();
 		ps5mods::Stop();
 		ps5forwarders::Stop();

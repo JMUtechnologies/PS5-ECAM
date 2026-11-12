@@ -330,7 +330,27 @@ namespace ps5shell
 		canvas.Text(block, box.x + box.w * 0.09f, box.Bottom() - box.w * 0.09f - block.height, 0xffffffff); // on the cover: white, whatever the theme
 	}
 
-	void Shell::DrawCover(Canvas& canvas, Game& game, const Box& box, bool focused, float lift)
+	void Shell::StatusBadge(Canvas& canvas, const Game& game, const Box& drawn, float top)
+	{
+		if (!game.report || drawn.w < 100)
+			return;
+		const std::string kind = ps5compat::Kind(game.report->status);
+		if (kind.empty())
+			return;
+		// how it runs, in the cover's top right corner: a dark disc whatever the theme (it sits on a picture,
+		// as the name on a card does), the status's colour and mark in it, the game page's Check and Warning
+		// (and a dash for Not playable), so it reads without its colour too
+		const float size = std::clamp(drawn.w * 0.14f, 30.0f, 40.0f), inset = std::clamp(drawn.w * 0.04f, 8.0f, 14.0f);
+		const Box disc{drawn.Right() - inset - size, drawn.y + top + inset, size, size};
+		canvas.Shadow(disc, size * 0.5f, 3, 8, 0x66000000);
+		canvas.Rect(disc, size * 0.5f, 0xd914161a);
+		canvas.Ring(disc, size * 0.5f, 1.5f, ui::SetAlpha(KindColour(kind), 0.55f));
+		const float mark = size * 0.62f;
+		canvas.Draw(kind == "good" ? Icon::Check : kind == "warn" ? Icon::Warning : Icon::Dash,
+			{disc.CentreX() - mark * 0.5f, disc.CentreY() - mark * 0.5f, mark, mark}, Lighter(KindColour(kind), 0.2f));
+	}
+
+	void Shell::DrawCover(Canvas& canvas, Game& game, const Box& box, bool focused, float lift, bool status)
 	{
 		const ui::Picture& picture = Cover(game);
 		Box drawn = box.Scaled(1.0f + lift);
@@ -355,6 +375,8 @@ namespace ps5shell
 			{
 				DrawBox3d(canvas, picture, m_images->Get(ps5boxart::SpinePath(game.boxArt)), drawn, focused,
 					game.entry.ambient[0] ? game.entry.ambient[0] : picture.ambient[0]);
+				if (status)
+					StatusBadge(canvas, game, drawn, drawn.h * 0.07f); // under the front's top, which falls toward its far edge
 				return;
 			}
 		}
@@ -395,6 +417,8 @@ namespace ps5shell
 		canvas.Ring(drawn, kRadiusCover, 1, 0x14ffffff);
 		if (focused)
 			Focus(drawn, kRadiusCover, glow);
+		if (status)
+			StatusBadge(canvas, game, drawn, 0);
 	}
 
 	void Shell::DrawBox3d(Canvas& canvas, const ui::Picture& picture, const ui::Picture& spineArt, const Box& box, bool focused, uint32_t ambient)

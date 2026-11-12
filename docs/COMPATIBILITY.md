@@ -5,6 +5,9 @@ a game that isn't here hasn't been reported yet, which doesn't mean it doesn't w
 or correct one, [open an issue](https://github.com/premohq/PlayTendoh/issues/new/choose) with the
 game's region and version, the app version, and how far you played.
 
+The app shows this list on each game, with what players' automatic reports say about the games it
+does not list ([REPORTS.md](REPORTS.md)): it fetches the newest as it starts.
+
 | Status | Meaning |
 |---|---|
 | **Playable** | Can be played through with no known problem that gets in the way |

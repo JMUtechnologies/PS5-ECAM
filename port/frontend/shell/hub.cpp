@@ -306,9 +306,18 @@ namespace ps5shell
 			canvas.Draw(kind == "good" ? Icon::Check : Icon::Warning, {card.x + 24, card.y + 22, 28, 28}, colour);
 			const std::string heading = kind == "good" ? std::string(Tr("Runs well on PS5")) : TrC("status", game.report->status);
 			canvas.Text(Style({26, ui::Weight::SemiBold, 1.2f}), card.x + 62, card.y + 22, heading, ui::Mix(colour, 0xffffffff, 0.3f), card.w - 86, 1);
-			// tr: {0} is a status from the compatibility list, such as Playable
-			const std::string notes = game.report->notes.empty() ? TrF("The compatibility list has it as “{0}”.", TrC("status", game.report->status)) :
-																   TrC("compatibility note", game.report->notes);
+			// the list's notes; else what players' reports say, how many and how they went
+			const ps5compat::Report& report = *game.report;
+			std::string notes;
+			if (!report.notes.empty())
+				notes = TrC("compatibility note", report.notes);
+			else if (report.sessions > 0)
+				// tr: a game's page, how it runs, from players' automatic reports ({0}: consoles; {1} of {2}: play sessions)
+				notes = TrP(report.consoles, "From reports on {0} console: {1} of {2} sessions went well.",
+					"From reports on {0} consoles: {1} of {2} sessions went well.", report.ended, report.sessions);
+			else
+				// tr: {0} is a status from the compatibility list, such as Playable
+				notes = TrF("The compatibility list has it as “{0}”.", TrC("status", report.status));
 			canvas.Text(Style({21, ui::Weight::Regular, 1.4f}), card.x + 24, card.y + 66, notes, Secondary(), card.w - 48, 3);
 		}
 		canvas.PopOffset();

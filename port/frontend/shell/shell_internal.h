@@ -286,6 +286,10 @@ namespace ps5shell
 		void PollGames();
 		void PollCore(); // Cemu's library, loading beside the launcher (ps5emu::StartCore): ready, or why not
 		void MakeGame(Game& game, const ps5catalog::Entry& entry);
+		// how a game of a side runs (app/compatibility.h), or null: none known, or the badges off (Settings > Launcher)
+		const ps5compat::Report* ReportOf(System side, const Game& game) const;
+		// every game's again: a newer feed came, or the badges were turned on or off
+		void FindReports();
 		// a Switch game's cover: a picture beside it, else GameTDB's box art or its own icon (Settings > Online)
 		std::string SwitchCover(const ps5emu::Game& game) const;
 		std::string IconOf(Game& game);
@@ -349,7 +353,9 @@ namespace ps5shell
 		Box IconButton(Canvas& canvas, float x, float y, Icon icon, bool focused, float size = 72);
 		float Chip(Canvas& canvas, float x, float y, const std::string& text, const char* kind = "", float height = 38);
 		float Badge(Canvas& canvas, float x, float y, System side);
-		void DrawCover(Canvas& canvas, Game& game, const Box& box, bool focused, float lift);
+		// status: its badge on it, how it runs (a shelf's and a row's covers; not the list's small ones)
+		void DrawCover(Canvas& canvas, Game& game, const Box& box, bool focused, float lift, bool status = false);
+		void StatusBadge(Canvas& canvas, const Game& game, const Box& drawn, float top);
 		void DrawGameName(Canvas& canvas, Game& game, const Box& box);
 		// labelScale: the list's one size for its labels (LabelScale); 0: the row fits its own label,
 		// a little smaller when it is long
@@ -713,6 +719,8 @@ namespace ps5shell
 		bool m_videoOut = false; // VideoOut was taken (a failure from here needs a fresh process)
 
 		std::vector<Game> m_games;
+		int m_compatGeneration = -1; // the compatibility feed the games' reports are from (ps5compat::Generation)
+		bool m_compatShown = true;	 // and whether they were found at all (Settings > Launcher > How games run)
 		bool m_scanning = false;
 		bool m_listed = false; // the side's scan has finished: m_games is all it found
 		uint32_t m_boxArrivals = 0;
