@@ -1557,7 +1557,7 @@ namespace ps5ingame3ds
 				}
 				std::vector<uint8_t> rgba;
 				int width = 0, height = 0;
-				if (!path.empty() && ps5tga::Load(path, ps5menu::kLoadingCoverWidth, ps5menu::kLoadingCoverHeight, rgba, width, height))
+				if (!path.empty() && ps5tga::Load(path, ps5menu::kLoadingCoverWidth, ps5menu::kLoadingCoverHeight, rgba, width, height, ui::DecodeFile))
 				{
 					g.cover = ImGui_ImplVulkan_GenerateTexture(target.commandBuffer, rgba, {width, height});
 					g.coverWidth = width;

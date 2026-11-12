@@ -40,6 +40,12 @@
 #include <map>
 #include <mutex>
 
+// ui/images.cpp's: a picture file decoded as RGBA rows, with the launcher's stb_image
+namespace ui
+{
+	bool DecodeFile(const std::string& path, std::vector<uint8_t>& rgba, int& width, int& height);
+}
+
 namespace
 {
 	using ps5lang::Percent;
@@ -886,7 +892,7 @@ void PS5Cemu_ImguiUploads()
 	}
 	std::vector<uint8_t> rgba;
 	int width = 0, height = 0;
-	if (path.empty() || !ps5tga::Load(path, ps5menu::kLoadingCoverWidth, ps5menu::kLoadingCoverHeight, rgba, width, height))
+	if (path.empty() || !ps5tga::Load(path, ps5menu::kLoadingCoverWidth, ps5menu::kLoadingCoverHeight, rgba, width, height, ui::DecodeFile))
 	{
 		ps5log::Line("[ingame] no box art for the menu ({})", path.empty() ? "none fetched" : path);
 		return;
