@@ -1449,16 +1449,20 @@ namespace ps5shell
 					TrF("The launcher's colours, corners and background. Make your own as a JSON file in {0}/themes; the text below this page says how. Games and in-game menus don't change.",
 						ps5paths::Root()));
 			}
-			// EmulationStation the third: a download until the app has it (app/esde_get.h)
-			std::vector<std::string> layouts{Tr("Classic"), Tr("Orbit"), Tr("EmulationStation")};
-			choice("launcher", Tr("Layout"), layouts, settings.ui.emulationStation ? 2 : std::clamp(settings.ui.layout, 0, 1),
+			// EmulationStation the third once the app has it: its download is the row below, never a choice
+			// here, which changes as focus passes over it (app/esde_get.h)
+			const bool esde = ps5esde::Available();
+			std::vector<std::string> layouts{Tr("Classic"), Tr("Orbit")};
+			if (esde)
+				layouts.push_back(Tr("EmulationStation"));
+			choice("launcher", Tr("Layout"), layouts, settings.ui.emulationStation && esde ? 2 : std::clamp(settings.ui.layout, 0, 1),
 				Tr("How the Library is laid out."),
-				Tr("Classic shows one console at a time, with Recently played on top. Orbit is a dial for picking a console, with recent games in the centre. EmulationStation (ES-DE) is a separate launcher, downloaded the first time you choose it. Your games, settings and saves stay the same."));
+				Tr("Classic shows one console at a time, with Recently played on top. Orbit is a dial for picking a console, with recent games in the centre. EmulationStation (ES-DE) is a separate launcher: download it on the row below to choose it here. Your games, settings and saves stay the same."));
 			{
 				// ES-DE in the app or not: its download, how it goes, and taking it out again
 				using State = ps5esdeget::Status::State;
 				const ps5esdeget::Status status = ps5esdeget::GetStatus();
-				const char* about = Tr("EmulationStation (ES-DE) shows the same games with its own themes. It's a separate download of about 850 MB and stays through updates. Games still play here with the same settings, saves and in-game menu. Hold L1 while Playtendoh starts to use this launcher instead.");
+				const std::string about = TrF("EmulationStation (ES-DE) shows the same games with its own themes. It's a separate download of about {0} MB and stays through updates. Games still play here with the same settings, saves and in-game menu. Hold L1 while Playtendoh starts to use this launcher instead.", ps5esdeget::kAboutBytes >> 20);
 				std::string value;
 				switch (status.state)
 				{
@@ -1469,10 +1473,13 @@ namespace ps5shell
 				case State::Verifying: value = Tr("Checking the download…"); break;
 				case State::Installing: value = Tr("Installing…"); break;
 				case State::Failed: value = status.message; break;
-				default: value = ps5esde::Available() ? std::string(Tr("Hold Cross to remove")) : TrF("Cross to download · {0} MB", ps5esdeget::kAboutBytes >> 20);
+				default: value = esde ? std::string(Tr("Hold Cross to remove")) : TrF("Hold Cross to download · {0} MB", ps5esdeget::kAboutBytes >> 20);
 				}
-				action(ps5esde::Available() && !ps5esdeget::Busy() ? Kind::Hold : Kind::Action, "esde-get", Tr("EmulationStation"), value,
-					ps5esde::Available() ? Tr("Installed. Choose it as the Layout above.") : Tr("A separate launcher, as a download."), about);
+				if (status.state == State::Failed)
+					value += "  ·  " + std::string(esde ? Tr("Hold Cross to remove") : Tr("Hold Cross to try again"));
+				// held, so passing over it or a press by mistake starts nothing; Cross stops a download under way
+				action(ps5esdeget::Busy() ? Kind::Action : Kind::Hold, "esde-get", Tr("EmulationStation"), value,
+					esde ? Tr("Installed. Choose it as the Layout above.") : Tr("A separate launcher, as a download."), about);
 			}
 			// the sides the bar offers: any mix, at least one, in its order
 			std::string shown;
@@ -2224,18 +2231,14 @@ namespace ps5shell
 			settings.ui.theme = index >= 0 && index < (int)m_themes.size() ? m_themes[index].id : "";
 		else if (id == "launcher")
 		{
-			// EmulationStation from the app's next start (downloaded first, where the app has not got it);
-			// Classic or Orbit now (the row is "launcher": "layout" is the handhelds' screen layout, caught above)
-			settings.ui.emulationStation = index == 2;
+			// EmulationStation from the app's next start, offered only once the app has it (its download is
+			// the row below: a choice changes as focus passes, so it never starts one); Classic or Orbit now
+			// (the row is "launcher": "layout" is the handhelds' screen layout, caught above)
+			settings.ui.emulationStation = index == 2 && ps5esde::Available();
 			if (index < 2)
 				settings.ui.layout = std::clamp(index, 0, 1);
-			else if (ps5esde::Available())
+			else if (settings.ui.emulationStation)
 				Toast(Tr("EmulationStation opens next time Playtendoh starts. Hold L1 while it starts to use this launcher instead."));
-			else
-			{
-				ps5esdeget::Start();
-				Toast(Tr("Downloading EmulationStation. It opens next time Playtendoh starts."));
-			}
 			settings.ui.layoutChosen = true;
 		}
 		else if (id == "abeverywhere")
@@ -2837,16 +2840,11 @@ namespace ps5shell
 		}
 		else if (id == "esde-get")
 		{
-			// Cross: the download, or stopping it
-			if (ps5esdeget::Busy())
-			{
-				if (ps5esdeget::Cancel())
-					Toast(Tr("EmulationStation's download stopped"));
-				else
-					m_feedback.Play(ui::Cue::Denied);
-			}
-			else if (!ps5esde::Available())
-				ps5esdeget::Start();
+			// Cross stops a download under way (held starts one, or removes ES-DE: HoldDone)
+			if (ps5esdeget::Busy() && ps5esdeget::Cancel())
+				Toast(Tr("EmulationStation's download stopped"));
+			else
+				m_feedback.Play(ui::Cue::Denied);
 		}
 		else if (id == "retro-diagnostics" && IsRetro())
 			OpenHelp(Tr("Emulator diagnostics"), ps5retro::Diagnostics(SideIndex(), m_settings.retro[ps5retro::Slot(SideIndex())].retroBackend));
@@ -3066,6 +3064,13 @@ namespace ps5shell
 
 	void Shell::HoldDone(const std::string& id)
 	{
+		if (id == "esde-get" && !ps5esde::Available())
+		{
+			// the download, held to say yes: the size was on the row
+			ps5esdeget::Start();
+			Toast(Tr("Downloading EmulationStation. Choose it as the Layout once it's in."));
+			return;
+		}
 		if (id == "esde-get")
 		{
 			std::string error;

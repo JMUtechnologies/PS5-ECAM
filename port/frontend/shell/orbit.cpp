@@ -502,6 +502,7 @@ namespace ps5shell
 		// EmulationStation, the third choice, where the app has it (port/esde/esde.h)
 		m_layoutFocus = m_settings.ui.emulationStation ? 2 : std::clamp(m_settings.ui.layout, 0, 1);
 		m_layoutShown = (float)m_layoutFocus;
+		m_layoutAskEsde = false;
 		m_onBar = false;
 		Show(ScreenId::Layout);
 		m_screenAt = m_now;
@@ -516,6 +517,7 @@ namespace ps5shell
 		{
 			const int last = 2;
 			const int next = std::clamp(m_layoutFocus + (press.button == Button::Right ? 1 : -1), 0, last);
+			m_layoutAskEsde = false; // passing over ES-DE's card starts nothing
 			if (next == m_layoutFocus)
 				m_feedback.Play(ui::Cue::Edge, press.repeat);
 			else
@@ -535,6 +537,15 @@ namespace ps5shell
 		case Button::Cross:
 		case Button::Circle:
 		{
+			// ES-DE where the app hasn't got it: the first Cross shows its size, a second downloads it, Circle
+			// takes the question back
+			if (m_layoutFocus == 2 && !ps5esde::Available() && (press.button == Button::Cross ? !m_layoutAskEsde : m_layoutAskEsde))
+			{
+				m_layoutAskEsde = press.button == Button::Cross;
+				m_feedback.Play(m_layoutAskEsde ? ui::Cue::Select : ui::Cue::Back);
+				break;
+			}
+			m_layoutAskEsde = false;
 			// Circle leaves it as it is: nothing here has to be answered, as the rest of Make it yours
 			if (press.button == Button::Cross)
 			{
@@ -548,7 +559,8 @@ namespace ps5shell
 					Toast(Tr("EmulationStation opens next time Playtendoh starts. Hold L1 while it starts to use this launcher instead."));
 				else
 				{
-					// a download of its own (app/esde_get.h): this launcher until it is in
+					// a download of its own (app/esde_get.h), the player having said yes to its size: this
+					// launcher until it is in
 					ps5esdeget::Start();
 					Toast(Tr("Downloading EmulationStation. It opens next time Playtendoh starts."));
 				}
@@ -764,8 +776,12 @@ namespace ps5shell
 		canvas.PopAlpha();
 
 		canvas.PushAlpha(Enter(2));
+		// ES-DE where the app hasn't got it: a download, asked for with its size first
+		const bool download = m_layoutFocus == 2 && !ps5esde::Available();
 		// tr: the button of the first start's question: {0} is the layout in focus, Classic or Orbit
-		const std::string use = TrF("Use {0}", cards[m_layoutFocus].name);
+		const std::string use = !download	   ? TrF("Use {0}", cards[m_layoutFocus].name)
+								: m_layoutAskEsde ? TrF("Download {0} MB", ps5esdeget::kAboutBytes >> 20)
+												  : std::string(Tr("Download ES-DE"));
 		const ui::TextStyle useStyle = Style({22, ui::Weight::SemiBold, 1.0f});
 		const float useWidth = m_fonts.Width(useStyle, use) + 72 + 36;
 		const Box button{1920 - 140 - useWidth, 912, useWidth, 68};
@@ -782,7 +798,9 @@ namespace ps5shell
 			canvas.Text(boxesLabel, boxesChip.x + 68, boxesChip.CentreY() - boxesLabel.height * 0.5f, kInk);
 		}
 		canvas.Text(Style({19, ui::Weight::Regular, 1.3f}), left, 926,
-			m_layoutFocus == 2 ? std::string(Tr("Hold L1 while Playtendoh starts to use its own launcher. Switch back any time in Settings > Launcher > Layout."))
+			download && m_layoutAskEsde
+				? TrF("ES-DE is a separate download of about {0} MB. Cross again to download it, Circle to cancel. Playtendoh's own launcher opens until it's in.", ps5esdeget::kAboutBytes >> 20)
+			: m_layoutFocus == 2 ? std::string(Tr("Hold L1 while Playtendoh starts to use its own launcher. Switch back any time in Settings > Launcher > Layout."))
 							   : std::string(Tr("Both have the Timeline, every console's games on one shelf, after the last console.")),
 			kInk2, (m_layoutFocus < 2 ? boxesChip.x : button.x) - 24 - left, 2);
 		canvas.Rect(button, 34, kInk);
