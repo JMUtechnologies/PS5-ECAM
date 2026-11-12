@@ -18,15 +18,15 @@ msgid_plural "{0} seconds left, or nothing changes. Touchpad click can be chosen
 msgstr[0] "Encore {0} seconde; ensuite rien ne change. Le clic du pavé tactile compte aussi."
 msgstr[1] "Encore {0} secondes; ensuite rien ne change. Le clic du pavé tactile compte aussi."
 
-#: port/app/emulator.cpp:532 port/frontend/shell/settings.cpp:3271 port/frontend/shell/shell.cpp:2388
+#: port/app/emulator.cpp:532 port/frontend/shell/settings.cpp:3276 port/frontend/shell/shell.cpp:2400
 msgid "Playtendoh cannot write to {0}. Is the HEN loaded?"
 msgstr "Playtendoh ne peut pas écrire dans {0}. Le HEN est-il chargé?"
 
-#: port/app/esde_get.cpp:231 port/app/updates.cpp:524
+#: port/app/esde_get.cpp:239 port/app/updates.cpp:524
 msgid "The download did not finish: is the PS5 online?"
 msgstr "Le téléchargement n’a pas abouti : la PS5 est-elle en ligne?"
 
-#: port/app/esde_get.cpp:283 port/app/pack_updates.cpp:194 port/app/updates.cpp:621
+#: port/app/esde_get.cpp:291 port/app/pack_updates.cpp:194 port/app/updates.cpp:621
 msgid "GitHub could not be found: is the PS5 online?"
 msgstr "GitHub est introuvable : la PS5 est-elle en ligne?"
 
@@ -147,7 +147,7 @@ msgstr "Azahar s’est arrêté en cours de route; {0}/azahar/log/azahar_log.txt
 
 #. the game menu: named groups of games the player makes (Couch co-op, say), shown on the Library's filter row
 #. What's new in 6.0: collections, groups of games the player makes
-#: port/frontend/shell/library.cpp:429 port/frontend/shell/shell.cpp:2250 port/frontend/shell/shell.cpp:2270 port/frontend/shell/shell.cpp:2296 port/frontend/shell/whatsnew.cpp:40
+#: port/frontend/shell/library.cpp:429 port/frontend/shell/shell.cpp:2262 port/frontend/shell/shell.cpp:2282 port/frontend/shell/shell.cpp:2308 port/frontend/shell/whatsnew.cpp:40
 msgid "Collections"
 msgstr "Collections"
 
@@ -249,20 +249,20 @@ msgstr "Le compte est supprimé; ses sauvegardes restent dans le stockage de la 
 msgid "Artic Base plays a game from your 3DS over the network; saves stay on the 3DS. Artic Setup copies your 3DS's system files, for the Home Menu and games that need them."
 msgstr "Artic Base joue à un jeu depuis une 3DS de votre réseau, ses sauvegardes restant sur la 3DS; Artic Setup copie les fichiers système d’une 3DS dans Azahar, pour le menu HOME et les jeux qui en ont besoin."
 
-#: port/frontend/shell/settings.cpp:1599
+#: port/frontend/shell/settings.cpp:1606
 msgid "Animations become short fades, and the background stays still."
 msgstr "Les ressorts deviennent de courts fondus; rien ne flotte, ne respire ou ne monte derrière les menus."
 
-#: port/frontend/shell/settings.cpp:1613
+#: port/frontend/shell/settings.cpp:1620
 msgid "Built-in music, your own, or none. For your own, put MP3 or WAV files in {0}."
 msgstr "La musique du lanceur, l’une des vôtres ou aucune. Pour la vôtre, placez des fichiers MP3 ou WAV dans {0}; ils apparaissent ici. Tous les côtés jouent la même."
 
 #. {0} is the folder they are kept in
-#: port/frontend/shell/settings.cpp:1644
+#: port/frontend/shell/settings.cpp:1651
 msgid "Deletes unpacked copies of archived games in {0}. They unpack again next time. Old copies are removed automatically when space runs low."
 msgstr "Supprime les copies des jeux décompressés de leurs archives, gardées dans {0}. Chacun est décompressé à nouveau à son prochain lancement; quand il faut de la place, les copies utilisées il y a le plus longtemps partent d’elles-mêmes."
 
-#: port/frontend/shell/settings.cpp:1698
+#: port/frontend/shell/settings.cpp:1705
 msgid ""
 "Shows {0} in a browser on a phone, tablet or computer on your network, with touch. Scan the code or open the address. Buttons and sound stay on the PS5.\n"
 "While a browser is open, games may run a little slower. Anyone on your network can open it, so turn it off on shared networks.\n"
@@ -272,11 +272,11 @@ msgstr ""
 "Tant qu’un navigateur l’affiche, la PS5 copie cet écran jusqu’à 30 fois par seconde, ce qui peut ralentir un peu un jeu; sans navigateur, cela ne coûte rien. Tout appareil de votre réseau peut ouvrir la page : désactivez-le sur un réseau partagé.\n"
 "Un seul interrupteur pour tous les côtés (l’écran du GamePad est celui du joueur 1), aussi dans le menu d’un jeu (clic du pavé tactile + OPTIONS). D’après l’idée et le prototype de dolphin78 (#38)."
 
-#: port/frontend/shell/settings.cpp:2183
+#: port/frontend/shell/settings.cpp:2190
 msgid "On: scan the QR code here to open the second screen in a phone's browser. The phone must be on the PS5's network."
 msgstr "Activé, un QR code ici ouvre le second écran du jeu dans le navigateur d’un téléphone. Rien à installer; le téléphone doit être sur le réseau de la PS5."
 
-#: port/frontend/shell/settings.cpp:3320
+#: port/frontend/shell/settings.cpp:3325
 msgid "{0} deleted. Its saves are kept."
 msgstr "{0} est supprimé; ses sauvegardes restent"
 
@@ -315,16 +315,16 @@ msgid "Turn on file sharing for a folder on your computer or NAS, then add it he
 msgstr "Activez le partage de fichiers pour un dossier de votre ordinateur ou NAS, puis ajoutez-le ici. La PS5 y lit les jeux; elle n’y écrit jamais. Pour les jeux Wii U, un câble vaut mieux que le Wi-Fi."
 
 #. the first choice of a game's Collections: a collection named with the keyboard, the game put in it
-#: port/frontend/shell/shell.cpp:2280 port/frontend/shell/shell.cpp:2299
+#: port/frontend/shell/shell.cpp:2292 port/frontend/shell/shell.cpp:2311
 msgid "New collection"
 msgstr "Nouvelle collection"
 
 #. a game's collection could not be written to the console's storage
-#: port/frontend/shell/shell.cpp:2287
+#: port/frontend/shell/shell.cpp:2299
 msgid "Could not save the collection"
 msgstr "Impossible d’enregistrer la collection"
 
-#: port/frontend/shell/shell.cpp:2968
+#: port/frontend/shell/shell.cpp:2980
 msgid "You have {0}. Download and install it now? Your games, saves and settings are kept."
 msgstr "Vous avez {0}. Télécharger et installer la nouvelle version maintenant? Vos jeux, sauvegardes et paramètres restent tels quels."
 
